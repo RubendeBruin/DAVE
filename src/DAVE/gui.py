@@ -25,6 +25,7 @@ from PyQt5.QtCore import QMimeData, Qt
 from PyQt5 import QtCore
 
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
+from PyQt5.QtWidgets import QFileDialog
 
 from IPython.utils.capture import capture_output
 import datetime
@@ -147,6 +148,10 @@ class Gui:
             exit(1)
 
         #---- register events ----
+
+        self.ui.actionOpen.triggered.connect(self.open)
+        self.ui.actionSave_scene.triggered.connect(self.menu_save)
+        self.ui.actionImport_sub_scene.triggered.connect(self.menu_import)
 
         self.ui.treeView.activated.connect(self.tree_select_node)  # fires when a user presses [enter]
         # self.ui.treeView.pressed.connect(self.tree_select_node)
@@ -282,6 +287,24 @@ class Gui:
 
     def clear(self):
         self.run_code('s.clear()')
+
+    def open(self):
+        filename, _ = QFileDialog.getOpenFileName(filter="*.pscene", caption="Scene files")
+        if filename:
+            code = 's.clear()\ns.load_scene(r"{}")'.format(filename)
+            self.run_code(code)
+
+    def menu_import(self):
+        filename, _ = QFileDialog.getOpenFileName(filter="*.pscene", caption="Scene files")
+        if filename:
+            code = 's.import_scene(r"{}")'.format(filename)
+            self.run_code(code)
+
+    def menu_save(self):
+        filename, _ = QFileDialog.getSaveFileName(filter="*.pscene", caption="Scene files")
+        if filename:
+            code = 's.save_scene(r"{}")'.format(filename)
+            self.run_code(code)
 
     def level_camera(self):
         self.visual.level_camera()
