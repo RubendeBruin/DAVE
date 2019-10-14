@@ -1,0 +1,18 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>con2d.png</file>
+    <file>Dave_icon.png</file>
+    <file>beam.png</file>
+    <file>buoy_mesh.png</file>
+    <file>cable.png</file>
+    <file>trimesh.png</file>
+    <file>poi.png</file>
+    <file>force.png</file>
+    <file>lincon6.png</file>
+    <file>linhyd.png</file>
+    <file>visual.png</file>
+    <file>cube.png</file>
+    <file>redball.png</file>
+    <file>axis.png</file>
+  </qresource>
+</RCC>
