@@ -4,4 +4,5 @@ from DAVE.example_scenes import *
 from DAVE.demo_assets import *
 
 s = Scene()
+octopus(s)
 Gui(s).show()

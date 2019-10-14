@@ -1,0 +1,47 @@
+"""
+Helper functions for running virtual-float from jupyter
+"""
+
+import DAVE.visual
+
+def _setup_viewport(vp, what = 'all', sea=True):
+
+    what = what.upper()
+
+    vp.show_global = sea
+
+    if what == 'ALL':
+        pass
+        # default
+    elif what == 'VISUALS':
+        vp.show_visual = True
+        vp.show_geometry = False
+        vp.show_force = False
+    elif True:
+        print('Unexpected what: {} '.format(what))
+        print('What should be "all","visuals"')
+
+    vp.create_visuals(recreate=True)
+    vp.position_visuals()
+    vp.update_visibility()
+
+    return vp
+
+def show(scene, what = 'all', sea=True):
+    """
+    Creates a 3d view of the scene.
+    """
+    vp = DAVE.visual.Viewport(scene)
+    vp.Jupyter = True
+
+    _setup_viewport(vp, what=what, sea=sea)
+
+    return vp.show()
+
+def screenshot(scene, what = 'all', sea=True, width=1024, height = 600, camera_pos=(50,-25,10), lookat = (0,0,0)):
+    vp = DAVE.visual.Viewport(scene)
+
+    _setup_viewport(vp, what=what, sea=sea)
+
+    vp.screenshot(w=width, h=height, camera_pos=camera_pos, lookat=lookat)
+
