@@ -1,13 +1,12 @@
 import sys
-sys.path.extend(['C:\\Users\\Ruben\\source\\repos\\o3d\\x64\\Release', 'C:\\Users\\Ruben\\source\\repos\\virtualfloat', 'C:\\Users\\Ruben\\source\\repos\\virtualfloat\\src', 'C:/Users/Ruben/source/repos/o3d/x64/Release'])
+sys.path.extend(['C:\\Users\\Ruben\\source\\repos\\o3d\\x64\\Release', 'C:\\Users\\Ruben\\source\\repos\\DAVE', 'C:\\Users\\Ruben\\source\\repos\\DAVE\\src', 'C:/Users/Ruben/source/repos/o3d/x64/Release'])
 
 import pdoc
-import virtualfloat
+import DAVE
 
 context = pdoc.Context()
 
-
-module = pdoc.Module(virtualfloat, context=context)
+module = pdoc.Module(DAVE, context=context)
 
 pdoc.link_inheritance(context)
 

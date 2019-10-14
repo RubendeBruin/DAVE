@@ -1,8 +1,8 @@
 ============
-VirtualFloat
+DAVE
 ============
 
-This is the documentation of **VirtualFloat**.
+This is the documentation of **DAVE**.
 
 *Virtual* as in Virtual-Reality. A visual playground for design and collaboration. Also a keyword in object oriented programming.
 
@@ -11,7 +11,7 @@ This is the documentation of **VirtualFloat**.
 
 .. note::
 
-    The VirtualFloat interface is an open-source python project.
+    The DAVE interface is an open-source python project.
 
 
     This is the main page of your project's `Sphinx`_ documentation.
