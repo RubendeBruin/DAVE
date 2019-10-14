@@ -207,7 +207,7 @@
     </sizepolicy>
    </property>
    <property name="floating">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="features">
     <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
@@ -827,7 +827,7 @@
   </action>
   <action name="actionOptimize">
    <property name="text">
-    <string>Optimize (multiple variables)</string>
+    <string>TODO: Optimize (multiple variables)</string>
    </property>
   </action>
   <zorder>dockWidget_3</zorder>
