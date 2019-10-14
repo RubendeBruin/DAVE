@@ -46,7 +46,12 @@ VF_NAME_SPLIT = "-->"    # used for node-names, eg:    Body23-->Cog
 #
 # VISUAL_BUOYANCY_PLANE_EXTEND = 5
 
-# ============ visuals ===========
+# ============ visuals :: geometry =========
+
+RESOLUTION_SPHERE = 12
+RESOLUTION_ARROW = 12
+
+# ============ visuals :: colors ===========
 
 _BLACK = [0,0,0]
 _RED = [144,33,30]

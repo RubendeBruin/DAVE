@@ -374,7 +374,7 @@ class Viewport:
                     actors.append(vis)
 
                 # cob
-                c = vp.Sphere(r=0.5).c(vc.COLOR_WATER)
+                c = vp.Sphere(r=0.5, res = vc.RESOLUTION_SPHERE).c(vc.COLOR_WATER)
                 c.actor_type = ActorType.FORCE
                 actors.append(c)
 
@@ -403,9 +403,9 @@ class Viewport:
 
             if isinstance(N, vf.Axis):
                 size = 1
-                ar = vp.Arrow((0,0,0),(size,0,0)).c(vc.COLOR_X)
-                ag = vp.Arrow((0, 0, 0), (0, size, 0)).c(vc.COLOR_Y)
-                ab = vp.Arrow((0, 0, 0), (0, 0, size)).c(vc.COLOR_Z)
+                ar = vp.Arrow((0,0,0),(size,0,0), res=vc.RESOLUTION_ARROW).c(vc.COLOR_X)
+                ag = vp.Arrow((0, 0, 0), (0, size, 0), res=vc.RESOLUTION_ARROW).c(vc.COLOR_Y)
+                ab = vp.Arrow((0, 0, 0), (0, 0, size), res=vc.RESOLUTION_ARROW).c(vc.COLOR_Z)
 
                 ar.actor_type = ActorType.GEOMETRY
                 ag.actor_type = ActorType.GEOMETRY
@@ -427,7 +427,7 @@ class Viewport:
 
             if isinstance(N, vf.Poi):
                 size = 1
-                p = vp.Sphere(pos=(0,0,0), r=size/2)
+                p = vp.Sphere(pos=(0,0,0), r=size/2, res = vc.RESOLUTION_SPHERE)
                 p.c(vc.COLOR_POI)
                 p.actor_type = ActorType.GEOMETRY
                 actors.append(p)
@@ -435,7 +435,7 @@ class Viewport:
             if isinstance(N, vf.Force):
 
                 endpoint = self._scaled_force_vector(N.force)
-                p = vp.Arrow(startPoint=(0,0,0), endPoint=endpoint, res=50)
+                p = vp.Arrow(startPoint=(0,0,0), endPoint=endpoint, res=vc.RESOLUTION_ARROW)
                 p.c(vc.COLOR_FORCE)
                 p.actor_type = ActorType.FORCE
                 p._force = endpoint
@@ -443,13 +443,13 @@ class Viewport:
                 actors.append(p)
 
                 endpoint = self._scaled_force_vector(N.moment)
-                p = vp.Arrow(startPoint=(0, 0, 0), endPoint=endpoint, res=50)
+                p = vp.Arrow(startPoint=(0, 0, 0), endPoint=endpoint, res=vc.RESOLUTION_ARROW)
                 p.actor_type = ActorType.FORCE
                 p._moment = endpoint
                 p.c(vc.COLOR_FORCE)
                 actors.append(p)
 
-                p = vp.Arrow(startPoint = 0.2 * endpoint, endPoint= 1.2 * endpoint, res=50)
+                p = vp.Arrow(startPoint = 0.2 * endpoint, endPoint= 1.2 * endpoint, res=vc.RESOLUTION_ARROW)
                 p.actor_type = ActorType.FORCE
                 p.c(vc.COLOR_FORCE)
                 actors.append(p)
@@ -694,7 +694,7 @@ class Viewport:
                     endpoint = self._scaled_force_vector(V.node.force)
 
 
-                    p = vp.Arrow(startPoint=(0, 0, 0), endPoint=endpoint, res=16)
+                    p = vp.Arrow(startPoint=(0, 0, 0), endPoint=endpoint, res=vc.RESOLUTION_ARROW)
                     p.actor_type = ActorType.FORCE
                     p._force = endpoint
                     p.c(vc.COLOR_FORCE)
@@ -708,13 +708,13 @@ class Viewport:
                     self.screen.remove(V.actors[2])
 
                     endpoint = self._scaled_force_vector(V.node.moment)
-                    p = vp.Arrow(startPoint=(0, 0, 0), endPoint=endpoint, res=16)
+                    p = vp.Arrow(startPoint=(0, 0, 0), endPoint=endpoint, res=vc.RESOLUTION_ARROW)
                     p.actor_type = ActorType.FORCE
                     p._moment = endpoint
                     p.c(vc.COLOR_FORCE)
                     V.actors[1] = p
 
-                    p = vp.Arrow(startPoint=0.2 * endpoint, endPoint=1.2 * endpoint, res=16)
+                    p = vp.Arrow(startPoint=0.2 * endpoint, endPoint=1.2 * endpoint, res=vc.RESOLUTION_ARROW)
                     p.actor_type = ActorType.FORCE
                     p.c(vc.COLOR_FORCE)
                     V.actors[2] = p
