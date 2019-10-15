@@ -868,15 +868,18 @@ class Viewport:
     def add_new_actors_to_screen(self):
         """Updates the screen with added actors"""
 
+        to_be_added = []
+
         if self.screen:
 
             actors = self.screen.getActors()
             for va in self.visuals:
                 for a in va.actors:
                     if not (a in actors):
-                        print('adding actor for {}'.format(va.node.name))
-                        self.screen.add(a)
-
+                        to_be_added.append(a)
+                        # self.screen.add(a)   # do not add directly to avoid frequent updates
+                        #print('adding actor for {}'.format(va.node.name))
+            self.screen.add(to_be_added)
 
             # check if objs need to be re-loaded
             for va in self.visuals:
@@ -1026,6 +1029,11 @@ class Viewport:
     def onMouseLeft(self, info):
         if self.mouseLeftEvent is not None:
             self.mouseLeftEvent(info)
+
+    def zoom_all(self):
+        for r in self.screen.renderers:
+            r.ResetCamera()
+
 
 
     def onMouseRight(self, info):

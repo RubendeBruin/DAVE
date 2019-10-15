@@ -373,6 +373,8 @@ class Ui_MainWindow(object):
         self.actionOptimize.setObjectName("actionOptimize")
         self.actionOpen = QtWidgets.QAction(MainWindow)
         self.actionOpen.setObjectName("actionOpen")
+        self.actionImport_browser = QtWidgets.QAction(MainWindow)
+        self.actionImport_browser.setObjectName("actionImport_browser")
         self.dockWidget_3.raise_()
         self.pythonDockWidget.raise_()
         self.dockWidget_4.raise_()
@@ -382,6 +384,7 @@ class Ui_MainWindow(object):
         self.menuSolve_Statics.addSeparator()
         self.menuSolve_Statics.addAction(self.actionOpen)
         self.menuSolve_Statics.addAction(self.actionImport_sub_scene)
+        self.menuSolve_Statics.addAction(self.actionImport_browser)
         self.menuSolve_Statics.addSeparator()
         self.menuSolve_Statics.addAction(self.actionSave_scene)
         self.menuView.addAction(self.actionHorizontal_camera)
@@ -494,7 +497,7 @@ class Ui_MainWindow(object):
         self.label_15.setText(_translate("MainWindow", "[degrees]"))
         self.stability_go.setText(_translate("MainWindow", "Displacement driven curve"))
         self.actionSave_scene.setText(_translate("MainWindow", "Save as"))
-        self.actionImport_sub_scene.setText(_translate("MainWindow", "Import"))
+        self.actionImport_sub_scene.setText(_translate("MainWindow", "Import (file)"))
         self.actionNew.setText(_translate("MainWindow", "New"))
         self.actionHorizontal_camera.setText(_translate("MainWindow", "Level camera (make horizon horizontal)"))
         self.actionHorizontal_camera.setShortcut(_translate("MainWindow", "Alt+L"))
@@ -525,6 +528,7 @@ class Ui_MainWindow(object):
         self.actionStability_curve.setText(_translate("MainWindow", "Stability-curve"))
         self.actionOptimize.setText(_translate("MainWindow", "TODO: Optimize (multiple variables)"))
         self.actionOpen.setText(_translate("MainWindow", "Open"))
+        self.actionImport_browser.setText(_translate("MainWindow", "Import (browser)"))
 
 import resources_rc
 

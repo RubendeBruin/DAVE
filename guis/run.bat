@@ -11,4 +11,6 @@ call c:\Anaconda\Library\bin\pyuic5.bat -x widget_linhyd.ui -o "..\src\DAVE\widg
 call c:\Anaconda\Library\bin\pyuic5.bat -x widget_lincon6.ui -o "..\src\DAVE\widget_lincon6.py"
 call c:\Anaconda\Library\bin\pyuic5.bat -x widget_beam.ui -o "..\src\DAVE\widget_beam.py"
 call c:\Anaconda\Library\bin\pyuic5.bat -x widget_con2d.ui -o "..\src\DAVE\widget_con2d.py"
+call c:\Anaconda\Library\bin\pyuic5.bat -x widget_con2d.ui -o "..\src\DAVE\widget_con2d.py"
+call c:\Anaconda\Library\bin\pyuic5.bat -x frm_standard_assets.ui -o "..\src\DAVE\frm_standard_assets.py"
 call c:\Anaconda\Library\bin\pyrcc5.bat resources.qrc -o "..\src\resources_rc.py"

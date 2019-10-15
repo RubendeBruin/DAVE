@@ -70,6 +70,7 @@
     <addaction name="separator"/>
     <addaction name="actionOpen"/>
     <addaction name="actionImport_sub_scene"/>
+    <addaction name="actionImport_browser"/>
     <addaction name="separator"/>
     <addaction name="actionSave_scene"/>
    </widget>
@@ -669,7 +670,7 @@
   </action>
   <action name="actionImport_sub_scene">
    <property name="text">
-    <string>Import</string>
+    <string>Import (file)</string>
    </property>
   </action>
   <action name="actionNew">
@@ -842,6 +843,11 @@
   <action name="actionOpen">
    <property name="text">
     <string>Open</string>
+   </property>
+  </action>
+  <action name="actionImport_browser">
+   <property name="text">
+    <string>Import (browser)</string>
    </property>
   </action>
   <zorder>dockWidget_3</zorder>

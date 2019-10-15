@@ -10,6 +10,8 @@ The GUI can be created from a scene
 import DAVE.visual as vfv
 import DAVE.scene as vfs
 import DAVE.constants as vfc
+import DAVE.standard_assets
+# DAVE.standard_assets.Gui().showModal()
 
 import DAVE.viewer_form
 
@@ -152,6 +154,7 @@ class Gui:
         self.ui.actionOpen.triggered.connect(self.open)
         self.ui.actionSave_scene.triggered.connect(self.menu_save)
         self.ui.actionImport_sub_scene.triggered.connect(self.menu_import)
+        self.ui.actionImport_browser.triggered.connect(self.import_browser)
 
         self.ui.treeView.activated.connect(self.tree_select_node)  # fires when a user presses [enter]
         # self.ui.treeView.pressed.connect(self.tree_select_node)
@@ -299,6 +302,18 @@ class Gui:
         if filename:
             code = 's.import_scene(r"{}")'.format(filename)
             self.run_code(code)
+
+    def import_browser(self):
+        G = DAVE.standard_assets.Gui()
+        r = G.showModal()
+
+        if r is not None:
+            file = r[0]
+            container = r[1]
+            prefix = r[2]
+            code = 's.import_scene(s.get_resource_path("{}"), containerize={}, prefix="{}")'.format(file,container,prefix)
+            self.run_code(code)
+
 
     def menu_save(self):
         filename, _ = QFileDialog.getSaveFileName(filter="*.pscene", caption="Scene files")
@@ -773,7 +788,8 @@ class Gui:
 
             except Exception as E:
 
-                self.ui.teFeedback.setText(c.stdout + '\n' + str(E))
+
+                self.ui.teFeedback.setText(c.stdout + '\n' + str(E) + '\n\nWhen running: \n\n' + code)
                 self.ui.teFeedback.setStyleSheet("background-color: red;")
                 return
 
@@ -908,6 +924,11 @@ class Gui:
         self._timerid = iren.CreateRepeatingTimer(round(1000/vfc.GUI_ANIMATION_FPS))
 
 
+# ====== main code ======
+
+if __name__ == '__main__':
+    s = vfs.Scene()
+    Gui(s).show()
 
 
 
