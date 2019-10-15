@@ -906,6 +906,10 @@ class Gui:
 
     def animate(self, old_dof, new_dof, steps):
 
+        print('Old dof: {}'.format(len(old_dof)))
+        print('New dof: {}'.format(len(new_dof)))
+
+        print('starting animation')
         self.visual.quick_updates_only = True
 
         self._old_dof = np.array(old_dof)
@@ -914,6 +918,7 @@ class Gui:
 
         self._timerid = None
 
+        print('creating timer')
         iren = self.visual.renwin.GetInteractor()
         self._iAnimation = 0
 
@@ -925,6 +930,35 @@ class Gui:
 
 if __name__ == '__main__':
     s = vfs.Scene()
+
+    s.clear()
+    s.import_scene(s.get_resource_path("turbine nacelle.pscene"), containerize=False, prefix="")
+
+    s.import_scene(s.get_resource_path("turbine blade.pscene"), containerize=False, prefix="blade1")
+    s['blade1body'].position = (-9.0, 0.0, 0.0)
+    s['blade1body'].rotation = (0.0, 0.0, 0.0)
+
+    s.import_scene(s.get_resource_path("turbine blade.pscene"), containerize=False, prefix="blade2")
+    s['blade2body'].position = (-9.0, 0.0, 0.0)
+    s['blade2body'].rotation = (120.0, 0.0, 0.0)
+
+    s.import_scene(s.get_resource_path("turbine blade.pscene"), containerize=False, prefix="blade3")
+    s['blade3body'].position = (-9.0, 0.0, 0.0)
+    s['blade3body'].rotation = (240.0, 0.0, 0.0)
+
+    s.new_axis('Hub_axis', parent='Nacelle')
+    # ---
+    s['Hub'].change_parent_to(s['Hub_axis'])
+    # ---
+    s['Hub2'].change_parent_to(s['Hub_axis'])
+    # ---
+    s['blade1body'].change_parent_to(s['Hub_axis'])
+    # ---
+    s['blade2body'].change_parent_to(s['Hub_axis'])
+    # ---
+    s['blade3body'].change_parent_to(s['Hub_axis'])
+    s['Hub_axis'].fixed = (True, True, True, False, True, True)
+
     Gui(s).show()
 
 

@@ -397,7 +397,7 @@ class Visual(Node):
 
         code += "\ns.new_visual(name='{}',".format(self.name)
         code += "\n            parent='{}',".format(self.parent.name)
-        code += "\n            path='{}',".format(self.path)
+        code += "\n            path=r'{}',".format(self.path)
         code += "\n            offset=({}, {}, {}), ".format(*self.offset)
         code += "\n            rotation=({}, {}, {}), ".format(*self.rotation)
         code += "\n            scale=({}, {}, {}) )".format(*self.scale)
@@ -1715,11 +1715,10 @@ class Buoyancy(NodeWithParent):
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
-        code += "\ns.new_buoyancy(name='{}',".format(self.name)
+        code += "\nmesh = s.new_buoyancy(name='{}',".format(self.name)
         if self.parent:
             code += "\n          parent='{}')".format(self.parent.name)
-        code += "\ns['{}'].trimesh.load_obj(s.get_resource_path('{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(self.name,
-            self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
+        code += "\nmesh.trimesh.load_obj(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
 
         return code
 
