@@ -1,0 +1,174 @@
+# auto generated pyhton code
+# By beneden
+# Time: 2019-10-15 11:51:29 UTC
+
+# To be able to distinguish the important number (eg: fixed positions) from
+# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
+# For anything written as solved(number) that actual number does not influence the static solution
+def solved(number):
+    return number
+
+# code for Octopus
+s.new_rigidbody(name='Octopus',
+                mass=100000.0,
+                cog=(87.153,
+                     0.0,
+                     15.0),
+                position=(0.0,
+                          0.0,
+                          solved(-19.725574766020145)),
+                rotation=(solved(-0.0025045744844162093),
+                          solved(-8.575876075943945e-05),
+                          0.0),
+                fixed =(True, True, False, False, False, True) )
+# code for buoyancy
+s.new_buoyancy(name='buoyancy',
+          parent='Octopus')
+s['buoyancy'].trimesh.load_obj(s.get_resource_path('buoyancy octopus.obj'), scale = (1,1,1), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
+# code for SB_crane_mast
+s.new_rigidbody(name='SB_crane_mast',
+                mass=4000.0,
+                cog=(0.0,
+                     0.0,
+                     25.0),
+                parent='Octopus',
+                position=(10.0,
+                          40.0,
+                          50.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for SB_crane_top
+s.new_poi(name='SB_crane_top',
+          parent='SB_crane_mast',
+          position=(0.0,
+                    0.0,
+                    61.0))
+# code for SB_crane_slew
+s.new_axis(name='SB_crane_slew',
+           parent='SB_crane_mast',
+           position=(0.0,
+                     0.0,
+                     15.0),
+           rotation=(0.0,
+                     0.0,
+                     29.999999999999996),
+           fixed =(True, True, True, True, True, True) )
+# code for SB_crane_boom
+s.new_rigidbody(name='SB_crane_boom',
+                mass=1200.0,
+                cog=(33.0,
+                     0.0,
+                     0.0),
+                parent='SB_crane_slew',
+                position=(0.0,
+                          0.0,
+                          0.0),
+                rotation=(0.0,
+                          solved(-24.26812441437327),
+                          0.0),
+                fixed =(True, True, True, True, False, True) )
+# code for SB_susp_wire_connection
+s.new_poi(name='SB_susp_wire_connection',
+          parent='SB_crane_boom',
+          position=(49.0,
+                    0.0,
+                    2.0))
+# code for SB_crane_Crane_susp_wire
+s.new_cable(name='SB_crane_Crane_susp_wire',
+            poiA='SB_susp_wire_connection',
+            poiB='SB_crane_top',
+            length=50.0,
+            EA=100000000.0)
+# code for PS_crane_mast
+s.new_rigidbody(name='PS_crane_mast',
+                mass=4000.0,
+                cog=(0.0,
+                     0.0,
+                     25.0),
+                parent='Octopus',
+                position=(10.0,
+                          -40.0,
+                          50.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for PS_crane_top
+s.new_poi(name='PS_crane_top',
+          parent='PS_crane_mast',
+          position=(0.0,
+                    0.0,
+                    61.0))
+# code for PS_crane_slew
+s.new_axis(name='PS_crane_slew',
+           parent='PS_crane_mast',
+           position=(0.0,
+                     0.0,
+                     15.0),
+           rotation=(0.0,
+                     0.0,
+                     -29.999999999999996),
+           fixed =(True, True, True, True, True, True) )
+# code for PS_crane_boom
+s.new_rigidbody(name='PS_crane_boom',
+                mass=1200.0,
+                cog=(33.0,
+                     0.0,
+                     0.0),
+                parent='PS_crane_slew',
+                position=(0.0,
+                          0.0,
+                          0.0),
+                rotation=(0.0,
+                          solved(-24.2681245372741),
+                          0.0),
+                fixed =(True, True, True, True, False, True) )
+# code for PS_susp_wire_connection
+s.new_poi(name='PS_susp_wire_connection',
+          parent='PS_crane_boom',
+          position=(49.0,
+                    0.0,
+                    2.0))
+# code for PS_crane_Crane_susp_wire
+s.new_cable(name='PS_crane_Crane_susp_wire',
+            poiA='PS_susp_wire_connection',
+            poiB='PS_crane_top',
+            length=50.0,
+            EA=100000000.0)
+# code for visual - vessel
+s.new_visual(name='visual - vessel',
+            parent='Octopus',
+            path='visual vessel octopus.obj',
+            offset=(0, 0, 0), 
+            rotation=(0, 0, 0), 
+            scale=(1.0, 1.0, 1.0) )
+# code for SB_visual - crane mast
+s.new_visual(name='SB_visual - crane mast',
+            parent='SB_crane_mast',
+            path='visual crane mast and boomrest.obj',
+            offset=(0, 0, 0), 
+            rotation=(0, 0, 0), 
+            scale=(1, 1, 1) )
+# code for SB_visual - crane boom
+s.new_visual(name='SB_visual - crane boom',
+            parent='SB_crane_boom',
+            path='visual crane-boom.obj',
+            offset=(0, 0, 0), 
+            rotation=(0, 0, 0), 
+            scale=(1, 1, 1) )
+# code for PS_visual - crane mast
+s.new_visual(name='PS_visual - crane mast',
+            parent='PS_crane_mast',
+            path='visual crane mast and boomrest.obj',
+            offset=(0, 0, 0), 
+            rotation=(0, 0, 0), 
+            scale=(1, 1, 1) )
+# code for PS_visual - crane boom
+s.new_visual(name='PS_visual - crane boom',
+            parent='PS_crane_boom',
+            path='visual crane-boom.obj',
+            offset=(0, 0, 0), 
+            rotation=(0, 0, 0), 
+            scale=(1, 1, 1) )

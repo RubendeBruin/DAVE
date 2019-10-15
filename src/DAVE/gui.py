@@ -316,7 +316,7 @@ class Gui:
 
 
     def menu_save(self):
-        filename, _ = QFileDialog.getSaveFileName(filter="*.pscene", caption="Scene files")
+        filename, _ = QFileDialog.getSaveFileName(filter="*.pscene", caption="Scene files",directory=self.scene.resources_paths[0])
         if filename:
             code = 's.save_scene(r"{}")'.format(filename)
             self.run_code(code)

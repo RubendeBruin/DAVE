@@ -127,55 +127,55 @@ def grid(s, n=5):
 
     return s
 
-def barge(s):
-
-    def solved(v):
-        return v
-
-    # code for Barge
-    s.new_rigidbody(name='Barge',
-                    mass=20000.0,
-                    cog=(50.0,
-                         0.0,
-                         2.5),
-                    position=(solved(0.0),
-                              solved(0.0),
-                              solved(-5.0)),
-                    rotation=(solved(0.0),
-                              solved(0.0),
-                              solved(0.0)),
-                    fixed=(False, False, False, False, False, False))
-    # code for Hydrostatics
-    s.new_hydspring(name='Hydrostatics',
-                    parent='Barge',
-                    cob=(50.0, 0.0, 2.5),
-                    BMT=(1 / 12) * 40 ** 3 * 100 / (40 * 100 * 5),
-                    BML=(1 / 12) * 100 ** 3 * 40 / (40 * 100 * 5),
-                    COFX=0.0,
-                    COFY=0.0,
-                    kHeave=39240.0,
-                    waterline=2.5,
-                    displacement_kN=196200.0)
-    # code for Poi
-    s.new_poi(name='Poi',
-              parent='Barge',
-              position=(0.0,
-                        10.0,
-                        0.0))
-    # code for Force
-    s.new_force(name='Force',
-                parent='Poi',
-                force=(0.0, 0.0, 0.0),
-                moment=(0.0, 0.0, 0.0))
-    #
-    # code for Visual
-    s.new_visual(name='Visual',
-                 parent='Barge',
-                 path='barge.obj',
-                 offset=(0.0, 0.0, 0.0),
-                 rotation=(0, 0, 0),
-                 scale=(1.0, 1.0, 1.0))
-
+# def barge(s):
+#
+#     def solved(v):
+#         return v
+#
+#     # code for Barge
+#     s.new_rigidbody(name='Barge',
+#                     mass=20000.0,
+#                     cog=(50.0,
+#                          0.0,
+#                          2.5),
+#                     position=(solved(0.0),
+#                               solved(0.0),
+#                               solved(-5.0)),
+#                     rotation=(solved(0.0),
+#                               solved(0.0),
+#                               solved(0.0)),
+#                     fixed=(False, False, False, False, False, False))
+#     # code for Hydrostatics
+#     s.new_hydspring(name='Hydrostatics',
+#                     parent='Barge',
+#                     cob=(50.0, 0.0, 2.5),
+#                     BMT=(1 / 12) * 40 ** 3 * 100 / (40 * 100 * 5),
+#                     BML=(1 / 12) * 100 ** 3 * 40 / (40 * 100 * 5),
+#                     COFX=0.0,
+#                     COFY=0.0,
+#                     kHeave=39240.0,
+#                     waterline=2.5,
+#                     displacement_kN=196200.0)
+#     # code for Poi
+#     s.new_poi(name='Poi',
+#               parent='Barge',
+#               position=(0.0,
+#                         10.0,
+#                         0.0))
+#     # code for Force
+#     s.new_force(name='Force',
+#                 parent='Poi',
+#                 force=(0.0, 0.0, 0.0),
+#                 moment=(0.0, 0.0, 0.0))
+#     #
+#     # code for Visual
+#     s.new_visual(name='Visual',
+#                  parent='Barge',
+#                  path='barge.obj',
+#                  offset=(0.0, 0.0, 0.0),
+#                  rotation=(0, 0, 0),
+#                  scale=(1.0, 1.0, 1.0))
+#
 
 def robot(s):
 
@@ -764,263 +764,179 @@ def lift_4p(s):
                  rotation=(0, 0, 0),
                  scale=(1.25, 2.0, 0.75))
 
+# def turtle(s):
+#
+#     # code for Turtle
+#     # code for Turtle
+#     s.new_rigidbody(name='Turtle',
+#                     mass=40006.0,
+#                     cog=(75.0,
+#                          0.0,
+#                          7.0),
+#                     position = (0,0,-20),
+#                     fixed=(True, True, False, False, False, True))
+#     # code for buoyancy
+#     s.new_buoyancy(name='buoyancy',
+#                    parent='Turtle')
+#     s['buoyancy'].trimesh.load_obj(s.get_resource_path('buoyancy turtle.obj'), scale=(1.0, 1.0, 1.0),
+#                                    rotation=(0.0, 0.0, 0.0), offset=(0.0, 0.0, 0.0))
+#     # code for import_container
+#     s.new_axis(name='import_container',
+#                position=(0.0,
+#                          0.0,
+#                          0.0),
+#                rotation=(0.0,
+#                          0.0,
+#                          0.0),
+#                fixed=(True, True, True, True, True, True))
+#     # code for visual - vessel
+#     s.new_visual(name='visual - vessel',
+#                  parent='Turtle',
+#                  path='visual vessel turtle.obj',
+#                  offset=(0, 0, 0),
+#                  rotation=(0, 0, 0),
+#                  scale=(1.0, 1.0, 1.0))
+#
+# def cheetah(s):
+#     # code for Cheetah
+#     s.new_rigidbody(name='Cheetah',
+#                     mass=60000.0,
+#                     cog=(114.0,
+#                          -2.068,
+#                          7.0),
+#                     fixed=(True, True, False, False, False, True))
+#     # code for buoyancy
+#     s.new_buoyancy(name='buoyancy',
+#                    parent='Cheetah')
+#     s['buoyancy'].trimesh.load_obj(s.get_resource_path('buoyancy cheetah.obj'), scale=(1, 1, 1),
+#                                    rotation=(0.0, 0.0, 0.0), offset=(0.0, 0.0, 0.0))
+#
+#     # code for visual - vessel
+#     s.new_visual(name='visual - vessel',
+#                  parent='Cheetah',
+#                  path='visual vessel cheetah.obj',
+#                  offset=(0, 0, 0),
+#                  rotation=(0, 0, 0),
+#                  scale=(1.0, 1.0, 1.0))
 
-def crane5000(s):
-    # auto generated pyhton code
-    # By Ruben
-    # Time: 2019-07-29 14:19:35 UTC
+    # s.import_scene('mast crane.pscene')
+    #
+    # mast = s['crane_mast']
+    # mast.parent = s['Cheetah']
+    # mast.position = (70.0, 17.0,  12.0)
 
-    # To be able to distinguish the important number (eg: fixed positions) from
-    # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
-    # For anything written as solved(number) that actual number does not influence the static solution
-    def solved(number):
-        return number
+# def crane(s):
+#     # code for crane_mast
+#     s.new_rigidbody(name='crane_mast',
+#                     mass=4000.0,
+#                     cog=(0.0,
+#                          0.0,
+#                          25.0),
+#                     rotation=(0.0,
+#                               0.0,
+#                               0.0),
+#                     fixed=(True, True, True, True, True, True))
+#
+#
+#     # code for crane_top
+#     s.new_poi(name='crane_top',
+#               parent='crane_mast',
+#               position=(0.0,
+#                         0.0,
+#                         61.0))
+#     # code for crane_slew
+#     s.new_axis(name='crane_slew',
+#                parent='crane_mast',
+#                position=(0.0,
+#                          0.0,
+#                          15.0),
+#                rotation=(0.0,
+#                          0.0,
+#                          -70.0),
+#                fixed=(True, True, True, True, True, True))
+#     # code for crane_boom
+#     s.new_rigidbody(name='crane_boom',
+#                     mass=1200.0,
+#                     cog=(33.0,
+#                          0.0,
+#                          0.0),
+#                     parent='crane_slew',
+#                     position=(0.0,
+#                               0.0,
+#                               0.0),
+#                     rotation=(0.0,
+#                               -25,
+#                               0.0),
+#                     fixed=(True, True, True, True, False, True))
+#     # code for susp_wire_connection
+#     s.new_poi(name='susp_wire_connection',
+#               parent='crane_boom',
+#               position=(49.0,
+#                         0.0,
+#                         2.0))
+#     # code for crane_Crane_susp_wire
+#     s.new_cable(name='crane_Crane_susp_wire',
+#                 poiA='susp_wire_connection',
+#                 poiB='crane_top',
+#                 length=50.0,
+#                 EA=100000000.0)
+#
+#     # code for visual - crane mast
+#     s.new_visual(name='visual - crane mast',
+#                  parent='crane_mast',
+#                  path='visual crane mast and boomrest.obj',
+#                  offset=(0, 0, 0),
+#                  rotation=(0, 0, 0),
+#                  scale=(1, 1, 1))
+#     # code for visual - crane boom
+#     s.new_visual(name='visual - crane boom',
+#                  parent='crane_boom',
+#                  path='visual crane-boom.obj',
+#                  offset=(0, 0, 0),
+#                  rotation=(0, 0, 0),
+#                  scale=(1, 1, 1))
 
-    # code for Crane5000_mast
-    s.new_rigidbody(name='Crane5000_mast',
-                    mass=4000.0,
-                    cog=(0.0,
-                         0.0,
-                         25.0),
-                    position=(0.0,
-                              0.0,
-                              0.0),
-                    rotation=(0.0,
-                              0.0,
-                              0.0),
-                    fixed=(True, True, True, True, True, True))
-    # code for Crane5000_top
-    s.new_poi(name='Crane5000_top',
-              parent='Crane5000_mast',
-              position=(0.0,
-                        0.0,
-                        61.0))
-    # code for Crane_slew
-    s.new_axis(name='Crane_slew',
-               parent='Crane5000_mast',
-               position=(0.0,
-                         0.0,
-                         15.0),
-               rotation=(0.0,
-                         0.0,
-                         90.0),
-               fixed=(True, True, True, True, True, True))
-    # code for Crane5000_boom
-    s.new_rigidbody(name='Crane5000_boom',
-                    mass=1200.0,
-                    cog=(33.0,
-                         0.0,
-                         0.0),
-                    parent='Crane_slew',
-                    position=(0.0,
-                              0.0,
-                              0.0),
-                    rotation=(0.0,
-                              -10,
-                              0),
-                    fixed=(True, True, True, True, False, True))
-    # code for Mast5000_susp_wire_connection
-    s.new_poi(name='Mast5000_susp_wire_connection',
-              parent='Crane5000_boom',
-              position=(49.0,
-                        0.0,
-                        2.0))
-    # code for Crane_susp_wire
-    s.new_cable(name='Crane_susp_wire',
-                poiA='Mast5000_susp_wire_connection',
-                poiB='Crane5000_top',
-                length=59.865,
-                EA=100000000.0)
-    # code for Mast5000_Visual
-    s.new_visual(name='Mast5000_Visual',
-                 parent='Crane5000_mast',
-                 path='crane_mastl.obj',
-                 offset=(0, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(1, 1, 1))
-    # code for Boom5000_Visual
-    s.new_visual(name='Boom5000_Visual',
-                 parent='Crane5000_boom',
-                 path='crane_boom.obj',
-                 offset=(0, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(1, 1, 1))
-
-def turtle(s):
-
-    # code for Turtle
-    # code for Turtle
-    s.new_rigidbody(name='Turtle',
-                    mass=40006.0,
-                    cog=(75.0,
-                         0.0,
-                         7.0),
-                    position = (0,0,-20),
-                    fixed=(True, True, False, False, False, True))
-    # code for buoyancy
-    s.new_buoyancy(name='buoyancy',
-                   parent='Turtle')
-    s['buoyancy'].trimesh.load_obj(s.get_resource_path('buoyancy turtle.obj'), scale=(1.0, 1.0, 1.0),
-                                   rotation=(0.0, 0.0, 0.0), offset=(0.0, 0.0, 0.0))
-    # code for import_container
-    s.new_axis(name='import_container',
-               position=(0.0,
-                         0.0,
-                         0.0),
-               rotation=(0.0,
-                         0.0,
-                         0.0),
-               fixed=(True, True, True, True, True, True))
-    # code for visual - vessel
-    s.new_visual(name='visual - vessel',
-                 parent='Turtle',
-                 path='visual vessel turtle.obj',
-                 offset=(0, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(1.0, 1.0, 1.0))
-
-def cheetah(s):
-    # code for Cheetah
-    s.new_rigidbody(name='Cheetah',
-                    mass=60000.0,
-                    cog=(114.0,
-                         -2.068,
-                         7.0),
-                    fixed=(True, True, False, False, False, True))
-    # code for buoyancy
-    s.new_buoyancy(name='buoyancy',
-                   parent='Cheetah')
-    s['buoyancy'].trimesh.load_obj(s.get_resource_path('buoyancy cheetah.obj'), scale=(1, 1, 1),
-                                   rotation=(0.0, 0.0, 0.0), offset=(0.0, 0.0, 0.0))
-
-    # code for visual - vessel
-    s.new_visual(name='visual - vessel',
-                 parent='Cheetah',
-                 path='visual vessel cheetah.obj',
-                 offset=(0, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(1.0, 1.0, 1.0))
-
-    imp = Scene()
-    crane(imp)
-    s.import_scene(imp)
-
-    mast = s['crane_mast']
-    mast.parent = s['Cheetah']
-    mast.position = (70.0, 17.0,  12.0)
-
-def crane(s):
-    # code for crane_mast
-    s.new_rigidbody(name='crane_mast',
-                    mass=4000.0,
-                    cog=(0.0,
-                         0.0,
-                         25.0),
-                    rotation=(0.0,
-                              0.0,
-                              0.0),
-                    fixed=(True, True, True, True, True, True))
-
-
-    # code for crane_top
-    s.new_poi(name='crane_top',
-              parent='crane_mast',
-              position=(0.0,
-                        0.0,
-                        61.0))
-    # code for crane_slew
-    s.new_axis(name='crane_slew',
-               parent='crane_mast',
-               position=(0.0,
-                         0.0,
-                         15.0),
-               rotation=(0.0,
-                         0.0,
-                         -70.0),
-               fixed=(True, True, True, True, True, True))
-    # code for crane_boom
-    s.new_rigidbody(name='crane_boom',
-                    mass=1200.0,
-                    cog=(33.0,
-                         0.0,
-                         0.0),
-                    parent='crane_slew',
-                    position=(0.0,
-                              0.0,
-                              0.0),
-                    rotation=(0.0,
-                              -25,
-                              0.0),
-                    fixed=(True, True, True, True, False, True))
-    # code for susp_wire_connection
-    s.new_poi(name='susp_wire_connection',
-              parent='crane_boom',
-              position=(49.0,
-                        0.0,
-                        2.0))
-    # code for crane_Crane_susp_wire
-    s.new_cable(name='crane_Crane_susp_wire',
-                poiA='susp_wire_connection',
-                poiB='crane_top',
-                length=50.0,
-                EA=100000000.0)
-
-    # code for visual - crane mast
-    s.new_visual(name='visual - crane mast',
-                 parent='crane_mast',
-                 path='visual crane mast and boomrest.obj',
-                 offset=(0, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(1, 1, 1))
-    # code for visual - crane boom
-    s.new_visual(name='visual - crane boom',
-                 parent='crane_boom',
-                 path='visual crane-boom.obj',
-                 offset=(0, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(1, 1, 1))
-
-def octopus(s):
-    # code for Cheetah
-    s.new_rigidbody(name='Octopus',
-                    mass=100000.0,
-                    cog=(87.153,
-                         0,
-                         15),
-                    fixed=(True, True, False, False, False, True))
-    # code for buoyancy
-    s.new_buoyancy(name='buoyancy',
-                   parent='Octopus')
-    s['buoyancy'].trimesh.load_obj(s.get_resource_path('buoyancy octopus.obj'), scale=(1, 1, 1),
-                                   rotation=(0.0, 0.0, 0.0), offset=(0.0, 0.0, 0.0))
-
-    # code for visual - vessel
-    s.new_visual(name='visual - vessel',
-                 parent='Octopus',
-                 path='visual vessel octopus.obj',
-                 offset=(0, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(1.0, 1.0, 1.0))
-
-    imp = Scene()
-    crane(imp)
-
-    # add the sb crane
-
-    c = s.import_scene(imp, prefix='SB_')
-    c.parent = s['Octopus']
-    c.position = (10.0, 40.0,  50.0)
-    s.dissolve(c)
-
-    # add the PS crane
-    c = s.import_scene(imp, prefix='PS_')
-    c.parent = s['Octopus']
-    c.position = (10.0, -40.0, 50.0)
-    s.dissolve(c)
-
-    # Set cranes
-    s['SB_crane_slew'].rotation = (0.0, 0.0, 30.0)
-    s['PS_crane_slew'].rotation = (0.0, 0.0, -30.0)
+# def octopus(s):
+#     # code for Cheetah
+#     s.new_rigidbody(name='Octopus',
+#                     mass=100000.0,
+#                     cog=(87.153,
+#                          0,
+#                          15),
+#                     fixed=(True, True, False, False, False, True))
+#     # code for buoyancy
+#     s.new_buoyancy(name='buoyancy',
+#                    parent='Octopus')
+#     s['buoyancy'].trimesh.load_obj(s.get_resource_path('buoyancy octopus.obj'), scale=(1, 1, 1),
+#                                    rotation=(0.0, 0.0, 0.0), offset=(0.0, 0.0, 0.0))
+#
+#     # code for visual - vessel
+#     s.new_visual(name='visual - vessel',
+#                  parent='Octopus',
+#                  path='visual vessel octopus.obj',
+#                  offset=(0, 0, 0),
+#                  rotation=(0, 0, 0),
+#                  scale=(1.0, 1.0, 1.0))
+#
+#     imp = Scene()
+#     crane(imp)
+#
+#     # add the sb crane
+#
+#     c = s.import_scene(imp, prefix='SB_')
+#     c.parent = s['Octopus']
+#     c.position = (10.0, 40.0,  50.0)
+#     s.dissolve(c)
+#
+#     # add the PS crane
+#     c = s.import_scene(imp, prefix='PS_')
+#     c.parent = s['Octopus']
+#     c.position = (10.0, -40.0, 50.0)
+#     s.dissolve(c)
+#
+#     # Set cranes
+#     s['SB_crane_slew'].rotation = (0.0, 0.0, 30.0)
+#     s['PS_crane_slew'].rotation = (0.0, 0.0, -30.0)
 
 
 def all_node_types(s):

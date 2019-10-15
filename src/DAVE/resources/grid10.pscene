@@ -1,0 +1,2882 @@
+# auto generated pyhton code
+# By beneden
+# Time: 2019-10-15 11:38:14 UTC
+
+# To be able to distinguish the important number (eg: fixed positions) from
+# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
+# For anything written as solved(number) that actual number does not influence the static solution
+def solved(number):
+    return number
+
+# code for body 0 0
+s.new_rigidbody(name='body 0 0',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 0 0
+s.new_poi(name='poi 0 0',
+          parent='body 0 0',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 0 1
+s.new_rigidbody(name='body 0 1',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(0.0),
+                          solved(4.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 0 1
+s.new_poi(name='poi 0 1',
+          parent='body 0 1',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 0 2
+s.new_rigidbody(name='body 0 2',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(0.0),
+                          solved(8.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 0 2
+s.new_poi(name='poi 0 2',
+          parent='body 0 2',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 0 3
+s.new_rigidbody(name='body 0 3',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(0.0),
+                          solved(12.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 0 3
+s.new_poi(name='poi 0 3',
+          parent='body 0 3',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 0 4
+s.new_rigidbody(name='body 0 4',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(0.0),
+                          solved(16.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 0 4
+s.new_poi(name='poi 0 4',
+          parent='body 0 4',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 0 5
+s.new_rigidbody(name='body 0 5',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(0.0),
+                          solved(20.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 0 5
+s.new_poi(name='poi 0 5',
+          parent='body 0 5',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 0 6
+s.new_rigidbody(name='body 0 6',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(0.0),
+                          solved(24.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 0 6
+s.new_poi(name='poi 0 6',
+          parent='body 0 6',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 0 7
+s.new_rigidbody(name='body 0 7',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(0.0),
+                          solved(28.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 0 7
+s.new_poi(name='poi 0 7',
+          parent='body 0 7',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 0 8
+s.new_rigidbody(name='body 0 8',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(0.0),
+                          solved(32.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 0 8
+s.new_poi(name='poi 0 8',
+          parent='body 0 8',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 0 9
+s.new_rigidbody(name='body 0 9',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(0.0,
+                          36.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 0 9
+s.new_poi(name='poi 0 9',
+          parent='body 0 9',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 1 0
+s.new_rigidbody(name='body 1 0',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(4.0),
+                          solved(0.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 1 0
+s.new_poi(name='poi 1 0',
+          parent='body 1 0',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 1 1
+s.new_rigidbody(name='body 1 1',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(4.0),
+                          solved(4.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 1 1
+s.new_poi(name='poi 1 1',
+          parent='body 1 1',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 1 2
+s.new_rigidbody(name='body 1 2',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(4.0),
+                          solved(8.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 1 2
+s.new_poi(name='poi 1 2',
+          parent='body 1 2',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 1 3
+s.new_rigidbody(name='body 1 3',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(4.0),
+                          solved(12.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 1 3
+s.new_poi(name='poi 1 3',
+          parent='body 1 3',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 1 4
+s.new_rigidbody(name='body 1 4',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(4.0),
+                          solved(16.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 1 4
+s.new_poi(name='poi 1 4',
+          parent='body 1 4',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 1 5
+s.new_rigidbody(name='body 1 5',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(4.0),
+                          solved(20.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 1 5
+s.new_poi(name='poi 1 5',
+          parent='body 1 5',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 1 6
+s.new_rigidbody(name='body 1 6',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(4.0),
+                          solved(24.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 1 6
+s.new_poi(name='poi 1 6',
+          parent='body 1 6',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 1 7
+s.new_rigidbody(name='body 1 7',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(4.0),
+                          solved(28.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 1 7
+s.new_poi(name='poi 1 7',
+          parent='body 1 7',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 1 8
+s.new_rigidbody(name='body 1 8',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(4.0),
+                          solved(32.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 1 8
+s.new_poi(name='poi 1 8',
+          parent='body 1 8',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 1 9
+s.new_rigidbody(name='body 1 9',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(4.0,
+                          36.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 1 9
+s.new_poi(name='poi 1 9',
+          parent='body 1 9',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 2 0
+s.new_rigidbody(name='body 2 0',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(8.0),
+                          solved(0.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 2 0
+s.new_poi(name='poi 2 0',
+          parent='body 2 0',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 2 1
+s.new_rigidbody(name='body 2 1',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(8.0),
+                          solved(4.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 2 1
+s.new_poi(name='poi 2 1',
+          parent='body 2 1',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 2 2
+s.new_rigidbody(name='body 2 2',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(8.0),
+                          solved(8.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 2 2
+s.new_poi(name='poi 2 2',
+          parent='body 2 2',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 2 3
+s.new_rigidbody(name='body 2 3',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(8.0),
+                          solved(12.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 2 3
+s.new_poi(name='poi 2 3',
+          parent='body 2 3',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 2 4
+s.new_rigidbody(name='body 2 4',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(8.0),
+                          solved(16.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 2 4
+s.new_poi(name='poi 2 4',
+          parent='body 2 4',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 2 5
+s.new_rigidbody(name='body 2 5',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(8.0),
+                          solved(20.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 2 5
+s.new_poi(name='poi 2 5',
+          parent='body 2 5',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 2 6
+s.new_rigidbody(name='body 2 6',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(8.0),
+                          solved(24.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 2 6
+s.new_poi(name='poi 2 6',
+          parent='body 2 6',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 2 7
+s.new_rigidbody(name='body 2 7',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(8.0),
+                          solved(28.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 2 7
+s.new_poi(name='poi 2 7',
+          parent='body 2 7',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 2 8
+s.new_rigidbody(name='body 2 8',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(8.0),
+                          solved(32.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 2 8
+s.new_poi(name='poi 2 8',
+          parent='body 2 8',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 2 9
+s.new_rigidbody(name='body 2 9',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(8.0,
+                          36.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 2 9
+s.new_poi(name='poi 2 9',
+          parent='body 2 9',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 3 0
+s.new_rigidbody(name='body 3 0',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(12.0),
+                          solved(0.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 3 0
+s.new_poi(name='poi 3 0',
+          parent='body 3 0',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 3 1
+s.new_rigidbody(name='body 3 1',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(12.0),
+                          solved(4.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 3 1
+s.new_poi(name='poi 3 1',
+          parent='body 3 1',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 3 2
+s.new_rigidbody(name='body 3 2',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(12.0),
+                          solved(8.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 3 2
+s.new_poi(name='poi 3 2',
+          parent='body 3 2',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 3 3
+s.new_rigidbody(name='body 3 3',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(12.0),
+                          solved(12.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 3 3
+s.new_poi(name='poi 3 3',
+          parent='body 3 3',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 3 4
+s.new_rigidbody(name='body 3 4',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(12.0),
+                          solved(16.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 3 4
+s.new_poi(name='poi 3 4',
+          parent='body 3 4',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 3 5
+s.new_rigidbody(name='body 3 5',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(12.0),
+                          solved(20.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 3 5
+s.new_poi(name='poi 3 5',
+          parent='body 3 5',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 3 6
+s.new_rigidbody(name='body 3 6',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(12.0),
+                          solved(24.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 3 6
+s.new_poi(name='poi 3 6',
+          parent='body 3 6',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 3 7
+s.new_rigidbody(name='body 3 7',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(12.0),
+                          solved(28.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 3 7
+s.new_poi(name='poi 3 7',
+          parent='body 3 7',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 3 8
+s.new_rigidbody(name='body 3 8',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(12.0),
+                          solved(32.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 3 8
+s.new_poi(name='poi 3 8',
+          parent='body 3 8',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 3 9
+s.new_rigidbody(name='body 3 9',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(12.0,
+                          36.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 3 9
+s.new_poi(name='poi 3 9',
+          parent='body 3 9',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 4 0
+s.new_rigidbody(name='body 4 0',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(16.0),
+                          solved(0.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 4 0
+s.new_poi(name='poi 4 0',
+          parent='body 4 0',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 4 1
+s.new_rigidbody(name='body 4 1',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(16.0),
+                          solved(4.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 4 1
+s.new_poi(name='poi 4 1',
+          parent='body 4 1',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 4 2
+s.new_rigidbody(name='body 4 2',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(16.0),
+                          solved(8.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 4 2
+s.new_poi(name='poi 4 2',
+          parent='body 4 2',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 4 3
+s.new_rigidbody(name='body 4 3',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(16.0),
+                          solved(12.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 4 3
+s.new_poi(name='poi 4 3',
+          parent='body 4 3',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 4 4
+s.new_rigidbody(name='body 4 4',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(16.0),
+                          solved(16.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 4 4
+s.new_poi(name='poi 4 4',
+          parent='body 4 4',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 4 5
+s.new_rigidbody(name='body 4 5',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(16.0),
+                          solved(20.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 4 5
+s.new_poi(name='poi 4 5',
+          parent='body 4 5',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 4 6
+s.new_rigidbody(name='body 4 6',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(16.0),
+                          solved(24.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 4 6
+s.new_poi(name='poi 4 6',
+          parent='body 4 6',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 4 7
+s.new_rigidbody(name='body 4 7',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(16.0),
+                          solved(28.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 4 7
+s.new_poi(name='poi 4 7',
+          parent='body 4 7',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 4 8
+s.new_rigidbody(name='body 4 8',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(16.0),
+                          solved(32.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 4 8
+s.new_poi(name='poi 4 8',
+          parent='body 4 8',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 4 9
+s.new_rigidbody(name='body 4 9',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(16.0,
+                          36.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 4 9
+s.new_poi(name='poi 4 9',
+          parent='body 4 9',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 5 0
+s.new_rigidbody(name='body 5 0',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(20.0),
+                          solved(0.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 5 0
+s.new_poi(name='poi 5 0',
+          parent='body 5 0',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 5 1
+s.new_rigidbody(name='body 5 1',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(20.0),
+                          solved(4.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 5 1
+s.new_poi(name='poi 5 1',
+          parent='body 5 1',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 5 2
+s.new_rigidbody(name='body 5 2',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(20.0),
+                          solved(8.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 5 2
+s.new_poi(name='poi 5 2',
+          parent='body 5 2',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 5 3
+s.new_rigidbody(name='body 5 3',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(20.0),
+                          solved(12.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 5 3
+s.new_poi(name='poi 5 3',
+          parent='body 5 3',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 5 4
+s.new_rigidbody(name='body 5 4',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(20.0),
+                          solved(16.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 5 4
+s.new_poi(name='poi 5 4',
+          parent='body 5 4',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 5 5
+s.new_rigidbody(name='body 5 5',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(20.0),
+                          solved(20.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 5 5
+s.new_poi(name='poi 5 5',
+          parent='body 5 5',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 5 6
+s.new_rigidbody(name='body 5 6',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(20.0),
+                          solved(24.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 5 6
+s.new_poi(name='poi 5 6',
+          parent='body 5 6',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 5 7
+s.new_rigidbody(name='body 5 7',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(20.0),
+                          solved(28.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 5 7
+s.new_poi(name='poi 5 7',
+          parent='body 5 7',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 5 8
+s.new_rigidbody(name='body 5 8',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(20.0),
+                          solved(32.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 5 8
+s.new_poi(name='poi 5 8',
+          parent='body 5 8',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 5 9
+s.new_rigidbody(name='body 5 9',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(20.0,
+                          36.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 5 9
+s.new_poi(name='poi 5 9',
+          parent='body 5 9',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 6 0
+s.new_rigidbody(name='body 6 0',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(24.0),
+                          solved(0.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 6 0
+s.new_poi(name='poi 6 0',
+          parent='body 6 0',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 6 1
+s.new_rigidbody(name='body 6 1',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(24.0),
+                          solved(4.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 6 1
+s.new_poi(name='poi 6 1',
+          parent='body 6 1',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 6 2
+s.new_rigidbody(name='body 6 2',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(24.0),
+                          solved(8.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 6 2
+s.new_poi(name='poi 6 2',
+          parent='body 6 2',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 6 3
+s.new_rigidbody(name='body 6 3',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(24.0),
+                          solved(12.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 6 3
+s.new_poi(name='poi 6 3',
+          parent='body 6 3',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 6 4
+s.new_rigidbody(name='body 6 4',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(24.0),
+                          solved(16.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 6 4
+s.new_poi(name='poi 6 4',
+          parent='body 6 4',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 6 5
+s.new_rigidbody(name='body 6 5',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(24.0),
+                          solved(20.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 6 5
+s.new_poi(name='poi 6 5',
+          parent='body 6 5',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 6 6
+s.new_rigidbody(name='body 6 6',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(24.0),
+                          solved(24.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 6 6
+s.new_poi(name='poi 6 6',
+          parent='body 6 6',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 6 7
+s.new_rigidbody(name='body 6 7',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(24.0),
+                          solved(28.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 6 7
+s.new_poi(name='poi 6 7',
+          parent='body 6 7',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 6 8
+s.new_rigidbody(name='body 6 8',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(24.0),
+                          solved(32.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 6 8
+s.new_poi(name='poi 6 8',
+          parent='body 6 8',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 6 9
+s.new_rigidbody(name='body 6 9',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(24.0,
+                          36.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 6 9
+s.new_poi(name='poi 6 9',
+          parent='body 6 9',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 7 0
+s.new_rigidbody(name='body 7 0',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(28.0),
+                          solved(0.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 7 0
+s.new_poi(name='poi 7 0',
+          parent='body 7 0',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 7 1
+s.new_rigidbody(name='body 7 1',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(28.0),
+                          solved(4.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 7 1
+s.new_poi(name='poi 7 1',
+          parent='body 7 1',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 7 2
+s.new_rigidbody(name='body 7 2',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(28.0),
+                          solved(8.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 7 2
+s.new_poi(name='poi 7 2',
+          parent='body 7 2',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 7 3
+s.new_rigidbody(name='body 7 3',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(28.0),
+                          solved(12.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 7 3
+s.new_poi(name='poi 7 3',
+          parent='body 7 3',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 7 4
+s.new_rigidbody(name='body 7 4',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(28.0),
+                          solved(16.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 7 4
+s.new_poi(name='poi 7 4',
+          parent='body 7 4',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 7 5
+s.new_rigidbody(name='body 7 5',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(28.0),
+                          solved(20.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 7 5
+s.new_poi(name='poi 7 5',
+          parent='body 7 5',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 7 6
+s.new_rigidbody(name='body 7 6',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(28.0),
+                          solved(24.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 7 6
+s.new_poi(name='poi 7 6',
+          parent='body 7 6',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 7 7
+s.new_rigidbody(name='body 7 7',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(28.0),
+                          solved(28.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 7 7
+s.new_poi(name='poi 7 7',
+          parent='body 7 7',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 7 8
+s.new_rigidbody(name='body 7 8',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(28.0),
+                          solved(32.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 7 8
+s.new_poi(name='poi 7 8',
+          parent='body 7 8',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 7 9
+s.new_rigidbody(name='body 7 9',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(28.0,
+                          36.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 7 9
+s.new_poi(name='poi 7 9',
+          parent='body 7 9',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 8 0
+s.new_rigidbody(name='body 8 0',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(32.0),
+                          solved(0.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 8 0
+s.new_poi(name='poi 8 0',
+          parent='body 8 0',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 8 1
+s.new_rigidbody(name='body 8 1',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(32.0),
+                          solved(4.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 8 1
+s.new_poi(name='poi 8 1',
+          parent='body 8 1',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 8 2
+s.new_rigidbody(name='body 8 2',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(32.0),
+                          solved(8.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 8 2
+s.new_poi(name='poi 8 2',
+          parent='body 8 2',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 8 3
+s.new_rigidbody(name='body 8 3',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(32.0),
+                          solved(12.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 8 3
+s.new_poi(name='poi 8 3',
+          parent='body 8 3',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 8 4
+s.new_rigidbody(name='body 8 4',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(32.0),
+                          solved(16.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 8 4
+s.new_poi(name='poi 8 4',
+          parent='body 8 4',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 8 5
+s.new_rigidbody(name='body 8 5',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(32.0),
+                          solved(20.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 8 5
+s.new_poi(name='poi 8 5',
+          parent='body 8 5',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 8 6
+s.new_rigidbody(name='body 8 6',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(32.0),
+                          solved(24.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 8 6
+s.new_poi(name='poi 8 6',
+          parent='body 8 6',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 8 7
+s.new_rigidbody(name='body 8 7',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(32.0),
+                          solved(28.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 8 7
+s.new_poi(name='poi 8 7',
+          parent='body 8 7',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 8 8
+s.new_rigidbody(name='body 8 8',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(solved(32.0),
+                          solved(32.0),
+                          solved(0.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for poi 8 8
+s.new_poi(name='poi 8 8',
+          parent='body 8 8',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 8 9
+s.new_rigidbody(name='body 8 9',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(32.0,
+                          36.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 8 9
+s.new_poi(name='poi 8 9',
+          parent='body 8 9',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 9 0
+s.new_rigidbody(name='body 9 0',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(36.0,
+                          0.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 9 0
+s.new_poi(name='poi 9 0',
+          parent='body 9 0',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 9 1
+s.new_rigidbody(name='body 9 1',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(36.0,
+                          4.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 9 1
+s.new_poi(name='poi 9 1',
+          parent='body 9 1',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 9 2
+s.new_rigidbody(name='body 9 2',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(36.0,
+                          8.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 9 2
+s.new_poi(name='poi 9 2',
+          parent='body 9 2',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 9 3
+s.new_rigidbody(name='body 9 3',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(36.0,
+                          12.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 9 3
+s.new_poi(name='poi 9 3',
+          parent='body 9 3',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 9 4
+s.new_rigidbody(name='body 9 4',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(36.0,
+                          16.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 9 4
+s.new_poi(name='poi 9 4',
+          parent='body 9 4',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 9 5
+s.new_rigidbody(name='body 9 5',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(36.0,
+                          20.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 9 5
+s.new_poi(name='poi 9 5',
+          parent='body 9 5',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 9 6
+s.new_rigidbody(name='body 9 6',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(36.0,
+                          24.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 9 6
+s.new_poi(name='poi 9 6',
+          parent='body 9 6',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 9 7
+s.new_rigidbody(name='body 9 7',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(36.0,
+                          28.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 9 7
+s.new_poi(name='poi 9 7',
+          parent='body 9 7',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 9 8
+s.new_rigidbody(name='body 9 8',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(36.0,
+                          32.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 9 8
+s.new_poi(name='poi 9 8',
+          parent='body 9 8',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for body 9 9
+s.new_rigidbody(name='body 9 9',
+                mass=1.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(36.0,
+                          36.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for poi 9 9
+s.new_poi(name='poi 9 9',
+          parent='body 9 9',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for cable 0 0 a
+s.new_cable(name='cable 0 0 a',
+            poiA='poi 0 0',
+            poiB='poi 0 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 0 0 b
+s.new_cable(name='cable 0 0 b',
+            poiA='poi 0 0',
+            poiB='poi 1 0',
+            length=5.0,
+            EA=1000.0)
+# code for cable 0 1 a
+s.new_cable(name='cable 0 1 a',
+            poiA='poi 0 1',
+            poiB='poi 0 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 0 1 b
+s.new_cable(name='cable 0 1 b',
+            poiA='poi 0 1',
+            poiB='poi 1 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 0 2 a
+s.new_cable(name='cable 0 2 a',
+            poiA='poi 0 2',
+            poiB='poi 0 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 0 2 b
+s.new_cable(name='cable 0 2 b',
+            poiA='poi 0 2',
+            poiB='poi 1 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 0 3 a
+s.new_cable(name='cable 0 3 a',
+            poiA='poi 0 3',
+            poiB='poi 0 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 0 3 b
+s.new_cable(name='cable 0 3 b',
+            poiA='poi 0 3',
+            poiB='poi 1 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 0 4 a
+s.new_cable(name='cable 0 4 a',
+            poiA='poi 0 4',
+            poiB='poi 0 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 0 4 b
+s.new_cable(name='cable 0 4 b',
+            poiA='poi 0 4',
+            poiB='poi 1 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 0 5 a
+s.new_cable(name='cable 0 5 a',
+            poiA='poi 0 5',
+            poiB='poi 0 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 0 5 b
+s.new_cable(name='cable 0 5 b',
+            poiA='poi 0 5',
+            poiB='poi 1 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 0 6 a
+s.new_cable(name='cable 0 6 a',
+            poiA='poi 0 6',
+            poiB='poi 0 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 0 6 b
+s.new_cable(name='cable 0 6 b',
+            poiA='poi 0 6',
+            poiB='poi 1 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 0 7 a
+s.new_cable(name='cable 0 7 a',
+            poiA='poi 0 7',
+            poiB='poi 0 8',
+            length=5.0,
+            EA=1000.0)
+# code for cable 0 7 b
+s.new_cable(name='cable 0 7 b',
+            poiA='poi 0 7',
+            poiB='poi 1 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 0 8 a
+s.new_cable(name='cable 0 8 a',
+            poiA='poi 0 8',
+            poiB='poi 0 9',
+            length=5.0,
+            EA=1000.0)
+# code for cable 0 8 b
+s.new_cable(name='cable 0 8 b',
+            poiA='poi 0 8',
+            poiB='poi 1 8',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 0 a
+s.new_cable(name='cable 1 0 a',
+            poiA='poi 1 0',
+            poiB='poi 1 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 0 b
+s.new_cable(name='cable 1 0 b',
+            poiA='poi 1 0',
+            poiB='poi 2 0',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 1 a
+s.new_cable(name='cable 1 1 a',
+            poiA='poi 1 1',
+            poiB='poi 1 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 1 b
+s.new_cable(name='cable 1 1 b',
+            poiA='poi 1 1',
+            poiB='poi 2 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 2 a
+s.new_cable(name='cable 1 2 a',
+            poiA='poi 1 2',
+            poiB='poi 1 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 2 b
+s.new_cable(name='cable 1 2 b',
+            poiA='poi 1 2',
+            poiB='poi 2 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 3 a
+s.new_cable(name='cable 1 3 a',
+            poiA='poi 1 3',
+            poiB='poi 1 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 3 b
+s.new_cable(name='cable 1 3 b',
+            poiA='poi 1 3',
+            poiB='poi 2 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 4 a
+s.new_cable(name='cable 1 4 a',
+            poiA='poi 1 4',
+            poiB='poi 1 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 4 b
+s.new_cable(name='cable 1 4 b',
+            poiA='poi 1 4',
+            poiB='poi 2 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 5 a
+s.new_cable(name='cable 1 5 a',
+            poiA='poi 1 5',
+            poiB='poi 1 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 5 b
+s.new_cable(name='cable 1 5 b',
+            poiA='poi 1 5',
+            poiB='poi 2 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 6 a
+s.new_cable(name='cable 1 6 a',
+            poiA='poi 1 6',
+            poiB='poi 1 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 6 b
+s.new_cable(name='cable 1 6 b',
+            poiA='poi 1 6',
+            poiB='poi 2 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 7 a
+s.new_cable(name='cable 1 7 a',
+            poiA='poi 1 7',
+            poiB='poi 1 8',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 7 b
+s.new_cable(name='cable 1 7 b',
+            poiA='poi 1 7',
+            poiB='poi 2 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 8 a
+s.new_cable(name='cable 1 8 a',
+            poiA='poi 1 8',
+            poiB='poi 1 9',
+            length=5.0,
+            EA=1000.0)
+# code for cable 1 8 b
+s.new_cable(name='cable 1 8 b',
+            poiA='poi 1 8',
+            poiB='poi 2 8',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 0 a
+s.new_cable(name='cable 2 0 a',
+            poiA='poi 2 0',
+            poiB='poi 2 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 0 b
+s.new_cable(name='cable 2 0 b',
+            poiA='poi 2 0',
+            poiB='poi 3 0',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 1 a
+s.new_cable(name='cable 2 1 a',
+            poiA='poi 2 1',
+            poiB='poi 2 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 1 b
+s.new_cable(name='cable 2 1 b',
+            poiA='poi 2 1',
+            poiB='poi 3 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 2 a
+s.new_cable(name='cable 2 2 a',
+            poiA='poi 2 2',
+            poiB='poi 2 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 2 b
+s.new_cable(name='cable 2 2 b',
+            poiA='poi 2 2',
+            poiB='poi 3 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 3 a
+s.new_cable(name='cable 2 3 a',
+            poiA='poi 2 3',
+            poiB='poi 2 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 3 b
+s.new_cable(name='cable 2 3 b',
+            poiA='poi 2 3',
+            poiB='poi 3 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 4 a
+s.new_cable(name='cable 2 4 a',
+            poiA='poi 2 4',
+            poiB='poi 2 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 4 b
+s.new_cable(name='cable 2 4 b',
+            poiA='poi 2 4',
+            poiB='poi 3 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 5 a
+s.new_cable(name='cable 2 5 a',
+            poiA='poi 2 5',
+            poiB='poi 2 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 5 b
+s.new_cable(name='cable 2 5 b',
+            poiA='poi 2 5',
+            poiB='poi 3 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 6 a
+s.new_cable(name='cable 2 6 a',
+            poiA='poi 2 6',
+            poiB='poi 2 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 6 b
+s.new_cable(name='cable 2 6 b',
+            poiA='poi 2 6',
+            poiB='poi 3 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 7 a
+s.new_cable(name='cable 2 7 a',
+            poiA='poi 2 7',
+            poiB='poi 2 8',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 7 b
+s.new_cable(name='cable 2 7 b',
+            poiA='poi 2 7',
+            poiB='poi 3 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 8 a
+s.new_cable(name='cable 2 8 a',
+            poiA='poi 2 8',
+            poiB='poi 2 9',
+            length=5.0,
+            EA=1000.0)
+# code for cable 2 8 b
+s.new_cable(name='cable 2 8 b',
+            poiA='poi 2 8',
+            poiB='poi 3 8',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 0 a
+s.new_cable(name='cable 3 0 a',
+            poiA='poi 3 0',
+            poiB='poi 3 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 0 b
+s.new_cable(name='cable 3 0 b',
+            poiA='poi 3 0',
+            poiB='poi 4 0',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 1 a
+s.new_cable(name='cable 3 1 a',
+            poiA='poi 3 1',
+            poiB='poi 3 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 1 b
+s.new_cable(name='cable 3 1 b',
+            poiA='poi 3 1',
+            poiB='poi 4 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 2 a
+s.new_cable(name='cable 3 2 a',
+            poiA='poi 3 2',
+            poiB='poi 3 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 2 b
+s.new_cable(name='cable 3 2 b',
+            poiA='poi 3 2',
+            poiB='poi 4 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 3 a
+s.new_cable(name='cable 3 3 a',
+            poiA='poi 3 3',
+            poiB='poi 3 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 3 b
+s.new_cable(name='cable 3 3 b',
+            poiA='poi 3 3',
+            poiB='poi 4 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 4 a
+s.new_cable(name='cable 3 4 a',
+            poiA='poi 3 4',
+            poiB='poi 3 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 4 b
+s.new_cable(name='cable 3 4 b',
+            poiA='poi 3 4',
+            poiB='poi 4 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 5 a
+s.new_cable(name='cable 3 5 a',
+            poiA='poi 3 5',
+            poiB='poi 3 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 5 b
+s.new_cable(name='cable 3 5 b',
+            poiA='poi 3 5',
+            poiB='poi 4 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 6 a
+s.new_cable(name='cable 3 6 a',
+            poiA='poi 3 6',
+            poiB='poi 3 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 6 b
+s.new_cable(name='cable 3 6 b',
+            poiA='poi 3 6',
+            poiB='poi 4 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 7 a
+s.new_cable(name='cable 3 7 a',
+            poiA='poi 3 7',
+            poiB='poi 3 8',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 7 b
+s.new_cable(name='cable 3 7 b',
+            poiA='poi 3 7',
+            poiB='poi 4 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 8 a
+s.new_cable(name='cable 3 8 a',
+            poiA='poi 3 8',
+            poiB='poi 3 9',
+            length=5.0,
+            EA=1000.0)
+# code for cable 3 8 b
+s.new_cable(name='cable 3 8 b',
+            poiA='poi 3 8',
+            poiB='poi 4 8',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 0 a
+s.new_cable(name='cable 4 0 a',
+            poiA='poi 4 0',
+            poiB='poi 4 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 0 b
+s.new_cable(name='cable 4 0 b',
+            poiA='poi 4 0',
+            poiB='poi 5 0',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 1 a
+s.new_cable(name='cable 4 1 a',
+            poiA='poi 4 1',
+            poiB='poi 4 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 1 b
+s.new_cable(name='cable 4 1 b',
+            poiA='poi 4 1',
+            poiB='poi 5 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 2 a
+s.new_cable(name='cable 4 2 a',
+            poiA='poi 4 2',
+            poiB='poi 4 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 2 b
+s.new_cable(name='cable 4 2 b',
+            poiA='poi 4 2',
+            poiB='poi 5 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 3 a
+s.new_cable(name='cable 4 3 a',
+            poiA='poi 4 3',
+            poiB='poi 4 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 3 b
+s.new_cable(name='cable 4 3 b',
+            poiA='poi 4 3',
+            poiB='poi 5 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 4 a
+s.new_cable(name='cable 4 4 a',
+            poiA='poi 4 4',
+            poiB='poi 4 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 4 b
+s.new_cable(name='cable 4 4 b',
+            poiA='poi 4 4',
+            poiB='poi 5 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 5 a
+s.new_cable(name='cable 4 5 a',
+            poiA='poi 4 5',
+            poiB='poi 4 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 5 b
+s.new_cable(name='cable 4 5 b',
+            poiA='poi 4 5',
+            poiB='poi 5 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 6 a
+s.new_cable(name='cable 4 6 a',
+            poiA='poi 4 6',
+            poiB='poi 4 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 6 b
+s.new_cable(name='cable 4 6 b',
+            poiA='poi 4 6',
+            poiB='poi 5 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 7 a
+s.new_cable(name='cable 4 7 a',
+            poiA='poi 4 7',
+            poiB='poi 4 8',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 7 b
+s.new_cable(name='cable 4 7 b',
+            poiA='poi 4 7',
+            poiB='poi 5 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 8 a
+s.new_cable(name='cable 4 8 a',
+            poiA='poi 4 8',
+            poiB='poi 4 9',
+            length=5.0,
+            EA=1000.0)
+# code for cable 4 8 b
+s.new_cable(name='cable 4 8 b',
+            poiA='poi 4 8',
+            poiB='poi 5 8',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 0 a
+s.new_cable(name='cable 5 0 a',
+            poiA='poi 5 0',
+            poiB='poi 5 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 0 b
+s.new_cable(name='cable 5 0 b',
+            poiA='poi 5 0',
+            poiB='poi 6 0',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 1 a
+s.new_cable(name='cable 5 1 a',
+            poiA='poi 5 1',
+            poiB='poi 5 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 1 b
+s.new_cable(name='cable 5 1 b',
+            poiA='poi 5 1',
+            poiB='poi 6 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 2 a
+s.new_cable(name='cable 5 2 a',
+            poiA='poi 5 2',
+            poiB='poi 5 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 2 b
+s.new_cable(name='cable 5 2 b',
+            poiA='poi 5 2',
+            poiB='poi 6 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 3 a
+s.new_cable(name='cable 5 3 a',
+            poiA='poi 5 3',
+            poiB='poi 5 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 3 b
+s.new_cable(name='cable 5 3 b',
+            poiA='poi 5 3',
+            poiB='poi 6 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 4 a
+s.new_cable(name='cable 5 4 a',
+            poiA='poi 5 4',
+            poiB='poi 5 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 4 b
+s.new_cable(name='cable 5 4 b',
+            poiA='poi 5 4',
+            poiB='poi 6 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 5 a
+s.new_cable(name='cable 5 5 a',
+            poiA='poi 5 5',
+            poiB='poi 5 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 5 b
+s.new_cable(name='cable 5 5 b',
+            poiA='poi 5 5',
+            poiB='poi 6 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 6 a
+s.new_cable(name='cable 5 6 a',
+            poiA='poi 5 6',
+            poiB='poi 5 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 6 b
+s.new_cable(name='cable 5 6 b',
+            poiA='poi 5 6',
+            poiB='poi 6 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 7 a
+s.new_cable(name='cable 5 7 a',
+            poiA='poi 5 7',
+            poiB='poi 5 8',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 7 b
+s.new_cable(name='cable 5 7 b',
+            poiA='poi 5 7',
+            poiB='poi 6 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 8 a
+s.new_cable(name='cable 5 8 a',
+            poiA='poi 5 8',
+            poiB='poi 5 9',
+            length=5.0,
+            EA=1000.0)
+# code for cable 5 8 b
+s.new_cable(name='cable 5 8 b',
+            poiA='poi 5 8',
+            poiB='poi 6 8',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 0 a
+s.new_cable(name='cable 6 0 a',
+            poiA='poi 6 0',
+            poiB='poi 6 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 0 b
+s.new_cable(name='cable 6 0 b',
+            poiA='poi 6 0',
+            poiB='poi 7 0',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 1 a
+s.new_cable(name='cable 6 1 a',
+            poiA='poi 6 1',
+            poiB='poi 6 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 1 b
+s.new_cable(name='cable 6 1 b',
+            poiA='poi 6 1',
+            poiB='poi 7 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 2 a
+s.new_cable(name='cable 6 2 a',
+            poiA='poi 6 2',
+            poiB='poi 6 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 2 b
+s.new_cable(name='cable 6 2 b',
+            poiA='poi 6 2',
+            poiB='poi 7 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 3 a
+s.new_cable(name='cable 6 3 a',
+            poiA='poi 6 3',
+            poiB='poi 6 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 3 b
+s.new_cable(name='cable 6 3 b',
+            poiA='poi 6 3',
+            poiB='poi 7 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 4 a
+s.new_cable(name='cable 6 4 a',
+            poiA='poi 6 4',
+            poiB='poi 6 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 4 b
+s.new_cable(name='cable 6 4 b',
+            poiA='poi 6 4',
+            poiB='poi 7 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 5 a
+s.new_cable(name='cable 6 5 a',
+            poiA='poi 6 5',
+            poiB='poi 6 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 5 b
+s.new_cable(name='cable 6 5 b',
+            poiA='poi 6 5',
+            poiB='poi 7 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 6 a
+s.new_cable(name='cable 6 6 a',
+            poiA='poi 6 6',
+            poiB='poi 6 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 6 b
+s.new_cable(name='cable 6 6 b',
+            poiA='poi 6 6',
+            poiB='poi 7 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 7 a
+s.new_cable(name='cable 6 7 a',
+            poiA='poi 6 7',
+            poiB='poi 6 8',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 7 b
+s.new_cable(name='cable 6 7 b',
+            poiA='poi 6 7',
+            poiB='poi 7 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 8 a
+s.new_cable(name='cable 6 8 a',
+            poiA='poi 6 8',
+            poiB='poi 6 9',
+            length=5.0,
+            EA=1000.0)
+# code for cable 6 8 b
+s.new_cable(name='cable 6 8 b',
+            poiA='poi 6 8',
+            poiB='poi 7 8',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 0 a
+s.new_cable(name='cable 7 0 a',
+            poiA='poi 7 0',
+            poiB='poi 7 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 0 b
+s.new_cable(name='cable 7 0 b',
+            poiA='poi 7 0',
+            poiB='poi 8 0',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 1 a
+s.new_cable(name='cable 7 1 a',
+            poiA='poi 7 1',
+            poiB='poi 7 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 1 b
+s.new_cable(name='cable 7 1 b',
+            poiA='poi 7 1',
+            poiB='poi 8 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 2 a
+s.new_cable(name='cable 7 2 a',
+            poiA='poi 7 2',
+            poiB='poi 7 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 2 b
+s.new_cable(name='cable 7 2 b',
+            poiA='poi 7 2',
+            poiB='poi 8 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 3 a
+s.new_cable(name='cable 7 3 a',
+            poiA='poi 7 3',
+            poiB='poi 7 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 3 b
+s.new_cable(name='cable 7 3 b',
+            poiA='poi 7 3',
+            poiB='poi 8 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 4 a
+s.new_cable(name='cable 7 4 a',
+            poiA='poi 7 4',
+            poiB='poi 7 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 4 b
+s.new_cable(name='cable 7 4 b',
+            poiA='poi 7 4',
+            poiB='poi 8 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 5 a
+s.new_cable(name='cable 7 5 a',
+            poiA='poi 7 5',
+            poiB='poi 7 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 5 b
+s.new_cable(name='cable 7 5 b',
+            poiA='poi 7 5',
+            poiB='poi 8 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 6 a
+s.new_cable(name='cable 7 6 a',
+            poiA='poi 7 6',
+            poiB='poi 7 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 6 b
+s.new_cable(name='cable 7 6 b',
+            poiA='poi 7 6',
+            poiB='poi 8 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 7 a
+s.new_cable(name='cable 7 7 a',
+            poiA='poi 7 7',
+            poiB='poi 7 8',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 7 b
+s.new_cable(name='cable 7 7 b',
+            poiA='poi 7 7',
+            poiB='poi 8 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 8 a
+s.new_cable(name='cable 7 8 a',
+            poiA='poi 7 8',
+            poiB='poi 7 9',
+            length=5.0,
+            EA=1000.0)
+# code for cable 7 8 b
+s.new_cable(name='cable 7 8 b',
+            poiA='poi 7 8',
+            poiB='poi 8 8',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 0 a
+s.new_cable(name='cable 8 0 a',
+            poiA='poi 8 0',
+            poiB='poi 8 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 0 b
+s.new_cable(name='cable 8 0 b',
+            poiA='poi 8 0',
+            poiB='poi 9 0',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 1 a
+s.new_cable(name='cable 8 1 a',
+            poiA='poi 8 1',
+            poiB='poi 8 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 1 b
+s.new_cable(name='cable 8 1 b',
+            poiA='poi 8 1',
+            poiB='poi 9 1',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 2 a
+s.new_cable(name='cable 8 2 a',
+            poiA='poi 8 2',
+            poiB='poi 8 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 2 b
+s.new_cable(name='cable 8 2 b',
+            poiA='poi 8 2',
+            poiB='poi 9 2',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 3 a
+s.new_cable(name='cable 8 3 a',
+            poiA='poi 8 3',
+            poiB='poi 8 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 3 b
+s.new_cable(name='cable 8 3 b',
+            poiA='poi 8 3',
+            poiB='poi 9 3',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 4 a
+s.new_cable(name='cable 8 4 a',
+            poiA='poi 8 4',
+            poiB='poi 8 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 4 b
+s.new_cable(name='cable 8 4 b',
+            poiA='poi 8 4',
+            poiB='poi 9 4',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 5 a
+s.new_cable(name='cable 8 5 a',
+            poiA='poi 8 5',
+            poiB='poi 8 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 5 b
+s.new_cable(name='cable 8 5 b',
+            poiA='poi 8 5',
+            poiB='poi 9 5',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 6 a
+s.new_cable(name='cable 8 6 a',
+            poiA='poi 8 6',
+            poiB='poi 8 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 6 b
+s.new_cable(name='cable 8 6 b',
+            poiA='poi 8 6',
+            poiB='poi 9 6',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 7 a
+s.new_cable(name='cable 8 7 a',
+            poiA='poi 8 7',
+            poiB='poi 8 8',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 7 b
+s.new_cable(name='cable 8 7 b',
+            poiA='poi 8 7',
+            poiB='poi 9 7',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 8 a
+s.new_cable(name='cable 8 8 a',
+            poiA='poi 8 8',
+            poiB='poi 8 9',
+            length=5.0,
+            EA=1000.0)
+# code for cable 8 8 b
+s.new_cable(name='cable 8 8 b',
+            poiA='poi 8 8',
+            poiB='poi 9 8',
+            length=5.0,
+            EA=1000.0)

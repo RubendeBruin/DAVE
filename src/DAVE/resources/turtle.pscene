@@ -1,0 +1,43 @@
+# auto generated pyhton code
+# By beneden
+# Time: 2019-10-15 14:55:04 UTC
+
+# To be able to distinguish the important number (eg: fixed positions) from
+# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
+# For anything written as solved(number) that actual number does not influence the static solution
+def solved(number):
+    return number
+
+# code for Turtle
+s.new_rigidbody(name='Turtle',
+                mass=40006.0,
+                cog=(75.0,
+                     0.0,
+                     7.0),
+                position=(0.0,
+                          0.0,
+                          solved(-20.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          0.0),
+                fixed =(True, True, False, False, False, True) )
+# code for buoyancy
+s.new_buoyancy(name='buoyancy',
+          parent='Turtle')
+s['buoyancy'].trimesh.load_obj(s.get_resource_path('buoyancy turtle.obj'), scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
+# code for import_container
+s.new_axis(name='import_container',
+           position=(0.0,
+                     0.0,
+                     0.0),
+           rotation=(0.0,
+                     0.0,
+                     0.0),
+           fixed =(True, True, True, True, True, True) )
+# code for visual - vessel
+s.new_visual(name='visual - vessel',
+            parent='Turtle',
+            path='visual vessel turtle.obj',
+            offset=(0, 0, 0), 
+            rotation=(0, 0, 0), 
+            scale=(1.0, 1.0, 1.0) )

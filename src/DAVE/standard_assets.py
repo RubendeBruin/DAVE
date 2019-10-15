@@ -85,16 +85,11 @@ class Gui:
             self._result = None
         else:
             self._result =  (self._selected, self.ui.checkBox.isChecked(), self.ui.txtPrefix.text())
-
-        self.visual.shutdown_qt()
         self.MainWindow.close()
-
-    def onClose(self):
-        self.visual.shutdown_qt()
-        print('closing')
 
     def showModal(self):
         self.MainWindow.exec_()
+        self.visual.shutdown_qt()
         return self._result
 
 # ====== main code ======

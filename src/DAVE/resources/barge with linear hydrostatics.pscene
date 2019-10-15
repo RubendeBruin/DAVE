@@ -1,0 +1,52 @@
+# auto generated pyhton code
+# By beneden
+# Time: 2019-10-15 14:48:23 UTC
+
+# To be able to distinguish the important number (eg: fixed positions) from
+# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
+# For anything written as solved(number) that actual number does not influence the static solution
+def solved(number):
+    return number
+
+# code for Barge
+s.new_rigidbody(name='Barge',
+                mass=20000.0,
+                cog=(50.0,
+                     0.0,
+                     2.5),
+                position=(solved(0.0),
+                          solved(0.0),
+                          solved(-5.0)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed =(False, False, False, False, False, False) )
+# code for Hydrostatics
+s.new_hydspring(name='Hydrostatics',
+            parent='Barge',
+            cob=(50.0, 0.0, 2.5),
+            BMT=26.666666666666664,
+            BML=166.66666666666666,
+            COFX=0.0,
+            COFY=0.0,
+            kHeave=39240.0,
+            waterline=2.5,
+            displacement_kN=196200.0 )
+# code for Poi
+s.new_poi(name='Poi',
+          parent='Barge',
+          position=(0.0,
+                    10.0,
+                    0.0))
+# code for Force
+s.new_force(name='Force',
+            parent='Poi',
+            force=(0.0, 0.0, 0.0),
+            moment=(0.0, 0.0, 0.0) )
+# code for Visual
+s.new_visual(name='Visual',
+            parent='Barge',
+            path='barge.obj',
+            offset=(0.0, 0.0, 0.0), 
+            rotation=(0, 0, 0), 
+            scale=(1.0, 1.0, 1.0) )
