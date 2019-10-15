@@ -1054,8 +1054,8 @@ class Cable(CoreConnectedNode):
                 code += "\n            sheaves = ['{}'])".format(poi_names[1])
             else:
                 code += "\n            sheaves = ['{}',".format(poi_names[1])
-                for i in range(n_sheaves-1):
-                    code += "\n                       '{}',".format(poi_names[1+i])
+                for i in range(n_sheaves-2):
+                    code += "\n                       '{}',".format(poi_names[2+i])
                 code += "\n                       '{}']),".format(poi_names[-2])
 
 

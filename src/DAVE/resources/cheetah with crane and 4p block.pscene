@@ -186,7 +186,6 @@ s.new_cable(name='Hoist wire',
             length=39.0,
             EA=100000.0,
             sheaves = ['Hoist sheeve 1',
-                       'Hoist sheeve 1',
                        'Hoist sheeve 2']),
 # code for visual - vessel
 s.new_visual(name='visual - vessel',

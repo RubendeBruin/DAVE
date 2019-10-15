@@ -22,6 +22,12 @@ from PyQt5 import QtCore
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
 from PyQt5.QtWidgets import QFileDialog
 
+class window_with_close_event(DAVE.frm_standard_assets.Ui_MainWindow):
+
+    def closeEvent(self):
+        self.visual.shutdown_qt()
+
+
 
 class Gui:
 
@@ -31,8 +37,9 @@ class Gui:
         self.visual = dv.Viewport(self.scene)
         """Reference to a viewport"""
 
-        self.ui = DAVE.frm_standard_assets.Ui_MainWindow()
+        self.ui = window_with_close_event()
         """Reference to the ui"""
+        self.ui.visual = self.visual # pass a reference
 
         self._selected = None
         self._result = None
@@ -59,6 +66,7 @@ class Gui:
 
         self.ui.btnImport.clicked.connect(self.clickImport)
 
+
     def changed(self):
         self.select(self.ui.listWidget.currentItem())
 
@@ -71,7 +79,13 @@ class Gui:
         self.select(data)
         file = data.text()
         self.scene.clear()
-        self.scene.load_scene(self.scene.get_resource_path(file))
+        try:
+            self.scene.load_scene(self.scene.get_resource_path(file))
+        except Exception as M:
+            print(M)
+            print('Error when loading file {}'.format(file))
+            return
+
         self.visual.create_visuals()
         self.visual.add_new_actors_to_screen()
         self.visual.position_visuals()
@@ -89,7 +103,6 @@ class Gui:
 
     def showModal(self):
         self.MainWindow.exec_()
-        self.visual.shutdown_qt()
         return self._result
 
 # ====== main code ======

@@ -890,9 +890,6 @@ class Gui:
                 self.visual.position_visuals()
                 self.visual.update_outlines()
                 self.visual.refresh_embeded_view()
-
-
-
                 return
 
 
@@ -904,7 +901,7 @@ class Gui:
             self.visual.update_outlines()
             self.visual.refresh_embeded_view()
         except:
-            print('An error occured during the animate-event')
+            print('An error occurred during the animate-event')
 
 
     def animate(self, old_dof, new_dof, steps):
