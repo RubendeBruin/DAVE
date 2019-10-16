@@ -458,6 +458,11 @@ class Axis(NodeWithParent):
 
     @fixed.setter
     def fixed(self, var):
+        if var == True:
+            var = (True,True,True,True,True,True)
+        if var == False:
+            var = (False, False, False, False, False, False)
+
         self._vfNode.fixed = var
 
     def set_free(self):
@@ -651,6 +656,30 @@ class Axis(NodeWithParent):
         return self._vfNode.connection_force
 
     @property
+    def connection_force_x(self):
+        return self.connection_force[0]
+
+    @property
+    def connection_force_y(self):
+        return self.connection_force[1]
+
+    @property
+    def connection_force_z(self):
+        return self.connection_force[2]
+
+    @property
+    def connection_moment_x(self):
+        return self.connection_force[3]
+
+    @property
+    def connection_moment_y(self):
+        return self.connection_force[4]
+
+    @property
+    def connection_moment_z(self):
+        return self.connection_force[5]
+
+    @property
     def applied_force(self):
         """Returns the force and moment that is applied on this axis [Global axis system]
         """
@@ -787,6 +816,21 @@ class Poi(NodeWithParent):
     @property
     def z(self):
         return self.position[2]
+
+    @x.setter
+    def x(self, var):
+        a = self.position
+        self.position = (var, a[1], a[2])
+
+    @y.setter
+    def y(self, var):
+        a = self.position
+        self.position = (a[0], var, a[2])
+
+    @z.setter
+    def z(self, var):
+        a = self.position
+        self.position = (a[0], a[1], var)
 
 
     @property

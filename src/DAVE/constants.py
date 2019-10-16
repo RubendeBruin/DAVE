@@ -105,12 +105,15 @@ LOGFILE = 'c:/data/vfLog.txt'
 
 # displayed properties of nodes
 PROPS_NODE = ['name']
-PROPS_AXIS = ['global_position','global_rotation','applied_force','connection_force','equilibrium_error','_vfNode._linrotation',
-              'x','y','z','gz','gy','gz','rx','ry','rz','grx','gry','grz']
+PROPS_AXIS = ['global_position','global_rotation','applied_force','connection_force','equilibrium_error',
+              'x','y','z','gz','gy','gz','rx','ry','rz','grx','gry','grz',
+              'connection_force_x','connection_force_y','connection_force_z','connection_moment_x','connection_moment_y','connection_moment_z'
+              ]
 PROPS_POI = ['global_position','applied_force_and_moment_global','x','y','z','gz','gy','gz']
 PROPS_CABLE = ['tension','stretch']
 PROPS_CON2D = ['angle','moment','force']
 PROPS_BODY = [*PROPS_AXIS, 'cog', 'cogx', 'cogy', 'cogz', 'mass']
+PROPS_BUOY_MESH = ['cob', 'displacement']
 
 GUI_ANIMATION_NSTEPS = 60 # ANIMATION SPEED
 GUI_ANIMATION_FPS = 60

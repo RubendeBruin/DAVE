@@ -710,6 +710,8 @@ class Gui:
             props.extend(vfc.PROPS_CABLE)
         if isinstance(node, vfs.Connector2d):
             props.extend(vfc.PROPS_CON2D)
+        if isinstance(node, vfs.Buoyancy):
+            props.extend(vfc.PROPS_BUOY_MESH)
 
         # evaluate properties
         self.ui.dispPropTree.clear()
@@ -985,7 +987,7 @@ if __name__ == '__main__':
 
     s.import_scene(s.get_resource_path("tower.pscene"), containerize=False, prefix="")
     s['Nacelle'].change_parent_to(s['Tower'])
-    s['Nacelle'].position = (2.0, 0.0, 68.0)
+    s['Nacelle'].position = (2.0, 0.0, 69.0)
 
     s['Nacelle'].mass = 200.0  # ref: youtube
 
@@ -1004,8 +1006,9 @@ if __name__ == '__main__':
     s['Tower'].change_parent_to(s['Spar with fixed ballast'])
 
     s.new_poi('Poi wind', parent='Nacelle')
-    s.new_force('Wind Force', parent='Poi wind')
-    s['Wind Force'].force = (1000.0, 0.0, 0.0)
+
+    # s.new_force('Wind Force', parent='Poi wind')
+    # s['Wind Force'].force = (1000.0, 0.0, 0.0)
 
     # code for Water ballast
     s.new_rigidbody(name='Water ballast',
@@ -1033,6 +1036,7 @@ if __name__ == '__main__':
 
     s['Barge'].position = (25,-50,-5)
     s['Barge'].rotation = (0,0,90)
+    s['Barge'].fixed = (True,True,0,False,False,False)
 
     # code for Liftpoint
     s.new_poi(name='Liftpoint',
@@ -1089,7 +1093,37 @@ if __name__ == '__main__':
                  rotation=(0, 0, 0),
                  scale=(6.0, 9.0, 19.0))
 
+    s.goal_seek(set_property="connection_force_z",
+                set_node="Nacelle",
+                target=0,
+                change_property="mass",
+                change_node="Water ballast")
+
+    s['Nacelle'].change_parent_to(None)
+    s['Nacelle'].fixed = False
+
+    s['Barge'].fixed = True
+
+    s['Spar with fixed ballast'].fixed = True
+
+    s.solve_statics()
+
+    s.solve_statics()
+
+    s.solve_statics()
+
     Gui(s).show()
+
+    s.goal_seek(set_property="ry",
+                set_node="Nacelle",
+                target=0,
+                change_property="x",
+                change_node="Liftpoint 2")
+
+
+
+
+
 
 
 
