@@ -1529,11 +1529,11 @@ class TriMeshSource(Node):
 
     """
 
-    def __init__(self, scene):
+    def __init__(self, scene, source):
 
         # Note: Visual does not have a corresponding vfCore Node in the scene but does have a vfCore
         self.scene = scene
-        self._TriMesh = pyo3d.TriMesh()
+        self._TriMesh = source
         self._new_mesh = True             # cheat for visuals
 
         self._path = ''                   # stores the data that was used to load the obj
@@ -1550,7 +1550,7 @@ class TriMeshSource(Node):
     def get_extends(self):
         """Returns the extends of the mesh in global coordinates
 
-        Returns: (minimum_x, maximum_x, minimum_y, maximum_y)
+        Returns: (minimum_x, maximum_x, minimum_y, maximum_y, minimum_z, maximum_z)
 
         """
 
@@ -1564,11 +1564,14 @@ class TriMeshSource(Node):
         xp = v[0]
         yn = v[1]
         yp = v[1]
+        zn = v[2]
+        zp = v[2]
 
         for i in range(t.nVertices):
             v = t.GetVertex(i)
             x = v[0]
             y= v[1]
+            z = v[2]
 
             if x<xn:
                 xn = x
@@ -1578,9 +1581,12 @@ class TriMeshSource(Node):
                 yn = y
             if y > yp:
                 yp = y
+            if z < zn:
+                zn = z
+            if z > zp:
+                zp = z
 
-        return (xn,xp,yn,yp)
-
+        return (xn,xp,yn,yp,zn, zp)
 
 
 
@@ -1733,19 +1739,11 @@ class Buoyancy(NodeWithParent):
     def __init__(self, scene, vfBuoyancy):
         super().__init__(scene, vfBuoyancy)
         self._None_parent_acceptable = True
-        self._trimesh = None
+        self._trimesh = TriMeshSource(self._scene, self._vfNode.trimesh) # the tri-mesh is wrapped in a custom object
 
     @property
     def trimesh(self):
         return self._trimesh
-
-    @trimesh.setter
-    def trimesh(self, new_mesh):
-        if isinstance(new_mesh, TriMeshSource):
-            self._vfNode.trimesh = new_mesh._TriMesh
-            self._trimesh = new_mesh
-        else:
-            raise TypeError('new_mesh should be a TriMeshSource object but is a {}'.format(type(new_mesh)))
 
     @property
     def cob(self):
@@ -1757,6 +1755,15 @@ class Buoyancy(NodeWithParent):
         """Returns the applied force in the parent axis system"""
         return self._vfNode.displacement
 
+    # @trimesh.setter
+    # def trimesh(self, new_mesh):
+    #     raise Exception()
+    #     if isinstance(new_mesh, TriMeshSource):
+    #         self._vfNode.trimesh = new_mesh._TriMesh
+    #         self._trimesh = new_mesh
+    #     else:
+    #         raise TypeError('new_mesh should be a TriMeshSource object but is a {}'.format(type(new_mesh)))
+
     def give_python_code(self):
         code = "# code for {}".format(self.name)
         code += "\nmesh = s.new_buoyancy(name='{}',".format(self.name)
@@ -1765,6 +1772,7 @@ class Buoyancy(NodeWithParent):
         code += "\nmesh.trimesh.load_obj(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
 
         return code
+
 
 
 class Scene:
@@ -2761,7 +2769,7 @@ class Scene:
         return new_node
 
 
-    def new_buoyancy(self, name, parent=None, trimesh = None):
+    def new_buoyancy(self, name, parent=None):
         """Creates a new *poi* node and adds it to the scene.
 
         Args:
@@ -2782,19 +2790,9 @@ class Scene:
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
-        if trimesh is None:
-            trimesh = TriMeshSource(self)
-            trimesh.make_cube()
-
-        if not isinstance(trimesh, TriMeshSource):
-            raise TypeError('trimesh should be a TriMeshSource object or "None" but is a {}'.format(type(trimesh)))
-
         # then create
         a = self._vfc.new_buoyancy(name)
-
-
         new_node = Buoyancy(self, a)
-        new_node.trimesh = trimesh
 
         # and set properties
         if b is not None:

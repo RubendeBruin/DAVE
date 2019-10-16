@@ -797,7 +797,7 @@ class Viewport:
                     V.actors[1].on()
 
                 # update water-plane
-                x1,x2,y1,y2 = V.node.trimesh.get_extends()
+                x1,x2,y1,y2,_,_ = V.node.trimesh.get_extends()
                 x1 -= vc.VISUAL_BUOYANCY_PLANE_EXTEND
                 x2 += vc.VISUAL_BUOYANCY_PLANE_EXTEND
                 y1 -= vc.VISUAL_BUOYANCY_PLANE_EXTEND

@@ -957,175 +957,173 @@ class Gui:
 if __name__ == '__main__':
     s = vfs.Scene()
 
-    s.clear()
-    s.import_scene(s.get_resource_path("turbine nacelle.pscene"), containerize=False, prefix="")
-
-    s.import_scene(s.get_resource_path("turbine blade.pscene"), containerize=False, prefix="blade1")
-    s['blade1body'].position = (-9.0, 0.0, 0.0)
-    s['blade1body'].rotation = (0.0, 0.0, 0.0)
-
-    s.import_scene(s.get_resource_path("turbine blade.pscene"), containerize=False, prefix="blade2")
-    s['blade2body'].position = (-9.0, 0.0, 0.0)
-    s['blade2body'].rotation = (120.0, 0.0, 0.0)
-
-    s.import_scene(s.get_resource_path("turbine blade.pscene"), containerize=False, prefix="blade3")
-    s['blade3body'].position = (-9.0, 0.0, 0.0)
-    s['blade3body'].rotation = (240.0, 0.0, 0.0)
-
-    s.new_axis('Hub_axis', parent='Nacelle')
-    # ---
-    s['Hub'].change_parent_to(s['Hub_axis'])
-    # ---
-    s['Hub2'].change_parent_to(s['Hub_axis'])
-    # ---
-    s['blade1body'].change_parent_to(s['Hub_axis'])
-    # ---
-    s['blade2body'].change_parent_to(s['Hub_axis'])
-    # ---
-    s['blade3body'].change_parent_to(s['Hub_axis'])
-    s['Hub_axis'].fixed = (True, True, True, False, True, True)
-
-    s.import_scene(s.get_resource_path("tower.pscene"), containerize=False, prefix="")
-    s['Nacelle'].change_parent_to(s['Tower'])
-    s['Nacelle'].position = (2.0, 0.0, 69.0)
-
-    s['Nacelle'].mass = 200.0  # ref: youtube
-
-    # Then the structure was towed out to its final destination in the Scottish waters. Each construction got a ballast of approximately 5,000 tons of the dense aggregate. And they also got an additional 1,100 tons of concrete ballast.
-    s.new_rigidbody(name='Spar with fixed ballast',
-                    mass=6100.0,
-                    cog=(0.0,
-                         0.0,
-                         -37.0),
-                    fixed=(True, True, False, False, False, True))
-
-    s.new_buoyancy('Spar buoyancy mesh', parent='Spar with fixed ballast')
-    s['Spar buoyancy mesh'].trimesh.load_obj(r'C:\data\Dave\Public\DAVE\src\DAVE/resources/cylinder 1x1x1.obj',
-                                             scale=(14.0, 14.0, 40.0), rotation=(0.0, 0.0, 0.0), offset=(0.0, 0.0, -40.0))
-
-    s['Tower'].change_parent_to(s['Spar with fixed ballast'])
-
-    s.new_poi('Poi wind', parent='Nacelle')
-
-    # s.new_force('Wind Force', parent='Poi wind')
-    # s['Wind Force'].force = (1000.0, 0.0, 0.0)
-
-    # code for Water ballast
-    s.new_rigidbody(name='Water ballast',
-                    mass=0.0,
-                    cog=(0.0,
-                         0.0,
-                         0.0),
-                    parent='Spar with fixed ballast',
-                    position=(0.0,
-                              0.0,
-                              -20.0),
-                    rotation=(0.0,
-                              0.0,
-                              0.0),
-                    fixed=(True, True, True, True, True, True))
-
-    s.import_scene(s.get_resource_path("barge with linear hydrostatics.pscene"), containerize=False, prefix="")
-    s.delete("Hydrostatics")
-
-    # code for Barge buoyancy mesh
-    mesh = s.new_buoyancy(name='Barge buoyancy mesh',
-                          parent='Barge')
-    mesh.trimesh.load_obj(s.get_resource_path(r'barge.obj'), scale=(1.0, 1.0, 1.0), rotation=(0.0, 0.0, 0.0),
-                          offset=(0.0, 0.0, 0.0))
-
-    s['Barge'].position = (25,-50,-5)
-    s['Barge'].rotation = (0,0,90)
-    s['Barge'].fixed = (True,True,0,False,False,False)
-
-    # code for Liftpoint
-    s.new_poi(name='Liftpoint',
-              parent='Barge',
-              position=(49.918,
-                        21.0,
-                        27.929))
-
-    # code for Liftpoint 1
-    s.new_poi(name='Liftpoint 1',
-              parent='Nacelle',
-              position=(-5.0,
-                        0.0,
-                        5.0))
-
-    # code for Liftpoint 2
-    s.new_poi(name='Liftpoint 2',
-              parent='Nacelle',
-              position=(3.0,
-                        0.0,
-                        5.0))
-
-    # code for Cable
-    s.new_cable(name='Cable',
-                poiA='Liftpoint 1',
-                poiB='Liftpoint 2',
-                length=16.0,
-                EA=10000000.0,
-                sheaves=['Liftpoint'])
-
-    # code for Crane
-    s.new_axis(name='Crane',
-               parent='Barge',
-               position=(50.0,
-                         0.0,
-                         7.0),
-               rotation=(0.0,
-                         0.0,
-                         90.0),
-               fixed=(True, True, True, True, True, True))
-
-    # code for Visual_1
-    s.new_visual(name='Visual_1',
-                 parent='Crane',
-                 path=r'visual crane-boom.obj',
-                 offset=(0.0, -0.0, 21.0),
-                 rotation=(0.0, 0.0, 0.0),
-                 scale=(0.3, 1.0, 1.0))
-    # code for Visual_2
-    s.new_visual(name='Visual_2',
-                 parent='Crane',
-                 path=r'cube.obj',
-                 offset=(8.0, 0.0, 13.0),
-                 rotation=(0, 0, 0),
-                 scale=(6.0, 9.0, 19.0))
-
-    s.goal_seek(set_property="connection_force_z",
-                set_node="Nacelle",
-                target=0,
-                change_property="mass",
-                change_node="Water ballast")
-
-    s['Nacelle'].change_parent_to(None)
-    s['Nacelle'].fixed = False
-
-    s['Barge'].fixed = True
-
-    s['Spar with fixed ballast'].fixed = True
-
-    s.solve_statics()
-
-    s.solve_statics()
-
-    s.solve_statics()
+    #
+    # s.import_scene(s.get_resource_path("turbine nacelle.pscene"), containerize=False, prefix="")
+    #
+    # s.import_scene(s.get_resource_path("turbine blade.pscene"), containerize=False, prefix="blade1")
+    # s['blade1body'].position = (-9.0, 0.0, 0.0)
+    # s['blade1body'].rotation = (0.0, 0.0, 0.0)
+    #
+    # s.import_scene(s.get_resource_path("turbine blade.pscene"), containerize=False, prefix="blade2")
+    # s['blade2body'].position = (-9.0, 0.0, 0.0)
+    # s['blade2body'].rotation = (120.0, 0.0, 0.0)
+    #
+    # s.import_scene(s.get_resource_path("turbine blade.pscene"), containerize=False, prefix="blade3")
+    # s['blade3body'].position = (-9.0, 0.0, 0.0)
+    # s['blade3body'].rotation = (240.0, 0.0, 0.0)
+    #
+    # s.new_axis('Hub_axis', parent='Nacelle')
+    # # ---
+    # s['Hub'].change_parent_to(s['Hub_axis'])
+    # # ---
+    # s['Hub2'].change_parent_to(s['Hub_axis'])
+    # # ---
+    # s['blade1body'].change_parent_to(s['Hub_axis'])
+    # # ---
+    # s['blade2body'].change_parent_to(s['Hub_axis'])
+    # # ---
+    # s['blade3body'].change_parent_to(s['Hub_axis'])
+    # s['Hub_axis'].fixed = (True, True, True, False, True, True)
+    #
+    # s.import_scene(s.get_resource_path("tower.pscene"), containerize=False, prefix="")
+    # s['Nacelle'].change_parent_to(s['Tower'])
+    # s['Nacelle'].position = (2.0, 0.0, 69.0)
+    #
+    # s['Nacelle'].mass = 200.0  # ref: youtube
+    #
+    # # Then the structure was towed out to its final destination in the Scottish waters. Each construction got a ballast of approximately 5,000 tons of the dense aggregate. And they also got an additional 1,100 tons of concrete ballast.
+    # s.new_rigidbody(name='Spar with fixed ballast',
+    #                 mass=6100.0,
+    #                 cog=(0.0,
+    #                      0.0,
+    #                      -37.0),
+    #                 fixed=(True, True, False, False, False, True))
+    #
+    # s.new_buoyancy('Spar buoyancy mesh', parent='Spar with fixed ballast')
+    # s['Spar buoyancy mesh'].trimesh.load_obj(r'C:\data\Dave\Public\DAVE\src\DAVE/resources/cylinder 1x1x1.obj',
+    #                                          scale=(14.0, 14.0, 40.0), rotation=(0.0, 0.0, 0.0), offset=(0.0, 0.0, -40.0))
+    #
+    # s['Tower'].change_parent_to(s['Spar with fixed ballast'])
+    #
+    # s.new_poi('Poi wind', parent='Nacelle')
+    #
+    # # s.new_force('Wind Force', parent='Poi wind')
+    # # s['Wind Force'].force = (1000.0, 0.0, 0.0)
+    #
+    # # code for Water ballast
+    # s.new_rigidbody(name='Water ballast',
+    #                 mass=0.0,
+    #                 cog=(0.0,
+    #                      0.0,
+    #                      0.0),
+    #                 parent='Spar with fixed ballast',
+    #                 position=(0.0,
+    #                           0.0,
+    #                           -20.0),
+    #                 rotation=(0.0,
+    #                           0.0,
+    #                           0.0),
+    #                 fixed=(True, True, True, True, True, True))
+    #
+    # Gui(s).show()
+    #
+    # s.import_scene(s.get_resource_path("barge with linear hydrostatics.pscene"), containerize=False, prefix="")
+    # s.delete("Hydrostatics")
+    #
+    # # code for Barge buoyancy mesh
+    # mesh = s.new_buoyancy(name='Barge buoyancy mesh',
+    #                       parent='Barge')
+    # mesh.trimesh.load_obj(s.get_resource_path(r'barge.obj'), scale=(1.0, 1.0, 1.0), rotation=(0.0, 0.0, 0.0),
+    #                       offset=(0.0, 0.0, 0.0))
+    #
+    # s['Barge'].position = (25,-50,-5)
+    # s['Barge'].rotation = (0,0,90)
+    # s['Barge'].fixed = (True,True,0,False,False,False)
+    #
+    # # code for Liftpoint
+    # s.new_poi(name='Liftpoint',
+    #           parent='Barge',
+    #           position=(49.918,
+    #                     21.0,
+    #                     27.929))
+    #
+    # # code for Liftpoint 1
+    # s.new_poi(name='Liftpoint 1',
+    #           parent='Nacelle',
+    #           position=(-5.0,
+    #                     0.0,
+    #                     5.0))
+    #
+    # # code for Liftpoint 2
+    # s.new_poi(name='Liftpoint 2',
+    #           parent='Nacelle',
+    #           position=(3.0,
+    #                     0.0,
+    #                     5.0))
+    #
+    # # code for Cable
+    # s.new_cable(name='Cable',
+    #             poiA='Liftpoint 1',
+    #             poiB='Liftpoint 2',
+    #             length=16.0,
+    #             EA=10000000.0,
+    #             sheaves=['Liftpoint'])
+    #
+    # # code for Crane
+    # s.new_axis(name='Crane',
+    #            parent='Barge',
+    #            position=(50.0,
+    #                      0.0,
+    #                      7.0),
+    #            rotation=(0.0,
+    #                      0.0,
+    #                      90.0),
+    #            fixed=(True, True, True, True, True, True))
+    #
+    # # code for Visual_1
+    # s.new_visual(name='Visual_1',
+    #              parent='Crane',
+    #              path=r'visual crane-boom.obj',
+    #              offset=(0.0, -0.0, 21.0),
+    #              rotation=(0.0, 0.0, 0.0),
+    #              scale=(0.3, 1.0, 1.0))
+    # # code for Visual_2
+    # s.new_visual(name='Visual_2',
+    #              parent='Crane',
+    #              path=r'cube.obj',
+    #              offset=(8.0, 0.0, 13.0),
+    #              rotation=(0, 0, 0),
+    #              scale=(6.0, 9.0, 19.0))
+    #
+    # s.goal_seek(set_property="connection_force_z",
+    #             set_node="Nacelle",
+    #             target=0,
+    #             change_property="mass",
+    #             change_node="Water ballast")
+    #
+    # s['Nacelle'].change_parent_to(None)
+    # s['Nacelle'].fixed = False
+    #
+    # s['Barge'].fixed = True
+    #
+    # s['Spar with fixed ballast'].fixed = True
+    #
+    # s.solve_statics()
+    #
+    # s['Liftpoint 2'].x = 3.154032
+    #
+    # print('\n\n\n\n\n\n\n\n\n')
+    # print(s._vfc.to_string())
+    #
+    # s.solve_statics()
+    #
+    #
+    # #
+    # s.goal_seek(set_property="ry",
+    #             set_node="Nacelle",
+    #             target=0,
+    #             change_property="x",
+    #             change_node="Liftpoint 2")
 
     Gui(s).show()
-
-    s.goal_seek(set_property="ry",
-                set_node="Nacelle",
-                target=0,
-                change_property="x",
-                change_node="Liftpoint 2")
-
-
-
-
-
-
-
-
-
 

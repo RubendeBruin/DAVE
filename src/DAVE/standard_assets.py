@@ -22,9 +22,10 @@ from PyQt5 import QtCore
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
 from PyQt5.QtWidgets import QFileDialog
 
-class window_with_close_event(DAVE.frm_standard_assets.Ui_MainWindow):
+class DialogWithCloseEvent(QtWidgets.QDialog):
 
-    def closeEvent(self):
+    def closeEvent(self, other):
+        print('closing qt interactor of import window')
         self.visual.shutdown_qt()
 
 
@@ -37,7 +38,7 @@ class Gui:
         self.visual = dv.Viewport(self.scene)
         """Reference to a viewport"""
 
-        self.ui = window_with_close_event()
+        self.ui = DAVE.frm_standard_assets.Ui_MainWindow()
         """Reference to the ui"""
         self.ui.visual = self.visual # pass a reference
 
@@ -45,7 +46,7 @@ class Gui:
         self._result = None
 
         # self.app = QtWidgets.QApplication(sys.argv)
-        self.MainWindow = QtWidgets.QDialog()
+        self.MainWindow = DialogWithCloseEvent() # QtWidgets.QDialog()
         self.ui.setupUi(self.MainWindow)
 
         txt = "Resources from:\n"
@@ -59,12 +60,11 @@ class Gui:
             self.ui.listWidget.addItem(r)
 
         self.ui.listWidget.itemSelectionChanged.connect(self.changed)
-            #(self.select)
         self.ui.listWidget.itemDoubleClicked.connect(self.dblclick)
-
         self.visual.show_embedded(self.ui.frame3d)
-
         self.ui.btnImport.clicked.connect(self.clickImport)
+
+        self.MainWindow.visual = self.visual # pass reference of onClose
 
 
     def changed(self):
