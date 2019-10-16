@@ -408,6 +408,30 @@ class Gui:
 
             menu.addSeparator()
 
+            def copy_python_code():
+                code = node.give_python_code()
+                print(code)
+                self.app.clipboard().setText(code)
+
+            menu.addAction("Copy python code", copy_python_code)
+            menu.addSeparator()
+
+            def duplicate():
+                name = node.name
+                name_of_duplicate = self.scene.available_name_like(name)
+                node.name = name_of_duplicate
+                code = node.give_python_code()
+                node.name = name
+                self.run_code(code)
+
+                data = self.node_data.get_name(name_of_duplicate)
+                self.select_node(data)
+
+
+            menu.addAction("Duplicate", duplicate)
+            menu.addSeparator()
+
+
 
         menu.addAction("New Axis", self.new_axis)
         menu.addAction("New Poi", self.new_poi)
@@ -958,6 +982,112 @@ if __name__ == '__main__':
     # ---
     s['blade3body'].change_parent_to(s['Hub_axis'])
     s['Hub_axis'].fixed = (True, True, True, False, True, True)
+
+    s.import_scene(s.get_resource_path("tower.pscene"), containerize=False, prefix="")
+    s['Nacelle'].change_parent_to(s['Tower'])
+    s['Nacelle'].position = (2.0, 0.0, 68.0)
+
+    s['Nacelle'].mass = 200.0  # ref: youtube
+
+    # Then the structure was towed out to its final destination in the Scottish waters. Each construction got a ballast of approximately 5,000 tons of the dense aggregate. And they also got an additional 1,100 tons of concrete ballast.
+    s.new_rigidbody(name='Spar with fixed ballast',
+                    mass=6100.0,
+                    cog=(0.0,
+                         0.0,
+                         -37.0),
+                    fixed=(True, True, False, False, False, True))
+
+    s.new_buoyancy('Spar buoyancy mesh', parent='Spar with fixed ballast')
+    s['Spar buoyancy mesh'].trimesh.load_obj(r'C:\data\Dave\Public\DAVE\src\DAVE/resources/cylinder 1x1x1.obj',
+                                             scale=(14.0, 14.0, 40.0), rotation=(0.0, 0.0, 0.0), offset=(0.0, 0.0, -40.0))
+
+    s['Tower'].change_parent_to(s['Spar with fixed ballast'])
+
+    s.new_poi('Poi wind', parent='Nacelle')
+    s.new_force('Wind Force', parent='Poi wind')
+    s['Wind Force'].force = (1000.0, 0.0, 0.0)
+
+    # code for Water ballast
+    s.new_rigidbody(name='Water ballast',
+                    mass=0.0,
+                    cog=(0.0,
+                         0.0,
+                         0.0),
+                    parent='Spar with fixed ballast',
+                    position=(0.0,
+                              0.0,
+                              -20.0),
+                    rotation=(0.0,
+                              0.0,
+                              0.0),
+                    fixed=(True, True, True, True, True, True))
+
+    s.import_scene(s.get_resource_path("barge with linear hydrostatics.pscene"), containerize=False, prefix="")
+    s.delete("Hydrostatics")
+
+    # code for Barge buoyancy mesh
+    mesh = s.new_buoyancy(name='Barge buoyancy mesh',
+                          parent='Barge')
+    mesh.trimesh.load_obj(s.get_resource_path(r'barge.obj'), scale=(1.0, 1.0, 1.0), rotation=(0.0, 0.0, 0.0),
+                          offset=(0.0, 0.0, 0.0))
+
+    s['Barge'].position = (25,-50,-5)
+    s['Barge'].rotation = (0,0,90)
+
+    # code for Liftpoint
+    s.new_poi(name='Liftpoint',
+              parent='Barge',
+              position=(49.918,
+                        21.0,
+                        27.929))
+
+    # code for Liftpoint 1
+    s.new_poi(name='Liftpoint 1',
+              parent='Nacelle',
+              position=(-5.0,
+                        0.0,
+                        5.0))
+
+    # code for Liftpoint 2
+    s.new_poi(name='Liftpoint 2',
+              parent='Nacelle',
+              position=(3.0,
+                        0.0,
+                        5.0))
+
+    # code for Cable
+    s.new_cable(name='Cable',
+                poiA='Liftpoint 1',
+                poiB='Liftpoint 2',
+                length=16.0,
+                EA=10000000.0,
+                sheaves=['Liftpoint'])
+
+    # code for Crane
+    s.new_axis(name='Crane',
+               parent='Barge',
+               position=(50.0,
+                         0.0,
+                         7.0),
+               rotation=(0.0,
+                         0.0,
+                         90.0),
+               fixed=(True, True, True, True, True, True))
+
+    # code for Visual_1
+    s.new_visual(name='Visual_1',
+                 parent='Crane',
+                 path=r'visual crane-boom.obj',
+                 offset=(0.0, -0.0, 21.0),
+                 rotation=(0.0, 0.0, 0.0),
+                 scale=(0.3, 1.0, 1.0))
+    # code for Visual_2
+    s.new_visual(name='Visual_2',
+                 parent='Crane',
+                 path=r'cube.obj',
+                 offset=(8.0, 0.0, 13.0),
+                 rotation=(0, 0, 0),
+                 scale=(6.0, 9.0, 19.0))
 
     Gui(s).show()
 

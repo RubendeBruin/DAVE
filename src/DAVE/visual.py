@@ -522,13 +522,21 @@ class Viewport:
 
             node = V.node
             if node not in self.scene.nodes:
-                if V.actors[0].actor_type != ActorType.GLOBAL:  # global visuals do not have a corresponding node
+                if len(V.actors) > 0:  # not all nodes have an actor
+                    if V.actors[0].actor_type != ActorType.GLOBAL:  # global visuals do not have a corresponding node
+                        to_be_removed.append(V)
+                        continue
+                else:
                     to_be_removed.append(V)
-                    continue
+                    continue  # node does not have an actor
+
 
             # create a transform from the Node
             # or the parent of the Node
             # or skip (for example a poi without a parent)
+
+            if V.node is None:
+                continue
 
             if isinstance(V.node, vf.Visual):
                 A = V.actors[0]
