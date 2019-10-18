@@ -1,5 +1,23 @@
+"""
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+  Ruben de Bruin - 2019
+
+
+
+  This file defines constants and settings used throughout the package.
+
+
+"""
+
+# ======== Constants ===========
+
 g = 9.81
 rho = 1.025
+
+# ======== Folders ===========
 
 from os.path import expanduser
 from os.path import dirname
@@ -13,13 +31,15 @@ print('default resource folders:')
 for a in RESOURCE_PATH:
     print(a)
 
+# temporary files:
+
 PATH_TEMP_SCREENSHOT = r'c:\data\screenshot.png'
 
-# TEXTURE_SEA = 'virtualSea'
-TEXTURE_SEA = ''
-ALPHA_SEA = 0.8
-ALPHA_BUOYANCY = 1.0
+# debugging / logging
+LOGFILE = 'c:/data/vfLog.txt'
 
+
+# TEXTURE_SEA = 'virtualSea'
 VF_NAME_SPLIT = "-->"    # used for node-names, eg:    Body23-->Cog
 
 # =========== Visuals ==================
@@ -97,11 +117,13 @@ VISUAL_AMBIENT = 0.5
 
 VISUAL_BUOYANCY_PLANE_EXTEND = 5
 
+TEXTURE_SEA = ''
+ALPHA_SEA = 0.8
+ALPHA_BUOYANCY = 1.0
+
 
 # ========= GUI =================
 
-# debugging / logging
-LOGFILE = 'c:/data/vfLog.txt'
 
 # displayed properties of nodes
 PROPS_NODE = ['name']

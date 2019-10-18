@@ -1,5 +1,17 @@
 """
-visual visualizes a scene using vtk
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+  Ruben de Bruin - 2019
+
+
+  Some tools
+
+"""
+
+"""
+visual visualizes a scene using vtkplotter
 
 
 main class is VisualActor
@@ -8,6 +20,11 @@ this class contains a reference to a Node and a list of actors
 a visual actor can be hidden by setting visible to False
 
 each of the individual vtk-plotter actors has a "actor_type" property which is a enum ActorType
+
+Note:
+at this moment the outlines of the actors are created using a outline filter. This is expensive.
+Probably more efficient to implement this using shaders. But only once VTK 9.0+ becomes standard as the shader
+code will change.
 
 """
 

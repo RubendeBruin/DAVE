@@ -1,186 +1,193 @@
 """
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-This is the main module of the engine. It contains both the nodes and the scene.
+  Ruben de Bruin - 2019
+"""
 
-A node is an item or element in a model. For example a ship or a force.
-A Scene is a collection of nodes.
-
-# Scene
-
-Scene contains methods to create, delete, import, re-order and export nodes.
-In a typical workflow one would start with an empty scene, add nodes to it, configure the nodes and then solve the model.
-
-.. list-table:: Scene functions
-   :widths: 30 20 40
-   :header-rows: 1
-
-   * - Action
-     - How
-     - Description
-
-   * - Create a new scene
-     - `s = Scene()`
-     - Creates a new scene "s". Optionally a file-name can be provided to load the contents of that file directly into the scene
-
-   * - **Adding content**
-     -
-     -
-
-   * - Adding a node
-     - `s.new_poi, s.new_axis, etc..`
-     - See list of node types and new_ functions in the next table.
-
-   * - Import nodes (1)
-     - :py:func:`Scene.import_scene`
-     - Imports all nodes from an other scene and places them as a group in the current scene.
-
-   * - Import nodes (2)
-     - :py:func:`Scene.load_scene`
-     - Imports all nodes from an other scene and adds them to the current scene. Beware of name-conflicts.
-
-   * - **Access nodes**
-     -
-     -
-
-   * - Get a node
-     - `s['node_name']`
-     - gets a reference to a node with name "node_name".
-
-   * - **Deleting content**
-     -
-     -
-
-   * - clear
-     - :py:func:`Scene.clear`
-     - Deletes all nodes from the scene
-
-   * - delete
-     - :py:func:`Scene.delete`
-     - Deletes a node from the scene. All nodes that depend on this node will be deleted as well.
-
-   * - dissolve
-     - :py:func:`Scene.dissolve`
-     - Removes a single node from the scene. Attempts to maintain child nodes. Often used in combination with import
-
-   * - **Saving or exporting**
-     -
-     -
-
-   * - Save to file
-     - :py:func:`Scene.save_scene`
-     - Saves the content of the scene to a file
-
-   * - Get as python code
-     - :py:func:`Scene.give_python_code`
-     - Returns python to re-create the scene in its current state.
-
-   * - Print node-tree
-     - :py:func:`Scene.print_node_tree`
-     - Prints a node-tree
-
-   * - **Solving**
-     -
-     -
-
-   * - Solve statics
-     - :py:func:`Scene.solve_statics`
-     - Brings the nodes in the scene to a static equilibrium
-
-
-
-# Nodes
-
-Nodes are elements or objects in a scene.
-
-.. list-table:: Node-types
-   :widths: 10 20 70
-   :header-rows: 1
-
-   * - Icon
-     - Type
-     - Description
-
-   * - .. image:: ../images/axis.png
-          :width: 28 px
-          :height: 28 px
-     - :py:class:`Axis`  :py:func:`Scene.new_axis`
-     - Axis is an local axis system.
-       This is the main building block of the geometry.
-
-   * - .. image:: ../images/poi.png
-          :width: 28 px
-          :height: 28 px
-     - :py:class:`Poi`
-       :py:func:`Scene.new_poi`
-     - Point of interest is a position on an axis system.
-       Used as connection point or reference point for other nodes.
-
-   * - .. image:: ../images/cable.png
-          :width: 28 px
-          :height: 28 px
-     - :py:class:`Cable`
-       :py:func:`Scene.new_cable`
-     - Linear elastic cable between two or more pois
-
-   * - .. image:: ../images/cube.png
-          :width: 28 px
-          :height: 28 px
-     - :py:class:`RigidBody`
-       :py:func:`Scene.new_rigidbody`
-     - This is a rigid body with a mass and cog.It creates its own axis system (it is a super-set of Axis)
-
-   * - .. image:: ../images/force.png
-          :width: 28 px
-          :height: 28 px
-     - :py:class:`Force`
-       :py:func:`Scene.new_force`
-     - This is a force/moment. If is defined in the global axis system and acts on a poi
-
-   * - .. image:: ../images/lincon6.png
-          :width: 28 px
-          :height: 28 px
-     - :py:class:`LC6d`
-       :py:func:`Scene.new_linear_connector_6d`
-     - Connects two axis systems with six linear springs
-
-   * - .. image:: ../images/linhyd.png
-          :width: 28 px
-          :height: 28 px
-     - :py:class:`HydSpring`
-       :py:func:`Scene.new_hydspring`
-     - Create linear springs to model linearized hydrostatics
-
-   * - .. image:: ../images/buoy_mesh.png
-          :width: 28 px
-          :height: 28 px
-     - :py:class:`Buoyancy`
-       :py:func:`Scene.new_buoyancy`
-     - Buoyancy mesh for non-linear, shape-based hydrostatics
-
-   * - .. image:: ../images/visual.png
-          :width: 28 px
-          :height: 28 px
-     - :py:class:`Visual`
-       :py:func:`Scene.new_visual`
-     - 3D visual to spice-up the looks of the scene
-
-   * - .. image:: ../images/trimesh.png
-          :width: 28 px
-          :height: 28 px
-     - :py:class:`TriMeshSource`
-       :py:func:`Buoyancy.trimesh`
-     - 3D triangulated mesh for buoyancy calculations
-
-
-# Example:
-
-```python
-s = Scene()                               # create an empty scene
-s.new_poi('point 1')                      # creates a poi with name anchor
-s.new_poi('point 2', position = (10,0,0)) # create a second poi at x=10
-s.new_cable('line',poiA = 'point 1', poiB = 'point 2') # creates a cable between the two points
-s.save_scene(r'c:\data\test.pscene')      # save to file
-```
+"""
+    This is the main module of the engine. It contains both the nodes and the scene.
+    
+    A node is an item or element in a model. For example a ship or a force.
+    A Scene is a collection of nodes.
+    
+    # Scene
+    
+    Scene contains methods to create, delete, import, re-order and export nodes.
+    In a typical workflow one would start with an empty scene, add nodes to it, configure the nodes and then solve the model.
+    
+    .. list-table:: Scene functions
+       :widths: 30 20 40
+       :header-rows: 1
+    
+       * - Action
+         - How
+         - Description
+    
+       * - Create a new scene
+         - `s = Scene()`
+         - Creates a new scene "s". Optionally a file-name can be provided to load the contents of that file directly into the scene
+    
+       * - **Adding content**
+         -
+         -
+    
+       * - Adding a node
+         - `s.new_poi, s.new_axis, etc..`
+         - See list of node types and new_ functions in the next table.
+    
+       * - Import nodes (1)
+         - :py:func:`Scene.import_scene`
+         - Imports all nodes from an other scene and places them as a group in the current scene.
+    
+       * - Import nodes (2)
+         - :py:func:`Scene.load_scene`
+         - Imports all nodes from an other scene and adds them to the current scene. Beware of name-conflicts.
+    
+       * - **Access nodes**
+         -
+         -
+    
+       * - Get a node
+         - `s['node_name']`
+         - gets a reference to a node with name "node_name".
+    
+       * - **Deleting content**
+         -
+         -
+    
+       * - clear
+         - :py:func:`Scene.clear`
+         - Deletes all nodes from the scene
+    
+       * - delete
+         - :py:func:`Scene.delete`
+         - Deletes a node from the scene. All nodes that depend on this node will be deleted as well.
+    
+       * - dissolve
+         - :py:func:`Scene.dissolve`
+         - Removes a single node from the scene. Attempts to maintain child nodes. Often used in combination with import
+    
+       * - **Saving or exporting**
+         -
+         -
+    
+       * - Save to file
+         - :py:func:`Scene.save_scene`
+         - Saves the content of the scene to a file
+    
+       * - Get as python code
+         - :py:func:`Scene.give_python_code`
+         - Returns python to re-create the scene in its current state.
+    
+       * - Print node-tree
+         - :py:func:`Scene.print_node_tree`
+         - Prints a node-tree
+    
+       * - **Solving**
+         -
+         -
+    
+       * - Solve statics
+         - :py:func:`Scene.solve_statics`
+         - Brings the nodes in the scene to a static equilibrium
+    
+    
+    
+    # Nodes
+    
+    Nodes are elements or objects in a scene.
+    
+    .. list-table:: Node-types
+       :widths: 10 20 70
+       :header-rows: 1
+    
+       * - Icon
+         - Type
+         - Description
+    
+       * - .. image:: ../images/axis.png
+              :width: 28 px
+              :height: 28 px
+         - :py:class:`Axis`  :py:func:`Scene.new_axis`
+         - Axis is an local axis system.
+           This is the main building block of the geometry.
+    
+       * - .. image:: ../images/poi.png
+              :width: 28 px
+              :height: 28 px
+         - :py:class:`Poi`
+           :py:func:`Scene.new_poi`
+         - Point of interest is a position on an axis system.
+           Used as connection point or reference point for other nodes.
+    
+       * - .. image:: ../images/cable.png
+              :width: 28 px
+              :height: 28 px
+         - :py:class:`Cable`
+           :py:func:`Scene.new_cable`
+         - Linear elastic cable between two or more pois
+    
+       * - .. image:: ../images/cube.png
+              :width: 28 px
+              :height: 28 px
+         - :py:class:`RigidBody`
+           :py:func:`Scene.new_rigidbody`
+         - This is a rigid body with a mass and cog.It creates its own axis system (it is a super-set of Axis)
+    
+       * - .. image:: ../images/force.png
+              :width: 28 px
+              :height: 28 px
+         - :py:class:`Force`
+           :py:func:`Scene.new_force`
+         - This is a force/moment. If is defined in the global axis system and acts on a poi
+    
+       * - .. image:: ../images/lincon6.png
+              :width: 28 px
+              :height: 28 px
+         - :py:class:`LC6d`
+           :py:func:`Scene.new_linear_connector_6d`
+         - Connects two axis systems with six linear springs
+    
+       * - .. image:: ../images/linhyd.png
+              :width: 28 px
+              :height: 28 px
+         - :py:class:`HydSpring`
+           :py:func:`Scene.new_hydspring`
+         - Create linear springs to model linearized hydrostatics
+    
+       * - .. image:: ../images/buoy_mesh.png
+              :width: 28 px
+              :height: 28 px
+         - :py:class:`Buoyancy`
+           :py:func:`Scene.new_buoyancy`
+         - Buoyancy mesh for non-linear, shape-based hydrostatics
+    
+       * - .. image:: ../images/visual.png
+              :width: 28 px
+              :height: 28 px
+         - :py:class:`Visual`
+           :py:func:`Scene.new_visual`
+         - 3D visual to spice-up the looks of the scene
+    
+       * - .. image:: ../images/trimesh.png
+              :width: 28 px
+              :height: 28 px
+         - :py:class:`TriMeshSource`
+           :py:func:`Buoyancy.trimesh`
+         - 3D triangulated mesh for buoyancy calculations
+    
+    
+    # Example:
+    
+    ```python
+    s = Scene()                               # create an empty scene
+    s.new_poi('point 1')                      # creates a poi with name anchor
+    s.new_poi('point 2', position = (10,0,0)) # create a second poi at x=10
+    s.new_cable('line',poiA = 'point 1', poiB = 'point 2') # creates a cable between the two points
+    s.save_scene(r'c:\data\test.pscene')      # save to file
+    ```
 
 """
 
