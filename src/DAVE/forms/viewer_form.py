@@ -530,7 +530,6 @@ class Ui_MainWindow(object):
         self.actionOpen.setText(_translate("MainWindow", "Open"))
         self.actionImport_browser.setText(_translate("MainWindow", "Import (browser)"))
 
-import resources_rc
 
 if __name__ == "__main__":
     import sys

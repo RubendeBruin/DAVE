@@ -12,18 +12,11 @@
 
 import DAVE.visual as dv
 import DAVE.scene as ds
-import DAVE.constants as dc
 
-import DAVE.frm_standard_assets
+import DAVE.forms.frm_standard_assets
 
-import sys
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QMenu
-from PyQt5.QtCore import QMimeData, Qt
-from PyQt5 import QtCore
 
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
-from PyQt5.QtWidgets import QFileDialog
 
 class DialogWithCloseEvent(QtWidgets.QDialog):
 
@@ -41,7 +34,7 @@ class Gui:
         self.visual = dv.Viewport(self.scene)
         """Reference to a viewport"""
 
-        self.ui = DAVE.frm_standard_assets.Ui_MainWindow()
+        self.ui = DAVE.forms.frm_standard_assets.Ui_MainWindow()
         """Reference to the ui"""
         self.ui.visual = self.visual # pass a reference
 

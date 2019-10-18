@@ -23,9 +23,9 @@ import DAVE.visual as vfv
 import DAVE.scene as vfs
 import DAVE.constants as vfc
 import DAVE.standard_assets
-# DAVE.standard_assets.Gui().showModal()
+import DAVE.forms.resources_rc as resources_rc
 
-import DAVE.viewer_form
+import DAVE.forms.viewer_form
 
 import numpy as np
 import math
@@ -127,7 +127,7 @@ class Gui:
         self.visual = vfv.Viewport(scene)
         """Reference to a viewport"""
 
-        self.ui = DAVE.viewer_form.Ui_MainWindow()
+        self.ui = DAVE.forms.viewer_form.Ui_MainWindow()
         """Reference to the ui"""
 
         self.app = QtWidgets.QApplication(sys.argv)

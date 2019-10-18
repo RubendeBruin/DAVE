@@ -12,19 +12,19 @@
 
 """
 
-import DAVE.widget_axis
-import DAVE.widget_body
-import DAVE.widget_poi
-import DAVE.widget_cable
-import DAVE.widget_name
-import DAVE.widget_visual
-import DAVE.widget_force
-import DAVE.widget_lincon6
-import DAVE.widget_linhyd
-import DAVE.widget_beam
-import DAVE.widget_con2d
+import DAVE.forms.widget_axis
+import DAVE.forms.widget_body
+import DAVE.forms.widget_poi
+import DAVE.forms.widget_cable
+import DAVE.forms.widget_name
+import DAVE.forms.widget_visual
+import DAVE.forms.widget_force
+import DAVE.forms.widget_lincon6
+import DAVE.forms.widget_linhyd
+import DAVE.forms.widget_beam
+import DAVE.forms.widget_con2d
 
-import DAVE.addnode_form
+import DAVE.forms.addnode_form
 
 import DAVE.scene as vfs
 from PyQt5.QtGui import QIcon
@@ -67,7 +67,7 @@ class EditNode(NodeEditor):
         if EditNode._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.widget_name.Ui_NameWidget()
+            ui = DAVE.forms.widget_name.Ui_NameWidget()
             ui.setupUi(widget)
             EditNode._ui = ui
             ui._widget = widget
@@ -100,7 +100,7 @@ class EditAxis(NodeEditor):
         if EditAxis._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.widget_axis.Ui_widget_axis()
+            ui = DAVE.forms.widget_axis.Ui_widget_axis()
             ui.setupUi(widget)
             EditAxis._ui = ui
             ui._widget = widget
@@ -194,7 +194,7 @@ class EditVisual(NodeEditor):
         if EditVisual._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.widget_visual.Ui_widget_axis()
+            ui = DAVE.forms.widget_visual.Ui_widget_axis()
             ui.setupUi(widget)
             EditVisual._ui = ui
             ui._widget = widget
@@ -287,7 +287,7 @@ class EditBuoyancy(NodeEditor):
         if EditBuoyancy._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.widget_visual.Ui_widget_axis() # same as visual widget!
+            ui = DAVE.forms.widget_visual.Ui_widget_axis() # same as visual widget!
             ui.setupUi(widget)
             EditBuoyancy._ui = ui
             ui._widget = widget
@@ -376,7 +376,7 @@ class EditBody(EditAxis):
         if EditBody._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.widget_body.Ui_Form()
+            ui = DAVE.forms.widget_body.Ui_Form()
             ui.setupUi(widget)
             EditBody._ui = ui
             ui._widget = widget
@@ -433,7 +433,7 @@ class EditPoi(NodeEditor):
         if EditPoi._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.widget_poi.Ui_Poi()
+            ui = DAVE.forms.widget_poi.Ui_Poi()
             ui.setupUi(widget)
             EditPoi._ui = ui
             ui._widget = widget
@@ -483,7 +483,7 @@ class EditCable(NodeEditor):
         if EditCable._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.widget_cable.Ui_Cable_form()
+            ui = DAVE.forms.widget_cable.Ui_Cable_form()
             ui.setupUi(widget)
 
             EditCable._ui = ui
@@ -604,7 +604,7 @@ class EditForce(NodeEditor):
         if EditForce._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.widget_force.Ui_widget_force()
+            ui = DAVE.forms.widget_force.Ui_widget_force()
             ui.setupUi(widget)
             EditForce._ui = ui
             ui._widget = widget
@@ -669,7 +669,7 @@ class EditHydSpring(NodeEditor):
         if EditHydSpring._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.widget_linhyd.Ui_widget_linhyd()
+            ui = DAVE.forms.widget_linhyd.Ui_widget_linhyd()
             ui.setupUi(widget)
             EditHydSpring._ui = ui
             ui._widget = widget
@@ -768,7 +768,7 @@ class EditLC6d(NodeEditor):
         if EditLC6d._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.widget_lincon6.Ui_widget_lincon6()
+            ui = DAVE.forms.widget_lincon6.Ui_widget_lincon6()
             ui.setupUi(widget)
             EditLC6d._ui = ui
             ui._widget = widget
@@ -862,7 +862,7 @@ class EditConnector2d(NodeEditor):
         if EditConnector2d._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.widget_con2d.Ui_widget_con2d()
+            ui = DAVE.forms.widget_con2d.Ui_widget_con2d()
             ui.setupUi(widget)
             EditConnector2d._ui = ui
             ui._widget = widget
@@ -939,7 +939,7 @@ class EditBeam(NodeEditor):
         if EditBeam._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.widget_beam.Ui_widget_beam()
+            ui = DAVE.forms.widget_beam.Ui_widget_beam()
             ui.setupUi(widget)
             EditBeam._ui = ui
             ui._widget = widget
@@ -1051,7 +1051,7 @@ def fill_dropdown_boxes(ui, scene):
 
 def add_node(scene):
     AddNode = QtWidgets.QDialog()
-    ui = DAVE.addnode_form.Ui_Dialog()
+    ui = DAVE.forms.addnode_form.Ui_Dialog()
     ui.setupUi(AddNode)
 
     ui.frmMasterSlave.setVisible(False)
