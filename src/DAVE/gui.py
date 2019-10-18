@@ -961,7 +961,6 @@ class Gui:
 
 if __name__ == '__main__':
     s = vfs.Scene()
-    
 
     Gui(s).show()
 
