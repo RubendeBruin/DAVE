@@ -115,5 +115,8 @@ PROPS_CON2D = ['angle','moment','force']
 PROPS_BODY = [*PROPS_AXIS, 'cog', 'cogx', 'cogy', 'cogz', 'mass']
 PROPS_BUOY_MESH = ['cob', 'displacement']
 
-GUI_ANIMATION_NSTEPS = 60 # ANIMATION SPEED
-GUI_ANIMATION_FPS = 60
+
+# ======= Animate after solving =========
+GUI_DO_ANIMATE = True
+GUI_ANIMATION_NSTEPS = 24 # ANIMATION SPEED
+GUI_ANIMATION_FPS = 24

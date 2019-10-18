@@ -2966,9 +2966,11 @@ class Scene:
         self._name_prefix = old_prefix # restore
 
         # Move all imported elements without a parent into a newly created axis system
-
         if containerize:
-            c = self.new_axis(prefix + 'import_container')
+
+            container_name = s.available_name_like('import_container')
+
+            c = self.new_axis(prefix + container_name)
 
             for name in imported_element_names:
 
