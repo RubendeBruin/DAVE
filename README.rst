@@ -15,4 +15,4 @@ A longer description of your project goes here...
 Note
 ====
 
-This project relies on EquilibriumCore for geometry and force calculations. 
+This project relies on EquilibriumCore for geometry and force calculations. Contact the author for a copy of EquilibriumCore (pyo3d.pyd).
