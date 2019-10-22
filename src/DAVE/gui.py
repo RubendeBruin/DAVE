@@ -973,6 +973,53 @@ class Gui:
 
 if __name__ == '__main__':
     s = vfs.Scene()
+    s.resources_paths.append(r"C:\data\3d models")
 
-    Gui(s).show()
+
+    # auto generated pyhton code
+    # By beneden
+    # Time: 2019-10-22 17:32:46 UTC
+
+    # To be able to distinguish the important number (eg: fixed positions) from
+    # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
+    # For anything written as solved(number) that actual number does not influence the static solution
+    def solved(number):
+        return number
+
+
+    # code for Axis
+    s.new_axis(name='Axis',
+               position=(0.0,
+                         0.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Visual
+    s.new_visual(name='Visual',
+                 parent='Axis',
+                 path=r'cone chopped.obj',
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))
+
+    s.new_visual(name='Visual2',
+                 parent='Axis',
+                 path=r'cone chopped.obj',
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(0.5, 0.5, 2))
+
+    import DAVE.io.blender
+
+    blender_base = r"C:\data\Dave\Private\Blender\python tests\base.blend"
+    blender_result = r"C:\data\Dave\Private\Blender\python tests\autoresult.blend"
+    python_file = r"C:\data\Dave\Private\Blender\python tests\auto.py"
+
+    # DAVE.io.blender.blender_py_file(s,python_file,blender_base,blender_result)
+    DAVE.io.blender.create_blend_and_open(s, blender_base, blender_result)
+
+
+    # Gui(s).show()
 

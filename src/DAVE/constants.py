@@ -32,11 +32,12 @@ for a in RESOURCE_PATH:
     print(a)
 
 # temporary files:
+PATH_TEMP = r"c:\data\\"
+PATH_TEMP_SCREENSHOT = PATH_TEMP + 'screenshot.png'
 
-PATH_TEMP_SCREENSHOT = r'c:\data\screenshot.png'
 
 # debugging / logging
-LOGFILE = 'c:/data/vfLog.txt'
+LOGFILE = PATH_TEMP + 'vfLog.txt'
 
 
 # TEXTURE_SEA = 'virtualSea'
