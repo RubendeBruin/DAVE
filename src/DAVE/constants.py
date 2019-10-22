@@ -143,3 +143,7 @@ PROPS_BUOY_MESH = ['cob', 'displacement']
 GUI_DO_ANIMATE = True
 GUI_ANIMATION_NSTEPS = 24 # ANIMATION SPEED
 GUI_ANIMATION_FPS = 24
+
+# ========== BLENDER ==============
+
+BLENDER_CABLE_DIA = 0.1 # m

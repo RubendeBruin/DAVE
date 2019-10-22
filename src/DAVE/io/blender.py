@@ -48,7 +48,12 @@ from os.path import splitext, basename
 from os import system
 
 
+# utility functions for our python scripts are hard-coded here
+
 BFUNC = """
+
+# These functions are inserted by DAVE.io.blender.py
+
 def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orientation=(0,0,0), position=(0,0,0) ):
 	\"\"\"
 	All meshes shall be joined
@@ -102,7 +107,28 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
 			bpy.ops.transform.rotate(value=orientation[0], orient_axis='X')
 
 			bpy.ops.transform.translate(value=position)
+			
+			
+def add_line(p1, p2, diameter):
+
+    bpy.ops.curve.primitive_bezier_curve_add(enter_editmode=True)
+    obj_data = bpy.context.active_object.data
+    obj_data.bevel_depth = diameter
+
+    end1 = obj_data.splines[0].bezier_points[0]
+    end1.co = p1
+    end1.handle_left = p1
+    end1.handle_right = p1
+
+    end2 = obj_data.splines[0].bezier_points[1]
+    end2.co = p2
+    end2.handle_left = p2
+    end2.handle_right = p2
+
+    bpy.ops.object.mode_set(mode='OBJECT')
 """
+
+
 
 def _to_euler(rotation):
     r = Rotation.from_rotvec(rotation)
@@ -133,9 +159,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file):
     code += BFUNC
     code += '\n'
 
-    visuals = scene.nodes_of_type(dc.Visual)
-
-    for visual in visuals:
+    for visual in scene.nodes_of_type(dc.Visual):
 
         code += '\n# Exporting {}'.format(visual.name)
 
@@ -152,6 +176,21 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file):
                     *_to_euler(visual.rotation),
                     *visual.parent.global_position,
                     *_to_euler(visual.parent.global_rotation))
+
+    for cable in scene.nodes_of_type(dc.Cable):
+        points = []
+        for p in cable._pois:
+            points.append(p.global_position)
+
+        n = len(points)
+        for i in range(n-1):
+            p1 = points[i]
+            p2 = points[i+1]
+            code += '\nadd_line(({},{},{}),({},{},{}), diameter={})'.format(*p1, *p2, consts.BLENDER_CABLE_DIA)
+
+
+
+
 
     code += '\nbpy.ops.wm.save_mainfile(filepath=r"{}")'.format(blender_result_file)
     # bpy.ops.wm.quit_blender() # not needed

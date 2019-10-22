@@ -978,7 +978,7 @@ if __name__ == '__main__':
 
     # auto generated pyhton code
     # By beneden
-    # Time: 2019-10-22 17:32:46 UTC
+    # Time: 2019-10-22 20:11:24 UTC
 
     # To be able to distinguish the important number (eg: fixed positions) from
     # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
@@ -996,6 +996,22 @@ if __name__ == '__main__':
                          0.0,
                          0.0),
                fixed=(True, True, True, True, True, True))
+    # code for Poi
+    s.new_poi(name='Poi',
+              position=(0.0,
+                        0.0,
+                        2.0))
+    # code for Poi_1
+    s.new_poi(name='Poi_1',
+              position=(5.0,
+                        0.0,
+                        2.0))
+    # code for Cable
+    s.new_cable(name='Cable',
+                poiA='Poi_1',
+                poiB='Poi',
+                length=5.0,
+                EA=0.0)
     # code for Visual
     s.new_visual(name='Visual',
                  parent='Axis',
@@ -1003,7 +1019,7 @@ if __name__ == '__main__':
                  offset=(0, 0, 0),
                  rotation=(0, 0, 0),
                  scale=(1, 1, 1))
-
+    # code for Visual2
     s.new_visual(name='Visual2',
                  parent='Axis',
                  path=r'cone chopped.obj',
@@ -1019,7 +1035,4 @@ if __name__ == '__main__':
 
     # DAVE.io.blender.blender_py_file(s,python_file,blender_base,blender_result)
     DAVE.io.blender.create_blend_and_open(s, blender_base, blender_result)
-
-
-    # Gui(s).show()
 
