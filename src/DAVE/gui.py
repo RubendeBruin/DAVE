@@ -24,12 +24,9 @@ import DAVE.scene as vfs
 import DAVE.constants as vfc
 import DAVE.standard_assets
 import DAVE.forms.resources_rc as resources_rc
-
 import DAVE.forms.viewer_form
-
 import numpy as np
 import math
-
 import DAVE.element_widgets as element_widgets
 
 import sys
@@ -167,6 +164,7 @@ class Gui:
         self.ui.actionSave_scene.triggered.connect(self.menu_save)
         self.ui.actionImport_sub_scene.triggered.connect(self.menu_import)
         self.ui.actionImport_browser.triggered.connect(self.import_browser)
+        self.ui.actionRender_current_view.triggered.connect(self.render_in_blender)
 
         self.ui.treeView.activated.connect(self.tree_select_node)  # fires when a user presses [enter]
         # self.ui.treeView.pressed.connect(self.tree_select_node)
@@ -326,6 +324,19 @@ class Gui:
             code = 's.import_scene(s.get_resource_path("{}"), containerize={}, prefix="{}")'.format(file,container,prefix)
             self.run_code(code)
 
+    def render_in_blender(self):
+
+        pos = self.visual.screen.camera.GetPosition()
+        dir = self.visual.screen.camera.GetDirectionOfProjection()
+
+        code = 'import DAVE.io.blender'
+        code += "\ncamera = {{'position':({},{},{}), 'direction':({},{},{})}}".format(*pos,*dir)
+        code += '\nblender_base = r"{}"'.format(vfc.BLENDER_BASE_SCENE)
+        code += '\nblender_result = r"{}"'.format(vfc.PATH_TEMP + 'current_render.blend')
+        code += '\nDAVE.io.blender.create_blend_and_open(s, blender_base, blender_result, camera=camera)'
+        code += '\nprint("Opening blender, close blender to continue.")'
+        code += '\nprint("In blender, press F12 to go to rendered camera view.")'
+        self.run_code(code)
 
     def menu_save(self):
         filename, _ = QFileDialog.getSaveFileName(filter="*.pscene", caption="Scene files",directory=self.scene.resources_paths[0])
@@ -1006,10 +1017,24 @@ if __name__ == '__main__':
               position=(5.0,
                         0.0,
                         2.0))
+
+    # code for Poi_1
+    s.new_poi(name='poi3',
+              position=(5.0,
+                        -2.0,
+                        2.0))
+
+    # code for Poi_1
+    s.new_poi(name='poi4',
+              position=(5.0,
+                        2.0,
+                        2.0))
+
     # code for Cable
     s.new_cable(name='Cable',
                 poiA='Poi_1',
                 poiB='Poi',
+                sheaves = ['poi3','poi4'],
                 length=5.0,
                 EA=0.0)
     # code for Visual
@@ -1027,12 +1052,4 @@ if __name__ == '__main__':
                  rotation=(0, 0, 0),
                  scale=(0.5, 0.5, 2))
 
-    import DAVE.io.blender
-
-    blender_base = r"C:\data\Dave\Private\Blender\python tests\base.blend"
-    blender_result = r"C:\data\Dave\Private\Blender\python tests\autoresult.blend"
-    python_file = r"C:\data\Dave\Private\Blender\python tests\auto.py"
-
-    # DAVE.io.blender.blender_py_file(s,python_file,blender_base,blender_result)
-    DAVE.io.blender.create_blend_and_open(s, blender_base, blender_result)
-
+    Gui(s).show()

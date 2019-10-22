@@ -44,6 +44,8 @@ class Ui_MainWindow(object):
         self.menuWhat_if.setObjectName("menuWhat_if")
         self.menuMarine = QtWidgets.QMenu(self.menubar)
         self.menuMarine.setObjectName("menuMarine")
+        self.menuRender = QtWidgets.QMenu(self.menubar)
+        self.menuRender.setObjectName("menuRender")
         MainWindow.setMenuBar(self.menubar)
         self.dockWidget = QtWidgets.QDockWidget(MainWindow)
         self.dockWidget.setFeatures(QtWidgets.QDockWidget.DockWidgetFloatable|QtWidgets.QDockWidget.DockWidgetMovable)
@@ -375,6 +377,8 @@ class Ui_MainWindow(object):
         self.actionOpen.setObjectName("actionOpen")
         self.actionImport_browser = QtWidgets.QAction(MainWindow)
         self.actionImport_browser.setObjectName("actionImport_browser")
+        self.actionRender_current_view = QtWidgets.QAction(MainWindow)
+        self.actionRender_current_view.setObjectName("actionRender_current_view")
         self.dockWidget_3.raise_()
         self.pythonDockWidget.raise_()
         self.dockWidget_4.raise_()
@@ -414,11 +418,13 @@ class Ui_MainWindow(object):
         self.menuWhat_if.addAction(self.actionGoal_seek)
         self.menuWhat_if.addAction(self.actionOptimize)
         self.menuMarine.addAction(self.actionStability_curve)
+        self.menuRender.addAction(self.actionRender_current_view)
         self.menubar.addAction(self.menuSolve_Statics.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
         self.menubar.addAction(self.menuView_2.menuAction())
         self.menubar.addAction(self.menuWhat_if.menuAction())
         self.menubar.addAction(self.menuMarine.menuAction())
+        self.menubar.addAction(self.menuRender.menuAction())
         self.toolBar.addSeparator()
 
         self.retranslateUi(MainWindow)
@@ -450,6 +456,7 @@ class Ui_MainWindow(object):
         self.menuView_2.setTitle(_translate("MainWindow", "Window"))
         self.menuWhat_if.setTitle(_translate("MainWindow", "Optimize"))
         self.menuMarine.setTitle(_translate("MainWindow", "Marine"))
+        self.menuRender.setTitle(_translate("MainWindow", "Blender"))
         self.dockWidget.setWindowTitle(_translate("MainWindow", "Nodes"))
         self.dockWidget_2.setWindowTitle(_translate("MainWindow", "Feedback"))
         self.pbGenerateSceneCode.setText(_translate("MainWindow", "Generate Scene Code"))
@@ -529,7 +536,7 @@ class Ui_MainWindow(object):
         self.actionOptimize.setText(_translate("MainWindow", "TODO: Optimize (multiple variables)"))
         self.actionOpen.setText(_translate("MainWindow", "Open"))
         self.actionImport_browser.setText(_translate("MainWindow", "Import (browser)"))
-
+        self.actionRender_current_view.setText(_translate("MainWindow", "Render current view"))
 
 if __name__ == "__main__":
     import sys

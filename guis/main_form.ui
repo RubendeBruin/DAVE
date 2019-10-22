@@ -121,11 +121,18 @@
     </property>
     <addaction name="actionStability_curve"/>
    </widget>
+   <widget class="QMenu" name="menuRender">
+    <property name="title">
+     <string>Blender</string>
+    </property>
+    <addaction name="actionRender_current_view"/>
+   </widget>
    <addaction name="menuSolve_Statics"/>
    <addaction name="menuView"/>
    <addaction name="menuView_2"/>
    <addaction name="menuWhat_if"/>
    <addaction name="menuMarine"/>
+   <addaction name="menuRender"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget">
    <property name="features">
@@ -848,6 +855,11 @@
   <action name="actionImport_browser">
    <property name="text">
     <string>Import (browser)</string>
+   </property>
+  </action>
+  <action name="actionRender_current_view">
+   <property name="text">
+    <string>Render current view</string>
    </property>
   </action>
   <zorder>dockWidget_3</zorder>

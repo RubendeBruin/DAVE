@@ -20,24 +20,22 @@
     
     A base blender file needs to be provided. The visuals will be added to this model. It will then be saved under a different name.
     
+    
+    All functions in this file one or more of the following arguments
+    
+    - camera : a dictionary with ['position'] and ['direction'] which specifies the camera position and look direction
+    - python_file : location for the generated python file
+    - blender_base_file : .blend file to be used a starting scene
+    - blender_result_file : .blend file to write to
+    - blender_exe_path : location of the blender executable. Defaults to DAVE.constants.BLENDER_EXEC
+                       : probably r"C:\Program Files\Blender Foundation\Blender\\blender.exe"
+    
     --- 
     
     
     
 
-    A Visual node contains a 3d visual, typically obtained from a .obj file.
-    A visual node can be placed on an axis-type node.
-
-    It is used for visualization. It does not affect the forces, dynamics or statics.
-
-        visual.offset = [0, 0, 0] :: Offset (x,y,z) of the visual. Offset is applied after scaling
-        visual.rotation = :: Rotation (rx,ry,rz) of the visual
-        visual.scale :: Scaling of the visual. Scaling is applied before offset.
-        visual.path :: Filename of the visual
-
-        visual.parent :: Parent : Axis-type
-
-        parent is an axis type and has .global_position and .global_rotation
+    
 
 """
 
@@ -51,6 +49,8 @@ from os import system
 # utility functions for our python scripts are hard-coded here
 
 BFUNC = """
+
+from mathutils import Vector
 
 # These functions are inserted by DAVE.io.blender.py
 
@@ -109,7 +109,7 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
 			bpy.ops.transform.translate(value=position)
 			
 			
-def add_line(p1, p2, diameter):
+def add_line(p1, p2, diameter, name=None):
 
     bpy.ops.curve.primitive_bezier_curve_add(enter_editmode=True)
     obj_data = bpy.context.active_object.data
@@ -125,6 +125,9 @@ def add_line(p1, p2, diameter):
     end2.handle_left = p2
     end2.handle_right = p2
 
+    if name is not None:
+        bpy.context.active_object.name = name
+
     bpy.ops.object.mode_set(mode='OBJECT')
 """
 
@@ -134,23 +137,27 @@ def _to_euler(rotation):
     r = Rotation.from_rotvec(rotation)
     return r.as_euler('zyx',degrees=False)
 
-def create_blend_and_open(scene, blender_base_file, blender_result_file, blender_exe_path=r"C:\Program Files\Blender Foundation\Blender\blender.exe"):
-    create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path)
+
+
+
+def create_blend_and_open(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None):
+    create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path,camera=camera)
     command = '"{}"'.format(blender_result_file)
     system(command)
 
-def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=r"C:\Program Files\Blender Foundation\Blender\blender.exe"):
+def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None):
     tempfile = consts.PATH_TEMP + 'blender.py'
 
-    blender_py_file(scene, tempfile, blender_base_file, blender_result_file)
+    blender_py_file(scene, tempfile, blender_base_file, blender_result_file,camera=camera)
+
+    if blender_exe_path is None:
+        blender_exe_path = consts.BLENDER_EXEC
 
     command = '""{}" -b --python "{}""'.format(blender_exe_path, tempfile)
     print(command)
     system(command)
 
-
-
-def blender_py_file(scene, python_file, blender_base_file, blender_result_file):
+def blender_py_file(scene, python_file, blender_base_file, blender_result_file, camera = None):
 
     code = '# Auto-generated python file for blender\n# Execute using blender.exe -b --python "{}"\n\n'.format(python_file)
     code += 'import bpy\n'
@@ -160,6 +167,22 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file):
     code += '\n'
 
     for visual in scene.nodes_of_type(dc.Visual):
+
+        """
+        A Visual node contains a 3d visual, typically obtained from a .obj file.
+        A visual node can be placed on an axis-type node.
+    
+        It is used for visualization. It does not affect the forces, dynamics or statics.
+    
+            visual.offset = [0, 0, 0] :: Offset (x,y,z) of the visual. Offset is applied after scaling
+            visual.rotation = :: Rotation (rx,ry,rz) of the visual
+            visual.scale :: Scaling of the visual. Scaling is applied before offset.
+            visual.path :: Filename of the visual
+    
+            visual.parent :: Parent : Axis-type
+    
+            parent is an axis type and has .global_position and .global_rotation
+        """
 
         code += '\n# Exporting {}'.format(visual.name)
 
@@ -186,11 +209,17 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file):
         for i in range(n-1):
             p1 = points[i]
             p2 = points[i+1]
-            code += '\nadd_line(({},{},{}),({},{},{}), diameter={})'.format(*p1, *p2, consts.BLENDER_CABLE_DIA)
+            code += '\nadd_line(({},{},{}),({},{},{}), diameter={}, name = "{}_{}")'.format(*p1, *p2, consts.BLENDER_CABLE_DIA, cable.name, i)
 
+    if camera is not None:
+        pos = camera['position']
+        dir = camera['direction']
 
-
-
+        code += '\n\n# Set the active camera'
+        code += '\nobj_camera = bpy.context.scene.camera'
+        code += '\nobj_camera.location = ({},{},{})'.format(*pos)
+        code += '\ndir = Vector(({},{},{}))\n'.format(*dir)
+        code += "\nq = dir.to_track_quat('-Z','Y')\nobj_camera.rotation_euler = q.to_euler()"
 
     code += '\nbpy.ops.wm.save_mainfile(filepath=r"{}")'.format(blender_result_file)
     # bpy.ops.wm.quit_blender() # not needed
