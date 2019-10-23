@@ -1,19 +1,18 @@
+.. image:: docs/images/promo1.jpg
+
 ============
 DAVE
 ============
 
-
-Add a short description here!
-
+DAVE is a software package designed to make engineering more fun. DAVE will take care of calculations and book-keeping so that you can focus on designing the best solution.
 
 Description
 ===========
 
-A longer description of your project goes here...
+This is a work-under-construction
 
 
 Note
 ====
 
-This project has been set up using PyScaffold 3.1. For details and usage
-information on PyScaffold see https://pyscaffold.org/.
+This project relies on EquilibriumCore for geometry and force calculations. Contact the author for a copy of EquilibriumCore (pyo3d.pyd).
