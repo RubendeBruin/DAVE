@@ -188,6 +188,10 @@
     s.new_cable('line',poiA = 'point 1', poiB = 'point 2') # creates a cable between the two points
     s.save_scene(r'c:\data\test.pscene')      # save to file
     ```
+    
+    Notes:
+    rotations are defined as https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation#Rotation_vector
+    
 
 """
 
@@ -396,7 +400,7 @@ class Visual(Node):
         """Filename of the visual"""
 
         self.parent = None
-        """Optional, Parent : Axis-type"""
+        """Parent : Axis-type"""
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)

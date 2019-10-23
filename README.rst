@@ -1,15 +1,15 @@
+.. image:: docs/images/promo1.jpg
+
 ============
 DAVE
 ============
 
-
-Add a short description here!
-
+DAVE is a software package designed to make engineering more fun. DAVE will take care of calculations and book-keeping so that you can focus on designing the best solution.
 
 Description
 ===========
 
-A longer description of your project goes here...
+This is a work-under-construction
 
 
 Note

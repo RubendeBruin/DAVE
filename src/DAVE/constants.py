@@ -32,11 +32,12 @@ for a in RESOURCE_PATH:
     print(a)
 
 # temporary files:
+PATH_TEMP = r"c:\data\\"
+PATH_TEMP_SCREENSHOT = PATH_TEMP + 'screenshot.png'
 
-PATH_TEMP_SCREENSHOT = r'c:\data\screenshot.png'
 
 # debugging / logging
-LOGFILE = 'c:/data/vfLog.txt'
+LOGFILE = PATH_TEMP + 'vfLog.txt'
 
 
 # TEXTURE_SEA = 'virtualSea'
@@ -142,3 +143,10 @@ PROPS_BUOY_MESH = ['cob', 'displacement']
 GUI_DO_ANIMATE = True
 GUI_ANIMATION_NSTEPS = 24 # ANIMATION SPEED
 GUI_ANIMATION_FPS = 24
+
+# ========== BLENDER ==============
+
+BLENDER_EXEC = r"C:\Program Files\Blender Foundation\Blender\blender.exe"
+BLENDER_BASE_SCENE = r"C:\data\Dave\base.blend"
+
+BLENDER_CABLE_DIA = 0.1 # m

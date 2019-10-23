@@ -24,12 +24,9 @@ import DAVE.scene as vfs
 import DAVE.constants as vfc
 import DAVE.standard_assets
 import DAVE.forms.resources_rc as resources_rc
-
 import DAVE.forms.viewer_form
-
 import numpy as np
 import math
-
 import DAVE.element_widgets as element_widgets
 
 import sys
@@ -167,6 +164,7 @@ class Gui:
         self.ui.actionSave_scene.triggered.connect(self.menu_save)
         self.ui.actionImport_sub_scene.triggered.connect(self.menu_import)
         self.ui.actionImport_browser.triggered.connect(self.import_browser)
+        self.ui.actionRender_current_view.triggered.connect(self.render_in_blender)
 
         self.ui.treeView.activated.connect(self.tree_select_node)  # fires when a user presses [enter]
         # self.ui.treeView.pressed.connect(self.tree_select_node)
@@ -326,6 +324,19 @@ class Gui:
             code = 's.import_scene(s.get_resource_path("{}"), containerize={}, prefix="{}")'.format(file,container,prefix)
             self.run_code(code)
 
+    def render_in_blender(self):
+
+        pos = self.visual.screen.camera.GetPosition()
+        dir = self.visual.screen.camera.GetDirectionOfProjection()
+
+        code = 'import DAVE.io.blender'
+        code += "\ncamera = {{'position':({},{},{}), 'direction':({},{},{})}}".format(*pos,*dir)
+        code += '\nblender_base = r"{}"'.format(vfc.BLENDER_BASE_SCENE)
+        code += '\nblender_result = r"{}"'.format(vfc.PATH_TEMP + 'current_render.blend')
+        code += '\nDAVE.io.blender.create_blend_and_open(s, blender_base, blender_result, camera=camera)'
+        code += '\nprint("Opening blender, close blender to continue.")'
+        code += '\nprint("In blender, press F12 to go to rendered camera view.")'
+        self.run_code(code)
 
     def menu_save(self):
         filename, _ = QFileDialog.getSaveFileName(filter="*.pscene", caption="Scene files",directory=self.scene.resources_paths[0])
@@ -973,6 +984,72 @@ class Gui:
 
 if __name__ == '__main__':
     s = vfs.Scene()
+    s.resources_paths.append(r"C:\data\3d models")
+
+
+    # auto generated pyhton code
+    # By beneden
+    # Time: 2019-10-22 20:11:24 UTC
+
+    # To be able to distinguish the important number (eg: fixed positions) from
+    # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
+    # For anything written as solved(number) that actual number does not influence the static solution
+    def solved(number):
+        return number
+
+
+    # code for Axis
+    s.new_axis(name='Axis',
+               position=(0.0,
+                         0.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Poi
+    s.new_poi(name='Poi',
+              position=(0.0,
+                        0.0,
+                        2.0))
+    # code for Poi_1
+    s.new_poi(name='Poi_1',
+              position=(5.0,
+                        0.0,
+                        2.0))
+
+    # code for Poi_1
+    s.new_poi(name='poi3',
+              position=(5.0,
+                        -2.0,
+                        2.0))
+
+    # code for Poi_1
+    s.new_poi(name='poi4',
+              position=(5.0,
+                        2.0,
+                        2.0))
+
+    # code for Cable
+    s.new_cable(name='Cable',
+                poiA='Poi_1',
+                poiB='Poi',
+                sheaves = ['poi3','poi4'],
+                length=5.0,
+                EA=0.0)
+    # code for Visual
+    s.new_visual(name='Visual',
+                 parent='Axis',
+                 path=r'cone chopped.obj',
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))
+    # code for Visual2
+    s.new_visual(name='Visual2',
+                 parent='Axis',
+                 path=r'cone chopped.obj',
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(0.5, 0.5, 2))
 
     Gui(s).show()
-

@@ -203,7 +203,6 @@ class Ui_MainWindow(object):
         self.actionOptimize.setText(_translate("MainWindow", "TODO: Optimize (multiple variables)"))
         self.actionOpen.setText(_translate("MainWindow", "Open"))
 
-
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
