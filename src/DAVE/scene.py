@@ -385,6 +385,8 @@ class Visual(Node):
 
     def __init__(self, scene):
 
+        # TODO: Add super().__init__(scene)
+
         # Note: Visual does not have a corresponding vfCore element
         self.scene = scene
 

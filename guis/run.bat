@@ -13,4 +13,5 @@ call c:\Anaconda\Library\bin\pyuic5.bat -x widget_beam.ui -o "..\src\DAVE\forms\
 call c:\Anaconda\Library\bin\pyuic5.bat -x widget_con2d.ui -o "..\src\DAVE\forms\widget_con2d.py"
 call c:\Anaconda\Library\bin\pyuic5.bat -x widget_con2d.ui -o "..\src\DAVE\forms\widget_con2d.py"
 call c:\Anaconda\Library\bin\pyuic5.bat -x frm_standard_assets.ui -o "..\src\DAVE\forms\frm_standard_assets.py"
+call c:\Anaconda\Library\bin\pyuic5.bat -x frm_animation.ui -o "..\src\DAVE\forms\frm_animation.py"
 call c:\Anaconda\Library\bin\pyrcc5.bat resources.qrc -o "..\src\DAVE\forms\resources_rc.py"

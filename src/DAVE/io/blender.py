@@ -91,21 +91,20 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
 			# active_object.location = (0,0,5)
 			# active_object.rotation_euler = (1,2,3)
 			# active_object.scale = (2,1,1)
-
+            
 			# apply transform
 			bpy.ops.transform.resize(value=scale)
-
+            
 			bpy.ops.transform.rotate(value=rotation[2], orient_axis='Z')
 			bpy.ops.transform.rotate(value=rotation[1], orient_axis='Y')
 			bpy.ops.transform.rotate(value=rotation[0], orient_axis='X')
-
+			
 			bpy.ops.transform.translate(value=offset)
-
+            
 			# apply global transforms
 			bpy.ops.transform.rotate(value=orientation[2], orient_axis='Z')
 			bpy.ops.transform.rotate(value=orientation[1], orient_axis='Y')
 			bpy.ops.transform.rotate(value=orientation[0], orient_axis='X')
-
 			bpy.ops.transform.translate(value=position)
 			
 			
@@ -195,10 +194,10 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
         code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{}), offset=({},{},{}), orientation=({},{},{}), position=({},{},{}))'.format(
 	                filename,
                     *visual.scale,
-                    *visual.offset,
                     *_to_euler(visual.rotation),
-                    *visual.parent.global_position,
-                    *_to_euler(visual.parent.global_rotation))
+                    *visual.offset,
+                    *_to_euler(visual.parent.global_rotation),
+                    *visual.parent.global_position)
 
     for cable in scene.nodes_of_type(dc.Cable):
         points = []
