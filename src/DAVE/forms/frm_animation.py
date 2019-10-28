@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_AnimationWindow(object):
     def setupUi(self, AnimationWindow):
         AnimationWindow.setObjectName("AnimationWindow")
-        AnimationWindow.resize(1341, 891)
+        AnimationWindow.resize(1689, 1060)
         self.centralwidget = QtWidgets.QWidget(AnimationWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
@@ -26,6 +26,34 @@ class Ui_AnimationWindow(object):
         self.dockWidget.setObjectName("dockWidget")
         self.dockWidgetContents = QtWidgets.QWidget()
         self.dockWidgetContents.setObjectName("dockWidgetContents")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.dockWidgetContents)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.lblInfo = QtWidgets.QLabel(self.dockWidgetContents)
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.lblInfo.setFont(font)
+        self.lblInfo.setObjectName("lblInfo")
+        self.verticalLayout.addWidget(self.lblInfo)
+        self.label = QtWidgets.QLabel(self.dockWidgetContents)
+        self.label.setObjectName("label")
+        self.verticalLayout.addWidget(self.label)
+        self.horizontalSlider = QtWidgets.QSlider(self.dockWidgetContents)
+        self.horizontalSlider.setOrientation(QtCore.Qt.Horizontal)
+        self.horizontalSlider.setObjectName("horizontalSlider")
+        self.verticalLayout.addWidget(self.horizontalSlider)
+        self.label_2 = QtWidgets.QLabel(self.dockWidgetContents)
+        self.label_2.setObjectName("label_2")
+        self.verticalLayout.addWidget(self.label_2)
+        self.horizontalSlider_2 = QtWidgets.QSlider(self.dockWidgetContents)
+        self.horizontalSlider_2.setMinimum(1)
+        self.horizontalSlider_2.setMaximum(100)
+        self.horizontalSlider_2.setProperty("value", 10)
+        self.horizontalSlider_2.setOrientation(QtCore.Qt.Horizontal)
+        self.horizontalSlider_2.setObjectName("horizontalSlider_2")
+        self.verticalLayout.addWidget(self.horizontalSlider_2)
+        spacerItem = QtWidgets.QSpacerItem(20, 839, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem)
         self.dockWidget.setWidget(self.dockWidgetContents)
         AnimationWindow.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.dockWidget)
 
@@ -35,6 +63,9 @@ class Ui_AnimationWindow(object):
     def retranslateUi(self, AnimationWindow):
         _translate = QtCore.QCoreApplication.translate
         AnimationWindow.setWindowTitle(_translate("AnimationWindow", "MainWindow"))
+        self.lblInfo.setText(_translate("AnimationWindow", "0.1 rad/s | 62 s"))
+        self.label.setText(_translate("AnimationWindow", "Mode-shape"))
+        self.label_2.setText(_translate("AnimationWindow", "Scale"))
 
 
 if __name__ == "__main__":
