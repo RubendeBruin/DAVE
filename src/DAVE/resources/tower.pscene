@@ -1,0 +1,34 @@
+# auto generated pyhton code
+# By beneden
+# Time: 2019-10-16 08:47:16 UTC
+
+# To be able to distinguish the important number (eg: fixed positions) from
+# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
+# For anything written as solved(number) that actual number does not influence the static solution
+def solved(number):
+    return number
+
+# code for Tower
+s.new_rigidbody(name='Tower',
+                mass=100.0,
+                cog=(0.0,
+                     0.0,
+                     32.0),
+                position=(0.0,
+                          0.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for Buoyancy mesh
+mesh = s.new_buoyancy(name='Buoyancy mesh',
+          parent='Tower')
+mesh.trimesh.load_obj(s.get_resource_path(r'cone chopped.obj'), scale = (2.5,2.5,65.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
+# code for Visual
+s.new_visual(name='Visual',
+            parent='Tower',
+            path=r'cone chopped.obj',
+            offset=(0, 0, 0), 
+            rotation=(0, 0, 0), 
+            scale=(2.5, 2.5, 65.0) )
