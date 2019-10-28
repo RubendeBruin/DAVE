@@ -987,13 +987,9 @@ if __name__ == '__main__':
     s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
 
     s.import_scene(s.get_resource_path("upsea turbine.pscene"), containerize=False, prefix="")
+    # ---
 
-    import DAVE.io.blender
 
-    camera = {'position': (3.908519921626712, -4.358519920881654, 1.954259960813356),
-              'direction': (-0.6666666666666666, 0.6666666666666666, -0.3333333333333333)}
-    blender_base = r"C:\data\Dave\Public\Blender visuals\base.blend"
-    blender_result = r"c:\data\\current_render.blend"
-    DAVE.io.blender.create_blend_and_open(s, blender_base, blender_result, camera=camera)
+    s['Tower'].rotation = (0.0, 0.0, 40.0)
 
     Gui(s).show()

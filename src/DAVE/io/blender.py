@@ -81,37 +81,28 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
 		print(object.name)
 
 		if object.type == 'MESH':    # only add meshes, materials are automatically included
-
 			bpy.ops.object.add_named(name=object.name)
-
 			# When you use bpy.ops.object.add() the newly created object becomes the active object
 			# bpy.context.active_object
-
 			active_object = bpy.context.view_layer.objects.active
 			bpy.ops.object.select_all(action='DESELECT')
 			active_object.select_set(True)
-
 			# set absolute
 			# active_object.location = (0,0,5)
 			# active_object.rotation_euler = (1,2,3)
 			# active_object.scale = (2,1,1)
-
 			# apply transform
-			bpy.ops.transform.rotate(value=-rotation[0], orient_axis='Z')  # blender rotates in opposite direction (2.80)
+			bpy.ops.transform.translate(value=offset)
+			bpy.ops.transform.rotate(value=-rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)
 			bpy.ops.transform.rotate(value=-rotation[1], orient_axis='Y')
 			bpy.ops.transform.rotate(value=-rotation[2], orient_axis='X')
-			
 			bpy.ops.transform.resize(value=scale)
-			bpy.ops.transform.translate(value=offset)
-            
 			# apply global transforms
 			bpy.ops.transform.rotate(value=-orientation[0], orient_axis='Z')
 			bpy.ops.transform.rotate(value=-orientation[1], orient_axis='Y')
 			bpy.ops.transform.rotate(value=-orientation[2], orient_axis='X')
-
 			bpy.ops.transform.translate(value=position)
-			
-			
+
 def add_line(p1, p2, diameter, name=None):
 
     bpy.ops.curve.primitive_bezier_curve_add(enter_editmode=True)
