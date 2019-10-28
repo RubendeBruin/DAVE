@@ -127,12 +127,19 @@
     </property>
     <addaction name="actionRender_current_view"/>
    </widget>
+   <widget class="QMenu" name="menuDynamics">
+    <property name="title">
+     <string>Dynamics</string>
+    </property>
+    <addaction name="actionModal_shapes"/>
+   </widget>
    <addaction name="menuSolve_Statics"/>
    <addaction name="menuView"/>
    <addaction name="menuView_2"/>
    <addaction name="menuWhat_if"/>
    <addaction name="menuMarine"/>
    <addaction name="menuRender"/>
+   <addaction name="menuDynamics"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget">
    <property name="features">
@@ -860,6 +867,11 @@
   <action name="actionRender_current_view">
    <property name="text">
     <string>Render current view</string>
+   </property>
+  </action>
+  <action name="actionModal_shapes">
+   <property name="text">
+    <string>Modal shapes</string>
    </property>
   </action>
   <zorder>dockWidget_3</zorder>

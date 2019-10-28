@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1689</width>
-    <height>1060</height>
+    <width>1787</width>
+    <height>1211</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -95,6 +95,75 @@
         </size>
        </property>
       </spacer>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_2">
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QPushButton" name="pushButton">
+       <property name="text">
+        <string>Update</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; color:#ff007f;&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::RichText</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTableWidget" name="tableWidget">
+       <column>
+        <property name="text">
+         <string>Node</string>
+        </property>
+        <property name="background">
+         <color>
+          <red>236</red>
+          <green>236</green>
+          <blue>236</blue>
+         </color>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Mass</string>
+        </property>
+        <property name="background">
+         <color>
+          <red>236</red>
+          <green>236</green>
+          <blue>236</blue>
+         </color>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>rxx</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>ryy</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>rzz</string>
+        </property>
+       </column>
+      </widget>
      </item>
     </layout>
    </widget>

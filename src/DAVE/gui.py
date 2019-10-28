@@ -165,6 +165,7 @@ class Gui:
         self.ui.actionImport_sub_scene.triggered.connect(self.menu_import)
         self.ui.actionImport_browser.triggered.connect(self.import_browser)
         self.ui.actionRender_current_view.triggered.connect(self.render_in_blender)
+        self.ui.actionModal_shapes.triggered.connect(self.model_shapes)
 
         self.ui.treeView.activated.connect(self.tree_select_node)  # fires when a user presses [enter]
         # self.ui.treeView.pressed.connect(self.tree_select_node)
@@ -323,6 +324,10 @@ class Gui:
             prefix = r[2]
             code = 's.import_scene(s.get_resource_path("{}"), containerize={}, prefix="{}")'.format(file,container,prefix)
             self.run_code(code)
+
+    def model_shapes(self):
+        from DAVE.modal_viewer import ModalViewer
+        window = ModalViewer(s, self.app)
 
     def render_in_blender(self):
 
