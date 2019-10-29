@@ -1935,7 +1935,7 @@ class Scene:
             if isfile(full):
                 return full
 
-        raise FileExistsError('Resource {} not found in resource paths'.format(name))
+        raise FileExistsError('Resource "{}" not found in resource paths'.format(name))
 
     def get_resource_list(self, extension):
         """Returns a list of all file-names given extension in any of the resource-paths"""
@@ -2966,6 +2966,14 @@ class Scene:
 
         for n in other.nodes:
             imported_element_names.append(prefix + n.name)
+
+
+        # check for double names
+
+        for new_node_name in imported_element_names:
+            if not self.name_available(new_node_name):
+                raise NameError('An element with name "{}" is already present. Please use a prefix to avoid double names'.format(new_node_name))
+
 
         self._name_prefix = prefix
 
