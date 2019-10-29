@@ -773,11 +773,44 @@ class Gui:
         data = self.node_data.get_actor(info)
 
         if data is not None:
-            # if a visual is clicked, then select the parent of this visual instead
-            node = data['node']
-            if isinstance(node, vfs.Visual):
-                if node.parent is not None:
-                    data = self.node_data.get_node(node.parent)
+            # # if a visual is clicked, then select the parent of this visual instead
+            # node = data['node']
+            # if isinstance(node, vfs.Visual):
+            #     if node.parent is not None:
+            #         data = self.node_data.get_node(node.parent)
+
+            # if the node is already selected, then select something different
+            if self.selected_node is not None:
+
+                # cycle between node and its parent
+                if self.selected_node['node'] == data['node']:
+                    node = data['node']
+                    try:
+                        node = node.parent
+                        data = self.node_data.get_node(node)
+                    except:
+                        pass
+
+                # cycle between node and its master
+                if self.selected_node['node'] == data['node']:
+                    node = data['node']
+                    try:
+                        node = node.master
+                        data = self.node_data.get_node(node)
+                    except:
+                        pass
+
+                # cycle between node and its poiA
+                if self.selected_node['node'] == data['node']:
+                    node = data['node']
+                    try:
+                        node = node._pois[0]
+                        data = self.node_data.get_node(node)
+                    except:
+                        pass
+
+
+
 
         self.select_node(data)
 
@@ -984,12 +1017,37 @@ class Gui:
 
 if __name__ == '__main__':
     s = vfs.Scene()
-    s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
-
-    s.import_scene(s.get_resource_path("upsea turbine.pscene"), containerize=False, prefix="")
-    # ---
-
-
-    s['Tower'].rotation = (0.0, 0.0, 40.0)
-
+    # s.load_scene(r"C:/Users/beneden/Models/roadkill frankenstein.pscene")
     Gui(s).show()
+
+    #
+    #
+    # s = vfs.Scene()
+    # s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
+    #
+    # s.import_scene(r"C:/Users/beneden/Models/roadkill frankenstein.pscene", prefix='1_')
+    # s.import_scene(r"C:/Users/beneden/Models/roadkill frankenstein.pscene", prefix='2_')
+    #
+    #
+    #
+    #
+    # # ---
+    # s.solve_statics()
+    # s.print_node_tree()
+    # from DAVE.marine import GZcurve_DisplacementDriven
+    #
+    #
+    #
+    # Gui(s).show()
+    #
+    # GZcurve_DisplacementDriven(scene=s,
+    #                            vessel_node="RoadKill-100",
+    #                            displacement_kN=1.025 * 9.81 * s['Buoyancy mesh'].displacement,
+    #                            minimum_heel=0,
+    #                            maximum_heel=20,
+    #                            steps=20,
+    #                            teardown=2,
+    #                            allow_surge=0,
+    #                            allow_sway=0,
+    #                            allow_yaw=0,
+    #                            allow_trim=2)
