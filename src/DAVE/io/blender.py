@@ -186,14 +186,19 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
         filename = scene.get_resource_path(name + '.blend')  # raises exception if file is not found
 
+        # the offset needs to be rotated.
+
+        rot = Rotation.from_rotvec(deg2rad(visual.parent.global_rotation))
+        rotated_offset = rot.apply(visual.offset)
+
         code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{}), offset=({},{},{}), orientation=({},{},{}), position=({},{},{}))'.format(
 	                filename,
                     *visual.scale,
                     *_to_euler(visual.rotation),
-                    *visual.offset,
+                    *rotated_offset,
                     *_to_euler(visual.parent.global_rotation),
                     *visual.parent.global_position)
-        print(code)
+
 
     for cable in scene.nodes_of_type(dc.Cable):
         points = []
@@ -218,6 +223,8 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
     code += '\nbpy.ops.wm.save_mainfile(filepath=r"{}")'.format(blender_result_file)
     # bpy.ops.wm.quit_blender() # not needed
+
+    print(code)
 
     file = open(python_file, 'w+')
     file.write(code)
