@@ -13,10 +13,13 @@
     It can be downloaded from https://www.blender.org
     
     Only visuals will be exported.
-    TODO: add cables
     
     For this to work every visual needs to have a corresponding .blend file. This file should be located in one of the resource-paths.
     The name of the .blend file should be the same as the name of the .obj file.
+    
+    The blender model
+    - should have the same origin as the .obj file
+    - should have all transformations applied (select object, control+A, all transformation)
     
     A base blender file needs to be provided. The visuals will be added to this model. It will then be saved under a different name.
     
@@ -44,6 +47,7 @@ import DAVE.constants as consts
 from scipy.spatial.transform import Rotation  # for conversion from axis-angle to euler
 from os.path import splitext, basename
 from os import system
+from numpy import deg2rad
 
 
 # utility functions for our python scripts are hard-coded here
@@ -57,10 +61,10 @@ from mathutils import Vector
 def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orientation=(0,0,0), position=(0,0,0) ):
 	\"\"\"
 	All meshes shall be joined
-
-	First scale (scale)
-	Then rotate (rotation)
-	Then move (offset)
+    
+    First rotate (rotation)
+	Then scale (scale)
+    Then move (offset)
 
 	Then global apply rotation rotate (orientation)
 	Then apply global move (position)
@@ -77,38 +81,28 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
 		print(object.name)
 
 		if object.type == 'MESH':    # only add meshes, materials are automatically included
-
 			bpy.ops.object.add_named(name=object.name)
-
 			# When you use bpy.ops.object.add() the newly created object becomes the active object
 			# bpy.context.active_object
-
 			active_object = bpy.context.view_layer.objects.active
 			bpy.ops.object.select_all(action='DESELECT')
 			active_object.select_set(True)
-
 			# set absolute
 			# active_object.location = (0,0,5)
 			# active_object.rotation_euler = (1,2,3)
 			# active_object.scale = (2,1,1)
-
 			# apply transform
-			bpy.ops.transform.resize(value=scale)
-
-			bpy.ops.transform.rotate(value=rotation[2], orient_axis='Z')
-			bpy.ops.transform.rotate(value=rotation[1], orient_axis='Y')
-			bpy.ops.transform.rotate(value=rotation[0], orient_axis='X')
-
 			bpy.ops.transform.translate(value=offset)
-
+			bpy.ops.transform.rotate(value=-rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)
+			bpy.ops.transform.rotate(value=-rotation[1], orient_axis='Y')
+			bpy.ops.transform.rotate(value=-rotation[2], orient_axis='X')
+			bpy.ops.transform.resize(value=scale)
 			# apply global transforms
-			bpy.ops.transform.rotate(value=orientation[2], orient_axis='Z')
-			bpy.ops.transform.rotate(value=orientation[1], orient_axis='Y')
-			bpy.ops.transform.rotate(value=orientation[0], orient_axis='X')
-
+			bpy.ops.transform.rotate(value=-orientation[0], orient_axis='Z')
+			bpy.ops.transform.rotate(value=-orientation[1], orient_axis='Y')
+			bpy.ops.transform.rotate(value=-orientation[2], orient_axis='X')
 			bpy.ops.transform.translate(value=position)
-			
-			
+
 def add_line(p1, p2, diameter, name=None):
 
     bpy.ops.curve.primitive_bezier_curve_add(enter_editmode=True)
@@ -134,7 +128,7 @@ def add_line(p1, p2, diameter, name=None):
 
 
 def _to_euler(rotation):
-    r = Rotation.from_rotvec(rotation)
+    r = Rotation.from_rotvec(deg2rad(rotation))
     return r.as_euler('zyx',degrees=False)
 
 
@@ -192,13 +186,19 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
         filename = scene.get_resource_path(name + '.blend')  # raises exception if file is not found
 
+        # the offset needs to be rotated.
+
+        rot = Rotation.from_rotvec(deg2rad(visual.parent.global_rotation))
+        rotated_offset = rot.apply(visual.offset)
+
         code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{}), offset=({},{},{}), orientation=({},{},{}), position=({},{},{}))'.format(
 	                filename,
                     *visual.scale,
-                    *visual.offset,
                     *_to_euler(visual.rotation),
-                    *visual.parent.global_position,
-                    *_to_euler(visual.parent.global_rotation))
+                    *rotated_offset,
+                    *_to_euler(visual.parent.global_rotation),
+                    *visual.parent.global_position)
+
 
     for cable in scene.nodes_of_type(dc.Cable):
         points = []
@@ -223,6 +223,8 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
     code += '\nbpy.ops.wm.save_mainfile(filepath=r"{}")'.format(blender_result_file)
     # bpy.ops.wm.quit_blender() # not needed
+
+    print(code)
 
     file = open(python_file, 'w+')
     file.write(code)
