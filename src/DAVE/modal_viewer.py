@@ -126,6 +126,11 @@ class ModalViewer:
         for row in range(self.ui.tableWidget.rowCount()):
             name = self.ui.tableWidget.item(row,0).text()
             mass = float(self.ui.tableWidget.item(row,1).text())
+
+            if mass <= 0:
+                print('Zero mass encountered')
+                continue
+
             rxx = float(self.ui.tableWidget.item(row,2).text())
             ryy = float(self.ui.tableWidget.item(row, 3).text())
             rzz = float(self.ui.tableWidget.item(row, 4).text())

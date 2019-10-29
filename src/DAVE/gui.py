@@ -991,5 +991,5 @@ if __name__ == '__main__':
     s = vfs.Scene()
     s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
 
-    s.import_scene(s.get_resource_path("upsea turbine.pscene"), containerize=False, prefix="")
+    s.import_scene(s.get_resource_path(r"C:\Users\beneden\Models\tendemlift result.pscene"), containerize=False, prefix="")
     Gui(s).show()
