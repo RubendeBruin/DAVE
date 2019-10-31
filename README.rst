@@ -21,7 +21,7 @@ The static equilibrium conditions allows for stability checks, static load distr
 Exporting to other software packages is possible. By default an export routine to Blender (3d visualization and animation) is included.
 Export to engineering applications such a dynamic simulation packages, simulation software or game engines can easily be added.
 
-.. image:: docs/images/twinny1.jpg
+.. image:: docs/images/twinny.jpg
 
 Note
 ====
