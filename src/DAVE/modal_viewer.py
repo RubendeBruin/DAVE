@@ -190,27 +190,36 @@ class ModalViewer:
                 print('added pm of {} at {} {} {} on {}'.format(m, *pm.offset, b.name))
 
     def calculate_modeshapes(self):
-        M = dynamics.frequency_domain.M(self.scene)
-        print("Mass matrix")
-        print(M)
-        K = self.scene._vfc.K(0.1)
-        K = -K
-        print("Stiffness matrix")
-        print(K)
 
-        if K.size>0:
-            V, D = eig(K, M)
+        V,D = dynamics.frequency_domain.mode_shapes(self.scene)
 
-            print("Values = ")
-            print(V)
-            print("Directions = ")
-            print(D)
-
+        if V is not None:
             self.shapes = D
-            self.omega = V
+            self.omega = np.real(np.sqrt(V))
             self.n_shapes = len(V)
         else:
             self.n_shapes = 0
+
+        # M = dynamics.frequency_domain.M(self.scene)
+        #
+        #
+        #
+        # print("Mass matrix")
+        # print(M)
+        # K = self.scene._vfc.K(0.1)
+        # K = -K
+        # print("Stiffness matrix")
+        # print(K)
+        #
+        # if K.size>0:
+        #     V, D = eig(K, M)
+        #
+        #     print("Values = ")
+        #     print(V)
+        #     print("Directions = ")
+        #     print(D)
+        #
+
 
     def onClose(self):
         iren = self.visual.renwin.GetInteractor()
@@ -275,7 +284,5 @@ if __name__ == '__main__':
 
     # ---
     s.import_scene(s.get_resource_path("cheetah.pscene"), containerize=False, prefix="")
-
     s.solve_statics()
-
     window = ModalViewer(s)

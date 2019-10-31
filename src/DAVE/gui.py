@@ -992,4 +992,8 @@ if __name__ == '__main__':
     s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
 
     s.import_scene(s.get_resource_path(r"C:\Users\beneden\Models\tendemlift result.pscene"), containerize=False, prefix="")
+
+    # import DAVE.io.blender
+    # DAVE.io.blender.create_blend_and_open(scene=s, blender_base_file=r"C:\data\Dave\Private\Blender\python tests\base ocean.blend", blender_result_file=r"c:\data\karel.blend")
+
     Gui(s).show()
