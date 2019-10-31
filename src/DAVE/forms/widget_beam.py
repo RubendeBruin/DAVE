@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_beam.ui'
+# Form implementation generated from reading ui file 'widget_beam.ui',
+# licensing of 'widget_beam.ui' applies.
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created: Thu Oct 31 16:19:28 2019
+#      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_widget_beam(object):
     def setupUi(self, widget_beam):
@@ -186,32 +188,21 @@ class Ui_widget_beam(object):
         widget_beam.setTabOrder(self.doubleSpinBox_4, self.doubleSpinBox_5)
 
     def retranslateUi(self, widget_beam):
-        _translate = QtCore.QCoreApplication.translate
-        widget_beam.setWindowTitle(_translate("widget_beam", "Form"))
-        self.label_9.setText(_translate("widget_beam", "Left connection"))
-        self.label_10.setText(_translate("widget_beam", "[axis]"))
-        self.label_11.setText(_translate("widget_beam", "Right connection"))
-        self.label_12.setText(_translate("widget_beam", "[axis]"))
-        self.label_7.setText(_translate("widget_beam", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Properties</span></p></body></html>"))
-        self.label_3.setText(_translate("widget_beam", "EIz"))
-        self.label.setText(_translate("widget_beam", "Length"))
-        self.label_2.setText(_translate("widget_beam", "EIy"))
-        self.label_5.setText(_translate("widget_beam", "EA"))
-        self.label_4.setText(_translate("widget_beam", "GIp"))
-        self.label_6.setText(_translate("widget_beam", "[m]"))
-        self.label_13.setText(_translate("widget_beam", "[kN*m2]"))
-        self.label_14.setText(_translate("widget_beam", "[kN*m2]"))
-        self.label_15.setText(_translate("widget_beam", "[kN*m2]"))
-        self.label_16.setText(_translate("widget_beam", "[kN]"))
-        self.label_8.setText(_translate("widget_beam", "<html><head/><body><p>E(steel) is ~200 GPa = 200*10^6 kN/m2</p></body></html>"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    widget_beam = QtWidgets.QWidget()
-    ui = Ui_widget_beam()
-    ui.setupUi(widget_beam)
-    widget_beam.show()
-    sys.exit(app.exec_())
+        widget_beam.setWindowTitle(QtWidgets.QApplication.translate("widget_beam", "Form", None, -1))
+        self.label_9.setText(QtWidgets.QApplication.translate("widget_beam", "Left connection", None, -1))
+        self.label_10.setText(QtWidgets.QApplication.translate("widget_beam", "[axis]", None, -1))
+        self.label_11.setText(QtWidgets.QApplication.translate("widget_beam", "Right connection", None, -1))
+        self.label_12.setText(QtWidgets.QApplication.translate("widget_beam", "[axis]", None, -1))
+        self.label_7.setText(QtWidgets.QApplication.translate("widget_beam", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Properties</span></p></body></html>", None, -1))
+        self.label_3.setText(QtWidgets.QApplication.translate("widget_beam", "EIz", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("widget_beam", "Length", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("widget_beam", "EIy", None, -1))
+        self.label_5.setText(QtWidgets.QApplication.translate("widget_beam", "EA", None, -1))
+        self.label_4.setText(QtWidgets.QApplication.translate("widget_beam", "GIp", None, -1))
+        self.label_6.setText(QtWidgets.QApplication.translate("widget_beam", "[m]", None, -1))
+        self.label_13.setText(QtWidgets.QApplication.translate("widget_beam", "[kN*m2]", None, -1))
+        self.label_14.setText(QtWidgets.QApplication.translate("widget_beam", "[kN*m2]", None, -1))
+        self.label_15.setText(QtWidgets.QApplication.translate("widget_beam", "[kN*m2]", None, -1))
+        self.label_16.setText(QtWidgets.QApplication.translate("widget_beam", "[kN]", None, -1))
+        self.label_8.setText(QtWidgets.QApplication.translate("widget_beam", "<html><head/><body><p>E(steel) is ~200 GPa = 200*10^6 kN/m2</p></body></html>", None, -1))
 

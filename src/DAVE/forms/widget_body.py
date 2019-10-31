@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_body.ui'
+# Form implementation generated from reading ui file 'widget_body.ui',
+# licensing of 'widget_body.ui' applies.
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created: Thu Oct 31 16:19:26 2019
+#      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -82,21 +84,10 @@ class Ui_Form(object):
         Form.setTabOrder(self.doubleSpinBox_2, self.doubleSpinBox_3)
 
     def retranslateUi(self, Form):
-        _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Form"))
-        self.label_7.setText(_translate("Form", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Mass and CoG position</span></p></body></html>"))
-        self.label_4.setText(_translate("Form", "Mass [mT]"))
-        self.label.setText(_translate("Form", "CoG position X"))
-        self.label_2.setText(_translate("Form", "CoG position Y"))
-        self.label_3.setText(_translate("Form", "CoG position Z"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    Form = QtWidgets.QWidget()
-    ui = Ui_Form()
-    ui.setupUi(Form)
-    Form.show()
-    sys.exit(app.exec_())
+        Form.setWindowTitle(QtWidgets.QApplication.translate("Form", "Form", None, -1))
+        self.label_7.setText(QtWidgets.QApplication.translate("Form", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Mass and CoG position</span></p></body></html>", None, -1))
+        self.label_4.setText(QtWidgets.QApplication.translate("Form", "Mass [mT]", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("Form", "CoG position X", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("Form", "CoG position Y", None, -1))
+        self.label_3.setText(QtWidgets.QApplication.translate("Form", "CoG position Z", None, -1))
 

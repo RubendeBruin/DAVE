@@ -27,9 +27,9 @@ import DAVE.forms.widget_con2d
 import DAVE.forms.addnode_form
 
 import DAVE.scene as vfs
-from PyQt5.QtGui import QIcon
+from PySide2.QtGui import QIcon
 
-from PyQt5 import QtWidgets
+from PySide2 import QtWidgets
 import numpy as np
 
 

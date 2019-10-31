@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'frm_standard_assets.ui'
+# Form implementation generated from reading ui file 'frm_standard_assets.ui',
+# licensing of 'frm_standard_assets.ui' applies.
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created: Thu Oct 31 16:19:28 2019
+#      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -163,52 +165,42 @@ class Ui_MainWindow(object):
         MainWindow.setTabOrder(self.btnImport, self.lineEdit)
 
     def retranslateUi(self, MainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Standard assets"))
-        self.checkBox.setText(_translate("MainWindow", "Place imported asset in a container axis"))
-        self.btnImport.setText(_translate("MainWindow", "Import this asset"))
-        self.label_19.setText(_translate("MainWindow", "Apply pre-fix to element names:"))
-        self.lblInfo.setText(_translate("MainWindow", "Info"))
-        self.label_2.setText(_translate("MainWindow", "Filter"))
-        self.actionSave_scene.setText(_translate("MainWindow", "Save as"))
-        self.actionImport_sub_scene.setText(_translate("MainWindow", "Import"))
-        self.actionNew.setText(_translate("MainWindow", "New"))
-        self.actionHorizontal_camera.setText(_translate("MainWindow", "Level camera (make horizon horizontal)"))
-        self.actionHorizontal_camera.setShortcut(_translate("MainWindow", "Alt+L"))
-        self.action.setText(_translate("MainWindow", "---"))
-        self.action2D_mode.setText(_translate("MainWindow", "2D mode"))
-        self.actionDark_mode.setText(_translate("MainWindow", "Make darker"))
-        self.actionDark_mode.setShortcut(_translate("MainWindow", "Alt+-"))
-        self.actionShow_visuals.setText(_translate("MainWindow", "Show visuals"))
-        self.actionShow_Geometry_elements.setText(_translate("MainWindow", "Show Geometry elements"))
-        self.actionShow_force_applyting_element.setText(_translate("MainWindow", "Show non-geometry elements"))
-        self.actionSet_all_visible.setText(_translate("MainWindow", "Set all visible"))
-        self.actionSet_all_hidden.setText(_translate("MainWindow", "Set all hidden"))
-        self.actionFull_refresh.setText(_translate("MainWindow", "Full refresh"))
-        self.actionShow_water_plane.setText(_translate("MainWindow", "Show water-plane"))
-        self.actionAdd_light.setText(_translate("MainWindow", "Make lighter"))
-        self.actionAdd_light.setShortcut(_translate("MainWindow", "Alt+="))
-        self.actionShow_all_forces_at_same_size.setText(_translate("MainWindow", "Show all forces same size (normalize)"))
-        self.actionIncrease_force_size.setText(_translate("MainWindow", "Increase force size"))
-        self.actionIncrease_force_size.setShortcut(_translate("MainWindow", "Alt+]"))
-        self.actionDecrease_force_size.setText(_translate("MainWindow", "Decrease force size"))
-        self.actionDecrease_force_size.setShortcut(_translate("MainWindow", "Alt+["))
-        self.actionIncrease_Geometry_size.setText(_translate("MainWindow", "Increase Geometry size (poi, axis)"))
-        self.actionIncrease_Geometry_size.setShortcut(_translate("MainWindow", "Alt+Shift+]"))
-        self.actionDecrease_Geometry_size.setText(_translate("MainWindow", "Decrease Geometry size"))
-        self.actionDecrease_Geometry_size.setShortcut(_translate("MainWindow", "Alt+Shift+["))
-        self.actionPython_console.setText(_translate("MainWindow", "Python console"))
-        self.actionGoal_seek.setText(_translate("MainWindow", "Goal-seek (one variable)"))
-        self.actionStability_curve.setText(_translate("MainWindow", "Stability-curve"))
-        self.actionOptimize.setText(_translate("MainWindow", "TODO: Optimize (multiple variables)"))
-        self.actionOpen.setText(_translate("MainWindow", "Open"))
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QDialog()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
+        MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Standard assets", None, -1))
+        self.checkBox.setText(QtWidgets.QApplication.translate("MainWindow", "Place imported asset in a container axis", None, -1))
+        self.btnImport.setText(QtWidgets.QApplication.translate("MainWindow", "Import this asset", None, -1))
+        self.label_19.setText(QtWidgets.QApplication.translate("MainWindow", "Apply pre-fix to element names:", None, -1))
+        self.lblInfo.setText(QtWidgets.QApplication.translate("MainWindow", "Info", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("MainWindow", "Filter", None, -1))
+        self.actionSave_scene.setText(QtWidgets.QApplication.translate("MainWindow", "Save as", None, -1))
+        self.actionImport_sub_scene.setText(QtWidgets.QApplication.translate("MainWindow", "Import", None, -1))
+        self.actionNew.setText(QtWidgets.QApplication.translate("MainWindow", "New", None, -1))
+        self.actionHorizontal_camera.setText(QtWidgets.QApplication.translate("MainWindow", "Level camera (make horizon horizontal)", None, -1))
+        self.actionHorizontal_camera.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Alt+L", None, -1))
+        self.action.setText(QtWidgets.QApplication.translate("MainWindow", "---", None, -1))
+        self.action2D_mode.setText(QtWidgets.QApplication.translate("MainWindow", "2D mode", None, -1))
+        self.actionDark_mode.setText(QtWidgets.QApplication.translate("MainWindow", "Make darker", None, -1))
+        self.actionDark_mode.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Alt+-", None, -1))
+        self.actionShow_visuals.setText(QtWidgets.QApplication.translate("MainWindow", "Show visuals", None, -1))
+        self.actionShow_Geometry_elements.setText(QtWidgets.QApplication.translate("MainWindow", "Show Geometry elements", None, -1))
+        self.actionShow_force_applyting_element.setText(QtWidgets.QApplication.translate("MainWindow", "Show non-geometry elements", None, -1))
+        self.actionSet_all_visible.setText(QtWidgets.QApplication.translate("MainWindow", "Set all visible", None, -1))
+        self.actionSet_all_hidden.setText(QtWidgets.QApplication.translate("MainWindow", "Set all hidden", None, -1))
+        self.actionFull_refresh.setText(QtWidgets.QApplication.translate("MainWindow", "Full refresh", None, -1))
+        self.actionShow_water_plane.setText(QtWidgets.QApplication.translate("MainWindow", "Show water-plane", None, -1))
+        self.actionAdd_light.setText(QtWidgets.QApplication.translate("MainWindow", "Make lighter", None, -1))
+        self.actionAdd_light.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Alt+=", None, -1))
+        self.actionShow_all_forces_at_same_size.setText(QtWidgets.QApplication.translate("MainWindow", "Show all forces same size (normalize)", None, -1))
+        self.actionIncrease_force_size.setText(QtWidgets.QApplication.translate("MainWindow", "Increase force size", None, -1))
+        self.actionIncrease_force_size.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Alt+]", None, -1))
+        self.actionDecrease_force_size.setText(QtWidgets.QApplication.translate("MainWindow", "Decrease force size", None, -1))
+        self.actionDecrease_force_size.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Alt+[", None, -1))
+        self.actionIncrease_Geometry_size.setText(QtWidgets.QApplication.translate("MainWindow", "Increase Geometry size (poi, axis)", None, -1))
+        self.actionIncrease_Geometry_size.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Alt+Shift+]", None, -1))
+        self.actionDecrease_Geometry_size.setText(QtWidgets.QApplication.translate("MainWindow", "Decrease Geometry size", None, -1))
+        self.actionDecrease_Geometry_size.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Alt+Shift+[", None, -1))
+        self.actionPython_console.setText(QtWidgets.QApplication.translate("MainWindow", "Python console", None, -1))
+        self.actionGoal_seek.setText(QtWidgets.QApplication.translate("MainWindow", "Goal-seek (one variable)", None, -1))
+        self.actionStability_curve.setText(QtWidgets.QApplication.translate("MainWindow", "Stability-curve", None, -1))
+        self.actionOptimize.setText(QtWidgets.QApplication.translate("MainWindow", "TODO: Optimize (multiple variables)", None, -1))
+        self.actionOpen.setText(QtWidgets.QApplication.translate("MainWindow", "Open", None, -1))
 
