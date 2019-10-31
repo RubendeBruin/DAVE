@@ -774,11 +774,44 @@ class Gui:
         data = self.node_data.get_actor(info)
 
         if data is not None:
-            # if a visual is clicked, then select the parent of this visual instead
-            node = data['node']
-            if isinstance(node, vfs.Visual):
-                if node.parent is not None:
-                    data = self.node_data.get_node(node.parent)
+            # # if a visual is clicked, then select the parent of this visual instead
+            # node = data['node']
+            # if isinstance(node, vfs.Visual):
+            #     if node.parent is not None:
+            #         data = self.node_data.get_node(node.parent)
+
+            # if the node is already selected, then select something different
+            if self.selected_node is not None:
+
+                # cycle between node and its parent
+                if self.selected_node['node'] == data['node']:
+                    node = data['node']
+                    try:
+                        node = node.parent
+                        data = self.node_data.get_node(node)
+                    except:
+                        pass
+
+                # cycle between node and its master
+                if self.selected_node['node'] == data['node']:
+                    node = data['node']
+                    try:
+                        node = node.master
+                        data = self.node_data.get_node(node)
+                    except:
+                        pass
+
+                # cycle between node and its poiA
+                if self.selected_node['node'] == data['node']:
+                    node = data['node']
+                    try:
+                        node = node._pois[0]
+                        data = self.node_data.get_node(node)
+                    except:
+                        pass
+
+
+
 
         self.select_node(data)
 
