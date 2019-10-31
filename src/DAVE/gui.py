@@ -1020,11 +1020,6 @@ if __name__ == '__main__':
     s = vfs.Scene()
     s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
 
-    s.import_scene(s.get_resource_path("upsea turbine.pscene"), containerize=False, prefix="")
-    # ---
-
-
-    s['Tower'].rotation = (0.0, 0.0, 40.0)
 
     g = Gui(s)
     g.show()
