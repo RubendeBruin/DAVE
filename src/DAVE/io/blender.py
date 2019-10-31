@@ -1,10 +1,4 @@
-"""
-  This Source Code Form is subject to the terms of the Mozilla Public
-  License, v. 2.0. If a copy of the MPL was not distributed with this
-  file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-  Ruben de Bruin - 2019
-"""
 
 """
     Using this module a scene can be exported to Blender.
@@ -41,6 +35,15 @@
     
 
 """
+
+"""
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+  Ruben de Bruin - 2019
+"""
+
 
 import DAVE.scene as dc
 import DAVE.constants as consts

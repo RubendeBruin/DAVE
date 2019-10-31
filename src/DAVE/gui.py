@@ -1,13 +1,4 @@
 """
-  This Source Code Form is subject to the terms of the Mozilla Public
-  License, v. 2.0. If a copy of the MPL was not distributed with this
-  file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-  Ruben de Bruin - 2019
-
-
-
-
     GUI
 
     The GUI can be created from a scene via
@@ -17,6 +8,17 @@
     G = Gui(s)
     G.show()
 
+
+    Or by running this file as main
+
+"""
+
+"""
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+  Ruben de Bruin - 2019
 """
 
 import DAVE.visual as vfv
