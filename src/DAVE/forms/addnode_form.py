@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'addnode_form.ui'
+# Form implementation generated from reading ui file 'addnode_form.ui',
+# licensing of 'addnode_form.ui' applies.
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created: Thu Oct 31 16:19:27 2019
+#      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -230,33 +232,22 @@ class Ui_Dialog(object):
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
-        _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "New Node"))
-        self.label.setText(_translate("Dialog", "Name"))
-        self.label_2.setText(_translate("Dialog", "[unique]"))
-        self.errUniqueName.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-weight:600; color:#aa0000;\">Pick a unique name !</span></p></body></html>"))
-        self.label_3.setText(_translate("Dialog", "Parent"))
-        self.label_4.setText(_translate("Dialog", "[axis]"))
-        self.label_13.setText(_translate("Dialog", "Parent"))
-        self.label_14.setText(_translate("Dialog", "[poi]"))
-        self.label_6.setText(_translate("Dialog", "Master"))
-        self.label_5.setText(_translate("Dialog", "[axis]"))
-        self.label_8.setText(_translate("Dialog", "Slave"))
-        self.label_7.setText(_translate("Dialog", "[axis]"))
-        self.label_10.setText(_translate("Dialog", "point 1"))
-        self.label_9.setText(_translate("Dialog", "[poi]"))
-        self.label_12.setText(_translate("Dialog", "point 2"))
-        self.label_11.setText(_translate("Dialog", "[poi]"))
-        self.errPois.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-weight:600; color:#aa0000;\">Select two distinct pois</span></p></body></html>"))
-        self.btnOk.setText(_translate("Dialog", "  Ok  "))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    Dialog = QtWidgets.QDialog()
-    ui = Ui_Dialog()
-    ui.setupUi(Dialog)
-    Dialog.show()
-    sys.exit(app.exec_())
+        Dialog.setWindowTitle(QtWidgets.QApplication.translate("Dialog", "New Node", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("Dialog", "Name", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("Dialog", "[unique]", None, -1))
+        self.errUniqueName.setText(QtWidgets.QApplication.translate("Dialog", "<html><head/><body><p><span style=\" font-weight:600; color:#aa0000;\">Pick a unique name !</span></p></body></html>", None, -1))
+        self.label_3.setText(QtWidgets.QApplication.translate("Dialog", "Parent", None, -1))
+        self.label_4.setText(QtWidgets.QApplication.translate("Dialog", "[axis]", None, -1))
+        self.label_13.setText(QtWidgets.QApplication.translate("Dialog", "Parent", None, -1))
+        self.label_14.setText(QtWidgets.QApplication.translate("Dialog", "[poi]", None, -1))
+        self.label_6.setText(QtWidgets.QApplication.translate("Dialog", "Master", None, -1))
+        self.label_5.setText(QtWidgets.QApplication.translate("Dialog", "[axis]", None, -1))
+        self.label_8.setText(QtWidgets.QApplication.translate("Dialog", "Slave", None, -1))
+        self.label_7.setText(QtWidgets.QApplication.translate("Dialog", "[axis]", None, -1))
+        self.label_10.setText(QtWidgets.QApplication.translate("Dialog", "point 1", None, -1))
+        self.label_9.setText(QtWidgets.QApplication.translate("Dialog", "[poi]", None, -1))
+        self.label_12.setText(QtWidgets.QApplication.translate("Dialog", "point 2", None, -1))
+        self.label_11.setText(QtWidgets.QApplication.translate("Dialog", "[poi]", None, -1))
+        self.errPois.setText(QtWidgets.QApplication.translate("Dialog", "<html><head/><body><p><span style=\" font-weight:600; color:#aa0000;\">Select two distinct pois</span></p></body></html>", None, -1))
+        self.btnOk.setText(QtWidgets.QApplication.translate("Dialog", "  Ok  ", None, -1))
 

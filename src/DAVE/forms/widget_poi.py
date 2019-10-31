@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_poi.ui'
+# Form implementation generated from reading ui file 'widget_poi.ui',
+# licensing of 'widget_poi.ui' applies.
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created: Thu Oct 31 16:19:27 2019
+#      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_Poi(object):
     def setupUi(self, Poi):
@@ -71,20 +73,9 @@ class Ui_Poi(object):
         Poi.setTabOrder(self.doubleSpinBox_2, self.doubleSpinBox_3)
 
     def retranslateUi(self, Poi):
-        _translate = QtCore.QCoreApplication.translate
-        Poi.setWindowTitle(_translate("Poi", "Form"))
-        self.label_7.setText(_translate("Poi", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Position on parent</span></p></body></html>"))
-        self.label_3.setText(_translate("Poi", "Z - position"))
-        self.label.setText(_translate("Poi", "X - position"))
-        self.label_2.setText(_translate("Poi", "Y - position"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    Poi = QtWidgets.QWidget()
-    ui = Ui_Poi()
-    ui.setupUi(Poi)
-    Poi.show()
-    sys.exit(app.exec_())
+        Poi.setWindowTitle(QtWidgets.QApplication.translate("Poi", "Form", None, -1))
+        self.label_7.setText(QtWidgets.QApplication.translate("Poi", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Position on parent</span></p></body></html>", None, -1))
+        self.label_3.setText(QtWidgets.QApplication.translate("Poi", "Z - position", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("Poi", "X - position", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("Poi", "Y - position", None, -1))
 

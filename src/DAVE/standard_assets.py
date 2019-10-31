@@ -15,7 +15,7 @@ import DAVE.scene as ds
 
 import DAVE.forms.frm_standard_assets
 
-from PyQt5 import QtWidgets
+from PySide2 import QtWidgets
 
 
 class DialogWithCloseEvent(QtWidgets.QDialog):

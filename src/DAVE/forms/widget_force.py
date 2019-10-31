@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_force.ui'
+# Form implementation generated from reading ui file 'widget_force.ui',
+# licensing of 'widget_force.ui' applies.
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created: Thu Oct 31 16:19:27 2019
+#      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_widget_force(object):
     def setupUi(self, widget_force):
@@ -147,25 +149,14 @@ class Ui_widget_force(object):
         widget_force.setTabOrder(self.doubleSpinBox_5, self.doubleSpinBox_6)
 
     def retranslateUi(self, widget_force):
-        _translate = QtCore.QCoreApplication.translate
-        widget_force.setWindowTitle(_translate("widget_force", "Form"))
-        self.label_7.setText(_translate("widget_force", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Force</span></p></body></html>"))
-        self.label.setText(_translate("widget_force", "X"))
-        self.label_2.setText(_translate("widget_force", "Y"))
-        self.label_3.setText(_translate("widget_force", "Z"))
-        self.label_9.setText(_translate("widget_force", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Moment</span></p></body></html>"))
-        self.label_5.setText(_translate("widget_force", "Y"))
-        self.label_6.setText(_translate("widget_force", "Z"))
-        self.label_4.setText(_translate("widget_force", "X"))
-        self.label_8.setText(_translate("widget_force", "<html><head/><body><p>Force components are defined in global axis.</p></body></html>"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    widget_force = QtWidgets.QWidget()
-    ui = Ui_widget_force()
-    ui.setupUi(widget_force)
-    widget_force.show()
-    sys.exit(app.exec_())
+        widget_force.setWindowTitle(QtWidgets.QApplication.translate("widget_force", "Form", None, -1))
+        self.label_7.setText(QtWidgets.QApplication.translate("widget_force", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Force</span></p></body></html>", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("widget_force", "X", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("widget_force", "Y", None, -1))
+        self.label_3.setText(QtWidgets.QApplication.translate("widget_force", "Z", None, -1))
+        self.label_9.setText(QtWidgets.QApplication.translate("widget_force", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Moment</span></p></body></html>", None, -1))
+        self.label_5.setText(QtWidgets.QApplication.translate("widget_force", "Y", None, -1))
+        self.label_6.setText(QtWidgets.QApplication.translate("widget_force", "Z", None, -1))
+        self.label_4.setText(QtWidgets.QApplication.translate("widget_force", "X", None, -1))
+        self.label_8.setText(QtWidgets.QApplication.translate("widget_force", "<html><head/><body><p>Force components are defined in global axis.</p></body></html>", None, -1))
 

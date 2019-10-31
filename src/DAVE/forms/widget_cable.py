@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_cable.ui'
+# Form implementation generated from reading ui file 'widget_cable.ui',
+# licensing of 'widget_cable.ui' applies.
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created: Thu Oct 31 16:19:27 2019
+#      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_Cable_form(object):
     def setupUi(self, Cable_form):
@@ -110,28 +112,17 @@ class Ui_Cable_form(object):
         Cable_form.setTabOrder(self.comboBox, self.comboBox_2)
 
     def retranslateUi(self, Cable_form):
-        _translate = QtCore.QCoreApplication.translate
-        Cable_form.setWindowTitle(_translate("Cable_form", "Form"))
-        self.label_7.setText(_translate("Cable_form", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Cable properties</span></p></body></html>"))
-        self.label.setText(_translate("Cable_form", "Length at rest [m]"))
-        self.label_2.setText(_translate("Cable_form", "Stiffness EA [kN/m]"))
-        self.label_3.setText(_translate("Cable_form", "<html><head/><body><p>Points of the cable</p></body></html>"))
-        self.btnAdd.setText(_translate("Cable_form", "Add"))
-        self.btnRemove.setText(_translate("Cable_form", "Remove"))
-        self.comboBox.setItemText(1, _translate("Cable_form", "Item1"))
-        self.comboBox.setItemText(2, _translate("Cable_form", "Item2"))
-        self.comboBox.setItemText(3, _translate("Cable_form", "Item3"))
-        self.comboBox_2.setItemText(1, _translate("Cable_form", "Item1"))
-        self.comboBox_2.setItemText(2, _translate("Cable_form", "Item2"))
-        self.comboBox_2.setItemText(3, _translate("Cable_form", "Item3"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    Cable_form = QtWidgets.QWidget()
-    ui = Ui_Cable_form()
-    ui.setupUi(Cable_form)
-    Cable_form.show()
-    sys.exit(app.exec_())
+        Cable_form.setWindowTitle(QtWidgets.QApplication.translate("Cable_form", "Form", None, -1))
+        self.label_7.setText(QtWidgets.QApplication.translate("Cable_form", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Cable properties</span></p></body></html>", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("Cable_form", "Length at rest [m]", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("Cable_form", "Stiffness EA [kN/m]", None, -1))
+        self.label_3.setText(QtWidgets.QApplication.translate("Cable_form", "<html><head/><body><p>Points of the cable</p></body></html>", None, -1))
+        self.btnAdd.setText(QtWidgets.QApplication.translate("Cable_form", "Add", None, -1))
+        self.btnRemove.setText(QtWidgets.QApplication.translate("Cable_form", "Remove", None, -1))
+        self.comboBox.setItemText(1, QtWidgets.QApplication.translate("Cable_form", "Item1", None, -1))
+        self.comboBox.setItemText(2, QtWidgets.QApplication.translate("Cable_form", "Item2", None, -1))
+        self.comboBox.setItemText(3, QtWidgets.QApplication.translate("Cable_form", "Item3", None, -1))
+        self.comboBox_2.setItemText(1, QtWidgets.QApplication.translate("Cable_form", "Item1", None, -1))
+        self.comboBox_2.setItemText(2, QtWidgets.QApplication.translate("Cable_form", "Item2", None, -1))
+        self.comboBox_2.setItemText(3, QtWidgets.QApplication.translate("Cable_form", "Item3", None, -1))
 

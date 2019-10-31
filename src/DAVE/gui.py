@@ -24,19 +24,20 @@ import DAVE.scene as vfs
 import DAVE.constants as vfc
 import DAVE.standard_assets
 import DAVE.forms.resources_rc as resources_rc
-import DAVE.forms.viewer_form
+from DAVE.forms.viewer_form import Ui_MainWindow
 import numpy as np
 import math
 import DAVE.element_widgets as element_widgets
 
 import sys
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QMenu
-from PyQt5.QtCore import QMimeData, Qt
-from PyQt5 import QtCore
 
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
-from PyQt5.QtWidgets import QFileDialog
+from PySide2 import QtWidgets
+from PySide2.QtWidgets import QMenu, QMainWindow
+from PySide2.QtCore import QMimeData, Qt
+from PySide2 import QtCore
+
+from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon
+from PySide2.QtWidgets import QFileDialog
 
 from IPython.utils.capture import capture_output
 import datetime
@@ -128,7 +129,8 @@ class Gui:
         """Reference to the ui"""
 
         self.app = QtWidgets.QApplication(sys.argv)
-        self.MainWindow = QtWidgets.QMainWindow()
+
+        self.MainWindow = QMainWindow()
         self.ui.setupUi(self.MainWindow)
 
         self.node_data = NodeData()
@@ -399,11 +401,11 @@ class Gui:
                                      self.ui.stability_heel_start.value(),
                                      self.ui.stability_heel_max.value(),
                                      self.ui.stability_n_steps.value(),
-                                     self.ui.stability_do_teardown.checkState(),
-                                     self.ui.stability_surge.checkState(),
-                                     self.ui.stability_sway.checkState(),
-                                     self.ui.stability_yaw.checkState(),
-                                     self.ui.stability_trim.checkState())
+                                     self.ui.stability_do_teardown.isChecked(),
+                                     self.ui.stability_surge.isChecked(),
+                                     self.ui.stability_sway.isChecked(),
+                                     self.ui.stability_yaw.isChecked(),
+                                     self.ui.stability_trim.isChecked())
 
         self.set_code(code)
 
@@ -517,7 +519,6 @@ class Gui:
     def show(self):
 
         self.MainWindow.show()
-
         self.app.aboutToQuit.connect(self.onClose)
 
         while True:
@@ -992,4 +993,5 @@ if __name__ == '__main__':
 
     s['Tower'].rotation = (0.0, 0.0, 40.0)
 
-    Gui(s).show()
+    g = Gui(s)
+    g.show()

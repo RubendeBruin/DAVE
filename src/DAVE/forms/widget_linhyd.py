@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_linhyd.ui'
+# Form implementation generated from reading ui file 'widget_linhyd.ui',
+# licensing of 'widget_linhyd.ui' applies.
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created: Thu Oct 31 16:19:27 2019
+#      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_widget_linhyd(object):
     def setupUi(self, widget_linhyd):
@@ -174,30 +176,19 @@ class Ui_widget_linhyd(object):
         widget_linhyd.setTabOrder(self.doubleSpinBox_2, self.doubleSpinBox_3)
 
     def retranslateUi(self, widget_linhyd):
-        _translate = QtCore.QCoreApplication.translate
-        widget_linhyd.setWindowTitle(_translate("widget_linhyd", "Form"))
-        self.label_2.setText(_translate("widget_linhyd", "Y - position"))
-        self.label_9.setText(_translate("widget_linhyd", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">CoB position</span></p><p>[Defined in parent axis system]</p><p><br/></p></body></html>"))
-        self.label.setText(_translate("widget_linhyd", "X - position"))
-        self.label_5.setText(_translate("widget_linhyd", "BM-t (heel)"))
-        self.label_10.setText(_translate("widget_linhyd", "<html><head/><body><br/><span style=\" font-weight:600; text-decoration: underline;\">Stability</span><br/></body></html>"))
-        self.label_3.setText(_translate("widget_linhyd", "Z - position"))
-        self.label_14.setText(_translate("widget_linhyd", "Waterline elevation (relative to CoB, usually positive)"))
-        self.label_6.setText(_translate("widget_linhyd", "BM-l (trim)"))
-        self.label_15.setText(_translate("widget_linhyd", "Displacement [kN]"))
-        self.label_12.setText(_translate("widget_linhyd", "CoF - Y (relative to CoB)"))
-        self.label_11.setText(_translate("widget_linhyd", "<html><head/><body><br/><span style=\" font-weight:600; text-decoration: underline;\">Heave effect</span><br/></body></html>"))
-        self.label_13.setText(_translate("widget_linhyd", "Heave stiffness [kN/m]"))
-        self.label_8.setText(_translate("widget_linhyd", "CoF - X (relative to CoB)"))
-        self.label_16.setText(_translate("widget_linhyd", "<html><head/><body><br/><span style=\" font-weight:600; text-decoration: underline;\">Draft</span><br/></body></html>"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    widget_linhyd = QtWidgets.QWidget()
-    ui = Ui_widget_linhyd()
-    ui.setupUi(widget_linhyd)
-    widget_linhyd.show()
-    sys.exit(app.exec_())
+        widget_linhyd.setWindowTitle(QtWidgets.QApplication.translate("widget_linhyd", "Form", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("widget_linhyd", "Y - position", None, -1))
+        self.label_9.setText(QtWidgets.QApplication.translate("widget_linhyd", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">CoB position</span></p><p>[Defined in parent axis system]</p><p><br/></p></body></html>", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("widget_linhyd", "X - position", None, -1))
+        self.label_5.setText(QtWidgets.QApplication.translate("widget_linhyd", "BM-t (heel)", None, -1))
+        self.label_10.setText(QtWidgets.QApplication.translate("widget_linhyd", "<html><head/><body><br/><span style=\" font-weight:600; text-decoration: underline;\">Stability</span><br/></body></html>", None, -1))
+        self.label_3.setText(QtWidgets.QApplication.translate("widget_linhyd", "Z - position", None, -1))
+        self.label_14.setText(QtWidgets.QApplication.translate("widget_linhyd", "Waterline elevation (relative to CoB, usually positive)", None, -1))
+        self.label_6.setText(QtWidgets.QApplication.translate("widget_linhyd", "BM-l (trim)", None, -1))
+        self.label_15.setText(QtWidgets.QApplication.translate("widget_linhyd", "Displacement [kN]", None, -1))
+        self.label_12.setText(QtWidgets.QApplication.translate("widget_linhyd", "CoF - Y (relative to CoB)", None, -1))
+        self.label_11.setText(QtWidgets.QApplication.translate("widget_linhyd", "<html><head/><body><br/><span style=\" font-weight:600; text-decoration: underline;\">Heave effect</span><br/></body></html>", None, -1))
+        self.label_13.setText(QtWidgets.QApplication.translate("widget_linhyd", "Heave stiffness [kN/m]", None, -1))
+        self.label_8.setText(QtWidgets.QApplication.translate("widget_linhyd", "CoF - X (relative to CoB)", None, -1))
+        self.label_16.setText(QtWidgets.QApplication.translate("widget_linhyd", "<html><head/><body><br/><span style=\" font-weight:600; text-decoration: underline;\">Draft</span><br/></body></html>", None, -1))
 

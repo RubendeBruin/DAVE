@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_name.ui'
+# Form implementation generated from reading ui file 'widget_name.ui',
+# licensing of 'widget_name.ui' applies.
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created: Thu Oct 31 16:19:27 2019
+#      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_NameWidget(object):
     def setupUi(self, NameWidget):
@@ -25,17 +27,6 @@ class Ui_NameWidget(object):
         QtCore.QMetaObject.connectSlotsByName(NameWidget)
 
     def retranslateUi(self, NameWidget):
-        _translate = QtCore.QCoreApplication.translate
-        NameWidget.setWindowTitle(_translate("NameWidget", "Form"))
-        self.label.setText(_translate("NameWidget", "Name [unique]"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    NameWidget = QtWidgets.QWidget()
-    ui = Ui_NameWidget()
-    ui.setupUi(NameWidget)
-    NameWidget.show()
-    sys.exit(app.exec_())
+        NameWidget.setWindowTitle(QtWidgets.QApplication.translate("NameWidget", "Form", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("NameWidget", "Name [unique]", None, -1))
 

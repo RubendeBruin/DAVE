@@ -28,6 +28,9 @@ code will change.
 
 """
 
+import vtkmodules.qt
+vtkmodules.qt.PyQtImpl = 'PySide2'
+
 import vtkplotter as vp   # ref: https://github.com/marcomusy/vtkplotter
 import DAVE.scene as vf
 import DAVE.constants as vc
@@ -1086,7 +1089,7 @@ class Viewport:
     def show_embedded(self, target_frame):
         """target frame : QFrame """
 
-        from PyQt5.QtWidgets import QVBoxLayout
+        from PySide2.QtWidgets import QVBoxLayout
         from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
         # add a widget to gui
