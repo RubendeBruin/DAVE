@@ -22,7 +22,7 @@ Exporting to other software packages is possible. By default an export routine t
 Export to engineering applications such a dynamic simulation packages, simulation software or game engines can easily be added.
 
 
-.. image:: docs/images/twinny.jpg
+.. image:: docs/images/twinlift.jpg
 
 
 Note
