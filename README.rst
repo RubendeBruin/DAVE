@@ -40,6 +40,19 @@ Or by cloning the repository from github
    git clone https://github.com/RubendeBruin/DAVE.git
 
 
+Requirements
+------------
+
+The following packages are required:
+ - vtk version 8.2 or up (the version 8.1.2 that pip installs does not work with pyside2m so use conda instead)
+ - pyside2 (installs qt)
+ - IPython
+ - vtkplotter
+ - numpy
+ - scipy
+ - matplotlib
+ - pyo3d (see note)
+
 Future developments
 ===================
 
@@ -80,6 +93,7 @@ DAVE hates re-inventing the wheel. Therefore DAVE uses the following already ava
 - Blender <http://www.blender.org>
 - vtkplotter <https://github.com/marcomusy/vtkplotter>
 - vtk <http://www.vtk.org>
+
 
 Note
 ====
