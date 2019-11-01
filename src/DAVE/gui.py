@@ -27,6 +27,7 @@ import DAVE.constants as vfc
 import DAVE.standard_assets
 import DAVE.forms.resources_rc as resources_rc
 from DAVE.forms.viewer_form import Ui_MainWindow
+from DAVE.forms.dlg_solver import Ui_Dialog
 import numpy as np
 import math
 import DAVE.element_widgets as element_widgets
@@ -34,7 +35,7 @@ import DAVE.element_widgets as element_widgets
 import sys
 
 from PySide2 import QtWidgets
-from PySide2.QtWidgets import QMenu, QMainWindow
+from PySide2.QtWidgets import QMenu, QMainWindow, QDialog
 from PySide2.QtCore import QMimeData, Qt
 from PySide2 import QtCore
 
@@ -117,6 +118,15 @@ class SceneTreeModel(QStandardItemModel):
         self._scene.run_code(code)
 
         return False
+
+class SolverDialog(QDialog, Ui_Dialog):
+    def __init__(self, parent=None):
+        super(SolverDialog, self).__init__(parent)
+        Ui_Dialog.__init__(self)
+        self.setupUi(self)
+        self.setWindowFlag(Qt.WindowCloseButtonHint, False)
+        self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
+        self.setWindowIcon(QIcon(":/icons/cube.png"))
 
 
 class Gui:
@@ -494,19 +504,61 @@ class Gui:
     def actionDelete(self):
         print('delete')
 
+    def stop_solving(self):
+        self._terminate = True
+
     def solve_statics(self):
         self.scene._vfc.state_update()
         old_dofs = self.scene._vfc.get_dofs()
         self._dofs = old_dofs.copy()
 
-        if DAVE.constants.GUI_DO_ANIMATE:
-            self.scene.solve_statics()
+        long_wait = False
+        dialog = None
+
+        self._terminate = False
+
+
+
+        # solve with time-out
+        count = 0
+        while True:
+            status = self.scene._vfc.state_solve_statics_with_timeout(0.5, True)
+
+            if self._terminate:
+                print('Terminating')
+                break
+
+            if status == 0:
+                if count == 0:
+                    break
+                else:
+                    long_wait = True
+
+                    self.visual.position_visuals()
+                    self.visual.refresh_embeded_view()
+                    break
+
+            if dialog is None:
+                dialog = SolverDialog()
+                dialog.btnTerminate.clicked.connect(self.stop_solving)
+                dialog.show()
+
+            count += 1
+            dialog.label_2.setText('Maximum error = {}'.format(self.scene._vfc.Emaxabs))
+            dialog.update()
+
+            self.visual.position_visuals()
+            self.visual.refresh_embeded_view()
+            self.app.processEvents()
+
+        if dialog is not None:
+            dialog.close()
+
+        if DAVE.constants.GUI_DO_ANIMATE and not long_wait:
             new_dofs = self.scene._vfc.get_dofs()
             self.animate(old_dofs, new_dofs, vfc.GUI_ANIMATION_NSTEPS)
-        else:
-            self.run_code('s.solve_statics()')
 
-
+        self.ui.teHistory.setPlainText(self.ui.teHistory.toPlainText() + '\n#---\ns.solve_statics()')
 
     def undo_solve_statics(self):
         if self._dofs is not None:
