@@ -19,7 +19,7 @@ Static equilibrium can be calculated via the EquilibriumCore plugin. This core s
 The static equilibrium conditions allows for stability checks, static load distributions in lifting ropes, internal loads, static clearance checks and much more.
 
 Exporting to other software packages is possible. By default an export routine to Blender (3d visualization and animation) is included.
-Export to engineering applications such a dynamic simulation packages, simulation software or game engines can easily be added.
+The design of DAVE is such that export to software such as dynamic simulation packages, simulation software or game engines can easily be added.
 
 
 .. image:: docs/images/twinlift.jpg
