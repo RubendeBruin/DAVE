@@ -271,10 +271,10 @@ python_version = '.'.join(map(str, sys.version_info[0:2]))
 #     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
 # }
 
-extensions.append('autoapi.extension')
+# extensions.append('autoapi.extension')
 
-autoapi_type = 'python'
-autoapi_dirs = ['../src/DAVE']
+# autoapi_type = 'python'
+# autoapi_dirs = ['../src/DAVE']
 
 def setup(app):
     app.add_stylesheet('custom.css')
