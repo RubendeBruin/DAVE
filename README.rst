@@ -52,9 +52,24 @@ The following packages are required:
  - scipy
  - matplotlib
  - pyo3d (see note)
+ 
+CONDA
+-----
+ 
+You can use the following environement yml file to create a new conda enviroment with these packages: <https://github.com/RubendeBruin/DAVE/blob/master/dave.yml>
+
+Then do:
+
+::
+
+    conda env create -f dave.yml
+    
+to create a dedicated environment for DAVE
 
 Future developments
 ===================
+
+DAVE is still growing. At this moment DAVE only supports static calculations and visuals. This may sound a little disappointing but many engineering problems are actually governed by statics. Being able to accurately calculate the static loads is very valuable. Think about skew-loads on a lifting hook, barge heel change when removing weights, static load distribution changes as effect cog changes or length differences in lifting ropes, etc.
 
 *Dynamics*
 
