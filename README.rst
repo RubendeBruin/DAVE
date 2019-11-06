@@ -24,6 +24,16 @@ The design of DAVE is such that export to software such as dynamic simulation pa
 
 .. image:: docs/images/twinlift.jpg
 
+TUTORIAL
+=========
+
+A first video tutorial is available at: https://youtu.be/f-dQaaepsrk
+
+.. raw:: html
+   
+   <iframe width="560" height="315" src="https://www.youtube.com/embed/f-dQaaepsrk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+
 Installation
 ============
 
@@ -97,7 +107,6 @@ For the design of rigging it is planned to add sheaves and cables with non-zero 
   * Carene tables from buoyancy shapes
   * Contact points and planes
   * Blender rendering to Jupyter
-
 
 References and credits
 ======================
