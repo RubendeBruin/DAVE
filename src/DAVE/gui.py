@@ -1074,6 +1074,5 @@ if __name__ == '__main__':
     s = vfs.Scene()
     s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
 
-
     g = Gui(s)
     g.show()

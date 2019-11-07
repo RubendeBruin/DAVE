@@ -785,6 +785,11 @@ class Viewport:
                 V.actors[3].SetScale(scale)
                 V.actors[3].setTransform(t)
 
+                # scale the arrows
+                V.actors[0].SetScale(self.geometry_scale)
+                V.actors[1].SetScale(self.geometry_scale)
+                V.actors[2].SetScale(self.geometry_scale)
+
                 continue
 
             if isinstance(V.node, vf.Buoyancy):
