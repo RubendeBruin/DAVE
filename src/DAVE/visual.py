@@ -390,6 +390,9 @@ class Viewport:
 
                 vis.actor_type = ActorType.FORCE
 
+                if vc.COLOR_BUOYANCY_MESH_FILL is None:
+                    vis.wireframe()
+
                 if vis is not None:
                     actors.append(vis)
 
@@ -782,6 +785,11 @@ class Viewport:
                 V.actors[3].SetScale(scale)
                 V.actors[3].setTransform(t)
 
+                # scale the arrows
+                V.actors[0].SetScale(self.geometry_scale)
+                V.actors[1].SetScale(self.geometry_scale)
+                V.actors[2].SetScale(self.geometry_scale)
+
                 continue
 
             if isinstance(V.node, vf.Buoyancy):
@@ -804,6 +812,10 @@ class Viewport:
 
                 V.actors[0].setTransform(mat4x4)
                 V.actors[0].alpha(vc.ALPHA_BUOYANCY)
+
+                if vc.COLOR_BUOYANCY_MESH_FILL is None:
+                    V.actors[0].c(vc.COLOR_BUOYANCY_MESH_LINES)
+                    V.actors[0].wireframe()
 
                 if self.quick_updates_only:
                     continue
@@ -855,6 +867,7 @@ class Viewport:
                     vis = vp.actors.Actor([vertices, faces]).c(vc.COLOR_BUOYANCY_MESH_LINES)
                     vis.actor_type = ActorType.FORCE
                     vis.wireframe()
+                    vis.lw(vc.LINEWIDTH_SUBMERGED_MESH)
                     V.actors.append(vis)
                     if self.screen is not None:
                         self.screen.add(vis)

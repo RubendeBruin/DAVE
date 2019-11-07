@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(2107, 1721)
+        MainWindow.resize(1920, 1200)
         MainWindow.setAcceptDrops(True)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/Dave_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
