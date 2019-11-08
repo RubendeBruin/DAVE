@@ -316,13 +316,13 @@ class Gui:
         self.run_code('s.clear()')
 
     def open(self):
-        filename, _ = QFileDialog.getOpenFileName(filter="*.pscene", caption="Scene files")
+        filename, _ = QFileDialog.getOpenFileName(filter="*.dave_asset", caption="Assets")
         if filename:
             code = 's.clear()\ns.load_scene(r"{}")'.format(filename)
             self.run_code(code)
 
     def menu_import(self):
-        filename, _ = QFileDialog.getOpenFileName(filter="*.pscene", caption="Scene files")
+        filename, _ = QFileDialog.getOpenFileName(filter="*.dave_asset", caption="Assets")
         if filename:
             code = 's.import_scene(r"{}")'.format(filename)
             self.run_code(code)
@@ -353,7 +353,7 @@ class Gui:
         self.run_code(code)
 
     def menu_save(self):
-        filename, _ = QFileDialog.getSaveFileName(filter="*.pscene", caption="Scene files",directory=self.scene.resources_paths[0])
+        filename, _ = QFileDialog.getSaveFileName(filter="*.dave_scene", caption="Scene files",directory=self.scene.resources_paths[0])
         if filename:
             code = 's.save_scene(r"{}")'.format(filename)
             self.run_code(code)
@@ -1073,6 +1073,8 @@ class Gui:
 if __name__ == '__main__':
     s = vfs.Scene()
     s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
+
+    s.import_scene(s.get_resource_path("cheetah.dave_asset"), containerize=False, prefix="")
 
     g = Gui(s)
     g.show()

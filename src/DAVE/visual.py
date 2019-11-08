@@ -70,6 +70,7 @@ def actor_from_trimesh(trimesh):
 
 def vp_actor_from_obj(filename):
     # load the data
+    filename = str(filename)
     source = vtk.vtkOBJReader()
     source.SetFileName(filename)
     #clean the data
@@ -1001,7 +1002,7 @@ class Viewport:
 
         self.update_outlines()
 
-        filename = vc.PATH_TEMP_SCREENSHOT
+        filename = str(vc.PATH_TEMP_SCREENSHOT)
 
         vp.screenshot(filename)
 

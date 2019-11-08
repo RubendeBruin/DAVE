@@ -29,28 +29,28 @@ RESOURCE_PATH = []
 from os.path import expanduser
 from os.path import dirname
 from os import mkdir
+from pathlib import Path
 
-cdir = dirname(__file__)
-RESOURCE_PATH.append(cdir + '/resources')
+cdir = Path(dirname(__file__))
+RESOURCE_PATH.append(cdir / 'resources')
 
-home = expanduser("~")
-default_user_dir = home + '/DAVE_models'
-mkdir(default_user_dir)
+home = Path(expanduser("~"))
+default_user_dir = home / 'DAVE_models'
+if not default_user_dir.exists():
+    mkdir(default_user_dir)
 RESOURCE_PATH.append(default_user_dir)
 
 print('default resource folders:')
 for a in RESOURCE_PATH:
     print(a)
 
-
-
 # temporary files:
-PATH_TEMP = default_user_dir   # stored in the user dir by default
-PATH_TEMP_SCREENSHOT = PATH_TEMP + 'screenshot.png'
+PATH_TEMP = Path(default_user_dir)   # stored in the user dir by default
+PATH_TEMP_SCREENSHOT = PATH_TEMP / 'screenshot.png'
 
 
 # debugging / logging
-LOGFILE = PATH_TEMP + 'vfLog.txt'
+LOGFILE = PATH_TEMP / 'vfLog.txt'
 
 
 # TEXTURE_SEA = 'virtualSea'

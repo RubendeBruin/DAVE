@@ -47,13 +47,13 @@ class Gui:
 
         txt = "Resources from:\n"
         for p in self.scene.resources_paths:
-            txt += '\n' + p
+            txt += '\n' + str(p)
         self.ui.lblInfo.setText(txt)
 
-        res = self.scene.get_resource_list('.pscene')
+        res = self.scene.get_resource_list('.dave_asset')
 
         for r in res:
-            self.ui.listWidget.addItem(r)
+            self.ui.listWidget.addItem(str(r))
 
         self.ui.listWidget.itemSelectionChanged.connect(self.changed)
         self.ui.listWidget.itemDoubleClicked.connect(self.dblclick)
@@ -69,7 +69,7 @@ class Gui:
     def select(self, data):
         file = data.text()
         self._selected = file
-        self.ui.btnImport.setText("Import {}".format(file[:-7])) # remove the .pscene part
+        self.ui.btnImport.setText("Import {}".format(file[:-11])) # remove the .dave_asset part
 
     def dblclick(self, data):
         self.select(data)

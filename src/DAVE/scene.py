@@ -19,7 +19,7 @@
         s.new_poi('point 1')                      # creates a poi with name anchor
         s.new_poi('point 2', position = (10,0,0)) # create a second poi at x=10
         s.new_cable('line',poiA = 'point 1', poiB = 'point 2') # creates a cable between the two points
-        s.save_scene(r'test.pscene')              # save to file
+        s.save_scene(r'test.dave_asset')              # save to file
 
 
     Nodes in a scene can be referenced by either name or by reference.
@@ -295,6 +295,7 @@ import DAVE.constants as vfc
 from DAVE.tools import *
 from os.path import isfile, split, dirname, exists
 from os import listdir
+from pathlib import Path
 import datetime
 
 
@@ -1787,6 +1788,8 @@ class TriMeshSource(Node):
         if not exists(filename):
             raise ValueError('File {} does not exit'.format(filename))
 
+        filename = str(filename)
+
         import vtk
         obj = vtk.vtkOBJReader()
         obj.SetFileName(filename)
@@ -2023,18 +2026,16 @@ class Scene:
             return name
 
         for res in self.resources_paths:
-            if res[-1] != '\\':
-                if res[-1] != '/':
-                    res = res + '/'
+            p = Path(res)
 
-            full = res + name
+            full = p / name
             if isfile(full):
                 return full
 
         raise FileExistsError('Resource "{}" not found in resource paths'.format(name))
 
     def get_resource_list(self, extension):
-        """Returns a list of all file-names given extension in any of the resource-paths"""
+        """Returns a list of all file-paths (strings) given extension in any of the resource-paths"""
 
         r = []
 
@@ -2953,10 +2954,10 @@ class Scene:
         So lets say this model uses a sub-model of a lifting hook which is imported from another file. If that other file is updated then
         the results of that update will not be reflected in the saved model.
 
-        If no path is present in the file-name then the model will be saved in the last resource-path (if any)
+        If no path is present in the file-name then the model will be saved in the last (lowest) resource-path (if any)
 
         Args:
-            filename : filename or file-path to save the file. Default extension is .pscene
+            filename : filename or file-path to save the file. Default extension is .dave_asset
 
         Returns:
             the full path to the saved file
@@ -2965,16 +2966,24 @@ class Scene:
 
         code = self.give_python_code()
 
-        dr = dirname(filename)
+        filename = Path(filename)
 
-        if not dr:
+        # add .dave_asset extension
+        if filename.suffix != '.dave_asset':
+            filename = Path(str(filename) + '.dave_asset')
+
+        # add path if not provided
+        if not filename.is_absolute():
             try:
-                filename = self.resources_paths[-1] + '\\' + filename
+                filename = Path(self.resources_paths[-1]) / filename
             except:
-                pass
+                pass # save in current folder
 
-        if not filename[-7:] == '.pscene':
-            filename += '.pscene'
+        # make sure directory exists
+        directory = filename.parent
+        if not directory.exists():
+            directory.mkdir()
+
 
         f = open(filename,'w+')
         f.write(code)
@@ -3019,7 +3028,7 @@ class Scene:
 
         This function is typically used on an empty scene.
 
-        Filename is appended with .pscene if needed.
+        Filename is appended with .dave_asset if needed.
         File is searched for in the resource-paths.
 
         See also: import scene"""
@@ -3027,10 +3036,14 @@ class Scene:
         if filename is None:
             raise Exception('Please provide a file-name')
 
-        if not filename.endswith('.pscene'):
-            filename += '.pscene'
+        filename = Path(filename)
+
+        if filename.suffix != '.dave_asset':
+            filename = Path(str(filename) + '.dave_asset')
 
         filename = self.get_resource_path(filename)
+
+        print('Loading {}'.format(filename))
 
         f = open(file=filename, mode = 'r')
         s = self
@@ -3050,6 +3063,9 @@ class Scene:
         Returns:
             Contained (Axis-type Node) : if the imported scene is containerized then a reference to the created container is returned.
         """
+
+        if isinstance(other, Path):
+            other = str(other)
 
         if isinstance(other, str):
             other = Scene(other)
