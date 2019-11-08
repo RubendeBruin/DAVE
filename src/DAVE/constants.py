@@ -18,21 +18,34 @@ g = 9.81
 rho = 1.025
 
 # ======== Folders ===========
+#
+# The RESOURCE PATH is the initial value for
+# Scene.resources_paths
+#
+# By default we fill it with the build-in assets
+# and a subfolder 'DAVE_models' in the user directory
+RESOURCE_PATH = []
 
 from os.path import expanduser
 from os.path import dirname
-home = expanduser("~")
+from os import mkdir
 
-RESOURCE_PATH = [home + '/models']
 cdir = dirname(__file__)
 RESOURCE_PATH.append(cdir + '/resources')
+
+home = expanduser("~")
+default_user_dir = home + '/DAVE_models'
+mkdir(default_user_dir)
+RESOURCE_PATH.append(default_user_dir)
 
 print('default resource folders:')
 for a in RESOURCE_PATH:
     print(a)
 
+
+
 # temporary files:
-PATH_TEMP = r"c:\data\\"
+PATH_TEMP = default_user_dir   # stored in the user dir by default
 PATH_TEMP_SCREENSHOT = PATH_TEMP + 'screenshot.png'
 
 
