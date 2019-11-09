@@ -53,7 +53,7 @@ PATH_TEMP_SCREENSHOT = PATH_TEMP / 'screenshot.png'
 LOGFILE = PATH_TEMP / 'vfLog.txt'
 
 
-# TEXTURE_SEA = 'virtualSea'
+
 VF_NAME_SPLIT = "-->"    # used for node-names, eg:    Body23-->Cog
 
 # =========== Visuals ==================
@@ -79,6 +79,12 @@ VF_NAME_SPLIT = "-->"    # used for node-names, eg:    Body23-->Cog
 # VISUAL_AMBIENT = 0.5
 #
 # VISUAL_BUOYANCY_PLANE_EXTEND = 5
+
+# ============ visuals :: sea ===========
+
+VISUAL_BUOYANCY_PLANE_EXTEND = 5
+TEXTURE_SEA = ''
+ALPHA_SEA = 0.8
 
 # ============ visuals :: geometry =========
 
@@ -123,19 +129,13 @@ COLOR_WATER = rgb(_BLUE_DARK)
 COLOR_BG2 = rgb(_WHITE)
 COLOR_BG1 = rgb(_BLUE_LIGHT)
 ALPHA_VISUAL = 0.3 # standard alpha value for visual when a node is selected
+ALPHA_BUOYANCY = 1.0
 
 OUTLINE_WIDTH = 1
 
 VISUAL_DIFFUSE = 0.4
 VISUAL_SPECULAR = 0.05
 VISUAL_AMBIENT = 0.5
-
-VISUAL_BUOYANCY_PLANE_EXTEND = 5
-
-TEXTURE_SEA = ''
-ALPHA_SEA = 0.8
-ALPHA_BUOYANCY = 1.0
-
 
 # ========= GUI =================
 
@@ -162,5 +162,4 @@ GUI_ANIMATION_FPS = 24
 
 BLENDER_EXEC = r"C:\Program Files\Blender Foundation\Blender\blender.exe"
 BLENDER_BASE_SCENE = r"C:\data\Dave\Public\Blender visuals\base.blend"
-
 BLENDER_CABLE_DIA = 0.1 # m

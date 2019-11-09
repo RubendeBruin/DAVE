@@ -11,6 +11,7 @@ For documentation of the main module "Scene" see :py:mod:`DAVE.scene`
 Other subjects:
 
 *  Assets and resources <assets_and_resources.rst>
+*  Source structure <package_structure.rst>
 *  Settings :py:mod:`DAVE.constants` - For changing colors, paths, naming
 *  Blender :py:mod:`DAVE.io.blender` - For exporting 3D scenes
 *  Jupyter :py:mod:`DAVE.jupyter` - For using DAVE in a notebook
@@ -39,6 +40,8 @@ Contents
    :maxdepth: 2
 
    Assets and resources <assets_and_resources.rst>
+   Scene and nodes <scene_and_nodes.rst>
+   Source structure <package_structure.rst>
    License <license>
    Authors <authors>
    Changelog <changelog>
