@@ -33,6 +33,7 @@ import math
 import DAVE.element_widgets as element_widgets
 
 import sys
+from pathlib import Path
 
 from PySide2 import QtWidgets
 from PySide2.QtWidgets import QMenu, QMainWindow, QDialog
@@ -346,7 +347,7 @@ class Gui:
         code = 'import DAVE.io.blender'
         code += "\ncamera = {{'position':({},{},{}), 'direction':({},{},{})}}".format(*pos,*dir)
         code += '\nblender_base = r"{}"'.format(vfc.BLENDER_BASE_SCENE)
-        code += '\nblender_result = r"{}"'.format(vfc.PATH_TEMP + 'current_render.blend')
+        code += '\nblender_result = r"{}"'.format(Path(vfc.PATH_TEMP) / 'current_render.blend')
         code += '\nDAVE.io.blender.create_blend_and_open(s, blender_base, blender_result, camera=camera)'
         code += '\nprint("Opening blender, close blender to continue.")'
         code += '\nprint("In blender, press F12 to go to rendered camera view.")'
@@ -1075,6 +1076,16 @@ if __name__ == '__main__':
     s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
 
     s.import_scene(s.get_resource_path("cheetah.dave_asset"), containerize=False, prefix="")
+
+    import DAVE.io.blender
+
+    camera = {'position': (411.6891719606241, -304.0115379598459, 165.17389979403023),
+              'direction': (-0.6666666666666666, 0.6666666666666666, -0.3333333333333333)}
+    blender_base = r"C:\data\Dave\Public\Blender visuals\base.blend"
+    blender_result = r"C:\Users\beneden\DAVE_models\current_render.blend"
+    DAVE.io.blender.create_blend_and_open(s, blender_base, blender_result, camera=camera)
+    print("Opening blender, close blender to continue.")
+    print("In blender, press F12 to go to rendered camera view.")
 
     g = Gui(s)
     g.show()

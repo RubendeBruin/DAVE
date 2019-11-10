@@ -51,6 +51,7 @@ from scipy.spatial.transform import Rotation  # for conversion from axis-angle t
 from os.path import splitext, basename
 from os import system
 from numpy import deg2rad
+from pathlib import Path
 
 
 # utility functions for our python scripts are hard-coded here
@@ -143,7 +144,7 @@ def create_blend_and_open(scene, blender_base_file, blender_result_file, blender
     system(command)
 
 def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None):
-    tempfile = consts.PATH_TEMP + 'blender.py'
+    tempfile = Path(consts.PATH_TEMP) / 'blender.py'
 
     blender_py_file(scene, tempfile, blender_base_file, blender_result_file,camera=camera)
 
