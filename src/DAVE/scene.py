@@ -1295,6 +1295,8 @@ class Sheave(NodeWithParent):
     @axis.setter
     def axis(self, val):
         assert3f(val)
+        if np.linalg.norm(val) == 0:
+            raise ValueError('Axis can not be 0,0,0')
         self._vfNode.axis_direction = val
 
     @property

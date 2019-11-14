@@ -631,6 +631,8 @@ class Gui:
                 item.setIcon(QIcon(":/icons/linhyd.png"))
             if isinstance(node, vfs.Force):
                 item.setIcon(QIcon(":/icons/force.png"))
+            if isinstance(node, vfs.Sheave):
+                item.setIcon(QIcon(":/icons/sheave.png"))
             if isinstance(node, vfs.Buoyancy):
                 item.setIcon(QIcon(":/icons/trimesh.png"))
 
@@ -1145,20 +1147,6 @@ if __name__ == '__main__':
                 EA=100.0,
                 sheaves=['s',
                          's2']),
-    # code for Visual
-    s.new_visual(name='Visual',
-                 parent='A',
-                 path=r'cylinder 1x1x1.obj',
-                 offset=(-0.1, 0.0, 0.0),
-                 rotation=(0.0, 90.0, 0.0),
-                 scale=(0.2, 8, 8))
-    # code for Visual
-    s.new_visual(name='Visual',
-                 parent='A2',
-                 path=r'cylinder 1x1x1.obj',
-                 offset=(-0.1, 0.0, 0.0),
-                 rotation=(0.0, 90.0, 0.0),
-                 scale=(0.2, 8, 8))
 
     g = Gui(s)
     g.show()
