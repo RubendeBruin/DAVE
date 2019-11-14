@@ -23,6 +23,7 @@ import DAVE.forms.widget_lincon6
 import DAVE.forms.widget_linhyd
 import DAVE.forms.widget_beam
 import DAVE.forms.widget_con2d
+import DAVE.forms.widget_sheave
 
 import DAVE.forms.addnode_form
 
@@ -663,6 +664,64 @@ class EditForce(NodeEditor):
             code += element + '.force = ({}, {}, {})'.format(*new_force)
         if not np.all(new_moment == self.node.moment):
             code += element + '.moment = ({}, {}, {})'.format(*new_moment)
+
+        return code
+
+class EditSheave(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditSheave._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_sheave.Ui_widget_sheave()
+            ui.setupUi(widget)
+            EditSheave._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditSheave._ui
+
+        try:
+            ui.sbAX.valueChanged.disconnect()
+            ui.sbAY.valueChanged.disconnect()
+            ui.sbAZ.valueChanged.disconnect()
+            ui.sbRadius.valueChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.sbAX.setValue(self.node.axis[0])
+        ui.sbAY.setValue(self.node.axis[1])
+        ui.sbAZ.setValue(self.node.axis[2])
+
+        ui.sbRadius.setValue(self.node.radius)
+
+        ui.sbAX.valueChanged.connect(self.callback)
+        ui.sbAY.valueChanged.connect(self.callback)
+        ui.sbAZ.valueChanged.connect(self.callback)
+
+        ui.sbRadius.valueChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = ""
+        element = "\ns['{}']".format(self.node.name)
+
+        new_axis = np.array(
+            (self.ui.sbAX.value(), self.ui.sbAY.value(),self.ui.sbAZ.value()))
+        new_radius = self.ui.sbRadius.value()
+
+        if not np.all(new_axis == self.node.axis):
+            code += element + '.axis = ({}, {}, {})'.format(*new_axis)
+        if not new_radius == self.node.radius:
+            code += element + '.radius = {}'.format(new_radius)
 
         return code
 

@@ -751,6 +751,10 @@ class Gui:
         if isinstance(node, vfs.Force):
             self._node_editors.append(element_widgets.EditForce(node, self.node_property_changed, self.scene))
 
+        if isinstance(node, vfs.Sheave):
+            self._node_editors.append(element_widgets.EditSheave(node, self.node_property_changed, self.scene))
+
+
         if isinstance(node, vfs.HydSpring):
             self._node_editors.append(element_widgets.EditHydSpring(node, self.node_property_changed, self.scene))
 
