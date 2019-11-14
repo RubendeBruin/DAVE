@@ -927,11 +927,7 @@ class Gui:
 
                 self.ui.teHistory.setPlainText(self.ui.teHistory.toPlainText() + '\n#---\n' + code)
                 self.ui.teHistory.verticalScrollBar().setValue(self.ui.teHistory.verticalScrollBar().maximum()) # scroll down all the way
-
-
             except Exception as E:
-
-
                 self.ui.teFeedback.setText(c.stdout + '\n' + str(E) + '\n\nWhen running: \n\n' + code)
                 self.ui.teFeedback.setStyleSheet("background-color: red;")
                 return
@@ -1073,19 +1069,92 @@ class Gui:
 
 if __name__ == '__main__':
     s = vfs.Scene()
-    s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
 
-    s.import_scene(s.get_resource_path("cheetah.dave_asset"), containerize=False, prefix="")
 
-    import DAVE.io.blender
+    def solved(number):
+        return number
 
-    camera = {'position': (411.6891719606241, -304.0115379598459, 165.17389979403023),
-              'direction': (-0.6666666666666666, 0.6666666666666666, -0.3333333333333333)}
-    blender_base = r"C:\data\Dave\Public\Blender visuals\base.blend"
-    blender_result = r"C:\Users\beneden\DAVE_models\current_render.blend"
-    DAVE.io.blender.create_blend_and_open(s, blender_base, blender_result, camera=camera)
-    print("Opening blender, close blender to continue.")
-    print("In blender, press F12 to go to rendered camera view.")
+
+    # code for a
+    s.new_poi(name='a',
+              position=(0.0,
+                        0.0,
+                        0.0))
+    # code for A
+    s.new_rigidbody(name='A',
+                    mass=10.0,
+                    cog=(0.0,
+                         0.0,
+                         0.0),
+                    position=(7.094,
+                              0.0,
+                              -2.668),
+                    rotation=(0.0,
+                              0.0,
+                              solved(95.5914555904906)),
+                    fixed=(True, True, True, True, True, False))
+    # code for b
+    s.new_poi(name='b',
+              parent='A',
+              position=(0.0,
+                        0.0,
+                        0.0))
+    # code for s
+    s.new_sheave(name='s',
+                 parent='b',
+                 axis=(-1.0, 0.0, 0.0),
+                 radius=4.0)
+    # code for A2
+    s.new_rigidbody(name='A2',
+                    mass=10.0,
+                    cog=(0.0,
+                         0.0,
+                         0.0),
+                    position=(20.0,
+                              0.0,
+                              1.0),
+                    rotation=(0.0,
+                              0.0,
+                              -130.0),
+                    fixed=(True, True, True, True, True, True))
+    # code for b2
+    s.new_poi(name='b2',
+              parent='A2',
+              position=(0.0,
+                        0.0,
+                        0.0))
+    # code for s2
+    s.new_sheave(name='s2',
+                 parent='b2',
+                 axis=(-1.0, 0.0, 0.0),
+                 radius=4.0)
+    # code for d
+    s.new_poi(name='d',
+              position=(30.0,
+                        0.0,
+                        -10.0))
+    # code for cable
+    s.new_cable(name='cable',
+                poiA='a',
+                poiB='d',
+                length=29.0,
+                EA=100.0,
+                sheaves=['s',
+                         's2']),
+    # code for Visual
+    s.new_visual(name='Visual',
+                 parent='A',
+                 path=r'cylinder 1x1x1.obj',
+                 offset=(-0.1, 0.0, 0.0),
+                 rotation=(0.0, 90.0, 0.0),
+                 scale=(0.2, 8, 8))
+    # code for Visual
+    s.new_visual(name='Visual',
+                 parent='A2',
+                 path=r'cylinder 1x1x1.obj',
+                 offset=(-0.1, 0.0, 0.0),
+                 rotation=(0.0, 90.0, 0.0),
+                 scale=(0.2, 8, 8))
 
     g = Gui(s)
     g.show()

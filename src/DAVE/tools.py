@@ -36,3 +36,14 @@ def assertPoi(var, name = "Node"):
         return
     else:
         raise ValueError(name + " be of type Poi but is a ".format(type(var)))
+
+def make_iterable(v):
+    """Makes an variable iterable by putting it in a list if needed"""
+
+    try:
+        _ = iter(v)
+        return v
+    except:
+        return [v]
+
+

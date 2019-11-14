@@ -1155,14 +1155,33 @@ class Cable(CoreConnectedNode):
     def EA(self, ea):
         self._vfNode.EA = ea
 
+    def check_endpoints(self):
+        if isinstance(self._pois[0], Sheave):
+            raise ValueError(
+                'First and last connection of a cable {} should be of type <Poi>. It is not allowed to use Sheave {} as start'.format(self.name, self._pois[0].name))
+
+        if isinstance(self._pois[-1], Sheave):
+            raise ValueError(
+                'First and last connection of a cable {} should be of type <Poi>. It is not allowed to use Sheave {} as endpoint'.format(self.name, self._pois[-1].name))
+
+
+
     def _update_pois(self):
         self._vfNode.clear_connections()
-        for poi in self._pois:
-            self._vfNode.add_connection(poi._vfNode)
+        for point in self._pois:
+
+            if isinstance(point, Poi):
+                self._vfNode.add_connection_poi(point._vfNode)
+            if isinstance(point, Sheave):
+                self._vfNode.add_connection_sheave(point._vfNode)
 
     def add_connection(self, apoi):
         """Adds a poi to the list of connection points"""
-        if not isinstance(apoi, Poi):
+
+        if isinstance(apoi, str):
+            apoi = self._scene[apoi]
+
+        if not (isinstance(apoi, Poi) or isinstance(apoi, Sheave)):
             raise TypeError('Provided point should be a Poi')
 
         if self._pois:  # check for not empty
@@ -1258,6 +1277,49 @@ class Force(NodeWithParent):
         code += "\n            force=({}, {}, {}),".format(*self.force)
         code += "\n            moment=({}, {}, {}) )".format(*self.moment)
         return code
+
+class Sheave(NodeWithParent):
+    """A Sheave models sheave with axis and diameter.
+
+    """
+
+    @property
+    def axis(self):
+        """
+        Gets or sets the x,y and z force components.
+
+        Example s['wind'].force = (12,34,56)
+        """
+        return self._vfNode.axis_direction
+
+    @axis.setter
+    def axis(self, val):
+        assert3f(val)
+        self._vfNode.axis_direction = val
+
+    @property
+    def radius(self):
+        """
+        Gets or sets the x,y and z moment components.
+
+        Example s['wind'].moment = (12,34,56)
+        """
+        return self._vfNode.radius
+
+
+    @radius.setter
+    def radius(self, val):
+        assert1f(val)
+        self._vfNode.radius = val
+
+    def give_python_code(self):
+        code = "# code for {}".format(self.name)
+        code += "\ns.new_sheave(name='{}',".format(self.name)
+        code += "\n            parent='{}',".format(self.parent.name)
+        code += "\n            axis=({}, {}, {}),".format(*self.axis)
+        code += "\n            radius={} )".format(self.radius)
+        return code
+
 
 class HydSpring(NodeWithParent):
     """A HydSpring models a linearized hydrostatic spring.
@@ -1971,10 +2033,13 @@ class Scene:
         if type(node) == str:
             node = self[self._name_prefix + node]
 
-        if isinstance(node, reqtype):
-            return node
+        reqtype = make_iterable(reqtype)
 
-        if isinstance(node, Node):
+        for r in reqtype:
+            if isinstance(node, r):
+                return node
+
+        if issubclass(type(node), Node):
             raise Exception(
                 "Element with name {} can not be used , it should be a {} or derived type but is a {}.".format(
                     node.name, reqtype, type(node)))
@@ -1998,6 +2063,15 @@ class Scene:
         Raises Exception if anything is not ok"""
 
         return self._node_from_node(node, Poi)
+
+    def _poi_or_sheave_from_node(self, node):
+        """Returns None if node is None
+        Returns node if node is an poi type node
+        Else returns the poi with the given name
+
+        Raises Exception if anything is not ok"""
+
+        return self._node_from_node(node, [Poi, Sheave])
 
     def _geometry_changed(self):
         """Notify the scene that the geometry has changed and that the global transforms are invalid"""
@@ -2605,12 +2679,19 @@ class Scene:
             if isinstance(sheaves, Poi): # single sheave as poi or string
                 sheaves = [sheaves]
 
+            if isinstance(sheaves, Sheave): # single sheave as poi or string
+                sheaves = [sheaves]
+
+
             if isinstance(sheaves, str):
                 sheaves = [sheaves]
 
 
             for s in sheaves:
-                pois.append(self._poi_from_node(s))
+                # s may be a poi or a sheave
+                pois.append(self._poi_or_sheave_from_node(s))
+
+
         pois.append(poiB)
 
         # default options
@@ -2683,6 +2764,45 @@ class Scene:
             new_node.force = force
         if moment is not None:
             new_node.moment = moment
+
+        self.nodes.append(new_node)
+        return new_node
+
+    def new_sheave(self, name, parent, axis, radius=0):
+        """Creates a new *sheave* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: name of the parent of the node [Poi]
+            axis: direction of the axis of rotation (x,y,z)
+            radius: optional, radius of the sheave
+
+
+        Returns:
+            Reference to newly created sheave
+
+        """
+
+        # apply prefixes
+        name = self._prefix_name(name)
+
+        # first check
+        self._verify_name_available(name)
+        b = self._poi_from_node(parent)
+
+        assert3f(axis, "Axis of rotation ")
+
+        assert1f(radius, "Radius of sheave")
+
+        # then create
+        a = self._vfc.new_sheave(name)
+
+        new_node = Sheave(self, a)
+
+        # and set properties
+        new_node.parent = b
+        new_node.axis = axis
+        new_node.radius = radius
 
         self.nodes.append(new_node)
         return new_node

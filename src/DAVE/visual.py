@@ -480,13 +480,15 @@ class Viewport:
 
             if isinstance(N, vf.Cable):
 
-                points = list()
-                for p in N._pois:
-                    points.append(p.global_position)
+                # points = list()
+                # for p in N._pois:
+                #     points.append(p.global_position)
+                # if N._vfNode.global_points:
+                #     a = vp.Line(N._vfNode.global_points, lw=3).c(vc.COLOR_CABLE)
+                # else:
+                a = vp.Line([(0,0,0),(0,0,10),(-5,0,0)], lw=3).c(vc.COLOR_CABLE)
 
-                a = vp.Line(points, lw=3).c(vc.COLOR_CABLE)
                 a.actor_type = ActorType.CABLE
-
                 actors.append(a)
 
             if isinstance(N, vf.LinearBeam):
@@ -605,23 +607,27 @@ class Viewport:
                 # # check the number of points
                 A = V.actors[0]
 
-                points = list()
-                for p in V.node._pois:
-                    points.append(p.global_position)
+                # points = list()
+                # for p in V.node._pois:
+                #     points.append(p.global_position)
 
-                A.setPoints(points)
-
-                # work-around
-                # (re-create the poly-line)
-                # if n_points != len(points):
+                points = V.node._vfNode.global_points
+                
+                if len(points)==0:  # not yet created
+                    continue
 
                 n_points = A.NPoints()
+                A.setPoints(points)   # points can be set without allocation
 
-                lines = vtk.vtkCellArray()  # Create the polyline.
-                lines.InsertNextCell(n_points)
-                for i in range(len(points)):
-                    lines.InsertCellPoint(i)
-                A.poly.SetLines(lines)
+                if n_points != len(points): # equal number of points
+                    # different number of points in line
+                    # (re-create the poly-line)
+                    lines = vtk.vtkCellArray()  # Create the polyline.
+                    lines.InsertNextCell(len(points))
+                    for i in range(len(points)):
+                        # print('inserting point {} {} {}'.format(*i))
+                        lines.InsertCellPoint(i)
+                    A.poly.SetLines(lines)
 
                 continue
 

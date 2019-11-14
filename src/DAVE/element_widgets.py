@@ -493,7 +493,11 @@ class EditCable(NodeEditor):
         else:
             ui = EditCable._ui
 
-        self.plist = list()
+        self.plist = [""]
+
+        for poi in self.scene.nodes_of_type(vfs.Sheave):
+            self.plist.append(poi.name)
+
         for poi in self.scene.nodes_of_type(vfs.Poi):
             self.plist.append(poi.name)
 
@@ -513,6 +517,7 @@ class EditCable(NodeEditor):
         ui.additional_pois.clear()
 
         ui.comboBox.clear()
+
         ui.comboBox.addItems(self.plist)
 
         ui.comboBox_2.clear()
@@ -521,11 +526,6 @@ class EditCable(NodeEditor):
         ui.doubleSpinBox_1.setValue(self.node.length)
         ui.doubleSpinBox_2.setValue(self.node.EA)
 
-        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
-
-        ui.btnAdd.clicked.connect(self.add_poi_dropdown)
-        ui.btnRemove.clicked.connect(self.delete_poi_dropdown)
 
         self.ui = ui  # needs to be done here as self.add_poi_dropdown modifies this
 
@@ -539,8 +539,15 @@ class EditCable(NodeEditor):
 
         for i,name in enumerate(poi_names[2:]):
             self.ui.additional_pois[i].setCurrentText(name)
+            # self.ui.additional_pois[i].currentIndexChanged.connect(self.callback)
 
         # Set events
+        ui.btnAdd.clicked.connect(self.add_poi_dropdown)
+        ui.btnRemove.clicked.connect(self.delete_poi_dropdown)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+
         ui.comboBox.currentIndexChanged.connect(self.callback)
         ui.comboBox_2.currentIndexChanged.connect(self.callback)
         for cbx in self.ui.additional_pois:
@@ -551,9 +558,8 @@ class EditCable(NodeEditor):
     def add_poi_dropdown(self):
         cbx = QtWidgets.QComboBox(self.ui.frame)
         self.ui.poiLayout.addWidget(cbx)
-        cbx.addItem("")
         cbx.addItems(self.plist)
-        cbx.currentIndexChanged.connect(self.callback)
+
         self.ui.additional_pois.append(cbx)
 
 
@@ -565,7 +571,6 @@ class EditCable(NodeEditor):
             self.callback()
 
     def generate_code(self):
-
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
@@ -579,8 +584,9 @@ class EditCable(NodeEditor):
             code += element + '.EA = {}'.format(new_EA)
 
         # get the poi names
-        new_names = [self.ui.comboBox.currentText(),self.ui.comboBox_2.currentText()]
-        for cbx in self.ui.additional_pois:
+        # new_names = [self.ui.comboBox.currentText(),self.ui.comboBox_2.currentText()]
+        new_names = []
+        for cbx in [self.ui.comboBox, self.ui.comboBox_2, *self.ui.additional_pois]:
             ct = cbx.currentText()
             if ct: # skip empty
                 new_names.append(ct)
@@ -590,6 +596,7 @@ class EditCable(NodeEditor):
             for name in new_names:
                 code += element + ".add_connection(s['{}'])".format(name)
 
+        code += '\n' + element + ".check_endpoints()"
 
         return code
 
