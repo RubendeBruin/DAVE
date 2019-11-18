@@ -1289,6 +1289,31 @@ def add_force(scene, parent = None):
 
     else:
         return None
+    
+def add_sheave(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParentPoi.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/sheave.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Sheave'))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        poi = ui.cbParentPoi.currentText()
+        name = ui.tbName.text()
+
+        return "new_sheave('{}', parent = '{}', axis = (0,1,0))".format(name, poi)
+
+    else:
+        return None
 
 def add_linear_connector(scene, parent = None):
 

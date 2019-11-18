@@ -472,8 +472,9 @@ class Gui:
 
 
         menu.addAction("New Axis", self.new_axis)
-        menu.addAction("New Poi", self.new_poi)
         menu.addAction("New RigidBody", self.new_body)
+        menu.addAction("New Poi", self.new_poi)
+        menu.addAction("New Sheave", self.new_sheave)
         menu.addAction("New Cable", self.new_cable)
         menu.addAction("New Force", self.new_force)
         menu.addAction("New Beam", self.new_beam)
@@ -994,6 +995,9 @@ class Gui:
 
     def new_force(self):
         self.new_something(DAVE.element_widgets.add_force)
+
+    def new_sheave(self):
+        self.new_something(DAVE.element_widgets.add_sheave)
 
     def new_linear_connector(self):
         self.new_something(DAVE.element_widgets.add_linear_connector)

@@ -523,10 +523,12 @@ class Viewport:
                 # points = list()
                 # for p in N._pois:
                 #     points.append(p.global_position)
-                # if N._vfNode.global_points:
-                #     a = vp.Line(N._vfNode.global_points, lw=3).c(vc.COLOR_CABLE)
-                # else:
-                a = vp.Line([(0,0,0),(0,0,10),(-5,0,0)], lw=3).c(vc.COLOR_CABLE)
+                #
+
+                if N._vfNode.global_points:
+                    a = vp.Line(N._vfNode.global_points, lw=3).c(vc.COLOR_CABLE)
+                else:
+                    a = vp.Line([(0,0,0),(0,0,0.1),(0,0,0)], lw=3).c(vc.COLOR_CABLE)
 
                 a.actor_type = ActorType.CABLE
                 actors.append(a)
@@ -657,9 +659,13 @@ class Viewport:
                 t.PostMultiply()
                 t.RotateWXYZ(np.rad2deg(angle), rot_axis)
 
+                t.Translate(V.node.parent.position)
+
                 # Get the parent matrix (if any)
                 if V.node.parent.parent is not None:
                     apply_parent_tranlation_on_transform(V.node.parent.parent, t)
+
+                
 
                 A.setTransform(t.GetMatrix())
                 continue

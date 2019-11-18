@@ -105,6 +105,7 @@ _BLUE = [12,106,146]
 _BLUE_LIGHT = [203,224,239]
 _BLUE_DARK = [57,76,90]
 _PINK = [247,17,228]
+_DARK_GRAY = [45,45,48]
 
 def rgb(col):
     return (col[0]/255, col[1]/255, col[2]/255)
@@ -127,8 +128,13 @@ COLOR_Z = rgb(_BLUE)
 
 COLOR_WATER = rgb(_BLUE_DARK)
 
-COLOR_BG2 = rgb(_WHITE)
-COLOR_BG1 = rgb(_BLUE_LIGHT)
+# COLOR_BG2 = rgb(_WHITE)
+# COLOR_BG1 = rgb(_BLUE_LIGHT)
+
+COLOR_BG1 = rgb(_DARK_GRAY)
+COLOR_BG2 = rgb(_DARK_GRAY)
+# _DARK_GRAY
+
 # COLOR_BG1 =rgb(_WHITE)
 ALPHA_VISUAL = 0.3 # standard alpha value for visual when a node is selected
 ALPHA_BUOYANCY = 1.0

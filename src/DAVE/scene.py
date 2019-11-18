@@ -1171,7 +1171,10 @@ class Cable(CoreConnectedNode):
         for point in self._pois:
 
             if isinstance(point, Poi):
-                self._vfNode.add_connection_poi(point._vfNode)
+                try:
+                    self._vfNode.add_connection_poi(point._vfNode)
+                except:
+                    self._vfNode.add_connection(point._vfNode)
             if isinstance(point, Sheave):
                 self._vfNode.add_connection_sheave(point._vfNode)
 
