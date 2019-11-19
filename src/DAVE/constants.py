@@ -176,6 +176,6 @@ GUI_ANIMATION_FPS = 24
 # ========== BLENDER ==============
 
 BLENDER_EXEC = r"C:\Program Files\Blender Foundation\Blender\blender.exe"
-BLENDER_BASE_SCENE = r"C:\data\Dave\Public\Blender visuals\base.blend"
+BLENDER_BASE_SCENE = r"C:\data\Dave\Public\Blender visuals\base ocean eevee.blend"
 BLENDER_DEFAULT_OUTFILE = PATH_TEMP_SCREENSHOT = PATH_TEMP / 'blenderout.blend'
 BLENDER_CABLE_DIA = 0.1 # m

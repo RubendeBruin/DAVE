@@ -1098,5 +1098,7 @@ if __name__ == '__main__':
 
     from DAVE.io.blender import *
 
+    # Gui(s).show()
+
     s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
     create_blend_and_open(s)
