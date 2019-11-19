@@ -107,26 +107,41 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
 			bpy.ops.transform.rotate(value=-orientation[2], orient_axis='X')
 			bpy.ops.transform.translate(value=position)
 
-def add_line(p1, p2, diameter, name=None):
+def add_line(points, diameter, name=None):
 
     bpy.ops.curve.primitive_bezier_curve_add(enter_editmode=True)
     obj_data = bpy.context.active_object.data
     obj_data.bevel_depth = diameter/2
 
     end1 = obj_data.splines[0].bezier_points[0]
-    end1.co = p1
-    end1.handle_left = p1
-    end1.handle_right = p1
+    end1.co = points[0]
+    end1.handle_left = points[0]
+    end1.handle_right = points[1]
 
     end2 = obj_data.splines[0].bezier_points[1]
-    end2.co = p2
-    end2.handle_left = p2
-    end2.handle_right = p2
+    end2.co = points[1]
+    end2.handle_left = points[0]
+    end2.handle_right = points[1]
+    
+    if len(points)>2:
+        
+        end2.handle_right = points[2]
+        
+        for i in range(2,len(points)):
+            obj_data.splines[0].bezier_points.add(1)
+            end3 = obj_data.splines[0].bezier_points[i]
+            end3.co = points[i]
+            end3.handle_left = points[i-1]
+            if i < len(points)-1:
+                end3.handle_right = points[i+1]
+            else:
+                end3.handle_right = points[i]
 
     if name is not None:
         bpy.context.active_object.name = name
 
     bpy.ops.object.mode_set(mode='OBJECT')
+    
 """
 
 
@@ -167,7 +182,8 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
     code += 'bpy.ops.wm.open_mainfile(filepath=r"{}")\n'.format(blender_base_file)
     code += '\n'
     code += BFUNC
-    code += '\n'
+    code += '\n# Set 3d cursor to origin'
+    code += '\nbpy.context.scene.cursor.location = (0.0, 0.0, 0.0)'
 
     for visual in scene.nodes_of_type(dc.Visual):
 
@@ -200,6 +216,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
         rot = Rotation.from_rotvec(deg2rad(visual.parent.global_rotation))
         rotated_offset = rot.apply(visual.offset)
 
+
         code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{}), offset=({},{},{}), orientation=({},{},{}), position=({},{},{}))'.format(
 	                filename,
                     *visual.scale,
@@ -217,11 +234,13 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
         if dia < consts.BLENDER_CABLE_DIA:
             dia = consts.BLENDER_CABLE_DIA
 
-        n = len(points)
-        for i in range(n-1):
-            p1 = points[i]
-            p2 = points[i+1]
-            code += '\nadd_line(({},{},{}),({},{},{}), diameter={}, name = "{}_{}")'.format(*p1, *p2, dia, cable.name, i)
+        code += '\npoints=['
+        for p in points:
+            code += '({},{},{}),'.format(*p)
+        code = code[:-1]
+        code += ']'
+
+        code += '\nadd_line(points, diameter={}, name = "{}")'.format(dia, cable.name)
 
     if camera is not None:
         pos = camera['position']
