@@ -679,7 +679,7 @@ class Viewport:
                 # for p in V.node._pois:
                 #     points.append(p.global_position)
 
-                points = V.node._vfNode.global_points
+                points = V.node.get_points_for_visual()
                 
                 if len(points)==0:  # not yet created
                     continue

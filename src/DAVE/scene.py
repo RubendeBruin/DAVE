@@ -1155,6 +1155,22 @@ class Cable(CoreConnectedNode):
     def EA(self, ea):
         self._vfNode.EA = ea
 
+    @property
+    def diameter(self):
+        return self._vfNode.diameter
+
+    @diameter.setter
+    def diameter(self, diameter):
+        self._vfNode.diameter = diameter
+
+    def get_points_for_visual(self):
+        """
+
+        Returns:
+
+        """
+        return self._vfNode.global_points
+
     def check_endpoints(self):
         if isinstance(self._pois[0], Sheave):
             raise ValueError(
@@ -2639,7 +2655,7 @@ class Scene:
         self.nodes.append(r)
         return r
 
-    def new_cable(self, name, poiA, poiB, length=-1, EA=0, sheaves=None):
+    def new_cable(self, name, poiA, poiB, length=-1, EA=0, diameter=0, sheaves=None):
         """Creates a new *cable* node and adds it to the scene.
 
         Args:
@@ -2715,11 +2731,17 @@ class Scene:
         if EA<0:
             raise Exception('EA should be more than 0')
 
+        assert1f(diameter, "Diameter should be a number >= 0")
+
+        if diameter<0:
+            raise Exception("Diameter should be >= 0")
+
         # then create
         a = self._vfc.new_cable(name)
         new_node = Cable(self, a)
         new_node.length = length
         new_node.EA = EA
+        new_node.diameter = diameter
 
         for poi in pois:
             new_node.add_connection(poi)

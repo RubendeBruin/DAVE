@@ -1078,79 +1078,25 @@ class Gui:
 # ====== main code ======
 
 if __name__ == '__main__':
-    s = vfs.Scene()
 
 
-    def solved(number):
-        return number
 
+    s = DAVE.scene.Scene()
 
-    # code for a
-    s.new_poi(name='a',
-              position=(0.0,
-                        0.0,
-                        0.0))
-    # code for A
-    s.new_rigidbody(name='A',
-                    mass=10.0,
-                    cog=(0.0,
-                         0.0,
-                         0.0),
-                    position=(7.094,
-                              0.0,
-                              -2.668),
-                    rotation=(0.0,
-                              0.0,
-                              solved(95.5914555904906)),
-                    fixed=(True, True, True, True, True, False))
-    # code for b
-    s.new_poi(name='b',
-              parent='A',
-              position=(0.0,
-                        0.0,
-                        0.0))
-    # code for s
-    s.new_sheave(name='s',
-                 parent='b',
-                 axis=(-1.0, 0.0, 0.0),
-                 radius=4.0)
-    # code for A2
-    s.new_rigidbody(name='A2',
-                    mass=10.0,
-                    cog=(0.0,
-                         0.0,
-                         0.0),
-                    position=(20.0,
-                              0.0,
-                              1.0),
-                    rotation=(0.0,
-                              0.0,
-                              -130.0),
-                    fixed=(True, True, True, True, True, True))
-    # code for b2
-    s.new_poi(name='b2',
-              parent='A2',
-              position=(0.0,
-                        0.0,
-                        0.0))
-    # code for s2
-    s.new_sheave(name='s2',
-                 parent='b2',
-                 axis=(-1.0, 0.0, 0.0),
-                 radius=4.0)
-    # code for d
-    s.new_poi(name='d',
-              position=(30.0,
-                        0.0,
-                        -10.0))
-    # code for cable
-    s.new_cable(name='cable',
-                poiA='a',
-                poiB='d',
-                length=29.0,
-                EA=100.0,
-                sheaves=['s',
-                         's2']),
+    s.new_poi('a')
+    s.new_poi('b', position = (10,0,15))
+    s.new_sheave('sa','a',(0,1,0),0.5)
+    s.new_sheave('sb', 'b', (0, 1, 0), 0.5)
 
-    g = Gui(s)
-    g.show()
+    from DAVE.rigging import *
+
+    create_sling(s,'test',Ltotal=30, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter = 0.3, EA = 1e6, mass = 3,
+                 endA='sa',
+                 endB='sb')
+
+    s.solve_statics()
+
+    from DAVE.io.blender import *
+
+    s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
+    create_blend_and_open(s)

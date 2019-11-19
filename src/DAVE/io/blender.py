@@ -111,7 +111,7 @@ def add_line(p1, p2, diameter, name=None):
 
     bpy.ops.curve.primitive_bezier_curve_add(enter_editmode=True)
     obj_data = bpy.context.active_object.data
-    obj_data.bevel_depth = diameter
+    obj_data.bevel_depth = diameter/2
 
     end1 = obj_data.splines[0].bezier_points[0]
     end1.co = p1
@@ -136,11 +136,16 @@ def _to_euler(rotation):
     return r.as_euler('zyx',degrees=False)
 
 
+def create_blend_and_open(scene, blender_result_file = None, blender_base_file=None, blender_exe_path=None, camera=None):
 
+    if blender_base_file is None:
+        blender_base_file = consts.BLENDER_BASE_SCENE
 
-def create_blend_and_open(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None):
+    if blender_result_file is None:
+        blender_result_file = consts.BLENDER_DEFAULT_OUTFILE
+
     create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path,camera=camera)
-    command = '"{}"'.format(blender_result_file)
+    command = '"{}"'.format(str(blender_result_file))
     system(command)
 
 def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None):
@@ -205,15 +210,18 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
 
     for cable in scene.nodes_of_type(dc.Cable):
-        points = []
-        for p in cable._pois:
-            points.append(p.global_position)
+
+        points = cable.get_points_for_visual()
+        dia = cable.diameter
+
+        if dia < consts.BLENDER_CABLE_DIA:
+            dia = consts.BLENDER_CABLE_DIA
 
         n = len(points)
         for i in range(n-1):
             p1 = points[i]
             p2 = points[i+1]
-            code += '\nadd_line(({},{},{}),({},{},{}), diameter={}, name = "{}_{}")'.format(*p1, *p2, consts.BLENDER_CABLE_DIA, cable.name, i)
+            code += '\nadd_line(({},{},{}),({},{},{}), diameter={}, name = "{}_{}")'.format(*p1, *p2, dia, cable.name, i)
 
     if camera is not None:
         pos = camera['position']

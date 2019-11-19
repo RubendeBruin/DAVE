@@ -106,6 +106,7 @@ _BLUE_LIGHT = [203,224,239]
 _BLUE_DARK = [57,76,90]
 _PINK = [247,17,228]
 _DARK_GRAY = [45,45,48]
+_LIGHT_GRAY = [200,200,203]
 
 def rgb(col):
     return (col[0]/255, col[1]/255, col[2]/255)
@@ -128,12 +129,18 @@ COLOR_Z = rgb(_BLUE)
 
 COLOR_WATER = rgb(_BLUE_DARK)
 
-# COLOR_BG2 = rgb(_WHITE)
-# COLOR_BG1 = rgb(_BLUE_LIGHT)
+COLOR_BG2 = rgb(_WHITE)
+COLOR_BG1 = rgb(_BLUE_LIGHT)
 
-COLOR_BG1 = rgb(_DARK_GRAY)
-COLOR_BG2 = rgb(_DARK_GRAY)
+COLOR_BG2 = rgb(_LIGHT_GRAY)
+COLOR_BG1 = rgb(_LIGHT_GRAY)
+
+
+# COLOR_BG1 = rgb(_DARK_GRAY)
+# COLOR_BG2 = rgb(_DARK_GRAY)
 # _DARK_GRAY
+
+
 
 # COLOR_BG1 =rgb(_WHITE)
 ALPHA_VISUAL = 0.3 # standard alpha value for visual when a node is selected
@@ -170,4 +177,5 @@ GUI_ANIMATION_FPS = 24
 
 BLENDER_EXEC = r"C:\Program Files\Blender Foundation\Blender\blender.exe"
 BLENDER_BASE_SCENE = r"C:\data\Dave\Public\Blender visuals\base.blend"
+BLENDER_DEFAULT_OUTFILE = PATH_TEMP_SCREENSHOT = PATH_TEMP / 'blenderout.blend'
 BLENDER_CABLE_DIA = 0.1 # m

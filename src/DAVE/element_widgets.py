@@ -505,6 +505,7 @@ class EditCable(NodeEditor):
         try:
             ui.doubleSpinBox_1.valueChanged.disconnect()
             ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox.valueChanged.disconnect()
             ui.comboBox_2.currentIndexChanged.disconnect()
             ui.comboBox.currentIndexChanged.disconnect()
 
@@ -526,7 +527,7 @@ class EditCable(NodeEditor):
 
         ui.doubleSpinBox_1.setValue(self.node.length)
         ui.doubleSpinBox_2.setValue(self.node.EA)
-
+        ui.doubleSpinBox.setValue(self.node.diameter)
 
         self.ui = ui  # needs to be done here as self.add_poi_dropdown modifies this
 
@@ -548,6 +549,7 @@ class EditCable(NodeEditor):
 
         ui.doubleSpinBox_1.valueChanged.connect(self.callback)
         ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox.valueChanged.connect(self.callback)
 
         ui.comboBox.currentIndexChanged.connect(self.callback)
         ui.comboBox_2.currentIndexChanged.connect(self.callback)
@@ -577,12 +579,16 @@ class EditCable(NodeEditor):
 
         new_length = self.ui.doubleSpinBox_1.value()
         new_EA = self.ui.doubleSpinBox_2.value()
+        new_diameter = self.ui.doubleSpinBox.value()
 
         if not new_length == self.node.length:
             code += element + '.length = {}'.format(new_length)
 
         if not new_EA == self.node.EA:
             code += element + '.EA = {}'.format(new_EA)
+
+        if not new_diameter == self.node.diameter:
+            code += element + '.diameter = {}'.format(new_diameter)
 
         # get the poi names
         # new_names = [self.ui.comboBox.currentText(),self.ui.comboBox_2.currentText()]
