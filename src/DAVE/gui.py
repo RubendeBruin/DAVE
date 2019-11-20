@@ -1108,6 +1108,6 @@ if __name__ == '__main__':
     s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
     s.resources_paths.append(r"C:\data\3d models\shackles")
 
-    # Gui(s).show()
+    Gui(s).show()
 
     create_blend_and_open(s)
