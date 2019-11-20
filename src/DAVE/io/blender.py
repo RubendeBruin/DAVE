@@ -17,7 +17,9 @@
     
     A base blender file needs to be provided. The visuals will be added to this model. It will then be saved under a different name.
     
-    
+    Requirements for the base blender file:
+    - Shall have a material called "Cable", this material will be assigned to each created cable.
+
     All functions in this file one or more of the following arguments
     
     - camera : a dictionary with ['position'] and ['direction'] which specifies the camera position and look direction
@@ -140,6 +142,7 @@ def add_line(points, diameter, name=None):
     if name is not None:
         bpy.context.active_object.name = name
 
+    bpy.context.active_object.data.materials.append(bpy.data.materials['Cable'])
     bpy.ops.object.mode_set(mode='OBJECT')
     
 """

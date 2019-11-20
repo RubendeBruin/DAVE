@@ -1083,22 +1083,31 @@ if __name__ == '__main__':
 
     s = DAVE.scene.Scene()
 
-    s.new_poi('a')
     s.new_poi('b', position = (10,0,15))
-    s.new_sheave('sa','a',(0,1,0),0.5)
     s.new_sheave('sb', 'b', (0, 1, 0), 0.5)
+
+    s.import_scene('trunnion_800')
 
     from DAVE.rigging import *
 
     create_sling(s,'test',Ltotal=30, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter = 0.3, EA = 1e6, mass = 3,
-                 endA='sa',
-                 endB='sb')
+                 endA='lp1',
+                 endB='lp2')
+
+    s['test'].clear_connections()
+    s['test'].add_connection(s['test_spliceAM'])
+    s['test'].add_connection(s['sb'])
+    s['test'].add_connection(s['test_spliceBM'])
 
     s.solve_statics()
 
     from DAVE.io.blender import *
 
-    Gui(s).show()
+
 
     s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
+    s.resources_paths.append(r"C:\data\3d models\shackles")
+
+    # Gui(s).show()
+
     create_blend_and_open(s)

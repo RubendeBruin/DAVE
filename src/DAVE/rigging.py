@@ -36,6 +36,8 @@ def create_sling(s, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA
         diameter: Diameter of the sling
         EA: EA of the wire
         mass: total mass
+        endA : Sheave or poi to fix end A of the sling to [optional]
+        endB : Sheave or poi to fix end A of the sling to [optional]
 
     Returns:
 
@@ -64,7 +66,21 @@ def create_sling(s, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA
                  scale=(LspliceB, 2 * diameter, diameter))
 
     # main part
-    s.new_cable(name, poiA = am, poiB = bm, length=Ltotal-LspliceA-LspliceB-LeyeA-LeyeB, EA=EA, diameter=diameter)
+
+    # The stiffness of the main part is corrected to account for the stiffness of the splices.
+    # It is considered that the stiffness of the splices is two times that of the wire.
+    #
+    # Springs in series: 1/Ktotal = 1/k1 + 1/k2 + 1/k3
+
+    Lmain = Ltotal-LspliceA-LspliceB-LeyeA-LeyeB
+    ka = (2*EA / LspliceA)
+    kb = (2*EA / LspliceB)
+    kmain = (EA / Lmain)
+    k_total = 1 / ((1/ka) + (1/kmain) + (1/kb))
+
+    EAmain = k_total * Lmain
+
+    s.new_cable(name, poiA = am, poiB = bm, length=Lmain, EA=EAmain, diameter=diameter)
 
     # eyes
     if endA is None:
