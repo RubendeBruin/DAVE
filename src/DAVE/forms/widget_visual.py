@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_visual.ui'
+# Form implementation generated from reading ui file 'widget_visual.ui',
+# licensing of 'widget_visual.ui' applies.
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created: Thu Oct 31 16:19:27 2019
+#      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_widget_axis(object):
     def setupUi(self, widget_axis):
@@ -200,29 +202,18 @@ class Ui_widget_axis(object):
         QtCore.QMetaObject.connectSlotsByName(widget_axis)
 
     def retranslateUi(self, widget_axis):
-        _translate = QtCore.QCoreApplication.translate
-        widget_axis.setWindowTitle(_translate("widget_axis", "Form"))
-        self.label_12.setText(_translate("widget_axis", "<html><head/><body><p><span style=\" font-weight:600;\">Shape</span></p><p>Select one of the default shapes from the drop-down or manually enter a (relative) path to a file.</p></body></html>"))
-        self.comboBox.setItemText(0, _translate("widget_axis", "wirecube.obj"))
-        self.label_7.setText(_translate("widget_axis", "<html><head/><body><p><span style=\" font-weight:600;\">Placement and scale</span></p></body></html>"))
-        self.label.setText(_translate("widget_axis", "X - offset"))
-        self.label_2.setText(_translate("widget_axis", "Y - offset"))
-        self.label_3.setText(_translate("widget_axis", "Z - offset"))
-        self.label_4.setText(_translate("widget_axis", "X-rotation"))
-        self.label_5.setText(_translate("widget_axis", "Y-rotation"))
-        self.label_6.setText(_translate("widget_axis", "Z-rotation"))
-        self.label_9.setText(_translate("widget_axis", "Scale : X"))
-        self.label_11.setText(_translate("widget_axis", "Scale : Y"))
-        self.label_10.setText(_translate("widget_axis", "Scale : Z"))
-        self.label_8.setText(_translate("widget_axis", "<html><head/><body><p><span style=\" text-decoration: underline;\">Notes:</span></p><p>Offset is applied on the scaled visual.</p><p>Rotation is defined as a rotation about a single axis.</p><p>- The axis of rotation is defined by the X,Y and Z components of the rotation.</p><p>- The angle or rotation is defined by the length of the rotation vector.</p></body></html>"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    widget_axis = QtWidgets.QWidget()
-    ui = Ui_widget_axis()
-    ui.setupUi(widget_axis)
-    widget_axis.show()
-    sys.exit(app.exec_())
+        widget_axis.setWindowTitle(QtWidgets.QApplication.translate("widget_axis", "Form", None, -1))
+        self.label_12.setText(QtWidgets.QApplication.translate("widget_axis", "<html><head/><body><p><span style=\" font-weight:600;\">Shape</span></p><p>Select one of the default shapes from the drop-down or manually enter a (relative) path to a file.</p></body></html>", None, -1))
+        self.comboBox.setItemText(0, QtWidgets.QApplication.translate("widget_axis", "wirecube.obj", None, -1))
+        self.label_7.setText(QtWidgets.QApplication.translate("widget_axis", "<html><head/><body><p><span style=\" font-weight:600;\">Placement and scale</span></p></body></html>", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("widget_axis", "X - offset", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("widget_axis", "Y - offset", None, -1))
+        self.label_3.setText(QtWidgets.QApplication.translate("widget_axis", "Z - offset", None, -1))
+        self.label_4.setText(QtWidgets.QApplication.translate("widget_axis", "X-rotation", None, -1))
+        self.label_5.setText(QtWidgets.QApplication.translate("widget_axis", "Y-rotation", None, -1))
+        self.label_6.setText(QtWidgets.QApplication.translate("widget_axis", "Z-rotation", None, -1))
+        self.label_9.setText(QtWidgets.QApplication.translate("widget_axis", "Scale : X", None, -1))
+        self.label_11.setText(QtWidgets.QApplication.translate("widget_axis", "Scale : Y", None, -1))
+        self.label_10.setText(QtWidgets.QApplication.translate("widget_axis", "Scale : Z", None, -1))
+        self.label_8.setText(QtWidgets.QApplication.translate("widget_axis", "<html><head/><body><p><span style=\" text-decoration: underline;\">Notes:</span></p><p>Offset is applied on the scaled visual.</p><p>Rotation is defined as a rotation about a single axis.</p><p>- The axis of rotation is defined by the X,Y and Z components of the rotation.</p><p>- The angle or rotation is defined by the length of the rotation vector.</p></body></html>", None, -1))
 

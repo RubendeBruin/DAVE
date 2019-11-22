@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_axis.ui'
+# Form implementation generated from reading ui file 'widget_axis.ui',
+# licensing of 'widget_axis.ui' applies.
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created: Thu Oct 31 16:19:26 2019
+#      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_widget_axis(object):
     def setupUi(self, widget_axis):
@@ -152,31 +154,20 @@ class Ui_widget_axis(object):
         QtCore.QMetaObject.connectSlotsByName(widget_axis)
 
     def retranslateUi(self, widget_axis):
-        _translate = QtCore.QCoreApplication.translate
-        widget_axis.setWindowTitle(_translate("widget_axis", "Form"))
-        self.label_7.setText(_translate("widget_axis", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Set position and rotation.</span></p><p>Modes that are &quot;<span style=\" font-weight:600;\">fixed</span>&quot; will not move when solving statics</p></body></html>"))
-        self.label.setText(_translate("widget_axis", "X - translation"))
-        self.checkBox_1.setText(_translate("widget_axis", "Fixed"))
-        self.label_2.setText(_translate("widget_axis", "Y - translation"))
-        self.checkBox_2.setText(_translate("widget_axis", "Fixed"))
-        self.label_3.setText(_translate("widget_axis", "Z - translation"))
-        self.checkBox_3.setText(_translate("widget_axis", "Fixed"))
-        self.label_4.setText(_translate("widget_axis", "X-rotation"))
-        self.checkBox_4.setText(_translate("widget_axis", "Fixed"))
-        self.label_5.setText(_translate("widget_axis", "Y-rotation"))
-        self.checkBox_5.setText(_translate("widget_axis", "Fixed"))
-        self.label_6.setText(_translate("widget_axis", "Z-rotation"))
-        self.checkBox_6.setText(_translate("widget_axis", "Fixed"))
-        self.toolButton.setToolTip(_translate("widget_axis", "<html><head/><body><p><span style=\" font-weight:600;\">Definition:</span></p><p>Rotation is defined as a rotation about a single axis.</p><p>- The axis of rotation is defined by the X,Y and Z components of the rotation.</p><p>- The angle or rotation is defined by the length of the rotation vector.</p><p><span style=\" font-weight:600;\"><br/>Examples:</span></p><p>x=0, y=0, z=90 ---&gt; 90 degees Rotation about Z-axis</p><p>x=10, y= 10, z= 0 --&gt; Axis of rotation is (1,1,0) and rotation angle |(10,10,0)| = sqrt(200)</p><p>x=Free, y =0, z= 0 --&gt; Axis system is free to rotate about the x-axis</p><p>x=Free, y = Free, z=0 --&gt; Axis system is free to rotate about any axis with z=0. The effect of this is hard to visualize.</p><p><br/></p><p><span style=\" font-weight:600;\">Tips:</span></p><p>To define subsequent rotations about different axis it is often more convenient to stack axis-nodes on top of eachother. For example to model a rotation of 20 degrees about the z-axis (yaw) and rotation of 5 degrees about the y-axis (pitch) simply consider the following:</p><p>1. Create an axis system for the yaw. Set the rotation to (0,0,20)</p><p>2. Create a second axis system and place it under yaw. Set the rotation of this axis system to (0,5,0).</p></body></html>"))
-        self.toolButton.setText(_translate("widget_axis", "??? (hoover for info)"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    widget_axis = QtWidgets.QWidget()
-    ui = Ui_widget_axis()
-    ui.setupUi(widget_axis)
-    widget_axis.show()
-    sys.exit(app.exec_())
+        widget_axis.setWindowTitle(QtWidgets.QApplication.translate("widget_axis", "Form", None, -1))
+        self.label_7.setText(QtWidgets.QApplication.translate("widget_axis", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Set position and rotation.</span></p><p>Modes that are &quot;<span style=\" font-weight:600;\">fixed</span>&quot; will not move when solving statics</p></body></html>", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("widget_axis", "X - translation", None, -1))
+        self.checkBox_1.setText(QtWidgets.QApplication.translate("widget_axis", "Fixed", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("widget_axis", "Y - translation", None, -1))
+        self.checkBox_2.setText(QtWidgets.QApplication.translate("widget_axis", "Fixed", None, -1))
+        self.label_3.setText(QtWidgets.QApplication.translate("widget_axis", "Z - translation", None, -1))
+        self.checkBox_3.setText(QtWidgets.QApplication.translate("widget_axis", "Fixed", None, -1))
+        self.label_4.setText(QtWidgets.QApplication.translate("widget_axis", "X-rotation", None, -1))
+        self.checkBox_4.setText(QtWidgets.QApplication.translate("widget_axis", "Fixed", None, -1))
+        self.label_5.setText(QtWidgets.QApplication.translate("widget_axis", "Y-rotation", None, -1))
+        self.checkBox_5.setText(QtWidgets.QApplication.translate("widget_axis", "Fixed", None, -1))
+        self.label_6.setText(QtWidgets.QApplication.translate("widget_axis", "Z-rotation", None, -1))
+        self.checkBox_6.setText(QtWidgets.QApplication.translate("widget_axis", "Fixed", None, -1))
+        self.toolButton.setToolTip(QtWidgets.QApplication.translate("widget_axis", "<html><head/><body><p><span style=\" font-weight:600;\">Definition:</span></p><p>Rotation is defined as a rotation about a single axis.</p><p>- The axis of rotation is defined by the X,Y and Z components of the rotation.</p><p>- The angle or rotation is defined by the length of the rotation vector.</p><p><span style=\" font-weight:600;\"><br/>Examples:</span></p><p>x=0, y=0, z=90 ---&gt; 90 degees Rotation about Z-axis</p><p>x=10, y= 10, z= 0 --&gt; Axis of rotation is (1,1,0) and rotation angle |(10,10,0)| = sqrt(200)</p><p>x=Free, y =0, z= 0 --&gt; Axis system is free to rotate about the x-axis</p><p>x=Free, y = Free, z=0 --&gt; Axis system is free to rotate about any axis with z=0. The effect of this is hard to visualize.</p><p><br/></p><p><span style=\" font-weight:600;\">Tips:</span></p><p>To define subsequent rotations about different axis it is often more convenient to stack axis-nodes on top of eachother. For example to model a rotation of 20 degrees about the z-axis (yaw) and rotation of 5 degrees about the y-axis (pitch) simply consider the following:</p><p>1. Create an axis system for the yaw. Set the rotation to (0,0,20)</p><p>2. Create a second axis system and place it under yaw. Set the rotation of this axis system to (0,5,0).</p></body></html>", None, -1))
+        self.toolButton.setText(QtWidgets.QApplication.translate("widget_axis", "??? (hoover for info)", None, -1))
 

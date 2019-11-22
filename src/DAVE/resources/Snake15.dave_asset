@@ -1,6 +1,6 @@
 # auto generated pyhton code
 # By beneden
-# Time: 2019-10-31 09:40:57 UTC
+# Time: 2019-11-01 11:29:15 UTC
 
 # To be able to distinguish the important number (eg: fixed positions) from
 # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.

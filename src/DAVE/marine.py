@@ -100,10 +100,15 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=1, minimum_he
         s._vfc.set_dofs(D0)
         heel_node.rx = x
         s.solve_statics(silent=True)
-        moment.append(-heel_node.applied_force[3])
+        moment.append(-heel_node.applied_force[3] / displacement_kN)
         trim.append(trim_motion.ry)
 
+    # restore dofs
     s._vfc.set_dofs(D0)
+
+    # calculate GM
+    GM = (moment[1] - moment[0]) / (np.deg2rad(heel[1] - heel[0]))
+    print('GM = {}m'.format(GM))
 
     if allow_trim:
         plt.plot(heel, trim, color='black', marker='o')
@@ -123,9 +128,10 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=1, minimum_he
     else:
         what = 'arm'
         plt.ylabel('GZ [m]')
+        plt.plot([0, np.rad2deg(0.2)], [0, 0.2*GM])
+        plt.text(np.rad2deg(0.2),0.2*GM,'GM = {:.2f}'.format(GM),horizontalalignment='right',backgroundcolor='w')
 
     plt.title('Restoring {} curve for {}'.format(what, vessel.name))
-
 
     plt.grid()
     plt.show()

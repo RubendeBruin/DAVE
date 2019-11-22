@@ -1,13 +1,4 @@
 """
-  This Source Code Form is subject to the terms of the Mozilla Public
-  License, v. 2.0. If a copy of the MPL was not distributed with this
-  file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-  Ruben de Bruin - 2019
-
-
-
-
     GUI
 
     The GUI can be created from a scene via
@@ -17,6 +8,17 @@
     G = Gui(s)
     G.show()
 
+
+    Or by running this file as main
+
+"""
+
+"""
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+  Ruben de Bruin - 2019
 """
 
 import DAVE.visual as vfv
@@ -24,19 +26,22 @@ import DAVE.scene as vfs
 import DAVE.constants as vfc
 import DAVE.standard_assets
 import DAVE.forms.resources_rc as resources_rc
-import DAVE.forms.viewer_form
+from DAVE.forms.viewer_form import Ui_MainWindow
+from DAVE.forms.dlg_solver import Ui_Dialog
 import numpy as np
 import math
 import DAVE.element_widgets as element_widgets
 
 import sys
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QMenu
-from PyQt5.QtCore import QMimeData, Qt
-from PyQt5 import QtCore
+from pathlib import Path
 
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
-from PyQt5.QtWidgets import QFileDialog
+from PySide2 import QtWidgets
+from PySide2.QtWidgets import QMenu, QMainWindow, QDialog
+from PySide2.QtCore import QMimeData, Qt
+from PySide2 import QtCore
+
+from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon
+from PySide2.QtWidgets import QFileDialog
 
 from IPython.utils.capture import capture_output
 import datetime
@@ -115,6 +120,15 @@ class SceneTreeModel(QStandardItemModel):
 
         return False
 
+class SolverDialog(QDialog, Ui_Dialog):
+    def __init__(self, parent=None):
+        super(SolverDialog, self).__init__(parent)
+        Ui_Dialog.__init__(self)
+        self.setupUi(self)
+        self.setWindowFlag(Qt.WindowCloseButtonHint, False)
+        self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
+        self.setWindowIcon(QIcon(":/icons/cube.png"))
+
 
 class Gui:
 
@@ -128,7 +142,8 @@ class Gui:
         """Reference to the ui"""
 
         self.app = QtWidgets.QApplication(sys.argv)
-        self.MainWindow = QtWidgets.QMainWindow()
+
+        self.MainWindow = QMainWindow()
         self.ui.setupUi(self.MainWindow)
 
         self.node_data = NodeData()
@@ -165,7 +180,6 @@ class Gui:
         self.ui.actionImport_sub_scene.triggered.connect(self.menu_import)
         self.ui.actionImport_browser.triggered.connect(self.import_browser)
         self.ui.actionRender_current_view.triggered.connect(self.render_in_blender)
-        self.ui.actionModal_shapes.triggered.connect(self.model_shapes)
 
         self.ui.treeView.activated.connect(self.tree_select_node)  # fires when a user presses [enter]
         # self.ui.treeView.pressed.connect(self.tree_select_node)
@@ -303,13 +317,13 @@ class Gui:
         self.run_code('s.clear()')
 
     def open(self):
-        filename, _ = QFileDialog.getOpenFileName(filter="*.pscene", caption="Scene files")
+        filename, _ = QFileDialog.getOpenFileName(filter="*.dave_asset", caption="Assets")
         if filename:
             code = 's.clear()\ns.load_scene(r"{}")'.format(filename)
             self.run_code(code)
 
     def menu_import(self):
-        filename, _ = QFileDialog.getOpenFileName(filter="*.pscene", caption="Scene files")
+        filename, _ = QFileDialog.getOpenFileName(filter="*.dave_asset", caption="Assets")
         if filename:
             code = 's.import_scene(r"{}")'.format(filename)
             self.run_code(code)
@@ -325,10 +339,6 @@ class Gui:
             code = 's.import_scene(s.get_resource_path("{}"), containerize={}, prefix="{}")'.format(file,container,prefix)
             self.run_code(code)
 
-    def model_shapes(self):
-        from DAVE.modal_viewer import ModalViewer
-        window = ModalViewer(s, self.app)
-
     def render_in_blender(self):
 
         pos = self.visual.screen.camera.GetPosition()
@@ -337,14 +347,14 @@ class Gui:
         code = 'import DAVE.io.blender'
         code += "\ncamera = {{'position':({},{},{}), 'direction':({},{},{})}}".format(*pos,*dir)
         code += '\nblender_base = r"{}"'.format(vfc.BLENDER_BASE_SCENE)
-        code += '\nblender_result = r"{}"'.format(vfc.PATH_TEMP + 'current_render.blend')
+        code += '\nblender_result = r"{}"'.format(Path(vfc.PATH_TEMP) / 'current_render.blend')
         code += '\nDAVE.io.blender.create_blend_and_open(s, blender_base, blender_result, camera=camera)'
         code += '\nprint("Opening blender, close blender to continue.")'
         code += '\nprint("In blender, press F12 to go to rendered camera view.")'
         self.run_code(code)
 
     def menu_save(self):
-        filename, _ = QFileDialog.getSaveFileName(filter="*.pscene", caption="Scene files",directory=self.scene.resources_paths[0])
+        filename, _ = QFileDialog.getSaveFileName(filter="*.dave_scene", caption="Scene files",directory=self.scene.resources_paths[0])
         if filename:
             code = 's.save_scene(r"{}")'.format(filename)
             self.run_code(code)
@@ -404,11 +414,11 @@ class Gui:
                                      self.ui.stability_heel_start.value(),
                                      self.ui.stability_heel_max.value(),
                                      self.ui.stability_n_steps.value(),
-                                     self.ui.stability_do_teardown.checkState(),
-                                     self.ui.stability_surge.checkState(),
-                                     self.ui.stability_sway.checkState(),
-                                     self.ui.stability_yaw.checkState(),
-                                     self.ui.stability_trim.checkState())
+                                     self.ui.stability_do_teardown.isChecked(),
+                                     self.ui.stability_surge.isChecked(),
+                                     self.ui.stability_sway.isChecked(),
+                                     self.ui.stability_yaw.isChecked(),
+                                     self.ui.stability_trim.isChecked())
 
         self.set_code(code)
 
@@ -462,8 +472,9 @@ class Gui:
 
 
         menu.addAction("New Axis", self.new_axis)
-        menu.addAction("New Poi", self.new_poi)
         menu.addAction("New RigidBody", self.new_body)
+        menu.addAction("New Poi", self.new_poi)
+        menu.addAction("New Sheave", self.new_sheave)
         menu.addAction("New Cable", self.new_cable)
         menu.addAction("New Force", self.new_force)
         menu.addAction("New Beam", self.new_beam)
@@ -495,19 +506,61 @@ class Gui:
     def actionDelete(self):
         print('delete')
 
+    def stop_solving(self):
+        self._terminate = True
+
     def solve_statics(self):
         self.scene._vfc.state_update()
         old_dofs = self.scene._vfc.get_dofs()
         self._dofs = old_dofs.copy()
 
-        if DAVE.constants.GUI_DO_ANIMATE:
-            self.scene.solve_statics()
+        long_wait = False
+        dialog = None
+
+        self._terminate = False
+
+
+
+        # solve with time-out
+        count = 0
+        while True:
+            status = self.scene._vfc.state_solve_statics_with_timeout(0.5, True)
+
+            if self._terminate:
+                print('Terminating')
+                break
+
+            if status == 0:
+                if count == 0:
+                    break
+                else:
+                    long_wait = True
+
+                    self.visual.position_visuals()
+                    self.visual.refresh_embeded_view()
+                    break
+
+            if dialog is None:
+                dialog = SolverDialog()
+                dialog.btnTerminate.clicked.connect(self.stop_solving)
+                dialog.show()
+
+            count += 1
+            dialog.label_2.setText('Maximum error = {}'.format(self.scene._vfc.Emaxabs))
+            dialog.update()
+
+            self.visual.position_visuals()
+            self.visual.refresh_embeded_view()
+            self.app.processEvents()
+
+        if dialog is not None:
+            dialog.close()
+
+        if DAVE.constants.GUI_DO_ANIMATE and not long_wait:
             new_dofs = self.scene._vfc.get_dofs()
             self.animate(old_dofs, new_dofs, vfc.GUI_ANIMATION_NSTEPS)
-        else:
-            self.run_code('s.solve_statics()')
 
-
+        self.ui.teHistory.setPlainText(self.ui.teHistory.toPlainText() + '\n#---\ns.solve_statics()')
 
     def undo_solve_statics(self):
         if self._dofs is not None:
@@ -522,7 +575,6 @@ class Gui:
     def show(self):
 
         self.MainWindow.show()
-
         self.app.aboutToQuit.connect(self.onClose)
 
         while True:
@@ -580,6 +632,8 @@ class Gui:
                 item.setIcon(QIcon(":/icons/linhyd.png"))
             if isinstance(node, vfs.Force):
                 item.setIcon(QIcon(":/icons/force.png"))
+            if isinstance(node, vfs.Sheave):
+                item.setIcon(QIcon(":/icons/sheave.png"))
             if isinstance(node, vfs.Buoyancy):
                 item.setIcon(QIcon(":/icons/trimesh.png"))
 
@@ -700,6 +754,10 @@ class Gui:
         if isinstance(node, vfs.Force):
             self._node_editors.append(element_widgets.EditForce(node, self.node_property_changed, self.scene))
 
+        if isinstance(node, vfs.Sheave):
+            self._node_editors.append(element_widgets.EditSheave(node, self.node_property_changed, self.scene))
+
+
         if isinstance(node, vfs.HydSpring):
             self._node_editors.append(element_widgets.EditHydSpring(node, self.node_property_changed, self.scene))
 
@@ -778,11 +836,44 @@ class Gui:
         data = self.node_data.get_actor(info)
 
         if data is not None:
-            # if a visual is clicked, then select the parent of this visual instead
-            node = data['node']
-            if isinstance(node, vfs.Visual):
-                if node.parent is not None:
-                    data = self.node_data.get_node(node.parent)
+            # # if a visual is clicked, then select the parent of this visual instead
+            # node = data['node']
+            # if isinstance(node, vfs.Visual):
+            #     if node.parent is not None:
+            #         data = self.node_data.get_node(node.parent)
+
+            # if the node is already selected, then select something different
+            if self.selected_node is not None:
+
+                # cycle between node and its parent
+                if self.selected_node['node'] == data['node']:
+                    node = data['node']
+                    try:
+                        node = node.parent
+                        data = self.node_data.get_node(node)
+                    except:
+                        pass
+
+                # cycle between node and its master
+                if self.selected_node['node'] == data['node']:
+                    node = data['node']
+                    try:
+                        node = node.master
+                        data = self.node_data.get_node(node)
+                    except:
+                        pass
+
+                # cycle between node and its poiA
+                if self.selected_node['node'] == data['node']:
+                    node = data['node']
+                    try:
+                        node = node._pois[0]
+                        data = self.node_data.get_node(node)
+                    except:
+                        pass
+
+
+
 
         self.select_node(data)
 
@@ -843,11 +934,7 @@ class Gui:
 
                 self.ui.teHistory.setPlainText(self.ui.teHistory.toPlainText() + '\n#---\n' + code)
                 self.ui.teHistory.verticalScrollBar().setValue(self.ui.teHistory.verticalScrollBar().maximum()) # scroll down all the way
-
-
             except Exception as E:
-
-
                 self.ui.teFeedback.setText(c.stdout + '\n' + str(E) + '\n\nWhen running: \n\n' + code)
                 self.ui.teFeedback.setStyleSheet("background-color: red;")
                 return
@@ -908,6 +995,9 @@ class Gui:
 
     def new_force(self):
         self.new_something(DAVE.element_widgets.add_force)
+
+    def new_sheave(self):
+        self.new_something(DAVE.element_widgets.add_sheave)
 
     def new_linear_connector(self):
         self.new_something(DAVE.element_widgets.add_linear_connector)
@@ -988,12 +1078,53 @@ class Gui:
 # ====== main code ======
 
 if __name__ == '__main__':
-    s = vfs.Scene()
+
+
+
+    s = DAVE.scene.Scene()
+    #
+    # s.new_poi('b', position = (10,0,15))
+    # s.new_sheave('sb', 'b', (0, 1, 0), 0.5)
+    #
+    # n = s.import_scene('liftme')
+    # n.fixed = False
+    #
+    #
+    # n = s.import_scene(s.get_resource_path("crane block 4p.dave_asset"), containerize=True, prefix="")
+    # n.z = 30
+    # s.dissolve(n)
+    #
+    # from DAVE.rigging import *
+    #
+    # create_sling(s,'sling3',Ltotal=30, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter = 0.3, EA = 1e6, mass = 3, endA='lp3bow', endB='prong4_sheave')
+    # create_sling(s, 'sling4', Ltotal=30, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter=0.3, EA=1e6, mass=3,
+    #              endA='lp4bow', endB='prong3_sheave')
+    #
+    # # doubled sling in two parts
+    # n = s.import_scene(s.get_resource_path("GP800.dave_asset"), containerize=True, prefix="sh01_")
+    # n.fixed = False
+    #
+    # create_sling(s, 'sling1_part1', Ltotal=40, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter=0.3, EA=1e6, mass=3,
+    #              endA='lp1lp2', endB='sh01_bow', sheave='prong2_sheave')
+    #
+    # create_sling(s, 'sling1_part2', Ltotal=20, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter=0.3, EA=1e6, mass=3,
+    #              endA='lp1lp1', endB='sh01_pin')
+    #
+    #
+    # # doubled sling
+    # create_sling(s, 'sling2', Ltotal=60, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter=0.3, EA=1e6, mass=3,
+    #              endA='lp2lp2', endB='lp2lp1', sheave='prong1_sheave')
+    #
+    #
+    #
+    # s.solve_statics()
+
+    from DAVE.io.blender import *
+
+
     s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
-
-    s.import_scene(s.get_resource_path(r"C:\Users\beneden\Models\tendemlift result.pscene"), containerize=False, prefix="")
-
-    # import DAVE.io.blender
-    # DAVE.io.blender.create_blend_and_open(scene=s, blender_base_file=r"C:\data\Dave\Private\Blender\python tests\base ocean.blend", blender_result_file=r"c:\data\karel.blend")
+    s.resources_paths.append(r"C:\data\3d models\shackles")
 
     Gui(s).show()
+
+    create_blend_and_open(s)

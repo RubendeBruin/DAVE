@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_lincon6.ui'
+# Form implementation generated from reading ui file 'widget_lincon6.ui',
+# licensing of 'widget_lincon6.ui' applies.
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created: Thu Oct 31 16:19:27 2019
+#      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_widget_lincon6(object):
     def setupUi(self, widget_lincon6):
@@ -194,28 +196,17 @@ class Ui_widget_lincon6(object):
         QtCore.QMetaObject.connectSlotsByName(widget_lincon6)
 
     def retranslateUi(self, widget_lincon6):
-        _translate = QtCore.QCoreApplication.translate
-        widget_lincon6.setWindowTitle(_translate("widget_lincon6", "Form"))
-        self.label_9.setText(_translate("widget_lincon6", "Master"))
-        self.label_10.setText(_translate("widget_lincon6", "[axis]"))
-        self.label_11.setText(_translate("widget_lincon6", "Slave"))
-        self.label_12.setText(_translate("widget_lincon6", "[axis]"))
-        self.label_7.setText(_translate("widget_lincon6", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Stiffness</span></p></body></html>"))
-        self.label.setText(_translate("widget_lincon6", "X - translation"))
-        self.label_2.setText(_translate("widget_lincon6", "Y - translation"))
-        self.label_3.setText(_translate("widget_lincon6", "Z - translation"))
-        self.label_4.setText(_translate("widget_lincon6", "X-rotation"))
-        self.label_5.setText(_translate("widget_lincon6", "Y-rotation"))
-        self.label_6.setText(_translate("widget_lincon6", "Z-rotation"))
-        self.label_8.setText(_translate("widget_lincon6", "<html><head/><body><p>Stiffness are defined in the axis system of MASTER</p><p>Rotations are the projected rotations. </p><p>rotation about Z is the arc-tan of the y-component of the rotated X unit axis divided by its x-component.</p></body></html>"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    widget_lincon6 = QtWidgets.QWidget()
-    ui = Ui_widget_lincon6()
-    ui.setupUi(widget_lincon6)
-    widget_lincon6.show()
-    sys.exit(app.exec_())
+        widget_lincon6.setWindowTitle(QtWidgets.QApplication.translate("widget_lincon6", "Form", None, -1))
+        self.label_9.setText(QtWidgets.QApplication.translate("widget_lincon6", "Master", None, -1))
+        self.label_10.setText(QtWidgets.QApplication.translate("widget_lincon6", "[axis]", None, -1))
+        self.label_11.setText(QtWidgets.QApplication.translate("widget_lincon6", "Slave", None, -1))
+        self.label_12.setText(QtWidgets.QApplication.translate("widget_lincon6", "[axis]", None, -1))
+        self.label_7.setText(QtWidgets.QApplication.translate("widget_lincon6", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Stiffness</span></p></body></html>", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("widget_lincon6", "X - translation", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("widget_lincon6", "Y - translation", None, -1))
+        self.label_3.setText(QtWidgets.QApplication.translate("widget_lincon6", "Z - translation", None, -1))
+        self.label_4.setText(QtWidgets.QApplication.translate("widget_lincon6", "X-rotation", None, -1))
+        self.label_5.setText(QtWidgets.QApplication.translate("widget_lincon6", "Y-rotation", None, -1))
+        self.label_6.setText(QtWidgets.QApplication.translate("widget_lincon6", "Z-rotation", None, -1))
+        self.label_8.setText(QtWidgets.QApplication.translate("widget_lincon6", "<html><head/><body><p>Stiffness are defined in the axis system of MASTER</p><p>Rotations are the projected rotations. </p><p>rotation about Z is the arc-tan of the y-component of the rotated X unit axis divided by its x-component.</p></body></html>", None, -1))
 
