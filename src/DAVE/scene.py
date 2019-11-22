@@ -1233,6 +1233,9 @@ class Cable(CoreConnectedNode):
         code += "\n            poiB='{}',".format(poi_names[-1])
         code += "\n            length={},".format(self.length)
 
+        if self.diameter != 0:
+            code += "\n            diameter={},".format(self.diameter)
+
         if len(poi_names) <= 2:
             code += "\n            EA={})".format(self.EA)
         else:
@@ -2126,6 +2129,14 @@ class Scene:
             full = p / name
             if isfile(full):
                 return full
+
+        # prepare feedback for error
+        ext = str(name).split('.')[-1]  # everything after the last .
+
+        print("The following resources with extension {} are available with ".format(ext))
+        available = self.get_resource_list(ext)
+        for a in available:
+            print(a)
 
         raise FileExistsError('Resource "{}" not found in resource paths'.format(name))
 

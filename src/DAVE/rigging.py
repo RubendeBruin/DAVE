@@ -15,15 +15,17 @@ This module supplies additional functionality for working with rigging.
   Ruben de Bruin - 2019
 """
 
-def create_sling(s, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None):
+def create_sling(s, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheave=None):
     """
     Creates a new sling and adds it to scene s.
 
+    endA
     eyeA (cable)
     splice (body , mass/2)
-    main (cable)
+    main (cable)     [optional: runs over sheave]
     splice (body, mass/2)
     eyeB (cable)
+    endB
 
     Args:
         s:     The scene in which the sling should be created
@@ -38,6 +40,7 @@ def create_sling(s, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA
         mass: total mass
         endA : Sheave or poi to fix end A of the sling to [optional]
         endB : Sheave or poi to fix end A of the sling to [optional]
+        sheave : Sheave or poi for the main part of the sling
 
     Returns:
 
@@ -80,7 +83,7 @@ def create_sling(s, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA
 
     EAmain = k_total * Lmain
 
-    s.new_cable(name, poiA = am, poiB = bm, length=Lmain, EA=EAmain, diameter=diameter)
+    s.new_cable(name, poiA = am, poiB = bm, length=Lmain, EA=EAmain, diameter=diameter, sheaves=sheave)
 
     # eyes
     if endA is None:
