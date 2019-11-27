@@ -543,6 +543,10 @@ class Axis(NodeWithParent):
     Axes can be nested by parent/child relationships meaning that an axis can be placed on an other axis.
     The possible movements of an axis can be controlled in each degree of freedom using the "fixed" property.
 
+    Axes are also the main building block of inertia.
+    Dynamics are controlled using the inertia properties of an axis: inertia [mT], inertia_position[m,m,m] and inertia_radii [m,m,m]
+
+
     Notes:
          - circular references are not allowed: It is not allowed to place a on b and b on a
 
@@ -551,6 +555,68 @@ class Axis(NodeWithParent):
     def __init__(self, scene, vfAxis):
         super().__init__(scene, vfAxis)
         self._None_parent_acceptable = True
+
+        self._inertia = 0
+        self._inertia_position = (0,0,0)
+        self._inertia_radii = (0,0,0)
+
+        self._pointmasses = list()
+        for i in range(6):
+            p = scene._vfc.new_pointmass(self.name + '_pointmass_{}'.format(i))
+            p.parent = vfAxis
+            self._pointmasses.append(p)
+        self._update_inertia()
+
+
+    @property
+    def inertia(self):
+        return self._inertia
+
+    @inertia.setter
+    def inertia(self,val):
+        assert1f(val,"Inertia")
+        self._inertia = val
+        self._update_inertia()
+
+    @property
+    def inertia_position(self):
+        return np.array(self._inertia_position,dtype=float)
+
+    @inertia_position.setter
+    def inertia_position(self, val):
+        assert3f(val, "Inertia position")
+        self._inertia_position = tuple(val)
+        self._update_inertia()
+
+    @property
+    def inertia_radii(self):
+        return np.array(self._inertia_position, dtype=float)
+
+    @inertia_radii.setter
+    def inertia_radii(self, val):
+        assert3f_positive(val, "Inertia radii of gyration")
+        self._inertia_radii = val
+        self._update_inertia()
+
+
+    def _update_inertia(self):
+        # update mass
+        for i in range(6):
+            self._pointmasses[i].inertia = self._inertia / 6
+
+        if self._inertia <= 0:
+            return
+
+        # update radii and position
+        pos = radii_to_positions(*self._inertia_radii)
+        for i in range(6):
+            p = (pos[i][0] + self._inertia_position[0],
+                 pos[i][1] + self._inertia_position[1],
+                 pos[i][2] + self._inertia_position[2])
+            self._pointmasses[i].position = p
+            # print('{} at {} {} {}'.format(self._inertia/6, *p))
+
+
 
     @property
     def fixed(self):
@@ -1054,6 +1120,8 @@ class RigidBody(Axis):
     def cog(self, newcog):
         assert3f(newcog)
         self._vfPoi.position = newcog
+        self.inertia_position = self.cog
+
 
     @property
     def mass(self):
@@ -1064,6 +1132,7 @@ class RigidBody(Axis):
     def mass(self, newmass):
         assert1f(newmass)
         self._vfForce.force = (0, 0, -vfc.g * newmass)
+        self.inertia = newmass
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -2648,6 +2717,9 @@ class Scene:
         g.force = (0, 0, -vfc.g * mass)
 
         r = RigidBody(self, a, p, g)
+
+        r.cog = cog  # set inertia
+        r.mass = mass
 
         # and set properties
         if b is not None:

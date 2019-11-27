@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'frm_animation.ui'
+# Form implementation generated from reading ui file 'frm_animation.ui',
+# licensing of 'frm_animation.ui' applies.
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created: Fri Nov 22 15:47:56 2019
+#      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 class Ui_AnimationWindow(object):
     def setupUi(self, AnimationWindow):
@@ -30,8 +32,8 @@ class Ui_AnimationWindow(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.lblInfo = QtWidgets.QLabel(self.dockWidgetContents)
         font = QtGui.QFont()
-        font.setBold(True)
         font.setWeight(75)
+        font.setBold(True)
         self.lblInfo.setFont(font)
         self.lblInfo.setObjectName("lblInfo")
         self.verticalLayout.addWidget(self.lblInfo)
@@ -74,10 +76,8 @@ class Ui_AnimationWindow(object):
         self.tableWidget.setColumnCount(5)
         self.tableWidget.setRowCount(0)
         item = QtWidgets.QTableWidgetItem()
-        item.setBackground(QtGui.QColor(236, 236, 236))
         self.tableWidget.setHorizontalHeaderItem(0, item)
         item = QtWidgets.QTableWidgetItem()
-        item.setBackground(QtGui.QColor(236, 236, 236))
         self.tableWidget.setHorizontalHeaderItem(1, item)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget.setHorizontalHeaderItem(2, item)
@@ -93,31 +93,15 @@ class Ui_AnimationWindow(object):
         QtCore.QMetaObject.connectSlotsByName(AnimationWindow)
 
     def retranslateUi(self, AnimationWindow):
-        _translate = QtCore.QCoreApplication.translate
-        AnimationWindow.setWindowTitle(_translate("AnimationWindow", "MainWindow"))
-        self.lblInfo.setText(_translate("AnimationWindow", "0.1 rad/s | 62 s"))
-        self.label.setText(_translate("AnimationWindow", "Mode-shape"))
-        self.label_2.setText(_translate("AnimationWindow", "Scale"))
-        self.pushButton.setText(_translate("AnimationWindow", "Update"))
-        self.label_3.setText(_translate("AnimationWindow", "<html><head/><body><p><span style=\" font-size:10pt; color:#ff007f;\"/></p></body></html>"))
-        item = self.tableWidget.horizontalHeaderItem(0)
-        item.setText(_translate("AnimationWindow", "Node"))
-        item = self.tableWidget.horizontalHeaderItem(1)
-        item.setText(_translate("AnimationWindow", "Mass"))
-        item = self.tableWidget.horizontalHeaderItem(2)
-        item.setText(_translate("AnimationWindow", "rxx"))
-        item = self.tableWidget.horizontalHeaderItem(3)
-        item.setText(_translate("AnimationWindow", "ryy"))
-        item = self.tableWidget.horizontalHeaderItem(4)
-        item.setText(_translate("AnimationWindow", "rzz"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    AnimationWindow = QtWidgets.QMainWindow()
-    ui = Ui_AnimationWindow()
-    ui.setupUi(AnimationWindow)
-    AnimationWindow.show()
-    sys.exit(app.exec_())
+        AnimationWindow.setWindowTitle(QtWidgets.QApplication.translate("AnimationWindow", "MainWindow", None, -1))
+        self.lblInfo.setText(QtWidgets.QApplication.translate("AnimationWindow", "0.1 rad/s | 62 s", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("AnimationWindow", "Mode-shape", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("AnimationWindow", "Scale", None, -1))
+        self.pushButton.setText(QtWidgets.QApplication.translate("AnimationWindow", "Update", None, -1))
+        self.label_3.setText(QtWidgets.QApplication.translate("AnimationWindow", "<html><head/><body><p><span style=\" font-size:10pt; color:#ff007f;\"/></p></body></html>", None, -1))
+        self.tableWidget.horizontalHeaderItem(0).setText(QtWidgets.QApplication.translate("AnimationWindow", "Node", None, -1))
+        self.tableWidget.horizontalHeaderItem(1).setText(QtWidgets.QApplication.translate("AnimationWindow", "Mass", None, -1))
+        self.tableWidget.horizontalHeaderItem(2).setText(QtWidgets.QApplication.translate("AnimationWindow", "rxx", None, -1))
+        self.tableWidget.horizontalHeaderItem(3).setText(QtWidgets.QApplication.translate("AnimationWindow", "ryy", None, -1))
+        self.tableWidget.horizontalHeaderItem(4).setText(QtWidgets.QApplication.translate("AnimationWindow", "rzz", None, -1))
 

@@ -2,12 +2,14 @@ from DAVE.scene import Scene, RigidBody
 from DAVE.visual import Viewport
 from DAVE.forms.frm_animation import Ui_AnimationWindow
 import dynamics.frequency_domain
-from dynamics.frequency_domain import PointMass
+# from dynamics.frequency_domain import PointMass
 import sys
 import numpy as np
 from scipy.linalg import eig
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
+
+
 # app = QtWidgets.QApplication(sys.argv)
 # AnimationWindow = QtWidgets.QMainWindow()
 # ui = Ui_AnimationWindow()
@@ -19,10 +21,10 @@ class ModalViewer:
         
 
         self._pause = False
-        self.n_frames = 240
+        self.n_frames = 480
         self.time = 0
         self.dt = 1
-        self.endTime = 240
+        self.endTime = 480
 
         
         self.scene = scene
@@ -73,7 +75,7 @@ class ModalViewer:
 
 
         self.fill_table()
-        self.update_point_masses()
+        # self.update_point_masses()
         self.calculate_modeshapes()
 
         if self.n_shapes > 0:
@@ -135,7 +137,7 @@ class ModalViewer:
             ryy = float(self.ui.tableWidget.item(row, 3).text())
             rzz = float(self.ui.tableWidget.item(row, 4).text())
 
-            # deconstruct into six point masses
+            # decouple into six point masses
 
             Ixx = mass * rxx ** 2
             Iyy = mass * ryy ** 2
@@ -270,11 +272,21 @@ class ModalViewer:
     def generateModeShape(self,i_shape,scale):
         self._pause = True
         self.animation_dofs = list()
+
+        d = np.array(self.d0)
+        displ = self.shapes[:, i_shape]
+        displ = np.real(displ)
+
+        print(displ)
+
+        # TODO: This is incorrect for rotations which have non-zero other components
+
         for i_frame in range(self.n_frames):
-            d = np.array(self.d0)
-            displ = self.shapes[:, i_shape]
-            frame_dofs = d + np.sin(2 * 3.14159 * i_frame / self.n_frames) * displ * scale
-            self.animation_dofs.append(frame_dofs)
+
+            change = np.sin(2 * 3.14159 * i_frame / self.n_frames) * displ * scale
+            self.eCore.set_dofs(self.d0)
+            self.eCore.change_dofs(change)
+            self.animation_dofs.append(self.eCore.get_dofs())
         self._pause = False
 
 # ====== main code ======
