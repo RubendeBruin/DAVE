@@ -107,6 +107,10 @@ class ModalViewer:
 
     def _runcode(self, code):
         s = self.scene
+
+        print('Running code:')
+        print(code)
+
         with capture_output() as c:
             try:
                 exec(code)
@@ -199,30 +203,38 @@ class ModalViewer:
             try:
                 node.mass
                 code = 's["{}"].mass = {}'.format(name, value)
+                print('test')
             except:
-                code = 's["{}"].intertia = {}'.format(name, value)
+                code = 's["{}"].inertia = {}'.format(name, value)
+                print('test2')
 
-        if col in (7,8,9): # cog
+        elif col in (7,8,9): # cog
 
             pos = [self.ui.tableDynProp.item(row,7).text(),
                    self.ui.tableDynProp.item(row,8).text(),
-                   self.ui.tableDynProp.item(row,9).text() ]
+                   self.ui.tableDynProp.item(row,9).text()]
 
             try:
                 node.mass
                 code = 's["{}"].cog = ({},{},{})'.format(name, *pos)
             except:
-                code = 's["{}"].intertia_position = ({},{},{})'.format(name, *pos)
+                code = 's["{}"].inertia_position = ({},{},{})'.format(name, *pos)
 
-        if col in (10,11,12):  # cog
+        elif col in (10,11,12):  # cog
 
             pos = [self.ui.tableDynProp.item(row, 10).text(),
                    self.ui.tableDynProp.item(row, 11).text(),
                    self.ui.tableDynProp.item(row, 12).text()]
 
-            code = 's["{}"].intertia_radii = ({},{},{})'.format(name, *pos)
+            code = 's["{}"].inertia_radii = ({},{},{})'.format(name, *pos)
 
-        self._runcode(code)
+        else:
+            print('This column is not supposed to be edited')
+
+        if not self._runcode(code):
+            print("there was an error running the code")
+
+        self.fill_result_table()
 
     # ===================== results table ===========================
 
