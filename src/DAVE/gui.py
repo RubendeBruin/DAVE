@@ -1125,6 +1125,8 @@ if __name__ == '__main__':
     s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
     s.resources_paths.append(r"C:\data\3d models\shackles")
 
+    s.import_scene(s.get_resource_path("mast crane.dave_asset"), containerize=False, prefix="")
+
     Gui(s).show()
 
-    create_blend_and_open(s)
+    # create_blend_and_open(s)

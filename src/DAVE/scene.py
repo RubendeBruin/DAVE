@@ -562,7 +562,7 @@ class Axis(NodeWithParent):
 
         self._pointmasses = list()
         for i in range(6):
-            p = scene._vfc.new_pointmass(self.name + '_pointmass_{}'.format(i))
+            p = scene._vfc.new_pointmass(self.name + vfc.VF_NAME_SPLIT + 'pointmass_{}'.format(i))
             p.parent = vfAxis
             self._pointmasses.append(p)
         self._update_inertia()
@@ -590,7 +590,7 @@ class Axis(NodeWithParent):
 
     @property
     def inertia_radii(self):
-        return np.array(self._inertia_position, dtype=float)
+        return np.array(self._inertia_radii, dtype=float)
 
     @inertia_radii.setter
     def inertia_radii(self, val):
@@ -2259,11 +2259,18 @@ class Scene:
     def sort_nodes_by_dependency(self):
         """Sorts the nodes such that a node only depends on nodes earlier in the list."""
 
+        scene_names = [n.name for n in self.nodes]
+
         self._vfc.state_update()  # use the function from the core.
         new_list = []
         for name in self._vfc.names:  # and then build a new list using the names
             if vfc.VF_NAME_SPLIT in name:
                 continue
+
+            if name not in scene_names:
+                raise Exception('Something went wrong with sorting the the nodes by dependency. '
+                                'Node naming between core and scene is inconsistent for node {}'.format(name))
+
             new_list.append(self[name])
 
         # and add the nodes without a vfc-core connection
@@ -3286,7 +3293,6 @@ class Scene:
 
         exec(code, {}, {'s': s})
 
-
     def import_scene(self, other, prefix = "", containerize = True):
         """Copy-paste all nodes of scene "other" into current scene.
 
@@ -3347,3 +3353,28 @@ class Scene:
             return c
 
         return None
+
+
+    # =================== DYNAMICS ==================
+
+    def dynamics_M(self,delta = 0.1):
+        """Returns the mass matrix of the scene"""
+        return self._vfc.M(delta)
+
+    def dynamics_K(self, delta):
+        """Returns the stiffness matrix of the scene for a perturbation of delta """
+        return -self._vfc.K(delta)
+
+    def dynamics_nodes(self):
+        """Returns a list of nodes associated with the rows/columns of M and K"""
+        nodes = self._vfc.get_dof_elements()
+        r = [self[n.name] for n in nodes]
+        return r
+
+    def dynamics_modes(self):
+        """Returns a list of nodes associated with the rows/columns of M and K"""
+        return self._vfc.get_dof_modes()
+
+
+
+

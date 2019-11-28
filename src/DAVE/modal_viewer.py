@@ -6,6 +6,7 @@ import dynamics.frequency_domain
 import sys
 import numpy as np
 from scipy.linalg import eig
+from PySide2.QtGui import QBrush, QColor
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
@@ -21,6 +22,7 @@ class ModalViewer:
         
 
         self._pause = False
+        self._filling_table = True
         self.n_frames = 480
         self.time = 0
         self.dt = 1
@@ -66,6 +68,9 @@ class ModalViewer:
         self.ui.horizontalSlider_2.setSliderPosition(10)
         self.ui.horizontalSlider_2.actionTriggered.connect(self.new_mode_shape)
 
+        self.ui.tableWidget.currentItemChanged.connect(self.cell_edit_start)
+        self.ui.tableWidget.itemChanged.connect(self.cell_edit_done)
+
         #
 
         self._pause = True
@@ -73,9 +78,7 @@ class ModalViewer:
         iren.AddObserver('TimerEvent', self.timerEvent)
         self.timerid = iren.CreateRepeatingTimer(round(100))
 
-
         self.fill_table()
-        # self.update_point_masses()
         self.calculate_modeshapes()
 
         if self.n_shapes > 0:
@@ -84,6 +87,7 @@ class ModalViewer:
             self.ui.label_3.setText("No mode-shapes found")
 
         self.ui.pushButton.clicked.connect(self.recalc)
+        self.ui.pushButton_2.clicked.connect(self.quickfix)
 
 
         self.app.aboutToQuit.connect(self.onClose)
@@ -96,100 +100,106 @@ class ModalViewer:
             except Exception as E:
                 print(E)
 
-    def recalc(self):
-        self._pause = True
-        self.update_point_masses()
-        self.calculate_modeshapes()
+    def cell_edit_start(self, data):
+        if self._filling_table:
+            return
+        try:
+            self._celldata = data.text()
+        except:
+            pass
 
-    def fill_table(self):
-        rows = -1
-        for b in self.scene.nodes_of_type(RigidBody):
-            rows += 1
-            self.ui.tableWidget.setRowCount(rows+1)
-            self.ui.tableWidget.setItem(rows,0, QtWidgets.QTableWidgetItem(b.name))
-            self.ui.tableWidget.setItem(rows,1, QtWidgets.QTableWidgetItem(str(b.mass)))
 
-            try:
-                rs = b.radii_of_gyration
-            except:
-                rs = (0,0,0)
 
-            self.ui.tableWidget.setItem(rows, 2, QtWidgets.QTableWidgetItem(str(rs[0])))
-            self.ui.tableWidget.setItem(rows, 3, QtWidgets.QTableWidgetItem(str(rs[1])))
-            self.ui.tableWidget.setItem(rows, 4, QtWidgets.QTableWidgetItem(str(rs[2])))
+    def cell_edit_done(self, data):
+        if self._filling_table:
+            return
 
-    def update_point_masses(self):
+        self._celldata = data.text()
 
-        self.ui.label_3.setText("")
-        for node in list(self.scene.nodes):
-            if isinstance(node, PointMass):
-                self.scene.nodes.remove(node)
+        row = data.row()
+        col = data.column()
 
-        for row in range(self.ui.tableWidget.rowCount()):
-            name = self.ui.tableWidget.item(row,0).text()
-            mass = float(self.ui.tableWidget.item(row,1).text())
+        name = self.ui.tableWidget.item(row, 1).text()
+        node = self.scene[name]
+        mode = int(self.ui.tableWidget.item(row, 2).text())
 
-            if mass <= 0:
-                print('Zero mass encountered')
-                continue
+        if col == 3:  # inertia
+            I = float(data.text())
 
-            rxx = float(self.ui.tableWidget.item(row,2).text())
-            ryy = float(self.ui.tableWidget.item(row, 3).text())
-            rzz = float(self.ui.tableWidget.item(row, 4).text())
+            if isinstance(node, RigidBody):
+                node.mass = I
+            else:
+                node.inertia = I
 
-            # decouple into six point masses
+            self.fill_table()
+            return
 
-            Ixx = mass * rxx ** 2
-            Iyy = mass * ryy ** 2
-            Izz = mass * rzz ** 2
-
-            rxx2 = (Ixx / mass)
-            ryy2 = (Iyy / mass)
-            rzz2 = (Izz / mass)
-
-            # checks
-            try:
-                if rxx2 > ryy2 + rzz2:
-                    raise Exception('Ixx should be < Iyy + Izz')
-                if ryy2 > rxx2 + rzz2:
-                    raise Exception('Iyy should be < Ixx + Izz')
-                if rzz2 > rxx2 + rzz2:
-                    raise Exception('Izz should be < Ixx + Iyy')
-            except Exception as ME:
-                self.ui.label_3.setText(str(ME))
+        elif col == 4: # radius
+            r = float(data.text())
+            if mode > 2:
+                temp = node.inertia_radii
+                temp[mode - 3] = r
+                node.inertia_radii = temp
+                self.fill_table()
                 return
 
-            x = np.sqrt(0.5 * (-rxx2 + ryy2 + rzz2)) * np.sqrt(3)
-            y = np.sqrt(0.5 * (rxx2 - ryy2 + rzz2)) * np.sqrt(3)
-            z = np.sqrt(0.5 * (rxx2 + ryy2 - rzz2)) * np.sqrt(3)
+        data.setText(self._celldata)
 
-            m = mass / 6
+    def recalc(self):
+        self._pause = True
+        self.fill_table()
+        self.calculate_modeshapes()
 
-            Ixxc = 2 * (y ** 2 + z ** 2) * m
-            Iyyc = 2 * (x ** 2 + z ** 2) * m
-            Izzc = 2 * (x ** 2 + y ** 2) * m
+    def quickfix(self):
+        self._pause = True
+        summary = dynamics.frequency_domain.dynamics_quickfix_dofs(self.scene)
+        self.fill_table_with(summary)
+        self.calculate_modeshapes()
+        self._pause = False
 
-            print('{} =?= {}'.format(Ixx, Ixxc))
-            print('{} =?= {}'.format(Iyy, Iyyc))
-            print('{} =?= {}'.format(Izz, Izzc))
 
-            # Add the point masses
-            ps = list()
-            ps.append([x,0,0])
-            ps.append([-x, 0,0])
-            ps.append([0, y, 0])
-            ps.append([0, -y, 0])
-            ps.append([0, 0, z])
-            ps.append([0,0 , -z])
+    def fill_table(self):
 
-            for p in ps:
-                pm = PointMass(self.scene)
-                b = self.scene[name]
-                pm.parent = b
-                pm.mass = m
-                pm.offset = (b.cogx + p[0], b.cogy + p[1], b.cogz + p[2])
-                self.scene.nodes.append(pm)
-                print('added pm of {} at {} {} {} on {}'.format(m, *pm.offset, b.name))
+        self.scene._vfc.set_dofs(self.d0)
+
+        summary = dynamics.frequency_domain.dynamics_summary_data(self.scene)
+        self.fill_table_with(summary)
+
+    def fill_table_with(self,summary):
+
+        self._filling_table = True
+        rows = -1
+        factor = 0.3
+        color = QColor.fromRgb(255 - 100 * factor, 255 - 100 * factor, 255)
+
+        for b in summary:
+            rows += 1
+
+            name = b['node']
+            node = self.scene[b['node']]
+            mode = b['mode']
+
+            self.ui.tableWidget.setRowCount(rows+1)
+            self.ui.tableWidget.setItem(rows, 1, QtWidgets.QTableWidgetItem(name))
+            self.ui.tableWidget.setItem(rows, 2, QtWidgets.QTableWidgetItem(str(mode)))
+            self.ui.tableWidget.setItem(rows, 3, QtWidgets.QTableWidgetItem('{:e}'.format(node.inertia)))
+            if mode>2:
+                self.ui.tableWidget.setItem(rows, 4, QtWidgets.QTableWidgetItem('{:e}'.format(node.inertia_radii[mode-3])))
+                self.ui.tableWidget.item(rows, 4).setBackground(QBrush(color))
+            else:
+                self.ui.tableWidget.item(rows, 3).setBackground(QBrush(color))
+                self.ui.tableWidget.setItem(rows, 4,
+                                            QtWidgets.QTableWidgetItem('n/a'))
+            self.ui.tableWidget.setItem(rows, 5, QtWidgets.QTableWidgetItem('{:.3e}'.format(b['child_inertia'])))
+            self.ui.tableWidget.setItem(rows, 6, QtWidgets.QTableWidgetItem('{:.3e}'.format(b['stiffness'])))
+            self.ui.tableWidget.setItem(rows, 7, QtWidgets.QTableWidgetItem(b['unconstrained']))
+            self.ui.tableWidget.setItem(rows, 8, QtWidgets.QTableWidgetItem(b['noinertia']))
+
+
+
+
+
+        self._filling_table = False
 
     def calculate_modeshapes(self):
 
@@ -201,27 +211,6 @@ class ModalViewer:
             self.n_shapes = len(V)
         else:
             self.n_shapes = 0
-
-        # M = dynamics.frequency_domain.M(self.scene)
-        #
-        #
-        #
-        # print("Mass matrix")
-        # print(M)
-        # K = self.scene._vfc.K(0.1)
-        # K = -K
-        # print("Stiffness matrix")
-        # print(K)
-        #
-        # if K.size>0:
-        #     V, D = eig(K, M)
-        #
-        #     print("Values = ")
-        #     print(V)
-        #     print("Directions = ")
-        #     print(D)
-        #
-
 
     def onClose(self):
         iren = self.visual.renwin.GetInteractor()
@@ -236,10 +225,11 @@ class ModalViewer:
         print('Activating mode-shape {} with scale {}'.format(i,scale))
 
         omega = self.omega[i]
-        text = '{:.2f} rad/s | {:.2f} s'.format(omega, 2*np.pi / omega)
-
-        self.ui.lblInfo.setText(text)
+        self.ui.lblPeriod.setText('{:.2f} s'.format(2*np.pi / omega))
+        self.ui.lblRads.setText('{:.2f} rad/s'.format(omega))
         self.generateModeShape(i,scale)
+
+
 
     def timerEvent(self,a,b):
         if self._pause:
@@ -271,15 +261,21 @@ class ModalViewer:
     
     def generateModeShape(self,i_shape,scale):
         self._pause = True
+        self._filling_table = True
         self.animation_dofs = list()
 
         d = np.array(self.d0)
         displ = self.shapes[:, i_shape]
         displ = np.real(displ)
 
-        print(displ)
+        # update exitation row in table
+        for i,d in enumerate(displ):
+            self.ui.tableWidget.setItem(i, 0, QtWidgets.QTableWidgetItem('{:.2f}'.format(d)))
+            cell = self.ui.tableWidget.item(i, 0)
+            factor = abs(d) / np.max(np.abs(displ))
+            color = QColor.fromRgb(255-100*factor,255-100*factor,255)
+            cell.setBackground(QBrush(color))
 
-        # TODO: This is incorrect for rotations which have non-zero other components
 
         for i_frame in range(self.n_frames):
 
@@ -287,14 +283,16 @@ class ModalViewer:
             self.eCore.set_dofs(self.d0)
             self.eCore.change_dofs(change)
             self.animation_dofs.append(self.eCore.get_dofs())
+
         self._pause = False
+        self._filling_table = False
 
 # ====== main code ======
 
 if __name__ == '__main__':
     s = Scene()
 
-    # ---
-    s.import_scene(s.get_resource_path("cheetah.pscene"), containerize=False, prefix="")
+    s.import_scene(s.get_resource_path("cheetah with crane.dave_asset"), containerize=False, prefix="")
+
     s.solve_statics()
     window = ModalViewer(s)
