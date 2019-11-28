@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="locale">
+   <locale language="English" country="UnitedStates"/>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
@@ -45,6 +48,9 @@
      <horstretch>0</horstretch>
      <verstretch>0</verstretch>
     </sizepolicy>
+   </property>
+   <property name="windowTitle">
+    <string>View</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -133,6 +139,9 @@
    <property name="features">
     <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
    </property>
+   <property name="windowTitle">
+    <string>DOF summary</string>
+   </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
    </attribute>
@@ -161,23 +170,6 @@
        <column>
         <property name="text">
          <string>Exitation</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Node</string>
-        </property>
-        <property name="background">
-         <color>
-          <red>236</red>
-          <green>236</green>
-          <blue>236</blue>
-         </color>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Mode</string>
         </property>
        </column>
        <column>
@@ -222,6 +214,9 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
+   <property name="windowTitle">
+    <string>Actions</string>
+   </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
@@ -239,6 +234,101 @@
        <property name="text">
         <string>Update model</string>
        </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_4">
+   <property name="windowTitle">
+    <string>Dynamic properties</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_4">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QLabel" name="lblChangeDynamicInfo">
+       <property name="text">
+        <string>Note: For RigidBody type nodes the inertia properties are coupled to the weight properties.
+Changing the intertia properties changes the weight properties as well</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTableWidget" name="tableDynProp">
+       <attribute name="horizontalHeaderMinimumSectionSize">
+        <number>20</number>
+       </attribute>
+       <attribute name="verticalHeaderVisible">
+        <bool>true</bool>
+       </attribute>
+       <column>
+        <property name="text">
+         <string>F</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>I</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>X</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>E</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>D</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string> </string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Inertia (weight)</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>x (cog)</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>y (cog)</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string> (cog)</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>rxx</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>ryy</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>rzz</string>
+        </property>
+       </column>
       </widget>
      </item>
     </layout>
