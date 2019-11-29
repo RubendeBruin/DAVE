@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'frm_animation.ui',
 # licensing of 'frm_animation.ui' applies.
 #
-# Created: Thu Nov 28 14:40:04 2019
+# Created: Fri Nov 29 09:50:22 2019
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -136,12 +136,15 @@ class Ui_AnimationWindow(object):
         self.dockWidgetContents_3.setObjectName("dockWidgetContents_3")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.dockWidgetContents_3)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.pushButton_2 = QtWidgets.QPushButton(self.dockWidgetContents_3)
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.verticalLayout.addWidget(self.pushButton_2)
+        self.btnStatics = QtWidgets.QPushButton(self.dockWidgetContents_3)
+        self.btnStatics.setObjectName("btnStatics")
+        self.verticalLayout.addWidget(self.btnStatics)
         self.pushButton = QtWidgets.QPushButton(self.dockWidgetContents_3)
         self.pushButton.setObjectName("pushButton")
         self.verticalLayout.addWidget(self.pushButton)
+        self.pushButton_2 = QtWidgets.QPushButton(self.dockWidgetContents_3)
+        self.pushButton_2.setObjectName("pushButton_2")
+        self.verticalLayout.addWidget(self.pushButton_2)
         self.dockWidget_3.setWidget(self.dockWidgetContents_3)
         AnimationWindow.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.dockWidget_3)
         self.dockWidget_4 = QtWidgets.QDockWidget(AnimationWindow)
@@ -194,20 +197,23 @@ class Ui_AnimationWindow(object):
 
     def retranslateUi(self, AnimationWindow):
         AnimationWindow.setWindowTitle(QtWidgets.QApplication.translate("AnimationWindow", "MainWindow", None, -1))
+        self.dockWidget.setWindowTitle(QtWidgets.QApplication.translate("AnimationWindow", "View", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("AnimationWindow", "Scale", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("AnimationWindow", "Mode-shape", None, -1))
         self.lblRads.setText(QtWidgets.QApplication.translate("AnimationWindow", "Frequency", None, -1))
         self.lblPeriod.setText(QtWidgets.QApplication.translate("AnimationWindow", "Period", None, -1))
-        self.dockWidget_2.setWindowTitle(QtWidgets.QApplication.translate("AnimationWindow", "Dynamic analysis details", None, -1))
+        self.dockWidget_2.setWindowTitle(QtWidgets.QApplication.translate("AnimationWindow", "DOF summary", None, -1))
         self.tableWidget.horizontalHeaderItem(0).setText(QtWidgets.QApplication.translate("AnimationWindow", "Exitation", None, -1))
-        self.tableWidget.horizontalHeaderItem(1).setText(QtWidgets.QApplication.translate("AnimationWindow", "Inertia", None, -1))
+        self.tableWidget.horizontalHeaderItem(1).setText(QtWidgets.QApplication.translate("AnimationWindow", "Linear Inertia", None, -1))
         self.tableWidget.horizontalHeaderItem(2).setText(QtWidgets.QApplication.translate("AnimationWindow", "Radius", None, -1))
-        self.tableWidget.horizontalHeaderItem(3).setText(QtWidgets.QApplication.translate("AnimationWindow", "(children)", None, -1))
+        self.tableWidget.horizontalHeaderItem(3).setText(QtWidgets.QApplication.translate("AnimationWindow", "Total inc. children", None, -1))
         self.tableWidget.horizontalHeaderItem(4).setText(QtWidgets.QApplication.translate("AnimationWindow", "Stiffness", None, -1))
         self.tableWidget.horizontalHeaderItem(5).setText(QtWidgets.QApplication.translate("AnimationWindow", "unconstrained", None, -1))
         self.tableWidget.horizontalHeaderItem(6).setText(QtWidgets.QApplication.translate("AnimationWindow", "no-inertia", None, -1))
-        self.pushButton_2.setText(QtWidgets.QApplication.translate("AnimationWindow", "Quick-fix model", None, -1))
+        self.dockWidget_3.setWindowTitle(QtWidgets.QApplication.translate("AnimationWindow", "Actions", None, -1))
+        self.btnStatics.setText(QtWidgets.QApplication.translate("AnimationWindow", "Solve statics", None, -1))
         self.pushButton.setText(QtWidgets.QApplication.translate("AnimationWindow", "Update model", None, -1))
+        self.pushButton_2.setText(QtWidgets.QApplication.translate("AnimationWindow", "Quick-fix model", None, -1))
         self.dockWidget_4.setWindowTitle(QtWidgets.QApplication.translate("AnimationWindow", "Dynamic properties", None, -1))
         self.lblChangeDynamicInfo.setText(QtWidgets.QApplication.translate("AnimationWindow", "Note: For RigidBody type nodes the inertia properties are coupled to the weight properties.\n"
 "Changing the intertia properties changes the weight properties as well", None, -1))
@@ -216,7 +222,6 @@ class Ui_AnimationWindow(object):
         self.tableDynProp.horizontalHeaderItem(2).setText(QtWidgets.QApplication.translate("AnimationWindow", "X", None, -1))
         self.tableDynProp.horizontalHeaderItem(3).setText(QtWidgets.QApplication.translate("AnimationWindow", "E", None, -1))
         self.tableDynProp.horizontalHeaderItem(4).setText(QtWidgets.QApplication.translate("AnimationWindow", "D", None, -1))
-        self.tableDynProp.horizontalHeaderItem(5).setText(QtWidgets.QApplication.translate("AnimationWindow", " ", None, -1))
         self.tableDynProp.horizontalHeaderItem(6).setText(QtWidgets.QApplication.translate("AnimationWindow", "Inertia (weight)", None, -1))
         self.tableDynProp.horizontalHeaderItem(7).setText(QtWidgets.QApplication.translate("AnimationWindow", "x (cog)", None, -1))
         self.tableDynProp.horizontalHeaderItem(8).setText(QtWidgets.QApplication.translate("AnimationWindow", "y (cog)", None, -1))

@@ -92,6 +92,7 @@ class ModalViewer:
 
         self.ui.pushButton.clicked.connect(self.recalc)
         self.ui.pushButton_2.clicked.connect(self.quickfix)
+        self.ui.btnStatics.clicked.connect(self.solvestatics)
 
 
         self.app.aboutToQuit.connect(self.onClose)
@@ -126,6 +127,13 @@ class ModalViewer:
                 print(c.stdout + '\n' + str(E) + '\n\nWhen running: \n\n' + code)
                 print('/ERROR')
                 return False
+
+    def solvestatics(self):
+        self._pause = True
+        self.scene.solve_statics()
+        self.d0 = self.scene._vfc.get_dofs()
+
+
 
     # ===================== Nodes table =============================
 
@@ -182,7 +190,9 @@ class ModalViewer:
         self.scene._vfc.state_update()
         self.d0 = self.scene._vfc.get_dofs()
 
+        self.calculate_modeshapes()
         self.fill_result_table()
+
 
 
     def node_table_cell_edit_done(self, data):
@@ -234,7 +244,9 @@ class ModalViewer:
         if not self._runcode(code):
             print("there was an error running the code")
 
+        self.calculate_modeshapes()
         self.fill_result_table()
+
 
     # ===================== results table ===========================
 
@@ -326,7 +338,7 @@ class ModalViewer:
                 self.ui.tableWidget.setItem(rows, 2,
                                             QtWidgets.QTableWidgetItem('n/a'))
 
-            self.ui.tableWidget.setItem(rows, 3, QtWidgets.QTableWidgetItem('{:.3e}'.format(b['child_inertia'])))
+            self.ui.tableWidget.setItem(rows, 3, QtWidgets.QTableWidgetItem('{:.3e}'.format(b['total_inertia'])))
             self.ui.tableWidget.setItem(rows, 4, QtWidgets.QTableWidgetItem('{:.3e}'.format(b['stiffness'])))
             self.ui.tableWidget.setItem(rows, 5, QtWidgets.QTableWidgetItem(b['unconstrained']))
             self.ui.tableWidget.setItem(rows, 6, QtWidgets.QTableWidgetItem(b['noinertia']))
@@ -347,6 +359,8 @@ class ModalViewer:
             self.n_shapes = len(V)
         else:
             self.n_shapes = 0
+
+        self.ui.horizontalSlider.setMaximum(self.n_shapes-1)
 
     def onClose(self):
         iren = self.visual.renwin.GetInteractor()
@@ -462,8 +476,8 @@ if __name__ == '__main__':
 
     # from DAVE.gui import Gui
     # s.import_scene(s.get_resource_path("pendulum.dave_asset"), containerize=False, prefix="")
-    s.import_scene(s.get_resource_path("cheetah with crane.dave_asset"), containerize=False, prefix="")
-    # Gui(s).show()
+    # s.import_scene(s.get_resource_path("cheetah with crane.dave_asset"), containerize=False, prefix="")
+    s.import_scene(s.get_resource_path("cheetah.dave_asset"), containerize=False, prefix="")
 
     s.solve_statics()
     window = ModalViewer(s)

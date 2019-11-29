@@ -174,7 +174,7 @@
        </column>
        <column>
         <property name="text">
-         <string>Inertia</string>
+         <string>Linear Inertia</string>
         </property>
        </column>
        <column>
@@ -184,7 +184,7 @@
        </column>
        <column>
         <property name="text">
-         <string>(children)</string>
+         <string>Total inc. children</string>
         </property>
        </column>
        <column>
@@ -223,9 +223,9 @@
    <widget class="QWidget" name="dockWidgetContents_3">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QPushButton" name="pushButton_2">
+      <widget class="QPushButton" name="btnStatics">
        <property name="text">
-        <string>Quick-fix model</string>
+        <string>Solve statics</string>
        </property>
       </widget>
      </item>
@@ -233,6 +233,13 @@
       <widget class="QPushButton" name="pushButton">
        <property name="text">
         <string>Update model</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_2">
+       <property name="text">
+        <string>Quick-fix model</string>
        </property>
       </widget>
      </item>
@@ -291,7 +298,7 @@ Changing the intertia properties changes the weight properties as well</string>
        </column>
        <column>
         <property name="text">
-         <string> </string>
+         <string/>
         </property>
        </column>
        <column>

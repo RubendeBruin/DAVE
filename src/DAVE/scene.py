@@ -3359,20 +3359,24 @@ class Scene:
 
     def dynamics_M(self,delta = 0.1):
         """Returns the mass matrix of the scene"""
+        self._vfc.state_update()
         return self._vfc.M(delta)
 
     def dynamics_K(self, delta):
         """Returns the stiffness matrix of the scene for a perturbation of delta """
+        self._vfc.state_update()
         return -self._vfc.K(delta)
 
     def dynamics_nodes(self):
         """Returns a list of nodes associated with the rows/columns of M and K"""
+        self._vfc.state_update()
         nodes = self._vfc.get_dof_elements()
         r = [self[n.name] for n in nodes]
         return r
 
     def dynamics_modes(self):
         """Returns a list of nodes associated with the rows/columns of M and K"""
+        self._vfc.state_update()
         return self._vfc.get_dof_modes()
 
 
