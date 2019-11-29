@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'frm_animation.ui',
 # licensing of 'frm_animation.ui' applies.
 #
-# Created: Fri Nov 29 09:50:22 2019
+# Created: Fri Nov 29 15:00:32 2019
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_AnimationWindow(object):
     def setupUi(self, AnimationWindow):
         AnimationWindow.setObjectName("AnimationWindow")
-        AnimationWindow.resize(1787, 1211)
+        AnimationWindow.resize(1408, 1191)
         AnimationWindow.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.centralwidget = QtWidgets.QWidget(AnimationWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -151,44 +151,6 @@ class Ui_AnimationWindow(object):
         self.dockWidget_4.setObjectName("dockWidget_4")
         self.dockWidgetContents_4 = QtWidgets.QWidget()
         self.dockWidgetContents_4.setObjectName("dockWidgetContents_4")
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.dockWidgetContents_4)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.lblChangeDynamicInfo = QtWidgets.QLabel(self.dockWidgetContents_4)
-        self.lblChangeDynamicInfo.setObjectName("lblChangeDynamicInfo")
-        self.verticalLayout_2.addWidget(self.lblChangeDynamicInfo)
-        self.tableDynProp = QtWidgets.QTableWidget(self.dockWidgetContents_4)
-        self.tableDynProp.setObjectName("tableDynProp")
-        self.tableDynProp.setColumnCount(13)
-        self.tableDynProp.setRowCount(0)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(0, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(1, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(2, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(3, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(4, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(5, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(6, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(7, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(8, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(9, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(10, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(11, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(12, item)
-        self.tableDynProp.horizontalHeader().setMinimumSectionSize(20)
-        self.tableDynProp.verticalHeader().setVisible(True)
-        self.verticalLayout_2.addWidget(self.tableDynProp)
         self.dockWidget_4.setWidget(self.dockWidgetContents_4)
         AnimationWindow.addDockWidget(QtCore.Qt.DockWidgetArea(2), self.dockWidget_4)
 
@@ -215,18 +177,4 @@ class Ui_AnimationWindow(object):
         self.pushButton.setText(QtWidgets.QApplication.translate("AnimationWindow", "Update model", None, -1))
         self.pushButton_2.setText(QtWidgets.QApplication.translate("AnimationWindow", "Quick-fix model", None, -1))
         self.dockWidget_4.setWindowTitle(QtWidgets.QApplication.translate("AnimationWindow", "Dynamic properties", None, -1))
-        self.lblChangeDynamicInfo.setText(QtWidgets.QApplication.translate("AnimationWindow", "Note: For RigidBody type nodes the inertia properties are coupled to the weight properties.\n"
-"Changing the intertia properties changes the weight properties as well", None, -1))
-        self.tableDynProp.horizontalHeaderItem(0).setText(QtWidgets.QApplication.translate("AnimationWindow", "F", None, -1))
-        self.tableDynProp.horizontalHeaderItem(1).setText(QtWidgets.QApplication.translate("AnimationWindow", "I", None, -1))
-        self.tableDynProp.horizontalHeaderItem(2).setText(QtWidgets.QApplication.translate("AnimationWindow", "X", None, -1))
-        self.tableDynProp.horizontalHeaderItem(3).setText(QtWidgets.QApplication.translate("AnimationWindow", "E", None, -1))
-        self.tableDynProp.horizontalHeaderItem(4).setText(QtWidgets.QApplication.translate("AnimationWindow", "D", None, -1))
-        self.tableDynProp.horizontalHeaderItem(6).setText(QtWidgets.QApplication.translate("AnimationWindow", "Inertia (weight)", None, -1))
-        self.tableDynProp.horizontalHeaderItem(7).setText(QtWidgets.QApplication.translate("AnimationWindow", "x (cog)", None, -1))
-        self.tableDynProp.horizontalHeaderItem(8).setText(QtWidgets.QApplication.translate("AnimationWindow", "y (cog)", None, -1))
-        self.tableDynProp.horizontalHeaderItem(9).setText(QtWidgets.QApplication.translate("AnimationWindow", " (cog)", None, -1))
-        self.tableDynProp.horizontalHeaderItem(10).setText(QtWidgets.QApplication.translate("AnimationWindow", "rxx", None, -1))
-        self.tableDynProp.horizontalHeaderItem(11).setText(QtWidgets.QApplication.translate("AnimationWindow", "ryy", None, -1))
-        self.tableDynProp.horizontalHeaderItem(12).setText(QtWidgets.QApplication.translate("AnimationWindow", "rzz", None, -1))
 

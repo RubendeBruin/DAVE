@@ -1,0 +1,88 @@
+# auto generated pyhton code
+# By beneden
+# Time: 2019-11-19 17:38:08 UTC
+
+# To be able to distinguish the important number (eg: fixed positions) from
+# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
+# For anything written as solved(number) that actual number does not influence the static solution
+def solved(number):
+    return number
+
+# code for Spreaderbar
+s.new_rigidbody(name='Spreaderbar',
+                mass=0.0,
+                cog=(0.0,
+                     0.0,
+                     0.0),
+                position=(0.0,
+                          0.0,
+                          0.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed =(True, True, True, True, True, True) )
+# code for lpA1_upper
+s.new_poi(name='lpA1_upper',
+          parent='Spreaderbar',
+          position=(9.0,
+                    0.8,
+                    0.0))
+# code for lpA2_upper
+s.new_poi(name='lpA2_upper',
+          parent='Spreaderbar',
+          position=(9.0,
+                    -0.8,
+                    0.0))
+# code for lpB1_upper
+s.new_poi(name='lpB1_upper',
+          parent='Spreaderbar',
+          position=(-9.0,
+                    0.8,
+                    0.0))
+# code for lpB2_upper
+s.new_poi(name='lpB2_upper',
+          parent='Spreaderbar',
+          position=(-9.0,
+                    -0.8,
+                    0.0))
+# code for Sheave
+s.new_sheave(name='Sheave',
+            parent='lpA1_upper',
+            axis=(0.0, 1.0, 0.0),
+            radius=0.4 )
+# code for Sheave_1
+s.new_sheave(name='Sheave_1',
+            parent='lpA2_upper',
+            axis=(0.0, 1.0, 0.0),
+            radius=0.4 )
+# code for Sheave_2
+s.new_sheave(name='Sheave_2',
+            parent='lpB1_upper',
+            axis=(0.0, 1.0, 0.0),
+            radius=0.4 )
+# code for Sheave_2_1
+s.new_sheave(name='Sheave_2_1',
+            parent='lpB2_upper',
+            axis=(0.0, 1.0, 0.0),
+            radius=0.4 )
+# code for Visual
+s.new_visual(name='Visual',
+            parent='Spreaderbar',
+            path=r'cylinder 1x1x1.obj',
+            offset=(-10.0, 0.0, 0.0), 
+            rotation=(0.0, 90.0, 0.0), 
+            scale=(20.0, 1.2, 1.2) )
+# code for Visual_1
+s.new_visual(name='Visual_1',
+            parent='Spreaderbar',
+            path=r'cylinder 1x1x1.obj',
+            offset=(-9.0, 1.0, 0.0), 
+            rotation=(90.0, 0.0, 0.0), 
+            scale=(1.0, 2.0, 1.0) )
+# code for Visual_1_1
+s.new_visual(name='Visual_1_1',
+            parent='Spreaderbar',
+            path=r'cylinder 1x1x1.obj',
+            offset=(9.0, 1.0, 0.0), 
+            rotation=(90.0, 0.0, 0.0), 
+            scale=(1.0, 2.0, 1.0) )

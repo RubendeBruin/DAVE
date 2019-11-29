@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1787</width>
-    <height>1211</height>
+    <width>1408</width>
+    <height>1191</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -253,93 +253,7 @@
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents_4">
-    <layout class="QVBoxLayout" name="verticalLayout_2">
-     <item>
-      <widget class="QLabel" name="lblChangeDynamicInfo">
-       <property name="text">
-        <string>Note: For RigidBody type nodes the inertia properties are coupled to the weight properties.
-Changing the intertia properties changes the weight properties as well</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QTableWidget" name="tableDynProp">
-       <attribute name="horizontalHeaderMinimumSectionSize">
-        <number>20</number>
-       </attribute>
-       <attribute name="verticalHeaderVisible">
-        <bool>true</bool>
-       </attribute>
-       <column>
-        <property name="text">
-         <string>F</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>I</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>X</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>E</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>D</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string/>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Inertia (weight)</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>x (cog)</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>y (cog)</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string> (cog)</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>rxx</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>ryy</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>rzz</string>
-        </property>
-       </column>
-      </widget>
-     </item>
-    </layout>
-   </widget>
+   <widget class="QWidget" name="dockWidgetContents_4"/>
   </widget>
  </widget>
  <resources/>

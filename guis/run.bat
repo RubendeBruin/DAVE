@@ -19,6 +19,7 @@ echo call pyside2-uic widget_con2d.ui -o "..\src\DAVE\forms\widget_con2d.py"
 echo call pyside2-uic frm_standard_assets.ui -o "..\src\DAVE\forms\frm_standard_assets.py"
 echo call pyside2-uic dlg_solver.ui -o "..\src\DAVE\forms\dlg_solver.py"
 call pyside2-uic frm_animation.ui -o "..\src\DAVE\forms\frm_animation.py"
+call pyside2-uic widget_dynprop.ui -o "..\src\DAVE\forms\widget_dynprop.py"
 
 
 echo call pyside2-rcc resources.qrc -o "..\src\DAVE\forms\resources_rc.py"

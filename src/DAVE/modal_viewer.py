@@ -13,6 +13,8 @@ from PySide2.QtWidgets import QCheckBox
 
 from IPython.utils.capture import capture_output
 
+import DAVE.forms.widget_dynprop
+
 
 # app = QtWidgets.QApplication(sys.argv)
 # AnimationWindow = QtWidgets.QMainWindow()
@@ -74,7 +76,13 @@ class ModalViewer:
         self.ui.tableWidget.currentItemChanged.connect(self.cell_edit_start)
         self.ui.tableWidget.itemChanged.connect(self.cell_edit_done)
 
+        ui = DAVE.forms.widget_dynprop.Ui_widget_dynprop()
+        ui.setupUi(self.ui.dockWidgetContents_4)
+        self.ui.dockWidgetContents_4.layout().addWidget(ui.widget)
+
+        self.ui.tableDynProp = ui.tableDynProp
         self.ui.tableDynProp.itemChanged.connect(self.node_table_cell_edit_done)
+
 
         #
         iren = self.visual.renwin.GetInteractor()
