@@ -132,6 +132,7 @@
      <string>Dynamics</string>
     </property>
     <addaction name="actionModal_shapes"/>
+    <addaction name="actionInertia_properties"/>
    </widget>
    <addaction name="menuSolve_Statics"/>
    <addaction name="menuView"/>
@@ -872,6 +873,11 @@
   <action name="actionModal_shapes">
    <property name="text">
     <string>Modal shapes</string>
+   </property>
+  </action>
+  <action name="actionInertia_properties">
+   <property name="text">
+    <string>Inertia properties</string>
    </property>
   </action>
   <zorder>dockWidget_3</zorder>

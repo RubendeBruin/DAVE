@@ -31,6 +31,7 @@ from DAVE.forms.dlg_solver import Ui_Dialog
 import numpy as np
 import math
 import DAVE.element_widgets as element_widgets
+from DAVE.widget_dynamic_properties import DynamicProperties
 
 import sys
 from pathlib import Path
@@ -161,6 +162,9 @@ class Gui:
         self._dofs = None
         """Values of dofs before last solve command"""
 
+        self._inertia_properties = None
+        """Reference to inertial properties dock-widget once created"""
+
         self.visual.create_visuals(recreate=True)
         self.visual.position_visuals()
 
@@ -180,6 +184,7 @@ class Gui:
         self.ui.actionImport_sub_scene.triggered.connect(self.menu_import)
         self.ui.actionImport_browser.triggered.connect(self.import_browser)
         self.ui.actionRender_current_view.triggered.connect(self.render_in_blender)
+        self.ui.actionInertia_properties.triggered.connect(self.show_inertia_properties)
 
         self.ui.treeView.activated.connect(self.tree_select_node)  # fires when a user presses [enter]
         # self.ui.treeView.pressed.connect(self.tree_select_node)
@@ -338,6 +343,14 @@ class Gui:
             prefix = r[2]
             code = 's.import_scene(s.get_resource_path("{}"), containerize={}, prefix="{}")'.format(file,container,prefix)
             self.run_code(code)
+
+    def show_inertia_properties(self):
+
+        if self._inertia_properties is None:
+            self._inertia_properties = QtWidgets.QDockWidget(self.MainWindow)
+
+            self.p = DynamicProperties(scene=self.scene, ui_target=self._inertia_properties, run_code_func=self.run_code)
+            self._inertia_properties.setVisible(True)
 
     def render_in_blender(self):
 

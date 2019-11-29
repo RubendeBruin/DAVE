@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_dynprop.ui',
 # licensing of 'widget_dynprop.ui' applies.
 #
-# Created: Fri Nov 29 15:00:32 2019
+# Created: Fri Nov 29 16:13:01 2019
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
