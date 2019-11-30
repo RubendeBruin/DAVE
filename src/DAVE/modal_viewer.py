@@ -15,11 +15,14 @@ from IPython.utils.capture import capture_output
 
 from DAVE.widget_dynamic_properties import DynamicProperties
 
+class MainWindowWithCloseEvent(QtWidgets.QMainWindow):
 
-# app = QtWidgets.QApplication(sys.argv)
-# AnimationWindow = QtWidgets.QMainWindow()
-# ui = Ui_AnimationWindow()
-# ui.setupUi(AnimationWindow)
+    def closeEvent(self, other):
+        print('closing qt interactor and timer of modal_viewer window')
+        iren = self.visual.renwin.GetInteractor()
+        iren.DestroyTimer(self.timerid)
+        self.visual.shutdown_qt()
+
 
 class ModalViewer:
 
@@ -48,15 +51,18 @@ class ModalViewer:
 
         if app is None:
             self.app = QtWidgets.QApplication(sys.argv)
+            self.MainWindow = QtWidgets.QMainWindow()
         else:
             self.app = app
+            self.MainWindow = MainWindowWithCloseEvent() # QtWidgets.QDialog()
 
-        self.MainWindow = QtWidgets.QMainWindow()
         self.ui.setupUi(self.MainWindow)
 
         self.visual.quick_updates_only = True
         self.visual.create_visuals(recreate=True)
         self.visual.position_visuals()
+
+        self.MainWindow.visual = self.visual # reference for the close event
 
         # -------------- Create the 3d view
 
@@ -82,8 +88,6 @@ class ModalViewer:
         # self.ui.tableDynProp = ui.tableDynProp
         # self.ui.tableDynProp.itemChanged.connect(self.node_table_cell_edit_done)
 
-
-
         def dyn_table_run_code(code):
             self._pause = True
             self.scene._vfc.set_dofs(self.d0)
@@ -92,13 +96,13 @@ class ModalViewer:
             self.calculate_modeshapes()
             self.fill_result_table()
 
-
         self.dynprop = DynamicProperties(scene=self.scene, ui_target=self.ui.dockWidgetContents_4, run_code_func=dyn_table_run_code)
 
         #
         iren = self.visual.renwin.GetInteractor()
         iren.AddObserver('TimerEvent', self.timerEvent)
         self.timerid = iren.CreateRepeatingTimer(round(100))
+        self.MainWindow.timerid = self.timerid # for close event
 
         self.fill_result_table()
         self.dynprop.fill_nodes_table()
@@ -113,8 +117,8 @@ class ModalViewer:
         self.ui.pushButton_2.clicked.connect(self.quickfix)
         self.ui.btnStatics.clicked.connect(self.solvestatics)
 
-
-        self.app.aboutToQuit.connect(self.onClose)
+        if app is not None:
+            self.app.aboutToQuit.connect(self.onClose)
         self.MainWindow.show()
 
         while True:

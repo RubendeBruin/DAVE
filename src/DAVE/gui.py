@@ -32,6 +32,7 @@ import numpy as np
 import math
 import DAVE.element_widgets as element_widgets
 from DAVE.widget_dynamic_properties import DynamicProperties
+from DAVE.modal_viewer import ModalViewer
 
 import sys
 from pathlib import Path
@@ -164,6 +165,9 @@ class Gui:
 
         self._inertia_properties = None
         """Reference to inertial properties dock-widget once created"""
+        self.dynProps = None
+        """Reference to inertial properties object once created"""
+
 
         self.visual.create_visuals(recreate=True)
         self.visual.position_visuals()
@@ -185,6 +189,7 @@ class Gui:
         self.ui.actionImport_browser.triggered.connect(self.import_browser)
         self.ui.actionRender_current_view.triggered.connect(self.render_in_blender)
         self.ui.actionInertia_properties.triggered.connect(self.show_inertia_properties)
+        self.ui.actionModal_shapes.triggered.connect(self.show_modal_shapes)
 
         self.ui.treeView.activated.connect(self.tree_select_node)  # fires when a user presses [enter]
         # self.ui.treeView.pressed.connect(self.tree_select_node)
@@ -344,13 +349,28 @@ class Gui:
             code = 's.import_scene(s.get_resource_path("{}"), containerize={}, prefix="{}")'.format(file,container,prefix)
             self.run_code(code)
 
+    def show_modal_shapes(self):
+        ModalViewer(scene=self.scene, app = self.app)
+
     def show_inertia_properties(self):
 
         if self._inertia_properties is None:
             self._inertia_properties = QtWidgets.QDockWidget(self.MainWindow)
+            self._inertia_properties.setFeatures(
+                QtWidgets.QDockWidget.DockWidgetFloatable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetClosable)
 
-            self.p = DynamicProperties(scene=self.scene, ui_target=self._inertia_properties, run_code_func=self.run_code)
+            self.dynProps = DynamicProperties(scene=self.scene, ui_target=self._inertia_properties, run_code_func=self.run_code)
+            self._inertia_properties.setWidget(self.dynProps.ui.widget)
+            self._inertia_properties.setWindowTitle("Inertia properties")
+            self._inertia_properties.setFloating(True)
             self._inertia_properties.setVisible(True)
+        else:
+            self._inertia_properties.setVisible(True)
+
+    def update_inertia_properties(self):
+        if self.dynProps is not None:
+            self.dynProps.scene = self.scene
+            self.dynProps.fill_nodes_table()
 
     def render_in_blender(self):
 
@@ -612,6 +632,9 @@ class Gui:
         model = SceneTreeModel()
         model._scene = self
         self.scene.sort_nodes_by_dependency()
+
+        self.update_inertia_properties()
+
 
         self.node_data.clear()
 
