@@ -348,7 +348,7 @@ class Gui:
         code += "\ncamera = {{'position':({},{},{}), 'direction':({},{},{})}}".format(*pos,*dir)
         code += '\nblender_base = r"{}"'.format(vfc.BLENDER_BASE_SCENE)
         code += '\nblender_result = r"{}"'.format(Path(vfc.PATH_TEMP) / 'current_render.blend')
-        code += '\nDAVE.io.blender.create_blend_and_open(s, blender_base, blender_result, camera=camera)'
+        code += '\nDAVE.io.blender.create_blend_and_open(s, blender_base_file=blender_base, blender_result_file=blender_result, camera=camera)'
         code += '\nprint("Opening blender, close blender to continue.")'
         code += '\nprint("In blender, press F12 to go to rendered camera view.")'
         self.run_code(code)
