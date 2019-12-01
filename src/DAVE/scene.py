@@ -1948,7 +1948,7 @@ class Buoyancy(NodeWithParent):
 
     @property
     def displacement(self):
-        """Returns the applied force in the parent axis system"""
+        """Returns displaced volume in m^3"""
         return self._vfNode.displacement
 
     # @trimesh.setter
