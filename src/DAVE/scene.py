@@ -30,7 +30,6 @@
     DAVE uses a [rotation vector](https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation#Rotation_vector) to represent rotations.
     This means that the rotation is defined as a vector with three components (rx,ry,rz). The magnitude of the vector is the rotation in degrees.
     The axis of rotation is the direction of the vector.
-    In the python part of the code the rotation angles are defined in degrees.
 
     Some examples:
 
@@ -63,7 +62,11 @@
 
     All settings are defined in UPPERCASE.
 
-    DAVE is multiplatform. It runs fine under windows or linux. The python standard [pathlib](https://docs.python.org/3/library/pathlib.html) library is used to deal with paths. In most situations however a string will work fine as well.
+    ###/ or \\ ###
+
+    DAVE is multiplatform. It runs fine under windows as well as linux.
+    Windows uses a \\ in path definitions while linux uses as /.
+    The python standard [pathlib](https://docs.python.org/3/library/pathlib.html) library is used to deal with paths. In most situations however a string will work fine as well.
 
     Note: Changing G or RHO has no effect at this moment as these values would also need to be changed in the equilibrium-core
 
@@ -74,7 +77,7 @@
     When loading a model or asset from a file into a scene the contents of that file are executed in the python interpreter. In the interpreter a variable `s` is
     available which refers to the current scene.
 
-    This makes it possible to define DAVE models in a very flexible way as arbitrary code can be executed when importing the model. Importing a model into DAVE is basically the same as running a file.
+    This makes it possible to define DAVE models in a very flexible way as arbitrary code can be executed when importing the model. Importing a model into DAVE is basically the same as running a file, so beware of the involed security implications.
 
 
     # Scene and nodes #
@@ -939,10 +942,12 @@ class Poi(NodeWithParent):
 
     @property
     def x(self):
+        """x component of local position"""
         return self.position[0]
 
     @property
     def y(self):
+        """y component of local position"""
         return self.position[1]
 
     @property
@@ -961,12 +966,14 @@ class Poi(NodeWithParent):
 
     @z.setter
     def z(self, var):
+        """z component of local position"""
         a = self.position
         self.position = (a[0], a[1], var)
 
 
     @property
     def position(self):
+        """Local position"""
         return self._vfNode.position
 
     @position.setter
@@ -981,19 +988,46 @@ class Poi(NodeWithParent):
 
     @property
     def gx(self):
+        """x component of global position"""
         return self.global_position[0]
 
     @property
     def gy(self):
+        """y component of global position"""
         return self.global_position[1]
 
     @property
     def gz(self):
+        """z component of global position"""
         return self.global_position[2]
+
+    @gx.setter
+    def gx(self, var):
+        a = self.global_position
+        self.global_position = (var, a[1], a[2])
+
+    @gy.setter
+    def gy(self, var):
+        a = self.global_position
+        self.global_position = (a[0], var, a[2])
+
+    @gz.setter
+    def gz(self, var):
+        a = self.global_position
+        self.global_position = (a[0], a[1], var)
 
     @property
     def global_position(self):
+        """Global position"""
         return self._vfNode.global_position
+
+    @global_position.setter
+    def global_position(self, val):
+        assert3f(val, "Global Position")
+        if self.parent:
+            self.position = self.parent.to_loc_position(val)
+        else:
+            self.position = val
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -1145,7 +1179,7 @@ class Cable(CoreConnectedNode):
     Intermediate pois or sheaves may be added.
 
     - Pois are considered as sheaves with a zero diameter.
-    - Sheaves are considered sheaves with the given geometry. If defined then the diameter of the cable is considered when calculating the geometry.
+    - Sheaves are considered sheaves with the given geometry. If defined then the diameter of the cable is considered when calculating the geometry. The cable runs over the sheave in the positive direction (right hand rule) as defined by the axis of the sheave.
 
     For cables running over a sheave the friction in sideways direction is considered to be infinite. The geometry is calculated such that the
     cable section between sheaves is perpendicular to the vector from the axis of the sheave to the point where the cable leaves the sheave.
@@ -1153,7 +1187,7 @@ class Cable(CoreConnectedNode):
     This assumption results in undefined behaviour when the axis of the sheave is parallel to the cable direction.
 
     Notes:
-        If pois on a cable come too close together (<1mm) then they will be pushed away from eachother.
+        If pois or sheaves on a cable come too close together (<1mm) then they will be pushed away from eachother.
         This prevents the unwanted situation where multiple pois end up at the same location. In that case it can not be determined which amount of force should be applied to each of the pois.
 
 
@@ -1484,9 +1518,9 @@ class LC6d(CoreConnectedNode):
     It connects two Axis elements with six linear springs.
     The translational-springs are easy. The rotational springs may not be as intuitive. They are defined as:
 
-    rotation_x = arc-tan ( uy[0] / uy[1] )
-    rotation_y = arc-tan ( -ux[0] / ux[2] )
-    rotation_z = arc-tan ( ux[0] / ux [1] )
+      - rotation_x = arc-tan ( uy[0] / uy[1] )
+      - rotation_y = arc-tan ( -ux[0] / ux[2] )
+      - rotation_z = arc-tan ( ux[0] / ux [1] )
 
     which works fine for small rotations and rotations about only a single axis.
 

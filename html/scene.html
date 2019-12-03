@@ -37,8 +37,7 @@ G and RHO are defined accordingly.</p>
 <p>Unfortunately there is no standard way of defining rotations in 3D.</p>
 <p>DAVE uses a <a href="https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation#Rotation_vector">rotation vector</a> to represent rotations.
 This means that the rotation is defined as a vector with three components (rx,ry,rz). The magnitude of the vector is the rotation in degrees.
-The axis of rotation is the direction of the vector.
-In the python part of the code the rotation angles are defined in degrees.</p>
+The axis of rotation is the direction of the vector.</p>
 <p>Some examples:</p>
 <ul>
 <li><code>(0,0,90)</code> : A rotation of 90 degrees about the Z-axis</li>
@@ -64,13 +63,16 @@ s = Scene()
 print(s.resources_paths)
 </code></pre>
 <p>All settings are defined in UPPERCASE.</p>
-<p>DAVE is multiplatform. It runs fine under windows or linux. The python standard <a href="https://docs.python.org/3/library/pathlib.html">pathlib</a> library is used to deal with paths. In most situations however a string will work fine as well.</p>
+<h3 id="or">/ or \</h3>
+<p>DAVE is multiplatform. It runs fine under windows as well as linux.
+Windows uses a \ in path definitions while linux uses as /.
+The python standard <a href="https://docs.python.org/3/library/pathlib.html">pathlib</a> library is used to deal with paths. In most situations however a string will work fine as well.</p>
 <p>Note: Changing G or RHO has no effect at this moment as these values would also need to be changed in the equilibrium-core</p>
 <h2 id="file-format">File format</h2>
 <p>The standard file-format for saving DAVE scenes and nodes is <a href="https://en.wikipedia.org/wiki/Vanilla_software">vanilla</a> python.</p>
 <p>When loading a model or asset from a file into a scene the contents of that file are executed in the python interpreter. In the interpreter a variable <code>s</code> is
 available which refers to the current scene.</p>
-<p>This makes it possible to define DAVE models in a very flexible way as arbitrary code can be executed when importing the model. Importing a model into DAVE is basically the same as running a file.</p>
+<p>This makes it possible to define DAVE models in a very flexible way as arbitrary code can be executed when importing the model. Importing a model into DAVE is basically the same as running a file, so beware of the involed security implications.</p>
 <h1 id="scene-and-nodes">Scene and nodes</h1>
 <p>A node is an item or element in a model. For example a ship or a force.
 A Scene is a collection of nodes.</p>
@@ -324,7 +326,6 @@ be used to obtain a full path to a resource with a known name.</p>
     DAVE uses a [rotation vector](https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation#Rotation_vector) to represent rotations.
     This means that the rotation is defined as a vector with three components (rx,ry,rz). The magnitude of the vector is the rotation in degrees.
     The axis of rotation is the direction of the vector.
-    In the python part of the code the rotation angles are defined in degrees.
 
     Some examples:
 
@@ -357,7 +358,11 @@ be used to obtain a full path to a resource with a known name.</p>
 
     All settings are defined in UPPERCASE.
 
-    DAVE is multiplatform. It runs fine under windows or linux. The python standard [pathlib](https://docs.python.org/3/library/pathlib.html) library is used to deal with paths. In most situations however a string will work fine as well.
+    ###/ or \\ ###
+
+    DAVE is multiplatform. It runs fine under windows as well as linux.
+    Windows uses a \\ in path definitions while linux uses as /.
+    The python standard [pathlib](https://docs.python.org/3/library/pathlib.html) library is used to deal with paths. In most situations however a string will work fine as well.
 
     Note: Changing G or RHO has no effect at this moment as these values would also need to be changed in the equilibrium-core
 
@@ -368,7 +373,7 @@ be used to obtain a full path to a resource with a known name.</p>
     When loading a model or asset from a file into a scene the contents of that file are executed in the python interpreter. In the interpreter a variable `s` is
     available which refers to the current scene.
 
-    This makes it possible to define DAVE models in a very flexible way as arbitrary code can be executed when importing the model. Importing a model into DAVE is basically the same as running a file.
+    This makes it possible to define DAVE models in a very flexible way as arbitrary code can be executed when importing the model. Importing a model into DAVE is basically the same as running a file, so beware of the involed security implications.
 
 
     # Scene and nodes #
@@ -1233,10 +1238,12 @@ class Poi(NodeWithParent):
 
     @property
     def x(self):
+        &#34;&#34;&#34;x component of local position&#34;&#34;&#34;
         return self.position[0]
 
     @property
     def y(self):
+        &#34;&#34;&#34;y component of local position&#34;&#34;&#34;
         return self.position[1]
 
     @property
@@ -1255,12 +1262,14 @@ class Poi(NodeWithParent):
 
     @z.setter
     def z(self, var):
+        &#34;&#34;&#34;z component of local position&#34;&#34;&#34;
         a = self.position
         self.position = (a[0], a[1], var)
 
 
     @property
     def position(self):
+        &#34;&#34;&#34;Local position&#34;&#34;&#34;
         return self._vfNode.position
 
     @position.setter
@@ -1275,19 +1284,46 @@ class Poi(NodeWithParent):
 
     @property
     def gx(self):
+        &#34;&#34;&#34;x component of global position&#34;&#34;&#34;
         return self.global_position[0]
 
     @property
     def gy(self):
+        &#34;&#34;&#34;y component of global position&#34;&#34;&#34;
         return self.global_position[1]
 
     @property
     def gz(self):
+        &#34;&#34;&#34;z component of global position&#34;&#34;&#34;
         return self.global_position[2]
+
+    @gx.setter
+    def gx(self, var):
+        a = self.global_position
+        self.global_position = (var, a[1], a[2])
+
+    @gy.setter
+    def gy(self, var):
+        a = self.global_position
+        self.global_position = (a[0], var, a[2])
+
+    @gz.setter
+    def gz(self, var):
+        a = self.global_position
+        self.global_position = (a[0], a[1], var)
 
     @property
     def global_position(self):
+        &#34;&#34;&#34;Global position&#34;&#34;&#34;
         return self._vfNode.global_position
+
+    @global_position.setter
+    def global_position(self, val):
+        assert3f(val, &#34;Global Position&#34;)
+        if self.parent:
+            self.position = self.parent.to_loc_position(val)
+        else:
+            self.position = val
 
     def give_python_code(self):
         code = &#34;# code for {}&#34;.format(self.name)
@@ -1439,7 +1475,7 @@ class Cable(CoreConnectedNode):
     Intermediate pois or sheaves may be added.
 
     - Pois are considered as sheaves with a zero diameter.
-    - Sheaves are considered sheaves with the given geometry. If defined then the diameter of the cable is considered when calculating the geometry.
+    - Sheaves are considered sheaves with the given geometry. If defined then the diameter of the cable is considered when calculating the geometry. The cable runs over the sheave in the positive direction (right hand rule) as defined by the axis of the sheave.
 
     For cables running over a sheave the friction in sideways direction is considered to be infinite. The geometry is calculated such that the
     cable section between sheaves is perpendicular to the vector from the axis of the sheave to the point where the cable leaves the sheave.
@@ -1447,7 +1483,7 @@ class Cable(CoreConnectedNode):
     This assumption results in undefined behaviour when the axis of the sheave is parallel to the cable direction.
 
     Notes:
-        If pois on a cable come too close together (&lt;1mm) then they will be pushed away from eachother.
+        If pois or sheaves on a cable come too close together (&lt;1mm) then they will be pushed away from eachother.
         This prevents the unwanted situation where multiple pois end up at the same location. In that case it can not be determined which amount of force should be applied to each of the pois.
 
 
@@ -1778,9 +1814,9 @@ class LC6d(CoreConnectedNode):
     It connects two Axis elements with six linear springs.
     The translational-springs are easy. The rotational springs may not be as intuitive. They are defined as:
 
-    rotation_x = arc-tan ( uy[0] / uy[1] )
-    rotation_y = arc-tan ( -ux[0] / ux[2] )
-    rotation_z = arc-tan ( ux[0] / ux [1] )
+      - rotation_x = arc-tan ( uy[0] / uy[1] )
+      - rotation_y = arc-tan ( -ux[0] / ux[2] )
+      - rotation_z = arc-tan ( ux[0] / ux [1] )
 
     which works fine for small rotations and rotations about only a single axis.
 
@@ -4740,13 +4776,13 @@ def trimesh(self):
 <p>Intermediate pois or sheaves may be added.</p>
 <ul>
 <li>Pois are considered as sheaves with a zero diameter.</li>
-<li>Sheaves are considered sheaves with the given geometry. If defined then the diameter of the cable is considered when calculating the geometry.</li>
+<li>Sheaves are considered sheaves with the given geometry. If defined then the diameter of the cable is considered when calculating the geometry. The cable runs over the sheave in the positive direction (right hand rule) as defined by the axis of the sheave.</li>
 </ul>
 <p>For cables running over a sheave the friction in sideways direction is considered to be infinite. The geometry is calculated such that the
 cable section between sheaves is perpendicular to the vector from the axis of the sheave to the point where the cable leaves the sheave.</p>
 <p>This assumption results in undefined behaviour when the axis of the sheave is parallel to the cable direction.</p>
 <h2 id="notes">Notes</h2>
-<p>If pois on a cable come too close together (&lt;1mm) then they will be pushed away from eachother.
+<p>If pois or sheaves on a cable come too close together (&lt;1mm) then they will be pushed away from eachother.
 This prevents the unwanted situation where multiple pois end up at the same location. In that case it can not be determined which amount of force should be applied to each of the pois.</p></section>
 <details class="source">
 <summary>
@@ -4760,7 +4796,7 @@ This prevents the unwanted situation where multiple pois end up at the same loca
     Intermediate pois or sheaves may be added.
 
     - Pois are considered as sheaves with a zero diameter.
-    - Sheaves are considered sheaves with the given geometry. If defined then the diameter of the cable is considered when calculating the geometry.
+    - Sheaves are considered sheaves with the given geometry. If defined then the diameter of the cable is considered when calculating the geometry. The cable runs over the sheave in the positive direction (right hand rule) as defined by the axis of the sheave.
 
     For cables running over a sheave the friction in sideways direction is considered to be infinite. The geometry is calculated such that the
     cable section between sheaves is perpendicular to the vector from the axis of the sheave to the point where the cable leaves the sheave.
@@ -4768,7 +4804,7 @@ This prevents the unwanted situation where multiple pois end up at the same loca
     This assumption results in undefined behaviour when the axis of the sheave is parallel to the cable direction.
 
     Notes:
-        If pois on a cable come too close together (&lt;1mm) then they will be pushed away from eachother.
+        If pois or sheaves on a cable come too close together (&lt;1mm) then they will be pushed away from eachother.
         This prevents the unwanted situation where multiple pois end up at the same location. In that case it can not be determined which amount of force should be applied to each of the pois.
 
 
@@ -5720,9 +5756,11 @@ def waterline(self):
 <section class="desc"><p>A LC6d models a Linear Connector with 6 dofs.</p>
 <p>It connects two Axis elements with six linear springs.
 The translational-springs are easy. The rotational springs may not be as intuitive. They are defined as:</p>
-<p>rotation_x = arc-tan ( uy[0] / uy[1] )
-rotation_y = arc-tan ( -ux[0] / ux[2] )
-rotation_z = arc-tan ( ux[0] / ux [1] )</p>
+<ul>
+<li>rotation_x = arc-tan ( uy[0] / uy[1] )</li>
+<li>rotation_y = arc-tan ( -ux[0] / ux[2] )</li>
+<li>rotation_z = arc-tan ( ux[0] / ux [1] )</li>
+</ul>
 <p>which works fine for small rotations and rotations about only a single axis.</p>
 <p>Try to avoid using very high stiffness settings to create fixed connections. It is better to use use the "fixed"
 property of axis systems to create joints.</p></section>
@@ -5736,9 +5774,9 @@ property of axis systems to create joints.</p></section>
     It connects two Axis elements with six linear springs.
     The translational-springs are easy. The rotational springs may not be as intuitive. They are defined as:
 
-    rotation_x = arc-tan ( uy[0] / uy[1] )
-    rotation_y = arc-tan ( -ux[0] / ux[2] )
-    rotation_z = arc-tan ( ux[0] / ux [1] )
+      - rotation_x = arc-tan ( uy[0] / uy[1] )
+      - rotation_y = arc-tan ( -ux[0] / ux[2] )
+      - rotation_z = arc-tan ( ux[0] / ux [1] )
 
     which works fine for small rotations and rotations about only a single axis.
 
@@ -6448,10 +6486,12 @@ def parent(self):
 
     @property
     def x(self):
+        &#34;&#34;&#34;x component of local position&#34;&#34;&#34;
         return self.position[0]
 
     @property
     def y(self):
+        &#34;&#34;&#34;y component of local position&#34;&#34;&#34;
         return self.position[1]
 
     @property
@@ -6470,12 +6510,14 @@ def parent(self):
 
     @z.setter
     def z(self, var):
+        &#34;&#34;&#34;z component of local position&#34;&#34;&#34;
         a = self.position
         self.position = (a[0], a[1], var)
 
 
     @property
     def position(self):
+        &#34;&#34;&#34;Local position&#34;&#34;&#34;
         return self._vfNode.position
 
     @position.setter
@@ -6490,19 +6532,46 @@ def parent(self):
 
     @property
     def gx(self):
+        &#34;&#34;&#34;x component of global position&#34;&#34;&#34;
         return self.global_position[0]
 
     @property
     def gy(self):
+        &#34;&#34;&#34;y component of global position&#34;&#34;&#34;
         return self.global_position[1]
 
     @property
     def gz(self):
+        &#34;&#34;&#34;z component of global position&#34;&#34;&#34;
         return self.global_position[2]
+
+    @gx.setter
+    def gx(self, var):
+        a = self.global_position
+        self.global_position = (var, a[1], a[2])
+
+    @gy.setter
+    def gy(self, var):
+        a = self.global_position
+        self.global_position = (a[0], var, a[2])
+
+    @gz.setter
+    def gz(self, var):
+        a = self.global_position
+        self.global_position = (a[0], a[1], var)
 
     @property
     def global_position(self):
+        &#34;&#34;&#34;Global position&#34;&#34;&#34;
         return self._vfNode.global_position
+
+    @global_position.setter
+    def global_position(self, val):
+        assert3f(val, &#34;Global Position&#34;)
+        if self.parent:
+            self.position = self.parent.to_loc_position(val)
+        else:
+            self.position = val
 
     def give_python_code(self):
         code = &#34;# code for {}&#34;.format(self.name)
@@ -6541,85 +6610,92 @@ def applied_force_and_moment_global(self):
 </dd>
 <dt id="DAVE.scene.Poi.global_position"><code class="name">var <span class="ident">global_position</span></code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>Global position</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def global_position(self):
+    &#34;&#34;&#34;Global position&#34;&#34;&#34;
     return self._vfNode.global_position</code></pre>
 </details>
 </dd>
 <dt id="DAVE.scene.Poi.gx"><code class="name">var <span class="ident">gx</span></code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>x component of global position</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def gx(self):
+    &#34;&#34;&#34;x component of global position&#34;&#34;&#34;
     return self.global_position[0]</code></pre>
 </details>
 </dd>
 <dt id="DAVE.scene.Poi.gy"><code class="name">var <span class="ident">gy</span></code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>y component of global position</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def gy(self):
+    &#34;&#34;&#34;y component of global position&#34;&#34;&#34;
     return self.global_position[1]</code></pre>
 </details>
 </dd>
 <dt id="DAVE.scene.Poi.gz"><code class="name">var <span class="ident">gz</span></code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>z component of global position</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def gz(self):
+    &#34;&#34;&#34;z component of global position&#34;&#34;&#34;
     return self.global_position[2]</code></pre>
 </details>
 </dd>
 <dt id="DAVE.scene.Poi.position"><code class="name">var <span class="ident">position</span></code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>Local position</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def position(self):
+    &#34;&#34;&#34;Local position&#34;&#34;&#34;
     return self._vfNode.position</code></pre>
 </details>
 </dd>
 <dt id="DAVE.scene.Poi.x"><code class="name">var <span class="ident">x</span></code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>x component of local position</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def x(self):
+    &#34;&#34;&#34;x component of local position&#34;&#34;&#34;
     return self.position[0]</code></pre>
 </details>
 </dd>
 <dt id="DAVE.scene.Poi.y"><code class="name">var <span class="ident">y</span></code></dt>
 <dd>
-<section class="desc"></section>
+<section class="desc"><p>y component of local position</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def y(self):
+    &#34;&#34;&#34;y component of local position&#34;&#34;&#34;
     return self.position[1]</code></pre>
 </details>
 </dd>
@@ -10852,7 +10928,10 @@ A visual node can be placed on an axis-type node.</p>
 <li><a href="#axis-systems">Axis systems</a></li>
 <li><a href="#units">Units</a></li>
 <li><a href="#3d-rotations">3D rotations</a></li>
-<li><a href="#filesystem-and-configuration">Filesystem and configuration</a></li>
+<li><a href="#filesystem-and-configuration">Filesystem and configuration</a><ul>
+<li><a href="#or">/ or \</a></li>
+</ul>
+</li>
 <li><a href="#file-format">File format</a></li>
 </ul>
 </li>

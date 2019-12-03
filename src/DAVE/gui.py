@@ -1120,10 +1120,10 @@ if __name__ == '__main__':
     # s.solve_statics()
     #
     # from DAVE.io.blender import *
-
-
-    s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
-    s.resources_paths.append(r"C:\data\3d models\shackles")
+    #
+    #
+    # s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
+    # s.resources_paths.append(r"C:\data\3d models\shackles")
 
     Gui(s).show()
 
