@@ -1076,16 +1076,5 @@ if __name__ == '__main__':
     s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
 
     s.import_scene(s.get_resource_path("cheetah.dave_asset"), containerize=False, prefix="")
-
-    import DAVE.io.blender
-
-    camera = {'position': (411.6891719606241, -304.0115379598459, 165.17389979403023),
-              'direction': (-0.6666666666666666, 0.6666666666666666, -0.3333333333333333)}
-    blender_base = r"C:\data\Dave\Public\Blender visuals\base.blend"
-    blender_result = r"C:\Users\beneden\DAVE_models\current_render.blend"
-    DAVE.io.blender.create_blend_and_open(s, blender_base, blender_result, camera=camera)
-    print("Opening blender, close blender to continue.")
-    print("In blender, press F12 to go to rendered camera view.")
-
     g = Gui(s)
     g.show()
