@@ -393,7 +393,7 @@ class Viewport:
             recreate : re-create already exisiting visuals
         """
 
-        for N in self.scene.nodes:
+        for N in self.scene._nodes:
 
             if not recreate:
                 try:            # if we already have a visual, then no need to create another one
@@ -589,7 +589,7 @@ class Viewport:
             # if not, then remove the visual
 
             node = V.node
-            if node not in self.scene.nodes:
+            if node not in self.scene._nodes:
                 if len(V.actors) > 0:  # not all nodes have an actor
                     if V.actors[0].actor_type != ActorType.GLOBAL:  # global visuals do not have a corresponding node
                         to_be_removed.append(V)
