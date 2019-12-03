@@ -37,21 +37,12 @@ A first video tutorial is available at: https://youtu.be/f-dQaaepsrk
 Installation
 ============
 
-DAVE can be installed using pip:
+Download and install python and required packages.
 
-::
+Download and install miniconda for x64
 
-   pip install useDAVE
-
-Or by cloning the repository from github
-
-::
-
-   git clone https://github.com/RubendeBruin/DAVE.git
-
-
-Requirements
-------------
+install packages
+----------------
 
 The following packages are required:
  - vtk version 8.2 or up (the version 8.1.2 that pip installs does not work with pyside2m so use conda instead)
@@ -63,8 +54,6 @@ The following packages are required:
  - matplotlib
  - pyo3d (see note)
  
-CONDA
------
  
 You can use the following environement yml file to create a new conda enviroment with these packages: <https://github.com/RubendeBruin/DAVE/blob/master/dave.yml>
 
@@ -75,6 +64,55 @@ Then do:
     conda env create -f dave.yml
     
 to create a dedicated environment for DAVE
+
+To activate this environment do
+
+::
+
+    activate dave
+
+
+Clone DAVE from github:
+------------------------
+
+Go to the folder where you want to store dave and related files.
+
+::
+
+   git clone https://github.com/RubendeBruin/DAVE.git
+
+
+Start DAVE
+-----------
+
+To start DAVE, the following needs to be run in python.
+
+Add the "src" subfolder to the python path
+
+::
+
+    import sys
+    sys.path.extend(r"c:\here\installed\DAVE\src"
+    
+import Scene and Gui
+
+::
+
+     from DAVE.scene import *
+     from DAVE.gui import Gui
+
+     s = Scene()
+     
+     # build your scene here
+     # for example
+     # s.new_axis('global_axis_system')
+     
+     Gui(s).show()
+
+     
+enjoy!
+    
+    
 
 Future developments
 ===================
