@@ -33,7 +33,7 @@ vtkmodules.qt.PyQtImpl = 'PySide2'
 
 import vtkplotter as vp   # ref: https://github.com/marcomusy/vtkplotter
 import DAVE.scene as vf
-import DAVE.constants as vc
+import DAVE.settings as vc
 import vtk
 import numpy as np
 from enum import Enum

@@ -2,7 +2,82 @@
 
 """
     This is the main module of the engine. It contains both the nodes and the scene.
-    
+    For calculations, this, together with settings.py, are the only required files.
+
+    If this is the first time you use DAVE, please use the Gui and youtube to experiment.
+
+    The purpose of this part of the documentation is to explain the general principles of DAVE and to provide a reference.
+
+    #General#
+
+    ##Axis systems##
+
+    Axis systems are right-handed.
+
+    In the global axis system the Z-axis points up.
+
+    The mean sea-surface is defined as Z=0
+
+    ##Units##
+
+    The default unit system is m, kN, mT (metric tonne).
+    G and RHO are defined accordingly.
+
+    ##3D rotations##
+
+    Unfortunately there is no standard way of defining rotations in 3D.
+
+    DAVE uses a [rotation vector](https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation#Rotation_vector) to represent rotations.
+    This means that the rotation is defined as a vector with three components (rx,ry,rz). The magnitude of the vector is the rotation in degrees.
+    The axis of rotation is the direction of the vector.
+    In the python part of the code the rotation angles are defined in degrees.
+
+    Some examples:
+
+    - `(0,0,90)` : A rotation of 90 degrees about the Z-axis
+    - `(0,-10,0)` : A rotation of -10 degrees about the Y-axis
+    - `(10,10,0)` : A rotation of sqrt(10^2 + 10^2) about the (1,1,0) axis.
+
+    Hint: If euler angles are needed then axis systems can be stacked to obtain the same result.
+
+    ##Filesystem and configuration##
+
+    By default DAVE will try to create a subfolder "DAVE_models" in the users HOME folder (%homepath% in windows,  ~ in linux). This folder will be used for storing temporary files, the log file, and as default save location for assets and models.
+
+    DAVE can be configured by changing the settings in the settings.py file or by manually overriding them after importing settings.py and before importing scene.py
+
+
+
+        import DAVE.settings
+        from DAVE.scene import *
+        from pathlib import Path
+
+        # override some of the settings
+        DAVE.settings.RESOURCE_PATH = [Path(r'c:\data')]
+        DAVE.settings.BLENDER_EXEC = r'C:\Program Files\Blender Foundation\Blender\2.82 alpha\blender.exe'
+
+        # now create the scene
+        s = Scene()
+
+        print(s.resources_paths)
+
+    All settings are defined in UPPERCASE.
+
+    DAVE is multiplatform. It runs fine under windows or linux. The python standard [pathlib](https://docs.python.org/3/library/pathlib.html) library is used to deal with paths. In most situations however a string will work fine as well.
+
+    Note: Changing G or RHO has no effect at this moment as these values would also need to be changed in the equilibrium-core
+
+    ##File format##
+
+    The standard file-format for saving DAVE scenes and nodes is [vanilla](https://en.wikipedia.org/wiki/Vanilla_software) python.
+
+    When loading a model or asset from a file into a scene the contents of that file are executed in the python interpreter. In the interpreter a variable `s` is
+    available which refers to the current scene.
+
+    This makes it possible to define DAVE models in a very flexible way as arbitrary code can be executed when importing the model. Importing a model into DAVE is basically the same as running a file.
+
+
+    # Scene and nodes #
     A node is an item or element in a model. For example a ship or a force.
     A Scene is a collection of nodes.
 
@@ -11,32 +86,30 @@
     1. Create a scene
     2. Add nodes to it
 
-    Example:
+    Nodes are added to the scene using .new_nodetype() where nodetype is the type of the node. Each node has a unique name. This is always needs to be provided to the .new_node function.
+    A complete list of node types and corresponding functions is provided later.
 
-    ::
+    Example
 
         s = Scene()                               # create an empty scene
         s.new_poi('point 1')                      # creates a poi with name anchor
         s.new_poi('point 2', position = (10,0,0)) # create a second poi at x=10
-        s.new_cable('line',poiA = 'point 1', poiB = 'point 2') # creates a cable between the two points
+        s.new_cable('line',poiA = 'point 1', poiB = 'point 2')
+              # creates a cable between the two points
         s.save_scene(r'test.dave_asset')              # save to file
 
 
     Nodes in a scene can be referenced by either name or by reference.
-    The new_some_node_type functions return a reference to the newly created node.
-
-    ::
+    The .new_nodetype() functions return a reference to the newly created node.
 
         s = Scene()
-        a = s.new_axis('axis')                     # a is now a reference to node 'axis'
+        a = s.new_axis('axis')
+            # a is now a reference to node 'axis'
 
         p1 = s.new_poi('poi_1', parent = a )       # refer by reference
         p2 = s.new_poi('poi_2', parent = 'axis' )  # refer by name
 
-
     A reference to a node can also be obtained from the scene using square brackets:
-
-    ::
 
         s = Scene()
         s.new_axis('axis')
@@ -45,239 +118,168 @@
         print(a.position)
 
 
-    **Nodes**
+    #Nodes#
 
     The following node types can be used:
 
-    .. list-table:: Node-types
-       :widths: 10 20 70
-       :header-rows: 1
+    ##Geometry##
 
-       * - Icon
-         - Type
-         - Description
+    The geometry of a scene is setup using `Axis`, `Poi` and `Sheave` nodes.
 
-       * - **Geometry**
-         -
-         -
+    |  Type | Provides  | Create using |
+    |:---------------- |:------------------------------- |:-----|
+    | `DAVE.scene.Axis` | Axis system with position and orientation  |  `DAVE.scene.Scene.new_axis` |
+    | `DAVE.scene.Poi` | A position  |  `DAVE.scene.Scene.new_poi` |
+    | `DAVE.scene.Sheave` | A disk with a radius and axis direction  |  `DAVE.scene.Scene.new_sheave` |
+    | `RigidBody` | Same as axis system, but provides a weight as well  |  `DAVE.scene.Scene.new_rigidbody` |
 
-       * - .. image:: ../images/axis.png
-              :width: 28 px
-              :height: 28 px
-         - :py:class:`Axis`  :py:func:`Scene.new_axis`
-         - Axis is an local axis system.
-           This is the main building block of the geometry.
+    A RigidBody is technically idential to an axis system. So everything that applies to Axis also applies to RigidBody
+    and everywhere where an axis system is used a rigidbody can be used as well.
 
-       * - .. image:: ../images/poi.png
-              :width: 28 px
-              :height: 28 px
-         - :py:class:`Poi`
-           :py:func:`Scene.new_poi`
-         - Point of interest is a position on an axis system.
-           Used as connection point or reference point for other nodes.
+    - Axis can be placed on other axis systems.
+    - Pois can be located on an axis system.
+    - Sheaves need to be placed on a poi.
 
-       * - .. image:: ../images/cube.png
-              :width: 28 px
-              :height: 28 px
-         - :py:class:`RigidBody`
-           :py:func:`Scene.new_rigidbody`
-         - This is a rigid body with a mass and cog.It creates its own axis system (it is a super-set of Axis)
-
-       * - **Connections**
-         -
-         -
-
-       * - .. image:: ../images/cable.png
-              :width: 28 px
-              :height: 28 px
-         - :py:class:`Cable`
-           :py:func:`Scene.new_cable`
-         - Linear elastic cable between two or more pois
-
-       * - .. image:: ../images/beam.png
-              :width: 28 px
-              :height: 28 px
-         - :py:class:`LinearBeam`
-           :py:func:`Scene.new_linear_beam`
-         - Linear elastic beam between two or more pois
-
-       * - .. image:: ../images/lincon6.png
-              :width: 28 px
-              :height: 28 px
-         - :py:class:`LC6d`
-           :py:func:`Scene.new_linear_connector_6d`
-         - Connects two axis systems with six linear springs
-
-       * - .. image:: ../images/con2d.png
-              :width: 28 px
-              :height: 28 px
-         - :py:class:`Connector2d`
-           :py:func:`Scene.new_connector2d`
-         - Connects two axis systems with one rotational and one translational spring
-
-       * - **Forces**
-         -
-         -
-
-       * - .. image:: ../images/force.png
-              :width: 28 px
-              :height: 28 px
-         - :py:class:`Force`
-           :py:func:`Scene.new_force`
-         - This is a force/moment. If is defined in the global axis system and acts on a poi
-
-       * - .. image:: ../images/linhyd.png
-              :width: 28 px
-              :height: 28 px
-         - :py:class:`HydSpring`
-           :py:func:`Scene.new_hydspring`
-         - Create linear springs to model linearized hydrostatics
-
-       * - .. image:: ../images/trimesh.png
-              :width: 28 px
-              :height: 28 px
-         - :py:class:`Buoyancy`
-           :py:func:`Scene.new_buoyancy`
-         - Buoyancy mesh for non-linear, shape-based hydrostatics
-
-       * - **Other**
-         -
-         -
-
-       * - .. image:: ../images/visual.png
-              :width: 28 px
-              :height: 28 px
-         - :py:class:`Visual`
-           :py:func:`Scene.new_visual`
-         - 3D visual to spice-up the looks of the scene
-
-       * - .. image:: ../images/trimesh.png
-              :width: 28 px
-              :height: 28 px
-         - :py:class:`TriMeshSource`
-           :py:func:`Buoyancy.trimesh`
-         - 3D triangulated mesh for buoyancy calculations. Automatically created when a Bouyancy node is added.
+    If a node has a parent then this means that its position and orientation are expressed relative to that parent.
+    For nodes without a parent everything is defined relative to the global axis system.
 
 
-    Geometry is build using Axis systems, Rigid bodies and Pois.
+    ###Forces###
 
-    Axis systems and rigid bodies have a position and an orientation.
-    Pois only have a position
+    Geometry nodes are also used to transfer forces.
 
-    All can be positioned on a parent. If a node has a parent then this means that its position and orientation are expressed relative to that parent.
+    Axis and Poi type nodes can receive forces and moments and apply them to their parents. See `Poi.applied_force_and_moment_global`,
+    `Axis.applied_force` and `Axis.connection_force`.
+    Cables running over sheave type nodes will apply the forces directly to the parent node of the sheave.
+
+    ###Degrees of freedom###
 
     Axis and RigidBodies can have all their six individual degrees of freedom either fixed or free. If a degree of freedom is free then this means that the
     node is able to move/rotate in this degree of freedom.
 
-    If this is the first time you read this then please use the Gui to experiment.
 
 
-    **Scene**
+    ##Connectors##
+
+    Connectors connect two or more nodes and can apply a force on them based on their positions and orientations.
+
+    |  Type | Provides  | Create using |
+    |:---------------- |:------------------------------- |:-----|
+    | `Cable` | A finite length cable with linear stiffness. A cable runs between two Poi nodes and can run over multiple pois or sheaves. A cable may have a diameter.   |  `Scene.new_cable` |
+    | `LinearBeam` | A beam connects two axis systems with a linear beam element   |  `Scene.new_linear_beam` |
+    | `LC6d` | Connects two axis systems with six linear springs. Orientation of the springs is determined by the master axis system   |  `Scene.new_linear_connector_6d` |
+    | `Connector2d` | Connects two axis systems with two linear springs. Orientation of the springs is determined by shortest distance between the two axis systems |  `Scene.new_connector2d` |
+
+
+    ##Forces##
+
+    Forces apply a force to a node. The magnitude of the force may depend on the position and/or orientation of the node.
+
+    |  Type | Provides  | Create using |
+    |:---------------- |:------------------------------- |:-----|
+    | `Force` | An fixed force and/or moment applied on a Poi |  `Scene.new_force` |
+    | `HydSpring` | A linear hydrostatic spring attached to an Axis  |  `Scene.new_hydspring` |
+    | `Buoyancy` | A buoyancy mesh attached to an Axis  |  `Scene.new_buoyancy` |
+
+    ##Visuals##
+
+    (Almost) Everything gets better when visualized :-).
+
+    |  Type | Provides  | Create using |
+    |:---------------- |:------------------------------- |:-----|
+    | `Visual` | Obj type 3D visuals can be attached to an Axis |  `Scene.new_visual` |
+
+    ##Others###
+
+    `TriMeshSource` is a node that defines a triangular mesh. It is not created directly but is created implicitly when
+    creating a buoyuany node. It may be accessed via `Buoyancy.trimesh`. Multiple buoyancy nodes may share the same TriMeshSource.
+
+
+
+
+    #Scene#
     
     Apart from methods to create nodes, Scene also harbours functionality to delete, import, re-order and export nodes.
 
-    
-    .. list-table:: Scene functions
-       :widths: 30 20 40
-       :header-rows: 1
-    
-       * - Action
-         - How
-         - Description
-    
-       * - Create a new scene
-         - `s = Scene()`
-         - Creates a new scene "s". Optionally a file-name can be provided to load the contents of that file directly into the scene
-    
-       * - **Adding content**
-         -
-         -
-    
-       * - Adding a node
-         - `s.new_poi, s.new_axis, etc..`
-         - See list of node types and new_ functions in the next table.
-    
-       * - Import nodes (1)
-         - :py:func:`Scene.import_scene`
-         - Imports all nodes from an other scene and places them as a group in the current scene.
-    
-       * - Import nodes (2)
-         - :py:func:`Scene.load_scene`
-         - Imports all nodes from an other scene and adds them to the current scene. Beware of name-conflicts.
-    
-       * - **Access nodes**
-         -
-         -
-    
-       * - Get a node
-         - `s['node_name']`
-         - gets a reference to a node with name "node_name".
+    ##Creating scenes##
 
-       * - Get all nodes of a type
-         - :py:func:`Scene.nodes_of_type`
-         - gets a list of reference to all nodes with this type
+    A Scene is not a singleton. Multiple scenes can exist next to eachother.
 
-       * - Get all nodes that depend on
-         - :py:func:`Scene.nodes_depending_on`
-         - gets a list of reference to all nodes with this type
+    A new and empty Scene can be created as follows:
 
-       * - Get all child nodes
-         - :py:func:`Scene.nodes_with_parent`
-         - gets a list of reference to all nodes with this type
+        s = Scene()
+
+     where `s` can be anything, for example `my_scene` but s is nice and short which is usefull as it will be used a lot.
+
+     Optionally a filename can be provided to the constructor. In that case that file will be imported.
+
+        my_vessel = Scene('path/to/my_vessel.dave_asset')
+
+    It is also possible to create a (deep) copy of a scene. This is done as follows:
+
+        copy_of_scene = Scene(copy_from = other_scene)
 
 
-       * - **Deleting content**
-         -
-         -
-    
-       * - clear
-         - :py:func:`Scene.clear`
-         - Deletes all nodes from the scene
-    
-       * - delete
-         - :py:func:`Scene.delete`
-         - Deletes a node from the scene. All nodes that depend on this node will be deleted as well.
-    
-       * - dissolve
-         - :py:func:`Scene.dissolve`
-         - Removes a single node from the scene. Attempts to maintain child nodes. Often used in combination with import
-    
-       * - **Saving or exporting**
-         -
-         -
-    
-       * - Save to file
-         - :py:func:`Scene.save_scene`
-         - Saves the content of the scene to a file
-    
-       * - Get as python code
-         - :py:func:`Scene.give_python_code`
-         - Returns python to re-create the scene in its current state.
-    
-       * - Print node-tree
-         - :py:func:`Scene.print_node_tree`
-         - Prints a node-tree
-    
-       * - **Solving**
-         -
-         -
-    
-       * - Solve statics
-         - :py:func:`Scene.solve_statics`
-         - Brings the nodes in the scene to a static equilibrium
+    ##Adding content##
 
-       * - Goal seek
-         - :py:func:`Scene.goal_seek`
-         - Iteratively changes a property to set another property to some specified value.
-    
-    
-    
+    Nodes can be added to the scene using the s.new_poi, s.new_axis, etc.. functions which were introduced in the previous section.
 
 
-    
-    Notes:
-    rotations are defined as https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation#Rotation_vector
-    
+    Multiple nodes can be imported from file or directly from another Scene object using `Scene.load_scene()` or `Scene.import_scene()` respectively.
+
+    Note: Beware of name-conflicts when importing. The `Scene.import_scene` provides the option to add a prefix to names of imported nodes.
+
+
+    ##Access nodes##
+
+    A list of nodes is maintained as the ._nodes property of a scene. It is advised not to use this directly.
+
+    Obtaining a reference to a single node can be done using its name:
+
+        node = s['node_name']
+
+    This is the reason why all node names should be unique. To get a list of all available node names use `Scene.print_node_tree()`
+
+    It is also possible to:
+
+    - Get all nodes of a type, use : `Scene.nodes_of_type()`
+    - Get all nodes that depend on a node : `Scene.nodes_depending_on()`
+    - Get all child nodes : `Scene.nodes_with_parent()`
+
+    ##Deleting nodes##
+
+    Removing nodes can be tricky due to nodes depending on eachother. For example deleting a poi which is also used a endpoint for a cable will cause problems for that cable.
+    The same applies to axis systems with nodes on it (children)
+
+    `Scene.clear` can be used to delete all nodes from a scene.
+
+    To delete a single node there are two options:
+
+    1. `Scene.delete`. This deletes a node from the scene. All nodes that depend on this node will be deleted as well.
+    2. `Scene.dissolve`. This "evaporates" the node. Attempts to maintain child nodes. Often used in combination with the containerize option of `Scene.import_scene`
+
+    ##Saving or exporting##
+
+    The standard file-format for saving DAVE scenes and nodes is [vanilla](https://en.wikipedia.org/wiki/Vanilla_software) python.
+
+    The contents of a Scene can be save using `Scene.save_scene`. The python code to re-create the scene can be obtained using `Scene.give_python_code`.
+
+    ##Solving##
+
+    Solving static equilibrium is done using `Scene.solve_statics`. If there is a static equilibrium condition then this function will attempt to find it by changing the non-fixed degrees of freedom of the scene.
+
+    ##Optimalizations##
+
+    A goal-seek function is available: `Scene.goal_seek`.
+
+    ##Resources##
+
+    In the default resource system the resources may be located in any of the folders listed in `Scene.resources_paths`.
+    The value of this property is initialized with `DAVE.settings.RESOURCE_PATH`.
+
+    `Scene.get_resource_list` can be used to obtain a list of all available resources. `Scene.get_resource_path` can
+    be used to obtain a full path to a resource with a known name.
+
 
 """
 
@@ -291,7 +293,7 @@
 
 import pyo3d
 import numpy as np
-import DAVE.constants as vfc
+import DAVE.settings as vfc
 from DAVE.tools import *
 from os.path import isfile, split, dirname, exists
 from os import listdir
@@ -309,14 +311,17 @@ import datetime
 #    --> node.position[2] = 5 is not allowed
 
 
+
 class Node:
-    """Master class for all nodes"""
+    """ABSTRACT CLASS - Properties defined here are applicable to all derived classes
+    Master class for all nodes"""
 
     def __init__(self, scene):
         self._scene = scene
         self._name = 'no name'
 
     def give_python_code(self):
+        """Returns the python code that can be executed to re-create this node"""
         return "# No python code generated for element {}".format(self.name)
 
     @property
@@ -332,14 +337,12 @@ class Node:
         pass
 
 class CoreConnectedNode(Node):
-    """Master class for all nodes with a connected vfCore element"""
+    """ABSTRACT CLASS - Properties defined here are applicable to all derived classes
+    Master class for all nodes with a connected eqCore element"""
 
     def __init__(self, scene, vfNode):
         super().__init__(scene)
         self._vfNode = vfNode
-
-    def give_python_code(self):
-        return "# No python code generated for element {}".format(self.name)
 
     @property
     def name(self):
@@ -465,16 +468,20 @@ class Visual(Node):
     """
     Visual
 
-    .. image:: ../images/visual.png
-       :width: 28px
-       :height: 28px
-       :align: right
-
+    .. image:: ./images/visual.png
 
     A Visual node contains a 3d visual, typically obtained from a .obj file.
     A visual node can be placed on an axis-type node.
 
     It is used for visualization. It does not affect the forces, dynamics or statics.
+
+    The visual can be given an offset, rotation and scale. These are applied in the following order
+
+    1. rotate
+    2. scale
+    3. offset
+
+    Hint: To scale before rotation place the visual on a dedicated axis and rotate that axis.
 
     """
 
@@ -554,7 +561,7 @@ class Axis(NodeWithParent):
     def fixed(self):
         """Determines which of the six degrees of freedom are fixed, if any. (x,y,z,rx,ry,rz).
         True means that that degree of freedom will not change when solving statics.
-        False means a that is may change.
+        False means a that is may be changed in order to find equilibrium.
 
         These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)
 
@@ -581,14 +588,17 @@ class Axis(NodeWithParent):
 
     @property
     def x(self):
+        """The x-component of the position vector"""
         return self.position[0]
 
     @property
     def y(self):
+        """The y-component of the position vector"""
         return self.position[1]
 
     @property
     def z(self):
+        """The y-component of the position vector"""
         return self.position[2]
 
     @x.setter
@@ -622,14 +632,17 @@ class Axis(NodeWithParent):
 
     @property
     def rx(self):
+        """The x-component of the rotation vector"""
         return self.rotation[0]
 
     @property
     def ry(self):
+        """The y-component of the rotation vector"""
         return self.rotation[1]
 
     @property
     def rz(self):
+        """The z-component of the rotation vector"""
         return self.rotation[2]
 
     @rx.setter
@@ -674,14 +687,17 @@ class Axis(NodeWithParent):
 
     @property
     def gx(self):
+        """The x-component of the global position vector"""
         return self.global_position[0]
 
     @property
     def gy(self):
+        """The y-component of the global position vector"""
         return self.global_position[1]
 
     @property
     def gz(self):
+        """The z-component of the global position vector"""
         return self.global_position[2]
 
     @gx.setter
@@ -701,7 +717,7 @@ class Axis(NodeWithParent):
 
     @property
     def global_position(self):
-        """Read-only, The global position of the origin."""
+        """The global position of the origin."""
         return self._vfNode.global_position
 
     @global_position.setter
@@ -714,14 +730,17 @@ class Axis(NodeWithParent):
 
     @property
     def grx(self):
+        """The x-component of the global rotation vector"""
         return self.global_rotation[0]
 
     @property
     def gry(self):
+        """The y-component of the global rotation vector"""
         return self.global_rotation[1]
 
     @property
     def grz(self):
+        """The z-component of the global rotation vector"""
         return self.global_rotation[2]
 
     @grx.setter
@@ -741,7 +760,7 @@ class Axis(NodeWithParent):
 
     @property
     def global_rotation(self):
-        """Read-only, The rotation of the origin in degrees."""
+        """The rotation of the axis in degrees. Expressed in the global axis system"""
         return tuple(np.rad2deg(self._vfNode.global_rotation))
 
     @global_rotation.setter
@@ -754,6 +773,7 @@ class Axis(NodeWithParent):
 
     @property
     def global_transform(self):
+        """Read-only: The global tranform of the axis system."""
         return self._vfNode.global_transform
 
     @property
@@ -763,26 +783,32 @@ class Axis(NodeWithParent):
 
     @property
     def connection_force_x(self):
+        """The x-component of the connection-force vector"""
         return self.connection_force[0]
 
     @property
     def connection_force_y(self):
+        """The y-component of the connection-force vector"""
         return self.connection_force[1]
 
     @property
     def connection_force_z(self):
+        """The z-component of the connection-force vector"""
         return self.connection_force[2]
 
     @property
     def connection_moment_x(self):
+        """The mx-component of the connection-force vector"""
         return self.connection_force[3]
 
     @property
     def connection_moment_y(self):
+        """The my-component of the connection-force vector"""
         return self.connection_force[4]
 
     @property
     def connection_moment_z(self):
+        """The mx-component of the connection-force vector"""
         return self.connection_force[5]
 
     @property
@@ -1056,12 +1082,12 @@ class RigidBody(Axis):
     @property
     def mass(self):
         """Control the static mass of the body"""
-        return self._vfForce.force[2] / -vfc.g
+        return self._vfForce.force[2] / -vfc.G
 
     @mass.setter
     def mass(self, newmass):
         assert1f(newmass)
-        self._vfForce.force = (0, 0, -vfc.g * newmass)
+        self._vfForce.force = (0, 0, -vfc.G * newmass)
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -1114,9 +1140,17 @@ class RigidBody(Axis):
 class Cable(CoreConnectedNode):
     """A Cable represents a linear elastic wire running from a Poi to another Poi.
 
-    A cable has a un-stretched length [length] and a stiffness [EA]. The tension in the cable is calculated.
+    A cable has a un-stretched length [length] and a stiffness [EA] and may have a diameter [m]. The tension in the cable is calculated.
 
-    Intermediate pois may be added. These are considered as sheaves with a zero diameter.
+    Intermediate pois or sheaves may be added.
+
+    - Pois are considered as sheaves with a zero diameter.
+    - Sheaves are considered sheaves with the given geometry. If defined then the diameter of the cable is considered when calculating the geometry.
+
+    For cables running over a sheave the friction in sideways direction is considered to be infinite. The geometry is calculated such that the
+    cable section between sheaves is perpendicular to the vector from the axis of the sheave to the point where the cable leaves the sheave.
+
+    This assumption results in undefined behaviour when the axis of the sheave is parallel to the cable direction.
 
     Notes:
         If pois on a cable come too close together (<1mm) then they will be pushed away from eachother.
@@ -1131,14 +1165,17 @@ class Cable(CoreConnectedNode):
 
     @property
     def tension(self):
+        """Tension in the cable in [kN] (Readonly, calculated)"""
         return self._vfNode.tension
 
     @property
     def stretch(self):
+        """Stretch of the cable in [m] (Readonly, calculated)"""
         return self._vfNode.stretch
 
     @property
     def length(self):
+        """Length in rest [m]"""
         return self._vfNode.Length
 
     @length.setter
@@ -1149,6 +1186,7 @@ class Cable(CoreConnectedNode):
 
     @property
     def EA(self):
+        """Stiffness of the cable in [kN]"""
         return self._vfNode.EA
 
     @EA.setter
@@ -1157,6 +1195,7 @@ class Cable(CoreConnectedNode):
 
     @property
     def diameter(self):
+        """Diameter of the cable [m]"""
         return self._vfNode.diameter
 
     @diameter.setter
@@ -1164,14 +1203,12 @@ class Cable(CoreConnectedNode):
         self._vfNode.diameter = diameter
 
     def get_points_for_visual(self):
-        """
-
-        Returns:
-
+        """Returns an list of 3D locations which can be used for visualization
         """
         return self._vfNode.global_points
 
     def check_endpoints(self):
+        """Verifies that the endpoints are Pois"""
         if isinstance(self._pois[0], Sheave):
             raise ValueError(
                 'First and last connection of a cable {} should be of type <Poi>. It is not allowed to use Sheave {} as start'.format(self.name, self._pois[0].name))
@@ -1303,14 +1340,13 @@ class Force(NodeWithParent):
 class Sheave(NodeWithParent):
     """A Sheave models sheave with axis and diameter.
 
+
     """
 
     @property
     def axis(self):
         """
-        Gets or sets the x,y and z force components.
-
-        Example s['wind'].force = (12,34,56)
+        Gets or sets direction of the sheave axis
         """
         return self._vfNode.axis_direction
 
@@ -1324,9 +1360,7 @@ class Sheave(NodeWithParent):
     @property
     def radius(self):
         """
-        Gets or sets the x,y and z moment components.
-
-        Example s['wind'].moment = (12,34,56)
+        Gets or sets radius of the sheave
         """
         return self._vfNode.radius
 
@@ -1468,6 +1502,7 @@ class LC6d(CoreConnectedNode):
 
     @property
     def stiffness(self):
+        """Stiffness of the connector (kx, ky, kz, krx, kry, krz)"""
         return self._vfNode.stiffness
 
     @stiffness.setter
@@ -1476,6 +1511,7 @@ class LC6d(CoreConnectedNode):
 
     @property
     def master(self):
+        """Master axis system"""
         return self._master
 
     @master.setter
@@ -1488,6 +1524,7 @@ class LC6d(CoreConnectedNode):
 
     @property
     def slave(self):
+        """Slave axis system"""
         return self._slave
 
     @slave.setter
@@ -1526,22 +1563,27 @@ class Connector2d(CoreConnectedNode):
 
     @property
     def angle(self):
+        """Actual angle between master and slave [deg] (read-only)"""
         return np.rad2deg(self._vfNode.angle)
 
     @property
     def force(self):
+        """Actual force between master and slave [kN] (read-only)"""
         return self._vfNode.force
 
     @property
     def moment(self):
+        """Actual moment between master and slave [kN*m] (read-only)"""
         return self._vfNode.moment
 
     @property
     def axis(self):
+        """Actual rotation axis between master and slave (read-only)"""
         return self._vfNode.axis
 
     @property
     def k_linear(self):
+        """Linear stiffness [kN/m]"""
         return self._vfNode.k_linear
 
     @k_linear.setter
@@ -1550,6 +1592,7 @@ class Connector2d(CoreConnectedNode):
 
     @property
     def k_angular(self):
+        """Linear stiffness [kN*m/rad]"""
         return self._vfNode.k_angular
 
     @k_angular.setter
@@ -1558,6 +1601,7 @@ class Connector2d(CoreConnectedNode):
 
     @property
     def master(self):
+        """Master axis system"""
         return self._master
 
     @master.setter
@@ -1570,6 +1614,7 @@ class Connector2d(CoreConnectedNode):
 
     @property
     def slave(self):
+        """Slave axis system"""
         return self._slave
 
     @slave.setter
@@ -1621,7 +1666,7 @@ class LinearBeam(CoreConnectedNode):
     The axis of rotation is the cross-product of the unit x-axis and D    AXIS = ux x D
     The angle of rotation is the angle between the master x-axis and D
 
-    Any rotation about the rotated X-axis is possible.
+    The rotation about the rotated X-axis is undefined.
     
     """
 
@@ -1712,12 +1757,6 @@ class LinearBeam(CoreConnectedNode):
 class TriMeshSource(Node):
     """
     TriMesh
-
-    .. image:: ../images/trimesh.png
-       :width: 28px
-       :height: 28px
-       :align: right
-
 
     A TriMesh node contains triangular mesh which can be used for buoyancy or contact
 
@@ -1870,7 +1909,21 @@ class TriMeshSource(Node):
 
 
     def load_obj(self, filename, offset = None, rotation = None, scale = None):
+        """Loads an .obj file and and triangulates it.
 
+        Order of modifications:
+
+        1. rotate
+        2. scale
+        3. offset
+
+        Args:
+            filename: (str or path): file to load
+            offset: : offset
+            rotation:  : rotation
+            scale:  scale
+
+        """
         if not exists(filename):
             raise ValueError('File {} does not exit'.format(filename))
 
@@ -1928,7 +1981,13 @@ class TriMeshSource(Node):
 
 
 class Buoyancy(NodeWithParent):
-    """A location on an axis"""
+    """Buoyancy provides a buoyancy force based on a buoyancy mesh. The mesh is triangulated and chopped at the instantaneous flat water surface. Buoyancy is applied as an upwards force that the center of buoyancy.
+    The calculation of buoyancy is as accurate as the provided geometry.
+
+    There as no restrictions to the size or aspect ratio of the panels. It is excellent to model as box using 6 faces. Using smaller panels has a negative effect on performance.
+
+    The normals of the panels should point towards to water.
+    """
 
     # init parent and name are fully derived from NodeWithParent
     # _vfNode is a buoyancy
@@ -1943,7 +2002,11 @@ class Buoyancy(NodeWithParent):
 
     @property
     def cob(self):
-        """Returns the applied force in the parent axis system"""
+        """Returns the GLOBAL position of the center of buoyancy
+
+        To convert to local coordinates use the .to_loc_position() function of the parent.
+
+        """
         return self._vfNode.cob
 
     @property
@@ -1981,7 +2044,13 @@ class Scene:
     _vfc : DAVE Core
     """
 
-    def __init__(self, filename = None):
+    def __init__(self, filename = None, copy_from = None):
+        """Creates a new Scene
+
+        Args:
+            filename: (str or Path) Insert contents from this file into the newly created scene
+            copy_from:  (Scene) Copy nodes from this other scene into the newly created scene
+        """
 
         self.verbose = True
         """Report actions using print()"""
@@ -1989,7 +2058,7 @@ class Scene:
         self._vfc = pyo3d.Scene()
         """_vfc : DAVE Core, where the actual magic happens"""
 
-        self.nodes = []
+        self._nodes = []
         """Contains a list of all nodes in the scene"""
 
         self.static_tolerance = 0.01
@@ -2006,10 +2075,13 @@ class Scene:
         if filename is not None:
             self.load_scene(filename)
 
+        if copy_from is not None:
+            self.import_scene(copy_from, containerize=False)
+
     def clear(self):
         """Deletes all nodes"""
 
-        self.nodes = []
+        self._nodes = []
         del self._vfc
         self._vfc = pyo3d.Scene()
 
@@ -2162,7 +2234,7 @@ class Scene:
     # ======== element functions =========
 
     def node_by_name(self, node_name):
-        for N in self.nodes:
+        for N in self._nodes:
             if N.name == node_name:
                 return N
 
@@ -2180,7 +2252,7 @@ class Scene:
             pois = scene.nodes_of_type(DAVE.Poi)
         """
         r = list()
-        for n in self.nodes:
+        for n in self._nodes:
             if isinstance(n, node_class):
                 r.append(n)
         return r
@@ -2196,15 +2268,15 @@ class Scene:
             new_list.append(self[name])
 
         # and add the nodes without a vfc-core connection
-        for node in self.nodes:
+        for node in self._nodes:
             if not node in new_list:
                 new_list.append(node)
 
-        self.nodes = new_list
+        self._nodes = new_list
 
     def name_available(self, name):
         """Returns True if the name is still available"""
-        names = [n.name for n in self.nodes]
+        names = [n.name for n in self._nodes]
         names.extend(self._vfc.names)
         return not (name in names)
 
@@ -2276,7 +2348,7 @@ class Scene:
 
         r = []
 
-        for n in self.nodes:
+        for n in self._nodes:
 
             try:
                 parent = n.parent
@@ -2307,7 +2379,7 @@ class Scene:
         # remove the vtk node
         self._print('removing vfc node')
         node._delete_vfc()
-        self.nodes.remove(node)
+        self._nodes.remove(node)
 
         # then delete the dependencies
 
@@ -2501,7 +2573,7 @@ class Scene:
             new_node.fixed = fixed
 
 
-        self.nodes.append(new_node)
+        self._nodes.append(new_node)
         return new_node
 
     def new_visual(self, name, path, parent=None, offset=None, rotation=None, scale = None):
@@ -2553,7 +2625,7 @@ class Scene:
         if scale is not None:
             new_node.scale = scale
 
-        self.nodes.append(new_node)
+        self._nodes.append(new_node)
         return new_node
 
 
@@ -2592,7 +2664,7 @@ class Scene:
         if position is not None:
             new_node.position = position
 
-        self.nodes.append(new_node)
+        self._nodes.append(new_node)
         return new_node
 
     def new_rigidbody(self, name, mass=0, cog=(0, 0, 0),
@@ -2643,7 +2715,7 @@ class Scene:
 
         g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + "gravity")
         g.parent = p
-        g.force = (0, 0, -vfc.g * mass)
+        g.force = (0, 0, -vfc.G * mass)
 
         r = RigidBody(self, a, p, g)
 
@@ -2663,7 +2735,7 @@ class Scene:
         else:
             r.fixed = fixed
 
-        self.nodes.append(r)
+        self._nodes.append(r)
         return r
 
     def new_cable(self, name, poiA, poiB, length=-1, EA=0, diameter=0, sheaves=None):
@@ -2758,7 +2830,7 @@ class Scene:
             new_node.add_connection(poi)
 
         # and add to the scene
-        self.nodes.append(new_node)
+        self._nodes.append(new_node)
         return new_node
 
     def new_force(self, name, parent=None, force=None, moment=None):
@@ -2803,7 +2875,7 @@ class Scene:
         if moment is not None:
             new_node.moment = moment
 
-        self.nodes.append(new_node)
+        self._nodes.append(new_node)
         return new_node
 
     def new_sheave(self, name, parent, axis, radius=0):
@@ -2842,7 +2914,7 @@ class Scene:
         new_node.axis = axis
         new_node.radius = radius
 
-        self.nodes.append(new_node)
+        self._nodes.append(new_node)
         return new_node
 
     def new_hydspring(self, name, parent, cob,
@@ -2896,7 +2968,7 @@ class Scene:
         new_node.waterline = waterline
         new_node.displacement_kN = displacement_kN
 
-        self.nodes.append(new_node)
+        self._nodes.append(new_node)
 
         return new_node
 
@@ -2939,7 +3011,7 @@ class Scene:
         new_node.slave = s
         new_node.stiffness = stiffness
 
-        self.nodes.append(new_node)
+        self._nodes.append(new_node)
         return new_node
 
     def new_connector2d(self, name, master, slave, k_linear=0, k_angular=0):
@@ -2980,7 +3052,7 @@ class Scene:
         new_node.k_linear = k_linear
         new_node.k_angular = k_angular
 
-        self.nodes.append(new_node)
+        self._nodes.append(new_node)
         return new_node
 
     def new_linear_beam(self, name, master, slave, EIy=0, EIz=0, GIp=0, EA=0, L=None):
@@ -3031,7 +3103,7 @@ class Scene:
         new_node.EA = EA
         new_node.L = L
 
-        self.nodes.append(new_node)
+        self._nodes.append(new_node)
         return new_node
 
 
@@ -3064,7 +3136,7 @@ class Scene:
         if b is not None:
             new_node.parent = b
 
-        self.nodes.append(new_node)
+        self._nodes.append(new_node)
         return new_node
 
     def print_python_code(self):
@@ -3096,7 +3168,7 @@ class Scene:
         code += "\n# For anything written as solved(number) that actual number does not influence the static solution"
         code += "\ndef solved(number):\n    return number\n"
 
-        for n in self.nodes:
+        for n in self._nodes:
             code += '\n' + n.give_python_code()
 
         return code
@@ -3156,7 +3228,7 @@ class Scene:
         self.sort_nodes_by_dependency()
 
         to_be_printed = []
-        for n in self.nodes:
+        for n in self._nodes:
             to_be_printed.append(n.name)
 
         # to_be_printed.reverse()
@@ -3234,7 +3306,7 @@ class Scene:
         old_prefix = self._name_prefix
         imported_element_names = []
 
-        for n in other.nodes:
+        for n in other._nodes:
             imported_element_names.append(prefix + n.name)
 
 

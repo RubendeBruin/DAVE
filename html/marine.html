@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.1" />
 <title>DAVE.marine API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can …" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -20,15 +22,31 @@
 <h1 class="title">Module <code>DAVE.marine</code></h1>
 </header>
 <section id="section-intro">
+<p>This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/.">http://mozilla.org/MPL/2.0/.</a></p>
+<p>Ruben de Bruin - 2019</p>
+<p>Helper functions for Marine analysis</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from DAVE.scene import *
+<pre><code class="python">&#34;&#34;&#34;
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+  Ruben de Bruin - 2019
+
+  Helper functions for Marine analysis
+
+&#34;&#34;&#34;
+
+from DAVE.scene import *
 import matplotlib.pyplot as plt
 
 
-def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=1, minimum_heel= 0, maximum_heel=90, steps=180, teardown=True, allow_surge=False, allow_sway=False, allow_yaw=False, allow_trim=True):
+def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum_heel= 0, maximum_heel=90, steps=180, teardown=True, allow_surge=False, allow_sway=False, allow_yaw=False, allow_trim=True, noplot = False, noshow = False):
     &#34;&#34;&#34;This works for vessels without a parent.
 
     The vessels slaved to an axis system and its heel angle is fixed and enforced. After solving statics the GZ
@@ -50,25 +68,38 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=1, minimum_he
         allow_sway:     (False)
         allow_yaw:      (False)
         allow_trim:     (True)
+        noplot:         Do not plot results [False]
+        noshow:         Do plot but do not do plt.show() [False]
 
     Returns:
-
+        dictionary with heel, moment, and GM
 
     &#34;&#34;&#34;
 
 
 
-    # verify input
-    # vessel_node should not have a parent
+    # --------- verify input -----------
+
 
     s = scene # lazy
 
+    if minimum_heel &gt; maximum_heel:
+        raise ValueError(&#39;Minimum heel should be smaller than maximum heel&#39;)
 
+    # vessel_node should not have a parent
     vessel = s._node_from_node_or_str(vessel_node)
     if vessel.parent is not None:
         raise ValueError(&#34;Vessel should not have a parent. Got {} as vessel which has parent {}.&#34;.format(vessel.name, vessel.parent.name))
 
+    no_displacement = False
+    if displacement_kN is None: # default value
+        no_displacement = True
+        displacement_kN = 1
 
+    if minimum_heel == maximum_heel and steps&gt;1:
+        raise ValueError(&#34;Can not take multiple steps of min and max value are identical&#34;)
+
+    # --------------- store current state -------
 
     # store current vessel props
     _position = vessel.position
@@ -76,6 +107,8 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=1, minimum_he
     _fixed = vessel.fixed
     _verbose = s.verbose
     s.verbose = False
+
+    # --------- construct system to impose heel ---------
 
     # construct axis system at vessel origin
     name = s.available_name_like(vessel.name + &#34;_global_motion&#34;)
@@ -106,7 +139,8 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=1, minimum_he
     s._vfc.state_update()
     D0 = s._vfc.get_dofs()
 
-    # do the calcs
+    # ----------------- do the calcs ---------------
+
     heel = np.linspace(minimum_heel,maximum_heel,num=steps)
     moment = list()
     trim = list()
@@ -118,32 +152,63 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=1, minimum_he
         moment.append(-heel_node.applied_force[3])
         trim.append(trim_motion.ry)
 
-    s._vfc.set_dofs(D0)
-
-    if allow_trim:
-        plt.plot(heel, trim, color=&#39;black&#39;, marker=&#39;o&#39;)
-        plt.xlabel(&#39;Imposed Heel angle [deg]&#39;)
-        plt.ylabel(&#39;Solved trim angle [deg]&#39;)
-        plt.title(&#39;Trim resulting from imposed heel&#39;)
-        plt.grid()
-        plt.figure()
-
-    plt.plot(heel, moment, color=&#39;black&#39;, marker=&#39;o&#39;)
-
-    plt.xlabel(&#39;Heel angle [deg]&#39;)
-    what = &#39;moment&#39;
-    if (displacement_kN==1):
-        plt.ylabel(&#39;Restoring moment [kN*m]&#39;)
-
+    if no_displacement:
+        GM = np.nan
     else:
-        what = &#39;arm&#39;
-        plt.ylabel(&#39;GZ [m]&#39;)
+        GZ = np.array(moment, dtype=float) / displacement_kN
+        # calculate GM, but only if zero is part of the heel curve and at least two points
+        if (np.max(heel)&gt;=0 and np.min(heel)&lt;=0 and len(heel)&gt;1):
+            GMs = np.diff(GZ) / np.diff(np.deg2rad(heel))
+            heels = 0.5*(heel[:-1] + heel[1:])
+            GM = np.interp(0,heels, GMs)
+        else:
+            GM = np.nan
 
-    plt.title(&#39;Restoring {} curve for {}&#39;.format(what, vessel.name))
+        # restore dofs
+        s._vfc.set_dofs(D0)
+
+    # ----------- plot the results -----------
+
+    if not noplot:
+
+        if allow_trim:
+            plt.plot(heel, trim, color=&#39;black&#39;, marker=&#39;+&#39;)
+            plt.xlabel(&#39;Imposed Heel angle [deg]&#39;)
+            plt.ylabel(&#39;Solved trim angle [deg]&#39;)
+            plt.title(&#39;Trim resulting from imposed heel&#39;)
+            plt.grid()
+            plt.figure()
+
+        plt.xlabel(&#39;Heel angle [deg]&#39;)
+        what = &#39;moment&#39;
+        if no_displacement:
+            plt.plot(heel, moment, color=&#39;black&#39;, marker=&#39;+&#39;)
+            plt.ylabel(&#39;Restoring moment [kN*m]&#39;)
+        else:
+            plt.plot(heel, GZ, color=&#39;black&#39;, marker=&#39;+&#39;)
+            what = &#39;arm&#39;
+            plt.ylabel(&#39;GZ [m]&#39;)
+
+            # plot the GM line
+            yy = plt.ylim()
+            xmax = np.rad2deg(yy[1] / GM)
+            xmin = np.rad2deg(yy[0] / GM)
+
+            xmin = np.max([xmin, np.min(heel)])
+            xmax = np.min([xmax, np.max(heel)])
 
 
-    plt.grid()
-    plt.show()
+            plt.plot([xmin, xmax], [np.deg2rad(xmin)*GM, np.deg2rad(xmax)*GM])
+            box_props = dict(boxstyle=&#39;round&#39;, facecolor=&#39;gold&#39;, alpha=1)
+            plt.text(xmax,np.deg2rad(xmax)*GM,&#39;GM = {:.2f}&#39;.format(GM),horizontalalignment=&#39;left&#39;,bbox=box_props)
+
+        plt.title(&#39;Restoring {} curve for {}&#39;.format(what, vessel.name))
+
+        plt.grid()
+        if not noshow:
+            plt.show()
+
+    # -------- clean up -----------
 
     if teardown:
         vessel.change_parent_to(None)
@@ -155,6 +220,18 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=1, minimum_he
         vessel.fixed = _fixed
 
     s.verbose = _verbose
+
+    # --------- collect return values --------
+    r = dict()
+    r[&#39;heel&#39;] = heel
+
+    if not no_displacement:
+        r[&#39;GM&#39;] = GM
+        r[&#39;GZ&#39;] = moment
+    else:
+        r[&#39;moment&#39;] = moment
+
+    return r
 
 
 def GZcurve_MomentDriven():
@@ -183,7 +260,7 @@ def GZcurve_MomentDriven():
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="DAVE.marine.GZcurve_DisplacementDriven"><code class="name flex">
-<span>def <span class="ident">GZcurve_DisplacementDriven</span></span>(<span>scene, vessel_node, displacement_kN=1, minimum_heel=0, maximum_heel=90, steps=180, teardown=True, allow_surge=False, allow_sway=False, allow_yaw=False, allow_trim=True)</span>
+<span>def <span class="ident">GZcurve_DisplacementDriven</span></span>(<span>scene, vessel_node, displacement_kN=None, minimum_heel=0, maximum_heel=90, steps=180, teardown=True, allow_surge=False, allow_sway=False, allow_yaw=False, allow_trim=True, noplot=False, noshow=False)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>This works for vessels without a parent.</p>
@@ -230,13 +307,27 @@ maximum heel, end of the curve (90)</dt>
 <dd>
 <p>(True)</p>
 </dd>
+<dt><strong><code>noplot</code></strong></dt>
+<dd>
+<pre><code>Do not plot results [False]
+</code></pre>
+</dd>
+<dt><strong><code>noshow</code></strong></dt>
+<dd>
+<pre><code>Do plot but do not do plt.show() [False]
+</code></pre>
+</dd>
 </dl>
-<p>Returns:</p></section>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dictionary</code> <code>with</code> <code>heel</code>, <code>moment</code>, <code>and</code> <code>GM</code></dt>
+<dd>&nbsp;</dd>
+</dl></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=1, minimum_heel= 0, maximum_heel=90, steps=180, teardown=True, allow_surge=False, allow_sway=False, allow_yaw=False, allow_trim=True):
+<pre><code class="python">def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum_heel= 0, maximum_heel=90, steps=180, teardown=True, allow_surge=False, allow_sway=False, allow_yaw=False, allow_trim=True, noplot = False, noshow = False):
     &#34;&#34;&#34;This works for vessels without a parent.
 
     The vessels slaved to an axis system and its heel angle is fixed and enforced. After solving statics the GZ
@@ -258,25 +349,38 @@ maximum heel, end of the curve (90)</dt>
         allow_sway:     (False)
         allow_yaw:      (False)
         allow_trim:     (True)
+        noplot:         Do not plot results [False]
+        noshow:         Do plot but do not do plt.show() [False]
 
     Returns:
-
+        dictionary with heel, moment, and GM
 
     &#34;&#34;&#34;
 
 
 
-    # verify input
-    # vessel_node should not have a parent
+    # --------- verify input -----------
+
 
     s = scene # lazy
 
+    if minimum_heel &gt; maximum_heel:
+        raise ValueError(&#39;Minimum heel should be smaller than maximum heel&#39;)
 
+    # vessel_node should not have a parent
     vessel = s._node_from_node_or_str(vessel_node)
     if vessel.parent is not None:
         raise ValueError(&#34;Vessel should not have a parent. Got {} as vessel which has parent {}.&#34;.format(vessel.name, vessel.parent.name))
 
+    no_displacement = False
+    if displacement_kN is None: # default value
+        no_displacement = True
+        displacement_kN = 1
 
+    if minimum_heel == maximum_heel and steps&gt;1:
+        raise ValueError(&#34;Can not take multiple steps of min and max value are identical&#34;)
+
+    # --------------- store current state -------
 
     # store current vessel props
     _position = vessel.position
@@ -284,6 +388,8 @@ maximum heel, end of the curve (90)</dt>
     _fixed = vessel.fixed
     _verbose = s.verbose
     s.verbose = False
+
+    # --------- construct system to impose heel ---------
 
     # construct axis system at vessel origin
     name = s.available_name_like(vessel.name + &#34;_global_motion&#34;)
@@ -314,7 +420,8 @@ maximum heel, end of the curve (90)</dt>
     s._vfc.state_update()
     D0 = s._vfc.get_dofs()
 
-    # do the calcs
+    # ----------------- do the calcs ---------------
+
     heel = np.linspace(minimum_heel,maximum_heel,num=steps)
     moment = list()
     trim = list()
@@ -326,32 +433,63 @@ maximum heel, end of the curve (90)</dt>
         moment.append(-heel_node.applied_force[3])
         trim.append(trim_motion.ry)
 
-    s._vfc.set_dofs(D0)
-
-    if allow_trim:
-        plt.plot(heel, trim, color=&#39;black&#39;, marker=&#39;o&#39;)
-        plt.xlabel(&#39;Imposed Heel angle [deg]&#39;)
-        plt.ylabel(&#39;Solved trim angle [deg]&#39;)
-        plt.title(&#39;Trim resulting from imposed heel&#39;)
-        plt.grid()
-        plt.figure()
-
-    plt.plot(heel, moment, color=&#39;black&#39;, marker=&#39;o&#39;)
-
-    plt.xlabel(&#39;Heel angle [deg]&#39;)
-    what = &#39;moment&#39;
-    if (displacement_kN==1):
-        plt.ylabel(&#39;Restoring moment [kN*m]&#39;)
-
+    if no_displacement:
+        GM = np.nan
     else:
-        what = &#39;arm&#39;
-        plt.ylabel(&#39;GZ [m]&#39;)
+        GZ = np.array(moment, dtype=float) / displacement_kN
+        # calculate GM, but only if zero is part of the heel curve and at least two points
+        if (np.max(heel)&gt;=0 and np.min(heel)&lt;=0 and len(heel)&gt;1):
+            GMs = np.diff(GZ) / np.diff(np.deg2rad(heel))
+            heels = 0.5*(heel[:-1] + heel[1:])
+            GM = np.interp(0,heels, GMs)
+        else:
+            GM = np.nan
 
-    plt.title(&#39;Restoring {} curve for {}&#39;.format(what, vessel.name))
+        # restore dofs
+        s._vfc.set_dofs(D0)
+
+    # ----------- plot the results -----------
+
+    if not noplot:
+
+        if allow_trim:
+            plt.plot(heel, trim, color=&#39;black&#39;, marker=&#39;+&#39;)
+            plt.xlabel(&#39;Imposed Heel angle [deg]&#39;)
+            plt.ylabel(&#39;Solved trim angle [deg]&#39;)
+            plt.title(&#39;Trim resulting from imposed heel&#39;)
+            plt.grid()
+            plt.figure()
+
+        plt.xlabel(&#39;Heel angle [deg]&#39;)
+        what = &#39;moment&#39;
+        if no_displacement:
+            plt.plot(heel, moment, color=&#39;black&#39;, marker=&#39;+&#39;)
+            plt.ylabel(&#39;Restoring moment [kN*m]&#39;)
+        else:
+            plt.plot(heel, GZ, color=&#39;black&#39;, marker=&#39;+&#39;)
+            what = &#39;arm&#39;
+            plt.ylabel(&#39;GZ [m]&#39;)
+
+            # plot the GM line
+            yy = plt.ylim()
+            xmax = np.rad2deg(yy[1] / GM)
+            xmin = np.rad2deg(yy[0] / GM)
+
+            xmin = np.max([xmin, np.min(heel)])
+            xmax = np.min([xmax, np.max(heel)])
 
 
-    plt.grid()
-    plt.show()
+            plt.plot([xmin, xmax], [np.deg2rad(xmin)*GM, np.deg2rad(xmax)*GM])
+            box_props = dict(boxstyle=&#39;round&#39;, facecolor=&#39;gold&#39;, alpha=1)
+            plt.text(xmax,np.deg2rad(xmax)*GM,&#39;GM = {:.2f}&#39;.format(GM),horizontalalignment=&#39;left&#39;,bbox=box_props)
+
+        plt.title(&#39;Restoring {} curve for {}&#39;.format(what, vessel.name))
+
+        plt.grid()
+        if not noshow:
+            plt.show()
+
+    # -------- clean up -----------
 
     if teardown:
         vessel.change_parent_to(None)
@@ -362,7 +500,19 @@ maximum heel, end of the curve (90)</dt>
         vessel.rotation = _rotation
         vessel.fixed = _fixed
 
-    s.verbose = _verbose</code></pre>
+    s.verbose = _verbose
+
+    # --------- collect return values --------
+    r = dict()
+    r[&#39;heel&#39;] = heel
+
+    if not no_displacement:
+        r[&#39;GM&#39;] = GM
+        r[&#39;GZ&#39;] = moment
+    else:
+        r[&#39;moment&#39;] = moment
+
+    return r</code></pre>
 </details>
 </dd>
 <dt id="DAVE.marine.GZcurve_MomentDriven"><code class="name flex">

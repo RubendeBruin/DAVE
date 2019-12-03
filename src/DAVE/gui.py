@@ -23,7 +23,7 @@
 
 import DAVE.visual as vfv
 import DAVE.scene as vfs
-import DAVE.constants as vfc
+import DAVE.settings as vfc
 import DAVE.standard_assets
 import DAVE.forms.resources_rc as resources_rc
 from DAVE.forms.viewer_form import Ui_MainWindow
@@ -556,7 +556,7 @@ class Gui:
         if dialog is not None:
             dialog.close()
 
-        if DAVE.constants.GUI_DO_ANIMATE and not long_wait:
+        if DAVE.settings.GUI_DO_ANIMATE and not long_wait:
             new_dofs = self.scene._vfc.get_dofs()
             self.animate(old_dofs, new_dofs, vfc.GUI_ANIMATION_NSTEPS)
 
@@ -1082,42 +1082,42 @@ if __name__ == '__main__':
 
 
     s = DAVE.scene.Scene()
-    #
-    # s.new_poi('b', position = (10,0,15))
-    # s.new_sheave('sb', 'b', (0, 1, 0), 0.5)
-    #
-    # n = s.import_scene('liftme')
-    # n.fixed = False
-    #
-    #
-    # n = s.import_scene(s.get_resource_path("crane block 4p.dave_asset"), containerize=True, prefix="")
-    # n.z = 30
-    # s.dissolve(n)
-    #
-    # from DAVE.rigging import *
-    #
-    # create_sling(s,'sling3',Ltotal=30, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter = 0.3, EA = 1e6, mass = 3, endA='lp3bow', endB='prong4_sheave')
-    # create_sling(s, 'sling4', Ltotal=30, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter=0.3, EA=1e6, mass=3,
-    #              endA='lp4bow', endB='prong3_sheave')
-    #
-    # # doubled sling in two parts
-    # n = s.import_scene(s.get_resource_path("GP800.dave_asset"), containerize=True, prefix="sh01_")
-    # n.fixed = False
-    #
-    # create_sling(s, 'sling1_part1', Ltotal=40, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter=0.3, EA=1e6, mass=3,
-    #              endA='lp1lp2', endB='sh01_bow', sheave='prong2_sheave')
-    #
-    # create_sling(s, 'sling1_part2', Ltotal=20, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter=0.3, EA=1e6, mass=3,
-    #              endA='lp1lp1', endB='sh01_pin')
-    #
-    #
-    # # doubled sling
-    # create_sling(s, 'sling2', Ltotal=60, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter=0.3, EA=1e6, mass=3,
-    #              endA='lp2lp2', endB='lp2lp1', sheave='prong1_sheave')
-    #
-    #
-    #
-    # s.solve_statics()
+
+    s.new_poi('b', position = (10,0,15))
+    s.new_sheave('sb', 'b', (0, 1, 0), 0.5)
+
+    n = s.import_scene('liftme')
+    n.fixed = False
+
+
+    n = s.import_scene(s.get_resource_path("crane block 4p.dave_asset"), containerize=True, prefix="")
+    n.z = 30
+    s.dissolve(n)
+
+    from DAVE.rigging import *
+
+    create_sling(s,'sling3',Ltotal=30, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter = 0.3, EA = 1e6, mass = 3, endA='lp3bow', endB='prong4_sheave')
+    create_sling(s, 'sling4', Ltotal=30, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter=0.3, EA=1e6, mass=3,
+                 endA='lp4bow', endB='prong3_sheave')
+
+    # doubled sling in two parts
+    n = s.import_scene(s.get_resource_path("GP800.dave_asset"), containerize=True, prefix="sh01_")
+    n.fixed = False
+
+    create_sling(s, 'sling1_part1', Ltotal=40, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter=0.3, EA=1e6, mass=3,
+                 endA='lp1lp2', endB='sh01_bow', sheave='prong2_sheave')
+
+    create_sling(s, 'sling1_part2', Ltotal=20, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter=0.3, EA=1e6, mass=3,
+                 endA='lp1lp1', endB='sh01_pin')
+
+
+    # doubled sling
+    create_sling(s, 'sling2', Ltotal=60, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter=0.3, EA=1e6, mass=3,
+                 endA='lp2lp2', endB='lp2lp1', sheave='prong1_sheave')
+
+
+
+    s.solve_statics()
 
     from DAVE.io.blender import *
 
@@ -1127,4 +1127,4 @@ if __name__ == '__main__':
 
     Gui(s).show()
 
-    create_blend_and_open(s)
+    # create_blend_and_open(s)

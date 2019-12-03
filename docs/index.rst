@@ -6,7 +6,7 @@ This is the documentation of **DAVE**.
 
 For a general introduction and source-code see `GitHub <https://github.com/RubendeBruin/DAVE>`_
 
-For documentation of the main module "Scene" see :py:mod:`DAVE.scene`
+For documentation of the main module "Scene" see the pdoc generated documentation.
 
 Other subjects:
 

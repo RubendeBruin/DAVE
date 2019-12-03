@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.7.1" />
 <title>DAVE.jupyter API documentation</title>
-<meta name="description" content="Helper functions for running virtual-float from jupyter" />
+<meta name="description" content="This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can …" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -20,14 +22,32 @@
 <h1 class="title">Module <code>DAVE.jupyter</code></h1>
 </header>
 <section id="section-intro">
+<p>This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/.">http://mozilla.org/MPL/2.0/.</a></p>
+<p>Ruben de Bruin - 2019</p>
 <p>Helper functions for running virtual-float from jupyter</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">&#34;&#34;&#34;
-Helper functions for running virtual-float from jupyter
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+  Ruben de Bruin - 2019
+
+
+  Helper functions for running virtual-float from jupyter
+
 &#34;&#34;&#34;
+
+import os
+
+# setup headless rendering
+os.system(&#39;/usr/bin/Xvfb :99 -screen 0 1024x768x24 &amp;&#39;)
+os.environ[&#39;DISPLAY&#39;] = &#39;:99&#39;
 
 import DAVE.visual
 
@@ -62,6 +82,7 @@ def show(scene, what = &#39;all&#39;, sea=True):
     vp.Jupyter = True
 
     _setup_viewport(vp, what=what, sea=sea)
+
 
     return vp.show()
 
@@ -114,6 +135,7 @@ def screenshot(scene, what = &#39;all&#39;, sea=True, width=1024, height = 600, 
     vp.Jupyter = True
 
     _setup_viewport(vp, what=what, sea=sea)
+
 
     return vp.show()</code></pre>
 </details>
