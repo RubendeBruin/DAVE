@@ -9,6 +9,6 @@ dependencies:
   - scipy
   - ipython
   - matplotlib
+  - prettytable 
   - pip:
     - vtkplotter
-    - useDAVE
