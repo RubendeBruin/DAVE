@@ -23,6 +23,7 @@ import DAVE.forms.widget_lincon6
 import DAVE.forms.widget_linhyd
 import DAVE.forms.widget_beam
 import DAVE.forms.widget_con2d
+import DAVE.forms.widget_sheave
 
 import DAVE.forms.addnode_form
 
@@ -493,13 +494,18 @@ class EditCable(NodeEditor):
         else:
             ui = EditCable._ui
 
-        self.plist = list()
+        self.plist = [""]
+
+        for poi in self.scene.nodes_of_type(vfs.Sheave):
+            self.plist.append(poi.name)
+
         for poi in self.scene.nodes_of_type(vfs.Poi):
             self.plist.append(poi.name)
 
         try:
             ui.doubleSpinBox_1.valueChanged.disconnect()
             ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox.valueChanged.disconnect()
             ui.comboBox_2.currentIndexChanged.disconnect()
             ui.comboBox.currentIndexChanged.disconnect()
 
@@ -513,6 +519,7 @@ class EditCable(NodeEditor):
         ui.additional_pois.clear()
 
         ui.comboBox.clear()
+
         ui.comboBox.addItems(self.plist)
 
         ui.comboBox_2.clear()
@@ -520,12 +527,7 @@ class EditCable(NodeEditor):
 
         ui.doubleSpinBox_1.setValue(self.node.length)
         ui.doubleSpinBox_2.setValue(self.node.EA)
-
-        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
-
-        ui.btnAdd.clicked.connect(self.add_poi_dropdown)
-        ui.btnRemove.clicked.connect(self.delete_poi_dropdown)
+        ui.doubleSpinBox.setValue(self.node.diameter)
 
         self.ui = ui  # needs to be done here as self.add_poi_dropdown modifies this
 
@@ -539,8 +541,16 @@ class EditCable(NodeEditor):
 
         for i,name in enumerate(poi_names[2:]):
             self.ui.additional_pois[i].setCurrentText(name)
+            # self.ui.additional_pois[i].currentIndexChanged.connect(self.callback)
 
         # Set events
+        ui.btnAdd.clicked.connect(self.add_poi_dropdown)
+        ui.btnRemove.clicked.connect(self.delete_poi_dropdown)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox.valueChanged.connect(self.callback)
+
         ui.comboBox.currentIndexChanged.connect(self.callback)
         ui.comboBox_2.currentIndexChanged.connect(self.callback)
         for cbx in self.ui.additional_pois:
@@ -551,9 +561,8 @@ class EditCable(NodeEditor):
     def add_poi_dropdown(self):
         cbx = QtWidgets.QComboBox(self.ui.frame)
         self.ui.poiLayout.addWidget(cbx)
-        cbx.addItem("")
         cbx.addItems(self.plist)
-        cbx.currentIndexChanged.connect(self.callback)
+
         self.ui.additional_pois.append(cbx)
 
 
@@ -565,12 +574,12 @@ class EditCable(NodeEditor):
             self.callback()
 
     def generate_code(self):
-
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
         new_length = self.ui.doubleSpinBox_1.value()
         new_EA = self.ui.doubleSpinBox_2.value()
+        new_diameter = self.ui.doubleSpinBox.value()
 
         if not new_length == self.node.length:
             code += element + '.length = {}'.format(new_length)
@@ -578,9 +587,13 @@ class EditCable(NodeEditor):
         if not new_EA == self.node.EA:
             code += element + '.EA = {}'.format(new_EA)
 
+        if not new_diameter == self.node.diameter:
+            code += element + '.diameter = {}'.format(new_diameter)
+
         # get the poi names
-        new_names = [self.ui.comboBox.currentText(),self.ui.comboBox_2.currentText()]
-        for cbx in self.ui.additional_pois:
+        # new_names = [self.ui.comboBox.currentText(),self.ui.comboBox_2.currentText()]
+        new_names = []
+        for cbx in [self.ui.comboBox, self.ui.comboBox_2, *self.ui.additional_pois]:
             ct = cbx.currentText()
             if ct: # skip empty
                 new_names.append(ct)
@@ -590,6 +603,7 @@ class EditCable(NodeEditor):
             for name in new_names:
                 code += element + ".add_connection(s['{}'])".format(name)
 
+        code += '\n' + element + ".check_endpoints()"
 
         return code
 
@@ -656,6 +670,64 @@ class EditForce(NodeEditor):
             code += element + '.force = ({}, {}, {})'.format(*new_force)
         if not np.all(new_moment == self.node.moment):
             code += element + '.moment = ({}, {}, {})'.format(*new_moment)
+
+        return code
+
+class EditSheave(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditSheave._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_sheave.Ui_widget_sheave()
+            ui.setupUi(widget)
+            EditSheave._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditSheave._ui
+
+        try:
+            ui.sbAX.valueChanged.disconnect()
+            ui.sbAY.valueChanged.disconnect()
+            ui.sbAZ.valueChanged.disconnect()
+            ui.sbRadius.valueChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.sbAX.setValue(self.node.axis[0])
+        ui.sbAY.setValue(self.node.axis[1])
+        ui.sbAZ.setValue(self.node.axis[2])
+
+        ui.sbRadius.setValue(self.node.radius)
+
+        ui.sbAX.valueChanged.connect(self.callback)
+        ui.sbAY.valueChanged.connect(self.callback)
+        ui.sbAZ.valueChanged.connect(self.callback)
+
+        ui.sbRadius.valueChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = ""
+        element = "\ns['{}']".format(self.node.name)
+
+        new_axis = np.array(
+            (self.ui.sbAX.value(), self.ui.sbAY.value(),self.ui.sbAZ.value()))
+        new_radius = self.ui.sbRadius.value()
+
+        if not np.all(new_axis == self.node.axis):
+            code += element + '.axis = ({}, {}, {})'.format(*new_axis)
+        if not new_radius == self.node.radius:
+            code += element + '.radius = {}'.format(new_radius)
 
         return code
 
@@ -1220,6 +1292,31 @@ def add_force(scene, parent = None):
         name = ui.tbName.text()
 
         return "new_force('{}', parent = '{}')".format(name, poi)
+
+    else:
+        return None
+    
+def add_sheave(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParentPoi.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/sheave.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Sheave'))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        poi = ui.cbParentPoi.currentText()
+        name = ui.tbName.text()
+
+        return "new_sheave('{}', parent = '{}', axis = (0,1,0))".format(name, poi)
 
     else:
         return None

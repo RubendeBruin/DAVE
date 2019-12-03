@@ -50,6 +50,7 @@ def show(scene, what = 'all', sea=True):
 
     _setup_viewport(vp, what=what, sea=sea)
 
+
     return vp.show()
 
 def screenshot(scene, what = 'all', sea=True, width=1024, height = 600, camera_pos=(50,-25,10), lookat = (0,0,0)):

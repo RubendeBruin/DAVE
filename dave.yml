@@ -3,12 +3,13 @@ channels:
   - conda
   - conda-forge
 dependencies:
+  - pip
   - pyside2
   - vtk
   - numpy
   - scipy
   - ipython
   - matplotlib
+  - prettytable 
   - pip:
     - vtkplotter
-    - useDAVE

@@ -23,7 +23,7 @@
 
 import DAVE.visual as vfv
 import DAVE.scene as vfs
-import DAVE.constants as vfc
+import DAVE.settings as vfc
 import DAVE.standard_assets
 import DAVE.forms.resources_rc as resources_rc
 from DAVE.forms.viewer_form import Ui_MainWindow
@@ -348,7 +348,7 @@ class Gui:
         code += "\ncamera = {{'position':({},{},{}), 'direction':({},{},{})}}".format(*pos,*dir)
         code += '\nblender_base = r"{}"'.format(vfc.BLENDER_BASE_SCENE)
         code += '\nblender_result = r"{}"'.format(Path(vfc.PATH_TEMP) / 'current_render.blend')
-        code += '\nDAVE.io.blender.create_blend_and_open(s, blender_base, blender_result, camera=camera)'
+        code += '\nDAVE.io.blender.create_blend_and_open(s, blender_base_file=blender_base, blender_result_file=blender_result, camera=camera)'
         code += '\nprint("Opening blender, close blender to continue.")'
         code += '\nprint("In blender, press F12 to go to rendered camera view.")'
         self.run_code(code)
@@ -472,8 +472,9 @@ class Gui:
 
 
         menu.addAction("New Axis", self.new_axis)
-        menu.addAction("New Poi", self.new_poi)
         menu.addAction("New RigidBody", self.new_body)
+        menu.addAction("New Poi", self.new_poi)
+        menu.addAction("New Sheave", self.new_sheave)
         menu.addAction("New Cable", self.new_cable)
         menu.addAction("New Force", self.new_force)
         menu.addAction("New Beam", self.new_beam)
@@ -555,7 +556,7 @@ class Gui:
         if dialog is not None:
             dialog.close()
 
-        if DAVE.constants.GUI_DO_ANIMATE and not long_wait:
+        if DAVE.settings.GUI_DO_ANIMATE and not long_wait:
             new_dofs = self.scene._vfc.get_dofs()
             self.animate(old_dofs, new_dofs, vfc.GUI_ANIMATION_NSTEPS)
 
@@ -591,7 +592,7 @@ class Gui:
         """
         Updates the tree and assembles the node-data
 
-        This data is obtained from scene.nodes and assumes that
+        This data is obtained from scene._nodes and assumes that
         each of the nodes has a visual assigned to it.
 
         """
@@ -601,7 +602,7 @@ class Gui:
 
         self.node_data.clear()
 
-        for node in self.scene.nodes:
+        for node in self.scene._nodes:
 
             # create a tree item
             text = node.name
@@ -631,6 +632,8 @@ class Gui:
                 item.setIcon(QIcon(":/icons/linhyd.png"))
             if isinstance(node, vfs.Force):
                 item.setIcon(QIcon(":/icons/force.png"))
+            if isinstance(node, vfs.Sheave):
+                item.setIcon(QIcon(":/icons/sheave.png"))
             if isinstance(node, vfs.Buoyancy):
                 item.setIcon(QIcon(":/icons/trimesh.png"))
 
@@ -750,6 +753,10 @@ class Gui:
 
         if isinstance(node, vfs.Force):
             self._node_editors.append(element_widgets.EditForce(node, self.node_property_changed, self.scene))
+
+        if isinstance(node, vfs.Sheave):
+            self._node_editors.append(element_widgets.EditSheave(node, self.node_property_changed, self.scene))
+
 
         if isinstance(node, vfs.HydSpring):
             self._node_editors.append(element_widgets.EditHydSpring(node, self.node_property_changed, self.scene))
@@ -881,11 +888,11 @@ class Gui:
     def code_change(self):
         if self.ui.cbAutoExecute.isChecked():
 
-            before = self.scene.nodes.copy()
+            before = self.scene._nodes.copy()
             self.run_code_in_teCode()
 
             # if we created something new, then select it
-            for node in self.scene.nodes:
+            for node in self.scene._nodes:
                 if node not in before:
                     data = self.node_data.get_node(node)
                     self.select_node(data)
@@ -927,11 +934,7 @@ class Gui:
 
                 self.ui.teHistory.setPlainText(self.ui.teHistory.toPlainText() + '\n#---\n' + code)
                 self.ui.teHistory.verticalScrollBar().setValue(self.ui.teHistory.verticalScrollBar().maximum()) # scroll down all the way
-
-
             except Exception as E:
-
-
                 self.ui.teFeedback.setText(c.stdout + '\n' + str(E) + '\n\nWhen running: \n\n' + code)
                 self.ui.teFeedback.setStyleSheet("background-color: red;")
                 return
@@ -948,7 +951,7 @@ class Gui:
             if self.selected_node is not None:
 
                 # check if selected node is still present
-                if self.selected_node['node'] in self.scene.nodes:
+                if self.selected_node['node'] in self.scene._nodes:
                     self.display_node_properties(self.selected_node['node'])
                 else:
                     self.selected_node = None
@@ -992,6 +995,9 @@ class Gui:
 
     def new_force(self):
         self.new_something(DAVE.element_widgets.add_force)
+
+    def new_sheave(self):
+        self.new_something(DAVE.element_widgets.add_sheave)
 
     def new_linear_connector(self):
         self.new_something(DAVE.element_widgets.add_linear_connector)
@@ -1072,9 +1078,5 @@ class Gui:
 # ====== main code ======
 
 if __name__ == '__main__':
-    s = vfs.Scene()
-    s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
-
-    s.import_scene(s.get_resource_path("cheetah.dave_asset"), containerize=False, prefix="")
-    g = Gui(s)
-    g.show()
+    s = DAVE.scene.Scene()
+    Gui(s).show()
