@@ -3,6 +3,7 @@ channels:
   - conda
   - conda-forge
 dependencies:
+  - pip
   - pyside2
   - vtk
   - numpy
