@@ -62,7 +62,9 @@ class WidgetNodeTree(guiDockWidget):
         self.contents.setLayout(layout)
 
     def guiProcessEvent(self, event):
-        if event in [guiEventType.MODEL_STRUCTURE_CHANGED, guiEventType.FULL_UPDATE]:
+        if event in [guiEventType.MODEL_STRUCTURE_CHANGED,
+                     guiEventType.FULL_UPDATE,
+                     guiEventType.SELECTED_NODE_MODIFIED]:
             self.update_node_data_and_tree()
 
         if event in [guiEventType.SELECTION_CHANGED]:

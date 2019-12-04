@@ -203,7 +203,7 @@ class Gui:
 
         self.ui.teCode.textChanged.connect(self.code_change)
 
-        self.visual.mouseLeftEvent = self.view3d_select_element
+        # self.visual.mouseLeftEvent = self.view3d_select_element
 
         self.ui.pbRunCode.clicked.connect(self.run_code_in_teCode)
         self.ui.pbCopyFeedback.clicked.connect(self.feedback_copy)
@@ -695,15 +695,15 @@ class Gui:
     #     self.ui.treeView.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
     #     self.ui.treeView.expandAll()
 
-    def node_name_changed(self):
-        """Triggered by changing the text in the node-name widget"""
-        node = self._node_name_editor.node
-        element = "\ns['{}']".format(node.name)
-
-        new_name = self._node_name_editor.ui.tbName.text()
-        if not new_name == node.name:
-            code = element + ".name = '{}'".format(new_name)
-            self.run_code(code)
+    # def node_name_changed(self):
+    #     """Triggered by changing the text in the node-name widget"""
+    #     node = self._node_name_editor.node
+    #     element = "\ns['{}']".format(node.name)
+    #
+    #     new_name = self._node_name_editor.ui.tbName.text()
+    #     if not new_name == node.name:
+    #         code = element + ".name = '{}'".format(new_name)
+    #         self.run_code(code)
 
 
     def deselect_all(self):
@@ -755,73 +755,73 @@ class Gui:
         index = self.ui.treeView.model().indexFromItem(twi)
         self.ui.treeView.setCurrentIndex(index)
 
-        for widget in self._open_edit_widgets:
-            self.ui.widgetLayout.removeWidget(widget)
-            widget.setVisible(False)
-
-        self._node_editors.clear()
-        self._open_edit_widgets.clear()
-
-        try:
-            self._node_name_editor
-            self._node_name_editor.node = node
-            self._node_name_editor.create_widget()
-        except:
-            self._node_name_editor = element_widgets.EditNode(node, self.node_name_changed, self.scene)
-            self._node_name_editor.create_widget()
-            self.ui.widgetLayout.addWidget(self._node_name_editor.ui._widget)
-
-        if isinstance(node, vfs.Visual):
-            # self.visual.set_alpha(1, 1)
-            self._node_editors.append(element_widgets.EditVisual(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.Axis):
-            self._node_editors.append(element_widgets.EditAxis(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.RigidBody):
-            self._node_editors.append(element_widgets.EditBody(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.Poi):
-            self._node_editors.append(element_widgets.EditPoi(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.Cable):
-            self._node_editors.append(element_widgets.EditCable(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.Force):
-            self._node_editors.append(element_widgets.EditForce(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.Sheave):
-            self._node_editors.append(element_widgets.EditSheave(node, self.node_property_changed, self.scene))
-
-
-        if isinstance(node, vfs.HydSpring):
-            self._node_editors.append(element_widgets.EditHydSpring(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.LC6d):
-            self._node_editors.append(element_widgets.EditLC6d(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.Connector2d):
-            self._node_editors.append(element_widgets.EditConnector2d(node, self.node_property_changed, self.scene))
-
-
-        if isinstance(node, vfs.LinearBeam):
-            self._node_editors.append(element_widgets.EditBeam(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.Buoyancy):
-            self._node_editors.append(element_widgets.EditBuoyancy(node, self.node_property_changed, self.scene))
-
-        for editor in self._node_editors:
-            widget = editor.create_widget()
-            widget.setVisible(True)
-            self.ui.widgetLayout.addWidget(widget)
-            self._open_edit_widgets.append(widget)
-
-        self.ui.dockWidget_3.setVisible(True)
-        self.ui.dockWidgetContents_3.resize(0, 0)  # set the size of the floating dock widget to its minimum size
-        self.ui.dockWidget_3.resize(0, 0)
-
-        # ---- display node properties
-        self.display_node_properties(node)
+        # for widget in self._open_edit_widgets:
+        #     self.ui.widgetLayout.removeWidget(widget)
+        #     widget.setVisible(False)
+        #
+        # self._node_editors.clear()
+        # self._open_edit_widgets.clear()
+        #
+        # try:
+        #     self._node_name_editor
+        #     self._node_name_editor.node = node
+        #     self._node_name_editor.create_widget()
+        # except:
+        #     self._node_name_editor = element_widgets.EditNode(node, self.node_name_changed, self.scene)
+        #     self._node_name_editor.create_widget()
+        #     self.ui.widgetLayout.addWidget(self._node_name_editor.ui._widget)
+        #
+        # if isinstance(node, vfs.Visual):
+        #     # self.visual.set_alpha(1, 1)
+        #     self._node_editors.append(element_widgets.EditVisual(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.Axis):
+        #     self._node_editors.append(element_widgets.EditAxis(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.RigidBody):
+        #     self._node_editors.append(element_widgets.EditBody(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.Poi):
+        #     self._node_editors.append(element_widgets.EditPoi(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.Cable):
+        #     self._node_editors.append(element_widgets.EditCable(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.Force):
+        #     self._node_editors.append(element_widgets.EditForce(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.Sheave):
+        #     self._node_editors.append(element_widgets.EditSheave(node, self.node_property_changed, self.scene))
+        #
+        #
+        # if isinstance(node, vfs.HydSpring):
+        #     self._node_editors.append(element_widgets.EditHydSpring(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.LC6d):
+        #     self._node_editors.append(element_widgets.EditLC6d(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.Connector2d):
+        #     self._node_editors.append(element_widgets.EditConnector2d(node, self.node_property_changed, self.scene))
+        #
+        #
+        # if isinstance(node, vfs.LinearBeam):
+        #     self._node_editors.append(element_widgets.EditBeam(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.Buoyancy):
+        #     self._node_editors.append(element_widgets.EditBuoyancy(node, self.node_property_changed, self.scene))
+        #
+        # for editor in self._node_editors:
+        #     widget = editor.create_widget()
+        #     widget.setVisible(True)
+        #     self.ui.widgetLayout.addWidget(widget)
+        #     self._open_edit_widgets.append(widget)
+        #
+        # self.ui.dockWidget_3.setVisible(True)
+        # self.ui.dockWidgetContents_3.resize(0, 0)  # set the size of the floating dock widget to its minimum size
+        # self.ui.dockWidget_3.resize(0, 0)
+        #
+        # # ---- display node properties
+        # self.display_node_properties(node)
 
     # def display_node_properties(self, node):
     #
@@ -868,50 +868,50 @@ class Gui:
         data = self.node_data.get_name(node_name)
         self.select_node(data)
 
-    def view3d_select_element(self, info):
-        data = self.node_data.get_actor(info)
-
-        if data is not None:
-            # # if a visual is clicked, then select the parent of this visual instead
-            # node = data['node']
-            # if isinstance(node, vfs.Visual):
-            #     if node.parent is not None:
-            #         data = self.node_data.get_node(node.parent)
-
-            # if the node is already selected, then select something different
-            if self.selected_node is not None:
-
-                # cycle between node and its parent
-                if self.selected_node['node'] == data['node']:
-                    node = data['node']
-                    try:
-                        node = node.parent
-                        data = self.node_data.get_node(node)
-                    except:
-                        pass
-
-                # cycle between node and its master
-                if self.selected_node['node'] == data['node']:
-                    node = data['node']
-                    try:
-                        node = node.master
-                        data = self.node_data.get_node(node)
-                    except:
-                        pass
-
-                # cycle between node and its poiA
-                if self.selected_node['node'] == data['node']:
-                    node = data['node']
-                    try:
-                        node = node._pois[0]
-                        data = self.node_data.get_node(node)
-                    except:
-                        pass
-
-
-
-
-        self.select_node(data)
+    # def view3d_select_element(self, info):
+    #     data = self.node_data.get_actor(info)
+    #
+    #     if data is not None:
+    #         # # if a visual is clicked, then select the parent of this visual instead
+    #         # node = data['node']
+    #         # if isinstance(node, vfs.Visual):
+    #         #     if node.parent is not None:
+    #         #         data = self.node_data.get_node(node.parent)
+    #
+    #         # if the node is already selected, then select something different
+    #         if self.selected_node is not None:
+    #
+    #             # cycle between node and its parent
+    #             if self.selected_node['node'] == data['node']:
+    #                 node = data['node']
+    #                 try:
+    #                     node = node.parent
+    #                     data = self.node_data.get_node(node)
+    #                 except:
+    #                     pass
+    #
+    #             # cycle between node and its master
+    #             if self.selected_node['node'] == data['node']:
+    #                 node = data['node']
+    #                 try:
+    #                     node = node.master
+    #                     data = self.node_data.get_node(node)
+    #                 except:
+    #                     pass
+    #
+    #             # cycle between node and its poiA
+    #             if self.selected_node['node'] == data['node']:
+    #                 node = data['node']
+    #                 try:
+    #                     node = node._pois[0]
+    #                     data = self.node_data.get_node(node)
+    #                 except:
+    #                     pass
+    #
+    #
+    #
+    #
+    #     self.select_node(data)
 
     def node_property_changed(self):
 

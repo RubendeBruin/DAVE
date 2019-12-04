@@ -24,7 +24,10 @@ class WidgetDerivedProperties(guiDockWidget):
 
     def guiProcessEvent(self, event):
 
-        if event in [guiEventType.SELECTION_CHANGED,guiEventType.FULL_UPDATE]:
+        if event in [guiEventType.SELECTION_CHANGED,
+                     guiEventType.FULL_UPDATE,
+                     guiEventType.MODEL_STATE_CHANGED,
+                     guiEventType.SELECTED_NODE_MODIFIED]:
             self.display_node_properties()
 
     # ======= custom

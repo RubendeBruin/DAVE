@@ -139,8 +139,12 @@ class VisualActor:
         self._original_colors = list()
         self._original_alpha = list()    # used by select
         self._original_opacity = list()  # overwritten by set-alpha
+        self._is_selected = False
 
     def select(self):
+
+        if self._is_selected:
+            return
 
         self._original_colors = list()
         self._original_alpha = list()
@@ -155,8 +159,19 @@ class VisualActor:
             self._original_alpha.append(actor.alpha())
             actor.color(vc.COLOR_SELECT)
 
+        self._is_selected = True
+
 
     def deselect(self):
+
+        print('resetting original colors 1')
+
+        if not self._is_selected:
+            return
+
+        print('resetting original colors 2')
+
+        self._is_selected = False
 
         if self._original_colors:
 
@@ -170,15 +185,18 @@ class VisualActor:
                 actor.color(color)
                 actor.alpha(alpha)
 
-            self._original_colors = list()
-            self._original_alpha = list()
+            # self._original_colors = list()
+            # self._original_alpha = list()
 
         else:
-            for a in self.actors:
-                if a.actor_type == ActorType.GLOBAL:
-                    a.alpha(0.4)
-                else:
-                    a.alpha(1)
+            raise "Original color not stored for this visual"
+
+        # else:
+        #     for a in self.actors:
+        #         if a.actor_type == ActorType.GLOBAL:
+        #             a.alpha(0.4)
+        #         else:
+        #             a.alpha(1)
 
 
     def make_transparent(self):
@@ -344,6 +362,28 @@ class Viewport:
     def deselect_all(self):
         for v in self.visuals:
             v.deselect()
+
+    def node_from_vtk_actor(self, actor):
+        """
+        Given a vkt actor, find the corresponding node
+        Args:
+            actor: vtkActor
+
+        Returns:
+
+        """
+        for v in self.visuals:
+            for a in v.actors:
+                if a == actor:
+                    return v.node
+        return None
+
+    def actor_from_node(self, node):
+        """Finds the VisualActor belonging to node"""
+        for v in self.visuals:
+            if v.node is node:
+                return v
+        return None
 
 
 

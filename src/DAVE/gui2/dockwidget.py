@@ -3,10 +3,11 @@ from enum import Enum
 
 class guiEventType(Enum):
     FULL_UPDATE = 0
-    MODEL_STRUCTURE_CHANGED = 2
-    MODEL_STATE_CHANGED = 3
-    SELECTION_CHANGED = 4
-    VIEWER_SETTINGS_UPDATE = 5
+    SELECTED_NODE_MODIFIED = 1   # properties of the currently selected node changed
+    MODEL_STRUCTURE_CHANGED = 2  # changes in global model structure
+    MODEL_STATE_CHANGED = 3      # only change in dofs
+    SELECTION_CHANGED = 4        # a different node is selected
+    VIEWER_SETTINGS_UPDATE = 5   # the display settings for the viewer changed
 
 class guiDockWidget(QtWidgets.QDockWidget):
 
@@ -28,7 +29,7 @@ class guiDockWidget(QtWidgets.QDockWidget):
         """will point to the singleton Scene object"""
 
         self.guiSelection = list()
-        """will point to a list with selected nodes"""
+        """will point to a list with selected nodes (Node-type)"""
 
         self.guiEmitEvent = None
         """will point to a function with signature func(event, sender), which emits to event to all widgets except sender"""
