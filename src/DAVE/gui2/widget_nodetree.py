@@ -1,51 +1,52 @@
 from DAVE.gui2.dockwidget import *
 from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon
 from PySide2.QtCore import QMimeData, Qt, QItemSelectionModel
+from PySide2.QtWidgets import QTreeWidgetItem
 import DAVE.scene as ds
 
-class SceneTreeModel(QStandardItemModel):
 
-    def mimeData(self, indexes):
-        QStandardItemModel.mimeData(self, indexes)
-        name = indexes[0].data()
-        print('called mimeData on ' + name)
-        mimedata = QMimeData()
-        mimedata.setText(name)
-        return mimedata
 
-    def supportedDropActions(self):
-        return QtCore.Qt.MoveAction
+class NodeTreeWidget(QtWidgets.QTreeWidget):
 
-    def canDropMimeData(self, data, action, row, column, parent):
-        print('can drop called on')
-        print(parent.data())
-        return True
+    def dropEvent(self, event):
+        if event.source() is not self:
+            print("Not accepting external data")
+            event.setDropAction(Qt.IgnoreAction)
+            return
 
-    def dropMimeData(self, data, action, row, column, parent):
-        parent_name = parent.data()
-        node_name = data.text()
-        print("Dropped {} onto {}".format(node_name, parent_name))
+        # item being dragged is the selected item
+        dragged = self.selectedItems()[0]
+        dragged_name = dragged.text(0)
 
-        if parent_name is None:
-            code = "s['{}'].change_parent_to(None)".format(node_name)
+        # dropped onto
+        point = event.pos()
+        drop_onto = self.itemAt(point)
+
+        if drop_onto is None:
+            drop_onto_name = None
         else:
-            code = "s['{}'].change_parent_to(s['{}'])".format(node_name, parent_name)
-        print(code)
+            drop_onto_name = drop_onto.text(0)
 
-        self._scene.run_code(code)
+        print('dragged {} onto {}'.format(dragged_name,drop_onto_name))
+        event.setDropAction(Qt.IgnoreAction)
 
-        return False
+        self.parentcallback(dragged_name, drop_onto_name)
+
+
+
+
 
 class WidgetNodeTree(guiDockWidget):
 
     def guiCreate(self):
 
-        self.treeView = QtWidgets.QTreeView(self.contents)
+        self.treeView = NodeTreeWidget(self.contents)
         self.treeView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.treeView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.treeView.setRootIsDecorated(True)
         self.treeView.setExpandsOnDoubleClick(False)
         self.treeView.setObjectName("treeView")
+        self.treeView.setColumnCount(1)
         self.treeView.header().setVisible(False)
         self.treeView.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
 
@@ -54,39 +55,57 @@ class WidgetNodeTree(guiDockWidget):
         self.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.rightClickTreeview)
 
+        self.treeView.parentcallback = self.dragDropCallback
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.treeView)
         self.contents.setLayout(layout)
 
     def guiProcessEvent(self, event):
-        if event in [guiEventType.MODEL_STRUCTURE_CHANGED, guiEventType.SELECTION_CHANGED, guiEventType.FULL_UPDATE]:
+        if event in [guiEventType.MODEL_STRUCTURE_CHANGED, guiEventType.FULL_UPDATE]:
             self.update_node_data_and_tree()
 
         if event in [guiEventType.SELECTION_CHANGED]:
             self.update_selection()
 
-
-
     # ======= custom
 
-    def tree_select_node(self, index):
-        node_name = index.data()
-        self.guiSelectNode(node_name)
+    def dragDropCallback(self, drop, onto):
 
-    def rightClickTreeview(self):
-        pass
-        # TODO
+        if onto is None:
+            code = "s['{}'].change_parent_to(None)".format(drop)
+        else:
+            code = "s['{}'].change_parent_to(s['{}'])".format(drop, onto)
+        print(code)
+
+        self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+
+    def tree_select_node(self, index):
+        if index.column() == 0:
+            node_name = index.data()
+            self.guiSelectNode(node_name)
+
+    def rightClickTreeview(self, point):
+        if self.treeView.selectedItems():
+            node_name = self.treeView.selectedItems()[0].text(0)
+        else:
+            node_name = None
+        globLoc = self.treeView.mapToGlobal(point)
+        self.gui.openContextMenyAt(node_name, globLoc)
+
+
+
 
     def update_selection(self):
 
         selected_names = [node.name for node in self.guiSelection]
         for name in self.items.keys():
+
             if name in selected_names:
-                selected_indexes.append(self.items[name])
-
-        self.treeView.selectionModel().select(selected_indexes[0], QItemSelectionModel.SelectionFlag(True))
-
+                self.items[name].setSelected(True)
+            else:
+                self.items[name].setSelected(False)
 
     def update_node_data_and_tree(self):
         """
@@ -96,46 +115,47 @@ class WidgetNodeTree(guiDockWidget):
         each of the nodes has a visual assigned to it.
 
         """
-        model = SceneTreeModel()
+
         self.items = dict()
 
         self.guiScene.sort_nodes_by_dependency()
+        self.treeView.clear()
 
         for node in self.guiScene.nodes:
 
             # create a tree item
             text = node.name
-            item = QStandardItem()
-            item.setText(text)
+            item = QTreeWidgetItem()
+            item.setText(0,text)
 
             # if we have a parent, then put the items under the parent,
             # else put it under the root
 
-            item.setIcon(QIcon(":/icons/redball.png"))
+            item.setIcon(0, QIcon(":/icons/redball.png"))
             if isinstance(node, ds.Axis):
-                item.setIcon(QIcon(":/icons/axis.png"))
+                item.setIcon(0, QIcon(":/icons/axis.png"))
             if isinstance(node, ds.RigidBody):
-                item.setIcon(QIcon(":/icons/cube.png"))
+                item.setIcon(0, QIcon(":/icons/cube.png"))
             if isinstance(node, ds.Poi):
-                item.setIcon(QIcon(":/icons/poi.png"))
+                item.setIcon(0,QIcon(":/icons/poi.png"))
             if isinstance(node, ds.Cable):
-                item.setIcon(QIcon(":/icons/cable.png"))
+                item.setIcon(0,QIcon(":/icons/cable.png"))
             if isinstance(node, ds.Visual):
-                item.setIcon(QIcon(":/icons/visual.png"))
+                item.setIcon(0,QIcon(":/icons/visual.png"))
             if isinstance(node, ds.LC6d):
-                item.setIcon(QIcon(":/icons/lincon6.png"))
+                item.setIcon(0,QIcon(":/icons/lincon6.png"))
             if isinstance(node, ds.Connector2d):
-                item.setIcon(QIcon(":/icons/con2d.png"))
+                item.setIcon(0,QIcon(":/icons/con2d.png"))
             if isinstance(node, ds.LinearBeam):
-                item.setIcon(QIcon(":/icons/beam.png"))
+                item.setIcon(0,QIcon(":/icons/beam.png"))
             if isinstance(node, ds.HydSpring):
-                item.setIcon(QIcon(":/icons/linhyd.png"))
+                item.setIcon(0,QIcon(":/icons/linhyd.png"))
             if isinstance(node, ds.Force):
-                item.setIcon(QIcon(":/icons/force.png"))
+                item.setIcon(0,QIcon(":/icons/force.png"))
             if isinstance(node, ds.Sheave):
-                item.setIcon(QIcon(":/icons/sheave.png"))
+                item.setIcon(0,QIcon(":/icons/sheave.png"))
             if isinstance(node, ds.Buoyancy):
-                item.setIcon(QIcon(":/icons/trimesh.png"))
+                item.setIcon(0,QIcon(":/icons/trimesh.png"))
 
             try:
                 parent = node.parent
@@ -145,11 +165,10 @@ class WidgetNodeTree(guiDockWidget):
             self.items[node.name] = item
 
             if parent is not None:
-                self.items[node.parent.name].appendRow(item)
+                self.items[node.parent.name].addChild(item)
             else:
-                model.invisibleRootItem().appendRow(item)
+                self.treeView.invisibleRootItem().addChild(item)
 
-        self.treeView.setModel(model)
-        #
+        # self.treeView.resizeColumnToContents(0)
         self.treeView.expandAll()
 

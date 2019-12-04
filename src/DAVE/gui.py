@@ -455,69 +455,69 @@ class Gui:
 
         self.set_code(code)
 
-    def openContextMenyAt(self, node, globLoc):
-        menu = QMenu()
-
-        if node is not None:
-
-            node = node[0]
-            node_name = node.name
-            node_data = self.node_data.get_node(node)
-
-            def delete():
-                self.set_code('s.delete("{}")'.format(node_name))
-
-            def dissolve():
-                self.set_code('s.dissolve("{}")'.format(node_name))
-
-            def edit():
-                self.select_node(node_data)
-
-            menu.addAction("Delete {}".format(node_name), delete)
-            menu.addAction("Dissolve (Evaporate) {}".format(node_name), dissolve)
-            menu.addAction("Edit {}".format(node_name), edit)
-
-            menu.addSeparator()
-
-            def copy_python_code():
-                code = node.give_python_code()
-                print(code)
-                self.app.clipboard().setText(code)
-
-            menu.addAction("Copy python code", copy_python_code)
-            menu.addSeparator()
-
-            def duplicate():
-                name = node.name
-                name_of_duplicate = self.scene.available_name_like(name)
-                node.name = name_of_duplicate
-                code = node.give_python_code()
-                node.name = name
-                self.run_code(code)
-
-                data = self.node_data.get_name(name_of_duplicate)
-                self.select_node(data)
-
-
-            menu.addAction("Duplicate", duplicate)
-            menu.addSeparator()
-
-
-
-        menu.addAction("New Axis", self.new_axis)
-        menu.addAction("New RigidBody", self.new_body)
-        menu.addAction("New Poi", self.new_poi)
-        menu.addAction("New Sheave", self.new_sheave)
-        menu.addAction("New Cable", self.new_cable)
-        menu.addAction("New Force", self.new_force)
-        menu.addAction("New Beam", self.new_beam)
-        menu.addAction("New 2d Connector", self.new_connector2d)
-        menu.addAction("New 6d Connector", self.new_linear_connector)
-        menu.addAction("New Linear Hydrostatics", self.new_linear_hydrostatics)
-        menu.addAction("New Visual", self.new_visual)
-        menu.addAction("New Buoyancy mesh", self.new_buoyancy_mesh)
-
-        menu.exec_(globLoc)
+    # def openContextMenyAt(self, node, globLoc):
+    #     menu = QMenu()
+    #
+    #     if node is not None:
+    #
+    #         node = node[0]
+    #         node_name = node.name
+    #         node_data = self.node_data.get_node(node)
+    #
+    #         def delete():
+    #             self.set_code('s.delete("{}")'.format(node_name))
+    #
+    #         def dissolve():
+    #             self.set_code('s.dissolve("{}")'.format(node_name))
+    #
+    #         def edit():
+    #             self.select_node(node_data)
+    #
+    #         menu.addAction("Delete {}".format(node_name), delete)
+    #         menu.addAction("Dissolve (Evaporate) {}".format(node_name), dissolve)
+    #         menu.addAction("Edit {}".format(node_name), edit)
+    #
+    #         menu.addSeparator()
+    #
+    #         def copy_python_code():
+    #             code = node.give_python_code()
+    #             print(code)
+    #             self.app.clipboard().setText(code)
+    #
+    #         menu.addAction("Copy python code", copy_python_code)
+    #         menu.addSeparator()
+    #
+    #         def duplicate():
+    #             name = node.name
+    #             name_of_duplicate = self.scene.available_name_like(name)
+    #             node.name = name_of_duplicate
+    #             code = node.give_python_code()
+    #             node.name = name
+    #             self.run_code(code)
+    #
+    #             data = self.node_data.get_name(name_of_duplicate)
+    #             self.select_node(data)
+    #
+    #
+    #         menu.addAction("Duplicate", duplicate)
+    #         menu.addSeparator()
+    #
+    #
+    #
+    #     menu.addAction("New Axis", self.new_axis)
+    #     menu.addAction("New RigidBody", self.new_body)
+    #     menu.addAction("New Poi", self.new_poi)
+    #     menu.addAction("New Sheave", self.new_sheave)
+    #     menu.addAction("New Cable", self.new_cable)
+    #     menu.addAction("New Force", self.new_force)
+    #     menu.addAction("New Beam", self.new_beam)
+    #     menu.addAction("New 2d Connector", self.new_connector2d)
+    #     menu.addAction("New 6d Connector", self.new_linear_connector)
+    #     menu.addAction("New Linear Hydrostatics", self.new_linear_hydrostatics)
+    #     menu.addAction("New Visual", self.new_visual)
+    #     menu.addAction("New Buoyancy mesh", self.new_buoyancy_mesh)
+    #
+    #     menu.exec_(globLoc)
 
 
     def toggle_show_force(self):
@@ -823,38 +823,38 @@ class Gui:
         # ---- display node properties
         self.display_node_properties(node)
 
-    def display_node_properties(self, node):
-
-        props = []
-        props.extend(vfc.PROPS_NODE)
-        if isinstance(node, vfs.Axis):
-            props.extend(vfc.PROPS_AXIS)
-        if isinstance(node, vfs.RigidBody):
-            props.extend(vfc.PROPS_BODY)
-        if isinstance(node, vfs.Poi):
-            props.extend(vfc.PROPS_POI)
-        if isinstance(node, vfs.Cable):
-            props.extend(vfc.PROPS_CABLE)
-        if isinstance(node, vfs.Connector2d):
-            props.extend(vfc.PROPS_CON2D)
-        if isinstance(node, vfs.Buoyancy):
-            props.extend(vfc.PROPS_BUOY_MESH)
-
-        # evaluate properties
-        self.ui.dispPropTree.clear()
-        for p in props:
-            code = "node.{}".format(p)
-            try:
-                result = eval(code)
-            except:
-                result = 'Error evaluating {}'.format(code)
-
-            pa = QtWidgets.QTreeWidgetItem(self.ui.dispPropTree)
-            v = QtWidgets.QTreeWidgetItem(pa)
-            pa.setText(0,'.' + p)
-            v.setText(0,str(result))
-
-        self.ui.dispPropTree.expandAll()
+    # def display_node_properties(self, node):
+    #
+    #     props = []
+    #     props.extend(vfc.PROPS_NODE)
+    #     if isinstance(node, vfs.Axis):
+    #         props.extend(vfc.PROPS_AXIS)
+    #     if isinstance(node, vfs.RigidBody):
+    #         props.extend(vfc.PROPS_BODY)
+    #     if isinstance(node, vfs.Poi):
+    #         props.extend(vfc.PROPS_POI)
+    #     if isinstance(node, vfs.Cable):
+    #         props.extend(vfc.PROPS_CABLE)
+    #     if isinstance(node, vfs.Connector2d):
+    #         props.extend(vfc.PROPS_CON2D)
+    #     if isinstance(node, vfs.Buoyancy):
+    #         props.extend(vfc.PROPS_BUOY_MESH)
+    #
+    #     # evaluate properties
+    #     self.ui.dispPropTree.clear()
+    #     for p in props:
+    #         code = "node.{}".format(p)
+    #         try:
+    #             result = eval(code)
+    #         except:
+    #             result = 'Error evaluating {}'.format(code)
+    #
+    #         pa = QtWidgets.QTreeWidgetItem(self.ui.dispPropTree)
+    #         v = QtWidgets.QTreeWidgetItem(pa)
+    #         pa.setText(0,'.' + p)
+    #         v.setText(0,str(result))
+    #
+    #     self.ui.dispPropTree.expandAll()
 
 
 
@@ -998,10 +998,10 @@ class Gui:
         code = self.ui.teCode.toPlainText()
         self.run_code(code)
 
-    def new_something(self, what):
-        r = what(self.scene, self.tree_selected_node())
-        if r:
-            self.set_code("s." + r)
+    # def new_something(self, what):
+    #     r = what(self.scene, self.tree_selected_node())
+    #     if r:
+    #         self.set_code("s." + r)
 
     def tree_selected_node(self):
 
@@ -1017,41 +1017,41 @@ class Gui:
             return None
 
 
-    def new_axis(self):
-        self.new_something(DAVE.element_widgets.add_axis)
-
-    def new_body(self):
-        self.new_something(DAVE.element_widgets.add_body)
-
-    def new_poi(self):
-        self.new_something(DAVE.element_widgets.add_poi)
-
-    def new_cable(self):
-        self.new_something(DAVE.element_widgets.add_cable)
-
-    def new_force(self):
-        self.new_something(DAVE.element_widgets.add_force)
-
-    def new_sheave(self):
-        self.new_something(DAVE.element_widgets.add_sheave)
-
-    def new_linear_connector(self):
-        self.new_something(DAVE.element_widgets.add_linear_connector)
-
-    def new_connector2d(self):
-        self.new_something(DAVE.element_widgets.add_connector2d)
-
-    def new_beam(self):
-        self.new_something(DAVE.element_widgets.add_beam_connector)
-
-    def new_linear_hydrostatics(self):
-        self.new_something(DAVE.element_widgets.add_linear_hydrostatics)
-
-    def new_visual(self):
-        self.new_something(DAVE.element_widgets.add_visual)
-
-    def new_buoyancy_mesh(self):
-        self.new_something(DAVE.element_widgets.add_buoyancy)
+    # def new_axis(self):
+    #     self.new_something(DAVE.element_widgets.add_axis)
+    #
+    # def new_body(self):
+    #     self.new_something(DAVE.element_widgets.add_body)
+    #
+    # def new_poi(self):
+    #     self.new_something(DAVE.element_widgets.add_poi)
+    #
+    # def new_cable(self):
+    #     self.new_something(DAVE.element_widgets.add_cable)
+    #
+    # def new_force(self):
+    #     self.new_something(DAVE.element_widgets.add_force)
+    #
+    # def new_sheave(self):
+    #     self.new_something(DAVE.element_widgets.add_sheave)
+    #
+    # def new_linear_connector(self):
+    #     self.new_something(DAVE.element_widgets.add_linear_connector)
+    #
+    # def new_connector2d(self):
+    #     self.new_something(DAVE.element_widgets.add_connector2d)
+    #
+    # def new_beam(self):
+    #     self.new_something(DAVE.element_widgets.add_beam_connector)
+    #
+    # def new_linear_hydrostatics(self):
+    #     self.new_something(DAVE.element_widgets.add_linear_hydrostatics)
+    #
+    # def new_visual(self):
+    #     self.new_something(DAVE.element_widgets.add_visual)
+    #
+    # def new_buoyancy_mesh(self):
+    #     self.new_something(DAVE.element_widgets.add_buoyancy)
 
     def set_state(self, a, b):
 

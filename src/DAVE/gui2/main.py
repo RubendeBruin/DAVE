@@ -3,6 +3,7 @@ from DAVE.scene import Scene
 
 from DAVE.gui2.forms.main_form import Ui_MainWindow
 from DAVE.visual import Viewport
+from DAVE.gui2 import new_node_dialog
 
 from IPython.utils.capture import capture_output
 import datetime
@@ -10,7 +11,11 @@ import datetime
 # All guiDockWidgets
 from DAVE.gui2.dockwidget import *
 from DAVE.gui2.widget_nodetree import WidgetNodeTree
+from DAVE.gui2.widget_derivedproperties import WidgetDerivedProperties
 
+# resources
+
+import DAVE.forms.resources_rc as resources_rc
 
 
 class Gui():
@@ -29,8 +34,10 @@ class Gui():
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self.MainWindow)
 
-        # Create globally available properties
+        # private properties
+        self._codelog = []
 
+        # Create globally available properties
         self.selected_nodes = []
         """A list of selected nodes (if any)"""
 
@@ -38,7 +45,6 @@ class Gui():
         """Reference to a scene"""
 
         # Create 3D viewpower
-
         self.visual = Viewport(scene)
         """Reference to a viewport"""
 
@@ -57,12 +63,20 @@ class Gui():
         self.guiWidgets = dict()
         """Dictionary of all created guiWidgets (dock-widgets)"""
 
-        self.show_guiWidget('NodeTree',WidgetNodeTree)
+        self.activate_workspace('BUILD')
 
         # Finalize
         splash.finish(self.MainWindow)
         self.MainWindow.show()
         self.app.exec_()
+
+    def activate_workspace(self, name):
+
+        if name == 'BUILD':
+            self.show_guiWidget('NodeTree', WidgetNodeTree)
+            self.show_guiWidget('DerivedProperties', WidgetDerivedProperties)
+
+
 
     def timerEvent(self):
         pass
@@ -94,14 +108,118 @@ class Gui():
 
                 self.ui.teFeedback.append(str(datetime.datetime.now()))
 
-                # TODO log code
-                # TODO check if selected node is still present
-                # TODO fire event
+                self._codelog.append(code)
 
+                if event is not None:
+                    self.guiEmitEvent(event)
+
+                # TODO check if selected node is still present
             except Exception as E:
                 self.ui.teFeedback.setText(c.stdout + '\n' + str(E) + '\n\nWhen running: \n\n' + code)
                 self.ui.teFeedback.setStyleSheet("background-color: red;")
                 return
+
+    def openContextMenyAt(self, node_name, globLoc):
+        menu = QtWidgets.QMenu()
+
+        if node_name is not None:
+
+
+            def delete():
+                self.set_code('s.delete("{}")'.format(node_name))
+
+            def dissolve():
+                self.set_code('s.dissolve("{}")'.format(node_name))
+
+            def edit():
+                self.select_node(node_name)
+
+            menu.addAction("Delete {}".format(node_name), delete)
+            menu.addAction("Dissolve (Evaporate) {}".format(node_name), dissolve)
+            menu.addAction("Edit {}".format(node_name), edit)
+
+            menu.addSeparator()
+
+            def copy_python_code():
+                code = self.scene[node_name].give_python_code()
+                print(code)
+                self.app.clipboard().setText(code)
+
+            menu.addAction("Copy python code", copy_python_code)
+            menu.addSeparator()
+
+            def duplicate():
+                name = node_name
+                name_of_duplicate = self.scene.available_name_like(name)
+
+                node = self.scene[node_name]
+                node.name = name_of_duplicate
+                code = node.give_python_code()
+                node.name = name
+                self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+                self.select_node(name_of_duplicate)
+
+
+            menu.addAction("Duplicate", duplicate)
+            menu.addSeparator()
+
+        menu.addAction("New Axis", self.new_axis)
+        menu.addAction("New RigidBody", self.new_body)
+        menu.addAction("New Poi", self.new_poi)
+        menu.addAction("New Sheave", self.new_sheave)
+        menu.addAction("New Cable", self.new_cable)
+        menu.addAction("New Force", self.new_force)
+        menu.addAction("New Beam", self.new_beam)
+        menu.addAction("New 2d Connector", self.new_connector2d)
+        menu.addAction("New 6d Connector", self.new_linear_connector)
+        menu.addAction("New Linear Hydrostatics", self.new_linear_hydrostatics)
+        menu.addAction("New Visual", self.new_visual)
+        menu.addAction("New Buoyancy mesh", self.new_buoyancy_mesh)
+
+        menu.exec_(globLoc)
+
+    def new_axis(self):
+        self.new_something(new_node_dialog.add_axis)
+
+    def new_body(self):
+        self.new_something(new_node_dialog.add_body)
+
+    def new_poi(self):
+        self.new_something(new_node_dialog.add_poi)
+
+    def new_cable(self):
+        self.new_something(new_node_dialog.add_cable)
+
+    def new_force(self):
+        self.new_something(new_node_dialog.add_force)
+
+    def new_sheave(self):
+        self.new_something(new_node_dialog.add_sheave)
+
+    def new_linear_connector(self):
+        self.new_something(new_node_dialog.add_linear_connector)
+
+    def new_connector2d(self):
+        self.new_something(new_node_dialog.add_connector2d)
+
+    def new_beam(self):
+        self.new_something(new_node_dialog.add_beam_connector)
+
+    def new_linear_hydrostatics(self):
+        self.new_something(new_node_dialog.add_linear_hydrostatics)
+
+    def new_visual(self):
+        self.new_something(new_node_dialog.add_visual)
+
+    def new_buoyancy_mesh(self):
+        self.new_something(new_node_dialog.add_buoyancy)
+
+    def new_something(self, what):
+        r = what(self.scene, self.selected_nodes)
+        if r:
+            self.run_code("s." + r, guiEventType.MODEL_STRUCTURE_CHANGED)
+
 
 
 
@@ -143,6 +261,7 @@ class Gui():
             d.guiRunCodeCallback = self.run_code
             d.guiSelectNode = self.guiSelectNode
             d.guiSelection = self.selected_nodes
+            d.gui = self
 
         d.show()
         d._active = True
