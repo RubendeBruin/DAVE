@@ -48,7 +48,7 @@
 
 
 import DAVE.scene as dc
-import DAVE.constants as consts
+import DAVE.settings as consts
 from scipy.spatial.transform import Rotation  # for conversion from axis-angle to euler
 from os.path import splitext, basename
 from os import system

@@ -13,7 +13,7 @@ from DAVE.scene import *
 import matplotlib.pyplot as plt
 
 
-def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=1, minimum_heel= 0, maximum_heel=90, steps=180, teardown=True, allow_surge=False, allow_sway=False, allow_yaw=False, allow_trim=True):
+def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum_heel= 0, maximum_heel=90, steps=180, teardown=True, allow_surge=False, allow_sway=False, allow_yaw=False, allow_trim=True, noplot = False, noshow = False):
     """This works for vessels without a parent.
 
     The vessels slaved to an axis system and its heel angle is fixed and enforced. After solving statics the GZ
@@ -35,25 +35,38 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=1, minimum_he
         allow_sway:     (False)
         allow_yaw:      (False)
         allow_trim:     (True)
+        noplot:         Do not plot results [False]
+        noshow:         Do plot but do not do plt.show() [False]
 
     Returns:
-
+        dictionary with heel, moment, and GM
 
     """
 
 
 
-    # verify input
-    # vessel_node should not have a parent
+    # --------- verify input -----------
+
 
     s = scene # lazy
 
+    if minimum_heel > maximum_heel:
+        raise ValueError('Minimum heel should be smaller than maximum heel')
 
+    # vessel_node should not have a parent
     vessel = s._node_from_node_or_str(vessel_node)
     if vessel.parent is not None:
         raise ValueError("Vessel should not have a parent. Got {} as vessel which has parent {}.".format(vessel.name, vessel.parent.name))
 
+    no_displacement = False
+    if displacement_kN is None: # default value
+        no_displacement = True
+        displacement_kN = 1
 
+    if minimum_heel == maximum_heel and steps>1:
+        raise ValueError("Can not take multiple steps of min and max value are identical")
+
+    # --------------- store current state -------
 
     # store current vessel props
     _position = vessel.position
@@ -61,6 +74,8 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=1, minimum_he
     _fixed = vessel.fixed
     _verbose = s.verbose
     s.verbose = False
+
+    # --------- construct system to impose heel ---------
 
     # construct axis system at vessel origin
     name = s.available_name_like(vessel.name + "_global_motion")
@@ -91,7 +106,8 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=1, minimum_he
     s._vfc.state_update()
     D0 = s._vfc.get_dofs()
 
-    # do the calcs
+    # ----------------- do the calcs ---------------
+
     heel = np.linspace(minimum_heel,maximum_heel,num=steps)
     moment = list()
     trim = list()
@@ -100,41 +116,66 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=1, minimum_he
         s._vfc.set_dofs(D0)
         heel_node.rx = x
         s.solve_statics(silent=True)
-        moment.append(-heel_node.applied_force[3] / displacement_kN)
+        moment.append(-heel_node.applied_force[3])
         trim.append(trim_motion.ry)
 
-    # restore dofs
-    s._vfc.set_dofs(D0)
-
-    # calculate GM
-    GM = (moment[1] - moment[0]) / (np.deg2rad(heel[1] - heel[0]))
-    print('GM = {}m'.format(GM))
-
-    if allow_trim:
-        plt.plot(heel, trim, color='black', marker='o')
-        plt.xlabel('Imposed Heel angle [deg]')
-        plt.ylabel('Solved trim angle [deg]')
-        plt.title('Trim resulting from imposed heel')
-        plt.grid()
-        plt.figure()
-
-    plt.plot(heel, moment, color='black', marker='o')
-
-    plt.xlabel('Heel angle [deg]')
-    what = 'moment'
-    if (displacement_kN==1):
-        plt.ylabel('Restoring moment [kN*m]')
-
+    if no_displacement:
+        GM = np.nan
     else:
-        what = 'arm'
-        plt.ylabel('GZ [m]')
-        plt.plot([0, np.rad2deg(0.2)], [0, 0.2*GM])
-        plt.text(np.rad2deg(0.2),0.2*GM,'GM = {:.2f}'.format(GM),horizontalalignment='right',backgroundcolor='w')
+        GZ = np.array(moment, dtype=float) / displacement_kN
+        # calculate GM, but only if zero is part of the heel curve and at least two points
+        if (np.max(heel)>=0 and np.min(heel)<=0 and len(heel)>1):
+            GMs = np.diff(GZ) / np.diff(np.deg2rad(heel))
+            heels = 0.5*(heel[:-1] + heel[1:])
+            GM = np.interp(0,heels, GMs)
+        else:
+            GM = np.nan
 
-    plt.title('Restoring {} curve for {}'.format(what, vessel.name))
+        # restore dofs
+        s._vfc.set_dofs(D0)
 
-    plt.grid()
-    plt.show()
+    # ----------- plot the results -----------
+
+    if not noplot:
+
+        if allow_trim:
+            plt.plot(heel, trim, color='black', marker='+')
+            plt.xlabel('Imposed Heel angle [deg]')
+            plt.ylabel('Solved trim angle [deg]')
+            plt.title('Trim resulting from imposed heel')
+            plt.grid()
+            plt.figure()
+
+        plt.xlabel('Heel angle [deg]')
+        what = 'moment'
+        if no_displacement:
+            plt.plot(heel, moment, color='black', marker='+')
+            plt.ylabel('Restoring moment [kN*m]')
+        else:
+            plt.plot(heel, GZ, color='black', marker='+')
+            what = 'arm'
+            plt.ylabel('GZ [m]')
+
+            # plot the GM line
+            yy = plt.ylim()
+            xmax = np.rad2deg(yy[1] / GM)
+            xmin = np.rad2deg(yy[0] / GM)
+
+            xmin = np.max([xmin, np.min(heel)])
+            xmax = np.min([xmax, np.max(heel)])
+
+
+            plt.plot([xmin, xmax], [np.deg2rad(xmin)*GM, np.deg2rad(xmax)*GM])
+            box_props = dict(boxstyle='round', facecolor='gold', alpha=1)
+            plt.text(xmax,np.deg2rad(xmax)*GM,'GM = {:.2f}'.format(GM),horizontalalignment='left',bbox=box_props)
+
+        plt.title('Restoring {} curve for {}'.format(what, vessel.name))
+
+        plt.grid()
+        if not noshow:
+            plt.show()
+
+    # -------- clean up -----------
 
     if teardown:
         vessel.change_parent_to(None)
@@ -146,6 +187,18 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=1, minimum_he
         vessel.fixed = _fixed
 
     s.verbose = _verbose
+
+    # --------- collect return values --------
+    r = dict()
+    r['heel'] = heel
+
+    if not no_displacement:
+        r['GM'] = GM
+        r['GZ'] = moment
+    else:
+        r['moment'] = moment
+
+    return r
 
 
 def GZcurve_MomentDriven():
