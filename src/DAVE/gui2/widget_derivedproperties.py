@@ -62,6 +62,12 @@ class WidgetDerivedProperties(guiDockWidget):
             code = "node.{}".format(p)
             try:
                 result = eval(code)
+
+                result = fancy_format(result)
+
+
+
+
             except:
                 result = 'Error evaluating {}'.format(code)
 
@@ -71,3 +77,41 @@ class WidgetDerivedProperties(guiDockWidget):
             v.setText(0, str(result))
 
         self.dispPropTree.expandAll()
+
+def fancy_format(text):
+    # do some formatting
+    try:
+        a = float(text)
+        result = '{:.3f}'.format(a)
+        return result
+
+    except:
+        pass
+
+
+    if len(text) > 0:
+
+        try:
+            float(text[0])
+        except:
+            return text
+
+        a = []
+        for e in text:
+            try:
+                r = float(e)
+                a.append('{:.3f}'.format(r))
+            except:
+                a.append(e)
+
+        result = '('
+        for e in a:
+            result += e
+            result += ', '
+        result = result[:-2]
+        result += ' )'
+        return result
+
+
+    return text
+

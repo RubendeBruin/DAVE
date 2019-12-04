@@ -137,9 +137,8 @@ class VisualActor:
         self.node = node      # Node
         self.visible = True
         self._original_colors = list()
-        self._original_alpha = list()    # used by select
-        self._original_opacity = list()  # overwritten by set-alpha
         self._is_selected = False
+        self._is_transparent = False
 
     def select(self):
 
@@ -147,7 +146,6 @@ class VisualActor:
             return
 
         self._original_colors = list()
-        self._original_alpha = list()
 
         if self.node is not None:
             print('storing ' + str(self.node.name))
@@ -156,7 +154,6 @@ class VisualActor:
 
         for actor in self.actors:
             self._original_colors.append(actor.color())
-            self._original_alpha.append(actor.alpha())
             actor.color(vc.COLOR_SELECT)
 
         self._is_selected = True
@@ -181,9 +178,8 @@ class VisualActor:
                 print('setting properties')
 
 
-            for actor, color, alpha in zip(self.actors, self._original_colors, self._original_alpha):
+            for actor, color in zip(self.actors, self._original_colors):
                 actor.color(color)
-                actor.alpha(alpha)
 
             # self._original_colors = list()
             # self._original_alpha = list()
@@ -191,33 +187,29 @@ class VisualActor:
         else:
             raise "Original color not stored for this visual"
 
-        # else:
-        #     for a in self.actors:
-        #         if a.actor_type == ActorType.GLOBAL:
-        #             a.alpha(0.4)
-        #         else:
-        #             a.alpha(1)
-
 
     def make_transparent(self):
 
-        self._original_opacity = []
+        if self._is_transparent:
+            return
+
         for a in self.actors:
-            self._original_opacity.append(a.alpha())
             a.alpha(0.4)
+
+        self._is_transparent = True
 
     def reset_opacity(self):
 
-        if self._original_opacity:
-            for a,alp in zip(self.actors, self._original_opacity):
-                a.alpha(alp)
-            self._original_opacity = []
-        else:
-            for a in self.actors:
-                if a.actor_type == ActorType.GLOBAL:
-                    a.alpha(0.4)
-                else:
-                    a.alpha(1)
+        if not self._is_transparent:
+            return
+
+        for a in self.actors:
+            if a.actor_type == ActorType.GLOBAL:
+                a.alpha(0.4)
+            else:
+                a.alpha(1)
+
+        self._is_transparent = False
 
     def set_dsa(self, d,s,a):
         for act in self.actors:

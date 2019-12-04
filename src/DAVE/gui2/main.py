@@ -292,10 +292,20 @@ class Gui():
                     print('deselecting {}'.format(v.node.name))
                 v.deselect()
 
+        for v in self.visual.visuals:
+            try:
+                parent = v.node.parent
+            except:
+                continue
+
+            if parent in self.selected_nodes:
+                v.make_transparent()
+            else:
+                v.reset_opacity()
 
 
 
-# ================= guiWidget codes
+    # ================= guiWidget codes
 
     def guiEmitEvent(self, event, sender=None):
         for widget in self.guiWidgets.values():
@@ -372,7 +382,7 @@ class Gui():
 
 s = Scene()
 a = s.new_rigidbody('test')
-a = s.new_rigidbody('test2', parent=a)
+a = s.new_rigidbody('test2', parent=a, position = (2,0,0))
 a = s.new_rigidbody('test3', position=(0,0,3))
 
 g = Gui(s)
