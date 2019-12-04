@@ -191,12 +191,12 @@ class Gui:
         self.ui.actionInertia_properties.triggered.connect(self.show_inertia_properties)
         self.ui.actionModal_shapes.triggered.connect(self.show_modal_shapes)
 
-        self.ui.treeView.activated.connect(self.tree_select_node)  # fires when a user presses [enter]
-        # self.ui.treeView.pressed.connect(self.tree_select_node)
-        self.ui.treeView.doubleClicked.connect(self.tree_select_node)
-
-        self.ui.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.ui.treeView.customContextMenuRequested.connect(self.rightClickTreeview)
+        # self.ui.treeView.activated.connect(self.tree_select_node)  # fires when a user presses [enter]
+        # # self.ui.treeView.pressed.connect(self.tree_select_node)
+        # self.ui.treeView.doubleClicked.connect(self.tree_select_node)
+        #
+        # self.ui.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
+        # self.ui.treeView.customContextMenuRequested.connect(self.rightClickTreeview)
 
         self.ui.frame3d.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.frame3d.customContextMenuRequested.connect(self.rightClickViewport)
@@ -618,82 +618,82 @@ class Gui:
     #             print(E)
 
 
-    def refresh_3dview(self):
-        self.visual.refresh_embeded_view()
+    # def refresh_3dview(self):
+    #     self.visual.refresh_embeded_view()
 
-    def update_node_data_and_tree(self):
-        """
-        Updates the tree and assembles the node-data
-
-        This data is obtained from scene.nodes and assumes that
-        each of the nodes has a visual assigned to it.
-
-        """
-        model = SceneTreeModel()
-        model._scene = self
-        self.scene.sort_nodes_by_dependency()
-
-        self.update_inertia_properties()
-
-
-        self.node_data.clear()
-
-        for node in self.scene.nodes:
-
-            # create a tree item
-            text = node.name
-            item = QStandardItem(text)
-
-            # if we have a parent, then put the items under the parent,
-            # else put it under the root
-
-            item.setIcon(QIcon(":/icons/redball.png"))
-            if isinstance(node, vfs.Axis):
-                item.setIcon(QIcon(":/icons/axis.png"))
-            if isinstance(node, vfs.RigidBody):
-                item.setIcon(QIcon(":/icons/cube.png"))
-            if isinstance(node, vfs.Poi):
-                item.setIcon(QIcon(":/icons/poi.png"))
-            if isinstance(node, vfs.Cable):
-                item.setIcon(QIcon(":/icons/cable.png"))
-            if isinstance(node, vfs.Visual):
-                item.setIcon(QIcon(":/icons/visual.png"))
-            if isinstance(node, vfs.LC6d):
-                item.setIcon(QIcon(":/icons/lincon6.png"))
-            if isinstance(node, vfs.Connector2d):
-                item.setIcon(QIcon(":/icons/con2d.png"))
-            if isinstance(node, vfs.LinearBeam):
-                item.setIcon(QIcon(":/icons/beam.png"))
-            if isinstance(node, vfs.HydSpring):
-                item.setIcon(QIcon(":/icons/linhyd.png"))
-            if isinstance(node, vfs.Force):
-                item.setIcon(QIcon(":/icons/force.png"))
-            if isinstance(node, vfs.Sheave):
-                item.setIcon(QIcon(":/icons/sheave.png"))
-            if isinstance(node, vfs.Buoyancy):
-                item.setIcon(QIcon(":/icons/trimesh.png"))
-
-
-            try:
-                parent = node.parent
-            except:
-                parent = None
-
-            if parent is not None:
-                data = self.node_data.get_node(parent)
-                if data is None:
-                    raise Exception('Parent of {} does not exist'.format(text))
-                data['tree'].appendRow(item)
-            else:
-                model.invisibleRootItem().appendRow(item)
-
-            # store in the lookup database
-
-            self.node_data.add(node,node.visual,item)
-
-        self.ui.treeView.setModel(model)
-        self.ui.treeView.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
-        self.ui.treeView.expandAll()
+    # def update_node_data_and_tree(self):
+    #     """
+    #     Updates the tree and assembles the node-data
+    #
+    #     This data is obtained from scene.nodes and assumes that
+    #     each of the nodes has a visual assigned to it.
+    #
+    #     """
+    #     model = SceneTreeModel()
+    #     model._scene = self
+    #     self.scene.sort_nodes_by_dependency()
+    #
+    #     self.update_inertia_properties()
+    #
+    #
+    #     self.node_data.clear()
+    #
+    #     for node in self.scene.nodes:
+    #
+    #         # create a tree item
+    #         text = node.name
+    #         item = QStandardItem(text)
+    #
+    #         # if we have a parent, then put the items under the parent,
+    #         # else put it under the root
+    #
+    #         item.setIcon(QIcon(":/icons/redball.png"))
+    #         if isinstance(node, vfs.Axis):
+    #             item.setIcon(QIcon(":/icons/axis.png"))
+    #         if isinstance(node, vfs.RigidBody):
+    #             item.setIcon(QIcon(":/icons/cube.png"))
+    #         if isinstance(node, vfs.Poi):
+    #             item.setIcon(QIcon(":/icons/poi.png"))
+    #         if isinstance(node, vfs.Cable):
+    #             item.setIcon(QIcon(":/icons/cable.png"))
+    #         if isinstance(node, vfs.Visual):
+    #             item.setIcon(QIcon(":/icons/visual.png"))
+    #         if isinstance(node, vfs.LC6d):
+    #             item.setIcon(QIcon(":/icons/lincon6.png"))
+    #         if isinstance(node, vfs.Connector2d):
+    #             item.setIcon(QIcon(":/icons/con2d.png"))
+    #         if isinstance(node, vfs.LinearBeam):
+    #             item.setIcon(QIcon(":/icons/beam.png"))
+    #         if isinstance(node, vfs.HydSpring):
+    #             item.setIcon(QIcon(":/icons/linhyd.png"))
+    #         if isinstance(node, vfs.Force):
+    #             item.setIcon(QIcon(":/icons/force.png"))
+    #         if isinstance(node, vfs.Sheave):
+    #             item.setIcon(QIcon(":/icons/sheave.png"))
+    #         if isinstance(node, vfs.Buoyancy):
+    #             item.setIcon(QIcon(":/icons/trimesh.png"))
+    #
+    #
+    #         try:
+    #             parent = node.parent
+    #         except:
+    #             parent = None
+    #
+    #         if parent is not None:
+    #             data = self.node_data.get_node(parent)
+    #             if data is None:
+    #                 raise Exception('Parent of {} does not exist'.format(text))
+    #             data['tree'].appendRow(item)
+    #         else:
+    #             model.invisibleRootItem().appendRow(item)
+    #
+    #         # store in the lookup database
+    #
+    #         self.node_data.add(node,node.visual,item)
+    #
+    #     self.ui.treeView.setModel(model)
+    #     self.ui.treeView.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
+    #     self.ui.treeView.expandAll()
 
     def node_name_changed(self):
         """Triggered by changing the text in the node-name widget"""
@@ -943,55 +943,55 @@ class Gui:
     def set_code(self, code):
         self.ui.teCode.setText(code)
 
-    def run_code(self, code):
-
-        s = self.scene
-
-        self.ui.teFeedback.setStyleSheet("background-color: yellow;")
-        self.ui.teFeedback.setText("Running...")
-        self.ui.teFeedback.update()
-
-        with capture_output() as c:
-
-            try:
-                exec(code)
-
-                self.ui.teFeedback.setStyleSheet("background-color: white;")
-                if c.stdout:
-                    self.ui.teFeedback.setText(c.stdout)
-                else:
-                    self.ui.teFeedback.append("...Done")
-
-                self.ui.teFeedback.append(str(datetime.datetime.now()))
-
-                self._logfile.write(code)
-                self._logfile.write('\n')
-                self._logfile.flush()
-
-                self.ui.teHistory.setPlainText(self.ui.teHistory.toPlainText() + '\n#---\n' + code)
-                self.ui.teHistory.verticalScrollBar().setValue(self.ui.teHistory.verticalScrollBar().maximum()) # scroll down all the way
-            except Exception as E:
-                self.ui.teFeedback.setText(c.stdout + '\n' + str(E) + '\n\nWhen running: \n\n' + code)
-                self.ui.teFeedback.setStyleSheet("background-color: red;")
-                return
-
-
-            self.scene._vfc.state_update()
-            self.visual.create_visuals()
-            self.visual.add_new_actors_to_screen()
-            self.update_node_data_and_tree()
-            self.visual.position_visuals()
-            self.visual.update_visibility()
-            self.refresh_3dview()
-
-            if self.selected_node is not None:
-
-                # check if selected node is still present
-                if self.selected_node['node'] in self.scene.nodes:
-                    self.display_node_properties(self.selected_node['node'])
-                else:
-                    self.selected_node = None
-                    self.ui.dockWidget_3.setVisible(False)
+    # def run_code(self, code):
+    #
+    #     s = self.scene
+    #
+    #     self.ui.teFeedback.setStyleSheet("background-color: yellow;")
+    #     self.ui.teFeedback.setText("Running...")
+    #     self.ui.teFeedback.update()
+    #
+    #     with capture_output() as c:
+    #
+    #         try:
+    #             exec(code)
+    #
+    #             self.ui.teFeedback.setStyleSheet("background-color: white;")
+    #             if c.stdout:
+    #                 self.ui.teFeedback.setText(c.stdout)
+    #             else:
+    #                 self.ui.teFeedback.append("...Done")
+    #
+    #             self.ui.teFeedback.append(str(datetime.datetime.now()))
+    #
+    #             self._logfile.write(code)
+    #             self._logfile.write('\n')
+    #             self._logfile.flush()
+    #
+    #             self.ui.teHistory.setPlainText(self.ui.teHistory.toPlainText() + '\n#---\n' + code)
+    #             self.ui.teHistory.verticalScrollBar().setValue(self.ui.teHistory.verticalScrollBar().maximum()) # scroll down all the way
+    #         except Exception as E:
+    #             self.ui.teFeedback.setText(c.stdout + '\n' + str(E) + '\n\nWhen running: \n\n' + code)
+    #             self.ui.teFeedback.setStyleSheet("background-color: red;")
+    #             return
+    #
+    #
+    #         self.scene._vfc.state_update()
+    #         self.visual.create_visuals()
+    #         self.visual.add_new_actors_to_screen()
+    #         self.update_node_data_and_tree()
+    #         self.visual.position_visuals()
+    #         self.visual.update_visibility()
+    #         self.refresh_3dview()
+    #
+    #         if self.selected_node is not None:
+    #
+    #             # check if selected node is still present
+    #             if self.selected_node['node'] in self.scene.nodes:
+    #                 self.display_node_properties(self.selected_node['node'])
+    #             else:
+    #                 self.selected_node = None
+    #                 self.ui.dockWidget_3.setVisible(False)
 
 
     def run_code_in_teCode(self):

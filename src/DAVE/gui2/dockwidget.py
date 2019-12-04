@@ -2,6 +2,7 @@ from PySide2 import QtWidgets, QtCore
 from enum import Enum
 
 class guiEventType(Enum):
+    FULL_UPDATE = 0
     MODEL_STRUCTURE_CHANGED = 2
     MODEL_STATE_CHANGED = 3
     SELECTION_CHANGED = 4
@@ -25,6 +26,13 @@ class guiDockWidget(QtWidgets.QDockWidget):
 
         self.guiSelection = list()
         """will point to a list with selected nodes"""
+
+        self.guiEmitEvent = None
+        """will point to a function with signature func(event, sender), which emits to event to all widgets except sender"""
+
+        self.guiSelectNode = None
+        """will point to a function with signature func(node-name). Call this to select the node with this name"""
+
 
     def closeEvent(self, event):  # overrides default
         super().closeEvent(event) # parent call
