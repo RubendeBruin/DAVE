@@ -3,7 +3,7 @@ from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon
 from PySide2.QtCore import QMimeData, Qt, QItemSelectionModel
 from PySide2.QtWidgets import QTreeWidgetItem
 import DAVE.scene as nodes
-import DAVE.constants as ds
+import DAVE.settings as ds
 
 class WidgetDerivedProperties(guiDockWidget):
 

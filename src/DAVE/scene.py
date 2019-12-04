@@ -2365,7 +2365,7 @@ class Scene:
     def sort_nodes_by_dependency(self):
         """Sorts the nodes such that a node only depends on nodes earlier in the list."""
 
-        scene_names = [n.name for n in self.nodes]
+        scene_names = [n.name for n in self._nodes]
 
         self._vfc.state_update()  # use the function from the core.
         new_list = []

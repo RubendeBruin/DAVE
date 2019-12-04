@@ -121,7 +121,7 @@ class WidgetNodeTree(guiDockWidget):
         self.guiScene.sort_nodes_by_dependency()
         self.treeView.clear()
 
-        for node in self.guiScene.nodes:
+        for node in self.guiScene._nodes:
 
             # create a tree item
             text = node.name
