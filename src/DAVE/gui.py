@@ -135,9 +135,9 @@ class SolverDialog(QDialog, Ui_Dialog):
 class Gui:
 
     def __init__(self, scene):
-        self.scene = scene
+        # self.scene = scene
         """Reference to a scene"""
-        self.visual = vfv.Viewport(scene)
+        # self.visual = vfv.Viewport(scene)
         """Reference to a viewport"""
 
         self.ui = DAVE.forms.viewer_form.Ui_MainWindow()
@@ -145,8 +145,8 @@ class Gui:
 
         self.app = QtWidgets.QApplication(sys.argv)
 
-        self.MainWindow = QMainWindow()
-        self.ui.setupUi(self.MainWindow)
+        # self.MainWindow = QMainWindow()
+        # self.ui.setupUi(self.MainWindow)
 
         self.node_data = NodeData()
         """Holds a list of node_data"""
@@ -169,8 +169,8 @@ class Gui:
         """Reference to inertial properties object once created"""
 
 
-        self.visual.create_visuals(recreate=True)
-        self.visual.position_visuals()
+        # self.visual.create_visuals(recreate=True)
+        # self.visual.position_visuals()
 
         self.update_node_data_and_tree()
 
@@ -315,12 +315,12 @@ class Gui:
 
         # -------------- Create the 3d view
 
-        self.MainWindow.setCentralWidget(self.ui.frame3d)
-        self.visual.show_embedded(self.ui.frame3d)
-        self.visual.update_visibility()
-
-        iren = self.visual.renwin.GetInteractor()
-        iren.AddObserver('TimerEvent', self.set_state)
+        # self.MainWindow.setCentralWidget(self.ui.frame3d)
+        # self.visual.show_embedded(self.ui.frame3d)
+        # self.visual.update_visibility()
+        #
+        # iren = self.visual.renwin.GetInteractor()
+        # iren.AddObserver('TimerEvent', self.set_state)
 
 
     def clear(self):
@@ -600,22 +600,22 @@ class Gui:
             self.run_code('s._vfc.set_dofs(self._dofs)')
 
 
-    def onClose(self):
-        self.visual.shutdown_qt()
-        self._logfile.close()
-        print('closing')
+    # def onClose(self):
+    #     self.visual.shutdown_qt()
+    #     self._logfile.close()
+    #     print('closing')
 
-    def show(self):
-
-        self.MainWindow.show()
-        self.app.aboutToQuit.connect(self.onClose)
-
-        while True:
-            try:
-                self.app.exec_()
-                break
-            except Exception as E:
-                print(E)
+    # def show(self):
+    #
+    #     self.MainWindow.show()
+    #     self.app.aboutToQuit.connect(self.onClose)
+    #
+    #     while True:
+    #         try:
+    #             self.app.exec_()
+    #             break
+    #         except Exception as E:
+    #             print(E)
 
 
     def refresh_3dview(self):
