@@ -1,9 +1,14 @@
 from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtCore import Qt
+from PySide2.QtGui import QIcon
+from PySide2.QtWidgets import QDialog
 from DAVE.scene import Scene
 
 from DAVE.gui2.forms.main_form import Ui_MainWindow
 from DAVE.visual import Viewport
 from DAVE.gui2 import new_node_dialog
+import DAVE.standard_assets
+from DAVE.forms.dlg_solver import Ui_Dialog
 
 from IPython.utils.capture import capture_output
 import datetime
@@ -14,10 +19,20 @@ from DAVE.gui2.widget_nodetree import WidgetNodeTree
 from DAVE.gui2.widget_derivedproperties import WidgetDerivedProperties
 from DAVE.gui2.widget_nodeprops import WidgetNodeProps
 
+import numpy as np
+
 # resources
 
 import DAVE.forms.resources_rc as resources_rc
 
+class SolverDialog(QDialog, Ui_Dialog):
+    def __init__(self, parent=None):
+        super(SolverDialog, self).__init__(parent)
+        Ui_Dialog.__init__(self)
+        self.setupUi(self)
+        self.setWindowFlag(Qt.WindowCloseButtonHint, False)
+        self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
+        self.setWindowIcon(QIcon(":/icons/cube.png"))
 
 class Gui():
 
@@ -67,6 +82,22 @@ class Gui():
 
 
         # Workspace buttons
+
+        self.btnSolve = QtWidgets.QPushButton()
+        self.btnSolve.setText('Solve statics')
+        self.ui.toolBar.addWidget(self.btnSolve)
+        self.btnSolve.clicked.connect(self.solve_statics)
+
+        self.btnUndoSolve = QtWidgets.QPushButton()
+        self.btnUndoSolve.setText('undo solve')
+        self.ui.toolBar.addWidget(self.btnUndoSolve)
+        self.btnUndoSolve.clicked.connect(self.undo_solve_statics)
+
+        self.btnLibrary = QtWidgets.QPushButton()
+        self.btnLibrary.setText('Library')
+        self.ui.toolBar.addWidget(self.btnLibrary)
+        self.btnLibrary.clicked.connect(self.import_browser)
+
         self.btnConstruct = QtWidgets.QPushButton()
         self.btnConstruct.setText('Construct')
         self.ui.toolBar.addWidget(self.btnConstruct)
@@ -89,6 +120,17 @@ class Gui():
             self.show_guiWidget('WidgetNodeProps', WidgetNodeProps)
             self.btnConstruct.setChecked(True)
 
+    def import_browser(self):
+        G = DAVE.standard_assets.Gui()
+        r = G.showModal()
+
+        if r is not None:
+            file = r[0]
+            container = r[1]
+            prefix = r[2]
+            code = 's.import_scene(s.get_resource_path("{}"), containerize={}, prefix="{}")'.format(file,container,prefix)
+            self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
 
     def timerEvent(self):
         pass
@@ -106,6 +148,7 @@ class Gui():
         self.ui.teFeedback.setStyleSheet("background-color: yellow;")
         self.ui.teFeedback.setText("Running:")
         self.ui.teFeedback.append(code)
+        self.ui.teFeedback.append('\n')
         self.ui.teFeedback.update()
 
         with capture_output() as c:
@@ -142,6 +185,89 @@ class Gui():
                 self.ui.teFeedback.setStyleSheet("background-color: red;")
                 return
 
+    def stop_solving(self):
+        self._terminate = True
+
+    def solve_statics(self):
+        self.scene._vfc.state_update()
+        old_dofs = self.scene._vfc.get_dofs()
+        self._dofs = old_dofs.copy()
+
+        long_wait = False
+        dialog = None
+
+        self._terminate = False
+
+
+
+        # solve with time-out
+        count = 0
+        while True:
+            status = self.scene._vfc.state_solve_statics_with_timeout(0.5, True)
+
+            if self._terminate:
+                print('Terminating')
+                break
+
+            if status == 0:
+                if count == 0:
+                    break
+                else:
+                    long_wait = True
+
+                    self.visual.position_visuals()
+                    self.visual.refresh_embeded_view()
+                    break
+
+            if dialog is None:
+                dialog = SolverDialog()
+                dialog.btnTerminate.clicked.connect(self.stop_solving)
+                dialog.show()
+
+            count += 1
+            dialog.label_2.setText('Maximum error = {}'.format(self.scene._vfc.Emaxabs))
+            dialog.update()
+
+            self.visual.position_visuals()
+            self.visual.refresh_embeded_view()
+            self.app.processEvents()
+
+        if dialog is not None:
+            dialog.close()
+
+        if DAVE.settings.GUI_DO_ANIMATE and not long_wait:
+            new_dofs = self.scene._vfc.get_dofs()
+            self.animate(old_dofs, new_dofs, DAVE.settings.GUI_ANIMATION_NSTEPS)
+
+        self._codelog.append('s.solve_statics()')
+
+    def animate(self, old_dof, new_dof, steps):
+        pass
+        # print('Old dof: {}'.format(len(old_dof)))
+        # print('New dof: {}'.format(len(new_dof)))
+        #
+        # print('starting animation')
+        # self.visual.quick_updates_only = True
+        #
+        # self._old_dof = np.array(old_dof)
+        # self._new_dof = np.array(new_dof)
+        # self._steps = steps
+        #
+        # self._timerid = None
+        #
+        # print('creating timer')
+        # iren = self.visual.renwin.GetInteractor()
+        # self._iAnimation = 0
+        #
+        # # iren.AddObserver('TimerEvent', self.set_state)
+        # self._timerid = iren.CreateRepeatingTimer(round(1000 / DAVE.settings.GUI_ANIMATION_FPS))
+        #
+
+
+    def undo_solve_statics(self):
+        if self._dofs is not None:
+            self.run_code('s._vfc.set_dofs(self._dofs)')
+
     def openContextMenyAt(self, node_name, globLoc):
         menu = QtWidgets.QMenu()
 
@@ -149,13 +275,14 @@ class Gui():
 
 
             def delete():
-                self.set_code('s.delete("{}")'.format(node_name))
+                self.run_code('s.delete("{}")'.format(node_name), guiEventType.MODEL_STRUCTURE_CHANGED)
 
             def dissolve():
-                self.set_code('s.dissolve("{}")'.format(node_name))
+                self.run_code('s.dissolve("{}")'.format(node_name), guiEventType.MODEL_STRUCTURE_CHANGED)
 
             def edit():
-                self.select_node(node_name)
+                self.selected_nodes.clear()
+                self.guiSelectNode(node_name)
 
             menu.addAction("Delete {}".format(node_name), delete)
             menu.addAction("Dissolve (Evaporate) {}".format(node_name), dissolve)
@@ -316,16 +443,18 @@ class Gui():
         # update the visual as well
         if event == guiEventType.SELECTION_CHANGED:
             self.visual_update_selection()
-            self.visual.refresh_embeded_view()
-        if event == guiEventType.MODEL_STATE_CHANGED:
+            self.refresh_3dview()
+            return
+        if event == guiEventType.SELECTED_NODE_MODIFIED:
             self.visual.position_visuals()
-            self.visual.refresh_embeded_view()
-        if event in [guiEventType.SELECTED_NODE_MODIFIED,
-                     guiEventType.MODEL_STRUCTURE_CHANGED,
-                     guiEventType.FULL_UPDATE]:
-            self.visual.add_new_actors_to_screen()
-            self.visual.position_visuals()
-            self.visual.refresh_embeded_view()
+            self.refresh_3dview()
+            return
+
+
+        self.visual.create_visuals()
+        self.visual.add_new_actors_to_screen()
+        self.visual.position_visuals()
+        self.refresh_3dview()
 
 
 
@@ -358,7 +487,11 @@ class Gui():
 
             d = widgetClass(self.MainWindow)
             d.setWindowTitle(name)
-            self.MainWindow.addDockWidget(d.guiDefaultLocation(), d)
+            location = d.guiDefaultLocation()
+            if location is None:
+                d.setFloating(True)
+            else:
+                self.MainWindow.addDockWidget(d.guiDefaultLocation(), d)
             self.guiWidgets[name] = d
 
             d.guiScene = self.scene

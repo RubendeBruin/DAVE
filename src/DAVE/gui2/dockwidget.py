@@ -55,7 +55,7 @@ class guiDockWidget(QtWidgets.QDockWidget):
     # ------- these should be overridden in the derived class -----------
 
     def guiDefaultLocation(self):
-        """Return the default location"""
+        """Return the default location, or None for floating"""
         return QtCore.Qt.DockWidgetArea.LeftDockWidgetArea
 
     def guiProcessEvent(self, event):

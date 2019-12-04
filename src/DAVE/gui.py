@@ -338,16 +338,16 @@ class Gui:
             code = 's.import_scene(r"{}")'.format(filename)
             self.run_code(code)
 
-    def import_browser(self):
-        G = DAVE.standard_assets.Gui()
-        r = G.showModal()
-
-        if r is not None:
-            file = r[0]
-            container = r[1]
-            prefix = r[2]
-            code = 's.import_scene(s.get_resource_path("{}"), containerize={}, prefix="{}")'.format(file,container,prefix)
-            self.run_code(code)
+    # def import_browser(self):
+    #     G = DAVE.standard_assets.Gui()
+    #     r = G.showModal()
+    #
+    #     if r is not None:
+    #         file = r[0]
+    #         container = r[1]
+    #         prefix = r[2]
+    #         code = 's.import_scene(s.get_resource_path("{}"), containerize={}, prefix="{}")'.format(file,container,prefix)
+    #         self.run_code(code)
 
     def show_modal_shapes(self):
         ModalViewer(scene=self.scene, app = self.app)
@@ -539,65 +539,65 @@ class Gui:
     def actionDelete(self):
         print('delete')
 
-    def stop_solving(self):
-        self._terminate = True
-
-    def solve_statics(self):
-        self.scene._vfc.state_update()
-        old_dofs = self.scene._vfc.get_dofs()
-        self._dofs = old_dofs.copy()
-
-        long_wait = False
-        dialog = None
-
-        self._terminate = False
-
-
-
-        # solve with time-out
-        count = 0
-        while True:
-            status = self.scene._vfc.state_solve_statics_with_timeout(0.5, True)
-
-            if self._terminate:
-                print('Terminating')
-                break
-
-            if status == 0:
-                if count == 0:
-                    break
-                else:
-                    long_wait = True
-
-                    self.visual.position_visuals()
-                    self.visual.refresh_embeded_view()
-                    break
-
-            if dialog is None:
-                dialog = SolverDialog()
-                dialog.btnTerminate.clicked.connect(self.stop_solving)
-                dialog.show()
-
-            count += 1
-            dialog.label_2.setText('Maximum error = {}'.format(self.scene._vfc.Emaxabs))
-            dialog.update()
-
-            self.visual.position_visuals()
-            self.visual.refresh_embeded_view()
-            self.app.processEvents()
-
-        if dialog is not None:
-            dialog.close()
-
-        if DAVE.constants.GUI_DO_ANIMATE and not long_wait:
-            new_dofs = self.scene._vfc.get_dofs()
-            self.animate(old_dofs, new_dofs, vfc.GUI_ANIMATION_NSTEPS)
-
-        self.ui.teHistory.setPlainText(self.ui.teHistory.toPlainText() + '\n#---\ns.solve_statics()')
-
-    def undo_solve_statics(self):
-        if self._dofs is not None:
-            self.run_code('s._vfc.set_dofs(self._dofs)')
+    # def stop_solving(self):
+    #     self._terminate = True
+    #
+    # def solve_statics(self):
+    #     self.scene._vfc.state_update()
+    #     old_dofs = self.scene._vfc.get_dofs()
+    #     self._dofs = old_dofs.copy()
+    #
+    #     long_wait = False
+    #     dialog = None
+    #
+    #     self._terminate = False
+    #
+    #
+    #
+    #     # solve with time-out
+    #     count = 0
+    #     while True:
+    #         status = self.scene._vfc.state_solve_statics_with_timeout(0.5, True)
+    #
+    #         if self._terminate:
+    #             print('Terminating')
+    #             break
+    #
+    #         if status == 0:
+    #             if count == 0:
+    #                 break
+    #             else:
+    #                 long_wait = True
+    #
+    #                 self.visual.position_visuals()
+    #                 self.visual.refresh_embeded_view()
+    #                 break
+    #
+    #         if dialog is None:
+    #             dialog = SolverDialog()
+    #             dialog.btnTerminate.clicked.connect(self.stop_solving)
+    #             dialog.show()
+    #
+    #         count += 1
+    #         dialog.label_2.setText('Maximum error = {}'.format(self.scene._vfc.Emaxabs))
+    #         dialog.update()
+    #
+    #         self.visual.position_visuals()
+    #         self.visual.refresh_embeded_view()
+    #         self.app.processEvents()
+    #
+    #     if dialog is not None:
+    #         dialog.close()
+    #
+    #     if DAVE.constants.GUI_DO_ANIMATE and not long_wait:
+    #         new_dofs = self.scene._vfc.get_dofs()
+    #         self.animate(old_dofs, new_dofs, vfc.GUI_ANIMATION_NSTEPS)
+    #
+    #     self.ui.teHistory.setPlainText(self.ui.teHistory.toPlainText() + '\n#---\ns.solve_statics()')
+    #
+    # def undo_solve_statics(self):
+    #     if self._dofs is not None:
+    #         self.run_code('s._vfc.set_dofs(self._dofs)')
 
 
     # def onClose(self):

@@ -1094,7 +1094,7 @@ class EditBeam(NodeEditor):
 class WidgetNodeProps(guiDockWidget):
 
     def guiDefaultLocation(self):
-        return QtCore.Qt.DockWidgetArea.RightDockWidgetArea
+        return None # QtCore.Qt.DockWidgetArea.RightDockWidgetArea
 
     def guiCreate(self):
         self._open_edit_widgets = list()
@@ -1133,9 +1133,11 @@ class WidgetNodeProps(guiDockWidget):
 
     def select_node(self, node):
         
-        for widget in self._open_edit_widgets:
-            self.layout.removeWidget(widget)
-            widget.setVisible(False)
+        # for widget in self._open_edit_widgets:
+        #     self.layout.removeWidget(widget)
+        #     widget.setVisible(False)
+
+        self.to_be_removed = self._open_edit_widgets.copy()
 
         self._node_editors.clear()
         self._open_edit_widgets.clear()
@@ -1186,8 +1188,18 @@ class WidgetNodeProps(guiDockWidget):
         if isinstance(node, vfs.Buoyancy):
             self._node_editors.append(EditBuoyancy(node, self.node_property_changed, self.guiScene))
 
+        to_be_added = []
         for editor in self._node_editors:
-            widget = editor.create_widget()
+            to_be_added.append(editor.create_widget())
+
+        for widget in self.to_be_removed:
+            if widget in to_be_added:
+                to_be_added.remove(widget)
+            else:
+                self.layout.removeWidget(widget)
+                widget.setVisible(False)
+
+        for widget in to_be_added:
             widget.setVisible(True)
             self.layout.addWidget(widget)
             self._open_edit_widgets.append(widget)

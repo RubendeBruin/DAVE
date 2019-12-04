@@ -30,6 +30,10 @@ class WidgetDerivedProperties(guiDockWidget):
                      guiEventType.SELECTED_NODE_MODIFIED]:
             self.display_node_properties()
 
+    def guiDefaultLocation(self):
+        return QtCore.Qt.DockWidgetArea.RightDockWidgetArea
+
+
     # ======= custom
 
     def display_node_properties(self):
@@ -64,9 +68,6 @@ class WidgetDerivedProperties(guiDockWidget):
                 result = eval(code)
 
                 result = fancy_format(result)
-
-
-
 
             except:
                 result = 'Error evaluating {}'.format(code)
