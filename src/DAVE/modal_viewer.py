@@ -1,7 +1,7 @@
 from DAVE.scene import Scene, RigidBody, Axis
 from DAVE.visual import Viewport
 from DAVE.forms.frm_animation import Ui_AnimationWindow
-import dynamics.frequency_domain
+import DAVE.frequency_domain
 # from dynamics.frequency_domain import PointMass
 import sys
 import numpy as np
@@ -151,125 +151,6 @@ class ModalViewer:
                 print('/ERROR')
                 return False
 
-    def solvestatics(self):
-        self._pause = True
-        self.scene.solve_statics()
-        self.d0 = self.scene._vfc.get_dofs()
-
-
-
-    # ===================== Nodes table =============================
-
-    # def fill_nodes_table(self):
-    #
-    #     # bodies = self.scene.nodes_of_type(RigidBody)
-    #     axes = self.scene.nodes_of_type(Axis)
-    #     self._filling_node_table = True
-    #
-    #
-    #
-    #     for row, b in enumerate(axes):
-    #         self.ui.tableDynProp.setRowCount(row+1)
-    #         self.ui.tableDynProp.setVerticalHeaderItem(row,QtWidgets.QTableWidgetItem(b.name))
-    #
-    #         cbs = list()
-    #         for i in range(6):
-    #             cbs.append(QCheckBox())
-    #             self.ui.tableDynProp.setCellWidget(row,i,cbs[i])
-    #             cbs[i].setChecked(b.fixed[i])
-    #             self.ui.tableDynProp.setColumnWidth(i,24)
-    #             cbs[i].node = b
-    #             cbs[i].stateChanged.connect(self.node_table_cell_change_checkbox)
-    #         b._checkboxes = cbs
-    #
-    #         self.ui.tableDynProp.setItem(row, 6, QtWidgets.QTableWidgetItem(str(b.inertia)))
-    #
-    #         for i in range(3):
-    #             self.ui.tableDynProp.setItem(row, 7+i, QtWidgets.QTableWidgetItem(str(b.inertia_position[i])))
-    #             self.ui.tableDynProp.setItem(row, 10+i, QtWidgets.QTableWidgetItem(str(b.inertia_radii[i])))
-    #
-    #     self.ui.tableDynProp.resizeColumnsToContents()
-    #
-    #     self._filling_node_table = False
-    #
-    # def node_table_cell_change_checkbox(self):
-    #     if self._filling_node_table:
-    #         return
-    #
-    #     row = self.ui.tableDynProp.currentRow()
-    #     name = self.ui.tableDynProp.verticalHeaderItem(row).text()
-    #     node = self.scene[name]
-    #
-    #     fixed = [cb.isChecked() for cb in node._checkboxes]
-    #
-    #     self._pause = True
-    #     self.scene._vfc.set_dofs(self.d0)
-    #     code = 's["{}"].fixed = ({},{},{},{},{},{})'.format(name, *fixed)
-    #
-    #
-    #     print(code)
-    #
-    #     self._runcode(code)
-    #     self.scene._vfc.state_update()
-    #     self.d0 = self.scene._vfc.get_dofs()
-    #
-    #     self.calculate_modeshapes()
-    #     self.fill_result_table()
-    #
-    #
-    #
-    # def node_table_cell_edit_done(self, data):
-    #     if self._filling_node_table:
-    #         return
-    #
-    #     value = data.text()
-    #
-    #     row = data.row()
-    #     col = data.column()
-    #
-    #     name = self.ui.tableDynProp.verticalHeaderItem(row).text()
-    #     node = self.scene[name]
-    #
-    #     code = ''
-    #
-    #     if col == 6:  # inertia
-    #         try:
-    #             node.mass
-    #             code = 's["{}"].mass = {}'.format(name, value)
-    #             print('test')
-    #         except:
-    #             code = 's["{}"].inertia = {}'.format(name, value)
-    #             print('test2')
-    #
-    #     elif col in (7,8,9): # cog
-    #
-    #         pos = [self.ui.tableDynProp.item(row,7).text(),
-    #                self.ui.tableDynProp.item(row,8).text(),
-    #                self.ui.tableDynProp.item(row,9).text()]
-    #
-    #         try:
-    #             node.mass
-    #             code = 's["{}"].cog = ({},{},{})'.format(name, *pos)
-    #         except:
-    #             code = 's["{}"].inertia_position = ({},{},{})'.format(name, *pos)
-    #
-    #     elif col in (10,11,12):  # cog
-    #
-    #         pos = [self.ui.tableDynProp.item(row, 10).text(),
-    #                self.ui.tableDynProp.item(row, 11).text(),
-    #                self.ui.tableDynProp.item(row, 12).text()]
-    #
-    #         code = 's["{}"].inertia_radii = ({},{},{})'.format(name, *pos)
-    #
-    #     else:
-    #         print('This column is not supposed to be edited')
-    #
-    #     if not self._runcode(code):
-    #         print("there was an error running the code")
-    #
-    #     self.calculate_modeshapes()
-    #     self.fill_result_table()
-
 
     # ===================== results table ===========================
 
@@ -374,16 +255,16 @@ class ModalViewer:
 
     def calculate_modeshapes(self):
 
-        V,D = dynamics.frequency_domain.mode_shapes(self.scene)
-
-        if V is not None:
-            self.shapes = D
-            self.omega = np.real(np.sqrt(V))
-            self.n_shapes = len(V)
-        else:
-            self.n_shapes = 0
-
-        self.ui.horizontalSlider.setMaximum(self.n_shapes-1)
+        # V,D = dynamics.frequency_domain.mode_shapes(self.scene)
+        #
+        # if V is not None:
+        #     self.shapes = D
+        #     self.omega = np.real(np.sqrt(V))
+        #     self.n_shapes = len(V)
+        # else:
+        #     self.n_shapes = 0
+        #
+        # self.ui.horizontalSlider.setMaximum(self.n_shapes-1)
 
     def onClose(self):
         iren = self.visual.renwin.GetInteractor()

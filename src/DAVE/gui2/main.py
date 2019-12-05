@@ -32,6 +32,8 @@
         - guiDefaultLocation : returns the location where the widget should be shown [optional]
     - Provided interaction with the main module by sending python-code to guiRunCodeCallback()
 
+    EXAMPLE: widget_template_example.py
+
     -  import the class in this file
     -  implement the activation of the widget in the activate_workspace method of the Gui class
 
@@ -45,13 +47,12 @@
 
     animation
     - current time (time in seconds, reset by start)
-    - time-lookup (array)
-    - dof-lookup (array of array)
+    - dof interpolation object
     - final dofs (array)
 
     - is loop     (bool)
-    - start()     (starts a new animation)
-    - terminate() (terminates the current animation)
+    - start()     (terminates the current animation, if any, and starts a new animation)
+    - terminate() (terminates the current animation, if and)
 
 
 
@@ -94,6 +95,7 @@ from DAVE.gui2.widget_nodetree import WidgetNodeTree
 from DAVE.gui2.widget_derivedproperties import WidgetDerivedProperties
 from DAVE.gui2.widget_nodeprops import WidgetNodeProps
 from DAVE.gui2.widget_dynamic_properties import WidgetDynamicProperties
+from DAVE.gui2.widget_modeshapes import WidgetModeShapes
 
 import numpy as np
 
@@ -209,6 +211,10 @@ class Gui():
         self.ui.toolBar.addWidget(self.btnConstruct)
         self.btnConstruct.clicked.connect(lambda : self.activate_workspace("DYNAMICS"))
 
+        space = QtWidgets.QWidget()
+        space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        self.ui.toolBar.addWidget(space)
+
         self.activate_workspace('CONSTRUCT')
 
         # ======================== Finalize ========================
@@ -218,7 +224,8 @@ class Gui():
 
     def activate_workspace(self, name):
 
-        # self.btnConstruct.setChecked(False)
+        self.animation_terminate()
+
         for g in self.guiWidgets.values():
             g.close()
 
@@ -232,8 +239,8 @@ class Gui():
             # self.show_guiWidget('NodeTree', WidgetNodeTree)
             # self.show_guiWidget('DerivedProperties', WidgetDerivedProperties)
             self.show_guiWidget('WidgetDynamicProperties', WidgetDynamicProperties)
+            self.show_guiWidget('WidgetModeShapes', WidgetModeShapes)
 
-            # self.btnConstruct.setChecked(True)
 
 
 
