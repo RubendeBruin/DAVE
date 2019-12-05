@@ -1,3 +1,75 @@
+"""
+
+   This is the root module for the graphical user interface.
+
+   The GUI is build using QT / PySide2 and is set-up to be easily to extent.
+
+   The main module (this file) provides the main screen with:
+     - A 3D viewer with interaction
+     - A method to modify the scene by running python code
+     - Opening and saving of models or actions
+     - The library browser
+     - A timer and animation mechanism
+     - A method to switch between workspaces
+     - An event system for communication between dock-widgets
+     - An data-source for teh dock-widgets
+
+    The interface is extended by dockwidgets. These are gui elements (widgets) that can be shown inside the main window.
+    Some of the dock-widgets are:
+    - the node-tree
+    - the node-properties (editor)
+    - the node-derived-properties (inspector)
+
+
+
+    Dockwidgets can be created by:
+
+    -  creating a new class derived from the guiDockWidget (dockwidget.py)
+    -  implement the abstract methods
+        - guiCreate : creates the content of the widget
+        - guiProcessEvent : is called when the model is changed. The widget should update itself accordingly.
+             See guiEventType enum for details.
+        - guiDefaultLocation : returns the location where the widget should be shown [optional]
+    - Provided interaction with the main module by sending python-code to guiRunCodeCallback()
+
+    -  import the class in this file
+    -  implement the activation of the widget in the activate_workspace method of the Gui class
+
+
+    Animation structure
+
+    The 3D viewer can be animated. This is done on basis of degrees of freedom of the scene.
+    Animations can continue as long as the model structure is unchanged.
+
+    Animations can be a "single-run" animation or can be a loop.
+
+    animation
+    - current time (time in seconds, reset by start)
+    - time-lookup (array)
+    - dof-lookup (array of array)
+    - final dofs (array)
+
+    - is loop     (bool)
+    - start()     (starts a new animation)
+    - terminate() (terminates the current animation)
+
+
+
+
+
+"""
+
+"""
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+  Ruben de Bruin - 2019
+"""
+
+
+
+
 from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon
@@ -9,9 +81,12 @@ from DAVE.visual import Viewport
 from DAVE.gui2 import new_node_dialog
 import DAVE.standard_assets
 from DAVE.forms.dlg_solver import Ui_Dialog
+import DAVE.settings
 
 from IPython.utils.capture import capture_output
 import datetime
+import time
+import scipy.interpolate
 
 # All guiDockWidgets
 from DAVE.gui2.dockwidget import *
@@ -50,21 +125,37 @@ class Gui():
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self.MainWindow)
 
-        # private properties
+        # ============== private properties ================
         self._codelog = []
 
-        # Create globally available properties
+        self._animation_start_time = 0
+        """Time at start of the simulation in seconds (system-time)"""
+
+        self._animation_length = 0
+        """The length of the animation in seconds"""
+
+        self._animation_loop = False
+        """Animation is a loop"""
+
+        self._animation_final_dofs = None
+        """DOFS at termination of the animation"""
+
+        self._animation_keyframe_interpolation_object = None
+        """Object that can be called with a time and yields the dofs at that time. t should be [0..._animation_length] """
+
+
+        # ================= Create globally available properties =======
         self.selected_nodes = []
         """A list of selected nodes (if any)"""
 
         self.scene = scene
         """Reference to a scene"""
 
-        # Create 3D viewpower
+        # ======================== Create 3D viewpower ====================
         self.visual = Viewport(scene)
         """Reference to a viewport"""
 
-        # populate
+
         self.visual.create_visuals(recreate=True)
         self.visual.position_visuals()
         self.visual.mouseLeftEvent = self.view3d_select_element
@@ -73,10 +164,11 @@ class Gui():
         self.visual.show_embedded(self.ui.frame3d)
         self.visual.update_visibility()
 
+        self._timerid = None
         iren = self.visual.renwin.GetInteractor()
         iren.AddObserver('TimerEvent', self.timerEvent)
 
-        # Docks
+        # ======================== Docks ====================
         self.guiWidgets = dict()
         """Dictionary of all created guiWidgets (dock-widgets)"""
 
@@ -105,7 +197,7 @@ class Gui():
 
         self.activate_workspace('CONSTRUCT')
 
-        # Finalize
+        # ======================== Finalize ========================
         splash.finish(self.MainWindow)
         self.MainWindow.show()
         self.app.exec_()
@@ -132,8 +224,72 @@ class Gui():
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
 
-    def timerEvent(self):
-        pass
+    def timerEvent(self,a,b):
+
+        if self._timerid is None:  # timer is going to be destroyed
+            return
+
+        t = time.time() - self._animation_start_time  # time since start of animation in [s]
+
+        if self._animation_loop:
+            t = np.mod(t, self._animation_length)
+        else:
+            if t>self._animation_length:
+                self.animation_terminate()
+                return
+
+        dofs = self._animation_keyframe_interpolation_object(t)
+        self.scene._vfc.set_dofs(dofs)
+        self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
+
+    def animation_terminate(self):
+
+        if self._timerid is None:
+            return # nothing to destroy
+
+        print('Destroying timer')
+        to_be_destroyed = self._timerid
+        self._timerid = None
+        iren = self.visual.renwin.GetInteractor()
+        iren.DestroyTimer(to_be_destroyed)
+
+        self.scene._vfc.set_dofs(self._animation_final_dofs)
+        self.visual.quick_updates_only = False
+        self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
+
+    def animation_start(self, t, dofs, is_loop, final_dofs = None):
+        """Start an new animation
+
+        Args:
+            t:    List of times at keyframes
+            dofs: List of dofs at keyframes
+            is_loop: Should animation be played in a loop (bool)
+            final_dofs : [optional] DOFS to be set when animation is finished or terminated. Defaults to last keyframe
+
+
+        """
+        self.animation_terminate() # end old animation, if any
+
+        if len(dofs) != len(t):
+            raise ValueError("dofs and t should have the same length (list or tuple)")
+
+        self._animation_length = np.max(t)
+        self._animation_keyframe_interpolation_object = scipy.interpolate.interp1d(t, dofs,axis=0)
+        self._animation_loop = is_loop
+
+        if final_dofs is None:
+            final_dofs = dofs[-1]
+
+        self._animation_final_dofs = final_dofs
+        self._animation_start_time = time.time()
+
+        self.visual.quick_updates_only = True
+
+        iren = self.visual.renwin.GetInteractor()
+        self._timerid = iren.CreateRepeatingTimer(round(1000 / DAVE.settings.GUI_ANIMATION_FPS))
+
+
+
 
     def onClose(self):
         self.visual.shutdown_qt()
@@ -191,6 +347,11 @@ class Gui():
     def solve_statics(self):
         self.scene._vfc.state_update()
         old_dofs = self.scene._vfc.get_dofs()
+
+        if len(old_dofs) == 0:  # no degrees of freedom
+            print('No dofs')
+            return
+
         self._dofs = old_dofs.copy()
 
         long_wait = False
@@ -237,17 +398,17 @@ class Gui():
 
         if DAVE.settings.GUI_DO_ANIMATE and not long_wait:
             new_dofs = self.scene._vfc.get_dofs()
-            self.animate(old_dofs, new_dofs, DAVE.settings.GUI_ANIMATION_NSTEPS)
+            self.animate_change(old_dofs, new_dofs, 10)
 
         self._codelog.append('s.solve_statics()')
 
-    def animate(self, old_dof, new_dof, steps):
-        pass
+    def animate_change(self, old_dof, new_dof, n_steps):
+
         # print('Old dof: {}'.format(len(old_dof)))
         # print('New dof: {}'.format(len(new_dof)))
         #
         # print('starting animation')
-        # self.visual.quick_updates_only = True
+        #
         #
         # self._old_dof = np.array(old_dof)
         # self._new_dof = np.array(new_dof)
@@ -262,6 +423,25 @@ class Gui():
         # # iren.AddObserver('TimerEvent', self.set_state)
         # self._timerid = iren.CreateRepeatingTimer(round(1000 / DAVE.settings.GUI_ANIMATION_FPS))
         #
+
+        dt = DAVE.settings.GUI_SOLVER_ANIMATION_DURATION / n_steps
+
+        t = []
+        dofs = []
+
+        old_dof = np.array(old_dof)
+        new_dof = np.array(new_dof)
+
+        for i in range(n_steps+1):
+
+            factor = i/n_steps
+            old = 0.5 + 0.5 * np.cos(3.14159 * factor)
+
+            t.append(dt*i)
+            dofs.append((1 - old) * new_dof + old * old_dof)
+
+        self.animation_start(t,dofs,is_loop=False)
+
 
 
     def undo_solve_statics(self):
@@ -514,8 +694,10 @@ class Gui():
 # ======================================
 
 s = Scene()
-a = s.new_rigidbody('test')
-a = s.new_rigidbody('test2', parent=a, position = (2,0,0))
-a = s.new_rigidbody('test3', position=(0,0,3))
+a = s.new_rigidbody('test', mass = 1, fixed=False)
+s.new_poi('lp', parent=a)
+s.new_poi('hook', position = (0,0,1))
+s.new_cable('cable', poiA='lp', poiB = 'hook', length=2, EA=100)
+
 
 g = Gui(s)

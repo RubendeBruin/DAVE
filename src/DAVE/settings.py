@@ -193,8 +193,8 @@ PROPS_BUOY_MESH = ['cob', 'displacement']
 
 # ======= Animate after solving =========
 GUI_DO_ANIMATE = True
-GUI_ANIMATION_NSTEPS = 24 # ANIMATION SPEED
-GUI_ANIMATION_FPS = 24
+GUI_SOLVER_ANIMATION_DURATION = 0.5 # S
+GUI_ANIMATION_FPS = 60
 
 # ========== BLENDER ==============
 
