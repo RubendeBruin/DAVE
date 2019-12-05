@@ -93,6 +93,7 @@ from DAVE.gui2.dockwidget import *
 from DAVE.gui2.widget_nodetree import WidgetNodeTree
 from DAVE.gui2.widget_derivedproperties import WidgetDerivedProperties
 from DAVE.gui2.widget_nodeprops import WidgetNodeProps
+from DAVE.gui2.widget_dynamic_properties import WidgetDynamicProperties
 
 import numpy as np
 
@@ -190,10 +191,23 @@ class Gui():
         self.ui.toolBar.addWidget(self.btnLibrary)
         self.btnLibrary.clicked.connect(self.import_browser)
 
+        space = QtWidgets.QWidget()
+        space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        self.ui.toolBar.addWidget(space)
+
+        lbl = QtWidgets.QLabel()
+        lbl.setText("Workspace:  ")
+        self.ui.toolBar.addWidget(lbl)
+
         self.btnConstruct = QtWidgets.QPushButton()
         self.btnConstruct.setText('Construct')
         self.ui.toolBar.addWidget(self.btnConstruct)
         self.btnConstruct.clicked.connect(lambda : self.activate_workspace("CONSTRUCT"))
+
+        self.btnConstruct = QtWidgets.QPushButton()
+        self.btnConstruct.setText('Dynamics')
+        self.ui.toolBar.addWidget(self.btnConstruct)
+        self.btnConstruct.clicked.connect(lambda : self.activate_workspace("DYNAMICS"))
 
         self.activate_workspace('CONSTRUCT')
 
@@ -204,13 +218,24 @@ class Gui():
 
     def activate_workspace(self, name):
 
-        self.btnConstruct.setChecked(False)
+        # self.btnConstruct.setChecked(False)
+        for g in self.guiWidgets.values():
+            g.close()
 
         if name == 'CONSTRUCT':
             self.show_guiWidget('NodeTree', WidgetNodeTree)
             self.show_guiWidget('DerivedProperties', WidgetDerivedProperties)
             self.show_guiWidget('WidgetNodeProps', WidgetNodeProps)
-            self.btnConstruct.setChecked(True)
+            # self.btnConstruct.setChecked(True)
+
+        if name == 'DYNAMICS':
+            # self.show_guiWidget('NodeTree', WidgetNodeTree)
+            # self.show_guiWidget('DerivedProperties', WidgetDerivedProperties)
+            self.show_guiWidget('WidgetDynamicProperties', WidgetDynamicProperties)
+
+            # self.btnConstruct.setChecked(True)
+
+
 
     def import_browser(self):
         G = DAVE.standard_assets.Gui()
@@ -403,26 +428,7 @@ class Gui():
         self._codelog.append('s.solve_statics()')
 
     def animate_change(self, old_dof, new_dof, n_steps):
-
-        # print('Old dof: {}'.format(len(old_dof)))
-        # print('New dof: {}'.format(len(new_dof)))
-        #
-        # print('starting animation')
-        #
-        #
-        # self._old_dof = np.array(old_dof)
-        # self._new_dof = np.array(new_dof)
-        # self._steps = steps
-        #
-        # self._timerid = None
-        #
-        # print('creating timer')
-        # iren = self.visual.renwin.GetInteractor()
-        # self._iAnimation = 0
-        #
-        # # iren.AddObserver('TimerEvent', self.set_state)
-        # self._timerid = iren.CreateRepeatingTimer(round(1000 / DAVE.settings.GUI_ANIMATION_FPS))
-        #
+        """Animates from old_dof to new_dofs in n_steps"""
 
         dt = DAVE.settings.GUI_SOLVER_ANIMATION_DURATION / n_steps
 
