@@ -5,7 +5,9 @@ import numpy as np
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 
-class tank:
+from DAVE.scene import *
+
+class Tank:
     def __init__(self):
         self.name = "noname"
         self.max = 0
@@ -27,31 +29,36 @@ class tank:
     def mxmymz(self):
         return self.position * self.weight()
 
-class system:
+class BallastSystemSolver:
 
-    def __init__(self):
-        self.tanks = []
+    def __init__(self, ballast_system_node):
+
+        self.BallastSystem = ballast_system_node
+
         self._target_cog = np.array((0.,0.,0.))
         self._target_wt = 0
 
+    # def xyzw(self):
+    #     """Gets the current ballast cog and weight
+    #
+    #     Returns:
+    #         ((x,y,z), weight)
+    #     """
+    #     mxmymz = np.array((0.,0.,0.))
+    #     wt = 0
+    #
+    #     for tank in self.tanks:
+    #         mxmymz += tank.mxmymz()
+    #         wt += tank.weight()
+    #
+    #     if wt==0:
+    #         return (np.array((0.,0.,0.)), 0)
+    #     xyz = mxmymz / wt
+    #
+    #     return (xyz, wt)
+
     def xyzw(self):
-        """Gets the current ballast cog and weight
-
-        Returns:
-            ((x,y,z), weight)
-        """
-        mxmymz = np.array((0.,0.,0.))
-        wt = 0
-
-        for tank in self.tanks:
-            mxmymz += tank.mxmymz()
-            wt += tank.weight()
-
-        if wt==0:
-            return (np.array((0.,0.,0.)), 0)
-        xyz = mxmymz / wt
-
-        return (xyz, wt)
+        return self.BallastSystem.xyzw()
 
     def _error(self):
         (cog, wt) = self.xyzw()
@@ -175,7 +182,7 @@ class system:
 
         while True:
 
-            _log.append([tank.pct for tank in self.tanks])
+            _log.append([tank.pct for tank in self.BallastSystem.tanks])
             print(_log[-1])
 
             if self._error() < 1e-5:
@@ -183,7 +190,7 @@ class system:
 
             # optimize partially filled tanks
             partials = []
-            for tank in self.tanks:
+            for tank in self.BallastSystem.tanks:
                 if tank.is_partial():
                     partials.append(tank)
 
@@ -198,7 +205,7 @@ class system:
 
             changed = False
 
-            for tank in self.tanks:
+            for tank in self.BallastSystem.tanks:
                 if self.optimize_tank(tank):
                     changed = True
                     break
@@ -210,7 +217,7 @@ class system:
 
         print(self._error())
         print(self.xyzw())
-        print([t.pct for t in self.tanks])
+        print([t.pct for t in self.BallastSystem.tanks])
         plt.plot(_log)
         plt.show()
 
@@ -219,36 +226,36 @@ class system:
 if __name__ == '__main__':
 
     # make four tanks
-    t1 = tank()
+    t1 = Tank()
     t1.position = np.array((10.,10.,0))
     t1.max = 500
 
 
-    t2 = tank()
+    t2 = Tank()
     t2.position = np.array((10., -10., 0))
     t2.max = 500
 
-    t3 = tank()
+    t3 = Tank()
     t3.position = np.array((-10., -10., 0))
     t3.max = 500
 
-    t4 = tank()
+    t4 = Tank()
     t4.position = np.array((-10., 10., 0))
     t4.max = 500
 
-    t5 = tank()
+    t5 = Tank()
     t5.position = np.array((10., 10., 0))
     t5.max = 500
 
-    t6 = tank()
+    t6 = Tank()
     t6.position = np.array((10., -10., 0))
     t6.max = 500
 
-    t7 = tank()
+    t7 = Tank()
     t7.position = np.array((-10., -10., 0))
     t7.max = 500
 
-    t8 = tank()
+    t8 = Tank()
     t8.position = np.array((-10., 10., 0))
     t8.max = 500
 
@@ -261,10 +268,18 @@ if __name__ == '__main__':
     t7.name = 't7'
     t8.name = 't8'
 
-    s = system()
-    s.tanks.extend([t1,t2,t3,t4,t5,t6,t7,t8])
+    # s = system()
 
-    s.ballast_to(0,5,2100)
+    s = Scene()
+    a = s.new_axis('as')
+
+    bs = s.new_ballastsystem('bs',parent=a)
+
+    bs.tanks.extend([t1,t2,t3,t4,t5,t6,t7,t8])
+
+    bso = BallastSystemSolver(bs)
+
+    bso.ballast_to(0,5,2100)
 
 """
 If more than three slack tanks

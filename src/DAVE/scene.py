@@ -2138,6 +2138,130 @@ class Buoyancy(NodeWithParent):
         return code
 
 
+# ===============
+
+class BallastSystem(Poi):
+    """A BallastSystem, internally composed of an Poi, and a force (gravity).
+
+    The node contains a list with "tanks". Tanks should be objects exposing two
+    functions:
+      - weight() <-- returns the weight of the tank
+      - position property
+
+    An example of an object the can be used as tank is the DAVE.solvers.ballast.Tank object.
+
+    The position of the axis system is the reference position for the tanks.
+
+    note:
+    System is similar to the setup of RigidBody, but without the Axis
+
+    TODO: Inertia
+
+    """
+
+    def __init__(self, scene, poi, force):
+        super().__init__(scene, poi)
+
+        # The poi is the Node
+        # force is added separately
+
+        self._vfForce = force
+
+        self.tanks = []
+
+    # override the following properties
+    # - name : sets the names of poi and force as well
+
+    def xyzw(self):
+        """Gets the current ballast cog and weight from the tanks
+
+        Returns:
+            ((x,y,z), weight)
+        """
+        mxmymz = np.array((0.,0.,0.))
+        wt = 0
+
+        for tank in self.tanks:
+            w = tank.weight()
+            mxmymz += tank.position * w
+            wt += w
+
+        if wt==0:
+            return (np.array((0.,0.,0.)), 0)
+        xyz = mxmymz / wt
+
+        return (xyz, wt)
+
+    def _delete_vfc(self):
+        super()._delete_vfc()
+        self._scene._vfc.delete(self._vfForce.name)
+
+    @property
+    def name(self):
+        return super().name
+
+    @name.setter
+    def name(self, newname):
+        super(Poi, self.__class__).name.fset(self, newname)
+        self._vfForce.name = newname + vfc.VF_NAME_SPLIT + "gravity"
+
+    @property
+    def cogx(self):
+        return self.cog[0]
+
+    @property
+    def cogy(self):
+        return self.cog[1]
+
+    @property
+    def cogz(self):
+        return self.cog[2]
+
+    @property
+    def cog(self):
+        """Control the cog position of the body"""
+        return self.position
+
+    @cogx.setter
+    def cogx(self, var):
+        a = self.cog
+        self.cog = (var, a[1], a[2])
+
+    @cogy.setter
+    def cogy(self, var):
+        a = self.cog
+        self.cog = (a[0], var, a[2])
+
+    @cogz.setter
+    def cogz(self, var):
+        a = self.cog
+        self.cog = (a[0], a[1], var)
+
+    @cog.setter
+    def cog(self, newcog):
+        assert3f(newcog)
+        # TODO: self.inertia_position = self.cog
+
+
+    @property
+    def mass(self):
+        """Control the static mass of the body"""
+        return self._vfForce.force[2] / -vfc.G
+
+    @mass.setter
+    def mass(self, newmass):
+        assert1f(newmass)
+        # TODO: self.inertia = newmass
+        self._vfForce.force = (0, 0, -vfc.G * newmass)
+
+    def give_python_code(self):
+        code = "# code for {} not exported".format(self.name)
+        return code
+
+
+#
+
+# ===============
 
 class Scene:
     """
@@ -3253,6 +3377,53 @@ class Scene:
 
         self._nodes.append(new_node)
         return new_node
+
+    def new_ballastsystem(self, name, parent=None, position=None):
+        """Creates a new *rigidbody* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: name of the parent of the ballast system (ie: the vessel axis system)
+            position: the reference system in which the tanks are defined [0,0,0]
+
+        Examples:
+            scene.new_ballastsystem("cheetah_ballast", parent="Cheetah")
+
+        Returns:
+            Reference to newly created BallastSystem
+
+        """
+
+        # apply prefixes
+        name = self._prefix_name(name)
+
+        # check input
+        self._verify_name_available(name)
+        b = self._parent_from_node(parent)
+
+        parent = self._parent_from_node(parent) # handles verification of type as well
+
+        if position is not None:
+            assert3f(position, "Position ")
+
+        # make elements
+
+        p = self._vfc.new_poi(name)
+
+        g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + "gravity")
+        g.parent =p
+        g.force = (0, 0, 0)
+
+        r = BallastSystem(self, p, g)
+
+        # and set properties
+        r.parent = parent
+
+        if position is not None:
+            r.position = position
+
+        self._nodes.append(r)
+        return r
 
     def print_python_code(self):
         """Prints the python code that generates the current scene

@@ -716,11 +716,64 @@ class Gui():
 
 # ======================================
 
-s = Scene()
-# a = s.new_rigidbody('test', mass = 1, fixed=False)
-# s.new_poi('lp', parent=a)
-# s.new_poi('hook', position = (0,0,1))
-# s.new_cable('cable', poiA='lp', poiB = 'hook', length=2, EA=100)
+# ====== main code ======
+
+if __name__ == '__main__':
+
+    from DAVE.solvers.ballast import Tank
+
+    s = Scene()
+    # make four tanks
+    t1 = Tank()
+    t1.position = np.array((10.,10.,0))
+    t1.max = 500
 
 
-g = Gui(s)
+    t2 = Tank()
+    t2.position = np.array((10., -10., 0))
+    t2.max = 500
+
+    t3 = Tank()
+    t3.position = np.array((-10., -10., 0))
+    t3.max = 500
+
+    t4 = Tank()
+    t4.position = np.array((-10., 10., 0))
+    t4.max = 500
+
+    t5 = Tank()
+    t5.position = np.array((10., 10., 0))
+    t5.max = 500
+
+    t6 = Tank()
+    t6.position = np.array((10., -10., 0))
+    t6.max = 500
+
+    t7 = Tank()
+    t7.position = np.array((-10., -10., 0))
+    t7.max = 500
+
+    t8 = Tank()
+    t8.position = np.array((-10., 10., 0))
+    t8.max = 500
+
+    t1.name = 't1'
+    t2.name = 't2'
+    t3.name = 't3'
+    t4.name = 't4'
+    t5.name = 't5'
+    t6.name = 't6'
+    t7.name = 't7'
+    t8.name = 't8'
+
+    # s = system()
+
+    s = Scene()
+    a = s.new_axis('as')
+
+    bs = s.new_ballastsystem('bs',parent=a)
+
+    bs.tanks.extend([t1,t2,t3,t4,t5,t6,t7,t8])
+
+
+    g = Gui(s)
