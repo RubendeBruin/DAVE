@@ -12,6 +12,7 @@ This is an example/template of how to setup a new dockwidget
 
 from DAVE.gui2.dockwidget import *
 from PySide2 import QtGui, QtCore, QtWidgets
+from PySide2.QtGui import QBrush, QColor
 from DAVE.gui2.forms.widgetUI_modeshapes import Ui_ModeShapesWidget
 import DAVE.scene as nodes
 import DAVE.settings as ds
@@ -36,6 +37,7 @@ class WidgetModeShapes(guiDockWidget):
         self.ui.horizontalSlider.actionTriggered.connect(self.activate_modeshape)
         self.ui.sliderSize.actionTriggered.connect(self.activate_modeshape)
         self.ui.lblError.setText('')
+        self.ui.pushButton_2.pressed.connect(self.quickfix)
 
     def guiProcessEvent(self, event):
         """
@@ -44,10 +46,18 @@ class WidgetModeShapes(guiDockWidget):
         After creation of the widget this event is called with guiEventType.FULL_UPDATE
         """
 
+        # do not update is state changed due to an animation
+        if self.gui.animation_running() and event == guiEventType.MODEL_STATE_CHANGED:
+            pass
+
+
         if event in [guiEventType.FULL_UPDATE,
                      guiEventType.MODEL_STRUCTURE_CHANGED,
                      guiEventType.SELECTED_NODE_MODIFIED]:
+
             self.gui.animation_terminate()
+            self.d0 = self.guiScene._vfc.get_dofs()
+            self.fill_result_table()
             self._shapes_calculated = False
             self.autocalc()
 
@@ -84,6 +94,13 @@ class WidgetModeShapes(guiDockWidget):
         self.omega = V
         self.shapes = D
         self._shapes_calculated = True
+        self.activate_modeshape()
+
+    def quickfix(self):
+        self.gui.animation_terminate()
+        summary = DAVE.frequency_domain.dynamics_quickfix(self.guiScene)
+        self.guiEmitEvent(guiEventType.MODEL_STRUCTURE_CHANGED)
+        self.fill_results_table_with(summary)  # do this after emitting the event
 
     def activate_modeshape(self):
 
@@ -101,15 +118,64 @@ class WidgetModeShapes(guiDockWidget):
 
         shape = self.shapes[:,i]
 
-        self.gui.animation_terminate()
-        d0 = self.guiScene._vfc.get_dofs()
-
         n_frames = 100
         t_modeshape = 5
 
-        dofs = DAVE.frequency_domain.generate_modeshape_dofs(d0,shape,scale,n_frames,scene=self.guiScene)
+        dofs = DAVE.frequency_domain.generate_modeshape_dofs(self.d0,shape,scale,n_frames,scene=self.guiScene)
         t = np.linspace(0,t_modeshape, n_frames)
-        self.gui.animation_start(t,dofs,True, d0)
+        self.gui.animation_start(t,dofs,True, self.d0, do_not_reset_time=True)
+
+
+        # update exitation row in table
+        for i, d in enumerate(shape):
+            self.ui.tableWidget.setItem(i, 0, QtWidgets.QTableWidgetItem('{:.2f}'.format(d)))
+            cell = self.ui.tableWidget.item(i, 0)
+            if cell is None:
+                continue
+            m = np.max(np.abs(shape))
+            if m > 0 and abs(d) > 0:
+                factor = 0.5 + 0.5 * abs(d) / m
+            else:
+                factor = 0
+            color = QColor.fromRgb(255 - 100 * factor, 255 - 100 * factor, 255)
+            cell.setBackground(QBrush(color))
+
+
+
+
+    def fill_result_table(self):
+        self.gui.animation_terminate()
+        summary = DAVE.frequency_domain.dynamics_summary_data(self.guiScene)
+        self.fill_results_table_with(summary)
+
+    def fill_results_table_with(self, summary):
+        rows = -1
+        factor = 0.3
+        color = QColor.fromRgb(255 - 100 * factor, 255 - 100 * factor, 255)
+
+        for b in summary:
+            rows += 1
+
+            mode = b['mode']
+            name = b['node'] + ' mode:' + str(mode)
+            node = self.guiScene[b['node']]
+
+            self.ui.tableWidget.setRowCount(rows+1)
+            self.ui.tableWidget.setVerticalHeaderItem(rows, QtWidgets.QTableWidgetItem(name))
+            self.ui.tableWidget.setItem(rows, 1, QtWidgets.QTableWidgetItem('{:e}'.format(node.inertia)))
+
+            if mode>2:
+                self.ui.tableWidget.setItem(rows, 2, QtWidgets.QTableWidgetItem('{:e}'.format(node.inertia_radii[mode-3])))
+                self.ui.tableWidget.item(rows, 2).setBackground(QBrush(color))
+            else:
+                self.ui.tableWidget.item(rows, 1).setBackground(QBrush(color))
+                self.ui.tableWidget.setItem(rows, 2,
+                                            QtWidgets.QTableWidgetItem('n/a'))
+
+            self.ui.tableWidget.setItem(rows, 3, QtWidgets.QTableWidgetItem('{:.3e}'.format(b['total_inertia'])))
+            self.ui.tableWidget.setItem(rows, 4, QtWidgets.QTableWidgetItem('{:.3e}'.format(b['stiffness'])))
+            self.ui.tableWidget.setItem(rows, 5, QtWidgets.QTableWidgetItem(b['unconstrained']))
+            self.ui.tableWidget.setItem(rows, 6, QtWidgets.QTableWidgetItem(b['noinertia']))
 
 
 

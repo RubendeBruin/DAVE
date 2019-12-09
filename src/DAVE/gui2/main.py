@@ -131,7 +131,7 @@ class Gui():
         # ============== private properties ================
         self._codelog = []
 
-        self._animation_start_time = 0
+        self._animation_start_time = time.time()
         """Time at start of the simulation in seconds (system-time)"""
 
         self._animation_length = 0
@@ -179,7 +179,7 @@ class Gui():
         # Workspace buttons
 
         self.btnSolve = QtWidgets.QPushButton()
-        self.btnSolve.setText('Solve statics')
+        self.btnSolve.setText('Solve &statics')
         self.ui.toolBar.addWidget(self.btnSolve)
         self.btnSolve.clicked.connect(self.solve_statics)
 
@@ -256,6 +256,10 @@ class Gui():
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
 
+    def animation_running(self):
+        """Returns true is an animation is running"""
+        return self._timerid is not None
+
     def timerEvent(self,a,b):
 
         if self._timerid is None:  # timer is going to be destroyed
@@ -274,9 +278,9 @@ class Gui():
         self.scene._vfc.set_dofs(dofs)
         self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
 
-    def animation_terminate(self):
+    def animation_terminate(self, no_reset_dofs = False):
 
-        if self._timerid is None:
+        if not self.animation_running():
             return # nothing to destroy
 
         print('Destroying timer')
@@ -285,11 +289,14 @@ class Gui():
         iren = self.visual.renwin.GetInteractor()
         iren.DestroyTimer(to_be_destroyed)
 
-        self.scene._vfc.set_dofs(self._animation_final_dofs)
+        if not no_reset_dofs:
+            self.scene._vfc.set_dofs(self._animation_final_dofs)
+            self.visual.quick_updates_only = False
+            self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
         self.visual.quick_updates_only = False
-        self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
 
-    def animation_start(self, t, dofs, is_loop, final_dofs = None):
+
+    def animation_start(self, t, dofs, is_loop, final_dofs = None, do_not_reset_time=False):
         """Start an new animation
 
         Args:
@@ -297,10 +304,11 @@ class Gui():
             dofs: List of dofs at keyframes
             is_loop: Should animation be played in a loop (bool)
             final_dofs : [optional] DOFS to be set when animation is finished or terminated. Defaults to last keyframe
+            do_not_reset_time : do not reset the time when starting the animation, this means the loop continues where it was.
 
 
         """
-        self.animation_terminate() # end old animation, if any
+        self.animation_terminate(no_reset_dofs=True) # end old animation, if any
 
         if len(dofs) != len(t):
             raise ValueError("dofs and t should have the same length (list or tuple)")
@@ -313,12 +321,16 @@ class Gui():
             final_dofs = dofs[-1]
 
         self._animation_final_dofs = final_dofs
-        self._animation_start_time = time.time()
+        if not do_not_reset_time:
+            self._animation_start_time = time.time()
 
         self.visual.quick_updates_only = True
 
         iren = self.visual.renwin.GetInteractor()
-        self._timerid = iren.CreateRepeatingTimer(round(1000 / DAVE.settings.GUI_ANIMATION_FPS))
+        if self._timerid is None:
+            self._timerid = iren.CreateRepeatingTimer(round(1000 / DAVE.settings.GUI_ANIMATION_FPS))
+        else:
+            raise Exception("could not create new timer, old timer is still active")
 
 
 
@@ -391,8 +403,6 @@ class Gui():
 
         self._terminate = False
 
-
-
         # solve with time-out
         count = 0
         while True:
@@ -459,7 +469,7 @@ class Gui():
 
     def undo_solve_statics(self):
         if self._dofs is not None:
-            self.run_code('s._vfc.set_dofs(self._dofs)')
+            self.run_code('s._vfc.set_dofs(self._dofs) # UNDO SOLVE STATICS', guiEventType.MODEL_STATE_CHANGED)
 
     def openContextMenyAt(self, node_name, globLoc):
         menu = QtWidgets.QMenu()
@@ -707,10 +717,10 @@ class Gui():
 # ======================================
 
 s = Scene()
-a = s.new_rigidbody('test', mass = 1, fixed=False)
-s.new_poi('lp', parent=a)
-s.new_poi('hook', position = (0,0,1))
-s.new_cable('cable', poiA='lp', poiB = 'hook', length=2, EA=100)
+# a = s.new_rigidbody('test', mass = 1, fixed=False)
+# s.new_poi('lp', parent=a)
+# s.new_poi('hook', position = (0,0,1))
+# s.new_cable('cable', poiA='lp', poiB = 'hook', length=2, EA=100)
 
 
 g = Gui(s)
