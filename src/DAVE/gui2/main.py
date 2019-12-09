@@ -363,6 +363,8 @@ class Gui():
         self.ui.teFeedback.append('\n')
         self.ui.teFeedback.update()
 
+        self.app.processEvents()
+
         with capture_output() as c:
 
             try:
@@ -757,19 +759,19 @@ if __name__ == '__main__':
     t4.max = 50000
 
     t5 = Tank()
-    t5.position = np.array((10., 10., 5))
+    t5.position = np.array((40., 10., 5))
     t5.max = 50000
 
     t6 = Tank()
-    t6.position = np.array((10., -10., 5))
+    t6.position = np.array((40., -10., 5))
     t6.max = 50000
 
     t7 = Tank()
-    t7.position = np.array((-10., -10., 5))
+    t7.position = np.array((-40., -10., 5))
     t7.max = 50000
 
     t8 = Tank()
-    t8.position = np.array((-10., 10., 5))
+    t8.position = np.array((-40., 10., 5))
     t8.max = 50000
 
     t1.name = 't1'
@@ -783,6 +785,7 @@ if __name__ == '__main__':
 
     s['Barge'].parent = None
     s['Barge'].fixed = False
+    s['Barge'].mass = 0.0
 
 
     # force_vessel_to_evenkeel_and_draft(s, s['Barge'], -4)
@@ -794,9 +797,8 @@ if __name__ == '__main__':
     bso = BallastSystemSolver(bs)
 
     s["bs"].empty_all_usable_tanks()
-    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Barge", z=-6.0)
+    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Barge", z=-9.0)
     bss = BallastSystemSolver(s["bs"])
     bso.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
 
-
-    # g = Gui(s)
+    g = Gui(s)

@@ -162,7 +162,9 @@ class BallastSystemSolver:
         res = minimize(fun, x0=np.array((50.)), bounds=[(0.,100.)])
 
         if not res.success:
-            raise ArithmeticError('Optimization failed')
+            print('SUB-OPTIMIZATION FAILED')
+            pass  # TODO: find something more robust?
+            # raise ArithmeticError('Optimization failed')
 
         # Did the optimization result in a different tank fill
         if abs(p0-res.x) > 0.0001:
@@ -228,7 +230,8 @@ class BallastSystemSolver:
         res = minimize(fun, x0=np.array(x0), bounds=bnds)
 
         if not res.success:
-            raise ArithmeticError('Optimization failed')
+            print('SUB-OPTIMIZATION FAILED')
+            # raise ArithmeticError('Optimization failed')  # TODO: possible to use a more robust routine?
 
 
         # apply the result
@@ -307,7 +310,12 @@ class BallastSystemSolver:
             if changed:
                 continue
 
+            print([t.pct for t in self.BallastSystem.tanks])
+            print(self._error())
+            print(self.xyzw())
+
             raise ArithmeticError('Optimization failed')
+
 
         print(self._error())
         print(self.xyzw())
@@ -338,19 +346,19 @@ if __name__ == '__main__':
     t4.max = 500
 
     t5 = Tank()
-    t5.position = np.array((10., 10., 0))
+    t5.position = np.array((40., 10., 0))
     t5.max = 500
 
     t6 = Tank()
-    t6.position = np.array((10., -10., 0))
+    t6.position = np.array((40., -10., 0))
     t6.max = 500
 
     t7 = Tank()
-    t7.position = np.array((-10., -10., 0))
+    t7.position = np.array((-40., -10., 0))
     t7.max = 500
 
     t8 = Tank()
-    t8.position = np.array((-10., 10., 0))
+    t8.position = np.array((-40., 10., 0))
     t8.max = 500
 
     t1.name = 't1'
@@ -372,6 +380,8 @@ if __name__ == '__main__':
     bs.tanks.extend([t1,t2,t3,t4,t5,t6,t7,t8])
 
     bso = BallastSystemSolver(bs)
+
+    s['Barge'].mass = 10000
 
     bso.ballast_to(0,5,2100)
 

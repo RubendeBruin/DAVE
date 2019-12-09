@@ -80,7 +80,6 @@ class WidgetBallastSolver(guiDockWidget):
         self.ui.label_4.setText(self._vesselNode.name)
 
     def determineRequiredBallast(self):
-
         code = 's["{}"].empty_all_usable_tanks()\n'.format(self.ui.comboBox.currentText())
         code += 's.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s,vessel="{}",z={})'.format(self._vesselNode.name, self.ui.doubleSpinBox.value())
         self.guiRunCodeCallback(code, guiEventType.MODEL_STATE_CHANGED)
@@ -90,7 +89,11 @@ class WidgetBallastSolver(guiDockWidget):
         self.ui.tableWidget.setItem(0, 2, QtWidgets.QTableWidgetItem(str(self.guiScene.required_ballast[2])))
 
     def solveBallast(self):
-        code = 'bss = BallastSystemSolver(s["{}"])\n'.format(self.ui.comboBox.currentText())
-        code += 'bso.ballast_to(cogx = s.required_ballast[1], cogy = s.required_ballast[2], weight = -s.required_ballast[0])'
+        code = 'ballast_solver = BallastSystemSolver(s["{}"])\n'.format(self.ui.comboBox.currentText())
+        code += 'try:\n'
+        code += '    ballast_solver.ballast_to(cogx = s.required_ballast[1], cogy = s.required_ballast[2], weight = -s.required_ballast[0])\n'
+        code += 'except:\n'
+        code += '    print("FAILED")'
+
         self.guiRunCodeCallback(code,guiEventType.MODEL_STATE_CHANGED)
 
