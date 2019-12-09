@@ -523,7 +523,7 @@ class Viewport:
             if isinstance(N, vf.BallastSystem):
                 size = 2
                 for t in N.tanks:
-                    p = vp.Sphere(pos=(0,0,0), r=size / 2, res=vc.RESOLUTION_SPHERE)
+                    p = vp.Cube(pos=(0,0,0), side=size / 2)
                     p.c(vc.COLOR_POI)
                     p.actor_type = ActorType.BALLASTTANK
                     actors.append(p)
@@ -560,11 +560,6 @@ class Viewport:
                 actors.append(p)
 
             if isinstance(N, vf.Cable):
-
-                # points = list()
-                # for p in N._pois:
-                #     points.append(p.global_position)
-                #
 
                 if N._vfNode.global_points:
                     a = vp.Line(N._vfNode.global_points, lw=3).c(vc.COLOR_CABLE)

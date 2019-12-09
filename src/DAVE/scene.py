@@ -2145,8 +2145,11 @@ class BallastSystem(Poi):
 
     The node contains a list with "tanks". Tanks should be objects exposing two
     functions:
-      - weight() <-- returns the weight of the tank
+      - weight() <-- returns the weight of the tank (current fill)
+      - is_frozen() <-- frozen tanks should not be used by optimizers
       - position property
+      - make_empty()
+      - make_full()
 
     An example of an object the can be used as tank is the DAVE.solvers.ballast.Tank object.
 
@@ -2191,6 +2194,12 @@ class BallastSystem(Poi):
         xyz = mxmymz / wt
 
         return (xyz, wt)
+
+    def empty_all_usable_tanks(self):
+        for t in self.tanks:
+            if not t.is_frozen():
+                t.make_empty()
+
 
     def _delete_vfc(self):
         super()._delete_vfc()

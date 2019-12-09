@@ -97,8 +97,11 @@ from DAVE.gui2.widget_nodeprops import WidgetNodeProps
 from DAVE.gui2.widget_dynamic_properties import WidgetDynamicProperties
 from DAVE.gui2.widget_modeshapes import WidgetModeShapes
 from DAVE.gui2.widget_ballastconfiguration import WidgetBallastConfiguration
+from DAVE.gui2.widget_ballastsolver import WidgetBallastSolver
 
+# Imports available in script
 import numpy as np
+from DAVE.solvers.ballast import force_vessel_to_evenkeel_and_draft, BallastSystemSolver
 
 # resources
 
@@ -248,7 +251,10 @@ class Gui():
             self.show_guiWidget('WidgetModeShapes', WidgetModeShapes)
 
         if name == 'BALLAST':
+
             self.show_guiWidget('WidgetBallastConfiguration', WidgetBallastConfiguration)
+            self.show_guiWidget('WidgetBallastSolver', WidgetBallastSolver)
+
 
     def import_browser(self):
         G = DAVE.standard_assets.Gui()
@@ -729,39 +735,42 @@ if __name__ == '__main__':
     from DAVE.solvers.ballast import Tank, BallastSystemSolver
 
     s = Scene()
+
+    s.import_scene('barge with linear hydrostatics.dave_asset')
+
     # make four tanks
     t1 = Tank()
     t1.position = np.array((10.,10.,0))
-    t1.max = 500
+    t1.max = 50000
 
 
     t2 = Tank()
     t2.position = np.array((10., -10., 0))
-    t2.max = 500
+    t2.max = 50000
 
     t3 = Tank()
     t3.position = np.array((-10., -10., 0))
-    t3.max = 500
+    t3.max = 50000
 
     t4 = Tank()
     t4.position = np.array((-10., 10., 0))
-    t4.max = 500
+    t4.max = 50000
 
     t5 = Tank()
     t5.position = np.array((10., 10., 5))
-    t5.max = 500
+    t5.max = 50000
 
     t6 = Tank()
     t6.position = np.array((10., -10., 5))
-    t6.max = 500
+    t6.max = 50000
 
     t7 = Tank()
     t7.position = np.array((-10., -10., 5))
-    t7.max = 500
+    t7.max = 50000
 
     t8 = Tank()
     t8.position = np.array((-10., 10., 5))
-    t8.max = 500
+    t8.max = 50000
 
     t1.name = 't1'
     t2.name = 't2'
@@ -772,20 +781,22 @@ if __name__ == '__main__':
     t7.name = 't7'
     t8.name = 't8'
 
-    # s = system()
+    s['Barge'].parent = None
+    s['Barge'].fixed = False
 
-    s = Scene()
-    a = s.new_axis('as')
 
-    bs = s.new_ballastsystem('bs',parent=a)
+    # force_vessel_to_evenkeel_and_draft(s, s['Barge'], -4)
+    #
+    bs = s.new_ballastsystem('bs',parent=s['Barge'], position = (50,0,0))
 
     bs.tanks.extend([t1,t2,t3,t4,t5,t6,t7,t8])
 
-    a.rotation = (0,0,0)
-
     bso = BallastSystemSolver(bs)
 
-    bso.ballast_to(0, 5, 2100)
+    s["bs"].empty_all_usable_tanks()
+    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Barge", z=-6.0)
+    bss = BallastSystemSolver(s["bs"])
+    bso.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
 
 
-    g = Gui(s)
+    # g = Gui(s)

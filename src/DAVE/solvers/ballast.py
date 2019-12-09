@@ -7,6 +7,79 @@ import matplotlib.pyplot as plt
 
 from DAVE.scene import *
 
+def force_vessel_to_evenkeel_and_draft(scene, vessel, z):
+    """
+    Calculates the required force to be applied to place the vessel even-keel at the given vertical position (-draft if origin is at keel).
+
+    Args:
+        scene:  Scene
+        vessel: Vessel node or vessel node name
+        draft:  requested vertical position of vessel axis system origin. If the vessel origin is at the keel than this is minus draft
+
+    Returns:
+        Required external force and position (F,x,y) to be applied to the the vessel to the given position
+    """
+
+
+
+    vessel = scene._node_from_node_or_str(vessel)
+
+    # store old props
+    # old_position = vessel.position
+    # old_rotation = vessel.rotation
+    old_parent = vessel.parent
+    old_fixed = vessel.fixed
+
+    if vessel.parent is not None:
+        raise Exception('Vessel with parent : not yet implemented')
+
+    # Create a dummy at the vessel origin
+    dummy_name = scene.available_name_like(vessel.name + "dummy")
+    dummy = scene.new_axis(dummy_name)
+    dummy.change_parent_to(vessel)
+    dummy.parent = None
+
+    # set dummy to even-keel
+    dummy.rx = 0
+    dummy.ry = 0
+    dummy.z = z
+    fixed = [1,1,1,1,1,1]
+    fixed[0] = old_fixed[0]  # allowed to surge
+    fixed[1] = old_fixed[1]  # allowed to sway
+    fixed[5] = old_fixed[5] # allowed to yaw
+
+    dummy.fixed = fixed
+
+    # Change vessel parent to dummy
+    vessel.parent = dummy
+    vessel.position = (0,0,0)
+    vessel.rotation = (0,0,0)
+    vessel.fixed = True
+
+    # solve statics
+    scene.solve_statics()
+
+    force = vessel.connection_force
+
+    vessel.parent = old_parent
+    vessel.fixed = old_fixed
+    scene.delete(dummy_name)
+
+    F = -force[2]
+
+    if abs(F)<1e-6:
+        print('No force required to get to requested draft')
+        return (0,0,0)
+
+    x = -force[4] / force[2]
+    y = force[3] / force[2]
+
+    print('Required force of {} kN at position x={}m and y={}m'.format(F,x,y))
+
+    return (F,x,y)
+
+
+
 class Tank:
     def __init__(self):
         self.name = "noname"
@@ -35,6 +108,15 @@ class Tank:
     def fillpct(self):
         return self.pct
 
+    def make_empty(self):
+        self.pct = 0
+
+    def make_full(self):
+        self.pct = 100
+
+    def is_frozen(self):
+        return False
+
 class BallastSystemSolver:
 
     def __init__(self, ballast_system_node):
@@ -43,25 +125,6 @@ class BallastSystemSolver:
 
         self._target_cog = np.array((0.,0.,0.))
         self._target_wt = 0
-
-    # def xyzw(self):
-    #     """Gets the current ballast cog and weight
-    #
-    #     Returns:
-    #         ((x,y,z), weight)
-    #     """
-    #     mxmymz = np.array((0.,0.,0.))
-    #     wt = 0
-    #
-    #     for tank in self.tanks:
-    #         mxmymz += tank.mxmymz()
-    #         wt += tank.weight()
-    #
-    #     if wt==0:
-    #         return (np.array((0.,0.,0.)), 0)
-    #     xyz = mxmymz / wt
-    #
-    #     return (xyz, wt)
 
     def xyzw(self):
         return self.BallastSystem.xyzw()
@@ -183,8 +246,19 @@ class BallastSystemSolver:
         _log = []
 
         self._target_wt = weight
-        self._target_cog[0] = cogx
-        self._target_cog[1] = cogy
+        self._target_cog[0] = cogx - self.BallastSystem.position[0]
+        self._target_cog[1] = cogy- self.BallastSystem.position[1]
+
+
+        # print log:
+        print('ballasting to volume of {} kN'.format(self._target_wt ))
+        print('at {} , {}'.format(self._target_cog[0],self._target_cog[1] ))
+
+        print('using:')
+        for tank in self.BallastSystem.tanks:
+            print('{} of {} at {} {} {}'.format(tank.name, tank.capacity(), *tank.position))
+        print('-----------------------------')
+
 
         while True:
 
@@ -215,6 +289,20 @@ class BallastSystemSolver:
                 if self.optimize_tank(tank):
                     changed = True
                     break
+
+            if changed:
+                continue
+
+            # optimizing the currently partial tanks failed
+            # keeping the currently partial tanks and optimizing any one of the other tanks failed
+
+            for tank in self.BallastSystem.tanks:
+                if tank not in partials:
+                    temp = partials.copy()
+                    temp.append(tank)
+                    if self.optimize_multiple_partial(temp):
+                        changed = True
+                        break
 
             if changed:
                 continue
