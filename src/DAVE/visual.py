@@ -124,6 +124,7 @@ class ActorType(Enum):
     GLOBAL = 4
     CABLE = 5
     NOT_GLOBAL = 6
+    BALLASTTANK = 7
 
 class VisualOutline:
     parent_vp_actor = None
@@ -519,6 +520,14 @@ class Viewport:
                 p.actor_type = ActorType.GEOMETRY
                 actors.append(p)
 
+            if isinstance(N, vf.BallastSystem):
+                size = 2
+                for t in N.tanks:
+                    p = vp.Sphere(pos=(0,0,0), r=size / 2, res=vc.RESOLUTION_SPHERE)
+                    p.c(vc.COLOR_POI)
+                    p.actor_type = ActorType.BALLASTTANK
+                    actors.append(p)
+
             if isinstance(N, vf.Force):
 
                 endpoint = self._scaled_force_vector(N.force)
@@ -811,14 +820,33 @@ class Viewport:
                 continue
 
 
+            if isinstance(V.node, vf.BallastSystem):
+                for i,tnk in enumerate(V.node.tanks):
+
+                    ia = i + 1
+
+                    t = vtk.vtkTransform()
+                    t.Identity()
+                    pos = V.node.parent.to_glob_position(V.node.position + tnk.position)
+                    t.Translate(pos)
+                    print('tank {} global position {} {} {}'.format(i, *pos))
+                    V.actors[ia].setTransform(t)
+                    V.actors[ia].SetScale(4)
+
+                    if tnk.is_partial():
+                        V.actors[ia].color([1,1,0])
+                    if tnk.is_full():
+                        V.actors[ia].color([0,0,0.2])
+                    if tnk.is_empty():
+                        V.actors[ia].color([0.8,0.9,1])
+
+
             if isinstance(V.node, vf.Poi):
-                t = V.actors[0].getTransform()
+                t = vtk.vtkTransform()
                 t.Identity()
                 t.Translate(V.node.global_position)
                 V.actors[0].setTransform(t)
-
                 V.actors[0].SetScale(self.geometry_scale)
-
                 continue
 
 

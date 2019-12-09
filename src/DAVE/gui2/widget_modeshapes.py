@@ -11,11 +11,9 @@ This is an example/template of how to setup a new dockwidget
 """
 
 from DAVE.gui2.dockwidget import *
-from PySide2 import QtGui, QtCore, QtWidgets
+from PySide2 import QtCore, QtWidgets
 from PySide2.QtGui import QBrush, QColor
-from DAVE.gui2.forms.widgetUI_modeshapes import Ui_ModeShapesWidget
-import DAVE.scene as nodes
-import DAVE.settings as ds
+from gui2.widgetUI_modeshapes import Ui_ModeShapesWidget
 import DAVE.frequency_domain
 import numpy as np
 

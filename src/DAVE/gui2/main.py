@@ -96,6 +96,7 @@ from DAVE.gui2.widget_derivedproperties import WidgetDerivedProperties
 from DAVE.gui2.widget_nodeprops import WidgetNodeProps
 from DAVE.gui2.widget_dynamic_properties import WidgetDynamicProperties
 from DAVE.gui2.widget_modeshapes import WidgetModeShapes
+from DAVE.gui2.widget_ballastconfiguration import WidgetBallastConfiguration
 
 import numpy as np
 
@@ -211,6 +212,11 @@ class Gui():
         self.ui.toolBar.addWidget(self.btnConstruct)
         self.btnConstruct.clicked.connect(lambda : self.activate_workspace("DYNAMICS"))
 
+        self.btnConstruct = QtWidgets.QPushButton()
+        self.btnConstruct.setText('Ballast')
+        self.ui.toolBar.addWidget(self.btnConstruct)
+        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("BALLAST"))
+
         space = QtWidgets.QWidget()
         space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         self.ui.toolBar.addWidget(space)
@@ -241,8 +247,8 @@ class Gui():
             self.show_guiWidget('WidgetDynamicProperties', WidgetDynamicProperties)
             self.show_guiWidget('WidgetModeShapes', WidgetModeShapes)
 
-
-
+        if name == 'BALLAST':
+            self.show_guiWidget('WidgetBallastConfiguration', WidgetBallastConfiguration)
 
     def import_browser(self):
         G = DAVE.standard_assets.Gui()
@@ -720,7 +726,7 @@ class Gui():
 
 if __name__ == '__main__':
 
-    from DAVE.solvers.ballast import Tank
+    from DAVE.solvers.ballast import Tank, BallastSystemSolver
 
     s = Scene()
     # make four tanks
@@ -742,19 +748,19 @@ if __name__ == '__main__':
     t4.max = 500
 
     t5 = Tank()
-    t5.position = np.array((10., 10., 0))
+    t5.position = np.array((10., 10., 5))
     t5.max = 500
 
     t6 = Tank()
-    t6.position = np.array((10., -10., 0))
+    t6.position = np.array((10., -10., 5))
     t6.max = 500
 
     t7 = Tank()
-    t7.position = np.array((-10., -10., 0))
+    t7.position = np.array((-10., -10., 5))
     t7.max = 500
 
     t8 = Tank()
-    t8.position = np.array((-10., 10., 0))
+    t8.position = np.array((-10., 10., 5))
     t8.max = 500
 
     t1.name = 't1'
@@ -774,6 +780,12 @@ if __name__ == '__main__':
     bs = s.new_ballastsystem('bs',parent=a)
 
     bs.tanks.extend([t1,t2,t3,t4,t5,t6,t7,t8])
+
+    a.rotation = (0,0,0)
+
+    bso = BallastSystemSolver(bs)
+
+    bso.ballast_to(0, 5, 2100)
 
 
     g = Gui(s)

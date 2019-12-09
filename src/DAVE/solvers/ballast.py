@@ -29,6 +29,12 @@ class Tank:
     def mxmymz(self):
         return self.position * self.weight()
 
+    def capacity(self):
+        return self.max
+
+    def fillpct(self):
+        return self.pct
+
 class BallastSystemSolver:
 
     def __init__(self, ballast_system_node):
@@ -86,7 +92,7 @@ class BallastSystemSolver:
         # optimum must be somewhere in between
 
         def fun(x):
-            tank.pct = x
+            tank.pct = x[0]
             return self._error()
 
 
@@ -98,7 +104,7 @@ class BallastSystemSolver:
         # Did the optimization result in a different tank fill
         if abs(p0-res.x) > 0.0001:
             print('Tank {} set to {}'.format(tank.name, res.x))
-            tank.pct = res.x
+            tank.pct = res.x[0]
             return True
 
         return False
@@ -218,8 +224,8 @@ class BallastSystemSolver:
         print(self._error())
         print(self.xyzw())
         print([t.pct for t in self.BallastSystem.tanks])
-        plt.plot(_log)
-        plt.show()
+        # plt.plot(_log)
+        # plt.show()
 
 # ====== main code ======
 
