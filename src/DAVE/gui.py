@@ -31,8 +31,11 @@ from DAVE.forms.dlg_solver import Ui_Dialog
 import numpy as np
 import math
 import DAVE.element_widgets as element_widgets
+from DAVE.widget_dynamic_properties import DynamicProperties
+from DAVE.modal_viewer import ModalViewer
 
 import sys
+from pathlib import Path
 
 from PySide2 import QtWidgets
 from PySide2.QtWidgets import QMenu, QMainWindow, QDialog
@@ -132,9 +135,9 @@ class SolverDialog(QDialog, Ui_Dialog):
 class Gui:
 
     def __init__(self, scene):
-        self.scene = scene
+        # self.scene = scene
         """Reference to a scene"""
-        self.visual = vfv.Viewport(scene)
+        # self.visual = vfv.Viewport(scene)
         """Reference to a viewport"""
 
         self.ui = DAVE.forms.viewer_form.Ui_MainWindow()
@@ -142,8 +145,8 @@ class Gui:
 
         self.app = QtWidgets.QApplication(sys.argv)
 
-        self.MainWindow = QMainWindow()
-        self.ui.setupUi(self.MainWindow)
+        # self.MainWindow = QMainWindow()
+        # self.ui.setupUi(self.MainWindow)
 
         self.node_data = NodeData()
         """Holds a list of node_data"""
@@ -160,8 +163,14 @@ class Gui:
         self._dofs = None
         """Values of dofs before last solve command"""
 
-        self.visual.create_visuals(recreate=True)
-        self.visual.position_visuals()
+        self._inertia_properties = None
+        """Reference to inertial properties dock-widget once created"""
+        self.dynProps = None
+        """Reference to inertial properties object once created"""
+
+
+        # self.visual.create_visuals(recreate=True)
+        # self.visual.position_visuals()
 
         self.update_node_data_and_tree()
 
@@ -179,20 +188,22 @@ class Gui:
         self.ui.actionImport_sub_scene.triggered.connect(self.menu_import)
         self.ui.actionImport_browser.triggered.connect(self.import_browser)
         self.ui.actionRender_current_view.triggered.connect(self.render_in_blender)
+        self.ui.actionInertia_properties.triggered.connect(self.show_inertia_properties)
+        self.ui.actionModal_shapes.triggered.connect(self.show_modal_shapes)
 
-        self.ui.treeView.activated.connect(self.tree_select_node)  # fires when a user presses [enter]
-        # self.ui.treeView.pressed.connect(self.tree_select_node)
-        self.ui.treeView.doubleClicked.connect(self.tree_select_node)
-
-        self.ui.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.ui.treeView.customContextMenuRequested.connect(self.rightClickTreeview)
+        # self.ui.treeView.activated.connect(self.tree_select_node)  # fires when a user presses [enter]
+        # # self.ui.treeView.pressed.connect(self.tree_select_node)
+        # self.ui.treeView.doubleClicked.connect(self.tree_select_node)
+        #
+        # self.ui.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
+        # self.ui.treeView.customContextMenuRequested.connect(self.rightClickTreeview)
 
         self.ui.frame3d.setContextMenuPolicy(Qt.CustomContextMenu)
         self.ui.frame3d.customContextMenuRequested.connect(self.rightClickViewport)
 
         self.ui.teCode.textChanged.connect(self.code_change)
 
-        self.visual.mouseLeftEvent = self.view3d_select_element
+        # self.visual.mouseLeftEvent = self.view3d_select_element
 
         self.ui.pbRunCode.clicked.connect(self.run_code_in_teCode)
         self.ui.pbCopyFeedback.clicked.connect(self.feedback_copy)
@@ -304,39 +315,62 @@ class Gui:
 
         # -------------- Create the 3d view
 
-        self.MainWindow.setCentralWidget(self.ui.frame3d)
-        self.visual.show_embedded(self.ui.frame3d)
-        self.visual.update_visibility()
-
-        iren = self.visual.renwin.GetInteractor()
-        iren.AddObserver('TimerEvent', self.set_state)
+        # self.MainWindow.setCentralWidget(self.ui.frame3d)
+        # self.visual.show_embedded(self.ui.frame3d)
+        # self.visual.update_visibility()
+        #
+        # iren = self.visual.renwin.GetInteractor()
+        # iren.AddObserver('TimerEvent', self.set_state)
 
 
     def clear(self):
         self.run_code('s.clear()')
 
     def open(self):
-        filename, _ = QFileDialog.getOpenFileName(filter="*.pscene", caption="Scene files")
+        filename, _ = QFileDialog.getOpenFileName(filter="*.dave_asset", caption="Assets")
         if filename:
             code = 's.clear()\ns.load_scene(r"{}")'.format(filename)
             self.run_code(code)
 
     def menu_import(self):
-        filename, _ = QFileDialog.getOpenFileName(filter="*.pscene", caption="Scene files")
+        filename, _ = QFileDialog.getOpenFileName(filter="*.dave_asset", caption="Assets")
         if filename:
             code = 's.import_scene(r"{}")'.format(filename)
             self.run_code(code)
 
-    def import_browser(self):
-        G = DAVE.standard_assets.Gui()
-        r = G.showModal()
+    # def import_browser(self):
+    #     G = DAVE.standard_assets.Gui()
+    #     r = G.showModal()
+    #
+    #     if r is not None:
+    #         file = r[0]
+    #         container = r[1]
+    #         prefix = r[2]
+    #         code = 's.import_scene(s.get_resource_path("{}"), containerize={}, prefix="{}")'.format(file,container,prefix)
+    #         self.run_code(code)
 
-        if r is not None:
-            file = r[0]
-            container = r[1]
-            prefix = r[2]
-            code = 's.import_scene(s.get_resource_path("{}"), containerize={}, prefix="{}")'.format(file,container,prefix)
-            self.run_code(code)
+    def show_modal_shapes(self):
+        ModalViewer(scene=self.scene, app = self.app)
+
+    def show_inertia_properties(self):
+
+        if self._inertia_properties is None:
+            self._inertia_properties = QtWidgets.QDockWidget(self.MainWindow)
+            self._inertia_properties.setFeatures(
+                QtWidgets.QDockWidget.DockWidgetFloatable | QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetClosable)
+
+            self.dynProps = DynamicProperties(scene=self.scene, ui_target=self._inertia_properties, run_code_func=self.run_code)
+            self._inertia_properties.setWidget(self.dynProps.ui.widget)
+            self._inertia_properties.setWindowTitle("Inertia properties")
+            self._inertia_properties.setFloating(True)
+            self._inertia_properties.setVisible(True)
+        else:
+            self._inertia_properties.setVisible(True)
+
+    def update_inertia_properties(self):
+        if self.dynProps is not None:
+            self.dynProps.scene = self.scene
+            self.dynProps.fill_nodes_table()
 
     def render_in_blender(self):
 
@@ -346,14 +380,14 @@ class Gui:
         code = 'import DAVE.io.blender'
         code += "\ncamera = {{'position':({},{},{}), 'direction':({},{},{})}}".format(*pos,*dir)
         code += '\nblender_base = r"{}"'.format(vfc.BLENDER_BASE_SCENE)
-        code += '\nblender_result = r"{}"'.format(vfc.PATH_TEMP + 'current_render.blend')
+        code += '\nblender_result = r"{}"'.format(Path(vfc.PATH_TEMP) / 'current_render.blend')
         code += '\nDAVE.io.blender.create_blend_and_open(s, blender_base, blender_result, camera=camera)'
         code += '\nprint("Opening blender, close blender to continue.")'
         code += '\nprint("In blender, press F12 to go to rendered camera view.")'
         self.run_code(code)
 
     def menu_save(self):
-        filename, _ = QFileDialog.getSaveFileName(filter="*.pscene", caption="Scene files",directory=self.scene.resources_paths[0])
+        filename, _ = QFileDialog.getSaveFileName(filter="*.dave_scene", caption="Scene files",directory=self.scene.resources_paths[0])
         if filename:
             code = 's.save_scene(r"{}")'.format(filename)
             self.run_code(code)
@@ -421,68 +455,69 @@ class Gui:
 
         self.set_code(code)
 
-    def openContextMenyAt(self, node, globLoc):
-        menu = QMenu()
-
-        if node is not None:
-
-            node = node[0]
-            node_name = node.name
-            node_data = self.node_data.get_node(node)
-
-            def delete():
-                self.set_code('s.delete("{}")'.format(node_name))
-
-            def dissolve():
-                self.set_code('s.dissolve("{}")'.format(node_name))
-
-            def edit():
-                self.select_node(node_data)
-
-            menu.addAction("Delete {}".format(node_name), delete)
-            menu.addAction("Dissolve (Evaporate) {}".format(node_name), dissolve)
-            menu.addAction("Edit {}".format(node_name), edit)
-
-            menu.addSeparator()
-
-            def copy_python_code():
-                code = node.give_python_code()
-                print(code)
-                self.app.clipboard().setText(code)
-
-            menu.addAction("Copy python code", copy_python_code)
-            menu.addSeparator()
-
-            def duplicate():
-                name = node.name
-                name_of_duplicate = self.scene.available_name_like(name)
-                node.name = name_of_duplicate
-                code = node.give_python_code()
-                node.name = name
-                self.run_code(code)
-
-                data = self.node_data.get_name(name_of_duplicate)
-                self.select_node(data)
-
-
-            menu.addAction("Duplicate", duplicate)
-            menu.addSeparator()
-
-
-
-        menu.addAction("New Axis", self.new_axis)
-        menu.addAction("New Poi", self.new_poi)
-        menu.addAction("New RigidBody", self.new_body)
-        menu.addAction("New Cable", self.new_cable)
-        menu.addAction("New Force", self.new_force)
-        menu.addAction("New Beam", self.new_beam)
-        menu.addAction("New 2d Connector", self.new_connector2d)
-        menu.addAction("New 6d Connector", self.new_linear_connector)
-        menu.addAction("New Linear Hydrostatics", self.new_linear_hydrostatics)
-        menu.addAction("New Visual", self.new_visual)
-        menu.addAction("New Buoyancy mesh", self.new_buoyancy_mesh)
-
-        menu.exec_(globLoc)
+    # def openContextMenyAt(self, node, globLoc):
+    #     menu = QMenu()
+    #
+    #     if node is not None:
+    #
+    #         node = node[0]
+    #         node_name = node.name
+    #         node_data = self.node_data.get_node(node)
+    #
+    #         def delete():
+    #             self.set_code('s.delete("{}")'.format(node_name))
+    #
+    #         def dissolve():
+    #             self.set_code('s.dissolve("{}")'.format(node_name))
+    #
+    #         def edit():
+    #             self.select_node(node_data)
+    #
+    #         menu.addAction("Delete {}".format(node_name), delete)
+    #         menu.addAction("Dissolve (Evaporate) {}".format(node_name), dissolve)
+    #         menu.addAction("Edit {}".format(node_name), edit)
+    #
+    #         menu.addSeparator()
+    #
+    #         def copy_python_code():
+    #             code = node.give_python_code()
+    #             print(code)
+    #             self.app.clipboard().setText(code)
+    #
+    #         menu.addAction("Copy python code", copy_python_code)
+    #         menu.addSeparator()
+    #
+    #         def duplicate():
+    #             name = node.name
+    #             name_of_duplicate = self.scene.available_name_like(name)
+    #             node.name = name_of_duplicate
+    #             code = node.give_python_code()
+    #             node.name = name
+    #             self.run_code(code)
+    #
+    #             data = self.node_data.get_name(name_of_duplicate)
+    #             self.select_node(data)
+    #
+    #
+    #         menu.addAction("Duplicate", duplicate)
+    #         menu.addSeparator()
+    #
+    #
+    #
+    #     menu.addAction("New Axis", self.new_axis)
+    #     menu.addAction("New RigidBody", self.new_body)
+    #     menu.addAction("New Poi", self.new_poi)
+    #     menu.addAction("New Sheave", self.new_sheave)
+    #     menu.addAction("New Cable", self.new_cable)
+    #     menu.addAction("New Force", self.new_force)
+    #     menu.addAction("New Beam", self.new_beam)
+    #     menu.addAction("New 2d Connector", self.new_connector2d)
+    #     menu.addAction("New 6d Connector", self.new_linear_connector)
+    #     menu.addAction("New Linear Hydrostatics", self.new_linear_hydrostatics)
+    #     menu.addAction("New Visual", self.new_visual)
+    #     menu.addAction("New Buoyancy mesh", self.new_buoyancy_mesh)
+    #
+    #     menu.exec_(globLoc)
 
 
     def toggle_show_force(self):
@@ -504,166 +539,171 @@ class Gui:
     def actionDelete(self):
         print('delete')
 
-    def stop_solving(self):
-        self._terminate = True
-
-    def solve_statics(self):
-        self.scene._vfc.state_update()
-        old_dofs = self.scene._vfc.get_dofs()
-        self._dofs = old_dofs.copy()
-
-        long_wait = False
-        dialog = None
-
-        self._terminate = False
-
-
-
-        # solve with time-out
-        count = 0
-        while True:
-            status = self.scene._vfc.state_solve_statics_with_timeout(0.5, True)
-
-            if self._terminate:
-                print('Terminating')
-                break
-
-            if status == 0:
-                if count == 0:
-                    break
-                else:
-                    long_wait = True
-
-                    self.visual.position_visuals()
-                    self.visual.refresh_embeded_view()
-                    break
-
-            if dialog is None:
-                dialog = SolverDialog()
-                dialog.btnTerminate.clicked.connect(self.stop_solving)
-                dialog.show()
-
-            count += 1
-            dialog.label_2.setText('Maximum error = {}'.format(self.scene._vfc.Emaxabs))
-            dialog.update()
-
-            self.visual.position_visuals()
-            self.visual.refresh_embeded_view()
-            self.app.processEvents()
-
-        if dialog is not None:
-            dialog.close()
-
-        if DAVE.constants.GUI_DO_ANIMATE and not long_wait:
-            new_dofs = self.scene._vfc.get_dofs()
-            self.animate(old_dofs, new_dofs, vfc.GUI_ANIMATION_NSTEPS)
-
-        self.ui.teHistory.setPlainText(self.ui.teHistory.toPlainText() + '\n#---\ns.solve_statics()')
-
-    def undo_solve_statics(self):
-        if self._dofs is not None:
-            self.run_code('s._vfc.set_dofs(self._dofs)')
-
-
-    def onClose(self):
-        self.visual.shutdown_qt()
-        self._logfile.close()
-        print('closing')
-
-    def show(self):
-
-        self.MainWindow.show()
-        self.app.aboutToQuit.connect(self.onClose)
-
-        while True:
-            try:
-                self.app.exec_()
-                break
-            except Exception as E:
-                print(E)
+    # def stop_solving(self):
+    #     self._terminate = True
+    #
+    # def solve_statics(self):
+    #     self.scene._vfc.state_update()
+    #     old_dofs = self.scene._vfc.get_dofs()
+    #     self._dofs = old_dofs.copy()
+    #
+    #     long_wait = False
+    #     dialog = None
+    #
+    #     self._terminate = False
+    #
+    #
+    #
+    #     # solve with time-out
+    #     count = 0
+    #     while True:
+    #         status = self.scene._vfc.state_solve_statics_with_timeout(0.5, True)
+    #
+    #         if self._terminate:
+    #             print('Terminating')
+    #             break
+    #
+    #         if status == 0:
+    #             if count == 0:
+    #                 break
+    #             else:
+    #                 long_wait = True
+    #
+    #                 self.visual.position_visuals()
+    #                 self.visual.refresh_embeded_view()
+    #                 break
+    #
+    #         if dialog is None:
+    #             dialog = SolverDialog()
+    #             dialog.btnTerminate.clicked.connect(self.stop_solving)
+    #             dialog.show()
+    #
+    #         count += 1
+    #         dialog.label_2.setText('Maximum error = {}'.format(self.scene._vfc.Emaxabs))
+    #         dialog.update()
+    #
+    #         self.visual.position_visuals()
+    #         self.visual.refresh_embeded_view()
+    #         self.app.processEvents()
+    #
+    #     if dialog is not None:
+    #         dialog.close()
+    #
+    #     if DAVE.constants.GUI_DO_ANIMATE and not long_wait:
+    #         new_dofs = self.scene._vfc.get_dofs()
+    #         self.animate(old_dofs, new_dofs, vfc.GUI_ANIMATION_NSTEPS)
+    #
+    #     self.ui.teHistory.setPlainText(self.ui.teHistory.toPlainText() + '\n#---\ns.solve_statics()')
+    #
+    # def undo_solve_statics(self):
+    #     if self._dofs is not None:
+    #         self.run_code('s._vfc.set_dofs(self._dofs)')
 
 
-    def refresh_3dview(self):
-        self.visual.refresh_embeded_view()
+    # def onClose(self):
+    #     self.visual.shutdown_qt()
+    #     self._logfile.close()
+    #     print('closing')
 
-    def update_node_data_and_tree(self):
-        """
-        Updates the tree and assembles the node-data
-
-        This data is obtained from scene.nodes and assumes that
-        each of the nodes has a visual assigned to it.
-
-        """
-        model = SceneTreeModel()
-        model._scene = self
-        self.scene.sort_nodes_by_dependency()
-
-        self.node_data.clear()
-
-        for node in self.scene.nodes:
-
-            # create a tree item
-            text = node.name
-            item = QStandardItem(text)
-
-            # if we have a parent, then put the items under the parent,
-            # else put it under the root
-
-            item.setIcon(QIcon(":/icons/redball.png"))
-            if isinstance(node, vfs.Axis):
-                item.setIcon(QIcon(":/icons/axis.png"))
-            if isinstance(node, vfs.RigidBody):
-                item.setIcon(QIcon(":/icons/cube.png"))
-            if isinstance(node, vfs.Poi):
-                item.setIcon(QIcon(":/icons/poi.png"))
-            if isinstance(node, vfs.Cable):
-                item.setIcon(QIcon(":/icons/cable.png"))
-            if isinstance(node, vfs.Visual):
-                item.setIcon(QIcon(":/icons/visual.png"))
-            if isinstance(node, vfs.LC6d):
-                item.setIcon(QIcon(":/icons/lincon6.png"))
-            if isinstance(node, vfs.Connector2d):
-                item.setIcon(QIcon(":/icons/con2d.png"))
-            if isinstance(node, vfs.LinearBeam):
-                item.setIcon(QIcon(":/icons/beam.png"))
-            if isinstance(node, vfs.HydSpring):
-                item.setIcon(QIcon(":/icons/linhyd.png"))
-            if isinstance(node, vfs.Force):
-                item.setIcon(QIcon(":/icons/force.png"))
-            if isinstance(node, vfs.Buoyancy):
-                item.setIcon(QIcon(":/icons/trimesh.png"))
+    # def show(self):
+    #
+    #     self.MainWindow.show()
+    #     self.app.aboutToQuit.connect(self.onClose)
+    #
+    #     while True:
+    #         try:
+    #             self.app.exec_()
+    #             break
+    #         except Exception as E:
+    #             print(E)
 
 
-            try:
-                parent = node.parent
-            except:
-                parent = None
+    # def refresh_3dview(self):
+    #     self.visual.refresh_embeded_view()
 
-            if parent is not None:
-                data = self.node_data.get_node(parent)
-                if data is None:
-                    raise Exception('Parent of {} does not exist'.format(text))
-                data['tree'].appendRow(item)
-            else:
-                model.invisibleRootItem().appendRow(item)
+    # def update_node_data_and_tree(self):
+    #     """
+    #     Updates the tree and assembles the node-data
+    #
+    #     This data is obtained from scene.nodes and assumes that
+    #     each of the nodes has a visual assigned to it.
+    #
+    #     """
+    #     model = SceneTreeModel()
+    #     model._scene = self
+    #     self.scene.sort_nodes_by_dependency()
+    #
+    #     self.update_inertia_properties()
+    #
+    #
+    #     self.node_data.clear()
+    #
+    #     for node in self.scene.nodes:
+    #
+    #         # create a tree item
+    #         text = node.name
+    #         item = QStandardItem(text)
+    #
+    #         # if we have a parent, then put the items under the parent,
+    #         # else put it under the root
+    #
+    #         item.setIcon(QIcon(":/icons/redball.png"))
+    #         if isinstance(node, vfs.Axis):
+    #             item.setIcon(QIcon(":/icons/axis.png"))
+    #         if isinstance(node, vfs.RigidBody):
+    #             item.setIcon(QIcon(":/icons/cube.png"))
+    #         if isinstance(node, vfs.Poi):
+    #             item.setIcon(QIcon(":/icons/poi.png"))
+    #         if isinstance(node, vfs.Cable):
+    #             item.setIcon(QIcon(":/icons/cable.png"))
+    #         if isinstance(node, vfs.Visual):
+    #             item.setIcon(QIcon(":/icons/visual.png"))
+    #         if isinstance(node, vfs.LC6d):
+    #             item.setIcon(QIcon(":/icons/lincon6.png"))
+    #         if isinstance(node, vfs.Connector2d):
+    #             item.setIcon(QIcon(":/icons/con2d.png"))
+    #         if isinstance(node, vfs.LinearBeam):
+    #             item.setIcon(QIcon(":/icons/beam.png"))
+    #         if isinstance(node, vfs.HydSpring):
+    #             item.setIcon(QIcon(":/icons/linhyd.png"))
+    #         if isinstance(node, vfs.Force):
+    #             item.setIcon(QIcon(":/icons/force.png"))
+    #         if isinstance(node, vfs.Sheave):
+    #             item.setIcon(QIcon(":/icons/sheave.png"))
+    #         if isinstance(node, vfs.Buoyancy):
+    #             item.setIcon(QIcon(":/icons/trimesh.png"))
+    #
+    #
+    #         try:
+    #             parent = node.parent
+    #         except:
+    #             parent = None
+    #
+    #         if parent is not None:
+    #             data = self.node_data.get_node(parent)
+    #             if data is None:
+    #                 raise Exception('Parent of {} does not exist'.format(text))
+    #             data['tree'].appendRow(item)
+    #         else:
+    #             model.invisibleRootItem().appendRow(item)
+    #
+    #         # store in the lookup database
+    #
+    #         self.node_data.add(node,node.visual,item)
+    #
+    #     self.ui.treeView.setModel(model)
+    #     self.ui.treeView.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
+    #     self.ui.treeView.expandAll()
 
-            # store in the lookup database
-
-            self.node_data.add(node,node.visual,item)
-
-        self.ui.treeView.setModel(model)
-        self.ui.treeView.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
-        self.ui.treeView.expandAll()
-
-    def node_name_changed(self):
-        """Triggered by changing the text in the node-name widget"""
-        node = self._node_name_editor.node
-        element = "\ns['{}']".format(node.name)
-
-        new_name = self._node_name_editor.ui.tbName.text()
-        if not new_name == node.name:
-            code = element + ".name = '{}'".format(new_name)
-            self.run_code(code)
+    # def node_name_changed(self):
+    #     """Triggered by changing the text in the node-name widget"""
+    #     node = self._node_name_editor.node
+    #     element = "\ns['{}']".format(node.name)
+    #
+    #     new_name = self._node_name_editor.ui.tbName.text()
+    #     if not new_name == node.name:
+    #         code = element + ".name = '{}'".format(new_name)
+    #         self.run_code(code)
 
 
     def deselect_all(self):
@@ -715,102 +755,106 @@ class Gui:
         index = self.ui.treeView.model().indexFromItem(twi)
         self.ui.treeView.setCurrentIndex(index)
 
-        for widget in self._open_edit_widgets:
-            self.ui.widgetLayout.removeWidget(widget)
-            widget.setVisible(False)
+        # for widget in self._open_edit_widgets:
+        #     self.ui.widgetLayout.removeWidget(widget)
+        #     widget.setVisible(False)
+        #
+        # self._node_editors.clear()
+        # self._open_edit_widgets.clear()
+        #
+        # try:
+        #     self._node_name_editor
+        #     self._node_name_editor.node = node
+        #     self._node_name_editor.create_widget()
+        # except:
+        #     self._node_name_editor = element_widgets.EditNode(node, self.node_name_changed, self.scene)
+        #     self._node_name_editor.create_widget()
+        #     self.ui.widgetLayout.addWidget(self._node_name_editor.ui._widget)
+        #
+        # if isinstance(node, vfs.Visual):
+        #     # self.visual.set_alpha(1, 1)
+        #     self._node_editors.append(element_widgets.EditVisual(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.Axis):
+        #     self._node_editors.append(element_widgets.EditAxis(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.RigidBody):
+        #     self._node_editors.append(element_widgets.EditBody(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.Poi):
+        #     self._node_editors.append(element_widgets.EditPoi(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.Cable):
+        #     self._node_editors.append(element_widgets.EditCable(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.Force):
+        #     self._node_editors.append(element_widgets.EditForce(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.Sheave):
+        #     self._node_editors.append(element_widgets.EditSheave(node, self.node_property_changed, self.scene))
+        #
+        #
+        # if isinstance(node, vfs.HydSpring):
+        #     self._node_editors.append(element_widgets.EditHydSpring(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.LC6d):
+        #     self._node_editors.append(element_widgets.EditLC6d(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.Connector2d):
+        #     self._node_editors.append(element_widgets.EditConnector2d(node, self.node_property_changed, self.scene))
+        #
+        #
+        # if isinstance(node, vfs.LinearBeam):
+        #     self._node_editors.append(element_widgets.EditBeam(node, self.node_property_changed, self.scene))
+        #
+        # if isinstance(node, vfs.Buoyancy):
+        #     self._node_editors.append(element_widgets.EditBuoyancy(node, self.node_property_changed, self.scene))
+        #
+        # for editor in self._node_editors:
+        #     widget = editor.create_widget()
+        #     widget.setVisible(True)
+        #     self.ui.widgetLayout.addWidget(widget)
+        #     self._open_edit_widgets.append(widget)
+        #
+        # self.ui.dockWidget_3.setVisible(True)
+        # self.ui.dockWidgetContents_3.resize(0, 0)  # set the size of the floating dock widget to its minimum size
+        # self.ui.dockWidget_3.resize(0, 0)
+        #
+        # # ---- display node properties
+        # self.display_node_properties(node)
 
-        self._node_editors.clear()
-        self._open_edit_widgets.clear()
-
-        try:
-            self._node_name_editor
-            self._node_name_editor.node = node
-            self._node_name_editor.create_widget()
-        except:
-            self._node_name_editor = element_widgets.EditNode(node, self.node_name_changed, self.scene)
-            self._node_name_editor.create_widget()
-            self.ui.widgetLayout.addWidget(self._node_name_editor.ui._widget)
-
-        if isinstance(node, vfs.Visual):
-            # self.visual.set_alpha(1, 1)
-            self._node_editors.append(element_widgets.EditVisual(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.Axis):
-            self._node_editors.append(element_widgets.EditAxis(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.RigidBody):
-            self._node_editors.append(element_widgets.EditBody(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.Poi):
-            self._node_editors.append(element_widgets.EditPoi(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.Cable):
-            self._node_editors.append(element_widgets.EditCable(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.Force):
-            self._node_editors.append(element_widgets.EditForce(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.HydSpring):
-            self._node_editors.append(element_widgets.EditHydSpring(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.LC6d):
-            self._node_editors.append(element_widgets.EditLC6d(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.Connector2d):
-            self._node_editors.append(element_widgets.EditConnector2d(node, self.node_property_changed, self.scene))
-
-
-        if isinstance(node, vfs.LinearBeam):
-            self._node_editors.append(element_widgets.EditBeam(node, self.node_property_changed, self.scene))
-
-        if isinstance(node, vfs.Buoyancy):
-            self._node_editors.append(element_widgets.EditBuoyancy(node, self.node_property_changed, self.scene))
-
-        for editor in self._node_editors:
-            widget = editor.create_widget()
-            widget.setVisible(True)
-            self.ui.widgetLayout.addWidget(widget)
-            self._open_edit_widgets.append(widget)
-
-        self.ui.dockWidget_3.setVisible(True)
-        self.ui.dockWidgetContents_3.resize(0, 0)  # set the size of the floating dock widget to its minimum size
-        self.ui.dockWidget_3.resize(0, 0)
-
-        # ---- display node properties
-        self.display_node_properties(node)
-
-    def display_node_properties(self, node):
-
-        props = []
-        props.extend(vfc.PROPS_NODE)
-        if isinstance(node, vfs.Axis):
-            props.extend(vfc.PROPS_AXIS)
-        if isinstance(node, vfs.RigidBody):
-            props.extend(vfc.PROPS_BODY)
-        if isinstance(node, vfs.Poi):
-            props.extend(vfc.PROPS_POI)
-        if isinstance(node, vfs.Cable):
-            props.extend(vfc.PROPS_CABLE)
-        if isinstance(node, vfs.Connector2d):
-            props.extend(vfc.PROPS_CON2D)
-        if isinstance(node, vfs.Buoyancy):
-            props.extend(vfc.PROPS_BUOY_MESH)
-
-        # evaluate properties
-        self.ui.dispPropTree.clear()
-        for p in props:
-            code = "node.{}".format(p)
-            try:
-                result = eval(code)
-            except:
-                result = 'Error evaluating {}'.format(code)
-
-            pa = QtWidgets.QTreeWidgetItem(self.ui.dispPropTree)
-            v = QtWidgets.QTreeWidgetItem(pa)
-            pa.setText(0,'.' + p)
-            v.setText(0,str(result))
-
-        self.ui.dispPropTree.expandAll()
+    # def display_node_properties(self, node):
+    #
+    #     props = []
+    #     props.extend(vfc.PROPS_NODE)
+    #     if isinstance(node, vfs.Axis):
+    #         props.extend(vfc.PROPS_AXIS)
+    #     if isinstance(node, vfs.RigidBody):
+    #         props.extend(vfc.PROPS_BODY)
+    #     if isinstance(node, vfs.Poi):
+    #         props.extend(vfc.PROPS_POI)
+    #     if isinstance(node, vfs.Cable):
+    #         props.extend(vfc.PROPS_CABLE)
+    #     if isinstance(node, vfs.Connector2d):
+    #         props.extend(vfc.PROPS_CON2D)
+    #     if isinstance(node, vfs.Buoyancy):
+    #         props.extend(vfc.PROPS_BUOY_MESH)
+    #
+    #     # evaluate properties
+    #     self.ui.dispPropTree.clear()
+    #     for p in props:
+    #         code = "node.{}".format(p)
+    #         try:
+    #             result = eval(code)
+    #         except:
+    #             result = 'Error evaluating {}'.format(code)
+    #
+    #         pa = QtWidgets.QTreeWidgetItem(self.ui.dispPropTree)
+    #         v = QtWidgets.QTreeWidgetItem(pa)
+    #         pa.setText(0,'.' + p)
+    #         v.setText(0,str(result))
+    #
+    #     self.ui.dispPropTree.expandAll()
 
 
 
@@ -824,50 +868,50 @@ class Gui:
         data = self.node_data.get_name(node_name)
         self.select_node(data)
 
-    def view3d_select_element(self, info):
-        data = self.node_data.get_actor(info)
-
-        if data is not None:
-            # # if a visual is clicked, then select the parent of this visual instead
-            # node = data['node']
-            # if isinstance(node, vfs.Visual):
-            #     if node.parent is not None:
-            #         data = self.node_data.get_node(node.parent)
-
-            # if the node is already selected, then select something different
-            if self.selected_node is not None:
-
-                # cycle between node and its parent
-                if self.selected_node['node'] == data['node']:
-                    node = data['node']
-                    try:
-                        node = node.parent
-                        data = self.node_data.get_node(node)
-                    except:
-                        pass
-
-                # cycle between node and its master
-                if self.selected_node['node'] == data['node']:
-                    node = data['node']
-                    try:
-                        node = node.master
-                        data = self.node_data.get_node(node)
-                    except:
-                        pass
-
-                # cycle between node and its poiA
-                if self.selected_node['node'] == data['node']:
-                    node = data['node']
-                    try:
-                        node = node._pois[0]
-                        data = self.node_data.get_node(node)
-                    except:
-                        pass
-
-
-
-
-        self.select_node(data)
+    # def view3d_select_element(self, info):
+    #     data = self.node_data.get_actor(info)
+    #
+    #     if data is not None:
+    #         # # if a visual is clicked, then select the parent of this visual instead
+    #         # node = data['node']
+    #         # if isinstance(node, vfs.Visual):
+    #         #     if node.parent is not None:
+    #         #         data = self.node_data.get_node(node.parent)
+    #
+    #         # if the node is already selected, then select something different
+    #         if self.selected_node is not None:
+    #
+    #             # cycle between node and its parent
+    #             if self.selected_node['node'] == data['node']:
+    #                 node = data['node']
+    #                 try:
+    #                     node = node.parent
+    #                     data = self.node_data.get_node(node)
+    #                 except:
+    #                     pass
+    #
+    #             # cycle between node and its master
+    #             if self.selected_node['node'] == data['node']:
+    #                 node = data['node']
+    #                 try:
+    #                     node = node.master
+    #                     data = self.node_data.get_node(node)
+    #                 except:
+    #                     pass
+    #
+    #             # cycle between node and its poiA
+    #             if self.selected_node['node'] == data['node']:
+    #                 node = data['node']
+    #                 try:
+    #                     node = node._pois[0]
+    #                     data = self.node_data.get_node(node)
+    #                 except:
+    #                     pass
+    #
+    #
+    #
+    #
+    #     self.select_node(data)
 
     def node_property_changed(self):
 
@@ -899,69 +943,65 @@ class Gui:
     def set_code(self, code):
         self.ui.teCode.setText(code)
 
-    def run_code(self, code):
-
-        s = self.scene
-
-        self.ui.teFeedback.setStyleSheet("background-color: yellow;")
-        self.ui.teFeedback.setText("Running...")
-        self.ui.teFeedback.update()
-
-        with capture_output() as c:
-
-            try:
-                exec(code)
-
-                self.ui.teFeedback.setStyleSheet("background-color: white;")
-                if c.stdout:
-                    self.ui.teFeedback.setText(c.stdout)
-                else:
-                    self.ui.teFeedback.append("...Done")
-
-                self.ui.teFeedback.append(str(datetime.datetime.now()))
-
-                self._logfile.write(code)
-                self._logfile.write('\n')
-                self._logfile.flush()
-
-                self.ui.teHistory.setPlainText(self.ui.teHistory.toPlainText() + '\n#---\n' + code)
-                self.ui.teHistory.verticalScrollBar().setValue(self.ui.teHistory.verticalScrollBar().maximum()) # scroll down all the way
-
-
-            except Exception as E:
-
-
-                self.ui.teFeedback.setText(c.stdout + '\n' + str(E) + '\n\nWhen running: \n\n' + code)
-                self.ui.teFeedback.setStyleSheet("background-color: red;")
-                return
-
-
-            self.scene._vfc.state_update()
-            self.visual.create_visuals()
-            self.visual.add_new_actors_to_screen()
-            self.update_node_data_and_tree()
-            self.visual.position_visuals()
-            self.visual.update_visibility()
-            self.refresh_3dview()
-
-            if self.selected_node is not None:
-
-                # check if selected node is still present
-                if self.selected_node['node'] in self.scene.nodes:
-                    self.display_node_properties(self.selected_node['node'])
-                else:
-                    self.selected_node = None
-                    self.ui.dockWidget_3.setVisible(False)
+    # def run_code(self, code):
+    #
+    #     s = self.scene
+    #
+    #     self.ui.teFeedback.setStyleSheet("background-color: yellow;")
+    #     self.ui.teFeedback.setText("Running...")
+    #     self.ui.teFeedback.update()
+    #
+    #     with capture_output() as c:
+    #
+    #         try:
+    #             exec(code)
+    #
+    #             self.ui.teFeedback.setStyleSheet("background-color: white;")
+    #             if c.stdout:
+    #                 self.ui.teFeedback.setText(c.stdout)
+    #             else:
+    #                 self.ui.teFeedback.append("...Done")
+    #
+    #             self.ui.teFeedback.append(str(datetime.datetime.now()))
+    #
+    #             self._logfile.write(code)
+    #             self._logfile.write('\n')
+    #             self._logfile.flush()
+    #
+    #             self.ui.teHistory.setPlainText(self.ui.teHistory.toPlainText() + '\n#---\n' + code)
+    #             self.ui.teHistory.verticalScrollBar().setValue(self.ui.teHistory.verticalScrollBar().maximum()) # scroll down all the way
+    #         except Exception as E:
+    #             self.ui.teFeedback.setText(c.stdout + '\n' + str(E) + '\n\nWhen running: \n\n' + code)
+    #             self.ui.teFeedback.setStyleSheet("background-color: red;")
+    #             return
+    #
+    #
+    #         self.scene._vfc.state_update()
+    #         self.visual.create_visuals()
+    #         self.visual.add_new_actors_to_screen()
+    #         self.update_node_data_and_tree()
+    #         self.visual.position_visuals()
+    #         self.visual.update_visibility()
+    #         self.refresh_3dview()
+    #
+    #         if self.selected_node is not None:
+    #
+    #             # check if selected node is still present
+    #             if self.selected_node['node'] in self.scene.nodes:
+    #                 self.display_node_properties(self.selected_node['node'])
+    #             else:
+    #                 self.selected_node = None
+    #                 self.ui.dockWidget_3.setVisible(False)
 
 
     def run_code_in_teCode(self):
         code = self.ui.teCode.toPlainText()
         self.run_code(code)
 
-    def new_something(self, what):
-        r = what(self.scene, self.tree_selected_node())
-        if r:
-            self.set_code("s." + r)
+    # def new_something(self, what):
+    #     r = what(self.scene, self.tree_selected_node())
+    #     if r:
+    #         self.set_code("s." + r)
 
     def tree_selected_node(self):
 
@@ -977,38 +1017,41 @@ class Gui:
             return None
 
 
-    def new_axis(self):
-        self.new_something(DAVE.element_widgets.add_axis)
-
-    def new_body(self):
-        self.new_something(DAVE.element_widgets.add_body)
-
-    def new_poi(self):
-        self.new_something(DAVE.element_widgets.add_poi)
-
-    def new_cable(self):
-        self.new_something(DAVE.element_widgets.add_cable)
-
-    def new_force(self):
-        self.new_something(DAVE.element_widgets.add_force)
-
-    def new_linear_connector(self):
-        self.new_something(DAVE.element_widgets.add_linear_connector)
-
-    def new_connector2d(self):
-        self.new_something(DAVE.element_widgets.add_connector2d)
-
-    def new_beam(self):
-        self.new_something(DAVE.element_widgets.add_beam_connector)
-
-    def new_linear_hydrostatics(self):
-        self.new_something(DAVE.element_widgets.add_linear_hydrostatics)
-
-    def new_visual(self):
-        self.new_something(DAVE.element_widgets.add_visual)
-
-    def new_buoyancy_mesh(self):
-        self.new_something(DAVE.element_widgets.add_buoyancy)
+    # def new_axis(self):
+    #     self.new_something(DAVE.element_widgets.add_axis)
+    #
+    # def new_body(self):
+    #     self.new_something(DAVE.element_widgets.add_body)
+    #
+    # def new_poi(self):
+    #     self.new_something(DAVE.element_widgets.add_poi)
+    #
+    # def new_cable(self):
+    #     self.new_something(DAVE.element_widgets.add_cable)
+    #
+    # def new_force(self):
+    #     self.new_something(DAVE.element_widgets.add_force)
+    #
+    # def new_sheave(self):
+    #     self.new_something(DAVE.element_widgets.add_sheave)
+    #
+    # def new_linear_connector(self):
+    #     self.new_something(DAVE.element_widgets.add_linear_connector)
+    #
+    # def new_connector2d(self):
+    #     self.new_something(DAVE.element_widgets.add_connector2d)
+    #
+    # def new_beam(self):
+    #     self.new_something(DAVE.element_widgets.add_beam_connector)
+    #
+    # def new_linear_hydrostatics(self):
+    #     self.new_something(DAVE.element_widgets.add_linear_hydrostatics)
+    #
+    # def new_visual(self):
+    #     self.new_something(DAVE.element_widgets.add_visual)
+    #
+    # def new_buoyancy_mesh(self):
+    #     self.new_something(DAVE.element_widgets.add_buoyancy)
 
     def set_state(self, a, b):
 
@@ -1071,9 +1114,55 @@ class Gui:
 # ====== main code ======
 
 if __name__ == '__main__':
-    s = vfs.Scene()
+
+
+
+    s = DAVE.scene.Scene()
+    #
+    # s.new_poi('b', position = (10,0,15))
+    # s.new_sheave('sb', 'b', (0, 1, 0), 0.5)
+    #
+    # n = s.import_scene('liftme')
+    # n.fixed = False
+    #
+    #
+    # n = s.import_scene(s.get_resource_path("crane block 4p.dave_asset"), containerize=True, prefix="")
+    # n.z = 30
+    # s.dissolve(n)
+    #
+    # from DAVE.rigging import *
+    #
+    # create_sling(s,'sling3',Ltotal=30, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter = 0.3, EA = 1e6, mass = 3, endA='lp3bow', endB='prong4_sheave')
+    # create_sling(s, 'sling4', Ltotal=30, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter=0.3, EA=1e6, mass=3,
+    #              endA='lp4bow', endB='prong3_sheave')
+    #
+    # # doubled sling in two parts
+    # n = s.import_scene(s.get_resource_path("GP800.dave_asset"), containerize=True, prefix="sh01_")
+    # n.fixed = False
+    #
+    # create_sling(s, 'sling1_part1', Ltotal=40, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter=0.3, EA=1e6, mass=3,
+    #              endA='lp1lp2', endB='sh01_bow', sheave='prong2_sheave')
+    #
+    # create_sling(s, 'sling1_part2', Ltotal=20, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter=0.3, EA=1e6, mass=3,
+    #              endA='lp1lp1', endB='sh01_pin')
+    #
+    #
+    # # doubled sling
+    # create_sling(s, 'sling2', Ltotal=60, LeyeA=4, LeyeB=5, LspliceA=2, LspliceB=3, diameter=0.3, EA=1e6, mass=3,
+    #              endA='lp2lp2', endB='lp2lp1', sheave='prong1_sheave')
+    #
+    #
+    #
+    # s.solve_statics()
+
+    from DAVE.io.blender import *
+
+
     s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
+    s.resources_paths.append(r"C:\data\3d models\shackles")
 
+    s.import_scene(s.get_resource_path("mast crane.dave_asset"), containerize=False, prefix="")
 
-    g = Gui(s)
-    g.show()
+    Gui(s).show()
+
+    # create_blend_and_open(s)

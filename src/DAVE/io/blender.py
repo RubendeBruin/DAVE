@@ -17,7 +17,9 @@
     
     A base blender file needs to be provided. The visuals will be added to this model. It will then be saved under a different name.
     
-    
+    Requirements for the base blender file:
+    - Shall have a material called "Cable", this material will be assigned to each created cable.
+
     All functions in this file one or more of the following arguments
     
     - camera : a dictionary with ['position'] and ['direction'] which specifies the camera position and look direction
@@ -46,11 +48,12 @@
 
 
 import DAVE.scene as dc
-import DAVE.constants as consts
+import DAVE.settings as consts
 from scipy.spatial.transform import Rotation  # for conversion from axis-angle to euler
 from os.path import splitext, basename
 from os import system
 from numpy import deg2rad
+from pathlib import Path
 
 
 # utility functions for our python scripts are hard-coded here
@@ -106,26 +109,42 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
 			bpy.ops.transform.rotate(value=-orientation[2], orient_axis='X')
 			bpy.ops.transform.translate(value=position)
 
-def add_line(p1, p2, diameter, name=None):
+def add_line(points, diameter, name=None):
 
     bpy.ops.curve.primitive_bezier_curve_add(enter_editmode=True)
     obj_data = bpy.context.active_object.data
-    obj_data.bevel_depth = diameter
+    obj_data.bevel_depth = diameter/2
 
     end1 = obj_data.splines[0].bezier_points[0]
-    end1.co = p1
-    end1.handle_left = p1
-    end1.handle_right = p1
+    end1.co = points[0]
+    end1.handle_left = points[0]
+    end1.handle_right = points[1]
 
     end2 = obj_data.splines[0].bezier_points[1]
-    end2.co = p2
-    end2.handle_left = p2
-    end2.handle_right = p2
+    end2.co = points[1]
+    end2.handle_left = points[0]
+    end2.handle_right = points[1]
+    
+    if len(points)>2:
+        
+        end2.handle_right = points[2]
+        
+        for i in range(2,len(points)):
+            obj_data.splines[0].bezier_points.add(1)
+            end3 = obj_data.splines[0].bezier_points[i]
+            end3.co = points[i]
+            end3.handle_left = points[i-1]
+            if i < len(points)-1:
+                end3.handle_right = points[i+1]
+            else:
+                end3.handle_right = points[i]
 
     if name is not None:
         bpy.context.active_object.name = name
 
+    bpy.context.active_object.data.materials.append(bpy.data.materials['Cable'])
     bpy.ops.object.mode_set(mode='OBJECT')
+    
 """
 
 
@@ -135,15 +154,20 @@ def _to_euler(rotation):
     return r.as_euler('zyx',degrees=False)
 
 
+def create_blend_and_open(scene, blender_result_file = None, blender_base_file=None, blender_exe_path=None, camera=None):
 
+    if blender_base_file is None:
+        blender_base_file = consts.BLENDER_BASE_SCENE
 
-def create_blend_and_open(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None):
+    if blender_result_file is None:
+        blender_result_file = consts.BLENDER_DEFAULT_OUTFILE
+
     create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path,camera=camera)
-    command = '"{}"'.format(blender_result_file)
+    command = '"{}"'.format(str(blender_result_file))
     system(command)
 
 def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None):
-    tempfile = consts.PATH_TEMP + 'blender.py'
+    tempfile = Path(consts.PATH_TEMP) / 'blender.py'
 
     blender_py_file(scene, tempfile, blender_base_file, blender_result_file,camera=camera)
 
@@ -161,7 +185,8 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
     code += 'bpy.ops.wm.open_mainfile(filepath=r"{}")\n'.format(blender_base_file)
     code += '\n'
     code += BFUNC
-    code += '\n'
+    code += '\n# Set 3d cursor to origin'
+    code += '\nbpy.context.scene.cursor.location = (0.0, 0.0, 0.0)'
 
     for visual in scene.nodes_of_type(dc.Visual):
 
@@ -194,6 +219,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
         rot = Rotation.from_rotvec(deg2rad(visual.parent.global_rotation))
         rotated_offset = rot.apply(visual.offset)
 
+
         code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{}), offset=({},{},{}), orientation=({},{},{}), position=({},{},{}))'.format(
 	                filename,
                     *visual.scale,
@@ -204,15 +230,20 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
 
     for cable in scene.nodes_of_type(dc.Cable):
-        points = []
-        for p in cable._pois:
-            points.append(p.global_position)
 
-        n = len(points)
-        for i in range(n-1):
-            p1 = points[i]
-            p2 = points[i+1]
-            code += '\nadd_line(({},{},{}),({},{},{}), diameter={}, name = "{}_{}")'.format(*p1, *p2, consts.BLENDER_CABLE_DIA, cable.name, i)
+        points = cable.get_points_for_visual()
+        dia = cable.diameter
+
+        if dia < consts.BLENDER_CABLE_DIA:
+            dia = consts.BLENDER_CABLE_DIA
+
+        code += '\npoints=['
+        for p in points:
+            code += '({},{},{}),'.format(*p)
+        code = code[:-1]
+        code += ']'
+
+        code += '\nadd_line(points, diameter={}, name = "{}")'.format(dia, cable.name)
 
     if camera is not None:
         pos = camera['position']

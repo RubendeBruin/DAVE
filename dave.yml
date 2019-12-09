@@ -1,0 +1,14 @@
+name: dave
+channels:
+  - conda
+  - conda-forge
+dependencies:
+  - pyside2
+  - vtk
+  - numpy
+  - scipy
+  - ipython
+  - matplotlib
+  - pip:
+    - vtkplotter
+    - useDAVE

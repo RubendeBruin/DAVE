@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Thu Oct 31 16:19:26 2019
+# Created: Fri Nov 29 16:13:01 2019
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -48,6 +48,8 @@ class Ui_MainWindow(object):
         self.menuMarine.setObjectName("menuMarine")
         self.menuRender = QtWidgets.QMenu(self.menubar)
         self.menuRender.setObjectName("menuRender")
+        self.menuDynamics = QtWidgets.QMenu(self.menubar)
+        self.menuDynamics.setObjectName("menuDynamics")
         MainWindow.setMenuBar(self.menubar)
         self.dockWidget = QtWidgets.QDockWidget(MainWindow)
         self.dockWidget.setFeatures(QtWidgets.QDockWidget.DockWidgetFloatable|QtWidgets.QDockWidget.DockWidgetMovable)
@@ -381,6 +383,10 @@ class Ui_MainWindow(object):
         self.actionImport_browser.setObjectName("actionImport_browser")
         self.actionRender_current_view = QtWidgets.QAction(MainWindow)
         self.actionRender_current_view.setObjectName("actionRender_current_view")
+        self.actionModal_shapes = QtWidgets.QAction(MainWindow)
+        self.actionModal_shapes.setObjectName("actionModal_shapes")
+        self.actionInertia_properties = QtWidgets.QAction(MainWindow)
+        self.actionInertia_properties.setObjectName("actionInertia_properties")
         self.menuSolve_Statics.addAction(self.actionNew)
         self.menuSolve_Statics.addSeparator()
         self.menuSolve_Statics.addAction(self.actionOpen)
@@ -416,12 +422,15 @@ class Ui_MainWindow(object):
         self.menuWhat_if.addAction(self.actionOptimize)
         self.menuMarine.addAction(self.actionStability_curve)
         self.menuRender.addAction(self.actionRender_current_view)
+        self.menuDynamics.addAction(self.actionModal_shapes)
+        self.menuDynamics.addAction(self.actionInertia_properties)
         self.menubar.addAction(self.menuSolve_Statics.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
         self.menubar.addAction(self.menuView_2.menuAction())
         self.menubar.addAction(self.menuWhat_if.menuAction())
         self.menubar.addAction(self.menuMarine.menuAction())
         self.menubar.addAction(self.menuRender.menuAction())
+        self.menubar.addAction(self.menuDynamics.menuAction())
         self.toolBar.addSeparator()
 
         self.retranslateUi(MainWindow)
@@ -453,6 +462,7 @@ class Ui_MainWindow(object):
         self.menuWhat_if.setTitle(QtWidgets.QApplication.translate("MainWindow", "Optimize", None, -1))
         self.menuMarine.setTitle(QtWidgets.QApplication.translate("MainWindow", "Marine", None, -1))
         self.menuRender.setTitle(QtWidgets.QApplication.translate("MainWindow", "Blender", None, -1))
+        self.menuDynamics.setTitle(QtWidgets.QApplication.translate("MainWindow", "Dynamics", None, -1))
         self.dockWidget.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Nodes", None, -1))
         self.dockWidget_2.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Feedback", None, -1))
         self.pbGenerateSceneCode.setText(QtWidgets.QApplication.translate("MainWindow", "Generate Scene Code", None, -1))
@@ -533,4 +543,6 @@ class Ui_MainWindow(object):
         self.actionOpen.setText(QtWidgets.QApplication.translate("MainWindow", "Open", None, -1))
         self.actionImport_browser.setText(QtWidgets.QApplication.translate("MainWindow", "Import (browser)", None, -1))
         self.actionRender_current_view.setText(QtWidgets.QApplication.translate("MainWindow", "Render current view", None, -1))
+        self.actionModal_shapes.setText(QtWidgets.QApplication.translate("MainWindow", "Modal shapes", None, -1))
+        self.actionInertia_properties.setText(QtWidgets.QApplication.translate("MainWindow", "Inertia properties", None, -1))
 

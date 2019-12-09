@@ -33,7 +33,7 @@ vtkmodules.qt.PyQtImpl = 'PySide2'
 
 import vtkplotter as vp   # ref: https://github.com/marcomusy/vtkplotter
 import DAVE.scene as vf
-import DAVE.constants as vc
+import DAVE.settings as vc
 import vtk
 import numpy as np
 from enum import Enum
@@ -51,6 +51,37 @@ def transform_from_point(x,y,z):
     mat4x4.SetElement(1, 3, y)
     mat4x4.SetElement(2, 3, z)
     return mat4x4
+
+def transform_from_direction(axis):
+    """
+    Creates a transform that rotates the X-axis to the given direction
+    Args:
+        axis: requested direction
+
+    Returns:
+        vtk.vtkTransform
+    """
+    theta = np.arccos(axis[2])
+    phi = np.arctan2(axis[1], axis[0])
+    t = vtk.vtkTransform()
+    t.PostMultiply()
+    # t.RotateX(90)  # put it along Z
+    t.RotateY(np.rad2deg(theta))
+    t.RotateZ(np.rad2deg(phi))
+
+    return t
+
+
+def apply_parent_tranlation_on_transform(parent, t):
+    tr = parent.global_transform
+
+    mat4x4 = vtk.vtkMatrix4x4()
+    for i in range(4):
+        for j in range(4):
+            mat4x4.SetElement(i, j, tr[j * 4 + i])
+
+    t.PostMultiply()
+    t.Concatenate(mat4x4)
 
 def actor_from_trimesh(trimesh):
     """Creates a vtkplotter.Actor from a pyo3d.TriMesh"""
@@ -70,6 +101,7 @@ def actor_from_trimesh(trimesh):
 
 def vp_actor_from_obj(filename):
     # load the data
+    filename = str(filename)
     source = vtk.vtkOBJReader()
     source.SetFileName(filename)
     #clean the data
@@ -105,13 +137,15 @@ class VisualActor:
         self.node = node      # Node
         self.visible = True
         self._original_colors = list()
-        self._original_alpha = list()    # used by select
-        self._original_opacity = list()  # overwritten by set-alpha
+        self._is_selected = False
+        self._is_transparent = False
 
     def select(self):
 
+        if self._is_selected:
+            return
+
         self._original_colors = list()
-        self._original_alpha = list()
 
         if self.node is not None:
             print('storing ' + str(self.node.name))
@@ -120,11 +154,21 @@ class VisualActor:
 
         for actor in self.actors:
             self._original_colors.append(actor.color())
-            self._original_alpha.append(actor.alpha())
             actor.color(vc.COLOR_SELECT)
+
+        self._is_selected = True
 
 
     def deselect(self):
+
+        print('resetting original colors 1')
+
+        if not self._is_selected:
+            return
+
+        print('resetting original colors 2')
+
+        self._is_selected = False
 
         if self._original_colors:
 
@@ -134,40 +178,38 @@ class VisualActor:
                 print('setting properties')
 
 
-            for actor, color, alpha in zip(self.actors, self._original_colors, self._original_alpha):
+            for actor, color in zip(self.actors, self._original_colors):
                 actor.color(color)
-                actor.alpha(alpha)
 
-            self._original_colors = list()
-            self._original_alpha = list()
+            # self._original_colors = list()
+            # self._original_alpha = list()
 
         else:
-            for a in self.actors:
-                if a.actor_type == ActorType.GLOBAL:
-                    a.alpha(0.4)
-                else:
-                    a.alpha(1)
+            raise "Original color not stored for this visual"
 
 
     def make_transparent(self):
 
-        self._original_opacity = []
+        if self._is_transparent:
+            return
+
         for a in self.actors:
-            self._original_opacity.append(a.alpha())
             a.alpha(0.4)
+
+        self._is_transparent = True
 
     def reset_opacity(self):
 
-        if self._original_opacity:
-            for a,alp in zip(self.actors, self._original_opacity):
-                a.alpha(alp)
-            self._original_opacity = []
-        else:
-            for a in self.actors:
-                if a.actor_type == ActorType.GLOBAL:
-                    a.alpha(0.4)
-                else:
-                    a.alpha(1)
+        if not self._is_transparent:
+            return
+
+        for a in self.actors:
+            if a.actor_type == ActorType.GLOBAL:
+                a.alpha(0.4)
+            else:
+                a.alpha(1)
+
+        self._is_transparent = False
 
     def set_dsa(self, d,s,a):
         for act in self.actors:
@@ -313,6 +355,28 @@ class Viewport:
         for v in self.visuals:
             v.deselect()
 
+    def node_from_vtk_actor(self, actor):
+        """
+        Given a vkt actor, find the corresponding node
+        Args:
+            actor: vtkActor
+
+        Returns:
+
+        """
+        for v in self.visuals:
+            for a in v.actors:
+                if a == actor:
+                    return v.node
+        return None
+
+    def actor_from_node(self, node):
+        """Finds the VisualActor belonging to node"""
+        for v in self.visuals:
+            if v.node is node:
+                return v
+        return None
+
 
 
     # def set_alpha(self, alpha_nodes, alpha_visuals):
@@ -361,7 +425,7 @@ class Viewport:
             recreate : re-create already exisiting visuals
         """
 
-        for N in self.scene.nodes:
+        for N in self.scene._nodes:
 
             if not recreate:
                 try:            # if we already have a visual, then no need to create another one
@@ -389,6 +453,9 @@ class Viewport:
                     vis.c(vc.COLOR_BUOYANCY_MESH_FILL)
 
                 vis.actor_type = ActorType.FORCE
+
+                if vc.COLOR_BUOYANCY_MESH_FILL is None:
+                    vis.wireframe()
 
                 if vis is not None:
                     actors.append(vis)
@@ -474,15 +541,28 @@ class Viewport:
                 p.c(vc.COLOR_FORCE)
                 actors.append(p)
 
+            if isinstance(N, vf.Sheave):
+                axis = np.array(N.axis)
+                axis /= np.linalg.norm(axis)
+                p = vp.Cylinder(r=1)
+                p.c(vc.COLOR_SHEAVE)
+                p.actor_type = ActorType.GEOMETRY
+
+                actors.append(p)
+
             if isinstance(N, vf.Cable):
 
-                points = list()
-                for p in N._pois:
-                    points.append(p.global_position)
+                # points = list()
+                # for p in N._pois:
+                #     points.append(p.global_position)
+                #
 
-                a = vp.Line(points, lw=3).c(vc.COLOR_CABLE)
+                if N._vfNode.global_points:
+                    a = vp.Line(N._vfNode.global_points, lw=3).c(vc.COLOR_CABLE)
+                else:
+                    a = vp.Line([(0,0,0),(0,0,0.1),(0,0,0)], lw=3).c(vc.COLOR_CABLE)
+
                 a.actor_type = ActorType.CABLE
-
                 actors.append(a)
 
             if isinstance(N, vf.LinearBeam):
@@ -541,7 +621,7 @@ class Viewport:
             # if not, then remove the visual
 
             node = V.node
-            if node not in self.scene.nodes:
+            if node not in self.scene._nodes:
                 if len(V.actors) > 0:  # not all nodes have an actor
                     if V.actors[0].actor_type != ActorType.GLOBAL:  # global visuals do not have a corresponding node
                         to_be_removed.append(V)
@@ -581,43 +661,73 @@ class Viewport:
 
                 # Get the parent matrix (if any)
                 if V.node.parent is not None:
-                    tr = V.node.parent.global_transform
-
-                    mat4x4 = vtk.vtkMatrix4x4()
-                    for i in range(4):
-                        for j in range(4):
-                            mat4x4.SetElement(i, j, tr[j * 4 + i])
-
-                    t.PostMultiply()
-                    t.Concatenate(mat4x4)
+                    apply_parent_tranlation_on_transform(V.node.parent, t)
 
                 A.setTransform(t.GetMatrix())
                 continue
 
+            if isinstance(V.node, vf.Sheave):
+                A = V.actors[0]
 
+                # get the local (user set) transform
+                t = vtk.vtkTransform()
+                t.Identity()
+
+                # scale to flat disk
+                t.Scale(V.node.radius, V.node.radius, 0.1)
+
+                # rotate z-axis (length axis is cylinder) is direction of axis
+                axis = V.node.axis / np.linalg.norm(V.node.axis)
+                z = (0,0,1)
+                rot_axis = np.cross(z, axis)
+                rot_dot = np.dot(z,axis)
+                if rot_dot > 1:
+                    rot_dot = 1
+                if rot_dot < -1:
+                    rot_dot = -1
+
+                angle = np.arccos(rot_dot)
+
+                t.PostMultiply()
+                t.RotateWXYZ(np.rad2deg(angle), rot_axis)
+
+                t.Translate(V.node.parent.position)
+
+                # Get the parent matrix (if any)
+                if V.node.parent.parent is not None:
+                    apply_parent_tranlation_on_transform(V.node.parent.parent, t)
+
+                
+
+                A.setTransform(t.GetMatrix())
+                continue
 
             if isinstance(V.node, vf.Cable):
 
                 # # check the number of points
                 A = V.actors[0]
 
-                points = list()
-                for p in V.node._pois:
-                    points.append(p.global_position)
+                # points = list()
+                # for p in V.node._pois:
+                #     points.append(p.global_position)
 
-                A.setPoints(points)
-
-                # work-around
-                # (re-create the poly-line)
-                # if n_points != len(points):
+                points = V.node.get_points_for_visual()
+                
+                if len(points)==0:  # not yet created
+                    continue
 
                 n_points = A.NPoints()
+                A.setPoints(points)   # points can be set without allocation
 
-                lines = vtk.vtkCellArray()  # Create the polyline.
-                lines.InsertNextCell(n_points)
-                for i in range(len(points)):
-                    lines.InsertCellPoint(i)
-                A.poly.SetLines(lines)
+                if n_points != len(points): # equal number of points
+                    # different number of points in line
+                    # (re-create the poly-line)
+                    lines = vtk.vtkCellArray()  # Create the polyline.
+                    lines.InsertNextCell(len(points))
+                    for i in range(len(points)):
+                        # print('inserting point {} {} {}'.format(*i))
+                        lines.InsertCellPoint(i)
+                    A.poly.SetLines(lines)
 
                 continue
 
@@ -782,6 +892,11 @@ class Viewport:
                 V.actors[3].SetScale(scale)
                 V.actors[3].setTransform(t)
 
+                # scale the arrows
+                V.actors[0].SetScale(self.geometry_scale)
+                V.actors[1].SetScale(self.geometry_scale)
+                V.actors[2].SetScale(self.geometry_scale)
+
                 continue
 
             if isinstance(V.node, vf.Buoyancy):
@@ -804,6 +919,10 @@ class Viewport:
 
                 V.actors[0].setTransform(mat4x4)
                 V.actors[0].alpha(vc.ALPHA_BUOYANCY)
+
+                if vc.COLOR_BUOYANCY_MESH_FILL is None:
+                    V.actors[0].c(vc.COLOR_BUOYANCY_MESH_LINES)
+                    V.actors[0].wireframe()
 
                 if self.quick_updates_only:
                     continue
@@ -855,6 +974,7 @@ class Viewport:
                     vis = vp.actors.Actor([vertices, faces]).c(vc.COLOR_BUOYANCY_MESH_LINES)
                     vis.actor_type = ActorType.FORCE
                     vis.wireframe()
+                    vis.lw(vc.LINEWIDTH_SUBMERGED_MESH)
                     V.actors.append(vis)
                     if self.screen is not None:
                         self.screen.add(vis)
@@ -988,7 +1108,7 @@ class Viewport:
 
         self.update_outlines()
 
-        filename = vc.PATH_TEMP_SCREENSHOT
+        filename = str(vc.PATH_TEMP_SCREENSHOT)
 
         vp.screenshot(filename)
 

@@ -24,6 +24,16 @@ The design of DAVE is such that export to software such as dynamic simulation pa
 
 .. image:: docs/images/twinlift.jpg
 
+TUTORIAL
+=========
+
+A first video tutorial is available at: https://youtu.be/f-dQaaepsrk
+
+.. raw:: html
+   
+   <iframe width="560" height="315" src="https://www.youtube.com/embed/f-dQaaepsrk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+
 Installation
 ============
 
@@ -40,8 +50,36 @@ Or by cloning the repository from github
    git clone https://github.com/RubendeBruin/DAVE.git
 
 
+Requirements
+------------
+
+The following packages are required:
+ - vtk version 8.2 or up (the version 8.1.2 that pip installs does not work with pyside2m so use conda instead)
+ - pyside2 (installs qt)
+ - IPython
+ - vtkplotter
+ - numpy
+ - scipy
+ - matplotlib
+ - pyo3d (see note)
+ 
+CONDA
+-----
+ 
+You can use the following environement yml file to create a new conda enviroment with these packages: <https://github.com/RubendeBruin/DAVE/blob/master/dave.yml>
+
+Then do:
+
+::
+
+    conda env create -f dave.yml
+    
+to create a dedicated environment for DAVE
+
 Future developments
 ===================
+
+DAVE is still growing. At this moment DAVE only supports static calculations and visuals. This may sound a little disappointing but many engineering problems are actually governed by statics. Being able to accurately calculate the static loads is very valuable. Think about skew-loads on a lifting hook, barge heel change when removing weights, static load distribution changes as effect cog changes or length differences in lifting ropes, etc.
 
 *Dynamics*
 
@@ -70,7 +108,6 @@ For the design of rigging it is planned to add sheaves and cables with non-zero 
   * Contact points and planes
   * Blender rendering to Jupyter
 
-
 References and credits
 ======================
 
@@ -80,6 +117,7 @@ DAVE hates re-inventing the wheel. Therefore DAVE uses the following already ava
 - Blender <http://www.blender.org>
 - vtkplotter <https://github.com/marcomusy/vtkplotter>
 - vtk <http://www.vtk.org>
+
 
 Note
 ====

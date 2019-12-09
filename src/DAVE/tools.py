@@ -24,6 +24,15 @@ def assert3f(var, name = "Variable"):
         if not isinstance(var[i], numbers.Number):
             raise ValueError(name + " should contain three numbers but {} is not a number.".format(var[i]))
 
+def assert3f_positive(var, name = "Variable"):
+    """Asserts that variable has length three and contains only numbers"""
+    assert len(var) == 3, name + " should have length 3 but has length {}".format(len(var))
+    for i in range(3):
+        if not isinstance(var[i], numbers.Number):
+            raise ValueError(name + " should contain three positive numbers but {} is not a number.".format(var[i]))
+        if var[i]<0:
+            raise ValueError(name + " should contain three positive numbers but {} is not > 0.".format(var[i]))
+
 def assert6f(var, name = "Variable"):
     """Asserts that variable has length six and contains only numbers"""
     assert len(var) == 6, name + " should have length 6 but has length {}".format(len(var))
@@ -36,3 +45,47 @@ def assertPoi(var, name = "Node"):
         return
     else:
         raise ValueError(name + " be of type Poi but is a ".format(type(var)))
+
+def make_iterable(v):
+    """Makes an variable iterable by putting it in a list if needed"""
+
+    try:
+        _ = iter(v)
+        return v
+    except:
+        return [v]
+
+
+def radii_to_positions(rxx,ryy,rzz):
+    """decouple radii of gyration into six point discrete positions"""
+
+    Ixx = rxx ** 2
+    Iyy = ryy ** 2
+    Izz = rzz ** 2
+
+    rxx2 = (Ixx)
+    ryy2 = (Iyy)
+    rzz2 = (Izz)
+
+    # checks
+    if rxx2 > ryy2 + rzz2:
+        raise Exception('Ixx should be < Iyy + Izz')
+    if ryy2 > rxx2 + rzz2:
+        raise Exception('Iyy should be < Ixx + Izz')
+    if rzz2 > rxx2 + rzz2:
+        raise Exception('Izz should be < Ixx + Iyy')
+
+    x = np.sqrt(0.5 * (-rxx2 + ryy2 + rzz2)) * np.sqrt(3)
+    y = np.sqrt(0.5 * (rxx2 - ryy2 + rzz2)) * np.sqrt(3)
+    z = np.sqrt(0.5 * (rxx2 + ryy2 - rzz2)) * np.sqrt(3)
+
+    # Add the point masses
+    ps = list()
+    ps.append([x, 0, 0])
+    ps.append([-x, 0, 0])
+    ps.append([0, y, 0])
+    ps.append([0, -y, 0])
+    ps.append([0, 0, z])
+    ps.append([0, 0, -z])
+
+    return ps
