@@ -90,10 +90,7 @@ class WidgetBallastSolver(guiDockWidget):
             return
 
         code = 'ballast_solver = BallastSystemSolver(s["{}"])\n'.format(self._bs.name)
-        code += 'try:\n'
-        code += '    ballast_solver.ballast_to(cogx = s.required_ballast[1], cogy = s.required_ballast[2], weight = -s.required_ballast[0])\n'
-        code += 'except:\n'
-        code += '    print("FAILED")'
+        code += 'ballast_solver.ballast_to(cogx = s.required_ballast[1], cogy = s.required_ballast[2], weight = -s.required_ballast[0])\n'
 
         self.guiRunCodeCallback(code,guiEventType.MODEL_STATE_CHANGED)
 

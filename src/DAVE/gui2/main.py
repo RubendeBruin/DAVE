@@ -176,6 +176,43 @@ class Gui():
         iren = self.visual.renwin.GetInteractor()
         iren.AddObserver('TimerEvent', self.timerEvent)
 
+        # ======================== Main Menu entries :: visuals ======
+
+        self.ui.actionShow_water_plane.triggered.connect(self.toggle_show_global)
+        self.ui.actionShow_visuals.triggered.connect(self.toggle_show_visuals)
+        self.ui.actionShow_Geometry_elements.triggered.connect(self.toggle_show_geometry)
+        self.ui.actionShow_force_applyting_element.triggered.connect(self.toggle_show_force)
+
+        self.ui.actionHorizontal_camera.triggered.connect(self.visual.level_camera)
+        self.ui.actionAdd_light.triggered.connect(self.visual.make_lighter)
+        self.ui.actionDark_mode.triggered.connect(self.visual.make_darker)
+        self.ui.action2D_mode.triggered.connect(self.visual.toggle_2D)
+
+        def normalize_force():
+            self.run_code('self.visual.force_do_normalize = not self.visual.force_do_normalize',guiEventType.VIEWER_SETTINGS_UPDATE)
+
+        self.ui.actionShow_all_forces_at_same_size.triggered.connect(normalize_force)
+
+        def increase_force_size():
+            self.run_code('self.visual.force_scale = 1.1*self.visual.force_scale',guiEventType.VIEWER_SETTINGS_UPDATE)
+
+        self.ui.actionIncrease_force_size.triggered.connect(increase_force_size)
+
+        def decrease_force_size():
+            self.run_code('self.visual.force_scale = 0.9*self.visual.force_scale',guiEventType.VIEWER_SETTINGS_UPDATE)
+
+        self.ui.actionDecrease_force_size.triggered.connect(decrease_force_size)
+
+        def increase_geo_size():
+            self.run_code('self.visual.geometry_scale = 1.1*self.visual.geometry_scale',guiEventType.VIEWER_SETTINGS_UPDATE)
+
+        self.ui.actionIncrease_Geometry_size.triggered.connect(increase_geo_size)
+
+        def decrease_geo_size():
+            self.run_code('self.visual.geometry_scale = 0.9*self.visual.geometry_scale',guiEventType.VIEWER_SETTINGS_UPDATE)
+
+        self.ui.actionDecrease_Geometry_size.triggered.connect(decrease_geo_size)
+
         # ======================== Docks ====================
         self.guiWidgets = dict()
         """Dictionary of all created guiWidgets (dock-widgets)"""
@@ -358,20 +395,23 @@ class Gui():
 
         s = self.scene
 
-        self.ui.teFeedback.setStyleSheet("background-color: yellow;")
-        self.ui.teFeedback.setText("Running:")
-        self.ui.teFeedback.append(code)
-        self.ui.teFeedback.append('\n')
+        self.ui.teCode.append('# ------------------')
+        self.ui.pbExecute.setStyleSheet("background-color: yellow;")
+        self.ui.teFeedback.setStyleSheet("")
         self.ui.teFeedback.update()
+        self.ui.teCode.append(code)
+        self.ui.teCode.append('\n')
+        self.ui.teCode.verticalScrollBar().setValue(
+            self.ui.teCode.verticalScrollBar().maximum())  # scroll down all the way
+        self.ui.teCode.update()
 
-        self.app.processEvents()
+        # self.app.processEvents()
 
         with capture_output() as c:
 
             try:
                 exec(code)
 
-                self.ui.teFeedback.setStyleSheet("background-color: white;")
                 if c.stdout:
                     self.ui.teFeedback.append(c.stdout)
                     self.ui.teFeedback.append(str(datetime.datetime.now()))
@@ -379,9 +419,6 @@ class Gui():
                     self.ui.teFeedback.append("Succes at " + str(datetime.datetime.now()))
 
                 self._codelog.append(code)
-
-                if event is not None:
-                    self.guiEmitEvent(event)
 
                 # See if selected nodes are still valid and identical to the ones
                 to_be_removed = []
@@ -396,9 +433,18 @@ class Gui():
                     self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
 
             except Exception as E:
+
                 self.ui.teFeedback.setText(c.stdout + '\n' + str(E) + '\n\nWhen running: \n\n' + code)
                 self.ui.teFeedback.setStyleSheet("background-color: red;")
-                return
+
+            self.ui.pbExecute.setStyleSheet("")
+            self.ui.pbExecute.update()
+            self.ui.teFeedback.verticalScrollBar().setValue(self.ui.teFeedback.verticalScrollBar().maximum()) # scroll down all the way
+
+            if event is not None:
+                self.guiEmitEvent(event)
+
+
 
     def stop_solving(self):
         self._terminate = True
@@ -480,7 +526,21 @@ class Gui():
 
         self.animation_start(t,dofs,is_loop=False)
 
+    def toggle_show_force(self):
+        self.visual.show_force = self.ui.actionShow_force_applyting_element.isChecked()
+        self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
+    def toggle_show_geometry(self):
+        self.visual.show_geometry = self.ui.actionShow_Geometry_elements.isChecked()
+        self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
+
+    def toggle_show_global(self):
+        self.visual.show_global = self.ui.actionShow_water_plane.isChecked()
+        self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
+
+    def toggle_show_visuals(self):
+        self.visual.show_visual = self.ui.actionShow_visuals.isChecked()
+        self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def undo_solve_statics(self):
         if self._dofs is not None:
@@ -624,7 +684,11 @@ class Gui():
 
         if node is None:  # in case the parent or something was none
             node = _node
-        self.guiSelectNode(node.name)
+
+        if node is None: # sea or something
+            self.selected_nodes.clear()
+        else:
+            self.guiSelectNode(node.name)
 
     def visual_update_selection(self):
         for v in self.visual.visuals:
@@ -668,6 +732,8 @@ class Gui():
             self.refresh_3dview()
             return
 
+        if event == guiEventType.VIEWER_SETTINGS_UPDATE:
+            self.visual.update_visibility()
 
         self.visual.create_visuals()
         self.visual.add_new_actors_to_screen()
@@ -798,7 +864,7 @@ if __name__ == '__main__':
     bso = BallastSystemSolver(bs)
 
     s["bs"].empty_all_usable_tanks()
-    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Barge", z=-5.5)
+    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Barge", z=-7.25)
     bss = BallastSystemSolver(s["bs"])
     bso.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
 

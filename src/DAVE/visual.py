@@ -182,11 +182,8 @@ class VisualActor:
             for actor, color in zip(self.actors, self._original_colors):
                 actor.color(color)
 
-            # self._original_colors = list()
-            # self._original_alpha = list()
-
         else:
-            raise "Original color not stored for this visual"
+            raise Exception("Original color not stored for visual belonging to {}".format(self.node.name))
 
 
     def make_transparent(self):

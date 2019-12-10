@@ -89,55 +89,44 @@
     <addaction name="separator"/>
     <addaction name="actionFull_refresh"/>
    </widget>
-   <widget class="QMenu" name="menuView_2">
-    <property name="title">
-     <string>Window</string>
-    </property>
-    <addaction name="actionPython_console"/>
-   </widget>
-   <widget class="QMenu" name="menuWhat_if">
-    <property name="title">
-     <string>Optimize</string>
-    </property>
-    <addaction name="actionGoal_seek"/>
-    <addaction name="actionOptimize"/>
-   </widget>
-   <widget class="QMenu" name="menuMarine">
-    <property name="title">
-     <string>Marine</string>
-    </property>
-    <addaction name="actionStability_curve"/>
-   </widget>
-   <widget class="QMenu" name="menuRender">
-    <property name="title">
-     <string>Blender</string>
-    </property>
-    <addaction name="actionRender_current_view"/>
-   </widget>
-   <widget class="QMenu" name="menuDynamics">
-    <property name="title">
-     <string>Dynamics</string>
-    </property>
-    <addaction name="actionModal_shapes"/>
-    <addaction name="actionInertia_properties"/>
-   </widget>
    <addaction name="menuSolve_Statics"/>
    <addaction name="menuView"/>
-   <addaction name="menuView_2"/>
-   <addaction name="menuWhat_if"/>
-   <addaction name="menuMarine"/>
-   <addaction name="menuRender"/>
-   <addaction name="menuDynamics"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget_2">
    <property name="windowTitle">
-    <string>Feedback</string>
+    <string>Engine internals</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QWidget" name="widget" native="true">
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Code:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pbGenerateSceneCode">
+          <property name="text">
+           <string>Generate Scene Code</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTextEdit" name="teCode"/>
+     </item>
      <item>
       <widget class="QFrame" name="frame_3">
        <property name="frameShape">
@@ -148,16 +137,30 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QPushButton" name="pbGenerateSceneCode">
+         <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>Generate Scene Code</string>
+           <string>Output:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="pbCopyFeedback">
           <property name="text">
-           <string>Copy</string>
+           <string>Copy output</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pbExecute">
+          <property name="text">
+           <string>Execute</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../guis/resources.qrc">
+            <normaloff>:/icons/python logo klein.png</normaloff>:/icons/python logo klein.png</iconset>
           </property>
          </widget>
         </item>
@@ -393,7 +396,6 @@
   </action>
  </widget>
  <tabstops>
-  <tabstop>pbGenerateSceneCode</tabstop>
   <tabstop>pbCopyFeedback</tabstop>
   <tabstop>teFeedback</tabstop>
  </tabstops>

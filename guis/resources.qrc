@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>python logo klein.png</file>
     <file>sheave.png</file>
     <file>con2d.png</file>
     <file>Dave_icon.png</file>

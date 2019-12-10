@@ -254,40 +254,40 @@ class Gui:
         # -------------- menu
 
         self.ui.actionNew.triggered.connect(self.clear)
-        self.ui.actionShow_water_plane.triggered.connect(self.toggle_show_global)
-        self.ui.actionShow_visuals.triggered.connect(self.toggle_show_visuals)
-        self.ui.actionShow_Geometry_elements.triggered.connect(self.toggle_show_geometry)
-        self.ui.actionShow_force_applyting_element.triggered.connect(self.toggle_show_force)
-
-        self.ui.actionHorizontal_camera.triggered.connect(self.level_camera)
-        self.ui.actionAdd_light.triggered.connect(self.visual.make_lighter)
-        self.ui.actionDark_mode.triggered.connect(self.visual.make_darker)
-        self.ui.action2D_mode.triggered.connect(self.visual.toggle_2D)
-
-        def normalize_force():
-            self.run_code('self.visual.force_do_normalize = not self.visual.force_do_normalize')
-
-        self.ui.actionShow_all_forces_at_same_size.triggered.connect(normalize_force)
-
-        def increase_force_size():
-            self.run_code('self.visual.force_scale = 1.1*self.visual.force_scale')
-
-        self.ui.actionIncrease_force_size.triggered.connect(increase_force_size)
-
-        def decrease_force_size():
-            self.run_code('self.visual.force_scale = 0.9*self.visual.force_scale')
-
-        self.ui.actionDecrease_force_size.triggered.connect(decrease_force_size)
-
-        def increase_geo_size():
-            self.run_code('self.visual.geometry_scale = 1.1*self.visual.geometry_scale')
-
-        self.ui.actionIncrease_Geometry_size.triggered.connect(increase_geo_size)
-
-        def decrease_geo_size():
-            self.run_code('self.visual.geometry_scale = 0.9*self.visual.geometry_scale')
-
-        self.ui.actionDecrease_Geometry_size.triggered.connect(decrease_geo_size)
+        # self.ui.actionShow_water_plane.triggered.connect(self.toggle_show_global)
+        # self.ui.actionShow_visuals.triggered.connect(self.toggle_show_visuals)
+        # self.ui.actionShow_Geometry_elements.triggered.connect(self.toggle_show_geometry)
+        # self.ui.actionShow_force_applyting_element.triggered.connect(self.toggle_show_force)
+        #
+        # self.ui.actionHorizontal_camera.triggered.connect(self.level_camera)
+        # self.ui.actionAdd_light.triggered.connect(self.visual.make_lighter)
+        # self.ui.actionDark_mode.triggered.connect(self.visual.make_darker)
+        # self.ui.action2D_mode.triggered.connect(self.visual.toggle_2D)
+        #
+        # def normalize_force():
+        #     self.run_code('self.visual.force_do_normalize = not self.visual.force_do_normalize')
+        #
+        # self.ui.actionShow_all_forces_at_same_size.triggered.connect(normalize_force)
+        #
+        # def increase_force_size():
+        #     self.run_code('self.visual.force_scale = 1.1*self.visual.force_scale')
+        #
+        # self.ui.actionIncrease_force_size.triggered.connect(increase_force_size)
+        #
+        # def decrease_force_size():
+        #     self.run_code('self.visual.force_scale = 0.9*self.visual.force_scale')
+        #
+        # self.ui.actionDecrease_force_size.triggered.connect(decrease_force_size)
+        #
+        # def increase_geo_size():
+        #     self.run_code('self.visual.geometry_scale = 1.1*self.visual.geometry_scale')
+        #
+        # self.ui.actionIncrease_Geometry_size.triggered.connect(increase_geo_size)
+        #
+        # def decrease_geo_size():
+        #     self.run_code('self.visual.geometry_scale = 0.9*self.visual.geometry_scale')
+        #
+        # self.ui.actionDecrease_Geometry_size.triggered.connect(decrease_geo_size)
 
         # docking windows
 
@@ -520,21 +520,21 @@ class Gui:
     #     menu.exec_(globLoc)
 
 
-    def toggle_show_force(self):
-        self.visual.show_force = self.ui.actionShow_force_applyting_element.isChecked()
-        self.visual.update_visibility()
-
-    def toggle_show_geometry(self):
-        self.visual.show_geometry = self.ui.actionShow_Geometry_elements.isChecked()
-        self.visual.update_visibility()
-
-    def toggle_show_global(self):
-        self.visual.show_global = self.ui.actionShow_water_plane.isChecked()
-        self.visual.update_visibility()
-
-    def toggle_show_visuals(self):
-        self.visual.show_visual = self.ui.actionShow_visuals.isChecked()
-        self.visual.update_visibility()
+    # def toggle_show_force(self):
+    #     self.visual.show_force = self.ui.actionShow_force_applyting_element.isChecked()
+    #     self.visual.update_visibility()
+    #
+    # def toggle_show_geometry(self):
+    #     self.visual.show_geometry = self.ui.actionShow_Geometry_elements.isChecked()
+    #     self.visual.update_visibility()
+    #
+    # def toggle_show_global(self):
+    #     self.visual.show_global = self.ui.actionShow_water_plane.isChecked()
+    #     self.visual.update_visibility()
+    #
+    # def toggle_show_visuals(self):
+    #     self.visual.show_visual = self.ui.actionShow_visuals.isChecked()
+    #     self.visual.update_visibility()
 
     def actionDelete(self):
         print('delete')

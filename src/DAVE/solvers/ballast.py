@@ -151,8 +151,6 @@ class BallastSystemSolver:
     the error reduced with at least min_error_reduction
     the system is a a better state (more filling in higher priority tank without increasing the error)
 
-    _improved = True/False
-
     """
 
     def __init__(self, ballast_system_node):
@@ -161,7 +159,9 @@ class BallastSystemSolver:
 
         self._target_cog = np.array((0.,0.,0.))
         self._target_wt = 0
-        self.silent = False
+        self.silent = True
+        self.min_error_reduction = 0.01
+
 
     def print(self, *kwarg):
         if not(self.silent):
@@ -181,36 +181,38 @@ class BallastSystemSolver:
         return dx**2 + dy**2 + dw **2
 
     def optimize_tank(self, tank):
+
+        self.print('-- optimize tank -- {}'.format(tank.name))
         E0 = self._error()
+        self.print('-- initial error {}'.format(E0))
         p0 = tank.pct
+
+        was_partial = tank.is_partial()
 
         # fill tank
         tank.pct = 100
         if self._error() < E0:
             self.print('Tank {} set to FULL'.format(tank.name))
-            if p0<99.99:
+            if self._error() < E0 - self.min_error_reduction:
                 return True
-            else:
-                return False
+            if was_partial:
+                return True
+
 
         # empty tank
         tank.pct = 0
         if self._error() < E0:
             self.print('Tank {} set to EMPTY'.format(tank.name, ))
-            if p0 > 0.001:
+            if self._error() < E0 - self.min_error_reduction:
                 return True
-            else:
-                return False
+            if was_partial:
+                return True
 
         # optimum must be somewhere in between
 
         def fun(x):
-            if hasattr(x, "__len__"):
-                tank.pct = x[0]
-            else:
-                tank.pct = x
+            tank.pct = x
             return self._error()
-
 
         res = minimize_scalar(fun, bounds=(0,100),method='Bounded')
 
@@ -223,63 +225,89 @@ class BallastSystemSolver:
             self.print('SUB-OPTIMIZATION FAILED FOR ONE TANK!!!')
             # raise ArithmeticError('Optimization failed')
 
-        if res.x > 100:
+        if res.x > 100 or res.x < 0:
             self.print('error with bounds')
 
         # Did the optimization result in a different tank fill
-        if abs(p0-res.x) > 0.0001:
+        if self._error() < E0 - self.min_error_reduction:
             self.print('Tank {} set to {}'.format(tank.name, res.x))
             tank.pct = res.x
             return True
 
+        tank.pct = p0
         return False
 
     def optimize_multiple_partial(self, tanks):
+
 
         E0 = self._error()
 
 
         n_tanks = len(tanks)
 
-        # See if it is possible to empty one of the tanks and get an result that is at least as good
+        self.print('Optimizing multiple ( n = {} ) tanks:'.format(n_tanks))
+        self.print('Initial error {}'.format(E0))
+
+        for tank in tanks:
+            self.print('{} == {} '.format(tank.name, tank.pct))
+
+        p0 = list()
+        for tank in tanks:
+            p0.append(tank.pct)
+
+        # See if it is possible to empty or fill one of the tanks and get an result that is at least as good
+        # This does not need to decrease the error because it leads to a better state
+        # Except if that tank was already empty or full
+
         if n_tanks == 2:
 
             store_tank1 = tanks[1].pct
             store_tank0 = tanks[0].pct
 
             # empty second tank and optimize first one
-            tanks[1].make_empty()
-            if self.optimize_tank(tanks[0]):
-                if self._error() < E0:
+            if not tanks[1].is_empty():
+                tanks[1].make_empty()
+                self.optimize_tank(tanks[0])
+                if self._error() <= E0:
                     return True
-            tanks[1].pct = store_tank1
+                tanks[1].pct = store_tank1
 
             # fill first tank and optimize second one
-            tanks[0].make_full()
-            if self.optimize_tank(tanks[1]):
-                if self._error() < E0:
+            if not tanks[0].is_full:
+                tanks[0].make_full()
+                self.optimize_tank(tanks[1])
+                if self._error() <= E0:
                     return True
-            tanks[0].pct = store_tank0
+                tanks[0].pct = store_tank0
 
             # fill second tank and optimize first one
-            tanks[1].make_full()
-            if self.optimize_tank(tanks[0]):
-                if self._error() < E0:
+            if not tanks[1].is_full:
+                tanks[1].make_full()
+                self.optimize_tank(tanks[0])
+                if self._error() <= E0:
                     return True
-            tanks[1].pct = store_tank1
+                tanks[1].pct = store_tank1
 
             # empty first tank and optimize second one
-            tanks[0].make_empty()
-            if self.optimize_tank(tanks[1]):
-                if self._error() < E0:
+            if not tanks[0].is_empty:
+                tanks[0].make_empty()
+                self.optimize_tank(tanks[1])
+                if self._error() <= E0:
                     return True
-            tanks[0].pct = store_tank0
+                tanks[0].pct = store_tank0
 
 
-        # See if it is possible to empty one of the tanks and get an result that is at least as good
+        # More than two tanks - make empty
         if n_tanks > 2:
-            # two slack tanks should be enough in most cases
             for i_empty in reversed(range(n_tanks)):
+
+                # set original fillings
+                for tank,fill in zip( tanks, p0):
+                    tank.pct = fill
+
+                if tanks[i_empty].is_empty(): # do not empty tanks that were already full
+                    continue
+
                 subset = []
                 for i in range(n_tanks):
                     if i == i_empty:
@@ -290,12 +318,22 @@ class BallastSystemSolver:
                 if self.optimize_multiple_partial(subset):
                     if self._error() <= E0:
                         self.print('Removed one of the slack tanks')
+                        for tank in tanks:
+                            self.print('{} == {} '.format(tank.name, tank.pct))
+
                         return True
 
-        # See if it is possible to fill one of the tanks and get an result that is at least as good
+        #  More than two tanks - make full
         if n_tanks>2:
-            # two slack tanks should be enough in most cases
             for i_full in range(n_tanks):
+
+                # set original fillings
+                for tank, fill in zip(tanks,p0):
+                    tank.pct = fill
+
+                if tanks[i_full].is_full():  # do not fill tanks that were already full
+                    continue
+
                 subset = []
                 for i in range(n_tanks):
                     if i==i_full:
@@ -309,6 +347,14 @@ class BallastSystemSolver:
                         return True
 
 
+        # =========== It was not possible to improve the state by filling or emptying one of the tanks partial completely ====
+        #
+        # Do an optimization over all the given tanks
+
+
+        # set original fillings
+        for tank, fill in zip(tanks,p0):
+            tank.pct = fill
 
         def fun(x):
             for i,tank in enumerate(tanks):
@@ -326,29 +372,28 @@ class BallastSystemSolver:
 
         if not res.success:
             self.print('SUB-OPTIMIZATION FAILED FOR {} TANKS'.format(n_tanks))
+
+            # Often it fails because the solution any point on a line.
+
             # raise ArithmeticError('Optimization failed')  # TODO: possible to use a more robust routine?
-            if n_tanks==2: # we can plot this!
-                visualize_optimiaztion(fun, (0,100), (0,100))
+            # if n_tanks==2: # we can plot this!
+            #     visualize_optimiaztion(fun, (0,100), (0,100))
 
 
         # apply the result
         fun(res.x)
 
         # Did the optimization result in a different tank fill
-        if self._error() < E0:
-
+        if self._error() < E0-self.min_error_reduction:
 
             self.print('Before optimaliz = ', x0)
             self.print('multi-opt result = ', res.x)
 
-            d = x0 - res.x
-            maxd = np.max(np.abs(d))
-            if maxd > 0.001:
-                return True
-            else:
-                self.print('change not big enough')
-                return False
+            return True
 
+        # set original fillings
+        for tank, fill in zip(tanks, p0):
+            tank.pct = fill
         return False
 
     def ballast_to(self, cogx, cogy, weight):
@@ -372,9 +417,7 @@ class BallastSystemSolver:
         maxit = 100
         for it in range(maxit):
 
-            if it==50:
-                print('here')
-
+            print('Iteration = {}, Error = {}'.format(it, self._error()))
 
             _log.append([tank.pct for tank in self.BallastSystem.tanks])
             print(_log[-1])
@@ -399,6 +442,7 @@ class BallastSystemSolver:
 
             changed = False
 
+            # See if it gets better by filling or emptying _any_ of the other tanks
             for tank in self.BallastSystem.tanks:
                 if self.optimize_tank(tank):
                     changed = True
@@ -415,6 +459,12 @@ class BallastSystemSolver:
                     temp = partials.copy()
                     temp.append(tank)
                     if self.optimize_multiple_partial(temp):
+
+                        self.print('Optimized the following:')
+                        for tank in temp:
+                            self.print('{} --> {}'.format(tank.name, tank.pct))
+
+
                         changed = True
                         break
 
