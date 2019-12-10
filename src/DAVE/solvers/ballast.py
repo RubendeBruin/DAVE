@@ -145,6 +145,15 @@ class Tank:
         return False
 
 class BallastSystemSolver:
+    """
+    Changes in ballast system are condidered ok if either
+
+    the error reduced with at least min_error_reduction
+    the system is a a better state (more filling in higher priority tank without increasing the error)
+
+    _improved = True/False
+
+    """
 
     def __init__(self, ballast_system_node):
 
@@ -152,6 +161,12 @@ class BallastSystemSolver:
 
         self._target_cog = np.array((0.,0.,0.))
         self._target_wt = 0
+        self.silent = False
+
+    def print(self, *kwarg):
+        if not(self.silent):
+            print(*kwarg)
+
 
     def xyzw(self):
         return self.BallastSystem.xyzw()
@@ -172,12 +187,20 @@ class BallastSystemSolver:
         # fill tank
         tank.pct = 100
         if self._error() < E0:
-            return True
+            self.print('Tank {} set to FULL'.format(tank.name))
+            if p0<99.99:
+                return True
+            else:
+                return False
 
         # empty tank
         tank.pct = 0
         if self._error() < E0:
-            return True
+            self.print('Tank {} set to EMPTY'.format(tank.name, ))
+            if p0 > 0.001:
+                return True
+            else:
+                return False
 
         # optimum must be somewhere in between
 
@@ -197,15 +220,15 @@ class BallastSystemSolver:
             y = funn(x)
             plt.plot(x,y)
             plt.show()
-            print('SUB-OPTIMIZATION FAILED FOR ONE TANK!!!')
+            self.print('SUB-OPTIMIZATION FAILED FOR ONE TANK!!!')
             # raise ArithmeticError('Optimization failed')
 
         if res.x > 100:
-            print('error with bounds')
+            self.print('error with bounds')
 
         # Did the optimization result in a different tank fill
         if abs(p0-res.x) > 0.0001:
-            print('Tank {} set to {}'.format(tank.name, res.x))
+            self.print('Tank {} set to {}'.format(tank.name, res.x))
             tank.pct = res.x
             return True
 
@@ -266,7 +289,7 @@ class BallastSystemSolver:
 
                 if self.optimize_multiple_partial(subset):
                     if self._error() <= E0:
-                        print('Removed one of the slack tanks')
+                        self.print('Removed one of the slack tanks')
                         return True
 
         # See if it is possible to fill one of the tanks and get an result that is at least as good
@@ -282,7 +305,7 @@ class BallastSystemSolver:
 
                 if self.optimize_multiple_partial(subset):
                     if self._error() <= E0:
-                        print('Removed one of the slack tanks')
+                        self.print('Removed one of the slack tanks')
                         return True
 
 
@@ -302,7 +325,7 @@ class BallastSystemSolver:
         res = minimize(fun, x0=np.array(x0), bounds=bnds)
 
         if not res.success:
-            print('SUB-OPTIMIZATION FAILED FOR {} TANKS'.format(n_tanks))
+            self.print('SUB-OPTIMIZATION FAILED FOR {} TANKS'.format(n_tanks))
             # raise ArithmeticError('Optimization failed')  # TODO: possible to use a more robust routine?
             if n_tanks==2: # we can plot this!
                 visualize_optimiaztion(fun, (0,100), (0,100))
@@ -313,8 +336,18 @@ class BallastSystemSolver:
 
         # Did the optimization result in a different tank fill
         if self._error() < E0:
-            print('multi-opt result = ', res.x)
-            return True
+
+
+            self.print('Before optimaliz = ', x0)
+            self.print('multi-opt result = ', res.x)
+
+            d = x0 - res.x
+            maxd = np.max(np.abs(d))
+            if maxd > 0.001:
+                return True
+            else:
+                self.print('change not big enough')
+                return False
 
         return False
 
@@ -336,8 +369,12 @@ class BallastSystemSolver:
             print('{} of {} at {} {} {}'.format(tank.name, tank.capacity(), *tank.position))
         print('-----------------------------')
 
+        maxit = 100
+        for it in range(maxit):
 
-        while True:
+            if it==50:
+                print('here')
+
 
             _log.append([tank.pct for tank in self.BallastSystem.tanks])
             print(_log[-1])
@@ -390,12 +427,15 @@ class BallastSystemSolver:
 
             raise ArithmeticError('Optimization failed')
 
-
-        print(self._error())
-        print(self.xyzw())
+        self.print('Error = {}'.format(self._error()))
+        self.print(self.xyzw())
         print([t.pct for t in self.BallastSystem.tanks])
-        # plt.plot(_log)
-        # plt.show()
+
+        if it == maxit-1:
+            plt.plot(_log)
+            print('Error = {}'.format(self._error()))
+            plt.show()
+            raise ArithmeticError('Optimization failed : too many iterations')
 
 # ====== main code ======
 

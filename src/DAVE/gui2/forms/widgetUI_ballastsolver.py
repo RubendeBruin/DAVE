@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_ballastsolver.ui',
 # licensing of 'widget_ballastsolver.ui' applies.
 #
-# Created: Mon Dec  9 17:39:12 2019
+# Created: Tue Dec 10 10:28:56 2019
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_BallastSolver(object):
     def setupUi(self, BallastSolver):
         BallastSolver.setObjectName("BallastSolver")
-        BallastSolver.resize(266, 556)
+        BallastSolver.resize(266, 516)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -22,17 +22,6 @@ class Ui_BallastSolver(object):
         BallastSolver.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.verticalLayout = QtWidgets.QVBoxLayout(BallastSolver)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.label = QtWidgets.QLabel(BallastSolver)
-        self.label.setObjectName("label")
-        self.verticalLayout.addWidget(self.label)
-        self.comboBox = QtWidgets.QComboBox(BallastSolver)
-        self.comboBox.setObjectName("comboBox")
-        self.verticalLayout.addWidget(self.comboBox)
-        self.line = QtWidgets.QFrame(BallastSolver)
-        self.line.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line.setObjectName("line")
-        self.verticalLayout.addWidget(self.line)
         self.label_3 = QtWidgets.QLabel(BallastSolver)
         self.label_3.setObjectName("label_3")
         self.verticalLayout.addWidget(self.label_3)
@@ -57,9 +46,10 @@ class Ui_BallastSolver(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.tableWidget.sizePolicy().hasHeightForWidth())
         self.tableWidget.setSizePolicy(sizePolicy)
+        self.tableWidget.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.tableWidget.setAlternatingRowColors(False)
-        self.tableWidget.setShowGrid(False)
+        self.tableWidget.setShowGrid(True)
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(1)
         self.tableWidget.setRowCount(3)
@@ -74,11 +64,6 @@ class Ui_BallastSolver(object):
         self.tableWidget.horizontalHeader().setStretchLastSection(True)
         self.tableWidget.verticalHeader().setStretchLastSection(True)
         self.verticalLayout.addWidget(self.tableWidget)
-        self.line_3 = QtWidgets.QFrame(BallastSolver)
-        self.line_3.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line_3.setObjectName("line_3")
-        self.verticalLayout.addWidget(self.line_3)
         self.pushButton = QtWidgets.QPushButton(BallastSolver)
         self.pushButton.setObjectName("pushButton")
         self.verticalLayout.addWidget(self.pushButton)
@@ -94,7 +79,6 @@ class Ui_BallastSolver(object):
 
     def retranslateUi(self, BallastSolver):
         BallastSolver.setWindowTitle(QtWidgets.QApplication.translate("BallastSolver", "Form", None, -1))
-        self.label.setText(QtWidgets.QApplication.translate("BallastSolver", "Ballast system:", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("BallastSolver", "Ballast", None, -1))
         self.label_4.setText(QtWidgets.QApplication.translate("BallastSolver", "VESSEL", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("BallastSolver", "to an even-keel conditions at vertical position of:", None, -1))

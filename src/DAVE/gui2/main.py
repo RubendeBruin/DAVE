@@ -98,6 +98,7 @@ from DAVE.gui2.widget_dynamic_properties import WidgetDynamicProperties
 from DAVE.gui2.widget_modeshapes import WidgetModeShapes
 from DAVE.gui2.widget_ballastconfiguration import WidgetBallastConfiguration
 from DAVE.gui2.widget_ballastsolver import WidgetBallastSolver
+from DAVE.gui2.widget_ballastsystemselect import WidgetBallastSystemSelect
 
 # Imports available in script
 import numpy as np
@@ -251,7 +252,7 @@ class Gui():
             self.show_guiWidget('WidgetModeShapes', WidgetModeShapes)
 
         if name == 'BALLAST':
-
+            self.show_guiWidget('WidgetBallastSystemSelect', WidgetBallastSystemSelect)
             self.show_guiWidget('WidgetBallastConfiguration', WidgetBallastConfiguration)
             self.show_guiWidget('WidgetBallastSolver', WidgetBallastSolver)
 
@@ -797,7 +798,7 @@ if __name__ == '__main__':
     bso = BallastSystemSolver(bs)
 
     s["bs"].empty_all_usable_tanks()
-    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Barge", z=-4.75)
+    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Barge", z=-5.5)
     bss = BallastSystemSolver(s["bs"])
     bso.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
 

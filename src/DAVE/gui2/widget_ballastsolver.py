@@ -32,9 +32,11 @@ class WidgetBallastSolver(guiDockWidget):
         self.ui.setupUi(self.contents)
 
         self._vesselNode = None
-        self.ui.comboBox.currentTextChanged.connect(self.ballast_system_selected)
+        self._bs = None             # selected ballast system
+
         self.ui.pushButton.pressed.connect(self.determineRequiredBallast)
         self.ui.pushButton_2.pressed.connect(self.solveBallast)
+        self.ui.doubleSpinBox.valueChanged.connect(self.draftChanged)
 
 
     def guiProcessEvent(self, event):
@@ -44,13 +46,10 @@ class WidgetBallastSolver(guiDockWidget):
         After creation of the widget this event is called with guiEventType.FULL_UPDATE
         """
 
-        if event in [guiEventType.FULL_UPDATE, guiEventType.MODEL_STRUCTURE_CHANGED]:
-            self.fill()
+        if event in [guiEventType.FULL_UPDATE, guiEventType.SELECTION_CHANGED]:
+            self.ballast_system_selected()
 
-        if event == guiEventType.SELECTION_CHANGED:
-            if self.guiSelection:
-                if isinstance(self.guiSelection[0], nodes.BallastSystem):
-                    self.ui.comboBox.setCurrentText(self.guiSelection[0].name)
+
 
 
     def guiDefaultLocation(self):
@@ -58,29 +57,27 @@ class WidgetBallastSolver(guiDockWidget):
 
     # ======
 
-    def fill(self):
-        # get all ballast-systems
-        self.ui.comboBox.clear()
-        for bs in self.guiScene.nodes_of_type(nodes.BallastSystem):
-            self.ui.comboBox.addItem(bs.name)
-
-        if self.guiSelection:
-            if isinstance(self.guiSelection[0], nodes.BallastSystem):
-                self.ui.comboBox.setCurrentText(self.guiSelection[0].name)
-
+    def assert_selection_valid(self):
+        try:
+            self.guiScene[self._bs.name]
+            return True
+        except:
+            print('Please select a ballast system first')
+            return False
 
     def ballast_system_selected(self):
-        name = self.ui.comboBox.currentText()
-        try:
-            bs = self.guiScene[name]
-        except ValueError:
-            return
+        if self.guiSelection:
+            if isinstance(self.guiSelection[0], nodes.BallastSystem):
+                self._bs = self.guiSelection[0]
+                self._vesselNode = self._bs.parent
 
-        self._vesselNode = bs.parent
-        self.ui.label_4.setText(self._vesselNode.name)
+                self.ui.label_4.setText(self._vesselNode.name)
 
     def determineRequiredBallast(self):
-        code = 's["{}"].empty_all_usable_tanks()\n'.format(self.ui.comboBox.currentText())
+        if not self.assert_selection_valid():
+            return
+
+        code = 's["{}"].empty_all_usable_tanks()\n'.format(self._bs.name)
         code += 's.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s,vessel="{}",z={})'.format(self._vesselNode.name, self.ui.doubleSpinBox.value())
         self.guiRunCodeCallback(code, guiEventType.MODEL_STATE_CHANGED)
         self.ui.tableWidget.item(0,0)
@@ -89,11 +86,18 @@ class WidgetBallastSolver(guiDockWidget):
         self.ui.tableWidget.setItem(0, 2, QtWidgets.QTableWidgetItem(str(self.guiScene.required_ballast[2])))
 
     def solveBallast(self):
-        code = 'ballast_solver = BallastSystemSolver(s["{}"])\n'.format(self.ui.comboBox.currentText())
+        if not self.assert_selection_valid():
+            return
+
+        code = 'ballast_solver = BallastSystemSolver(s["{}"])\n'.format(self._bs.name)
         code += 'try:\n'
         code += '    ballast_solver.ballast_to(cogx = s.required_ballast[1], cogy = s.required_ballast[2], weight = -s.required_ballast[0])\n'
         code += 'except:\n'
         code += '    print("FAILED")'
 
         self.guiRunCodeCallback(code,guiEventType.MODEL_STATE_CHANGED)
+
+    def draftChanged(self):
+        self.determineRequiredBallast()
+        self.solveBallast()
 

@@ -13,8 +13,10 @@ WidgetBallastConfiguration
 from DAVE.gui2.dockwidget import *
 from DAVE.gui2.forms.widgetUI_ballastconfiguration import Ui_widget_ballastsystem
 from PySide2 import QtGui, QtCore, QtWidgets
+from PySide2.QtGui import QBrush, QColor
 import DAVE.scene as nodes
 import DAVE.settings as ds
+import numpy as np
 
 class WidgetBallastConfiguration(guiDockWidget):
 
@@ -30,8 +32,9 @@ class WidgetBallastConfiguration(guiDockWidget):
         # # or from a generated file
         self.ui = Ui_widget_ballastsystem()
         self.ui.setupUi(self.contents)
-
         self.ui.tableWidget.verticalHeader().setSectionsMovable(True)
+
+        self._bs = None # active ballast system
 
 
 
@@ -58,19 +61,37 @@ class WidgetBallastConfiguration(guiDockWidget):
         # display the name of the selected node
         if self.guiSelection:
             node = self.guiSelection[0]
-
             if isinstance(node, nodes.BallastSystem):
-                tw = self.ui.tableWidget
-                for i,t in enumerate(node.tanks):
-                    rows = i
+                self._bs = node
 
-                    tw.setRowCount(rows + 1)
-                    tw.setVerticalHeaderItem(rows, QtWidgets.QTableWidgetItem(t.name))
-                    tw.setItem(rows, 0, QtWidgets.QTableWidgetItem('{:e}'.format(t.capacity())))
-                    tw.setItem(rows, 1, QtWidgets.QTableWidgetItem('{:.1f}'.format(t.fillpct())))
-                    tw.setItem(rows, 2, QtWidgets.QTableWidgetItem('{:e}'.format(t.position[0])))
-                    tw.setItem(rows, 3, QtWidgets.QTableWidgetItem('{:e}'.format(t.position[1])))
-                    tw.setItem(rows, 4, QtWidgets.QTableWidgetItem('{:e}'.format(t.position[2])))
+        if self._bs is None:
+            return
+
+        tw = self.ui.tableWidget
+
+        partial = QColor.fromRgb(*254*np.array(ds.COLOR_SELECT))
+        full    = QColor.fromRgb(*254*np.array(ds.COLOR_WATER))
+        empty = QColor.fromRgb(254,254,254)
+
+        for i,t in enumerate(self._bs.tanks):
+            rows = i
+
+            tw.setRowCount(rows + 1)
+            tw.setVerticalHeaderItem(rows, QtWidgets.QTableWidgetItem(t.name))
+            tw.setItem(rows, 0, QtWidgets.QTableWidgetItem('{:e}'.format(t.capacity())))
+            tw.setItem(rows, 1, QtWidgets.QTableWidgetItem('{:.1f}'.format(t.fillpct())))
+            tw.setItem(rows, 2, QtWidgets.QTableWidgetItem('{:e}'.format(t.position[0])))
+            tw.setItem(rows, 3, QtWidgets.QTableWidgetItem('{:e}'.format(t.position[1])))
+            tw.setItem(rows, 4, QtWidgets.QTableWidgetItem('{:e}'.format(t.position[2])))
+
+            if t.fillpct() >= 99.9:
+                self.ui.tableWidget.item(rows, 1).setBackground(QBrush(full))
+                self.ui.tableWidget.item(rows, 1).setTextColor(empty)
+
+            elif t.fillpct() > 0.1:
+                self.ui.tableWidget.item(rows, 1).setBackground(QBrush(partial))
+            else:
+                self.ui.tableWidget.item(rows, 1).setBackground(QBrush(empty))
 
     def action(self):
         pass
