@@ -74,7 +74,7 @@
 from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import QDialog
+from PySide2.QtWidgets import QDialog,QFileDialog
 from DAVE.scene import Scene
 
 from DAVE.gui2.forms.main_form import Ui_MainWindow
@@ -177,6 +177,22 @@ class Gui():
         iren.AddObserver('TimerEvent', self.timerEvent)
 
         # ======================== Main Menu entries :: visuals ======
+
+        self.ui.actionNew.triggered.connect(self.clear)
+        self.ui.actionOpen.triggered.connect(self.open)
+        self.ui.actionSave_scene.triggered.connect(self.menu_save)
+        self.ui.actionImport_sub_scene.triggered.connect(self.menu_import)
+        self.ui.actionImport_browser.triggered.connect(self.import_browser)
+
+        # --- buttons
+
+        self.ui.pbExecute.pressed.connect(self.run_code_in_teCode)
+        self.ui.pbCopyFeedback.pressed.connect(self.feedback_copy)
+        self.ui.pbGenerateSceneCode.pressed.connect(self.generate_scene_code)
+
+
+
+        # -- visuals
 
         self.ui.actionShow_water_plane.triggered.connect(self.toggle_show_global)
         self.ui.actionShow_visuals.triggered.connect(self.toggle_show_visuals)
@@ -545,6 +561,37 @@ class Gui():
     def undo_solve_statics(self):
         if self._dofs is not None:
             self.run_code('s._vfc.set_dofs(self._dofs) # UNDO SOLVE STATICS', guiEventType.MODEL_STATE_CHANGED)
+
+    def clear(self):
+        self.run_code('s.clear()', guiEventType.FULL_UPDATE)
+
+    def open(self):
+        filename, _ = QFileDialog.getOpenFileName(filter="*.dave", caption="Assets")
+        if filename:
+            code = 's.clear()\ns.load_scene(r"{}")'.format(filename)
+            self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+    def menu_import(self):
+        filename, _ = QFileDialog.getOpenFileName(filter="*.dave", caption="Assets")
+        if filename:
+            code = 's.import_scene(r"{}")'.format(filename)
+            self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+    def menu_save(self):
+        filename, _ = QFileDialog.getSaveFileName(filter="*.dave", caption="Scene files",directory=self.scene.resources_paths[0])
+        if filename:
+            code = 's.save_scene(r"{}")'.format(filename)
+            self.run_code(code, guiEventType.NOTHING)
+
+    def feedback_copy(self):
+        self.app.clipboard().setText(self.ui.teFeedback.toPlainText())
+
+    def generate_scene_code(self):
+        self.ui.teFeedback.setText(self.scene.give_python_code())
+
+    def run_code_in_teCode(self):
+        code = self.ui.teCode.toPlainText()
+        self.run_code(code,guiEventType.FULL_UPDATE)
 
     def openContextMenyAt(self, node_name, globLoc):
         menu = QtWidgets.QMenu()

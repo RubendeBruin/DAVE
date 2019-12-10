@@ -2,9 +2,10 @@ from PySide2 import QtWidgets, QtCore
 from enum import Enum
 
 class guiEventType(Enum):
-    FULL_UPDATE = 0
+    NOTHING = -1                 # no changes, for example model saved
+    FULL_UPDATE = 0              # unknown, better update everything
     SELECTED_NODE_MODIFIED = 1   # properties of the currently selected node changed
-    MODEL_STRUCTURE_CHANGED = 2  # changes in global model structure
+    MODEL_STRUCTURE_CHANGED = 2  # changes in global model structure, for example nodes added or removed
     MODEL_STATE_CHANGED = 3      # only change in dofs
     SELECTION_CHANGED = 4        # a different node is selected
     VIEWER_SETTINGS_UPDATE = 5   # the display settings for the viewer changed

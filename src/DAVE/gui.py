@@ -323,20 +323,20 @@ class Gui:
         # iren.AddObserver('TimerEvent', self.set_state)
 
 
-    def clear(self):
-        self.run_code('s.clear()')
+    # def clear(self):
+    #     self.run_code('s.clear()')
 
-    def open(self):
-        filename, _ = QFileDialog.getOpenFileName(filter="*.dave_asset", caption="Assets")
-        if filename:
-            code = 's.clear()\ns.load_scene(r"{}")'.format(filename)
-            self.run_code(code)
-
-    def menu_import(self):
-        filename, _ = QFileDialog.getOpenFileName(filter="*.dave_asset", caption="Assets")
-        if filename:
-            code = 's.import_scene(r"{}")'.format(filename)
-            self.run_code(code)
+    # def open(self):
+    #     filename, _ = QFileDialog.getOpenFileName(filter="*.dave_asset", caption="Assets")
+    #     if filename:
+    #         code = 's.clear()\ns.load_scene(r"{}")'.format(filename)
+    #         self.run_code(code)
+    #
+    # def menu_import(self):
+    #     filename, _ = QFileDialog.getOpenFileName(filter="*.dave_asset", caption="Assets")
+    #     if filename:
+    #         code = 's.import_scene(r"{}")'.format(filename)
+    #         self.run_code(code)
 
     # def import_browser(self):
     #     G = DAVE.standard_assets.Gui()
@@ -387,7 +387,7 @@ class Gui:
         self.run_code(code)
 
     def menu_save(self):
-        filename, _ = QFileDialog.getSaveFileName(filter="*.dave_scene", caption="Scene files",directory=self.scene.resources_paths[0])
+        filename, _ = QFileDialog.getSaveFileName(filter="*.dave", caption="Scene files",directory=self.scene.resources_paths[0])
         if filename:
             code = 's.save_scene(r"{}")'.format(filename)
             self.run_code(code)
