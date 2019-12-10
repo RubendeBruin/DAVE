@@ -6,6 +6,7 @@ from scipy.optimize import minimize, minimize_scalar
 import matplotlib.pyplot as plt
 
 from DAVE.scene import *
+import DAVE.settings as ds
 
 
 def visualize_optimiaztion(fun, xlim, ylim):
@@ -114,6 +115,13 @@ class Tank:
         self.max = 0
         self.pct = 0
         self.position = np.array((0.,0.,0.))
+
+        self.inertia_radii = (0., 0., 0.) # radii of gyration
+
+
+    @property
+    def inertia(self):
+        return self.weight() / ds.G
 
     def weight(self):
         """Returns the actual weight of tank contents in kN"""

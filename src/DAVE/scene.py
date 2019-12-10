@@ -2200,25 +2200,52 @@ class BallastSystem(Poi):
     # - position is not the position of the Poi
     # - cog is calculated and read-only
 
-    def xyzw(self):
-        """Gets the current ballast cog and weight from the tanks
+    def _calc(self):
+        """Calculates the weight and inertia properties of the tanks"""
 
-        Returns:
-            ((x,y,z), weight)
-        """
         mxmymz = np.array((0.,0.,0.))
         wt = 0
+        mx2my2mz2 = np.array((0.,0.,0.))
+        I = 0
 
         for tank in self.tanks:
             w = tank.weight()
             mxmymz += tank.position * w
+            mx2my2mz2 += tank.position * tank.position * tank.inertia
+
             wt += w
+            I += tank.inertia
 
         if wt==0:
-            return (np.array((0.,0.,0.)), 0)
-        xyz = mxmymz / wt
+            xyz = np.array((0.,0.,0.))
+        else:
+            xyz = mxmymz / wt
 
-        return (xyz, wt)
+        if I == 0:
+            radii = np.array((0., 0., 0.))
+        else:
+            radii = (mx2my2mz2 / I) ** (0.5)  # Ixx = rxx **2 * I --> rxx**2 = Ixx / I
+
+        return (xyz, wt, radii, I)
+
+
+    def xyzw(self):
+        """Gets the current ballast cog and weight from the tanks
+
+                Returns:
+                    (x,y,z), weight
+                """
+        (xyz, wt, radii, I) = self._calc()
+        return xyz, wt
+
+    def radiiI(self):
+        """Gets the current radii of gyration and inertia
+
+            Returns:
+            radii, weight
+         """
+        (xyz, wt, radii, I) = self._calc()
+        return radii, I
 
     def empty_all_usable_tanks(self):
         for t in self.tanks:
@@ -2227,9 +2254,13 @@ class BallastSystem(Poi):
 
 
     def update(self):
-        self._cog, wt = self.xyzw()
+        self._cog, wt, radii, I = self._calc()
         self._vfNode.position = np.array(self._cog) + np.array(self.position)
         self._vfForce.force = (0, 0, -wt)
+
+        self.inertia = I
+        self.inertia_radii = radii
+
         print('Weight {} cog {} {} {}'.format(wt, *self._cog))
 
     def _delete_vfc(self):
