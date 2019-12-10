@@ -185,15 +185,11 @@ class Gui():
         self.ui.actionImport_browser.triggered.connect(self.import_browser)
 
         # --- buttons
-
         self.ui.pbExecute.pressed.connect(self.run_code_in_teCode)
         self.ui.pbCopyFeedback.pressed.connect(self.feedback_copy)
         self.ui.pbGenerateSceneCode.pressed.connect(self.generate_scene_code)
 
-
-
         # -- visuals
-
         self.ui.actionShow_water_plane.triggered.connect(self.toggle_show_global)
         self.ui.actionShow_visuals.triggered.connect(self.toggle_show_visuals)
         self.ui.actionShow_Geometry_elements.triggered.connect(self.toggle_show_geometry)
@@ -775,20 +771,14 @@ class Gui():
             self.refresh_3dview()
             return
         if event == guiEventType.SELECTED_NODE_MODIFIED:
+            self.visual.add_new_actors_to_screen()
             self.visual.position_visuals()
             self.refresh_3dview()
             return
 
         if event == guiEventType.VIEWER_SETTINGS_UPDATE:
             self.visual.update_visibility()
-
-        self.visual.create_visuals()
-        self.visual.add_new_actors_to_screen()
-        self.visual.position_visuals()
-        self.refresh_3dview()
-
-
-
+            self.refresh_3dview()
 
 
     def guiSelectNode(self, node_name):
