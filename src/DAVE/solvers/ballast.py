@@ -2,10 +2,37 @@
 Ballasting
 """
 import numpy as np
-from scipy.optimize import minimize
+from scipy.optimize import minimize, minimize_scalar
 import matplotlib.pyplot as plt
 
 from DAVE.scene import *
+
+
+def visualize_optimiaztion(fun, xlim, ylim):
+    step = 1
+    x,y = np.meshgrid(np.arange(xlim[0], xlim[1] + step, step),
+                      np.arange(ylim[0], ylim[1] + step, step))
+    def fun2(x,y):
+        return fun([x,y])
+
+    funn = np.vectorize(fun2)
+    z = funn(x,y)
+
+    fig = plt.figure(figsize=(8, 5))
+
+    from mpl_toolkits.mplot3d import Axes3D
+    from matplotlib.colors import LogNorm
+
+    ax = plt.axes(projection='3d', elev=50, azim=-50)
+
+    ax.plot_surface(x, y, z, norm=LogNorm(), rstride=1, cstride=1,
+                    edgecolor='none', alpha=.8, cmap=plt.cm.jet)
+
+    plt.show()
+
+
+
+
 
 def force_vessel_to_evenkeel_and_draft(scene, vessel, z):
     """
@@ -155,21 +182,31 @@ class BallastSystemSolver:
         # optimum must be somewhere in between
 
         def fun(x):
-            tank.pct = x[0]
+            if hasattr(x, "__len__"):
+                tank.pct = x[0]
+            else:
+                tank.pct = x
             return self._error()
 
 
-        res = minimize(fun, x0=np.array((50.)), bounds=[(0.,100.)])
+        res = minimize_scalar(fun, bounds=(0,100),method='Bounded')
 
         if not res.success:
-            print('SUB-OPTIMIZATION FAILED')
-            pass  # TODO: find something more robust?
+            x = np.linspace(0,100,num=101)
+            funn = np.vectorize(fun)
+            y = funn(x)
+            plt.plot(x,y)
+            plt.show()
+            print('SUB-OPTIMIZATION FAILED FOR ONE TANK!!!')
             # raise ArithmeticError('Optimization failed')
+
+        if res.x > 100:
+            print('error with bounds')
 
         # Did the optimization result in a different tank fill
         if abs(p0-res.x) > 0.0001:
             print('Tank {} set to {}'.format(tank.name, res.x))
-            tank.pct = res.x[0]
+            tank.pct = res.x
             return True
 
         return False
@@ -180,6 +217,41 @@ class BallastSystemSolver:
 
 
         n_tanks = len(tanks)
+
+        # See if it is possible to empty one of the tanks and get an result that is at least as good
+        if n_tanks == 2:
+
+            store_tank1 = tanks[1].pct
+            store_tank0 = tanks[0].pct
+
+            # empty second tank and optimize first one
+            tanks[1].make_empty()
+            if self.optimize_tank(tanks[0]):
+                if self._error() < E0:
+                    return True
+            tanks[1].pct = store_tank1
+
+            # fill first tank and optimize second one
+            tanks[0].make_full()
+            if self.optimize_tank(tanks[1]):
+                if self._error() < E0:
+                    return True
+            tanks[0].pct = store_tank0
+
+            # fill second tank and optimize first one
+            tanks[1].make_full()
+            if self.optimize_tank(tanks[0]):
+                if self._error() < E0:
+                    return True
+            tanks[1].pct = store_tank1
+
+            # empty first tank and optimize second one
+            tanks[0].make_empty()
+            if self.optimize_tank(tanks[1]):
+                if self._error() < E0:
+                    return True
+            tanks[0].pct = store_tank0
+
 
         # See if it is possible to empty one of the tanks and get an result that is at least as good
         if n_tanks > 2:
@@ -230,8 +302,10 @@ class BallastSystemSolver:
         res = minimize(fun, x0=np.array(x0), bounds=bnds)
 
         if not res.success:
-            print('SUB-OPTIMIZATION FAILED')
+            print('SUB-OPTIMIZATION FAILED FOR {} TANKS'.format(n_tanks))
             # raise ArithmeticError('Optimization failed')  # TODO: possible to use a more robust routine?
+            if n_tanks==2: # we can plot this!
+                visualize_optimiaztion(fun, (0,100), (0,100))
 
 
         # apply the result

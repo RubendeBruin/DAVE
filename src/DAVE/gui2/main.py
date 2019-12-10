@@ -797,7 +797,7 @@ if __name__ == '__main__':
     bso = BallastSystemSolver(bs)
 
     s["bs"].empty_all_usable_tanks()
-    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Barge", z=-9.0)
+    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Barge", z=-4.75)
     bss = BallastSystemSolver(s["bs"])
     bso.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
 
