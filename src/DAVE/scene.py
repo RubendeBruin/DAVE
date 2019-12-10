@@ -192,6 +192,13 @@
     |:---------------- |:------------------------------- |:-----|
     | `Visual` | Obj type 3D visuals can be attached to an Axis |  `Scene.new_visual` |
 
+    ##Inertia##
+
+    Inertia is included via PointMass nodes. There is no direct API interface for these elements. They are included under
+    the hood in the Axis nodes (and this in the derived RigidBody node).
+    Also the ballast-system node type employs them to add the inertia of the ballast tanks.
+
+
     ##Others###
 
     `TriMeshSource` is a node that defines a triangular mesh. It is not created directly but is created implicitly when
@@ -337,6 +344,10 @@ class Node:
         self._name = name
 
     def _delete_vfc(self):
+        pass
+
+    def update(self):
+        """Performs internal updates relevant for physics. Called before solving statics or getting results"""
         pass
 
 class CoreConnectedNode(Node):
@@ -2143,20 +2154,26 @@ class Buoyancy(NodeWithParent):
 class BallastSystem(Poi):
     """A BallastSystem, internally composed of an Poi, and a force (gravity).
 
-    The node contains a list with "tanks". Tanks should be objects exposing two
-    functions:
+    The node contains a list with "tanks". Tanks should be objects exposing the following
+    functions / properties:
       - weight() <-- returns the weight of the tank (current fill)
       - is_frozen() <-- frozen tanks should not be used by optimizers
       - position property
       - make_empty()
       - make_full()
 
+        - mass
+        - radii
+
+
     An example of an object the can be used as tank is the DAVE.solvers.ballast.Tank object.
 
     The position of the axis system is the reference position for the tanks.
 
     note:
-    System is similar to the setup of RigidBody, but without the Axis
+    - System is similar to the setup of RigidBody, but without the Axis
+    - The class extends Poi, but overrides some of its properties
+    - Update nees to be called to update the weight and cog
 
     TODO: Inertia
 
@@ -2167,13 +2184,21 @@ class BallastSystem(Poi):
 
         # The poi is the Node
         # force is added separately
-
         self._vfForce = force
 
         self.tanks = []
+        """List of tank objects"""
+
+        self._position = (0., 0., 0.)
+        """Position is the origin of the ballast system"""
+
+        self._cog = (0., 0., 0.)
+        """Position of the CoG of the ballast-tanks relative to self._position"""
 
     # override the following properties
     # - name : sets the names of poi and force as well
+    # - position is not the position of the Poi
+    # - cog is calculated and read-only
 
     def xyzw(self):
         """Gets the current ballast cog and weight from the tanks
@@ -2201,9 +2226,25 @@ class BallastSystem(Poi):
                 t.make_empty()
 
 
+    def update(self):
+        self._cog, wt = self.xyzw()
+        self._vfNode.position = np.array(self._cog) + np.array(self.position)
+        self._vfForce.force = (0, 0, -wt)
+        print('Weight {} cog {} {} {}'.format(wt, *self._cog))
+
     def _delete_vfc(self):
         super()._delete_vfc()
         self._scene._vfc.delete(self._vfForce.name)
+
+    @property
+    def position(self):
+        """Local position"""
+        return self._position
+
+    @position.setter
+    def position(self, new_position):
+        assert3f(new_position)
+        self._position = new_position
 
     @property
     def name(self):
@@ -2228,40 +2269,15 @@ class BallastSystem(Poi):
 
     @property
     def cog(self):
-        """Control the cog position of the body"""
-        return self.position
-
-    @cogx.setter
-    def cogx(self, var):
-        a = self.cog
-        self.cog = (var, a[1], a[2])
-
-    @cogy.setter
-    def cogy(self, var):
-        a = self.cog
-        self.cog = (a[0], var, a[2])
-
-    @cogz.setter
-    def cogz(self, var):
-        a = self.cog
-        self.cog = (a[0], a[1], var)
-
-    @cog.setter
-    def cog(self, newcog):
-        assert3f(newcog)
-        # TODO: self.inertia_position = self.cog
-
+        """Returns the cog of the ballast-system"""
+        return self._cog
 
     @property
     def mass(self):
         """Control the static mass of the body"""
         return self._vfForce.force[2] / -vfc.G
 
-    @mass.setter
-    def mass(self, newmass):
-        assert1f(newmass)
-        # TODO: self.inertia = newmass
-        self._vfForce.force = (0, 0, -vfc.G * newmass)
+
 
     def give_python_code(self):
         code = "# code for {} not exported".format(self.name)
@@ -2660,7 +2676,15 @@ class Scene:
 
 
 
-    # ========= The most important function ========
+    # ========= The most important functions ========
+
+    def update(self):
+        """Updates the interface between the nodes and the core. This includes the re-calculation of all forces,
+        buoyancy positions, ballast-system cogs etc.
+        """
+        for n in self._nodes:
+            n.update()
+        self._vfc.state_update()
 
     def solve_statics(self, silent=False):
         """Solves statics
@@ -2672,6 +2696,7 @@ class Scene:
             bool: True if successful, False otherwise.
 
         """
+        self.update()
         succes = self._vfc.state_solve_statics()
 
         if self.verify_equilibrium():
@@ -3420,7 +3445,7 @@ class Scene:
         p = self._vfc.new_poi(name)
 
         g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + "gravity")
-        g.parent =p
+        g.parent = p
         g.force = (0, 0, 0)
 
         r = BallastSystem(self, p, g)
@@ -3645,24 +3670,24 @@ class Scene:
 
     def dynamics_M(self,delta = 0.1):
         """Returns the mass matrix of the scene"""
-        self._vfc.state_update()
+        self.update()
         return self._vfc.M(delta)
 
     def dynamics_K(self, delta):
         """Returns the stiffness matrix of the scene for a perturbation of delta """
-        self._vfc.state_update()
+        self.update()
         return -self._vfc.K(delta)
 
     def dynamics_nodes(self):
         """Returns a list of nodes associated with the rows/columns of M and K"""
-        self._vfc.state_update()
+        self.update()
         nodes = self._vfc.get_dof_elements()
         r = [self[n.name] for n in nodes]
         return r
 
     def dynamics_modes(self):
         """Returns a list of nodes associated with the rows/columns of M and K"""
-        self._vfc.state_update()
+        self.update()
         return self._vfc.get_dof_modes()
 
 

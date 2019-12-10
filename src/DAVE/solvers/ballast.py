@@ -108,6 +108,7 @@ def force_vessel_to_evenkeel_and_draft(scene, vessel, z):
 
 
 class Tank:
+
     def __init__(self):
         self.name = "noname"
         self.max = 0
@@ -115,6 +116,7 @@ class Tank:
         self.position = np.array((0.,0.,0.))
 
     def weight(self):
+        """Returns the actual weight of tank contents in kN"""
         return self.max *  self.pct / 100
 
     def is_full(self):

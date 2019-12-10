@@ -462,7 +462,7 @@ class Gui():
         self._terminate = True
 
     def solve_statics(self):
-        self.scene._vfc.state_update()
+        self.scene.update()
         old_dofs = self.scene._vfc.get_dofs()
 
         if len(old_dofs) == 0:  # no degrees of freedom
@@ -770,8 +770,14 @@ class Gui():
             self.visual_update_selection()
             self.refresh_3dview()
             return
+
         if event == guiEventType.SELECTED_NODE_MODIFIED:
             self.visual.add_new_actors_to_screen()
+            self.visual.position_visuals()
+            self.refresh_3dview()
+            return
+
+        if event== guiEventType.MODEL_STATE_CHANGED:
             self.visual.position_visuals()
             self.refresh_3dview()
             return
@@ -779,7 +785,12 @@ class Gui():
         if event == guiEventType.VIEWER_SETTINGS_UPDATE:
             self.visual.update_visibility()
             self.refresh_3dview()
+            return
 
+        self.visual.create_visuals()
+        self.visual.add_new_actors_to_screen()
+        self.visual.position_visuals()
+        self.refresh_3dview()
 
     def guiSelectNode(self, node_name):
         print('selecting a node with name {}'.format(node_name))
