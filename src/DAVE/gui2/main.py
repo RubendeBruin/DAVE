@@ -231,6 +231,31 @@ class Gui():
 
 
         # Workspace buttons
+        self.btnConstruct = QtWidgets.QPushButton()
+        self.btnConstruct.setText('Construct')
+        self.ui.toolBar.addWidget(self.btnConstruct)
+        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("CONSTRUCT"))
+
+        self.btnConstruct = QtWidgets.QPushButton()
+        self.btnConstruct.setText('Dynamics')
+        self.ui.toolBar.addWidget(self.btnConstruct)
+        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("DYNAMICS"))
+
+        self.btnConstruct = QtWidgets.QPushButton()
+        self.btnConstruct.setText('Ballast')
+        self.ui.toolBar.addWidget(self.btnConstruct)
+        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("BALLAST"))
+
+
+        # action buttons
+
+        space = QtWidgets.QWidget()
+        space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        self.ui.toolBar.addWidget(space)
+
+        lbl = QtWidgets.QLabel()
+        lbl.setText("Actions:  ")
+        self.ui.toolBar.addWidget(lbl)
 
         self.btnSolve = QtWidgets.QPushButton()
         self.btnSolve.setText('Solve &statics')
@@ -247,28 +272,9 @@ class Gui():
         self.ui.toolBar.addWidget(self.btnLibrary)
         self.btnLibrary.clicked.connect(self.import_browser)
 
-        space = QtWidgets.QWidget()
-        space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
-        self.ui.toolBar.addWidget(space)
 
-        lbl = QtWidgets.QLabel()
-        lbl.setText("Workspace:  ")
-        self.ui.toolBar.addWidget(lbl)
 
-        self.btnConstruct = QtWidgets.QPushButton()
-        self.btnConstruct.setText('Construct')
-        self.ui.toolBar.addWidget(self.btnConstruct)
-        self.btnConstruct.clicked.connect(lambda : self.activate_workspace("CONSTRUCT"))
 
-        self.btnConstruct = QtWidgets.QPushButton()
-        self.btnConstruct.setText('Dynamics')
-        self.ui.toolBar.addWidget(self.btnConstruct)
-        self.btnConstruct.clicked.connect(lambda : self.activate_workspace("DYNAMICS"))
-
-        self.btnConstruct = QtWidgets.QPushButton()
-        self.btnConstruct.setText('Ballast')
-        self.ui.toolBar.addWidget(self.btnConstruct)
-        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("BALLAST"))
 
         space = QtWidgets.QWidget()
         space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
@@ -849,71 +855,58 @@ class Gui():
 
 if __name__ == '__main__':
 
-    from DAVE.solvers.ballast import Tank, BallastSystemSolver
+    from DAVE.solvers.ballast import BallastSystemSolver
 
     s = Scene()
 
     s.import_scene('barge with linear hydrostatics.dave_asset')
 
-    # make four tanks
-    t1 = Tank()
-    t1.position = np.array((10.,10.,0))
-    t1.max = 50000
-
-
-    t2 = Tank()
-    t2.position = np.array((10., -10., 0))
-    t2.max = 50000
-
-    t3 = Tank()
-    t3.position = np.array((-10., -10., 0))
-    t3.max = 50000
-
-    t4 = Tank()
-    t4.position = np.array((-10., 10., 0))
-    t4.max = 50000
-
-    t5 = Tank()
-    t5.position = np.array((40., 10., 5))
-    t5.max = 50000
-
-    t6 = Tank()
-    t6.position = np.array((40., -10., 5))
-    t6.max = 50000
-
-    t7 = Tank()
-    t7.position = np.array((-40., -10., 5))
-    t7.max = 50000
-
-    t8 = Tank()
-    t8.position = np.array((-40., 10., 5))
-    t8.max = 50000
-
-    t1.name = 't1'
-    t2.name = 't2'
-    t3.name = 't3'
-    t4.name = 't4'
-    t5.name = 't5'
-    t6.name = 't6'
-    t7.name = 't7'
-    t8.name = 't8'
 
     s['Barge'].parent = None
     s['Barge'].fixed = False
     s['Barge'].mass = 0.0
 
-
+    #
     # force_vessel_to_evenkeel_and_draft(s, s['Barge'], -4)
     #
-    bs = s.new_ballastsystem('bs',parent=s['Barge'], position = (50,0,0))
+    bs = s.new_ballastsystem('bs',parent=s['Barge'], position = (-10,0,5))
 
-    bs.tanks.extend([t1,t2,t3,t4,t5,t6,t7,t8])
+    bs.new_tank('p1', (20 ,10,0), 50000, actual_fill=10)
+    bs.new_tank('p2', (40, 10, 0), 50000)
+    bs.new_tank('p3', (60, 10, 0), 50000)
+    bs.new_tank('p4', (80, 10, 0), 50000)
+    bs.new_tank('p5', (100, 10, 0), 50000)
+
+    bs.new_tank('s1', (20, -10, 0), 50000)
+    bs.new_tank('s2', (40, -10, 0), 50000)
+    bs.new_tank('s3', (60, -10, 0), 50000)
+    bs.new_tank('s4', (80, -10, 0), 50000)
+    bs.new_tank('s5', (100, -10, 0), 50000)
+
+    bs.update()
 
     bso = BallastSystemSolver(bs)
 
     s["bs"].empty_all_usable_tanks()
-    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Barge", z=-7.25)
+    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Barge", z=-5.5)
     bss = BallastSystemSolver(s["bs"])
     bso.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
 
-    g = Gui(s)
+    s["bs"].empty_all_usable_tanks()
+    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Barge", z=-5.5)
+    bss = BallastSystemSolver(s["bs"])
+    bso.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
+
+    s['Barge'].fixed = (True, True, False, False, False, True)
+    s.solve_statics()
+
+    print(s.dynamics_M())
+
+    s["bs"].empty_all_usable_tanks()
+    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Barge", z=-4.75)
+    bss = BallastSystemSolver(s["bs"])
+    bso.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
+
+    print(s.dynamics_M())
+
+    Gui(s)

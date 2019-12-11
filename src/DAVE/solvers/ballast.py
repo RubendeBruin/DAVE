@@ -108,51 +108,7 @@ def force_vessel_to_evenkeel_and_draft(scene, vessel, z):
 
 
 
-class Tank:
 
-    def __init__(self):
-        self.name = "noname"
-        self.max = 0
-        self.pct = 0
-        self.position = np.array((0.,0.,0.))
-
-        self.inertia_radii = (0., 0., 0.) # radii of gyration
-
-
-    @property
-    def inertia(self):
-        return self.weight() / ds.G
-
-    def weight(self):
-        """Returns the actual weight of tank contents in kN"""
-        return self.max *  self.pct / 100
-
-    def is_full(self):
-        return self.pct>=100-1e-5
-
-    def is_empty(self):
-        return self.pct<=1e-5
-
-    def is_partial(self):
-        return (not self.is_empty() and not self.is_full())
-
-    def mxmymz(self):
-        return self.position * self.weight()
-
-    def capacity(self):
-        return self.max
-
-    def fillpct(self):
-        return self.pct
-
-    def make_empty(self):
-        self.pct = 0
-
-    def make_full(self):
-        self.pct = 100
-
-    def is_frozen(self):
-        return False
 
 class BallastSystemSolver:
     """

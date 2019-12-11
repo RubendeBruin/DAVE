@@ -2179,6 +2179,69 @@ class BallastSystem(Poi):
 
     """
 
+    # Tank is an inner class
+    class Tank:
+
+        def __init__(self):
+            self.name = "noname"
+            """Name of the tank"""
+
+            self.max = 0
+            """Maximum fill in [kN]"""
+
+            self.pct = 0
+            """Actual fill percentage in [%]"""
+
+            self.position = np.array((0., 0., 0.))
+            """Tank CoG position relative to ballast system origin [m,m,m]"""
+
+            self.frozen = False
+            """The fill of frozen tanks should not be altered"""
+
+            self._pointmass = None
+            """Optional reference to pointmass node - handled by ballastsystem node"""
+
+
+        @property
+        def inertia(self):
+            return self.weight() / vfc.G
+
+        def weight(self):
+            """Returns the actual weight of tank contents in kN"""
+            return self.max * self.pct / 100
+
+        def is_full(self):
+            """Returns True of tank is (almost) full"""
+            return self.pct >= 100 - 1e-5
+
+        def is_empty(self):
+            """Returns True of tank is (almost) empty"""
+            return self.pct <= 1e-5
+
+        def is_partial(self):
+            """Returns True of tank not full but also not empty"""
+            return (not self.is_empty() and not self.is_full())
+
+        def mxmymz(self):
+            """Position times actual weight"""
+            return self.position * self.weight()
+
+        # TODO: delete
+        def capacity(self):
+            return self.max
+
+        # TODO: delete
+        def fillpct(self):
+            return self.pct
+
+        def make_empty(self):
+            """Empties the tank"""
+            self.pct = 0
+
+        def make_full(self):
+            """Fills the tank"""
+            self.pct = 100
+
     def __init__(self, scene, poi, force):
         super().__init__(scene, poi)
 
@@ -2186,6 +2249,7 @@ class BallastSystem(Poi):
         # force is added separately
         self._vfForce = force
 
+        # TODO: refactor to _tanks
         self.tanks = []
         """List of tank objects"""
 
@@ -2193,79 +2257,34 @@ class BallastSystem(Poi):
         """Position is the origin of the ballast system"""
 
         self._cog = (0., 0., 0.)
-        """Position of the CoG of the ballast-tanks relative to self._position"""
+        """Position of the CoG of the ballast-tanks relative to self._position, calculated when calling update()"""
+
+
 
     # override the following properties
-    # - name : sets the names of poi and force as well
-    # - position is not the position of the Poi
-    # - cog is calculated and read-only
-
-    def _calc(self):
-        """Calculates the weight and inertia properties of the tanks"""
-
-        mxmymz = np.array((0.,0.,0.))
-        wt = 0
-        mx2my2mz2 = np.array((0.,0.,0.))
-        I = 0
-
-        for tank in self.tanks:
-            w = tank.weight()
-            mxmymz += tank.position * w
-            mx2my2mz2 += tank.position * tank.position * tank.inertia
-
-            wt += w
-            I += tank.inertia
-
-        if wt==0:
-            xyz = np.array((0.,0.,0.))
-        else:
-            xyz = mxmymz / wt
-
-        if I == 0:
-            radii = np.array((0., 0., 0.))
-        else:
-            radii = (mx2my2mz2 / I) ** (0.5)  # Ixx = rxx **2 * I --> rxx**2 = Ixx / I
-
-        return (xyz, wt, radii, I)
-
-
-    def xyzw(self):
-        """Gets the current ballast cog and weight from the tanks
-
-                Returns:
-                    (x,y,z), weight
-                """
-        (xyz, wt, radii, I) = self._calc()
-        return xyz, wt
-
-    def radiiI(self):
-        """Gets the current radii of gyration and inertia
-
-            Returns:
-            radii, weight
-         """
-        (xyz, wt, radii, I) = self._calc()
-        return radii, I
-
-    def empty_all_usable_tanks(self):
-        for t in self.tanks:
-            if not t.is_frozen():
-                t.make_empty()
-
 
     def update(self):
-        self._cog, wt, radii, I = self._calc()
+        self._cog, wt, = self._calc()
         self._vfNode.position = np.array(self._cog) + np.array(self.position)
         self._vfForce.force = (0, 0, -wt)
 
-        self.inertia = I
-        self.inertia_radii = radii
+        for tank in self.tanks:
+            I = tank.inertia
+            pos = np.array(tank.position) + np.array(self.position)
+            print("{} : inertia = {} , position = {} {} {}".format(tank.name,I,*pos))
+            tank._pointmass.inertia = tank.inertia
+            tank._pointmass.position = pos
 
         print('Weight {} cog {} {} {}'.format(wt, *self._cog))
 
     def _delete_vfc(self):
         super()._delete_vfc()
         self._scene._vfc.delete(self._vfForce.name)
+
+        # delete the pointmasses (if any)
+        for tank in self.tanks:
+            if tank._pointmass is not None:
+                self._scene._vfc.delete(tank._pointmass.name)
 
     @property
     def position(self):
@@ -2285,6 +2304,92 @@ class BallastSystem(Poi):
     def name(self, newname):
         super(Poi, self.__class__).name.fset(self, newname)
         self._vfForce.name = newname + vfc.VF_NAME_SPLIT + "gravity"
+
+    def new_tank(self, name, position, capacity_kN, actual_fill = 0, frozen = False) :
+        """Creates a new tanks and adds it to the ballast-system
+        
+        Args:
+            name: (str) name of the tanks
+            position: (float[3]) position of the tank [m,m,m]
+            capacity_kN: (float) Maximum capacity of the tank in [kN]
+            actual_fill: (float) Optional, actual fill percentage of the tank [0] [%]
+            frozen: (bool) Optional, the contents of frozen tanks should not be altered
+
+        Returns:
+            BallastSystem.Tank object
+
+        """
+        # asserts
+
+        assert3f(position, "position")
+        assert1f(capacity_kN, "Capacity in kN")
+        assert1f(actual_fill, "Actual fill percentage")
+        assertValidName(name)
+
+
+        t = BallastSystem.Tank()
+        t.name = name
+        t.position = position
+        t.max = capacity_kN
+        t.pct = actual_fill
+        t.frozen = frozen
+
+        t._pointmass = \
+            self._scene._vfc.new_pointmass(self.name + vfc.VF_NAME_SPLIT + '_pointmass_{}'.format(name))
+        t._pointmass.parent = self.parent._vfNode # Axis
+
+        self.tanks.append(t)
+
+        return t
+
+
+
+    def _calc(self):
+        """Calculates the weight and inertia properties of the tanks"""
+
+        mxmymz = np.array((0.,0.,0.))
+        wt = 0
+        # mx2my2mz2 = np.array((0.,0.,0.))
+        # I = 0
+
+        for tank in self.tanks:
+            w = tank.weight()
+            p = np.array(tank.position, dtype=float)
+            mxmymz += p * w
+            # mx2my2mz2 += p * p * tank.inertia
+
+            wt += w
+            # I += tank.inertia
+
+        if wt==0:
+            xyz = np.array((0.,0.,0.))
+        else:
+            xyz = mxmymz / wt
+
+        # if I == 0:
+        #     radii = np.array((0., 0., 0.))
+        # else:
+        #     radii = (mx2my2mz2 / I) ** (0.5)  # Ixx = rxx **2 * I --> rxx**2 = Ixx / I
+
+        return (xyz, wt) #, radii, I)
+
+
+    def xyzw(self):
+        """Gets the current ballast cog and weight from the tanks
+
+                Returns:
+                    (x,y,z), weight
+                """
+        return self._calc()
+
+
+    def empty_all_usable_tanks(self):
+        for t in self.tanks:
+            if not t.frozen:
+                t.make_empty()
+
+
+
 
     @property
     def cogx(self):
@@ -2838,6 +2943,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
@@ -2897,6 +3003,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
@@ -2948,6 +3055,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
@@ -2993,6 +3101,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # check input
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
@@ -3074,6 +3183,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         assert1f(length, 'length')
         assert1f(EA, 'EA')
@@ -3156,6 +3266,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._poi_from_node(parent)
 
@@ -3201,6 +3312,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._poi_from_node(parent)
 
@@ -3247,6 +3359,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
         assert3f(cob, "CoB ")
@@ -3296,6 +3409,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         m = self._parent_from_node(master)
         s = self._parent_from_node(slave)
@@ -3338,6 +3452,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         m = self._parent_from_node(master)
         s = self._parent_from_node(slave)
@@ -3382,6 +3497,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         m = self._parent_from_node(master)
         s = self._parent_from_node(slave)
@@ -3429,6 +3545,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
@@ -3463,6 +3580,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # check input
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 

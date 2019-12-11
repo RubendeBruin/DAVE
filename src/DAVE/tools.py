@@ -12,6 +12,7 @@
 
 import numbers
 from DAVE.scene import *
+import DAVE.settings as ds
 
 def assert1f(var, name = "Variable"):
     if not isinstance(var, numbers.Number):
@@ -39,6 +40,12 @@ def assert6f(var, name = "Variable"):
     for i in range(6):
         if not isinstance(var[i], numbers.Number):
             raise ValueError(name + " should contain six numbers but {} is not a number.".format(var[i]))
+
+
+def assertValidName(var):
+    assert isinstance(var, str), "Name should be a string"
+    if ds.VF_NAME_SPLIT in var:
+        raise ValueError('Name should not contain "{}", but "{}" does'.format(ds.VF_NAME_SPLIT, var))
 
 def assertPoi(var, name = "Node"):
     if isinstance(var, Poi):
