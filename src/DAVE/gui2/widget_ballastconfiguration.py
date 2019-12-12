@@ -73,22 +73,22 @@ class WidgetBallastConfiguration(guiDockWidget):
         full    = QColor.fromRgb(*254*np.array(ds.COLOR_WATER))
         empty = QColor.fromRgb(254,254,254)
 
-        for i,t in enumerate(self._bs.tanks):
+        for i,t in enumerate(self._bs._tanks):
             rows = i
 
             tw.setRowCount(rows + 1)
             tw.setVerticalHeaderItem(rows, QtWidgets.QTableWidgetItem(t.name))
-            tw.setItem(rows, 0, QtWidgets.QTableWidgetItem('{:e}'.format(t.capacity())))
-            tw.setItem(rows, 1, QtWidgets.QTableWidgetItem('{:.1f}'.format(t.fillpct())))
+            tw.setItem(rows, 0, QtWidgets.QTableWidgetItem('{:e}'.format(t.max)))
+            tw.setItem(rows, 1, QtWidgets.QTableWidgetItem('{:.1f}'.format(t.pct)))
             tw.setItem(rows, 2, QtWidgets.QTableWidgetItem('{:e}'.format(t.position[0])))
             tw.setItem(rows, 3, QtWidgets.QTableWidgetItem('{:e}'.format(t.position[1])))
             tw.setItem(rows, 4, QtWidgets.QTableWidgetItem('{:e}'.format(t.position[2])))
 
-            if t.fillpct() >= 99.9:
+            if t.pct >= 99.9:
                 self.ui.tableWidget.item(rows, 1).setBackground(QBrush(full))
                 self.ui.tableWidget.item(rows, 1).setTextColor(empty)
 
-            elif t.fillpct() > 0.1:
+            elif t.pct > 0.1:
                 self.ui.tableWidget.item(rows, 1).setBackground(QBrush(partial))
             else:
                 self.ui.tableWidget.item(rows, 1).setBackground(QBrush(empty))

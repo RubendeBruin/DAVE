@@ -2157,25 +2157,14 @@ class Buoyancy(NodeWithParent):
 # ===============
 
 class BallastSystem(Poi):
-    """A BallastSystem, internally composed of an Poi, and a force (gravity).
-
-    The node contains a list with "tanks". Tanks should be objects exposing the following
-    functions / properties:
-      - weight() <-- returns the weight of the tank (current fill)
-      - is_frozen() <-- frozen tanks should not be used by optimizers
-      - position property
-      - make_empty()
-      - make_full()
-
-        - mass
-        - radii
-
-
-    An example of an object the can be used as tank is the DAVE.solvers.ballast.Tank object.
+    """A BallastSystem
 
     The position of the axis system is the reference position for the tanks.
 
-    note:
+    Tanks can be added using new_tank()
+
+
+    technical notes:
     - System is similar to the setup of RigidBody, but without the Axis
     - The class extends Poi, but overrides some of its properties
     - Update nees to be called to update the weight and cog
@@ -2231,14 +2220,6 @@ class BallastSystem(Poi):
             """Position times actual weight"""
             return self.position * self.weight()
 
-        # TODO: delete
-        def capacity(self):
-            return self.max
-
-        # TODO: delete
-        def fillpct(self):
-            return self.pct
-
         def make_empty(self):
             """Empties the tank"""
             self.pct = 0
@@ -2254,8 +2235,7 @@ class BallastSystem(Poi):
         # force is added separately
         self._vfForce = force
 
-        # TODO: refactor to _tanks
-        self.tanks = []
+        self._tanks = []
         """List of tank objects"""
 
         self._position = (0., 0., 0.)
@@ -2277,7 +2257,7 @@ class BallastSystem(Poi):
 
         super(Poi, type(self)).parent.fset(self, var)
         # update parent of other core nodes
-        for tank in self.tanks:
+        for tank in self._tanks:
             tank._vfNode.parent = self.parent._vfNode
 
 
@@ -2295,7 +2275,7 @@ class BallastSystem(Poi):
 
         self._vfForce.force = (0, 0, -self._weight)
 
-        for tank in self.tanks:
+        for tank in self._tanks:
             I = tank.inertia
             pos = np.array(tank.position) + np.array(self.position)
             tank._pointmass.inertia = tank.inertia
@@ -2308,7 +2288,7 @@ class BallastSystem(Poi):
         self._scene._vfc.delete(self._vfForce.name)
 
         # delete the pointmasses (if any)
-        for tank in self.tanks:
+        for tank in self._tanks:
             if tank._pointmass is not None:
                 self._scene._vfc.delete(tank._pointmass.name)
 
@@ -2364,7 +2344,7 @@ class BallastSystem(Poi):
             self._scene._vfc.new_pointmass(self.name + vfc.VF_NAME_SPLIT + '_pointmass_{}'.format(name))
         t._pointmass.parent = self.parent._vfNode # Axis
 
-        self.tanks.append(t)
+        self._tanks.append(t)
 
         return t
 
@@ -2381,7 +2361,7 @@ class BallastSystem(Poi):
         mxmymz = np.array((0., 0., 0.))
         wt = 0
 
-        for tank in self.tanks:
+        for tank in self._tanks:
             w = tank.weight()
             p = np.array(tank.position, dtype=float)
             mxmymz += p * w
@@ -2397,7 +2377,7 @@ class BallastSystem(Poi):
 
 
     def empty_all_usable_tanks(self):
-        for t in self.tanks:
+        for t in self._tanks:
             if not t.frozen:
                 t.make_empty()
 
@@ -2875,6 +2855,7 @@ class Scene:
             bool: True if successful, False if not an equilibrium.
 
         """
+        self.update()
         return (self._vfc.Emaxabs < tol)
 
 

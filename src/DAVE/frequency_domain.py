@@ -22,6 +22,11 @@ def mode_shapes(scene):
     if K.size > 0:
         V, D = eig(K, M)
 
+        # sort by increasing eigenvalue
+        i_sorted = np.argsort(V)
+        V = V[i_sorted]
+        D = D[:,i_sorted]
+
         print("Values = ")
         print(V)
         print("Directions = ")
@@ -81,7 +86,11 @@ def _print_summary(data):
 
 
 def dynamics_summary_data(scene):
-    """Returns an overview of the dynamic properties of the scene"""
+    """Returns an overview of the dynamic properties of the scene
+
+    Returns:
+        (dict)
+        """
     summary = []
 
     M = scene.dynamics_M(0.1)
@@ -137,8 +146,8 @@ def dynamics_summary_data(scene):
 
 def dynamics_quickfix(scene):
     """Attempts to
-    1. remove unconstrained nodes by adding soft springs
-    2. remove intertia-less nodes by adding inertia
+    1. remove unconstrained modes by adding soft springs
+    2. remove zero-inertia modes by adding inertia
 
     returns an updated summary structure
     """
@@ -213,12 +222,13 @@ def dynamics_quickfix(scene):
 
 
 def check_unconstrained(scene, V, D,K,M):
-    """Unconstrained nodes come up with a natural period of nan
+    """Prints information about errornous mode-shapes.
+    Unconstrained nodes come up with a natural period of nan.
 
     Args:
-        scene:
-        V:
-        D:
+        scene: scene
+        V: eigenvalues
+        D: eigenvectors
 
     Returns:
 

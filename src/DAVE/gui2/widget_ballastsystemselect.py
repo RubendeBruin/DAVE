@@ -27,6 +27,13 @@ class WidgetBallastSystemSelect(guiDockWidget):
         upon creation and guiScene etc are not yet available.
 
         """
+        self.resize(266, 100)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
+        self.setSizePolicy(sizePolicy)
+
         self.label0 = QtWidgets.QLabel(self.contents)
         self.label0.setText("Select ballast system:")
 
@@ -38,13 +45,13 @@ class WidgetBallastSystemSelect(guiDockWidget):
         layout.addWidget(self.label0)
         layout.addWidget(self.comboBox)
         layout.addWidget(self.label)
+
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        layout.addItem(spacerItem)
+
         self.contents.setLayout(layout)
 
-        self.resize(0,20)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
+
 
         self.comboBox.currentTextChanged.connect(self.ballast_system_selected)
 

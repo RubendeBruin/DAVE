@@ -55,7 +55,10 @@ class WidgetModeShapes(guiDockWidget):
                      guiEventType.SELECTED_NODE_MODIFIED]:
 
             self.gui.animation_terminate()
-            self.d0 = self.guiScene._vfc.get_dofs()
+            if self.guiScene.verify_equilibrium():
+                self.d0 = self.guiScene._vfc.get_dofs()
+            else:
+                self.d0 = None
             self.fill_result_table()
             self._shapes_calculated = False
             self.autocalc()
@@ -70,6 +73,11 @@ class WidgetModeShapes(guiDockWidget):
             self.calc_modeshapes()
 
     def calc_modeshapes(self):
+
+        if self.d0 is None:
+            if not self.guiScene.verify_equilibrium():
+                self.gui.solve_statics()
+            self.d0 = self.guiScene._vfc.get_dofs()
 
         try:
             V, D = DAVE.frequency_domain.mode_shapes(self.guiScene)
@@ -117,7 +125,7 @@ class WidgetModeShapes(guiDockWidget):
         i = self.ui.horizontalSlider.sliderPosition()
         scale = self.ui.sliderSize.sliderPosition() + 1
         scale = 1.05 ** (scale - 30)
-        print('Activating mode-shape {} with scale {}'.format(i, scale))
+        # print('Activating mode-shape {} with scale {}'.format(i, scale))
 
         omega = self.omega[i]
         self.ui.lblPeriod.setText('{:.2f} s'.format(2 * np.pi / omega))

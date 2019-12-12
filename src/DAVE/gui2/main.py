@@ -73,7 +73,7 @@
 
 from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.QtCore import Qt
-from PySide2.QtGui import QIcon
+from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import QDialog,QFileDialog
 from DAVE.scene import Scene
 
@@ -125,7 +125,7 @@ class Gui():
         self.app.aboutToQuit.connect(self.onClose)
 
         splash = QtWidgets.QSplashScreen()
-        splash.showMessage("Starting GUI")
+        splash.setPixmap(QPixmap(":/icons/Dave_icon.png"))
         splash.show()
 
         # Main Window
@@ -351,7 +351,7 @@ class Gui():
         if not self.animation_running():
             return # nothing to destroy
 
-        print('Destroying timer')
+        # print('Destroying timer')
         to_be_destroyed = self._timerid
         self._timerid = None
         iren = self.visual.renwin.GetInteractor()
@@ -859,7 +859,7 @@ if __name__ == '__main__':
 
     s = Scene()
 
-    s.import_scene('barge with linear hydrostatics.dave_asset')
+    s.import_scene('barge with linear hydrostatics.dave_asset',containerize=False)
 
 
     s['Barge'].parent = None

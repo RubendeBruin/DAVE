@@ -519,7 +519,7 @@ class Viewport:
 
             if isinstance(N, vf.BallastSystem):
                 size = 2
-                for t in N.tanks:
+                for t in N._tanks:
                     p = vp.Cube(pos=(0,0,0), side=size / 2)
                     p.c(vc.COLOR_POI)
                     p.actor_type = ActorType.BALLASTTANK
@@ -813,7 +813,7 @@ class Viewport:
 
 
             if isinstance(V.node, vf.BallastSystem):
-                for i,tnk in enumerate(V.node.tanks):
+                for i,tnk in enumerate(V.node._tanks):
 
                     ia = i + 1
 
@@ -822,7 +822,6 @@ class Viewport:
                     local_position = np.array(V.node.position, dtype=float) + np.array(tnk.position, dtype=float)
                     pos = V.node.parent.to_glob_position(local_position)
                     t.Translate(pos)
-                    # print('tank {} global position {} {} {}'.format(i, *pos))
                     V.actors[ia].setTransform(t)
                     V.actors[ia].SetScale(4)
 

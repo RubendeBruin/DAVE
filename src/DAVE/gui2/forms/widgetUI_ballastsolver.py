@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_ballastsolver.ui',
 # licensing of 'widget_ballastsolver.ui' applies.
 #
-# Created: Tue Dec 10 15:08:57 2019
+# Created: Thu Dec 12 14:44:53 2019
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,8 +13,8 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_BallastSolver(object):
     def setupUi(self, BallastSolver):
         BallastSolver.setObjectName("BallastSolver")
-        BallastSolver.resize(266, 516)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum)
+        BallastSolver.resize(266, 488)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(BallastSolver.sizePolicy().hasHeightForWidth())
@@ -73,6 +73,8 @@ class Ui_BallastSolver(object):
         self.label_5 = QtWidgets.QLabel(BallastSolver)
         self.label_5.setObjectName("label_5")
         self.verticalLayout.addWidget(self.label_5)
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem)
 
         self.retranslateUi(BallastSolver)
         QtCore.QMetaObject.connectSlotsByName(BallastSolver)
