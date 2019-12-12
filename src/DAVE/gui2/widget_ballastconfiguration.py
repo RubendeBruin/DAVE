@@ -33,8 +33,12 @@ class WidgetBallastConfiguration(guiDockWidget):
         self.ui = Ui_widget_ballastsystem()
         self.ui.setupUi(self.contents)
         self.ui.tableWidget.verticalHeader().setSectionsMovable(True)
+        self.ui.tableWidget.verticalHeader().sectionMoved.connect(self.reorder_rows)
+
+        self.ui.tableWidget.cellChanged.connect(self.tankfillchanged)
 
         self._bs = None # active ballast system
+        self._filling_table = True
 
 
 
@@ -73,26 +77,66 @@ class WidgetBallastConfiguration(guiDockWidget):
         full    = QColor.fromRgb(*254*np.array(ds.COLOR_WATER))
         empty = QColor.fromRgb(254,254,254)
 
+        self._filling_table = True
+
         for i,t in enumerate(self._bs._tanks):
             rows = i
 
             tw.setRowCount(rows + 1)
             tw.setVerticalHeaderItem(rows, QtWidgets.QTableWidgetItem(t.name))
-            tw.setItem(rows, 0, QtWidgets.QTableWidgetItem('{:e}'.format(t.max)))
-            tw.setItem(rows, 1, QtWidgets.QTableWidgetItem('{:.1f}'.format(t.pct)))
-            tw.setItem(rows, 2, QtWidgets.QTableWidgetItem('{:e}'.format(t.position[0])))
-            tw.setItem(rows, 3, QtWidgets.QTableWidgetItem('{:e}'.format(t.position[1])))
-            tw.setItem(rows, 4, QtWidgets.QTableWidgetItem('{:e}'.format(t.position[2])))
 
+            item = QtWidgets.QTableWidgetItem('{:e}'.format(t.max))
+            item.setFlags(QtCore.Qt.ItemIsEditable)
+            tw.setItem(rows, 0, item)
+
+            item = QtWidgets.QTableWidgetItem('{:.1f}'.format(t.pct))
             if t.pct >= 99.9:
-                self.ui.tableWidget.item(rows, 1).setBackground(QBrush(full))
-                self.ui.tableWidget.item(rows, 1).setTextColor(empty)
+                item.setBackground(QBrush(full))
+                item.setTextColor(empty)
 
             elif t.pct > 0.1:
-                self.ui.tableWidget.item(rows, 1).setBackground(QBrush(partial))
+                item.setBackground(QBrush(partial))
             else:
-                self.ui.tableWidget.item(rows, 1).setBackground(QBrush(empty))
+                item.setBackground(QBrush(empty))
+            tw.setItem(rows, 1, item)
 
-    def action(self):
-        pass
+            for j in range(3):
+                item = QtWidgets.QTableWidgetItem('{:e}'.format(t.position[j]))
+                item.setFlags(QtCore.Qt.ItemIsEditable)
+                tw.setItem(rows, 2+j, item)
 
+        self._filling_table = False
+
+
+    def reorder_rows(self, a, b, c):
+        vh = self.ui.tableWidget.verticalHeader()
+        tw = self.ui.tableWidget
+        names = list()
+        for row in range(tw.rowCount()):
+            i = vh.logicalIndex(row)
+            names.append(tw.verticalHeaderItem(i).text())
+
+        code = 's["{}"].reorder_tanks(['.format(self._bs.name)
+        for name in names:
+            code += "'{}',".format(name)
+
+        code = code[:-1]
+        code += '])'
+
+        self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
+
+    def tankfillchanged(self,a,b):
+
+        if self._filling_table:
+            return
+
+        tank_name = self.ui.tableWidget.verticalHeaderItem(a).text()
+        fill = self.ui.tableWidget.item(a,b).text()
+
+        # try:
+        #     float(fill)
+        # except:
+        #     return
+
+        code = 's["{}"].fill_tank("{}",{})'.format(self._bs.name, tank_name, fill)
+        self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)

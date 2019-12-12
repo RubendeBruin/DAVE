@@ -846,6 +846,14 @@ class Axis(NodeWithParent):
         self.global_rotation = (a[0], a[1], var)
 
     @property
+    def heel(self):
+        return 'to be implemented'  # TODO
+
+    @property
+    def trim(self):
+        return 'to be implemented'  # TODO
+
+    @property
     def global_rotation(self):
         """The rotation of the axis in degrees. Expressed in the global axis system"""
         return tuple(np.rad2deg(self._vfNode.global_rotation))
@@ -2348,7 +2356,48 @@ class BallastSystem(Poi):
 
         return t
 
+    def reorder_tanks(self, names):
+        """Places tanks with given names at the top of the list. Other tanks are appended afterwards in original order.
 
+        For a complete re-order give all tank names.
+
+        Example:
+            let tanks be 'a','b','c','d','e'
+
+            then re_order_tanks(['e','b']) will result in ['e','b','a','c','d']
+        """
+        for name in names:
+            if name not in self.tank_names():
+                raise ValueError('No tank with name {}'.format(name))
+
+        old_tanks = self._tanks.copy()
+        self._tanks.clear()
+        to_be_deleted = list()
+
+        for name in names:
+            for tank in old_tanks:
+                if tank.name == name:
+                    self._tanks.append(tank)
+                    to_be_deleted.append(tank)
+
+        for tank in to_be_deleted:
+            old_tanks.remove(tank)
+
+        for tank in old_tanks:
+            self._tanks.append(tank)
+
+    def tank_names(self):
+        return [tank.name for tank in self._tanks]
+
+    def fill_tank(self, name, fill):
+
+        assert1f(fill, "tank fill")
+
+        for tank in self._tanks:
+            if tank.name == name:
+                tank.pct = fill
+                return
+        raise ValueError('No tank with name {}'.format(name))
 
     def xyzw(self):
         """Gets the current ballast cog and weight from the tanks

@@ -125,7 +125,7 @@ class Gui():
         self.app.aboutToQuit.connect(self.onClose)
 
         splash = QtWidgets.QSplashScreen()
-        splash.setPixmap(QPixmap(":/icons/Dave_icon.png"))
+        splash.setPixmap(QPixmap(":/icons/splashscreen.png"))
         splash.show()
 
         # Main Window
@@ -416,12 +416,14 @@ class Gui():
         self.ui.teCode.append('# ------------------')
         self.ui.pbExecute.setStyleSheet("background-color: yellow;")
         self.ui.teFeedback.setStyleSheet("")
+        self.ui.teFeedback.clear()
         self.ui.teFeedback.update()
         self.ui.teCode.append(code)
         self.ui.teCode.append('\n')
         self.ui.teCode.verticalScrollBar().setValue(
             self.ui.teCode.verticalScrollBar().maximum())  # scroll down all the way
         self.ui.teCode.update()
+        self.ui.teCode.repaint()
 
         # self.app.processEvents()
 
@@ -453,7 +455,7 @@ class Gui():
             except Exception as E:
 
                 self.ui.teFeedback.setText(c.stdout + '\n' + str(E) + '\n\nWhen running: \n\n' + code)
-                self.ui.teFeedback.setStyleSheet("background-color: red;")
+                self.ui.teFeedback.setStyleSheet("background-color: pink;")
 
             self.ui.pbExecute.setStyleSheet("")
             self.ui.pbExecute.update()

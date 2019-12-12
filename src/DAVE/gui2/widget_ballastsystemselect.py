@@ -41,17 +41,24 @@ class WidgetBallastSystemSelect(guiDockWidget):
         self.label = QtWidgets.QLabel(self.contents)
         self.label.setText("On vessel [XXXXX]")
         self.label.setAlignment(QtCore.Qt.AlignCenter)
+
+        self.lblDraft = QtWidgets.QLabel(self.contents)
+        self.lblHeel = QtWidgets.QLabel(self.contents)
+        self.lblTrim = QtWidgets.QLabel(self.contents)
+
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.label0)
         layout.addWidget(self.comboBox)
         layout.addWidget(self.label)
 
+        layout.addWidget(self.lblDraft)
+        layout.addWidget(self.lblHeel)
+        layout.addWidget(self.lblTrim)
+
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         layout.addItem(spacerItem)
 
         self.contents.setLayout(layout)
-
-
 
         self.comboBox.currentTextChanged.connect(self.ballast_system_selected)
 
@@ -72,11 +79,25 @@ class WidgetBallastSystemSelect(guiDockWidget):
                     if self.comboBox.currentText() != self.guiSelection[0].name:
                         self.comboBox.setCurrentText(self.guiSelection[0].name)
 
+        if event in [guiEventType.FULL_UPDATE, guiEventType.MODEL_STRUCTURE_CHANGED, guiEventType.MODEL_STATE_CHANGED]:
+            self.updateRPD()
+
 
     def guiDefaultLocation(self):
         return QtCore.Qt.DockWidgetArea.LeftDockWidgetArea
 
     # ======
+
+    def updateRPD(self):
+        name = self.comboBox.currentText()
+        try:
+            vessel = self.guiScene[name].parent
+        except:
+            return
+
+        self.lblDraft.setText("Z = {}m".format(vessel.gz))
+        self.lblHeel.setText("Heel = {}m".format(vessel.heel))
+        self.lblTrim.setText("Trim = {}m".format(vessel.trim))
 
     def fill(self):
         # get all ballast-systems

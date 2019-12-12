@@ -377,7 +377,7 @@ class BallastSystemSolver:
 
         print('using:')
         for tank in self.BallastSystem._tanks:
-            print('{} of {} at {} {} {}'.format(tank.name, tank.max, *tank.position))
+            print('{} of {} [ {}% full ]at {} {} {}'.format(tank.name, tank.max, tank.pct, *tank.position))
         print('-----------------------------')
 
         maxit = 100
