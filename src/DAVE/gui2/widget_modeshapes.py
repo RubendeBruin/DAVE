@@ -36,6 +36,7 @@ class WidgetModeShapes(guiDockWidget):
         self.ui.sliderSize.actionTriggered.connect(self.activate_modeshape)
         self.ui.lblError.setText('')
         self.ui.pushButton_2.pressed.connect(self.quickfix)
+        self._shapes_calculated = False
 
     def guiProcessEvent(self, event):
         """
@@ -69,7 +70,14 @@ class WidgetModeShapes(guiDockWidget):
             self.calc_modeshapes()
 
     def calc_modeshapes(self):
-        V, D = DAVE.frequency_domain.mode_shapes(self.guiScene)
+
+        try:
+            V, D = DAVE.frequency_domain.mode_shapes(self.guiScene)
+        except ArithmeticError as me:
+            print('Could not calculate mode-shapes because:')
+            print(me)
+            return
+
 
         if V is not None:
             self.n_shapes = len(V)

@@ -5,9 +5,12 @@ from scipy.linalg import eig
 
 
 def mode_shapes(scene):
-    """Calculates the mode shapes and eigenvalues for scene
+    """Calculates the mode shapes and eigenvalues for scene.
 
     Returns: V (eigenvalues), D (eigenvectors)"""
+
+    if not scene.verify_equilibrium():
+        raise ArithmeticError('Scene is not in static equilibrium, modal analysis aborted')
 
     print("Mass matrix")
     M = scene.dynamics_M(0.1)

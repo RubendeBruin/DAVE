@@ -589,6 +589,11 @@ class Axis(NodeWithParent):
         self._update_inertia()
 
 
+    def _delete_vfc(self):
+        super()._delete_vfc()
+        for p in self._pointmasses:
+            self._scene._vfc.delete(p.name)
+
     @property
     def inertia(self):
         return self._inertia
@@ -2262,11 +2267,28 @@ class BallastSystem(Poi):
 
 
     # override the following properties
+    @Poi.parent.setter
+    def parent(self, var):
+        """Assigns a new parent. Keeps the local position and rotations the same
+
+        See also: change_parent_to
+        """
+
+        super(Poi, type(self)).parent.fset(self, var)
+        # update parent of other core nodes
+        for tank in self.tanks:
+            tank._vfNode.parent = self.parent._vfNode
+
+
 
     def update(self):
         self._cog, wt, = self._calc()
         self._vfNode.position = np.array(self._cog) + np.array(self.position)
         self._vfForce.force = (0, 0, -wt)
+
+        print('--------------')
+        print(self._scene._vfc.to_string())
+        print('--------------')
 
         for tank in self.tanks:
             I = tank.inertia
@@ -2276,6 +2298,9 @@ class BallastSystem(Poi):
             tank._pointmass.position = pos
 
         print('Weight {} cog {} {} {}'.format(wt, *self._cog))
+        print('--------------')
+        print(self._scene._vfc.to_string())
+        print('--------------')
 
     def _delete_vfc(self):
         super()._delete_vfc()
@@ -3753,7 +3778,7 @@ class Scene:
 
         exec(code, {}, {'s': s})
 
-    def import_scene(self, other, prefix = "", containerize = True):
+    def   import_scene(self, other, prefix = "", containerize = True):
         """Copy-paste all nodes of scene "other" into current scene.
 
         To avoid double names it is recommended to use a prefix. This prefix will be added to all element names.

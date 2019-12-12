@@ -898,7 +898,8 @@ if __name__ == '__main__':
     bso.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
 
     s['Barge'].fixed = (True, True, False, False, False, True)
-    s.solve_statics()
+    # s.solve_statics()
+    s._vfc.set_dofs([-5.500000000012284, 0.0, 0.0])
 
     print(s.dynamics_M())
 
@@ -908,5 +909,6 @@ if __name__ == '__main__':
     bso.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
 
     print(s.dynamics_M())
-
+    M = s.dynamics_M(0.1)
+    print(s._vfc.to_string())
     Gui(s)
