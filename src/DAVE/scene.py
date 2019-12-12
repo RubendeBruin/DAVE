@@ -2264,7 +2264,8 @@ class BallastSystem(Poi):
         self._cog = (0., 0., 0.)
         """Position of the CoG of the ballast-tanks relative to self._position, calculated when calling update()"""
 
-
+        self._weight = 0
+        """Weight [kN] of the ballast-tanks , calculated when calling update()"""
 
     # override the following properties
     @Poi.parent.setter
@@ -2282,25 +2283,25 @@ class BallastSystem(Poi):
 
 
     def update(self):
-        self._cog, wt, = self._calc()
-        self._vfNode.position = np.array(self._cog) + np.array(self.position)
-        self._vfForce.force = (0, 0, -wt)
+        self._cog, self._weight, = self.xyzw()
+        self._weight = np.around(self._weight, decimals=5)
 
-        print('--------------')
-        print(self._scene._vfc.to_string())
-        print('--------------')
+        # we are rounding a bit here to avoid very small numbers
+        # which would mess-up the solver
+        pos = np.array(self._cog) + np.array(self.position)
+        pos = np.around(pos, 5)
+
+        self._vfNode.position = pos
+
+        self._vfForce.force = (0, 0, -self._weight)
 
         for tank in self.tanks:
             I = tank.inertia
             pos = np.array(tank.position) + np.array(self.position)
-            print("{} : inertia = {} , position = {} {} {}".format(tank.name,I,*pos))
             tank._pointmass.inertia = tank.inertia
             tank._pointmass.position = pos
 
-        print('Weight {} cog {} {} {}'.format(wt, *self._cog))
-        print('--------------')
-        print(self._scene._vfc.to_string())
-        print('--------------')
+        print('Weight {} cog {} {} {}'.format(self._weight, *self._cog))
 
     def _delete_vfc(self):
         super()._delete_vfc()
@@ -2369,43 +2370,30 @@ class BallastSystem(Poi):
 
 
 
-    def _calc(self):
-        """Calculates the weight and inertia properties of the tanks"""
-
-        mxmymz = np.array((0.,0.,0.))
-        wt = 0
-        # mx2my2mz2 = np.array((0.,0.,0.))
-        # I = 0
-
-        for tank in self.tanks:
-            w = tank.weight()
-            p = np.array(tank.position, dtype=float)
-            mxmymz += p * w
-            # mx2my2mz2 += p * p * tank.inertia
-
-            wt += w
-            # I += tank.inertia
-
-        if wt==0:
-            xyz = np.array((0.,0.,0.))
-        else:
-            xyz = mxmymz / wt
-
-        # if I == 0:
-        #     radii = np.array((0., 0., 0.))
-        # else:
-        #     radii = (mx2my2mz2 / I) ** (0.5)  # Ixx = rxx **2 * I --> rxx**2 = Ixx / I
-
-        return (xyz, wt) #, radii, I)
-
-
     def xyzw(self):
         """Gets the current ballast cog and weight from the tanks
 
                 Returns:
                     (x,y,z), weight
                 """
-        return self._calc()
+        """Calculates the weight and inertia properties of the tanks"""
+
+        mxmymz = np.array((0., 0., 0.))
+        wt = 0
+
+        for tank in self.tanks:
+            w = tank.weight()
+            p = np.array(tank.position, dtype=float)
+            mxmymz += p * w
+
+            wt += w
+
+        if wt == 0:
+            xyz = np.array((0., 0., 0.))
+        else:
+            xyz = mxmymz / wt
+
+        return xyz, wt
 
 
     def empty_all_usable_tanks(self):
@@ -2431,7 +2419,15 @@ class BallastSystem(Poi):
     @property
     def cog(self):
         """Returns the cog of the ballast-system"""
-        return self._cog
+        self.update()
+        return (self._cog[0], self._cog[1], self._cog[2])
+
+    @property
+    def weight(self):
+        """Returns the cog of the ballast-system"""
+        self.update()
+        return self._weight
+
 
     @property
     def mass(self):

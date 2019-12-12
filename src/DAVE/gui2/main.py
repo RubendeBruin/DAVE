@@ -892,23 +892,6 @@ if __name__ == '__main__':
     bss = BallastSystemSolver(s["bs"])
     bso.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
 
-    s["bs"].empty_all_usable_tanks()
-    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Barge", z=-5.5)
-    bss = BallastSystemSolver(s["bs"])
-    bso.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
-
     s['Barge'].fixed = (True, True, False, False, False, True)
-    # s.solve_statics()
-    s._vfc.set_dofs([-5.500000000012284, 0.0, 0.0])
 
-    print(s.dynamics_M())
-
-    s["bs"].empty_all_usable_tanks()
-    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Barge", z=-4.75)
-    bss = BallastSystemSolver(s["bs"])
-    bso.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
-
-    print(s.dynamics_M())
-    M = s.dynamics_M(0.1)
-    print(s._vfc.to_string())
     Gui(s)

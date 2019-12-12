@@ -822,7 +822,7 @@ class Viewport:
                     local_position = np.array(V.node.position, dtype=float) + np.array(tnk.position, dtype=float)
                     pos = V.node.parent.to_glob_position(local_position)
                     t.Translate(pos)
-                    print('tank {} global position {} {} {}'.format(i, *pos))
+                    # print('tank {} global position {} {} {}'.format(i, *pos))
                     V.actors[ia].setTransform(t)
                     V.actors[ia].SetScale(4)
 

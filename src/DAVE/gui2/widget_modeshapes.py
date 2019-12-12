@@ -76,6 +76,7 @@ class WidgetModeShapes(guiDockWidget):
         except ArithmeticError as me:
             print('Could not calculate mode-shapes because:')
             print(me)
+            self.ui.lblError.setText(str(me))
             return
 
 
