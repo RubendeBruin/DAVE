@@ -1318,14 +1318,25 @@ class Viewport:
                 elif a.actor_type == ActorType.GEOMETRY:
                     if self.show_geometry:
                         a.on()
+
                     else:
                         a.off()
 
                 elif a.actor_type == ActorType.GLOBAL:
                     if self.show_global:
                         a.on()
+
+                        arenderer = self.vtkWidget.GetRenderWindow().GetRenderers().GetFirstRenderer()
+                        arenderer.GradientBackgroundOn()
+                        arenderer.SetBackground2(vc.COLOR_BG2_ENV)
+                        arenderer.SetBackground2(vc.COLOR_BG1_ENV)
                     else:
                         a.off()
+
+                        arenderer = self.vtkWidget.GetRenderWindow().GetRenderers().GetFirstRenderer()
+                        arenderer.GradientBackgroundOn()
+                        arenderer.SetBackground2(vc.COLOR_BG2)
+                        arenderer.SetBackground2(vc.COLOR_BG1)
 
                 elif a.actor_type == ActorType.NOT_GLOBAL:
                     if self.show_global:

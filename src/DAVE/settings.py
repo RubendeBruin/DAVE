@@ -150,11 +150,12 @@ COLOR_Z = rgb(_BLUE)
 
 COLOR_WATER = rgb(_BLUE_DARK)
 
-COLOR_BG2 = rgb(_WHITE)
-COLOR_BG1 = rgb(_BLUE_LIGHT)
-
 COLOR_BG2 = rgb(_LIGHT_GRAY)
 COLOR_BG1 = rgb(_LIGHT_GRAY)
+
+COLOR_BG2_ENV = rgb(_WHITE)         # colors when global elements (waterplane) are shown
+COLOR_BG1_ENV = rgb(_BLUE_LIGHT)
+
 
 # COLOR_BG1 = rgb(_DARK_GRAY)
 # COLOR_BG2 = rgb(_DARK_GRAY)

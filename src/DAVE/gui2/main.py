@@ -151,6 +151,13 @@ class Gui():
         self._animation_keyframe_interpolation_object = None
         """Object that can be called with a time and yields the dofs at that time. t should be [0..._animation_length] """
 
+        self._animation_paused = False
+        """Animation paused"""
+
+        self._animation_available = False
+        """Animation available"""
+
+
 
         # ================= Create globally available properties =======
         self.selected_nodes = []
@@ -168,13 +175,18 @@ class Gui():
         self.visual.position_visuals()
         self.visual.mouseLeftEvent = self.view3d_select_element
 
-        self.MainWindow.setCentralWidget(self.ui.frame3d)
         self.visual.show_embedded(self.ui.frame3d)
         self.visual.update_visibility()
 
         self._timerid = None
         iren = self.visual.renwin.GetInteractor()
         iren.AddObserver('TimerEvent', self.timerEvent)
+
+        # ------ animation buttons ------
+
+        self.ui.frameAni.setVisible(False)
+        self.ui.btnStopAnimation.pressed.connect(lambda :self.animation_terminate(False))
+        self.ui.btnPauseAnimation.pressed.connect(self.animation_pause_or_continue_click)
 
         # ======================== Main Menu entries :: visuals ======
 
@@ -344,12 +356,15 @@ class Gui():
 
         dofs = self._animation_keyframe_interpolation_object(t)
         self.scene._vfc.set_dofs(dofs)
+        self.ui.aniSlider.setValue(t*1000)
         self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
 
-    def animation_terminate(self, no_reset_dofs = False):
+    def animation_terminate(self, keep_current_dofs = False):
 
         if not self.animation_running():
             return # nothing to destroy
+
+        self.ui.frameAni.setVisible(False)
 
         # print('Destroying timer')
         to_be_destroyed = self._timerid
@@ -357,14 +372,17 @@ class Gui():
         iren = self.visual.renwin.GetInteractor()
         iren.DestroyTimer(to_be_destroyed)
 
-        if not no_reset_dofs:
+        self._animation_available = False
+
+        # restore DOFs
+        if not keep_current_dofs:
             self.scene._vfc.set_dofs(self._animation_final_dofs)
             self.visual.quick_updates_only = False
             self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
         self.visual.quick_updates_only = False
 
 
-    def animation_start(self, t, dofs, is_loop, final_dofs = None, do_not_reset_time=False):
+    def animation_start(self, t, dofs, is_loop, final_dofs = None, do_not_reset_time=False, show_animation_bar = True):
         """Start an new animation
 
         Args:
@@ -376,7 +394,7 @@ class Gui():
 
 
         """
-        self.animation_terminate(no_reset_dofs=True) # end old animation, if any
+        self.animation_terminate(keep_current_dofs=True) # end old animation, if any
 
         if len(dofs) != len(t):
             raise ValueError("dofs and t should have the same length (list or tuple)")
@@ -394,14 +412,57 @@ class Gui():
 
         self.visual.quick_updates_only = True
 
-        iren = self.visual.renwin.GetInteractor()
-        if self._timerid is None:
-            self._timerid = iren.CreateRepeatingTimer(round(1000 / DAVE.settings.GUI_ANIMATION_FPS))
+        self.ui.aniSlider.setMaximum(1000*self._animation_length)
+        self.ui.frameAni.setVisible(show_animation_bar)
+
+        self._animation_available = True
+
+        if not show_animation_bar:          # override pause for short animations
+            self.ui.btnPauseAnimation.setChecked(False)
+            self._animation_paused = False
+
+        if not self._animation_paused:
+
+            iren = self.visual.renwin.GetInteractor()
+            if self._timerid is None:
+                self._timerid = iren.CreateRepeatingTimer(round(1000 / DAVE.settings.GUI_ANIMATION_FPS))
+
+            else:
+                raise Exception("could not create new timer, old timer is still active")
+
+
+    def animation_pause(self):
+        """Pauses a running animation"""
+
+        if self._animation_paused:
+            return
+
+        if self._timerid is not None:
+            to_be_destroyed = self._timerid
+            self._timerid = None
+            iren = self.visual.renwin.GetInteractor()
+            iren.DestroyTimer(to_be_destroyed)
+
+        self._animation_paused = True
+
+    def animation_continue(self):
+
+        if not self._animation_paused:
+            return
+
+        if self._animation_available:
+            if self._timerid is None:
+                iren = self.visual.renwin.GetInteractor()
+                self._timerid = iren.CreateRepeatingTimer(round(1000 / DAVE.settings.GUI_ANIMATION_FPS))
+
+        self._animation_paused = False
+
+    def animation_pause_or_continue_click(self):
+        """Pauses or continues the animation"""
+        if self.ui.btnPauseAnimation.isChecked():
+            self.animation_continue()
         else:
-            raise Exception("could not create new timer, old timer is still active")
-
-
-
+            self.animation_pause()
 
     def onClose(self):
         self.visual.shutdown_qt()
@@ -544,7 +605,7 @@ class Gui():
             t.append(dt*i)
             dofs.append((1 - old) * new_dof + old * old_dof)
 
-        self.animation_start(t,dofs,is_loop=False)
+        self.animation_start(t,dofs,is_loop=False, show_animation_bar=False)
 
     def toggle_show_force(self):
         self.visual.show_force = self.ui.actionShow_force_applyting_element.isChecked()

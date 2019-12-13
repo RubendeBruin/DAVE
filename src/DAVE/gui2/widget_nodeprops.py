@@ -1097,6 +1097,8 @@ class WidgetNodeProps(guiDockWidget):
         return None # QtCore.Qt.DockWidgetArea.RightDockWidgetArea
 
     def guiCreate(self):
+        self.setVisible(False)
+
         self._open_edit_widgets = list()
         self._node_editors = list()
         
@@ -1109,6 +1111,12 @@ class WidgetNodeProps(guiDockWidget):
             # check if we have a selection
             if self.guiSelection:
                 self.select_node(self.guiSelection[0])
+
+        if self._open_edit_widgets:
+            self.setVisible(True)
+        else:
+            self.setVisible(False)
+
 
     # ======= custom
 

@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Tue Dec 10 15:08:56 2019
+# Created: Fri Dec 13 14:41:36 2019
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -21,14 +21,46 @@ class Ui_MainWindow(object):
         MainWindow.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.centralwidget)
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.centralwidget)
+        self.verticalLayout_3.setSpacing(0)
+        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.frame3d = QtWidgets.QFrame(self.centralwidget)
         self.frame3d.setAcceptDrops(False)
         self.frame3d.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.frame3d.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame3d.setObjectName("frame3d")
-        self.horizontalLayout_2.addWidget(self.frame3d)
+        self.verticalLayout_3.addWidget(self.frame3d)
+        self.frameAni = QtWidgets.QWidget(self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.frameAni.sizePolicy().hasHeightForWidth())
+        self.frameAni.setSizePolicy(sizePolicy)
+        self.frameAni.setObjectName("frameAni")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.frameAni)
+        self.horizontalLayout.setSpacing(0)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.widget_2 = QtWidgets.QWidget(self.frameAni)
+        self.widget_2.setObjectName("widget_2")
+        self.gridLayout = QtWidgets.QGridLayout(self.widget_2)
+        self.gridLayout.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout.setObjectName("gridLayout")
+        self.btnStopAnimation = QtWidgets.QToolButton(self.widget_2)
+        self.btnStopAnimation.setObjectName("btnStopAnimation")
+        self.gridLayout.addWidget(self.btnStopAnimation, 0, 0, 1, 1)
+        self.btnPauseAnimation = QtWidgets.QToolButton(self.widget_2)
+        self.btnPauseAnimation.setCheckable(True)
+        self.btnPauseAnimation.setObjectName("btnPauseAnimation")
+        self.gridLayout.addWidget(self.btnPauseAnimation, 0, 1, 1, 1)
+        self.horizontalLayout.addWidget(self.widget_2)
+        self.aniSlider = QtWidgets.QSlider(self.frameAni)
+        self.aniSlider.setOrientation(QtCore.Qt.Horizontal)
+        self.aniSlider.setTickPosition(QtWidgets.QSlider.TicksAbove)
+        self.aniSlider.setObjectName("aniSlider")
+        self.horizontalLayout.addWidget(self.aniSlider)
+        self.verticalLayout_3.addWidget(self.frameAni)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1721, 31))
@@ -200,6 +232,8 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "DAVE", None, -1))
+        self.btnStopAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "X", None, -1))
+        self.btnPauseAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "||", None, -1))
         self.menuSolve_Statics.setTitle(QtWidgets.QApplication.translate("MainWindow", "File", None, -1))
         self.menuView.setTitle(QtWidgets.QApplication.translate("MainWindow", "View", None, -1))
         self.dockWidget_2.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Engine internals", None, -1))
