@@ -477,7 +477,6 @@ class NodeWithParent(CoreConnectedNode):
             if has_rotation:
                 self.rotation = new_parent.to_loc_direction(glob_rot)
 
-
 class Visual(Node):
     """
     Visual
@@ -501,7 +500,7 @@ class Visual(Node):
 
     def __init__(self, scene):
 
-        # TODO: Add super().__init__(scene)
+        super().__init__(scene)
 
         # Note: Visual does not have a corresponding vfCore element
         self.scene = scene
@@ -553,8 +552,6 @@ class Visual(Node):
         else:
             self.offset = new_parent.to_loc_position(cur_position)
             self.rotation = new_parent.to_loc_direction(cur_rotation)
-
-
 
 class Axis(NodeWithParent):
     """
@@ -1135,8 +1132,6 @@ class Poi(NodeWithParent):
 
         return code
 
-
-#
 class RigidBody(Axis):
     """A Rigid body, internally composed of an axis, a poi (cog) and a force (gravity)"""
 
@@ -1262,9 +1257,6 @@ class RigidBody(Axis):
         code += "\n                fixed =({}, {}, {}, {}, {}, {}) )".format(*self.fixed)
 
         return code
-
-
-#
 
 class Cable(CoreConnectedNode):
     """A Cable represents a linear elastic wire running from a Poi to another Poi.
@@ -1418,7 +1410,6 @@ class Cable(CoreConnectedNode):
 
         return code
 
-
 class Force(NodeWithParent):
     """A Force models a force and moment on a poi.
 
@@ -1506,7 +1497,6 @@ class Sheave(NodeWithParent):
         code += "\n            axis=({}, {}, {}),".format(*self.axis)
         code += "\n            radius={} )".format(self.radius)
         return code
-
 
 class HydSpring(NodeWithParent):
     """A HydSpring models a linearized hydrostatic spring.
@@ -1677,7 +1667,6 @@ class LC6d(CoreConnectedNode):
 
         return code
 
-
 class Connector2d(CoreConnectedNode):
     """A Connector2d linear connector with acts both on linear displacement and angular displacement.
 
@@ -1764,7 +1753,6 @@ class Connector2d(CoreConnectedNode):
         code += "\n            k_angular ={})".format(self.k_angular)
 
         return code
-
 
 class LinearBeam(CoreConnectedNode):
     """A LinearBeam models a FEM-like linear beam element.
@@ -1881,7 +1869,6 @@ class LinearBeam(CoreConnectedNode):
         code += "\n            L ={}) # L can possibly be omitted".format(self.L)
 
         return code
-
 
 class TriMeshSource(Node):
     """
@@ -2105,10 +2092,6 @@ class TriMeshSource(Node):
             self.offset = new_parent.to_loc_position(cur_position)
             self.rotation = new_parent.to_loc_direction(cur_rotation)
 
-
-
-
-
 class Buoyancy(NodeWithParent):
     """Buoyancy provides a buoyancy force based on a buoyancy mesh. The mesh is triangulated and chopped at the instantaneous flat water surface. Buoyancy is applied as an upwards force that the center of buoyancy.
     The calculation of buoyancy is as accurate as the provided geometry.
@@ -2160,9 +2143,6 @@ class Buoyancy(NodeWithParent):
         code += "\nmesh.trimesh.load_obj(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
 
         return code
-
-
-# ===============
 
 class BallastSystem(Poi):
     """A BallastSystem
@@ -2468,6 +2448,61 @@ class BallastSystem(Poi):
     def give_python_code(self):
         code = "# code for {} not exported".format(self.name)
         return code
+
+class WaveInteraction1(Node):
+    """
+    WaveInteraction
+
+    Wave-interaction-1 couples a first-order hydrodynamic database to an axis.
+
+    This adds:
+    - wave-forces
+    - damping
+    - added mass
+
+    The data is provided by a Hyddb1 object which is defined in the MaFreDo package. The contents are not embedded
+    but are to be provided separately in a file. This node contains only the file-name.
+
+    """
+
+    def __init__(self, scene):
+
+        super().__init__(scene)
+        self.scene = scene
+
+        self.offset = [0, 0, 0]
+        """Offset (x,y,z) of the visual. Offset is applied after scaling"""
+
+        self.parent = None
+        """Parent : Axis-type"""
+
+        self.path = None
+        """Filename of a file that can be read by a Hyddb1 object"""
+
+    def give_python_code(self):
+        code = "# code for {}".format(self.name)
+
+        code += "\ns.new_waveinteraction(name='{}',".format(self.name)
+        code += "\n            parent='{}',".format(self.parent.name)
+        code += "\n            path=r'{}',".format(self.path)
+        code += "\n            offset=({}, {}, {}) )".format(*self.offset)
+
+        return code
+
+    def change_parent_to(self, new_parent):
+        if not (isinstance(new_parent, Axis)):
+            raise ValueError('Hydrodynamic databases can only be attached to an axis (or derived)')
+
+        # get current position and orientation
+        if self.parent is not None:
+            cur_position = self.parent.to_glob_position(self.offset)
+        else:
+            cur_position = self.offset
+
+        self.parent = new_parent
+        self.offset = new_parent.to_loc_position(cur_position)
+
+
 
 
 #
@@ -3034,8 +3069,57 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
+    def new_waveinteraction(self, name, path, parent=None, offset=None,):
+            """Creates a new *wave interaction* node and adds it to the scene.
+
+            Args:
+                name: Name for the node, should be unique
+                path: Path to the hydrodynamic database
+                parent: optional, name of the parent of the node
+                offset: optional, position for the node (x,y,z)
+
+            Returns:
+                Reference to newly created wave-interaction object
+
+            """
+
+            if not parent:
+                raise ValueError('Wave-interaction has to be located on an Axis')
+
+            # apply prefixes
+            name = self._prefix_name(name)
+
+            # first check
+            assertValidName(name)
+            self._verify_name_available(name)
+            b = self._parent_from_node(parent)
+
+            if b is None:
+                raise ValueError('Wave-interaction has to be located on an Axis')
+
+            if offset is not None:
+                assert3f(offset, "Offset ")
+
+            self.get_resource_path(path)  # raises error when resource is not found
+
+            # then create
+
+            new_node = WaveInteraction1(self)
+
+            new_node.name = name
+            new_node.path = path
+            new_node.parent = parent
+
+            # and set properties
+            new_node.parent = b
+            if offset is not None:
+                new_node.offset = offset
+
+            self._nodes.append(new_node)
+            return new_node
+
     def new_visual(self, name, path, parent=None, offset=None, rotation=None, scale = None):
-        """Creates a new *axis* node and adds it to the scene.
+        """Creates a new *Visual* node and adds it to the scene.
 
         Args:
             name: Name for the node, should be unique

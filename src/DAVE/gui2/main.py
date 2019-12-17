@@ -99,6 +99,7 @@ from DAVE.gui2.widget_modeshapes import WidgetModeShapes
 from DAVE.gui2.widget_ballastconfiguration import WidgetBallastConfiguration
 from DAVE.gui2.widget_ballastsolver import WidgetBallastSolver
 from DAVE.gui2.widget_ballastsystemselect import WidgetBallastSystemSelect
+from DAVE.gui2.widget_airy import WidgetAiry
 
 # Imports available in script
 import numpy as np
@@ -249,15 +250,19 @@ class Gui():
         self.btnConstruct.clicked.connect(lambda: self.activate_workspace("CONSTRUCT"))
 
         self.btnConstruct = QtWidgets.QPushButton()
-        self.btnConstruct.setText('Dynamics')
-        self.ui.toolBar.addWidget(self.btnConstruct)
-        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("DYNAMICS"))
-
-        self.btnConstruct = QtWidgets.QPushButton()
         self.btnConstruct.setText('Ballast')
         self.ui.toolBar.addWidget(self.btnConstruct)
         self.btnConstruct.clicked.connect(lambda: self.activate_workspace("BALLAST"))
 
+        self.btnConstruct = QtWidgets.QPushButton()
+        self.btnConstruct.setText('Dynamics')
+        self.ui.toolBar.addWidget(self.btnConstruct)
+        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("MODESHAPES"))
+
+        self.btnConstruct = QtWidgets.QPushButton()
+        self.btnConstruct.setText('Airy')
+        self.ui.toolBar.addWidget(self.btnConstruct)
+        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("AIRY"))
 
         # action buttons
 
@@ -322,6 +327,10 @@ class Gui():
             self.show_guiWidget('WidgetBallastSystemSelect', WidgetBallastSystemSelect)
             self.show_guiWidget('WidgetBallastConfiguration', WidgetBallastConfiguration)
             self.show_guiWidget('WidgetBallastSolver', WidgetBallastSolver)
+
+        if name == 'AIRY':
+            self.show_guiWidget('WidgetAiry', WidgetAiry)
+
 
 
     def import_browser(self):
@@ -472,7 +481,11 @@ class Gui():
 
     def run_code(self, code, event):
 
+        before = self.scene._nodes.copy()
+
         s = self.scene
+
+
 
         self.ui.teCode.append('# ------------------')
         self.ui.pbExecute.setStyleSheet("background-color: yellow;")
@@ -510,7 +523,17 @@ class Gui():
                 for node in to_be_removed:
                     self.selected_nodes.remove(node)
 
-                if to_be_removed:
+                # if we created something new, then select it
+                emitted = False
+                for node in self.scene._nodes:
+                    if node not in before:
+                        self.selected_nodes.clear()
+                        self.selected_nodes.append(node)
+                        self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
+                        emitted = True
+                        break
+
+                if to_be_removed and not emitted:
                     self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
 
             except Exception as E:
@@ -716,6 +739,7 @@ class Gui():
         menu.addAction("New Linear Hydrostatics", self.new_linear_hydrostatics)
         menu.addAction("New Visual", self.new_visual)
         menu.addAction("New Buoyancy mesh", self.new_buoyancy_mesh)
+        menu.addAction("New Wave Interaction", self.new_waveinteraction)
 
         menu.exec_(globLoc)
 
@@ -754,6 +778,9 @@ class Gui():
 
     def new_buoyancy_mesh(self):
         self.new_something(new_node_dialog.add_buoyancy)
+
+    def new_waveinteraction(self):
+        self.new_something(new_node_dialog.add_waveinteraction)
 
     def new_something(self, what):
         r = what(self.scene, self.selected_nodes)
@@ -922,39 +949,73 @@ if __name__ == '__main__':
 
     s = Scene()
 
-    s.import_scene('barge with linear hydrostatics.dave_asset',containerize=False)
+
+    # auto generated pyhton code
+    # By beneden
+    # Time: 2019-12-17 15:26:51 UTC
+
+    # To be able to distinguish the important number (eg: fixed positions) from
+    # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
+    # For anything written as solved(number) that actual number does not influence the static solution
+    def solved(number):
+        return number
 
 
-    s['Barge'].parent = None
-    s['Barge'].fixed = False
-    s['Barge'].mass = 0.0
+    # code for Barge
+    s.new_rigidbody(name='Barge',
+                    mass=20000.0,
+                    cog=(50.0,
+                         0.0,
+                         2.5),
+                    position=(solved(0.0),
+                              solved(0.0),
+                              solved(-5.0)),
+                    rotation=(solved(0.0),
+                              solved(0.0),
+                              solved(0.0)),
+                    fixed=(False, False, False, False, False, False))
+    # code for Hydrostatics
+    s.new_hydspring(name='Hydrostatics',
+                    parent='Barge',
+                    cob=(50.0, 0.0, 2.5),
+                    BMT=26.666666666666664,
+                    BML=166.66666666666666,
+                    COFX=0.0,
+                    COFY=0.0,
+                    kHeave=39240.0,
+                    waterline=2.5,
+                    displacement_kN=196200.0)
+    # code for Poi
+    s.new_poi(name='Poi',
+              parent='Barge',
+              position=(0.0,
+                        10.0,
+                        0.0))
+    # code for Force
+    s.new_force(name='Force',
+                parent='Poi',
+                force=(0.0, 0.0, 0.0),
+                moment=(0.0, 0.0, 0.0))
+    # code for Visual
+    s.new_visual(name='Visual',
+                 parent='Barge',
+                 path=r'barge.obj',
+                 offset=(0.0, 0.0, 0.0),
+                 rotation=(0, 0, 0),
+                 scale=(1.0, 1.0, 1.0))
+    # code for Empty is possible as well
+    s.new_waveinteraction(name='Empty is possible as well',
+                          parent='Barge',
+                          path=r'barge_100_30_5.dhyd',
+                          offset=(50, 0, 5))
 
-    #
-    # force_vessel_to_evenkeel_and_draft(s, s['Barge'], -4)
-    #
-    bs = s.new_ballastsystem('bs',parent=s['Barge'], position = (-10,0,5))
+    from DAVE.frequency_domain import *
+    prepare_for_fd(s)
 
-    bs.new_tank('p1', (20 ,10,0), 50000, actual_fill=10)
-    bs.new_tank('p2', (40, 10, 0), 50000)
-    bs.new_tank('p3', (60, 10, 0), 50000)
-    bs.new_tank('p4', (80, 10, 0), 50000)
-    bs.new_tank('p5', (100, 10, 0), 50000)
+    s.solve_statics()
 
-    bs.new_tank('s1', (20, -10, 0), 50000)
-    bs.new_tank('s2', (40, -10, 0), 50000)
-    bs.new_tank('s3', (60, -10, 0), 50000)
-    bs.new_tank('s4', (80, -10, 0), 50000)
-    bs.new_tank('s5', (100, -10, 0), 50000)
+    x = calc_wave_response(s, 0.3, 90)
 
-    bs.update()
 
-    bso = BallastSystemSolver(bs)
-
-    s["bs"].empty_all_usable_tanks()
-    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Barge", z=-5.5)
-    bss = BallastSystemSolver(s["bs"])
-    bso.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
-
-    s['Barge'].fixed = (True, True, False, False, False, True)
 
     Gui(s)

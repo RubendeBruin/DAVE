@@ -1,7 +1,53 @@
+"""
+Frequency domain dynamics
+
+Provides frequency domain dynamics for DAVE
+
+Frequency domain dynamics are based on the mass, stiffness and damping matrices which can be obtained from a scene.
+These matrices are calculated numerically for a given displacement of the degrees of freedom. This allows to linearize
+
+(Borgman - Ocean wave simulation for engineering design. 1967)
+Quadratic components:
+ B * u|u|  --> B * const * u
+ const = rms * sqrt(8/pi)
+
+
+
+ The Mass matrix is constructed as follows:
+  M(i,j) is the force or moment that results in dof_i as result of a unit acceleration of dof_j
+
+ This is evaluated as follows:
+   1. Displace dof j by delta
+   2. For express the displacements of all activated masses of dof_i in the axis system of the parent of dof_i
+   3. If dof_i is a force:
+          the resulting force is the displacement * mass / delta
+   4. If dof_i is a moment:
+          the resulting moment is the displacement * mass * distance to dof_i origin / delta
+
+   The distance to the dof_i origin is measured in the axis system of the parent of dof_i and is the
+   reference position of the point-mass (ie: the un-displaced position)
+
+
+
+
+"""
+
+
+"""
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+  Ruben de Bruin - 2019
+
+"""
+
 from DAVE.scene import *
 import numpy as np
 import prettytable as pt
 from scipy.linalg import eig
+from mafredo.hyddb1 import Hyddb1
+from mafredo.rao import Rao
 
 
 def mode_shapes(scene):
@@ -46,7 +92,7 @@ def generate_modeshape_dofs(d0, displ, scale, n_frames, scene):
         d0: mean values of the dofs (static equilibrium)
         displ: modeshape displacement
         scale: scale factor
-        n_frames: numer of requested frames
+        n_frames: number of requested frames
 
     Returns:
         List of np.arrays
@@ -62,6 +108,36 @@ def generate_modeshape_dofs(d0, displ, scale, n_frames, scene):
         result.append(core.get_dofs())
 
     return result
+
+def generate_unitwave_response(s, d0, rao, wave_amplitude, n_frames):
+    """Will return a list of DOFs for the given modeshape.
+        These can be passed directly to one of the animate functions
+
+        Args:
+            d0: mean values of the dofs (static equilibrium)
+            rao: compelex rao for all dofs
+            wave_amplitude : float
+            n_frames: number of requested frames
+
+        Returns:
+            List of np.arrays
+
+        """
+    core = s._vfc
+    result = []
+
+    for i_frame in range(n_frames):
+        factor = i_frame / n_frames
+
+        change = rao * np.exp(1j * factor * 2 * np.pi)
+        change = wave_amplitude * np.real(change)
+
+        core.set_dofs(d0)
+        core.change_dofs(change)
+        result.append(core.get_dofs())
+
+    return result
+
 
 def dynamics_summary(scene):
     """Prints and returns an overview of the dynamic properties of the scene"""
@@ -263,3 +339,118 @@ def check_unconstrained(scene, V, D,K,M):
 
         for [i,e] in enumerate(d):
             print('{} - {:.2f}'.format(i,e))
+
+def prepare_for_fd(s):
+    """Prepares the model for frequency domain analysis.
+
+    WARNING:
+        this is a destructive method. Please run this on a copy of a scene.
+
+    All wave-interaction nodes shall be at the origin of an axis system.
+    That axis system shall not have a parent
+    That axis systen shall have all dofs set to free
+
+    Raises:
+        ValueError if the scene can not be prepared.
+
+    """
+
+    wis = s.nodes_of_type(node_class=WaveInteraction1)
+
+    for w in wis:
+
+        # checks
+        assert isinstance(w.parent, Axis), ValueError('Parent of "{}" shall be an axis or derived'.format(w.name))
+        assert not np.any(w.parent.fixed) , ValueError('Parent of "{}" shall have all its dofs set to free (not fixed)'.format(w.name))
+
+        # loads hydrodynamic data
+        try:
+            if w._hyddb is not None:
+                loaddb = True
+            else:
+                loaddb = False
+        except:
+            loaddb = True
+
+        if loaddb:
+            w._hyddb = Hyddb1()
+            w._hyddb.load_from(s.get_resource_path(w.path))
+
+        if np.all(w.offset == (0,0,0)):
+            continue
+
+        # create a new axis system at the global position and orientation of the node
+        glob_position = w.parent.to_glob_position(w.offset)
+        glob_rotation = w.parent.global_rotation
+
+        name = s.available_name_like('autocreated_parent_for_{}'.format(w.name))
+
+        new_parent = s.new_axis(name, position = glob_position, rotation = glob_rotation, fixed=False)
+
+        w.parent.change_parent_to(new_parent)
+        w.parent.fixed = True
+
+        w.parent = new_parent
+        w.offset = (0,0,0)
+
+def calc_wave_response(s, omega, wave_direction):
+
+    M = s.dynamics_M(0.1)
+    K = s.dynamics_K(0.1)
+    nodes = s.dynamics_nodes()
+    modes = s.dynamics_modes()
+    names = [node.name for node in nodes]
+
+    M = np.array(M, dtype=complex)  # change M to complex
+    F = np.zeros(shape=(M.shape[0]),dtype=complex)
+    B = np.zeros_like(M)
+
+    wis = s.nodes_of_type(node_class=WaveInteraction1)
+
+    for w in wis:
+        # find the corresponding dof numbers
+        name = w.parent.name
+        inds = [i for i, x in enumerate(names) if x == name] # get all indices where names[i] == name
+
+        # double-check if these yield mode 0 ... 5
+        mods = [modes[i] for i in inds]
+
+        assert mods == [0,1,2,3,4,5], ValueError('Parent of "{}" shall have all DOFs free'.format(w.name))
+
+        m_added = w._hyddb.amass(omega)
+        B  = w._hyddb.damping(omega)
+        force = w._hyddb.force(omega, wave_direction)
+
+        # add the components to system matrices
+        for i in range(6):
+            sys_i = inds[i]
+
+            for j in range(6):
+                sys_j = inds[j]
+
+                M[sys_i, sys_j] += m_added[i,j]
+                B[sys_i, sys_j] += B[i, j]
+
+            F[sys_i] += force[i]
+
+    # solve the system
+
+    A = np.zeros_like(M)
+
+    A += -omega**2 * M   # intertia
+    A += 1j * omega * B  # damping
+    A += K               # stiffness
+
+    x = np.linalg.solve(A, F)  # solve
+
+    return x
+
+
+
+
+
+
+
+
+
+

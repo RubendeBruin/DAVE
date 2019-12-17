@@ -924,15 +924,15 @@ class Gui:
     def code_change(self):
         if self.ui.cbAutoExecute.isChecked():
 
-            before = self.scene.nodes.copy()
-            self.run_code_in_teCode()
-
-            # if we created something new, then select it
-            for node in self.scene.nodes:
-                if node not in before:
-                    data = self.node_data.get_node(node)
-                    self.select_node(data)
-                    break
+            # before = self.scene.nodes.copy()
+            # self.run_code_in_teCode()
+            #
+            # # if we created something new, then select it
+            # for node in self.scene.nodes:
+            #     if node not in before:
+            #         data = self.node_data.get_node(node)
+            #         self.select_node(data)
+            #         break
 
 
 

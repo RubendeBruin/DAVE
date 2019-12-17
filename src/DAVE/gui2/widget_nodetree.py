@@ -158,6 +158,8 @@ class WidgetNodeTree(guiDockWidget):
                 item.setIcon(0,QIcon(":/icons/sheave.png"))
             if isinstance(node, ds.Buoyancy):
                 item.setIcon(0,QIcon(":/icons/trimesh.png"))
+            if isinstance(node, ds.WaveInteraction1):
+                item.setIcon(0,QIcon(":/icons/waveinteraction.png"))
 
             try:
                 parent = node.parent

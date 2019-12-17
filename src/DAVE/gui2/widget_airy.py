@@ -1,0 +1,84 @@
+"""
+This is an example/template of how to setup a new dockwidget
+"""
+
+"""
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+  Ruben de Bruin - 2019
+"""
+
+from DAVE.gui2.dockwidget import *
+import DAVE.gui2.forms.widgetUI_airy
+from PySide2 import QtGui, QtCore, QtWidgets
+import DAVE.scene as nodes
+import DAVE.settings as ds
+import DAVE.frequency_domain as fd
+import numpy as np
+
+class WidgetAiry(guiDockWidget):
+
+    def guiCreate(self):
+        """
+        Add gui components to self.contents
+
+        Do not fill the controls with actual values here. This is executed
+        upon creation and guiScene etc are not yet available.
+        """
+
+        # # or from a generated file
+        self.ui = DAVE.gui2.forms.widgetUI_airy.Ui_frmAiryWave()
+        self.ui.setupUi(self.contents)
+        self.d0 = None
+
+        self.ui.heading.valueChanged.connect(self.action)
+        self.ui.amplitude.valueChanged.connect(self.action)
+        self.ui.period.valueChanged.connect(self.action)
+
+    def guiProcessEvent(self, event):
+        """
+        Add processing that needs to be done.
+
+        After creation of the widget this event is called with guiEventType.FULL_UPDATE
+        """
+
+        if event in [guiEventType.FULL_UPDATE,
+                     guiEventType.MODEL_STRUCTURE_CHANGED,
+                     guiEventType.SELECTED_NODE_MODIFIED]:
+
+            self.gui.animation_terminate()
+            if self.guiScene.verify_equilibrium():
+                self.d0 = self.guiScene._vfc.get_dofs()
+            else:
+                self.d0 = None
+
+    def guiDefaultLocation(self):
+        return QtCore.Qt.DockWidgetArea.LeftDockWidgetArea
+
+    # ======
+
+    def action(self):
+
+        if self.d0 is None:
+            raise ValueError('No equilibrium position available')
+
+        wave_direction = self.ui.heading.value()
+        amplitude = self.ui.amplitude.value()
+        period = self.ui.period.value()
+        x = fd.calc_wave_response(s=self.guiScene, omega = 2*np.pi/period, wave_direction=wave_direction )
+
+        n_frames = int(60*period)
+
+        self.ui.label.setText(str(wave_direction) + '[deg]')
+
+        dofs = fd.generate_unitwave_response(s=self.guiScene, d0 = self.d0, rao=x, wave_amplitude=amplitude, n_frames=n_frames)
+
+        t = np.linspace(0, period, n_frames)
+        self.gui.animation_start(t, dofs, True, self.d0)
+
+
+
+
+

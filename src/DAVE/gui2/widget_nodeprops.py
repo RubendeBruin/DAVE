@@ -18,6 +18,7 @@ import DAVE.forms.widget_linhyd
 import DAVE.forms.widget_beam
 import DAVE.forms.widget_con2d
 import DAVE.forms.widget_sheave
+import DAVE.forms.widget_waveinteraction
 
 import numpy as np
 
@@ -261,6 +262,67 @@ class EditVisual(NodeEditor):
 
         if not np.all(new_scale == self.node.scale):
             code += element + '.scale = ({}, {}, {})'.format(*new_scale)
+
+
+        return code
+
+class EditWaveInteraction(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditWaveInteraction._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_waveinteraction.Ui_widget_waveinteraction()
+            ui.setupUi(widget)
+            EditWaveInteraction._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditWaveInteraction._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+            ui.comboBox.editTextChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.doubleSpinBox_1.setValue(self.node.offset[0])
+        ui.doubleSpinBox_2.setValue(self.node.offset[1])
+        ui.doubleSpinBox_3.setValue(self.node.offset[2])
+
+        ui.comboBox.clear()
+        ui.comboBox.addItems(self.scene.get_resource_list('dhyd'))
+
+        ui.comboBox.setCurrentText(self.node.path)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+        ui.comboBox.editTextChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = ""
+        element = "\ns['{}']".format(self.node.name)
+
+        new_position = np.array((self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+        new_path = self.ui.comboBox.currentText()
+
+        if not new_path == self.node.path:
+            code += element + ".path = r'{}'".format(new_path)
+
+        if not np.all(new_position == self.node.offset):
+            code += element + '.offset = ({}, {}, {})'.format(*new_position)
 
 
         return code
@@ -1165,6 +1227,9 @@ class WidgetNodeProps(guiDockWidget):
 
         if isinstance(node, vfs.Visual):
             self._node_editors.append(EditVisual(node, self.node_property_changed, self.guiScene))
+
+        if isinstance(node, vfs.WaveInteraction1):
+            self._node_editors.append(EditWaveInteraction(node, self.node_property_changed, self.guiScene))
 
         if isinstance(node, vfs.Axis):
             self._node_editors.append(EditAxis(node, self.node_property_changed, self.guiScene))

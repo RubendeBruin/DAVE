@@ -410,6 +410,31 @@ def add_buoyancy(scene, parent = None):
 
 
 
+def add_waveinteraction(scene, parent = None):
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/waveinteraction.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('WaveInteraction'))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+
+        return "new_waveinteraction('{}', parent = '{}', path = r'barge_100_30_5.dhyd')".format(
+            name, parent)
+
+    else:
+        return None
+
 
 
 

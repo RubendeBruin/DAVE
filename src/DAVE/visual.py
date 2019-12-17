@@ -517,6 +517,13 @@ class Viewport:
                 p.actor_type = ActorType.GEOMETRY
                 actors.append(p)
 
+            if isinstance(N, vf.WaveInteraction1):
+                size = 2
+                p = vp.Sphere(pos=(0,0,0), r=size/2, res = vc.RESOLUTION_SPHERE)
+                p.c(vc.COLOR_WAVEINTERACTION)
+                p.actor_type = ActorType.FORCE
+                actors.append(p)
+
             if isinstance(N, vf.BallastSystem):
                 size = 2
                 for t in N._tanks:
@@ -837,6 +844,14 @@ class Viewport:
                 t = vtk.vtkTransform()
                 t.Identity()
                 t.Translate(V.node.global_position)
+                V.actors[0].setTransform(t)
+                V.actors[0].SetScale(self.geometry_scale)
+                continue
+
+            if isinstance(V.node, vf.WaveInteraction1):
+                t = vtk.vtkTransform()
+                t.Identity()
+                t.Translate(V.node.parent.to_glob_position(V.node.offset))
                 V.actors[0].setTransform(t)
                 V.actors[0].SetScale(self.geometry_scale)
                 continue
