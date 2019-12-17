@@ -104,7 +104,7 @@ VF_NAME_SPLIT = "-->"    # used for node-names, eg:    Body23-->Cog
 # ============ visuals :: sea ===========
 
 VISUAL_BUOYANCY_PLANE_EXTEND = 5
-TEXTURE_SEA = ''
+TEXTURE_SEA = str(RESOURCE_PATH[0] / 'virtualSea.jpg')
 ALPHA_SEA = 0.8
 
 # ============ visuals :: geometry =========

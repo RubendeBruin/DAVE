@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_airy.ui',
 # licensing of 'widget_airy.ui' applies.
 #
-# Created: Tue Dec 17 17:12:42 2019
+# Created: Tue Dec 17 21:52:45 2019
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -34,7 +34,7 @@ class Ui_frmAiryWave(object):
         self.label_2.setObjectName("label_2")
         self.verticalLayout.addWidget(self.label_2)
         self.amplitude = QtWidgets.QDoubleSpinBox(self.widget_2)
-        self.amplitude.setSingleStep(5.0)
+        self.amplitude.setSingleStep(0.5)
         self.amplitude.setProperty("value", 2.0)
         self.amplitude.setObjectName("amplitude")
         self.verticalLayout.addWidget(self.amplitude)
@@ -48,7 +48,8 @@ class Ui_frmAiryWave(object):
         self.gridLayout.addWidget(self.widget_2, 1, 2, 1, 1)
         self.heading = QtWidgets.QDial(self.widget)
         self.heading.setMaximum(360)
-        self.heading.setProperty("value", 317)
+        self.heading.setPageStep(45)
+        self.heading.setProperty("value", 0)
         self.heading.setOrientation(QtCore.Qt.Vertical)
         self.heading.setWrapping(True)
         self.heading.setNotchTarget(0.0)

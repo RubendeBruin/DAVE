@@ -47,6 +47,7 @@ import numpy as np
 import prettytable as pt
 from scipy.linalg import eig
 from mafredo.hyddb1 import Hyddb1
+from mafredo.helpers import wavelength
 from mafredo.rao import Rao
 
 
@@ -129,7 +130,7 @@ def generate_unitwave_response(s, d0, rao, wave_amplitude, n_frames):
     for i_frame in range(n_frames):
         factor = i_frame / n_frames
 
-        change = rao * np.exp(1j * factor * 2 * np.pi)
+        change = rao * np.exp(-1j * factor * 2 * np.pi)
         change = wave_amplitude * np.real(change)
 
         core.set_dofs(d0)
@@ -393,7 +394,12 @@ def prepare_for_fd(s):
         w.parent = new_parent
         w.offset = (0,0,0)
 
-def calc_wave_response(s, omega, wave_direction):
+def calc_wave_response(s, omega, wave_direction, waterdepth=0):
+    """Calculates the response to a unit-wave
+
+    Phase-angles are relative to the global origin. Waterdepth is needed to
+    calculate the wave-lengths for shallow water (default: deep water)
+    """
 
     M = s.dynamics_M(0.1)
     K = s.dynamics_K(0.1)
@@ -418,8 +424,16 @@ def calc_wave_response(s, omega, wave_direction):
         assert mods == [0,1,2,3,4,5], ValueError('Parent of "{}" shall have all DOFs free'.format(w.name))
 
         m_added = w._hyddb.amass(omega)
-        B  = w._hyddb.damping(omega)
+        B_hyd  = w._hyddb.damping(omega)
         force = w._hyddb.force(omega, wave_direction)
+
+        # Use the dot-product with the wave-direction vector to determine the phase differnce
+        pos = w.parent.global_position
+        wave_dir = [np.cos(np.deg2rad(wave_direction)), np.sin(np.deg2rad(wave_direction))]
+        distance = pos[0]*wave_dir[0] + pos[1]*wave_dir[1]
+        phase_difference = 2*np.pi * distance / wavelength(omega, waterdepth=waterdepth)
+        phasor = np.exp(1j * phase_difference)
+
 
         # add the components to system matrices
         for i in range(6):
@@ -429,9 +443,9 @@ def calc_wave_response(s, omega, wave_direction):
                 sys_j = inds[j]
 
                 M[sys_i, sys_j] += m_added[i,j]
-                B[sys_i, sys_j] += B[i, j]
+                B[sys_i, sys_j] += B_hyd[i, j]
 
-            F[sys_i] += force[i]
+            F[sys_i] += phasor * force[i]
 
     # solve the system
 

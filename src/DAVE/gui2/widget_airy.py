@@ -17,6 +17,7 @@ import DAVE.scene as nodes
 import DAVE.settings as ds
 import DAVE.frequency_domain as fd
 import numpy as np
+from mafredo.helpers import wavelength
 
 class WidgetAiry(guiDockWidget):
 
@@ -76,6 +77,27 @@ class WidgetAiry(guiDockWidget):
         dofs = fd.generate_unitwave_response(s=self.guiScene, d0 = self.d0, rao=x, wave_amplitude=amplitude, n_frames=n_frames)
 
         t = np.linspace(0, period, n_frames)
+
+
+        import DAVE.visual
+
+        omega = 2*np.pi / period
+        wave_length = wavelength(omega,0) # infinite waterdepth
+
+        wf = DAVE.visual.WaveField()
+        wf.create_waveplane(wave_direction=wave_direction,
+                            wave_amplitude=amplitude,
+                            wave_length=wave_length,
+                            wave_period = period,
+                            nt = n_frames,
+                            nx = 100, ny = 100, dx=200,dy=200)
+
+        if self.gui._wavefield is not None:
+            self.gui.visual.screen.renderer.RemoveActor(self.gui._wavefield.actor)
+
+        self.gui.visual.screen.renderer.AddActor(wf.actor)
+        self.gui._wavefield = wf
+
         self.gui.animation_start(t, dofs, True, self.d0)
 
 

@@ -49,6 +49,7 @@
     - current time (time in seconds, reset by start)
     - dof interpolation object
     - final dofs (array)
+    - wavefield (WaveField object)
 
     - is loop     (bool)
     - start()     (terminates the current animation, if any, and starts a new animation)
@@ -157,6 +158,9 @@ class Gui():
 
         self._animation_available = False
         """Animation available"""
+
+        self._wavefield = None
+        """WaveField object"""
 
 
 
@@ -365,6 +369,10 @@ class Gui():
 
         dofs = self._animation_keyframe_interpolation_object(t)
         self.scene._vfc.set_dofs(dofs)
+
+        if self._wavefield is not None:
+            self._wavefield.update(t)
+
         self.ui.aniSlider.setValue(t*1000)
         self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
 
@@ -952,7 +960,7 @@ if __name__ == '__main__':
 
     # auto generated pyhton code
     # By beneden
-    # Time: 2019-12-17 15:26:51 UTC
+    # Time: 2019-12-17 21:56:32 UTC
 
     # To be able to distinguish the important number (eg: fixed positions) from
     # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
@@ -961,19 +969,20 @@ if __name__ == '__main__':
         return number
 
 
+
     # code for Barge
     s.new_rigidbody(name='Barge',
                     mass=20000.0,
                     cog=(50.0,
                          0.0,
                          2.5),
-                    position=(solved(0.0),
-                              solved(0.0),
-                              solved(-5.0)),
-                    rotation=(solved(0.0),
-                              solved(0.0),
-                              solved(0.0)),
-                    fixed=(False, False, False, False, False, False))
+                   position=(-50.0,
+                              0.0,
+                              -5.0),
+                    rotation=(0.0,
+                              0.0,
+                              0.0),
+                    fixed=False)
     # code for Hydrostatics
     s.new_hydspring(name='Hydrostatics',
                     parent='Barge',
@@ -996,6 +1005,37 @@ if __name__ == '__main__':
                 parent='Poi',
                 force=(0.0, 0.0, 0.0),
                 moment=(0.0, 0.0, 0.0))
+    # code for Poi_1
+    s.new_poi(name='Poi_1',
+              parent='Barge',
+              position=(43.0,
+                        0.0,
+                        29.0))
+    # code for Body
+    s.new_rigidbody(name='Body',
+                    mass=300.0,
+                    cog=(0.0,
+                         0.0,
+                         0.0),
+                    position=(solved(42.993750000000006),
+                              solved(0.0),
+                              solved(11.567415671221074)),
+                    rotation=(solved(0.0),
+                              solved(0.0),
+                              solved(0.0)),
+                    fixed=(False, False, False, False, False, True))
+    # code for Poi_2
+    s.new_poi(name='Poi_2',
+              parent='Body',
+              position=(0.0,
+                        0.0,
+                        1.0))
+    # code for Cable
+    s.new_cable(name='Cable',
+                poiA='Poi_2',
+                poiB='Poi_1',
+                length=12.0,
+                EA=100000.0)
     # code for Visual
     s.new_visual(name='Visual',
                  parent='Barge',
@@ -1004,15 +1044,18 @@ if __name__ == '__main__':
                  rotation=(0, 0, 0),
                  scale=(1.0, 1.0, 1.0))
     # code for Empty is possible as well
-    s.new_waveinteraction(name='Empty is possible as well',
+    s.new_waveinteraction(name='Hyd',
                           parent='Barge',
                           path=r'barge_100_30_5.dhyd',
                           offset=(50, 0, 5))
 
     from DAVE.frequency_domain import *
-    prepare_for_fd(s)
 
     s.solve_statics()
+    s['Barge']._inertia_radii = (10,40,40)
+
+    prepare_for_fd(s)
+
 
     x = calc_wave_response(s, 0.3, 90)
 

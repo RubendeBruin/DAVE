@@ -1380,6 +1380,98 @@ class Viewport:
         self.set_dsa(vc.VISUAL_DIFFUSE, vc.VISUAL_SPECULAR, vc.VISUAL_AMBIENT)
 
 
+class WaveField():
+
+    def __init__(self):
+        self.actor = None
+        self.pts = None
+        self.nt = 0
+        self.elevation = None
+
+        self.texture = vtk.vtkTexture()
+        input = vtk.vtkJPEGReader()
+        input.SetFileName(vc.TEXTURE_SEA)
+        self.texture.SetInputConnection(input.GetOutputPort())
+        self.ttp = vtk.vtkTextureMapToPlane()
+
+
+    def update(self, t):
+        t = np.mod(t, self.period)
+        i = int(self.nt * t/self.period)
+
+        count = 0
+        for ix,xx in enumerate(self.x):
+            for iy, yy in enumerate(self.y):
+                self.pts.SetPoint(count, xx,yy,self.elevation[iy,ix,i])
+                count += 1
+        self.pts.Modified()
+
+    def create_waveplane(self, wave_direction, wave_amplitude, wave_length, wave_period, nt, nx, ny, dx,dy):
+
+        x = np.linspace(-dx, dx, nx)
+        y = np.linspace(-dy, dy, ny)
+        xv, yv = np.meshgrid(x, y)
+
+        u = np.array((np.cos(np.deg2rad(wave_direction)), np.sin(np.deg2rad(wave_direction))))
+
+        dist_phasor = np.exp(1j * (xv*u[0] + yv*u[1]) * (2*np.pi/ wave_length))
+
+        t = np.linspace(0,wave_period, nt)
+        phase = 0 # np.pi/2 # debugging
+        time_phasor = np.exp(-1j * ((2*np.pi * t / wave_period) + phase) )
+
+        elevation = np.zeros((*xv.shape, nt))
+
+        for i in range(nt):
+            elevation[:,:,i] = wave_amplitude * np.real(time_phasor[i] * dist_phasor)
+
+
+        # the vtk stuff
+
+        # make grid
+        pts = vtk.vtkPoints()
+        for ix,xx in enumerate(x):
+            for iy, yy in enumerate(y):
+                pts.InsertNextPoint(yy,xx,elevation[iy,ix,1])
+
+        grid = vtk.vtkStructuredGrid()
+        grid.SetDimensions(ny,nx,1)
+        grid.SetPoints(pts)
+
+        # make mapper
+        filter = vtk.vtkStructuredGridGeometryFilter()
+        filter.SetInputData(grid)
+
+        # texture stuff
+        self.ttp.SetInputConnection(filter.GetOutputPort())
+
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputConnection(self.ttp.GetOutputPort())
+
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+        actor.SetTexture(self.texture)
+
+
+        self.pts = pts
+        self.actor = actor
+        self.elevation = elevation
+        self.nt = nt
+        self.period = wave_period
+        self.x = x
+        self.y = y
+
+
+if __name__ == "__main__":
+
+    v = WaveField()
+    v.create_waveplane(90,1,10,6, 50, 100,2,100,100)
+
+
+
+
+
+
 
 
 
