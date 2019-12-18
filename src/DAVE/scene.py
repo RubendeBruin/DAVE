@@ -23,7 +23,7 @@
     The default unit system is m, kN, mT (metric tonne).
     G and RHO are defined accordingly.
 
-    ##3D rotations##
+    ##Rotations##
 
     Unfortunately there is no standard way of defining rotations in 3D.
 
@@ -38,6 +38,19 @@
     - `(10,10,0)` : A rotation of sqrt(10^2 + 10^2) about the (1,1,0) axis.
 
     Hint: If euler angles are needed then axis systems can be stacked to obtain the same result.
+
+
+    ###2D rotations###
+
+    The following 2D rotations are available: tilt_x, tilt_y, heel, trim, heading and heading_compass. These are derived from the
+    projection of one of the local axis onto the global axis system.
+    For example the tilt about the x-axis is derived from the z-component of the y-axis.
+
+    Example:
+        A 3d rotation of (5,0,0) will give a heel of 5 degrees and a tilt_x of 8.7%
+        A 3d rotation of (0,0,120) will give a heading of 120 degrees and a heading_compass of 330.
+
+
 
     ##Filesystem and configuration##
 
@@ -62,13 +75,14 @@
 
     All settings are defined in UPPERCASE.
 
+    Note: Changing G or RHO has no effect at this moment as these values would also need to be changed in the equilibrium-core
+
     ###/ or \\ ###
 
     DAVE is multiplatform. It runs fine under windows as well as linux.
     Windows uses a \\ in path definitions while linux uses as /.
     The python standard [pathlib](https://docs.python.org/3/library/pathlib.html) library is used to deal with paths. In most situations however a string will work fine as well.
 
-    Note: Changing G or RHO has no effect at this moment as these values would also need to be changed in the equilibrium-core
 
     ##File format##
 
@@ -843,12 +857,67 @@ class Axis(NodeWithParent):
         self.global_rotation = (a[0], a[1], var)
 
     @property
+    def tilt_x(self):
+        """Returns the trim in [%]. This is the z-component of the unit y vector.
+
+        See Also: heel
+        """
+        y = (0,1,0)
+        uy = self.to_glob_direction(y)
+        return 100*uy[2]
+
+    @property
     def heel(self):
-        return 'to be implemented'  # TODO
+        """Returns the heel in [deg].  SB down is positive.
+        This is the inverse sin of the unit y vector(This is the arcsin of the tiltx)
+
+        See also: tilt_x
+        """
+        return np.rad2deg(np.arcsin(self.tilt_x/100))
+
+    @property
+    def tilt_y(self):
+        """Returns the trim in [%]. This is the z-component of the unit -x vector. So a positive rotation about
+        the y axis result in a positive tilt_y.
+
+        See Also: heel
+        """
+        x = (-1, 0, 0)
+        ux = self.to_glob_direction(x)
+        return 100 * ux[2]
 
     @property
     def trim(self):
-        return 'to be implemented'  # TODO
+        """Returns the trim in [deg]. Bow-down is positive.
+
+        This is the inverse sin of the unit -x vector(This is the arcsin of the tilt_y)
+
+        See also: tilt_y
+        """
+        return np.rad2deg(np.arcsin(self.tilt_y / 100))
+
+    @property
+    def heading(self):
+        """Returns the direction (0..360) [deg] of the local x-axis relative to the global x axis. Measured about the global z axis
+
+        heading = atan(u_y,u_x)
+
+        typically:
+            heading 0  --> local axis align with global axis
+            heading 90 --> local x-axis in direction of global y axis
+
+
+        See also: heading_compass
+        """
+        x = (1, 0, 0)
+        ux = self.to_glob_direction(x)
+        heading = np.rad2deg(np.arctan2(ux[1],ux[0]))
+        return np.mod(heading,360)
+
+    @property
+    def heading_compass(self):
+        """The heading (0..360)[deg] assuming that the global y-axis is North and global x-axis is East and rotation accoring compass definition"""
+        return np.mod(90-self.heading,360)
 
     @property
     def global_rotation(self):

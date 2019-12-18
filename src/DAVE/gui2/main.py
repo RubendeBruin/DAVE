@@ -159,10 +159,6 @@ class Gui():
         self._animation_available = False
         """Animation available"""
 
-        self._wavefield = None
-        """WaveField object"""
-
-
 
         # ================= Create globally available properties =======
         self.selected_nodes = []
@@ -322,8 +318,6 @@ class Gui():
             # self.btnConstruct.setChecked(True)
 
         if name == 'DYNAMICS':
-            # self.show_guiWidget('NodeTree', WidgetNodeTree)
-            # self.show_guiWidget('DerivedProperties', WidgetDerivedProperties)
             self.show_guiWidget('WidgetDynamicProperties', WidgetDynamicProperties)
             self.show_guiWidget('WidgetModeShapes', WidgetModeShapes)
 
@@ -370,8 +364,8 @@ class Gui():
         dofs = self._animation_keyframe_interpolation_object(t)
         self.scene._vfc.set_dofs(dofs)
 
-        if self._wavefield is not None:
-            self._wavefield.update(t)
+        self.visual.update_dynamic_waveplane(t)
+
 
         self.ui.aniSlider.setValue(t*1000)
         self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
@@ -390,6 +384,7 @@ class Gui():
         iren.DestroyTimer(to_be_destroyed)
 
         self._animation_available = False
+        self.visual.remove_dynamic_wave_plane()
 
         # restore DOFs
         if not keep_current_dofs:
@@ -537,7 +532,7 @@ class Gui():
                     if node not in before:
                         self.selected_nodes.clear()
                         self.selected_nodes.append(node)
-                        self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
+                        self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
                         emitted = True
                         break
 

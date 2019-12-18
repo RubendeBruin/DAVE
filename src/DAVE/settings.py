@@ -184,8 +184,8 @@ Gui specific settings
 PROPS_NODE = ['name']
 PROPS_AXIS = ['global_position','global_rotation','applied_force','connection_force','equilibrium_error',
               'x','y','z','gz','gy','gz','rx','ry','rz','grx','gry','grz',
-              'connection_force_x','connection_force_y','connection_force_z','connection_moment_x','connection_moment_y','connection_moment_z'
-              ]
+              'connection_force_x','connection_force_y','connection_force_z','connection_moment_x','connection_moment_y','connection_moment_z',
+              'tilt_x','heel','tilt_y','trim','heading','heading_compass']
 PROPS_POI = ['global_position','applied_force_and_moment_global','x','y','z','gz','gy','gz']
 PROPS_CABLE = ['tension','stretch']
 PROPS_CON2D = ['angle','moment','force']

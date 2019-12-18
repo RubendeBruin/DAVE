@@ -136,7 +136,7 @@ class VisualActor:
     def __init__(self, actors, node):
         self.actors = actors  # vtkplotter actors
         self.node = node      # Node
-        self.visible = True
+        # self.visible = True
         self._original_colors = list()
         self._is_selected = False
         self._is_transparent = False
@@ -213,6 +213,18 @@ class VisualActor:
         for act in self.actors:
             act.lighting(diffuse=vc.VISUAL_DIFFUSE, ambient=vc.VISUAL_AMBIENT, specular=vc.VISUAL_SPECULAR, enabled=True)
 
+    def on(self):
+        for a in self.actors:
+            a.on()
+
+    def off(self):
+        for a in self.actors:
+            a.off()
+
+    @property
+    def visible(self):
+        return self.actors[0].GetVisibility()
+
 
 class Viewport:
 
@@ -222,6 +234,9 @@ class Viewport:
         self.outlines = []
         self.screen = None
         """Becomes assigned when a screen is active (or was active...)"""
+
+        self.global_visual = None
+        """Visuals for the global environment"""
 
         self.mouseLeftEvent = None
         self.mouseRightEvent = None
@@ -241,6 +256,8 @@ class Viewport:
 
         self.quick_updates_only = False # Do not perform slow updates ( make animations quicker)
 
+        self._wavefield = None
+        """WaveField object"""
 
     def update_outlines(self):
         if self.screen is None:
@@ -349,6 +366,8 @@ class Viewport:
         v = VisualActor(world_actors, None)
         self.visuals.append(v)
 
+        self.global_visual = v
+
     def deselect_all(self):
         for v in self.visuals:
             v.deselect()
@@ -375,6 +394,31 @@ class Viewport:
                 return v
         return None
 
+    def add_dynamic_wave_plane(self, waveplane):
+        self.remove_dynamic_wave_plane()
+        self.screen.renderer.AddActor(waveplane.actor)
+        self._wavefield = waveplane
+
+        if self.global_visual.visible:
+            self._staticwaveplane = True
+            self.global_visual.off()
+        else:
+            self._staticwaveplane = False
+
+    def remove_dynamic_wave_plane(self):
+        if self._wavefield is not None:
+            self.screen.renderer.RemoveActor(self._wavefield.actor)
+            self._wavefield = None
+
+            if self._staticwaveplane:
+                self.global_visual.on()
+
+
+
+
+    def update_dynamic_waveplane(self, t):
+        if self._wavefield is not None:
+            self._wavefield.update(t)
 
 
     # def set_alpha(self, alpha_nodes, alpha_visuals):
@@ -1452,6 +1496,9 @@ class WaveField():
         actor.SetMapper(mapper)
         actor.SetTexture(self.texture)
 
+        actor.GetProperty().SetAmbient(1.0)
+        actor.GetProperty().SetDiffuse(0.0)
+        actor.GetProperty().SetSpecular(0.0)
 
         self.pts = pts
         self.actor = actor

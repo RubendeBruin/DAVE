@@ -92,12 +92,8 @@ class WidgetAiry(guiDockWidget):
                             nt = n_frames,
                             nx = 100, ny = 100, dx=200,dy=200)
 
-        if self.gui._wavefield is not None:
-            self.gui.visual.screen.renderer.RemoveActor(self.gui._wavefield.actor)
-
-        self.gui.visual.screen.renderer.AddActor(wf.actor)
-        self.gui._wavefield = wf
-
+        self.gui.animation_terminate()
+        self.gui.visual.add_dynamic_wave_plane(wf)
         self.gui.animation_start(t, dofs, True, self.d0)
 
 
