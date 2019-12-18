@@ -159,6 +159,8 @@ class Gui():
         self._animation_available = False
         """Animation available"""
 
+        self._animation_speed = 1.0
+
 
         # ================= Create globally available properties =======
         self.selected_nodes = []
@@ -189,6 +191,7 @@ class Gui():
         self.ui.btnStopAnimation.pressed.connect(lambda :self.animation_terminate(False))
         self.ui.btnPauseAnimation.pressed.connect(self.animation_pause_or_continue_click)
         self.ui.aniSlider.valueChanged.connect(self.animation_change_time)
+        self.ui.sbPlaybackspeed.valueChanged.connect(self.animation_speed_change)
 
         # ======================== Main Menu entries :: visuals ======
 
@@ -355,6 +358,8 @@ class Gui():
 
         t = time.time() - self._animation_start_time  # time since start of animation in [s]
 
+        t *= self._animation_speed
+
         if self._animation_loop:
             t = np.mod(t, self._animation_length)
         else:
@@ -365,6 +370,9 @@ class Gui():
         self.animation_activate_time(t)
 
         self.ui.aniSlider.setValue(t*1000)
+
+    def animation_speed_change(self):
+        self._animation_speed = self.ui.sbPlaybackspeed.value()
 
     def animation_activate_time(self,t):
         dofs = self._animation_keyframe_interpolation_object(t)
@@ -500,8 +508,6 @@ class Gui():
         before = self.scene._nodes.copy()
 
         s = self.scene
-
-
 
         self.ui.teCode.append('# ------------------')
         self.ui.pbExecute.setStyleSheet("background-color: yellow;")
@@ -968,7 +974,7 @@ if __name__ == '__main__':
 
     # auto generated pyhton code
     # By beneden
-    # Time: 2019-12-17 21:56:32 UTC
+    # Time: 2019-12-18 16:56:52 UTC
 
     # To be able to distinguish the important number (eg: fixed positions) from
     # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
@@ -977,31 +983,19 @@ if __name__ == '__main__':
         return number
 
 
-
     # code for Barge
     s.new_rigidbody(name='Barge',
-                    mass=20000.0,
+                    mass=15375.0,
                     cog=(50.0,
                          0.0,
-                         2.5),
-                   position=(-50.0,
-                              0.0,
-                              -5.0),
-                    rotation=(0.0,
-                              0.0,
-                              0.0),
-                    fixed=False)
-    # code for Hydrostatics
-    s.new_hydspring(name='Hydrostatics',
-                    parent='Barge',
-                    cob=(50.0, 0.0, 2.5),
-                    BMT=26.666666666666664,
-                    BML=166.66666666666666,
-                    COFX=0.0,
-                    COFY=0.0,
-                    kHeave=39240.0,
-                    waterline=2.5,
-                    displacement_kN=196200.0)
+                         5.0),
+                    position=(solved(-8.801848139228262e-11),
+                              solved(0.0),
+                              solved(-1.345604120542668e-12)),
+                    rotation=(solved(0.0),
+                              solved(0.0),
+                              solved(0.0)),
+                    fixed=(False, False, False, False, False, False))
     # code for Poi
     s.new_poi(name='Poi',
               parent='Barge',
@@ -1019,30 +1013,101 @@ if __name__ == '__main__':
               position=(43.0,
                         0.0,
                         29.0))
+    # code for global_springs
+    s.new_axis(name='global_springs',
+               position=(0.0,
+                         0.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
 
+    # code for Buoyancy mesh
+    mesh = s.new_buoyancy(name='Buoyancy mesh',
+                          parent='Barge')
+    mesh.trimesh.load_obj(s.get_resource_path(r'cube.obj'), scale=(100.0, 30.0, 10.0), rotation=(0.0, 0.0, 0.0),
+                          offset=(50.0, 0.0, 0.0))
+    # code for Hyd
+    s.new_waveinteraction(name='Hyd',
+                          parent='Barge',
+                          path=r'c:\data\temp.nc',
+                          offset=(50, 0, 5))
     # code for Visual
     s.new_visual(name='Visual',
                  parent='Barge',
-                 path=r'barge.obj',
-                 offset=(0.0, 0.0, 0.0),
+                 path=r'cube.obj',
+                 offset=(50.0, 0.0, 0.0),
                  rotation=(0, 0, 0),
-                 scale=(1.0, 1.0, 1.0))
-    # code for Empty is possible as well
-    s.new_waveinteraction(name='Hyd',
-                          parent='Barge',
-                          path=r'barge_100_30_5.dhyd',
-                          offset=(50, 0, 5))
+                 scale=(100.0, 30.0, 10.0))
 
     from DAVE.frequency_domain import *
 
-    s.solve_statics()
-    s['Barge']._inertia_radii = (10,20,20)
-
     prepare_for_fd(s)
 
+    # code for global_springs_connector
+    s.new_linear_connector_6d(name='global_springs_connector',
+                              master='global_springs',
+                              slave='autocreated_parent_for_Hyd',
+                              stiffness=(100.0, 100.0, 0.0,
+                                         0.0, 0.0, 1000.0))
 
-    x = calc_wave_response(s, 0.3, 90)
+    s.solve_statics()
+    s['Barge'].inertia_radii = (10,40,40)
 
 
 
     Gui(s)
+    #
+    #
+    # print(s.dynamics_M())
+    # m = s.dynamics_M()
+    # k = s.dynamics_K(0.1)
+    # print('s')
+    # #
+    # omegas = np.linspace(0.01,4,100)
+    # # print('calculating')
+    # RAO = calc_wave_response(s, omegas, 90)
+    # # print('done')
+    # #
+    # import matplotlib.pyplot as plt
+    #
+    # plt.figure()
+    # for i in range(6):
+    #
+    #     a = RAO[i,:]
+    #
+    #     ax1 = plt.subplot(3, 2, i + 1)
+    #
+    #     amplitude = abs(a)
+    #     if i > 2:
+    #         amplitude = np.rad2deg(amplitude)
+    #
+    #     ax1.plot(omegas, amplitude, label="amplitude", color='black', linewidth=1)
+    #     plt.title(str(i))
+    #     ax1.set_xlabel('omega [rad/s]')
+    #
+    #     yy = plt.ylim()
+    #     if yy[1] < 1e-5:
+    #         plt.ylim((0, 0.1))
+    #         continue
+    #     else:
+    #         plt.ylim((0, yy[1]))
+    #
+    #     if i == 4:
+    #         plt.legend()
+    #
+    #     ax2 = ax1.twinx()
+    #     ax2.plot(omegas, np.angle(a), label="phase", color='black', linestyle=':', linewidth=1)
+    #
+    #     if i == 5:
+    #         plt.legend()
+    #
+    # # plt.suptitle('Incoming wave direction = {}'.format(heading))
+    # plt.tight_layout()
+    #
+    # plt.show()
+    # # #
+    # #
+    # #
+    # # Gui(s)

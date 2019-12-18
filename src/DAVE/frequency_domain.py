@@ -394,11 +394,14 @@ def prepare_for_fd(s):
         w.parent = new_parent
         w.offset = (0,0,0)
 
-def calc_wave_response(s, omega, wave_direction, waterdepth=0):
+def calc_wave_response(s, omegas, wave_direction, waterdepth=0):
     """Calculates the response to a unit-wave
 
     Phase-angles are relative to the global origin. Waterdepth is needed to
     calculate the wave-lengths for shallow water (default: deep water)
+
+    Returns:
+        numpy array with dimensions [iDOF, iOmega]
     """
 
     M = s.dynamics_M(0.1)
@@ -406,12 +409,24 @@ def calc_wave_response(s, omega, wave_direction, waterdepth=0):
     nodes = s.dynamics_nodes()
     modes = s.dynamics_modes()
     names = [node.name for node in nodes]
+    n_dof = M.shape[0]
+
+    try:
+        n_omega = len(omegas)
+    except:
+        n_omega=1
+        omegas = [omegas]
 
     M = np.array(M, dtype=complex)  # change M to complex
-    F = np.zeros(shape=(M.shape[0]),dtype=complex)
     B = np.zeros_like(M)
 
     wis = s.nodes_of_type(node_class=WaveInteraction1)
+
+
+
+    M_hyd = np.zeros((*M.shape, n_omega), dtype=float)
+    B_hyd = np.zeros((*M.shape, n_omega), dtype=float)
+    F_hyd = np.zeros((M.shape[0], n_omega), dtype = complex)
 
     for w in wis:
         # find the corresponding dof numbers
@@ -423,41 +438,55 @@ def calc_wave_response(s, omega, wave_direction, waterdepth=0):
 
         assert mods == [0,1,2,3,4,5], ValueError('Parent of "{}" shall have all DOFs free'.format(w.name))
 
-        m_added = w._hyddb.amass(omega)
-        B_hyd  = w._hyddb.damping(omega)
-        force = w._hyddb.force(omega, wave_direction)
-
+        relative_heading = np.mod(wave_direction - w.parent.heading, 360)
         # Use the dot-product with the wave-direction vector to determine the phase differnce
         pos = w.parent.global_position
         wave_dir = [np.cos(np.deg2rad(wave_direction)), np.sin(np.deg2rad(wave_direction))]
         distance = pos[0]*wave_dir[0] + pos[1]*wave_dir[1]
-        phase_difference = 2*np.pi * distance / wavelength(omega, waterdepth=waterdepth)
-        phasor = np.exp(-1j * phase_difference)
 
+        M_omegas = w._hyddb.amass(omegas)
+        B_omegas = w._hyddb.damping(omegas)
 
-        # add the components to system matrices
-        for i in range(6):
-            sys_i = inds[i]
+        if M_omegas.ndim == 2:
+            M_omegas = np.expand_dims(M_omegas,2)
+            B_omegas = np.expand_dims(B_omegas,2)
 
-            for j in range(6):
-                sys_j = inds[j]
+        for i_omega, omega in enumerate(omegas):
 
-                M[sys_i, sys_j] += m_added[i,j]
-                B[sys_i, sys_j] += B_hyd[i, j]
+            # Get relative wave-heading
+            relative_heading = np.mod(wave_direction - w.parent.heading, 360)
+            F_omega = w._hyddb.force(omega, relative_heading)
 
-            F[sys_i] += phasor * force[i]
+            phase_global_origin = 2*np.pi * distance / wavelength(omega, waterdepth=waterdepth)
+            phasor_global_origin = np.exp(1j * phase_global_origin)
+
+            # add the components to system matrices
+            for i in range(6):
+                sys_i = inds[i]
+
+                for j in range(6):
+                    sys_j = inds[j]
+
+                    M_hyd[sys_i, sys_j,i_omega] += M_omegas[i,j,i_omega]
+                    B_hyd[sys_i, sys_j,i_omega] += B_omegas[i, j,i_omega]
+
+                F_hyd[sys_i,i_omega] += phasor_global_origin * F_omega[i]
+
 
     # solve the system
+    RAO = np.zeros((n_dof, n_omega), dtype=complex)
+    for i_omega, omega in enumerate(omegas):
 
-    A = np.zeros_like(M)
+        A = np.zeros_like(M)
 
-    A += -omega**2 * M   # intertia
-    A += 1j * omega * B  # damping
-    A += K               # stiffness
+        A += -omega**2 * ( M + M_hyd[:,:,i_omega] )   # inertia
+        A += 1j * omega * B_hyd[:,:,i_omega]  # damping
+        A += K               # stiffness
 
-    x = np.linalg.solve(A, F)  # solve
+        x = np.linalg.solve(A, F_hyd[:,i_omega])  # solve
+        RAO[:,i_omega] = x
 
-    return x
+    return RAO
 
 
 

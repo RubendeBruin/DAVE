@@ -1004,7 +1004,12 @@ class Viewport:
                     V.actors[0].wireframe()
 
                 if self.quick_updates_only:
+                    for a in V.actors:
+                        a.off()
                     continue
+                else:
+                    for a in V.actors:
+                        a.on()
 
                 # move the CoB to the new (global!) position
                 cob = V.node.cob
@@ -1461,8 +1466,7 @@ class WaveField():
         dist_phasor = np.exp(1j * (xv*u[0] + yv*u[1]) * (2*np.pi/ wave_length))
 
         t = np.linspace(0,wave_period, nt)
-        phase = 0 # np.pi/2 # debugging
-        time_phasor = np.exp(-1j * ((2*np.pi * t / wave_period) + phase) )
+        time_phasor = np.exp(-1j * (2 * np.pi * t / wave_period))
 
         elevation = np.zeros((*xv.shape, nt))
 

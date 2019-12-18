@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1721</width>
+    <width>1905</width>
     <height>1677</height>
    </rect>
   </property>
@@ -80,13 +80,6 @@
        <item>
         <widget class="QWidget" name="widget_2" native="true">
          <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="0">
-           <widget class="QToolButton" name="btnStopAnimation">
-            <property name="text">
-             <string>X</string>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="1">
            <widget class="QToolButton" name="btnPauseAnimation">
             <property name="text">
@@ -94,6 +87,32 @@
             </property>
             <property name="checkable">
              <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QToolButton" name="btnStopAnimation">
+            <property name="text">
+             <string>X</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QDoubleSpinBox" name="sbPlaybackspeed">
+            <property name="toolTip">
+             <string extracomment="playback speed"/>
+            </property>
+            <property name="toolTipDuration">
+             <number>0</number>
+            </property>
+            <property name="minimum">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>10.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
             </property>
            </widget>
           </item>
@@ -120,7 +139,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1721</width>
+     <width>1905</width>
      <height>31</height>
     </rect>
    </property>
@@ -189,13 +208,6 @@
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QPushButton" name="pbGenerateSceneCode">
-          <property name="text">
-           <string>Generate Scene Code</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
      </item>
@@ -218,6 +230,13 @@
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pbGenerateSceneCode">
+          <property name="text">
+           <string>Generate Scene Code</string>
           </property>
          </widget>
         </item>

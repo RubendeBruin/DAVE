@@ -68,13 +68,13 @@ class WidgetAiry(guiDockWidget):
         wave_direction = self.ui.heading.value()
         amplitude = self.ui.amplitude.value()
         period = self.ui.period.value()
-        x = fd.calc_wave_response(s=self.guiScene, omega = 2*np.pi/period, wave_direction=wave_direction )
+        x = fd.calc_wave_response(s=self.guiScene, omegas = 2*np.pi/period, wave_direction=wave_direction )
 
         n_frames = int(60*period)
 
         self.ui.label.setText(str(wave_direction) + '[deg]')
 
-        dofs = fd.generate_unitwave_response(s=self.guiScene, d0 = self.d0, rao=x, wave_amplitude=amplitude, n_frames=n_frames)
+        dofs = fd.generate_unitwave_response(s=self.guiScene, d0 = self.d0, rao=x[:,0], wave_amplitude=amplitude, n_frames=n_frames)
 
         t = np.linspace(0, period, n_frames)
 

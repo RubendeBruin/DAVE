@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Fri Dec 13 14:41:36 2019
+# Created: Wed Dec 18 17:30:39 2019
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1721, 1677)
+        MainWindow.resize(1905, 1677)
         MainWindow.setAcceptDrops(True)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/Dave_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -47,13 +47,21 @@ class Ui_MainWindow(object):
         self.gridLayout = QtWidgets.QGridLayout(self.widget_2)
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.gridLayout.setObjectName("gridLayout")
-        self.btnStopAnimation = QtWidgets.QToolButton(self.widget_2)
-        self.btnStopAnimation.setObjectName("btnStopAnimation")
-        self.gridLayout.addWidget(self.btnStopAnimation, 0, 0, 1, 1)
         self.btnPauseAnimation = QtWidgets.QToolButton(self.widget_2)
         self.btnPauseAnimation.setCheckable(True)
         self.btnPauseAnimation.setObjectName("btnPauseAnimation")
         self.gridLayout.addWidget(self.btnPauseAnimation, 0, 1, 1, 1)
+        self.btnStopAnimation = QtWidgets.QToolButton(self.widget_2)
+        self.btnStopAnimation.setObjectName("btnStopAnimation")
+        self.gridLayout.addWidget(self.btnStopAnimation, 0, 0, 1, 1)
+        self.sbPlaybackspeed = QtWidgets.QDoubleSpinBox(self.widget_2)
+        self.sbPlaybackspeed.setToolTip("")
+        self.sbPlaybackspeed.setToolTipDuration(0)
+        self.sbPlaybackspeed.setMinimum(0.1)
+        self.sbPlaybackspeed.setMaximum(10.0)
+        self.sbPlaybackspeed.setSingleStep(0.1)
+        self.sbPlaybackspeed.setObjectName("sbPlaybackspeed")
+        self.gridLayout.addWidget(self.sbPlaybackspeed, 0, 2, 1, 1)
         self.horizontalLayout.addWidget(self.widget_2)
         self.aniSlider = QtWidgets.QSlider(self.frameAni)
         self.aniSlider.setOrientation(QtCore.Qt.Horizontal)
@@ -63,7 +71,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.addWidget(self.frameAni)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1721, 31))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1905, 31))
         self.menubar.setObjectName("menubar")
         self.menuSolve_Statics = QtWidgets.QMenu(self.menubar)
         self.menuSolve_Statics.setObjectName("menuSolve_Statics")
@@ -85,9 +93,6 @@ class Ui_MainWindow(object):
         self.label.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTop|QtCore.Qt.AlignTrailing)
         self.label.setObjectName("label")
         self.verticalLayout.addWidget(self.label)
-        self.pbGenerateSceneCode = QtWidgets.QPushButton(self.widget)
-        self.pbGenerateSceneCode.setObjectName("pbGenerateSceneCode")
-        self.verticalLayout.addWidget(self.pbGenerateSceneCode)
         self.horizontalLayout_4.addWidget(self.widget)
         self.teCode = QtWidgets.QTextEdit(self.dockWidgetContents_2)
         self.teCode.setObjectName("teCode")
@@ -102,6 +107,9 @@ class Ui_MainWindow(object):
         self.label_2.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTop|QtCore.Qt.AlignTrailing)
         self.label_2.setObjectName("label_2")
         self.verticalLayout_2.addWidget(self.label_2)
+        self.pbGenerateSceneCode = QtWidgets.QPushButton(self.frame_3)
+        self.pbGenerateSceneCode.setObjectName("pbGenerateSceneCode")
+        self.verticalLayout_2.addWidget(self.pbGenerateSceneCode)
         self.pbCopyFeedback = QtWidgets.QPushButton(self.frame_3)
         self.pbCopyFeedback.setObjectName("pbCopyFeedback")
         self.verticalLayout_2.addWidget(self.pbCopyFeedback)
@@ -232,14 +240,14 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "DAVE", None, -1))
-        self.btnStopAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "X", None, -1))
         self.btnPauseAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "||", None, -1))
+        self.btnStopAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "X", None, -1))
         self.menuSolve_Statics.setTitle(QtWidgets.QApplication.translate("MainWindow", "File", None, -1))
         self.menuView.setTitle(QtWidgets.QApplication.translate("MainWindow", "View", None, -1))
         self.dockWidget_2.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Engine internals", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("MainWindow", "Code:", None, -1))
-        self.pbGenerateSceneCode.setText(QtWidgets.QApplication.translate("MainWindow", "Generate Scene Code", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("MainWindow", "Output:", None, -1))
+        self.pbGenerateSceneCode.setText(QtWidgets.QApplication.translate("MainWindow", "Generate Scene Code", None, -1))
         self.pbCopyFeedback.setText(QtWidgets.QApplication.translate("MainWindow", "Copy output", None, -1))
         self.pbExecute.setText(QtWidgets.QApplication.translate("MainWindow", "Execute", None, -1))
         self.toolBar.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "toolBar", None, -1))
@@ -279,4 +287,3 @@ class Ui_MainWindow(object):
         self.actionRender_current_view.setText(QtWidgets.QApplication.translate("MainWindow", "Render current view", None, -1))
         self.actionModal_shapes.setText(QtWidgets.QApplication.translate("MainWindow", "Modal shapes", None, -1))
         self.actionInertia_properties.setText(QtWidgets.QApplication.translate("MainWindow", "Inertia properties", None, -1))
-
