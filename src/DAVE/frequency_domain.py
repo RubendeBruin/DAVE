@@ -432,7 +432,7 @@ def calc_wave_response(s, omega, wave_direction, waterdepth=0):
         wave_dir = [np.cos(np.deg2rad(wave_direction)), np.sin(np.deg2rad(wave_direction))]
         distance = pos[0]*wave_dir[0] + pos[1]*wave_dir[1]
         phase_difference = 2*np.pi * distance / wavelength(omega, waterdepth=waterdepth)
-        phasor = np.exp(1j * phase_difference)
+        phasor = np.exp(-1j * phase_difference)
 
 
         # add the components to system matrices
