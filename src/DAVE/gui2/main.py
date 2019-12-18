@@ -188,6 +188,7 @@ class Gui():
         self.ui.frameAni.setVisible(False)
         self.ui.btnStopAnimation.pressed.connect(lambda :self.animation_terminate(False))
         self.ui.btnPauseAnimation.pressed.connect(self.animation_pause_or_continue_click)
+        self.ui.aniSlider.valueChanged.connect(self.animation_change_time)
 
         # ======================== Main Menu entries :: visuals ======
 
@@ -255,9 +256,9 @@ class Gui():
         self.btnConstruct.clicked.connect(lambda: self.activate_workspace("BALLAST"))
 
         self.btnConstruct = QtWidgets.QPushButton()
-        self.btnConstruct.setText('Dynamics')
+        self.btnConstruct.setText('Mode Shapes')
         self.ui.toolBar.addWidget(self.btnConstruct)
-        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("MODESHAPES"))
+        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("DYNAMICS"))
 
         self.btnConstruct = QtWidgets.QPushButton()
         self.btnConstruct.setText('Airy')
@@ -361,14 +362,16 @@ class Gui():
                 self.animation_terminate()
                 return
 
-        dofs = self._animation_keyframe_interpolation_object(t)
-        self.scene._vfc.set_dofs(dofs)
-
-        self.visual.update_dynamic_waveplane(t)
-
+        self.animation_activate_time(t)
 
         self.ui.aniSlider.setValue(t*1000)
+
+    def animation_activate_time(self,t):
+        dofs = self._animation_keyframe_interpolation_object(t)
+        self.scene._vfc.set_dofs(dofs)
+        self.visual.update_dynamic_waveplane(t)
         self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
+
 
     def animation_terminate(self, keep_current_dofs = False):
 
@@ -475,6 +478,16 @@ class Gui():
             self.animation_continue()
         else:
             self.animation_pause()
+
+    def animation_change_time(self):
+
+        # only works if animation is paused
+        if not self._animation_paused:
+            return
+
+        t = self.ui.aniSlider.value() / 1000
+        self.animation_activate_time(t)
+
 
     def onClose(self):
         self.visual.shutdown_qt()
@@ -1006,31 +1019,7 @@ if __name__ == '__main__':
               position=(43.0,
                         0.0,
                         29.0))
-    # code for Body
-    s.new_rigidbody(name='Body',
-                    mass=300.0,
-                    cog=(0.0,
-                         0.0,
-                         0.0),
-                    position=(solved(42.993750000000006),
-                              solved(0.0),
-                              solved(11.567415671221074)),
-                    rotation=(solved(0.0),
-                              solved(0.0),
-                              solved(0.0)),
-                    fixed=(False, False, False, False, False, True))
-    # code for Poi_2
-    s.new_poi(name='Poi_2',
-              parent='Body',
-              position=(0.0,
-                        0.0,
-                        1.0))
-    # code for Cable
-    s.new_cable(name='Cable',
-                poiA='Poi_2',
-                poiB='Poi_1',
-                length=12.0,
-                EA=100000.0)
+
     # code for Visual
     s.new_visual(name='Visual',
                  parent='Barge',
@@ -1047,7 +1036,7 @@ if __name__ == '__main__':
     from DAVE.frequency_domain import *
 
     s.solve_statics()
-    s['Barge']._inertia_radii = (10,40,40)
+    s['Barge']._inertia_radii = (10,20,20)
 
     prepare_for_fd(s)
 

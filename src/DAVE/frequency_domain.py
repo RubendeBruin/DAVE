@@ -130,8 +130,8 @@ def generate_unitwave_response(s, d0, rao, wave_amplitude, n_frames):
     for i_frame in range(n_frames):
         factor = i_frame / n_frames
 
-        change = rao * np.exp(-1j * factor * 2 * np.pi)
-        change = wave_amplitude * np.real(change)
+        t = factor * 2 * np.pi
+        change = wave_amplitude * np.abs(rao) * np.cos(t - np.angle(rao))
 
         core.set_dofs(d0)
         core.change_dofs(change)
