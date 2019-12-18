@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>418</width>
-    <height>241</height>
+    <width>486</width>
+    <height>246</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -90,6 +90,13 @@
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pushButton">
+     <property name="text">
+      <string>Prepare model for hydrodynamic interaction</string>
+     </property>
     </widget>
    </item>
    <item>

@@ -37,6 +37,7 @@ class WidgetAiry(guiDockWidget):
         self.ui.heading.valueChanged.connect(self.action)
         self.ui.amplitude.valueChanged.connect(self.action)
         self.ui.period.valueChanged.connect(self.action)
+        self.ui.pushButton.pressed.connect(self.prepare_for_wave_interaction)
 
     def guiProcessEvent(self, event):
         """
@@ -59,6 +60,10 @@ class WidgetAiry(guiDockWidget):
         return QtCore.Qt.DockWidgetArea.LeftDockWidgetArea
 
     # ======
+
+    def prepare_for_wave_interaction(self):
+        self.guiRunCodeCallback('prepare_for_fd(s)',guiEventType.MODEL_STRUCTURE_CHANGED)
+
 
     def action(self):
 

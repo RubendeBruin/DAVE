@@ -1,0 +1,73 @@
+def solved(number):
+    return number
+
+
+# code for Barge
+s.new_rigidbody(name='Barge',
+                mass=15375.0,
+                cog=(50.0,
+                     0.0,
+                     5.0),
+                position=(solved(-8.801848139228262e-11),
+                          solved(0.0),
+                          solved(-1.345604120542668e-12)),
+                rotation=(solved(0.0),
+                          solved(0.0),
+                          solved(0.0)),
+                fixed=(False, False, False, False, False, False))
+# code for Poi
+s.new_poi(name='Poi',
+          parent='Barge',
+          position=(0.0,
+                    10.0,
+                    0.0))
+# code for Force
+s.new_force(name='Force',
+            parent='Poi',
+            force=(0.0, 0.0, 0.0),
+            moment=(0.0, 0.0, 0.0))
+# code for Poi_1
+s.new_poi(name='Poi_1',
+          parent='Barge',
+          position=(43.0,
+                    0.0,
+                    29.0))
+# code for global_springs
+s.new_axis(name='global_springs',
+           position=(0.0,
+                     0.0,
+                     0.0),
+           rotation=(0.0,
+                     0.0,
+                     0.0),
+           fixed=(True, True, True, True, True, True))
+
+# code for Buoyancy mesh
+mesh = s.new_buoyancy(name='Buoyancy mesh',
+                      parent='Barge')
+mesh.trimesh.load_obj(s.get_resource_path(r'cube.obj'), scale=(100.0, 30.0, 10.0), rotation=(0.0, 0.0, 0.0),
+                      offset=(50.0, 0.0, 0.0))
+# code for Hyd
+s.new_waveinteraction(name='Hyd',
+                      parent='Barge',
+                      path=r'c:\data\temp.nc',
+                      offset=(50, 0, 5))
+# code for Visual
+s.new_visual(name='Visual',
+             parent='Barge',
+             path=r'cube.obj',
+             offset=(50.0, 0.0, 0.0),
+             rotation=(0, 0, 0),
+             scale=(100.0, 30.0, 10.0))
+
+from DAVE.frequency_domain import *
+
+prepare_for_fd(s)
+# code for global_springs_connector
+s.new_linear_connector_6d(name='global_springs_connector',
+                          master='global_springs',
+                          slave='autocreated_parent_for_Hyd',
+                          stiffness=(100.0, 100.0, 0.0,
+                                     0.0, 0.0, 1000.0))
+
+s['Barge'].inertia_radii = (10,40,40)
