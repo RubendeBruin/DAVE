@@ -38,6 +38,7 @@ class WidgetAiry(guiDockWidget):
         self.ui.amplitude.valueChanged.connect(self.action)
         self.ui.period.valueChanged.connect(self.action)
         self.ui.pushButton.pressed.connect(self.prepare_for_wave_interaction)
+        self.ui.pushButton_2.pressed.connect(self.plot_raos)
 
     def guiProcessEvent(self, event):
         """
@@ -64,6 +65,19 @@ class WidgetAiry(guiDockWidget):
     def prepare_for_wave_interaction(self):
         self.guiRunCodeCallback('prepare_for_fd(s)',guiEventType.MODEL_STRUCTURE_CHANGED)
 
+    def plot_raos(self):
+
+        code = """wave_direction = 90
+min = 0.01
+max = 4
+steps = 100
+plot_RAO_1d(s, np.linspace(min,max,steps), wave_direction)
+plt.show()
+"""
+
+        self.guiRunCodeCallback(code, guiEventType.NOTHING)
+
+
 
     def action(self):
 
@@ -73,7 +87,7 @@ class WidgetAiry(guiDockWidget):
         wave_direction = self.ui.heading.value()
         amplitude = self.ui.amplitude.value()
         period = self.ui.period.value()
-        x = fd.calc_wave_response(s=self.guiScene, omegas = 2*np.pi/period, wave_direction=wave_direction )
+        x = fd.RAO_1d(s=self.guiScene, omegas =2 * np.pi / period, wave_direction=wave_direction)
 
         n_frames = int(60*period)
 

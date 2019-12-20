@@ -1084,6 +1084,14 @@ class Axis(NodeWithParent):
         else:
             code += "\n                     solved({})),".format(self.rotation[2])
 
+        # inertia and radii of gyration
+        if self.inertia > 0:
+            code += "\n                     inertia = {},".format(self.inertia)
+
+        if np.any(self.inertia_radii > 0):
+            code += "\n                     inertia_radii = ({}, {}, {}),".format(*self.inertia_radii)
+
+        # fixeties
         code += "\n           fixed =({}, {}, {}, {}, {}, {}) )".format(*self.fixed)
 
         return code
@@ -1322,6 +1330,9 @@ class RigidBody(Axis):
             code += "\n                          {}),".format(self.rotation[2])
         else:
             code += "\n                          solved({})),".format(self.rotation[2])
+
+        if np.any(self.inertia_radii > 0):
+            code += "\n                     inertia_radii = ({}, {}, {}),".format(*self.inertia_radii)
 
         code += "\n                fixed =({}, {}, {}, {}, {}, {}) )".format(*self.fixed)
 
@@ -2790,10 +2801,11 @@ class Scene:
         return self.node_by_name(node_name)
 
     def nodes_of_type(self, node_class):
-        """Returns all nodes of the specified type
+        """Returns all nodes of the specified or derived type
 
         Examples:
             pois = scene.nodes_of_type(DAVE.Poi)
+            axis_and_bodies = scene.nodes_of_type(DAVE.Axis)
         """
         r = list()
         for n in self._nodes:
@@ -3079,7 +3091,7 @@ class Scene:
 
     # ======== create functions =========
 
-    def new_axis(self, name, parent=None, position=None, rotation=None, fixed = True):
+    def new_axis(self, name, parent=None, position=None, rotation=None, inertia=None, inertia_radii=None, fixed = True):
         """Creates a new *axis* node and adds it to the scene.
 
         Args:
@@ -3107,6 +3119,14 @@ class Scene:
         if rotation is not None:
             assert3f(rotation, "Rotation ")
 
+        if inertia is not None:
+            assert1f_positive(inertia, "inertia ")
+
+        if inertia_radii is not None:
+            assert3f_positive(inertia_radii, "Radii of inertia")
+            assert inertia is not None, ValueError("Can not set radii of gyration without specifying inertia")
+
+
         if not isinstance(fixed, bool):
             if len(fixed) != 6:
                 raise Exception('"fixed" parameter should either be True/False or a 6x bool sequence such as (True,True,False,False,True,False)')
@@ -3125,6 +3145,11 @@ class Scene:
             new_node.position = position
         if rotation is not None:
             new_node.rotation = rotation
+        if inertia is not None:
+            new_node.inertia = inertia
+        if inertia_radii is not None:
+            new_node.inertia_radii = inertia_radii
+
 
         if isinstance(fixed, bool):
             if fixed:
@@ -3281,7 +3306,7 @@ class Scene:
         return new_node
 
     def new_rigidbody(self, name, mass=0, cog=(0, 0, 0),
-                      parent=None, position=None, rotation=None, fixed = True ):
+                      parent=None, position=None, rotation=None, inertia_radii=None, fixed = True ):
         """Creates a new *rigidbody* node and adds it to the scene.
 
         Args:
@@ -3291,6 +3316,7 @@ class Scene:
             parent: optional, name of the parent of the node
             position: optional, position for the node (x,y,z)
             rotation: optional, rotation for the node (rx,ry,rz)
+            inertia_radii : optional, radii of gyration (rxx,ryy,rzz); only used for dynamics
             fixed [True]: optional, determines whether the axis is fixed [True] or free [False]. May also be a sequence of 6 booleans.
 
         Examples:
@@ -3313,6 +3339,10 @@ class Scene:
             assert3f(position, "Position ")
         if rotation is not None:
             assert3f(rotation, "Rotation ")
+            
+        if inertia_radii is not None:
+            assert3f_positive(inertia_radii, "Radii of inertia")
+            assert mass>0, ValueError("Can not set radii of gyration without specifying mass")
 
         if not isinstance(fixed, bool):
             if len(fixed) != 6:
@@ -3343,6 +3373,9 @@ class Scene:
             r.position = position
         if rotation is not None:
             r.rotation = rotation
+            
+        if inertia_radii is not None:
+            r.inertia_radii = inertia_radii
 
         if isinstance(fixed, bool):
             if fixed:
@@ -3957,7 +3990,7 @@ class Scene:
 
         exec(code, {}, {'s': s})
 
-    def   import_scene(self, other, prefix = "", containerize = True):
+    def import_scene(self, other, prefix = "", containerize = True):
         """Copy-paste all nodes of scene "other" into current scene.
 
         To avoid double names it is recommended to use a prefix. This prefix will be added to all element names.
@@ -4017,6 +4050,21 @@ class Scene:
             return c
 
         return None
+
+    def copy(self):
+        """Creates a full and independent copy of the scene and returns it.
+
+        Example:
+            s = Scene()
+            c = s.copy()
+            c.new_axis('only in c')
+
+        """
+
+        c = Scene()
+        c.import_scene(self)
+        return c
+
 
 
     # =================== DYNAMICS ==================

@@ -102,11 +102,14 @@ from DAVE.gui2.widget_ballastconfiguration import WidgetBallastConfiguration
 from DAVE.gui2.widget_ballastsolver import WidgetBallastSolver
 from DAVE.gui2.widget_ballastsystemselect import WidgetBallastSystemSelect
 from DAVE.gui2.widget_airy import WidgetAiry
+from DAVE.gui2.widget_stability_disp import WidgetDisplacedStability
 
 # Imports available in script
 import numpy as np
+import matplotlib.pyplot as plt
 from DAVE.solvers.ballast import force_vessel_to_evenkeel_and_draft, BallastSystemSolver
-from DAVE.frequency_domain import prepare_for_fd
+from DAVE.frequency_domain import prepare_for_fd, plot_RAO_1d
+
 
 # resources
 
@@ -261,6 +264,11 @@ class Gui():
         self.btnConstruct.clicked.connect(lambda: self.activate_workspace("BALLAST"))
 
         self.btnConstruct = QtWidgets.QPushButton()
+        self.btnConstruct.setText('Stability')
+        self.ui.toolBar.addWidget(self.btnConstruct)
+        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("STABILITY"))
+
+        self.btnConstruct = QtWidgets.QPushButton()
         self.btnConstruct.setText('Mode Shapes')
         self.ui.toolBar.addWidget(self.btnConstruct)
         self.btnConstruct.clicked.connect(lambda: self.activate_workspace("DYNAMICS"))
@@ -331,6 +339,9 @@ class Gui():
             self.show_guiWidget('WidgetBallastSystemSelect', WidgetBallastSystemSelect)
             self.show_guiWidget('WidgetBallastConfiguration', WidgetBallastConfiguration)
             self.show_guiWidget('WidgetBallastSolver', WidgetBallastSolver)
+
+        if name == 'STABILITY':
+            self.show_guiWidget('Stability', WidgetDisplacedStability)
 
         if name == 'AIRY':
             self.show_guiWidget('WidgetAiry', WidgetAiry)
@@ -972,144 +983,12 @@ if __name__ == '__main__':
     from DAVE.solvers.ballast import BallastSystemSolver
 
     s = Scene()
-    Gui(s)
-    #
-    # # auto generated pyhton code
-    # # By beneden
-    # # Time: 2019-12-18 16:56:52 UTC
-    #
-    # # To be able to distinguish the important number (eg: fixed positions) from
-    # # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
-    # # For anything written as solved(number) that actual number does not influence the static solution
-    # def solved(number):
-    #     return number
-    #
-    #
-    # # code for Barge
-    # s.new_rigidbody(name='Barge',
-    #                 mass=15375.0,
-    #                 cog=(50.0,
-    #                      0.0,
-    #                      5.0),
-    #                 position=(solved(-8.801848139228262e-11),
-    #                           solved(0.0),
-    #                           solved(-1.345604120542668e-12)),
-    #                 rotation=(solved(0.0),
-    #                           solved(0.0),
-    #                           solved(0.0)),
-    #                 fixed=(False, False, False, False, False, False))
-    # # code for Poi
-    # s.new_poi(name='Poi',
-    #           parent='Barge',
-    #           position=(0.0,
-    #                     10.0,
-    #                     0.0))
-    # # code for Force
-    # s.new_force(name='Force',
-    #             parent='Poi',
-    #             force=(0.0, 0.0, 0.0),
-    #             moment=(0.0, 0.0, 0.0))
-    # # code for Poi_1
-    # s.new_poi(name='Poi_1',
-    #           parent='Barge',
-    #           position=(43.0,
-    #                     0.0,
-    #                     29.0))
-    # # code for global_springs
-    # s.new_axis(name='global_springs',
-    #            position=(0.0,
-    #                      0.0,
-    #                      0.0),
-    #            rotation=(0.0,
-    #                      0.0,
-    #                      0.0),
-    #            fixed=(True, True, True, True, True, True))
-    #
-    # # code for Buoyancy mesh
-    # mesh = s.new_buoyancy(name='Buoyancy mesh',
-    #                       parent='Barge')
-    # mesh.trimesh.load_obj(s.get_resource_path(r'cube.obj'), scale=(100.0, 30.0, 10.0), rotation=(0.0, 0.0, 0.0),
-    #                       offset=(50.0, 0.0, 0.0))
-    # # code for Hyd
-    # s.new_waveinteraction(name='Hyd',
-    #                       parent='Barge',
-    #                       path=r'c:\data\temp.nc',
-    #                       offset=(50, 0, 5))
-    # # code for Visual
-    # s.new_visual(name='Visual',
-    #              parent='Barge',
-    #              path=r'cube.obj',
-    #              offset=(50.0, 0.0, 0.0),
-    #              rotation=(0, 0, 0),
-    #              scale=(100.0, 30.0, 10.0))
-    #
-    # from DAVE.frequency_domain import *
-    #
-    # prepare_for_fd(s)
-    #
-    # # code for global_springs_connector
-    # s.new_linear_connector_6d(name='global_springs_connector',
-    #                           master='global_springs',
-    #                           slave='autocreated_parent_for_Hyd',
-    #                           stiffness=(100.0, 100.0, 0.0,
-    #                                      0.0, 0.0, 1000.0))
-    #
-    # s.solve_statics()
-    # s['Barge'].inertia_radii = (10,40,40)
-    #
-    #
-    #
+
+    s.import_scene(s.get_resource_path("cheetah.dave_asset"), containerize=False, prefix="")
+
+    s['Cheetah'].fixed = (False, False, False, False, False, False)
+
+    prepare_for_fd(s)
+
     # Gui(s)
-    # #
-    # #
-    # # print(s.dynamics_M())
-    # # m = s.dynamics_M()
-    # # k = s.dynamics_K(0.1)
-    # # print('s')
-    # # #
-    # # omegas = np.linspace(0.01,4,100)
-    # # # print('calculating')
-    # # RAO = calc_wave_response(s, omegas, 90)
-    # # # print('done')
-    # # #
-    # # import matplotlib.pyplot as plt
-    # #
-    # # plt.figure()
-    # # for i in range(6):
-    # #
-    # #     a = RAO[i,:]
-    # #
-    # #     ax1 = plt.subplot(3, 2, i + 1)
-    # #
-    # #     amplitude = abs(a)
-    # #     if i > 2:
-    # #         amplitude = np.rad2deg(amplitude)
-    # #
-    # #     ax1.plot(omegas, amplitude, label="amplitude", color='black', linewidth=1)
-    # #     plt.title(str(i))
-    # #     ax1.set_xlabel('omega [rad/s]')
-    # #
-    # #     yy = plt.ylim()
-    # #     if yy[1] < 1e-5:
-    # #         plt.ylim((0, 0.1))
-    # #         continue
-    # #     else:
-    # #         plt.ylim((0, yy[1]))
-    # #
-    # #     if i == 4:
-    # #         plt.legend()
-    # #
-    # #     ax2 = ax1.twinx()
-    # #     ax2.plot(omegas, np.angle(a), label="phase", color='black', linestyle=':', linewidth=1)
-    # #
-    # #     if i == 5:
-    # #         plt.legend()
-    # #
-    # # # plt.suptitle('Incoming wave direction = {}'.format(heading))
-    # # plt.tight_layout()
-    # #
-    # # plt.show()
-    # # # #
-    # # #
-    # # #
-    # # # Gui(s)
+

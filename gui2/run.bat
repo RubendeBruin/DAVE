@@ -6,5 +6,7 @@ echo call pyside2-uic widget_modeshapes.ui -o "..\src\DAVE\gui2\forms\widgetUI_m
 echo call pyside2-uic widget_ballastconfiguration.ui -o "..\src\DAVE\gui2\forms\widgetUI_ballastconfiguration.py"
 echo call pyside2-uic widget_ballastsolver.ui -o "..\src\DAVE\gui2\forms\widgetUI_ballastsolver.py"
 call pyside2-uic widget_airy.ui -o "..\src\DAVE\gui2\forms\widgetUI_airy.py"
+call pyside2-uic widget_stability_displ.ui -o "..\src\DAVE\gui2\forms\widget_stability_displUI.py"
+
 
 echo call pyside2-rcc ..\guis\resources.qrc -o "..\src\DAVE\forms\resources_rc.py"

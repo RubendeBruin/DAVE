@@ -3,14 +3,9 @@ Frequency domain dynamics
 
 Provides frequency domain dynamics for DAVE
 
+
 Frequency domain dynamics are based on the mass, stiffness and damping matrices which can be obtained from a scene.
 These matrices are calculated numerically for a given displacement of the degrees of freedom. This allows to linearize
-
-(Borgman - Ocean wave simulation for engineering design. 1967)
-Quadratic components:
- B * u|u|  --> B * const * u
- const = rms * sqrt(8/pi)
-
 
 
  The Mass matrix is constructed as follows:
@@ -27,6 +22,25 @@ Quadratic components:
    The distance to the dof_i origin is measured in the axis system of the parent of dof_i and is the
    reference position of the point-mass (ie: the un-displaced position)
 
+
+# Linearization of quadratic terms #
+
+Not yet implemented:
+
+(Borgman - Ocean wave simulation for engineering design. 1967)
+Quadratic components:
+ B * u|u|  --> B * const * u
+ const = rms * sqrt(8/pi)
+
+
+# Adding of linearized responses #
+
+Response resulting from multiple wave components need to be added to synthesize a time-domain response in multi-directional wave spectra.
+This means 3D rotations about different axis need to be added.
+For subsequent rotations the order in which they are applied matters, especially when they are not small.
+
+This is solved by adding the rotation VECTORS. A rotation of 30 degrees about the X axis in combination with an rotation
+of 30 degrees about the Y axis then becomes an rotation of sqrt(2)*30 degrees about the (1,1,0) axis.
 
 
 
@@ -296,8 +310,6 @@ def dynamics_quickfix(scene):
     _print_summary(summary)
     return summary
 
-
-
 def check_unconstrained(scene, V, D,K,M):
     """Prints information about errornous mode-shapes.
     Unconstrained nodes come up with a natural period of nan.
@@ -394,7 +406,109 @@ def prepare_for_fd(s):
         w.parent = new_parent
         w.offset = (0,0,0)
 
-def calc_wave_response(s, omegas, wave_direction, waterdepth=0):
+
+def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
+    """Calculates and plots the RAOs. Call plt.show afterwards to show the plots"""
+
+    RAOs = RAO_1d(s=s,omegas=omegas,wave_direction=wave_direction, waterdepth=waterdepth)
+
+    # now plot
+    # Use one figure per node
+    nodes = s.dynamics_nodes()
+    modes = s.dynamics_modes()
+
+    figures = []
+
+    cur_fig = None
+    prev_node = (None, None)
+
+    for node, mode in zip(nodes, modes):
+
+        if node != prev_node:
+            figures.append(cur_fig)
+            cur_fig = list()
+
+        cur_fig.append((node, mode))
+        prev_node = node
+
+    figures.append(cur_fig)
+    figures = figures[1:] # remove fist None entry
+
+    counter = 0
+    mode_names = ['X','Y','Z','RX','RY','RZ']
+
+
+    import matplotlib.pyplot as plt
+    from matplotlib.figure import figaspect
+
+    for figure in figures:
+
+
+
+        n_plots = len(figure)
+        n_h = 1
+        n_v = 1
+        w, h = figaspect(1)
+        if n_plots > 1:
+            n_h = 2  # horizontal
+            n_v = 1
+            w, h = figaspect(0.5)
+        if n_plots > 2:
+            n_h = 2  # horizontal
+            n_v = 2
+            w, h = figaspect(1)
+        if n_plots > 4:
+            n_h = 2  # horizontal
+            n_v = 3
+            w, h = figaspect(1.5)
+
+        f = plt.figure(figsize=(w, h))
+
+        for i, entry in enumerate(figure):
+            ax1 = plt.subplot(n_v, n_h, i+1)
+
+            node = entry[0]
+            mode = entry[1]
+
+            a = RAOs[counter,:]
+            counter += 1
+
+            amplitude = np.abs(a)
+
+            if mode>2:
+                amplitude = np.rad2deg(amplitude)
+
+            ax1.plot(omegas, amplitude, label="amplitude", color='black', linewidth=1)
+            plt.title(mode_names[mode])
+            ax1.set_xlabel('omega [rad/s]')
+            plt.grid()
+
+            yy = plt.ylim()
+            if yy[1] < 1e-4:
+                plt.ylim((0, 1))
+                continue
+            elif yy[1] < 1.0:
+                plt.ylim((0, 1))
+            else:
+                plt.ylim((0, yy[1]))
+
+            ax2 = ax1.twinx()
+            ax2.plot(omegas, np.angle(a), label="phase", color='black', linestyle=':', linewidth=1)
+
+            plt.suptitle('{}\nIncoming wave direction = {}'.format(node.name, wave_direction))
+
+        plt.figtext(0.995, 0.01, 'Amplitude (solid) in [m] or [deg] on left axis\nPhase (dashed) in [rad] on right axis', ha='right', va='bottom', fontsize=6)
+        plt.tight_layout()
+
+
+
+
+
+
+
+
+
+def RAO_1d(s, omegas, wave_direction, waterdepth=0):
     """Calculates the response to a unit-wave
 
     Phase-angles are relative to the global origin. Waterdepth is needed to
@@ -421,8 +535,6 @@ def calc_wave_response(s, omegas, wave_direction, waterdepth=0):
     B = np.zeros_like(M)
 
     wis = s.nodes_of_type(node_class=WaveInteraction1)
-
-
 
     M_hyd = np.zeros((*M.shape, n_omega), dtype=float)
     B_hyd = np.zeros((*M.shape, n_omega), dtype=float)

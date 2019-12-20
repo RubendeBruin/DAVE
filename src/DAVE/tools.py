@@ -16,7 +16,13 @@ import DAVE.settings as ds
 
 def assert1f(var, name = "Variable"):
     if not isinstance(var, numbers.Number):
-        raise ValueError(name + " should be a number but {} is not a number.".format(var[i]))
+        raise ValueError(name + " should be a number but {} is not a number.".format(var))
+
+def assert1f_positive(var, name = "Variable"):
+    if not isinstance(var, numbers.Number):
+        raise ValueError(name + " should be a number but {} is not a number.".format(var))
+    if var < 0:
+        raise ValueError(name + " can not be negative.".format(var))
 
 def assert3f(var, name = "Variable"):
     """Asserts that variable has length three and contains only numbers"""
@@ -66,21 +72,13 @@ def make_iterable(v):
 def radii_to_positions(rxx,ryy,rzz):
     """decouple radii of gyration into six point discrete positions"""
 
-    Ixx = rxx ** 2
-    Iyy = ryy ** 2
-    Izz = rzz ** 2
+    rxx2 = rxx ** 2
+    ryy2 = ryy ** 2
+    rzz2 = rzz ** 2
 
-    rxx2 = (Ixx)
-    ryy2 = (Iyy)
-    rzz2 = (Izz)
-
-    # checks
-    if rxx2 > ryy2 + rzz2:
-        raise Exception('Ixx should be < Iyy + Izz')
-    if ryy2 > rxx2 + rzz2:
-        raise Exception('Iyy should be < Ixx + Izz')
-    if rzz2 > rxx2 + rzz2:
-        raise Exception('Izz should be < Ixx + Iyy')
+    assert (rxx2 <= (ryy2 + rzz2)) , ValueError('rxx^2 should be <= ryy^2 + rzz^2, but rxx={}, ryy={}, rzz={}'.format(rxx,ryy,rzz))
+    assert (ryy2 <= (rxx2 + rzz2)),  ValueError('ryy^2 should be <= rxx^2 + rzz^2, but rxx={}, ryy={}, rzz={}'.format(rxx,ryy,rzz))
+    assert (rzz2 <= (rxx2 + ryy2)),  ValueError('rzz^2 should be <= rxx^2 + ryy^2, but rxx={}, ryy={}, rzz={}'.format(rxx,ryy,rzz))
 
     x = np.sqrt(0.5 * (-rxx2 + ryy2 + rzz2)) * np.sqrt(3)
     y = np.sqrt(0.5 * (rxx2 - ryy2 + rzz2)) * np.sqrt(3)

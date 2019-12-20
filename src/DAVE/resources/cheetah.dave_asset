@@ -1,13 +1,3 @@
-# auto generated pyhton code
-# By beneden
-# Time: 2019-10-15 14:54:13 UTC
-
-# To be able to distinguish the important number (eg: fixed positions) from
-# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
-# For anything written as solved(number) that actual number does not influence the static solution
-def solved(number):
-    return number
-
 # code for Cheetah
 s.new_rigidbody(name='Cheetah',
                 mass=60000.0,
@@ -16,19 +6,26 @@ s.new_rigidbody(name='Cheetah',
                      7.0),
                 position=(0.0,
                           0.0,
-                          solved(-6.752391206208039)),
-                rotation=(solved(2.7611337966828806e-07),
-                          solved(0.3416769535369142),
-                          0.0),
+                          -6.75),
+                rotation=(0,0,0),
                 fixed =(True, True, False, False, False, True) )
+
 # code for buoyancy
-s.new_buoyancy(name='buoyancy',
+mesh = s.new_buoyancy(name='buoyancy',
           parent='Cheetah')
-s['buoyancy'].trimesh.load_obj(s.get_resource_path('buoyancy cheetah.obj'), scale = (1,1,1), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
+mesh.trimesh.load_obj(s.get_resource_path(r'buoyancy cheetah.obj'), scale = (1,1,1), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
+
 # code for visual - vessel
 s.new_visual(name='visual - vessel',
             parent='Cheetah',
-            path='visual vessel cheetah.obj',
-            offset=(0, 0, 0), 
-            rotation=(0, 0, 0), 
+            path=r'visual vessel cheetah.obj',
+            offset=(0, 0, 0),
+            rotation=(0, 0, 0),
             scale=(1.0, 1.0, 1.0) )
+
+# code for WaveInteraction
+s.new_waveinteraction(name='Wave Interaction draft 6.75',
+            parent='Cheetah',
+            path=r'cheetah.dhyd',
+            offset=(100.0, 0.0, 6.75) )
+
