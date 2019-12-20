@@ -1,6 +1,6 @@
 # code for Cheetah
 s.new_rigidbody(name='Cheetah',
-                mass=60000.0,
+                mass=20000.0,   # light ship weight
                 cog=(106.0,
                      0.0,
                      7.0),
@@ -8,12 +8,18 @@ s.new_rigidbody(name='Cheetah',
                           0.0,
                           -6.75),
                 rotation=(0,0,0),
+                inertia_radii = (20,80,80),
                 fixed =(True, True, False, False, False, True) )
+
+
 
 # code for buoyancy
 mesh = s.new_buoyancy(name='buoyancy',
           parent='Cheetah')
 mesh.trimesh.load_obj(s.get_resource_path(r'buoyancy cheetah.obj'), scale = (1,1,1), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
+
+
+
 
 # code for visual - vessel
 s.new_visual(name='visual - vessel',

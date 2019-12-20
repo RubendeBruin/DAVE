@@ -95,9 +95,10 @@ class WidgetBallastSystemSelect(guiDockWidget):
         except:
             return
 
-        self.lblDraft.setText("Z = {}m".format(vessel.gz))
-        self.lblHeel.setText("Heel = {}m".format(vessel.heel))
-        self.lblTrim.setText("Trim = {}m".format(vessel.trim))
+        self.lblDraft.setText("Z = {:.3f} m".format(vessel.gz))
+
+        self.lblHeel.setText("Heel = {:.3f} deg (positive to SB)".format(vessel.heel))
+        self.lblTrim.setText("Trim = {:.3f} deg (positive to bow".format(vessel.trim))
 
     def fill(self):
         # get all ballast-systems
@@ -115,9 +116,20 @@ class WidgetBallastSystemSelect(guiDockWidget):
         try:
             bs = self.guiScene[name]
             self.label.setText("on vessel '{}'".format(bs.parent.name))
+
+            self.gui.visual.set_alpha(0.3, exclude_nodes = [bs])
+
+
+
+            self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
+
+
         except ValueError:
             return
 
         self.guiSelection.clear()
         self.guiSelection.append(bs)
         self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+
+
+

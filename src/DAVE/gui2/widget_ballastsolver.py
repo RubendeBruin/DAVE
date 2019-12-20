@@ -36,7 +36,7 @@ class WidgetBallastSolver(guiDockWidget):
 
         self.ui.pushButton.pressed.connect(self.determineRequiredBallast)
         self.ui.pushButton_2.pressed.connect(self.solveBallast)
-        self.ui.doubleSpinBox.valueChanged.connect(self.draftChanged)
+        self.ui.doubleSpinBox.valueChanged.connect(self.determineRequiredBallast)
 
 
     def guiProcessEvent(self, event):

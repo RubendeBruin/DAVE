@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>828</width>
+    <width>1396</width>
     <height>1412</height>
    </rect>
   </property>
@@ -65,6 +65,60 @@
     </widget>
    </item>
    <item>
+    <widget class="QWidget" name="widget_2" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QPushButton" name="pbFillAll">
+        <property name="text">
+         <string>Fill all</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pbEmptyAll">
+        <property name="text">
+         <string>Empty all</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pbToggleFreeze">
+        <property name="text">
+         <string>Toggle freeze</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pbUnfreezeAll">
+        <property name="text">
+         <string>Unfreeze all</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pbFreezeAll">
+        <property name="text">
+         <string>Freeze all</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QTableWidget" name="tableWidget">
      <property name="dragEnabled">
       <bool>true</bool>
@@ -87,27 +141,32 @@
      </row>
      <column>
       <property name="text">
-       <string>Capacity</string>
+       <string>Capacity [kN]</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Fill</string>
+       <string>Fill [%]</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>X</string>
+       <string>Frozen</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Y</string>
+       <string>X [m]</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Z</string>
+       <string>Y [m]</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Z [m]</string>
       </property>
      </column>
     </widget>

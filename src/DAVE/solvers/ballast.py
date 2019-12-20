@@ -125,8 +125,9 @@ class BallastSystemSolver:
 
         self._target_cog = np.array((0.,0.,0.))
         self._target_wt = 0
+        self.tolerance = 1e-3
         self.silent = True
-        self.min_error_reduction = 0.01
+        self.min_error_reduction = self.tolerance/10
 
 
     def print(self, *kwarg):
@@ -144,7 +145,7 @@ class BallastSystemSolver:
         dy = cog[1] - self._target_cog[1]
         dw = wt - self._target_wt
 
-        return dx**2 + dy**2 + dw **2
+        return dx**2 + dy**2 + 0.1*dw **2
 
     def optimize_tank(self, tank):
 
@@ -207,6 +208,9 @@ class BallastSystemSolver:
 
 
         E0 = self._error()
+        p0 = list()
+        for tank in tanks:
+            p0.append(tank.pct)
 
 
         n_tanks = len(tanks)
@@ -217,9 +221,7 @@ class BallastSystemSolver:
         for tank in tanks:
             self.print('{} == {} '.format(tank.name, tank.pct))
 
-        p0 = list()
-        for tank in tanks:
-            p0.append(tank.pct)
+
 
         # See if it is possible to empty or fill one of the tanks and get an result that is at least as good
         # This does not need to decrease the error because it leads to a better state
@@ -362,6 +364,53 @@ class BallastSystemSolver:
             tank.pct = fill
         return False
 
+
+    def optimize_using(self, tanks):
+        """Optimize using the given tanks. No fancy combinations"""
+
+        names = ''
+        for t in tanks:
+            names += ' ' + t.name + '(' + str(t.pct) + ')'
+        print('Optimize using {} tanks: {}'.format(len(tanks), names))
+
+        E0 = self._error()
+        p0 = list()
+        for tank in tanks:
+            p0.append(tank.pct)
+
+        def fun(x):
+            for i, tank in enumerate(tanks):
+                tank.pct = x[i]
+            return self._error()
+
+        x0 = []
+        bnds = []
+
+        for tank in tanks:
+            x0.append(tank.pct)
+            bnds.append((0., 100.))
+
+        res = minimize(fun, x0=np.array(x0), bounds=bnds)
+
+        if not res.success:
+            self.print('SUB-OPTIMIZATION FAILED FOR {} TANKS'.format(len(tanks)))
+
+        # apply the result
+        fun(res.x)
+
+        # Did the optimization result in a different tank fill
+        if self._error() < E0:
+            self.print('Before optimaliz = ', x0)
+            self.print('multi-opt result = ', res.x)
+            return True
+        else:
+            self.print('multi-opt result = ', res.x)
+
+        # set original fillings
+        for tank, fill in zip(tanks, p0):
+            tank.pct = fill
+        return False
+
     def ballast_to(self, cogx, cogy, weight):
 
         _log = []
@@ -370,13 +419,20 @@ class BallastSystemSolver:
         self._target_cog[0] = cogx - self.BallastSystem.position[0]
         self._target_cog[1] = cogy- self.BallastSystem.position[1]
 
+        # Get usable tanks
+        optTanks = []
+        for tank in self.BallastSystem._tanks:
+            if not tank.frozen:
+                optTanks.append(tank)
+
+
 
         # print log:
         print('ballasting to volume of {} kN'.format(self._target_wt ))
         print('at {} , {}'.format(self._target_cog[0],self._target_cog[1] ))
 
         print('using:')
-        for tank in self.BallastSystem._tanks:
+        for tank in optTanks:
             print('{} of {} [ {}% full ]at {} {} {}'.format(tank.name, tank.max, tank.pct, *tank.position))
         print('-----------------------------')
 
@@ -385,15 +441,15 @@ class BallastSystemSolver:
 
             print('Iteration = {}, Error = {} with tanks:'.format(it, self._error()))
 
-            _log.append([tank.pct for tank in self.BallastSystem._tanks])
+            _log.append([tank.pct for tank in optTanks])
             print(_log[-1])
 
-            if self._error() < 1e-5:
+            if self._error() < self.tolerance:
                 break
 
             # optimize partially filled tanks
             partials = []
-            for tank in self.BallastSystem._tanks:
+            for tank in optTanks:
                 if tank.is_partial():
                     partials.append(tank)
 
@@ -409,7 +465,7 @@ class BallastSystemSolver:
             changed = False
 
             # See if it gets better by filling or emptying _any_ of the other tanks
-            for tank in self.BallastSystem._tanks:
+            for tank in optTanks:
                 if self.optimize_tank(tank):
                     changed = True
                     break
@@ -421,7 +477,7 @@ class BallastSystemSolver:
             # keeping the currently partial tanks and optimizing any one of the other tanks failed
 
             # use the current partial tanks in combination with ONE of the other tanks
-            for tank in self.BallastSystem._tanks:
+            for tank in optTanks:
                 if tank not in partials:
                     temp = partials.copy()
                     temp.append(tank)
@@ -440,14 +496,41 @@ class BallastSystemSolver:
             # use the current partial tanks in combination with TWO of the other tanks
             #
             # WARNING: This is very, very slow because there are many combinations
-            for tank in self.BallastSystem._tanks:
-                for tank2 in self.BallastSystem._tanks:
+
+            # do we need to fill or drain?
+            _, wt = self.xyzw()
+            if wt < self._target_wt:
+                fill = False
+            else:
+                fill = True
+
+            for tank in self.optTanks:
+
+                # exclude full tanks if we need to fill
+                if fill and tank.is_full():
+                    continue
+                # exclude empty tanks if we need to drain
+                if not fill and tank.is_empty():
+                    continue
+
+                for tank2 in self.optTanks:
+
+                    # exclude full tanks if we need to fill
+                    if fill and tank2.is_full():
+                        continue
+                    # exclude empty tanks if we need to drain
+                    if not fill and tank2.is_empty():
+                        continue
+
+                    # we now have tank and tank2
+                    # optimize using all partial tanks plus these two
+
                     if tank not in partials:
                         temp = partials.copy()
                         temp.append(tank)
                         if tank2 not in temp:
                             temp.append(tank2)
-                            if self.optimize_multiple_partial(temp):
+                            if self.optimize_using(temp):
 
                                 self.print('Optimized the following:')
                                 for tank in temp:
@@ -459,7 +542,7 @@ class BallastSystemSolver:
             if changed:
                 continue
 
-            print([t.pct for t in self.BallastSystem._tanks])
+            print([t.pct for t in optTanks])
             print(self._error())
             print(self.xyzw())
 
@@ -467,7 +550,7 @@ class BallastSystemSolver:
 
         self.print('Error = {}'.format(self._error()))
         self.print(self.xyzw())
-        print([t.pct for t in self.BallastSystem._tanks])
+        print([t.pct for t in optTanks])
 
         if it == maxit-1:
             plt.plot(_log)

@@ -37,8 +37,16 @@ class WidgetBallastConfiguration(guiDockWidget):
 
         self.ui.tableWidget.cellChanged.connect(self.tankfillchanged)
 
+        self.ui.pbFreezeAll.pressed.connect(self.freeze_all)
+        self.ui.pbUnfreezeAll.pressed.connect(self.unfreeze_all)
+        self.ui.pbToggleFreeze.pressed.connect(self.toggle_freeze)
+
+        self.ui.pbFillAll.pressed.connect(lambda : self.fill_all_to(100))
+        self.ui.pbEmptyAll.pressed.connect(lambda: self.fill_all_to(0))
+
         self._bs = None # active ballast system
         self._filling_table = True
+        self._cbFrozen = list()
 
 
 
@@ -60,6 +68,33 @@ class WidgetBallastConfiguration(guiDockWidget):
 
     # ======
 
+    def freeze_all(self):
+        if self._bs is None:
+            return
+        for t in self._bs._tanks:
+            t.frozen = True
+        self.fill()
+
+    def unfreeze_all(self):
+        if self._bs is None:
+            return
+        for t in self._bs._tanks:
+            t.frozen = False
+        self.fill()
+
+    def toggle_freeze(self):
+        if self._bs is None:
+            return
+        for t in self._bs._tanks:
+            t.frozen = not t.frozen
+        self.fill()
+
+    def fill_all_to(self,pct):
+        code = ''
+        for t in self._bs._tanks:
+            code += '\ns["{}"]["{}"].pct = {}'.format(self._bs.name, t.name, pct)
+        self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
+
     def fill(self):
 
         # display the name of the selected node
@@ -78,6 +113,7 @@ class WidgetBallastConfiguration(guiDockWidget):
         empty = QColor.fromRgb(254,254,254)
 
         self._filling_table = True
+        self._cbFrozen.clear()
 
         for i,t in enumerate(self._bs._tanks):
             rows = i
@@ -85,7 +121,7 @@ class WidgetBallastConfiguration(guiDockWidget):
             tw.setRowCount(rows + 1)
             tw.setVerticalHeaderItem(rows, QtWidgets.QTableWidgetItem(t.name))
 
-            item = QtWidgets.QTableWidgetItem('{:e}'.format(t.max))
+            item = QtWidgets.QTableWidgetItem('{:.1f}'.format(t.max))
             item.setFlags(QtCore.Qt.ItemIsEditable)
             tw.setItem(rows, 0, item)
 
@@ -100,10 +136,16 @@ class WidgetBallastConfiguration(guiDockWidget):
                 item.setBackground(QBrush(empty))
             tw.setItem(rows, 1, item)
 
+            item = QtWidgets.QCheckBox()
+            self._cbFrozen.append(item)
+            item.setChecked(t.frozen)
+            item.stateChanged.connect(self.tankFrozenChanged)
+            tw.setCellWidget (rows, 2, item)
+
             for j in range(3):
-                item = QtWidgets.QTableWidgetItem('{:e}'.format(t.position[j]))
+                item = QtWidgets.QTableWidgetItem('{:.3f}'.format(t.position[j]))
                 item.setFlags(QtCore.Qt.ItemIsEditable)
-                tw.setItem(rows, 2+j, item)
+                tw.setItem(rows, 3+j, item)
 
         self._filling_table = False
 
@@ -131,12 +173,26 @@ class WidgetBallastConfiguration(guiDockWidget):
             return
 
         tank_name = self.ui.tableWidget.verticalHeaderItem(a).text()
-        fill = self.ui.tableWidget.item(a,b).text()
 
-        # try:
-        #     float(fill)
-        # except:
-        #     return
+        if b == 1:
+            fill = self.ui.tableWidget.item(a,b).text()
 
-        code = 's["{}"].fill_tank("{}",{})'.format(self._bs.name, tank_name, fill)
-        self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
+            code = 's["{}"].fill_tank("{}",{})'.format(self._bs.name, tank_name, fill)
+            self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
+        else:
+            raise Exception('This cell is not supposed to be editable')
+
+    def tankFrozenChanged(self):
+        if self._filling_table:
+            return
+
+        # no idea which entry was changed....
+        for i_row in range(self.ui.tableWidget.rowCount()):
+            tank_name = self.ui.tableWidget.verticalHeaderItem(i_row).text()
+            frozen = self._cbFrozen[i_row].isChecked()
+
+            if self._bs[tank_name].frozen != frozen:
+                self.guiRunCodeCallback('s["{}"]["{}"].frozen = {}'.format(self._bs.name, tank_name, frozen), guiEventType.SELECTED_NODE_MODIFIED)
+                return
+
+

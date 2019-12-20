@@ -79,7 +79,7 @@ from PySide2.QtWidgets import QDialog,QFileDialog
 from DAVE.scene import Scene
 
 from DAVE.gui2.forms.main_form import Ui_MainWindow
-from DAVE.visual import Viewport
+from DAVE.visual import Viewport, ActorType
 from DAVE.gui2 import new_node_dialog
 import DAVE.standard_assets
 from DAVE.forms.dlg_solver import Ui_Dialog
@@ -108,7 +108,7 @@ from DAVE.gui2.widget_stability_disp import WidgetDisplacedStability
 import numpy as np
 import matplotlib.pyplot as plt
 from DAVE.solvers.ballast import force_vessel_to_evenkeel_and_draft, BallastSystemSolver
-from DAVE.frequency_domain import prepare_for_fd, plot_RAO_1d
+from DAVE.frequency_domain import prepare_for_fd, plot_RAO_1d, dynamics_quickfix
 
 
 # resources
@@ -322,6 +322,10 @@ class Gui():
 
         self.animation_terminate()
 
+        self.visual.set_alpha(1.0)
+        self.visual.hide_actors_of_type([ActorType.BALLASTTANK])
+        self.visual.update_outlines()
+
         for g in self.guiWidgets.values():
             g.close()
 
@@ -339,6 +343,7 @@ class Gui():
             self.show_guiWidget('WidgetBallastSystemSelect', WidgetBallastSystemSelect)
             self.show_guiWidget('WidgetBallastConfiguration', WidgetBallastConfiguration)
             self.show_guiWidget('WidgetBallastSolver', WidgetBallastSolver)
+            self.visual.show_actors_of_type([ActorType.BALLASTTANK])
 
         if name == 'STABILITY':
             self.show_guiWidget('Stability', WidgetDisplacedStability)
@@ -984,11 +989,105 @@ if __name__ == '__main__':
 
     s = Scene()
 
-    s.import_scene(s.get_resource_path("cheetah.dave_asset"), containerize=False, prefix="")
+    # code for Cheetah
+    s.new_rigidbody(name='Cheetah',
+                    mass=20000.0,  # light ship weight
+                    cog=(106.0,
+                         0.0,
+                         7.0),
+                    position=(0.0,
+                              0.0,
+                              -6.75),
+                    rotation=(0, 0, 0),
+                    inertia_radii=(20, 80, 80),
+                    fixed=(True, True, False, False, False, True))
 
-    s['Cheetah'].fixed = (False, False, False, False, False, False)
+    # code for buoyancy
+    mesh = s.new_buoyancy(name='buoyancy',
+                          parent='Cheetah')
+    mesh.trimesh.load_obj(s.get_resource_path(r'buoyancy cheetah.obj'), scale=(1, 1, 1), rotation=(0.0, 0.0, 0.0),
+                          offset=(0.0, 0.0, 0.0))
 
-    prepare_for_fd(s)
 
-    # Gui(s)
+    # Define the ballast system
+
+    # displacement at 6.75m draft = 53290.760 m3
+    #
+
+    bs = s.new_ballastsystem('Ballast_system', parent='Cheetah')
+
+    for i in range(8):
+
+
+        capacity = 15*10*10*9.81*1.025
+        if i > 1:
+            capacity = 15*20*10*9.81*1.025
+
+        bs.new_tank('ps{}'.format(i+1), (10 + 20*i,10,5), capacity)
+        bs.new_tank('sb{}'.format(i + 1), (10 + 20*i, -10, 5), capacity)
+
+    bs.new_tank('ps9', (175, 8, 5), 10 * 10 * 5 * 9.81 * 1.025)
+    bs.new_tank('sb9', (175, -8, 5), 10 * 10 * 5 * 9.81 * 1.025)
+
+    bs.new_tank('bow', (190, 0, 5), 10 * 10 * 6 * 9.81 * 1.025)
+
+    # code for visual - vessel
+    s.new_visual(name='visual - vessel',
+                 parent='Cheetah',
+                 path=r'visual vessel cheetah.obj',
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1.0, 1.0, 1.0))
+
+    # code for WaveInteraction
+    s.new_waveinteraction(name='Wave Interaction draft 6.75',
+                          parent='Cheetah',
+                          path=r'cheetah.dhyd',
+                          offset=(100.0, 0.0, 6.75))
+
+    # s["Ballast_system"].empty_all_usable_tanks()
+    # s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Cheetah", z=-5.0)
+    #
+    # # ------------------
+    # ballast_solver = BallastSystemSolver(s["Ballast_system"])
+    # ballast_solver.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
+
+    # ------------------
+    s["Ballast_system"]["ps1"].frozen = True
+
+    # ------------------
+    s["Ballast_system"]["sb1"].frozen = True
+
+    # ------------------
+    s["Ballast_system"]["sb9"].frozen = True
+
+    # ------------------
+    s["Ballast_system"]["bow"].frozen = True
+
+    # ------------------
+    s["Ballast_system"].fill_tank("sb9", 100)
+
+    # ------------------
+    s["Ballast_system"].fill_tank("bow", 100)
+
+    # ------------------
+    s["Ballast_system"].fill_tank("ps9", 100)
+
+    # ------------------
+    s["Ballast_system"]["ps9"].frozen = True
+
+    # ------------------
+    s["Ballast_system"].fill_tank("ps1", 100)
+
+    # ------------------
+    s["Ballast_system"].fill_tank("sb1", 100)
+
+    s["Ballast_system"].empty_all_usable_tanks()
+    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Cheetah", z=-5.0)
+
+    # ------------------
+    ballast_solver = BallastSystemSolver(s["Ballast_system"])
+    ballast_solver.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
+
+    Gui(s)
 

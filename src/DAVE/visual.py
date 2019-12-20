@@ -230,8 +230,8 @@ class Viewport:
 
     def __init__(self, scene, jupyter = False):
         self.scene = scene
-        self.visuals = []
-        self.outlines = []
+        self.visuals = list()
+        self.outlines = list()
         self.screen = None
         """Becomes assigned when a screen is active (or was active...)"""
 
@@ -267,6 +267,9 @@ class Viewport:
             for outline in self.outlines:
                 outline.outline_actor.SetVisibility(False)
             return
+
+        for outline in self.outlines:
+            outline.outline_actor.SetVisibility(outline.parent_vp_actor.GetVisibility())
 
         # list of already existing outlines
         _outlines = [a.parent_vp_actor for a in self.outlines]
@@ -421,17 +424,33 @@ class Viewport:
             self._wavefield.update(t)
 
 
-    # def set_alpha(self, alpha_nodes, alpha_visuals):
-    #     """Sets the alpha (transparency) of element-type nodes and visual-type nodes to the given values"""
-    #
-    #     for V in self.visuals:
-    #         if isinstance(V.node, vf.Visual):
-    #             a = alpha_visuals
-    #         else:
-    #             a = alpha_nodes
-    #
-    #         for A in V.actors:
-    #             A.alpha(a)
+    def hide_actors_of_type(self, types):
+        for V in self.visuals:
+            for A in V.actors:
+                if A.actor_type in types:
+                    A.off()
+
+
+    def show_actors_of_type(self, types):
+        for V in self.visuals:
+            for A in V.actors:
+                    if A.actor_type in types:
+                        A.on()
+
+    def set_alpha(self, alpha, exclude_nodes=None):
+        """Sets the alpha (transparency) of for ALL actors in all visuals except the GLOBAL actors or visuals belonging to a node in exclude_nodes"""
+
+        if exclude_nodes is None:
+            exclude_nodes = []
+        for V in self.visuals:
+            for A in V.actors:
+
+                if V.node in exclude_nodes:
+                    continue
+
+                if A.actor_type == ActorType.GLOBAL:
+                    continue
+                A.alpha(alpha)
 
 
     def level_camera(self):
@@ -569,9 +588,15 @@ class Viewport:
                 actors.append(p)
 
             if isinstance(N, vf.BallastSystem):
-                size = 2
+
                 for t in N._tanks:
-                    p = vp.Cube(pos=(0,0,0), side=size / 2)
+
+                    capacity = t.max
+                    volume = capacity / (1.025 * 9.81)
+                    side = volume**(1/3)
+                    scale = 0.5
+
+                    p = vp.Cube(pos=(0,0,0), side=0.5*side*scale)
                     p.c(vc.COLOR_POI)
                     p.actor_type = ActorType.BALLASTTANK
                     actors.append(p)

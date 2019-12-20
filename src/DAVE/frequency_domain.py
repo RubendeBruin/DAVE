@@ -492,6 +492,10 @@ def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
             else:
                 plt.ylim((0, yy[1]))
 
+
+            xx = plt.xlim()     # force min x to 0
+            plt.ylim((0, xx[1]))
+
             ax2 = ax1.twinx()
             ax2.plot(omegas, np.angle(a), label="phase", color='black', linestyle=':', linewidth=1)
 

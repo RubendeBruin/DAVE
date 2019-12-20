@@ -2315,6 +2315,9 @@ class BallastSystem(Poi):
         self._weight = 0
         """Weight [kN] of the ballast-tanks , calculated when calling update()"""
 
+        self.frozen = False
+        """The contents of a frozen tank should not be changed"""
+
     # override the following properties
     @Poi.parent.setter
     def parent(self, var):
@@ -2400,6 +2403,7 @@ class BallastSystem(Poi):
         assert1f(actual_fill, "Actual fill percentage")
         assertValidName(name)
 
+        assert name not in [t.name for t in self._tanks], ValueError('Double names are not allowed, {} already exists'.format(name))
 
         t = BallastSystem.Tank()
         t.name = name
@@ -2490,7 +2494,14 @@ class BallastSystem(Poi):
             if not t.frozen:
                 t.make_empty()
 
+    def tank(self, name):
+        for t in self._tanks:
+            if t.name == name:
+                return t
+        raise ValueError('No tank with name {}'.format(name))
 
+    def __getitem__(self, item):
+        return self.tank(item)
 
 
     @property
