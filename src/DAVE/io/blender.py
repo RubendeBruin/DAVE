@@ -64,50 +64,79 @@ from mathutils import Vector
 
 # These functions are inserted by DAVE.io.blender.py
 
-def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orientation=(0,0,0), position=(0,0,0) ):
-	\"\"\"
-	All meshes shall be joined
+def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orientation=(0,0,0,0), position=(0,0,0), orientations=[], positions=[], frames_per_dof = 5 ):
+    \"\"\"
+    All meshes shall be joined
     
     First rotate (rotation)
-	Then scale (scale)
+    Then scale (scale)
     Then move (offset)
 
-	Then global apply rotation rotate (orientation)
-	Then apply global move (position)
+    Then global apply rotation rotate (orientation)
+    Then apply global move (position)
 
-	rotations in radians
+    rotations in radians
 
-	\"\"\"
-	print('Loading {}'.format(filepath))
+    \"\"\"
+    print('Loading {}'.format(filepath))
 
-	with bpy.data.libraries.load(filepath=filepath, relative=False) as (data_from, data_to):
-		data_to.objects.extend(data_from.objects)
-	
-	for object in data_to.objects:
-		print(object.name)
+    with bpy.data.libraries.load(filepath=filepath, relative=False) as (data_from, data_to):
+        data_to.objects.extend(data_from.objects)
+    
+    for object in data_to.objects:
+        print(object.name)
 
-		if object.type == 'MESH':    # only add meshes, materials are automatically included
-			bpy.ops.object.add_named(name=object.name)
-			# When you use bpy.ops.object.add() the newly created object becomes the active object
-			# bpy.context.active_object
-			active_object = bpy.context.view_layer.objects.active
-			bpy.ops.object.select_all(action='DESELECT')
-			active_object.select_set(True)
-			# set absolute
-			# active_object.location = (0,0,5)
-			# active_object.rotation_euler = (1,2,3)
-			# active_object.scale = (2,1,1)
-			# apply transform
-			bpy.ops.transform.translate(value=offset)
-			bpy.ops.transform.rotate(value=-rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)
-			bpy.ops.transform.rotate(value=-rotation[1], orient_axis='Y')
-			bpy.ops.transform.rotate(value=-rotation[2], orient_axis='X')
-			bpy.ops.transform.resize(value=scale)
-			# apply global transforms
-			bpy.ops.transform.rotate(value=-orientation[0], orient_axis='Z')
-			bpy.ops.transform.rotate(value=-orientation[1], orient_axis='Y')
-			bpy.ops.transform.rotate(value=-orientation[2], orient_axis='X')
-			bpy.ops.transform.translate(value=position)
+        if object.type == 'MESH':    # only add meshes, materials are automatically included
+            bpy.ops.object.add_named(name=object.name)
+            # When you use bpy.ops.object.add() the newly created object becomes the active object
+            # bpy.context.active_object
+            active_object = bpy.context.view_layer.objects.active
+            bpy.ops.object.select_all(action='DESELECT')
+            active_object.select_set(True)
+            # set absolute
+            # active_object.location = (0,0,5)
+            # active_object.rotation_euler = (1,2,3)
+            # active_object.scale = (2,1,1)
+            # apply transform
+            bpy.ops.transform.translate(value=offset)
+            bpy.ops.transform.rotate(value=-rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)
+            bpy.ops.transform.rotate(value=-rotation[1], orient_axis='Y')
+            bpy.ops.transform.rotate(value=-rotation[2], orient_axis='X')
+            bpy.ops.transform.resize(value=scale)
+            
+            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
+            # apply global transforms
+            
+            # bpy.ops.transform.rotate(value=-orientation[0], orient_axis='Z')
+            # bpy.ops.transform.rotate(value=-orientation[1], orient_axis='Y')
+            # bpy.ops.transform.rotate(value=-orientation[2], orient_axis='X')
+            # bpy.ops.transform.translate(value=position)
+            # active_object.rotation_mode = 'QUATERNION'
+            
+            active_object.location = position
+            active_object.rotation_mode = 'QUATERNION'
+            # bpy.context.object.rotation_quaternion[1] = 1.8
+            active_object.rotation_quaternion = (orientation[3], orientation[0], orientation[1],orientation[2])
+            
+            print(active_object.location)
+            print(active_object.rotation_quaternion)
+
+            n_frame = 1
+            for pos, orient in zip(positions, orientations):
+                bpy.context.scene.frame_set(n_frame * frames_per_dof)
+                n_frame += 1
+                active_object.location = pos
+                active_object.keyframe_insert(data_path="location",index = -1)
+                active_object.rotation_quaternion = (orient[3], orient[0], orient[1],orient[2])
+                active_object.keyframe_insert(data_path="rotation_euler", index = -1)
+                
+            bpy.context.scene.frame_end = (n_frame-1) * frames_per_dof
+
+
+
+
+            
 
 def add_line(points, diameter, name=None):
 
@@ -153,8 +182,12 @@ def _to_euler(rotation):
     r = Rotation.from_rotvec(deg2rad(rotation))
     return r.as_euler('zyx',degrees=False)
 
+def _to_quaternion(rotation):
+    r = Rotation.from_rotvec(deg2rad(rotation))
+    return r.as_quat()
 
-def create_blend_and_open(scene, blender_result_file = None, blender_base_file=None, blender_exe_path=None, camera=None):
+
+def create_blend_and_open(scene, blender_result_file = None, blender_base_file=None, blender_exe_path=None, camera=None, animation_dofs=None):
 
     if blender_base_file is None:
         blender_base_file = consts.BLENDER_BASE_SCENE
@@ -162,14 +195,14 @@ def create_blend_and_open(scene, blender_result_file = None, blender_base_file=N
     if blender_result_file is None:
         blender_result_file = consts.BLENDER_DEFAULT_OUTFILE
 
-    create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path,camera=camera)
+    create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path,camera=camera, animation_dofs=animation_dofs)
     command = '"{}"'.format(str(blender_result_file))
     system(command)
 
-def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None):
+def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None,animation_dofs=None):
     tempfile = Path(consts.PATH_TEMP) / 'blender.py'
 
-    blender_py_file(scene, tempfile, blender_base_file, blender_result_file,camera=camera)
+    blender_py_file(scene, tempfile, blender_base_file, blender_result_file,camera=camera,animation_dofs=animation_dofs)
 
     if blender_exe_path is None:
         blender_exe_path = consts.BLENDER_EXEC
@@ -178,7 +211,7 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
     print(command)
     system(command)
 
-def blender_py_file(scene, python_file, blender_base_file, blender_result_file, camera = None):
+def blender_py_file(scene, python_file, blender_base_file, blender_result_file, camera = None, animation_dofs=None):
 
     code = '# Auto-generated python file for blender\n# Execute using blender.exe -b --python "{}"\n\n'.format(python_file)
     code += 'import bpy\n'
@@ -219,14 +252,36 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
         rot = Rotation.from_rotvec(deg2rad(visual.parent.global_rotation))
         rotated_offset = rot.apply(visual.offset)
 
+        if animation_dofs:
+            code += '\npositions = []'
+            code += '\norientations = []'
+            for dof in animation_dofs:
+                scene._vfc.set_dofs(dof)
+                scene.update()
 
-        code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{}), offset=({},{},{}), orientation=({},{},{}), position=({},{},{}))'.format(
-	                filename,
-                    *visual.scale,
-                    *_to_euler(visual.rotation),
-                    *rotated_offset,
-                    *_to_euler(visual.parent.global_rotation),
-                    *visual.parent.global_position)
+                code += '\norientations.append([{},{},{},{}])'.format(*_to_quaternion(visual.parent.global_rotation))
+                code += '\npositions.append([{},{},{}])'.format(*visual.parent.global_position)
+
+            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations)'.format(
+                filename,
+                *visual.scale,
+                *_to_euler(visual.rotation),
+                *rotated_offset,
+                *_to_quaternion(visual.parent.global_rotation),
+                *visual.parent.global_position)
+
+
+        else:
+            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}))'.format(
+                        filename,
+                        *visual.scale,
+                        *_to_euler(visual.rotation),
+                        *rotated_offset,
+                        *_to_quaternion(visual.parent.global_rotation),
+                        *visual.parent.global_position)
+
+
+
 
 
     for cable in scene.nodes_of_type(dc.Cable):

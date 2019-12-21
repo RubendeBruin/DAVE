@@ -205,13 +205,10 @@ class BallastSystemSolver:
         return False
 
     def optimize_multiple_partial(self, tanks):
-
-
         E0 = self._error()
         p0 = list()
         for tank in tanks:
             p0.append(tank.pct)
-
 
         n_tanks = len(tanks)
 
@@ -504,7 +501,7 @@ class BallastSystemSolver:
             else:
                 fill = True
 
-            for tank in self.optTanks:
+            for tank in optTanks:
 
                 # exclude full tanks if we need to fill
                 if fill and tank.is_full():
@@ -513,7 +510,7 @@ class BallastSystemSolver:
                 if not fill and tank.is_empty():
                     continue
 
-                for tank2 in self.optTanks:
+                for tank2 in optTanks:
 
                     # exclude full tanks if we need to fill
                     if fill and tank2.is_full():

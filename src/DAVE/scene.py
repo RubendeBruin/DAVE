@@ -2537,7 +2537,15 @@ class BallastSystem(Poi):
 
 
     def give_python_code(self):
-        code = "# code for {} not exported".format(self.name)
+        code = "\n# code for {} and its tanks".format(self.name)
+
+        code += "\nbs = s.new_ballastsystem('{}', parent = '{}',".format(self.name, self.parent.name)
+        code += "\n                         position = ({},{},{}))".format(*self.position)
+
+        for tank in self._tanks:
+            code += "\nbs.new_tank('{}', position = ({},{},{}),".format(tank.name, *tank.position)
+            code += "\n            capacity_kN = {}, frozen = {}, actual_fill = {})".format(tank.max, tank.frozen, tank.pct)
+
         return code
 
 class WaveInteraction1(Node):

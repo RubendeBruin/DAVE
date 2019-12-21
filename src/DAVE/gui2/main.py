@@ -985,52 +985,137 @@ class Gui():
 
 if __name__ == '__main__':
 
-    from DAVE.solvers.ballast import BallastSystemSolver
-
     s = Scene()
+
+
+    # auto generated pyhton code
+    # By beneden
+    # Time: 2019-12-21 11:21:14 UTC
+
+    # To be able to distinguish the important number (eg: fixed positions) from
+    # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
+    # For anything written as solved(number) that actual number does not influence the static solution
+    def solved(number):
+        return number
+
 
     # code for Cheetah
     s.new_rigidbody(name='Cheetah',
-                    mass=20000.0,  # light ship weight
+                    mass=20000.0,
                     cog=(106.0,
                          0.0,
                          7.0),
                     position=(0.0,
                               0.0,
-                              -6.75),
-                    rotation=(0, 0, 0),
-                    inertia_radii=(20, 80, 80),
-                    fixed=(True, True, False, False, False, True))
-
+                              solved(-6.0)),
+                    rotation=(0.001,
+                              0.0,
+                              -20.0),
+                    inertia_radii=(20.0, 80.0, 80.0),
+                    fixed=(True, True, False, True, True, True))
     # code for buoyancy
     mesh = s.new_buoyancy(name='buoyancy',
                           parent='Cheetah')
     mesh.trimesh.load_obj(s.get_resource_path(r'buoyancy cheetah.obj'), scale=(1, 1, 1), rotation=(0.0, 0.0, 0.0),
                           offset=(0.0, 0.0, 0.0))
 
-
-    # Define the ballast system
-
-    # displacement at 6.75m draft = 53290.760 m3
-    #
-
-    bs = s.new_ballastsystem('Ballast_system', parent='Cheetah')
-
-    for i in range(8):
-
-
-        capacity = 15*10*10*9.81*1.025
-        if i > 1:
-            capacity = 15*20*10*9.81*1.025
-
-        bs.new_tank('ps{}'.format(i+1), (10 + 20*i,10,5), capacity)
-        bs.new_tank('sb{}'.format(i + 1), (10 + 20*i, -10, 5), capacity)
-
-    bs.new_tank('ps9', (175, 8, 5), 10 * 10 * 5 * 9.81 * 1.025)
-    bs.new_tank('sb9', (175, -8, 5), 10 * 10 * 5 * 9.81 * 1.025)
-
-    bs.new_tank('bow', (190, 0, 5), 10 * 10 * 6 * 9.81 * 1.025)
-
+    # code for Ballast_system and its tanks
+    bs = s.new_ballastsystem('Ballast_system', parent='Cheetah',
+                             position=(0.0, 0.0, 0.0))
+    bs.new_tank('ps1', position=(10, 10, 5),
+                capacity_kN=15082.874999999998, frozen=False, actual_fill=0)
+    bs.new_tank('sb1', position=(10, -10, 5),
+                capacity_kN=15082.874999999998, frozen=False, actual_fill=0)
+    bs.new_tank('ps2', position=(30, 10, 5),
+                capacity_kN=15082.874999999998, frozen=False, actual_fill=0.0)
+    bs.new_tank('sb2', position=(30, -10, 5),
+                capacity_kN=15082.874999999998, frozen=False, actual_fill=0)
+    bs.new_tank('ps3', position=(50, 10, 5),
+                capacity_kN=30165.749999999996, frozen=False, actual_fill=0.0)
+    bs.new_tank('sb3', position=(50, -10, 5),
+                capacity_kN=30165.749999999996, frozen=False, actual_fill=20.59026998860341)
+    bs.new_tank('ps4', position=(70, 10, 5),
+                capacity_kN=30165.749999999996, frozen=False, actual_fill=0.0)
+    bs.new_tank('sb4', position=(70, -10, 5),
+                capacity_kN=30165.749999999996, frozen=False, actual_fill=100.0)
+    bs.new_tank('ps5', position=(90, 10, 5),
+                capacity_kN=30165.749999999996, frozen=False, actual_fill=14.900726965196325)
+    bs.new_tank('sb5', position=(90, -10, 5),
+                capacity_kN=30165.749999999996, frozen=False, actual_fill=100.0)
+    bs.new_tank('ps6', position=(110, 10, 5),
+                capacity_kN=30165.749999999996, frozen=False, actual_fill=100.0)
+    bs.new_tank('sb6', position=(110, -10, 5),
+                capacity_kN=30165.749999999996, frozen=False, actual_fill=100.0)
+    bs.new_tank('ps7', position=(130, 10, 5),
+                capacity_kN=30165.749999999996, frozen=False, actual_fill=100.0)
+    bs.new_tank('sb7', position=(130, -10, 5),
+                capacity_kN=30165.749999999996, frozen=False, actual_fill=100.0)
+    bs.new_tank('ps8', position=(150, 10, 5),
+                capacity_kN=30165.749999999996, frozen=False, actual_fill=0)
+    bs.new_tank('sb8', position=(150, -10, 5),
+                capacity_kN=30165.749999999996, frozen=False, actual_fill=100)
+    bs.new_tank('ps9', position=(175, 8, 5),
+                capacity_kN=5027.625, frozen=False, actual_fill=9.397523890792005)
+    bs.new_tank('sb9', position=(175, -8, 5),
+                capacity_kN=5027.625, frozen=False, actual_fill=0)
+    bs.new_tank('bow', position=(190, 0, 5),
+                capacity_kN=6033.15, frozen=False, actual_fill=0)
+    # code for crane_mast
+    s.new_rigidbody(name='crane_mast',
+                    mass=4000.0,
+                    cog=(0.0,
+                         0.0,
+                         25.0),
+                    parent='Cheetah',
+                    position=(61.0,
+                              18.0,
+                              12.0),
+                    rotation=(0.0,
+                              0.0,
+                              0.0),
+                    fixed=(True, True, True, True, True, True))
+    # code for crane_top
+    s.new_poi(name='crane_top',
+              parent='crane_mast',
+              position=(0.0,
+                        0.0,
+                        61.0))
+    # code for crane_slew
+    s.new_axis(name='crane_slew',
+               parent='crane_mast',
+               position=(0.0,
+                         0.0,
+                         15.0),
+               rotation=(0.0,
+                         0.0,
+                         45.0),
+               fixed=(True, True, True, True, True, True))
+    # code for crane_boom
+    s.new_rigidbody(name='crane_boom',
+                    mass=1200.0,
+                    cog=(33.0,
+                         0.0,
+                         0.0),
+                    parent='crane_slew',
+                    position=(0.0,
+                              0.0,
+                              0.0),
+                    rotation=(0.0,
+                              solved(-4.679207369065072),
+                              0.0),
+                    fixed=(True, True, True, True, False, True))
+    # code for susp_wire_connection
+    s.new_poi(name='susp_wire_connection',
+              parent='crane_boom',
+              position=(49.0,
+                        0.0,
+                        2.0))
+    # code for crane_Crane_susp_wire
+    s.new_cable(name='crane_Crane_susp_wire',
+                poiA='susp_wire_connection',
+                poiB='crane_top',
+                length=63.0,
+                EA=100000000.0)
     # code for visual - vessel
     s.new_visual(name='visual - vessel',
                  parent='Cheetah',
@@ -1038,56 +1123,53 @@ if __name__ == '__main__':
                  offset=(0, 0, 0),
                  rotation=(0, 0, 0),
                  scale=(1.0, 1.0, 1.0))
-
-    # code for WaveInteraction
+    # code for Wave Interaction draft 6.75
     s.new_waveinteraction(name='Wave Interaction draft 6.75',
                           parent='Cheetah',
                           path=r'cheetah.dhyd',
                           offset=(100.0, 0.0, 6.75))
+    # code for visual - crane mast
+    s.new_visual(name='visual - crane mast',
+                 parent='crane_mast',
+                 path=r'visual crane mast and boomrest.obj',
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))
+    # code for visual - crane boom
+    s.new_visual(name='visual - crane boom',
+                 parent='crane_boom',
+                 path=r'visual crane-boom.obj',
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))
 
-    # s["Ballast_system"].empty_all_usable_tanks()
-    # s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Cheetah", z=-5.0)
-    #
-    # # ------------------
-    # ballast_solver = BallastSystemSolver(s["Ballast_system"])
-    # ballast_solver.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
 
-    # ------------------
-    s["Ballast_system"]["ps1"].frozen = True
+    s.solve_statics()
 
-    # ------------------
-    s["Ballast_system"]["sb1"].frozen = True
+    from DAVE.frequency_domain import *
 
-    # ------------------
-    s["Ballast_system"]["sb9"].frozen = True
+    V,D = mode_shapes(s)
 
-    # ------------------
-    s["Ballast_system"]["bow"].frozen = True
+    # select modeshape 2
+    displ = D[:,1]
+    d0 = s._vfc.get_dofs()
+    scale = 1
+    n_frames = 60
 
-    # ------------------
-    s["Ballast_system"].fill_tank("sb9", 100)
+    dofs = generate_modeshape_dofs(d0, displ, scale, n_frames, s)
+    print(dofs)
 
-    # ------------------
-    s["Ballast_system"].fill_tank("bow", 100)
+    # Gui(s)
 
-    # ------------------
-    s["Ballast_system"].fill_tank("ps9", 100)
+    # Blender part
 
-    # ------------------
-    s["Ballast_system"]["ps9"].frozen = True
+    from DAVE.io.blender import *
+    s.resources_paths.append(r'C:\data\Dave\Public\Blender visuals')
 
-    # ------------------
-    s["Ballast_system"].fill_tank("ps1", 100)
+    create_blend_and_open(s, animation_dofs = dofs)
 
-    # ------------------
-    s["Ballast_system"].fill_tank("sb1", 100)
 
-    s["Ballast_system"].empty_all_usable_tanks()
-    s.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s, vessel="Cheetah", z=-5.0)
 
-    # ------------------
-    ballast_solver = BallastSystemSolver(s["Ballast_system"])
-    ballast_solver.ballast_to(cogx=s.required_ballast[1], cogy=s.required_ballast[2], weight=-s.required_ballast[0])
 
-    Gui(s)
+
 
