@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Wed Dec 18 17:30:39 2019
+# Created: Sat Dec 21 15:17:09 2019
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -25,6 +25,30 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.setSpacing(0)
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.widget_3 = QtWidgets.QWidget(self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.widget_3.sizePolicy().hasHeightForWidth())
+        self.widget_3.setSizePolicy(sizePolicy)
+        self.widget_3.setMinimumSize(QtCore.QSize(0, 20))
+        self.widget_3.setObjectName("widget_3")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.widget_3)
+        self.horizontalLayout_2.setSpacing(2)
+        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem)
+        self.btnWater = QtWidgets.QToolButton(self.widget_3)
+        self.btnWater.setObjectName("btnWater")
+        self.horizontalLayout_2.addWidget(self.btnWater)
+        self.btnLevelCamera = QtWidgets.QToolButton(self.widget_3)
+        self.btnLevelCamera.setObjectName("btnLevelCamera")
+        self.horizontalLayout_2.addWidget(self.btnLevelCamera)
+        self.btnBlender = QtWidgets.QToolButton(self.widget_3)
+        self.btnBlender.setObjectName("btnBlender")
+        self.horizontalLayout_2.addWidget(self.btnBlender)
+        self.verticalLayout_3.addWidget(self.widget_3)
         self.frame3d = QtWidgets.QFrame(self.centralwidget)
         self.frame3d.setAcceptDrops(False)
         self.frame3d.setFrameShape(QtWidgets.QFrame.NoFrame)
@@ -37,6 +61,8 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.frameAni.sizePolicy().hasHeightForWidth())
         self.frameAni.setSizePolicy(sizePolicy)
+        self.frameAni.setMinimumSize(QtCore.QSize(0, 20))
+        self.frameAni.setMaximumSize(QtCore.QSize(16777215, 30))
         self.frameAni.setObjectName("frameAni")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.frameAni)
         self.horizontalLayout.setSpacing(0)
@@ -46,6 +72,8 @@ class Ui_MainWindow(object):
         self.widget_2.setObjectName("widget_2")
         self.gridLayout = QtWidgets.QGridLayout(self.widget_2)
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout.setHorizontalSpacing(2)
+        self.gridLayout.setVerticalSpacing(0)
         self.gridLayout.setObjectName("gridLayout")
         self.btnPauseAnimation = QtWidgets.QToolButton(self.widget_2)
         self.btnPauseAnimation.setCheckable(True)
@@ -60,6 +88,7 @@ class Ui_MainWindow(object):
         self.sbPlaybackspeed.setMinimum(0.1)
         self.sbPlaybackspeed.setMaximum(10.0)
         self.sbPlaybackspeed.setSingleStep(0.1)
+        self.sbPlaybackspeed.setProperty("value", 1.0)
         self.sbPlaybackspeed.setObjectName("sbPlaybackspeed")
         self.gridLayout.addWidget(self.sbPlaybackspeed, 0, 2, 1, 1)
         self.horizontalLayout.addWidget(self.widget_2)
@@ -240,6 +269,9 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "DAVE", None, -1))
+        self.btnWater.setText(QtWidgets.QApplication.translate("MainWindow", "~", None, -1))
+        self.btnLevelCamera.setText(QtWidgets.QApplication.translate("MainWindow", "__", None, -1))
+        self.btnBlender.setText(QtWidgets.QApplication.translate("MainWindow", "Blender", None, -1))
         self.btnPauseAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "||", None, -1))
         self.btnStopAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "X", None, -1))
         self.menuSolve_Statics.setTitle(QtWidgets.QApplication.translate("MainWindow", "File", None, -1))
@@ -287,3 +319,4 @@ class Ui_MainWindow(object):
         self.actionRender_current_view.setText(QtWidgets.QApplication.translate("MainWindow", "Render current view", None, -1))
         self.actionModal_shapes.setText(QtWidgets.QApplication.translate("MainWindow", "Modal shapes", None, -1))
         self.actionInertia_properties.setText(QtWidgets.QApplication.translate("MainWindow", "Inertia properties", None, -1))
+

@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_ballastconfiguration.ui',
 # licensing of 'widget_ballastconfiguration.ui' applies.
 #
-# Created: Fri Dec 20 12:10:51 2019
+# Created: Sat Dec 21 15:17:09 2019
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!

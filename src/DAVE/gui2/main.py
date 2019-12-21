@@ -190,6 +190,12 @@ class Gui():
         iren = self.visual.renwin.GetInteractor()
         iren.AddObserver('TimerEvent', self.timerEvent)
 
+        # ------ viewport buttons ------
+
+        self.ui.btnLevelCamera.pressed.connect(self.visual.level_camera)
+        self.ui.btnWater.pressed.connect(self.toggle_show_global)
+        self.ui.btnBlender.pressed.connect(self.to_blender)
+
         # ------ animation buttons ------
 
         self.ui.frameAni.setVisible(False)
@@ -365,6 +371,9 @@ class Gui():
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
 
+    # ============== Animation functions =============
+
+
     def animation_running(self):
         """Returns true is an animation is running"""
         return self._timerid is not None
@@ -513,6 +522,8 @@ class Gui():
 
         t = self.ui.aniSlider.value() / 1000
         self.animation_activate_time(t)
+
+    # =================================================== end of animation functions ==================
 
 
     def onClose(self):
@@ -669,6 +680,26 @@ class Gui():
             dofs.append((1 - old) * new_dof + old * old_dof)
 
         self.animation_start(t,dofs,is_loop=False, show_animation_bar=False)
+
+
+    def to_blender(self):
+
+        from DAVE.io.blender import create_blend_and_open
+
+        if self.animation_running():
+            dofs = []
+
+            # assume 24 frames per second for rendering
+            n_frames = self._animation_length * 24
+            for t in np.linspace(0,self._animation_length, n_frames):
+                dofs.append(self._animation_keyframe_interpolation_object(t))
+
+        else:
+            dofs = None
+
+        create_blend_and_open(s, animation_dofs=dofs)
+
+
 
     def toggle_show_force(self):
         self.visual.show_force = self.ui.actionShow_force_applyting_element.isChecked()
@@ -986,11 +1017,13 @@ class Gui():
 if __name__ == '__main__':
 
     s = Scene()
+    s.resources_paths.append('C:\data\Dave\Private\Blender\christmastree')
+    s.resources_paths.append(r'C:\data\Dave\Public\Blender visuals')
 
 
     # auto generated pyhton code
     # By beneden
-    # Time: 2019-12-21 11:21:14 UTC
+    # Time: 2019-12-21 14:09:03 UTC
 
     # To be able to distinguish the important number (eg: fixed positions) from
     # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
@@ -1005,14 +1038,14 @@ if __name__ == '__main__':
                     cog=(106.0,
                          0.0,
                          7.0),
-                    position=(0.0,
-                              0.0,
-                              solved(-6.0)),
-                    rotation=(0.001,
-                              0.0,
-                              -20.0),
+                    position=(solved(3.2817803718686446e-10),
+                              solved(-4.838411629071326e-10),
+                              solved(-6.064852002088185)),
+                    rotation=(solved(-1.4602395128851173),
+                              solved(-0.03297444157164061),
+                              solved(0.00042000147384594206)),
                     inertia_radii=(20.0, 80.0, 80.0),
-                    fixed=(True, True, False, True, True, True))
+                    fixed=(False, False, False, False, False, False))
     # code for buoyancy
     mesh = s.new_buoyancy(name='buoyancy',
                           parent='Cheetah')
@@ -1101,9 +1134,9 @@ if __name__ == '__main__':
                               0.0,
                               0.0),
                     rotation=(0.0,
-                              solved(-4.679207369065072),
+                              -38.005283038454635,
                               0.0),
-                    fixed=(True, True, True, True, False, True))
+                    fixed=(True, True, True, True, True, True))
     # code for susp_wire_connection
     s.new_poi(name='susp_wire_connection',
               parent='crane_boom',
@@ -1114,8 +1147,66 @@ if __name__ == '__main__':
     s.new_cable(name='crane_Crane_susp_wire',
                 poiA='susp_wire_connection',
                 poiB='crane_top',
-                length=63.0,
+                length=39.0,
                 EA=100000000.0)
+    # code for Tree
+    s.new_rigidbody(name='Tree',
+                    mass=100.0,
+                    cog=(0.0,
+                         0.0,
+                         5.0),
+                    position=(solved(108.62843980780129),
+                              solved(67.61904723295882),
+                              solved(7.268230450066845)),
+                    rotation=(solved(0.0),
+                              solved(0.0),
+                              0.0),
+                    inertia_radii=(10.0, 10.0, 10.0),
+                    fixed=(False, False, False, False, False, True))
+    # code for Poi
+    s.new_poi(name='Poi',
+              parent='Tree',
+              position=(0.0,
+                        0.0,
+                        44.0))
+
+    s.new_visual(name='box',
+                 parent='Tree',
+                 path=r'cube.obj',
+                 offset=(0, 0, 44.0),
+                 rotation=(0, 0, 0),
+                 scale=(1.0, 1.0, 1.0))
+
+
+
+    # code for whip
+    s.new_poi(name='whip',
+              parent='crane_boom',
+              position=(84.0,
+                        0.0,
+                        -2.0))
+    # code for Cable
+    s.new_cable(name='Cable',
+                poiA='whip',
+                poiB='Poi',
+                length=18.0,
+                EA=100000.0)
+
+    # code for Cheetah DP setpoint
+    s.new_axis(name='Cheetah DP setpoint',
+               position=(0.0,
+                         0.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for cheetah positioning system
+    s.new_linear_connector_6d(name='cheetah positioning system',
+                              master='Cheetah DP setpoint',
+                              slave='Cheetah',
+                              stiffness=(100.0, 100.0, 0.0,
+                                         0.0, 0.0, 10000000.0))
     # code for visual - vessel
     s.new_visual(name='visual - vessel',
                  parent='Cheetah',
@@ -1142,34 +1233,57 @@ if __name__ == '__main__':
                  offset=(0, 0, 0),
                  rotation=(0, 0, 0),
                  scale=(1, 1, 1))
+    # code for Visual
+    s.new_visual(name='Visual',
+                 parent='Tree',
+                 path=r'christmastree.obj',
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(20.0, 20.0, 25.0))
+
+    # code for Poi_1
+    s.new_poi(name='Poi_1',
+              parent='Cheetah',
+              position=(155.7,
+                        21.5,
+                        41.0))
+    # code for Cable_1
+    s.new_cable(name='Cable_1',
+                poiA='Poi_1',
+                poiB='crane_top',
+                length=100.02169764606077,
+                EA=0.0)
 
 
-    s.solve_statics()
+    Gui(s)
 
-    from DAVE.frequency_domain import *
-
-    V,D = mode_shapes(s)
-
-    # select modeshape 2
-    displ = D[:,1]
-    d0 = s._vfc.get_dofs()
-    scale = 1
-    n_frames = 60
-
-    dofs = generate_modeshape_dofs(d0, displ, scale, n_frames, s)
-    print(dofs)
-
-    # Gui(s)
-
-    # Blender part
-
-    from DAVE.io.blender import *
-    s.resources_paths.append(r'C:\data\Dave\Public\Blender visuals')
-
-    create_blend_and_open(s, animation_dofs = dofs)
-
-
-
-
-
-
+    # s.solve_statics()
+    #
+    #
+    # from DAVE.frequency_domain import *
+    #
+    # V,D = mode_shapes(s)
+    #
+    # # select modeshape 2
+    # displ = D[:,4]
+    # d0 = s._vfc.get_dofs()
+    # scale = 1
+    # n_frames = 60
+    #
+    # dofs = generate_modeshape_dofs(d0, displ, scale, n_frames, s)
+    # print(dofs)
+    #
+    # # Gui(s)
+    #
+    # # Blender part
+    #
+    # from DAVE.io.blender import *
+    # s.resources_paths.append(r'C:\data\Dave\Public\Blender visuals')
+    #
+    # create_blend_and_open(s, animation_dofs = dofs)
+    #
+    #
+    #
+    #
+    #
+    #

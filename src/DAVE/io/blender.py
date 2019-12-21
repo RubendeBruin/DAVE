@@ -64,7 +64,7 @@ from mathutils import Vector
 
 # These functions are inserted by DAVE.io.blender.py
 
-def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orientation=(0,0,0,0), position=(0,0,0), orientations=[], positions=[], frames_per_dof = 5 ):
+def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orientation=(0,0,0,0), position=(0,0,0), orientations=[], positions=[], frames_per_dof = 1 ):
     \"\"\"
     All meshes shall be joined
     
@@ -119,9 +119,6 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
             # bpy.context.object.rotation_quaternion[1] = 1.8
             active_object.rotation_quaternion = (orientation[3], orientation[0], orientation[1],orientation[2])
             
-            print(active_object.location)
-            print(active_object.rotation_quaternion)
-
             n_frame = 1
             for pos, orient in zip(positions, orientations):
                 bpy.context.scene.frame_set(n_frame * frames_per_dof)
@@ -138,35 +135,64 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
 
             
 
-def add_line(points, diameter, name=None):
+def add_line(points, diameter, name=None, ani_points = None, frames_per_entry=1):
 
     bpy.ops.curve.primitive_bezier_curve_add(enter_editmode=True)
     obj_data = bpy.context.active_object.data
     obj_data.bevel_depth = diameter/2
-
-    end1 = obj_data.splines[0].bezier_points[0]
-    end1.co = points[0]
-    end1.handle_left = points[0]
-    end1.handle_right = points[1]
-
-    end2 = obj_data.splines[0].bezier_points[1]
-    end2.co = points[1]
-    end2.handle_left = points[0]
-    end2.handle_right = points[1]
     
-    if len(points)>2:
+    n_points = len(points)
+    if n_points > 2:   # by default a curve has two points
+        obj_data.splines[0].bezier_points.add(n_points-2)
+    
+    bpy.ops.object.mode_set(mode='OBJECT')  # back to object mode
+    
+    curve = bpy.context.active_object
+    bp = curve.data.splines[0].bezier_points
+
+    def setpoints(pts):
+        end1 = bp[0]
+        end1.co = pts[0]
+        end1.handle_left = pts[0]
+        end1.handle_right = pts[1]
+
+        end2 = bp[1]
+        end2.co = pts[1]
+        end2.handle_left = pts[0]
+        end2.handle_right = pts[1]
+
+        if len(pts)>2:
+
+            end2.handle_right = pts[2]
+
+            for i in range(2,len(pts)):
+                
+                end3 = bp[i]
+                end3.co = pts[i]
+                end3.handle_left = pts[i-1]
+                if i < len(pts)-1:
+                    end3.handle_right = pts[i+1]
+                else:
+                    end3.handle_right = pts[i]
+
+
+    if ani_points is not None:
+        for i_frame, cur_points in enumerate(ani_points):
         
-        end2.handle_right = points[2]
+            n_frame = i_frame * frames_per_entry
+            bpy.context.scene.frame_set(n_frame)
+            print('set frame {}'.format(n_frame))
         
-        for i in range(2,len(points)):
-            obj_data.splines[0].bezier_points.add(1)
-            end3 = obj_data.splines[0].bezier_points[i]
-            end3.co = points[i]
-            end3.handle_left = points[i-1]
-            if i < len(points)-1:
-                end3.handle_right = points[i+1]
-            else:
-                end3.handle_right = points[i]
+            setpoints(cur_points)
+                        
+            # insert keyframes
+            for i_point in range(n_points):
+                bp[i_point].keyframe_insert(data_path='handle_left', index=-1)
+                bp[i_point].keyframe_insert(data_path='handle_right', index=-1)
+                bp[i_point].keyframe_insert(data_path='co', index=-1)
+
+    else:
+        setpoints(points)
 
     if name is not None:
         bpy.context.active_object.name = name
@@ -298,7 +324,24 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
         code = code[:-1]
         code += ']'
 
-        code += '\nadd_line(points, diameter={}, name = "{}")'.format(dia, cable.name)
+        if animation_dofs:
+            code += '\nani_points = []'
+            for dof in animation_dofs:
+                scene._vfc.set_dofs(dof)
+                scene.update()
+                points = cable.get_points_for_visual()
+                code += '\nframe_points=['
+                for p in points:
+                    code += '({},{},{}),'.format(*p)
+                code = code[:-1]
+                code += ']'
+                code += '\nani_points.append(frame_points)'
+
+            code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points)'.format(dia, cable.name)
+
+        else:
+
+            code += '\nadd_line(points, diameter={}, name = "{}")'.format(dia, cable.name)
 
     if camera is not None:
         pos = camera['position']
