@@ -54,13 +54,14 @@ from os.path import splitext, basename
 from os import system
 from numpy import deg2rad
 from pathlib import Path
+import numpy as np
 
 
 # utility functions for our python scripts are hard-coded here
 
 BFUNC = """
 
-from mathutils import Vector
+from mathutils import Vector, Quaternion
 
 # These functions are inserted by DAVE.io.blender.py
 
@@ -93,40 +94,38 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
             active_object = bpy.context.view_layer.objects.active
             bpy.ops.object.select_all(action='DESELECT')
             active_object.select_set(True)
-            # set absolute
-            # active_object.location = (0,0,5)
-            # active_object.rotation_euler = (1,2,3)
-            # active_object.scale = (2,1,1)
-            # apply transform
-            bpy.ops.transform.translate(value=offset)
+
+            # apply local transform
+            
+            bpy.ops.transform.translate(value=offset)  # translate
+            
             bpy.ops.transform.rotate(value=-rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)
             bpy.ops.transform.rotate(value=-rotation[1], orient_axis='Y')
             bpy.ops.transform.rotate(value=-rotation[2], orient_axis='X')
             bpy.ops.transform.resize(value=scale)
             
+            bpy.ops.transform.translate(value=(-offset[0], -offset[1], -offset[2])) # and translate back
+            
             bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
             # apply global transforms
             
-            # bpy.ops.transform.rotate(value=-orientation[0], orient_axis='Z')
-            # bpy.ops.transform.rotate(value=-orientation[1], orient_axis='Y')
-            # bpy.ops.transform.rotate(value=-orientation[2], orient_axis='X')
-            # bpy.ops.transform.translate(value=position)
-            # active_object.rotation_mode = 'QUATERNION'
-            
             active_object.location = position
             active_object.rotation_mode = 'QUATERNION'
-            # bpy.context.object.rotation_quaternion[1] = 1.8
             active_object.rotation_quaternion = (orientation[3], orientation[0], orientation[1],orientation[2])
             
             n_frame = 1
             for pos, orient in zip(positions, orientations):
                 bpy.context.scene.frame_set(n_frame * frames_per_dof)
                 n_frame += 1
-                active_object.location = pos
-                active_object.keyframe_insert(data_path="location",index = -1)
+                
+                
                 active_object.rotation_quaternion = (orient[3], orient[0], orient[1],orient[2])
-                active_object.keyframe_insert(data_path="rotation_euler", index = -1)
+                active_object.keyframe_insert(data_path="rotation_quaternion", index = -1)
+                
+                active_object.location = Vector(pos)
+                active_object.keyframe_insert(data_path="location",index = -1)
+                
                 
             bpy.context.scene.frame_end = (n_frame-1) * frames_per_dof
 
@@ -286,7 +285,13 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 scene.update()
 
                 code += '\norientations.append([{},{},{},{}])'.format(*_to_quaternion(visual.parent.global_rotation))
-                code += '\npositions.append([{},{},{}])'.format(*visual.parent.global_position)
+
+                position = visual.parent.global_position
+                global_offset = visual.parent.to_glob_direction(visual.offset)
+
+                glob_position = np.array(position) + np.array(global_offset)
+
+                code += '\npositions.append([{},{},{}])'.format(*glob_position)
 
             code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations)'.format(
                 filename,
