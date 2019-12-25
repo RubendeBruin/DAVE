@@ -601,9 +601,10 @@ class Axis(NodeWithParent):
 
 
     def _delete_vfc(self):
-        super()._delete_vfc()
         for p in self._pointmasses:
             self._scene._vfc.delete(p.name)
+
+        super()._delete_vfc()
 
     @property
     def inertia(self):
@@ -2958,16 +2959,16 @@ class Scene:
 
         self._print('Deleting {} [{}]'.format(node.name, str(type(node)).split('.')[-1][:-2]))
 
-        # remove the vtk node
+        # First delete the dependencies
+        for d in depending_nodes:
+            if not self.name_available(d):  # element is still here
+                self.delete(d)
+
+        # then remove the vtk node itself
         self._print('removing vfc node')
         node._delete_vfc()
         self._nodes.remove(node)
 
-        # then delete the dependencies
-
-        for d in depending_nodes:
-            if not self.name_available(d):  # element is still here
-                self.delete(d)
 
 
     def dissolve(self, node):
