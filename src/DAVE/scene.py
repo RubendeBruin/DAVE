@@ -980,6 +980,21 @@ class Axis(NodeWithParent):
         return self._vfNode.applied_force
 
     @property
+    def ux(self):
+        """The unit x axis in global coordinates"""
+        return self.to_glob_direction((1,0,0))
+
+    @property
+    def uy(self):
+        """The unit y axis in global coordinates"""
+        return self.to_glob_direction((0, 1, 0))
+
+    @property
+    def uz(self):
+        """The unit z axis in global coordinates"""
+        return self.to_glob_direction((0, 0, 1))
+
+    @property
     def equilibrium_error(self):
         """Returns the force and moment that remains on this axis (applied-force minus connection force) [Parent axis system]
         """
@@ -3143,21 +3158,29 @@ class Scene:
 
 
     def plot_effect(self, evaluate, change_node, change_property, start, to, steps):
-        """plot_effect
+        """Produces a 2D plot with the relation between two properties of the scene. For example the length of a cable
+        versus the force in another cable.
 
+        The evaluate argument is processed using "eval" and may contain python code. This may be used to combine multiple
+        properties to one value. For example calculate the diagonal load distribution from four independent loads.
 
+        The plot is produced using matplotlob. The plot is produced in the current figure (if any) and plt.show is not executed.
 
         Args:
-            evaluate : code to be evaluated to yield the value that is solved for. Eg: s['poi'].fx Scene is abbiviated as "s"
+            evaluate (str): code to be evaluated to yield the value on the y-axis. Eg: s['poi'].fx Scene is abbiviated as "s"
             change_node(Node or str):  node to be adjusted
             change_property (str): property of that node to be adjusted
-            range(optional)  : specify the possible search-interval
+            start : left side of the interval
+            to : right side of the interval
+            steps : number of steps in the interval
 
         Returns:
-            bool: True if successful, False otherwise.
+            Tuple (x,y) with x and y coordinates
 
         Examples:
-
+            >>> s.plot_effect("s['cable'].tension", "cable", "length", 11, 14, 10)
+            >>> import matplotlib.pyplot as plt
+            >>> plt.show()
 
         """
         s=self
@@ -3184,10 +3207,13 @@ class Scene:
         for x in xs:
             y.append(set_and_get(x))
 
+        y = np.array(y)
         import matplotlib.pyplot as plt
         plt.plot(xs,y)
+        plt.xlabel('{} of {}'.format(change_property, change_node.name))
+        plt.ylabel(evaluate)
 
-        return True
+        return (xs,y)
 
 
     # ======== create functions =========

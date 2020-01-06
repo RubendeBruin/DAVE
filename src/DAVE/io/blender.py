@@ -199,9 +199,60 @@ def add_line(points, diameter, name=None, ani_points = None, frames_per_entry=1)
     bpy.context.active_object.data.materials.append(bpy.data.materials['Cable'])
     bpy.ops.object.mode_set(mode='OBJECT')
     
+
+def add_beam(points, direction, diameter, name=None, ani_points=None, frames_per_entry=1):
+    bpy.ops.curve.primitive_bezier_curve_add(enter_editmode=True)
+    obj_data = bpy.context.active_object.data
+    obj_data.bevel_depth = diameter / 2
+
+    n_points = len(points)
+    if n_points > 2:  # by default a curve has two points
+        obj_data.splines[0].bezier_points.add(n_points - 2)
+
+    bpy.ops.object.mode_set(mode='OBJECT')  # back to object mode
+
+    curve = bpy.context.active_object
+    bp = curve.data.splines[0].bezier_points
+
+    def setpoints(pts):
+
+        L = 0.2*((pts[0][0]-pts[1][0])**2+(pts[0][1]-pts[1][1])**2+(pts[0][2]-pts[1][2])**2)**0.5
+
+        end1 = bp[0]
+        end1.co = pts[0]
+        end1.handle_left = (pts[0][0]-L*direction[0][0], pts[0][1]-L*direction[0][1],pts[0][2]-L*direction[0][2])
+        end1.handle_right = (pts[0][0]+L*direction[0][0], pts[0][1]+L*direction[0][1],pts[0][2]+L*direction[0][2])
+
+        end2 = bp[1]
+        end2.co = pts[1]
+        end2.handle_left = (pts[1][0]-L*direction[1][0], pts[1][1]-L*direction[1][1],pts[1][2]-L*direction[1][2])
+        end2.handle_right = (pts[1][0]+L*direction[1][0], pts[1][1]+L*direction[1][1],pts[1][2]+L*direction[1][2])
+
+    if ani_points is not None:
+        for i_frame, cur_points in enumerate(ani_points):
+
+            n_frame = i_frame * frames_per_entry
+            bpy.context.scene.frame_set(n_frame)
+            print('set frame {}'.format(n_frame))
+
+            setpoints(cur_points)
+
+            # insert keyframes
+            for i_point in range(n_points):
+                bp[i_point].keyframe_insert(data_path='handle_left', index=-1)
+                bp[i_point].keyframe_insert(data_path='handle_right', index=-1)
+                bp[i_point].keyframe_insert(data_path='co', index=-1)
+
+    else:
+        setpoints(points)
+
+    if name is not None:
+        bpy.context.active_object.name = name
+
+    bpy.context.active_object.data.materials.append(bpy.data.materials['Cable'])
+    bpy.ops.object.mode_set(mode='OBJECT')
+
 """
-
-
 
 def _to_euler(rotation):
     r = Rotation.from_rotvec(deg2rad(rotation))
@@ -347,6 +398,25 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
         else:
 
             code += '\nadd_line(points, diameter={}, name = "{}")'.format(dia, cable.name)
+
+
+    for beam in scene.nodes_of_type(dc.LinearBeam):
+        pa = beam.master.global_position
+        pb = beam.slave.global_position
+
+        code += '\npoints=['
+        code += '({},{},{}),'.format(*pa)
+        code += '({},{},{})]'.format(*pb)
+
+        code += '\ndirections=['
+        code += '({},{},{}),'.format(*beam.master.ux)
+        code += '({},{},{})]'.format(*beam.slave.ux)
+
+        dia = consts.BLENDER_BEAM_DIA
+
+        code += '\nadd_beam(points, directions, diameter={}, name = "{}")'.format(dia, beam.name)
+
+
 
     if camera is not None:
         pos = camera['position']

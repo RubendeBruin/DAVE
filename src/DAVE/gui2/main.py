@@ -261,32 +261,38 @@ class Gui():
 
         # Workspace buttons
         self.btnConstruct = QtWidgets.QPushButton()
-        self.btnConstruct.setText('Construct')
+        self.btnConstruct.setFlat(True)
+        self.btnConstruct.setText('&1. Construct')
         self.ui.toolBar.addWidget(self.btnConstruct)
         self.btnConstruct.clicked.connect(lambda: self.activate_workspace("CONSTRUCT"))
 
         self.btnConstruct = QtWidgets.QPushButton()
-        self.btnConstruct.setText('Explore')
+        self.btnConstruct.setFlat(True)
+        self.btnConstruct.setText('&2. Explore')
         self.ui.toolBar.addWidget(self.btnConstruct)
         self.btnConstruct.clicked.connect(lambda: self.activate_workspace("EXPLORE"))
 
         self.btnConstruct = QtWidgets.QPushButton()
-        self.btnConstruct.setText('Ballast')
+        self.btnConstruct.setFlat(True)
+        self.btnConstruct.setText('&3. Ballast')
         self.ui.toolBar.addWidget(self.btnConstruct)
         self.btnConstruct.clicked.connect(lambda: self.activate_workspace("BALLAST"))
 
         self.btnConstruct = QtWidgets.QPushButton()
-        self.btnConstruct.setText('Stability')
+        self.btnConstruct.setFlat(True)
+        self.btnConstruct.setText('&4. Stability')
         self.ui.toolBar.addWidget(self.btnConstruct)
         self.btnConstruct.clicked.connect(lambda: self.activate_workspace("STABILITY"))
 
         self.btnConstruct = QtWidgets.QPushButton()
-        self.btnConstruct.setText('Mode Shapes')
+        self.btnConstruct.setFlat(True)
+        self.btnConstruct.setText('&5. Mode Shapes')
         self.ui.toolBar.addWidget(self.btnConstruct)
         self.btnConstruct.clicked.connect(lambda: self.activate_workspace("DYNAMICS"))
 
         self.btnConstruct = QtWidgets.QPushButton()
-        self.btnConstruct.setText('Airy')
+        self.btnConstruct.setText('&6. Airy')
+        self.btnConstruct.setFlat(True)
         self.ui.toolBar.addWidget(self.btnConstruct)
         self.btnConstruct.clicked.connect(lambda: self.activate_workspace("AIRY"))
 
