@@ -141,6 +141,7 @@ COLOR_WAVEINTERACTION = rgb(_BLUE)
 COLOR_FORCE = rgb(_ORANGE)
 COLOR_SHEAVE = rgb(_WHITE)
 COLOR_COG = rgb(_PURPLE)
+COLOR_BEAM = rgb(_DARK_GRAY)
 COLOR_BUOYANCY_MESH_FILL = None
 COLOR_BUOYANCY_MESH_LINES = rgb(_BLUE_DARK)
 LINEWIDTH_SUBMERGED_MESH = 3
@@ -191,6 +192,8 @@ PROPS_CABLE = ['tension','stretch']
 PROPS_CON2D = ['angle','moment','force']
 PROPS_BODY = [*PROPS_AXIS, 'cog', 'cogx', 'cogy', 'cogz', 'mass']
 PROPS_BUOY_MESH = ['cob', 'displacement']
+PROPS_LINEARBEAM = ['tension','torsion','moment_on_master','moment_on_slave']
+
 
 
 # ======= Animate after solving =========

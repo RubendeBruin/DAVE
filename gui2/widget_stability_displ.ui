@@ -54,7 +54,7 @@
       <string>Allow Trim</string>
      </property>
      <property name="checked">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
    </item>
@@ -67,8 +67,11 @@
    </item>
    <item row="3" column="2" colspan="2">
     <widget class="QSpinBox" name="stability_n_steps">
+     <property name="maximum">
+      <number>1000</number>
+     </property>
      <property name="value">
-      <number>60</number>
+      <number>40</number>
      </property>
     </widget>
    </item>
@@ -132,8 +135,11 @@
    </item>
    <item row="2" column="4">
     <widget class="QSpinBox" name="stability_heel_max">
+     <property name="maximum">
+      <number>180</number>
+     </property>
      <property name="value">
-      <number>60</number>
+      <number>40</number>
      </property>
     </widget>
    </item>
@@ -177,6 +183,20 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>node_name</tabstop>
+  <tabstop>stability_displacement</tabstop>
+  <tabstop>stability_heel_start</tabstop>
+  <tabstop>stability_heel_max</tabstop>
+  <tabstop>stability_n_steps</tabstop>
+  <tabstop>stability_surge</tabstop>
+  <tabstop>stability_sway</tabstop>
+  <tabstop>stability_yaw</tabstop>
+  <tabstop>stability_trim</tabstop>
+  <tabstop>stability_do_teardown</tabstop>
+  <tabstop>stability_go</tabstop>
+  <tabstop>pushButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

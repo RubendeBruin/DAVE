@@ -1936,11 +1936,33 @@ class LinearBeam(CoreConnectedNode):
         self._slave = val
         self._vfNode.slave = val._vfNode
 
+    # read-only
+    @property
+    def moment_on_master(self):
+        return self._vfNode.moment_on_master
 
-    def give_python_code(self):
+    @property
+    def moment_on_slave(self):
+        return self._vfNode.moment_on_slave
+
+    @property
+    def tension(self):
+        return self._vfNode.tension
+
+    @property
+    def torsion(self):
+        return self._vfNode.torsion
+
+    @property
+    def torsion_angle(self):
+        """Torsion angle in degrees"""
+        return np.rad2deg(self._vfNode.torsion_angle)
+
+
+def give_python_code(self):
         code = "# code for {}".format(self.name)
 
-        code += "\ns.new_linearbeam(name='{}',".format(self.name)
+        code += "\ns.new_linear_beam(name='{}',".format(self.name)
         code += "\n            master='{}',".format(self.master.name)
         code += "\n            slave='{}',".format(self.slave.name)
         code += "\n            EIy ={},".format(self.EIy)
@@ -2662,6 +2684,10 @@ class Scene:
 
 
     # =========== private functions =============
+
+    def _print_cpp(self):
+        print(self._vfc.to_string())
+
     def _print(self,what):
         if self.verbose:
             print(what)
@@ -3008,7 +3034,7 @@ class Scene:
             n.update()
         self._vfc.state_update()
 
-    def solve_statics(self, silent=False):
+    def solve_statics(self, silent=False, timeout = None):
         """Solves statics
 
         Args:
@@ -3019,7 +3045,10 @@ class Scene:
 
         """
         self.update()
-        succes = self._vfc.state_solve_statics()
+        if timeout is None:
+            succes = self._vfc.state_solve_statics()
+        else:
+            succes = self._vfc.state_solve_statics_with_timeout(timeout, False)
 
         if self.verify_equilibrium():
             if not silent:

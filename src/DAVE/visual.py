@@ -366,6 +366,15 @@ class Viewport:
         else:
             world_actors[0].off()
 
+        world_actors.append(vp.Line((0, 0, 0), (10, 0, 0)).c('red'))
+        world_actors[-1].actor_type = ActorType.GEOMETRY
+
+        world_actors.append(vp.Line((0, 0, 0), (0, 10, 0)).c('green'))
+        world_actors[-1].actor_type = ActorType.GEOMETRY
+
+        world_actors.append(vp.Line((0, 0, 0), (0, 0, 10)).c('blue'))
+        world_actors[-1].actor_type = ActorType.GEOMETRY
+
         v = VisualActor(world_actors, None)
         self.visuals.append(v)
 
@@ -649,7 +658,7 @@ class Viewport:
                 for i in range(4):
                     points.append((0,0,0))
 
-                a = vp.Line(points, lw=5).c(vc.COLOR_VISUAL)
+                a = vp.Line(points, lw=5).c(vc.COLOR_BEAM)
                 a.actor_type = ActorType.CABLE
 
                 actors.append(a)
@@ -818,10 +827,12 @@ class Viewport:
 
                 A = V.actors[0]
 
+                d = 0
+
                 points = list()
                 points.append(node.master.to_glob_position((0,0,0)))
-                points.append(node.master.to_glob_position((0.1*node.L, 0, 0)))
-                points.append(node.slave.to_glob_position((-0.1 * node.L, 0, 0)))
+                points.append(node.master.to_glob_position((d*node.L, 0, 0)))
+                points.append(node.slave.to_glob_position((-d * node.L, 0, 0)))
                 points.append(node.slave.to_glob_position((0, 0, 0)))
 
 

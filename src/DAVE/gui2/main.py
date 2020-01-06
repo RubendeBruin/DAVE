@@ -654,9 +654,21 @@ class Gui():
         if dialog is not None:
             dialog.close()
 
-        if DAVE.settings.GUI_DO_ANIMATE and not long_wait:
-            new_dofs = self.scene._vfc.get_dofs()
-            self.animate_change(old_dofs, new_dofs, 10)
+        try:
+            # See if we can get the debug-log
+            dofs = self.scene._vfc.get_solve_dofs_log()
+            n_steps = len(dofs)
+            if n_steps <= 2:
+                new_dofs = self.scene._vfc.get_dofs()
+                self.animate_change(old_dofs, new_dofs, 10)
+                return # nothing to animate
+
+            ts = np.linspace(0,10,num=n_steps)
+            self.animation_start(t=ts, dofs=dofs, is_loop=True)
+        except AttributeError:
+            if DAVE.settings.GUI_DO_ANIMATE and not long_wait:
+                new_dofs = self.scene._vfc.get_dofs()
+                self.animate_change(old_dofs, new_dofs, 10)
 
         self._codelog.append('s.solve_statics()')
 
@@ -1017,245 +1029,63 @@ class Gui():
 if __name__ == '__main__':
 
     s = Scene()
-    s.resources_paths.append('C:\data\Dave\Private\Blender\christmastree')
-    s.resources_paths.append(r'C:\data\Dave\Public\Blender visuals')
+    n = 10
+    L = 10
 
+    FIX = False
 
-    # auto generated pyhton code
-    # By beneden
-    # Time: 2019-12-21 14:09:03 UTC
+    for i in range(n + 1):
+        t = s.new_axis('axis' + str(i), fixed=FIX)
+        t.position = (i * L / n, 0, 0)
 
-    # To be able to distinguish the important number (eg: fixed positions) from
-    # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
-    # For anything written as solved(number) that actual number does not influence the static solution
-    def solved(number):
-        return number
+    s['axis' + str(n)].fixed = (True, True, True, True, True, True)
 
+    poi = s.new_poi('poi', parent='axis0')
+    force = s.new_force('force', parent=poi)
 
-    # code for Cheetah
-    s.new_rigidbody(name='Cheetah',
-                    mass=20000.0,
-                    cog=(106.0,
-                         0.0,
-                         7.0),
-                    position=(solved(3.2817803718686446e-10),
-                              solved(-4.838411629071326e-10),
-                              solved(-6.064852002088185)),
-                    rotation=(solved(-1.4602395128851173),
-                              solved(-0.03297444157164061),
-                              solved(0.00042000147384594206)),
-                    inertia_radii=(20.0, 80.0, 80.0),
-                    fixed=(False, False, False, False, False, False))
-    # code for buoyancy
-    mesh = s.new_buoyancy(name='buoyancy',
-                          parent='Cheetah')
-    mesh.trimesh.load_obj(s.get_resource_path(r'buoyancy cheetah.obj'), scale=(1, 1, 1), rotation=(0.0, 0.0, 0.0),
-                          offset=(0.0, 0.0, 0.0))
+    b = 0.1
+    h = 0.1
 
-    # code for Ballast_system and its tanks
-    bs = s.new_ballastsystem('Ballast_system', parent='Cheetah',
-                             position=(0.0, 0.0, 0.0))
-    bs.new_tank('ps1', position=(10, 10, 5),
-                capacity_kN=15082.874999999998, frozen=False, actual_fill=0)
-    bs.new_tank('sb1', position=(10, -10, 5),
-                capacity_kN=15082.874999999998, frozen=False, actual_fill=0)
-    bs.new_tank('ps2', position=(30, 10, 5),
-                capacity_kN=15082.874999999998, frozen=False, actual_fill=0.0)
-    bs.new_tank('sb2', position=(30, -10, 5),
-                capacity_kN=15082.874999999998, frozen=False, actual_fill=0)
-    bs.new_tank('ps3', position=(50, 10, 5),
-                capacity_kN=30165.749999999996, frozen=False, actual_fill=0.0)
-    bs.new_tank('sb3', position=(50, -10, 5),
-                capacity_kN=30165.749999999996, frozen=False, actual_fill=20.59026998860341)
-    bs.new_tank('ps4', position=(70, 10, 5),
-                capacity_kN=30165.749999999996, frozen=False, actual_fill=0.0)
-    bs.new_tank('sb4', position=(70, -10, 5),
-                capacity_kN=30165.749999999996, frozen=False, actual_fill=100.0)
-    bs.new_tank('ps5', position=(90, 10, 5),
-                capacity_kN=30165.749999999996, frozen=False, actual_fill=14.900726965196325)
-    bs.new_tank('sb5', position=(90, -10, 5),
-                capacity_kN=30165.749999999996, frozen=False, actual_fill=100.0)
-    bs.new_tank('ps6', position=(110, 10, 5),
-                capacity_kN=30165.749999999996, frozen=False, actual_fill=100.0)
-    bs.new_tank('sb6', position=(110, -10, 5),
-                capacity_kN=30165.749999999996, frozen=False, actual_fill=100.0)
-    bs.new_tank('ps7', position=(130, 10, 5),
-                capacity_kN=30165.749999999996, frozen=False, actual_fill=100.0)
-    bs.new_tank('sb7', position=(130, -10, 5),
-                capacity_kN=30165.749999999996, frozen=False, actual_fill=100.0)
-    bs.new_tank('ps8', position=(150, 10, 5),
-                capacity_kN=30165.749999999996, frozen=False, actual_fill=0)
-    bs.new_tank('sb8', position=(150, -10, 5),
-                capacity_kN=30165.749999999996, frozen=False, actual_fill=100)
-    bs.new_tank('ps9', position=(175, 8, 5),
-                capacity_kN=5027.625, frozen=False, actual_fill=9.397523890792005)
-    bs.new_tank('sb9', position=(175, -8, 5),
-                capacity_kN=5027.625, frozen=False, actual_fill=0)
-    bs.new_tank('bow', position=(190, 0, 5),
-                capacity_kN=6033.15, frozen=False, actual_fill=0)
-    # code for crane_mast
-    s.new_rigidbody(name='crane_mast',
-                    mass=4000.0,
-                    cog=(0.0,
-                         0.0,
-                         25.0),
-                    parent='Cheetah',
-                    position=(61.0,
-                              18.0,
-                              12.0),
-                    rotation=(0.0,
-                              0.0,
-                              0.0),
-                    fixed=(True, True, True, True, True, True))
-    # code for crane_top
-    s.new_poi(name='crane_top',
-              parent='crane_mast',
-              position=(0.0,
-                        0.0,
-                        61.0))
-    # code for crane_slew
-    s.new_axis(name='crane_slew',
-               parent='crane_mast',
-               position=(0.0,
-                         0.0,
-                         15.0),
-               rotation=(0.0,
-                         0.0,
-                         45.0),
-               fixed=(True, True, True, True, True, True))
-    # code for crane_boom
-    s.new_rigidbody(name='crane_boom',
-                    mass=1200.0,
-                    cog=(33.0,
-                         0.0,
-                         0.0),
-                    parent='crane_slew',
-                    position=(0.0,
-                              0.0,
-                              0.0),
-                    rotation=(0.0,
-                              -38.005283038454635,
-                              0.0),
-                    fixed=(True, True, True, True, True, True))
-    # code for susp_wire_connection
-    s.new_poi(name='susp_wire_connection',
-              parent='crane_boom',
-              position=(49.0,
-                        0.0,
-                        2.0))
-    # code for crane_Crane_susp_wire
-    s.new_cable(name='crane_Crane_susp_wire',
-                poiA='susp_wire_connection',
-                poiB='crane_top',
-                length=39.0,
-                EA=100000000.0)
-    # code for Tree
-    s.new_rigidbody(name='Tree',
-                    mass=100.0,
-                    cog=(0.0,
-                         0.0,
-                         5.0),
-                    position=(solved(108.62843980780129),
-                              solved(67.61904723295882),
-                              solved(7.268230450066845)),
-                    rotation=(solved(0.0),
-                              solved(0.0),
-                              0.0),
-                    inertia_radii=(10.0, 10.0, 10.0),
-                    fixed=(False, False, False, False, False, True))
-    # code for Poi
-    s.new_poi(name='Poi',
-              parent='Tree',
-              position=(0.0,
-                        0.0,
-                        44.0))
+    # derived for rectangle
+    A = b * h
+    Iy = (1 / 12) * b * h ** 3
+    Iz = (1 / 12) * h * b ** 3
+    Ip = (1 / 12) * b * h * (h ** 2 + b ** 2)
 
-    s.new_visual(name='box',
-                 parent='Tree',
-                 path=r'cube.obj',
-                 offset=(0, 0, 44.0),
-                 rotation=(0, 0, 0),
-                 scale=(1.0, 1.0, 1.0))
+    # steel
+    E = 200 * 10 ** 6
+    G = 80 * 10 ** 6
+    P = 10
 
+    EIy = Iy * E
 
+    for i in range(n):
+        b = s.new_linear_beam('beam' + str(i), master='axis' + str(i), slave='axis' + str(i + 1), EA=E * A, EIy=EIy,
+                              EIz=E * Iz, GIp=G * Ip)
 
-    # code for whip
-    s.new_poi(name='whip',
-              parent='crane_boom',
-              position=(84.0,
-                        0.0,
-                        -2.0))
-    # code for Cable
-    s.new_cable(name='Cable',
-                poiA='whip',
-                poiB='Poi',
-                length=18.0,
-                EA=100000.0)
+    force.force = (0.0, 0, -20.0)
+    force.moment = (0, 0.0, 0.0)
 
-    # code for Cheetah DP setpoint
-    s.new_axis(name='Cheetah DP setpoint',
-               position=(0.0,
-                         0.0,
-                         0.0),
-               rotation=(0.0,
-                         0.0,
-                         0.0),
-               fixed=(True, True, True, True, True, True))
-    # code for cheetah positioning system
-    s.new_linear_connector_6d(name='cheetah positioning system',
-                              master='Cheetah DP setpoint',
-                              slave='Cheetah',
-                              stiffness=(100.0, 100.0, 0.0,
-                                         0.0, 0.0, 10000000.0))
-    # code for visual - vessel
-    s.new_visual(name='visual - vessel',
-                 parent='Cheetah',
-                 path=r'visual vessel cheetah.obj',
-                 offset=(0, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(1.0, 1.0, 1.0))
-    # code for Wave Interaction draft 6.75
-    s.new_waveinteraction(name='Wave Interaction draft 6.75',
-                          parent='Cheetah',
-                          path=r'cheetah.dhyd',
-                          offset=(100.0, 0.0, 6.75))
-    # code for visual - crane mast
-    s.new_visual(name='visual - crane mast',
-                 parent='crane_mast',
-                 path=r'visual crane mast and boomrest.obj',
-                 offset=(0, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(1, 1, 1))
-    # code for visual - crane boom
-    s.new_visual(name='visual - crane boom',
-                 parent='crane_boom',
-                 path=r'visual crane-boom.obj',
-                 offset=(0, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(1, 1, 1))
-    # code for Visual
-    s.new_visual(name='Visual',
-                 parent='Tree',
-                 path=r'christmastree.obj',
-                 offset=(0, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(20.0, 20.0, 25.0))
-
-    # code for Poi_1
-    s.new_poi(name='Poi_1',
-              parent='Cheetah',
-              position=(155.7,
-                        21.5,
-                        41.0))
-    # code for Cable_1
-    s.new_cable(name='Cable_1',
-                poiA='Poi_1',
-                poiB='crane_top',
-                length=100.02169764606077,
-                EA=0.0)
-
+    s.solve_statics()
 
     Gui(s)
+
+    s.delete('force')
+
+    print('================================================================')
+
+    s.solve_statics()
+
+    # Gui(s)
+
+    # force.force = (0.0, 0.0, 0.0)
+    # force.moment = (0.0, 0.0, 0.0)
+    #
+    # s.solve_statics()
+    # assert s.verify_equilibrium()
+
+
+
 
     # s.solve_statics()
     #
