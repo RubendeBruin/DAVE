@@ -103,6 +103,7 @@ from DAVE.gui2.widget_ballastsolver import WidgetBallastSolver
 from DAVE.gui2.widget_ballastsystemselect import WidgetBallastSystemSelect
 from DAVE.gui2.widget_airy import WidgetAiry
 from DAVE.gui2.widget_stability_disp import WidgetDisplacedStability
+from DAVE.gui2.widget_explore import WidgetExplore
 
 # Imports available in script
 import numpy as np
@@ -218,7 +219,7 @@ class Gui():
         self.ui.pbGenerateSceneCode.pressed.connect(self.generate_scene_code)
 
         # -- visuals
-        self.ui.actionShow_water_plane.triggered.connect(self.toggle_show_global)
+        self.ui.actionShow_water_plane.triggered.connect(self.toggle_show_global_from_menu)
         self.ui.actionShow_visuals.triggered.connect(self.toggle_show_visuals)
         self.ui.actionShow_Geometry_elements.triggered.connect(self.toggle_show_geometry)
         self.ui.actionShow_force_applyting_element.triggered.connect(self.toggle_show_force)
@@ -263,6 +264,11 @@ class Gui():
         self.btnConstruct.setText('Construct')
         self.ui.toolBar.addWidget(self.btnConstruct)
         self.btnConstruct.clicked.connect(lambda: self.activate_workspace("CONSTRUCT"))
+
+        self.btnConstruct = QtWidgets.QPushButton()
+        self.btnConstruct.setText('Explore')
+        self.ui.toolBar.addWidget(self.btnConstruct)
+        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("EXPLORE"))
 
         self.btnConstruct = QtWidgets.QPushButton()
         self.btnConstruct.setText('Ballast')
@@ -339,6 +345,11 @@ class Gui():
             self.show_guiWidget('NodeTree', WidgetNodeTree)
             self.show_guiWidget('DerivedProperties', WidgetDerivedProperties)
             self.show_guiWidget('WidgetNodeProps', WidgetNodeProps)
+            # self.btnConstruct.setChecked(True)
+
+        if name == 'EXPLORE':
+            self.show_guiWidget('DerivedProperties', WidgetDerivedProperties)
+            self.show_guiWidget('Explore 1-to-1', WidgetExplore)
             # self.btnConstruct.setChecked(True)
 
         if name == 'DYNAMICS':
@@ -722,6 +733,10 @@ class Gui():
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def toggle_show_global(self):
+        self.ui.actionShow_water_plane.setChecked(not self.ui.actionShow_water_plane.isChecked())
+        self.toggle_show_global_from_menu()
+
+    def toggle_show_global_from_menu(self):
         self.visual.show_global = self.ui.actionShow_water_plane.isChecked()
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 

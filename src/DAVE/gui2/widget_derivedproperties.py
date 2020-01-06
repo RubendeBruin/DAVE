@@ -1,9 +1,36 @@
 from DAVE.gui2.dockwidget import *
-from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon
+from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag
 from PySide2.QtCore import QMimeData, Qt, QItemSelectionModel
+from PySide2.QtGui import QColor
 from PySide2.QtWidgets import QTreeWidgetItem
 import DAVE.scene as nodes
 import DAVE.settings as ds
+
+
+class TreeWithDragOut(QtWidgets.QTreeWidget):
+
+    def mouseMoveEvent(self, event):
+
+        # we should have only a single item selected
+        item = self.selectedItems()
+        if len(item) != 1:
+            return
+
+        item = item[0]
+
+        # item should not have a parent (should not be a value)
+        if item.parent() is None:
+            drag = QDrag(self)
+            mime = QtCore.QMimeData()
+
+            text = item.text(0)
+            if text[0]=='.':
+                text = "s['{}']{}".format(self.nodename, text)
+
+            mime.setText(text)
+            drag.setMimeData(mime)
+            drag.start(QtCore.Qt.MoveAction)
+
 
 class WidgetDerivedProperties(guiDockWidget):
 
@@ -12,7 +39,7 @@ class WidgetDerivedProperties(guiDockWidget):
         self._watches = []
         self._nodename = None
 
-        self.dispPropTree = QtWidgets.QTreeWidget(self.contents)
+        self.dispPropTree = TreeWithDragOut(self.contents)
         self.dispPropTree.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.dispPropTree.setAlternatingRowColors(True)
         self.dispPropTree.setRootIsDecorated(False)
@@ -20,6 +47,7 @@ class WidgetDerivedProperties(guiDockWidget):
         item_0 = QtWidgets.QTreeWidgetItem(self.dispPropTree)
         item_1 = QtWidgets.QTreeWidgetItem(item_0)
         self.dispPropTree.header().setVisible(False)
+        self.dispPropTree.setDragDropMode(QtWidgets.QAbstractItemView.DragOnly)
 
         self.dispPropTree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.dispPropTree.customContextMenuRequested.connect(self.rightClickTreeview)
@@ -43,8 +71,8 @@ class WidgetDerivedProperties(guiDockWidget):
     # ======= custom
 
     def display_node_properties(self):
-
         self.dispPropTree.clear()
+
 
         s = self.guiScene
 
@@ -56,14 +84,17 @@ class WidgetDerivedProperties(guiDockWidget):
             except:
                 result = 'Error evaluating {}'.format(w)
             pa = QtWidgets.QTreeWidgetItem(self.dispPropTree)
+            pa.setTextColor(0,QColor(0,120,0))
+
             v = QtWidgets.QTreeWidgetItem(pa)
-            pa.setText(0, '.' + w)
+            pa.setText(0, w)
             v.setText(0, str(result))
 
         # get first selected item
         if self.guiSelection:
             node = self.guiSelection[0]
             self._nodename = node.name
+            self.dispPropTree.nodename = node.name
         else:
             return
 
@@ -116,8 +147,6 @@ class WidgetDerivedProperties(guiDockWidget):
         if node_prop[0] == '.':   # need to be a property, not a value
             globLoc = self.dispPropTree.mapToGlobal(point)
             self.openContextMenyAt(self._nodename, node_prop, globLoc)
-
-
 
     def openContextMenyAt(self, node_name, node_prop, globLoc):
 

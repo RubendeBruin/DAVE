@@ -3076,15 +3076,14 @@ class Scene:
 
     # ====== goal seek ========
 
-    def goal_seek(self, set_node, set_property, target, change_node, change_property, bracket=None, tol=1e-3):
+    def goal_seek(self, evaluate, target, change_node, change_property, bracket=None, tol=1e-3):
         """goal_seek
 
         Goal seek is the classic goal-seek. It changes a single property of a single node in order to get
         some property of some node to a specified value. Just like excel.
 
         Args:
-            set_node (Node or str):     node to be evaluated
-            set_property (str): property of that node to be evaluated
+            evaluate : code to be evaluated to yield the value that is solved for. Eg: s['poi'].fx Scene is abbiviated as "s"
             target (number):       target value for that property
             change_node(Node or str):  node to be adjusted
             change_property (str): property of that node to be adjusted
@@ -3095,16 +3094,22 @@ class Scene:
 
         Examples:
             Change the y-position of the cog of a rigid body ('Barge')  in order to obtain zero roll (rx)
-            >>> s.goal_seek('Barge','rx',0,'Barge','cogy')
+            >>> s.goal_seek("s['Barge'].fx",0,'Barge','cogy')
 
         """
+        s = self
 
-        set_node = self._node_from_node_or_str(set_node)
         change_node = self._node_from_node_or_str(change_node)
 
         # check that the attributes exist and are single numbers
-        test = getattr(set_node, set_property)
-        self._print('Attempting to set {}.{} to {} (now {})'.format(set_node.name, set_property, target, test))
+        test = eval(evaluate)
+
+        try:
+            float(test)
+        except:
+            raise ValueError('Evaluation of {} does not result in a float')
+
+        self._print('Attempting to evaluate {} to {} (now {})'.format(evaluate, target, test))
 
         initial = getattr(change_node, change_property)
         self._print('By changing the value of {}.{} (now {})'.format(change_node.name, change_property, initial))
@@ -3112,7 +3117,8 @@ class Scene:
         def set_and_get(x):
             setattr(change_node, change_property,x)
             self.solve_statics(silent=True)
-            result = getattr(set_node, set_property)
+            s = self
+            result = eval(evaluate)
             self._print('setting {} results in {}'.format(x,result))
             return result-target
 
@@ -3128,7 +3134,7 @@ class Scene:
         self._print(res)
 
         # evaluate result
-        final_value = getattr(set_node, set_property)
+        final_value = eval(evaluate)
         if abs(final_value-target) > 1e-3:
             raise ValueError("Target not reached. Target was {}, reached value is {}".format(target, final_value))
 
@@ -3136,6 +3142,52 @@ class Scene:
         return True
 
 
+    def plot_effect(self, evaluate, change_node, change_property, start, to, steps):
+        """plot_effect
+
+
+
+        Args:
+            evaluate : code to be evaluated to yield the value that is solved for. Eg: s['poi'].fx Scene is abbiviated as "s"
+            change_node(Node or str):  node to be adjusted
+            change_property (str): property of that node to be adjusted
+            range(optional)  : specify the possible search-interval
+
+        Returns:
+            bool: True if successful, False otherwise.
+
+        Examples:
+
+
+        """
+        s=self
+        change_node = self._node_from_node_or_str(change_node)
+
+        # check that the attributes exist and are single numbers
+        test = eval(evaluate)
+
+        try:
+            float(test)
+        except:
+            raise ValueError('Evaluation of {} does not result in a float')
+
+        def set_and_get(x):
+            setattr(change_node, change_property,x)
+            self.solve_statics(silent=True)
+            s = self
+            result = eval(evaluate)
+            self._print('setting {} results in {}'.format(x,result))
+            return result
+
+        xs = np.linspace(start,to,steps)
+        y = []
+        for x in xs:
+            y.append(set_and_get(x))
+
+        import matplotlib.pyplot as plt
+        plt.plot(xs,y)
+
+        return True
 
 
     # ======== create functions =========
