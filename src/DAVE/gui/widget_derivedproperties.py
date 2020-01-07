@@ -1,4 +1,4 @@
-from DAVE.gui2.dockwidget import *
+from DAVE.gui.dockwidget import *
 from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag
 from PySide2.QtCore import QMimeData, Qt, QItemSelectionModel
 from PySide2.QtGui import QColor

@@ -14,7 +14,7 @@
 
 
 
-import DAVE.gui2.forms.addnode_form
+import DAVE.gui.forms.addnode_form
 
 import DAVE.scene as vfs
 from PySide2.QtGui import QIcon
@@ -44,7 +44,7 @@ def fill_dropdown_boxes(ui, scene):
 
 def add_node(scene):
     AddNode = QtWidgets.QDialog()
-    ui = DAVE.gui2.forms.addnode_form.Ui_Dialog()
+    ui = DAVE._obsolete.gui.forms.addnode_form.Ui_Dialog()
     ui.setupUi(AddNode)
 
     ui.frmMasterSlave.setVisible(False)

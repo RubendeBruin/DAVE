@@ -127,7 +127,7 @@ class BallastSystemSolver:
         self._target_wt = 0
         self.tolerance = 1e-3
         self.silent = True
-        self.min_error_reduction = self.tolerance/10
+        self.min_error_reduction = self.tolerance/25
 
 
     def print(self, *kwarg):
@@ -333,7 +333,7 @@ class BallastSystemSolver:
             x0.append(tank.pct)
             bnds.append((0., 100.))
 
-        res = minimize(fun, x0=np.array(x0), bounds=bnds)
+        res = minimize(fun, x0=np.array(x0), bounds=bnds) # , method="trust-constr" is slowest but give best results?
 
         if not res.success:
             self.print('SUB-OPTIMIZATION FAILED FOR {} TANKS'.format(n_tanks))

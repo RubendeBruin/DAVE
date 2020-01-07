@@ -1,7 +1,7 @@
-import DAVE.forms.widget_dynprop
+import DAVE.gui.forms.widget_dynprop
 from PySide2 import QtWidgets
 from PySide2.QtWidgets import QMainWindow, QApplication, QCheckBox
-from DAVE.scene import Axis, RigidBody, Scene
+from DAVE.scene import Axis, Scene
 
 class DynamicProperties:
 
@@ -17,7 +17,7 @@ class DynamicProperties:
         self.scene = scene
         self.run_code_func = run_code_func
 
-        self.ui = DAVE.forms.widget_dynprop.Ui_widget_dynprop()
+        self.ui = DAVE.gui.forms.widget_dynprop.Ui_widget_dynprop()
         self.ui.setupUi(ui_target)
 
         self.fill_nodes_table()

@@ -10,11 +10,9 @@ This is an example/template of how to setup a new dockwidget
   Ruben de Bruin - 2019
 """
 
-from DAVE.gui2.dockwidget import *
-import DAVE.gui2.forms.widgetUI_airy
-from PySide2 import QtGui, QtCore, QtWidgets
-import DAVE.scene as nodes
-import DAVE.settings as ds
+from DAVE.gui.dockwidget import *
+import DAVE.gui.forms.widgetUI_airy
+from PySide2 import QtCore
 import DAVE.frequency_domain as fd
 import numpy as np
 from mafredo.helpers import wavelength
@@ -30,7 +28,7 @@ class WidgetAiry(guiDockWidget):
         """
 
         # # or from a generated file
-        self.ui = DAVE.gui2.forms.widgetUI_airy.Ui_frmAiryWave()
+        self.ui = DAVE.gui.forms.widgetUI_airy.Ui_frmAiryWave()
         self.ui.setupUi(self.contents)
         self.d0 = None
 

@@ -69,20 +69,16 @@
   Ruben de Bruin - 2019
 """
 
-
-
-
-from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import QDialog,QFileDialog
 from DAVE.scene import Scene
 
-from DAVE.gui2.forms.main_form import Ui_MainWindow
+from DAVE.gui.forms.main_form import Ui_MainWindow
 from DAVE.visual import Viewport, ActorType
-from DAVE.gui2 import new_node_dialog
-import DAVE.standard_assets
-from DAVE.forms.dlg_solver import Ui_Dialog
+from DAVE.gui import new_node_dialog
+import DAVE.gui.standard_assets
+from DAVE.gui.forms.dlg_solver import Ui_Dialog
 import DAVE.settings
 
 
@@ -92,29 +88,25 @@ import time
 import scipy.interpolate
 
 # All guiDockWidgets
-from DAVE.gui2.dockwidget import *
-from DAVE.gui2.widget_nodetree import WidgetNodeTree
-from DAVE.gui2.widget_derivedproperties import WidgetDerivedProperties
-from DAVE.gui2.widget_nodeprops import WidgetNodeProps
-from DAVE.gui2.widget_dynamic_properties import WidgetDynamicProperties
-from DAVE.gui2.widget_modeshapes import WidgetModeShapes
-from DAVE.gui2.widget_ballastconfiguration import WidgetBallastConfiguration
-from DAVE.gui2.widget_ballastsolver import WidgetBallastSolver
-from DAVE.gui2.widget_ballastsystemselect import WidgetBallastSystemSelect
-from DAVE.gui2.widget_airy import WidgetAiry
-from DAVE.gui2.widget_stability_disp import WidgetDisplacedStability
-from DAVE.gui2.widget_explore import WidgetExplore
+from DAVE.gui.dockwidget import *
+from DAVE.gui.widget_nodetree import WidgetNodeTree
+from DAVE.gui.widget_derivedproperties import WidgetDerivedProperties
+from DAVE.gui.widget_nodeprops import WidgetNodeProps
+from DAVE.gui.widget_dynamic_properties import WidgetDynamicProperties
+from DAVE.gui.widget_modeshapes import WidgetModeShapes
+from DAVE.gui.widget_ballastconfiguration import WidgetBallastConfiguration
+from DAVE.gui.widget_ballastsolver import WidgetBallastSolver
+from DAVE.gui.widget_ballastsystemselect import WidgetBallastSystemSelect
+from DAVE.gui.widget_airy import WidgetAiry
+from DAVE.gui.widget_stability_disp import WidgetDisplacedStability
+from DAVE.gui.widget_explore import WidgetExplore
+from DAVE.gui.widget_tank_order import WidgetTankOrder
 
 # Imports available in script
 import numpy as np
-import matplotlib.pyplot as plt
-from DAVE.solvers.ballast import force_vessel_to_evenkeel_and_draft, BallastSystemSolver
-from DAVE.frequency_domain import prepare_for_fd, plot_RAO_1d, dynamics_quickfix
 
 
 # resources
-
-import DAVE.forms.resources_rc as resources_rc
 
 class SolverDialog(QDialog, Ui_Dialog):
     def __init__(self, parent=None):
@@ -364,6 +356,7 @@ class Gui():
             self.show_guiWidget('WidgetBallastSystemSelect', WidgetBallastSystemSelect)
             self.show_guiWidget('WidgetBallastConfiguration', WidgetBallastConfiguration)
             self.show_guiWidget('WidgetBallastSolver', WidgetBallastSolver)
+            self.show_guiWidget('WidgetTankOrder', WidgetTankOrder)
             self.visual.show_actors_of_type([ActorType.BALLASTTANK])
 
         if name == 'STABILITY':
@@ -375,7 +368,7 @@ class Gui():
 
 
     def import_browser(self):
-        G = DAVE.standard_assets.Gui()
+        G = DAVE.gui.standard_assets.Gui()
         r = G.showModal()
 
         if r is not None:
@@ -1048,91 +1041,6 @@ class Gui():
 if __name__ == '__main__':
 
     s = Scene()
-    n = 10
-    L = 10
-
-    FIX = False
-
-    for i in range(n + 1):
-        t = s.new_axis('axis' + str(i), fixed=FIX)
-        t.position = (i * L / n, 0, 0)
-
-    s['axis' + str(n)].fixed = (True, True, True, True, True, True)
-
-    poi = s.new_poi('poi', parent='axis0')
-    force = s.new_force('force', parent=poi)
-
-    b = 0.1
-    h = 0.1
-
-    # derived for rectangle
-    A = b * h
-    Iy = (1 / 12) * b * h ** 3
-    Iz = (1 / 12) * h * b ** 3
-    Ip = (1 / 12) * b * h * (h ** 2 + b ** 2)
-
-    # steel
-    E = 200 * 10 ** 6
-    G = 80 * 10 ** 6
-    P = 10
-
-    EIy = Iy * E
-
-    for i in range(n):
-        b = s.new_linear_beam('beam' + str(i), master='axis' + str(i), slave='axis' + str(i + 1), EA=E * A, EIy=EIy,
-                              EIz=E * Iz, GIp=G * Ip)
-
-    force.force = (0.0, 0, -20.0)
-    force.moment = (0, 0.0, 0.0)
-
-    s.solve_statics()
+    s.import_scene(s.get_resource_path("cheetah.dave_asset"), containerize=False, prefix="")
 
     Gui(s)
-
-    s.delete('force')
-
-    print('================================================================')
-
-    s.solve_statics()
-
-    # Gui(s)
-
-    # force.force = (0.0, 0.0, 0.0)
-    # force.moment = (0.0, 0.0, 0.0)
-    #
-    # s.solve_statics()
-    # assert s.verify_equilibrium()
-
-
-
-
-    # s.solve_statics()
-    #
-    #
-    # from DAVE.frequency_domain import *
-    #
-    # V,D = mode_shapes(s)
-    #
-    # # select modeshape 2
-    # displ = D[:,4]
-    # d0 = s._vfc.get_dofs()
-    # scale = 1
-    # n_frames = 60
-    #
-    # dofs = generate_modeshape_dofs(d0, displ, scale, n_frames, s)
-    # print(dofs)
-    #
-    # # Gui(s)
-    #
-    # # Blender part
-    #
-    # from DAVE.io.blender import *
-    # s.resources_paths.append(r'C:\data\Dave\Public\Blender visuals')
-    #
-    # create_blend_and_open(s, animation_dofs = dofs)
-    #
-    #
-    #
-    #
-    #
-    #

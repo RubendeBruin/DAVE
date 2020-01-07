@@ -21,32 +21,25 @@
   Ruben de Bruin - 2019
 """
 
-import DAVE.visual as vfv
 import DAVE.scene as vfs
 import DAVE.constants as vfc
-import DAVE.standard_assets
-import DAVE.forms.resources_rc as resources_rc
-from DAVE.forms.viewer_form import Ui_MainWindow
-from DAVE.forms.dlg_solver import Ui_Dialog
-import numpy as np
+import DAVE.gui.standard_assets
+from DAVE.gui.forms.viewer_form import Ui_MainWindow
+from DAVE.gui.forms.dlg_solver import Ui_Dialog
 import math
-import DAVE.element_widgets as element_widgets
-from DAVE.widget_dynamic_properties import DynamicProperties
-from DAVE.modal_viewer import ModalViewer
+from DAVE._obsolete.widget_dynamic_properties import DynamicProperties
+from DAVE._obsolete.modal_viewer import ModalViewer
 
 import sys
-from pathlib import Path
 
 from PySide2 import QtWidgets
-from PySide2.QtWidgets import QMenu, QMainWindow, QDialog
+from PySide2.QtWidgets import QDialog
 from PySide2.QtCore import QMimeData, Qt
 from PySide2 import QtCore
 
-from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon
+from PySide2.QtGui import QStandardItemModel, QIcon
 from PySide2.QtWidgets import QFileDialog
 
-from IPython.utils.capture import capture_output
-import datetime
 
 class NodeData:
     data = list()
@@ -140,7 +133,7 @@ class Gui:
         # self.visual = vfv.Viewport(scene)
         """Reference to a viewport"""
 
-        self.ui = DAVE.forms.viewer_form.Ui_MainWindow()
+        self.ui = DAVE.gui.forms.viewer_form.Ui_MainWindow()
         """Reference to the ui"""
 
         self.app = QtWidgets.QApplication(sys.argv)

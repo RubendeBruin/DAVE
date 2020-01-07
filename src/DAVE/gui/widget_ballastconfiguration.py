@@ -10,8 +10,8 @@ WidgetBallastConfiguration
   Ruben de Bruin - 2019
 """
 
-from DAVE.gui2.dockwidget import *
-from DAVE.gui2.forms.widgetUI_ballastconfiguration import Ui_widget_ballastsystem
+from DAVE.gui.dockwidget import *
+from DAVE.gui.forms.widgetUI_ballastconfiguration import Ui_widget_ballastsystem
 from PySide2 import QtGui, QtCore, QtWidgets
 from PySide2.QtGui import QBrush, QColor
 import DAVE.scene as nodes
@@ -43,6 +43,8 @@ class WidgetBallastConfiguration(guiDockWidget):
 
         self.ui.pbFillAll.pressed.connect(lambda : self.fill_all_to(100))
         self.ui.pbEmptyAll.pressed.connect(lambda: self.fill_all_to(0))
+
+
 
         self._bs = None # active ballast system
         self._filling_table = True

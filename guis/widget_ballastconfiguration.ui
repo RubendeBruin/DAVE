@@ -6,64 +6,17 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1396</width>
-    <height>1412</height>
+    <width>1270</width>
+    <height>1320</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="locale">
+   <locale language="English" country="UnitedStates"/>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>The order of the tanks in the table determines how eager the auto-ballast algorithm is to fill that tank. Tanks higher on the list are more likely to be filled than tanks lower on the list.  The order of the list can be changed by using one of the buttons or by dragging the tanks up or down in the list by selecting their name.</string>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QWidget" name="widget" native="true">
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QPushButton" name="pushButton">
-        <property name="text">
-         <string>Order by elevation</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_2">
-        <property name="text">
-         <string>Minimize radii of gyration</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButton_3">
-        <property name="text">
-         <string>Maximize radii of gyration</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item>
     <widget class="QWidget" name="widget_2" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -173,6 +126,14 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>tableWidget</tabstop>
+  <tabstop>pbFillAll</tabstop>
+  <tabstop>pbEmptyAll</tabstop>
+  <tabstop>pbToggleFreeze</tabstop>
+  <tabstop>pbUnfreezeAll</tabstop>
+  <tabstop>pbFreezeAll</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

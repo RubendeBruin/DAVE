@@ -2488,6 +2488,58 @@ class BallastSystem(Poi):
         for tank in old_tanks:
             self._tanks.append(tank)
 
+    def order_tanks_by_elevation(self):
+        """Re-orders the existing tanks such that the lowest tanks are higher in the list"""
+
+        zs = [tank.position[2] for tank in self._tanks]
+        inds = np.argsort(zs)
+        self._tanks = [self._tanks[i] for i in inds]
+
+    def order_tanks_by_distance_from_point(self, point, reverse=False):
+        """Re-orders the existing tanks such that the tanks *furthest* from the point are first on the list
+
+        Args:
+            point : (x,y,z)  - reference point to determine the distance to
+            reverse: (False) - order in reverse order: tanks nearest to the points first on list
+
+
+        """
+        pos = [tank.position for tank in self._tanks]
+        pos = np.array(pos, dtype=float)
+        pos -= np.array(point)
+
+        dist = np.apply_along_axis(np.linalg.norm,1,pos)
+
+        if reverse:
+            inds = np.argsort(dist)
+        else:
+            inds = np.argsort(-dist)
+
+        self._tanks = [self._tanks[i] for i in inds]
+
+    def order_tanks_to_maximize_inertia_moment(self):
+        """Re-order tanks such that tanks furthest from center of system are first on the list"""
+        self._order_tanks_to_inertia_moment()
+
+    def order_tanks_to_minimize_inertia_moment(self):
+        """Re-order tanks such that tanks nearest to center of system are first on the list"""
+        self._order_tanks_to_inertia_moment(maximize=False)
+
+    def _order_tanks_to_inertia_moment(self, maximize = True):
+
+        pos = [tank.position for tank in self._tanks]
+        m = [tank.max for tank in self._tanks]
+        pos = np.array(pos, dtype=float)
+        mxmymz = np.vstack((m,m,m)).transpose() * pos
+        total = np.sum(m)
+        point = sum(mxmymz) / total
+
+        if maximize:
+            self.order_tanks_by_distance_from_point(point)
+        else:
+            self.order_tanks_by_distance_from_point(point, reverse=True)
+
+
     def tank_names(self):
         return [tank.name for tank in self._tanks]
 

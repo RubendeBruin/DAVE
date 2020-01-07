@@ -1,25 +1,36 @@
-from DAVE.gui2.dockwidget import *
-from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon
-from PySide2.QtCore import QMimeData, Qt, QItemSelectionModel
-from PySide2.QtWidgets import QTreeWidgetItem
+"""
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+  Ruben de Bruin - 2019
+
+
+
+  Interface between the gui and and the element-widgets
+
+
+"""
+
+import DAVE.gui.forms.widget_axis
+import DAVE.gui.forms.widget_body
+import DAVE.gui.forms.widget_poi
+import DAVE.gui.forms.widget_cable
+import DAVE.gui.forms.widget_name
+import DAVE.gui.forms.widget_visual
+import DAVE.gui.forms.widget_force
+import DAVE.gui.forms.widget_lincon6
+import DAVE.gui.forms.widget_linhyd
+import DAVE.gui.forms.widget_beam
+import DAVE.gui.forms.widget_con2d
+import DAVE.gui.forms.widget_sheave
+
+import DAVE.forms.addnode_form
+
 import DAVE.scene as vfs
-import DAVE.settings as ds
+from PySide2.QtGui import QIcon
 
-
-import DAVE.forms.widget_axis
-import DAVE.forms.widget_body
-import DAVE.forms.widget_poi
-import DAVE.forms.widget_cable
-import DAVE.forms.widget_name
-import DAVE.forms.widget_visual
-import DAVE.forms.widget_force
-import DAVE.forms.widget_lincon6
-import DAVE.forms.widget_linhyd
-import DAVE.forms.widget_beam
-import DAVE.forms.widget_con2d
-import DAVE.forms.widget_sheave
-import DAVE.forms.widget_waveinteraction
-
+from PySide2 import QtWidgets
 import numpy as np
 
 
@@ -57,7 +68,7 @@ class EditNode(NodeEditor):
         if EditNode._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.forms.widget_name.Ui_NameWidget()
+            ui = DAVE.gui.forms.widget_name.Ui_NameWidget()
             ui.setupUi(widget)
             EditNode._ui = ui
             ui._widget = widget
@@ -90,7 +101,7 @@ class EditAxis(NodeEditor):
         if EditAxis._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.forms.widget_axis.Ui_widget_axis()
+            ui = DAVE.gui.forms.widget_axis.Ui_widget_axis()
             ui.setupUi(widget)
             EditAxis._ui = ui
             ui._widget = widget
@@ -184,7 +195,7 @@ class EditVisual(NodeEditor):
         if EditVisual._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.forms.widget_visual.Ui_widget_axis()
+            ui = DAVE.gui.forms.widget_visual.Ui_widget_axis()
             ui.setupUi(widget)
             EditVisual._ui = ui
             ui._widget = widget
@@ -266,67 +277,6 @@ class EditVisual(NodeEditor):
 
         return code
 
-class EditWaveInteraction(NodeEditor):
-
-    _ui = None
-
-    def create_widget(self):
-
-        # Prevents the ui from being created more than once
-        if EditWaveInteraction._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.forms.widget_waveinteraction.Ui_widget_waveinteraction()
-            ui.setupUi(widget)
-            EditWaveInteraction._ui = ui
-            ui._widget = widget
-
-        else:
-            ui = EditWaveInteraction._ui
-
-        try:
-            ui.doubleSpinBox_1.valueChanged.disconnect()
-            ui.doubleSpinBox_2.valueChanged.disconnect()
-            ui.doubleSpinBox_3.valueChanged.disconnect()
-            ui.comboBox.editTextChanged.disconnect()
-        except:
-            pass # no connections yet
-
-        ui.doubleSpinBox_1.setValue(self.node.offset[0])
-        ui.doubleSpinBox_2.setValue(self.node.offset[1])
-        ui.doubleSpinBox_3.setValue(self.node.offset[2])
-
-        ui.comboBox.clear()
-        ui.comboBox.addItems(self.scene.get_resource_list('dhyd'))
-
-        ui.comboBox.setCurrentText(self.node.path)
-
-        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
-        ui.comboBox.editTextChanged.connect(self.callback)
-
-        self.ui = ui
-
-        return ui._widget
-
-    def generate_code(self):
-
-        code = ""
-        element = "\ns['{}']".format(self.node.name)
-
-        new_position = np.array((self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
-        new_path = self.ui.comboBox.currentText()
-
-        if not new_path == self.node.path:
-            code += element + ".path = r'{}'".format(new_path)
-
-        if not np.all(new_position == self.node.offset):
-            code += element + '.offset = ({}, {}, {})'.format(*new_position)
-
-
-        return code
-
 
 class EditBuoyancy(NodeEditor):
 
@@ -338,7 +288,7 @@ class EditBuoyancy(NodeEditor):
         if EditBuoyancy._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.forms.widget_visual.Ui_widget_axis() # same as visual widget!
+            ui = DAVE.gui.forms.widget_visual.Ui_widget_axis() # same as visual widget!
             ui.setupUi(widget)
             EditBuoyancy._ui = ui
             ui._widget = widget
@@ -427,7 +377,7 @@ class EditBody(EditAxis):
         if EditBody._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.forms.widget_body.Ui_Form()
+            ui = DAVE.gui.forms.widget_body.Ui_Form()
             ui.setupUi(widget)
             EditBody._ui = ui
             ui._widget = widget
@@ -484,7 +434,7 @@ class EditPoi(NodeEditor):
         if EditPoi._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.forms.widget_poi.Ui_Poi()
+            ui = DAVE.gui.forms.widget_poi.Ui_Poi()
             ui.setupUi(widget)
             EditPoi._ui = ui
             ui._widget = widget
@@ -534,7 +484,7 @@ class EditCable(NodeEditor):
         if EditCable._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.forms.widget_cable.Ui_Cable_form()
+            ui = DAVE.gui.forms.widget_cable.Ui_Cable_form()
             ui.setupUi(widget)
 
             EditCable._ui = ui
@@ -668,7 +618,7 @@ class EditForce(NodeEditor):
         if EditForce._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.forms.widget_force.Ui_widget_force()
+            ui = DAVE.gui.forms.widget_force.Ui_widget_force()
             ui.setupUi(widget)
             EditForce._ui = ui
             ui._widget = widget
@@ -733,7 +683,7 @@ class EditSheave(NodeEditor):
         if EditSheave._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.forms.widget_sheave.Ui_widget_sheave()
+            ui = DAVE.gui.forms.widget_sheave.Ui_widget_sheave()
             ui.setupUi(widget)
             EditSheave._ui = ui
             ui._widget = widget
@@ -791,7 +741,7 @@ class EditHydSpring(NodeEditor):
         if EditHydSpring._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.forms.widget_linhyd.Ui_widget_linhyd()
+            ui = DAVE.gui.forms.widget_linhyd.Ui_widget_linhyd()
             ui.setupUi(widget)
             EditHydSpring._ui = ui
             ui._widget = widget
@@ -890,7 +840,7 @@ class EditLC6d(NodeEditor):
         if EditLC6d._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.forms.widget_lincon6.Ui_widget_lincon6()
+            ui = DAVE.gui.forms.widget_lincon6.Ui_widget_lincon6()
             ui.setupUi(widget)
             EditLC6d._ui = ui
             ui._widget = widget
@@ -984,7 +934,7 @@ class EditConnector2d(NodeEditor):
         if EditConnector2d._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.forms.widget_con2d.Ui_widget_con2d()
+            ui = DAVE.gui.forms.widget_con2d.Ui_widget_con2d()
             ui.setupUi(widget)
             EditConnector2d._ui = ui
             ui._widget = widget
@@ -1061,7 +1011,7 @@ class EditBeam(NodeEditor):
         if EditBeam._ui is None:
 
             widget = QtWidgets.QWidget()
-            ui = DAVE.forms.widget_beam.Ui_widget_beam()
+            ui = DAVE.gui.forms.widget_beam.Ui_widget_beam()
             ui.setupUi(widget)
             EditBeam._ui = ui
             ui._widget = widget
@@ -1151,138 +1101,394 @@ class EditBeam(NodeEditor):
 
         return code
 
-# ===========================================
+def fill_dropdown_boxes(ui, scene):
+    a = list()
+    p = list()
+    for e in scene.nodes_of_type(vfs.Axis):
+        a.append(e.name)
+    for e in scene.nodes_of_type(vfs.Poi):
+        p.append(e.name)
 
-class WidgetNodeProps(guiDockWidget):
+    ui.cbMasterAxis.addItems(a)
+    ui.cbSlaveAxis.addItems(a)
+    ui.cbPoiA.addItems(p)
+    ui.cbPoiB.addItems(p)
+    ui.cbParentPoi.addItems(p)
+    if len(p) > 1:
+        ui.cbPoiB.setCurrentText(p[1])
 
-    def guiDefaultLocation(self):
-        return None # QtCore.Qt.DockWidgetArea.RightDockWidgetArea
-
-    def guiCreate(self):
-        self.setVisible(False)
-
-        self._open_edit_widgets = list()
-        self._node_editors = list()
-        
-        self.layout = QtWidgets.QVBoxLayout()
-        self.contents.setLayout(self.layout)
-
-    def guiProcessEvent(self, event):
-
-        if event in [guiEventType.SELECTION_CHANGED,guiEventType.FULL_UPDATE]:
-            # check if we have a selection
-            if self.guiSelection:
-                self.select_node(self.guiSelection[0])
-
-        if self._open_edit_widgets:
-            self.setVisible(True)
-        else:
-            self.setVisible(False)
+    ui.cbParentAxis.addItems([""])
+    ui.cbParentAxis.addItems(a)
 
 
-    # ======= custom
+def add_node(scene):
+    AddNode = QtWidgets.QDialog()
+    ui = DAVE.forms.addnode_form.Ui_Dialog()
+    ui.setupUi(AddNode)
 
-    def node_name_changed(self):
-        """Triggered by changing the text in the node-name widget"""
-        node = self._node_name_editor.node
-        element = "\ns['{}']".format(node.name)
+    ui.frmMasterSlave.setVisible(False)
+    ui.frmPoints.setVisible(False)
+    ui.frmParent.setVisible(False)
+    ui.frmParentPoi.setVisible(False)
 
-        new_name = self._node_name_editor.ui.tbName.text()
-        if not new_name == node.name:
-            code = element + ".name = '{}'".format(new_name)
-            self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
+    fill_dropdown_boxes(ui, scene)
 
-    def node_property_changed(self):
+    # AddNode.setFixedHeight(250)
 
-        code = ""
-        for editor in self._node_editors:
-            code += editor.generate_code()
+    ui.errPois.setVisible(False)
+    ui.errUniqueName.setVisible(False)
 
-        self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
-
-
-    def select_node(self, node):
-        
-        # for widget in self._open_edit_widgets:
-        #     self.layout.removeWidget(widget)
-        #     widget.setVisible(False)
-
-        to_be_removed = self._open_edit_widgets.copy()
-
-
-        for item in to_be_removed:
-            print('to be removed: ' + str(type(item)))
-
-        self._node_editors.clear()
-        self._open_edit_widgets.clear()
-
-        try:
-            self._node_name_editor
-            self._node_name_editor.node = node
-            self._node_name_editor.create_widget()
-        except:
-            self._node_name_editor = EditNode(node, self.node_name_changed, self.guiScene)
-            self._node_name_editor.create_widget()
-            self.layout.addWidget(self._node_name_editor.ui._widget)
-
-        if isinstance(node, vfs.Visual):
-            self._node_editors.append(EditVisual(node, self.node_property_changed, self.guiScene))
-
-        if isinstance(node, vfs.WaveInteraction1):
-            self._node_editors.append(EditWaveInteraction(node, self.node_property_changed, self.guiScene))
-
-        if isinstance(node, vfs.Axis):
-            self._node_editors.append(EditAxis(node, self.node_property_changed, self.guiScene))
-
-        if isinstance(node, vfs.RigidBody):
-            self._node_editors.append(EditBody(node, self.node_property_changed, self.guiScene))
-
-        if isinstance(node, vfs.Poi):
-            self._node_editors.append(EditPoi(node, self.node_property_changed, self.guiScene))
-
-        if isinstance(node, vfs.Cable):
-            self._node_editors.append(EditCable(node, self.node_property_changed, self.guiScene))
-
-        if isinstance(node, vfs.Force):
-            self._node_editors.append(EditForce(node, self.node_property_changed, self.guiScene))
-
-        if isinstance(node, vfs.Sheave):
-            self._node_editors.append(EditSheave(node, self.node_property_changed, self.guiScene))
-
-
-        if isinstance(node, vfs.HydSpring):
-            self._node_editors.append(EditHydSpring(node, self.node_property_changed, self.guiScene))
-
-        if isinstance(node, vfs.LC6d):
-            self._node_editors.append(EditLC6d(node, self.node_property_changed, self.guiScene))
-
-        if isinstance(node, vfs.Connector2d):
-            self._node_editors.append(EditConnector2d(node, self.node_property_changed, self.guiScene))
-
-        if isinstance(node, vfs.LinearBeam):
-            self._node_editors.append(EditBeam(node, self.node_property_changed, self.guiScene))
-
-        if isinstance(node, vfs.Buoyancy):
-            self._node_editors.append(EditBuoyancy(node, self.node_property_changed, self.guiScene))
-
-        to_be_added = []
-        for editor in self._node_editors:
-            to_be_added.append(editor.create_widget())
-
-        for item in to_be_added:
-            print('to be added: ' + str(type(item)))
-
-        for widget in to_be_removed:
-            if widget in to_be_added:
-                to_be_added.remove(widget)
-                self._open_edit_widgets.append(widget)
+    def ok():
+        if ui.frmPoints.isVisible():
+            if ui.cbPoiA.currentText() == ui.cbPoiB.currentText():
+                ui.errPois.setVisible(True)
             else:
-                self.layout.removeWidget(widget)
-                widget.setVisible(False)
+                ui.errPois.setVisible(False)
+        ui.btnOk.setEnabled((not ui.errPois.isVisible()) and (not ui.errUniqueName.isVisible()))
 
-        for widget in to_be_added:
-            widget.setVisible(True)
-            self.layout.addWidget(widget)
-            self._open_edit_widgets.append(widget)
+    def ok_name():
+        ui.errUniqueName.setVisible(not scene.name_available(ui.tbName.text()))
+        ui.btnOk.setEnabled((not ui.errPois.isVisible()) and (not ui.errUniqueName.isVisible()))
 
-        self.resize(0, 0)  # set the size of the floating dock widget to its minimum size
+    ui.cbPoiA.currentTextChanged.connect(ok)
+    ui.cbPoiB.currentTextChanged.connect(ok)
+    ui.tbName.textChanged.connect(ok_name)
+
+    def cancel():
+        AddNode.reject()
+
+    ui.buttonBox.clicked.connect(cancel)
+
+    return ui, AddNode
+
+
+def add_axis(scene, parent=None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/axis.png"))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Axis'))
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+        if parent:
+            return "new_axis('{}', parent = '{}')".format(name, parent)
+        else:
+            return "new_axis('{}')".format(name)
+    else:
+        return None
+
+def add_body(scene, parent=None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/rigidbody.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Body'))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+        if parent:
+            return "new_rigidbody('{}', parent = '{}')".format(name, parent)
+        else:
+            return "new_rigidbody('{}')".format(name)
+    else:
+        return None
+
+def add_poi(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/poi.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Poi'))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+        if parent:
+            return "new_poi('{}', parent = '{}')".format(name, parent)
+        else:
+            return "new_poi('{}')".format(name)
+    else:
+        return None
+
+
+def add_cable(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmPoints.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/cable.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Cable'))
+
+    if parent:
+        ui.cbPoiA.setCurrentText(parent[0].name)
+        try:
+            ui.cbPoiB.setCurrentText(parent[1].name)
+        except:
+            pass
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        poiA = ui.cbPoiA.currentText()
+        poiB = ui.cbPoiB.currentText()
+        name = ui.tbName.text()
+
+        return "new_cable('{}', poiA = '{}', poiB= '{}')".format(name, poiA, poiB)
+
+    else:
+        return None
+
+def add_force(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParentPoi.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/force.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Force'))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        poi = ui.cbParentPoi.currentText()
+        name = ui.tbName.text()
+
+        return "new_force('{}', parent = '{}')".format(name, poi)
+
+    else:
+        return None
+    
+def add_sheave(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParentPoi.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/sheave.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Sheave'))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        poi = ui.cbParentPoi.currentText()
+        name = ui.tbName.text()
+
+        return "new_sheave('{}', parent = '{}', axis = (0,1,0))".format(name, poi)
+
+    else:
+        return None
+
+def add_linear_connector(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmMasterSlave.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/lincon6.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('LinCon6d'))
+
+    if parent:
+        ui.cbMasterAxis.setCurrentText(parent[0].name)
+        try:
+            ui.cbSlaveAxis.setCurrentText(parent[1].name)
+        except:
+            pass
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        master = ui.cbMasterAxis.currentText()
+        slave = ui.cbSlaveAxis.currentText()
+        name = ui.tbName.text()
+
+        return "new_linear_connector_6d('{}', slave = '{}', master = '{}')".format(name, slave, master)
+
+    else:
+        return None
+
+
+def add_connector2d(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmMasterSlave.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/con2d.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Connector2d'))
+
+    if parent:
+        ui.cbMasterAxis.setCurrentText(parent[0].name)
+        try:
+            ui.cbSlaveAxis.setCurrentText(parent[1].name)
+        except:
+            pass
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        master = ui.cbMasterAxis.currentText()
+        slave = ui.cbSlaveAxis.currentText()
+        name = ui.tbName.text()
+
+        return "new_connector2d('{}', slave = '{}', master = '{}')".format(name, slave, master)
+
+    else:
+        return None
+
+def add_beam_connector(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmMasterSlave.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/beam.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Beam'))
+
+    if parent:
+        ui.cbMasterAxis.setCurrentText(parent[0].name)
+        try:
+            ui.cbSlaveAxis.setCurrentText(parent[1].name)
+        except:
+            pass
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        master = ui.cbMasterAxis.currentText()
+        slave = ui.cbSlaveAxis.currentText()
+        name = ui.tbName.text()
+
+        return "new_linear_beam('{}', slave = '{}', master = '{}')".format(name, slave, master)
+
+    else:
+        return None
+
+
+def add_linear_hydrostatics(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/linhyd.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Hydrostatics'))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+
+        return "new_hydspring('{}', parent = '{}', cob = (0,0,0), BMT=0, BML=0, COFX=0, COFY=0, kHeave=0, waterline=0, displacement_kN=0)".format(name, parent)
+
+    else:
+        return None
+
+def add_visual(scene, parent = None):
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/visual.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Visual'))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+
+        return "new_visual('{}', parent = '{}', path = r'wirecube.obj')".format(
+            name, parent)
+
+    else:
+        return None
+
+def add_buoyancy(scene, parent = None):
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/buoy_mesh.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Buoyancy mesh'))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+
+        return "new_buoyancy('{}', parent = '{}')".format(name, parent)
+
+    else:
+        return None
+
+
+
+
+
+

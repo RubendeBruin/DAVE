@@ -1,20 +1,15 @@
-import DAVE.forms.widget_dynprop
-from PySide2 import QtWidgets
-from PySide2.QtWidgets import QMainWindow, QApplication, QCheckBox
-from DAVE.scene import Axis, RigidBody, Scene
+import DAVE.gui.forms.widget_dynprop
+from PySide2.QtWidgets import QCheckBox
+from DAVE.scene import Axis
 
-from DAVE.gui2.dockwidget import *
-from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon
-from PySide2.QtCore import QMimeData, Qt, QItemSelectionModel
-from PySide2.QtWidgets import QTreeWidgetItem
-import DAVE.scene as nodes
-import DAVE.settings as ds
+from DAVE.gui.dockwidget import *
+
 
 class WidgetDynamicProperties(guiDockWidget):
 
     def guiCreate(self):
 
-        self.ui = DAVE.forms.widget_dynprop.Ui_widget_dynprop()
+        self.ui = DAVE.gui.forms.widget_dynprop.Ui_widget_dynprop()
         self.ui.setupUi(self.contents)
 
         self.ui.tableDynProp.itemChanged.connect(self.node_table_cell_edit_done)

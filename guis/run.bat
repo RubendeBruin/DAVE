@@ -1,5 +1,15 @@
 call conda activate deploy
-echo set PATH=%PATH%;"C:\Users\beneden\Miniconda3\pkgs\pyside2-5.13.1-py37hfa7ce6d_2\Library\bin"
+
+echo call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
+echo call pyside2-uic widget_modeshapes.ui -o "..\src\DAVE\gui\forms\widgetUI_modeshapes.py"
+call pyside2-uic widget_ballastconfiguration.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastconfiguration.py"
+echo call pyside2-uic widget_ballastsolver.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastsolver.py"
+echo call pyside2-uic widget_airy.ui -o "..\src\DAVE\gui\forms\widgetUI_airy.py"
+echo call pyside2-uic widget_stability_displ.ui -o "..\src\DAVE\gui\forms\widget_stability_displUI.py"
+call pyside2-uic widget_explore.ui -o "..\src\DAVE\gui\forms\widgetUI_explore.py"
+call pyside2-uic widget_tank_order.ui -o "..\src\DAVE\gui\forms\widgetUI_tank_order.py"
+
+echo call pyside2-rcc ..\guis\resources.qrc -o "..\src\DAVE\forms\resources_rc.py"
 
 echo call pyside2-uic main_form.ui -o "..\src\DAVE\forms\viewer_form.py"
 

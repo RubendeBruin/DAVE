@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_ballastconfiguration.ui',
 # licensing of 'widget_ballastconfiguration.ui' applies.
 #
-# Created: Sat Dec 21 15:17:09 2019
+# Created: Tue Jan  7 10:15:56 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,30 +13,10 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_widget_ballastsystem(object):
     def setupUi(self, widget_ballastsystem):
         widget_ballastsystem.setObjectName("widget_ballastsystem")
-        widget_ballastsystem.resize(1396, 1412)
+        widget_ballastsystem.resize(1270, 1320)
+        widget_ballastsystem.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.verticalLayout = QtWidgets.QVBoxLayout(widget_ballastsystem)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.label = QtWidgets.QLabel(widget_ballastsystem)
-        self.label.setWordWrap(True)
-        self.label.setObjectName("label")
-        self.verticalLayout.addWidget(self.label)
-        self.widget = QtWidgets.QWidget(widget_ballastsystem)
-        self.widget.setObjectName("widget")
-        self.horizontalLayout = QtWidgets.QHBoxLayout(self.widget)
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.pushButton = QtWidgets.QPushButton(self.widget)
-        self.pushButton.setObjectName("pushButton")
-        self.horizontalLayout.addWidget(self.pushButton)
-        self.pushButton_2 = QtWidgets.QPushButton(self.widget)
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.horizontalLayout.addWidget(self.pushButton_2)
-        self.pushButton_3 = QtWidgets.QPushButton(self.widget)
-        self.pushButton_3.setObjectName("pushButton_3")
-        self.horizontalLayout.addWidget(self.pushButton_3)
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem)
-        self.verticalLayout.addWidget(self.widget)
         self.widget_2 = QtWidgets.QWidget(widget_ballastsystem)
         self.widget_2.setObjectName("widget_2")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.widget_2)
@@ -57,8 +37,8 @@ class Ui_widget_ballastsystem(object):
         self.pbFreezeAll = QtWidgets.QPushButton(self.widget_2)
         self.pbFreezeAll.setObjectName("pbFreezeAll")
         self.horizontalLayout_2.addWidget(self.pbFreezeAll)
-        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_2.addItem(spacerItem1)
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem)
         self.verticalLayout.addWidget(self.widget_2)
         self.tableWidget = QtWidgets.QTableWidget(widget_ballastsystem)
         self.tableWidget.setDragEnabled(True)
@@ -87,13 +67,14 @@ class Ui_widget_ballastsystem(object):
 
         self.retranslateUi(widget_ballastsystem)
         QtCore.QMetaObject.connectSlotsByName(widget_ballastsystem)
+        widget_ballastsystem.setTabOrder(self.tableWidget, self.pbFillAll)
+        widget_ballastsystem.setTabOrder(self.pbFillAll, self.pbEmptyAll)
+        widget_ballastsystem.setTabOrder(self.pbEmptyAll, self.pbToggleFreeze)
+        widget_ballastsystem.setTabOrder(self.pbToggleFreeze, self.pbUnfreezeAll)
+        widget_ballastsystem.setTabOrder(self.pbUnfreezeAll, self.pbFreezeAll)
 
     def retranslateUi(self, widget_ballastsystem):
         widget_ballastsystem.setWindowTitle(QtWidgets.QApplication.translate("widget_ballastsystem", "Form", None, -1))
-        self.label.setText(QtWidgets.QApplication.translate("widget_ballastsystem", "The order of the tanks in the table determines how eager the auto-ballast algorithm is to fill that tank. Tanks higher on the list are more likely to be filled than tanks lower on the list.  The order of the list can be changed by using one of the buttons or by dragging the tanks up or down in the list by selecting their name.", None, -1))
-        self.pushButton.setText(QtWidgets.QApplication.translate("widget_ballastsystem", "Order by elevation", None, -1))
-        self.pushButton_2.setText(QtWidgets.QApplication.translate("widget_ballastsystem", "Minimize radii of gyration", None, -1))
-        self.pushButton_3.setText(QtWidgets.QApplication.translate("widget_ballastsystem", "Maximize radii of gyration", None, -1))
         self.pbFillAll.setText(QtWidgets.QApplication.translate("widget_ballastsystem", "Fill all", None, -1))
         self.pbEmptyAll.setText(QtWidgets.QApplication.translate("widget_ballastsystem", "Empty all", None, -1))
         self.pbToggleFreeze.setText(QtWidgets.QApplication.translate("widget_ballastsystem", "Toggle freeze", None, -1))

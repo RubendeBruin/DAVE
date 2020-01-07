@@ -1,19 +1,16 @@
-from DAVE.scene import Scene, RigidBody, Axis
+from DAVE.scene import Scene, RigidBody
 from DAVE.visual import Viewport
-from DAVE.forms.frm_animation import Ui_AnimationWindow
-import DAVE.frequency_domain
+from DAVE.gui.forms.frm_animation import Ui_AnimationWindow
 # from dynamics.frequency_domain import PointMass
 import sys
 import numpy as np
-from scipy.linalg import eig
 from PySide2.QtGui import QBrush, QColor
 
-from PySide2 import QtCore, QtGui, QtWidgets
-from PySide2.QtWidgets import QCheckBox
+from PySide2 import QtWidgets
 
 from IPython.utils.capture import capture_output
 
-from DAVE.widget_dynamic_properties import DynamicProperties
+from DAVE._obsolete.widget_dynamic_properties import DynamicProperties
 
 class MainWindowWithCloseEvent(QtWidgets.QMainWindow):
 

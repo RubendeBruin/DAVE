@@ -13,7 +13,7 @@
 import DAVE.visual as dv
 import DAVE.scene as ds
 
-import DAVE.forms.frm_standard_assets
+import DAVE.gui.forms.frm_standard_assets
 
 from PySide2 import QtWidgets
 
@@ -34,7 +34,7 @@ class Gui:
         self.visual = dv.Viewport(self.scene)
         """Reference to a viewport"""
 
-        self.ui = DAVE.forms.frm_standard_assets.Ui_MainWindow()
+        self.ui = DAVE.gui.forms.frm_standard_assets.Ui_MainWindow()
         """Reference to the ui"""
         self.ui.visual = self.visual # pass a reference
 

@@ -1,0 +1,913 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>2107</width>
+    <height>1721</height>
+   </rect>
+  </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
+  <property name="windowTitle">
+   <string>DAVE</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/icons/Dave_icon.png</normaloff>:/icons/Dave_icon.png</iconset>
+  </property>
+  <property name="locale">
+   <locale language="English" country="UnitedStates"/>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <item>
+     <widget class="QFrame" name="frame3d">
+      <property name="acceptDrops">
+       <bool>false</bool>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QLabel" name="label_2">
+       <property name="geometry">
+        <rect>
+         <x>580</x>
+         <y>410</y>
+         <width>161</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>3D view loading....</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>2107</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuSolve_Statics">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionNew"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpen"/>
+    <addaction name="actionImport_sub_scene"/>
+    <addaction name="actionImport_browser"/>
+    <addaction name="separator"/>
+    <addaction name="actionSave_scene"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionHorizontal_camera"/>
+    <addaction name="separator"/>
+    <addaction name="action2D_mode"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_light"/>
+    <addaction name="actionDark_mode"/>
+    <addaction name="separator"/>
+    <addaction name="actionShow_all_forces_at_same_size"/>
+    <addaction name="actionIncrease_force_size"/>
+    <addaction name="actionDecrease_force_size"/>
+    <addaction name="separator"/>
+    <addaction name="actionIncrease_Geometry_size"/>
+    <addaction name="actionDecrease_Geometry_size"/>
+    <addaction name="separator"/>
+    <addaction name="actionShow_visuals"/>
+    <addaction name="actionShow_Geometry_elements"/>
+    <addaction name="actionShow_force_applyting_element"/>
+    <addaction name="actionShow_water_plane"/>
+    <addaction name="separator"/>
+    <addaction name="actionSet_all_visible"/>
+    <addaction name="actionSet_all_hidden"/>
+    <addaction name="separator"/>
+    <addaction name="actionFull_refresh"/>
+   </widget>
+   <widget class="QMenu" name="menuView_2">
+    <property name="title">
+     <string>Window</string>
+    </property>
+    <addaction name="actionPython_console"/>
+   </widget>
+   <widget class="QMenu" name="menuWhat_if">
+    <property name="title">
+     <string>Optimize</string>
+    </property>
+    <addaction name="actionGoal_seek"/>
+    <addaction name="actionOptimize"/>
+   </widget>
+   <widget class="QMenu" name="menuMarine">
+    <property name="title">
+     <string>Marine</string>
+    </property>
+    <addaction name="actionStability_curve"/>
+   </widget>
+   <widget class="QMenu" name="menuRender">
+    <property name="title">
+     <string>Blender</string>
+    </property>
+    <addaction name="actionRender_current_view"/>
+   </widget>
+   <widget class="QMenu" name="menuDynamics">
+    <property name="title">
+     <string>Dynamics</string>
+    </property>
+    <addaction name="actionModal_shapes"/>
+    <addaction name="actionInertia_properties"/>
+   </widget>
+   <addaction name="menuSolve_Statics"/>
+   <addaction name="menuView"/>
+   <addaction name="menuView_2"/>
+   <addaction name="menuWhat_if"/>
+   <addaction name="menuMarine"/>
+   <addaction name="menuRender"/>
+   <addaction name="menuDynamics"/>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget">
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="windowTitle">
+    <string>Nodes</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QTreeView" name="treeView">
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+       <property name="rootIsDecorated">
+        <bool>true</bool>
+       </property>
+       <property name="expandsOnDoubleClick">
+        <bool>false</bool>
+       </property>
+       <attribute name="headerVisible">
+        <bool>false</bool>
+       </attribute>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_2">
+   <property name="windowTitle">
+    <string>Feedback</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QFrame" name="frame_3">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QPushButton" name="pbGenerateSceneCode">
+          <property name="text">
+           <string>Generate Scene Code</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pbCopyFeedback">
+          <property name="text">
+           <string>Copy</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTextEdit" name="teFeedback">
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_3">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="floating">
+    <bool>true</bool>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+   </property>
+   <property name="windowTitle">
+    <string>Node Properties Editor</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_3">
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_3">
+     <item>
+      <layout class="QVBoxLayout" name="widgetLayout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="sizeConstraint">
+        <enum>QLayout::SetMinimumSize</enum>
+       </property>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="pythonDockWidget">
+   <property name="floating">
+    <bool>true</bool>
+   </property>
+   <property name="features">
+    <set>QDockWidget::AllDockWidgetFeatures</set>
+   </property>
+   <property name="windowTitle">
+    <string>Python code</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_4">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>History of succesfully executed code:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTextEdit" name="teHistory">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QFrame" name="frame_2">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="pbCopyHistory">
+          <property name="text">
+           <string>Copy all</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pbStartOver">
+          <property name="text">
+           <string>Start over</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>New code to be executed</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTextEdit" name="teCode"/>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="cbAutoExecute">
+       <property name="text">
+        <string>Auto execute generated code</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="cbAutoStatics">
+       <property name="text">
+        <string>Solve statics on after succesfull execution</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QFrame" name="frame">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QPushButton" name="pbRunCode">
+          <property name="text">
+           <string>Run code</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="separator"/>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_4">
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="windowTitle">
+    <string>Derived Properties</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_5">
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="0">
+      <widget class="QTreeWidget" name="dispPropTree">
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="alternatingRowColors">
+        <bool>true</bool>
+       </property>
+       <property name="rootIsDecorated">
+        <bool>false</bool>
+       </property>
+       <attribute name="headerVisible">
+        <bool>false</bool>
+       </attribute>
+       <column>
+        <property name="text">
+         <string>1</string>
+        </property>
+       </column>
+       <item>
+        <property name="text">
+         <string>Property</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>Value</string>
+         </property>
+        </item>
+       </item>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="goalseekDockWidget">
+   <property name="floating">
+    <bool>true</bool>
+   </property>
+   <property name="windowTitle">
+    <string>Goal-seek</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_6">
+    <layout class="QGridLayout" name="gridLayout_3">
+     <item row="1" column="4">
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>(scalar number)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0" colspan="2">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Set propery:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>To value:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLineEdit" name="gsValue"/>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLineEdit" name="gsSetProp"/>
+     </item>
+     <item row="0" column="4">
+      <widget class="QLineEdit" name="gsSetNode"/>
+     </item>
+     <item row="2" column="2">
+      <widget class="QLineEdit" name="gsChangeProp"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>By changing:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="4">
+      <widget class="QLineEdit" name="gsChangeNode"/>
+     </item>
+     <item row="0" column="3">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>of node</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="3">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>of node</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="4">
+      <widget class="QPushButton" name="btnGoalSeek">
+       <property name="text">
+        <string>Go --&gt;</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="stabilityDockWidget">
+   <property name="floating">
+    <bool>true</bool>
+   </property>
+   <property name="windowTitle">
+    <string>Stability curves</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_7">
+    <layout class="QGridLayout" name="gridLayout_4">
+     <item row="0" column="4">
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>[Axis or Rigid-body]</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1" colspan="3">
+      <widget class="QDoubleSpinBox" name="stability_displacement">
+       <property name="maximum">
+        <double>999999999999999.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>1.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1" colspan="3">
+      <widget class="QLineEdit" name="stability_node_name">
+       <property name="text">
+        <string>Axis or Rigid body name here</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="4">
+      <widget class="QLabel" name="label_17">
+       <property name="text">
+        <string>[kN]</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_11">
+       <property name="text">
+        <string>Node</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_12">
+       <property name="text">
+        <string>Range</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_16">
+       <property name="text">
+        <string>Displacement</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="0">
+      <widget class="QLabel" name="label_13">
+       <property name="text">
+        <string>Tear-down</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="3">
+      <widget class="QSpinBox" name="stability_heel_max">
+       <property name="value">
+        <number>60</number>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1" colspan="2">
+      <widget class="QSpinBox" name="stability_n_steps">
+       <property name="value">
+        <number>60</number>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QSpinBox" name="stability_heel_start">
+       <property name="minimum">
+        <number>-180</number>
+       </property>
+       <property name="maximum">
+        <number>20</number>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1" colspan="2">
+      <widget class="QCheckBox" name="stability_do_teardown">
+       <property name="text">
+        <string>Delete temporary nodes</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1" colspan="2">
+      <widget class="QCheckBox" name="stability_trim">
+       <property name="text">
+        <string>Allow Trim</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_18">
+       <property name="text">
+        <string>Steps</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QLabel" name="label_14">
+       <property name="text">
+        <string>till</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1" colspan="2">
+      <widget class="QCheckBox" name="stability_sway">
+       <property name="text">
+        <string>Allow Sway</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1" colspan="2">
+      <widget class="QCheckBox" name="stability_yaw">
+       <property name="text">
+        <string>Allow Yaw</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1" colspan="2">
+      <widget class="QCheckBox" name="stability_surge">
+       <property name="text">
+        <string>Allow Surge</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="4">
+      <widget class="QLabel" name="label_15">
+       <property name="text">
+        <string>[degrees]</string>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="3" colspan="2">
+      <widget class="QPushButton" name="stability_go">
+       <property name="text">
+        <string>Displacement driven curve</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="actionSave_scene">
+   <property name="text">
+    <string>Save as</string>
+   </property>
+  </action>
+  <action name="actionImport_sub_scene">
+   <property name="text">
+    <string>Import (file)</string>
+   </property>
+  </action>
+  <action name="actionNew">
+   <property name="text">
+    <string>New</string>
+   </property>
+  </action>
+  <action name="actionHorizontal_camera">
+   <property name="text">
+    <string>Level camera (make horizon horizontal)</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+L</string>
+   </property>
+  </action>
+  <action name="action">
+   <property name="text">
+    <string>---</string>
+   </property>
+  </action>
+  <action name="action2D_mode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>2D mode</string>
+   </property>
+  </action>
+  <action name="actionDark_mode">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Make darker</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+-</string>
+   </property>
+  </action>
+  <action name="actionShow_visuals">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show visuals</string>
+   </property>
+  </action>
+  <action name="actionShow_Geometry_elements">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Geometry elements</string>
+   </property>
+  </action>
+  <action name="actionShow_force_applyting_element">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show non-geometry elements</string>
+   </property>
+  </action>
+  <action name="actionSet_all_visible">
+   <property name="text">
+    <string>Set all visible</string>
+   </property>
+  </action>
+  <action name="actionSet_all_hidden">
+   <property name="text">
+    <string>Set all hidden</string>
+   </property>
+  </action>
+  <action name="actionFull_refresh">
+   <property name="text">
+    <string>Full refresh</string>
+   </property>
+  </action>
+  <action name="actionShow_water_plane">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Show water-plane</string>
+   </property>
+  </action>
+  <action name="actionAdd_light">
+   <property name="text">
+    <string>Make lighter</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+=</string>
+   </property>
+  </action>
+  <action name="actionShow_all_forces_at_same_size">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show all forces same size (normalize)</string>
+   </property>
+  </action>
+  <action name="actionIncrease_force_size">
+   <property name="text">
+    <string>Increase force size</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+]</string>
+   </property>
+  </action>
+  <action name="actionDecrease_force_size">
+   <property name="text">
+    <string>Decrease force size</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+[</string>
+   </property>
+  </action>
+  <action name="actionIncrease_Geometry_size">
+   <property name="text">
+    <string>Increase Geometry size (poi, axis)</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+]</string>
+   </property>
+  </action>
+  <action name="actionDecrease_Geometry_size">
+   <property name="text">
+    <string>Decrease Geometry size</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Shift+[</string>
+   </property>
+  </action>
+  <action name="actionPython_console">
+   <property name="text">
+    <string>Python console</string>
+   </property>
+  </action>
+  <action name="actionGoal_seek">
+   <property name="text">
+    <string>Goal-seek (one variable)</string>
+   </property>
+  </action>
+  <action name="actionStability_curve">
+   <property name="text">
+    <string>Stability-curve</string>
+   </property>
+  </action>
+  <action name="actionOptimize">
+   <property name="text">
+    <string>TODO: Optimize (multiple variables)</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Open</string>
+   </property>
+  </action>
+  <action name="actionImport_browser">
+   <property name="text">
+    <string>Import (browser)</string>
+   </property>
+  </action>
+  <action name="actionRender_current_view">
+   <property name="text">
+    <string>Render current view</string>
+   </property>
+  </action>
+  <action name="actionModal_shapes">
+   <property name="text">
+    <string>Modal shapes</string>
+   </property>
+  </action>
+  <action name="actionInertia_properties">
+   <property name="text">
+    <string>Inertia properties</string>
+   </property>
+  </action>
+  <zorder>dockWidget_3</zorder>
+  <zorder>pythonDockWidget</zorder>
+  <zorder>dockWidget_4</zorder>
+  <zorder>goalseekDockWidget</zorder>
+  <zorder>stabilityDockWidget</zorder>
+ </widget>
+ <tabstops>
+  <tabstop>pbCopyHistory</tabstop>
+  <tabstop>pbCopyFeedback</tabstop>
+  <tabstop>teFeedback</tabstop>
+  <tabstop>teHistory</tabstop>
+  <tabstop>gsSetProp</tabstop>
+  <tabstop>gsSetNode</tabstop>
+  <tabstop>gsValue</tabstop>
+  <tabstop>gsChangeProp</tabstop>
+  <tabstop>gsChangeNode</tabstop>
+  <tabstop>btnGoalSeek</tabstop>
+  <tabstop>pbRunCode</tabstop>
+  <tabstop>dispPropTree</tabstop>
+  <tabstop>cbAutoStatics</tabstop>
+  <tabstop>pbGenerateSceneCode</tabstop>
+  <tabstop>pbStartOver</tabstop>
+  <tabstop>treeView</tabstop>
+  <tabstop>teCode</tabstop>
+  <tabstop>cbAutoExecute</tabstop>
+ </tabstops>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

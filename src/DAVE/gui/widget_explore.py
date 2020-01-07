@@ -10,9 +10,9 @@ Explore widget
   Ruben de Bruin - 2019
 """
 
-from DAVE.gui2.dockwidget import *
+from DAVE.gui.dockwidget import *
 from PySide2 import QtGui, QtCore, QtWidgets
-from DAVE.gui2.forms.widgetUI_explore import Ui_widgetExplore11
+from DAVE.gui.forms.widgetUI_explore import Ui_widgetExplore11
 import DAVE.scene as nodes
 import DAVE.settings as ds
 
