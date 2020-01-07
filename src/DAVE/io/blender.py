@@ -180,7 +180,6 @@ def add_line(points, diameter, name=None, ani_points = None, frames_per_entry=1)
         
             n_frame = i_frame * frames_per_entry
             bpy.context.scene.frame_set(n_frame)
-            print('set frame {}'.format(n_frame))
         
             setpoints(cur_points)
                         
@@ -200,7 +199,7 @@ def add_line(points, diameter, name=None, ani_points = None, frames_per_entry=1)
     bpy.ops.object.mode_set(mode='OBJECT')
     
 
-def add_beam(points, direction, diameter, name=None, ani_points=None, frames_per_entry=1):
+def add_beam(points, direction, diameter, name=None, ani_points=None, ani_directions=None, frames_per_entry=1):
     bpy.ops.curve.primitive_bezier_curve_add(enter_editmode=True)
     obj_data = bpy.context.active_object.data
     obj_data.bevel_depth = diameter / 2
@@ -214,28 +213,27 @@ def add_beam(points, direction, diameter, name=None, ani_points=None, frames_per
     curve = bpy.context.active_object
     bp = curve.data.splines[0].bezier_points
 
-    def setpoints(pts):
+    def setpoints(pts, directions):
 
         L = 0.2*((pts[0][0]-pts[1][0])**2+(pts[0][1]-pts[1][1])**2+(pts[0][2]-pts[1][2])**2)**0.5
 
         end1 = bp[0]
         end1.co = pts[0]
-        end1.handle_left = (pts[0][0]-L*direction[0][0], pts[0][1]-L*direction[0][1],pts[0][2]-L*direction[0][2])
-        end1.handle_right = (pts[0][0]+L*direction[0][0], pts[0][1]+L*direction[0][1],pts[0][2]+L*direction[0][2])
+        end1.handle_left = (pts[0][0]-L*directions[0][0], pts[0][1]-L*directions[0][1],pts[0][2]-L*directions[0][2])
+        end1.handle_right = (pts[0][0]+L*directions[0][0], pts[0][1]+L*directions[0][1],pts[0][2]+L*directions[0][2])
 
         end2 = bp[1]
         end2.co = pts[1]
-        end2.handle_left = (pts[1][0]-L*direction[1][0], pts[1][1]-L*direction[1][1],pts[1][2]-L*direction[1][2])
-        end2.handle_right = (pts[1][0]+L*direction[1][0], pts[1][1]+L*direction[1][1],pts[1][2]+L*direction[1][2])
+        end2.handle_left = (pts[1][0]-L*directions[1][0], pts[1][1]-L*directions[1][1],pts[1][2]-L*directions[1][2])
+        end2.handle_right = (pts[1][0]+L*directions[1][0], pts[1][1]+L*directions[1][1],pts[1][2]+L*directions[1][2])
 
     if ani_points is not None:
-        for i_frame, cur_points in enumerate(ani_points):
+        for i_frame, (cur_points, cur_dir) in enumerate(zip(ani_points, ani_directions)):
 
             n_frame = i_frame * frames_per_entry
             bpy.context.scene.frame_set(n_frame)
-            print('set frame {}'.format(n_frame))
 
-            setpoints(cur_points)
+            setpoints(cur_points, cur_dir)
 
             # insert keyframes
             for i_point in range(n_points):
@@ -244,7 +242,7 @@ def add_beam(points, direction, diameter, name=None, ani_points=None, frames_per
                 bp[i_point].keyframe_insert(data_path='co', index=-1)
 
     else:
-        setpoints(points)
+        setpoints(points, direction)
 
     if name is not None:
         bpy.context.active_object.name = name
@@ -253,6 +251,7 @@ def add_beam(points, direction, diameter, name=None, ani_points=None, frames_per
     bpy.ops.object.mode_set(mode='OBJECT')
 
 """
+
 
 def _to_euler(rotation):
     r = Rotation.from_rotvec(deg2rad(rotation))
@@ -414,7 +413,32 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
         dia = consts.BLENDER_BEAM_DIA
 
-        code += '\nadd_beam(points, directions, diameter={}, name = "{}")'.format(dia, beam.name)
+        if animation_dofs:
+            code += '\nani_points = []'
+            code += '\nani_dirs = []'
+
+            for dof in animation_dofs:
+                scene._vfc.set_dofs(dof)
+                scene.update()
+                pa = beam.master.global_position
+                pb = beam.slave.global_position
+
+                code += '\nf_points=['
+                code += '({},{},{}),'.format(*pa)
+                code += '({},{},{})]'.format(*pb)
+
+                code += '\nf_directions=['
+                code += '({},{},{}),'.format(*beam.master.ux)
+                code += '({},{},{})]'.format(*beam.slave.ux)
+
+                code += '\nani_points.append(f_points)'
+                code += '\nani_dirs.append(f_directions)'
+
+
+
+            code += '\nadd_beam(points, directions, diameter={}, name = "{}", ani_points = ani_points,ani_directions = ani_dirs)'.format(dia, beam.name)
+        else:
+            code += '\nadd_beam(points, directions, diameter={}, name = "{}")'.format(dia, beam.name)
 
 
 
