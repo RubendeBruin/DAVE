@@ -258,46 +258,44 @@ class Gui():
         self.guiWidgets = dict()
         """Dictionary of all created guiWidgets (dock-widgets)"""
 
+        def set_pb_style(pb):
+            pb.setFlat(True)
+            pb.setCheckable(True)
+            pb.setAutoExclusive(True)
+            self.ui.toolBar.addWidget(pb)
 
         # Workspace buttons
-        self.btnConstruct = QtWidgets.QPushButton()
-        self.btnConstruct.setFlat(True)
-        self.btnConstruct.setText('&1. Construct')
-        self.ui.toolBar.addWidget(self.btnConstruct)
-        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("CONSTRUCT"))
+        btnConstruct = QtWidgets.QPushButton()
+        btnConstruct.setText('&1. Construct')
+        btnConstruct.clicked.connect(lambda: self.activate_workspace("CONSTRUCT"))
+        set_pb_style(btnConstruct)
 
-        self.btnConstruct = QtWidgets.QPushButton()
-        self.btnConstruct.setFlat(True)
-        self.btnConstruct.setText('&2. Explore')
-        self.ui.toolBar.addWidget(self.btnConstruct)
-        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("EXPLORE"))
+        btnConstruct = QtWidgets.QPushButton()
+        btnConstruct.setText('&2. Explore')
+        btnConstruct.clicked.connect(lambda: self.activate_workspace("EXPLORE"))
+        set_pb_style(btnConstruct)
 
-        self.btnConstruct = QtWidgets.QPushButton()
-        self.btnConstruct.setFlat(True)
-        self.btnConstruct.setText('&3. Ballast')
-        self.ui.toolBar.addWidget(self.btnConstruct)
-        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("BALLAST"))
+        btnConstruct = QtWidgets.QPushButton()
+        btnConstruct.setText('&3. Ballast')
+        btnConstruct.clicked.connect(lambda: self.activate_workspace("BALLAST"))
+        set_pb_style(btnConstruct)
 
-        self.btnConstruct = QtWidgets.QPushButton()
-        self.btnConstruct.setFlat(True)
-        self.btnConstruct.setText('&4. Stability')
-        self.ui.toolBar.addWidget(self.btnConstruct)
-        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("STABILITY"))
+        btnConstruct = QtWidgets.QPushButton()
+        btnConstruct.setText('&4. Stability')
+        btnConstruct.clicked.connect(lambda: self.activate_workspace("STABILITY"))
+        set_pb_style(btnConstruct)
 
-        self.btnConstruct = QtWidgets.QPushButton()
-        self.btnConstruct.setFlat(True)
-        self.btnConstruct.setText('&5. Mode Shapes')
-        self.ui.toolBar.addWidget(self.btnConstruct)
-        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("DYNAMICS"))
+        btnConstruct = QtWidgets.QPushButton()
+        btnConstruct.setText('&5. Mode Shapes')
+        btnConstruct.clicked.connect(lambda: self.activate_workspace("DYNAMICS"))
+        set_pb_style(btnConstruct)
 
-        self.btnConstruct = QtWidgets.QPushButton()
-        self.btnConstruct.setText('&6. Airy')
-        self.btnConstruct.setFlat(True)
-        self.ui.toolBar.addWidget(self.btnConstruct)
-        self.btnConstruct.clicked.connect(lambda: self.activate_workspace("AIRY"))
+        btnConstruct = QtWidgets.QPushButton()
+        btnConstruct.setText('&6. Airy')
+        btnConstruct.clicked.connect(lambda: self.activate_workspace("AIRY"))
+        set_pb_style(btnConstruct)
 
         # action buttons
-
         space = QtWidgets.QWidget()
         space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         self.ui.toolBar.addWidget(space)
@@ -351,12 +349,12 @@ class Gui():
             self.show_guiWidget('NodeTree', WidgetNodeTree)
             self.show_guiWidget('DerivedProperties', WidgetDerivedProperties)
             self.show_guiWidget('WidgetNodeProps', WidgetNodeProps)
-            # self.btnConstruct.setChecked(True)
+
 
         if name == 'EXPLORE':
             self.show_guiWidget('DerivedProperties', WidgetDerivedProperties)
             self.show_guiWidget('Explore 1-to-1', WidgetExplore)
-            # self.btnConstruct.setChecked(True)
+
 
         if name == 'DYNAMICS':
             self.show_guiWidget('WidgetDynamicProperties', WidgetDynamicProperties)
