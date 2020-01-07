@@ -33,7 +33,7 @@ For calculations, this, together with settings.py, are the only required files.<
 <h2 id="units">Units</h2>
 <p>The default unit system is m, kN, mT (metric tonne).
 G and RHO are defined accordingly.</p>
-<h2 id="3d-rotations">3D rotations</h2>
+<h2 id="rotations">Rotations</h2>
 <p>Unfortunately there is no standard way of defining rotations in 3D.</p>
 <p>DAVE uses a <a href="https://en.wikipedia.org/wiki/Axis%E2%80%93angle_representation#Rotation_vector">rotation vector</a> to represent rotations.
 This means that the rotation is defined as a vector with three components (rx,ry,rz). The magnitude of the vector is the rotation in degrees.
@@ -45,6 +45,13 @@ The axis of rotation is the direction of the vector.</p>
 <li><code>(10,10,0)</code> : A rotation of sqrt(10^2 + 10^2) about the (1,1,0) axis.</li>
 </ul>
 <p>Hint: If euler angles are needed then axis systems can be stacked to obtain the same result.</p>
+<h3 id="2d-rotations">2D rotations</h3>
+<p>The following 2D rotations are available: tilt_x, tilt_y, heel, trim, heading and heading_compass. These are derived from the
+projection of one of the local axis onto the global axis system.
+For example the tilt about the x-axis is derived from the z-component of the y-axis.</p>
+<h2 id="example">Example</h2>
+<p>A 3d rotation of (5,0,0) will give a heel of 5 degrees and a tilt_x of 8.7%
+A 3d rotation of (0,0,120) will give a heading of 120 degrees and a heading_compass of 330.</p>
 <h2 id="filesystem-and-configuration">Filesystem and configuration</h2>
 <p>By default DAVE will try to create a subfolder "DAVE_models" in the users HOME folder (%homepath% in windows,
 ~ in linux). This folder will be used for storing temporary files, the log file, and as default save location for assets and models.</p>
@@ -63,11 +70,14 @@ s = Scene()
 print(s.resources_paths)
 </code></pre>
 <p>All settings are defined in UPPERCASE.</p>
+<dl>
+<dt><strong><code>Note</code></strong> :&ensp;<code>Changing</code> <code>G</code> or <code>RHO</code> <code>has</code> <code>no</code> <code>effect</code> <code>at</code> <code>this</code> <code>moment</code> <code>as</code> <code>these</code> <code>values</code> <code>would</code> <code>also</code> <code>need</code> <code>to</code> <code>be</code> <code>changed</code> <code>in</code> <code>the</code> <code>equilibrium</code>-<code>core</code></dt>
+<dd>&nbsp;</dd>
+</dl>
 <h3 id="or">/ or \</h3>
 <p>DAVE is multiplatform. It runs fine under windows as well as linux.
 Windows uses a \ in path definitions while linux uses as /.
 The python standard <a href="https://docs.python.org/3/library/pathlib.html">pathlib</a> library is used to deal with paths. In most situations however a string will work fine as well.</p>
-<p>Note: Changing G or RHO has no effect at this moment as these values would also need to be changed in the equilibrium-core</p>
 <h2 id="file-format">File format</h2>
 <p>The standard file-format for saving DAVE scenes and nodes is <a href="https://en.wikipedia.org/wiki/Vanilla_software">vanilla</a> python.</p>
 <p>When loading a model or asset from a file into a scene the contents of that file are executed in the python interpreter. In the interpreter a variable <code>s</code> is
@@ -83,14 +93,18 @@ A Scene is a collection of nodes.</p>
 </ol>
 <p>Nodes are added to the scene using .new_nodetype() where nodetype is the type of the node. Each node has a unique name. This is always needs to be provided to the .new_node function.
 A complete list of node types and corresponding functions is provided later.</p>
-<p>Example</p>
-<pre><code>s = Scene()                               # create an empty scene
-s.new_poi('point 1')                      # creates a poi with name anchor
+<dl>
+<dt><strong><code>Example</code></strong></dt>
+<dd>s = Scene()
+# create an empty scene
+s.new_poi('point 1')
+# creates a poi with name anchor
 s.new_poi('point 2', position = (10,0,0)) # create a second poi at x=10
 s.new_cable('line',poiA = 'point 1', poiB = 'point 2')
-      # creates a cable between the two points
-s.save_scene(r'test.dave_asset')              # save to file
-</code></pre>
+# creates a cable between the two points
+s.save_scene(r'test.dave_asset')
+# save to file</dd>
+</dl>
 <p>Nodes in a scene can be referenced by either name or by reference.
 The .new_nodetype() functions return a reference to the newly created node.</p>
 <pre><code>s = Scene()
@@ -238,6 +252,10 @@ node is able to move/rotate in this degree of freedom.</p>
 </tr>
 </tbody>
 </table>
+<h2 id="inertia">Inertia</h2>
+<p>Inertia is included via PointMass nodes. There is no direct API interface for these elements. They are included under
+the hood in the Axis nodes (and this in the derived RigidBody node).
+Also the ballast-system node type employs them to add the inertia of the ballast tanks.</p>
 <h2 id="others">Others</h2>
 <p><a title="DAVE.scene.TriMeshSource" href="#DAVE.scene.TriMeshSource"><code>TriMeshSource</code></a> is a node that defines a triangular mesh. It is not created directly but is created implicitly when
 creating a buoyuany node. It may be accessed via <a title="DAVE.scene.Buoyancy.trimesh" href="#DAVE.scene.Buoyancy.trimesh"><code>Buoyancy.trimesh</code></a>. Multiple buoyancy nodes may share the same TriMeshSource.</p>
@@ -319,7 +337,7 @@ be used to obtain a full path to a resource with a known name.</p>
     The default unit system is m, kN, mT (metric tonne).
     G and RHO are defined accordingly.
 
-    ##3D rotations##
+    ##Rotations##
 
     Unfortunately there is no standard way of defining rotations in 3D.
 
@@ -334,6 +352,19 @@ be used to obtain a full path to a resource with a known name.</p>
     - `(10,10,0)` : A rotation of sqrt(10^2 + 10^2) about the (1,1,0) axis.
 
     Hint: If euler angles are needed then axis systems can be stacked to obtain the same result.
+
+
+    ###2D rotations###
+
+    The following 2D rotations are available: tilt_x, tilt_y, heel, trim, heading and heading_compass. These are derived from the
+    projection of one of the local axis onto the global axis system.
+    For example the tilt about the x-axis is derived from the z-component of the y-axis.
+
+    Example:
+        A 3d rotation of (5,0,0) will give a heel of 5 degrees and a tilt_x of 8.7%
+        A 3d rotation of (0,0,120) will give a heading of 120 degrees and a heading_compass of 330.
+
+
 
     ##Filesystem and configuration##
 
@@ -358,13 +389,14 @@ be used to obtain a full path to a resource with a known name.</p>
 
     All settings are defined in UPPERCASE.
 
+    Note: Changing G or RHO has no effect at this moment as these values would also need to be changed in the equilibrium-core
+
     ###/ or \\ ###
 
     DAVE is multiplatform. It runs fine under windows as well as linux.
     Windows uses a \\ in path definitions while linux uses as /.
     The python standard [pathlib](https://docs.python.org/3/library/pathlib.html) library is used to deal with paths. In most situations however a string will work fine as well.
 
-    Note: Changing G or RHO has no effect at this moment as these values would also need to be changed in the equilibrium-core
 
     ##File format##
 
@@ -487,6 +519,13 @@ be used to obtain a full path to a resource with a known name.</p>
     |  Type | Provides  | Create using |
     |:---------------- |:------------------------------- |:-----|
     | `Visual` | Obj type 3D visuals can be attached to an Axis |  `Scene.new_visual` |
+
+    ##Inertia##
+
+    Inertia is included via PointMass nodes. There is no direct API interface for these elements. They are included under
+    the hood in the Axis nodes (and this in the derived RigidBody node).
+    Also the ballast-system node type employs them to add the inertia of the ballast tanks.
+
 
     ##Others###
 
@@ -635,6 +674,10 @@ class Node:
     def _delete_vfc(self):
         pass
 
+    def update(self):
+        &#34;&#34;&#34;Performs internal updates relevant for physics. Called before solving statics or getting results&#34;&#34;&#34;
+        pass
+
 class CoreConnectedNode(Node):
     &#34;&#34;&#34;ABSTRACT CLASS - Properties defined here are applicable to all derived classes
     Master class for all nodes with a connected eqCore element&#34;&#34;&#34;
@@ -762,7 +805,6 @@ class NodeWithParent(CoreConnectedNode):
             if has_rotation:
                 self.rotation = new_parent.to_loc_direction(glob_rot)
 
-
 class Visual(Node):
     &#34;&#34;&#34;
     Visual
@@ -785,6 +827,8 @@ class Visual(Node):
     &#34;&#34;&#34;
 
     def __init__(self, scene):
+
+        super().__init__(scene)
 
         # Note: Visual does not have a corresponding vfCore element
         self.scene = scene
@@ -837,8 +881,6 @@ class Visual(Node):
             self.offset = new_parent.to_loc_position(cur_position)
             self.rotation = new_parent.to_loc_direction(cur_rotation)
 
-
-
 class Axis(NodeWithParent):
     &#34;&#34;&#34;
     Axis
@@ -846,6 +888,10 @@ class Axis(NodeWithParent):
     Axes are the main building blocks of the geometry. They have a position and an rotation in space. Other nodes can be placed on them.
     Axes can be nested by parent/child relationships meaning that an axis can be placed on an other axis.
     The possible movements of an axis can be controlled in each degree of freedom using the &#34;fixed&#34; property.
+
+    Axes are also the main building block of inertia.
+    Dynamics are controlled using the inertia properties of an axis: inertia [mT], inertia_position[m,m,m] and inertia_radii [m,m,m]
+
 
     Notes:
          - circular references are not allowed: It is not allowed to place a on b and b on a
@@ -855,6 +901,74 @@ class Axis(NodeWithParent):
     def __init__(self, scene, vfAxis):
         super().__init__(scene, vfAxis)
         self._None_parent_acceptable = True
+
+        self._inertia = 0
+        self._inertia_position = (0,0,0)
+        self._inertia_radii = (0,0,0)
+
+        self._pointmasses = list()
+        for i in range(6):
+            p = scene._vfc.new_pointmass(self.name + vfc.VF_NAME_SPLIT + &#39;pointmass_{}&#39;.format(i))
+            p.parent = vfAxis
+            self._pointmasses.append(p)
+        self._update_inertia()
+
+
+    def _delete_vfc(self):
+        for p in self._pointmasses:
+            self._scene._vfc.delete(p.name)
+
+        super()._delete_vfc()
+
+    @property
+    def inertia(self):
+        return self._inertia
+
+    @inertia.setter
+    def inertia(self,val):
+        assert1f(val,&#34;Inertia&#34;)
+        self._inertia = val
+        self._update_inertia()
+
+    @property
+    def inertia_position(self):
+        return np.array(self._inertia_position,dtype=float)
+
+    @inertia_position.setter
+    def inertia_position(self, val):
+        assert3f(val, &#34;Inertia position&#34;)
+        self._inertia_position = tuple(val)
+        self._update_inertia()
+
+    @property
+    def inertia_radii(self):
+        return np.array(self._inertia_radii, dtype=float)
+
+    @inertia_radii.setter
+    def inertia_radii(self, val):
+        assert3f_positive(val, &#34;Inertia radii of gyration&#34;)
+        self._inertia_radii = val
+        self._update_inertia()
+
+
+    def _update_inertia(self):
+        # update mass
+        for i in range(6):
+            self._pointmasses[i].inertia = self._inertia / 6
+
+        if self._inertia &lt;= 0:
+            return
+
+        # update radii and position
+        pos = radii_to_positions(*self._inertia_radii)
+        for i in range(6):
+            p = (pos[i][0] + self._inertia_position[0],
+                 pos[i][1] + self._inertia_position[1],
+                 pos[i][2] + self._inertia_position[2])
+            self._pointmasses[i].position = p
+            # print(&#39;{} at {} {} {}&#39;.format(self._inertia/6, *p))
+
+
 
     @property
     def fixed(self):
@@ -1058,6 +1172,69 @@ class Axis(NodeWithParent):
         self.global_rotation = (a[0], a[1], var)
 
     @property
+    def tilt_x(self):
+        &#34;&#34;&#34;Returns the trim in [%]. This is the z-component of the unit y vector.
+
+        See Also: heel
+        &#34;&#34;&#34;
+        y = (0,1,0)
+        uy = self.to_glob_direction(y)
+        return 100*uy[2]
+
+    @property
+    def heel(self):
+        &#34;&#34;&#34;Returns the heel in [deg].  SB down is positive.
+        This is the inverse sin of the unit y vector(This is the arcsin of the tiltx)
+
+        See also: tilt_x
+        &#34;&#34;&#34;
+        return np.rad2deg(np.arcsin(self.tilt_x/100))
+
+    @property
+    def tilt_y(self):
+        &#34;&#34;&#34;Returns the trim in [%]. This is the z-component of the unit -x vector. So a positive rotation about
+        the y axis result in a positive tilt_y.
+
+        See Also: heel
+        &#34;&#34;&#34;
+        x = (-1, 0, 0)
+        ux = self.to_glob_direction(x)
+        return 100 * ux[2]
+
+    @property
+    def trim(self):
+        &#34;&#34;&#34;Returns the trim in [deg]. Bow-down is positive.
+
+        This is the inverse sin of the unit -x vector(This is the arcsin of the tilt_y)
+
+        See also: tilt_y
+        &#34;&#34;&#34;
+        return np.rad2deg(np.arcsin(self.tilt_y / 100))
+
+    @property
+    def heading(self):
+        &#34;&#34;&#34;Returns the direction (0..360) [deg] of the local x-axis relative to the global x axis. Measured about the global z axis
+
+        heading = atan(u_y,u_x)
+
+        typically:
+            heading 0  --&gt; local axis align with global axis
+            heading 90 --&gt; local x-axis in direction of global y axis
+
+
+        See also: heading_compass
+        &#34;&#34;&#34;
+        x = (1, 0, 0)
+        ux = self.to_glob_direction(x)
+        heading = np.rad2deg(np.arctan2(ux[1],ux[0]))
+        return np.mod(heading,360)
+
+    @property
+    def heading_compass(self):
+        &#34;&#34;&#34;The heading (0..360)[deg] assuming that the global y-axis is North and global x-axis is East and rotation accoring compass definition&#34;&#34;&#34;
+        return np.mod(90-self.heading,360)
+
+    @property
     def global_rotation(self):
         &#34;&#34;&#34;The rotation of the axis in degrees. Expressed in the global axis system&#34;&#34;&#34;
         return tuple(np.rad2deg(self._vfNode.global_rotation))
@@ -1115,6 +1292,21 @@ class Axis(NodeWithParent):
         &#34;&#34;&#34;Returns the force and moment that is applied on this axis [Global axis system]
         &#34;&#34;&#34;
         return self._vfNode.applied_force
+
+    @property
+    def ux(self):
+        &#34;&#34;&#34;The unit x axis in global coordinates&#34;&#34;&#34;
+        return self.to_glob_direction((1,0,0))
+
+    @property
+    def uy(self):
+        &#34;&#34;&#34;The unit y axis in global coordinates&#34;&#34;&#34;
+        return self.to_glob_direction((0, 1, 0))
+
+    @property
+    def uz(self):
+        &#34;&#34;&#34;The unit z axis in global coordinates&#34;&#34;&#34;
+        return self.to_glob_direction((0, 0, 1))
 
     @property
     def equilibrium_error(self):
@@ -1222,6 +1414,14 @@ class Axis(NodeWithParent):
         else:
             code += &#34;\n                     solved({})),&#34;.format(self.rotation[2])
 
+        # inertia and radii of gyration
+        if self.inertia &gt; 0:
+            code += &#34;\n                     inertia = {},&#34;.format(self.inertia)
+
+        if np.any(self.inertia_radii &gt; 0):
+            code += &#34;\n                     inertia_radii = ({}, {}, {}),&#34;.format(*self.inertia_radii)
+
+        # fixeties
         code += &#34;\n           fixed =({}, {}, {}, {}, {}, {}) )&#34;.format(*self.fixed)
 
         return code
@@ -1339,8 +1539,6 @@ class Poi(NodeWithParent):
 
         return code
 
-
-#
 class RigidBody(Axis):
     &#34;&#34;&#34;A Rigid body, internally composed of an axis, a poi (cog) and a force (gravity)&#34;&#34;&#34;
 
@@ -1408,6 +1606,8 @@ class RigidBody(Axis):
     def cog(self, newcog):
         assert3f(newcog)
         self._vfPoi.position = newcog
+        self.inertia_position = self.cog
+
 
     @property
     def mass(self):
@@ -1417,6 +1617,7 @@ class RigidBody(Axis):
     @mass.setter
     def mass(self, newmass):
         assert1f(newmass)
+        self.inertia = newmass
         self._vfForce.force = (0, 0, -vfc.G * newmass)
 
     def give_python_code(self):
@@ -1460,12 +1661,12 @@ class RigidBody(Axis):
         else:
             code += &#34;\n                          solved({})),&#34;.format(self.rotation[2])
 
+        if np.any(self.inertia_radii &gt; 0):
+            code += &#34;\n                     inertia_radii = ({}, {}, {}),&#34;.format(*self.inertia_radii)
+
         code += &#34;\n                fixed =({}, {}, {}, {}, {}, {}) )&#34;.format(*self.fixed)
 
         return code
-
-
-#
 
 class Cable(CoreConnectedNode):
     &#34;&#34;&#34;A Cable represents a linear elastic wire running from a Poi to another Poi.
@@ -1619,7 +1820,6 @@ class Cable(CoreConnectedNode):
 
         return code
 
-
 class Force(NodeWithParent):
     &#34;&#34;&#34;A Force models a force and moment on a poi.
 
@@ -1707,7 +1907,6 @@ class Sheave(NodeWithParent):
         code += &#34;\n            axis=({}, {}, {}),&#34;.format(*self.axis)
         code += &#34;\n            radius={} )&#34;.format(self.radius)
         return code
-
 
 class HydSpring(NodeWithParent):
     &#34;&#34;&#34;A HydSpring models a linearized hydrostatic spring.
@@ -1878,7 +2077,6 @@ class LC6d(CoreConnectedNode):
 
         return code
 
-
 class Connector2d(CoreConnectedNode):
     &#34;&#34;&#34;A Connector2d linear connector with acts both on linear displacement and angular displacement.
 
@@ -1965,7 +2163,6 @@ class Connector2d(CoreConnectedNode):
         code += &#34;\n            k_angular ={})&#34;.format(self.k_angular)
 
         return code
-
 
 class LinearBeam(CoreConnectedNode):
     &#34;&#34;&#34;A LinearBeam models a FEM-like linear beam element.
@@ -2068,11 +2265,33 @@ class LinearBeam(CoreConnectedNode):
         self._slave = val
         self._vfNode.slave = val._vfNode
 
+    # read-only
+    @property
+    def moment_on_master(self):
+        return self._vfNode.moment_on_master
 
-    def give_python_code(self):
+    @property
+    def moment_on_slave(self):
+        return self._vfNode.moment_on_slave
+
+    @property
+    def tension(self):
+        return self._vfNode.tension
+
+    @property
+    def torsion(self):
+        return self._vfNode.torsion
+
+    @property
+    def torsion_angle(self):
+        &#34;&#34;&#34;Torsion angle in degrees&#34;&#34;&#34;
+        return np.rad2deg(self._vfNode.torsion_angle)
+
+
+def give_python_code(self):
         code = &#34;# code for {}&#34;.format(self.name)
 
-        code += &#34;\ns.new_linearbeam(name=&#39;{}&#39;,&#34;.format(self.name)
+        code += &#34;\ns.new_linear_beam(name=&#39;{}&#39;,&#34;.format(self.name)
         code += &#34;\n            master=&#39;{}&#39;,&#34;.format(self.master.name)
         code += &#34;\n            slave=&#39;{}&#39;,&#34;.format(self.slave.name)
         code += &#34;\n            EIy ={},&#34;.format(self.EIy)
@@ -2082,7 +2301,6 @@ class LinearBeam(CoreConnectedNode):
         code += &#34;\n            L ={}) # L can possibly be omitted&#34;.format(self.L)
 
         return code
-
 
 class TriMeshSource(Node):
     &#34;&#34;&#34;
@@ -2306,10 +2524,6 @@ class TriMeshSource(Node):
             self.offset = new_parent.to_loc_position(cur_position)
             self.rotation = new_parent.to_loc_direction(cur_rotation)
 
-
-
-
-
 class Buoyancy(NodeWithParent):
     &#34;&#34;&#34;Buoyancy provides a buoyancy force based on a buoyancy mesh. The mesh is triangulated and chopped at the instantaneous flat water surface. Buoyancy is applied as an upwards force that the center of buoyancy.
     The calculation of buoyancy is as accurate as the provided geometry.
@@ -2362,7 +2576,441 @@ class Buoyancy(NodeWithParent):
 
         return code
 
+class BallastSystem(Poi):
+    &#34;&#34;&#34;A BallastSystem
 
+    The position of the axis system is the reference position for the tanks.
+
+    Tanks can be added using new_tank()
+
+
+    technical notes:
+    - System is similar to the setup of RigidBody, but without the Axis
+    - The class extends Poi, but overrides some of its properties
+    - Update nees to be called to update the weight and cog
+
+    TODO: Inertia
+
+    &#34;&#34;&#34;
+
+    # Tank is an inner class
+    class Tank:
+
+        def __init__(self):
+            self.name = &#34;noname&#34;
+            &#34;&#34;&#34;Name of the tank&#34;&#34;&#34;
+
+            self.max = 0
+            &#34;&#34;&#34;Maximum fill in [kN]&#34;&#34;&#34;
+
+            self.pct = 0
+            &#34;&#34;&#34;Actual fill percentage in [%]&#34;&#34;&#34;
+
+            self.position = np.array((0., 0., 0.))
+            &#34;&#34;&#34;Tank CoG position relative to ballast system origin [m,m,m]&#34;&#34;&#34;
+
+            self.frozen = False
+            &#34;&#34;&#34;The fill of frozen tanks should not be altered&#34;&#34;&#34;
+
+            self._pointmass = None
+            &#34;&#34;&#34;Optional reference to pointmass node - handled by ballastsystem node&#34;&#34;&#34;
+
+
+        @property
+        def inertia(self):
+            return self.weight() / vfc.G
+
+        def weight(self):
+            &#34;&#34;&#34;Returns the actual weight of tank contents in kN&#34;&#34;&#34;
+            return self.max * self.pct / 100
+
+        def is_full(self):
+            &#34;&#34;&#34;Returns True of tank is (almost) full&#34;&#34;&#34;
+            return self.pct &gt;= 100 - 1e-5
+
+        def is_empty(self):
+            &#34;&#34;&#34;Returns True of tank is (almost) empty&#34;&#34;&#34;
+            return self.pct &lt;= 1e-5
+
+        def is_partial(self):
+            &#34;&#34;&#34;Returns True of tank not full but also not empty&#34;&#34;&#34;
+            return (not self.is_empty() and not self.is_full())
+
+        def mxmymz(self):
+            &#34;&#34;&#34;Position times actual weight&#34;&#34;&#34;
+            return self.position * self.weight()
+
+        def make_empty(self):
+            &#34;&#34;&#34;Empties the tank&#34;&#34;&#34;
+            self.pct = 0
+
+        def make_full(self):
+            &#34;&#34;&#34;Fills the tank&#34;&#34;&#34;
+            self.pct = 100
+
+    def __init__(self, scene, poi, force):
+        super().__init__(scene, poi)
+
+        # The poi is the Node
+        # force is added separately
+        self._vfForce = force
+
+        self._tanks = []
+        &#34;&#34;&#34;List of tank objects&#34;&#34;&#34;
+
+        self._position = (0., 0., 0.)
+        &#34;&#34;&#34;Position is the origin of the ballast system&#34;&#34;&#34;
+
+        self._cog = (0., 0., 0.)
+        &#34;&#34;&#34;Position of the CoG of the ballast-tanks relative to self._position, calculated when calling update()&#34;&#34;&#34;
+
+        self._weight = 0
+        &#34;&#34;&#34;Weight [kN] of the ballast-tanks , calculated when calling update()&#34;&#34;&#34;
+
+        self.frozen = False
+        &#34;&#34;&#34;The contents of a frozen tank should not be changed&#34;&#34;&#34;
+
+    # override the following properties
+    @Poi.parent.setter
+    def parent(self, var):
+        &#34;&#34;&#34;Assigns a new parent. Keeps the local position and rotations the same
+
+        See also: change_parent_to
+        &#34;&#34;&#34;
+
+        super(Poi, type(self)).parent.fset(self, var)
+        # update parent of other core nodes
+        for tank in self._tanks:
+            tank._vfNode.parent = self.parent._vfNode
+
+
+
+    def update(self):
+        self._cog, self._weight, = self.xyzw()
+        self._weight = np.around(self._weight, decimals=5)
+
+        # we are rounding a bit here to avoid very small numbers
+        # which would mess-up the solver
+        pos = np.array(self._cog) + np.array(self.position)
+        pos = np.around(pos, 5)
+
+        self._vfNode.position = pos
+
+        self._vfForce.force = (0, 0, -self._weight)
+
+        for tank in self._tanks:
+            I = tank.inertia
+            pos = np.array(tank.position) + np.array(self.position)
+            tank._pointmass.inertia = tank.inertia
+            tank._pointmass.position = pos
+
+        print(&#39;Weight {} cog {} {} {}&#39;.format(self._weight, *self._cog))
+
+    def _delete_vfc(self):
+        super()._delete_vfc()
+        self._scene._vfc.delete(self._vfForce.name)
+
+        # delete the pointmasses (if any)
+        for tank in self._tanks:
+            if tank._pointmass is not None:
+                self._scene._vfc.delete(tank._pointmass.name)
+
+    @property
+    def position(self):
+        &#34;&#34;&#34;Local position&#34;&#34;&#34;
+        return self._position
+
+    @position.setter
+    def position(self, new_position):
+        assert3f(new_position)
+        self._position = new_position
+
+    @property
+    def name(self):
+        return super().name
+
+    @name.setter
+    def name(self, newname):
+        super(Poi, self.__class__).name.fset(self, newname)
+        self._vfForce.name = newname + vfc.VF_NAME_SPLIT + &#34;gravity&#34;
+
+    def new_tank(self, name, position, capacity_kN, actual_fill = 0, frozen = False) :
+        &#34;&#34;&#34;Creates a new tanks and adds it to the ballast-system
+        
+        Args:
+            name: (str) name of the tanks
+            position: (float[3]) position of the tank [m,m,m]
+            capacity_kN: (float) Maximum capacity of the tank in [kN]
+            actual_fill: (float) Optional, actual fill percentage of the tank [0] [%]
+            frozen: (bool) Optional, the contents of frozen tanks should not be altered
+
+        Returns:
+            BallastSystem.Tank object
+
+        &#34;&#34;&#34;
+        # asserts
+
+        assert3f(position, &#34;position&#34;)
+        assert1f(capacity_kN, &#34;Capacity in kN&#34;)
+        assert1f(actual_fill, &#34;Actual fill percentage&#34;)
+        assertValidName(name)
+
+        assert name not in [t.name for t in self._tanks], ValueError(&#39;Double names are not allowed, {} already exists&#39;.format(name))
+
+        t = BallastSystem.Tank()
+        t.name = name
+        t.position = position
+        t.max = capacity_kN
+        t.pct = actual_fill
+        t.frozen = frozen
+
+        t._pointmass = \
+            self._scene._vfc.new_pointmass(self.name + vfc.VF_NAME_SPLIT + &#39;_pointmass_{}&#39;.format(name))
+        t._pointmass.parent = self.parent._vfNode # Axis
+
+        self._tanks.append(t)
+
+        return t
+
+    def reorder_tanks(self, names):
+        &#34;&#34;&#34;Places tanks with given names at the top of the list. Other tanks are appended afterwards in original order.
+
+        For a complete re-order give all tank names.
+
+        Example:
+            let tanks be &#39;a&#39;,&#39;b&#39;,&#39;c&#39;,&#39;d&#39;,&#39;e&#39;
+
+            then re_order_tanks([&#39;e&#39;,&#39;b&#39;]) will result in [&#39;e&#39;,&#39;b&#39;,&#39;a&#39;,&#39;c&#39;,&#39;d&#39;]
+        &#34;&#34;&#34;
+        for name in names:
+            if name not in self.tank_names():
+                raise ValueError(&#39;No tank with name {}&#39;.format(name))
+
+        old_tanks = self._tanks.copy()
+        self._tanks.clear()
+        to_be_deleted = list()
+
+        for name in names:
+            for tank in old_tanks:
+                if tank.name == name:
+                    self._tanks.append(tank)
+                    to_be_deleted.append(tank)
+
+        for tank in to_be_deleted:
+            old_tanks.remove(tank)
+
+        for tank in old_tanks:
+            self._tanks.append(tank)
+
+    def order_tanks_by_elevation(self):
+        &#34;&#34;&#34;Re-orders the existing tanks such that the lowest tanks are higher in the list&#34;&#34;&#34;
+
+        zs = [tank.position[2] for tank in self._tanks]
+        inds = np.argsort(zs)
+        self._tanks = [self._tanks[i] for i in inds]
+
+    def order_tanks_by_distance_from_point(self, point, reverse=False):
+        &#34;&#34;&#34;Re-orders the existing tanks such that the tanks *furthest* from the point are first on the list
+
+        Args:
+            point : (x,y,z)  - reference point to determine the distance to
+            reverse: (False) - order in reverse order: tanks nearest to the points first on list
+
+
+        &#34;&#34;&#34;
+        pos = [tank.position for tank in self._tanks]
+        pos = np.array(pos, dtype=float)
+        pos -= np.array(point)
+
+        dist = np.apply_along_axis(np.linalg.norm,1,pos)
+
+        if reverse:
+            inds = np.argsort(dist)
+        else:
+            inds = np.argsort(-dist)
+
+        self._tanks = [self._tanks[i] for i in inds]
+
+    def order_tanks_to_maximize_inertia_moment(self):
+        &#34;&#34;&#34;Re-order tanks such that tanks furthest from center of system are first on the list&#34;&#34;&#34;
+        self._order_tanks_to_inertia_moment()
+
+    def order_tanks_to_minimize_inertia_moment(self):
+        &#34;&#34;&#34;Re-order tanks such that tanks nearest to center of system are first on the list&#34;&#34;&#34;
+        self._order_tanks_to_inertia_moment(maximize=False)
+
+    def _order_tanks_to_inertia_moment(self, maximize = True):
+
+        pos = [tank.position for tank in self._tanks]
+        m = [tank.max for tank in self._tanks]
+        pos = np.array(pos, dtype=float)
+        mxmymz = np.vstack((m,m,m)).transpose() * pos
+        total = np.sum(m)
+        point = sum(mxmymz) / total
+
+        if maximize:
+            self.order_tanks_by_distance_from_point(point)
+        else:
+            self.order_tanks_by_distance_from_point(point, reverse=True)
+
+
+    def tank_names(self):
+        return [tank.name for tank in self._tanks]
+
+    def fill_tank(self, name, fill):
+
+        assert1f(fill, &#34;tank fill&#34;)
+
+        for tank in self._tanks:
+            if tank.name == name:
+                tank.pct = fill
+                return
+        raise ValueError(&#39;No tank with name {}&#39;.format(name))
+
+    def xyzw(self):
+        &#34;&#34;&#34;Gets the current ballast cog and weight from the tanks
+
+                Returns:
+                    (x,y,z), weight
+                &#34;&#34;&#34;
+        &#34;&#34;&#34;Calculates the weight and inertia properties of the tanks&#34;&#34;&#34;
+
+        mxmymz = np.array((0., 0., 0.))
+        wt = 0
+
+        for tank in self._tanks:
+            w = tank.weight()
+            p = np.array(tank.position, dtype=float)
+            mxmymz += p * w
+
+            wt += w
+
+        if wt == 0:
+            xyz = np.array((0., 0., 0.))
+        else:
+            xyz = mxmymz / wt
+
+        return xyz, wt
+
+
+    def empty_all_usable_tanks(self):
+        for t in self._tanks:
+            if not t.frozen:
+                t.make_empty()
+
+    def tank(self, name):
+        for t in self._tanks:
+            if t.name == name:
+                return t
+        raise ValueError(&#39;No tank with name {}&#39;.format(name))
+
+    def __getitem__(self, item):
+        return self.tank(item)
+
+
+    @property
+    def cogx(self):
+        return self.cog[0]
+
+    @property
+    def cogy(self):
+        return self.cog[1]
+
+    @property
+    def cogz(self):
+        return self.cog[2]
+
+    @property
+    def cog(self):
+        &#34;&#34;&#34;Returns the cog of the ballast-system&#34;&#34;&#34;
+        self.update()
+        return (self._cog[0], self._cog[1], self._cog[2])
+
+    @property
+    def weight(self):
+        &#34;&#34;&#34;Returns the cog of the ballast-system&#34;&#34;&#34;
+        self.update()
+        return self._weight
+
+
+    @property
+    def mass(self):
+        &#34;&#34;&#34;Control the static mass of the body&#34;&#34;&#34;
+        return self._vfForce.force[2] / -vfc.G
+
+
+
+    def give_python_code(self):
+        code = &#34;\n# code for {} and its tanks&#34;.format(self.name)
+
+        code += &#34;\nbs = s.new_ballastsystem(&#39;{}&#39;, parent = &#39;{}&#39;,&#34;.format(self.name, self.parent.name)
+        code += &#34;\n                         position = ({},{},{}))&#34;.format(*self.position)
+
+        for tank in self._tanks:
+            code += &#34;\nbs.new_tank(&#39;{}&#39;, position = ({},{},{}),&#34;.format(tank.name, *tank.position)
+            code += &#34;\n            capacity_kN = {}, frozen = {}, actual_fill = {})&#34;.format(tank.max, tank.frozen, tank.pct)
+
+        return code
+
+class WaveInteraction1(Node):
+    &#34;&#34;&#34;
+    WaveInteraction
+
+    Wave-interaction-1 couples a first-order hydrodynamic database to an axis.
+
+    This adds:
+    - wave-forces
+    - damping
+    - added mass
+
+    The data is provided by a Hyddb1 object which is defined in the MaFreDo package. The contents are not embedded
+    but are to be provided separately in a file. This node contains only the file-name.
+
+    &#34;&#34;&#34;
+
+    def __init__(self, scene):
+
+        super().__init__(scene)
+        self.scene = scene
+
+        self.offset = [0, 0, 0]
+        &#34;&#34;&#34;Offset (x,y,z) of the visual. Offset is applied after scaling&#34;&#34;&#34;
+
+        self.parent = None
+        &#34;&#34;&#34;Parent : Axis-type&#34;&#34;&#34;
+
+        self.path = None
+        &#34;&#34;&#34;Filename of a file that can be read by a Hyddb1 object&#34;&#34;&#34;
+
+    def give_python_code(self):
+        code = &#34;# code for {}&#34;.format(self.name)
+
+        code += &#34;\ns.new_waveinteraction(name=&#39;{}&#39;,&#34;.format(self.name)
+        code += &#34;\n            parent=&#39;{}&#39;,&#34;.format(self.parent.name)
+        code += &#34;\n            path=r&#39;{}&#39;,&#34;.format(self.path)
+        code += &#34;\n            offset=({}, {}, {}) )&#34;.format(*self.offset)
+
+        return code
+
+    def change_parent_to(self, new_parent):
+        if not (isinstance(new_parent, Axis)):
+            raise ValueError(&#39;Hydrodynamic databases can only be attached to an axis (or derived)&#39;)
+
+        # get current position and orientation
+        if self.parent is not None:
+            cur_position = self.parent.to_glob_position(self.offset)
+        else:
+            cur_position = self.offset
+
+        self.parent = new_parent
+        self.offset = new_parent.to_loc_position(cur_position)
+
+
+
+
+#
+
+# ===============
 
 class Scene:
     &#34;&#34;&#34;
@@ -2417,6 +3065,10 @@ class Scene:
 
 
     # =========== private functions =============
+
+    def _print_cpp(self):
+        print(self._vfc.to_string())
+
     def _print(self,what):
         if self.verbose:
             print(what)
@@ -2576,10 +3228,11 @@ class Scene:
         return self.node_by_name(node_name)
 
     def nodes_of_type(self, node_class):
-        &#34;&#34;&#34;Returns all nodes of the specified type
+        &#34;&#34;&#34;Returns all nodes of the specified or derived type
 
         Examples:
             pois = scene.nodes_of_type(DAVE.Poi)
+            axis_and_bodies = scene.nodes_of_type(DAVE.Axis)
         &#34;&#34;&#34;
         r = list()
         for n in self._nodes:
@@ -2590,11 +3243,18 @@ class Scene:
     def sort_nodes_by_dependency(self):
         &#34;&#34;&#34;Sorts the nodes such that a node only depends on nodes earlier in the list.&#34;&#34;&#34;
 
+        scene_names = [n.name for n in self._nodes]
+
         self._vfc.state_update()  # use the function from the core.
         new_list = []
         for name in self._vfc.names:  # and then build a new list using the names
             if vfc.VF_NAME_SPLIT in name:
                 continue
+
+            if name not in scene_names:
+                raise Exception(&#39;Something went wrong with sorting the the nodes by dependency. &#39;
+                                &#39;Node naming between core and scene is inconsistent for node {}&#39;.format(name))
+
             new_list.append(self[name])
 
         # and add the nodes without a vfc-core connection
@@ -2706,16 +3366,16 @@ class Scene:
 
         self._print(&#39;Deleting {} [{}]&#39;.format(node.name, str(type(node)).split(&#39;.&#39;)[-1][:-2]))
 
-        # remove the vtk node
+        # First delete the dependencies
+        for d in depending_nodes:
+            if not self.name_available(d):  # element is still here
+                self.delete(d)
+
+        # then remove the vtk node itself
         self._print(&#39;removing vfc node&#39;)
         node._delete_vfc()
         self._nodes.remove(node)
 
-        # then delete the dependencies
-
-        for d in depending_nodes:
-            if not self.name_available(d):  # element is still here
-                self.delete(d)
 
 
     def dissolve(self, node):
@@ -2745,9 +3405,17 @@ class Scene:
 
 
 
-    # ========= The most important function ========
+    # ========= The most important functions ========
 
-    def solve_statics(self, silent=False):
+    def update(self):
+        &#34;&#34;&#34;Updates the interface between the nodes and the core. This includes the re-calculation of all forces,
+        buoyancy positions, ballast-system cogs etc.
+        &#34;&#34;&#34;
+        for n in self._nodes:
+            n.update()
+        self._vfc.state_update()
+
+    def solve_statics(self, silent=False, timeout = None):
         &#34;&#34;&#34;Solves statics
 
         Args:
@@ -2757,7 +3425,11 @@ class Scene:
             bool: True if successful, False otherwise.
 
         &#34;&#34;&#34;
-        succes = self._vfc.state_solve_statics()
+        self.update()
+        if timeout is None:
+            succes = self._vfc.state_solve_statics()
+        else:
+            succes = self._vfc.state_solve_statics_with_timeout(timeout, False)
 
         if self.verify_equilibrium():
             if not silent:
@@ -2778,21 +3450,21 @@ class Scene:
             bool: True if successful, False if not an equilibrium.
 
         &#34;&#34;&#34;
+        self.update()
         return (self._vfc.Emaxabs &lt; tol)
 
 
 
     # ====== goal seek ========
 
-    def goal_seek(self, set_node, set_property, target, change_node, change_property, bracket=None, tol=1e-3):
+    def goal_seek(self, evaluate, target, change_node, change_property, bracket=None, tol=1e-3):
         &#34;&#34;&#34;goal_seek
 
         Goal seek is the classic goal-seek. It changes a single property of a single node in order to get
         some property of some node to a specified value. Just like excel.
 
         Args:
-            set_node (Node or str):     node to be evaluated
-            set_property (str): property of that node to be evaluated
+            evaluate : code to be evaluated to yield the value that is solved for. Eg: s[&#39;poi&#39;].fx Scene is abbiviated as &#34;s&#34;
             target (number):       target value for that property
             change_node(Node or str):  node to be adjusted
             change_property (str): property of that node to be adjusted
@@ -2803,16 +3475,22 @@ class Scene:
 
         Examples:
             Change the y-position of the cog of a rigid body (&#39;Barge&#39;)  in order to obtain zero roll (rx)
-            &gt;&gt;&gt; s.goal_seek(&#39;Barge&#39;,&#39;rx&#39;,0,&#39;Barge&#39;,&#39;cogy&#39;)
+            &gt;&gt;&gt; s.goal_seek(&#34;s[&#39;Barge&#39;].fx&#34;,0,&#39;Barge&#39;,&#39;cogy&#39;)
 
         &#34;&#34;&#34;
+        s = self
 
-        set_node = self._node_from_node_or_str(set_node)
         change_node = self._node_from_node_or_str(change_node)
 
         # check that the attributes exist and are single numbers
-        test = getattr(set_node, set_property)
-        self._print(&#39;Attempting to set {}.{} to {} (now {})&#39;.format(set_node.name, set_property, target, test))
+        test = eval(evaluate)
+
+        try:
+            float(test)
+        except:
+            raise ValueError(&#39;Evaluation of {} does not result in a float&#39;)
+
+        self._print(&#39;Attempting to evaluate {} to {} (now {})&#39;.format(evaluate, target, test))
 
         initial = getattr(change_node, change_property)
         self._print(&#39;By changing the value of {}.{} (now {})&#39;.format(change_node.name, change_property, initial))
@@ -2820,7 +3498,8 @@ class Scene:
         def set_and_get(x):
             setattr(change_node, change_property,x)
             self.solve_statics(silent=True)
-            result = getattr(set_node, set_property)
+            s = self
+            result = eval(evaluate)
             self._print(&#39;setting {} results in {}&#39;.format(x,result))
             return result-target
 
@@ -2836,7 +3515,7 @@ class Scene:
         self._print(res)
 
         # evaluate result
-        final_value = getattr(set_node, set_property)
+        final_value = eval(evaluate)
         if abs(final_value-target) &gt; 1e-3:
             raise ValueError(&#34;Target not reached. Target was {}, reached value is {}&#34;.format(target, final_value))
 
@@ -2844,11 +3523,68 @@ class Scene:
         return True
 
 
+    def plot_effect(self, evaluate, change_node, change_property, start, to, steps):
+        &#34;&#34;&#34;Produces a 2D plot with the relation between two properties of the scene. For example the length of a cable
+        versus the force in another cable.
+
+        The evaluate argument is processed using &#34;eval&#34; and may contain python code. This may be used to combine multiple
+        properties to one value. For example calculate the diagonal load distribution from four independent loads.
+
+        The plot is produced using matplotlob. The plot is produced in the current figure (if any) and plt.show is not executed.
+
+        Args:
+            evaluate (str): code to be evaluated to yield the value on the y-axis. Eg: s[&#39;poi&#39;].fx Scene is abbiviated as &#34;s&#34;
+            change_node(Node or str):  node to be adjusted
+            change_property (str): property of that node to be adjusted
+            start : left side of the interval
+            to : right side of the interval
+            steps : number of steps in the interval
+
+        Returns:
+            Tuple (x,y) with x and y coordinates
+
+        Examples:
+            &gt;&gt;&gt; s.plot_effect(&#34;s[&#39;cable&#39;].tension&#34;, &#34;cable&#34;, &#34;length&#34;, 11, 14, 10)
+            &gt;&gt;&gt; import matplotlib.pyplot as plt
+            &gt;&gt;&gt; plt.show()
+
+        &#34;&#34;&#34;
+        s=self
+        change_node = self._node_from_node_or_str(change_node)
+
+        # check that the attributes exist and are single numbers
+        test = eval(evaluate)
+
+        try:
+            float(test)
+        except:
+            raise ValueError(&#39;Evaluation of {} does not result in a float&#39;)
+
+        def set_and_get(x):
+            setattr(change_node, change_property,x)
+            self.solve_statics(silent=True)
+            s = self
+            result = eval(evaluate)
+            self._print(&#39;setting {} results in {}&#39;.format(x,result))
+            return result
+
+        xs = np.linspace(start,to,steps)
+        y = []
+        for x in xs:
+            y.append(set_and_get(x))
+
+        y = np.array(y)
+        import matplotlib.pyplot as plt
+        plt.plot(xs,y)
+        plt.xlabel(&#39;{} of {}&#39;.format(change_property, change_node.name))
+        plt.ylabel(evaluate)
+
+        return (xs,y)
 
 
     # ======== create functions =========
 
-    def new_axis(self, name, parent=None, position=None, rotation=None, fixed = True):
+    def new_axis(self, name, parent=None, position=None, rotation=None, inertia=None, inertia_radii=None, fixed = True):
         &#34;&#34;&#34;Creates a new *axis* node and adds it to the scene.
 
         Args:
@@ -2867,6 +3603,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
@@ -2874,6 +3611,14 @@ class Scene:
             assert3f(position, &#34;Position &#34;)
         if rotation is not None:
             assert3f(rotation, &#34;Rotation &#34;)
+
+        if inertia is not None:
+            assert1f_positive(inertia, &#34;inertia &#34;)
+
+        if inertia_radii is not None:
+            assert3f_positive(inertia_radii, &#34;Radii of inertia&#34;)
+            assert inertia is not None, ValueError(&#34;Can not set radii of gyration without specifying inertia&#34;)
+
 
         if not isinstance(fixed, bool):
             if len(fixed) != 6:
@@ -2893,6 +3638,11 @@ class Scene:
             new_node.position = position
         if rotation is not None:
             new_node.rotation = rotation
+        if inertia is not None:
+            new_node.inertia = inertia
+        if inertia_radii is not None:
+            new_node.inertia_radii = inertia_radii
+
 
         if isinstance(fixed, bool):
             if fixed:
@@ -2906,8 +3656,57 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
+    def new_waveinteraction(self, name, path, parent=None, offset=None,):
+            &#34;&#34;&#34;Creates a new *wave interaction* node and adds it to the scene.
+
+            Args:
+                name: Name for the node, should be unique
+                path: Path to the hydrodynamic database
+                parent: optional, name of the parent of the node
+                offset: optional, position for the node (x,y,z)
+
+            Returns:
+                Reference to newly created wave-interaction object
+
+            &#34;&#34;&#34;
+
+            if not parent:
+                raise ValueError(&#39;Wave-interaction has to be located on an Axis&#39;)
+
+            # apply prefixes
+            name = self._prefix_name(name)
+
+            # first check
+            assertValidName(name)
+            self._verify_name_available(name)
+            b = self._parent_from_node(parent)
+
+            if b is None:
+                raise ValueError(&#39;Wave-interaction has to be located on an Axis&#39;)
+
+            if offset is not None:
+                assert3f(offset, &#34;Offset &#34;)
+
+            self.get_resource_path(path)  # raises error when resource is not found
+
+            # then create
+
+            new_node = WaveInteraction1(self)
+
+            new_node.name = name
+            new_node.path = path
+            new_node.parent = parent
+
+            # and set properties
+            new_node.parent = b
+            if offset is not None:
+                new_node.offset = offset
+
+            self._nodes.append(new_node)
+            return new_node
+
     def new_visual(self, name, path, parent=None, offset=None, rotation=None, scale = None):
-        &#34;&#34;&#34;Creates a new *axis* node and adds it to the scene.
+        &#34;&#34;&#34;Creates a new *Visual* node and adds it to the scene.
 
         Args:
             name: Name for the node, should be unique
@@ -2926,6 +3725,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
@@ -2977,6 +3777,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
@@ -2998,7 +3799,7 @@ class Scene:
         return new_node
 
     def new_rigidbody(self, name, mass=0, cog=(0, 0, 0),
-                      parent=None, position=None, rotation=None, fixed = True ):
+                      parent=None, position=None, rotation=None, inertia_radii=None, fixed = True ):
         &#34;&#34;&#34;Creates a new *rigidbody* node and adds it to the scene.
 
         Args:
@@ -3008,6 +3809,7 @@ class Scene:
             parent: optional, name of the parent of the node
             position: optional, position for the node (x,y,z)
             rotation: optional, rotation for the node (rx,ry,rz)
+            inertia_radii : optional, radii of gyration (rxx,ryy,rzz); only used for dynamics
             fixed [True]: optional, determines whether the axis is fixed [True] or free [False]. May also be a sequence of 6 booleans.
 
         Examples:
@@ -3022,6 +3824,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # check input
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
@@ -3029,6 +3832,10 @@ class Scene:
             assert3f(position, &#34;Position &#34;)
         if rotation is not None:
             assert3f(rotation, &#34;Rotation &#34;)
+            
+        if inertia_radii is not None:
+            assert3f_positive(inertia_radii, &#34;Radii of inertia&#34;)
+            assert mass&gt;0, ValueError(&#34;Can not set radii of gyration without specifying mass&#34;)
 
         if not isinstance(fixed, bool):
             if len(fixed) != 6:
@@ -3049,6 +3856,9 @@ class Scene:
 
         r = RigidBody(self, a, p, g)
 
+        r.cog = cog  # set inertia
+        r.mass = mass
+
         # and set properties
         if b is not None:
             r.parent = b
@@ -3056,6 +3866,9 @@ class Scene:
             r.position = position
         if rotation is not None:
             r.rotation = rotation
+            
+        if inertia_radii is not None:
+            r.inertia_radii = inertia_radii
 
         if isinstance(fixed, bool):
             if fixed:
@@ -3100,6 +3913,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         assert1f(length, &#39;length&#39;)
         assert1f(EA, &#39;EA&#39;)
@@ -3182,6 +3996,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._poi_from_node(parent)
 
@@ -3227,6 +4042,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._poi_from_node(parent)
 
@@ -3273,6 +4089,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
         assert3f(cob, &#34;CoB &#34;)
@@ -3322,6 +4139,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         m = self._parent_from_node(master)
         s = self._parent_from_node(slave)
@@ -3364,6 +4182,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         m = self._parent_from_node(master)
         s = self._parent_from_node(slave)
@@ -3408,6 +4227,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         m = self._parent_from_node(master)
         s = self._parent_from_node(slave)
@@ -3455,6 +4275,7 @@ class Scene:
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
@@ -3468,6 +4289,54 @@ class Scene:
 
         self._nodes.append(new_node)
         return new_node
+
+    def new_ballastsystem(self, name, parent=None, position=None):
+        &#34;&#34;&#34;Creates a new *rigidbody* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: name of the parent of the ballast system (ie: the vessel axis system)
+            position: the reference system in which the tanks are defined [0,0,0]
+
+        Examples:
+            scene.new_ballastsystem(&#34;cheetah_ballast&#34;, parent=&#34;Cheetah&#34;)
+
+        Returns:
+            Reference to newly created BallastSystem
+
+        &#34;&#34;&#34;
+
+        # apply prefixes
+        name = self._prefix_name(name)
+
+        # check input
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._parent_from_node(parent)
+
+        parent = self._parent_from_node(parent) # handles verification of type as well
+
+        if position is not None:
+            assert3f(position, &#34;Position &#34;)
+
+        # make elements
+
+        p = self._vfc.new_poi(name)
+
+        g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + &#34;gravity&#34;)
+        g.parent = p
+        g.force = (0, 0, 0)
+
+        r = BallastSystem(self, p, g)
+
+        # and set properties
+        r.parent = parent
+
+        if position is not None:
+            r.position = position
+
+        self._nodes.append(r)
+        return r
 
     def print_python_code(self):
         &#34;&#34;&#34;Prints the python code that generates the current scene
@@ -3614,7 +4483,6 @@ class Scene:
 
         exec(code, {}, {&#39;s&#39;: s})
 
-
     def import_scene(self, other, prefix = &#34;&#34;, containerize = True):
         &#34;&#34;&#34;Copy-paste all nodes of scene &#34;other&#34; into current scene.
 
@@ -3674,7 +4542,47 @@ class Scene:
 
             return c
 
-        return None</code></pre>
+        return None
+
+    def copy(self):
+        &#34;&#34;&#34;Creates a full and independent copy of the scene and returns it.
+
+        Example:
+            s = Scene()
+            c = s.copy()
+            c.new_axis(&#39;only in c&#39;)
+
+        &#34;&#34;&#34;
+
+        c = Scene()
+        c.import_scene(self)
+        return c
+
+
+
+    # =================== DYNAMICS ==================
+
+    def dynamics_M(self,delta = 0.1):
+        &#34;&#34;&#34;Returns the mass matrix of the scene&#34;&#34;&#34;
+        self.update()
+        return self._vfc.M(delta)
+
+    def dynamics_K(self, delta):
+        &#34;&#34;&#34;Returns the stiffness matrix of the scene for a perturbation of delta &#34;&#34;&#34;
+        self.update()
+        return -self._vfc.K(delta)
+
+    def dynamics_nodes(self):
+        &#34;&#34;&#34;Returns a list of nodes associated with the rows/columns of M and K&#34;&#34;&#34;
+        self.update()
+        nodes = self._vfc.get_dof_elements()
+        r = [self[n.name] for n in nodes]
+        return r
+
+    def dynamics_modes(self):
+        &#34;&#34;&#34;Returns a list of nodes associated with the rows/columns of M and K&#34;&#34;&#34;
+        self.update()
+        return self._vfc.get_dof_modes()</code></pre>
 </details>
 </section>
 <section>
@@ -3682,6 +4590,33 @@ class Scene:
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="DAVE.scene.give_python_code"><code class="name flex">
+<span>def <span class="ident">give_python_code</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def give_python_code(self):
+        code = &#34;# code for {}&#34;.format(self.name)
+
+        code += &#34;\ns.new_linear_beam(name=&#39;{}&#39;,&#34;.format(self.name)
+        code += &#34;\n            master=&#39;{}&#39;,&#34;.format(self.master.name)
+        code += &#34;\n            slave=&#39;{}&#39;,&#34;.format(self.slave.name)
+        code += &#34;\n            EIy ={},&#34;.format(self.EIy)
+        code += &#34;\n            EIz ={},&#34;.format(self.EIz)
+        code += &#34;\n            GIp ={},&#34;.format(self.GIp)
+        code += &#34;\n            EA ={},&#34;.format(self.EA)
+        code += &#34;\n            L ={}) # L can possibly be omitted&#34;.format(self.L)
+
+        return code</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -3695,6 +4630,8 @@ class Scene:
 <p>Axes are the main building blocks of the geometry. They have a position and an rotation in space. Other nodes can be placed on them.
 Axes can be nested by parent/child relationships meaning that an axis can be placed on an other axis.
 The possible movements of an axis can be controlled in each degree of freedom using the "fixed" property.</p>
+<p>Axes are also the main building block of inertia.
+Dynamics are controlled using the inertia properties of an axis: inertia [mT], inertia_position[m,m,m] and inertia_radii [m,m,m]</p>
 <h2 id="notes">Notes</h2>
 <ul>
 <li>circular references are not allowed: It is not allowed to place a on b and b on a</li>
@@ -3711,6 +4648,10 @@ The possible movements of an axis can be controlled in each degree of freedom us
     Axes can be nested by parent/child relationships meaning that an axis can be placed on an other axis.
     The possible movements of an axis can be controlled in each degree of freedom using the &#34;fixed&#34; property.
 
+    Axes are also the main building block of inertia.
+    Dynamics are controlled using the inertia properties of an axis: inertia [mT], inertia_position[m,m,m] and inertia_radii [m,m,m]
+
+
     Notes:
          - circular references are not allowed: It is not allowed to place a on b and b on a
 
@@ -3719,6 +4660,74 @@ The possible movements of an axis can be controlled in each degree of freedom us
     def __init__(self, scene, vfAxis):
         super().__init__(scene, vfAxis)
         self._None_parent_acceptable = True
+
+        self._inertia = 0
+        self._inertia_position = (0,0,0)
+        self._inertia_radii = (0,0,0)
+
+        self._pointmasses = list()
+        for i in range(6):
+            p = scene._vfc.new_pointmass(self.name + vfc.VF_NAME_SPLIT + &#39;pointmass_{}&#39;.format(i))
+            p.parent = vfAxis
+            self._pointmasses.append(p)
+        self._update_inertia()
+
+
+    def _delete_vfc(self):
+        for p in self._pointmasses:
+            self._scene._vfc.delete(p.name)
+
+        super()._delete_vfc()
+
+    @property
+    def inertia(self):
+        return self._inertia
+
+    @inertia.setter
+    def inertia(self,val):
+        assert1f(val,&#34;Inertia&#34;)
+        self._inertia = val
+        self._update_inertia()
+
+    @property
+    def inertia_position(self):
+        return np.array(self._inertia_position,dtype=float)
+
+    @inertia_position.setter
+    def inertia_position(self, val):
+        assert3f(val, &#34;Inertia position&#34;)
+        self._inertia_position = tuple(val)
+        self._update_inertia()
+
+    @property
+    def inertia_radii(self):
+        return np.array(self._inertia_radii, dtype=float)
+
+    @inertia_radii.setter
+    def inertia_radii(self, val):
+        assert3f_positive(val, &#34;Inertia radii of gyration&#34;)
+        self._inertia_radii = val
+        self._update_inertia()
+
+
+    def _update_inertia(self):
+        # update mass
+        for i in range(6):
+            self._pointmasses[i].inertia = self._inertia / 6
+
+        if self._inertia &lt;= 0:
+            return
+
+        # update radii and position
+        pos = radii_to_positions(*self._inertia_radii)
+        for i in range(6):
+            p = (pos[i][0] + self._inertia_position[0],
+                 pos[i][1] + self._inertia_position[1],
+                 pos[i][2] + self._inertia_position[2])
+            self._pointmasses[i].position = p
+            # print(&#39;{} at {} {} {}&#39;.format(self._inertia/6, *p))
+
+
 
     @property
     def fixed(self):
@@ -3922,6 +4931,69 @@ The possible movements of an axis can be controlled in each degree of freedom us
         self.global_rotation = (a[0], a[1], var)
 
     @property
+    def tilt_x(self):
+        &#34;&#34;&#34;Returns the trim in [%]. This is the z-component of the unit y vector.
+
+        See Also: heel
+        &#34;&#34;&#34;
+        y = (0,1,0)
+        uy = self.to_glob_direction(y)
+        return 100*uy[2]
+
+    @property
+    def heel(self):
+        &#34;&#34;&#34;Returns the heel in [deg].  SB down is positive.
+        This is the inverse sin of the unit y vector(This is the arcsin of the tiltx)
+
+        See also: tilt_x
+        &#34;&#34;&#34;
+        return np.rad2deg(np.arcsin(self.tilt_x/100))
+
+    @property
+    def tilt_y(self):
+        &#34;&#34;&#34;Returns the trim in [%]. This is the z-component of the unit -x vector. So a positive rotation about
+        the y axis result in a positive tilt_y.
+
+        See Also: heel
+        &#34;&#34;&#34;
+        x = (-1, 0, 0)
+        ux = self.to_glob_direction(x)
+        return 100 * ux[2]
+
+    @property
+    def trim(self):
+        &#34;&#34;&#34;Returns the trim in [deg]. Bow-down is positive.
+
+        This is the inverse sin of the unit -x vector(This is the arcsin of the tilt_y)
+
+        See also: tilt_y
+        &#34;&#34;&#34;
+        return np.rad2deg(np.arcsin(self.tilt_y / 100))
+
+    @property
+    def heading(self):
+        &#34;&#34;&#34;Returns the direction (0..360) [deg] of the local x-axis relative to the global x axis. Measured about the global z axis
+
+        heading = atan(u_y,u_x)
+
+        typically:
+            heading 0  --&gt; local axis align with global axis
+            heading 90 --&gt; local x-axis in direction of global y axis
+
+
+        See also: heading_compass
+        &#34;&#34;&#34;
+        x = (1, 0, 0)
+        ux = self.to_glob_direction(x)
+        heading = np.rad2deg(np.arctan2(ux[1],ux[0]))
+        return np.mod(heading,360)
+
+    @property
+    def heading_compass(self):
+        &#34;&#34;&#34;The heading (0..360)[deg] assuming that the global y-axis is North and global x-axis is East and rotation accoring compass definition&#34;&#34;&#34;
+        return np.mod(90-self.heading,360)
+
+    @property
     def global_rotation(self):
         &#34;&#34;&#34;The rotation of the axis in degrees. Expressed in the global axis system&#34;&#34;&#34;
         return tuple(np.rad2deg(self._vfNode.global_rotation))
@@ -3979,6 +5051,21 @@ The possible movements of an axis can be controlled in each degree of freedom us
         &#34;&#34;&#34;Returns the force and moment that is applied on this axis [Global axis system]
         &#34;&#34;&#34;
         return self._vfNode.applied_force
+
+    @property
+    def ux(self):
+        &#34;&#34;&#34;The unit x axis in global coordinates&#34;&#34;&#34;
+        return self.to_glob_direction((1,0,0))
+
+    @property
+    def uy(self):
+        &#34;&#34;&#34;The unit y axis in global coordinates&#34;&#34;&#34;
+        return self.to_glob_direction((0, 1, 0))
+
+    @property
+    def uz(self):
+        &#34;&#34;&#34;The unit z axis in global coordinates&#34;&#34;&#34;
+        return self.to_glob_direction((0, 0, 1))
 
     @property
     def equilibrium_error(self):
@@ -4086,6 +5173,14 @@ The possible movements of an axis can be controlled in each degree of freedom us
         else:
             code += &#34;\n                     solved({})),&#34;.format(self.rotation[2])
 
+        # inertia and radii of gyration
+        if self.inertia &gt; 0:
+            code += &#34;\n                     inertia = {},&#34;.format(self.inertia)
+
+        if np.any(self.inertia_radii &gt; 0):
+            code += &#34;\n                     inertia_radii = ({}, {}, {}),&#34;.format(*self.inertia_radii)
+
+        # fixeties
         code += &#34;\n           fixed =({}, {}, {}, {}, {}, {}) )&#34;.format(*self.fixed)
 
         return code</code></pre>
@@ -4362,6 +5457,107 @@ def gz(self):
     return self.global_position[2]</code></pre>
 </details>
 </dd>
+<dt id="DAVE.scene.Axis.heading"><code class="name">var <span class="ident">heading</span></code></dt>
+<dd>
+<section class="desc"><p>Returns the direction (0..360) [deg] of the local x-axis relative to the global x axis. Measured about the global z axis</p>
+<p>heading = atan(u_y,u_x)</p>
+<p>typically:
+heading 0
+&ndash;&gt; local axis align with global axis
+heading 90 &ndash;&gt; local x-axis in direction of global y axis</p>
+<p>See also: heading_compass</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def heading(self):
+    &#34;&#34;&#34;Returns the direction (0..360) [deg] of the local x-axis relative to the global x axis. Measured about the global z axis
+
+    heading = atan(u_y,u_x)
+
+    typically:
+        heading 0  --&gt; local axis align with global axis
+        heading 90 --&gt; local x-axis in direction of global y axis
+
+
+    See also: heading_compass
+    &#34;&#34;&#34;
+    x = (1, 0, 0)
+    ux = self.to_glob_direction(x)
+    heading = np.rad2deg(np.arctan2(ux[1],ux[0]))
+    return np.mod(heading,360)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Axis.heading_compass"><code class="name">var <span class="ident">heading_compass</span></code></dt>
+<dd>
+<section class="desc"><p>The heading (0..360)[deg] assuming that the global y-axis is North and global x-axis is East and rotation accoring compass definition</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def heading_compass(self):
+    &#34;&#34;&#34;The heading (0..360)[deg] assuming that the global y-axis is North and global x-axis is East and rotation accoring compass definition&#34;&#34;&#34;
+    return np.mod(90-self.heading,360)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Axis.heel"><code class="name">var <span class="ident">heel</span></code></dt>
+<dd>
+<section class="desc"><p>Returns the heel in [deg].
+SB down is positive.
+This is the inverse sin of the unit y vector(This is the arcsin of the tiltx)</p>
+<p>See also: tilt_x</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def heel(self):
+    &#34;&#34;&#34;Returns the heel in [deg].  SB down is positive.
+    This is the inverse sin of the unit y vector(This is the arcsin of the tiltx)
+
+    See also: tilt_x
+    &#34;&#34;&#34;
+    return np.rad2deg(np.arcsin(self.tilt_x/100))</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Axis.inertia"><code class="name">var <span class="ident">inertia</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def inertia(self):
+    return self._inertia</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Axis.inertia_position"><code class="name">var <span class="ident">inertia_position</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def inertia_position(self):
+    return np.array(self._inertia_position,dtype=float)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Axis.inertia_radii"><code class="name">var <span class="ident">inertia_radii</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def inertia_radii(self):
+    return np.array(self._inertia_radii, dtype=float)</code></pre>
+</details>
+</dd>
 <dt id="DAVE.scene.Axis.parent"><code class="name">var <span class="ident">parent</span></code></dt>
 <dd>
 <section class="desc"><p>Determines the parent of the axis. Should either be another axis or 'None'</p></section>
@@ -4444,6 +5640,105 @@ def ry(self):
 def rz(self):
     &#34;&#34;&#34;The z-component of the rotation vector&#34;&#34;&#34;
     return self.rotation[2]</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Axis.tilt_x"><code class="name">var <span class="ident">tilt_x</span></code></dt>
+<dd>
+<section class="desc"><p>Returns the trim in [%]. This is the z-component of the unit y vector.</p>
+<p>See Also: heel</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def tilt_x(self):
+    &#34;&#34;&#34;Returns the trim in [%]. This is the z-component of the unit y vector.
+
+    See Also: heel
+    &#34;&#34;&#34;
+    y = (0,1,0)
+    uy = self.to_glob_direction(y)
+    return 100*uy[2]</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Axis.tilt_y"><code class="name">var <span class="ident">tilt_y</span></code></dt>
+<dd>
+<section class="desc"><p>Returns the trim in [%]. This is the z-component of the unit -x vector. So a positive rotation about
+the y axis result in a positive tilt_y.</p>
+<p>See Also: heel</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def tilt_y(self):
+    &#34;&#34;&#34;Returns the trim in [%]. This is the z-component of the unit -x vector. So a positive rotation about
+    the y axis result in a positive tilt_y.
+
+    See Also: heel
+    &#34;&#34;&#34;
+    x = (-1, 0, 0)
+    ux = self.to_glob_direction(x)
+    return 100 * ux[2]</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Axis.trim"><code class="name">var <span class="ident">trim</span></code></dt>
+<dd>
+<section class="desc"><p>Returns the trim in [deg]. Bow-down is positive.</p>
+<p>This is the inverse sin of the unit -x vector(This is the arcsin of the tilt_y)</p>
+<p>See also: tilt_y</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def trim(self):
+    &#34;&#34;&#34;Returns the trim in [deg]. Bow-down is positive.
+
+    This is the inverse sin of the unit -x vector(This is the arcsin of the tilt_y)
+
+    See also: tilt_y
+    &#34;&#34;&#34;
+    return np.rad2deg(np.arcsin(self.tilt_y / 100))</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Axis.ux"><code class="name">var <span class="ident">ux</span></code></dt>
+<dd>
+<section class="desc"><p>The unit x axis in global coordinates</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def ux(self):
+    &#34;&#34;&#34;The unit x axis in global coordinates&#34;&#34;&#34;
+    return self.to_glob_direction((1,0,0))</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Axis.uy"><code class="name">var <span class="ident">uy</span></code></dt>
+<dd>
+<section class="desc"><p>The unit y axis in global coordinates</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def uy(self):
+    &#34;&#34;&#34;The unit y axis in global coordinates&#34;&#34;&#34;
+    return self.to_glob_direction((0, 1, 0))</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Axis.uz"><code class="name">var <span class="ident">uz</span></code></dt>
+<dd>
+<section class="desc"><p>The unit z axis in global coordinates</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def uz(self):
+    &#34;&#34;&#34;The unit z axis in global coordinates&#34;&#34;&#34;
+    return self.to_glob_direction((0, 0, 1))</code></pre>
 </details>
 </dd>
 <dt id="DAVE.scene.Axis.x"><code class="name">var <span class="ident">x</span></code></dt>
@@ -4633,6 +5928,892 @@ See Also: to_loc_position, to_loc_direction</p></section>
 <li><code><a title="DAVE.scene.NodeWithParent.change_parent_to" href="#DAVE.scene.NodeWithParent.change_parent_to">change_parent_to</a></code></li>
 <li><code><a title="DAVE.scene.NodeWithParent.give_python_code" href="#DAVE.scene.Node.give_python_code">give_python_code</a></code></li>
 <li><code><a title="DAVE.scene.NodeWithParent.name" href="#DAVE.scene.Node.name">name</a></code></li>
+<li><code><a title="DAVE.scene.NodeWithParent.update" href="#DAVE.scene.Node.update">update</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="DAVE.scene.BallastSystem"><code class="flex name class">
+<span>class <span class="ident">BallastSystem</span></span>
+<span>(</span><span>scene, poi, force)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>A BallastSystem</p>
+<p>The position of the axis system is the reference position for the tanks.</p>
+<p>Tanks can be added using new_tank()</p>
+<p>technical notes:
+- System is similar to the setup of RigidBody, but without the Axis
+- The class extends Poi, but overrides some of its properties
+- Update nees to be called to update the weight and cog</p>
+<p>TODO: Inertia</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class BallastSystem(Poi):
+    &#34;&#34;&#34;A BallastSystem
+
+    The position of the axis system is the reference position for the tanks.
+
+    Tanks can be added using new_tank()
+
+
+    technical notes:
+    - System is similar to the setup of RigidBody, but without the Axis
+    - The class extends Poi, but overrides some of its properties
+    - Update nees to be called to update the weight and cog
+
+    TODO: Inertia
+
+    &#34;&#34;&#34;
+
+    # Tank is an inner class
+    class Tank:
+
+        def __init__(self):
+            self.name = &#34;noname&#34;
+            &#34;&#34;&#34;Name of the tank&#34;&#34;&#34;
+
+            self.max = 0
+            &#34;&#34;&#34;Maximum fill in [kN]&#34;&#34;&#34;
+
+            self.pct = 0
+            &#34;&#34;&#34;Actual fill percentage in [%]&#34;&#34;&#34;
+
+            self.position = np.array((0., 0., 0.))
+            &#34;&#34;&#34;Tank CoG position relative to ballast system origin [m,m,m]&#34;&#34;&#34;
+
+            self.frozen = False
+            &#34;&#34;&#34;The fill of frozen tanks should not be altered&#34;&#34;&#34;
+
+            self._pointmass = None
+            &#34;&#34;&#34;Optional reference to pointmass node - handled by ballastsystem node&#34;&#34;&#34;
+
+
+        @property
+        def inertia(self):
+            return self.weight() / vfc.G
+
+        def weight(self):
+            &#34;&#34;&#34;Returns the actual weight of tank contents in kN&#34;&#34;&#34;
+            return self.max * self.pct / 100
+
+        def is_full(self):
+            &#34;&#34;&#34;Returns True of tank is (almost) full&#34;&#34;&#34;
+            return self.pct &gt;= 100 - 1e-5
+
+        def is_empty(self):
+            &#34;&#34;&#34;Returns True of tank is (almost) empty&#34;&#34;&#34;
+            return self.pct &lt;= 1e-5
+
+        def is_partial(self):
+            &#34;&#34;&#34;Returns True of tank not full but also not empty&#34;&#34;&#34;
+            return (not self.is_empty() and not self.is_full())
+
+        def mxmymz(self):
+            &#34;&#34;&#34;Position times actual weight&#34;&#34;&#34;
+            return self.position * self.weight()
+
+        def make_empty(self):
+            &#34;&#34;&#34;Empties the tank&#34;&#34;&#34;
+            self.pct = 0
+
+        def make_full(self):
+            &#34;&#34;&#34;Fills the tank&#34;&#34;&#34;
+            self.pct = 100
+
+    def __init__(self, scene, poi, force):
+        super().__init__(scene, poi)
+
+        # The poi is the Node
+        # force is added separately
+        self._vfForce = force
+
+        self._tanks = []
+        &#34;&#34;&#34;List of tank objects&#34;&#34;&#34;
+
+        self._position = (0., 0., 0.)
+        &#34;&#34;&#34;Position is the origin of the ballast system&#34;&#34;&#34;
+
+        self._cog = (0., 0., 0.)
+        &#34;&#34;&#34;Position of the CoG of the ballast-tanks relative to self._position, calculated when calling update()&#34;&#34;&#34;
+
+        self._weight = 0
+        &#34;&#34;&#34;Weight [kN] of the ballast-tanks , calculated when calling update()&#34;&#34;&#34;
+
+        self.frozen = False
+        &#34;&#34;&#34;The contents of a frozen tank should not be changed&#34;&#34;&#34;
+
+    # override the following properties
+    @Poi.parent.setter
+    def parent(self, var):
+        &#34;&#34;&#34;Assigns a new parent. Keeps the local position and rotations the same
+
+        See also: change_parent_to
+        &#34;&#34;&#34;
+
+        super(Poi, type(self)).parent.fset(self, var)
+        # update parent of other core nodes
+        for tank in self._tanks:
+            tank._vfNode.parent = self.parent._vfNode
+
+
+
+    def update(self):
+        self._cog, self._weight, = self.xyzw()
+        self._weight = np.around(self._weight, decimals=5)
+
+        # we are rounding a bit here to avoid very small numbers
+        # which would mess-up the solver
+        pos = np.array(self._cog) + np.array(self.position)
+        pos = np.around(pos, 5)
+
+        self._vfNode.position = pos
+
+        self._vfForce.force = (0, 0, -self._weight)
+
+        for tank in self._tanks:
+            I = tank.inertia
+            pos = np.array(tank.position) + np.array(self.position)
+            tank._pointmass.inertia = tank.inertia
+            tank._pointmass.position = pos
+
+        print(&#39;Weight {} cog {} {} {}&#39;.format(self._weight, *self._cog))
+
+    def _delete_vfc(self):
+        super()._delete_vfc()
+        self._scene._vfc.delete(self._vfForce.name)
+
+        # delete the pointmasses (if any)
+        for tank in self._tanks:
+            if tank._pointmass is not None:
+                self._scene._vfc.delete(tank._pointmass.name)
+
+    @property
+    def position(self):
+        &#34;&#34;&#34;Local position&#34;&#34;&#34;
+        return self._position
+
+    @position.setter
+    def position(self, new_position):
+        assert3f(new_position)
+        self._position = new_position
+
+    @property
+    def name(self):
+        return super().name
+
+    @name.setter
+    def name(self, newname):
+        super(Poi, self.__class__).name.fset(self, newname)
+        self._vfForce.name = newname + vfc.VF_NAME_SPLIT + &#34;gravity&#34;
+
+    def new_tank(self, name, position, capacity_kN, actual_fill = 0, frozen = False) :
+        &#34;&#34;&#34;Creates a new tanks and adds it to the ballast-system
+        
+        Args:
+            name: (str) name of the tanks
+            position: (float[3]) position of the tank [m,m,m]
+            capacity_kN: (float) Maximum capacity of the tank in [kN]
+            actual_fill: (float) Optional, actual fill percentage of the tank [0] [%]
+            frozen: (bool) Optional, the contents of frozen tanks should not be altered
+
+        Returns:
+            BallastSystem.Tank object
+
+        &#34;&#34;&#34;
+        # asserts
+
+        assert3f(position, &#34;position&#34;)
+        assert1f(capacity_kN, &#34;Capacity in kN&#34;)
+        assert1f(actual_fill, &#34;Actual fill percentage&#34;)
+        assertValidName(name)
+
+        assert name not in [t.name for t in self._tanks], ValueError(&#39;Double names are not allowed, {} already exists&#39;.format(name))
+
+        t = BallastSystem.Tank()
+        t.name = name
+        t.position = position
+        t.max = capacity_kN
+        t.pct = actual_fill
+        t.frozen = frozen
+
+        t._pointmass = \
+            self._scene._vfc.new_pointmass(self.name + vfc.VF_NAME_SPLIT + &#39;_pointmass_{}&#39;.format(name))
+        t._pointmass.parent = self.parent._vfNode # Axis
+
+        self._tanks.append(t)
+
+        return t
+
+    def reorder_tanks(self, names):
+        &#34;&#34;&#34;Places tanks with given names at the top of the list. Other tanks are appended afterwards in original order.
+
+        For a complete re-order give all tank names.
+
+        Example:
+            let tanks be &#39;a&#39;,&#39;b&#39;,&#39;c&#39;,&#39;d&#39;,&#39;e&#39;
+
+            then re_order_tanks([&#39;e&#39;,&#39;b&#39;]) will result in [&#39;e&#39;,&#39;b&#39;,&#39;a&#39;,&#39;c&#39;,&#39;d&#39;]
+        &#34;&#34;&#34;
+        for name in names:
+            if name not in self.tank_names():
+                raise ValueError(&#39;No tank with name {}&#39;.format(name))
+
+        old_tanks = self._tanks.copy()
+        self._tanks.clear()
+        to_be_deleted = list()
+
+        for name in names:
+            for tank in old_tanks:
+                if tank.name == name:
+                    self._tanks.append(tank)
+                    to_be_deleted.append(tank)
+
+        for tank in to_be_deleted:
+            old_tanks.remove(tank)
+
+        for tank in old_tanks:
+            self._tanks.append(tank)
+
+    def order_tanks_by_elevation(self):
+        &#34;&#34;&#34;Re-orders the existing tanks such that the lowest tanks are higher in the list&#34;&#34;&#34;
+
+        zs = [tank.position[2] for tank in self._tanks]
+        inds = np.argsort(zs)
+        self._tanks = [self._tanks[i] for i in inds]
+
+    def order_tanks_by_distance_from_point(self, point, reverse=False):
+        &#34;&#34;&#34;Re-orders the existing tanks such that the tanks *furthest* from the point are first on the list
+
+        Args:
+            point : (x,y,z)  - reference point to determine the distance to
+            reverse: (False) - order in reverse order: tanks nearest to the points first on list
+
+
+        &#34;&#34;&#34;
+        pos = [tank.position for tank in self._tanks]
+        pos = np.array(pos, dtype=float)
+        pos -= np.array(point)
+
+        dist = np.apply_along_axis(np.linalg.norm,1,pos)
+
+        if reverse:
+            inds = np.argsort(dist)
+        else:
+            inds = np.argsort(-dist)
+
+        self._tanks = [self._tanks[i] for i in inds]
+
+    def order_tanks_to_maximize_inertia_moment(self):
+        &#34;&#34;&#34;Re-order tanks such that tanks furthest from center of system are first on the list&#34;&#34;&#34;
+        self._order_tanks_to_inertia_moment()
+
+    def order_tanks_to_minimize_inertia_moment(self):
+        &#34;&#34;&#34;Re-order tanks such that tanks nearest to center of system are first on the list&#34;&#34;&#34;
+        self._order_tanks_to_inertia_moment(maximize=False)
+
+    def _order_tanks_to_inertia_moment(self, maximize = True):
+
+        pos = [tank.position for tank in self._tanks]
+        m = [tank.max for tank in self._tanks]
+        pos = np.array(pos, dtype=float)
+        mxmymz = np.vstack((m,m,m)).transpose() * pos
+        total = np.sum(m)
+        point = sum(mxmymz) / total
+
+        if maximize:
+            self.order_tanks_by_distance_from_point(point)
+        else:
+            self.order_tanks_by_distance_from_point(point, reverse=True)
+
+
+    def tank_names(self):
+        return [tank.name for tank in self._tanks]
+
+    def fill_tank(self, name, fill):
+
+        assert1f(fill, &#34;tank fill&#34;)
+
+        for tank in self._tanks:
+            if tank.name == name:
+                tank.pct = fill
+                return
+        raise ValueError(&#39;No tank with name {}&#39;.format(name))
+
+    def xyzw(self):
+        &#34;&#34;&#34;Gets the current ballast cog and weight from the tanks
+
+                Returns:
+                    (x,y,z), weight
+                &#34;&#34;&#34;
+        &#34;&#34;&#34;Calculates the weight and inertia properties of the tanks&#34;&#34;&#34;
+
+        mxmymz = np.array((0., 0., 0.))
+        wt = 0
+
+        for tank in self._tanks:
+            w = tank.weight()
+            p = np.array(tank.position, dtype=float)
+            mxmymz += p * w
+
+            wt += w
+
+        if wt == 0:
+            xyz = np.array((0., 0., 0.))
+        else:
+            xyz = mxmymz / wt
+
+        return xyz, wt
+
+
+    def empty_all_usable_tanks(self):
+        for t in self._tanks:
+            if not t.frozen:
+                t.make_empty()
+
+    def tank(self, name):
+        for t in self._tanks:
+            if t.name == name:
+                return t
+        raise ValueError(&#39;No tank with name {}&#39;.format(name))
+
+    def __getitem__(self, item):
+        return self.tank(item)
+
+
+    @property
+    def cogx(self):
+        return self.cog[0]
+
+    @property
+    def cogy(self):
+        return self.cog[1]
+
+    @property
+    def cogz(self):
+        return self.cog[2]
+
+    @property
+    def cog(self):
+        &#34;&#34;&#34;Returns the cog of the ballast-system&#34;&#34;&#34;
+        self.update()
+        return (self._cog[0], self._cog[1], self._cog[2])
+
+    @property
+    def weight(self):
+        &#34;&#34;&#34;Returns the cog of the ballast-system&#34;&#34;&#34;
+        self.update()
+        return self._weight
+
+
+    @property
+    def mass(self):
+        &#34;&#34;&#34;Control the static mass of the body&#34;&#34;&#34;
+        return self._vfForce.force[2] / -vfc.G
+
+
+
+    def give_python_code(self):
+        code = &#34;\n# code for {} and its tanks&#34;.format(self.name)
+
+        code += &#34;\nbs = s.new_ballastsystem(&#39;{}&#39;, parent = &#39;{}&#39;,&#34;.format(self.name, self.parent.name)
+        code += &#34;\n                         position = ({},{},{}))&#34;.format(*self.position)
+
+        for tank in self._tanks:
+            code += &#34;\nbs.new_tank(&#39;{}&#39;, position = ({},{},{}),&#34;.format(tank.name, *tank.position)
+            code += &#34;\n            capacity_kN = {}, frozen = {}, actual_fill = {})&#34;.format(tank.max, tank.frozen, tank.pct)
+
+        return code</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="DAVE.scene.Poi" href="#DAVE.scene.Poi">Poi</a></li>
+<li><a title="DAVE.scene.NodeWithParent" href="#DAVE.scene.NodeWithParent">NodeWithParent</a></li>
+<li><a title="DAVE.scene.CoreConnectedNode" href="#DAVE.scene.CoreConnectedNode">CoreConnectedNode</a></li>
+<li><a title="DAVE.scene.Node" href="#DAVE.scene.Node">Node</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="DAVE.scene.BallastSystem.Tank"><code class="name">var <span class="ident">Tank</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Tank:
+
+    def __init__(self):
+        self.name = &#34;noname&#34;
+        &#34;&#34;&#34;Name of the tank&#34;&#34;&#34;
+
+        self.max = 0
+        &#34;&#34;&#34;Maximum fill in [kN]&#34;&#34;&#34;
+
+        self.pct = 0
+        &#34;&#34;&#34;Actual fill percentage in [%]&#34;&#34;&#34;
+
+        self.position = np.array((0., 0., 0.))
+        &#34;&#34;&#34;Tank CoG position relative to ballast system origin [m,m,m]&#34;&#34;&#34;
+
+        self.frozen = False
+        &#34;&#34;&#34;The fill of frozen tanks should not be altered&#34;&#34;&#34;
+
+        self._pointmass = None
+        &#34;&#34;&#34;Optional reference to pointmass node - handled by ballastsystem node&#34;&#34;&#34;
+
+
+    @property
+    def inertia(self):
+        return self.weight() / vfc.G
+
+    def weight(self):
+        &#34;&#34;&#34;Returns the actual weight of tank contents in kN&#34;&#34;&#34;
+        return self.max * self.pct / 100
+
+    def is_full(self):
+        &#34;&#34;&#34;Returns True of tank is (almost) full&#34;&#34;&#34;
+        return self.pct &gt;= 100 - 1e-5
+
+    def is_empty(self):
+        &#34;&#34;&#34;Returns True of tank is (almost) empty&#34;&#34;&#34;
+        return self.pct &lt;= 1e-5
+
+    def is_partial(self):
+        &#34;&#34;&#34;Returns True of tank not full but also not empty&#34;&#34;&#34;
+        return (not self.is_empty() and not self.is_full())
+
+    def mxmymz(self):
+        &#34;&#34;&#34;Position times actual weight&#34;&#34;&#34;
+        return self.position * self.weight()
+
+    def make_empty(self):
+        &#34;&#34;&#34;Empties the tank&#34;&#34;&#34;
+        self.pct = 0
+
+    def make_full(self):
+        &#34;&#34;&#34;Fills the tank&#34;&#34;&#34;
+        self.pct = 100</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="DAVE.scene.BallastSystem._cog"><code class="name">var <span class="ident">_cog</span></code></dt>
+<dd>
+<section class="desc"><p>Position of the CoG of the ballast-tanks relative to self._position, calculated when calling update()</p></section>
+</dd>
+<dt id="DAVE.scene.BallastSystem._position"><code class="name">var <span class="ident">_position</span></code></dt>
+<dd>
+<section class="desc"><p>Position is the origin of the ballast system</p></section>
+</dd>
+<dt id="DAVE.scene.BallastSystem._tanks"><code class="name">var <span class="ident">_tanks</span></code></dt>
+<dd>
+<section class="desc"><p>List of tank objects</p></section>
+</dd>
+<dt id="DAVE.scene.BallastSystem._weight"><code class="name">var <span class="ident">_weight</span></code></dt>
+<dd>
+<section class="desc"><p>Weight [kN] of the ballast-tanks , calculated when calling update()</p></section>
+</dd>
+<dt id="DAVE.scene.BallastSystem.cog"><code class="name">var <span class="ident">cog</span></code></dt>
+<dd>
+<section class="desc"><p>Returns the cog of the ballast-system</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def cog(self):
+    &#34;&#34;&#34;Returns the cog of the ballast-system&#34;&#34;&#34;
+    self.update()
+    return (self._cog[0], self._cog[1], self._cog[2])</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.BallastSystem.cogx"><code class="name">var <span class="ident">cogx</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def cogx(self):
+    return self.cog[0]</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.BallastSystem.cogy"><code class="name">var <span class="ident">cogy</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def cogy(self):
+    return self.cog[1]</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.BallastSystem.cogz"><code class="name">var <span class="ident">cogz</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def cogz(self):
+    return self.cog[2]</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.BallastSystem.frozen"><code class="name">var <span class="ident">frozen</span></code></dt>
+<dd>
+<section class="desc"><p>The contents of a frozen tank should not be changed</p></section>
+</dd>
+<dt id="DAVE.scene.BallastSystem.mass"><code class="name">var <span class="ident">mass</span></code></dt>
+<dd>
+<section class="desc"><p>Control the static mass of the body</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def mass(self):
+    &#34;&#34;&#34;Control the static mass of the body&#34;&#34;&#34;
+    return self._vfForce.force[2] / -vfc.G</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.BallastSystem.weight"><code class="name">var <span class="ident">weight</span></code></dt>
+<dd>
+<section class="desc"><p>Returns the cog of the ballast-system</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def weight(self):
+    &#34;&#34;&#34;Returns the cog of the ballast-system&#34;&#34;&#34;
+    self.update()
+    return self._weight</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="DAVE.scene.BallastSystem.empty_all_usable_tanks"><code class="name flex">
+<span>def <span class="ident">empty_all_usable_tanks</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def empty_all_usable_tanks(self):
+    for t in self._tanks:
+        if not t.frozen:
+            t.make_empty()</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.BallastSystem.fill_tank"><code class="name flex">
+<span>def <span class="ident">fill_tank</span></span>(<span>self, name, fill)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fill_tank(self, name, fill):
+
+    assert1f(fill, &#34;tank fill&#34;)
+
+    for tank in self._tanks:
+        if tank.name == name:
+            tank.pct = fill
+            return
+    raise ValueError(&#39;No tank with name {}&#39;.format(name))</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.BallastSystem.new_tank"><code class="name flex">
+<span>def <span class="ident">new_tank</span></span>(<span>self, name, position, capacity_kN, actual_fill=0, frozen=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Creates a new tanks and adds it to the ballast-system</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>name</code></strong></dt>
+<dd>(str) name of the tanks</dd>
+<dt><strong><code>position</code></strong></dt>
+<dd>(float[3]) position of the tank [m,m,m]</dd>
+<dt><strong><code>capacity_kN</code></strong></dt>
+<dd>(float) Maximum capacity of the tank in [kN]</dd>
+<dt><strong><code>actual_fill</code></strong></dt>
+<dd>(float) Optional, actual fill percentage of the tank [0] [%]</dd>
+<dt><strong><code>frozen</code></strong></dt>
+<dd>(bool) Optional, the contents of frozen tanks should not be altered</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><a title="DAVE.scene.BallastSystem.Tank" href="#DAVE.scene.BallastSystem.Tank"><code>BallastSystem.Tank</code></a> <code>object</code></dt>
+<dd>&nbsp;</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def new_tank(self, name, position, capacity_kN, actual_fill = 0, frozen = False) :
+    &#34;&#34;&#34;Creates a new tanks and adds it to the ballast-system
+    
+    Args:
+        name: (str) name of the tanks
+        position: (float[3]) position of the tank [m,m,m]
+        capacity_kN: (float) Maximum capacity of the tank in [kN]
+        actual_fill: (float) Optional, actual fill percentage of the tank [0] [%]
+        frozen: (bool) Optional, the contents of frozen tanks should not be altered
+
+    Returns:
+        BallastSystem.Tank object
+
+    &#34;&#34;&#34;
+    # asserts
+
+    assert3f(position, &#34;position&#34;)
+    assert1f(capacity_kN, &#34;Capacity in kN&#34;)
+    assert1f(actual_fill, &#34;Actual fill percentage&#34;)
+    assertValidName(name)
+
+    assert name not in [t.name for t in self._tanks], ValueError(&#39;Double names are not allowed, {} already exists&#39;.format(name))
+
+    t = BallastSystem.Tank()
+    t.name = name
+    t.position = position
+    t.max = capacity_kN
+    t.pct = actual_fill
+    t.frozen = frozen
+
+    t._pointmass = \
+        self._scene._vfc.new_pointmass(self.name + vfc.VF_NAME_SPLIT + &#39;_pointmass_{}&#39;.format(name))
+    t._pointmass.parent = self.parent._vfNode # Axis
+
+    self._tanks.append(t)
+
+    return t</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.BallastSystem.order_tanks_by_distance_from_point"><code class="name flex">
+<span>def <span class="ident">order_tanks_by_distance_from_point</span></span>(<span>self, point, reverse=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Re-orders the existing tanks such that the tanks <em>furthest</em> from the point are first on the list</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>point</code></strong> :&ensp;(<code>x</code>,<code>y</code>,<code>z</code>)
+- <code>reference</code> <code>point</code> <code>to</code> <code>determine</code> <code>the</code> <code>distance</code> <code>to</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>reverse</code></strong></dt>
+<dd>(False) - order in reverse order: tanks nearest to the points first on list</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def order_tanks_by_distance_from_point(self, point, reverse=False):
+    &#34;&#34;&#34;Re-orders the existing tanks such that the tanks *furthest* from the point are first on the list
+
+    Args:
+        point : (x,y,z)  - reference point to determine the distance to
+        reverse: (False) - order in reverse order: tanks nearest to the points first on list
+
+
+    &#34;&#34;&#34;
+    pos = [tank.position for tank in self._tanks]
+    pos = np.array(pos, dtype=float)
+    pos -= np.array(point)
+
+    dist = np.apply_along_axis(np.linalg.norm,1,pos)
+
+    if reverse:
+        inds = np.argsort(dist)
+    else:
+        inds = np.argsort(-dist)
+
+    self._tanks = [self._tanks[i] for i in inds]</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.BallastSystem.order_tanks_by_elevation"><code class="name flex">
+<span>def <span class="ident">order_tanks_by_elevation</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Re-orders the existing tanks such that the lowest tanks are higher in the list</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def order_tanks_by_elevation(self):
+    &#34;&#34;&#34;Re-orders the existing tanks such that the lowest tanks are higher in the list&#34;&#34;&#34;
+
+    zs = [tank.position[2] for tank in self._tanks]
+    inds = np.argsort(zs)
+    self._tanks = [self._tanks[i] for i in inds]</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.BallastSystem.order_tanks_to_maximize_inertia_moment"><code class="name flex">
+<span>def <span class="ident">order_tanks_to_maximize_inertia_moment</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Re-order tanks such that tanks furthest from center of system are first on the list</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def order_tanks_to_maximize_inertia_moment(self):
+    &#34;&#34;&#34;Re-order tanks such that tanks furthest from center of system are first on the list&#34;&#34;&#34;
+    self._order_tanks_to_inertia_moment()</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.BallastSystem.order_tanks_to_minimize_inertia_moment"><code class="name flex">
+<span>def <span class="ident">order_tanks_to_minimize_inertia_moment</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Re-order tanks such that tanks nearest to center of system are first on the list</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def order_tanks_to_minimize_inertia_moment(self):
+    &#34;&#34;&#34;Re-order tanks such that tanks nearest to center of system are first on the list&#34;&#34;&#34;
+    self._order_tanks_to_inertia_moment(maximize=False)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.BallastSystem.reorder_tanks"><code class="name flex">
+<span>def <span class="ident">reorder_tanks</span></span>(<span>self, names)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Places tanks with given names at the top of the list. Other tanks are appended afterwards in original order.</p>
+<p>For a complete re-order give all tank names.</p>
+<h2 id="example">Example</h2>
+<p>let tanks be 'a','b','c','d','e'</p>
+<p>then re_order_tanks(['e','b']) will result in ['e','b','a','c','d']</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reorder_tanks(self, names):
+    &#34;&#34;&#34;Places tanks with given names at the top of the list. Other tanks are appended afterwards in original order.
+
+    For a complete re-order give all tank names.
+
+    Example:
+        let tanks be &#39;a&#39;,&#39;b&#39;,&#39;c&#39;,&#39;d&#39;,&#39;e&#39;
+
+        then re_order_tanks([&#39;e&#39;,&#39;b&#39;]) will result in [&#39;e&#39;,&#39;b&#39;,&#39;a&#39;,&#39;c&#39;,&#39;d&#39;]
+    &#34;&#34;&#34;
+    for name in names:
+        if name not in self.tank_names():
+            raise ValueError(&#39;No tank with name {}&#39;.format(name))
+
+    old_tanks = self._tanks.copy()
+    self._tanks.clear()
+    to_be_deleted = list()
+
+    for name in names:
+        for tank in old_tanks:
+            if tank.name == name:
+                self._tanks.append(tank)
+                to_be_deleted.append(tank)
+
+    for tank in to_be_deleted:
+        old_tanks.remove(tank)
+
+    for tank in old_tanks:
+        self._tanks.append(tank)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.BallastSystem.tank"><code class="name flex">
+<span>def <span class="ident">tank</span></span>(<span>self, name)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def tank(self, name):
+    for t in self._tanks:
+        if t.name == name:
+            return t
+    raise ValueError(&#39;No tank with name {}&#39;.format(name))</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.BallastSystem.tank_names"><code class="name flex">
+<span>def <span class="ident">tank_names</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def tank_names(self):
+    return [tank.name for tank in self._tanks]</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.BallastSystem.xyzw"><code class="name flex">
+<span>def <span class="ident">xyzw</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Gets the current ballast cog and weight from the tanks</p>
+<h2 id="returns">Returns</h2>
+<p>(x,y,z), weight</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def xyzw(self):
+    &#34;&#34;&#34;Gets the current ballast cog and weight from the tanks
+
+            Returns:
+                (x,y,z), weight
+            &#34;&#34;&#34;
+    &#34;&#34;&#34;Calculates the weight and inertia properties of the tanks&#34;&#34;&#34;
+
+    mxmymz = np.array((0., 0., 0.))
+    wt = 0
+
+    for tank in self._tanks:
+        w = tank.weight()
+        p = np.array(tank.position, dtype=float)
+        mxmymz += p * w
+
+        wt += w
+
+    if wt == 0:
+        xyz = np.array((0., 0., 0.))
+    else:
+        xyz = mxmymz / wt
+
+    return xyz, wt</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="DAVE.scene.Poi" href="#DAVE.scene.Poi">Poi</a></b></code>:
+<ul class="hlist">
+<li><code><a title="DAVE.scene.Poi.applied_force_and_moment_global" href="#DAVE.scene.Poi.applied_force_and_moment_global">applied_force_and_moment_global</a></code></li>
+<li><code><a title="DAVE.scene.Poi.change_parent_to" href="#DAVE.scene.NodeWithParent.change_parent_to">change_parent_to</a></code></li>
+<li><code><a title="DAVE.scene.Poi.give_python_code" href="#DAVE.scene.Node.give_python_code">give_python_code</a></code></li>
+<li><code><a title="DAVE.scene.Poi.global_position" href="#DAVE.scene.Poi.global_position">global_position</a></code></li>
+<li><code><a title="DAVE.scene.Poi.gx" href="#DAVE.scene.Poi.gx">gx</a></code></li>
+<li><code><a title="DAVE.scene.Poi.gy" href="#DAVE.scene.Poi.gy">gy</a></code></li>
+<li><code><a title="DAVE.scene.Poi.gz" href="#DAVE.scene.Poi.gz">gz</a></code></li>
+<li><code><a title="DAVE.scene.Poi.name" href="#DAVE.scene.Node.name">name</a></code></li>
+<li><code><a title="DAVE.scene.Poi.parent" href="#DAVE.scene.NodeWithParent.parent">parent</a></code></li>
+<li><code><a title="DAVE.scene.Poi.position" href="#DAVE.scene.Poi.position">position</a></code></li>
+<li><code><a title="DAVE.scene.Poi.update" href="#DAVE.scene.Node.update">update</a></code></li>
+<li><code><a title="DAVE.scene.Poi.x" href="#DAVE.scene.Poi.x">x</a></code></li>
+<li><code><a title="DAVE.scene.Poi.y" href="#DAVE.scene.Poi.y">y</a></code></li>
 </ul>
 </li>
 </ul>
@@ -4762,6 +6943,7 @@ def trimesh(self):
 <li><code><a title="DAVE.scene.NodeWithParent.give_python_code" href="#DAVE.scene.Node.give_python_code">give_python_code</a></code></li>
 <li><code><a title="DAVE.scene.NodeWithParent.name" href="#DAVE.scene.Node.name">name</a></code></li>
 <li><code><a title="DAVE.scene.NodeWithParent.parent" href="#DAVE.scene.NodeWithParent.parent">parent</a></code></li>
+<li><code><a title="DAVE.scene.NodeWithParent.update" href="#DAVE.scene.Node.update">update</a></code></li>
 </ul>
 </li>
 </ul>
@@ -5115,6 +7297,7 @@ def tension(self):
 <ul class="hlist">
 <li><code><a title="DAVE.scene.CoreConnectedNode.give_python_code" href="#DAVE.scene.Node.give_python_code">give_python_code</a></code></li>
 <li><code><a title="DAVE.scene.CoreConnectedNode.name" href="#DAVE.scene.Node.name">name</a></code></li>
+<li><code><a title="DAVE.scene.CoreConnectedNode.update" href="#DAVE.scene.Node.update">update</a></code></li>
 </ul>
 </li>
 </ul>
@@ -5338,6 +7521,7 @@ def slave(self):
 <ul class="hlist">
 <li><code><a title="DAVE.scene.CoreConnectedNode.give_python_code" href="#DAVE.scene.Node.give_python_code">give_python_code</a></code></li>
 <li><code><a title="DAVE.scene.CoreConnectedNode.name" href="#DAVE.scene.Node.name">name</a></code></li>
+<li><code><a title="DAVE.scene.CoreConnectedNode.update" href="#DAVE.scene.Node.update">update</a></code></li>
 </ul>
 </li>
 </ul>
@@ -5393,6 +7577,7 @@ Master class for all nodes with a connected eqCore element</p></section>
 <ul class="hlist">
 <li><code><a title="DAVE.scene.Node.give_python_code" href="#DAVE.scene.Node.give_python_code">give_python_code</a></code></li>
 <li><code><a title="DAVE.scene.Node.name" href="#DAVE.scene.Node.name">name</a></code></li>
+<li><code><a title="DAVE.scene.Node.update" href="#DAVE.scene.Node.update">update</a></code></li>
 </ul>
 </li>
 </ul>
@@ -5508,6 +7693,7 @@ def moment(self):
 <li><code><a title="DAVE.scene.NodeWithParent.give_python_code" href="#DAVE.scene.Node.give_python_code">give_python_code</a></code></li>
 <li><code><a title="DAVE.scene.NodeWithParent.name" href="#DAVE.scene.Node.name">name</a></code></li>
 <li><code><a title="DAVE.scene.NodeWithParent.parent" href="#DAVE.scene.NodeWithParent.parent">parent</a></code></li>
+<li><code><a title="DAVE.scene.NodeWithParent.update" href="#DAVE.scene.Node.update">update</a></code></li>
 </ul>
 </li>
 </ul>
@@ -5744,6 +7930,7 @@ def waterline(self):
 <li><code><a title="DAVE.scene.NodeWithParent.give_python_code" href="#DAVE.scene.Node.give_python_code">give_python_code</a></code></li>
 <li><code><a title="DAVE.scene.NodeWithParent.name" href="#DAVE.scene.Node.name">name</a></code></li>
 <li><code><a title="DAVE.scene.NodeWithParent.parent" href="#DAVE.scene.NodeWithParent.parent">parent</a></code></li>
+<li><code><a title="DAVE.scene.NodeWithParent.update" href="#DAVE.scene.Node.update">update</a></code></li>
 </ul>
 </li>
 </ul>
@@ -5891,6 +8078,7 @@ def stiffness(self):
 <ul class="hlist">
 <li><code><a title="DAVE.scene.CoreConnectedNode.give_python_code" href="#DAVE.scene.Node.give_python_code">give_python_code</a></code></li>
 <li><code><a title="DAVE.scene.CoreConnectedNode.name" href="#DAVE.scene.Node.name">name</a></code></li>
+<li><code><a title="DAVE.scene.CoreConnectedNode.update" href="#DAVE.scene.Node.update">update</a></code></li>
 </ul>
 </li>
 </ul>
@@ -6034,20 +8222,27 @@ The angle of rotation is the angle between the master x-axis and D</p>
         self._slave = val
         self._vfNode.slave = val._vfNode
 
+    # read-only
+    @property
+    def moment_on_master(self):
+        return self._vfNode.moment_on_master
 
-    def give_python_code(self):
-        code = &#34;# code for {}&#34;.format(self.name)
+    @property
+    def moment_on_slave(self):
+        return self._vfNode.moment_on_slave
 
-        code += &#34;\ns.new_linearbeam(name=&#39;{}&#39;,&#34;.format(self.name)
-        code += &#34;\n            master=&#39;{}&#39;,&#34;.format(self.master.name)
-        code += &#34;\n            slave=&#39;{}&#39;,&#34;.format(self.slave.name)
-        code += &#34;\n            EIy ={},&#34;.format(self.EIy)
-        code += &#34;\n            EIz ={},&#34;.format(self.EIz)
-        code += &#34;\n            GIp ={},&#34;.format(self.GIp)
-        code += &#34;\n            EA ={},&#34;.format(self.EA)
-        code += &#34;\n            L ={}) # L can possibly be omitted&#34;.format(self.L)
+    @property
+    def tension(self):
+        return self._vfNode.tension
 
-        return code</code></pre>
+    @property
+    def torsion(self):
+        return self._vfNode.torsion
+
+    @property
+    def torsion_angle(self):
+        &#34;&#34;&#34;Torsion angle in degrees&#34;&#34;&#34;
+        return np.rad2deg(self._vfNode.torsion_angle)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -6128,6 +8323,30 @@ def master(self):
     return self._master</code></pre>
 </details>
 </dd>
+<dt id="DAVE.scene.LinearBeam.moment_on_master"><code class="name">var <span class="ident">moment_on_master</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def moment_on_master(self):
+    return self._vfNode.moment_on_master</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.LinearBeam.moment_on_slave"><code class="name">var <span class="ident">moment_on_slave</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def moment_on_slave(self):
+    return self._vfNode.moment_on_slave</code></pre>
+</details>
+</dd>
 <dt id="DAVE.scene.LinearBeam.slave"><code class="name">var <span class="ident">slave</span></code></dt>
 <dd>
 <section class="desc"></section>
@@ -6140,6 +8359,43 @@ def slave(self):
     return self._slave</code></pre>
 </details>
 </dd>
+<dt id="DAVE.scene.LinearBeam.tension"><code class="name">var <span class="ident">tension</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def tension(self):
+    return self._vfNode.tension</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.LinearBeam.torsion"><code class="name">var <span class="ident">torsion</span></code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def torsion(self):
+    return self._vfNode.torsion</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.LinearBeam.torsion_angle"><code class="name">var <span class="ident">torsion_angle</span></code></dt>
+<dd>
+<section class="desc"><p>Torsion angle in degrees</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def torsion_angle(self):
+    &#34;&#34;&#34;Torsion angle in degrees&#34;&#34;&#34;
+    return np.rad2deg(self._vfNode.torsion_angle)</code></pre>
+</details>
+</dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
@@ -6147,6 +8403,7 @@ def slave(self):
 <ul class="hlist">
 <li><code><a title="DAVE.scene.CoreConnectedNode.give_python_code" href="#DAVE.scene.Node.give_python_code">give_python_code</a></code></li>
 <li><code><a title="DAVE.scene.CoreConnectedNode.name" href="#DAVE.scene.Node.name">name</a></code></li>
+<li><code><a title="DAVE.scene.CoreConnectedNode.update" href="#DAVE.scene.Node.update">update</a></code></li>
 </ul>
 </li>
 </ul>
@@ -6184,6 +8441,10 @@ Master class for all nodes</p></section>
         self._name = name
 
     def _delete_vfc(self):
+        pass
+
+    def update(self):
+        &#34;&#34;&#34;Performs internal updates relevant for physics. Called before solving statics or getting results&#34;&#34;&#34;
         pass</code></pre>
 </details>
 <h3>Subclasses</h3>
@@ -6191,6 +8452,7 @@ Master class for all nodes</p></section>
 <li><a title="DAVE.scene.CoreConnectedNode" href="#DAVE.scene.CoreConnectedNode">CoreConnectedNode</a></li>
 <li><a title="DAVE.scene.Visual" href="#DAVE.scene.Visual">Visual</a></li>
 <li><a title="DAVE.scene.TriMeshSource" href="#DAVE.scene.TriMeshSource">TriMeshSource</a></li>
+<li><a title="DAVE.scene.WaveInteraction1" href="#DAVE.scene.WaveInteraction1">WaveInteraction1</a></li>
 </ul>
 <h3>Instance variables</h3>
 <dl>
@@ -6222,6 +8484,20 @@ def name(self):
 <pre><code class="python">def give_python_code(self):
     &#34;&#34;&#34;Returns the python code that can be executed to re-create this node&#34;&#34;&#34;
     return &#34;# No python code generated for element {}&#34;.format(self.name)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Node.update"><code class="name flex">
+<span>def <span class="ident">update</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Performs internal updates relevant for physics. Called before solving statics or getting results</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def update(self):
+    &#34;&#34;&#34;Performs internal updates relevant for physics. Called before solving statics or getting results&#34;&#34;&#34;
+    pass</code></pre>
 </details>
 </dd>
 </dl>
@@ -6460,6 +8736,7 @@ def parent(self):
 <ul class="hlist">
 <li><code><a title="DAVE.scene.CoreConnectedNode.give_python_code" href="#DAVE.scene.Node.give_python_code">give_python_code</a></code></li>
 <li><code><a title="DAVE.scene.CoreConnectedNode.name" href="#DAVE.scene.Node.name">name</a></code></li>
+<li><code><a title="DAVE.scene.CoreConnectedNode.update" href="#DAVE.scene.Node.update">update</a></code></li>
 </ul>
 </li>
 </ul>
@@ -6593,6 +8870,10 @@ def parent(self):
 <li><a title="DAVE.scene.CoreConnectedNode" href="#DAVE.scene.CoreConnectedNode">CoreConnectedNode</a></li>
 <li><a title="DAVE.scene.Node" href="#DAVE.scene.Node">Node</a></li>
 </ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="DAVE.scene.BallastSystem" href="#DAVE.scene.BallastSystem">BallastSystem</a></li>
+</ul>
 <h3>Instance variables</h3>
 <dl>
 <dt id="DAVE.scene.Poi.applied_force_and_moment_global"><code class="name">var <span class="ident">applied_force_and_moment_global</span></code></dt>
@@ -6720,6 +9001,7 @@ def z(self):
 <li><code><a title="DAVE.scene.NodeWithParent.give_python_code" href="#DAVE.scene.Node.give_python_code">give_python_code</a></code></li>
 <li><code><a title="DAVE.scene.NodeWithParent.name" href="#DAVE.scene.Node.name">name</a></code></li>
 <li><code><a title="DAVE.scene.NodeWithParent.parent" href="#DAVE.scene.NodeWithParent.parent">parent</a></code></li>
+<li><code><a title="DAVE.scene.NodeWithParent.update" href="#DAVE.scene.Node.update">update</a></code></li>
 </ul>
 </li>
 </ul>
@@ -6801,6 +9083,8 @@ def z(self):
     def cog(self, newcog):
         assert3f(newcog)
         self._vfPoi.position = newcog
+        self.inertia_position = self.cog
+
 
     @property
     def mass(self):
@@ -6810,6 +9094,7 @@ def z(self):
     @mass.setter
     def mass(self, newmass):
         assert1f(newmass)
+        self.inertia = newmass
         self._vfForce.force = (0, 0, -vfc.G * newmass)
 
     def give_python_code(self):
@@ -6852,6 +9137,9 @@ def z(self):
             code += &#34;\n                          {}),&#34;.format(self.rotation[2])
         else:
             code += &#34;\n                          solved({})),&#34;.format(self.rotation[2])
+
+        if np.any(self.inertia_radii &gt; 0):
+            code += &#34;\n                     inertia_radii = ({}, {}, {}),&#34;.format(*self.inertia_radii)
 
         code += &#34;\n                fixed =({}, {}, {}, {}, {}, {}) )&#34;.format(*self.fixed)
 
@@ -6954,6 +9242,9 @@ def mass(self):
 <li><code><a title="DAVE.scene.Axis.gx" href="#DAVE.scene.Axis.gx">gx</a></code></li>
 <li><code><a title="DAVE.scene.Axis.gy" href="#DAVE.scene.Axis.gy">gy</a></code></li>
 <li><code><a title="DAVE.scene.Axis.gz" href="#DAVE.scene.Axis.gz">gz</a></code></li>
+<li><code><a title="DAVE.scene.Axis.heading" href="#DAVE.scene.Axis.heading">heading</a></code></li>
+<li><code><a title="DAVE.scene.Axis.heading_compass" href="#DAVE.scene.Axis.heading_compass">heading_compass</a></code></li>
+<li><code><a title="DAVE.scene.Axis.heel" href="#DAVE.scene.Axis.heel">heel</a></code></li>
 <li><code><a title="DAVE.scene.Axis.name" href="#DAVE.scene.Node.name">name</a></code></li>
 <li><code><a title="DAVE.scene.Axis.parent" href="#DAVE.scene.Axis.parent">parent</a></code></li>
 <li><code><a title="DAVE.scene.Axis.position" href="#DAVE.scene.Axis.position">position</a></code></li>
@@ -6963,12 +9254,19 @@ def mass(self):
 <li><code><a title="DAVE.scene.Axis.rz" href="#DAVE.scene.Axis.rz">rz</a></code></li>
 <li><code><a title="DAVE.scene.Axis.set_fixed" href="#DAVE.scene.Axis.set_fixed">set_fixed</a></code></li>
 <li><code><a title="DAVE.scene.Axis.set_free" href="#DAVE.scene.Axis.set_free">set_free</a></code></li>
+<li><code><a title="DAVE.scene.Axis.tilt_x" href="#DAVE.scene.Axis.tilt_x">tilt_x</a></code></li>
+<li><code><a title="DAVE.scene.Axis.tilt_y" href="#DAVE.scene.Axis.tilt_y">tilt_y</a></code></li>
 <li><code><a title="DAVE.scene.Axis.to_glob_direction" href="#DAVE.scene.Axis.to_glob_direction">to_glob_direction</a></code></li>
 <li><code><a title="DAVE.scene.Axis.to_glob_position" href="#DAVE.scene.Axis.to_glob_position">to_glob_position</a></code></li>
 <li><code><a title="DAVE.scene.Axis.to_glob_rotation" href="#DAVE.scene.Axis.to_glob_rotation">to_glob_rotation</a></code></li>
 <li><code><a title="DAVE.scene.Axis.to_loc_direction" href="#DAVE.scene.Axis.to_loc_direction">to_loc_direction</a></code></li>
 <li><code><a title="DAVE.scene.Axis.to_loc_position" href="#DAVE.scene.Axis.to_loc_position">to_loc_position</a></code></li>
 <li><code><a title="DAVE.scene.Axis.to_loc_rotation" href="#DAVE.scene.Axis.to_loc_rotation">to_loc_rotation</a></code></li>
+<li><code><a title="DAVE.scene.Axis.trim" href="#DAVE.scene.Axis.trim">trim</a></code></li>
+<li><code><a title="DAVE.scene.Axis.update" href="#DAVE.scene.Node.update">update</a></code></li>
+<li><code><a title="DAVE.scene.Axis.ux" href="#DAVE.scene.Axis.ux">ux</a></code></li>
+<li><code><a title="DAVE.scene.Axis.uy" href="#DAVE.scene.Axis.uy">uy</a></code></li>
+<li><code><a title="DAVE.scene.Axis.uz" href="#DAVE.scene.Axis.uz">uz</a></code></li>
 <li><code><a title="DAVE.scene.Axis.x" href="#DAVE.scene.Axis.x">x</a></code></li>
 <li><code><a title="DAVE.scene.Axis.y" href="#DAVE.scene.Axis.y">y</a></code></li>
 <li><code><a title="DAVE.scene.Axis.z" href="#DAVE.scene.Axis.z">z</a></code></li>
@@ -7050,6 +9348,10 @@ It interfaces with the virtual-float core for all calculations.</p>
 
 
     # =========== private functions =============
+
+    def _print_cpp(self):
+        print(self._vfc.to_string())
+
     def _print(self,what):
         if self.verbose:
             print(what)
@@ -7209,10 +9511,11 @@ It interfaces with the virtual-float core for all calculations.</p>
         return self.node_by_name(node_name)
 
     def nodes_of_type(self, node_class):
-        &#34;&#34;&#34;Returns all nodes of the specified type
+        &#34;&#34;&#34;Returns all nodes of the specified or derived type
 
         Examples:
             pois = scene.nodes_of_type(DAVE.Poi)
+            axis_and_bodies = scene.nodes_of_type(DAVE.Axis)
         &#34;&#34;&#34;
         r = list()
         for n in self._nodes:
@@ -7223,11 +9526,18 @@ It interfaces with the virtual-float core for all calculations.</p>
     def sort_nodes_by_dependency(self):
         &#34;&#34;&#34;Sorts the nodes such that a node only depends on nodes earlier in the list.&#34;&#34;&#34;
 
+        scene_names = [n.name for n in self._nodes]
+
         self._vfc.state_update()  # use the function from the core.
         new_list = []
         for name in self._vfc.names:  # and then build a new list using the names
             if vfc.VF_NAME_SPLIT in name:
                 continue
+
+            if name not in scene_names:
+                raise Exception(&#39;Something went wrong with sorting the the nodes by dependency. &#39;
+                                &#39;Node naming between core and scene is inconsistent for node {}&#39;.format(name))
+
             new_list.append(self[name])
 
         # and add the nodes without a vfc-core connection
@@ -7339,16 +9649,16 @@ It interfaces with the virtual-float core for all calculations.</p>
 
         self._print(&#39;Deleting {} [{}]&#39;.format(node.name, str(type(node)).split(&#39;.&#39;)[-1][:-2]))
 
-        # remove the vtk node
+        # First delete the dependencies
+        for d in depending_nodes:
+            if not self.name_available(d):  # element is still here
+                self.delete(d)
+
+        # then remove the vtk node itself
         self._print(&#39;removing vfc node&#39;)
         node._delete_vfc()
         self._nodes.remove(node)
 
-        # then delete the dependencies
-
-        for d in depending_nodes:
-            if not self.name_available(d):  # element is still here
-                self.delete(d)
 
 
     def dissolve(self, node):
@@ -7378,9 +9688,17 @@ It interfaces with the virtual-float core for all calculations.</p>
 
 
 
-    # ========= The most important function ========
+    # ========= The most important functions ========
 
-    def solve_statics(self, silent=False):
+    def update(self):
+        &#34;&#34;&#34;Updates the interface between the nodes and the core. This includes the re-calculation of all forces,
+        buoyancy positions, ballast-system cogs etc.
+        &#34;&#34;&#34;
+        for n in self._nodes:
+            n.update()
+        self._vfc.state_update()
+
+    def solve_statics(self, silent=False, timeout = None):
         &#34;&#34;&#34;Solves statics
 
         Args:
@@ -7390,7 +9708,11 @@ It interfaces with the virtual-float core for all calculations.</p>
             bool: True if successful, False otherwise.
 
         &#34;&#34;&#34;
-        succes = self._vfc.state_solve_statics()
+        self.update()
+        if timeout is None:
+            succes = self._vfc.state_solve_statics()
+        else:
+            succes = self._vfc.state_solve_statics_with_timeout(timeout, False)
 
         if self.verify_equilibrium():
             if not silent:
@@ -7411,21 +9733,21 @@ It interfaces with the virtual-float core for all calculations.</p>
             bool: True if successful, False if not an equilibrium.
 
         &#34;&#34;&#34;
+        self.update()
         return (self._vfc.Emaxabs &lt; tol)
 
 
 
     # ====== goal seek ========
 
-    def goal_seek(self, set_node, set_property, target, change_node, change_property, bracket=None, tol=1e-3):
+    def goal_seek(self, evaluate, target, change_node, change_property, bracket=None, tol=1e-3):
         &#34;&#34;&#34;goal_seek
 
         Goal seek is the classic goal-seek. It changes a single property of a single node in order to get
         some property of some node to a specified value. Just like excel.
 
         Args:
-            set_node (Node or str):     node to be evaluated
-            set_property (str): property of that node to be evaluated
+            evaluate : code to be evaluated to yield the value that is solved for. Eg: s[&#39;poi&#39;].fx Scene is abbiviated as &#34;s&#34;
             target (number):       target value for that property
             change_node(Node or str):  node to be adjusted
             change_property (str): property of that node to be adjusted
@@ -7436,16 +9758,22 @@ It interfaces with the virtual-float core for all calculations.</p>
 
         Examples:
             Change the y-position of the cog of a rigid body (&#39;Barge&#39;)  in order to obtain zero roll (rx)
-            &gt;&gt;&gt; s.goal_seek(&#39;Barge&#39;,&#39;rx&#39;,0,&#39;Barge&#39;,&#39;cogy&#39;)
+            &gt;&gt;&gt; s.goal_seek(&#34;s[&#39;Barge&#39;].fx&#34;,0,&#39;Barge&#39;,&#39;cogy&#39;)
 
         &#34;&#34;&#34;
+        s = self
 
-        set_node = self._node_from_node_or_str(set_node)
         change_node = self._node_from_node_or_str(change_node)
 
         # check that the attributes exist and are single numbers
-        test = getattr(set_node, set_property)
-        self._print(&#39;Attempting to set {}.{} to {} (now {})&#39;.format(set_node.name, set_property, target, test))
+        test = eval(evaluate)
+
+        try:
+            float(test)
+        except:
+            raise ValueError(&#39;Evaluation of {} does not result in a float&#39;)
+
+        self._print(&#39;Attempting to evaluate {} to {} (now {})&#39;.format(evaluate, target, test))
 
         initial = getattr(change_node, change_property)
         self._print(&#39;By changing the value of {}.{} (now {})&#39;.format(change_node.name, change_property, initial))
@@ -7453,7 +9781,8 @@ It interfaces with the virtual-float core for all calculations.</p>
         def set_and_get(x):
             setattr(change_node, change_property,x)
             self.solve_statics(silent=True)
-            result = getattr(set_node, set_property)
+            s = self
+            result = eval(evaluate)
             self._print(&#39;setting {} results in {}&#39;.format(x,result))
             return result-target
 
@@ -7469,7 +9798,7 @@ It interfaces with the virtual-float core for all calculations.</p>
         self._print(res)
 
         # evaluate result
-        final_value = getattr(set_node, set_property)
+        final_value = eval(evaluate)
         if abs(final_value-target) &gt; 1e-3:
             raise ValueError(&#34;Target not reached. Target was {}, reached value is {}&#34;.format(target, final_value))
 
@@ -7477,11 +9806,68 @@ It interfaces with the virtual-float core for all calculations.</p>
         return True
 
 
+    def plot_effect(self, evaluate, change_node, change_property, start, to, steps):
+        &#34;&#34;&#34;Produces a 2D plot with the relation between two properties of the scene. For example the length of a cable
+        versus the force in another cable.
+
+        The evaluate argument is processed using &#34;eval&#34; and may contain python code. This may be used to combine multiple
+        properties to one value. For example calculate the diagonal load distribution from four independent loads.
+
+        The plot is produced using matplotlob. The plot is produced in the current figure (if any) and plt.show is not executed.
+
+        Args:
+            evaluate (str): code to be evaluated to yield the value on the y-axis. Eg: s[&#39;poi&#39;].fx Scene is abbiviated as &#34;s&#34;
+            change_node(Node or str):  node to be adjusted
+            change_property (str): property of that node to be adjusted
+            start : left side of the interval
+            to : right side of the interval
+            steps : number of steps in the interval
+
+        Returns:
+            Tuple (x,y) with x and y coordinates
+
+        Examples:
+            &gt;&gt;&gt; s.plot_effect(&#34;s[&#39;cable&#39;].tension&#34;, &#34;cable&#34;, &#34;length&#34;, 11, 14, 10)
+            &gt;&gt;&gt; import matplotlib.pyplot as plt
+            &gt;&gt;&gt; plt.show()
+
+        &#34;&#34;&#34;
+        s=self
+        change_node = self._node_from_node_or_str(change_node)
+
+        # check that the attributes exist and are single numbers
+        test = eval(evaluate)
+
+        try:
+            float(test)
+        except:
+            raise ValueError(&#39;Evaluation of {} does not result in a float&#39;)
+
+        def set_and_get(x):
+            setattr(change_node, change_property,x)
+            self.solve_statics(silent=True)
+            s = self
+            result = eval(evaluate)
+            self._print(&#39;setting {} results in {}&#39;.format(x,result))
+            return result
+
+        xs = np.linspace(start,to,steps)
+        y = []
+        for x in xs:
+            y.append(set_and_get(x))
+
+        y = np.array(y)
+        import matplotlib.pyplot as plt
+        plt.plot(xs,y)
+        plt.xlabel(&#39;{} of {}&#39;.format(change_property, change_node.name))
+        plt.ylabel(evaluate)
+
+        return (xs,y)
 
 
     # ======== create functions =========
 
-    def new_axis(self, name, parent=None, position=None, rotation=None, fixed = True):
+    def new_axis(self, name, parent=None, position=None, rotation=None, inertia=None, inertia_radii=None, fixed = True):
         &#34;&#34;&#34;Creates a new *axis* node and adds it to the scene.
 
         Args:
@@ -7500,6 +9886,7 @@ It interfaces with the virtual-float core for all calculations.</p>
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
@@ -7507,6 +9894,14 @@ It interfaces with the virtual-float core for all calculations.</p>
             assert3f(position, &#34;Position &#34;)
         if rotation is not None:
             assert3f(rotation, &#34;Rotation &#34;)
+
+        if inertia is not None:
+            assert1f_positive(inertia, &#34;inertia &#34;)
+
+        if inertia_radii is not None:
+            assert3f_positive(inertia_radii, &#34;Radii of inertia&#34;)
+            assert inertia is not None, ValueError(&#34;Can not set radii of gyration without specifying inertia&#34;)
+
 
         if not isinstance(fixed, bool):
             if len(fixed) != 6:
@@ -7526,6 +9921,11 @@ It interfaces with the virtual-float core for all calculations.</p>
             new_node.position = position
         if rotation is not None:
             new_node.rotation = rotation
+        if inertia is not None:
+            new_node.inertia = inertia
+        if inertia_radii is not None:
+            new_node.inertia_radii = inertia_radii
+
 
         if isinstance(fixed, bool):
             if fixed:
@@ -7539,8 +9939,57 @@ It interfaces with the virtual-float core for all calculations.</p>
         self._nodes.append(new_node)
         return new_node
 
+    def new_waveinteraction(self, name, path, parent=None, offset=None,):
+            &#34;&#34;&#34;Creates a new *wave interaction* node and adds it to the scene.
+
+            Args:
+                name: Name for the node, should be unique
+                path: Path to the hydrodynamic database
+                parent: optional, name of the parent of the node
+                offset: optional, position for the node (x,y,z)
+
+            Returns:
+                Reference to newly created wave-interaction object
+
+            &#34;&#34;&#34;
+
+            if not parent:
+                raise ValueError(&#39;Wave-interaction has to be located on an Axis&#39;)
+
+            # apply prefixes
+            name = self._prefix_name(name)
+
+            # first check
+            assertValidName(name)
+            self._verify_name_available(name)
+            b = self._parent_from_node(parent)
+
+            if b is None:
+                raise ValueError(&#39;Wave-interaction has to be located on an Axis&#39;)
+
+            if offset is not None:
+                assert3f(offset, &#34;Offset &#34;)
+
+            self.get_resource_path(path)  # raises error when resource is not found
+
+            # then create
+
+            new_node = WaveInteraction1(self)
+
+            new_node.name = name
+            new_node.path = path
+            new_node.parent = parent
+
+            # and set properties
+            new_node.parent = b
+            if offset is not None:
+                new_node.offset = offset
+
+            self._nodes.append(new_node)
+            return new_node
+
     def new_visual(self, name, path, parent=None, offset=None, rotation=None, scale = None):
-        &#34;&#34;&#34;Creates a new *axis* node and adds it to the scene.
+        &#34;&#34;&#34;Creates a new *Visual* node and adds it to the scene.
 
         Args:
             name: Name for the node, should be unique
@@ -7559,6 +10008,7 @@ It interfaces with the virtual-float core for all calculations.</p>
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
@@ -7610,6 +10060,7 @@ It interfaces with the virtual-float core for all calculations.</p>
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
@@ -7631,7 +10082,7 @@ It interfaces with the virtual-float core for all calculations.</p>
         return new_node
 
     def new_rigidbody(self, name, mass=0, cog=(0, 0, 0),
-                      parent=None, position=None, rotation=None, fixed = True ):
+                      parent=None, position=None, rotation=None, inertia_radii=None, fixed = True ):
         &#34;&#34;&#34;Creates a new *rigidbody* node and adds it to the scene.
 
         Args:
@@ -7641,6 +10092,7 @@ It interfaces with the virtual-float core for all calculations.</p>
             parent: optional, name of the parent of the node
             position: optional, position for the node (x,y,z)
             rotation: optional, rotation for the node (rx,ry,rz)
+            inertia_radii : optional, radii of gyration (rxx,ryy,rzz); only used for dynamics
             fixed [True]: optional, determines whether the axis is fixed [True] or free [False]. May also be a sequence of 6 booleans.
 
         Examples:
@@ -7655,6 +10107,7 @@ It interfaces with the virtual-float core for all calculations.</p>
         name = self._prefix_name(name)
 
         # check input
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
@@ -7662,6 +10115,10 @@ It interfaces with the virtual-float core for all calculations.</p>
             assert3f(position, &#34;Position &#34;)
         if rotation is not None:
             assert3f(rotation, &#34;Rotation &#34;)
+            
+        if inertia_radii is not None:
+            assert3f_positive(inertia_radii, &#34;Radii of inertia&#34;)
+            assert mass&gt;0, ValueError(&#34;Can not set radii of gyration without specifying mass&#34;)
 
         if not isinstance(fixed, bool):
             if len(fixed) != 6:
@@ -7682,6 +10139,9 @@ It interfaces with the virtual-float core for all calculations.</p>
 
         r = RigidBody(self, a, p, g)
 
+        r.cog = cog  # set inertia
+        r.mass = mass
+
         # and set properties
         if b is not None:
             r.parent = b
@@ -7689,6 +10149,9 @@ It interfaces with the virtual-float core for all calculations.</p>
             r.position = position
         if rotation is not None:
             r.rotation = rotation
+            
+        if inertia_radii is not None:
+            r.inertia_radii = inertia_radii
 
         if isinstance(fixed, bool):
             if fixed:
@@ -7733,6 +10196,7 @@ It interfaces with the virtual-float core for all calculations.</p>
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         assert1f(length, &#39;length&#39;)
         assert1f(EA, &#39;EA&#39;)
@@ -7815,6 +10279,7 @@ It interfaces with the virtual-float core for all calculations.</p>
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._poi_from_node(parent)
 
@@ -7860,6 +10325,7 @@ It interfaces with the virtual-float core for all calculations.</p>
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._poi_from_node(parent)
 
@@ -7906,6 +10372,7 @@ It interfaces with the virtual-float core for all calculations.</p>
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
         assert3f(cob, &#34;CoB &#34;)
@@ -7955,6 +10422,7 @@ It interfaces with the virtual-float core for all calculations.</p>
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         m = self._parent_from_node(master)
         s = self._parent_from_node(slave)
@@ -7997,6 +10465,7 @@ It interfaces with the virtual-float core for all calculations.</p>
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         m = self._parent_from_node(master)
         s = self._parent_from_node(slave)
@@ -8041,6 +10510,7 @@ It interfaces with the virtual-float core for all calculations.</p>
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         m = self._parent_from_node(master)
         s = self._parent_from_node(slave)
@@ -8088,6 +10558,7 @@ It interfaces with the virtual-float core for all calculations.</p>
         name = self._prefix_name(name)
 
         # first check
+        assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
@@ -8101,6 +10572,54 @@ It interfaces with the virtual-float core for all calculations.</p>
 
         self._nodes.append(new_node)
         return new_node
+
+    def new_ballastsystem(self, name, parent=None, position=None):
+        &#34;&#34;&#34;Creates a new *rigidbody* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: name of the parent of the ballast system (ie: the vessel axis system)
+            position: the reference system in which the tanks are defined [0,0,0]
+
+        Examples:
+            scene.new_ballastsystem(&#34;cheetah_ballast&#34;, parent=&#34;Cheetah&#34;)
+
+        Returns:
+            Reference to newly created BallastSystem
+
+        &#34;&#34;&#34;
+
+        # apply prefixes
+        name = self._prefix_name(name)
+
+        # check input
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._parent_from_node(parent)
+
+        parent = self._parent_from_node(parent) # handles verification of type as well
+
+        if position is not None:
+            assert3f(position, &#34;Position &#34;)
+
+        # make elements
+
+        p = self._vfc.new_poi(name)
+
+        g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + &#34;gravity&#34;)
+        g.parent = p
+        g.force = (0, 0, 0)
+
+        r = BallastSystem(self, p, g)
+
+        # and set properties
+        r.parent = parent
+
+        if position is not None:
+            r.position = position
+
+        self._nodes.append(r)
+        return r
 
     def print_python_code(self):
         &#34;&#34;&#34;Prints the python code that generates the current scene
@@ -8247,7 +10766,6 @@ It interfaces with the virtual-float core for all calculations.</p>
 
         exec(code, {}, {&#39;s&#39;: s})
 
-
     def import_scene(self, other, prefix = &#34;&#34;, containerize = True):
         &#34;&#34;&#34;Copy-paste all nodes of scene &#34;other&#34; into current scene.
 
@@ -8307,7 +10825,47 @@ It interfaces with the virtual-float core for all calculations.</p>
 
             return c
 
-        return None</code></pre>
+        return None
+
+    def copy(self):
+        &#34;&#34;&#34;Creates a full and independent copy of the scene and returns it.
+
+        Example:
+            s = Scene()
+            c = s.copy()
+            c.new_axis(&#39;only in c&#39;)
+
+        &#34;&#34;&#34;
+
+        c = Scene()
+        c.import_scene(self)
+        return c
+
+
+
+    # =================== DYNAMICS ==================
+
+    def dynamics_M(self,delta = 0.1):
+        &#34;&#34;&#34;Returns the mass matrix of the scene&#34;&#34;&#34;
+        self.update()
+        return self._vfc.M(delta)
+
+    def dynamics_K(self, delta):
+        &#34;&#34;&#34;Returns the stiffness matrix of the scene for a perturbation of delta &#34;&#34;&#34;
+        self.update()
+        return -self._vfc.K(delta)
+
+    def dynamics_nodes(self):
+        &#34;&#34;&#34;Returns a list of nodes associated with the rows/columns of M and K&#34;&#34;&#34;
+        self.update()
+        nodes = self._vfc.get_dof_elements()
+        r = [self[n.name] for n in nodes]
+        return r
+
+    def dynamics_modes(self):
+        &#34;&#34;&#34;Returns a list of nodes associated with the rows/columns of M and K&#34;&#34;&#34;
+        self.update()
+        return self._vfc.get_dof_modes()</code></pre>
 </details>
 <h3>Instance variables</h3>
 <dl>
@@ -8376,6 +10934,34 @@ It interfaces with the virtual-float core for all calculations.</p>
     self._vfc = pyo3d.Scene()</code></pre>
 </details>
 </dd>
+<dt id="DAVE.scene.Scene.copy"><code class="name flex">
+<span>def <span class="ident">copy</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Creates a full and independent copy of the scene and returns it.</p>
+<h2 id="example">Example</h2>
+<p>s = Scene()
+c = s.copy()
+c.new_axis('only in c')</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def copy(self):
+    &#34;&#34;&#34;Creates a full and independent copy of the scene and returns it.
+
+    Example:
+        s = Scene()
+        c = s.copy()
+        c.new_axis(&#39;only in c&#39;)
+
+    &#34;&#34;&#34;
+
+    c = Scene()
+    c.import_scene(self)
+    return c</code></pre>
+</details>
+</dd>
 <dt id="DAVE.scene.Scene.delete"><code class="name flex">
 <span>def <span class="ident">delete</span></span>(<span>self, node)</span>
 </code></dt>
@@ -8401,16 +10987,15 @@ dissolve</p></section>
 
     self._print(&#39;Deleting {} [{}]&#39;.format(node.name, str(type(node)).split(&#39;.&#39;)[-1][:-2]))
 
-    # remove the vtk node
-    self._print(&#39;removing vfc node&#39;)
-    node._delete_vfc()
-    self._nodes.remove(node)
-
-    # then delete the dependencies
-
+    # First delete the dependencies
     for d in depending_nodes:
         if not self.name_available(d):  # element is still here
-            self.delete(d)</code></pre>
+            self.delete(d)
+
+    # then remove the vtk node itself
+    self._print(&#39;removing vfc node&#39;)
+    node._delete_vfc()
+    self._nodes.remove(node)</code></pre>
 </details>
 </dd>
 <dt id="DAVE.scene.Scene.dissolve"><code class="name flex">
@@ -8454,6 +11039,68 @@ the element. For example a poi can only be dissolved when nothing is attached to
         self[d].change_parent_to(node.parent)
 
     self.delete(node)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Scene.dynamics_K"><code class="name flex">
+<span>def <span class="ident">dynamics_K</span></span>(<span>self, delta)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns the stiffness matrix of the scene for a perturbation of delta</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dynamics_K(self, delta):
+    &#34;&#34;&#34;Returns the stiffness matrix of the scene for a perturbation of delta &#34;&#34;&#34;
+    self.update()
+    return -self._vfc.K(delta)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Scene.dynamics_M"><code class="name flex">
+<span>def <span class="ident">dynamics_M</span></span>(<span>self, delta=0.1)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns the mass matrix of the scene</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dynamics_M(self,delta = 0.1):
+    &#34;&#34;&#34;Returns the mass matrix of the scene&#34;&#34;&#34;
+    self.update()
+    return self._vfc.M(delta)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Scene.dynamics_modes"><code class="name flex">
+<span>def <span class="ident">dynamics_modes</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns a list of nodes associated with the rows/columns of M and K</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dynamics_modes(self):
+    &#34;&#34;&#34;Returns a list of nodes associated with the rows/columns of M and K&#34;&#34;&#34;
+    self.update()
+    return self._vfc.get_dof_modes()</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Scene.dynamics_nodes"><code class="name flex">
+<span>def <span class="ident">dynamics_nodes</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns a list of nodes associated with the rows/columns of M and K</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dynamics_nodes(self):
+    &#34;&#34;&#34;Returns a list of nodes associated with the rows/columns of M and K&#34;&#34;&#34;
+    self.update()
+    nodes = self._vfc.get_dof_elements()
+    r = [self[n.name] for n in nodes]
+    return r</code></pre>
 </details>
 </dd>
 <dt id="DAVE.scene.Scene.get_resource_list"><code class="name flex">
@@ -8581,7 +11228,7 @@ resource_paths</p>
 </details>
 </dd>
 <dt id="DAVE.scene.Scene.goal_seek"><code class="name flex">
-<span>def <span class="ident">goal_seek</span></span>(<span>self, set_node, set_property, target, change_node, change_property, bracket=None, tol=0.001)</span>
+<span>def <span class="ident">goal_seek</span></span>(<span>self, evaluate, target, change_node, change_property, bracket=None, tol=0.001)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>goal_seek</p>
@@ -8589,12 +11236,8 @@ resource_paths</p>
 some property of some node to a specified value. Just like excel.</p>
 <h2 id="args">Args</h2>
 <dl>
-<dt><strong><code>set_node</code></strong> :&ensp;<a title="DAVE.scene.Node" href="#DAVE.scene.Node"><code>Node</code></a> or <code>str</code></dt>
-<dd>
-<p>node to be evaluated</p>
-</dd>
-<dt><strong><code>set_property</code></strong> :&ensp;<code>str</code></dt>
-<dd>property of that node to be evaluated</dd>
+<dt><strong><code>evaluate</code></strong> :&ensp;<code>code</code> <code>to</code> <code>be</code> <code>evaluated</code> <code>to</code> <code>yield</code> <code>the</code> <code>value</code> <code>that</code> <code>is</code> <code>solved</code> <code>for.</code> <code>Eg</code>: <code>s</code>[<code>'poi'</code>]<code>.fx</code> <a title="DAVE.scene.Scene" href="#DAVE.scene.Scene"><code>Scene</code></a> <code>is</code> <code>abbiviated</code> <code>as</code> <code>"s"</code></dt>
+<dd>&nbsp;</dd>
 <dt><strong><code>target</code></strong> :&ensp;<code>number</code></dt>
 <dd>
 <p>target value for that property</p>
@@ -8614,21 +11257,20 @@ node to be adjusted</dt>
 <h2 id="examples">Examples</h2>
 <p>Change the y-position of the cog of a rigid body ('Barge')
 in order to obtain zero roll (rx)</p>
-<pre><code>&gt;&gt;&gt; s.goal_seek('Barge','rx',0,'Barge','cogy')
+<pre><code>&gt;&gt;&gt; s.goal_seek("s['Barge'].fx",0,'Barge','cogy')
 </code></pre></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def goal_seek(self, set_node, set_property, target, change_node, change_property, bracket=None, tol=1e-3):
+<pre><code class="python">def goal_seek(self, evaluate, target, change_node, change_property, bracket=None, tol=1e-3):
     &#34;&#34;&#34;goal_seek
 
     Goal seek is the classic goal-seek. It changes a single property of a single node in order to get
     some property of some node to a specified value. Just like excel.
 
     Args:
-        set_node (Node or str):     node to be evaluated
-        set_property (str): property of that node to be evaluated
+        evaluate : code to be evaluated to yield the value that is solved for. Eg: s[&#39;poi&#39;].fx Scene is abbiviated as &#34;s&#34;
         target (number):       target value for that property
         change_node(Node or str):  node to be adjusted
         change_property (str): property of that node to be adjusted
@@ -8639,16 +11281,22 @@ in order to obtain zero roll (rx)</p>
 
     Examples:
         Change the y-position of the cog of a rigid body (&#39;Barge&#39;)  in order to obtain zero roll (rx)
-        &gt;&gt;&gt; s.goal_seek(&#39;Barge&#39;,&#39;rx&#39;,0,&#39;Barge&#39;,&#39;cogy&#39;)
+        &gt;&gt;&gt; s.goal_seek(&#34;s[&#39;Barge&#39;].fx&#34;,0,&#39;Barge&#39;,&#39;cogy&#39;)
 
     &#34;&#34;&#34;
+    s = self
 
-    set_node = self._node_from_node_or_str(set_node)
     change_node = self._node_from_node_or_str(change_node)
 
     # check that the attributes exist and are single numbers
-    test = getattr(set_node, set_property)
-    self._print(&#39;Attempting to set {}.{} to {} (now {})&#39;.format(set_node.name, set_property, target, test))
+    test = eval(evaluate)
+
+    try:
+        float(test)
+    except:
+        raise ValueError(&#39;Evaluation of {} does not result in a float&#39;)
+
+    self._print(&#39;Attempting to evaluate {} to {} (now {})&#39;.format(evaluate, target, test))
 
     initial = getattr(change_node, change_property)
     self._print(&#39;By changing the value of {}.{} (now {})&#39;.format(change_node.name, change_property, initial))
@@ -8656,7 +11304,8 @@ in order to obtain zero roll (rx)</p>
     def set_and_get(x):
         setattr(change_node, change_property,x)
         self.solve_statics(silent=True)
-        result = getattr(set_node, set_property)
+        s = self
+        result = eval(evaluate)
         self._print(&#39;setting {} results in {}&#39;.format(x,result))
         return result-target
 
@@ -8672,7 +11321,7 @@ in order to obtain zero roll (rx)</p>
     self._print(res)
 
     # evaluate result
-    final_value = getattr(set_node, set_property)
+    final_value = eval(evaluate)
     if abs(final_value-target) &gt; 1e-3:
         raise ValueError(&#34;Target not reached. Target was {}, reached value is {}&#34;.format(target, final_value))
 
@@ -8816,7 +11465,7 @@ File is searched for in the resource-paths.</p>
 </details>
 </dd>
 <dt id="DAVE.scene.Scene.new_axis"><code class="name flex">
-<span>def <span class="ident">new_axis</span></span>(<span>self, name, parent=None, position=None, rotation=None, fixed=True)</span>
+<span>def <span class="ident">new_axis</span></span>(<span>self, name, parent=None, position=None, rotation=None, inertia=None, inertia_radii=None, fixed=True)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Creates a new <em>axis</em> node and adds it to the scene.</p>
@@ -8841,7 +11490,7 @@ File is searched for in the resource-paths.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def new_axis(self, name, parent=None, position=None, rotation=None, fixed = True):
+<pre><code class="python">def new_axis(self, name, parent=None, position=None, rotation=None, inertia=None, inertia_radii=None, fixed = True):
     &#34;&#34;&#34;Creates a new *axis* node and adds it to the scene.
 
     Args:
@@ -8860,6 +11509,7 @@ File is searched for in the resource-paths.</p>
     name = self._prefix_name(name)
 
     # first check
+    assertValidName(name)
     self._verify_name_available(name)
     b = self._parent_from_node(parent)
 
@@ -8867,6 +11517,14 @@ File is searched for in the resource-paths.</p>
         assert3f(position, &#34;Position &#34;)
     if rotation is not None:
         assert3f(rotation, &#34;Rotation &#34;)
+
+    if inertia is not None:
+        assert1f_positive(inertia, &#34;inertia &#34;)
+
+    if inertia_radii is not None:
+        assert3f_positive(inertia_radii, &#34;Radii of inertia&#34;)
+        assert inertia is not None, ValueError(&#34;Can not set radii of gyration without specifying inertia&#34;)
+
 
     if not isinstance(fixed, bool):
         if len(fixed) != 6:
@@ -8886,6 +11544,11 @@ File is searched for in the resource-paths.</p>
         new_node.position = position
     if rotation is not None:
         new_node.rotation = rotation
+    if inertia is not None:
+        new_node.inertia = inertia
+    if inertia_radii is not None:
+        new_node.inertia_radii = inertia_radii
+
 
     if isinstance(fixed, bool):
         if fixed:
@@ -8898,6 +11561,80 @@ File is searched for in the resource-paths.</p>
 
     self._nodes.append(new_node)
     return new_node</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Scene.new_ballastsystem"><code class="name flex">
+<span>def <span class="ident">new_ballastsystem</span></span>(<span>self, name, parent=None, position=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Creates a new <em>rigidbody</em> node and adds it to the scene.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>name</code></strong></dt>
+<dd>Name for the node, should be unique</dd>
+<dt><strong><code>parent</code></strong></dt>
+<dd>name of the parent of the ballast system (ie: the vessel axis system)</dd>
+<dt><strong><code>position</code></strong></dt>
+<dd>the reference system in which the tanks are defined [0,0,0]</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<p>scene.new_ballastsystem("cheetah_ballast", parent="Cheetah")</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Reference</code> <code>to</code> <code>newly</code> <code>created</code> <a title="DAVE.scene.BallastSystem" href="#DAVE.scene.BallastSystem"><code>BallastSystem</code></a></dt>
+<dd>&nbsp;</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def new_ballastsystem(self, name, parent=None, position=None):
+    &#34;&#34;&#34;Creates a new *rigidbody* node and adds it to the scene.
+
+    Args:
+        name: Name for the node, should be unique
+        parent: name of the parent of the ballast system (ie: the vessel axis system)
+        position: the reference system in which the tanks are defined [0,0,0]
+
+    Examples:
+        scene.new_ballastsystem(&#34;cheetah_ballast&#34;, parent=&#34;Cheetah&#34;)
+
+    Returns:
+        Reference to newly created BallastSystem
+
+    &#34;&#34;&#34;
+
+    # apply prefixes
+    name = self._prefix_name(name)
+
+    # check input
+    assertValidName(name)
+    self._verify_name_available(name)
+    b = self._parent_from_node(parent)
+
+    parent = self._parent_from_node(parent) # handles verification of type as well
+
+    if position is not None:
+        assert3f(position, &#34;Position &#34;)
+
+    # make elements
+
+    p = self._vfc.new_poi(name)
+
+    g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + &#34;gravity&#34;)
+    g.parent = p
+    g.force = (0, 0, 0)
+
+    r = BallastSystem(self, p, g)
+
+    # and set properties
+    r.parent = parent
+
+    if position is not None:
+        r.position = position
+
+    self._nodes.append(r)
+    return r</code></pre>
 </details>
 </dd>
 <dt id="DAVE.scene.Scene.new_buoyancy"><code class="name flex">
@@ -8941,6 +11678,7 @@ File is searched for in the resource-paths.</p>
     name = self._prefix_name(name)
 
     # first check
+    assertValidName(name)
     self._verify_name_available(name)
     b = self._parent_from_node(parent)
 
@@ -9024,6 +11762,7 @@ EA [0] : stiffness of the cable in kN/m; default</p>
     name = self._prefix_name(name)
 
     # first check
+    assertValidName(name)
     self._verify_name_available(name)
     assert1f(length, &#39;length&#39;)
     assert1f(EA, &#39;EA&#39;)
@@ -9135,6 +11874,7 @@ EA [0] : stiffness of the cable in kN/m; default</p>
     name = self._prefix_name(name)
 
     # first check
+    assertValidName(name)
     self._verify_name_available(name)
     m = self._parent_from_node(master)
     s = self._parent_from_node(slave)
@@ -9201,6 +11941,7 @@ EA [0] : stiffness of the cable in kN/m; default</p>
     name = self._prefix_name(name)
 
     # first check
+    assertValidName(name)
     self._verify_name_available(name)
     b = self._poi_from_node(parent)
 
@@ -9291,6 +12032,7 @@ EA [0] : stiffness of the cable in kN/m; default</p>
     name = self._prefix_name(name)
 
     # first check
+    assertValidName(name)
     self._verify_name_available(name)
     b = self._parent_from_node(parent)
     assert3f(cob, &#34;CoB &#34;)
@@ -9370,6 +12112,7 @@ See :py:class:<a title="DAVE.scene.LinearBeam" href="#DAVE.scene.LinearBeam"><co
     name = self._prefix_name(name)
 
     # first check
+    assertValidName(name)
     self._verify_name_available(name)
     m = self._parent_from_node(master)
     s = self._parent_from_node(slave)
@@ -9445,6 +12188,7 @@ See :py:class:<a title="DAVE.scene.LinearBeam" href="#DAVE.scene.LinearBeam"><co
     name = self._prefix_name(name)
 
     # first check
+    assertValidName(name)
     self._verify_name_available(name)
     m = self._parent_from_node(master)
     s = self._parent_from_node(slave)
@@ -9509,6 +12253,7 @@ See :py:class:<a title="DAVE.scene.LinearBeam" href="#DAVE.scene.LinearBeam"><co
     name = self._prefix_name(name)
 
     # first check
+    assertValidName(name)
     self._verify_name_available(name)
     b = self._parent_from_node(parent)
 
@@ -9531,7 +12276,7 @@ See :py:class:<a title="DAVE.scene.LinearBeam" href="#DAVE.scene.LinearBeam"><co
 </details>
 </dd>
 <dt id="DAVE.scene.Scene.new_rigidbody"><code class="name flex">
-<span>def <span class="ident">new_rigidbody</span></span>(<span>self, name, mass=0, cog=(0, 0, 0), parent=None, position=None, rotation=None, fixed=True)</span>
+<span>def <span class="ident">new_rigidbody</span></span>(<span>self, name, mass=0, cog=(0, 0, 0), parent=None, position=None, rotation=None, inertia_radii=None, fixed=True)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Creates a new <em>rigidbody</em> node and adds it to the scene.</p>
@@ -9549,6 +12294,8 @@ See :py:class:<a title="DAVE.scene.LinearBeam" href="#DAVE.scene.LinearBeam"><co
 <dd>optional, position for the node (x,y,z)</dd>
 <dt><strong><code>rotation</code></strong></dt>
 <dd>optional, rotation for the node (rx,ry,rz)</dd>
+<dt><strong><code>inertia_radii</code></strong> :&ensp;optional, <code>radii</code> of <code>gyration</code> (<code>rxx</code>,<code>ryy</code>,<code>rzz</code>); <code>only</code> <code>used</code> <code>for</code> <code>dynamics</code></dt>
+<dd>&nbsp;</dd>
 </dl>
 <p>fixed [True]: optional, determines whether the axis is fixed [True] or free [False]. May also be a sequence of 6 booleans.</p>
 <h2 id="examples">Examples</h2>
@@ -9563,7 +12310,7 @@ See :py:class:<a title="DAVE.scene.LinearBeam" href="#DAVE.scene.LinearBeam"><co
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def new_rigidbody(self, name, mass=0, cog=(0, 0, 0),
-                  parent=None, position=None, rotation=None, fixed = True ):
+                  parent=None, position=None, rotation=None, inertia_radii=None, fixed = True ):
     &#34;&#34;&#34;Creates a new *rigidbody* node and adds it to the scene.
 
     Args:
@@ -9573,6 +12320,7 @@ See :py:class:<a title="DAVE.scene.LinearBeam" href="#DAVE.scene.LinearBeam"><co
         parent: optional, name of the parent of the node
         position: optional, position for the node (x,y,z)
         rotation: optional, rotation for the node (rx,ry,rz)
+        inertia_radii : optional, radii of gyration (rxx,ryy,rzz); only used for dynamics
         fixed [True]: optional, determines whether the axis is fixed [True] or free [False]. May also be a sequence of 6 booleans.
 
     Examples:
@@ -9587,6 +12335,7 @@ See :py:class:<a title="DAVE.scene.LinearBeam" href="#DAVE.scene.LinearBeam"><co
     name = self._prefix_name(name)
 
     # check input
+    assertValidName(name)
     self._verify_name_available(name)
     b = self._parent_from_node(parent)
 
@@ -9594,6 +12343,10 @@ See :py:class:<a title="DAVE.scene.LinearBeam" href="#DAVE.scene.LinearBeam"><co
         assert3f(position, &#34;Position &#34;)
     if rotation is not None:
         assert3f(rotation, &#34;Rotation &#34;)
+        
+    if inertia_radii is not None:
+        assert3f_positive(inertia_radii, &#34;Radii of inertia&#34;)
+        assert mass&gt;0, ValueError(&#34;Can not set radii of gyration without specifying mass&#34;)
 
     if not isinstance(fixed, bool):
         if len(fixed) != 6:
@@ -9614,6 +12367,9 @@ See :py:class:<a title="DAVE.scene.LinearBeam" href="#DAVE.scene.LinearBeam"><co
 
     r = RigidBody(self, a, p, g)
 
+    r.cog = cog  # set inertia
+    r.mass = mass
+
     # and set properties
     if b is not None:
         r.parent = b
@@ -9621,6 +12377,9 @@ See :py:class:<a title="DAVE.scene.LinearBeam" href="#DAVE.scene.LinearBeam"><co
         r.position = position
     if rotation is not None:
         r.rotation = rotation
+        
+    if inertia_radii is not None:
+        r.inertia_radii = inertia_radii
 
     if isinstance(fixed, bool):
         if fixed:
@@ -9678,6 +12437,7 @@ See :py:class:<a title="DAVE.scene.LinearBeam" href="#DAVE.scene.LinearBeam"><co
     name = self._prefix_name(name)
 
     # first check
+    assertValidName(name)
     self._verify_name_available(name)
     b = self._poi_from_node(parent)
 
@@ -9703,7 +12463,7 @@ See :py:class:<a title="DAVE.scene.LinearBeam" href="#DAVE.scene.LinearBeam"><co
 <span>def <span class="ident">new_visual</span></span>(<span>self, name, path, parent=None, offset=None, rotation=None, scale=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Creates a new <em>axis</em> node and adds it to the scene.</p>
+<section class="desc"><p>Creates a new <em>Visual</em> node and adds it to the scene.</p>
 <h2 id="args">Args</h2>
 <dl>
 <dt><strong><code>name</code></strong></dt>
@@ -9728,7 +12488,7 @@ See :py:class:<a title="DAVE.scene.LinearBeam" href="#DAVE.scene.LinearBeam"><co
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def new_visual(self, name, path, parent=None, offset=None, rotation=None, scale = None):
-    &#34;&#34;&#34;Creates a new *axis* node and adds it to the scene.
+    &#34;&#34;&#34;Creates a new *Visual* node and adds it to the scene.
 
     Args:
         name: Name for the node, should be unique
@@ -9747,6 +12507,7 @@ See :py:class:<a title="DAVE.scene.LinearBeam" href="#DAVE.scene.LinearBeam"><co
     name = self._prefix_name(name)
 
     # first check
+    assertValidName(name)
     self._verify_name_available(name)
     b = self._parent_from_node(parent)
 
@@ -9778,6 +12539,81 @@ See :py:class:<a title="DAVE.scene.LinearBeam" href="#DAVE.scene.LinearBeam"><co
 
     self._nodes.append(new_node)
     return new_node</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Scene.new_waveinteraction"><code class="name flex">
+<span>def <span class="ident">new_waveinteraction</span></span>(<span>self, name, path, parent=None, offset=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Creates a new <em>wave interaction</em> node and adds it to the scene.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>name</code></strong></dt>
+<dd>Name for the node, should be unique</dd>
+<dt><strong><code>path</code></strong></dt>
+<dd>Path to the hydrodynamic database</dd>
+<dt><strong><code>parent</code></strong></dt>
+<dd>optional, name of the parent of the node</dd>
+<dt><strong><code>offset</code></strong></dt>
+<dd>optional, position for the node (x,y,z)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Reference</code> <code>to</code> <code>newly</code> <code>created</code> <code>wave</code>-<code>interaction</code> <code>object</code></dt>
+<dd>&nbsp;</dd>
+</dl></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def new_waveinteraction(self, name, path, parent=None, offset=None,):
+        &#34;&#34;&#34;Creates a new *wave interaction* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            path: Path to the hydrodynamic database
+            parent: optional, name of the parent of the node
+            offset: optional, position for the node (x,y,z)
+
+        Returns:
+            Reference to newly created wave-interaction object
+
+        &#34;&#34;&#34;
+
+        if not parent:
+            raise ValueError(&#39;Wave-interaction has to be located on an Axis&#39;)
+
+        # apply prefixes
+        name = self._prefix_name(name)
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._parent_from_node(parent)
+
+        if b is None:
+            raise ValueError(&#39;Wave-interaction has to be located on an Axis&#39;)
+
+        if offset is not None:
+            assert3f(offset, &#34;Offset &#34;)
+
+        self.get_resource_path(path)  # raises error when resource is not found
+
+        # then create
+
+        new_node = WaveInteraction1(self)
+
+        new_node.name = name
+        new_node.path = path
+        new_node.parent = parent
+
+        # and set properties
+        new_node.parent = b
+        if offset is not None:
+            new_node.offset = offset
+
+        self._nodes.append(new_node)
+        return new_node</code></pre>
 </details>
 </dd>
 <dt id="DAVE.scene.Scene.node_by_name"><code class="name flex">
@@ -9865,18 +12701,20 @@ This function should be used to determine dependencies of Core-connected element
 <span>def <span class="ident">nodes_of_type</span></span>(<span>self, node_class)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Returns all nodes of the specified type</p>
+<section class="desc"><p>Returns all nodes of the specified or derived type</p>
 <h2 id="examples">Examples</h2>
-<p>pois = scene.nodes_of_type(DAVE.Poi)</p></section>
+<p>pois = scene.nodes_of_type(DAVE.Poi)
+axis_and_bodies = scene.nodes_of_type(DAVE.Axis)</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def nodes_of_type(self, node_class):
-    &#34;&#34;&#34;Returns all nodes of the specified type
+    &#34;&#34;&#34;Returns all nodes of the specified or derived type
 
     Examples:
         pois = scene.nodes_of_type(DAVE.Poi)
+        axis_and_bodies = scene.nodes_of_type(DAVE.Axis)
     &#34;&#34;&#34;
     r = list()
     for n in self._nodes:
@@ -9936,6 +12774,103 @@ For checking physical connections use nodes_depending_on instead.</p>
             r.append(n.name)
 
     return r</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Scene.plot_effect"><code class="name flex">
+<span>def <span class="ident">plot_effect</span></span>(<span>self, evaluate, change_node, change_property, start, to, steps)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Produces a 2D plot with the relation between two properties of the scene. For example the length of a cable
+versus the force in another cable.</p>
+<p>The evaluate argument is processed using "eval" and may contain python code. This may be used to combine multiple
+properties to one value. For example calculate the diagonal load distribution from four independent loads.</p>
+<p>The plot is produced using matplotlob. The plot is produced in the current figure (if any) and plt.show is not executed.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>evaluate</code></strong> :&ensp;<code>str</code></dt>
+<dd>code to be evaluated to yield the value on the y-axis. Eg: s['poi'].fx Scene is abbiviated as "s"</dd>
+<dt>change_node(Node or str):
+node to be adjusted</dt>
+<dt><strong><code>change_property</code></strong> :&ensp;<code>str</code></dt>
+<dd>property of that node to be adjusted</dd>
+<dt><strong><code>start</code></strong> :&ensp;<code>left</code> <code>side</code> of <code>the</code> <code>interval</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>to</code></strong> :&ensp;<code>right</code> <code>side</code> of <code>the</code> <code>interval</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>steps</code></strong> :&ensp;<code>number</code> of <code>steps</code> <code>in</code> <code>the</code> <code>interval</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Tuple</code> (<code>x</code>,<code>y</code>) <code>with</code> <code>x</code> <code>and</code> <code>y</code> <code>coordinates</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<pre><code>&gt;&gt;&gt; s.plot_effect("s['cable'].tension", "cable", "length", 11, 14, 10)
+&gt;&gt;&gt; import matplotlib.pyplot as plt
+&gt;&gt;&gt; plt.show()
+</code></pre></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_effect(self, evaluate, change_node, change_property, start, to, steps):
+    &#34;&#34;&#34;Produces a 2D plot with the relation between two properties of the scene. For example the length of a cable
+    versus the force in another cable.
+
+    The evaluate argument is processed using &#34;eval&#34; and may contain python code. This may be used to combine multiple
+    properties to one value. For example calculate the diagonal load distribution from four independent loads.
+
+    The plot is produced using matplotlob. The plot is produced in the current figure (if any) and plt.show is not executed.
+
+    Args:
+        evaluate (str): code to be evaluated to yield the value on the y-axis. Eg: s[&#39;poi&#39;].fx Scene is abbiviated as &#34;s&#34;
+        change_node(Node or str):  node to be adjusted
+        change_property (str): property of that node to be adjusted
+        start : left side of the interval
+        to : right side of the interval
+        steps : number of steps in the interval
+
+    Returns:
+        Tuple (x,y) with x and y coordinates
+
+    Examples:
+        &gt;&gt;&gt; s.plot_effect(&#34;s[&#39;cable&#39;].tension&#34;, &#34;cable&#34;, &#34;length&#34;, 11, 14, 10)
+        &gt;&gt;&gt; import matplotlib.pyplot as plt
+        &gt;&gt;&gt; plt.show()
+
+    &#34;&#34;&#34;
+    s=self
+    change_node = self._node_from_node_or_str(change_node)
+
+    # check that the attributes exist and are single numbers
+    test = eval(evaluate)
+
+    try:
+        float(test)
+    except:
+        raise ValueError(&#39;Evaluation of {} does not result in a float&#39;)
+
+    def set_and_get(x):
+        setattr(change_node, change_property,x)
+        self.solve_statics(silent=True)
+        s = self
+        result = eval(evaluate)
+        self._print(&#39;setting {} results in {}&#39;.format(x,result))
+        return result
+
+    xs = np.linspace(start,to,steps)
+    y = []
+    for x in xs:
+        y.append(set_and_get(x))
+
+    y = np.array(y)
+    import matplotlib.pyplot as plt
+    plt.plot(xs,y)
+    plt.xlabel(&#39;{} of {}&#39;.format(change_property, change_node.name))
+    plt.ylabel(evaluate)
+
+    return (xs,y)</code></pre>
 </details>
 </dd>
 <dt id="DAVE.scene.Scene.print_node_tree"><code class="name flex">
@@ -10075,7 +13010,7 @@ the results of that update will not be reflected in the saved model.</p>
 </details>
 </dd>
 <dt id="DAVE.scene.Scene.solve_statics"><code class="name flex">
-<span>def <span class="ident">solve_statics</span></span>(<span>self, silent=False)</span>
+<span>def <span class="ident">solve_statics</span></span>(<span>self, silent=False, timeout=None)</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Solves statics</p>
@@ -10093,7 +13028,7 @@ the results of that update will not be reflected in the saved model.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def solve_statics(self, silent=False):
+<pre><code class="python">def solve_statics(self, silent=False, timeout = None):
     &#34;&#34;&#34;Solves statics
 
     Args:
@@ -10103,7 +13038,11 @@ the results of that update will not be reflected in the saved model.</p>
         bool: True if successful, False otherwise.
 
     &#34;&#34;&#34;
-    succes = self._vfc.state_solve_statics()
+    self.update()
+    if timeout is None:
+        succes = self._vfc.state_solve_statics()
+    else:
+        succes = self._vfc.state_solve_statics_with_timeout(timeout, False)
 
     if self.verify_equilibrium():
         if not silent:
@@ -10130,11 +13069,18 @@ the results of that update will not be reflected in the saved model.</p>
 <pre><code class="python">def sort_nodes_by_dependency(self):
     &#34;&#34;&#34;Sorts the nodes such that a node only depends on nodes earlier in the list.&#34;&#34;&#34;
 
+    scene_names = [n.name for n in self._nodes]
+
     self._vfc.state_update()  # use the function from the core.
     new_list = []
     for name in self._vfc.names:  # and then build a new list using the names
         if vfc.VF_NAME_SPLIT in name:
             continue
+
+        if name not in scene_names:
+            raise Exception(&#39;Something went wrong with sorting the the nodes by dependency. &#39;
+                            &#39;Node naming between core and scene is inconsistent for node {}&#39;.format(name))
+
         new_list.append(self[name])
 
     # and add the nodes without a vfc-core connection
@@ -10143,6 +13089,25 @@ the results of that update will not be reflected in the saved model.</p>
             new_list.append(node)
 
     self._nodes = new_list</code></pre>
+</details>
+</dd>
+<dt id="DAVE.scene.Scene.update"><code class="name flex">
+<span>def <span class="ident">update</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Updates the interface between the nodes and the core. This includes the re-calculation of all forces,
+buoyancy positions, ballast-system cogs etc.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def update(self):
+    &#34;&#34;&#34;Updates the interface between the nodes and the core. This includes the re-calculation of all forces,
+    buoyancy positions, ballast-system cogs etc.
+    &#34;&#34;&#34;
+    for n in self._nodes:
+        n.update()
+    self._vfc.state_update()</code></pre>
 </details>
 </dd>
 <dt id="DAVE.scene.Scene.verify_equilibrium"><code class="name flex">
@@ -10166,6 +13131,7 @@ the results of that update will not be reflected in the saved model.</p>
         bool: True if successful, False if not an equilibrium.
 
     &#34;&#34;&#34;
+    self.update()
     return (self._vfc.Emaxabs &lt; tol)</code></pre>
 </details>
 </dd>
@@ -10269,6 +13235,7 @@ def radius(self):
 <li><code><a title="DAVE.scene.NodeWithParent.give_python_code" href="#DAVE.scene.Node.give_python_code">give_python_code</a></code></li>
 <li><code><a title="DAVE.scene.NodeWithParent.name" href="#DAVE.scene.Node.name">name</a></code></li>
 <li><code><a title="DAVE.scene.NodeWithParent.parent" href="#DAVE.scene.NodeWithParent.parent">parent</a></code></li>
+<li><code><a title="DAVE.scene.NodeWithParent.update" href="#DAVE.scene.Node.update">update</a></code></li>
 </ul>
 </li>
 </ul>
@@ -10747,6 +13714,7 @@ trimesh.load_vtk_polydataSource(cube)</p></section>
 <ul class="hlist">
 <li><code><a title="DAVE.scene.Node.give_python_code" href="#DAVE.scene.Node.give_python_code">give_python_code</a></code></li>
 <li><code><a title="DAVE.scene.Node.name" href="#DAVE.scene.Node.name">name</a></code></li>
+<li><code><a title="DAVE.scene.Node.update" href="#DAVE.scene.Node.update">update</a></code></li>
 </ul>
 </li>
 </ul>
@@ -10794,6 +13762,8 @@ A visual node can be placed on an axis-type node.</p>
     &#34;&#34;&#34;
 
     def __init__(self, scene):
+
+        super().__init__(scene)
 
         # Note: Visual does not have a corresponding vfCore element
         self.scene = scene
@@ -10913,6 +13883,133 @@ A visual node can be placed on an axis-type node.</p>
 <ul class="hlist">
 <li><code><a title="DAVE.scene.Node.give_python_code" href="#DAVE.scene.Node.give_python_code">give_python_code</a></code></li>
 <li><code><a title="DAVE.scene.Node.name" href="#DAVE.scene.Node.name">name</a></code></li>
+<li><code><a title="DAVE.scene.Node.update" href="#DAVE.scene.Node.update">update</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="DAVE.scene.WaveInteraction1"><code class="flex name class">
+<span>class <span class="ident">WaveInteraction1</span></span>
+<span>(</span><span>scene)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>WaveInteraction</p>
+<p>Wave-interaction-1 couples a first-order hydrodynamic database to an axis.</p>
+<p>This adds:
+- wave-forces
+- damping
+- added mass</p>
+<p>The data is provided by a Hyddb1 object which is defined in the MaFreDo package. The contents are not embedded
+but are to be provided separately in a file. This node contains only the file-name.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class WaveInteraction1(Node):
+    &#34;&#34;&#34;
+    WaveInteraction
+
+    Wave-interaction-1 couples a first-order hydrodynamic database to an axis.
+
+    This adds:
+    - wave-forces
+    - damping
+    - added mass
+
+    The data is provided by a Hyddb1 object which is defined in the MaFreDo package. The contents are not embedded
+    but are to be provided separately in a file. This node contains only the file-name.
+
+    &#34;&#34;&#34;
+
+    def __init__(self, scene):
+
+        super().__init__(scene)
+        self.scene = scene
+
+        self.offset = [0, 0, 0]
+        &#34;&#34;&#34;Offset (x,y,z) of the visual. Offset is applied after scaling&#34;&#34;&#34;
+
+        self.parent = None
+        &#34;&#34;&#34;Parent : Axis-type&#34;&#34;&#34;
+
+        self.path = None
+        &#34;&#34;&#34;Filename of a file that can be read by a Hyddb1 object&#34;&#34;&#34;
+
+    def give_python_code(self):
+        code = &#34;# code for {}&#34;.format(self.name)
+
+        code += &#34;\ns.new_waveinteraction(name=&#39;{}&#39;,&#34;.format(self.name)
+        code += &#34;\n            parent=&#39;{}&#39;,&#34;.format(self.parent.name)
+        code += &#34;\n            path=r&#39;{}&#39;,&#34;.format(self.path)
+        code += &#34;\n            offset=({}, {}, {}) )&#34;.format(*self.offset)
+
+        return code
+
+    def change_parent_to(self, new_parent):
+        if not (isinstance(new_parent, Axis)):
+            raise ValueError(&#39;Hydrodynamic databases can only be attached to an axis (or derived)&#39;)
+
+        # get current position and orientation
+        if self.parent is not None:
+            cur_position = self.parent.to_glob_position(self.offset)
+        else:
+            cur_position = self.offset
+
+        self.parent = new_parent
+        self.offset = new_parent.to_loc_position(cur_position)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="DAVE.scene.Node" href="#DAVE.scene.Node">Node</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="DAVE.scene.WaveInteraction1.offset"><code class="name">var <span class="ident">offset</span></code></dt>
+<dd>
+<section class="desc"><p>Offset (x,y,z) of the visual. Offset is applied after scaling</p></section>
+</dd>
+<dt id="DAVE.scene.WaveInteraction1.parent"><code class="name">var <span class="ident">parent</span></code></dt>
+<dd>
+<section class="desc"><p>Parent : Axis-type</p></section>
+</dd>
+<dt id="DAVE.scene.WaveInteraction1.path"><code class="name">var <span class="ident">path</span></code></dt>
+<dd>
+<section class="desc"><p>Filename of a file that can be read by a Hyddb1 object</p></section>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="DAVE.scene.WaveInteraction1.change_parent_to"><code class="name flex">
+<span>def <span class="ident">change_parent_to</span></span>(<span>self, new_parent)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def change_parent_to(self, new_parent):
+    if not (isinstance(new_parent, Axis)):
+        raise ValueError(&#39;Hydrodynamic databases can only be attached to an axis (or derived)&#39;)
+
+    # get current position and orientation
+    if self.parent is not None:
+        cur_position = self.parent.to_glob_position(self.offset)
+    else:
+        cur_position = self.offset
+
+    self.parent = new_parent
+    self.offset = new_parent.to_loc_position(cur_position)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="DAVE.scene.Node" href="#DAVE.scene.Node">Node</a></b></code>:
+<ul class="hlist">
+<li><code><a title="DAVE.scene.Node.give_python_code" href="#DAVE.scene.Node.give_python_code">give_python_code</a></code></li>
+<li><code><a title="DAVE.scene.Node.name" href="#DAVE.scene.Node.name">name</a></code></li>
+<li><code><a title="DAVE.scene.Node.update" href="#DAVE.scene.Node.update">update</a></code></li>
 </ul>
 </li>
 </ul>
@@ -10927,7 +14024,10 @@ A visual node can be placed on an axis-type node.</p>
 <li><a href="#general">General</a><ul>
 <li><a href="#axis-systems">Axis systems</a></li>
 <li><a href="#units">Units</a></li>
-<li><a href="#3d-rotations">3D rotations</a></li>
+<li><a href="#rotations">Rotations</a><ul>
+<li><a href="#2d-rotations">2D rotations</a></li>
+</ul>
+</li>
 <li><a href="#filesystem-and-configuration">Filesystem and configuration</a><ul>
 <li><a href="#or">/ or \</a></li>
 </ul>
@@ -10945,6 +14045,7 @@ A visual node can be placed on an axis-type node.</p>
 <li><a href="#connectors">Connectors</a></li>
 <li><a href="#forces_1">Forces</a></li>
 <li><a href="#visuals">Visuals</a></li>
+<li><a href="#inertia">Inertia</a></li>
 <li><a href="#others">Others</a></li>
 </ul>
 </li>
@@ -10965,6 +14066,11 @@ A visual node can be placed on an axis-type node.</p>
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="DAVE" href="index.html">DAVE</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="DAVE.scene.give_python_code" href="#DAVE.scene.give_python_code">give_python_code</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
@@ -10991,6 +14097,12 @@ A visual node can be placed on an axis-type node.</p>
 <li><code><a title="DAVE.scene.Axis.gx" href="#DAVE.scene.Axis.gx">gx</a></code></li>
 <li><code><a title="DAVE.scene.Axis.gy" href="#DAVE.scene.Axis.gy">gy</a></code></li>
 <li><code><a title="DAVE.scene.Axis.gz" href="#DAVE.scene.Axis.gz">gz</a></code></li>
+<li><code><a title="DAVE.scene.Axis.heading" href="#DAVE.scene.Axis.heading">heading</a></code></li>
+<li><code><a title="DAVE.scene.Axis.heading_compass" href="#DAVE.scene.Axis.heading_compass">heading_compass</a></code></li>
+<li><code><a title="DAVE.scene.Axis.heel" href="#DAVE.scene.Axis.heel">heel</a></code></li>
+<li><code><a title="DAVE.scene.Axis.inertia" href="#DAVE.scene.Axis.inertia">inertia</a></code></li>
+<li><code><a title="DAVE.scene.Axis.inertia_position" href="#DAVE.scene.Axis.inertia_position">inertia_position</a></code></li>
+<li><code><a title="DAVE.scene.Axis.inertia_radii" href="#DAVE.scene.Axis.inertia_radii">inertia_radii</a></code></li>
 <li><code><a title="DAVE.scene.Axis.parent" href="#DAVE.scene.Axis.parent">parent</a></code></li>
 <li><code><a title="DAVE.scene.Axis.position" href="#DAVE.scene.Axis.position">position</a></code></li>
 <li><code><a title="DAVE.scene.Axis.rotation" href="#DAVE.scene.Axis.rotation">rotation</a></code></li>
@@ -10999,15 +14111,49 @@ A visual node can be placed on an axis-type node.</p>
 <li><code><a title="DAVE.scene.Axis.rz" href="#DAVE.scene.Axis.rz">rz</a></code></li>
 <li><code><a title="DAVE.scene.Axis.set_fixed" href="#DAVE.scene.Axis.set_fixed">set_fixed</a></code></li>
 <li><code><a title="DAVE.scene.Axis.set_free" href="#DAVE.scene.Axis.set_free">set_free</a></code></li>
+<li><code><a title="DAVE.scene.Axis.tilt_x" href="#DAVE.scene.Axis.tilt_x">tilt_x</a></code></li>
+<li><code><a title="DAVE.scene.Axis.tilt_y" href="#DAVE.scene.Axis.tilt_y">tilt_y</a></code></li>
 <li><code><a title="DAVE.scene.Axis.to_glob_direction" href="#DAVE.scene.Axis.to_glob_direction">to_glob_direction</a></code></li>
 <li><code><a title="DAVE.scene.Axis.to_glob_position" href="#DAVE.scene.Axis.to_glob_position">to_glob_position</a></code></li>
 <li><code><a title="DAVE.scene.Axis.to_glob_rotation" href="#DAVE.scene.Axis.to_glob_rotation">to_glob_rotation</a></code></li>
 <li><code><a title="DAVE.scene.Axis.to_loc_direction" href="#DAVE.scene.Axis.to_loc_direction">to_loc_direction</a></code></li>
 <li><code><a title="DAVE.scene.Axis.to_loc_position" href="#DAVE.scene.Axis.to_loc_position">to_loc_position</a></code></li>
 <li><code><a title="DAVE.scene.Axis.to_loc_rotation" href="#DAVE.scene.Axis.to_loc_rotation">to_loc_rotation</a></code></li>
+<li><code><a title="DAVE.scene.Axis.trim" href="#DAVE.scene.Axis.trim">trim</a></code></li>
+<li><code><a title="DAVE.scene.Axis.ux" href="#DAVE.scene.Axis.ux">ux</a></code></li>
+<li><code><a title="DAVE.scene.Axis.uy" href="#DAVE.scene.Axis.uy">uy</a></code></li>
+<li><code><a title="DAVE.scene.Axis.uz" href="#DAVE.scene.Axis.uz">uz</a></code></li>
 <li><code><a title="DAVE.scene.Axis.x" href="#DAVE.scene.Axis.x">x</a></code></li>
 <li><code><a title="DAVE.scene.Axis.y" href="#DAVE.scene.Axis.y">y</a></code></li>
 <li><code><a title="DAVE.scene.Axis.z" href="#DAVE.scene.Axis.z">z</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="DAVE.scene.BallastSystem" href="#DAVE.scene.BallastSystem">BallastSystem</a></code></h4>
+<ul class="">
+<li><code><a title="DAVE.scene.BallastSystem.Tank" href="#DAVE.scene.BallastSystem.Tank">Tank</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem._cog" href="#DAVE.scene.BallastSystem._cog">_cog</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem._position" href="#DAVE.scene.BallastSystem._position">_position</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem._tanks" href="#DAVE.scene.BallastSystem._tanks">_tanks</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem._weight" href="#DAVE.scene.BallastSystem._weight">_weight</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.cog" href="#DAVE.scene.BallastSystem.cog">cog</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.cogx" href="#DAVE.scene.BallastSystem.cogx">cogx</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.cogy" href="#DAVE.scene.BallastSystem.cogy">cogy</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.cogz" href="#DAVE.scene.BallastSystem.cogz">cogz</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.empty_all_usable_tanks" href="#DAVE.scene.BallastSystem.empty_all_usable_tanks">empty_all_usable_tanks</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.fill_tank" href="#DAVE.scene.BallastSystem.fill_tank">fill_tank</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.frozen" href="#DAVE.scene.BallastSystem.frozen">frozen</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.mass" href="#DAVE.scene.BallastSystem.mass">mass</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.new_tank" href="#DAVE.scene.BallastSystem.new_tank">new_tank</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.order_tanks_by_distance_from_point" href="#DAVE.scene.BallastSystem.order_tanks_by_distance_from_point">order_tanks_by_distance_from_point</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.order_tanks_by_elevation" href="#DAVE.scene.BallastSystem.order_tanks_by_elevation">order_tanks_by_elevation</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.order_tanks_to_maximize_inertia_moment" href="#DAVE.scene.BallastSystem.order_tanks_to_maximize_inertia_moment">order_tanks_to_maximize_inertia_moment</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.order_tanks_to_minimize_inertia_moment" href="#DAVE.scene.BallastSystem.order_tanks_to_minimize_inertia_moment">order_tanks_to_minimize_inertia_moment</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.reorder_tanks" href="#DAVE.scene.BallastSystem.reorder_tanks">reorder_tanks</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.tank" href="#DAVE.scene.BallastSystem.tank">tank</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.tank_names" href="#DAVE.scene.BallastSystem.tank_names">tank_names</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.weight" href="#DAVE.scene.BallastSystem.weight">weight</a></code></li>
+<li><code><a title="DAVE.scene.BallastSystem.xyzw" href="#DAVE.scene.BallastSystem.xyzw">xyzw</a></code></li>
 </ul>
 </li>
 <li>
@@ -11086,7 +14232,12 @@ A visual node can be placed on an axis-type node.</p>
 <li><code><a title="DAVE.scene.LinearBeam.GIp" href="#DAVE.scene.LinearBeam.GIp">GIp</a></code></li>
 <li><code><a title="DAVE.scene.LinearBeam.L" href="#DAVE.scene.LinearBeam.L">L</a></code></li>
 <li><code><a title="DAVE.scene.LinearBeam.master" href="#DAVE.scene.LinearBeam.master">master</a></code></li>
+<li><code><a title="DAVE.scene.LinearBeam.moment_on_master" href="#DAVE.scene.LinearBeam.moment_on_master">moment_on_master</a></code></li>
+<li><code><a title="DAVE.scene.LinearBeam.moment_on_slave" href="#DAVE.scene.LinearBeam.moment_on_slave">moment_on_slave</a></code></li>
 <li><code><a title="DAVE.scene.LinearBeam.slave" href="#DAVE.scene.LinearBeam.slave">slave</a></code></li>
+<li><code><a title="DAVE.scene.LinearBeam.tension" href="#DAVE.scene.LinearBeam.tension">tension</a></code></li>
+<li><code><a title="DAVE.scene.LinearBeam.torsion" href="#DAVE.scene.LinearBeam.torsion">torsion</a></code></li>
+<li><code><a title="DAVE.scene.LinearBeam.torsion_angle" href="#DAVE.scene.LinearBeam.torsion_angle">torsion_angle</a></code></li>
 </ul>
 </li>
 <li>
@@ -11094,6 +14245,7 @@ A visual node can be placed on an axis-type node.</p>
 <ul class="">
 <li><code><a title="DAVE.scene.Node.give_python_code" href="#DAVE.scene.Node.give_python_code">give_python_code</a></code></li>
 <li><code><a title="DAVE.scene.Node.name" href="#DAVE.scene.Node.name">name</a></code></li>
+<li><code><a title="DAVE.scene.Node.update" href="#DAVE.scene.Node.update">update</a></code></li>
 </ul>
 </li>
 <li>
@@ -11135,8 +14287,13 @@ A visual node can be placed on an axis-type node.</p>
 <li><code><a title="DAVE.scene.Scene._vfc" href="#DAVE.scene.Scene._vfc">_vfc</a></code></li>
 <li><code><a title="DAVE.scene.Scene.available_name_like" href="#DAVE.scene.Scene.available_name_like">available_name_like</a></code></li>
 <li><code><a title="DAVE.scene.Scene.clear" href="#DAVE.scene.Scene.clear">clear</a></code></li>
+<li><code><a title="DAVE.scene.Scene.copy" href="#DAVE.scene.Scene.copy">copy</a></code></li>
 <li><code><a title="DAVE.scene.Scene.delete" href="#DAVE.scene.Scene.delete">delete</a></code></li>
 <li><code><a title="DAVE.scene.Scene.dissolve" href="#DAVE.scene.Scene.dissolve">dissolve</a></code></li>
+<li><code><a title="DAVE.scene.Scene.dynamics_K" href="#DAVE.scene.Scene.dynamics_K">dynamics_K</a></code></li>
+<li><code><a title="DAVE.scene.Scene.dynamics_M" href="#DAVE.scene.Scene.dynamics_M">dynamics_M</a></code></li>
+<li><code><a title="DAVE.scene.Scene.dynamics_modes" href="#DAVE.scene.Scene.dynamics_modes">dynamics_modes</a></code></li>
+<li><code><a title="DAVE.scene.Scene.dynamics_nodes" href="#DAVE.scene.Scene.dynamics_nodes">dynamics_nodes</a></code></li>
 <li><code><a title="DAVE.scene.Scene.get_resource_list" href="#DAVE.scene.Scene.get_resource_list">get_resource_list</a></code></li>
 <li><code><a title="DAVE.scene.Scene.get_resource_path" href="#DAVE.scene.Scene.get_resource_path">get_resource_path</a></code></li>
 <li><code><a title="DAVE.scene.Scene.give_python_code" href="#DAVE.scene.Scene.give_python_code">give_python_code</a></code></li>
@@ -11145,6 +14302,7 @@ A visual node can be placed on an axis-type node.</p>
 <li><code><a title="DAVE.scene.Scene.load_scene" href="#DAVE.scene.Scene.load_scene">load_scene</a></code></li>
 <li><code><a title="DAVE.scene.Scene.name_available" href="#DAVE.scene.Scene.name_available">name_available</a></code></li>
 <li><code><a title="DAVE.scene.Scene.new_axis" href="#DAVE.scene.Scene.new_axis">new_axis</a></code></li>
+<li><code><a title="DAVE.scene.Scene.new_ballastsystem" href="#DAVE.scene.Scene.new_ballastsystem">new_ballastsystem</a></code></li>
 <li><code><a title="DAVE.scene.Scene.new_buoyancy" href="#DAVE.scene.Scene.new_buoyancy">new_buoyancy</a></code></li>
 <li><code><a title="DAVE.scene.Scene.new_cable" href="#DAVE.scene.Scene.new_cable">new_cable</a></code></li>
 <li><code><a title="DAVE.scene.Scene.new_connector2d" href="#DAVE.scene.Scene.new_connector2d">new_connector2d</a></code></li>
@@ -11156,10 +14314,12 @@ A visual node can be placed on an axis-type node.</p>
 <li><code><a title="DAVE.scene.Scene.new_rigidbody" href="#DAVE.scene.Scene.new_rigidbody">new_rigidbody</a></code></li>
 <li><code><a title="DAVE.scene.Scene.new_sheave" href="#DAVE.scene.Scene.new_sheave">new_sheave</a></code></li>
 <li><code><a title="DAVE.scene.Scene.new_visual" href="#DAVE.scene.Scene.new_visual">new_visual</a></code></li>
+<li><code><a title="DAVE.scene.Scene.new_waveinteraction" href="#DAVE.scene.Scene.new_waveinteraction">new_waveinteraction</a></code></li>
 <li><code><a title="DAVE.scene.Scene.node_by_name" href="#DAVE.scene.Scene.node_by_name">node_by_name</a></code></li>
 <li><code><a title="DAVE.scene.Scene.nodes_depending_on" href="#DAVE.scene.Scene.nodes_depending_on">nodes_depending_on</a></code></li>
 <li><code><a title="DAVE.scene.Scene.nodes_of_type" href="#DAVE.scene.Scene.nodes_of_type">nodes_of_type</a></code></li>
 <li><code><a title="DAVE.scene.Scene.nodes_with_parent" href="#DAVE.scene.Scene.nodes_with_parent">nodes_with_parent</a></code></li>
+<li><code><a title="DAVE.scene.Scene.plot_effect" href="#DAVE.scene.Scene.plot_effect">plot_effect</a></code></li>
 <li><code><a title="DAVE.scene.Scene.print_node_tree" href="#DAVE.scene.Scene.print_node_tree">print_node_tree</a></code></li>
 <li><code><a title="DAVE.scene.Scene.print_python_code" href="#DAVE.scene.Scene.print_python_code">print_python_code</a></code></li>
 <li><code><a title="DAVE.scene.Scene.resources_paths" href="#DAVE.scene.Scene.resources_paths">resources_paths</a></code></li>
@@ -11167,6 +14327,7 @@ A visual node can be placed on an axis-type node.</p>
 <li><code><a title="DAVE.scene.Scene.solve_statics" href="#DAVE.scene.Scene.solve_statics">solve_statics</a></code></li>
 <li><code><a title="DAVE.scene.Scene.sort_nodes_by_dependency" href="#DAVE.scene.Scene.sort_nodes_by_dependency">sort_nodes_by_dependency</a></code></li>
 <li><code><a title="DAVE.scene.Scene.static_tolerance" href="#DAVE.scene.Scene.static_tolerance">static_tolerance</a></code></li>
+<li><code><a title="DAVE.scene.Scene.update" href="#DAVE.scene.Scene.update">update</a></code></li>
 <li><code><a title="DAVE.scene.Scene.verbose" href="#DAVE.scene.Scene.verbose">verbose</a></code></li>
 <li><code><a title="DAVE.scene.Scene.verify_equilibrium" href="#DAVE.scene.Scene.verify_equilibrium">verify_equilibrium</a></code></li>
 </ul>
@@ -11199,6 +14360,15 @@ A visual node can be placed on an axis-type node.</p>
 <li><code><a title="DAVE.scene.Visual.path" href="#DAVE.scene.Visual.path">path</a></code></li>
 <li><code><a title="DAVE.scene.Visual.rotation" href="#DAVE.scene.Visual.rotation">rotation</a></code></li>
 <li><code><a title="DAVE.scene.Visual.scale" href="#DAVE.scene.Visual.scale">scale</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="DAVE.scene.WaveInteraction1" href="#DAVE.scene.WaveInteraction1">WaveInteraction1</a></code></h4>
+<ul class="">
+<li><code><a title="DAVE.scene.WaveInteraction1.change_parent_to" href="#DAVE.scene.WaveInteraction1.change_parent_to">change_parent_to</a></code></li>
+<li><code><a title="DAVE.scene.WaveInteraction1.offset" href="#DAVE.scene.WaveInteraction1.offset">offset</a></code></li>
+<li><code><a title="DAVE.scene.WaveInteraction1.parent" href="#DAVE.scene.WaveInteraction1.parent">parent</a></code></li>
+<li><code><a title="DAVE.scene.WaveInteraction1.path" href="#DAVE.scene.WaveInteraction1.path">path</a></code></li>
 </ul>
 </li>
 </ul>

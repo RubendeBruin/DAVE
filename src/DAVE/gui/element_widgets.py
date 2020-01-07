@@ -25,7 +25,7 @@ import DAVE.gui.forms.widget_beam
 import DAVE.gui.forms.widget_con2d
 import DAVE.gui.forms.widget_sheave
 
-import DAVE.forms.addnode_form
+import DAVE.gui.forms.addnode_form
 
 import DAVE.scene as vfs
 from PySide2.QtGui import QIcon

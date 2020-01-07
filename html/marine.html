@@ -74,6 +74,9 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
     Returns:
         dictionary with heel, moment, and GM
 
+        Also, it teardown is not selected, the DOFs for each of the displacements are stored in scene._gui_stability_dofs
+        This is used by the Gui to make a movie of the stability calculation
+
     &#34;&#34;&#34;
 
 
@@ -82,6 +85,7 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
 
 
     s = scene # lazy
+    doflog = []
 
     if minimum_heel &gt; maximum_heel:
         raise ValueError(&#39;Minimum heel should be smaller than maximum heel&#39;)
@@ -149,6 +153,14 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
         s._vfc.set_dofs(D0)
         heel_node.rx = x
         s.solve_statics(silent=True)
+
+        # for movie replay
+        heel_node.fixed = (True,True,True,False,True,True)
+        s._vfc.state_update()
+        dofs = s._vfc.get_dofs()
+        doflog.append(dofs)
+        heel_node.set_fixed()
+
         moment.append(-heel_node.applied_force[3])
         trim.append(trim_motion.ry)
 
@@ -218,6 +230,9 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
         vessel.position = _position
         vessel.rotation = _rotation
         vessel.fixed = _fixed
+    else:
+        heel_node.fixed = (True, True, True, False, True, True)
+        s._gui_stability_dofs = doflog
 
     s.verbose = _verbose
 
@@ -322,6 +337,10 @@ maximum heel, end of the curve (90)</dt>
 <dl>
 <dt><code>dictionary</code> <code>with</code> <code>heel</code>, <code>moment</code>, <code>and</code> <code>GM</code></dt>
 <dd>&nbsp;</dd>
+<dt><code>Also</code>, <code>it</code> <code>teardown</code> <code>is</code> <code>not</code> <code>selected</code>, <code>the</code> <code>DOFs</code> <code>for</code> <code>each</code> of <code>the</code> <code>displacements</code> <code>are</code> <code>stored</code> <code>in</code> <code>scene._gui_stability_dofs</code></dt>
+<dd>&nbsp;</dd>
+<dt><code>This</code> <code>is</code> <code>used</code> <code>by</code> <code>the</code> <code>Gui</code> <code>to</code> <code>make</code> <code>a</code> <code>movie</code> of <code>the</code> <code>stability</code> <code>calculation</code></dt>
+<dd>&nbsp;</dd>
 </dl></section>
 <details class="source">
 <summary>
@@ -355,6 +374,9 @@ maximum heel, end of the curve (90)</dt>
     Returns:
         dictionary with heel, moment, and GM
 
+        Also, it teardown is not selected, the DOFs for each of the displacements are stored in scene._gui_stability_dofs
+        This is used by the Gui to make a movie of the stability calculation
+
     &#34;&#34;&#34;
 
 
@@ -363,6 +385,7 @@ maximum heel, end of the curve (90)</dt>
 
 
     s = scene # lazy
+    doflog = []
 
     if minimum_heel &gt; maximum_heel:
         raise ValueError(&#39;Minimum heel should be smaller than maximum heel&#39;)
@@ -430,6 +453,14 @@ maximum heel, end of the curve (90)</dt>
         s._vfc.set_dofs(D0)
         heel_node.rx = x
         s.solve_statics(silent=True)
+
+        # for movie replay
+        heel_node.fixed = (True,True,True,False,True,True)
+        s._vfc.state_update()
+        dofs = s._vfc.get_dofs()
+        doflog.append(dofs)
+        heel_node.set_fixed()
+
         moment.append(-heel_node.applied_force[3])
         trim.append(trim_motion.ry)
 
@@ -499,6 +530,9 @@ maximum heel, end of the curve (90)</dt>
         vessel.position = _position
         vessel.rotation = _rotation
         vessel.fixed = _fixed
+    else:
+        heel_node.fixed = (True, True, True, False, True, True)
+        s._gui_stability_dofs = doflog
 
     s.verbose = _verbose
 
