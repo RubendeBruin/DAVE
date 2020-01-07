@@ -184,6 +184,10 @@ class Gui():
         self.visual.show_embedded(self.ui.frame3d)
         self.visual.update_visibility()
 
+        # right-click event for
+        self.ui.frame3d.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.frame3d.customContextMenuRequested.connect(self.rightClickViewport)
+
         self._timerid = None
         iren = self.visual.renwin.GetInteractor()
         iren.AddObserver('TimerEvent', self.timerEvent)
@@ -316,10 +320,6 @@ class Gui():
         self.ui.toolBar.addWidget(self.btnLibrary)
         self.btnLibrary.clicked.connect(self.import_browser)
 
-
-
-
-
         space = QtWidgets.QWidget()
         space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         self.ui.toolBar.addWidget(space)
@@ -343,32 +343,30 @@ class Gui():
             g.close()
 
         if name == 'CONSTRUCT':
-            self.show_guiWidget('NodeTree', WidgetNodeTree)
-            self.show_guiWidget('DerivedProperties', WidgetDerivedProperties)
-            self.show_guiWidget('WidgetNodeProps', WidgetNodeProps)
-
+            self.show_guiWidget('Node Tree', WidgetNodeTree)
+            self.show_guiWidget('Derived Properties', WidgetDerivedProperties)
+            self.show_guiWidget('Properties', WidgetNodeProps)
 
         if name == 'EXPLORE':
-            self.show_guiWidget('DerivedProperties', WidgetDerivedProperties)
+            self.show_guiWidget('Derived Properties', WidgetDerivedProperties)
             self.show_guiWidget('Explore 1-to-1', WidgetExplore)
 
-
         if name == 'DYNAMICS':
-            self.show_guiWidget('WidgetDynamicProperties', WidgetDynamicProperties)
-            self.show_guiWidget('WidgetModeShapes', WidgetModeShapes)
+            self.show_guiWidget('Properties - dyanmic', WidgetDynamicProperties)
+            self.show_guiWidget('Mode-shapes', WidgetModeShapes)
 
         if name == 'BALLAST':
-            self.show_guiWidget('WidgetBallastSystemSelect', WidgetBallastSystemSelect)
-            self.show_guiWidget('WidgetBallastConfiguration', WidgetBallastConfiguration)
-            self.show_guiWidget('WidgetBallastSolver', WidgetBallastSolver)
-            self.show_guiWidget('WidgetTankOrder', WidgetTankOrder)
+            self.show_guiWidget('Ballast system', WidgetBallastSystemSelect)
+            self.show_guiWidget('Tanks', WidgetBallastConfiguration)
+            self.show_guiWidget('Solver', WidgetBallastSolver)
+            self.show_guiWidget('Tank order', WidgetTankOrder)
             self.visual.show_actors_of_type([ActorType.BALLASTTANK])
 
         if name == 'STABILITY':
             self.show_guiWidget('Stability', WidgetDisplacedStability)
 
         if name == 'AIRY':
-            self.show_guiWidget('WidgetAiry', WidgetAiry)
+            self.show_guiWidget('Airy waves', WidgetAiry)
 
 
 
@@ -722,7 +720,7 @@ class Gui():
         else:
             dofs = None
 
-        create_blend_and_open(s, animation_dofs=dofs)
+        create_blend_and_open(self.scene, animation_dofs=dofs)
 
 
 
@@ -781,11 +779,21 @@ class Gui():
         code = self.ui.teCode.toPlainText()
         self.run_code(code,guiEventType.FULL_UPDATE)
 
+    def rightClickViewport(self, point):
+        globLoc = self.ui.frame3d.mapToGlobal(point)
+        name = None
+        try:
+            name = self.selected_nodes[0].name
+        except:
+            pass
+
+        self.openContextMenyAt(name, globLoc)
+
+
     def openContextMenyAt(self, node_name, globLoc):
         menu = QtWidgets.QMenu()
 
         if node_name is not None:
-
 
             def delete():
                 self.run_code('s.delete("{}")'.format(node_name), guiEventType.MODEL_STRUCTURE_CHANGED)
@@ -821,7 +829,7 @@ class Gui():
                 node.name = name
                 self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
-                self.select_node(name_of_duplicate)
+                self.guiSelectNode(name_of_duplicate)
 
 
             menu.addAction("Duplicate", duplicate)
@@ -842,6 +850,7 @@ class Gui():
         menu.addAction("New Wave Interaction", self.new_waveinteraction)
 
         menu.exec_(globLoc)
+
 
     def new_axis(self):
         self.new_something(new_node_dialog.add_axis)
@@ -886,6 +895,10 @@ class Gui():
         r = what(self.scene, self.selected_nodes)
         if r:
             self.run_code("s." + r, guiEventType.MODEL_STRUCTURE_CHANGED)
+            # self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+            # added_node = self.scene._nodes[-1]
+            # self.guiSelectNode(added_node)
+
 
 # ================= viewer code ===================
 
@@ -986,6 +999,7 @@ class Gui():
         self.visual.create_visuals()
         self.visual.add_new_actors_to_screen()
         self.visual.position_visuals()
+        self.visual_update_selection()
         self.refresh_3dview()
 
     def guiSelectNode(self, node_name):
@@ -997,7 +1011,7 @@ class Gui():
             self.selected_nodes.clear()
 
 
-        node = self.scene[node_name]
+        node = self.scene._node_from_node_or_str(node_name)
         if node not in self.selected_nodes:
             self.selected_nodes.append(node)
 

@@ -96,9 +96,6 @@ class WidgetNodeTree(guiDockWidget):
         globLoc = self.treeView.mapToGlobal(point)
         self.gui.openContextMenyAt(node_name, globLoc)
 
-
-
-
     def update_selection(self):
 
         selected_names = [node.name for node in self.guiSelection]

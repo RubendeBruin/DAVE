@@ -17,7 +17,7 @@
    <string>DAVE</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../guis/resources.qrc">
+   <iconset resource="resources.qrc">
     <normaloff>:/icons/Dave_icon.png</normaloff>:/icons/Dave_icon.png</iconset>
   </property>
   <property name="locale">
@@ -54,6 +54,12 @@
         <height>20</height>
        </size>
       </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>25</height>
+       </size>
+      </property>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <property name="spacing">
         <number>2</number>
@@ -84,23 +90,86 @@
         </spacer>
        </item>
        <item>
-        <widget class="QToolButton" name="btnWater">
+        <widget class="QPushButton" name="btnWater">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>30</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>30</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="baseSize">
+          <size>
+           <width>30</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
           <string>~</string>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="btnLevelCamera">
-         <property name="text">
-          <string>__</string>
+         <property name="flat">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="btnBlender">
+        <widget class="QPushButton" name="btnLevelCamera">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>30</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>30</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="baseSize">
+          <size>
+           <width>30</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
-          <string>Blender</string>
+          <string>__</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnBlender">
+         <property name="maximumSize">
+          <size>
+           <width>60</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>blender</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -356,7 +425,7 @@
            <string>Execute</string>
           </property>
           <property name="icon">
-           <iconset resource="../guis/resources.qrc">
+           <iconset resource="resources.qrc">
             <normaloff>:/icons/python logo klein.png</normaloff>:/icons/python logo klein.png</iconset>
           </property>
          </widget>
@@ -597,7 +666,7 @@
   <tabstop>teFeedback</tabstop>
  </tabstops>
  <resources>
-  <include location="../guis/resources.qrc"/>
+  <include location="resources.qrc"/>
  </resources>
  <connections/>
 </ui>
