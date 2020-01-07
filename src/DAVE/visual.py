@@ -354,7 +354,7 @@ class Viewport:
         world_actors = []
 
         plane = vp.Plane(pos=(0,0,0), normal=(0,0,1), sx=1000, sy=1000).c(vc.COLOR_WATER)
-        plane.texture('blue') # vc.TEXTURE_SEA)
+        plane.texture(vc.TEXTURE_SEA)
         plane.lighting(ambient=1.0, diffuse=0.0, specular=0.0)
         plane.alpha(0.4)
 

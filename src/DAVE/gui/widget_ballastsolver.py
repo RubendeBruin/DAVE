@@ -77,8 +77,9 @@ class WidgetBallastSolver(guiDockWidget):
         if not self.assert_selection_valid():
             return
 
-        code = 's["{}"].empty_all_usable_tanks()\n'.format(self._bs.name)
-        code += 's.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s,vessel="{}",z={})'.format(self._vesselNode.name, self.ui.doubleSpinBox.value())
+        code = 'from DAVE.solvers.ballast import force_vessel_to_evenkeel_and_draft'
+        code += '\ns["{}"].empty_all_usable_tanks()'.format(self._bs.name)
+        code += '\ns.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s,vessel="{}",z={})'.format(self._vesselNode.name, self.ui.doubleSpinBox.value())
         self.guiRunCodeCallback(code, guiEventType.MODEL_STATE_CHANGED)
         self.ui.tableWidget.item(0,0)
         self.ui.tableWidget.setItem(0, 0, QtWidgets.QTableWidgetItem(str(-self.guiScene.required_ballast[0])))
@@ -89,7 +90,8 @@ class WidgetBallastSolver(guiDockWidget):
         if not self.assert_selection_valid():
             return
 
-        code = 'ballast_solver = BallastSystemSolver(s["{}"])\n'.format(self._bs.name)
+        code = 'from DAVE.solvers.ballast import BallastSystemSolver'
+        code += '\nballast_solver = BallastSystemSolver(s["{}"])\n'.format(self._bs.name)
         code += 'ballast_solver.ballast_to(cogx = s.required_ballast[1], cogy = s.required_ballast[2], weight = -s.required_ballast[0])\n'
 
         self.guiRunCodeCallback(code,guiEventType.MODEL_STATE_CHANGED)

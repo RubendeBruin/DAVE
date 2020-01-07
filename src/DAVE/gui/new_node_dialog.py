@@ -44,7 +44,7 @@ def fill_dropdown_boxes(ui, scene):
 
 def add_node(scene):
     AddNode = QtWidgets.QDialog()
-    ui = DAVE._obsolete.gui.forms.addnode_form.Ui_Dialog()
+    ui = DAVE.gui.forms.addnode_form.Ui_Dialog()
     ui.setupUi(AddNode)
 
     ui.frmMasterSlave.setVisible(False)

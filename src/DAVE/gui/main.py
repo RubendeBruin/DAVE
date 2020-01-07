@@ -107,6 +107,7 @@ import numpy as np
 
 
 # resources
+import DAVE.gui.forms.resources_rc
 
 class SolverDialog(QDialog, Ui_Dialog):
     def __init__(self, parent=None):
@@ -119,14 +120,18 @@ class SolverDialog(QDialog, Ui_Dialog):
 
 class Gui():
 
-    def __init__(self, scene):
+    def __init__(self, scene, splash=None, app=None):
 
-        self.app = QtWidgets.QApplication()
+        if app is None:
+            self.app = QtWidgets.QApplication()
+        else:
+            self.app = app
         self.app.aboutToQuit.connect(self.onClose)
 
-        splash = QtWidgets.QSplashScreen()
-        splash.setPixmap(QPixmap(":/icons/splashscreen.png"))
-        splash.show()
+        if splash is None:
+            splash = QtWidgets.QSplashScreen()
+            splash.setPixmap(QPixmap(":/icons/splashscreen.png"))
+            splash.show()
 
         # Main Window
         self.MainWindow = QtWidgets.QMainWindow()
