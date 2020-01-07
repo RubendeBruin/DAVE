@@ -312,6 +312,7 @@ class Gui():
 
         self.btnSolve = QtWidgets.QPushButton()
         self.btnSolve.setText('Solve &statics')
+        self.btnSolve.setIcon(QIcon(":/icons/Dave_icon.png"))
         self.ui.toolBar.addWidget(self.btnSolve)
         self.btnSolve.clicked.connect(self.solve_statics)
 

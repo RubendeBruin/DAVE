@@ -9,6 +9,7 @@ dependencies:
   - scipy
   - ipython
   - matplotlib
+  - mafredo
+  - dave
   - pip:
     - vtkplotter
-    - useDAVE
