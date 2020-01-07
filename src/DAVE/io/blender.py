@@ -81,53 +81,78 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
     \"\"\"
     print('Loading {}'.format(filepath))
 
-    with bpy.data.libraries.load(filepath=filepath, relative=False) as (data_from, data_to):
-        data_to.objects.extend(data_from.objects)
-    
-    for object in data_to.objects:
+   
+    objects = []
+    if filepath.endswith('.blend'):
+        with bpy.data.libraries.load(filepath=filepath, relative=False) as (data_from, data_to):
+            data_to.objects.extend(data_from.objects)
+        
+        for object in data_to.objects:
+
+            if object.type == 'MESH':  # only add meshes, materials are automatically included
+                bpy.ops.object.add_named(name=object.name)
+                # When you use bpy.ops.object.add() the newly created object becomes the active object
+                # bpy.context.active_object
+                objects.append(bpy.context.view_layer.objects.active)
+
+
+    elif filepath.endswith('.obj'):
+        obj = bpy.ops.import_scene.obj(filepath=filepath)
+        obj = bpy.context.selected_objects[0]
+        obj.rotation_euler[0] = 0
+        objects = [obj]
+        
+    elif filepath.endwith('.stl'):
+        print('STL not yet implemented')
+        
+
+    for object in objects:
         print(object.name)
 
-        if object.type == 'MESH':    # only add meshes, materials are automatically included
-            bpy.ops.object.add_named(name=object.name)
-            # When you use bpy.ops.object.add() the newly created object becomes the active object
-            # bpy.context.active_object
-            active_object = bpy.context.view_layer.objects.active
-            bpy.ops.object.select_all(action='DESELECT')
-            active_object.select_set(True)
+        # bpy.ops.object.add_named(name=object.name)
+        # When you use bpy.ops.object.add() the newly created object becomes the active object
+        # bpy.context.active_object
+        #active_object = bpy.context.view_layer.objects.active
 
-            # apply local transform
-            
-            bpy.ops.transform.translate(value=offset)  # translate
-            
-            bpy.ops.transform.rotate(value=-rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)
-            bpy.ops.transform.rotate(value=-rotation[1], orient_axis='Y')
-            bpy.ops.transform.rotate(value=-rotation[2], orient_axis='X')
-            bpy.ops.transform.resize(value=scale)
-            
-            bpy.ops.transform.translate(value=(-offset[0], -offset[1], -offset[2])) # and translate back
-            
-            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        # Select only object
 
-            # apply global transforms
-            
-            active_object.location = position
-            active_object.rotation_mode = 'QUATERNION'
-            active_object.rotation_quaternion = (orientation[3], orientation[0], orientation[1],orientation[2])
-            
-            n_frame = 1
-            for pos, orient in zip(positions, orientations):
-                bpy.context.scene.frame_set(n_frame * frames_per_dof)
-                n_frame += 1
-                
-                
-                active_object.rotation_quaternion = (orient[3], orient[0], orient[1],orient[2])
-                active_object.keyframe_insert(data_path="rotation_quaternion", index = -1)
-                
-                active_object.location = Vector(pos)
-                active_object.keyframe_insert(data_path="location",index = -1)
-                
-                
-            bpy.context.scene.frame_end = (n_frame-1) * frames_per_dof
+        bpy.ops.object.select_all(action='DESELECT')
+        object.select_set(True)
+        active_object = object
+
+        # apply local transform
+
+        bpy.ops.transform.translate(value=offset)  # translate
+
+        bpy.ops.transform.rotate(value=-rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)
+        bpy.ops.transform.rotate(value=-rotation[1], orient_axis='Y')
+        bpy.ops.transform.rotate(value=-rotation[2], orient_axis='X')
+        bpy.ops.transform.resize(value=scale)
+
+        bpy.ops.transform.translate(value=(-offset[0], -offset[1], -offset[2])) # and translate back
+
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
+        # apply global transforms
+
+        active_object.location = position
+        active_object.rotation_mode = 'QUATERNION'
+        active_object.rotation_quaternion = (orientation[3], orientation[0], orientation[1],orientation[2])
+
+        n_frame = 1
+        for pos, orient in zip(positions, orientations):
+            bpy.context.scene.frame_set(n_frame * frames_per_dof)
+            n_frame += 1
+
+
+            active_object.rotation_quaternion = (orient[3], orient[0], orient[1],orient[2])
+            active_object.keyframe_insert(data_path="rotation_quaternion", index = -1)
+
+            active_object.location = Vector(pos)
+            active_object.keyframe_insert(data_path="location",index = -1)
+
+
+        bpy.context.scene.frame_end = (n_frame-1) * frames_per_dof
 
 
 
@@ -320,7 +345,10 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
         name,_ = splitext(basename(visual.path))
 
-        filename = scene.get_resource_path(name + '.blend')  # raises exception if file is not found
+        try:
+            filename = scene.get_resource_path(name + '.blend')  # raises exception if file is not found
+        except:
+            filename = scene.get_resource_path(visual.path) # fall-back to .obj
 
         # the offset needs to be rotated.
 

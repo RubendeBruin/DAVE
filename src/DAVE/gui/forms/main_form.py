@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Tue Jan  7 16:16:38 2020
+# Created: Tue Jan  7 20:50:38 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -31,13 +31,20 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.widget_3.sizePolicy().hasHeightForWidth())
         self.widget_3.setSizePolicy(sizePolicy)
-        self.widget_3.setMinimumSize(QtCore.QSize(0, 20))
-        self.widget_3.setMaximumSize(QtCore.QSize(16777215, 25))
+        self.widget_3.setMinimumSize(QtCore.QSize(0, 24))
+        self.widget_3.setMaximumSize(QtCore.QSize(16777215, 30))
         self.widget_3.setObjectName("widget_3")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.widget_3)
         self.horizontalLayout_2.setSpacing(2)
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.btnSolveStatics = QtWidgets.QPushButton(self.widget_3)
+        self.btnSolveStatics.setIcon(icon)
+        self.btnSolveStatics.setObjectName("btnSolveStatics")
+        self.horizontalLayout_2.addWidget(self.btnSolveStatics)
+        self.btnUndoStatics = QtWidgets.QPushButton(self.widget_3)
+        self.btnUndoStatics.setObjectName("btnUndoStatics")
+        self.horizontalLayout_2.addWidget(self.btnUndoStatics)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
         self.btnWater = QtWidgets.QPushButton(self.widget_3)
@@ -296,6 +303,8 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "DAVE", None, -1))
+        self.btnSolveStatics.setText(QtWidgets.QApplication.translate("MainWindow", "Solve &statics", None, -1))
+        self.btnUndoStatics.setText(QtWidgets.QApplication.translate("MainWindow", "undo", None, -1))
         self.btnWater.setText(QtWidgets.QApplication.translate("MainWindow", "~", None, -1))
         self.btnLevelCamera.setText(QtWidgets.QApplication.translate("MainWindow", "__", None, -1))
         self.btnBlender.setText(QtWidgets.QApplication.translate("MainWindow", "blender", None, -1))

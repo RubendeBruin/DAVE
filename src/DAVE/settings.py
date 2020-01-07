@@ -184,7 +184,7 @@ Gui specific settings
 # displayed properties of nodes
 PROPS_NODE = ['name']
 PROPS_AXIS = ['global_position','global_rotation','applied_force','connection_force','equilibrium_error',
-              'x','y','z','gz','gy','gz','rx','ry','rz','grx','gry','grz',
+              'x','y','z','gz','gy','gz','rx','ry','rz','grx','gry','grz','ux','uy','uz',
               'connection_force_x','connection_force_y','connection_force_z','connection_moment_x','connection_moment_y','connection_moment_z',
               'tilt_x','heel','tilt_y','trim','heading','heading_compass']
 PROPS_POI = ['global_position','applied_force_and_moment_global','x','y','z','gz','gy','gz']
@@ -194,8 +194,6 @@ PROPS_BODY = [*PROPS_AXIS, 'cog', 'cogx', 'cogy', 'cogz', 'mass']
 PROPS_BUOY_MESH = ['cob', 'displacement']
 PROPS_LINEARBEAM = ['tension','torsion','moment_on_master','moment_on_slave']
 
-
-
 # ======= Animate after solving =========
 GUI_DO_ANIMATE = True
 GUI_SOLVER_ANIMATION_DURATION = 0.5 # S
@@ -203,8 +201,39 @@ GUI_ANIMATION_FPS = 60
 
 # ========== BLENDER ==============
 
-BLENDER_EXEC = r"C:\Program Files\Blender Foundation\Blender\blender.exe"
-BLENDER_BASE_SCENE = r"C:\data\Dave\Public\Blender visuals\base ocean.blend"
+# try to find the blender executable
+BLENDER_EXEC_DEFAULT_WIN = r"C:\Program Files\Blender Foundation\Blender\blender.exe"
+
+import platform
+if platform.system().lower().startswith('win'):
+    # on windows we can possible get blender from the registry
+    import winreg
+    pt = ''
+    try:
+        pt = winreg.QueryValue(winreg.HKEY_CURRENT_USER,r'SOFTWARE\Classes\blendfile\shell\open\command')
+    except:
+        try:
+            pt = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\Classes\blendfile\shell\open\command')
+        except:
+            pass
+    if pt:
+        BLENDER_EXEC = pt[1:-6]
+    else:
+        BLENDER_EXEC = BLENDER_EXEC_DEFAULT_WIN
+
+    from os import path
+    if path.exists(BLENDER_EXEC):
+        print("Blender found at: {}".format(BLENDER_EXEC))
+    else:
+        print("! Blender not found - please either:\n"
+              "   edit BLENDER_EXEC_DEFAULT_WIN in settings.py or \n"
+              "   set setting.BLENDER_EXEC or\n"
+              "   configure windows to open .blend files with blender automatically")
+else: # assume we're on linux
+    BLENDER_EXEC = 'blender'
+
+
+BLENDER_BASE_SCENE = RESOURCE_PATH[0] / 'base ocean.blend'
 BLENDER_DEFAULT_OUTFILE = PATH_TEMP / 'blenderout.blend'
 BLENDER_CABLE_DIA = 0.1 # m
 BLENDER_BEAM_DIA = 0.5 # m

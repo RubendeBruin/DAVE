@@ -218,6 +218,10 @@ class Gui():
         self.ui.pbCopyFeedback.pressed.connect(self.feedback_copy)
         self.ui.pbGenerateSceneCode.pressed.connect(self.generate_scene_code)
 
+        #
+        self.ui.btnSolveStatics.clicked.connect(self.solve_statics)
+        self.ui.btnUndoStatics.clicked.connect(self.undo_solve_statics)
+
         # -- visuals
         self.ui.actionShow_water_plane.triggered.connect(self.toggle_show_global_from_menu)
         self.ui.actionShow_visuals.triggered.connect(self.toggle_show_visuals)
@@ -300,28 +304,6 @@ class Gui():
         btnConstruct.setText('&6. Airy')
         btnConstruct.clicked.connect(lambda: self.activate_workspace("AIRY"))
         set_pb_style(btnConstruct)
-
-        # action buttons
-        space = QtWidgets.QWidget()
-        space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
-        self.ui.toolBar.addWidget(space)
-
-        lbl = QtWidgets.QLabel()
-        lbl.setText("Actions:  ")
-        self.ui.toolBar.addWidget(lbl)
-
-        self.btnSolve = QtWidgets.QPushButton()
-        self.btnSolve.setText('Solve &statics')
-        self.btnSolve.setIcon(QIcon(":/icons/Dave_icon.png"))
-        self.ui.toolBar.addWidget(self.btnSolve)
-        self.btnSolve.clicked.connect(self.solve_statics)
-
-        self.btnUndoSolve = QtWidgets.QPushButton()
-        self.btnUndoSolve.setText('undo solve')
-        self.ui.toolBar.addWidget(self.btnUndoSolve)
-        self.btnUndoSolve.clicked.connect(self.undo_solve_statics)
-
-
 
         space = QtWidgets.QWidget()
         space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
@@ -1082,6 +1064,11 @@ class Gui():
 if __name__ == '__main__':
 
     s = Scene()
-    s.import_scene(s.get_resource_path("cheetah.dave_asset"), containerize=False, prefix="")
+    s.import_scene(s.get_resource_path("cheetah.dave"), containerize=False, prefix="")
 
-    Gui(s)
+    s.resources_paths.append(r"C:\data\Dave\Public\Blender visuals")
+
+    from DAVE.io.blender import create_blend_and_open
+
+    create_blend_and_open(s)
+    # Gui(s)
