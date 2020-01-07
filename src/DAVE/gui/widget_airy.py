@@ -56,8 +56,11 @@ class WidgetAiry(guiDockWidget):
 
     # ======
 
+
+
     def prepare_for_wave_interaction(self):
-        self.guiRunCodeCallback('prepare_for_fd(s)',guiEventType.MODEL_STRUCTURE_CHANGED)
+        code = "from DAVE.frequency_domain import prepare_for_fd\nprepare_for_fd(s)"
+        self.guiRunCodeCallback(code,guiEventType.MODEL_STRUCTURE_CHANGED)
 
     def plot_raos(self):
 

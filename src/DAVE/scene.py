@@ -113,7 +113,7 @@
         s.new_poi('point 2', position = (10,0,0)) # create a second poi at x=10
         s.new_cable('line',poiA = 'point 1', poiB = 'point 2')
               # creates a cable between the two points
-        s.save_scene(r'test.dave_asset')              # save to file
+        s.save_scene(r'test.dave')              # save to file
 
 
     Nodes in a scene can be referenced by either name or by reference.
@@ -4083,9 +4083,9 @@ class Scene:
 
         filename = Path(filename)
 
-        # add .dave_asset extension
-        if filename.suffix != '.dave_asset':
-            filename = Path(str(filename) + '.dave_asset')
+        # add .dave extension if needed
+        if filename.suffix != '.dave':
+            filename = Path(str(filename) + '.dave')
 
         # add path if not provided
         if not filename.is_absolute():
@@ -4098,7 +4098,6 @@ class Scene:
         directory = filename.parent
         if not directory.exists():
             directory.mkdir()
-
 
         f = open(filename,'w+')
         f.write(code)
@@ -4143,7 +4142,7 @@ class Scene:
 
         This function is typically used on an empty scene.
 
-        Filename is appended with .dave_asset if needed.
+        Filename is appended with .dave if needed.
         File is searched for in the resource-paths.
 
         See also: import scene"""
@@ -4153,8 +4152,8 @@ class Scene:
 
         filename = Path(filename)
 
-        if filename.suffix != '.dave_asset':
-            filename = Path(str(filename) + '.dave_asset')
+        if filename.suffix != '.dave':
+            filename = Path(str(filename) + '.dave')
 
         filename = self.get_resource_path(filename)
 

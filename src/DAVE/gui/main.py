@@ -102,9 +102,7 @@ from DAVE.gui.widget_stability_disp import WidgetDisplacedStability
 from DAVE.gui.widget_explore import WidgetExplore
 from DAVE.gui.widget_tank_order import WidgetTankOrder
 
-# Imports available in script
 import numpy as np
-
 
 # resources
 import DAVE.gui.forms.resources_rc
@@ -211,6 +209,7 @@ class Gui():
         self.ui.actionNew.triggered.connect(self.clear)
         self.ui.actionOpen.triggered.connect(self.open)
         self.ui.actionSave_scene.triggered.connect(self.menu_save)
+        self.ui.actionSave_actions_as.triggered.connect(self.menu_save_actions)
         self.ui.actionImport_sub_scene.triggered.connect(self.menu_import)
         self.ui.actionImport_browser.triggered.connect(self.import_browser)
 
@@ -266,6 +265,12 @@ class Gui():
             self.ui.toolBar.addWidget(pb)
 
         # Workspace buttons
+        btnConstruct= QtWidgets.QPushButton()
+        btnConstruct.setText('&0. Library')
+        btnConstruct.clicked.connect(self.import_browser)
+        btnConstruct.setFlat(True)
+        self.ui.toolBar.addWidget(btnConstruct)
+
         btnConstruct = QtWidgets.QPushButton()
         btnConstruct.setText('&1. Construct')
         btnConstruct.clicked.connect(lambda: self.activate_workspace("CONSTRUCT"))
@@ -315,10 +320,7 @@ class Gui():
         self.ui.toolBar.addWidget(self.btnUndoSolve)
         self.btnUndoSolve.clicked.connect(self.undo_solve_statics)
 
-        self.btnLibrary = QtWidgets.QPushButton()
-        self.btnLibrary.setText('Library')
-        self.ui.toolBar.addWidget(self.btnLibrary)
-        self.btnLibrary.clicked.connect(self.import_browser)
+
 
         space = QtWidgets.QWidget()
         space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
@@ -768,6 +770,25 @@ class Gui():
         if filename:
             code = 's.save_scene(r"{}")'.format(filename)
             self.run_code(code, guiEventType.NOTHING)
+
+    def menu_save_actions(self):
+        filename, _ = QFileDialog.getSaveFileName(filter="*.dave", caption="Scene files",directory=self.scene.resources_paths[0])
+        if filename:
+
+            prev_line = ''
+
+            f = open(filename, 'w+')
+            for s in self._codelog:
+
+                if s.split('=')[0] == prev_line.split('=')[0]:
+                    prev_line = s
+                    continue
+
+                f.write(prev_line + '\n')
+                prev_line = s
+
+            f.write(prev_line + '\n')
+            f.close()
 
     def feedback_copy(self):
         self.app.clipboard().setText(self.ui.teFeedback.toPlainText())

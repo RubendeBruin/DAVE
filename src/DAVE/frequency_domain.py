@@ -62,7 +62,6 @@ import prettytable as pt
 from scipy.linalg import eig
 from mafredo.hyddb1 import Hyddb1
 from mafredo.helpers import wavelength
-from mafredo.rao import Rao
 
 
 def mode_shapes(scene):

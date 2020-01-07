@@ -22,7 +22,7 @@ This is the main module of the engine. It contains both the nodes and the scene.
         s.new_poi('point 1')                      # creates a poi with name anchor
         s.new_poi('point 2', position = (10,0,0)) # create a second poi at x=10
         s.new_cable('line',poiA = 'point 1', poiB = 'point 2') # creates a cable between the two points
-        s.save_scene(r'test.dave_asset')              # save to file
+        s.save_scene(r'test.dave')                # save to file
 
 
     Nodes in a scene can be referenced by either name or by reference.

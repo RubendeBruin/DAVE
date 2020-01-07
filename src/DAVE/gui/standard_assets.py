@@ -50,7 +50,7 @@ class Gui:
             txt += '\n' + str(p)
         self.ui.lblInfo.setText(txt)
 
-        res = self.scene.get_resource_list('.dave_asset')
+        res = self.scene.get_resource_list('.dave')
 
         for r in res:
             self.ui.listWidget.addItem(str(r))
@@ -69,7 +69,7 @@ class Gui:
     def select(self, data):
         file = data.text()
         self._selected = file
-        self.ui.btnImport.setText("Import {}".format(file[:-11])) # remove the .dave_asset part
+        self.ui.btnImport.setText("Import {}".format(file[:-5])) # remove the .dave part
 
     def dblclick(self, data):
         self.select(data)

@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Tue Jan  7 14:43:03 2020
+# Created: Tue Jan  7 16:16:38 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -251,6 +251,10 @@ class Ui_MainWindow(object):
         self.actionModal_shapes.setObjectName("actionModal_shapes")
         self.actionInertia_properties = QtWidgets.QAction(MainWindow)
         self.actionInertia_properties.setObjectName("actionInertia_properties")
+        self.actionSave_actions_as = QtWidgets.QAction(MainWindow)
+        self.actionSave_actions_as.setObjectName("actionSave_actions_as")
+        self.actionsee_open_ocean_org = QtWidgets.QAction(MainWindow)
+        self.actionsee_open_ocean_org.setObjectName("actionsee_open_ocean_org")
         self.menuSolve_Statics.addAction(self.actionNew)
         self.menuSolve_Statics.addSeparator()
         self.menuSolve_Statics.addAction(self.actionOpen)
@@ -258,6 +262,7 @@ class Ui_MainWindow(object):
         self.menuSolve_Statics.addAction(self.actionImport_browser)
         self.menuSolve_Statics.addSeparator()
         self.menuSolve_Statics.addAction(self.actionSave_scene)
+        self.menuSolve_Statics.addAction(self.actionSave_actions_as)
         self.menuView.addAction(self.actionHorizontal_camera)
         self.menuView.addSeparator()
         self.menuView.addAction(self.action2D_mode)
@@ -341,4 +346,6 @@ class Ui_MainWindow(object):
         self.actionRender_current_view.setText(QtWidgets.QApplication.translate("MainWindow", "Render current view", None, -1))
         self.actionModal_shapes.setText(QtWidgets.QApplication.translate("MainWindow", "Modal shapes", None, -1))
         self.actionInertia_properties.setText(QtWidgets.QApplication.translate("MainWindow", "Inertia properties", None, -1))
+        self.actionSave_actions_as.setText(QtWidgets.QApplication.translate("MainWindow", "Save actions as", None, -1))
+        self.actionsee_open_ocean_org.setText(QtWidgets.QApplication.translate("MainWindow", "see open-ocean.org", None, -1))
 

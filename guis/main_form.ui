@@ -326,6 +326,7 @@
     <addaction name="actionImport_browser"/>
     <addaction name="separator"/>
     <addaction name="actionSave_scene"/>
+    <addaction name="actionSave_actions_as"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -658,6 +659,16 @@
   <action name="actionInertia_properties">
    <property name="text">
     <string>Inertia properties</string>
+   </property>
+  </action>
+  <action name="actionSave_actions_as">
+   <property name="text">
+    <string>Save actions as</string>
+   </property>
+  </action>
+  <action name="actionsee_open_ocean_org">
+   <property name="text">
+    <string>see open-ocean.org</string>
    </property>
   </action>
  </widget>

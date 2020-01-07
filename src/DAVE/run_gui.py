@@ -17,7 +17,6 @@ from PySide2.QtGui import QPixmap
 from DAVE.scene import *
 from DAVE.marine import *
 from DAVE.rigging import *
-from DAVE.solvers.ballast import force_vessel_to_evenkeel_and_draft, BallastSystemSolver
 
 def run():
     app = QApplication()
