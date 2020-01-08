@@ -1,0 +1,4145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.1" />
+<title>DAVE.element_widgets API documentation</title>
+<meta name="description" content="This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>DAVE.element_widgets</code></h1>
+</header>
+<section id="section-intro">
+<p>This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/.">http://mozilla.org/MPL/2.0/.</a></p>
+<p>Ruben de Bruin - 2019</p>
+<p>Interface between the gui and and the element-widgets</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+  Ruben de Bruin - 2019
+
+
+
+  Interface between the gui and and the element-widgets
+
+
+&#34;&#34;&#34;
+
+import DAVE.forms.widget_axis
+import DAVE.forms.widget_body
+import DAVE.forms.widget_poi
+import DAVE.forms.widget_cable
+import DAVE.forms.widget_name
+import DAVE.forms.widget_visual
+import DAVE.forms.widget_force
+import DAVE.forms.widget_lincon6
+import DAVE.forms.widget_linhyd
+import DAVE.forms.widget_beam
+import DAVE.forms.widget_con2d
+import DAVE.forms.widget_sheave
+
+import DAVE.forms.addnode_form
+
+import DAVE.scene as vfs
+from PySide2.QtGui import QIcon
+
+from PySide2 import QtWidgets
+import numpy as np
+
+
+class NodeEditor:
+    &#34;&#34;&#34;NodeEditor implements a &#34;singleton&#34; instance of NodeEditor-derived widget.
+
+    This widget is shown in target_layout, which is a QtLayout
+
+    properties:
+    - node : the node being edited
+    - callback : a callback function being called when python code need to be executed
+
+    A create_widget() method shall be implemented. This function creates the widget and returns it. When th
+
+    &#34;&#34;&#34;
+
+
+    def __init__(self, node, callback, scene):
+        self.node = node
+        self.callback = callback
+        self.scene = scene
+
+    def create_widget(self):
+        &#34;&#34;&#34;Creates and returns the widget&#34;&#34;&#34;
+        raise Exception(&#39;Show() method not defined in derived class&#39;)
+
+
+class EditNode(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditNode._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_name.Ui_NameWidget()
+            ui.setupUi(widget)
+            EditNode._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditNode._ui
+
+        try:
+            ui.tbName.textChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.tbName.setText(self.node.name)
+
+        ui.tbName.textChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+
+
+class EditAxis(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditAxis._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_axis.Ui_widget_axis()
+            ui.setupUi(widget)
+            EditAxis._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditAxis._ui
+
+        try:
+            ui.checkBox_1.stateChanged.disconnect()
+            ui.checkBox_2.stateChanged.disconnect()
+            ui.checkBox_3.stateChanged.disconnect()
+            ui.checkBox_4.stateChanged.disconnect()
+            ui.checkBox_5.stateChanged.disconnect()
+            ui.checkBox_6.stateChanged.disconnect()
+
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+            ui.doubleSpinBox_4.valueChanged.disconnect()
+            ui.doubleSpinBox_5.valueChanged.disconnect()
+            ui.doubleSpinBox_6.valueChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.doubleSpinBox_1.setValue(self.node.position[0])
+        ui.doubleSpinBox_2.setValue(self.node.position[1])
+        ui.doubleSpinBox_3.setValue(self.node.position[2])
+
+        ui.doubleSpinBox_4.setValue(self.node.rotation[0])
+        ui.doubleSpinBox_5.setValue(self.node.rotation[1])
+        ui.doubleSpinBox_6.setValue(self.node.rotation[2])
+
+        ui.checkBox_1.setChecked(self.node.fixed[0])
+        ui.checkBox_2.setChecked(self.node.fixed[1])
+        ui.checkBox_3.setChecked(self.node.fixed[2])
+        ui.checkBox_4.setChecked(self.node.fixed[3])
+        ui.checkBox_5.setChecked(self.node.fixed[4])
+        ui.checkBox_6.setChecked(self.node.fixed[5])
+
+        ui.checkBox_1.stateChanged.connect(self.callback)
+        ui.checkBox_2.stateChanged.connect(self.callback)
+        ui.checkBox_3.stateChanged.connect(self.callback)
+        ui.checkBox_4.stateChanged.connect(self.callback)
+        ui.checkBox_5.stateChanged.connect(self.callback)
+        ui.checkBox_6.stateChanged.connect(self.callback)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_6.valueChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_position = np.array((self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+        new_rotation = np.array((self.ui.doubleSpinBox_4.value(), self.ui.doubleSpinBox_5.value(),self.ui.doubleSpinBox_6.value()))
+        new_fixed = np.array((self.ui.checkBox_1.isChecked(),
+                              self.ui.checkBox_2.isChecked(),
+                              self.ui.checkBox_3.isChecked(),
+                              self.ui.checkBox_4.isChecked(),
+                              self.ui.checkBox_5.isChecked(),
+                              self.ui.checkBox_6.isChecked()))
+
+        if not np.all(new_position == self.node.position):
+            code += element + &#39;.position = ({}, {}, {})&#39;.format(*new_position)
+
+        if not np.all(new_rotation == self.node.rotation):
+            code += element + &#39;.rotation = ({}, {}, {})&#39;.format(*new_rotation)
+
+        if not np.all(new_fixed == self.node.fixed):
+            code += element + &#39;.fixed = ({}, {}, {}, {}, {}, {})&#39;.format(*new_fixed)
+
+        return code
+
+
+class EditVisual(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditVisual._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_visual.Ui_widget_axis()
+            ui.setupUi(widget)
+            EditVisual._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditVisual._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+            ui.doubleSpinBox_4.valueChanged.disconnect()
+            ui.doubleSpinBox_5.valueChanged.disconnect()
+            ui.doubleSpinBox_6.valueChanged.disconnect()
+            ui.doubleSpinBox_7.valueChanged.disconnect()
+            ui.doubleSpinBox_8.valueChanged.disconnect()
+            ui.doubleSpinBox_9.valueChanged.disconnect()
+
+            ui.comboBox.editTextChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.doubleSpinBox_1.setValue(self.node.offset[0])
+        ui.doubleSpinBox_2.setValue(self.node.offset[1])
+        ui.doubleSpinBox_3.setValue(self.node.offset[2])
+
+        ui.doubleSpinBox_4.setValue(self.node.rotation[0])
+        ui.doubleSpinBox_5.setValue(self.node.rotation[1])
+        ui.doubleSpinBox_6.setValue(self.node.rotation[2])
+
+        ui.doubleSpinBox_7.setValue(self.node.scale[0])
+        ui.doubleSpinBox_8.setValue(self.node.scale[1])
+        ui.doubleSpinBox_9.setValue(self.node.scale[2])
+
+        ui.comboBox.clear()
+        ui.comboBox.addItems(self.scene.get_resource_list(&#39;obj&#39;))
+
+        ui.comboBox.setCurrentText(self.node.path)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_6.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_7.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_8.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_9.valueChanged.connect(self.callback)
+
+        ui.comboBox.editTextChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_position = np.array((self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+        new_rotation = np.array((self.ui.doubleSpinBox_4.value(), self.ui.doubleSpinBox_5.value(),self.ui.doubleSpinBox_6.value()))
+        new_scale = np.array((self.ui.doubleSpinBox_7.value(), self.ui.doubleSpinBox_8.value(),self.ui.doubleSpinBox_9.value()))
+
+        new_path = self.ui.comboBox.currentText()
+
+        if not new_path == self.node.path:
+            code += element + &#34;.path = r&#39;{}&#39;&#34;.format(new_path)
+
+        if not np.all(new_position == self.node.offset):
+            code += element + &#39;.offset = ({}, {}, {})&#39;.format(*new_position)
+
+        if not np.all(new_rotation == self.node.rotation):
+            code += element + &#39;.rotation = ({}, {}, {})&#39;.format(*new_rotation)
+
+        if not np.all(new_scale == self.node.scale):
+            code += element + &#39;.scale = ({}, {}, {})&#39;.format(*new_scale)
+
+
+        return code
+
+
+class EditBuoyancy(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditBuoyancy._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_visual.Ui_widget_axis() # same as visual widget!
+            ui.setupUi(widget)
+            EditBuoyancy._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditBuoyancy._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+            ui.doubleSpinBox_4.valueChanged.disconnect()
+            ui.doubleSpinBox_5.valueChanged.disconnect()
+            ui.doubleSpinBox_6.valueChanged.disconnect()
+            ui.doubleSpinBox_7.valueChanged.disconnect()
+            ui.doubleSpinBox_8.valueChanged.disconnect()
+            ui.doubleSpinBox_9.valueChanged.disconnect()
+
+            ui.comboBox.editTextChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        # ui.doubleSpinBox_1.setValue(self.node.offset[0])
+        # ui.doubleSpinBox_2.setValue(self.node.offset[1])
+        # ui.doubleSpinBox_3.setValue(self.node.offset[2])
+        #
+        # ui.doubleSpinBox_4.setValue(self.node.rotation[0])
+        # ui.doubleSpinBox_5.setValue(self.node.rotation[1])
+        # ui.doubleSpinBox_6.setValue(self.node.rotation[2])
+        #
+        # ui.doubleSpinBox_7.setValue(self.node.scale[0])
+        # ui.doubleSpinBox_8.setValue(self.node.scale[1])
+        # ui.doubleSpinBox_9.setValue(self.node.scale[2])
+
+
+
+        ui.comboBox.clear()
+        ui.comboBox.addItems(self.scene.get_resource_list(&#39;obj&#39;))
+
+        ui.comboBox.setCurrentText(self.node.trimesh._path)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_6.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_7.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_8.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_9.valueChanged.connect(self.callback)
+
+        ui.comboBox.editTextChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        offset = np.array((self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+        rotation = np.array((self.ui.doubleSpinBox_4.value(), self.ui.doubleSpinBox_5.value(),self.ui.doubleSpinBox_6.value()))
+        scale = np.array((self.ui.doubleSpinBox_7.value(), self.ui.doubleSpinBox_8.value(),self.ui.doubleSpinBox_9.value()))
+
+        try:
+            new_path = self.scene.get_resource_path(self.ui.comboBox.currentText())
+        except:
+            new_path = &#34;FILE DOES NOT EXIST&#34;
+
+        # load_obj(self, filename, offset = None, rotation = None, scale = None)
+        code = element + &#34;.trimesh.load_obj(r&#39;{}&#39;, scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))&#34;.format(new_path, *scale, *rotation, *offset)
+
+        return code
+
+
+
+class EditBody(EditAxis):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditBody._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_body.Ui_Form()
+            ui.setupUi(widget)
+            EditBody._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditBody._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+            ui.doubleSpinBox_mass.valueChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.doubleSpinBox_1.setValue(self.node.cog[0])
+        ui.doubleSpinBox_2.setValue(self.node.cog[1])
+        ui.doubleSpinBox_3.setValue(self.node.cog[2])
+
+        ui.doubleSpinBox_mass.setValue(self.node.mass)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_mass.valueChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_mass = self.ui.doubleSpinBox_mass.value()
+        new_cog = np.array(
+            (self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(), self.ui.doubleSpinBox_3.value()))
+
+        if new_mass != self.node.mass:
+            code += element + &#39;.mass = {}&#39;.format(new_mass)
+
+        if not np.all(new_cog == self.node.cog):
+            code += element + &#39;.cog = ({}, {}, {})&#39;.format(*new_cog)
+
+        return code
+
+class EditPoi(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditPoi._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_poi.Ui_Poi()
+            ui.setupUi(widget)
+            EditPoi._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditPoi._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.doubleSpinBox_1.setValue(self.node.position[0])
+        ui.doubleSpinBox_2.setValue(self.node.position[1])
+        ui.doubleSpinBox_3.setValue(self.node.position[2])
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_position = np.array((self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+
+        if not np.all(new_position == self.node.position):
+            code += element + &#39;.position = ({}, {}, {})&#39;.format(*new_position)
+
+        return code
+
+
+class EditCable(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditCable._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_cable.Ui_Cable_form()
+            ui.setupUi(widget)
+
+            EditCable._ui = ui
+            ui._widget = widget
+            ui.additional_pois = list()
+
+        else:
+            ui = EditCable._ui
+
+        self.plist = [&#34;&#34;]
+
+        for poi in self.scene.nodes_of_type(vfs.Sheave):
+            self.plist.append(poi.name)
+
+        for poi in self.scene.nodes_of_type(vfs.Poi):
+            self.plist.append(poi.name)
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox.valueChanged.disconnect()
+            ui.comboBox_2.currentIndexChanged.disconnect()
+            ui.comboBox.currentIndexChanged.disconnect()
+
+        except:
+            pass # no connections yet
+
+        for ddb in ui.additional_pois:
+            ui.poiLayout.removeWidget(ddb)
+            ddb.deleteLater()
+
+        ui.additional_pois.clear()
+
+        ui.comboBox.clear()
+
+        ui.comboBox.addItems(self.plist)
+
+        ui.comboBox_2.clear()
+        ui.comboBox_2.addItems(self.plist)
+
+        ui.doubleSpinBox_1.setValue(self.node.length)
+        ui.doubleSpinBox_2.setValue(self.node.EA)
+        ui.doubleSpinBox.setValue(self.node.diameter)
+
+        self.ui = ui  # needs to be done here as self.add_poi_dropdown modifies this
+
+        # Add as many drop-down boxes as needed
+        poi_names = self.node.give_poi_names()
+        for i in range(len(poi_names)-2):
+            self.add_poi_dropdown()
+
+        self.ui.comboBox.setCurrentText(poi_names[0])
+        self.ui.comboBox_2.setCurrentText(poi_names[1])
+
+        for i,name in enumerate(poi_names[2:]):
+            self.ui.additional_pois[i].setCurrentText(name)
+            # self.ui.additional_pois[i].currentIndexChanged.connect(self.callback)
+
+        # Set events
+        ui.btnAdd.clicked.connect(self.add_poi_dropdown)
+        ui.btnRemove.clicked.connect(self.delete_poi_dropdown)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox.valueChanged.connect(self.callback)
+
+        ui.comboBox.currentIndexChanged.connect(self.callback)
+        ui.comboBox_2.currentIndexChanged.connect(self.callback)
+        for cbx in self.ui.additional_pois:
+            cbx.currentIndexChanged.connect(self.callback)
+
+        return ui._widget
+
+    def add_poi_dropdown(self):
+        cbx = QtWidgets.QComboBox(self.ui.frame)
+        self.ui.poiLayout.addWidget(cbx)
+        cbx.addItems(self.plist)
+
+        self.ui.additional_pois.append(cbx)
+
+
+    def delete_poi_dropdown(self):
+        if self.ui.additional_pois:
+            last_item = self.ui.additional_pois.pop()
+            self.ui.poiLayout.removeWidget(last_item)
+            last_item.deleteLater()
+            self.callback()
+
+    def generate_code(self):
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_length = self.ui.doubleSpinBox_1.value()
+        new_EA = self.ui.doubleSpinBox_2.value()
+        new_diameter = self.ui.doubleSpinBox.value()
+
+        if not new_length == self.node.length:
+            code += element + &#39;.length = {}&#39;.format(new_length)
+
+        if not new_EA == self.node.EA:
+            code += element + &#39;.EA = {}&#39;.format(new_EA)
+
+        if not new_diameter == self.node.diameter:
+            code += element + &#39;.diameter = {}&#39;.format(new_diameter)
+
+        # get the poi names
+        # new_names = [self.ui.comboBox.currentText(),self.ui.comboBox_2.currentText()]
+        new_names = []
+        for cbx in [self.ui.comboBox, self.ui.comboBox_2, *self.ui.additional_pois]:
+            ct = cbx.currentText()
+            if ct: # skip empty
+                new_names.append(ct)
+
+        if not (new_names == self.node.give_poi_names):
+            code += element + &#39;.clear_connections()&#39;
+            for name in new_names:
+                code += element + &#34;.add_connection(s[&#39;{}&#39;])&#34;.format(name)
+
+        code += &#39;\n&#39; + element + &#34;.check_endpoints()&#34;
+
+        return code
+
+
+class EditForce(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditForce._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_force.Ui_widget_force()
+            ui.setupUi(widget)
+            EditForce._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditForce._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+            ui.doubleSpinBox_4.valueChanged.disconnect()
+            ui.doubleSpinBox_5.valueChanged.disconnect()
+            ui.doubleSpinBox_6.valueChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.doubleSpinBox_1.setValue(self.node.force[0])
+        ui.doubleSpinBox_2.setValue(self.node.force[1])
+        ui.doubleSpinBox_3.setValue(self.node.force[2])
+
+        ui.doubleSpinBox_4.setValue(self.node.moment[0])
+        ui.doubleSpinBox_5.setValue(self.node.moment[1])
+        ui.doubleSpinBox_6.setValue(self.node.moment[2])
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+
+        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_6.valueChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_force = np.array(
+            (self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+        new_moment = np.array(
+            (self.ui.doubleSpinBox_4.value(), self.ui.doubleSpinBox_5.value(), self.ui.doubleSpinBox_6.value()))
+
+        if not np.all(new_force == self.node.force):
+            code += element + &#39;.force = ({}, {}, {})&#39;.format(*new_force)
+        if not np.all(new_moment == self.node.moment):
+            code += element + &#39;.moment = ({}, {}, {})&#39;.format(*new_moment)
+
+        return code
+
+class EditSheave(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditSheave._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_sheave.Ui_widget_sheave()
+            ui.setupUi(widget)
+            EditSheave._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditSheave._ui
+
+        try:
+            ui.sbAX.valueChanged.disconnect()
+            ui.sbAY.valueChanged.disconnect()
+            ui.sbAZ.valueChanged.disconnect()
+            ui.sbRadius.valueChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.sbAX.setValue(self.node.axis[0])
+        ui.sbAY.setValue(self.node.axis[1])
+        ui.sbAZ.setValue(self.node.axis[2])
+
+        ui.sbRadius.setValue(self.node.radius)
+
+        ui.sbAX.valueChanged.connect(self.callback)
+        ui.sbAY.valueChanged.connect(self.callback)
+        ui.sbAZ.valueChanged.connect(self.callback)
+
+        ui.sbRadius.valueChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_axis = np.array(
+            (self.ui.sbAX.value(), self.ui.sbAY.value(),self.ui.sbAZ.value()))
+        new_radius = self.ui.sbRadius.value()
+
+        if not np.all(new_axis == self.node.axis):
+            code += element + &#39;.axis = ({}, {}, {})&#39;.format(*new_axis)
+        if not new_radius == self.node.radius:
+            code += element + &#39;.radius = {}&#39;.format(new_radius)
+
+        return code
+
+class EditHydSpring(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditHydSpring._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_linhyd.Ui_widget_linhyd()
+            ui.setupUi(widget)
+            EditHydSpring._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditHydSpring._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+            ui.BMT.valueChanged.disconnect()
+            ui.BML.valueChanged.disconnect()
+            ui.COFX.valueChanged.disconnect()
+            ui.COFY.valueChanged.disconnect()
+            ui.kHeave.valueChanged.disconnect()
+            ui.waterline.valueChanged.disconnect()
+            ui.disp.valueChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.doubleSpinBox_1.setValue(self.node.cob[0])
+        ui.doubleSpinBox_2.setValue(self.node.cob[1])
+        ui.doubleSpinBox_3.setValue(self.node.cob[2])
+        ui.BMT.setValue(self.node.BMT)
+        ui.BML.setValue(self.node.BML)
+        ui.COFX.setValue(self.node.COFX)
+        ui.COFY.setValue(self.node.COFY)
+        ui.kHeave.setValue(self.node.kHeave)
+        ui.waterline.setValue(self.node.waterline)
+        ui.disp.setValue(self.node.displacement_kN)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+        ui.BMT.valueChanged.connect(self.callback)
+        ui.BML.valueChanged.connect(self.callback)
+        ui.COFX.valueChanged.connect(self.callback)
+        ui.COFY.valueChanged.connect(self.callback)
+        ui.kHeave.valueChanged.connect(self.callback)
+        ui.waterline.valueChanged.connect(self.callback)
+        ui.disp.valueChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_cob = np.array(
+            (self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+        new_bmt = self.ui.BMT.value()
+        new_bml = self.ui.BML.value()
+        new_cofx = self.ui.COFX.value()
+        new_cofy = self.ui.COFY.value()
+        new_kHeave = self.ui.kHeave.value()
+        new_waterline = self.ui.waterline.value()
+        new_dipl = self.ui.disp.value()
+
+        if not np.all(new_cob == self.node.cob):
+            code += element + &#39;.cob = ({}, {}, {})&#39;.format(*new_cob)
+
+        if not new_bmt == self.node.BMT:
+            code += element + &#39;.BMT = {}&#39;.format(new_bmt)
+
+        if not new_bml == self.node.BML:
+            code += element + &#39;.BML = {}&#39;.format(new_bml)
+
+        if not new_cofx == self.node.COFX:
+            code += element + &#39;.COFX = {}&#39;.format(new_cofx)
+
+        if not new_cofy == self.node.COFY:
+            code += element + &#39;.COFY = {}&#39;.format(new_cofy)
+
+        if not new_kHeave == self.node.kHeave:
+            code += element + &#39;.kHeave = {}&#39;.format(new_kHeave)
+
+        if not new_waterline == self.node.waterline:
+            code += element + &#39;.waterline = {}&#39;.format(new_waterline)
+
+        if not new_dipl == self.node.displacement_kN:
+            code += element + &#39;.displacement_kN = {}&#39;.format(new_dipl)
+
+        return code
+
+class EditLC6d(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditLC6d._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_lincon6.Ui_widget_lincon6()
+            ui.setupUi(widget)
+            EditLC6d._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditLC6d._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+            ui.doubleSpinBox_4.valueChanged.disconnect()
+            ui.doubleSpinBox_5.valueChanged.disconnect()
+            ui.doubleSpinBox_6.valueChanged.disconnect()
+
+            ui.cbMasterAxis.currentIndexChanged.disconnect()
+            ui.cbSlaveAxis.currentIndexChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        self.alist = list()
+        for axis in self.scene.nodes_of_type(vfs.Axis):
+            self.alist.append(axis.name)
+
+        ui.cbMasterAxis.clear()
+        ui.cbSlaveAxis.clear()
+
+        ui.cbMasterAxis.addItems(self.alist)
+        ui.cbSlaveAxis.addItems(self.alist)
+
+        ui.cbMasterAxis.setCurrentText(self.node.master.name)
+        ui.cbSlaveAxis.setCurrentText(self.node.slave.name)
+
+        ui.doubleSpinBox_1.setValue(self.node.stiffness[0])
+        ui.doubleSpinBox_2.setValue(self.node.stiffness[1])
+        ui.doubleSpinBox_3.setValue(self.node.stiffness[2])
+
+        ui.doubleSpinBox_4.setValue(self.node.stiffness[3])
+        ui.doubleSpinBox_5.setValue(self.node.stiffness[4])
+        ui.doubleSpinBox_6.setValue(self.node.stiffness[5])
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_6.valueChanged.connect(self.callback)
+
+        ui.cbMasterAxis.currentIndexChanged.connect(self.callback)
+        ui.cbSlaveAxis.currentIndexChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_stiffness = np.array((self.ui.doubleSpinBox_1.value(),
+                                  self.ui.doubleSpinBox_2.value(),
+                                  self.ui.doubleSpinBox_3.value(),
+                                  self.ui.doubleSpinBox_4.value(),
+                                  self.ui.doubleSpinBox_5.value(),
+                                  self.ui.doubleSpinBox_6.value()))
+
+        new_master = self.ui.cbMasterAxis.currentText()
+        new_slave = self.ui.cbSlaveAxis.currentText()
+
+        if not np.all(new_stiffness == self.node.stiffness):
+            code += element + &#39;.stiffness = ({}, {}, {},&#39;.format(*new_stiffness[:3])
+            code += &#39;                  {}, {}, {})&#39;.format(*new_stiffness[3:])
+
+        if not new_master == self.node.master.name:
+            code += element + &#39;.master = s[&#34;{}&#34;]&#39;.format(new_master)
+
+        if not new_slave == self.node.slave.name:
+            code += element + &#39;.slave = s[&#34;{}&#34;]&#39;.format(new_slave)
+
+
+        return code
+
+class EditConnector2d(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditConnector2d._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_con2d.Ui_widget_con2d()
+            ui.setupUi(widget)
+            EditConnector2d._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditConnector2d._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_4.valueChanged.disconnect()
+
+            ui.cbMasterAxis.currentIndexChanged.disconnect()
+            ui.cbSlaveAxis.currentIndexChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        self.alist = list()
+        for axis in self.scene.nodes_of_type(vfs.Axis):
+            self.alist.append(axis.name)
+
+        ui.cbMasterAxis.clear()
+        ui.cbSlaveAxis.clear()
+
+        ui.cbMasterAxis.addItems(self.alist)
+        ui.cbSlaveAxis.addItems(self.alist)
+
+        ui.cbMasterAxis.setCurrentText(self.node.master.name)
+        ui.cbSlaveAxis.setCurrentText(self.node.slave.name)
+
+        ui.doubleSpinBox_1.setValue(self.node.k_linear)
+        ui.doubleSpinBox_4.setValue(self.node.k_angular)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
+
+        ui.cbMasterAxis.currentIndexChanged.connect(self.callback)
+        ui.cbSlaveAxis.currentIndexChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_k_lin = self.ui.doubleSpinBox_1.value()
+        new_k_ang = self.ui.doubleSpinBox_4.value()
+        new_master = self.ui.cbMasterAxis.currentText()
+        new_slave = self.ui.cbSlaveAxis.currentText()
+
+        if not new_master == self.node.master.name:
+            code += element + &#39;.master = s[&#34;{}&#34;]&#39;.format(new_master)
+
+        if not new_slave == self.node.slave.name:
+            code += element + &#39;.slave = s[&#34;{}&#34;]&#39;.format(new_slave)
+
+        if not new_k_lin == self.node.k_linear:
+            code += element + &#39;.k_linear = {}&#39;.format(new_k_lin)
+
+        if not new_k_ang == self.node.k_angular:
+            code += element + &#39;.k_angular = {}&#39;.format(new_k_ang)
+
+        return code
+
+class EditBeam(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditBeam._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_beam.Ui_widget_beam()
+            ui.setupUi(widget)
+            EditBeam._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditBeam._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+            ui.doubleSpinBox_4.valueChanged.disconnect()
+            ui.doubleSpinBox_5.valueChanged.disconnect()
+
+            ui.cbMasterAxis.currentIndexChanged.disconnect()
+            ui.cbSlaveAxis.currentIndexChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        self.alist = list()
+        for axis in self.scene.nodes_of_type(vfs.Axis):
+            self.alist.append(axis.name)
+
+        ui.cbMasterAxis.clear()
+        ui.cbSlaveAxis.clear()
+
+        ui.cbMasterAxis.addItems(self.alist)
+        ui.cbSlaveAxis.addItems(self.alist)
+
+        ui.cbMasterAxis.setCurrentText(self.node.master.name)
+        ui.cbSlaveAxis.setCurrentText(self.node.slave.name)
+
+        ui.doubleSpinBox_1.setValue(self.node.L)
+        ui.doubleSpinBox_2.setValue(self.node.EIy)
+        ui.doubleSpinBox_3.setValue(self.node.EIz)
+
+        ui.doubleSpinBox_4.setValue(self.node.GIp)
+        ui.doubleSpinBox_5.setValue(self.node.EA)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
+
+        ui.cbMasterAxis.currentIndexChanged.connect(self.callback)
+        ui.cbSlaveAxis.currentIndexChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_L = self.ui.doubleSpinBox_1.value()
+        new_EIy = self.ui.doubleSpinBox_2.value()
+        new_EIz = self.ui.doubleSpinBox_3.value()
+        new_GIp = self.ui.doubleSpinBox_4.value()
+        new_EA = self.ui.doubleSpinBox_5.value()
+
+        new_master = self.ui.cbMasterAxis.currentText()
+        new_slave = self.ui.cbSlaveAxis.currentText()
+
+        if not new_L == self.node.L:
+            code += element + &#39;.L = {}&#39;.format(new_L)
+
+        if not new_EIy == self.node.EIy:
+            code += element + &#39;.EIy = {}&#39;.format(new_EIy)
+
+        if not new_EIz == self.node.EIz:
+            code += element + &#39;.EIz = {}&#39;.format(new_EIz)
+
+        if not new_GIp == self.node.GIp:
+            code += element + &#39;.GIp = {}&#39;.format(new_GIp)
+
+        if not new_EA == self.node.EA:
+            code += element + &#39;.EA = {}&#39;.format(new_EA)
+
+        if not new_master == self.node.master.name:
+            code += element + &#39;.master = s[&#34;{}&#34;]&#39;.format(new_master)
+
+        if not new_slave == self.node.slave.name:
+            code += element + &#39;.slave = s[&#34;{}&#34;]&#39;.format(new_slave)
+
+        return code
+
+def fill_dropdown_boxes(ui, scene):
+    a = list()
+    p = list()
+    for e in scene.nodes_of_type(vfs.Axis):
+        a.append(e.name)
+    for e in scene.nodes_of_type(vfs.Poi):
+        p.append(e.name)
+
+    ui.cbMasterAxis.addItems(a)
+    ui.cbSlaveAxis.addItems(a)
+    ui.cbPoiA.addItems(p)
+    ui.cbPoiB.addItems(p)
+    ui.cbParentPoi.addItems(p)
+    if len(p) &gt; 1:
+        ui.cbPoiB.setCurrentText(p[1])
+
+    ui.cbParentAxis.addItems([&#34;&#34;])
+    ui.cbParentAxis.addItems(a)
+
+
+def add_node(scene):
+    AddNode = QtWidgets.QDialog()
+    ui = DAVE.forms.addnode_form.Ui_Dialog()
+    ui.setupUi(AddNode)
+
+    ui.frmMasterSlave.setVisible(False)
+    ui.frmPoints.setVisible(False)
+    ui.frmParent.setVisible(False)
+    ui.frmParentPoi.setVisible(False)
+
+    fill_dropdown_boxes(ui, scene)
+
+    # AddNode.setFixedHeight(250)
+
+    ui.errPois.setVisible(False)
+    ui.errUniqueName.setVisible(False)
+
+    def ok():
+        if ui.frmPoints.isVisible():
+            if ui.cbPoiA.currentText() == ui.cbPoiB.currentText():
+                ui.errPois.setVisible(True)
+            else:
+                ui.errPois.setVisible(False)
+        ui.btnOk.setEnabled((not ui.errPois.isVisible()) and (not ui.errUniqueName.isVisible()))
+
+    def ok_name():
+        ui.errUniqueName.setVisible(not scene.name_available(ui.tbName.text()))
+        ui.btnOk.setEnabled((not ui.errPois.isVisible()) and (not ui.errUniqueName.isVisible()))
+
+    ui.cbPoiA.currentTextChanged.connect(ok)
+    ui.cbPoiB.currentTextChanged.connect(ok)
+    ui.tbName.textChanged.connect(ok_name)
+
+    def cancel():
+        AddNode.reject()
+
+    ui.buttonBox.clicked.connect(cancel)
+
+    return ui, AddNode
+
+
+def add_axis(scene, parent=None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/axis.png&#34;))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Axis&#39;))
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+        if parent:
+            return &#34;new_axis(&#39;{}&#39;, parent = &#39;{}&#39;)&#34;.format(name, parent)
+        else:
+            return &#34;new_axis(&#39;{}&#39;)&#34;.format(name)
+    else:
+        return None
+
+def add_body(scene, parent=None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/rigidbody.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Body&#39;))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+        if parent:
+            return &#34;new_rigidbody(&#39;{}&#39;, parent = &#39;{}&#39;)&#34;.format(name, parent)
+        else:
+            return &#34;new_rigidbody(&#39;{}&#39;)&#34;.format(name)
+    else:
+        return None
+
+def add_poi(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/poi.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Poi&#39;))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+        if parent:
+            return &#34;new_poi(&#39;{}&#39;, parent = &#39;{}&#39;)&#34;.format(name, parent)
+        else:
+            return &#34;new_poi(&#39;{}&#39;)&#34;.format(name)
+    else:
+        return None
+
+
+def add_cable(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmPoints.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/cable.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Cable&#39;))
+
+    if parent:
+        ui.cbPoiA.setCurrentText(parent[0].name)
+        try:
+            ui.cbPoiB.setCurrentText(parent[1].name)
+        except:
+            pass
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        poiA = ui.cbPoiA.currentText()
+        poiB = ui.cbPoiB.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_cable(&#39;{}&#39;, poiA = &#39;{}&#39;, poiB= &#39;{}&#39;)&#34;.format(name, poiA, poiB)
+
+    else:
+        return None
+
+def add_force(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParentPoi.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/force.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Force&#39;))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        poi = ui.cbParentPoi.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_force(&#39;{}&#39;, parent = &#39;{}&#39;)&#34;.format(name, poi)
+
+    else:
+        return None
+    
+def add_sheave(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParentPoi.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/sheave.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Sheave&#39;))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        poi = ui.cbParentPoi.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_sheave(&#39;{}&#39;, parent = &#39;{}&#39;, axis = (0,1,0))&#34;.format(name, poi)
+
+    else:
+        return None
+
+def add_linear_connector(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmMasterSlave.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/lincon6.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;LinCon6d&#39;))
+
+    if parent:
+        ui.cbMasterAxis.setCurrentText(parent[0].name)
+        try:
+            ui.cbSlaveAxis.setCurrentText(parent[1].name)
+        except:
+            pass
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        master = ui.cbMasterAxis.currentText()
+        slave = ui.cbSlaveAxis.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_linear_connector_6d(&#39;{}&#39;, slave = &#39;{}&#39;, master = &#39;{}&#39;)&#34;.format(name, slave, master)
+
+    else:
+        return None
+
+
+def add_connector2d(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmMasterSlave.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/con2d.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Connector2d&#39;))
+
+    if parent:
+        ui.cbMasterAxis.setCurrentText(parent[0].name)
+        try:
+            ui.cbSlaveAxis.setCurrentText(parent[1].name)
+        except:
+            pass
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        master = ui.cbMasterAxis.currentText()
+        slave = ui.cbSlaveAxis.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_connector2d(&#39;{}&#39;, slave = &#39;{}&#39;, master = &#39;{}&#39;)&#34;.format(name, slave, master)
+
+    else:
+        return None
+
+def add_beam_connector(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmMasterSlave.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/beam.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Beam&#39;))
+
+    if parent:
+        ui.cbMasterAxis.setCurrentText(parent[0].name)
+        try:
+            ui.cbSlaveAxis.setCurrentText(parent[1].name)
+        except:
+            pass
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        master = ui.cbMasterAxis.currentText()
+        slave = ui.cbSlaveAxis.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_linear_beam(&#39;{}&#39;, slave = &#39;{}&#39;, master = &#39;{}&#39;)&#34;.format(name, slave, master)
+
+    else:
+        return None
+
+
+def add_linear_hydrostatics(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/linhyd.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Hydrostatics&#39;))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_hydspring(&#39;{}&#39;, parent = &#39;{}&#39;, cob = (0,0,0), BMT=0, BML=0, COFX=0, COFY=0, kHeave=0, waterline=0, displacement_kN=0)&#34;.format(name, parent)
+
+    else:
+        return None
+
+def add_visual(scene, parent = None):
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/visual.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Visual&#39;))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_visual(&#39;{}&#39;, parent = &#39;{}&#39;, path = r&#39;wirecube.obj&#39;)&#34;.format(
+            name, parent)
+
+    else:
+        return None
+
+def add_buoyancy(scene, parent = None):
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/buoy_mesh.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Buoyancy mesh&#39;))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_buoyancy(&#39;{}&#39;, parent = &#39;{}&#39;)&#34;.format(name, parent)
+
+    else:
+        return None</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="DAVE.element_widgets.add_axis"><code class="name flex">
+<span>def <span class="ident">add_axis</span></span>(<span>scene, parent=None)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_axis(scene, parent=None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/axis.png&#34;))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Axis&#39;))
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+        if parent:
+            return &#34;new_axis(&#39;{}&#39;, parent = &#39;{}&#39;)&#34;.format(name, parent)
+        else:
+            return &#34;new_axis(&#39;{}&#39;)&#34;.format(name)
+    else:
+        return None</code></pre>
+</details>
+</dd>
+<dt id="DAVE.element_widgets.add_beam_connector"><code class="name flex">
+<span>def <span class="ident">add_beam_connector</span></span>(<span>scene, parent=None)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_beam_connector(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmMasterSlave.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/beam.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Beam&#39;))
+
+    if parent:
+        ui.cbMasterAxis.setCurrentText(parent[0].name)
+        try:
+            ui.cbSlaveAxis.setCurrentText(parent[1].name)
+        except:
+            pass
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        master = ui.cbMasterAxis.currentText()
+        slave = ui.cbSlaveAxis.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_linear_beam(&#39;{}&#39;, slave = &#39;{}&#39;, master = &#39;{}&#39;)&#34;.format(name, slave, master)
+
+    else:
+        return None</code></pre>
+</details>
+</dd>
+<dt id="DAVE.element_widgets.add_body"><code class="name flex">
+<span>def <span class="ident">add_body</span></span>(<span>scene, parent=None)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_body(scene, parent=None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/rigidbody.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Body&#39;))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+        if parent:
+            return &#34;new_rigidbody(&#39;{}&#39;, parent = &#39;{}&#39;)&#34;.format(name, parent)
+        else:
+            return &#34;new_rigidbody(&#39;{}&#39;)&#34;.format(name)
+    else:
+        return None</code></pre>
+</details>
+</dd>
+<dt id="DAVE.element_widgets.add_buoyancy"><code class="name flex">
+<span>def <span class="ident">add_buoyancy</span></span>(<span>scene, parent=None)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_buoyancy(scene, parent = None):
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/buoy_mesh.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Buoyancy mesh&#39;))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_buoyancy(&#39;{}&#39;, parent = &#39;{}&#39;)&#34;.format(name, parent)
+
+    else:
+        return None</code></pre>
+</details>
+</dd>
+<dt id="DAVE.element_widgets.add_cable"><code class="name flex">
+<span>def <span class="ident">add_cable</span></span>(<span>scene, parent=None)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_cable(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmPoints.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/cable.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Cable&#39;))
+
+    if parent:
+        ui.cbPoiA.setCurrentText(parent[0].name)
+        try:
+            ui.cbPoiB.setCurrentText(parent[1].name)
+        except:
+            pass
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        poiA = ui.cbPoiA.currentText()
+        poiB = ui.cbPoiB.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_cable(&#39;{}&#39;, poiA = &#39;{}&#39;, poiB= &#39;{}&#39;)&#34;.format(name, poiA, poiB)
+
+    else:
+        return None</code></pre>
+</details>
+</dd>
+<dt id="DAVE.element_widgets.add_connector2d"><code class="name flex">
+<span>def <span class="ident">add_connector2d</span></span>(<span>scene, parent=None)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_connector2d(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmMasterSlave.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/con2d.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Connector2d&#39;))
+
+    if parent:
+        ui.cbMasterAxis.setCurrentText(parent[0].name)
+        try:
+            ui.cbSlaveAxis.setCurrentText(parent[1].name)
+        except:
+            pass
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        master = ui.cbMasterAxis.currentText()
+        slave = ui.cbSlaveAxis.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_connector2d(&#39;{}&#39;, slave = &#39;{}&#39;, master = &#39;{}&#39;)&#34;.format(name, slave, master)
+
+    else:
+        return None</code></pre>
+</details>
+</dd>
+<dt id="DAVE.element_widgets.add_force"><code class="name flex">
+<span>def <span class="ident">add_force</span></span>(<span>scene, parent=None)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_force(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParentPoi.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/force.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Force&#39;))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        poi = ui.cbParentPoi.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_force(&#39;{}&#39;, parent = &#39;{}&#39;)&#34;.format(name, poi)
+
+    else:
+        return None</code></pre>
+</details>
+</dd>
+<dt id="DAVE.element_widgets.add_linear_connector"><code class="name flex">
+<span>def <span class="ident">add_linear_connector</span></span>(<span>scene, parent=None)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_linear_connector(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmMasterSlave.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/lincon6.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;LinCon6d&#39;))
+
+    if parent:
+        ui.cbMasterAxis.setCurrentText(parent[0].name)
+        try:
+            ui.cbSlaveAxis.setCurrentText(parent[1].name)
+        except:
+            pass
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        master = ui.cbMasterAxis.currentText()
+        slave = ui.cbSlaveAxis.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_linear_connector_6d(&#39;{}&#39;, slave = &#39;{}&#39;, master = &#39;{}&#39;)&#34;.format(name, slave, master)
+
+    else:
+        return None</code></pre>
+</details>
+</dd>
+<dt id="DAVE.element_widgets.add_linear_hydrostatics"><code class="name flex">
+<span>def <span class="ident">add_linear_hydrostatics</span></span>(<span>scene, parent=None)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_linear_hydrostatics(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/linhyd.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Hydrostatics&#39;))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_hydspring(&#39;{}&#39;, parent = &#39;{}&#39;, cob = (0,0,0), BMT=0, BML=0, COFX=0, COFY=0, kHeave=0, waterline=0, displacement_kN=0)&#34;.format(name, parent)
+
+    else:
+        return None</code></pre>
+</details>
+</dd>
+<dt id="DAVE.element_widgets.add_node"><code class="name flex">
+<span>def <span class="ident">add_node</span></span>(<span>scene)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_node(scene):
+    AddNode = QtWidgets.QDialog()
+    ui = DAVE.forms.addnode_form.Ui_Dialog()
+    ui.setupUi(AddNode)
+
+    ui.frmMasterSlave.setVisible(False)
+    ui.frmPoints.setVisible(False)
+    ui.frmParent.setVisible(False)
+    ui.frmParentPoi.setVisible(False)
+
+    fill_dropdown_boxes(ui, scene)
+
+    # AddNode.setFixedHeight(250)
+
+    ui.errPois.setVisible(False)
+    ui.errUniqueName.setVisible(False)
+
+    def ok():
+        if ui.frmPoints.isVisible():
+            if ui.cbPoiA.currentText() == ui.cbPoiB.currentText():
+                ui.errPois.setVisible(True)
+            else:
+                ui.errPois.setVisible(False)
+        ui.btnOk.setEnabled((not ui.errPois.isVisible()) and (not ui.errUniqueName.isVisible()))
+
+    def ok_name():
+        ui.errUniqueName.setVisible(not scene.name_available(ui.tbName.text()))
+        ui.btnOk.setEnabled((not ui.errPois.isVisible()) and (not ui.errUniqueName.isVisible()))
+
+    ui.cbPoiA.currentTextChanged.connect(ok)
+    ui.cbPoiB.currentTextChanged.connect(ok)
+    ui.tbName.textChanged.connect(ok_name)
+
+    def cancel():
+        AddNode.reject()
+
+    ui.buttonBox.clicked.connect(cancel)
+
+    return ui, AddNode</code></pre>
+</details>
+</dd>
+<dt id="DAVE.element_widgets.add_poi"><code class="name flex">
+<span>def <span class="ident">add_poi</span></span>(<span>scene, parent=None)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_poi(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/poi.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Poi&#39;))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+        if parent:
+            return &#34;new_poi(&#39;{}&#39;, parent = &#39;{}&#39;)&#34;.format(name, parent)
+        else:
+            return &#34;new_poi(&#39;{}&#39;)&#34;.format(name)
+    else:
+        return None</code></pre>
+</details>
+</dd>
+<dt id="DAVE.element_widgets.add_sheave"><code class="name flex">
+<span>def <span class="ident">add_sheave</span></span>(<span>scene, parent=None)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_sheave(scene, parent = None):
+
+    ui, AddNode = add_node(scene)
+
+    ui.frmParentPoi.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/sheave.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Sheave&#39;))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        poi = ui.cbParentPoi.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_sheave(&#39;{}&#39;, parent = &#39;{}&#39;, axis = (0,1,0))&#34;.format(name, poi)
+
+    else:
+        return None</code></pre>
+</details>
+</dd>
+<dt id="DAVE.element_widgets.add_visual"><code class="name flex">
+<span>def <span class="ident">add_visual</span></span>(<span>scene, parent=None)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_visual(scene, parent = None):
+    ui, AddNode = add_node(scene)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(&#34;:/icons/visual.png&#34;))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like(&#39;Visual&#39;))
+
+    if parent:
+        ui.cbParentAxis.setCurrentText(parent[0].name)
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+
+        return &#34;new_visual(&#39;{}&#39;, parent = &#39;{}&#39;, path = r&#39;wirecube.obj&#39;)&#34;.format(
+            name, parent)
+
+    else:
+        return None</code></pre>
+</details>
+</dd>
+<dt id="DAVE.element_widgets.fill_dropdown_boxes"><code class="name flex">
+<span>def <span class="ident">fill_dropdown_boxes</span></span>(<span>ui, scene)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fill_dropdown_boxes(ui, scene):
+    a = list()
+    p = list()
+    for e in scene.nodes_of_type(vfs.Axis):
+        a.append(e.name)
+    for e in scene.nodes_of_type(vfs.Poi):
+        p.append(e.name)
+
+    ui.cbMasterAxis.addItems(a)
+    ui.cbSlaveAxis.addItems(a)
+    ui.cbPoiA.addItems(p)
+    ui.cbPoiB.addItems(p)
+    ui.cbParentPoi.addItems(p)
+    if len(p) &gt; 1:
+        ui.cbPoiB.setCurrentText(p[1])
+
+    ui.cbParentAxis.addItems([&#34;&#34;])
+    ui.cbParentAxis.addItems(a)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="DAVE.element_widgets.EditAxis"><code class="flex name class">
+<span>class <span class="ident">EditAxis</span></span>
+<span>(</span><span>node, callback, scene)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>NodeEditor implements a "singleton" instance of NodeEditor-derived widget.</p>
+<p>This widget is shown in target_layout, which is a QtLayout</p>
+<p>properties:
+- node : the node being edited
+- callback : a callback function being called when python code need to be executed</p>
+<p>A create_widget() method shall be implemented. This function creates the widget and returns it. When th</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EditAxis(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditAxis._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_axis.Ui_widget_axis()
+            ui.setupUi(widget)
+            EditAxis._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditAxis._ui
+
+        try:
+            ui.checkBox_1.stateChanged.disconnect()
+            ui.checkBox_2.stateChanged.disconnect()
+            ui.checkBox_3.stateChanged.disconnect()
+            ui.checkBox_4.stateChanged.disconnect()
+            ui.checkBox_5.stateChanged.disconnect()
+            ui.checkBox_6.stateChanged.disconnect()
+
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+            ui.doubleSpinBox_4.valueChanged.disconnect()
+            ui.doubleSpinBox_5.valueChanged.disconnect()
+            ui.doubleSpinBox_6.valueChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.doubleSpinBox_1.setValue(self.node.position[0])
+        ui.doubleSpinBox_2.setValue(self.node.position[1])
+        ui.doubleSpinBox_3.setValue(self.node.position[2])
+
+        ui.doubleSpinBox_4.setValue(self.node.rotation[0])
+        ui.doubleSpinBox_5.setValue(self.node.rotation[1])
+        ui.doubleSpinBox_6.setValue(self.node.rotation[2])
+
+        ui.checkBox_1.setChecked(self.node.fixed[0])
+        ui.checkBox_2.setChecked(self.node.fixed[1])
+        ui.checkBox_3.setChecked(self.node.fixed[2])
+        ui.checkBox_4.setChecked(self.node.fixed[3])
+        ui.checkBox_5.setChecked(self.node.fixed[4])
+        ui.checkBox_6.setChecked(self.node.fixed[5])
+
+        ui.checkBox_1.stateChanged.connect(self.callback)
+        ui.checkBox_2.stateChanged.connect(self.callback)
+        ui.checkBox_3.stateChanged.connect(self.callback)
+        ui.checkBox_4.stateChanged.connect(self.callback)
+        ui.checkBox_5.stateChanged.connect(self.callback)
+        ui.checkBox_6.stateChanged.connect(self.callback)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_6.valueChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_position = np.array((self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+        new_rotation = np.array((self.ui.doubleSpinBox_4.value(), self.ui.doubleSpinBox_5.value(),self.ui.doubleSpinBox_6.value()))
+        new_fixed = np.array((self.ui.checkBox_1.isChecked(),
+                              self.ui.checkBox_2.isChecked(),
+                              self.ui.checkBox_3.isChecked(),
+                              self.ui.checkBox_4.isChecked(),
+                              self.ui.checkBox_5.isChecked(),
+                              self.ui.checkBox_6.isChecked()))
+
+        if not np.all(new_position == self.node.position):
+            code += element + &#39;.position = ({}, {}, {})&#39;.format(*new_position)
+
+        if not np.all(new_rotation == self.node.rotation):
+            code += element + &#39;.rotation = ({}, {}, {})&#39;.format(*new_rotation)
+
+        if not np.all(new_fixed == self.node.fixed):
+            code += element + &#39;.fixed = ({}, {}, {}, {}, {}, {})&#39;.format(*new_fixed)
+
+        return code</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="DAVE.element_widgets.EditBody" href="#DAVE.element_widgets.EditBody">EditBody</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="DAVE.element_widgets.EditAxis.generate_code"><code class="name flex">
+<span>def <span class="ident">generate_code</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_code(self):
+
+    code = &#34;&#34;
+    element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+    new_position = np.array((self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+    new_rotation = np.array((self.ui.doubleSpinBox_4.value(), self.ui.doubleSpinBox_5.value(),self.ui.doubleSpinBox_6.value()))
+    new_fixed = np.array((self.ui.checkBox_1.isChecked(),
+                          self.ui.checkBox_2.isChecked(),
+                          self.ui.checkBox_3.isChecked(),
+                          self.ui.checkBox_4.isChecked(),
+                          self.ui.checkBox_5.isChecked(),
+                          self.ui.checkBox_6.isChecked()))
+
+    if not np.all(new_position == self.node.position):
+        code += element + &#39;.position = ({}, {}, {})&#39;.format(*new_position)
+
+    if not np.all(new_rotation == self.node.rotation):
+        code += element + &#39;.rotation = ({}, {}, {})&#39;.format(*new_rotation)
+
+    if not np.all(new_fixed == self.node.fixed):
+        code += element + &#39;.fixed = ({}, {}, {}, {}, {}, {})&#39;.format(*new_fixed)
+
+    return code</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></b></code>:
+<ul class="hlist">
+<li><code><a title="DAVE.element_widgets.NodeEditor.create_widget" href="#DAVE.element_widgets.NodeEditor.create_widget">create_widget</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="DAVE.element_widgets.EditBeam"><code class="flex name class">
+<span>class <span class="ident">EditBeam</span></span>
+<span>(</span><span>node, callback, scene)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>NodeEditor implements a "singleton" instance of NodeEditor-derived widget.</p>
+<p>This widget is shown in target_layout, which is a QtLayout</p>
+<p>properties:
+- node : the node being edited
+- callback : a callback function being called when python code need to be executed</p>
+<p>A create_widget() method shall be implemented. This function creates the widget and returns it. When th</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EditBeam(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditBeam._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_beam.Ui_widget_beam()
+            ui.setupUi(widget)
+            EditBeam._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditBeam._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+            ui.doubleSpinBox_4.valueChanged.disconnect()
+            ui.doubleSpinBox_5.valueChanged.disconnect()
+
+            ui.cbMasterAxis.currentIndexChanged.disconnect()
+            ui.cbSlaveAxis.currentIndexChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        self.alist = list()
+        for axis in self.scene.nodes_of_type(vfs.Axis):
+            self.alist.append(axis.name)
+
+        ui.cbMasterAxis.clear()
+        ui.cbSlaveAxis.clear()
+
+        ui.cbMasterAxis.addItems(self.alist)
+        ui.cbSlaveAxis.addItems(self.alist)
+
+        ui.cbMasterAxis.setCurrentText(self.node.master.name)
+        ui.cbSlaveAxis.setCurrentText(self.node.slave.name)
+
+        ui.doubleSpinBox_1.setValue(self.node.L)
+        ui.doubleSpinBox_2.setValue(self.node.EIy)
+        ui.doubleSpinBox_3.setValue(self.node.EIz)
+
+        ui.doubleSpinBox_4.setValue(self.node.GIp)
+        ui.doubleSpinBox_5.setValue(self.node.EA)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
+
+        ui.cbMasterAxis.currentIndexChanged.connect(self.callback)
+        ui.cbSlaveAxis.currentIndexChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_L = self.ui.doubleSpinBox_1.value()
+        new_EIy = self.ui.doubleSpinBox_2.value()
+        new_EIz = self.ui.doubleSpinBox_3.value()
+        new_GIp = self.ui.doubleSpinBox_4.value()
+        new_EA = self.ui.doubleSpinBox_5.value()
+
+        new_master = self.ui.cbMasterAxis.currentText()
+        new_slave = self.ui.cbSlaveAxis.currentText()
+
+        if not new_L == self.node.L:
+            code += element + &#39;.L = {}&#39;.format(new_L)
+
+        if not new_EIy == self.node.EIy:
+            code += element + &#39;.EIy = {}&#39;.format(new_EIy)
+
+        if not new_EIz == self.node.EIz:
+            code += element + &#39;.EIz = {}&#39;.format(new_EIz)
+
+        if not new_GIp == self.node.GIp:
+            code += element + &#39;.GIp = {}&#39;.format(new_GIp)
+
+        if not new_EA == self.node.EA:
+            code += element + &#39;.EA = {}&#39;.format(new_EA)
+
+        if not new_master == self.node.master.name:
+            code += element + &#39;.master = s[&#34;{}&#34;]&#39;.format(new_master)
+
+        if not new_slave == self.node.slave.name:
+            code += element + &#39;.slave = s[&#34;{}&#34;]&#39;.format(new_slave)
+
+        return code</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="DAVE.element_widgets.EditBeam.generate_code"><code class="name flex">
+<span>def <span class="ident">generate_code</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_code(self):
+
+    code = &#34;&#34;
+    element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+    new_L = self.ui.doubleSpinBox_1.value()
+    new_EIy = self.ui.doubleSpinBox_2.value()
+    new_EIz = self.ui.doubleSpinBox_3.value()
+    new_GIp = self.ui.doubleSpinBox_4.value()
+    new_EA = self.ui.doubleSpinBox_5.value()
+
+    new_master = self.ui.cbMasterAxis.currentText()
+    new_slave = self.ui.cbSlaveAxis.currentText()
+
+    if not new_L == self.node.L:
+        code += element + &#39;.L = {}&#39;.format(new_L)
+
+    if not new_EIy == self.node.EIy:
+        code += element + &#39;.EIy = {}&#39;.format(new_EIy)
+
+    if not new_EIz == self.node.EIz:
+        code += element + &#39;.EIz = {}&#39;.format(new_EIz)
+
+    if not new_GIp == self.node.GIp:
+        code += element + &#39;.GIp = {}&#39;.format(new_GIp)
+
+    if not new_EA == self.node.EA:
+        code += element + &#39;.EA = {}&#39;.format(new_EA)
+
+    if not new_master == self.node.master.name:
+        code += element + &#39;.master = s[&#34;{}&#34;]&#39;.format(new_master)
+
+    if not new_slave == self.node.slave.name:
+        code += element + &#39;.slave = s[&#34;{}&#34;]&#39;.format(new_slave)
+
+    return code</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></b></code>:
+<ul class="hlist">
+<li><code><a title="DAVE.element_widgets.NodeEditor.create_widget" href="#DAVE.element_widgets.NodeEditor.create_widget">create_widget</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="DAVE.element_widgets.EditBody"><code class="flex name class">
+<span>class <span class="ident">EditBody</span></span>
+<span>(</span><span>node, callback, scene)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>NodeEditor implements a "singleton" instance of NodeEditor-derived widget.</p>
+<p>This widget is shown in target_layout, which is a QtLayout</p>
+<p>properties:
+- node : the node being edited
+- callback : a callback function being called when python code need to be executed</p>
+<p>A create_widget() method shall be implemented. This function creates the widget and returns it. When th</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EditBody(EditAxis):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditBody._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_body.Ui_Form()
+            ui.setupUi(widget)
+            EditBody._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditBody._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+            ui.doubleSpinBox_mass.valueChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.doubleSpinBox_1.setValue(self.node.cog[0])
+        ui.doubleSpinBox_2.setValue(self.node.cog[1])
+        ui.doubleSpinBox_3.setValue(self.node.cog[2])
+
+        ui.doubleSpinBox_mass.setValue(self.node.mass)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_mass.valueChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_mass = self.ui.doubleSpinBox_mass.value()
+        new_cog = np.array(
+            (self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(), self.ui.doubleSpinBox_3.value()))
+
+        if new_mass != self.node.mass:
+            code += element + &#39;.mass = {}&#39;.format(new_mass)
+
+        if not np.all(new_cog == self.node.cog):
+            code += element + &#39;.cog = ({}, {}, {})&#39;.format(*new_cog)
+
+        return code</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="DAVE.element_widgets.EditAxis" href="#DAVE.element_widgets.EditAxis">EditAxis</a></li>
+<li><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="DAVE.element_widgets.EditBody.generate_code"><code class="name flex">
+<span>def <span class="ident">generate_code</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_code(self):
+    code = &#34;&#34;
+    element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+    new_mass = self.ui.doubleSpinBox_mass.value()
+    new_cog = np.array(
+        (self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(), self.ui.doubleSpinBox_3.value()))
+
+    if new_mass != self.node.mass:
+        code += element + &#39;.mass = {}&#39;.format(new_mass)
+
+    if not np.all(new_cog == self.node.cog):
+        code += element + &#39;.cog = ({}, {}, {})&#39;.format(*new_cog)
+
+    return code</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="DAVE.element_widgets.EditAxis" href="#DAVE.element_widgets.EditAxis">EditAxis</a></b></code>:
+<ul class="hlist">
+<li><code><a title="DAVE.element_widgets.EditAxis.create_widget" href="#DAVE.element_widgets.NodeEditor.create_widget">create_widget</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="DAVE.element_widgets.EditBuoyancy"><code class="flex name class">
+<span>class <span class="ident">EditBuoyancy</span></span>
+<span>(</span><span>node, callback, scene)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>NodeEditor implements a "singleton" instance of NodeEditor-derived widget.</p>
+<p>This widget is shown in target_layout, which is a QtLayout</p>
+<p>properties:
+- node : the node being edited
+- callback : a callback function being called when python code need to be executed</p>
+<p>A create_widget() method shall be implemented. This function creates the widget and returns it. When th</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EditBuoyancy(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditBuoyancy._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_visual.Ui_widget_axis() # same as visual widget!
+            ui.setupUi(widget)
+            EditBuoyancy._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditBuoyancy._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+            ui.doubleSpinBox_4.valueChanged.disconnect()
+            ui.doubleSpinBox_5.valueChanged.disconnect()
+            ui.doubleSpinBox_6.valueChanged.disconnect()
+            ui.doubleSpinBox_7.valueChanged.disconnect()
+            ui.doubleSpinBox_8.valueChanged.disconnect()
+            ui.doubleSpinBox_9.valueChanged.disconnect()
+
+            ui.comboBox.editTextChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        # ui.doubleSpinBox_1.setValue(self.node.offset[0])
+        # ui.doubleSpinBox_2.setValue(self.node.offset[1])
+        # ui.doubleSpinBox_3.setValue(self.node.offset[2])
+        #
+        # ui.doubleSpinBox_4.setValue(self.node.rotation[0])
+        # ui.doubleSpinBox_5.setValue(self.node.rotation[1])
+        # ui.doubleSpinBox_6.setValue(self.node.rotation[2])
+        #
+        # ui.doubleSpinBox_7.setValue(self.node.scale[0])
+        # ui.doubleSpinBox_8.setValue(self.node.scale[1])
+        # ui.doubleSpinBox_9.setValue(self.node.scale[2])
+
+
+
+        ui.comboBox.clear()
+        ui.comboBox.addItems(self.scene.get_resource_list(&#39;obj&#39;))
+
+        ui.comboBox.setCurrentText(self.node.trimesh._path)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_6.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_7.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_8.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_9.valueChanged.connect(self.callback)
+
+        ui.comboBox.editTextChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        offset = np.array((self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+        rotation = np.array((self.ui.doubleSpinBox_4.value(), self.ui.doubleSpinBox_5.value(),self.ui.doubleSpinBox_6.value()))
+        scale = np.array((self.ui.doubleSpinBox_7.value(), self.ui.doubleSpinBox_8.value(),self.ui.doubleSpinBox_9.value()))
+
+        try:
+            new_path = self.scene.get_resource_path(self.ui.comboBox.currentText())
+        except:
+            new_path = &#34;FILE DOES NOT EXIST&#34;
+
+        # load_obj(self, filename, offset = None, rotation = None, scale = None)
+        code = element + &#34;.trimesh.load_obj(r&#39;{}&#39;, scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))&#34;.format(new_path, *scale, *rotation, *offset)
+
+        return code</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="DAVE.element_widgets.EditBuoyancy.generate_code"><code class="name flex">
+<span>def <span class="ident">generate_code</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_code(self):
+
+    code = &#34;&#34;
+    element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+    offset = np.array((self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+    rotation = np.array((self.ui.doubleSpinBox_4.value(), self.ui.doubleSpinBox_5.value(),self.ui.doubleSpinBox_6.value()))
+    scale = np.array((self.ui.doubleSpinBox_7.value(), self.ui.doubleSpinBox_8.value(),self.ui.doubleSpinBox_9.value()))
+
+    try:
+        new_path = self.scene.get_resource_path(self.ui.comboBox.currentText())
+    except:
+        new_path = &#34;FILE DOES NOT EXIST&#34;
+
+    # load_obj(self, filename, offset = None, rotation = None, scale = None)
+    code = element + &#34;.trimesh.load_obj(r&#39;{}&#39;, scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))&#34;.format(new_path, *scale, *rotation, *offset)
+
+    return code</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></b></code>:
+<ul class="hlist">
+<li><code><a title="DAVE.element_widgets.NodeEditor.create_widget" href="#DAVE.element_widgets.NodeEditor.create_widget">create_widget</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="DAVE.element_widgets.EditCable"><code class="flex name class">
+<span>class <span class="ident">EditCable</span></span>
+<span>(</span><span>node, callback, scene)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>NodeEditor implements a "singleton" instance of NodeEditor-derived widget.</p>
+<p>This widget is shown in target_layout, which is a QtLayout</p>
+<p>properties:
+- node : the node being edited
+- callback : a callback function being called when python code need to be executed</p>
+<p>A create_widget() method shall be implemented. This function creates the widget and returns it. When th</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EditCable(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditCable._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_cable.Ui_Cable_form()
+            ui.setupUi(widget)
+
+            EditCable._ui = ui
+            ui._widget = widget
+            ui.additional_pois = list()
+
+        else:
+            ui = EditCable._ui
+
+        self.plist = [&#34;&#34;]
+
+        for poi in self.scene.nodes_of_type(vfs.Sheave):
+            self.plist.append(poi.name)
+
+        for poi in self.scene.nodes_of_type(vfs.Poi):
+            self.plist.append(poi.name)
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox.valueChanged.disconnect()
+            ui.comboBox_2.currentIndexChanged.disconnect()
+            ui.comboBox.currentIndexChanged.disconnect()
+
+        except:
+            pass # no connections yet
+
+        for ddb in ui.additional_pois:
+            ui.poiLayout.removeWidget(ddb)
+            ddb.deleteLater()
+
+        ui.additional_pois.clear()
+
+        ui.comboBox.clear()
+
+        ui.comboBox.addItems(self.plist)
+
+        ui.comboBox_2.clear()
+        ui.comboBox_2.addItems(self.plist)
+
+        ui.doubleSpinBox_1.setValue(self.node.length)
+        ui.doubleSpinBox_2.setValue(self.node.EA)
+        ui.doubleSpinBox.setValue(self.node.diameter)
+
+        self.ui = ui  # needs to be done here as self.add_poi_dropdown modifies this
+
+        # Add as many drop-down boxes as needed
+        poi_names = self.node.give_poi_names()
+        for i in range(len(poi_names)-2):
+            self.add_poi_dropdown()
+
+        self.ui.comboBox.setCurrentText(poi_names[0])
+        self.ui.comboBox_2.setCurrentText(poi_names[1])
+
+        for i,name in enumerate(poi_names[2:]):
+            self.ui.additional_pois[i].setCurrentText(name)
+            # self.ui.additional_pois[i].currentIndexChanged.connect(self.callback)
+
+        # Set events
+        ui.btnAdd.clicked.connect(self.add_poi_dropdown)
+        ui.btnRemove.clicked.connect(self.delete_poi_dropdown)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox.valueChanged.connect(self.callback)
+
+        ui.comboBox.currentIndexChanged.connect(self.callback)
+        ui.comboBox_2.currentIndexChanged.connect(self.callback)
+        for cbx in self.ui.additional_pois:
+            cbx.currentIndexChanged.connect(self.callback)
+
+        return ui._widget
+
+    def add_poi_dropdown(self):
+        cbx = QtWidgets.QComboBox(self.ui.frame)
+        self.ui.poiLayout.addWidget(cbx)
+        cbx.addItems(self.plist)
+
+        self.ui.additional_pois.append(cbx)
+
+
+    def delete_poi_dropdown(self):
+        if self.ui.additional_pois:
+            last_item = self.ui.additional_pois.pop()
+            self.ui.poiLayout.removeWidget(last_item)
+            last_item.deleteLater()
+            self.callback()
+
+    def generate_code(self):
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_length = self.ui.doubleSpinBox_1.value()
+        new_EA = self.ui.doubleSpinBox_2.value()
+        new_diameter = self.ui.doubleSpinBox.value()
+
+        if not new_length == self.node.length:
+            code += element + &#39;.length = {}&#39;.format(new_length)
+
+        if not new_EA == self.node.EA:
+            code += element + &#39;.EA = {}&#39;.format(new_EA)
+
+        if not new_diameter == self.node.diameter:
+            code += element + &#39;.diameter = {}&#39;.format(new_diameter)
+
+        # get the poi names
+        # new_names = [self.ui.comboBox.currentText(),self.ui.comboBox_2.currentText()]
+        new_names = []
+        for cbx in [self.ui.comboBox, self.ui.comboBox_2, *self.ui.additional_pois]:
+            ct = cbx.currentText()
+            if ct: # skip empty
+                new_names.append(ct)
+
+        if not (new_names == self.node.give_poi_names):
+            code += element + &#39;.clear_connections()&#39;
+            for name in new_names:
+                code += element + &#34;.add_connection(s[&#39;{}&#39;])&#34;.format(name)
+
+        code += &#39;\n&#39; + element + &#34;.check_endpoints()&#34;
+
+        return code</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="DAVE.element_widgets.EditCable.add_poi_dropdown"><code class="name flex">
+<span>def <span class="ident">add_poi_dropdown</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_poi_dropdown(self):
+    cbx = QtWidgets.QComboBox(self.ui.frame)
+    self.ui.poiLayout.addWidget(cbx)
+    cbx.addItems(self.plist)
+
+    self.ui.additional_pois.append(cbx)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.element_widgets.EditCable.delete_poi_dropdown"><code class="name flex">
+<span>def <span class="ident">delete_poi_dropdown</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def delete_poi_dropdown(self):
+    if self.ui.additional_pois:
+        last_item = self.ui.additional_pois.pop()
+        self.ui.poiLayout.removeWidget(last_item)
+        last_item.deleteLater()
+        self.callback()</code></pre>
+</details>
+</dd>
+<dt id="DAVE.element_widgets.EditCable.generate_code"><code class="name flex">
+<span>def <span class="ident">generate_code</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_code(self):
+    code = &#34;&#34;
+    element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+    new_length = self.ui.doubleSpinBox_1.value()
+    new_EA = self.ui.doubleSpinBox_2.value()
+    new_diameter = self.ui.doubleSpinBox.value()
+
+    if not new_length == self.node.length:
+        code += element + &#39;.length = {}&#39;.format(new_length)
+
+    if not new_EA == self.node.EA:
+        code += element + &#39;.EA = {}&#39;.format(new_EA)
+
+    if not new_diameter == self.node.diameter:
+        code += element + &#39;.diameter = {}&#39;.format(new_diameter)
+
+    # get the poi names
+    # new_names = [self.ui.comboBox.currentText(),self.ui.comboBox_2.currentText()]
+    new_names = []
+    for cbx in [self.ui.comboBox, self.ui.comboBox_2, *self.ui.additional_pois]:
+        ct = cbx.currentText()
+        if ct: # skip empty
+            new_names.append(ct)
+
+    if not (new_names == self.node.give_poi_names):
+        code += element + &#39;.clear_connections()&#39;
+        for name in new_names:
+            code += element + &#34;.add_connection(s[&#39;{}&#39;])&#34;.format(name)
+
+    code += &#39;\n&#39; + element + &#34;.check_endpoints()&#34;
+
+    return code</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></b></code>:
+<ul class="hlist">
+<li><code><a title="DAVE.element_widgets.NodeEditor.create_widget" href="#DAVE.element_widgets.NodeEditor.create_widget">create_widget</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="DAVE.element_widgets.EditConnector2d"><code class="flex name class">
+<span>class <span class="ident">EditConnector2d</span></span>
+<span>(</span><span>node, callback, scene)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>NodeEditor implements a "singleton" instance of NodeEditor-derived widget.</p>
+<p>This widget is shown in target_layout, which is a QtLayout</p>
+<p>properties:
+- node : the node being edited
+- callback : a callback function being called when python code need to be executed</p>
+<p>A create_widget() method shall be implemented. This function creates the widget and returns it. When th</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EditConnector2d(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditConnector2d._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_con2d.Ui_widget_con2d()
+            ui.setupUi(widget)
+            EditConnector2d._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditConnector2d._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_4.valueChanged.disconnect()
+
+            ui.cbMasterAxis.currentIndexChanged.disconnect()
+            ui.cbSlaveAxis.currentIndexChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        self.alist = list()
+        for axis in self.scene.nodes_of_type(vfs.Axis):
+            self.alist.append(axis.name)
+
+        ui.cbMasterAxis.clear()
+        ui.cbSlaveAxis.clear()
+
+        ui.cbMasterAxis.addItems(self.alist)
+        ui.cbSlaveAxis.addItems(self.alist)
+
+        ui.cbMasterAxis.setCurrentText(self.node.master.name)
+        ui.cbSlaveAxis.setCurrentText(self.node.slave.name)
+
+        ui.doubleSpinBox_1.setValue(self.node.k_linear)
+        ui.doubleSpinBox_4.setValue(self.node.k_angular)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
+
+        ui.cbMasterAxis.currentIndexChanged.connect(self.callback)
+        ui.cbSlaveAxis.currentIndexChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_k_lin = self.ui.doubleSpinBox_1.value()
+        new_k_ang = self.ui.doubleSpinBox_4.value()
+        new_master = self.ui.cbMasterAxis.currentText()
+        new_slave = self.ui.cbSlaveAxis.currentText()
+
+        if not new_master == self.node.master.name:
+            code += element + &#39;.master = s[&#34;{}&#34;]&#39;.format(new_master)
+
+        if not new_slave == self.node.slave.name:
+            code += element + &#39;.slave = s[&#34;{}&#34;]&#39;.format(new_slave)
+
+        if not new_k_lin == self.node.k_linear:
+            code += element + &#39;.k_linear = {}&#39;.format(new_k_lin)
+
+        if not new_k_ang == self.node.k_angular:
+            code += element + &#39;.k_angular = {}&#39;.format(new_k_ang)
+
+        return code</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="DAVE.element_widgets.EditConnector2d.generate_code"><code class="name flex">
+<span>def <span class="ident">generate_code</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_code(self):
+
+    code = &#34;&#34;
+    element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+    new_k_lin = self.ui.doubleSpinBox_1.value()
+    new_k_ang = self.ui.doubleSpinBox_4.value()
+    new_master = self.ui.cbMasterAxis.currentText()
+    new_slave = self.ui.cbSlaveAxis.currentText()
+
+    if not new_master == self.node.master.name:
+        code += element + &#39;.master = s[&#34;{}&#34;]&#39;.format(new_master)
+
+    if not new_slave == self.node.slave.name:
+        code += element + &#39;.slave = s[&#34;{}&#34;]&#39;.format(new_slave)
+
+    if not new_k_lin == self.node.k_linear:
+        code += element + &#39;.k_linear = {}&#39;.format(new_k_lin)
+
+    if not new_k_ang == self.node.k_angular:
+        code += element + &#39;.k_angular = {}&#39;.format(new_k_ang)
+
+    return code</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></b></code>:
+<ul class="hlist">
+<li><code><a title="DAVE.element_widgets.NodeEditor.create_widget" href="#DAVE.element_widgets.NodeEditor.create_widget">create_widget</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="DAVE.element_widgets.EditForce"><code class="flex name class">
+<span>class <span class="ident">EditForce</span></span>
+<span>(</span><span>node, callback, scene)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>NodeEditor implements a "singleton" instance of NodeEditor-derived widget.</p>
+<p>This widget is shown in target_layout, which is a QtLayout</p>
+<p>properties:
+- node : the node being edited
+- callback : a callback function being called when python code need to be executed</p>
+<p>A create_widget() method shall be implemented. This function creates the widget and returns it. When th</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EditForce(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditForce._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_force.Ui_widget_force()
+            ui.setupUi(widget)
+            EditForce._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditForce._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+            ui.doubleSpinBox_4.valueChanged.disconnect()
+            ui.doubleSpinBox_5.valueChanged.disconnect()
+            ui.doubleSpinBox_6.valueChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.doubleSpinBox_1.setValue(self.node.force[0])
+        ui.doubleSpinBox_2.setValue(self.node.force[1])
+        ui.doubleSpinBox_3.setValue(self.node.force[2])
+
+        ui.doubleSpinBox_4.setValue(self.node.moment[0])
+        ui.doubleSpinBox_5.setValue(self.node.moment[1])
+        ui.doubleSpinBox_6.setValue(self.node.moment[2])
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+
+        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_6.valueChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_force = np.array(
+            (self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+        new_moment = np.array(
+            (self.ui.doubleSpinBox_4.value(), self.ui.doubleSpinBox_5.value(), self.ui.doubleSpinBox_6.value()))
+
+        if not np.all(new_force == self.node.force):
+            code += element + &#39;.force = ({}, {}, {})&#39;.format(*new_force)
+        if not np.all(new_moment == self.node.moment):
+            code += element + &#39;.moment = ({}, {}, {})&#39;.format(*new_moment)
+
+        return code</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="DAVE.element_widgets.EditForce.generate_code"><code class="name flex">
+<span>def <span class="ident">generate_code</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_code(self):
+
+    code = &#34;&#34;
+    element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+    new_force = np.array(
+        (self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+    new_moment = np.array(
+        (self.ui.doubleSpinBox_4.value(), self.ui.doubleSpinBox_5.value(), self.ui.doubleSpinBox_6.value()))
+
+    if not np.all(new_force == self.node.force):
+        code += element + &#39;.force = ({}, {}, {})&#39;.format(*new_force)
+    if not np.all(new_moment == self.node.moment):
+        code += element + &#39;.moment = ({}, {}, {})&#39;.format(*new_moment)
+
+    return code</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></b></code>:
+<ul class="hlist">
+<li><code><a title="DAVE.element_widgets.NodeEditor.create_widget" href="#DAVE.element_widgets.NodeEditor.create_widget">create_widget</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="DAVE.element_widgets.EditHydSpring"><code class="flex name class">
+<span>class <span class="ident">EditHydSpring</span></span>
+<span>(</span><span>node, callback, scene)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>NodeEditor implements a "singleton" instance of NodeEditor-derived widget.</p>
+<p>This widget is shown in target_layout, which is a QtLayout</p>
+<p>properties:
+- node : the node being edited
+- callback : a callback function being called when python code need to be executed</p>
+<p>A create_widget() method shall be implemented. This function creates the widget and returns it. When th</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EditHydSpring(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditHydSpring._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_linhyd.Ui_widget_linhyd()
+            ui.setupUi(widget)
+            EditHydSpring._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditHydSpring._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+            ui.BMT.valueChanged.disconnect()
+            ui.BML.valueChanged.disconnect()
+            ui.COFX.valueChanged.disconnect()
+            ui.COFY.valueChanged.disconnect()
+            ui.kHeave.valueChanged.disconnect()
+            ui.waterline.valueChanged.disconnect()
+            ui.disp.valueChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.doubleSpinBox_1.setValue(self.node.cob[0])
+        ui.doubleSpinBox_2.setValue(self.node.cob[1])
+        ui.doubleSpinBox_3.setValue(self.node.cob[2])
+        ui.BMT.setValue(self.node.BMT)
+        ui.BML.setValue(self.node.BML)
+        ui.COFX.setValue(self.node.COFX)
+        ui.COFY.setValue(self.node.COFY)
+        ui.kHeave.setValue(self.node.kHeave)
+        ui.waterline.setValue(self.node.waterline)
+        ui.disp.setValue(self.node.displacement_kN)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+        ui.BMT.valueChanged.connect(self.callback)
+        ui.BML.valueChanged.connect(self.callback)
+        ui.COFX.valueChanged.connect(self.callback)
+        ui.COFY.valueChanged.connect(self.callback)
+        ui.kHeave.valueChanged.connect(self.callback)
+        ui.waterline.valueChanged.connect(self.callback)
+        ui.disp.valueChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_cob = np.array(
+            (self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+        new_bmt = self.ui.BMT.value()
+        new_bml = self.ui.BML.value()
+        new_cofx = self.ui.COFX.value()
+        new_cofy = self.ui.COFY.value()
+        new_kHeave = self.ui.kHeave.value()
+        new_waterline = self.ui.waterline.value()
+        new_dipl = self.ui.disp.value()
+
+        if not np.all(new_cob == self.node.cob):
+            code += element + &#39;.cob = ({}, {}, {})&#39;.format(*new_cob)
+
+        if not new_bmt == self.node.BMT:
+            code += element + &#39;.BMT = {}&#39;.format(new_bmt)
+
+        if not new_bml == self.node.BML:
+            code += element + &#39;.BML = {}&#39;.format(new_bml)
+
+        if not new_cofx == self.node.COFX:
+            code += element + &#39;.COFX = {}&#39;.format(new_cofx)
+
+        if not new_cofy == self.node.COFY:
+            code += element + &#39;.COFY = {}&#39;.format(new_cofy)
+
+        if not new_kHeave == self.node.kHeave:
+            code += element + &#39;.kHeave = {}&#39;.format(new_kHeave)
+
+        if not new_waterline == self.node.waterline:
+            code += element + &#39;.waterline = {}&#39;.format(new_waterline)
+
+        if not new_dipl == self.node.displacement_kN:
+            code += element + &#39;.displacement_kN = {}&#39;.format(new_dipl)
+
+        return code</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="DAVE.element_widgets.EditHydSpring.generate_code"><code class="name flex">
+<span>def <span class="ident">generate_code</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_code(self):
+
+    code = &#34;&#34;
+    element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+    new_cob = np.array(
+        (self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+    new_bmt = self.ui.BMT.value()
+    new_bml = self.ui.BML.value()
+    new_cofx = self.ui.COFX.value()
+    new_cofy = self.ui.COFY.value()
+    new_kHeave = self.ui.kHeave.value()
+    new_waterline = self.ui.waterline.value()
+    new_dipl = self.ui.disp.value()
+
+    if not np.all(new_cob == self.node.cob):
+        code += element + &#39;.cob = ({}, {}, {})&#39;.format(*new_cob)
+
+    if not new_bmt == self.node.BMT:
+        code += element + &#39;.BMT = {}&#39;.format(new_bmt)
+
+    if not new_bml == self.node.BML:
+        code += element + &#39;.BML = {}&#39;.format(new_bml)
+
+    if not new_cofx == self.node.COFX:
+        code += element + &#39;.COFX = {}&#39;.format(new_cofx)
+
+    if not new_cofy == self.node.COFY:
+        code += element + &#39;.COFY = {}&#39;.format(new_cofy)
+
+    if not new_kHeave == self.node.kHeave:
+        code += element + &#39;.kHeave = {}&#39;.format(new_kHeave)
+
+    if not new_waterline == self.node.waterline:
+        code += element + &#39;.waterline = {}&#39;.format(new_waterline)
+
+    if not new_dipl == self.node.displacement_kN:
+        code += element + &#39;.displacement_kN = {}&#39;.format(new_dipl)
+
+    return code</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></b></code>:
+<ul class="hlist">
+<li><code><a title="DAVE.element_widgets.NodeEditor.create_widget" href="#DAVE.element_widgets.NodeEditor.create_widget">create_widget</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="DAVE.element_widgets.EditLC6d"><code class="flex name class">
+<span>class <span class="ident">EditLC6d</span></span>
+<span>(</span><span>node, callback, scene)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>NodeEditor implements a "singleton" instance of NodeEditor-derived widget.</p>
+<p>This widget is shown in target_layout, which is a QtLayout</p>
+<p>properties:
+- node : the node being edited
+- callback : a callback function being called when python code need to be executed</p>
+<p>A create_widget() method shall be implemented. This function creates the widget and returns it. When th</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EditLC6d(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditLC6d._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_lincon6.Ui_widget_lincon6()
+            ui.setupUi(widget)
+            EditLC6d._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditLC6d._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+            ui.doubleSpinBox_4.valueChanged.disconnect()
+            ui.doubleSpinBox_5.valueChanged.disconnect()
+            ui.doubleSpinBox_6.valueChanged.disconnect()
+
+            ui.cbMasterAxis.currentIndexChanged.disconnect()
+            ui.cbSlaveAxis.currentIndexChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        self.alist = list()
+        for axis in self.scene.nodes_of_type(vfs.Axis):
+            self.alist.append(axis.name)
+
+        ui.cbMasterAxis.clear()
+        ui.cbSlaveAxis.clear()
+
+        ui.cbMasterAxis.addItems(self.alist)
+        ui.cbSlaveAxis.addItems(self.alist)
+
+        ui.cbMasterAxis.setCurrentText(self.node.master.name)
+        ui.cbSlaveAxis.setCurrentText(self.node.slave.name)
+
+        ui.doubleSpinBox_1.setValue(self.node.stiffness[0])
+        ui.doubleSpinBox_2.setValue(self.node.stiffness[1])
+        ui.doubleSpinBox_3.setValue(self.node.stiffness[2])
+
+        ui.doubleSpinBox_4.setValue(self.node.stiffness[3])
+        ui.doubleSpinBox_5.setValue(self.node.stiffness[4])
+        ui.doubleSpinBox_6.setValue(self.node.stiffness[5])
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_6.valueChanged.connect(self.callback)
+
+        ui.cbMasterAxis.currentIndexChanged.connect(self.callback)
+        ui.cbSlaveAxis.currentIndexChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_stiffness = np.array((self.ui.doubleSpinBox_1.value(),
+                                  self.ui.doubleSpinBox_2.value(),
+                                  self.ui.doubleSpinBox_3.value(),
+                                  self.ui.doubleSpinBox_4.value(),
+                                  self.ui.doubleSpinBox_5.value(),
+                                  self.ui.doubleSpinBox_6.value()))
+
+        new_master = self.ui.cbMasterAxis.currentText()
+        new_slave = self.ui.cbSlaveAxis.currentText()
+
+        if not np.all(new_stiffness == self.node.stiffness):
+            code += element + &#39;.stiffness = ({}, {}, {},&#39;.format(*new_stiffness[:3])
+            code += &#39;                  {}, {}, {})&#39;.format(*new_stiffness[3:])
+
+        if not new_master == self.node.master.name:
+            code += element + &#39;.master = s[&#34;{}&#34;]&#39;.format(new_master)
+
+        if not new_slave == self.node.slave.name:
+            code += element + &#39;.slave = s[&#34;{}&#34;]&#39;.format(new_slave)
+
+
+        return code</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="DAVE.element_widgets.EditLC6d.generate_code"><code class="name flex">
+<span>def <span class="ident">generate_code</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_code(self):
+
+    code = &#34;&#34;
+    element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+    new_stiffness = np.array((self.ui.doubleSpinBox_1.value(),
+                              self.ui.doubleSpinBox_2.value(),
+                              self.ui.doubleSpinBox_3.value(),
+                              self.ui.doubleSpinBox_4.value(),
+                              self.ui.doubleSpinBox_5.value(),
+                              self.ui.doubleSpinBox_6.value()))
+
+    new_master = self.ui.cbMasterAxis.currentText()
+    new_slave = self.ui.cbSlaveAxis.currentText()
+
+    if not np.all(new_stiffness == self.node.stiffness):
+        code += element + &#39;.stiffness = ({}, {}, {},&#39;.format(*new_stiffness[:3])
+        code += &#39;                  {}, {}, {})&#39;.format(*new_stiffness[3:])
+
+    if not new_master == self.node.master.name:
+        code += element + &#39;.master = s[&#34;{}&#34;]&#39;.format(new_master)
+
+    if not new_slave == self.node.slave.name:
+        code += element + &#39;.slave = s[&#34;{}&#34;]&#39;.format(new_slave)
+
+
+    return code</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></b></code>:
+<ul class="hlist">
+<li><code><a title="DAVE.element_widgets.NodeEditor.create_widget" href="#DAVE.element_widgets.NodeEditor.create_widget">create_widget</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="DAVE.element_widgets.EditNode"><code class="flex name class">
+<span>class <span class="ident">EditNode</span></span>
+<span>(</span><span>node, callback, scene)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>NodeEditor implements a "singleton" instance of NodeEditor-derived widget.</p>
+<p>This widget is shown in target_layout, which is a QtLayout</p>
+<p>properties:
+- node : the node being edited
+- callback : a callback function being called when python code need to be executed</p>
+<p>A create_widget() method shall be implemented. This function creates the widget and returns it. When th</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EditNode(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditNode._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_name.Ui_NameWidget()
+            ui.setupUi(widget)
+            EditNode._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditNode._ui
+
+        try:
+            ui.tbName.textChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.tbName.setText(self.node.name)
+
+        ui.tbName.textChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></b></code>:
+<ul class="hlist">
+<li><code><a title="DAVE.element_widgets.NodeEditor.create_widget" href="#DAVE.element_widgets.NodeEditor.create_widget">create_widget</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="DAVE.element_widgets.EditPoi"><code class="flex name class">
+<span>class <span class="ident">EditPoi</span></span>
+<span>(</span><span>node, callback, scene)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>NodeEditor implements a "singleton" instance of NodeEditor-derived widget.</p>
+<p>This widget is shown in target_layout, which is a QtLayout</p>
+<p>properties:
+- node : the node being edited
+- callback : a callback function being called when python code need to be executed</p>
+<p>A create_widget() method shall be implemented. This function creates the widget and returns it. When th</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EditPoi(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditPoi._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_poi.Ui_Poi()
+            ui.setupUi(widget)
+            EditPoi._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditPoi._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.doubleSpinBox_1.setValue(self.node.position[0])
+        ui.doubleSpinBox_2.setValue(self.node.position[1])
+        ui.doubleSpinBox_3.setValue(self.node.position[2])
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_position = np.array((self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+
+        if not np.all(new_position == self.node.position):
+            code += element + &#39;.position = ({}, {}, {})&#39;.format(*new_position)
+
+        return code</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="DAVE.element_widgets.EditPoi.generate_code"><code class="name flex">
+<span>def <span class="ident">generate_code</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_code(self):
+
+    code = &#34;&#34;
+    element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+    new_position = np.array((self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+
+    if not np.all(new_position == self.node.position):
+        code += element + &#39;.position = ({}, {}, {})&#39;.format(*new_position)
+
+    return code</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></b></code>:
+<ul class="hlist">
+<li><code><a title="DAVE.element_widgets.NodeEditor.create_widget" href="#DAVE.element_widgets.NodeEditor.create_widget">create_widget</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="DAVE.element_widgets.EditSheave"><code class="flex name class">
+<span>class <span class="ident">EditSheave</span></span>
+<span>(</span><span>node, callback, scene)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>NodeEditor implements a "singleton" instance of NodeEditor-derived widget.</p>
+<p>This widget is shown in target_layout, which is a QtLayout</p>
+<p>properties:
+- node : the node being edited
+- callback : a callback function being called when python code need to be executed</p>
+<p>A create_widget() method shall be implemented. This function creates the widget and returns it. When th</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EditSheave(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditSheave._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_sheave.Ui_widget_sheave()
+            ui.setupUi(widget)
+            EditSheave._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditSheave._ui
+
+        try:
+            ui.sbAX.valueChanged.disconnect()
+            ui.sbAY.valueChanged.disconnect()
+            ui.sbAZ.valueChanged.disconnect()
+            ui.sbRadius.valueChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.sbAX.setValue(self.node.axis[0])
+        ui.sbAY.setValue(self.node.axis[1])
+        ui.sbAZ.setValue(self.node.axis[2])
+
+        ui.sbRadius.setValue(self.node.radius)
+
+        ui.sbAX.valueChanged.connect(self.callback)
+        ui.sbAY.valueChanged.connect(self.callback)
+        ui.sbAZ.valueChanged.connect(self.callback)
+
+        ui.sbRadius.valueChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_axis = np.array(
+            (self.ui.sbAX.value(), self.ui.sbAY.value(),self.ui.sbAZ.value()))
+        new_radius = self.ui.sbRadius.value()
+
+        if not np.all(new_axis == self.node.axis):
+            code += element + &#39;.axis = ({}, {}, {})&#39;.format(*new_axis)
+        if not new_radius == self.node.radius:
+            code += element + &#39;.radius = {}&#39;.format(new_radius)
+
+        return code</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="DAVE.element_widgets.EditSheave.generate_code"><code class="name flex">
+<span>def <span class="ident">generate_code</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_code(self):
+
+    code = &#34;&#34;
+    element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+    new_axis = np.array(
+        (self.ui.sbAX.value(), self.ui.sbAY.value(),self.ui.sbAZ.value()))
+    new_radius = self.ui.sbRadius.value()
+
+    if not np.all(new_axis == self.node.axis):
+        code += element + &#39;.axis = ({}, {}, {})&#39;.format(*new_axis)
+    if not new_radius == self.node.radius:
+        code += element + &#39;.radius = {}&#39;.format(new_radius)
+
+    return code</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></b></code>:
+<ul class="hlist">
+<li><code><a title="DAVE.element_widgets.NodeEditor.create_widget" href="#DAVE.element_widgets.NodeEditor.create_widget">create_widget</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="DAVE.element_widgets.EditVisual"><code class="flex name class">
+<span>class <span class="ident">EditVisual</span></span>
+<span>(</span><span>node, callback, scene)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>NodeEditor implements a "singleton" instance of NodeEditor-derived widget.</p>
+<p>This widget is shown in target_layout, which is a QtLayout</p>
+<p>properties:
+- node : the node being edited
+- callback : a callback function being called when python code need to be executed</p>
+<p>A create_widget() method shall be implemented. This function creates the widget and returns it. When th</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EditVisual(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditVisual._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.forms.widget_visual.Ui_widget_axis()
+            ui.setupUi(widget)
+            EditVisual._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditVisual._ui
+
+        try:
+            ui.doubleSpinBox_1.valueChanged.disconnect()
+            ui.doubleSpinBox_2.valueChanged.disconnect()
+            ui.doubleSpinBox_3.valueChanged.disconnect()
+            ui.doubleSpinBox_4.valueChanged.disconnect()
+            ui.doubleSpinBox_5.valueChanged.disconnect()
+            ui.doubleSpinBox_6.valueChanged.disconnect()
+            ui.doubleSpinBox_7.valueChanged.disconnect()
+            ui.doubleSpinBox_8.valueChanged.disconnect()
+            ui.doubleSpinBox_9.valueChanged.disconnect()
+
+            ui.comboBox.editTextChanged.disconnect()
+        except:
+            pass # no connections yet
+
+        ui.doubleSpinBox_1.setValue(self.node.offset[0])
+        ui.doubleSpinBox_2.setValue(self.node.offset[1])
+        ui.doubleSpinBox_3.setValue(self.node.offset[2])
+
+        ui.doubleSpinBox_4.setValue(self.node.rotation[0])
+        ui.doubleSpinBox_5.setValue(self.node.rotation[1])
+        ui.doubleSpinBox_6.setValue(self.node.rotation[2])
+
+        ui.doubleSpinBox_7.setValue(self.node.scale[0])
+        ui.doubleSpinBox_8.setValue(self.node.scale[1])
+        ui.doubleSpinBox_9.setValue(self.node.scale[2])
+
+        ui.comboBox.clear()
+        ui.comboBox.addItems(self.scene.get_resource_list(&#39;obj&#39;))
+
+        ui.comboBox.setCurrentText(self.node.path)
+
+        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_6.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_7.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_8.valueChanged.connect(self.callback)
+        ui.doubleSpinBox_9.valueChanged.connect(self.callback)
+
+        ui.comboBox.editTextChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = &#34;&#34;
+        element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+        new_position = np.array((self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+        new_rotation = np.array((self.ui.doubleSpinBox_4.value(), self.ui.doubleSpinBox_5.value(),self.ui.doubleSpinBox_6.value()))
+        new_scale = np.array((self.ui.doubleSpinBox_7.value(), self.ui.doubleSpinBox_8.value(),self.ui.doubleSpinBox_9.value()))
+
+        new_path = self.ui.comboBox.currentText()
+
+        if not new_path == self.node.path:
+            code += element + &#34;.path = r&#39;{}&#39;&#34;.format(new_path)
+
+        if not np.all(new_position == self.node.offset):
+            code += element + &#39;.offset = ({}, {}, {})&#39;.format(*new_position)
+
+        if not np.all(new_rotation == self.node.rotation):
+            code += element + &#39;.rotation = ({}, {}, {})&#39;.format(*new_rotation)
+
+        if not np.all(new_scale == self.node.scale):
+            code += element + &#39;.scale = ({}, {}, {})&#39;.format(*new_scale)
+
+
+        return code</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="DAVE.element_widgets.EditVisual.generate_code"><code class="name flex">
+<span>def <span class="ident">generate_code</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_code(self):
+
+    code = &#34;&#34;
+    element = &#34;\ns[&#39;{}&#39;]&#34;.format(self.node.name)
+
+    new_position = np.array((self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
+    new_rotation = np.array((self.ui.doubleSpinBox_4.value(), self.ui.doubleSpinBox_5.value(),self.ui.doubleSpinBox_6.value()))
+    new_scale = np.array((self.ui.doubleSpinBox_7.value(), self.ui.doubleSpinBox_8.value(),self.ui.doubleSpinBox_9.value()))
+
+    new_path = self.ui.comboBox.currentText()
+
+    if not new_path == self.node.path:
+        code += element + &#34;.path = r&#39;{}&#39;&#34;.format(new_path)
+
+    if not np.all(new_position == self.node.offset):
+        code += element + &#39;.offset = ({}, {}, {})&#39;.format(*new_position)
+
+    if not np.all(new_rotation == self.node.rotation):
+        code += element + &#39;.rotation = ({}, {}, {})&#39;.format(*new_rotation)
+
+    if not np.all(new_scale == self.node.scale):
+        code += element + &#39;.scale = ({}, {}, {})&#39;.format(*new_scale)
+
+
+    return code</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></b></code>:
+<ul class="hlist">
+<li><code><a title="DAVE.element_widgets.NodeEditor.create_widget" href="#DAVE.element_widgets.NodeEditor.create_widget">create_widget</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="DAVE.element_widgets.NodeEditor"><code class="flex name class">
+<span>class <span class="ident">NodeEditor</span></span>
+<span>(</span><span>node, callback, scene)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>NodeEditor implements a "singleton" instance of NodeEditor-derived widget.</p>
+<p>This widget is shown in target_layout, which is a QtLayout</p>
+<p>properties:
+- node : the node being edited
+- callback : a callback function being called when python code need to be executed</p>
+<p>A create_widget() method shall be implemented. This function creates the widget and returns it. When th</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NodeEditor:
+    &#34;&#34;&#34;NodeEditor implements a &#34;singleton&#34; instance of NodeEditor-derived widget.
+
+    This widget is shown in target_layout, which is a QtLayout
+
+    properties:
+    - node : the node being edited
+    - callback : a callback function being called when python code need to be executed
+
+    A create_widget() method shall be implemented. This function creates the widget and returns it. When th
+
+    &#34;&#34;&#34;
+
+
+    def __init__(self, node, callback, scene):
+        self.node = node
+        self.callback = callback
+        self.scene = scene
+
+    def create_widget(self):
+        &#34;&#34;&#34;Creates and returns the widget&#34;&#34;&#34;
+        raise Exception(&#39;Show() method not defined in derived class&#39;)</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="DAVE.element_widgets.EditNode" href="#DAVE.element_widgets.EditNode">EditNode</a></li>
+<li><a title="DAVE.element_widgets.EditAxis" href="#DAVE.element_widgets.EditAxis">EditAxis</a></li>
+<li><a title="DAVE.element_widgets.EditVisual" href="#DAVE.element_widgets.EditVisual">EditVisual</a></li>
+<li><a title="DAVE.element_widgets.EditBuoyancy" href="#DAVE.element_widgets.EditBuoyancy">EditBuoyancy</a></li>
+<li><a title="DAVE.element_widgets.EditPoi" href="#DAVE.element_widgets.EditPoi">EditPoi</a></li>
+<li><a title="DAVE.element_widgets.EditCable" href="#DAVE.element_widgets.EditCable">EditCable</a></li>
+<li><a title="DAVE.element_widgets.EditForce" href="#DAVE.element_widgets.EditForce">EditForce</a></li>
+<li><a title="DAVE.element_widgets.EditSheave" href="#DAVE.element_widgets.EditSheave">EditSheave</a></li>
+<li><a title="DAVE.element_widgets.EditHydSpring" href="#DAVE.element_widgets.EditHydSpring">EditHydSpring</a></li>
+<li><a title="DAVE.element_widgets.EditLC6d" href="#DAVE.element_widgets.EditLC6d">EditLC6d</a></li>
+<li><a title="DAVE.element_widgets.EditConnector2d" href="#DAVE.element_widgets.EditConnector2d">EditConnector2d</a></li>
+<li><a title="DAVE.element_widgets.EditBeam" href="#DAVE.element_widgets.EditBeam">EditBeam</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="DAVE.element_widgets.NodeEditor.create_widget"><code class="name flex">
+<span>def <span class="ident">create_widget</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Creates and returns the widget</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_widget(self):
+    &#34;&#34;&#34;Creates and returns the widget&#34;&#34;&#34;
+    raise Exception(&#39;Show() method not defined in derived class&#39;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="DAVE" href="index.html">DAVE</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="DAVE.element_widgets.add_axis" href="#DAVE.element_widgets.add_axis">add_axis</a></code></li>
+<li><code><a title="DAVE.element_widgets.add_beam_connector" href="#DAVE.element_widgets.add_beam_connector">add_beam_connector</a></code></li>
+<li><code><a title="DAVE.element_widgets.add_body" href="#DAVE.element_widgets.add_body">add_body</a></code></li>
+<li><code><a title="DAVE.element_widgets.add_buoyancy" href="#DAVE.element_widgets.add_buoyancy">add_buoyancy</a></code></li>
+<li><code><a title="DAVE.element_widgets.add_cable" href="#DAVE.element_widgets.add_cable">add_cable</a></code></li>
+<li><code><a title="DAVE.element_widgets.add_connector2d" href="#DAVE.element_widgets.add_connector2d">add_connector2d</a></code></li>
+<li><code><a title="DAVE.element_widgets.add_force" href="#DAVE.element_widgets.add_force">add_force</a></code></li>
+<li><code><a title="DAVE.element_widgets.add_linear_connector" href="#DAVE.element_widgets.add_linear_connector">add_linear_connector</a></code></li>
+<li><code><a title="DAVE.element_widgets.add_linear_hydrostatics" href="#DAVE.element_widgets.add_linear_hydrostatics">add_linear_hydrostatics</a></code></li>
+<li><code><a title="DAVE.element_widgets.add_node" href="#DAVE.element_widgets.add_node">add_node</a></code></li>
+<li><code><a title="DAVE.element_widgets.add_poi" href="#DAVE.element_widgets.add_poi">add_poi</a></code></li>
+<li><code><a title="DAVE.element_widgets.add_sheave" href="#DAVE.element_widgets.add_sheave">add_sheave</a></code></li>
+<li><code><a title="DAVE.element_widgets.add_visual" href="#DAVE.element_widgets.add_visual">add_visual</a></code></li>
+<li><code><a title="DAVE.element_widgets.fill_dropdown_boxes" href="#DAVE.element_widgets.fill_dropdown_boxes">fill_dropdown_boxes</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="DAVE.element_widgets.EditAxis" href="#DAVE.element_widgets.EditAxis">EditAxis</a></code></h4>
+<ul class="">
+<li><code><a title="DAVE.element_widgets.EditAxis.generate_code" href="#DAVE.element_widgets.EditAxis.generate_code">generate_code</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="DAVE.element_widgets.EditBeam" href="#DAVE.element_widgets.EditBeam">EditBeam</a></code></h4>
+<ul class="">
+<li><code><a title="DAVE.element_widgets.EditBeam.generate_code" href="#DAVE.element_widgets.EditBeam.generate_code">generate_code</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="DAVE.element_widgets.EditBody" href="#DAVE.element_widgets.EditBody">EditBody</a></code></h4>
+<ul class="">
+<li><code><a title="DAVE.element_widgets.EditBody.generate_code" href="#DAVE.element_widgets.EditBody.generate_code">generate_code</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="DAVE.element_widgets.EditBuoyancy" href="#DAVE.element_widgets.EditBuoyancy">EditBuoyancy</a></code></h4>
+<ul class="">
+<li><code><a title="DAVE.element_widgets.EditBuoyancy.generate_code" href="#DAVE.element_widgets.EditBuoyancy.generate_code">generate_code</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="DAVE.element_widgets.EditCable" href="#DAVE.element_widgets.EditCable">EditCable</a></code></h4>
+<ul class="">
+<li><code><a title="DAVE.element_widgets.EditCable.add_poi_dropdown" href="#DAVE.element_widgets.EditCable.add_poi_dropdown">add_poi_dropdown</a></code></li>
+<li><code><a title="DAVE.element_widgets.EditCable.delete_poi_dropdown" href="#DAVE.element_widgets.EditCable.delete_poi_dropdown">delete_poi_dropdown</a></code></li>
+<li><code><a title="DAVE.element_widgets.EditCable.generate_code" href="#DAVE.element_widgets.EditCable.generate_code">generate_code</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="DAVE.element_widgets.EditConnector2d" href="#DAVE.element_widgets.EditConnector2d">EditConnector2d</a></code></h4>
+<ul class="">
+<li><code><a title="DAVE.element_widgets.EditConnector2d.generate_code" href="#DAVE.element_widgets.EditConnector2d.generate_code">generate_code</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="DAVE.element_widgets.EditForce" href="#DAVE.element_widgets.EditForce">EditForce</a></code></h4>
+<ul class="">
+<li><code><a title="DAVE.element_widgets.EditForce.generate_code" href="#DAVE.element_widgets.EditForce.generate_code">generate_code</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="DAVE.element_widgets.EditHydSpring" href="#DAVE.element_widgets.EditHydSpring">EditHydSpring</a></code></h4>
+<ul class="">
+<li><code><a title="DAVE.element_widgets.EditHydSpring.generate_code" href="#DAVE.element_widgets.EditHydSpring.generate_code">generate_code</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="DAVE.element_widgets.EditLC6d" href="#DAVE.element_widgets.EditLC6d">EditLC6d</a></code></h4>
+<ul class="">
+<li><code><a title="DAVE.element_widgets.EditLC6d.generate_code" href="#DAVE.element_widgets.EditLC6d.generate_code">generate_code</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="DAVE.element_widgets.EditNode" href="#DAVE.element_widgets.EditNode">EditNode</a></code></h4>
+</li>
+<li>
+<h4><code><a title="DAVE.element_widgets.EditPoi" href="#DAVE.element_widgets.EditPoi">EditPoi</a></code></h4>
+<ul class="">
+<li><code><a title="DAVE.element_widgets.EditPoi.generate_code" href="#DAVE.element_widgets.EditPoi.generate_code">generate_code</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="DAVE.element_widgets.EditSheave" href="#DAVE.element_widgets.EditSheave">EditSheave</a></code></h4>
+<ul class="">
+<li><code><a title="DAVE.element_widgets.EditSheave.generate_code" href="#DAVE.element_widgets.EditSheave.generate_code">generate_code</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="DAVE.element_widgets.EditVisual" href="#DAVE.element_widgets.EditVisual">EditVisual</a></code></h4>
+<ul class="">
+<li><code><a title="DAVE.element_widgets.EditVisual.generate_code" href="#DAVE.element_widgets.EditVisual.generate_code">generate_code</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="DAVE.element_widgets.NodeEditor" href="#DAVE.element_widgets.NodeEditor">NodeEditor</a></code></h4>
+<ul class="">
+<li><code><a title="DAVE.element_widgets.NodeEditor.create_widget" href="#DAVE.element_widgets.NodeEditor.create_widget">create_widget</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

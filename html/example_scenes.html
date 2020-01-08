@@ -1,0 +1,2616 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.1" />
+<title>DAVE.example_scenes API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>DAVE.example_scenes</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from DAVE.scene import *
+import numpy as np
+
+def single_dof_hinge(s):
+    b = s.new_rigidbody(&#39;block&#39;, mass = 1, cog = (10,0,0), fixed=(True,True,True,True,False, True))
+    return [np.pi / 2]
+
+def single_dof_hinge_eq(s):
+    b = s.new_rigidbody(&#39;block&#39;, mass = 1, cog = (10,0,0), rotation = (0,-90,0), fixed=(True,True,True,True,False, True))
+    return [np.pi / 2]
+
+
+def dual_dof_hinge(s):
+    b = s.new_rigidbody(&#39;block&#39;, mass = 1, cog = (10,0,0), fixed=(True,True,True,False,False, True))
+    return [0, np.pi / 2]
+
+def tripple_dof_hinge(s):
+    b = s.new_rigidbody(&#39;block&#39;, mass = 1, cog = (10,0,0), fixed=(True,True,True,False,False, False))
+    return [0, np.pi / 2,0]
+
+def single_dof_hinge_plus_cable(s):
+    b = s.new_rigidbody(&#39;block&#39;, mass = 1, cog = (10,0,0), fixed=(True,True,True,True,False, True))
+    p1 = s.new_poi(&#39;p1&#39;, position = (10,0,10))
+    p2 = s.new_poi(&#39;p2&#39;, parent=&#39;block&#39;, position = (20,0,0))
+    s.new_cable(&#39;cable&#39;,&#39;p1&#39;,&#39;p2&#39;, length = 8, EA=1000)
+    return [-0.454547]
+
+def demo_cable(s):
+    b = s.new_rigidbody(&#39;block&#39;, mass=1, cog=(10, 0, 0))
+    b.set_free()
+    p1 = s.new_poi(&#39;p1&#39;, position=(10, 0, 10))
+    p2 = s.new_poi(&#39;p2&#39;, parent=&#39;block&#39;, position=(0, 0, 0))
+    s.new_cable(&#39;cable&#39;, &#39;p1&#39;, &#39;p2&#39;, length=15, EA=1000)
+
+    k = 1000 / 15
+    F = 1 * 9.81
+    stretch = F / k
+    z = -5 - stretch
+
+    return [10,0,z,0,np.pi/2,0]
+
+
+def demo_two_cable(s):
+    b = s.new_rigidbody(&#39;block&#39;, mass=20, cog=(0, 0, 0))
+    b.set_free()
+    s.new_poi(&#39;p1a&#39;, position=(1, 0, 10))
+    s.new_poi(&#39;p1b&#39;, position=(-1, 0, 10))
+    s.new_poi(&#39;p2a&#39;, parent=&#39;block&#39;, position=(1, 0, 0))
+    s.new_poi(&#39;p2b&#39;, parent=&#39;block&#39;, position=(-1, 0, 0))
+
+    s.new_cable(&#39;cable_a&#39;, &#39;p1a&#39;, &#39;p2a&#39;, length=15, EA=1000)
+    s.new_cable(&#39;cable_b&#39;, &#39;p1b&#39;, &#39;p2b&#39;, length=15, EA=1000)
+
+    k = 2*1000/15
+    F = 20 * 9.81
+    stretch = F / k
+    z = -5 - stretch
+
+    return [0, 0, z, 0.0, 0.0, 0.0]
+
+def demo_two_cable_twisted(s):
+    b = s.new_rigidbody(&#39;block&#39;, mass=20, cog=(0, 0, 0), rotation=(0,0,180))
+    b.set_free()
+    s.new_poi(&#39;p1a&#39;, position=(1, 0, 10))
+    s.new_poi(&#39;p1b&#39;, position=(-1, 0, 10))
+    s.new_poi(&#39;p2a&#39;, parent=&#39;block&#39;, position=(1, 0, 0))
+    s.new_poi(&#39;p2b&#39;, parent=&#39;block&#39;, position=(-1, 0, 0))
+
+    s.new_cable(&#39;cable_a&#39;, &#39;p1a&#39;, &#39;p2a&#39;, length=15, EA=1000)
+    s.new_cable(&#39;cable_b&#39;, &#39;p1b&#39;, &#39;p2b&#39;, length=15, EA=1000)
+
+    k = 2*1000/15
+    F = 20 * 9.81
+    stretch = F / k
+    z = -5 - stretch
+
+    return [0, 0, z, 0.0, 0.0, 0.0]
+
+def demo_snake(s, n=20):
+    s.new_axis(&#39;base0&#39;)
+    for i in range(n):  # 20
+        s.new_rigidbody(name = &#39;base{}&#39;.format(i+1),
+                        parent = &#39;base{}&#39;.format(i),
+                        mass = 1,
+                        position = (2,0,0),
+                        cog = (1,0,0),
+                        fixed = (True,True,True,True, False, True))
+
+    s.new_poi(&#39;Poi&#39;, parent=&#39;base{}&#39;.format(n), position = (2,0,0))
+    s.new_poi(&#39;Poi_1&#39;)
+    s[&#39;Poi_1&#39;].position = (10.0, 0.0, 0.0)
+    s.new_cable(&#39;Cable&#39;, poiA = &#39;Poi_1&#39;, poiB= &#39;Poi&#39;, length=7.000, EA=100000)
+
+    print(&#39;for n=20 the expected tension in cable is 81.385&#39;)
+
+def all_elements():
+    s = Scene()
+    a = s.new_axis(&#39;test&#39;, position = (10,20,0))
+    b = s.new_rigidbody(&#39;rigidbody&#39;, mass=10)
+    b.set_free()
+    pa = s.new_poi(&#39;poi on rigidbody&#39;, parent = &#39;rigidbody&#39;, position = (2,2,2))
+    pt = s.new_poi(&#39;poi on test&#39;, parent=&#39;test&#39;, position = (5,7,-2))
+    pb = s.new_poi(&#39;global poi&#39;, position=(0, 0, 1))
+    s.new_cable(&#39;cable&#39;, length=50, EA=1000, poiA=pa, poiB = pt, sheaves=[pb])
+    # s.new_cable(&#39;cable&#39;, length=1, EA=1000, poiA=pa, poiB=pb)
+
+    return s
+
+def grid(s, n=5):
+
+
+    for i in range(n):
+        for j in range(n):
+            b = s.new_rigidbody(name = &#39;body {} {}&#39;.format(i,j), mass = 1, position = (4*i, 4*j, 0))
+            s.new_poi(name = &#39;poi {} {}&#39;.format(i,j), parent = b)
+
+    for i in range(n-1):
+        for j in range(n-1):
+            p1 = &#39;poi {} {}&#39;.format(i,j)
+            p2 = &#39;poi {} {}&#39;.format(i, j+1)
+            p3 = &#39;poi {} {}&#39;.format(i+1, j)
+
+            s.new_cable(name = &#39;cable {} {} a&#39;.format(i,j), poiA = p1, poiB = p2, length = 5, EA = 1000)
+            s.new_cable(name=&#39;cable {} {} b&#39;.format(i, j), poiA=p1, poiB=p3, length=5, EA=1000)
+
+            s[&#39;body {} {}&#39;.format(i,j)].set_free()
+
+    return s
+
+def barge(s):
+
+    def solved(v):
+        return v
+
+    # code for Barge
+    s.new_rigidbody(name=&#39;Barge&#39;,
+                    mass=20000.0,
+                    cog=(50.0,
+                         0.0,
+                         2.5),
+                    position=(solved(0.0),
+                              solved(0.0),
+                              solved(-5.0)),
+                    rotation=(solved(0.0),
+                              solved(0.0),
+                              solved(0.0)),
+                    fixed=(False, False, False, False, False, False))
+    # code for Hydrostatics
+    s.new_hydspring(name=&#39;Hydrostatics&#39;,
+                    parent=&#39;Barge&#39;,
+                    cob=(50.0, 0.0, 2.5),
+                    BMT=(1 / 12) * 40 ** 3 * 100 / (40 * 100 * 5),
+                    BML=(1 / 12) * 100 ** 3 * 40 / (40 * 100 * 5),
+                    COFX=0.0,
+                    COFY=0.0,
+                    kHeave=39240.0,
+                    waterline=2.5,
+                    displacement_kN=196200.0)
+    # code for Poi
+    s.new_poi(name=&#39;Poi&#39;,
+              parent=&#39;Barge&#39;,
+              position=(0.0,
+                        10.0,
+                        0.0))
+    # code for Force
+    s.new_force(name=&#39;Force&#39;,
+                parent=&#39;Poi&#39;,
+                force=(0.0, 0.0, 0.0),
+                moment=(0.0, 0.0, 0.0))
+    #
+    # code for Visual
+    s.new_visual(name=&#39;Visual&#39;,
+                 parent=&#39;Barge&#39;,
+                 path=&#39;barge.obj&#39;,
+                 offset=(0.0, 0.0, 0.0),
+                 rotation=(0, 0, 0),
+                 scale=(1.0, 1.0, 1.0))
+
+
+def robot(s):
+
+    def solved(v):
+        return v
+
+    # code for base_axis
+    s.new_axis(name=&#39;base_axis&#39;,
+               position=(0.0,
+                         0.0,
+                         4.0),
+               rotation=(0.0,
+                         0.0,
+                         4.0),
+               fixed=(True, True, True, True, True, True))
+
+    s.new_visual(name=&#39;waldrof&#39;,
+                 path=&#39;robot_body.obj&#39;,
+                 parent=&#39;base_axis&#39;)
+
+    # code for Shoulder
+    s.new_axis(name=&#39;Shoulder&#39;,
+               parent=&#39;base_axis&#39;,
+               position=(0.0,
+                         1.0,
+                         0.8),
+               rotation=(0.0,
+                         1.0,
+                         0.8),
+               fixed=(True, True, True, True, True, True))
+    # code for Upper Arm
+    s.new_rigidbody(name=&#39;Upper Arm&#39;,
+                    mass=0.0,
+                    cog=(0.0,
+                         0.0,
+                         0.0),
+                    parent=&#39;Shoulder&#39;,
+                    position=(0.0,
+                              0.0,
+                              0.0),
+                    rotation=(0.0,
+                              0.0,
+                              0.0),
+                    fixed=(True, True, True, False, False, False))
+
+    s.new_visual(name=&#39;upper_arm&#39;,
+                 path=&#39;wirecube.obj&#39;,
+                 offset=(0, 1, 0),
+                 scale=(0.3, 1, 0.3),
+                 parent=&#39;Upper Arm&#39;)
+
+    # code for elbow
+    s.new_axis(name=&#39;elbow&#39;,
+               parent=&#39;Upper Arm&#39;,
+               position=(0.0,
+                         2.0,
+                         0.0),
+               rotation=(0.0,
+                         2.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Lower Arm
+    s.new_rigidbody(name=&#39;Lower Arm&#39;,
+                    mass=0.0,
+                    cog=(0.0,
+                         0.0,
+                         0.0),
+                    parent=&#39;elbow&#39;,
+                    position=(0.0,
+                              0.0,
+                              0.0),
+                    rotation=(0.0,
+                              solved(0.0),
+                              solved(0.0)),
+                    fixed=(True, True, True, True, True, False))
+
+    s.new_visual(name=&#39;lower arm visual&#39;,
+                 path=&#39;wirecube.obj&#39;,
+                 offset=(0, 1, 0),
+                 scale=(0.3, 1, 0.3),
+                 parent=&#39;Lower Arm&#39;)
+
+    # code for Hand
+    s.new_poi(name=&#39;Hand&#39;,
+              parent=&#39;Lower Arm&#39;,
+              position=(0.0,
+                        2.0,
+                        0.0))
+    # code for Beer
+    s.new_axis(name=&#39;BeerAxis&#39;,
+               position = (2,5,5))
+
+    s.new_visual(name = &#39;BeerBottle&#39;,
+                 path = &#39;beerbottle.obj&#39;,
+                 parent = &#39;BeerAxis&#39;)
+    s[&#39;BeerBottle&#39;].scale = (0.4, 0.4, 0.4)
+
+    s.new_poi(name=&#39;Beer&#39;,
+              parent = &#39;BeerAxis&#39;)
+
+
+
+    # code for Action driver
+    s.new_cable(name=&#39;Action driver&#39;,
+                poiA=&#39;Hand&#39;,
+                poiB=&#39;Beer&#39;,
+                length=0.001,
+                EA=1.0)
+
+def seal(s):
+
+    def solved(number):
+        return number
+
+    # code for barge
+    s.new_rigidbody(name=&#39;Seabert&#39;,
+                    mass=45.0,
+                    cog=(0.0,
+                         0.0,
+                         -2.0),
+                    position=(solved(3.3108571809215213),
+                              solved(3.2120928215643465),
+                              solved(-0.28003075398497845)),
+                    rotation=(solved(-20.40709918636502),
+                              solved(29.908831313851124),
+                              0.0),
+                    fixed=(False, False, False, False, False, True))
+    # code for buoyancy
+    b = s.new_buoyancy(name=&#39;buoyancy&#39;,
+                   parent=&#39;Seabert&#39;)
+
+    b.trimesh.load_obj(s.get_resource_path(&#39;17919_Seal_baby_happy_V1.obj&#39;))
+
+    s.new_poi(name=&#39;Hand&#39;,
+              parent=&#39;Seabert&#39;,
+              position=(-3.0,
+                        -3.0,
+                        -2.0))
+     # code for HOP
+    s.new_poi(name=&#39;HOP&#39;,
+              position=(0.0,
+                        0.0,
+                        9.0))
+    # code for Cable
+    s.new_cable(name=&#39;Cable&#39;,
+                poiA=&#39;Hand&#39;,
+                poiB=&#39;HOP&#39;,
+                length=8.0,
+                EA=2000.0)
+
+def discrete_beam(s, EI, L, n, P, M):
+    K = 2 * EI / (L / n)
+
+    # auto generated pyhton code
+    # By Ruben
+    # Time: 2019-09-06 17:20:24 UTC
+
+    # To be able to distinguish the important number (eg: fixed positions) from
+    # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called &#39;solved&#39;.
+    # For anything written as solved(number) that actual number does not influence the static solution
+    def solved(number):
+        return number
+
+    # code for Axis0
+    s.new_axis(name=&#39;Axis0&#39;,
+               position=(0.0,
+                         0.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Beam
+
+    for i in range(n):
+        s.new_axis(name=&#39;Beam{}&#39;.format(i),
+                   parent=&#39;Axis{}&#39;.format(i),
+                   position=(0.0,
+                             0.0,
+                             0.0),
+                   rotation=(0.0,
+                             solved(0.0),
+                             0.0),
+                   fixed=(True, True, True, True, False, True))
+        # code for Axis1
+        s.new_axis(name=&#39;Axis{}&#39;.format(i + 1),
+                   parent=&#39;Beam{}&#39;.format(i),
+                   position=(L / n,
+                             0.0,
+                             0.0),
+                   rotation=(0.0,
+                             solved(0.0),
+                             0.0),
+                   fixed=(True, True, True, True, False, True))
+        # code for Beam_right
+        s.new_axis(name=&#39;Beam{}_right&#39;.format(i),
+                   parent=&#39;Beam{}&#39;.format(i),
+                   position=(L / n,
+                             0.0,
+                             0.0),
+                   rotation=(0.0,
+                             0.0,
+                             0.0),
+                   fixed=(True, True, True, True, True, True))
+        # code for ConLeft
+        s.new_linear_connector_6d(name=&#39;ConLeft{}&#39;.format(i),
+                                  master=&#39;Axis{}&#39;.format(i),
+                                  slave=&#39;Beam{}&#39;.format(i),
+                                  stiffness=(0.0, 0.0, 0.0,
+                                             0.0, K, 0.0))
+        # code for ConRight
+        s.new_linear_connector_6d(name=&#39;ConRight{}&#39;.format(i),
+                                  master=&#39;Beam{}_right&#39;.format(i),
+                                  slave=&#39;Axis{}&#39;.format(i + 1),
+                                  stiffness=(0.0, 0.0, 0.0,
+                                             0.0, K, 0.0))
+
+        # code for Visual
+        s.new_visual(name=&#39;Visual{}&#39;.format(i),
+                     parent=&#39;Beam{}&#39;.format(i),
+                     path=&#39;wirecube.obj&#39;,
+                     offset=(0.5 * L / n, 0.0, 0.0),
+                     rotation=(0, 0, 0),
+                     scale=(0.5 * L / n, 0.1, 0.1))
+
+    # ===============
+
+    # code for Poi
+    s.new_poi(name=&#39;Poi&#39;,
+              parent=&#39;Axis{}&#39;.format(n),
+              position=(0.0,
+                        0.0,
+                        0.0))
+
+    # code for Force
+    s.new_force(name=&#39;Force&#39;,
+                parent=&#39;Poi&#39;,
+                force=(0.0, 0.0, 0.0),
+                moment=(0.0, 0.0, 0.0))
+
+    f = s[&#39;Force&#39;]
+
+    f.force = (0, 0, -P)
+    f.moment = (0, M, 0)
+
+    print(s._vfc.to_string())
+
+    s.solve_statics()
+
+    last_beam = s[&#39;Axis{}&#39;.format(n)]
+
+    delta = -last_beam.global_position[2]
+    phi = last_beam.global_rotation[1]
+
+    delta_expected = P * L ** 3 / (3 * EI) + M * L ** 2 / (2 * EI)
+    phi_expected = np.rad2deg(P * L ** 2 / (2 * EI) + M * L / (EI))
+
+    print(&#39;displacement: expected {} actual {}&#39;.format(delta_expected, delta))
+    print(&#39;rotation: expected {} actual {}&#39;.format(phi_expected, phi))
+
+    return (last_beam, delta_expected, phi_expected)
+
+
+# =======================
+
+def discrete_beam_free_in_Z(s, EI, L, n, P, M, KZ_factor):
+
+    K = 2 * EI / (L / n)
+    KZ = K * KZ_factor
+
+    def solved(number):
+        return number
+
+    # code for Axis0
+    s.new_axis(name=&#39;Axis0&#39;,
+               position=(0.0,
+                         0.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Beam
+
+    for i in range(n):
+        s.new_axis(name=&#39;Beam{}&#39;.format(i),
+                   parent=&#39;Axis{}&#39;.format(i),
+                   position=(0.0,
+                             0.0,
+                             0.0),
+                   rotation=(0.0,
+                             solved(0.0),
+                             0.0),
+                   fixed=(True, True, True, True, False, True))
+        # code for Axis1
+        s.new_axis(name=&#39;Axis{}&#39;.format(i + 1),
+                   parent=&#39;Beam{}&#39;.format(i),
+                   position=(L / n,
+                             0.0,
+                             0.0),
+                   rotation=(0.0,
+                             solved(0.0),
+                             0.0),
+                   fixed=(True, True, False, True, False, True))
+        # code for Beam_right
+        s.new_axis(name=&#39;Beam{}_right&#39;.format(i),
+                   parent=&#39;Beam{}&#39;.format(i),
+                   position=(L / n,
+                             0.0,
+                             0.0),
+                   rotation=(0.0,
+                             0.0,
+                             0.0),
+                   fixed=(True, True, True, True, True, True))
+        # code for ConLeft
+        s.new_linear_connector_6d(name=&#39;ConLeft{}&#39;.format(i),
+                                  master=&#39;Axis{}&#39;.format(i),
+                                  slave=&#39;Beam{}&#39;.format(i),
+                                  stiffness=(0.0, 0.0, KZ,
+                                             0.0, K, 0.0))
+        # code for ConRight
+        s.new_linear_connector_6d(name=&#39;ConRight{}&#39;.format(i),
+                                  master=&#39;Beam{}_right&#39;.format(i),
+                                  slave=&#39;Axis{}&#39;.format(i + 1),
+                                  stiffness=(0.0, 0.0, KZ,
+                                             0.0, K, 0.0))
+
+        # code for Visual
+        s.new_visual(name=&#39;Visual{}&#39;.format(i),
+                     parent=&#39;Beam{}&#39;.format(i),
+                     path=&#39;wirecube.obj&#39;,
+                     offset=(0.5 * L / n, 0.0, 0.0),
+                     rotation=(0, 0, 0),
+                     scale=(0.5 * L / n, 0.1, 0.1))
+
+    # ===============
+
+    # code for Poi
+    s.new_poi(name=&#39;Poi&#39;,
+              parent=&#39;Axis{}&#39;.format(n),
+              position=(0.0,
+                        0.0,
+                        0.0))
+
+    # code for Force
+    s.new_force(name=&#39;Force&#39;,
+                parent=&#39;Poi&#39;,
+                force=(0.0, 0.0, 0.0),
+                moment=(0.0, 0.0, 0.0))
+
+    f = s[&#39;Force&#39;]
+
+    f.force = (0, 0, -P)
+    f.moment = (0, M, 0)
+
+    print(s._vfc.to_string())
+    s.solve_statics()
+
+    last_beam = s[&#39;Axis{}&#39;.format(n)]
+
+    delta = -last_beam.global_position[2]
+    phi = last_beam.global_rotation[1]
+
+    delta_expected = P * L ** 3 / (3 * EI) + M * L ** 2 / (2 * EI)
+    phi_expected = np.rad2deg(P * L ** 2 / (2 * EI) + M * L / (EI))
+
+    print(&#39;displacement: expected {} actual {}&#39;.format(delta_expected, delta))
+    print(&#39;rotation: expected {} actual {}&#39;.format(phi_expected, phi))
+
+    return (last_beam, delta_expected, phi_expected)
+
+
+def discrete_linearbeam(s, EIy, EIz, EA, GIp, L, n):
+
+    def solved(number):
+        return number
+
+    # code for Axis0
+    s.new_axis(name=&#39;Axis0&#39;,
+               position=(0.0,
+                         0.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Beam
+
+    for i in range(n):
+        s.new_axis(name=&#39;Axis{}&#39;.format(i + 1),
+                   position=((i+1)*L / n,
+                             0.0,
+                             0.0),
+                   rotation=(0.0,
+                             solved(0.0),
+                             0.0),
+                   fixed=False)
+        s.new_linear_beam(name=&#39;Beam{}&#39;.format(i),
+                          master=&#39;Axis{}&#39;.format(i), slave=&#39;Axis{}&#39;.format(i+1),
+                          L = L/n,
+                          EA=EA,
+                          EIy = EIy,
+                          EIz = EIz,
+                          GIp = GIp )
+
+    # code for Poi
+    s.new_poi(name=&#39;Poi&#39;,
+              parent=&#39;Axis{}&#39;.format(n),
+              position=(0.0,
+                        0.0,
+                        0.0))
+
+def catenaty(s, EIy, EIz, EA, GIp, L, n):
+
+     # code for Axis0
+    s.new_axis(name=&#39;Axis0&#39;,
+               position=(0.0,
+                         0.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Beam
+
+    for i in range(n):
+        s.new_axis(name=&#39;Axis{}&#39;.format(i + 1),
+                   position=((i+1)*L / n,
+                             0.0,
+                             0.0),
+                   rotation=(0.0,
+                             0.0,
+                             0.0),
+                   fixed=False)
+        s.new_linear_beam(name=&#39;Beam{}&#39;.format(i),
+                          master=&#39;Axis{}&#39;.format(i), slave=&#39;Axis{}&#39;.format(i+1),
+                          L = L/n,
+                          EA=EA,
+                          EIy = EIy,
+                          EIz = EIz,
+                          GIp = GIp )
+
+    s[&#39;Axis{}&#39;.format(n)].set_fixed()
+
+
+
+
+def lift_4p(s):
+    # auto generated pyhton code
+    # By beneden
+    # Time: 2019-09-04 11:58:31 UTC
+
+    # To be able to distinguish the important number (eg: fixed positions) from
+    # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called &#39;solved&#39;.
+    # For anything written as solved(number) that actual number does not influence the static solution
+    def solved(number):
+        return number
+
+    # code for hook4p
+    s.new_rigidbody(name=&#39;hook4p&#39;,
+                    mass=80.0,
+                    cog=(0.0,
+                         0.0,
+                         -1.3),
+                    position=(0.0,
+                              0.0,
+                              0.0),
+                    rotation=(0.0,
+                              solved(8.289072000610565),
+                              0.0),
+                    fixed=(True, True, True, True, False, True))
+    # code for prong1
+    s.new_poi(name=&#39;prong1&#39;,
+              parent=&#39;hook4p&#39;,
+              position=(1.2,
+                        0.0,
+                        -1.3))
+    # code for prong2
+    s.new_poi(name=&#39;prong2&#39;,
+              parent=&#39;hook4p&#39;,
+              position=(0.0,
+                        1.2,
+                        -1.3))
+    # code for prong3
+    s.new_poi(name=&#39;prong3&#39;,
+              parent=&#39;hook4p&#39;,
+              position=(-1.2,
+                        0.0,
+                        -1.3))
+    # code for prong4
+    s.new_poi(name=&#39;prong4&#39;,
+              parent=&#39;hook4p&#39;,
+              position=(0.0,
+                        -1.2,
+                        -1.3))
+    # code for Module
+    s.new_rigidbody(name=&#39;Module&#39;,
+                    mass=1000.0,
+                    cog=(4.0,
+                         2.0,
+                         -8.0),
+                    position=(solved(-4.394144309416421),
+                              solved(0.5367535161192127),
+                              solved(-15.23572203377319)),
+                    rotation=(solved(5.870642210595144),
+                              solved(1.1413016663584672),
+                              solved(-44.734473311889985)),
+                    fixed=(False, False, False, False, False, False))
+    # code for LP1
+    s.new_poi(name=&#39;LP1&#39;,
+              parent=&#39;Module&#39;,
+              position=(10.0,
+                        10.0,
+                        0.0))
+    # code for Cable
+    s.new_cable(name=&#39;Cable&#39;,
+                poiA=&#39;LP1&#39;,
+                poiB=&#39;prong1&#39;,
+                length=15.0,
+                EA=100000.0)
+    # code for LP2
+    s.new_poi(name=&#39;LP2&#39;,
+              parent=&#39;Module&#39;,
+              position=(-10.0,
+                        10.0,
+                        0.0))
+    # code for Cable_1
+    s.new_cable(name=&#39;Cable_1&#39;,
+                poiA=&#39;prong2&#39;,
+                poiB=&#39;LP2&#39;,
+                length=20.0,
+                EA=100000.0)
+    # code for LP4
+    s.new_poi(name=&#39;LP4&#39;,
+              parent=&#39;Module&#39;,
+              position=(10.0,
+                        -10.0,
+                        0.0))
+    # code for Cable_3
+    s.new_cable(name=&#39;Cable_3&#39;,
+                poiA=&#39;LP4&#39;,
+                poiB=&#39;prong4&#39;,
+                length=20.0,
+                EA=100000.0)
+    # code for Padeye1
+    s.new_axis(name=&#39;Padeye1&#39;,
+               parent=&#39;Module&#39;,
+               position=(-10.0,
+                         -10.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         50.0),
+               fixed=(True, True, True, True, True, True))
+    # code for LP3
+    s.new_poi(name=&#39;LP3&#39;,
+              parent=&#39;Padeye1&#39;,
+              position=(1.25,
+                        0.0,
+                        0.7))
+    # code for Cable_2
+    s.new_cable(name=&#39;Cable_2&#39;,
+                poiA=&#39;LP3&#39;,
+                poiB=&#39;prong3&#39;,
+                length=20.0,
+                EA=100000.0)
+    # code for Visual2
+    s.new_visual(name=&#39;Visual2&#39;,
+                 parent=&#39;hook4p&#39;,
+                 path=&#39;hook4p.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1.0, 1.0, 1.0))
+    # code for Visual
+    s.new_visual(name=&#39;Visual&#39;,
+                 parent=&#39;Module&#39;,
+                 path=&#39;wirecube.obj&#39;,
+                 offset=(0.0, 0.0, -5.0),
+                 rotation=(0, 0, 0),
+                 scale=(10.0, 10.0, 5.0))
+    # code for Pad1Visual
+    s.new_visual(name=&#39;Pad1Visual&#39;,
+                 parent=&#39;Padeye1&#39;,
+                 path=&#39;padeye.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1.25, 2.0, 0.75))
+
+
+def crane5000(s):
+    # auto generated pyhton code
+    # By Ruben
+    # Time: 2019-07-29 14:19:35 UTC
+
+    # To be able to distinguish the important number (eg: fixed positions) from
+    # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called &#39;solved&#39;.
+    # For anything written as solved(number) that actual number does not influence the static solution
+    def solved(number):
+        return number
+
+    # code for Crane5000_mast
+    s.new_rigidbody(name=&#39;Crane5000_mast&#39;,
+                    mass=4000.0,
+                    cog=(0.0,
+                         0.0,
+                         25.0),
+                    position=(0.0,
+                              0.0,
+                              0.0),
+                    rotation=(0.0,
+                              0.0,
+                              0.0),
+                    fixed=(True, True, True, True, True, True))
+    # code for Crane5000_top
+    s.new_poi(name=&#39;Crane5000_top&#39;,
+              parent=&#39;Crane5000_mast&#39;,
+              position=(0.0,
+                        0.0,
+                        61.0))
+    # code for Crane_slew
+    s.new_axis(name=&#39;Crane_slew&#39;,
+               parent=&#39;Crane5000_mast&#39;,
+               position=(0.0,
+                         0.0,
+                         15.0),
+               rotation=(0.0,
+                         0.0,
+                         90.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Crane5000_boom
+    s.new_rigidbody(name=&#39;Crane5000_boom&#39;,
+                    mass=1200.0,
+                    cog=(33.0,
+                         0.0,
+                         0.0),
+                    parent=&#39;Crane_slew&#39;,
+                    position=(0.0,
+                              0.0,
+                              0.0),
+                    rotation=(0.0,
+                              -10,
+                              0),
+                    fixed=(True, True, True, True, False, True))
+    # code for Mast5000_susp_wire_connection
+    s.new_poi(name=&#39;Mast5000_susp_wire_connection&#39;,
+              parent=&#39;Crane5000_boom&#39;,
+              position=(49.0,
+                        0.0,
+                        2.0))
+    # code for Crane_susp_wire
+    s.new_cable(name=&#39;Crane_susp_wire&#39;,
+                poiA=&#39;Mast5000_susp_wire_connection&#39;,
+                poiB=&#39;Crane5000_top&#39;,
+                length=59.865,
+                EA=100000000.0)
+    # code for Mast5000_Visual
+    s.new_visual(name=&#39;Mast5000_Visual&#39;,
+                 parent=&#39;Crane5000_mast&#39;,
+                 path=&#39;crane_mastl.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))
+    # code for Boom5000_Visual
+    s.new_visual(name=&#39;Boom5000_Visual&#39;,
+                 parent=&#39;Crane5000_boom&#39;,
+                 path=&#39;crane_boom.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))
+
+def turtle(s):
+
+    # code for Turtle
+    # code for Turtle
+    s.new_rigidbody(name=&#39;Turtle&#39;,
+                    mass=40006.0,
+                    cog=(75.0,
+                         0.0,
+                         7.0),
+                    position = (0,0,-20),
+                    fixed=(True, True, False, False, False, True))
+    # code for buoyancy
+    s.new_buoyancy(name=&#39;buoyancy&#39;,
+                   parent=&#39;Turtle&#39;)
+    s[&#39;buoyancy&#39;].trimesh.load_obj(s.get_resource_path(&#39;buoyancy turtle.obj&#39;), scale=(1.0, 1.0, 1.0),
+                                   rotation=(0.0, 0.0, 0.0), offset=(0.0, 0.0, 0.0))
+    # code for import_container
+    s.new_axis(name=&#39;import_container&#39;,
+               position=(0.0,
+                         0.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for visual - vessel
+    s.new_visual(name=&#39;visual - vessel&#39;,
+                 parent=&#39;Turtle&#39;,
+                 path=&#39;visual vessel turtle.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1.0, 1.0, 1.0))
+
+def cheetah(s):
+    # code for Cheetah
+    s.new_rigidbody(name=&#39;Cheetah&#39;,
+                    mass=60000.0,
+                    cog=(114.0,
+                         -2.068,
+                         7.0),
+                    fixed=(True, True, False, False, False, True))
+    # code for buoyancy
+    s.new_buoyancy(name=&#39;buoyancy&#39;,
+                   parent=&#39;Cheetah&#39;)
+    s[&#39;buoyancy&#39;].trimesh.load_obj(s.get_resource_path(&#39;buoyancy cheetah.obj&#39;), scale=(1, 1, 1),
+                                   rotation=(0.0, 0.0, 0.0), offset=(0.0, 0.0, 0.0))
+
+    # code for visual - vessel
+    s.new_visual(name=&#39;visual - vessel&#39;,
+                 parent=&#39;Cheetah&#39;,
+                 path=&#39;visual vessel cheetah.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1.0, 1.0, 1.0))
+
+    imp = Scene()
+    crane(imp)
+    s.import_scene(imp)
+
+    mast = s[&#39;crane_mast&#39;]
+    mast.parent = s[&#39;Cheetah&#39;]
+    mast.position = (70.0, 17.0,  12.0)
+
+def crane(s):
+    # code for crane_mast
+    s.new_rigidbody(name=&#39;crane_mast&#39;,
+                    mass=4000.0,
+                    cog=(0.0,
+                         0.0,
+                         25.0),
+                    rotation=(0.0,
+                              0.0,
+                              0.0),
+                    fixed=(True, True, True, True, True, True))
+
+
+    # code for crane_top
+    s.new_poi(name=&#39;crane_top&#39;,
+              parent=&#39;crane_mast&#39;,
+              position=(0.0,
+                        0.0,
+                        61.0))
+    # code for crane_slew
+    s.new_axis(name=&#39;crane_slew&#39;,
+               parent=&#39;crane_mast&#39;,
+               position=(0.0,
+                         0.0,
+                         15.0),
+               rotation=(0.0,
+                         0.0,
+                         -70.0),
+               fixed=(True, True, True, True, True, True))
+    # code for crane_boom
+    s.new_rigidbody(name=&#39;crane_boom&#39;,
+                    mass=1200.0,
+                    cog=(33.0,
+                         0.0,
+                         0.0),
+                    parent=&#39;crane_slew&#39;,
+                    position=(0.0,
+                              0.0,
+                              0.0),
+                    rotation=(0.0,
+                              -25,
+                              0.0),
+                    fixed=(True, True, True, True, False, True))
+    # code for susp_wire_connection
+    s.new_poi(name=&#39;susp_wire_connection&#39;,
+              parent=&#39;crane_boom&#39;,
+              position=(49.0,
+                        0.0,
+                        2.0))
+    # code for crane_Crane_susp_wire
+    s.new_cable(name=&#39;crane_Crane_susp_wire&#39;,
+                poiA=&#39;susp_wire_connection&#39;,
+                poiB=&#39;crane_top&#39;,
+                length=50.0,
+                EA=100000000.0)
+
+    # code for visual - crane mast
+    s.new_visual(name=&#39;visual - crane mast&#39;,
+                 parent=&#39;crane_mast&#39;,
+                 path=&#39;visual crane mast and boomrest.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))
+    # code for visual - crane boom
+    s.new_visual(name=&#39;visual - crane boom&#39;,
+                 parent=&#39;crane_boom&#39;,
+                 path=&#39;visual crane-boom.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))
+
+def octopus(s):
+    # code for Cheetah
+    s.new_rigidbody(name=&#39;Octopus&#39;,
+                    mass=100000.0,
+                    cog=(87.153,
+                         0,
+                         15),
+                    fixed=(True, True, False, False, False, True))
+    # code for buoyancy
+    s.new_buoyancy(name=&#39;buoyancy&#39;,
+                   parent=&#39;Octopus&#39;)
+    s[&#39;buoyancy&#39;].trimesh.load_obj(s.get_resource_path(&#39;buoyancy octopus.obj&#39;), scale=(1, 1, 1),
+                                   rotation=(0.0, 0.0, 0.0), offset=(0.0, 0.0, 0.0))
+
+    # code for visual - vessel
+    s.new_visual(name=&#39;visual - vessel&#39;,
+                 parent=&#39;Octopus&#39;,
+                 path=&#39;visual vessel octopus.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1.0, 1.0, 1.0))
+
+    imp = Scene()
+    crane(imp)
+
+    # add the sb crane
+
+    c = s.import_scene(imp, prefix=&#39;SB_&#39;)
+    c.parent = s[&#39;Octopus&#39;]
+    c.position = (10.0, 40.0,  50.0)
+    s.dissolve(c)
+
+    # add the PS crane
+    c = s.import_scene(imp, prefix=&#39;PS_&#39;)
+    c.parent = s[&#39;Octopus&#39;]
+    c.position = (10.0, -40.0, 50.0)
+    s.dissolve(c)
+
+    # Set cranes
+    s[&#39;SB_crane_slew&#39;].rotation = (0.0, 0.0, 30.0)
+    s[&#39;PS_crane_slew&#39;].rotation = (0.0, 0.0, -30.0)
+
+
+def all_node_types(s):
+
+    def solved(number):
+        return number
+
+    # code for Axis
+    s.new_axis(name=&#39;Axis&#39;,
+               position=(0.0,
+                         0.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Poi
+    s.new_poi(name=&#39;Poi&#39;,
+              parent=&#39;Axis&#39;,
+              position=(5.0,
+                        0.0,
+                        -1.0))
+    # code for Body
+    s.new_rigidbody(name=&#39;Body&#39;,
+                    mass=0.0,
+                    cog=(0.0,
+                         0.0,
+                         0.0),
+                    position=(10.0,
+                              0.0,
+                              -6.0),
+                    rotation=(0.0,
+                              0.0,
+                              0.0),
+                    fixed=(True, True, True, True, True, True))
+    # code for Poi_1
+    s.new_poi(name=&#39;Poi_1&#39;,
+              position=(0.0,
+                        0.0,
+                        -4.0))
+    # code for Cable
+    s.new_cable(name=&#39;Cable&#39;,
+                poiA=&#39;Poi&#39;,
+                poiB=&#39;Poi_1&#39;,
+                length=6.4031242374328485,
+                EA=0.0)
+    # code for Force
+    s.new_force(name=&#39;Force&#39;,
+                parent=&#39;Poi_1&#39;,
+                force=(2.0, 1.0, 0.0),
+                moment=(0.0, 0.0, -1.0))
+    # code for Axis_1
+    s.new_axis(name=&#39;Axis_1&#39;,
+               position=(5.0,
+                         0.0,
+                         -4.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Axis_2
+    s.new_axis(name=&#39;Axis_2&#39;,
+               position=(10.0,
+                         0.0,
+                         -3.0),
+               rotation=(0.0,
+                         -25.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Beam
+    s.new_linear_beam(name=&#39;Beam&#39;,
+                     master=&#39;Axis_1&#39;,
+                     slave=&#39;Axis_2&#39;,
+                     EIy=0.0,
+                     EIz=0.0,
+                     GIp=0.0,
+                     EA=0.0,
+                     L=5.0990195135927845)  # L can possibly be omitted
+    # code for Connector2d
+    s.new_connector2d(name=&#39;Connector2d&#39;,
+                      master=&#39;Axis_1&#39;,
+                      slave=&#39;Axis&#39;,
+                      k_linear=0.0,
+                      k_angular=0.0)
+    # code for Axis_3
+    s.new_axis(name=&#39;Axis_3&#39;,
+               position=(2.0,
+                         0.0,
+                         -7.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for LinCon6d
+    s.new_linear_connector_6d(name=&#39;LinCon6d&#39;,
+                              master=&#39;Axis_1&#39;,
+                              slave=&#39;Axis_3&#39;,
+                              stiffness=(0.0, 0.0, 0.0,
+                                         0.0, 0.0, 0.0))
+    # code for Hydrostatics
+    s.new_hydspring(name=&#39;Hydrostatics&#39;,
+                    parent=&#39;Axis_3&#39;,
+                    cob=(0.0, 0.0, 0.0),
+                    BMT=0.0,
+                    BML=0.0,
+                    COFX=0.0,
+                    COFY=0.0,
+                    kHeave=0.0,
+                    waterline=0.0,
+                    displacement_kN=0.0)
+    # code for Buoyancy mesh
+    s.new_buoyancy(name=&#39;Buoyancy mesh&#39;,
+                   parent=&#39;Axis_2&#39;)
+    s[&#39;Buoyancy mesh&#39;].trimesh.load_obj(s.get_resource_path(&#39;cog.obj&#39;), scale=(1.0, 1.0, 1.0), rotation=(0.0, 0.0, 0.0),
+                                        offset=(0.0, 0.0, 3.0))
+    # code for Visual
+    s.new_visual(name=&#39;Visual&#39;,
+                 parent=&#39;Axis_3&#39;,
+                 path=&#39;wirecube.obj&#39;,
+                 offset=(4.0, 0.0, 0.0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="DAVE.example_scenes.all_elements"><code class="name flex">
+<span>def <span class="ident">all_elements</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def all_elements():
+    s = Scene()
+    a = s.new_axis(&#39;test&#39;, position = (10,20,0))
+    b = s.new_rigidbody(&#39;rigidbody&#39;, mass=10)
+    b.set_free()
+    pa = s.new_poi(&#39;poi on rigidbody&#39;, parent = &#39;rigidbody&#39;, position = (2,2,2))
+    pt = s.new_poi(&#39;poi on test&#39;, parent=&#39;test&#39;, position = (5,7,-2))
+    pb = s.new_poi(&#39;global poi&#39;, position=(0, 0, 1))
+    s.new_cable(&#39;cable&#39;, length=50, EA=1000, poiA=pa, poiB = pt, sheaves=[pb])
+    # s.new_cable(&#39;cable&#39;, length=1, EA=1000, poiA=pa, poiB=pb)
+
+    return s</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.all_node_types"><code class="name flex">
+<span>def <span class="ident">all_node_types</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def all_node_types(s):
+
+    def solved(number):
+        return number
+
+    # code for Axis
+    s.new_axis(name=&#39;Axis&#39;,
+               position=(0.0,
+                         0.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Poi
+    s.new_poi(name=&#39;Poi&#39;,
+              parent=&#39;Axis&#39;,
+              position=(5.0,
+                        0.0,
+                        -1.0))
+    # code for Body
+    s.new_rigidbody(name=&#39;Body&#39;,
+                    mass=0.0,
+                    cog=(0.0,
+                         0.0,
+                         0.0),
+                    position=(10.0,
+                              0.0,
+                              -6.0),
+                    rotation=(0.0,
+                              0.0,
+                              0.0),
+                    fixed=(True, True, True, True, True, True))
+    # code for Poi_1
+    s.new_poi(name=&#39;Poi_1&#39;,
+              position=(0.0,
+                        0.0,
+                        -4.0))
+    # code for Cable
+    s.new_cable(name=&#39;Cable&#39;,
+                poiA=&#39;Poi&#39;,
+                poiB=&#39;Poi_1&#39;,
+                length=6.4031242374328485,
+                EA=0.0)
+    # code for Force
+    s.new_force(name=&#39;Force&#39;,
+                parent=&#39;Poi_1&#39;,
+                force=(2.0, 1.0, 0.0),
+                moment=(0.0, 0.0, -1.0))
+    # code for Axis_1
+    s.new_axis(name=&#39;Axis_1&#39;,
+               position=(5.0,
+                         0.0,
+                         -4.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Axis_2
+    s.new_axis(name=&#39;Axis_2&#39;,
+               position=(10.0,
+                         0.0,
+                         -3.0),
+               rotation=(0.0,
+                         -25.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Beam
+    s.new_linear_beam(name=&#39;Beam&#39;,
+                     master=&#39;Axis_1&#39;,
+                     slave=&#39;Axis_2&#39;,
+                     EIy=0.0,
+                     EIz=0.0,
+                     GIp=0.0,
+                     EA=0.0,
+                     L=5.0990195135927845)  # L can possibly be omitted
+    # code for Connector2d
+    s.new_connector2d(name=&#39;Connector2d&#39;,
+                      master=&#39;Axis_1&#39;,
+                      slave=&#39;Axis&#39;,
+                      k_linear=0.0,
+                      k_angular=0.0)
+    # code for Axis_3
+    s.new_axis(name=&#39;Axis_3&#39;,
+               position=(2.0,
+                         0.0,
+                         -7.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for LinCon6d
+    s.new_linear_connector_6d(name=&#39;LinCon6d&#39;,
+                              master=&#39;Axis_1&#39;,
+                              slave=&#39;Axis_3&#39;,
+                              stiffness=(0.0, 0.0, 0.0,
+                                         0.0, 0.0, 0.0))
+    # code for Hydrostatics
+    s.new_hydspring(name=&#39;Hydrostatics&#39;,
+                    parent=&#39;Axis_3&#39;,
+                    cob=(0.0, 0.0, 0.0),
+                    BMT=0.0,
+                    BML=0.0,
+                    COFX=0.0,
+                    COFY=0.0,
+                    kHeave=0.0,
+                    waterline=0.0,
+                    displacement_kN=0.0)
+    # code for Buoyancy mesh
+    s.new_buoyancy(name=&#39;Buoyancy mesh&#39;,
+                   parent=&#39;Axis_2&#39;)
+    s[&#39;Buoyancy mesh&#39;].trimesh.load_obj(s.get_resource_path(&#39;cog.obj&#39;), scale=(1.0, 1.0, 1.0), rotation=(0.0, 0.0, 0.0),
+                                        offset=(0.0, 0.0, 3.0))
+    # code for Visual
+    s.new_visual(name=&#39;Visual&#39;,
+                 parent=&#39;Axis_3&#39;,
+                 path=&#39;wirecube.obj&#39;,
+                 offset=(4.0, 0.0, 0.0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.barge"><code class="name flex">
+<span>def <span class="ident">barge</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def barge(s):
+
+    def solved(v):
+        return v
+
+    # code for Barge
+    s.new_rigidbody(name=&#39;Barge&#39;,
+                    mass=20000.0,
+                    cog=(50.0,
+                         0.0,
+                         2.5),
+                    position=(solved(0.0),
+                              solved(0.0),
+                              solved(-5.0)),
+                    rotation=(solved(0.0),
+                              solved(0.0),
+                              solved(0.0)),
+                    fixed=(False, False, False, False, False, False))
+    # code for Hydrostatics
+    s.new_hydspring(name=&#39;Hydrostatics&#39;,
+                    parent=&#39;Barge&#39;,
+                    cob=(50.0, 0.0, 2.5),
+                    BMT=(1 / 12) * 40 ** 3 * 100 / (40 * 100 * 5),
+                    BML=(1 / 12) * 100 ** 3 * 40 / (40 * 100 * 5),
+                    COFX=0.0,
+                    COFY=0.0,
+                    kHeave=39240.0,
+                    waterline=2.5,
+                    displacement_kN=196200.0)
+    # code for Poi
+    s.new_poi(name=&#39;Poi&#39;,
+              parent=&#39;Barge&#39;,
+              position=(0.0,
+                        10.0,
+                        0.0))
+    # code for Force
+    s.new_force(name=&#39;Force&#39;,
+                parent=&#39;Poi&#39;,
+                force=(0.0, 0.0, 0.0),
+                moment=(0.0, 0.0, 0.0))
+    #
+    # code for Visual
+    s.new_visual(name=&#39;Visual&#39;,
+                 parent=&#39;Barge&#39;,
+                 path=&#39;barge.obj&#39;,
+                 offset=(0.0, 0.0, 0.0),
+                 rotation=(0, 0, 0),
+                 scale=(1.0, 1.0, 1.0))</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.catenaty"><code class="name flex">
+<span>def <span class="ident">catenaty</span></span>(<span>s, EIy, EIz, EA, GIp, L, n)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def catenaty(s, EIy, EIz, EA, GIp, L, n):
+
+     # code for Axis0
+    s.new_axis(name=&#39;Axis0&#39;,
+               position=(0.0,
+                         0.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Beam
+
+    for i in range(n):
+        s.new_axis(name=&#39;Axis{}&#39;.format(i + 1),
+                   position=((i+1)*L / n,
+                             0.0,
+                             0.0),
+                   rotation=(0.0,
+                             0.0,
+                             0.0),
+                   fixed=False)
+        s.new_linear_beam(name=&#39;Beam{}&#39;.format(i),
+                          master=&#39;Axis{}&#39;.format(i), slave=&#39;Axis{}&#39;.format(i+1),
+                          L = L/n,
+                          EA=EA,
+                          EIy = EIy,
+                          EIz = EIz,
+                          GIp = GIp )
+
+    s[&#39;Axis{}&#39;.format(n)].set_fixed()</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.cheetah"><code class="name flex">
+<span>def <span class="ident">cheetah</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cheetah(s):
+    # code for Cheetah
+    s.new_rigidbody(name=&#39;Cheetah&#39;,
+                    mass=60000.0,
+                    cog=(114.0,
+                         -2.068,
+                         7.0),
+                    fixed=(True, True, False, False, False, True))
+    # code for buoyancy
+    s.new_buoyancy(name=&#39;buoyancy&#39;,
+                   parent=&#39;Cheetah&#39;)
+    s[&#39;buoyancy&#39;].trimesh.load_obj(s.get_resource_path(&#39;buoyancy cheetah.obj&#39;), scale=(1, 1, 1),
+                                   rotation=(0.0, 0.0, 0.0), offset=(0.0, 0.0, 0.0))
+
+    # code for visual - vessel
+    s.new_visual(name=&#39;visual - vessel&#39;,
+                 parent=&#39;Cheetah&#39;,
+                 path=&#39;visual vessel cheetah.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1.0, 1.0, 1.0))
+
+    imp = Scene()
+    crane(imp)
+    s.import_scene(imp)
+
+    mast = s[&#39;crane_mast&#39;]
+    mast.parent = s[&#39;Cheetah&#39;]
+    mast.position = (70.0, 17.0,  12.0)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.crane"><code class="name flex">
+<span>def <span class="ident">crane</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def crane(s):
+    # code for crane_mast
+    s.new_rigidbody(name=&#39;crane_mast&#39;,
+                    mass=4000.0,
+                    cog=(0.0,
+                         0.0,
+                         25.0),
+                    rotation=(0.0,
+                              0.0,
+                              0.0),
+                    fixed=(True, True, True, True, True, True))
+
+
+    # code for crane_top
+    s.new_poi(name=&#39;crane_top&#39;,
+              parent=&#39;crane_mast&#39;,
+              position=(0.0,
+                        0.0,
+                        61.0))
+    # code for crane_slew
+    s.new_axis(name=&#39;crane_slew&#39;,
+               parent=&#39;crane_mast&#39;,
+               position=(0.0,
+                         0.0,
+                         15.0),
+               rotation=(0.0,
+                         0.0,
+                         -70.0),
+               fixed=(True, True, True, True, True, True))
+    # code for crane_boom
+    s.new_rigidbody(name=&#39;crane_boom&#39;,
+                    mass=1200.0,
+                    cog=(33.0,
+                         0.0,
+                         0.0),
+                    parent=&#39;crane_slew&#39;,
+                    position=(0.0,
+                              0.0,
+                              0.0),
+                    rotation=(0.0,
+                              -25,
+                              0.0),
+                    fixed=(True, True, True, True, False, True))
+    # code for susp_wire_connection
+    s.new_poi(name=&#39;susp_wire_connection&#39;,
+              parent=&#39;crane_boom&#39;,
+              position=(49.0,
+                        0.0,
+                        2.0))
+    # code for crane_Crane_susp_wire
+    s.new_cable(name=&#39;crane_Crane_susp_wire&#39;,
+                poiA=&#39;susp_wire_connection&#39;,
+                poiB=&#39;crane_top&#39;,
+                length=50.0,
+                EA=100000000.0)
+
+    # code for visual - crane mast
+    s.new_visual(name=&#39;visual - crane mast&#39;,
+                 parent=&#39;crane_mast&#39;,
+                 path=&#39;visual crane mast and boomrest.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))
+    # code for visual - crane boom
+    s.new_visual(name=&#39;visual - crane boom&#39;,
+                 parent=&#39;crane_boom&#39;,
+                 path=&#39;visual crane-boom.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.crane5000"><code class="name flex">
+<span>def <span class="ident">crane5000</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def crane5000(s):
+    # auto generated pyhton code
+    # By Ruben
+    # Time: 2019-07-29 14:19:35 UTC
+
+    # To be able to distinguish the important number (eg: fixed positions) from
+    # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called &#39;solved&#39;.
+    # For anything written as solved(number) that actual number does not influence the static solution
+    def solved(number):
+        return number
+
+    # code for Crane5000_mast
+    s.new_rigidbody(name=&#39;Crane5000_mast&#39;,
+                    mass=4000.0,
+                    cog=(0.0,
+                         0.0,
+                         25.0),
+                    position=(0.0,
+                              0.0,
+                              0.0),
+                    rotation=(0.0,
+                              0.0,
+                              0.0),
+                    fixed=(True, True, True, True, True, True))
+    # code for Crane5000_top
+    s.new_poi(name=&#39;Crane5000_top&#39;,
+              parent=&#39;Crane5000_mast&#39;,
+              position=(0.0,
+                        0.0,
+                        61.0))
+    # code for Crane_slew
+    s.new_axis(name=&#39;Crane_slew&#39;,
+               parent=&#39;Crane5000_mast&#39;,
+               position=(0.0,
+                         0.0,
+                         15.0),
+               rotation=(0.0,
+                         0.0,
+                         90.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Crane5000_boom
+    s.new_rigidbody(name=&#39;Crane5000_boom&#39;,
+                    mass=1200.0,
+                    cog=(33.0,
+                         0.0,
+                         0.0),
+                    parent=&#39;Crane_slew&#39;,
+                    position=(0.0,
+                              0.0,
+                              0.0),
+                    rotation=(0.0,
+                              -10,
+                              0),
+                    fixed=(True, True, True, True, False, True))
+    # code for Mast5000_susp_wire_connection
+    s.new_poi(name=&#39;Mast5000_susp_wire_connection&#39;,
+              parent=&#39;Crane5000_boom&#39;,
+              position=(49.0,
+                        0.0,
+                        2.0))
+    # code for Crane_susp_wire
+    s.new_cable(name=&#39;Crane_susp_wire&#39;,
+                poiA=&#39;Mast5000_susp_wire_connection&#39;,
+                poiB=&#39;Crane5000_top&#39;,
+                length=59.865,
+                EA=100000000.0)
+    # code for Mast5000_Visual
+    s.new_visual(name=&#39;Mast5000_Visual&#39;,
+                 parent=&#39;Crane5000_mast&#39;,
+                 path=&#39;crane_mastl.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))
+    # code for Boom5000_Visual
+    s.new_visual(name=&#39;Boom5000_Visual&#39;,
+                 parent=&#39;Crane5000_boom&#39;,
+                 path=&#39;crane_boom.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.demo_cable"><code class="name flex">
+<span>def <span class="ident">demo_cable</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def demo_cable(s):
+    b = s.new_rigidbody(&#39;block&#39;, mass=1, cog=(10, 0, 0))
+    b.set_free()
+    p1 = s.new_poi(&#39;p1&#39;, position=(10, 0, 10))
+    p2 = s.new_poi(&#39;p2&#39;, parent=&#39;block&#39;, position=(0, 0, 0))
+    s.new_cable(&#39;cable&#39;, &#39;p1&#39;, &#39;p2&#39;, length=15, EA=1000)
+
+    k = 1000 / 15
+    F = 1 * 9.81
+    stretch = F / k
+    z = -5 - stretch
+
+    return [10,0,z,0,np.pi/2,0]</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.demo_snake"><code class="name flex">
+<span>def <span class="ident">demo_snake</span></span>(<span>s, n=20)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def demo_snake(s, n=20):
+    s.new_axis(&#39;base0&#39;)
+    for i in range(n):  # 20
+        s.new_rigidbody(name = &#39;base{}&#39;.format(i+1),
+                        parent = &#39;base{}&#39;.format(i),
+                        mass = 1,
+                        position = (2,0,0),
+                        cog = (1,0,0),
+                        fixed = (True,True,True,True, False, True))
+
+    s.new_poi(&#39;Poi&#39;, parent=&#39;base{}&#39;.format(n), position = (2,0,0))
+    s.new_poi(&#39;Poi_1&#39;)
+    s[&#39;Poi_1&#39;].position = (10.0, 0.0, 0.0)
+    s.new_cable(&#39;Cable&#39;, poiA = &#39;Poi_1&#39;, poiB= &#39;Poi&#39;, length=7.000, EA=100000)
+
+    print(&#39;for n=20 the expected tension in cable is 81.385&#39;)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.demo_two_cable"><code class="name flex">
+<span>def <span class="ident">demo_two_cable</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def demo_two_cable(s):
+    b = s.new_rigidbody(&#39;block&#39;, mass=20, cog=(0, 0, 0))
+    b.set_free()
+    s.new_poi(&#39;p1a&#39;, position=(1, 0, 10))
+    s.new_poi(&#39;p1b&#39;, position=(-1, 0, 10))
+    s.new_poi(&#39;p2a&#39;, parent=&#39;block&#39;, position=(1, 0, 0))
+    s.new_poi(&#39;p2b&#39;, parent=&#39;block&#39;, position=(-1, 0, 0))
+
+    s.new_cable(&#39;cable_a&#39;, &#39;p1a&#39;, &#39;p2a&#39;, length=15, EA=1000)
+    s.new_cable(&#39;cable_b&#39;, &#39;p1b&#39;, &#39;p2b&#39;, length=15, EA=1000)
+
+    k = 2*1000/15
+    F = 20 * 9.81
+    stretch = F / k
+    z = -5 - stretch
+
+    return [0, 0, z, 0.0, 0.0, 0.0]</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.demo_two_cable_twisted"><code class="name flex">
+<span>def <span class="ident">demo_two_cable_twisted</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def demo_two_cable_twisted(s):
+    b = s.new_rigidbody(&#39;block&#39;, mass=20, cog=(0, 0, 0), rotation=(0,0,180))
+    b.set_free()
+    s.new_poi(&#39;p1a&#39;, position=(1, 0, 10))
+    s.new_poi(&#39;p1b&#39;, position=(-1, 0, 10))
+    s.new_poi(&#39;p2a&#39;, parent=&#39;block&#39;, position=(1, 0, 0))
+    s.new_poi(&#39;p2b&#39;, parent=&#39;block&#39;, position=(-1, 0, 0))
+
+    s.new_cable(&#39;cable_a&#39;, &#39;p1a&#39;, &#39;p2a&#39;, length=15, EA=1000)
+    s.new_cable(&#39;cable_b&#39;, &#39;p1b&#39;, &#39;p2b&#39;, length=15, EA=1000)
+
+    k = 2*1000/15
+    F = 20 * 9.81
+    stretch = F / k
+    z = -5 - stretch
+
+    return [0, 0, z, 0.0, 0.0, 0.0]</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.discrete_beam"><code class="name flex">
+<span>def <span class="ident">discrete_beam</span></span>(<span>s, EI, L, n, P, M)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def discrete_beam(s, EI, L, n, P, M):
+    K = 2 * EI / (L / n)
+
+    # auto generated pyhton code
+    # By Ruben
+    # Time: 2019-09-06 17:20:24 UTC
+
+    # To be able to distinguish the important number (eg: fixed positions) from
+    # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called &#39;solved&#39;.
+    # For anything written as solved(number) that actual number does not influence the static solution
+    def solved(number):
+        return number
+
+    # code for Axis0
+    s.new_axis(name=&#39;Axis0&#39;,
+               position=(0.0,
+                         0.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Beam
+
+    for i in range(n):
+        s.new_axis(name=&#39;Beam{}&#39;.format(i),
+                   parent=&#39;Axis{}&#39;.format(i),
+                   position=(0.0,
+                             0.0,
+                             0.0),
+                   rotation=(0.0,
+                             solved(0.0),
+                             0.0),
+                   fixed=(True, True, True, True, False, True))
+        # code for Axis1
+        s.new_axis(name=&#39;Axis{}&#39;.format(i + 1),
+                   parent=&#39;Beam{}&#39;.format(i),
+                   position=(L / n,
+                             0.0,
+                             0.0),
+                   rotation=(0.0,
+                             solved(0.0),
+                             0.0),
+                   fixed=(True, True, True, True, False, True))
+        # code for Beam_right
+        s.new_axis(name=&#39;Beam{}_right&#39;.format(i),
+                   parent=&#39;Beam{}&#39;.format(i),
+                   position=(L / n,
+                             0.0,
+                             0.0),
+                   rotation=(0.0,
+                             0.0,
+                             0.0),
+                   fixed=(True, True, True, True, True, True))
+        # code for ConLeft
+        s.new_linear_connector_6d(name=&#39;ConLeft{}&#39;.format(i),
+                                  master=&#39;Axis{}&#39;.format(i),
+                                  slave=&#39;Beam{}&#39;.format(i),
+                                  stiffness=(0.0, 0.0, 0.0,
+                                             0.0, K, 0.0))
+        # code for ConRight
+        s.new_linear_connector_6d(name=&#39;ConRight{}&#39;.format(i),
+                                  master=&#39;Beam{}_right&#39;.format(i),
+                                  slave=&#39;Axis{}&#39;.format(i + 1),
+                                  stiffness=(0.0, 0.0, 0.0,
+                                             0.0, K, 0.0))
+
+        # code for Visual
+        s.new_visual(name=&#39;Visual{}&#39;.format(i),
+                     parent=&#39;Beam{}&#39;.format(i),
+                     path=&#39;wirecube.obj&#39;,
+                     offset=(0.5 * L / n, 0.0, 0.0),
+                     rotation=(0, 0, 0),
+                     scale=(0.5 * L / n, 0.1, 0.1))
+
+    # ===============
+
+    # code for Poi
+    s.new_poi(name=&#39;Poi&#39;,
+              parent=&#39;Axis{}&#39;.format(n),
+              position=(0.0,
+                        0.0,
+                        0.0))
+
+    # code for Force
+    s.new_force(name=&#39;Force&#39;,
+                parent=&#39;Poi&#39;,
+                force=(0.0, 0.0, 0.0),
+                moment=(0.0, 0.0, 0.0))
+
+    f = s[&#39;Force&#39;]
+
+    f.force = (0, 0, -P)
+    f.moment = (0, M, 0)
+
+    print(s._vfc.to_string())
+
+    s.solve_statics()
+
+    last_beam = s[&#39;Axis{}&#39;.format(n)]
+
+    delta = -last_beam.global_position[2]
+    phi = last_beam.global_rotation[1]
+
+    delta_expected = P * L ** 3 / (3 * EI) + M * L ** 2 / (2 * EI)
+    phi_expected = np.rad2deg(P * L ** 2 / (2 * EI) + M * L / (EI))
+
+    print(&#39;displacement: expected {} actual {}&#39;.format(delta_expected, delta))
+    print(&#39;rotation: expected {} actual {}&#39;.format(phi_expected, phi))
+
+    return (last_beam, delta_expected, phi_expected)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.discrete_beam_free_in_Z"><code class="name flex">
+<span>def <span class="ident">discrete_beam_free_in_Z</span></span>(<span>s, EI, L, n, P, M, KZ_factor)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def discrete_beam_free_in_Z(s, EI, L, n, P, M, KZ_factor):
+
+    K = 2 * EI / (L / n)
+    KZ = K * KZ_factor
+
+    def solved(number):
+        return number
+
+    # code for Axis0
+    s.new_axis(name=&#39;Axis0&#39;,
+               position=(0.0,
+                         0.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Beam
+
+    for i in range(n):
+        s.new_axis(name=&#39;Beam{}&#39;.format(i),
+                   parent=&#39;Axis{}&#39;.format(i),
+                   position=(0.0,
+                             0.0,
+                             0.0),
+                   rotation=(0.0,
+                             solved(0.0),
+                             0.0),
+                   fixed=(True, True, True, True, False, True))
+        # code for Axis1
+        s.new_axis(name=&#39;Axis{}&#39;.format(i + 1),
+                   parent=&#39;Beam{}&#39;.format(i),
+                   position=(L / n,
+                             0.0,
+                             0.0),
+                   rotation=(0.0,
+                             solved(0.0),
+                             0.0),
+                   fixed=(True, True, False, True, False, True))
+        # code for Beam_right
+        s.new_axis(name=&#39;Beam{}_right&#39;.format(i),
+                   parent=&#39;Beam{}&#39;.format(i),
+                   position=(L / n,
+                             0.0,
+                             0.0),
+                   rotation=(0.0,
+                             0.0,
+                             0.0),
+                   fixed=(True, True, True, True, True, True))
+        # code for ConLeft
+        s.new_linear_connector_6d(name=&#39;ConLeft{}&#39;.format(i),
+                                  master=&#39;Axis{}&#39;.format(i),
+                                  slave=&#39;Beam{}&#39;.format(i),
+                                  stiffness=(0.0, 0.0, KZ,
+                                             0.0, K, 0.0))
+        # code for ConRight
+        s.new_linear_connector_6d(name=&#39;ConRight{}&#39;.format(i),
+                                  master=&#39;Beam{}_right&#39;.format(i),
+                                  slave=&#39;Axis{}&#39;.format(i + 1),
+                                  stiffness=(0.0, 0.0, KZ,
+                                             0.0, K, 0.0))
+
+        # code for Visual
+        s.new_visual(name=&#39;Visual{}&#39;.format(i),
+                     parent=&#39;Beam{}&#39;.format(i),
+                     path=&#39;wirecube.obj&#39;,
+                     offset=(0.5 * L / n, 0.0, 0.0),
+                     rotation=(0, 0, 0),
+                     scale=(0.5 * L / n, 0.1, 0.1))
+
+    # ===============
+
+    # code for Poi
+    s.new_poi(name=&#39;Poi&#39;,
+              parent=&#39;Axis{}&#39;.format(n),
+              position=(0.0,
+                        0.0,
+                        0.0))
+
+    # code for Force
+    s.new_force(name=&#39;Force&#39;,
+                parent=&#39;Poi&#39;,
+                force=(0.0, 0.0, 0.0),
+                moment=(0.0, 0.0, 0.0))
+
+    f = s[&#39;Force&#39;]
+
+    f.force = (0, 0, -P)
+    f.moment = (0, M, 0)
+
+    print(s._vfc.to_string())
+    s.solve_statics()
+
+    last_beam = s[&#39;Axis{}&#39;.format(n)]
+
+    delta = -last_beam.global_position[2]
+    phi = last_beam.global_rotation[1]
+
+    delta_expected = P * L ** 3 / (3 * EI) + M * L ** 2 / (2 * EI)
+    phi_expected = np.rad2deg(P * L ** 2 / (2 * EI) + M * L / (EI))
+
+    print(&#39;displacement: expected {} actual {}&#39;.format(delta_expected, delta))
+    print(&#39;rotation: expected {} actual {}&#39;.format(phi_expected, phi))
+
+    return (last_beam, delta_expected, phi_expected)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.discrete_linearbeam"><code class="name flex">
+<span>def <span class="ident">discrete_linearbeam</span></span>(<span>s, EIy, EIz, EA, GIp, L, n)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def discrete_linearbeam(s, EIy, EIz, EA, GIp, L, n):
+
+    def solved(number):
+        return number
+
+    # code for Axis0
+    s.new_axis(name=&#39;Axis0&#39;,
+               position=(0.0,
+                         0.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Beam
+
+    for i in range(n):
+        s.new_axis(name=&#39;Axis{}&#39;.format(i + 1),
+                   position=((i+1)*L / n,
+                             0.0,
+                             0.0),
+                   rotation=(0.0,
+                             solved(0.0),
+                             0.0),
+                   fixed=False)
+        s.new_linear_beam(name=&#39;Beam{}&#39;.format(i),
+                          master=&#39;Axis{}&#39;.format(i), slave=&#39;Axis{}&#39;.format(i+1),
+                          L = L/n,
+                          EA=EA,
+                          EIy = EIy,
+                          EIz = EIz,
+                          GIp = GIp )
+
+    # code for Poi
+    s.new_poi(name=&#39;Poi&#39;,
+              parent=&#39;Axis{}&#39;.format(n),
+              position=(0.0,
+                        0.0,
+                        0.0))</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.dual_dof_hinge"><code class="name flex">
+<span>def <span class="ident">dual_dof_hinge</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dual_dof_hinge(s):
+    b = s.new_rigidbody(&#39;block&#39;, mass = 1, cog = (10,0,0), fixed=(True,True,True,False,False, True))
+    return [0, np.pi / 2]</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.grid"><code class="name flex">
+<span>def <span class="ident">grid</span></span>(<span>s, n=5)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def grid(s, n=5):
+
+
+    for i in range(n):
+        for j in range(n):
+            b = s.new_rigidbody(name = &#39;body {} {}&#39;.format(i,j), mass = 1, position = (4*i, 4*j, 0))
+            s.new_poi(name = &#39;poi {} {}&#39;.format(i,j), parent = b)
+
+    for i in range(n-1):
+        for j in range(n-1):
+            p1 = &#39;poi {} {}&#39;.format(i,j)
+            p2 = &#39;poi {} {}&#39;.format(i, j+1)
+            p3 = &#39;poi {} {}&#39;.format(i+1, j)
+
+            s.new_cable(name = &#39;cable {} {} a&#39;.format(i,j), poiA = p1, poiB = p2, length = 5, EA = 1000)
+            s.new_cable(name=&#39;cable {} {} b&#39;.format(i, j), poiA=p1, poiB=p3, length=5, EA=1000)
+
+            s[&#39;body {} {}&#39;.format(i,j)].set_free()
+
+    return s</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.lift_4p"><code class="name flex">
+<span>def <span class="ident">lift_4p</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def lift_4p(s):
+    # auto generated pyhton code
+    # By beneden
+    # Time: 2019-09-04 11:58:31 UTC
+
+    # To be able to distinguish the important number (eg: fixed positions) from
+    # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called &#39;solved&#39;.
+    # For anything written as solved(number) that actual number does not influence the static solution
+    def solved(number):
+        return number
+
+    # code for hook4p
+    s.new_rigidbody(name=&#39;hook4p&#39;,
+                    mass=80.0,
+                    cog=(0.0,
+                         0.0,
+                         -1.3),
+                    position=(0.0,
+                              0.0,
+                              0.0),
+                    rotation=(0.0,
+                              solved(8.289072000610565),
+                              0.0),
+                    fixed=(True, True, True, True, False, True))
+    # code for prong1
+    s.new_poi(name=&#39;prong1&#39;,
+              parent=&#39;hook4p&#39;,
+              position=(1.2,
+                        0.0,
+                        -1.3))
+    # code for prong2
+    s.new_poi(name=&#39;prong2&#39;,
+              parent=&#39;hook4p&#39;,
+              position=(0.0,
+                        1.2,
+                        -1.3))
+    # code for prong3
+    s.new_poi(name=&#39;prong3&#39;,
+              parent=&#39;hook4p&#39;,
+              position=(-1.2,
+                        0.0,
+                        -1.3))
+    # code for prong4
+    s.new_poi(name=&#39;prong4&#39;,
+              parent=&#39;hook4p&#39;,
+              position=(0.0,
+                        -1.2,
+                        -1.3))
+    # code for Module
+    s.new_rigidbody(name=&#39;Module&#39;,
+                    mass=1000.0,
+                    cog=(4.0,
+                         2.0,
+                         -8.0),
+                    position=(solved(-4.394144309416421),
+                              solved(0.5367535161192127),
+                              solved(-15.23572203377319)),
+                    rotation=(solved(5.870642210595144),
+                              solved(1.1413016663584672),
+                              solved(-44.734473311889985)),
+                    fixed=(False, False, False, False, False, False))
+    # code for LP1
+    s.new_poi(name=&#39;LP1&#39;,
+              parent=&#39;Module&#39;,
+              position=(10.0,
+                        10.0,
+                        0.0))
+    # code for Cable
+    s.new_cable(name=&#39;Cable&#39;,
+                poiA=&#39;LP1&#39;,
+                poiB=&#39;prong1&#39;,
+                length=15.0,
+                EA=100000.0)
+    # code for LP2
+    s.new_poi(name=&#39;LP2&#39;,
+              parent=&#39;Module&#39;,
+              position=(-10.0,
+                        10.0,
+                        0.0))
+    # code for Cable_1
+    s.new_cable(name=&#39;Cable_1&#39;,
+                poiA=&#39;prong2&#39;,
+                poiB=&#39;LP2&#39;,
+                length=20.0,
+                EA=100000.0)
+    # code for LP4
+    s.new_poi(name=&#39;LP4&#39;,
+              parent=&#39;Module&#39;,
+              position=(10.0,
+                        -10.0,
+                        0.0))
+    # code for Cable_3
+    s.new_cable(name=&#39;Cable_3&#39;,
+                poiA=&#39;LP4&#39;,
+                poiB=&#39;prong4&#39;,
+                length=20.0,
+                EA=100000.0)
+    # code for Padeye1
+    s.new_axis(name=&#39;Padeye1&#39;,
+               parent=&#39;Module&#39;,
+               position=(-10.0,
+                         -10.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         50.0),
+               fixed=(True, True, True, True, True, True))
+    # code for LP3
+    s.new_poi(name=&#39;LP3&#39;,
+              parent=&#39;Padeye1&#39;,
+              position=(1.25,
+                        0.0,
+                        0.7))
+    # code for Cable_2
+    s.new_cable(name=&#39;Cable_2&#39;,
+                poiA=&#39;LP3&#39;,
+                poiB=&#39;prong3&#39;,
+                length=20.0,
+                EA=100000.0)
+    # code for Visual2
+    s.new_visual(name=&#39;Visual2&#39;,
+                 parent=&#39;hook4p&#39;,
+                 path=&#39;hook4p.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1.0, 1.0, 1.0))
+    # code for Visual
+    s.new_visual(name=&#39;Visual&#39;,
+                 parent=&#39;Module&#39;,
+                 path=&#39;wirecube.obj&#39;,
+                 offset=(0.0, 0.0, -5.0),
+                 rotation=(0, 0, 0),
+                 scale=(10.0, 10.0, 5.0))
+    # code for Pad1Visual
+    s.new_visual(name=&#39;Pad1Visual&#39;,
+                 parent=&#39;Padeye1&#39;,
+                 path=&#39;padeye.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1.25, 2.0, 0.75))</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.octopus"><code class="name flex">
+<span>def <span class="ident">octopus</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def octopus(s):
+    # code for Cheetah
+    s.new_rigidbody(name=&#39;Octopus&#39;,
+                    mass=100000.0,
+                    cog=(87.153,
+                         0,
+                         15),
+                    fixed=(True, True, False, False, False, True))
+    # code for buoyancy
+    s.new_buoyancy(name=&#39;buoyancy&#39;,
+                   parent=&#39;Octopus&#39;)
+    s[&#39;buoyancy&#39;].trimesh.load_obj(s.get_resource_path(&#39;buoyancy octopus.obj&#39;), scale=(1, 1, 1),
+                                   rotation=(0.0, 0.0, 0.0), offset=(0.0, 0.0, 0.0))
+
+    # code for visual - vessel
+    s.new_visual(name=&#39;visual - vessel&#39;,
+                 parent=&#39;Octopus&#39;,
+                 path=&#39;visual vessel octopus.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1.0, 1.0, 1.0))
+
+    imp = Scene()
+    crane(imp)
+
+    # add the sb crane
+
+    c = s.import_scene(imp, prefix=&#39;SB_&#39;)
+    c.parent = s[&#39;Octopus&#39;]
+    c.position = (10.0, 40.0,  50.0)
+    s.dissolve(c)
+
+    # add the PS crane
+    c = s.import_scene(imp, prefix=&#39;PS_&#39;)
+    c.parent = s[&#39;Octopus&#39;]
+    c.position = (10.0, -40.0, 50.0)
+    s.dissolve(c)
+
+    # Set cranes
+    s[&#39;SB_crane_slew&#39;].rotation = (0.0, 0.0, 30.0)
+    s[&#39;PS_crane_slew&#39;].rotation = (0.0, 0.0, -30.0)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.robot"><code class="name flex">
+<span>def <span class="ident">robot</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def robot(s):
+
+    def solved(v):
+        return v
+
+    # code for base_axis
+    s.new_axis(name=&#39;base_axis&#39;,
+               position=(0.0,
+                         0.0,
+                         4.0),
+               rotation=(0.0,
+                         0.0,
+                         4.0),
+               fixed=(True, True, True, True, True, True))
+
+    s.new_visual(name=&#39;waldrof&#39;,
+                 path=&#39;robot_body.obj&#39;,
+                 parent=&#39;base_axis&#39;)
+
+    # code for Shoulder
+    s.new_axis(name=&#39;Shoulder&#39;,
+               parent=&#39;base_axis&#39;,
+               position=(0.0,
+                         1.0,
+                         0.8),
+               rotation=(0.0,
+                         1.0,
+                         0.8),
+               fixed=(True, True, True, True, True, True))
+    # code for Upper Arm
+    s.new_rigidbody(name=&#39;Upper Arm&#39;,
+                    mass=0.0,
+                    cog=(0.0,
+                         0.0,
+                         0.0),
+                    parent=&#39;Shoulder&#39;,
+                    position=(0.0,
+                              0.0,
+                              0.0),
+                    rotation=(0.0,
+                              0.0,
+                              0.0),
+                    fixed=(True, True, True, False, False, False))
+
+    s.new_visual(name=&#39;upper_arm&#39;,
+                 path=&#39;wirecube.obj&#39;,
+                 offset=(0, 1, 0),
+                 scale=(0.3, 1, 0.3),
+                 parent=&#39;Upper Arm&#39;)
+
+    # code for elbow
+    s.new_axis(name=&#39;elbow&#39;,
+               parent=&#39;Upper Arm&#39;,
+               position=(0.0,
+                         2.0,
+                         0.0),
+               rotation=(0.0,
+                         2.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for Lower Arm
+    s.new_rigidbody(name=&#39;Lower Arm&#39;,
+                    mass=0.0,
+                    cog=(0.0,
+                         0.0,
+                         0.0),
+                    parent=&#39;elbow&#39;,
+                    position=(0.0,
+                              0.0,
+                              0.0),
+                    rotation=(0.0,
+                              solved(0.0),
+                              solved(0.0)),
+                    fixed=(True, True, True, True, True, False))
+
+    s.new_visual(name=&#39;lower arm visual&#39;,
+                 path=&#39;wirecube.obj&#39;,
+                 offset=(0, 1, 0),
+                 scale=(0.3, 1, 0.3),
+                 parent=&#39;Lower Arm&#39;)
+
+    # code for Hand
+    s.new_poi(name=&#39;Hand&#39;,
+              parent=&#39;Lower Arm&#39;,
+              position=(0.0,
+                        2.0,
+                        0.0))
+    # code for Beer
+    s.new_axis(name=&#39;BeerAxis&#39;,
+               position = (2,5,5))
+
+    s.new_visual(name = &#39;BeerBottle&#39;,
+                 path = &#39;beerbottle.obj&#39;,
+                 parent = &#39;BeerAxis&#39;)
+    s[&#39;BeerBottle&#39;].scale = (0.4, 0.4, 0.4)
+
+    s.new_poi(name=&#39;Beer&#39;,
+              parent = &#39;BeerAxis&#39;)
+
+
+
+    # code for Action driver
+    s.new_cable(name=&#39;Action driver&#39;,
+                poiA=&#39;Hand&#39;,
+                poiB=&#39;Beer&#39;,
+                length=0.001,
+                EA=1.0)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.seal"><code class="name flex">
+<span>def <span class="ident">seal</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def seal(s):
+
+    def solved(number):
+        return number
+
+    # code for barge
+    s.new_rigidbody(name=&#39;Seabert&#39;,
+                    mass=45.0,
+                    cog=(0.0,
+                         0.0,
+                         -2.0),
+                    position=(solved(3.3108571809215213),
+                              solved(3.2120928215643465),
+                              solved(-0.28003075398497845)),
+                    rotation=(solved(-20.40709918636502),
+                              solved(29.908831313851124),
+                              0.0),
+                    fixed=(False, False, False, False, False, True))
+    # code for buoyancy
+    b = s.new_buoyancy(name=&#39;buoyancy&#39;,
+                   parent=&#39;Seabert&#39;)
+
+    b.trimesh.load_obj(s.get_resource_path(&#39;17919_Seal_baby_happy_V1.obj&#39;))
+
+    s.new_poi(name=&#39;Hand&#39;,
+              parent=&#39;Seabert&#39;,
+              position=(-3.0,
+                        -3.0,
+                        -2.0))
+     # code for HOP
+    s.new_poi(name=&#39;HOP&#39;,
+              position=(0.0,
+                        0.0,
+                        9.0))
+    # code for Cable
+    s.new_cable(name=&#39;Cable&#39;,
+                poiA=&#39;Hand&#39;,
+                poiB=&#39;HOP&#39;,
+                length=8.0,
+                EA=2000.0)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.single_dof_hinge"><code class="name flex">
+<span>def <span class="ident">single_dof_hinge</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def single_dof_hinge(s):
+    b = s.new_rigidbody(&#39;block&#39;, mass = 1, cog = (10,0,0), fixed=(True,True,True,True,False, True))
+    return [np.pi / 2]</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.single_dof_hinge_eq"><code class="name flex">
+<span>def <span class="ident">single_dof_hinge_eq</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def single_dof_hinge_eq(s):
+    b = s.new_rigidbody(&#39;block&#39;, mass = 1, cog = (10,0,0), rotation = (0,-90,0), fixed=(True,True,True,True,False, True))
+    return [np.pi / 2]</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.single_dof_hinge_plus_cable"><code class="name flex">
+<span>def <span class="ident">single_dof_hinge_plus_cable</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def single_dof_hinge_plus_cable(s):
+    b = s.new_rigidbody(&#39;block&#39;, mass = 1, cog = (10,0,0), fixed=(True,True,True,True,False, True))
+    p1 = s.new_poi(&#39;p1&#39;, position = (10,0,10))
+    p2 = s.new_poi(&#39;p2&#39;, parent=&#39;block&#39;, position = (20,0,0))
+    s.new_cable(&#39;cable&#39;,&#39;p1&#39;,&#39;p2&#39;, length = 8, EA=1000)
+    return [-0.454547]</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.tripple_dof_hinge"><code class="name flex">
+<span>def <span class="ident">tripple_dof_hinge</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def tripple_dof_hinge(s):
+    b = s.new_rigidbody(&#39;block&#39;, mass = 1, cog = (10,0,0), fixed=(True,True,True,False,False, False))
+    return [0, np.pi / 2,0]</code></pre>
+</details>
+</dd>
+<dt id="DAVE.example_scenes.turtle"><code class="name flex">
+<span>def <span class="ident">turtle</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def turtle(s):
+
+    # code for Turtle
+    # code for Turtle
+    s.new_rigidbody(name=&#39;Turtle&#39;,
+                    mass=40006.0,
+                    cog=(75.0,
+                         0.0,
+                         7.0),
+                    position = (0,0,-20),
+                    fixed=(True, True, False, False, False, True))
+    # code for buoyancy
+    s.new_buoyancy(name=&#39;buoyancy&#39;,
+                   parent=&#39;Turtle&#39;)
+    s[&#39;buoyancy&#39;].trimesh.load_obj(s.get_resource_path(&#39;buoyancy turtle.obj&#39;), scale=(1.0, 1.0, 1.0),
+                                   rotation=(0.0, 0.0, 0.0), offset=(0.0, 0.0, 0.0))
+    # code for import_container
+    s.new_axis(name=&#39;import_container&#39;,
+               position=(0.0,
+                         0.0,
+                         0.0),
+               rotation=(0.0,
+                         0.0,
+                         0.0),
+               fixed=(True, True, True, True, True, True))
+    # code for visual - vessel
+    s.new_visual(name=&#39;visual - vessel&#39;,
+                 parent=&#39;Turtle&#39;,
+                 path=&#39;visual vessel turtle.obj&#39;,
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1.0, 1.0, 1.0))</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="DAVE" href="index.html">DAVE</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="DAVE.example_scenes.all_elements" href="#DAVE.example_scenes.all_elements">all_elements</a></code></li>
+<li><code><a title="DAVE.example_scenes.all_node_types" href="#DAVE.example_scenes.all_node_types">all_node_types</a></code></li>
+<li><code><a title="DAVE.example_scenes.barge" href="#DAVE.example_scenes.barge">barge</a></code></li>
+<li><code><a title="DAVE.example_scenes.catenaty" href="#DAVE.example_scenes.catenaty">catenaty</a></code></li>
+<li><code><a title="DAVE.example_scenes.cheetah" href="#DAVE.example_scenes.cheetah">cheetah</a></code></li>
+<li><code><a title="DAVE.example_scenes.crane" href="#DAVE.example_scenes.crane">crane</a></code></li>
+<li><code><a title="DAVE.example_scenes.crane5000" href="#DAVE.example_scenes.crane5000">crane5000</a></code></li>
+<li><code><a title="DAVE.example_scenes.demo_cable" href="#DAVE.example_scenes.demo_cable">demo_cable</a></code></li>
+<li><code><a title="DAVE.example_scenes.demo_snake" href="#DAVE.example_scenes.demo_snake">demo_snake</a></code></li>
+<li><code><a title="DAVE.example_scenes.demo_two_cable" href="#DAVE.example_scenes.demo_two_cable">demo_two_cable</a></code></li>
+<li><code><a title="DAVE.example_scenes.demo_two_cable_twisted" href="#DAVE.example_scenes.demo_two_cable_twisted">demo_two_cable_twisted</a></code></li>
+<li><code><a title="DAVE.example_scenes.discrete_beam" href="#DAVE.example_scenes.discrete_beam">discrete_beam</a></code></li>
+<li><code><a title="DAVE.example_scenes.discrete_beam_free_in_Z" href="#DAVE.example_scenes.discrete_beam_free_in_Z">discrete_beam_free_in_Z</a></code></li>
+<li><code><a title="DAVE.example_scenes.discrete_linearbeam" href="#DAVE.example_scenes.discrete_linearbeam">discrete_linearbeam</a></code></li>
+<li><code><a title="DAVE.example_scenes.dual_dof_hinge" href="#DAVE.example_scenes.dual_dof_hinge">dual_dof_hinge</a></code></li>
+<li><code><a title="DAVE.example_scenes.grid" href="#DAVE.example_scenes.grid">grid</a></code></li>
+<li><code><a title="DAVE.example_scenes.lift_4p" href="#DAVE.example_scenes.lift_4p">lift_4p</a></code></li>
+<li><code><a title="DAVE.example_scenes.octopus" href="#DAVE.example_scenes.octopus">octopus</a></code></li>
+<li><code><a title="DAVE.example_scenes.robot" href="#DAVE.example_scenes.robot">robot</a></code></li>
+<li><code><a title="DAVE.example_scenes.seal" href="#DAVE.example_scenes.seal">seal</a></code></li>
+<li><code><a title="DAVE.example_scenes.single_dof_hinge" href="#DAVE.example_scenes.single_dof_hinge">single_dof_hinge</a></code></li>
+<li><code><a title="DAVE.example_scenes.single_dof_hinge_eq" href="#DAVE.example_scenes.single_dof_hinge_eq">single_dof_hinge_eq</a></code></li>
+<li><code><a title="DAVE.example_scenes.single_dof_hinge_plus_cable" href="#DAVE.example_scenes.single_dof_hinge_plus_cable">single_dof_hinge_plus_cable</a></code></li>
+<li><code><a title="DAVE.example_scenes.tripple_dof_hinge" href="#DAVE.example_scenes.tripple_dof_hinge">tripple_dof_hinge</a></code></li>
+<li><code><a title="DAVE.example_scenes.turtle" href="#DAVE.example_scenes.turtle">turtle</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
