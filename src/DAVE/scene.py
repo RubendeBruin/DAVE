@@ -2232,12 +2232,14 @@ class Buoyancy(NodeWithParent):
 
     @property
     def cob(self):
-        """Returns the GLOBAL position of the center of buoyancy
-
-        To convert to local coordinates use the .to_loc_position() function of the parent.
-
-        """
+        """Returns the GLOBAL position of the center of buoyancy"""
         return self._vfNode.cob
+
+    @property
+    def cob_local(self):
+        """Returns the local position of the center of buoyancy"""
+
+        return self.parent.to_loc_position(self.cob)
 
     @property
     def displacement(self):

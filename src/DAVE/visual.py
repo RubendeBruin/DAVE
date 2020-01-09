@@ -97,7 +97,7 @@ def actor_from_trimesh(trimesh):
     for i in range(trimesh.nFaces):
         faces.append(trimesh.GetFace(i))
 
-    return vp.actors.Actor([vertices, faces]).alpha(vc.ALPHA_BUOYANCY)
+    return vp.Mesh([vertices, faces]).alpha(vc.ALPHA_BUOYANCY)
 
 def vp_actor_from_obj(filename):
     # load the data
@@ -113,7 +113,7 @@ def vp_actor_from_obj(filename):
     mapper.Update()
     # actor = vtk.vtkActor()
     # actor.SetMapper(mapper)
-    vpa = vp.actors.Actor(mapper.GetInputAsDataSet())
+    vpa = vp.Mesh(mapper.GetInputAsDataSet())
     vpa.flat()
     return vpa
 
@@ -148,10 +148,10 @@ class VisualActor:
 
         self._original_colors = list()
 
-        if self.node is not None:
-            print('storing ' + str(self.node.name))
-        else:
-            print('storing properties')
+        # if self.node is not None:
+        #     print('storing ' + str(self.node.name))
+        # else:
+        #     print('storing properties')
 
         for actor in self.actors:
             self._original_colors.append(actor.color())
@@ -162,21 +162,21 @@ class VisualActor:
 
     def deselect(self):
 
-        print('resetting original colors 1')
+        # print('resetting original colors 1')
 
         if not self._is_selected:
             return
 
-        print('resetting original colors 2')
+        # print('resetting original colors 2')
 
         self._is_selected = False
 
         if self._original_colors:
 
-            if self.node is not None:
-                print('setting ' + str(self.node.name))
-            else:
-                print('setting properties')
+            # if self.node is not None:
+            #     print('setting ' + str(self.node.name))
+            # else:
+            #     print('setting properties')
 
 
             for actor, color in zip(self.actors, self._original_colors):
@@ -240,6 +240,8 @@ class Viewport:
 
         self.mouseLeftEvent = None
         self.mouseRightEvent = None
+        self.onEscapeKey = None
+        "Function handles"
 
         self.Jupyter = jupyter
 
@@ -803,7 +805,7 @@ class Viewport:
                     continue
 
                 n_points = A.NPoints()
-                A.setPoints(points)   # points can be set without allocation
+                A.points(points)   # points can be set without allocation
 
                 if n_points != len(points): # equal number of points
                     # different number of points in line
@@ -813,7 +815,7 @@ class Viewport:
                     for i in range(len(points)):
                         # print('inserting point {} {} {}'.format(*i))
                         lines.InsertCellPoint(i)
-                    A.poly.SetLines(lines)
+                    A.polydata().SetLines(lines)
 
                 continue
 
@@ -836,20 +838,7 @@ class Viewport:
                 points.append(node.slave.to_glob_position((0, 0, 0)))
 
 
-                A.setPoints(points)
-
-                # work-around
-                # (re-create the poly-line)
-                # if n_points != len(points):
-
-                n_points = A.NPoints()
-
-                lines = vtk.vtkCellArray()  # Create the polyline.
-                lines.InsertNextCell(n_points)
-                for i in range(len(points)):
-                    lines.InsertCellPoint(i)
-                A.poly.SetLines(lines)
-
+                A.points(points)
                 continue
 
             if isinstance(V.node, vf.Connector2d):
@@ -859,19 +848,7 @@ class Viewport:
                 points.append(node.master.to_glob_position((0,0,0)))
                 points.append(node.slave.to_glob_position((0, 0, 0)))
 
-                A.setPoints(points)
-
-                # work-around
-                # (re-create the poly-line)
-                # if n_points != len(points):
-
-                n_points = A.NPoints()
-
-                lines = vtk.vtkCellArray()  # Create the polyline.
-                lines.InsertNextCell(n_points)
-                for i in range(len(points)):
-                    lines.InsertCellPoint(i)
-                A.poly.SetLines(lines)
+                A.points(points)
 
                 continue
 
@@ -882,19 +859,7 @@ class Viewport:
                 points.append(node.master.to_glob_position((0,0,0)))
                 points.append(node.slave.to_glob_position((0, 0, 0)))
 
-                A.setPoints(points)
-
-                # work-around
-                # (re-create the poly-line)
-                # if n_points != len(points):
-
-                n_points = A.NPoints()
-
-                lines = vtk.vtkCellArray()  # Create the polyline.
-                lines.InsertNextCell(n_points)
-                for i in range(len(points)):
-                    lines.InsertCellPoint(i)
-                A.poly.SetLines(lines)
+                A.points(points)
 
                 continue
 
@@ -1066,10 +1031,11 @@ class Viewport:
                 p3 = V.node.parent.to_glob_position((x2, y2, 0))
                 p4 = V.node.parent.to_glob_position((x1, y2, 0))
 
-                V.actors[2].setPoint(0,(p1[0],p1[1], 0))
-                V.actors[2].setPoint(1,(p2[0],p2[1], 0))
-                V.actors[2].setPoint(2,(p4[0],p4[1], 0))
-                V.actors[2].setPoint(3,(p3[0],p3[1], 0))
+                corners = [(p1[0],p1[1], 0),
+                            (p2[0],p2[1], 0),
+                            (p4[0],p4[1], 0),
+                            (p3[0],p3[1], 0)]
+                V.actors[2].points(corners)
 
                 # create the actual buoyancy mesh as a new actor
 
@@ -1090,8 +1056,8 @@ class Viewport:
                     for i in range(mesh.nFaces):
                         faces.append(mesh.GetFace(i))
 
-                    # vis = vp.actors.Actor([vertices, faces], wire=True).c((0, 0, 1))
-                    vis = vp.actors.Actor([vertices, faces]).c(vc.COLOR_BUOYANCY_MESH_LINES)
+                    # vis = vp.Mesh([vertices, faces], wire=True).c((0, 0, 1))
+                    vis = vp.Mesh([vertices, faces]).c(vc.COLOR_BUOYANCY_MESH_LINES)
                     vis.actor_type = ActorType.FORCE
                     vis.wireframe()
                     vis.lw(vc.LINEWIDTH_SUBMERGED_MESH)
@@ -1140,7 +1106,7 @@ class Viewport:
 
         if self.screen:
 
-            actors = self.screen.getActors()
+            actors = self.screen.getMeshes()
             for va in self.visuals:
                 for a in va.actors:
                     if not (a in actors):
@@ -1356,6 +1322,7 @@ class Viewport:
         iren.AddObserver("LeftButtonPressEvent", screen._mouseleft)
         iren.AddObserver("RightButtonPressEvent", screen._mouseright)
         iren.AddObserver("MiddleButtonPressEvent", screen._mousemiddle)
+        iren.AddObserver("KeyPressEvent", self.keyPressFunction)
 
         for r in screen.renderers:
             r.ResetCamera()
@@ -1377,6 +1344,14 @@ class Viewport:
         self.renderer.AddLight(light1)
 
         self.light = light1
+
+    def keyPressFunction(self, obj, event):
+        key = obj.GetKeySym()
+        if key == 'Escape':
+            if self.onEscapeKey is not None:
+                self.onEscapeKey()
+
+
 
 
     def refresh_embeded_view(self):
@@ -1520,7 +1495,7 @@ class WaveField():
 
         grid = vtk.vtkStructuredGrid()
         grid.SetDimensions(ny,nx,1)
-        grid.SetPoints(pts)
+        grid.points(pts)
 
         # make mapper
         filter = vtk.vtkStructuredGridGeometryFilter()
