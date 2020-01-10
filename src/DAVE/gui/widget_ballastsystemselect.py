@@ -27,7 +27,6 @@ class WidgetBallastSystemSelect(guiDockWidget):
         upon creation and guiScene etc are not yet available.
 
         """
-        self.resize(266, 100)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)

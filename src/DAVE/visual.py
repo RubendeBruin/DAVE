@@ -576,7 +576,6 @@ class Viewport:
 
             if isinstance(N, vf.RigidBody):
                 size = 1
-                # box = vp.Box(pos=(0,0,0), length=size, width=size, height= size).c(vc.COLOR_COG)
 
                 box = vp_actor_from_obj(self.scene.get_resource_path('cog.obj'))
                 box.color(vc.COLOR_COG)
@@ -605,12 +604,15 @@ class Viewport:
                     capacity = t.max
                     volume = capacity / (1.025 * 9.81)
                     side = volume**(1/3)
-                    scale = 0.5
 
-                    p = vp.Cube(pos=(0,0,0), side=0.5*side*scale)
+                    scale = 0.7
+                    p = vp.Cube(pos=(0,0,0), side=scale*side)
                     p.c(vc.COLOR_POI)
                     p.actor_type = ActorType.BALLASTTANK
                     actors.append(p)
+
+                    # attach reference to the visual to the ballast tank as they may change position
+                    t.actor = p
 
             if isinstance(N, vf.Force):
 
@@ -865,24 +867,42 @@ class Viewport:
 
 
             if isinstance(V.node, vf.BallastSystem):
-                for i,tnk in enumerate(V.node._tanks):
 
-                    ia = i + 1
+                tr = V.node.parent.global_transform
+                mat4x4 = transform_to_mat4x4(tr)
 
-                    t = vtk.vtkTransform()
-                    t.Identity()
-                    local_position = np.array(V.node.position, dtype=float) + np.array(tnk.position, dtype=float)
-                    pos = V.node.parent.to_glob_position(local_position)
-                    t.Translate(pos)
-                    V.actors[ia].setTransform(t)
-                    V.actors[ia].SetScale(4)
+                for tnk in V.node._tanks:
+
+                    # t = vtk.vtkTransform()
+                    # t.Identity()
+                    # local_position = np.array(V.node.position, dtype=float) + np.array(tnk.position, dtype=float)
+                    # pos = V.node.parent.to_glob_position(local_position)
+                    # t.Translate(pos)
+
+                    actor = tnk.actor
+
+                    # actor.setTransform(t)
+                    # actor.SetScale(4)
 
                     if tnk.is_partial():
-                        V.actors[ia].color([1,1,0])
+                        actor.color([1,1,0])
                     if tnk.is_full():
-                        V.actors[ia].color([0,0,0.2])
+                        actor.color([0,0,0.2])
                     if tnk.is_empty():
-                        V.actors[ia].color([0.8,0.9,1])
+                        actor.color([0.8,0.9,1])
+
+                    # get the local (user set) transform
+                    t = vtk.vtkTransform()
+                    t.Identity()
+                    t.Translate(tnk.position)
+
+                    # Get the parent matrix (if any)
+                    if V.node.parent is not None:
+                        apply_parent_tranlation_on_transform(V.node.parent, t)
+
+                    actor.setTransform(t.GetMatrix())
+
+                continue
 
 
             if isinstance(V.node, vf.Poi):

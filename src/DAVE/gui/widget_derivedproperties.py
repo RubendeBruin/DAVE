@@ -115,6 +115,8 @@ class WidgetDerivedProperties(guiDockWidget):
             props.extend(ds.PROPS_BUOY_MESH)
         if isinstance(node, nodes.LinearBeam):
             props.extend(ds.PROPS_LINEARBEAM)
+        if isinstance(node, nodes.Force):
+            props.extend(ds.PROPS_FORCE)
 
         # evaluate properties
         for p in props:

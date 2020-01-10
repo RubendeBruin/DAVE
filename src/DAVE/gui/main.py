@@ -283,6 +283,7 @@ class Gui():
         btnConstruct.setText('&1. Construct')
         btnConstruct.clicked.connect(lambda: self.activate_workspace("CONSTRUCT"))
         set_pb_style(btnConstruct)
+        btnConstruct.setChecked(True)
 
         btnConstruct = QtWidgets.QPushButton()
         btnConstruct.setText('&2. Explore')
@@ -1077,58 +1078,7 @@ if __name__ == '__main__':
 
     s = Scene()
 
+    s.import_scene('cheetah',containerize=False)
+    s['Cheetah'].fixed = False
 
-    # auto generated pyhton code
-    # By beneden
-    # Time: 2020-01-09 19:45:41 UTC
-
-    # To be able to distinguish the important number (eg: fixed positions) from
-    # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
-    # For anything written as solved(number) that actual number does not influence the static solution
-    def solved(number):
-        return number
-
-
-    # code for Body
-    s.new_rigidbody(name='Body',
-                    mass=1.0,
-                    cog=(0.0,
-                         0.0,
-                         0.0),
-                    position=(solved(-2.6677072796833478e-09),
-                              solved(3.9286407057061375e-16),
-                              solved(-11.41519456228433)),
-                    rotation=(solved(85.14858971637302),
-                              solved(-34.76201500294565),
-                              solved(35.628688665718165)),
-                    fixed=(False, False, False, False, False, False))
-    # code for Poi
-    s.new_poi(name='Poi',
-              parent='Body',
-              position=(1.0,
-                        1.0,
-                        0.0))
-    # code for Poi_1
-    s.new_poi(name='Poi_1',
-              position=(0.0,
-                        0.0,
-                        0.0))
-    # code for Poi_2
-    s.new_poi(name='Poi_2',
-              position=(8.0,
-                        0.0,
-                        0.0))
-    # code for Cable
-    s.new_cable(name='Cable',
-                poiA='Poi',
-                poiB='Poi_2',
-                length=10.0,
-                EA=100000.0)
-    # code for Visual
-    s.new_visual(name='Visual',
-                 parent='Body',
-                 path=r'wirecube.obj',
-                 offset=(0, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(1, 1, 1))
     Gui(s)

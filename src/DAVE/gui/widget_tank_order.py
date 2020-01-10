@@ -37,7 +37,7 @@ class WidgetTankOrder(guiDockWidget):
         self.ui.pbMaximizeRadii.pressed.connect(lambda: self.run_action("order_tanks_to_maximize_inertia_moment()"))
         self.ui.pbMinimizeRadii.pressed.connect(lambda: self.run_action("order_tanks_to_minimize_inertia_moment()"))
 
-        self.ui.pbFurthest.pressed.connect(lambda: self.point)
+        self.ui.pbFurthest.pressed.connect(lambda: self.point(", reverse=False"))
         self.ui.pbNearest.pressed.connect(lambda: self.point(", reverse=True"))
 
 

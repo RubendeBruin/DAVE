@@ -189,6 +189,7 @@ PROPS_AXIS = ['global_position','global_rotation','applied_force','connection_fo
               'tilt_x','heel','tilt_y','trim','heading','heading_compass']
 PROPS_POI = ['global_position','applied_force_and_moment_global','x','y','z','gx','gy','gz']
 PROPS_CABLE = ['tension','stretch']
+PROPS_FORCE = ['force','fx','fy','fz','moment','mx','my','mz']
 PROPS_CON2D = ['angle','moment','force']
 PROPS_BODY = ['cog', 'cogx', 'cogy', 'cogz', 'mass']
 PROPS_BUOY_MESH = ['cob', 'displacement', 'cob_local']

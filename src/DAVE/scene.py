@@ -1528,6 +1528,36 @@ class Force(NodeWithParent):
         self._vfNode.force = val
 
     @property
+    def fx(self):
+        """The global x-component of the force"""
+        return self.force[0]
+
+    @fx.setter
+    def fx(self, var):
+        a = self.force
+        self.force = (var, a[1], a[2])
+
+    @property
+    def fy(self):
+        """The global y-component of the force"""
+        return self.force[1]
+
+    @fy.setter
+    def fy(self, var):
+        a = self.force
+        self.force = (a[0], var, a[2])
+
+    @property
+    def fz(self):
+        """The global z-component of the force"""
+        return self.force[2]
+
+    @fz.setter
+    def fz(self, var):
+        a = self.force
+        self.force = (a[0], a[1], var)
+
+    @property
     def moment(self):
         """
         Gets or sets the x,y and z moment components.
@@ -1536,11 +1566,41 @@ class Force(NodeWithParent):
         """
         return self._vfNode.moment
 
-
     @moment.setter
     def moment(self, val):
         assert3f(val)
         self._vfNode.moment = val
+
+    @property
+    def mx(self):
+        """The global x-component of the force"""
+        return self.moment[0]
+
+    @mx.setter
+    def mx(self, var):
+        a = self.moment
+        self.moment = (var, a[1], a[2])
+
+    @property
+    def my(self):
+        """The global y-component of the force"""
+        return self.moment[1]
+
+    @my.setter
+    def my(self, var):
+        a = self.moment
+        self.moment = (a[0], var, a[2])
+
+    @property
+    def mz(self):
+        """The global z-component of the force"""
+        return self.moment[2]
+
+    @mz.setter
+    def mz(self, var):
+        a = self.moment
+        self.moment = (a[0], a[1], var)
+
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
