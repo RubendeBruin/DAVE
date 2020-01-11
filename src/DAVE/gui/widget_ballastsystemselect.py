@@ -96,8 +96,18 @@ class WidgetBallastSystemSelect(guiDockWidget):
 
         self.lblDraft.setText("Z = {:.3f} m".format(vessel.gz))
 
-        self.lblHeel.setText("Heel = {:.3f} deg (positive to SB)".format(vessel.heel))
-        self.lblTrim.setText("Trim = {:.3f} deg (positive to bow".format(vessel.trim))
+        if vessel.heel > 0:
+            heel = 'PS highest'
+        else:
+            heel = 'SB highest'
+
+        if vessel.trim > 0:
+            trim = 'stern highest'
+        else:
+            trim = 'bow highest'
+
+        self.lblHeel.setText("Heel = {:.3f} deg ({})".format(vessel.heel, heel))
+        self.lblTrim.setText("Trim = {:.3f} deg ({})".format(vessel.trim, trim))
 
     def fill(self):
         # get all ballast-systems

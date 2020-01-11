@@ -1515,7 +1515,7 @@ class WaveField():
 
         grid = vtk.vtkStructuredGrid()
         grid.SetDimensions(ny,nx,1)
-        grid.points(pts)
+        grid.SetPoints(pts)
 
         # make mapper
         filter = vtk.vtkStructuredGridGeometryFilter()

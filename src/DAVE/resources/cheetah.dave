@@ -9,7 +9,17 @@ s.new_rigidbody(name='Cheetah',
                           -6.75),
                 rotation=(0, 0, 0),
                 inertia_radii=(20, 80, 80),
-                fixed=(True, True, False, False, False, True))
+                fixed=False)
+
+
+s.new_axis('DP reference point', parent = 'Cheetah',
+            position = (100,0,0))
+
+s.new_axis('DP setpoint for cheetah',position = (100,0,0))
+
+s.new_linear_connector_6d('DP springs cheetah', master = 'DP reference point',
+           slave = 'DP setpoint for cheetah',
+           stiffness = (100,100,0,0,0,10000))
 
 # code for buoyancy
 mesh = s.new_buoyancy(name='buoyancy',

@@ -17,6 +17,7 @@ from PySide2.QtGui import QPixmap
 from DAVE.scene import *
 from DAVE.marine import *
 from DAVE.rigging import *
+from DAVE.frequency_domain import *
 
 def run():
     app = QApplication()

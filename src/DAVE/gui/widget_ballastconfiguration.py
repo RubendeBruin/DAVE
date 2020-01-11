@@ -34,6 +34,7 @@ class WidgetBallastConfiguration(guiDockWidget):
         self.ui.setupUi(self.contents)
         self.ui.tableWidget.verticalHeader().setSectionsMovable(True)
         self.ui.tableWidget.verticalHeader().sectionMoved.connect(self.reorder_rows)
+        self.ui.tableWidget.currentCellChanged.connect(self.selection_changed)
 
         self.ui.tableWidget.cellChanged.connect(self.tankfillchanged)
 
@@ -65,10 +66,49 @@ class WidgetBallastConfiguration(guiDockWidget):
                      guiEventType.SELECTED_NODE_MODIFIED]:
             self.fill()
 
+
     def guiDefaultLocation(self):
         return QtCore.Qt.DockWidgetArea.RightDockWidgetArea
 
     # ======
+
+    def selection_changed(self,cur_row, cur_col, prev_row, prev_col):
+        item = self.ui.tableWidget.verticalHeaderItem(cur_row)
+        if item is not None:
+            name = item.text()
+            self.update_outlines(name=name)
+
+    def update_outlines(self, name = ""):
+        if self._bs is None:
+            return
+
+        # loop over tanks
+        #   find visual
+        #       find outline
+        #            git outline a different width and color
+
+        # print('selecting tank {}'.format(name))
+
+        for tank in self._bs._tanks:
+            actor = tank.actor
+
+            outline_actor = None
+            for outline in self.gui.visual.outlines:
+                if outline.parent_vp_actor == actor:
+                    outline_actor = outline.outline_actor
+                    break
+
+
+            if outline_actor is not None:
+                if tank.name == name:
+                    outline_actor.GetProperty().SetLineWidth(5)
+                    outline_actor.GetProperty().SetColor(254,0,0)
+                else:
+                    outline_actor.GetProperty().SetLineWidth(self.gui.visual.outline_width)
+                    outline_actor.GetProperty().SetColor(0, 0, 0)
+
+        self.gui.visual.refresh_embeded_view()
+
 
     def freeze_all(self):
         if self._bs is None:
@@ -179,10 +219,18 @@ class WidgetBallastConfiguration(guiDockWidget):
         if b == 1:
             fill = self.ui.tableWidget.item(a,b).text()
 
+            if fill == 'f':
+                fill = 100
+            if fill == 'e':
+                fill = 0
+
             code = 's["{}"].fill_tank("{}",{})'.format(self._bs.name, tank_name, fill)
             self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
         else:
             raise Exception('This cell is not supposed to be editable')
+
+        self.ui.tableWidget.setCurrentCell(a,b)
+        self.ui.tableWidget.setFocus()
 
     def tankFrozenChanged(self):
         if self._filling_table:
