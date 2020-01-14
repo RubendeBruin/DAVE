@@ -328,10 +328,16 @@ class Gui():
             self.selected_nodes.clear()
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
 
+    def savepoint_restore(self):
+        if self.scene.savepoint_restore():
+            self.selected_nodes.clear()
+            self.guiEmitEvent(guiEventType.MODEL_STRUCTURE_CHANGED)
+
 
     def activate_workspace(self, name):
 
         self.animation_terminate()
+        self.savepoint_restore()
 
         self.visual.set_alpha(1.0)
         self.visual.hide_actors_of_type([ActorType.BALLASTTANK])
@@ -364,6 +370,7 @@ class Gui():
             self.show_guiWidget('Stability', WidgetDisplacedStability)
 
         if name == 'AIRY':
+            self.scene.savepoint_make()
             self.show_guiWidget('Airy waves', WidgetAiry)
 
 
@@ -419,8 +426,10 @@ class Gui():
 
     def animation_terminate(self, keep_current_dofs = False):
 
-        if not self.animation_running():
-            return # nothing to destroy
+        #if not self.animation_running():
+        #    return # nothing to destroy
+        if not self._animation_available:
+            return
 
         self.ui.frameAni.setVisible(False)
 
@@ -1077,6 +1086,8 @@ class Gui():
 if __name__ == '__main__':
 
     s = Scene()
+
+    s.resources_paths.append(r'C:\data\Dave\Public\Blender visuals')
 
     s.import_scene('cheetah',containerize=False)
     s['Cheetah'].fixed = False

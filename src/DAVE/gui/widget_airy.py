@@ -79,6 +79,10 @@ plt.show()
     def action(self):
 
         if self.d0 is None:
+
+            if self.guiScene.verify_equilibrium():
+                self.d0 = self.guiScene._vfc.get_dofs()
+
             raise ValueError('No equilibrium position available')
 
         wave_direction = self.ui.heading.value()

@@ -592,10 +592,27 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0):
     RAO = np.zeros((n_dof, n_omega), dtype=complex)
     for i_omega, omega in enumerate(omegas):
 
+        B = np.zeros_like(M)
+        B += B_hyd[:,:,i_omega]
+
+        M_total = (M + M_hyd[:,:,i_omega])
+
+        Mdiag = M_total.diagonal()
+        Kdiag = K.diagonal()
+
+        # critical damping = 2*sqrt(km) https: // en.wikipedia.org / wiki / Damping_ratio
+        critial_damping_diag = 2*np.sqrt(Kdiag * Mdiag)
+        min_damping = 0.01 * critial_damping_diag
+
+        for i in range(M.shape[0]):
+            if B[i,i] < min_damping[i]:
+                print('Increasing diagonal damping for mode {} to {}'.format(i, min_damping[i]))
+                B[i,i] = min_damping[i]
+
         A = np.zeros_like(M)
 
-        A += -omega**2 * ( M + M_hyd[:,:,i_omega] )   # inertia
-        A += 1j * omega * B_hyd[:,:,i_omega]  # damping
+        A += -omega ** 2 * M_total  # inertia
+        A += 1j * omega * B  # damping
         A += K               # stiffness
 
         x = np.linalg.solve(A, F_hyd[:,i_omega])  # solve

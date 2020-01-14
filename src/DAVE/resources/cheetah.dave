@@ -40,13 +40,15 @@ for i in range(8):
 
     capacity = 15*10*10*9.81*1.025
     if i > 1:
-        capacity = 15*20*10*9.81*1.025
+        capacity = 10*20*10*9.81*1.025
 
-    bs.new_tank('ps{}'.format(i+1), (10 + 20*i,10,5), capacity)
-    bs.new_tank('sb{}'.format(i + 1), (10 + 20*i, -10, 5), capacity)
+    bs.new_tank('ps{}'.format(i+1), (10 + 20*i,12,5), capacity)
+    bs.new_tank('sb{}'.format(i + 1), (10 + 20*i, -12, 5), capacity)
+    bs.new_tank('mid{}'.format(i + 1), (10 + 20*i, 0, 5), capacity)
 
-bs.new_tank('ps9', (175, 8, 5), 10 * 10 * 5 * 9.81 * 1.025)
-bs.new_tank('sb9', (175, -8, 5), 10 * 10 * 5 * 9.81 * 1.025)
+
+bs.new_tank('ps9', (170, 8, 5), 15 * 15 * 10 * 9.81 * 1.025)
+bs.new_tank('sb9', (170, -8, 5), 15 * 15 * 10 * 9.81 * 1.025)
 
 bs.new_tank('bow', (190, 0, 5), 10 * 10 * 6 * 9.81 * 1.025)
 

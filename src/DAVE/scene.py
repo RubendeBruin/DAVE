@@ -2794,6 +2794,8 @@ class Scene:
         """A list of paths where to look for resources such as .obj files. Priority is given to paths earlier in the list."""
         self.resources_paths.extend(vfc.RESOURCE_PATH)
 
+        self._savepoint = None
+        """Python code to re-create the scene, see savepoint_make()"""
 
         self._name_prefix = ""
         """An optional prefix to be applied to node names. Used when importing scenes."""
@@ -3151,6 +3153,17 @@ class Scene:
 
         self.delete(node)
 
+    def savepoint_make(self):
+        self._savepoint = self.give_python_code()
+
+    def savepoint_restore(self):
+        if self._savepoint is not None:
+            self.clear()
+            exec(self._savepoint, {}, {'s': self})
+            self._savepoint = None
+            return True
+        else:
+            return False
 
 
     # ========= The most important functions ========

@@ -36,7 +36,6 @@ class WidgetDisplacedStability(guiDockWidget):
         self.ui.pushButton.pressed.connect(self.movie)
 
 
-
     def guiProcessEvent(self, event):
         """
         Add processing that needs to be done.
@@ -93,6 +92,11 @@ class WidgetDisplacedStability(guiDockWidget):
         plt.show()
 
     def movie(self):
+
+
+        self.gui.savepoint_restore()
+        self.guiScene.savepoint_make()
+
 
         self.guiScene._gui_stability_dofs = None
 
