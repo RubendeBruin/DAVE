@@ -36,6 +36,11 @@ from pathlib import Path
 G = 9.81
 RHO = 1.025
 
+# ======== Frequency domain ======
+
+# Minimum damping for frequency domain analsysis, as fraction of critical damping based on diagonal terms.
+FD_GLOBAL_MIN_DAMPING_FRACTION = 0.005
+
 # ======== Folders ===========
 #
 

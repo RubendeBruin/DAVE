@@ -62,10 +62,14 @@ import prettytable as pt
 from scipy.linalg import eig
 from mafredo.hyddb1 import Hyddb1
 from mafredo.helpers import wavelength
+import DAVE.settings as ds
 
 
 def mode_shapes(scene):
     """Calculates the mode shapes and eigenvalues for scene.
+    The output is sorted in order of increasing eigenvalue.
+
+    The natural period is sqrt(eigenvalue)
 
     Returns: V (eigenvalues), D (eigenvectors)"""
 
@@ -73,9 +77,9 @@ def mode_shapes(scene):
         raise ArithmeticError('Scene is not in static equilibrium, modal analysis aborted')
 
     print("Mass matrix")
-    M = scene.dynamics_M(0.1)
+    M = scene.dynamics_M(1e-6)
     print(M)
-    K = scene.dynamics_K(0.1)
+    K = scene.dynamics_K(1e-6)
     print("Stiffness matrix")
     print(K)
 
@@ -144,7 +148,7 @@ def generate_unitwave_response(s, d0, rao, wave_amplitude, n_frames):
         factor = i_frame / n_frames
 
         t = factor * 2 * np.pi
-        change = np.real(wave_amplitude * rao * np.cos(t - np.angle(rao)))
+        change = np.real(wave_amplitude * rao * np.cos(t + np.angle(rao)))
 
         core.set_dofs(d0)
         core.change_dofs(change)
@@ -521,8 +525,8 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0):
         numpy array with dimensions [iDOF, iOmega]
     """
 
-    M = s.dynamics_M(0.1)
-    K = s.dynamics_K(0.1)
+    M = s.dynamics_M(1e-6)
+    K = s.dynamics_K(1e-6)
     nodes = s.dynamics_nodes()
     modes = s.dynamics_modes()
     names = [node.name for node in nodes]
@@ -602,7 +606,7 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0):
 
         # critical damping = 2*sqrt(km) https: // en.wikipedia.org / wiki / Damping_ratio
         critial_damping_diag = 2*np.sqrt(Kdiag * Mdiag)
-        min_damping = 0.01 * critial_damping_diag
+        min_damping = ds.FD_GLOBAL_MIN_DAMPING_FRACTION * critial_damping_diag
 
         for i in range(M.shape[0]):
             if B[i,i] < min_damping[i]:
@@ -611,7 +615,7 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0):
 
         A = np.zeros_like(M)
 
-        A += -omega ** 2 * M_total  # inertia
+        A += -(omega ** 2) * M_total  # inertia
         A += 1j * omega * B  # damping
         A += K               # stiffness
 

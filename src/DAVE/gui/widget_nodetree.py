@@ -166,7 +166,10 @@ class WidgetNodeTree(guiDockWidget):
             self.items[node.name] = item
 
             if parent is not None:
-                self.items[node.parent.name].addChild(item)
+                try:
+                    self.items[node.parent.name].addChild(item)
+                except:
+                    print('stop here')
             else:
                 self.treeView.invisibleRootItem().addChild(item)
 

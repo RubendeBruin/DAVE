@@ -3063,8 +3063,9 @@ class Scene:
             except:
                 pass
 
-        # check visuals as well (which are not core-connected)
-        for v in self.nodes_of_type(Visual):
+        # check visuals and wave-interaction as well (which are not core-connected)
+
+        for v in [*self.nodes_of_type(Visual), *self.nodes_of_type(WaveInteraction1)]:
             if v.parent is _node:
                 r.append(v.name)
 
@@ -4325,11 +4326,18 @@ class Scene:
     def dynamics_M(self,delta = 0.1):
         """Returns the mass matrix of the scene"""
         self.update()
+
         return self._vfc.M(delta)
 
     def dynamics_K(self, delta):
-        """Returns the stiffness matrix of the scene for a perturbation of delta """
+        """Returns the stiffness matrix of the scene for a perturbation of delta
+
+        A component is positive if a displacement introduces an reaction force in the opposite direction.
+        or:
+        A component is positive if a positive force is needed to introduce a positive displacement.
+        """
         self.update()
+
         return -self._vfc.K(delta)
 
     def dynamics_nodes(self):

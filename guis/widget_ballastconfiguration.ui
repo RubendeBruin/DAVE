@@ -124,6 +124,13 @@
      </column>
     </widget>
    </item>
+   <item>
+    <widget class="QPushButton" name="pbGenerate">
+     <property name="text">
+      <string>Generate tank-fill python code</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <tabstops>

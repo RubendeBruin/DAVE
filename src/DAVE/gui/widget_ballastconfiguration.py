@@ -45,7 +45,7 @@ class WidgetBallastConfiguration(guiDockWidget):
         self.ui.pbFillAll.pressed.connect(lambda : self.fill_all_to(100))
         self.ui.pbEmptyAll.pressed.connect(lambda: self.fill_all_to(0))
 
-
+        self.ui.pbGenerate.pressed.connect(self.report_python)
 
         self._bs = None # active ballast system
         self._filling_table = True
@@ -81,13 +81,6 @@ class WidgetBallastConfiguration(guiDockWidget):
     def update_outlines(self, name = ""):
         if self._bs is None:
             return
-
-        # loop over tanks
-        #   find visual
-        #       find outline
-        #            git outline a different width and color
-
-        # print('selecting tank {}'.format(name))
 
         for tank in self._bs._tanks:
             actor = tank.actor
@@ -244,5 +237,14 @@ class WidgetBallastConfiguration(guiDockWidget):
             if self._bs[tank_name].frozen != frozen:
                 self.guiRunCodeCallback('s["{}"]["{}"].frozen = {}'.format(self._bs.name, tank_name, frozen), guiEventType.SELECTED_NODE_MODIFIED)
                 return
+
+    def report_python(self):
+        """Runs the current tank fillings in python"""
+
+        code = ''
+        for t in self._bs._tanks:
+            code += '\ns["{}"]["{}"].pct = {}'.format(self._bs.name, t.name, t.pct)
+        self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
+
 
 

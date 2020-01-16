@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_ballastconfiguration.ui',
 # licensing of 'widget_ballastconfiguration.ui' applies.
 #
-# Created: Tue Jan  7 20:50:38 2020
+# Created: Thu Jan 16 09:03:53 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -64,6 +64,9 @@ class Ui_widget_ballastsystem(object):
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget.setHorizontalHeaderItem(5, item)
         self.verticalLayout.addWidget(self.tableWidget)
+        self.pbGenerate = QtWidgets.QPushButton(widget_ballastsystem)
+        self.pbGenerate.setObjectName("pbGenerate")
+        self.verticalLayout.addWidget(self.pbGenerate)
 
         self.retranslateUi(widget_ballastsystem)
         QtCore.QMetaObject.connectSlotsByName(widget_ballastsystem)
@@ -88,4 +91,5 @@ class Ui_widget_ballastsystem(object):
         self.tableWidget.horizontalHeaderItem(3).setText(QtWidgets.QApplication.translate("widget_ballastsystem", "X [m]", None, -1))
         self.tableWidget.horizontalHeaderItem(4).setText(QtWidgets.QApplication.translate("widget_ballastsystem", "Y [m]", None, -1))
         self.tableWidget.horizontalHeaderItem(5).setText(QtWidgets.QApplication.translate("widget_ballastsystem", "Z [m]", None, -1))
+        self.pbGenerate.setText(QtWidgets.QApplication.translate("widget_ballastsystem", "Generate tank-fill python code", None, -1))
 

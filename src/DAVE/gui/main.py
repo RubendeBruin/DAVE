@@ -371,11 +371,15 @@ class Gui():
 
         if name == 'AIRY':
             self.scene.savepoint_make()
+            code = "from DAVE.frequency_domain import prepare_for_fd\nprepare_for_fd(s)"
+            self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
             self.show_guiWidget('Airy waves', WidgetAiry)
 
 
 
     def import_browser(self):
+        self.activate_workspace('CONSTRUCT')
+
         G = DAVE.gui.standard_assets.Gui()
         r = G.showModal()
 
@@ -434,10 +438,11 @@ class Gui():
         self.ui.frameAni.setVisible(False)
 
         # print('Destroying timer')
-        to_be_destroyed = self._timerid
-        self._timerid = None
-        iren = self.visual.renwin.GetInteractor()
-        iren.DestroyTimer(to_be_destroyed)
+        if self._timerid is not None:
+            to_be_destroyed = self._timerid
+            self._timerid = None
+            iren = self.visual.renwin.GetInteractor()
+            iren.DestroyTimer(to_be_destroyed)
 
         self._animation_available = False
         self.visual.remove_dynamic_wave_plane()
@@ -1089,7 +1094,6 @@ if __name__ == '__main__':
 
     s.resources_paths.append(r'C:\data\Dave\Public\Blender visuals')
 
-    s.import_scene('cheetah',containerize=False)
-    s['Cheetah'].fixed = False
+
 
     Gui(s)

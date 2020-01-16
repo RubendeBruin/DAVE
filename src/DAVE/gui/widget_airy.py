@@ -59,12 +59,13 @@ class WidgetAiry(guiDockWidget):
 
 
     def prepare_for_wave_interaction(self):
-        code = "from DAVE.frequency_domain import prepare_for_fd\nprepare_for_fd(s)"
-        self.guiRunCodeCallback(code,guiEventType.MODEL_STRUCTURE_CHANGED)
+        pass
 
     def plot_raos(self):
 
-        code = """wave_direction = 90
+        code = """from DAVE.frequency_domain import plot_RAO_1d
+import matplotlib.pyplot as plt
+wave_direction = 90
 min = 0.01
 max = 4
 steps = 100
@@ -84,6 +85,8 @@ plt.show()
                 self.d0 = self.guiScene._vfc.get_dofs()
 
             raise ValueError('No equilibrium position available')
+
+        self.guiScene.solve_statics()
 
         wave_direction = self.ui.heading.value()
         amplitude = self.ui.amplitude.value()

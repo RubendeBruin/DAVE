@@ -20,6 +20,7 @@ s.new_rigidbody(name='Upper block',
                 rotation=(0.0,
                           0.0,
                           0.0),
+                inertia_radii=(2,2,2),
                 fixed =(True, True, True, True, True, True) )
 # code for Lower block
 s.new_rigidbody(name='Lower block',
@@ -34,6 +35,7 @@ s.new_rigidbody(name='Lower block',
                 rotation=(solved(1.7075472925031877e-06),
                           0.0,
                           0.0),
+                inertia_radii=(2,2,2),
                 fixed =(True, True, True, False, True, True) )
 # code for hook4p
 s.new_rigidbody(name='hook4p',
@@ -48,6 +50,7 @@ s.new_rigidbody(name='hook4p',
                 rotation=(0.0,
                           solved(0.0),
                           0.0),
+                inertia_radii=(2,2,2),
                 fixed =(True, True, True, True, False, True) )
 # code for prong1
 s.new_poi(name='prong1',
