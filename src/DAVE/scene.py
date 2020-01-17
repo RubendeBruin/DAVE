@@ -2905,6 +2905,46 @@ class Scene:
         """Notify the scene that the geometry has changed and that the global transforms are invalid"""
         self._vfc.geometry_changed()
 
+    def _fix_vessel_heel_trim(self):
+        """Fixes the heel and trim of each node that has a buoyancy or linear hydrostatics node attached.
+
+        Returns:
+            Dictionary with original fixed properties as dict({'node name',fixed[6]}) which can be passed to _restore_original_fixes
+        """
+
+        vessel_indicators = [*self.nodes_of_type(Buoyancy), *self.nodes_of_type(HydSpring)]
+        r = dict()
+
+        for node in vessel_indicators:
+            parent = node.parent           # axis
+
+            if parent.fixed[3] and parent.fixed[4]:
+                continue # already fixed
+
+            r[parent.name] = parent.fixed  # store original fixes
+            fixed = [*parent.fixed]
+            fixed[3]=True
+            fixed[4]=True
+            parent.fixed = fixed
+
+        return r
+
+    def _restore_original_fixes(self, original_fixes):
+        """Restores the fixes as in original_fixes
+
+        See also: _fix_vessel_heel_trim
+
+        Args:
+            original_fixes: dict with {'node name',fixes[6] }
+
+        Returns:
+            None
+
+        """
+        for name in original_fixes.keys():
+            self.node_by_name(name).fixed = original_fixes[name]
+
+
     # ======== resources =========
 
     def get_resource_path(self, name):
@@ -3188,10 +3228,26 @@ class Scene:
 
         """
         self.update()
+
+
         if timeout is None:
-            succes = self._vfc.state_solve_statics()
+            solve_func = self._vfc.state_solve_statics
         else:
-            succes = self._vfc.state_solve_statics_with_timeout(timeout, False)
+            solve_func = lambda : self._vfc.state_solve_statics_with_timeout(timeout, False)
+
+
+        # pass 1
+        orignal_fixes = self._fix_vessel_heel_trim()
+        succes = solve_func()
+        if not succes:
+            self._restore_original_fixes(orignal_fixes)
+            return False
+
+        if orignal_fixes:
+            # pass 2
+            self._restore_original_fixes(orignal_fixes)
+            succes = solve_func()
+
 
         if self.verify_equilibrium():
             if not silent:

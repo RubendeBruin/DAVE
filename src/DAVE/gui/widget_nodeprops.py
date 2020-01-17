@@ -1174,6 +1174,11 @@ class WidgetNodeProps(guiDockWidget):
         else:
             self.setVisible(False)
 
+        if event in [guiEventType.MODEL_STATE_CHANGED]:
+            if self.guiSelection:
+                self.select_node(self.guiSelection[0])
+
+
 
     # ======= custom
 

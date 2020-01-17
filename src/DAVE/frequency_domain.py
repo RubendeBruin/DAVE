@@ -427,8 +427,6 @@ def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
     for i in range(len(nodes)):
 
         node = nodes[i]
-        mode = modes[i]
-
         node_name = node.name
 
         if node_name in figures.keys():
@@ -440,9 +438,7 @@ def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
         figures[node_name] = figure
 
 
-    counter = 0
     mode_names = ['X','Y','Z','RX','RY','RZ']
-
 
     import matplotlib.pyplot as plt
     from matplotlib.figure import figaspect

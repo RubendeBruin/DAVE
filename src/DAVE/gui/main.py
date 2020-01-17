@@ -649,22 +649,37 @@ class Gui():
 
         # solve with time-out
         count = 0
+
+        original_dofs = self.scene._fix_vessel_heel_trim()
+
         while True:
+
             status = self.scene._vfc.state_solve_statics_with_timeout(0.5, True)
 
             if self._terminate:
                 print('Terminating')
+                self.scene._restore_original_fixes(original_dofs)
                 break
 
-            if status == 0:
+            if status == 0:  # solving done
                 if count == 0:
-                    break
+
+                    if original_dofs:
+                        self.scene._restore_original_fixes(original_dofs)
+                        original_dofs = None
+                    else:
+                        break
                 else:
                     long_wait = True
 
                     self.visual.position_visuals()
                     self.visual.refresh_embeded_view()
-                    break
+                    if original_dofs:
+                        self.scene._restore_original_fixes(original_dofs)
+                        original_dofs = None
+                    else:
+                        break
+
 
             if dialog is None:
                 dialog = SolverDialog()
@@ -698,6 +713,8 @@ class Gui():
                 new_dofs = self.scene._vfc.get_dofs()
                 self.animate_change(old_dofs, new_dofs, 10)
 
+
+        self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
         self._codelog.append('s.solve_statics()')
 
     def animate_change(self, old_dof, new_dof, n_steps):
