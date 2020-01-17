@@ -129,9 +129,9 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
         bpy.ops.transform.rotate(value=-rotation[2], orient_axis='X')
         bpy.ops.transform.resize(value=scale)
 
-        bpy.ops.transform.translate(value=(-offset[0], -offset[1], -offset[2])) # and translate back
-
+        # bpy.ops.transform.translate(value=(-offset[0], -offset[1], -offset[2])) # and translate back
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        # bpy.ops.transform.translate(value=offset)  # translate    
 
         # apply global transforms
 
@@ -353,7 +353,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
         # the offset needs to be rotated.
 
         rot = Rotation.from_rotvec(deg2rad(visual.parent.global_rotation))
-        rotated_offset = rot.apply(visual.offset)
+        # rotated_offset = rot.apply(visual.offset)
 
         if animation_dofs:
             code += '\npositions = []'
@@ -365,9 +365,9 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 code += '\norientations.append([{},{},{},{}])'.format(*_to_quaternion(visual.parent.global_rotation))
 
                 position = visual.parent.global_position
-                global_offset = visual.parent.to_glob_direction(visual.offset)
+                # global_offset = visual.parent.to_glob_direction(visual.offset)
 
-                glob_position = np.array(position) + np.array(global_offset)
+                glob_position = np.array(position) # + np.array(global_offset)
 
                 code += '\npositions.append([{},{},{}])'.format(*glob_position)
 
@@ -375,7 +375,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 filename,
                 *visual.scale,
                 *_to_euler(visual.rotation),
-                *rotated_offset,
+                *visual.offset,
                 *_to_quaternion(visual.parent.global_rotation),
                 *visual.parent.global_position)
 
@@ -385,7 +385,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                         filename,
                         *visual.scale,
                         *_to_euler(visual.rotation),
-                        *rotated_offset,
+                        *visual.offset,
                         *_to_quaternion(visual.parent.global_rotation),
                         *visual.parent.global_position)
 
