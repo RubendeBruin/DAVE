@@ -1,7 +1,7 @@
 """
-constants.py
+settings.py
 
-This is the configuration file.
+This is the global configuration file.
 
 This file defines constants and settings used throughout the package.
 Among which:
@@ -38,13 +38,10 @@ RHO = 1.025
 
 # ======== Frequency domain ======
 
-# Minimum damping for frequency domain analsysis, as fraction of critical damping based on diagonal terms.
+# Minimum damping for frequency domain analysis, as fraction of critical damping based on diagonal terms.
 FD_GLOBAL_MIN_DAMPING_FRACTION = 0.005
 
 # ======== Folders ===========
-#
-
-
 
 # Default user directory
 #

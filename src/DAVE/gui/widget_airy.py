@@ -31,7 +31,6 @@ class WidgetAiry(guiDockWidget):
         self.ui.heading.valueChanged.connect(self.action)
         self.ui.amplitude.valueChanged.connect(self.action)
         self.ui.period.valueChanged.connect(self.action)
-        self.ui.pushButton.pressed.connect(self.prepare_for_wave_interaction)
         self.ui.pushButton_2.pressed.connect(self.plot_raos)
 
     def guiProcessEvent(self, event):
@@ -57,10 +56,6 @@ class WidgetAiry(guiDockWidget):
     # ======
 
 
-
-    def prepare_for_wave_interaction(self):
-        pass
-
     def plot_raos(self):
 
         code = """from DAVE.frequency_domain import plot_RAO_1d
@@ -84,21 +79,31 @@ plt.show()
             if self.guiScene.verify_equilibrium():
                 self.d0 = self.guiScene._vfc.get_dofs()
 
-            raise ValueError('No equilibrium position available')
+            else:
+                self.guiScene.solve_statics()
+                if self.guiScene.verify_equilibrium():
+                    self.d0 = self.guiScene._vfc.get_dofs()
+                else:
+                    raise ValueError('No equilibrium position available')
+        else:
+            self.guiScene._vfc.set_dofs(self.d0)
 
         self.guiScene.solve_statics()
 
         wave_direction = self.ui.heading.value()
         amplitude = self.ui.amplitude.value()
         period = self.ui.period.value()
-        x = fd.RAO_1d(s=self.guiScene, omegas =2 * np.pi / period, wave_direction=wave_direction)
+
+        try:
+            x = fd.RAO_1d(s=self.guiScene, omegas =2 * np.pi / period, wave_direction=wave_direction)
+        except Exception as m:
+            self.gui.show_exception(m)
+            return
 
         n_frames = int(60*period)
 
-        self.ui.label.setText(str(wave_direction) + '[deg]')
-
+        self.ui.lblHeading.setText(str(wave_direction) + '[deg]')
         dofs = fd.generate_unitwave_response(s=self.guiScene, d0 = self.d0, rao=x[:,0], wave_amplitude=amplitude, n_frames=n_frames)
-
         t = np.linspace(0, period, n_frames)
 
 

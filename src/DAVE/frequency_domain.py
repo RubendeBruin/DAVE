@@ -148,7 +148,7 @@ def generate_unitwave_response(s, d0, rao, wave_amplitude, n_frames):
         factor = i_frame / n_frames
 
         t = factor * 2 * np.pi
-        change = np.real(wave_amplitude * rao * np.cos(t + np.angle(rao)))
+        change = wave_amplitude * abs(rao) * np.cos(t + np.angle(rao))
 
         core.set_dofs(d0)
         core.change_dofs(change)
@@ -420,22 +420,25 @@ def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
     nodes = s.dynamics_nodes()
     modes = s.dynamics_modes()
 
-    figures = []
+    figures = dict()
 
-    cur_fig = None
-    prev_node = (None, None)
+    # loop over nodes and modes and attach a figure to each of the nodes
 
-    for node, mode in zip(nodes, modes):
+    for i in range(len(nodes)):
 
-        if node != prev_node:
-            figures.append(cur_fig)
-            cur_fig = list()
+        node = nodes[i]
+        mode = modes[i]
 
-        cur_fig.append((node, mode))
-        prev_node = node
+        node_name = node.name
 
-    figures.append(cur_fig)
-    figures = figures[1:] # remove fist None entry
+        if node_name in figures.keys():
+            figure = figures[node_name]
+        else:
+            figure = list()
+
+        figure.append(i)
+        figures[node_name] = figure
+
 
     counter = 0
     mode_names = ['X','Y','Z','RX','RY','RZ']
@@ -444,9 +447,7 @@ def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
     import matplotlib.pyplot as plt
     from matplotlib.figure import figaspect
 
-    for figure in figures:
-
-
+    for figure in figures.values():
 
         n_plots = len(figure)
         n_h = 1
@@ -467,14 +468,13 @@ def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
 
         f = plt.figure(figsize=(w, h))
 
-        for i, entry in enumerate(figure):
-            ax1 = plt.subplot(n_v, n_h, i+1)
+        for i_plot, i_entry in enumerate(figure):
+            ax1 = plt.subplot(n_v, n_h, i_plot+1)
 
-            node = entry[0]
-            mode = entry[1]
+            node = nodes[i_entry]
+            mode = modes[i_entry]
 
-            a = RAOs[counter,:]
-            counter += 1
+            a = RAOs[i_entry,:]
 
             amplitude = np.abs(a)
 
@@ -507,15 +507,7 @@ def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
         plt.figtext(0.995, 0.01, 'Amplitude (solid) in [m] or [deg] on left axis\nPhase (dashed) in [rad] on right axis', ha='right', va='bottom', fontsize=6)
         plt.tight_layout()
 
-
-
-
-
-
-
-
-
-def RAO_1d(s, omegas, wave_direction, waterdepth=0):
+def RAO_1d(s, omegas, wave_direction, waterdepth=0) -> np.ndarray:
     """Calculates the response to a unit-wave
 
     Phase-angles are relative to the global origin. Waterdepth is needed to
@@ -576,8 +568,12 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0):
             relative_heading = np.mod(wave_direction - w.parent.heading, 360)
             F_omega = w._hyddb.force(omega, relative_heading)
 
+            if np.any(np.isnan(F_omega)):
+                print('stop here')
+
+            # phase shift due to distance from origin
             phase_global_origin = 2*np.pi * distance / wavelength(omega, waterdepth=waterdepth)
-            phasor_global_origin = np.exp(1j * phase_global_origin)
+            phasor_global_origin = np.exp(-1j * phase_global_origin)
 
             # add the components to system matrices
             for i in range(6):
@@ -589,7 +585,9 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0):
                     M_hyd[sys_i, sys_j,i_omega] += M_omegas[i,j,i_omega]
                     B_hyd[sys_i, sys_j,i_omega] += B_omegas[i, j,i_omega]
 
-                F_hyd[sys_i,i_omega] += phasor_global_origin * F_omega[i]
+
+                # complex multiplication is equivalent to amplitude multiplication and phase addition
+                F_hyd[sys_i,i_omega] += F_omega[i] * phasor_global_origin
 
 
     # solve the system

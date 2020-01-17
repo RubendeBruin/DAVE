@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>503</width>
-    <height>426</height>
+    <height>321</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -23,23 +23,6 @@
    <locale language="English" country="UnitedStates"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
-   <item>
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Model need to be prepared before responses can be calculated. This loads the hydrodynamic data</string>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="pushButton">
-     <property name="text">
-      <string>Prepare model for hydrodynamic interaction</string>
-     </property>
-    </widget>
-   </item>
    <item>
     <widget class="QLabel" name="label_5">
      <property name="text">
@@ -59,6 +42,9 @@
      <property name="text">
       <string>Visualization</string>
      </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
     </widget>
    </item>
    <item>
@@ -67,13 +53,6 @@
       <item row="1" column="2">
        <widget class="QWidget" name="widget_2" native="true">
         <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>&lt;- Direction</string>
-           </property>
-          </widget>
-         </item>
          <item>
           <widget class="QLabel" name="label_2">
            <property name="text">
@@ -130,6 +109,16 @@
         </property>
         <property name="notchesVisible">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLabel" name="lblHeading">
+        <property name="text">
+         <string>heading</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
         </property>
        </widget>
       </item>

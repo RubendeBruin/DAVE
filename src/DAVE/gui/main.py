@@ -554,6 +554,11 @@ class Gui():
         # self._logfile.close()
         print('closing')
 
+    def show_exception(self, e):
+        self.ui.teFeedback.setText(str(e))
+        self.ui.teFeedback.setStyleSheet("background-color: pink;")
+
+
 
     def run_code(self, code, event):
 
@@ -697,6 +702,9 @@ class Gui():
 
     def animate_change(self, old_dof, new_dof, n_steps):
         """Animates from old_dof to new_dofs in n_steps"""
+
+        if len(old_dof) != len(new_dof):
+            return
 
         dt = DAVE.settings.GUI_SOLVER_ANIMATION_DURATION / n_steps
 
@@ -1094,6 +1102,65 @@ if __name__ == '__main__':
 
     s.resources_paths.append(r'C:\data\Dave\Public\Blender visuals')
 
+    # ------------------
+    s.import_scene(s.get_resource_path("billy.dave"), containerize=False, prefix="")
 
+    # ------------------
+
+    s['Billy'].fixed = (False, True, False, False, False, False)
+
+    # ------------------
+
+    s['Billy'].fixed = (False, False, False, False, False, False)
+
+    # ------------------
+
+    s['Billy'].fixed = (False, False, False, True, False, False)
+
+    # ------------------
+
+    s['Billy'].fixed = (False, False, False, True, True, False)
+
+    # ------------------
+
+    s['Billy'].position = (0.0, 0.0, 0.0)
+    s['Billy'].fixed = (False, False, False, False, True, False)
+
+    # ------------------
+
+    s['Billy'].fixed = (False, False, False, False, False, False)
+
+    # ------------------
+    s.import_scene(s.get_resource_path("billy.dave"), containerize=False, prefix="2_")
+
+    # ------------------
+
+    s['2_Billy'].fixed = (False, False, False, True, False, False)
+
+    # ------------------
+
+    s['2_Billy'].fixed = (False, False, False, True, True, False)
+
+    # ------------------
+
+    s['2_Billy'].position = (0.0, 0.0, 0.0)
+    s['2_Billy'].rotation = (0.0, 0.0, 0.0)
+    s['2_Billy'].fixed = (False, False, False, False, True, False)
+
+    # ------------------
+
+    s['2_Billy'].fixed = (False, False, False, False, False, False)
+
+    # ------------------
+
+    s['2_billy_positioning_target'].position = (0.0, 1.0, 0.0)
+
+    # ------------------
+
+    s['2_billy_positioning_target'].position = (0.0, 10.0, 0.0)
+
+    # ------------------
+
+    s['2_billy_positioning_target'].position = (0.0, 100.0, 0.0)
 
     Gui(s)

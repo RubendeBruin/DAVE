@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_airy.ui',
 # licensing of 'widget_airy.ui' applies.
 #
-# Created: Thu Dec 19 14:22:27 2019
+# Created: Thu Jan 16 14:19:52 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,17 +13,11 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_frmAiryWave(object):
     def setupUi(self, frmAiryWave):
         frmAiryWave.setObjectName("frmAiryWave")
-        frmAiryWave.resize(503, 439)
+        frmAiryWave.resize(503, 321)
+        frmAiryWave.setMaximumSize(QtCore.QSize(16777215, 500))
         frmAiryWave.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(frmAiryWave)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.label_4 = QtWidgets.QLabel(frmAiryWave)
-        self.label_4.setWordWrap(True)
-        self.label_4.setObjectName("label_4")
-        self.verticalLayout_2.addWidget(self.label_4)
-        self.pushButton = QtWidgets.QPushButton(frmAiryWave)
-        self.pushButton.setObjectName("pushButton")
-        self.verticalLayout_2.addWidget(self.pushButton)
         self.label_5 = QtWidgets.QLabel(frmAiryWave)
         self.label_5.setObjectName("label_5")
         self.verticalLayout_2.addWidget(self.label_5)
@@ -31,6 +25,7 @@ class Ui_frmAiryWave(object):
         self.pushButton_2.setObjectName("pushButton_2")
         self.verticalLayout_2.addWidget(self.pushButton_2)
         self.label_6 = QtWidgets.QLabel(frmAiryWave)
+        self.label_6.setAlignment(QtCore.Qt.AlignCenter)
         self.label_6.setObjectName("label_6")
         self.verticalLayout_2.addWidget(self.label_6)
         self.widget = QtWidgets.QWidget(frmAiryWave)
@@ -43,9 +38,6 @@ class Ui_frmAiryWave(object):
         self.verticalLayout = QtWidgets.QVBoxLayout(self.widget_2)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.label = QtWidgets.QLabel(self.widget_2)
-        self.label.setObjectName("label")
-        self.verticalLayout.addWidget(self.label)
         self.label_2 = QtWidgets.QLabel(self.widget_2)
         self.label_2.setObjectName("label_2")
         self.verticalLayout.addWidget(self.label_2)
@@ -72,6 +64,10 @@ class Ui_frmAiryWave(object):
         self.heading.setNotchesVisible(True)
         self.heading.setObjectName("heading")
         self.gridLayout.addWidget(self.heading, 1, 1, 1, 1)
+        self.lblHeading = QtWidgets.QLabel(self.widget)
+        self.lblHeading.setAlignment(QtCore.Qt.AlignCenter)
+        self.lblHeading.setObjectName("lblHeading")
+        self.gridLayout.addWidget(self.lblHeading, 2, 1, 1, 1)
         self.verticalLayout_2.addWidget(self.widget)
         spacerItem = QtWidgets.QSpacerItem(20, 8, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem)
@@ -81,12 +77,10 @@ class Ui_frmAiryWave(object):
 
     def retranslateUi(self, frmAiryWave):
         frmAiryWave.setWindowTitle(QtWidgets.QApplication.translate("frmAiryWave", "Form", None, -1))
-        self.label_4.setText(QtWidgets.QApplication.translate("frmAiryWave", "Model need to be prepared before responses can be calculated. This loads the hydrodynamic data", None, -1))
-        self.pushButton.setText(QtWidgets.QApplication.translate("frmAiryWave", "Prepare model for hydrodynamic interaction", None, -1))
         self.label_5.setText(QtWidgets.QApplication.translate("frmAiryWave", "RAO calculation, no linearization of quadratic damping", None, -1))
         self.pushButton_2.setText(QtWidgets.QApplication.translate("frmAiryWave", "Show RAOs", None, -1))
         self.label_6.setText(QtWidgets.QApplication.translate("frmAiryWave", "Visualization", None, -1))
-        self.label.setText(QtWidgets.QApplication.translate("frmAiryWave", "<- Direction", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("frmAiryWave", "Amplitude [m]", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("frmAiryWave", "Period [s]", None, -1))
+        self.lblHeading.setText(QtWidgets.QApplication.translate("frmAiryWave", "heading", None, -1))
 
