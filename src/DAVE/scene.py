@@ -2033,6 +2033,20 @@ class LinearBeam(CoreConnectedNode):
         """Torsion angle in degrees"""
         return np.rad2deg(self._vfNode.torsion_angle)
 
+    def give_python_code(self):
+        code = "# code for linear beam {}".format(self.name)
+
+
+        code += "\ns.new_linear_beam(name='{}',".format(self.name)
+        code += "\n            master='{}',".format(self.master.name)
+        code += "\n            slave='{}',".format(self.slave.name)
+        code += "\n            EIy={},".format(self.EIy)
+        code += "\n            EIz={},".format(self.EIz)
+        code += "\n            GIp={},".format(self.GIp)
+        code += "\n            EA={},".format(self.EA)
+        code += "\n            L={})".format(self.L)
+
+        return code
 
 def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -2941,6 +2955,9 @@ class Scene:
             None
 
         """
+        if original_fixes is None:
+            return
+
         for name in original_fixes.keys():
             self.node_by_name(name).fixed = original_fixes[name]
 

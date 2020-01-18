@@ -647,9 +647,6 @@ class Gui():
 
         self._terminate = False
 
-        # solve with time-out
-        count = 0
-
         original_dofs = self.scene._fix_vessel_heel_trim()
 
         while True:
@@ -662,31 +659,22 @@ class Gui():
                 break
 
             if status == 0:  # solving done
-                if count == 0:
 
-                    if original_dofs:
-                        self.scene._restore_original_fixes(original_dofs)
-                        original_dofs = None
-                    else:
-                        break
-                else:
-                    long_wait = True
+                # solving exited with succes
 
-                    self.visual.position_visuals()
-                    self.visual.refresh_embeded_view()
-                    if original_dofs:
-                        self.scene._restore_original_fixes(original_dofs)
-                        original_dofs = None
-                    else:
-                        break
-
+                if original_dofs:  # reset original dofs and go to phase 2
+                    self.scene._restore_original_fixes(original_dofs)
+                    original_dofs = None
+                    continue
+                else: # done
+                    break
 
             if dialog is None:
                 dialog = SolverDialog()
                 dialog.btnTerminate.clicked.connect(self.stop_solving)
                 dialog.show()
+                long_wait = True
 
-            count += 1
             dialog.label_2.setText('Maximum error = {}'.format(self.scene._vfc.Emaxabs))
             dialog.update()
 
@@ -1001,12 +989,12 @@ class Gui():
     def visual_update_selection(self):
         for v in self.visual.visuals:
             if v.node in self.selected_nodes:
-                if v.node is not None:
-                    print('selecting {}'.format(v.node.name))
+                # if v.node is not None:
+                #     print('selecting {}'.format(v.node.name))
                 v.select()
             else:
-                if v.node is not None:
-                    print('deselecting {}'.format(v.node.name))
+                # if v.node is not None:
+                #     print('deselecting {}'.format(v.node.name))
                 v.deselect()
 
         for v in self.visual.visuals:
@@ -1179,5 +1167,41 @@ if __name__ == '__main__':
     # ------------------
 
     s['2_billy_positioning_target'].position = (0.0, 100.0, 0.0)
+
+    # code for Tower
+    s.new_rigidbody(name='Tower',
+                    mass=800.0,
+                    cog=(0.0,
+                         0.0,
+                         90.0),
+                    position=(120.0,
+                              0.0,
+                              0.0),
+                    rotation=(-90.0,
+                              0.0,
+                              0.0),
+                    fixed=False)
+
+    # code for Visual_1
+    s.new_visual(name='Visual_1',
+                 parent='Tower',
+                 path=r'cone chopped.obj',
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(5.0, 5.0, 120.0))
+    # code for Nacelle
+    s.new_visual(name='Nacelle',
+                 parent='Tower',
+                 path=r'cube_with_bevel.obj',
+                 offset=(0.0, -2.0, 122.0),
+                 rotation=(0, 0, 0),
+                 scale=(4.0, 6.0, 4.0))
+    # code for Hub
+    s.new_visual(name='Hub',
+                 parent='Tower',
+                 path=r'cone chopped.obj',
+                 offset=(0.0, 4.0, 122.0),
+                 rotation=(-90.0, 0.0, 0.0),
+                 scale=(3.0, 3.0, 3.0))
 
     Gui(s)

@@ -52,6 +52,7 @@ class WidgetNodeTree(guiDockWidget):
 
         self.treeView.activated.connect(self.tree_select_node)  # fires when a user presses [enter]
         self.treeView.doubleClicked.connect(self.tree_select_node)
+        self.treeView.itemClicked.connect(self.item_clicked)
         self.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.rightClickTreeview)
 
@@ -87,6 +88,10 @@ class WidgetNodeTree(guiDockWidget):
         if index.column() == 0:
             node_name = index.data()
             self.guiSelectNode(node_name)
+
+    def item_clicked(self, data):
+        name = data.text(0)
+        self.guiSelectNode(name)
 
     def rightClickTreeview(self, point):
         if self.treeView.selectedItems():
