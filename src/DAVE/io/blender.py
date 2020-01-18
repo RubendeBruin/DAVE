@@ -62,6 +62,7 @@ import numpy as np
 BFUNC = """
 
 from mathutils import Vector, Quaternion
+import numpy as np
 
 # These functions are inserted by DAVE.io.blender.py
 
@@ -158,73 +159,50 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
 
 
             
-
 def add_line(points, diameter, name=None, ani_points = None, frames_per_entry=1):
-
-    bpy.ops.curve.primitive_bezier_curve_add(enter_editmode=True)
-    obj_data = bpy.context.active_object.data
-    obj_data.bevel_depth = diameter/2
+    # Points should contain FOUR coordinates per point, the 4th one can be 1.0
     
+    curve = bpy.data.curves.new("Curve", type='CURVE')
+    polyline = curve.splines.new(type='POLY')
+
     n_points = len(points)
-    if n_points > 2:   # by default a curve has two points
-        obj_data.splines[0].bezier_points.add(n_points-2)
-    
-    bpy.ops.object.mode_set(mode='OBJECT')  # back to object mode
-    
-    curve = bpy.context.active_object
-    bp = curve.data.splines[0].bezier_points
+    if n_points > 2:  # by default a curve has one points
+        polyline.points.add(n_points - 1)
 
-    def setpoints(pts):
-        end1 = bp[0]
-        end1.co = pts[0]
-        end1.handle_left = pts[0]
-        end1.handle_right = pts[1]
+    # set the points
+    pts = np.ravel(points)
+    polyline.points.foreach_set('co',pts)
 
-        end2 = bp[1]
-        end2.co = pts[1]
-        end2.handle_left = pts[0]
-        end2.handle_right = pts[1]
-
-        if len(pts)>2:
-
-            end2.handle_right = pts[2]
-
-            for i in range(2,len(pts)):
-                
-                end3 = bp[i]
-                end3.co = pts[i]
-                end3.handle_left = pts[i-1]
-                if i < len(pts)-1:
-                    end3.handle_right = pts[i+1]
-                else:
-                    end3.handle_right = pts[i]
-
-
+    # add animation
     if ani_points is not None:
+
+        points = curve.splines.data.splines[0].points  # need to be in splines[0]
         for i_frame, cur_points in enumerate(ani_points):
-        
             n_frame = i_frame * frames_per_entry
-            bpy.context.scene.frame_set(n_frame)
-        
-            setpoints(cur_points)
-                        
-            # insert keyframes
-            for i_point in range(n_points):
-                bp[i_point].keyframe_insert(data_path='handle_left', index=-1)
-                bp[i_point].keyframe_insert(data_path='handle_right', index=-1)
-                bp[i_point].keyframe_insert(data_path='co', index=-1)
 
-    else:
-        setpoints(points)
+            # set the data
+            pts = np.ravel(cur_points)
+            points.foreach_set("co", pts)
 
-    if name is not None:
-        bpy.context.active_object.name = name
+            # add the key-frames
+            for point in points:
+                point.keyframe_insert(data_path="co", frame = n_frame)
 
-    bpy.context.active_object.data.materials.append(bpy.data.materials['Cable'])
-    bpy.ops.object.mode_set(mode='OBJECT')
-    
+
+    # Create the object
+    if name is None:
+        name = "Line"
+    curveObj = bpy.data.objects.new(name, curve)
+
+    # attach to scene
+    bpy.context.scene.collection.objects.link(curveObj)
+
+    # add material
+    curveObj.data.materials.append(bpy.data.materials['Cable'])
+    curveObj.data.bevel_depth = diameter/2
 
 def add_beam(points, direction, diameter, name=None, ani_points=None, ani_directions=None, frames_per_entry=1):
+    # Beam is a bezier while lines are poly
     bpy.ops.curve.primitive_bezier_curve_add(enter_editmode=True)
     obj_data = bpy.context.active_object.data
     obj_data.bevel_depth = diameter / 2
@@ -274,6 +252,7 @@ def add_beam(points, direction, diameter, name=None, ani_points=None, ani_direct
 
     bpy.context.active_object.data.materials.append(bpy.data.materials['Cable'])
     bpy.ops.object.mode_set(mode='OBJECT')
+
 
 """
 
@@ -403,7 +382,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
         code += '\npoints=['
         for p in points:
-            code += '({},{},{}),'.format(*p)
+            code += '({},{},{},1.0),'.format(*p)
         code = code[:-1]
         code += ']'
 
@@ -415,7 +394,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 points = cable.get_points_for_visual()
                 code += '\nframe_points=['
                 for p in points:
-                    code += '({},{},{}),'.format(*p)
+                    code += '({},{},{},1.0),'.format(*p)
                 code = code[:-1]
                 code += ']'
                 code += '\nani_points.append(frame_points)'
