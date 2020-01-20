@@ -383,25 +383,32 @@ mesh.polygons.foreach_set("loop_total", loop_total)
         # update wave-field
         wavefield.update(t)
         wavefield.actor.GetMapper().Update()
+
+        filename = consts.PATH_TEMP / 'waves_frame{}.npy'.format(n_frame)
         # data = v.actor.GetMapper().GetInputAsDataSet()
 
-        wave_code = ''
+        #pre-allocate data
+        n_points = data.GetNumberOfPoints()
+        points = np.zeros((n_points, 3))
 
-        wave_code += '\nvertices = np.array(['
-
-        for i in range(data.GetNumberOfPoints()):
+        for i in range(n_points):
             point = data.GetPoint(i)
-            wave_code += '\n    {}, {}, {},'.format(*point)
+            points[i,:] = point
 
-        wave_code = wave_code[:-1]  # remove the last ,
+        np.save(filename,np.ravel(points))
 
-        wave_code += """], dtype=np.float32)
+        code += '\nprint("Importing wave-frame {} / {}")'.format(n_frame, wavefield.nt)
+
+        code += '\nvertices = np.load(r"{}")'.format(str(filename))
+        code += """
         
 mesh.vertices.foreach_set("co", vertices)
 for vertex in mesh.vertices:
     """
-        wave_code += 'vertex.keyframe_insert(data_path="co", frame = {})'.format(np.round(n_frame))
-        code += wave_code
+        code += 'vertex.keyframe_insert(data_path="co", frame = {})'.format(np.round(n_frame))
+
+        # ============= END OF THE LOOP
+
     code += """
 # We're done setting up the mesh values, update mesh object and 
 # let Blender do some checks on it
