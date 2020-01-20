@@ -1,17 +1,17 @@
 call conda activate deploy
 
 echo call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
-echo call pyside2-uic widget_modeshapes.ui -o "..\src\DAVE\gui\forms\widgetUI_modeshapes.py"
-call pyside2-uic widget_ballastconfiguration.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastconfiguration.py"
+call pyside2-uic widget_modeshapes.ui -o "..\src\DAVE\gui\forms\widgetUI_modeshapes.py"
+echo call pyside2-uic widget_ballastconfiguration.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastconfiguration.py"
 echo call pyside2-uic widget_ballastsolver.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastsolver.py"
 call pyside2-uic widget_airy.ui -o "..\src\DAVE\gui\forms\widgetUI_airy.py"
-echo call pyside2-uic widget_stability_displ.ui -o "..\src\DAVE\gui\forms\widget_stability_displUI.py"
-call pyside2-uic widget_explore.ui -o "..\src\DAVE\gui\forms\widgetUI_explore.py"
-call pyside2-uic widget_tank_order.ui -o "..\src\DAVE\gui\forms\widgetUI_tank_order.py"
+echo echo call pyside2-uic widget_stability_displ.ui -o "..\src\DAVE\gui\forms\widget_stability_displUI.py"
+echo call pyside2-uic widget_explore.ui -o "..\src\DAVE\gui\forms\widgetUI_explore.py"
+echo call pyside2-uic widget_tank_order.ui -o "..\src\DAVE\gui\forms\widgetUI_tank_order.py"
 
 echo call pyside2-rcc ..\guis\resources.qrc -o "..\src\DAVE\forms\resources_rc.py"
 
-call pyside2-uic widget_waveinteraction.ui -o "..\src\DAVE\forms\widget_waveinteraction.py"
+echo call pyside2-uic widget_waveinteraction.ui -o "..\src\DAVE\forms\widget_waveinteraction.py"
 echo call pyside2-uic widget_axis.ui -o "..\src\DAVE\forms\widget_axis.py"
 echo call pyside2-uic widget_body.ui -o "..\src\DAVE\forms\widget_body.py"
 echo call pyside2-uic widget_poi.ui -o "..\src\DAVE\forms\widget_poi.py"
@@ -32,4 +32,4 @@ echo call pyside2-uic frm_animation.ui -o "..\src\DAVE\forms\frm_animation.py"
 echo call pyside2-uic widget_dynprop.ui -o "..\src\DAVE\forms\widget_dynprop.py"
 
 
-call pyside2-rcc resources.qrc -o "..\src\DAVE\forms\resources_rc.py"
+echo call pyside2-rcc resources.qrc -o "..\src\DAVE\forms\resources_rc.py"

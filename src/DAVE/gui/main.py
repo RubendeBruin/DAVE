@@ -329,7 +329,12 @@ class Gui():
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
 
     def savepoint_restore(self):
+
+        if self.scene._savepoint is not None:
+            self.animation_terminate(keep_current_dofs=True)
+
         if self.scene.savepoint_restore():
+
             self.selected_nodes.clear()
             self.guiEmitEvent(guiEventType.MODEL_STRUCTURE_CHANGED)
 

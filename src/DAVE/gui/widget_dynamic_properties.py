@@ -31,6 +31,8 @@ class WidgetDynamicProperties(guiDockWidget):
         axes = self.guiScene.nodes_of_type(Axis)
         self._filling_node_table = True
 
+        store_scrollbar_position = self.ui.tableDynProp.verticalScrollBar().sliderPosition()
+
         for row, b in enumerate(axes):
             self.ui.tableDynProp.setRowCount(row+1)
             self.ui.tableDynProp.setVerticalHeaderItem(row,QtWidgets.QTableWidgetItem(b.name))
@@ -53,11 +55,15 @@ class WidgetDynamicProperties(guiDockWidget):
 
         self.ui.tableDynProp.resizeColumnsToContents()
 
+        self.ui.tableDynProp.verticalScrollBar().setSliderPosition(store_scrollbar_position)
+
         self._filling_node_table = False
 
     def node_table_cell_change_checkbox(self):
         if self._filling_node_table:
             return
+
+        self.gui.animation_terminate()
 
         row = self.ui.tableDynProp.currentRow()
         name = self.ui.tableDynProp.verticalHeaderItem(row).text()
@@ -70,6 +76,8 @@ class WidgetDynamicProperties(guiDockWidget):
         code = 's["{}"].fixed = ({},{},{},{},{},{})'.format(name, *fixed)
 
         self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+
 
     def node_table_cell_edit_done(self, data):
         if self._filling_node_table:

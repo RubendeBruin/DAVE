@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_modeshapes.ui',
 # licensing of 'widget_modeshapes.ui' applies.
 #
-# Created: Thu Dec  5 14:38:27 2019
+# Created: Mon Jan 20 16:06:35 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -86,7 +86,7 @@ class Ui_ModeShapesWidget(object):
         self.verticalLayout_2.addItem(spacerItem)
         self.gridLayout.addWidget(self.frame_2, 3, 0, 1, 1)
         self.btnCalc = QtWidgets.QPushButton(ModeShapesWidget)
-        self.btnCalc.setCheckable(True)
+        self.btnCalc.setCheckable(False)
         self.btnCalc.setChecked(False)
         self.btnCalc.setObjectName("btnCalc")
         self.gridLayout.addWidget(self.btnCalc, 0, 0, 1, 1)

@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_airy.ui',
 # licensing of 'widget_airy.ui' applies.
 #
-# Created: Thu Jan 16 14:19:52 2020
+# Created: Mon Jan 20 16:06:35 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!

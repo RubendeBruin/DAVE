@@ -1,5 +1,14 @@
 """
-This is an example/template of how to setup a new dockwidget
+This is the widget that calculates the mode-shapes and activates or terminates the animation
+
+If strucutre of model changes:
+ - terminate animation
+
+If button pressed:
+ - calculate mode-shapes
+ - start animation
+
+
 """
 
 """
@@ -61,18 +70,23 @@ class WidgetModeShapes(guiDockWidget):
                 self.d0 = None
             self.fill_result_table()
             self._shapes_calculated = False
-            self.autocalc()
+            self.ui.btnCalc.setStyleSheet("background-color: lightgreen;")
+            self.ui.lblError.setText("")
+
+            # self.autocalc()
 
     def guiDefaultLocation(self):
         return QtCore.Qt.DockWidgetArea.TopDockWidgetArea
 
     # ======
 
-    def autocalc(self):
-        if self.ui.btnCalc.isChecked():
-            self.calc_modeshapes()
+    # def autocalc(self):
+    #     if self.ui.btnCalc.isChecked():
+    #         self.calc_modeshapes()
 
     def calc_modeshapes(self):
+
+        self.gui.animation_terminate()
 
         if self.d0 is None:
             if not self.guiScene.verify_equilibrium():
@@ -104,9 +118,10 @@ class WidgetModeShapes(guiDockWidget):
             warnings += ' UNCONTRAINED'
 
         self.ui.lblError.setText(warnings)
+        self.ui.btnCalc.setStyleSheet("")
 
         self.ui.horizontalSlider.setMaximum(self.n_shapes - 1)
-        self.omega = V
+        self.omega = np.sqrt(V)  # omega is sqrt(eigenvalues)
         self.shapes = D
         self._shapes_calculated = True
         self.activate_modeshape()
