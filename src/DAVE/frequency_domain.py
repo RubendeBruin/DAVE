@@ -275,6 +275,10 @@ def dynamics_quickfix(scene):
                 if isinstance(node, RigidBody):
                     position = node.cog
                 a = scene.new_axis(name, position = node.to_glob_position(position), rotation = node.global_rotation)
+
+                # if node has a parent, then place the axis there (also works if parent is None)
+                a.change_parent_to(node.parent)
+
                 helper_axis[entry['node']] = a
 
             try:

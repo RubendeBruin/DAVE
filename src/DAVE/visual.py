@@ -1548,6 +1548,120 @@ if __name__ == "__main__":
 
     v = WaveField()
     v.create_waveplane(90,1,10,6, 50, 100,2,100,100)
+    v.update(0)
+
+    v.actor.GetMapper().Update()
+    data = v.actor.GetMapper().GetInputAsDataSet()
+
+    code = ''
+    code += '\nvertices = np.array(['
+
+    for i in range(data.GetNumberOfPoints()):
+        point = data.GetPoint(i)
+        code += '\n    {}, {}, {},'.format(*point)
+
+    code = code[:-1] # remove the last ,
+
+    code += """], dtype=np.float32)
+
+
+num_vertices = vertices.shape[0] // 3
+
+# Polygons are defined in loops. Here, we define one quad and two triangles
+vertex_index = np.array(["""
+
+    poly_length = []
+    counter = 0
+    poly_start = []
+
+    for i in range(data.GetNumberOfCells()):
+        cell = data.GetCell(i)
+
+        if isinstance(cell, vtk.vtkLine):
+            print("Cell nr {} is a line, not adding to mesh".format(i))
+            continue
+
+        code += '\n    '
+
+        for ip in range(cell.GetNumberOfPoints()):
+            code += '{},'.format(cell.GetPointId(ip))
+
+        poly_length.append(cell.GetNumberOfPoints())
+        poly_start.append(counter)
+        counter += cell.GetNumberOfPoints()
+
+    code = code[:-1]  # remove the last ,
+
+    code += """], dtype=np.int32)
+
+# For each polygon the start of its vertex indices in the vertex_index array
+loop_start = np.array([
+    """
+
+    for p in poly_start:
+        code += '{}, '.format(p)
+
+    code = code[:-1]  # remove the last ,
+
+    code += """], dtype=np.int32)
+
+# Length of each polygon in number of vertices
+loop_total = np.array([
+    """
+
+    for p in poly_length:
+        code += '{}, '.format(p)
+
+    code = code[:-1]  # remove the last ,
+
+    code += """], dtype=np.int32)
+
+num_vertex_indices = vertex_index.shape[0]
+num_loops = loop_start.shape[0]
+
+# Create mesh object based on the arrays above
+
+mesh = bpy.data.meshes.new(name='created mesh')
+
+mesh.vertices.add(num_vertices)
+mesh.vertices.foreach_set("co", vertices)
+
+mesh.loops.add(num_vertex_indices)
+mesh.loops.foreach_set("vertex_index", vertex_index)
+
+mesh.polygons.add(num_loops)
+mesh.polygons.foreach_set("loop_start", loop_start)
+mesh.polygons.foreach_set("loop_total", loop_total)
+
+# We're done setting up the mesh values, update mesh object and 
+# let Blender do some checks on it
+mesh.update()
+mesh.validate()
+
+# Create Object whose Object Data is our new mesh
+obj = bpy.data.objects.new('created object', mesh)
+
+# Add *Object* to the scene, not the mesh
+scene = bpy.context.scene
+scene.collection.objects.link(obj)
+
+# Select the new object and make it active
+bpy.ops.object.select_all(action='DESELECT')
+obj.select_set(True)
+bpy.context.view_layer.objects.active = obj"""
+
+    print(code)
+
+
+
+
+    # vertices  : array of (3)
+    #
+
+
+
+
+
 
 
 
