@@ -166,7 +166,7 @@ def add_line(points, diameter, name=None, ani_points = None, frames_per_entry=1)
     polyline = curve.splines.new(type='POLY')
 
     n_points = len(points)
-    if n_points > 2:  # by default a curve has one points
+    if n_points > 1:  # by default a poly curve has one point
         polyline.points.add(n_points - 1)
 
     # set the points
@@ -193,6 +193,7 @@ def add_line(points, diameter, name=None, ani_points = None, frames_per_entry=1)
     if name is None:
         name = "Line"
     curveObj = bpy.data.objects.new(name, curve)
+    curveObj.data.dimensions = '3D'
 
     # attach to scene
     bpy.context.scene.collection.objects.link(curveObj)
