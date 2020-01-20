@@ -1547,13 +1547,16 @@ class WaveField():
 if __name__ == "__main__":
 
     v = WaveField()
-    v.create_waveplane(90,1,10,6, 50, 100,2,100,100)
+
+
+    # def create_waveplane(self, wave_direction, wave_amplitude, wave_length, wave_period, nt, nx, ny, dx, dy):
+    v.create_waveplane(30,2,100,7, 50, 40, 40 ,100,100)
     v.update(0)
 
     v.actor.GetMapper().Update()
     data = v.actor.GetMapper().GetInputAsDataSet()
 
-    code = ''
+    code = 'import numpy as np\nimport bpy\n'
     code += '\nvertices = np.array(['
 
     for i in range(data.GetNumberOfPoints()):
@@ -1633,6 +1636,40 @@ mesh.polygons.add(num_loops)
 mesh.polygons.foreach_set("loop_start", loop_start)
 mesh.polygons.foreach_set("loop_total", loop_total)
 
+
+"""
+
+    v.nt  # number of key-frames
+
+
+    for i_source_frame in range(v.nt):
+        t = v.period * i_source_frame / v.nt
+
+        n_frame = 30 * t # todo: replace with frames per second
+
+        # update wave-field
+        v.update(t)
+        v.actor.GetMapper().Update()
+        # data = v.actor.GetMapper().GetInputAsDataSet()
+
+
+        code += '\nvertices = np.array(['
+
+        for i in range(data.GetNumberOfPoints()):
+            point = data.GetPoint(i)
+            code += '\n    {}, {}, {},'.format(*point)
+
+        code = code[:-1]  # remove the last ,
+
+        code += """], dtype=np.float32)
+        
+mesh.vertices.foreach_set("co", vertices)
+for vertex in mesh.vertices:
+        """
+        code += 'vertex.keyframe_insert(data_path="co", frame = {})'.format(np.round(n_frame))
+
+
+    code += """
 # We're done setting up the mesh values, update mesh object and 
 # let Blender do some checks on it
 mesh.update()
@@ -1650,13 +1687,8 @@ bpy.ops.object.select_all(action='DESELECT')
 obj.select_set(True)
 bpy.context.view_layer.objects.active = obj"""
 
-    print(code)
-
-
-
-
-    # vertices  : array of (3)
-    #
+    with open('c:/data/test.py', 'w') as data:
+        data.write(code)
 
 
 
