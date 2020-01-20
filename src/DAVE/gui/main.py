@@ -738,14 +738,14 @@ class Gui():
             dofs = []
 
             # assume 24 frames per second for rendering
-            n_frames = self._animation_length * 24
+            n_frames = self._animation_length * DAVE.settings.BLENDER_FPS
             for t in np.linspace(0,self._animation_length, n_frames):
                 dofs.append(self._animation_keyframe_interpolation_object(t))
 
         else:
             dofs = None
 
-        create_blend_and_open(self.scene, animation_dofs=dofs)
+        create_blend_and_open(self.scene, animation_dofs=dofs, wavefield=self.visual._wavefield)
 
 
 
@@ -1106,6 +1106,8 @@ if __name__ == '__main__':
     s = Scene()
 
     s.resources_paths.append(r'C:\data\Dave\Public\Blender visuals')
+    s.import_scene(s.get_resource_path("billy.dave"), containerize=False, prefix="")
+    Gui(s)
 
     # ------------------
     s.import_scene(s.get_resource_path("billy.dave"), containerize=False, prefix="")

@@ -56,6 +56,8 @@ from numpy import deg2rad
 from pathlib import Path
 import numpy as np
 
+import vtk
+
 
 # utility functions for our python scripts are hard-coded here
 
@@ -257,7 +259,6 @@ def add_beam(points, direction, diameter, name=None, ani_points=None, ani_direct
 
 """
 
-
 def _to_euler(rotation):
     r = Rotation.from_rotvec(deg2rad(rotation))
     return r.as_euler('zyx',degrees=False)
@@ -267,7 +268,158 @@ def _to_quaternion(rotation):
     return r.as_quat()
 
 
-def create_blend_and_open(scene, blender_result_file = None, blender_base_file=None, blender_exe_path=None, camera=None, animation_dofs=None):
+def _wavefield_to_blender(wavefield):
+    """Returns blender python code to generate the wavefield in Blender
+    
+    Args:
+        wavefield: DAVE.visual.wavefield object
+    
+    Returns:
+        str
+    """
+
+    wavefield.update(0)
+
+    wavefield.actor.GetMapper().Update()
+    data = wavefield.actor.GetMapper().GetInputAsDataSet()
+
+    code = '\n'
+    code += '\nvertices = np.array(['
+
+    for i in range(data.GetNumberOfPoints()):
+        point = data.GetPoint(i)
+        code += '\n    {}, {}, {},'.format(*point)
+
+    code = code[:-1]  # remove the last ,
+
+    code += """], dtype=np.float32)
+
+num_vertices = vertices.shape[0] // 3
+
+# Polygons are defined in loops. Here, we define one quad and two triangles
+vertex_index = np.array(["""
+
+    poly_length = []
+    counter = 0
+    poly_start = []
+
+    for i in range(data.GetNumberOfCells()):
+        cell = data.GetCell(i)
+
+        if isinstance(cell, vtk.vtkLine):
+            print("Cell nr {} is a line, not adding to mesh".format(i))
+            continue
+
+        code += '\n    '
+
+        for ip in range(cell.GetNumberOfPoints()):
+            code += '{},'.format(cell.GetPointId(ip))
+
+        poly_length.append(cell.GetNumberOfPoints())
+        poly_start.append(counter)
+        counter += cell.GetNumberOfPoints()
+
+    code = code[:-1]  # remove the last ,
+
+    code += """], dtype=np.int32)
+
+# For each polygon the start of its vertex indices in the vertex_index array
+loop_start = np.array([
+        """
+
+    for p in poly_start:
+        code += '{}, '.format(p)
+
+    code = code[:-1]  # remove the last ,
+
+    code += """], dtype=np.int32)
+
+# Length of each polygon in number of vertices
+loop_total = np.array([
+        """
+
+    for p in poly_length:
+        code += '{}, '.format(p)
+
+    code = code[:-1]  # remove the last ,
+
+    code += """], dtype=np.int32)
+
+num_vertex_indices = vertex_index.shape[0]
+num_loops = loop_start.shape[0]
+
+# Create mesh object based on the arrays above
+
+mesh = bpy.data.meshes.new(name='created mesh')
+
+mesh.vertices.add(num_vertices)
+mesh.vertices.foreach_set("co", vertices)
+
+mesh.loops.add(num_vertex_indices)
+mesh.loops.foreach_set("vertex_index", vertex_index)
+
+mesh.polygons.add(num_loops)
+mesh.polygons.foreach_set("loop_start", loop_start)
+mesh.polygons.foreach_set("loop_total", loop_total)
+
+"""
+
+    wavefield.nt  # number of key-frames
+
+    last_frame_nr = 0
+
+    for i_source_frame in range(wavefield.nt):
+        t = wavefield.period * i_source_frame / wavefield.nt
+
+        n_frame = consts.BLENDER_FPS * t
+
+        if n_frame - last_frame_nr < 5:
+            continue
+
+        last_frame_nr = n_frame
+
+        print('exporting wave-frame {} of {}'.format(n_frame,wavefield.nt))
+
+        # update wave-field
+        wavefield.update(t)
+        wavefield.actor.GetMapper().Update()
+        # data = v.actor.GetMapper().GetInputAsDataSet()
+
+        wave_code = ''
+
+        wave_code += '\nvertices = np.array(['
+
+        for i in range(data.GetNumberOfPoints()):
+            point = data.GetPoint(i)
+            wave_code += '\n    {}, {}, {},'.format(*point)
+
+        wave_code = wave_code[:-1]  # remove the last ,
+
+        wave_code += """], dtype=np.float32)
+        
+mesh.vertices.foreach_set("co", vertices)
+for vertex in mesh.vertices:
+    """
+        wave_code += 'vertex.keyframe_insert(data_path="co", frame = {})'.format(np.round(n_frame))
+        code += wave_code
+    code += """
+# We're done setting up the mesh values, update mesh object and 
+# let Blender do some checks on it
+mesh.update()
+mesh.validate()
+
+# Create Object whose Object Data is our new mesh
+obj = bpy.data.objects.new('created object', mesh)
+
+# Add *Object* to the scene, not the mesh
+scene = bpy.context.scene
+scene.collection.objects.link(obj)"""
+    
+    return code
+    
+
+
+def create_blend_and_open(scene, blender_result_file = None, blender_base_file=None, blender_exe_path=None, camera=None, animation_dofs=None, wavefield=None):
 
     if blender_base_file is None:
         blender_base_file = consts.BLENDER_BASE_SCENE
@@ -275,14 +427,14 @@ def create_blend_and_open(scene, blender_result_file = None, blender_base_file=N
     if blender_result_file is None:
         blender_result_file = consts.BLENDER_DEFAULT_OUTFILE
 
-    create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path,camera=camera, animation_dofs=animation_dofs)
+    create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield)
     command = '"{}"'.format(str(blender_result_file))
     system(command)
 
-def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None,animation_dofs=None):
+def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None,animation_dofs=None, wavefield=None):
     tempfile = Path(consts.PATH_TEMP) / 'blender.py'
 
-    blender_py_file(scene, tempfile, blender_base_file, blender_result_file,camera=camera,animation_dofs=animation_dofs)
+    blender_py_file(scene, tempfile, blender_base_file, blender_result_file,camera=camera,animation_dofs=animation_dofs, wavefield=wavefield)
 
     if blender_exe_path is None:
         blender_exe_path = consts.BLENDER_EXEC
@@ -291,7 +443,7 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
     print(command)
     system(command)
 
-def blender_py_file(scene, python_file, blender_base_file, blender_result_file, camera = None, animation_dofs=None):
+def blender_py_file(scene, python_file, blender_base_file, blender_result_file, camera = None, animation_dofs=None, wavefield=None):
 
     code = '# Auto-generated python file for blender\n# Execute using blender.exe -b --python "{}"\n\n'.format(python_file)
     code += 'import bpy\n'
@@ -459,6 +611,13 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
         code += '\nobj_camera.location = ({},{},{})'.format(*pos)
         code += '\ndir = Vector(({},{},{}))\n'.format(*dir)
         code += "\nq = dir.to_track_quat('-Z','Y')\nobj_camera.rotation_euler = q.to_euler()"
+        
+    # Add the wave-plane
+    if wavefield is not None:
+        
+        code += '\n# wavefield'
+        code += _wavefield_to_blender(wavefield)
+        
 
     code += '\nbpy.ops.wm.save_mainfile(filepath=r"{}")'.format(blender_result_file)
     # bpy.ops.wm.quit_blender() # not needed
