@@ -4402,7 +4402,7 @@ class Scene:
 
         return self._vfc.M(delta)
 
-    def dynamics_K(self, delta):
+    def dynamics_K(self, delta = 1e-6):
         """Returns the stiffness matrix of the scene for a perturbation of delta
 
         A component is positive if a displacement introduces an reaction force in the opposite direction.

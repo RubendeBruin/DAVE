@@ -187,8 +187,8 @@ def dynamics_summary_data(scene):
         """
     summary = []
 
-    M = scene.dynamics_M(0.1)
-    K = scene.dynamics_K(0.1)
+    M = scene.dynamics_M()
+    K = scene.dynamics_K()
     nodes = scene.dynamics_nodes()
     modes = scene.dynamics_modes()
 

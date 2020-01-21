@@ -101,9 +101,11 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
 
     elif filepath.endswith('.obj'):
         obj = bpy.ops.import_scene.obj(filepath=filepath)
-        obj = bpy.context.selected_objects[0]
-        obj.rotation_euler[0] = 0
-        objects = [obj]
+        objects = []
+        for obj in bpy.context.selected_objects:
+            obj.rotation_euler[0] = 0
+            objects.append(obj)
+        
         
     elif filepath.endwith('.stl'):
         print('STL not yet implemented')
