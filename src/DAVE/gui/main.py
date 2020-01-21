@@ -1109,106 +1109,106 @@ class Gui():
 if __name__ == '__main__':
 
     s = Scene()
-
-    s.resources_paths.append(r'C:\data\Dave\Public\Blender visuals')
-    s.import_scene(s.get_resource_path("billy.dave"), containerize=False, prefix="")
-    Gui(s)
-
-    # ------------------
-    s.import_scene(s.get_resource_path("billy.dave"), containerize=False, prefix="")
-
-    # ------------------
-
-    s['Billy'].fixed = (False, True, False, False, False, False)
-
-    # ------------------
-
-    s['Billy'].fixed = (False, False, False, False, False, False)
-
-    # ------------------
-
-    s['Billy'].fixed = (False, False, False, True, False, False)
-
-    # ------------------
-
-    s['Billy'].fixed = (False, False, False, True, True, False)
-
-    # ------------------
-
-    s['Billy'].position = (0.0, 0.0, 0.0)
-    s['Billy'].fixed = (False, False, False, False, True, False)
-
-    # ------------------
-
-    s['Billy'].fixed = (False, False, False, False, False, False)
-
-    # ------------------
-    s.import_scene(s.get_resource_path("billy.dave"), containerize=False, prefix="2_")
-
-    # ------------------
-
-    s['2_Billy'].fixed = (False, False, False, True, False, False)
-
-    # ------------------
-
-    s['2_Billy'].fixed = (False, False, False, True, True, False)
-
-    # ------------------
-
-    s['2_Billy'].position = (0.0, 0.0, 0.0)
-    s['2_Billy'].rotation = (0.0, 0.0, 0.0)
-    s['2_Billy'].fixed = (False, False, False, False, True, False)
-
-    # ------------------
-
-    s['2_Billy'].fixed = (False, False, False, False, False, False)
-
-    # ------------------
-
-    s['2_billy_positioning_target'].position = (0.0, 1.0, 0.0)
-
-    # ------------------
-
-    s['2_billy_positioning_target'].position = (0.0, 10.0, 0.0)
-
-    # ------------------
-
-    s['2_billy_positioning_target'].position = (0.0, 100.0, 0.0)
-
-    # code for Tower
-    s.new_rigidbody(name='Tower',
-                    mass=800.0,
-                    cog=(0.0,
-                         0.0,
-                         90.0),
-                    position=(120.0,
-                              0.0,
-                              0.0),
-                    rotation=(-90.0,
-                              0.0,
-                              0.0),
-                    fixed=False)
-
-    # code for Visual_1
-    s.new_visual(name='Visual_1',
-                 parent='Tower',
-                 path=r'cone chopped.obj',
-                 offset=(0, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(5.0, 5.0, 120.0))
-    # code for Nacelle
-    s.new_visual(name='Nacelle',
-                 parent='Tower',
-                 path=r'cube_with_bevel.obj',
-                 offset=(0.0, -2.0, 122.0),
-                 rotation=(0, 0, 0),
-                 scale=(4.0, 6.0, 4.0))
-    # code for Hub
-    s.new_visual(name='Hub',
-                 parent='Tower',
-                 path=r'cone chopped.obj',
-                 offset=(0.0, 4.0, 122.0),
-                 rotation=(-90.0, 0.0, 0.0),
-                 scale=(3.0, 3.0, 3.0))
+    #
+    # s.resources_paths.append(r'C:\data\Dave\Public\Blender visuals')
+    # # s.import_scene(s.get_resource_path("billy.dave"), containerize=False, prefix="")
+    # Gui(s)
+    #
+    # # ------------------
+    # s.import_scene(s.get_resource_path("billy.dave"), containerize=False, prefix="")
+    #
+    # # ------------------
+    #
+    # s['Billy'].fixed = (False, True, False, False, False, False)
+    #
+    # # ------------------
+    #
+    # s['Billy'].fixed = (False, False, False, False, False, False)
+    #
+    # # ------------------
+    #
+    # s['Billy'].fixed = (False, False, False, True, False, False)
+    #
+    # # ------------------
+    #
+    # s['Billy'].fixed = (False, False, False, True, True, False)
+    #
+    # # ------------------
+    #
+    # s['Billy'].position = (0.0, 0.0, 0.0)
+    # s['Billy'].fixed = (False, False, False, False, True, False)
+    #
+    # # ------------------
+    #
+    # s['Billy'].fixed = (False, False, False, False, False, False)
+    #
+    # # ------------------
+    # s.import_scene(s.get_resource_path("billy.dave"), containerize=False, prefix="2_")
+    #
+    # # ------------------
+    #
+    # s['2_Billy'].fixed = (False, False, False, True, False, False)
+    #
+    # # ------------------
+    #
+    # s['2_Billy'].fixed = (False, False, False, True, True, False)
+    #
+    # # ------------------
+    #
+    # s['2_Billy'].position = (0.0, 0.0, 0.0)
+    # s['2_Billy'].rotation = (0.0, 0.0, 0.0)
+    # s['2_Billy'].fixed = (False, False, False, False, True, False)
+    #
+    # # ------------------
+    #
+    # s['2_Billy'].fixed = (False, False, False, False, False, False)
+    #
+    # # ------------------
+    #
+    # s['2_billy_positioning_target'].position = (0.0, 1.0, 0.0)
+    #
+    # # ------------------
+    #
+    # s['2_billy_positioning_target'].position = (0.0, 10.0, 0.0)
+    #
+    # # ------------------
+    #
+    # s['2_billy_positioning_target'].position = (0.0, 100.0, 0.0)
+    #
+    # # code for Tower
+    # s.new_rigidbody(name='Tower',
+    #                 mass=800.0,
+    #                 cog=(0.0,
+    #                      0.0,
+    #                      90.0),
+    #                 position=(120.0,
+    #                           0.0,
+    #                           0.0),
+    #                 rotation=(-90.0,
+    #                           0.0,
+    #                           0.0),
+    #                 fixed=False)
+    #
+    # # code for Visual_1
+    # s.new_visual(name='Visual_1',
+    #              parent='Tower',
+    #              path=r'cone chopped.obj',
+    #              offset=(0, 0, 0),
+    #              rotation=(0, 0, 0),
+    #              scale=(5.0, 5.0, 120.0))
+    # # code for Nacelle
+    # s.new_visual(name='Nacelle',
+    #              parent='Tower',
+    #              path=r'cube_with_bevel.obj',
+    #              offset=(0.0, -2.0, 122.0),
+    #              rotation=(0, 0, 0),
+    #              scale=(4.0, 6.0, 4.0))
+    # # code for Hub
+    # s.new_visual(name='Hub',
+    #              parent='Tower',
+    #              path=r'cone chopped.obj',
+    #              offset=(0.0, 4.0, 122.0),
+    #              rotation=(-90.0, 0.0, 0.0),
+    #              scale=(3.0, 3.0, 3.0))
 
     Gui(s)
