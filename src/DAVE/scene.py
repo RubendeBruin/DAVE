@@ -4396,7 +4396,7 @@ class Scene:
 
     # =================== DYNAMICS ==================
 
-    def dynamics_M(self,delta = 0.1):
+    def dynamics_M(self,delta = 1e-6):
         """Returns the mass matrix of the scene"""
         self.update()
 
