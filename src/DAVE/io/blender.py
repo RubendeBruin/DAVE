@@ -54,107 +54,379 @@ from os.path import splitext, basename
 from os import system
 from numpy import deg2rad
 from pathlib import Path
+import numpy as np
+
+import vtk
 
 
 # utility functions for our python scripts are hard-coded here
 
 BFUNC = """
 
-from mathutils import Vector
+from mathutils import Vector, Quaternion
+import numpy as np
 
 # These functions are inserted by DAVE.io.blender.py
 
-def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orientation=(0,0,0), position=(0,0,0) ):
-	\"\"\"
-	All meshes shall be joined
+def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orientation=(0,0,0,0), position=(0,0,0), orientations=[], positions=[], frames_per_dof = 1 ):
+    \"\"\"
+    All meshes shall be joined
     
     First rotate (rotation)
-	Then scale (scale)
+    Then scale (scale)
     Then move (offset)
 
-	Then global apply rotation rotate (orientation)
-	Then apply global move (position)
+    Then global apply rotation rotate (orientation)
+    Then apply global move (position)
 
-	rotations in radians
+    rotations in radians
 
-	\"\"\"
-	print('Loading {}'.format(filepath))
+    \"\"\"
+    print('Loading {}'.format(filepath))
 
-	with bpy.data.libraries.load(filepath=filepath, relative=False) as (data_from, data_to):
-		data_to.objects.extend(data_from.objects)
-	
-	for object in data_to.objects:
-		print(object.name)
+   
+    objects = []
+    if filepath.endswith('.blend'):
+        with bpy.data.libraries.load(filepath=filepath, relative=False) as (data_from, data_to):
+            data_to.objects.extend(data_from.objects)
+        
+        for object in data_to.objects:
 
-		if object.type == 'MESH':    # only add meshes, materials are automatically included
-			bpy.ops.object.add_named(name=object.name)
-			# When you use bpy.ops.object.add() the newly created object becomes the active object
-			# bpy.context.active_object
-			active_object = bpy.context.view_layer.objects.active
-			bpy.ops.object.select_all(action='DESELECT')
-			active_object.select_set(True)
-			# set absolute
-			# active_object.location = (0,0,5)
-			# active_object.rotation_euler = (1,2,3)
-			# active_object.scale = (2,1,1)
-			# apply transform
-			bpy.ops.transform.translate(value=offset)
-			bpy.ops.transform.rotate(value=-rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)
-			bpy.ops.transform.rotate(value=-rotation[1], orient_axis='Y')
-			bpy.ops.transform.rotate(value=-rotation[2], orient_axis='X')
-			bpy.ops.transform.resize(value=scale)
-			# apply global transforms
-			bpy.ops.transform.rotate(value=-orientation[0], orient_axis='Z')
-			bpy.ops.transform.rotate(value=-orientation[1], orient_axis='Y')
-			bpy.ops.transform.rotate(value=-orientation[2], orient_axis='X')
-			bpy.ops.transform.translate(value=position)
+            if object.type == 'MESH':  # only add meshes, materials are automatically included
+                bpy.ops.object.add_named(name=object.name)
+                # When you use bpy.ops.object.add() the newly created object becomes the active object
+                # bpy.context.active_object
+                objects.append(bpy.context.view_layer.objects.active)
 
-def add_line(points, diameter, name=None):
 
+    elif filepath.endswith('.obj'):
+        obj = bpy.ops.import_scene.obj(filepath=filepath)
+        obj = bpy.context.selected_objects[0]
+        obj.rotation_euler[0] = 0
+        objects = [obj]
+        
+    elif filepath.endwith('.stl'):
+        print('STL not yet implemented')
+        
+
+    for object in objects:
+        print(object.name)
+
+        # bpy.ops.object.add_named(name=object.name)
+        # When you use bpy.ops.object.add() the newly created object becomes the active object
+        # bpy.context.active_object
+        #active_object = bpy.context.view_layer.objects.active
+
+        # Select only object
+
+        bpy.ops.object.select_all(action='DESELECT')
+        object.select_set(True)
+        active_object = object
+
+        # apply local transform
+
+        bpy.ops.transform.translate(value=offset)  # translate
+
+        bpy.ops.transform.rotate(value=-rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)
+        bpy.ops.transform.rotate(value=-rotation[1], orient_axis='Y')
+        bpy.ops.transform.rotate(value=-rotation[2], orient_axis='X')
+        bpy.ops.transform.resize(value=scale)
+
+        # bpy.ops.transform.translate(value=(-offset[0], -offset[1], -offset[2])) # and translate back
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        # bpy.ops.transform.translate(value=offset)  # translate    
+
+        # apply global transforms
+
+        active_object.location = position
+        active_object.rotation_mode = 'QUATERNION'
+        active_object.rotation_quaternion = (orientation[3], orientation[0], orientation[1],orientation[2])
+
+        n_frame = 1
+        for pos, orient in zip(positions, orientations):
+            bpy.context.scene.frame_set(n_frame * frames_per_dof)
+            n_frame += 1
+
+
+            active_object.rotation_quaternion = (orient[3], orient[0], orient[1],orient[2])
+            active_object.keyframe_insert(data_path="rotation_quaternion", index = -1)
+
+            active_object.location = Vector(pos)
+            active_object.keyframe_insert(data_path="location",index = -1)
+
+
+        bpy.context.scene.frame_end = (n_frame-1) * frames_per_dof
+
+
+
+
+            
+def add_line(points, diameter, name=None, ani_points = None, frames_per_entry=1):
+    # Points should contain FOUR coordinates per point, the 4th one can be 1.0
+    
+    curve = bpy.data.curves.new("Curve", type='CURVE')
+    polyline = curve.splines.new(type='POLY')
+
+    n_points = len(points)
+    if n_points > 1:  # by default a poly curve has one point
+        polyline.points.add(n_points - 1)
+
+    # set the points
+    pts = np.ravel(points)
+    polyline.points.foreach_set('co',pts)
+
+    # add animation
+    if ani_points is not None:
+
+        points = curve.splines.data.splines[0].points  # need to be in splines[0]
+        for i_frame, cur_points in enumerate(ani_points):
+            n_frame = i_frame * frames_per_entry
+
+            # set the data
+            pts = np.ravel(cur_points)
+            points.foreach_set("co", pts)
+
+            # add the key-frames
+            for point in points:
+                point.keyframe_insert(data_path="co", frame = n_frame)
+
+
+    # Create the object
+    if name is None:
+        name = "Line"
+    curveObj = bpy.data.objects.new(name, curve)
+    curveObj.data.dimensions = '3D'
+
+    # attach to scene
+    bpy.context.scene.collection.objects.link(curveObj)
+
+    # add material
+    curveObj.data.materials.append(bpy.data.materials['Cable'])
+    curveObj.data.bevel_depth = diameter/2
+
+def add_beam(points, direction, diameter, name=None, ani_points=None, ani_directions=None, frames_per_entry=1):
+    # Beam is a bezier while lines are poly
     bpy.ops.curve.primitive_bezier_curve_add(enter_editmode=True)
     obj_data = bpy.context.active_object.data
-    obj_data.bevel_depth = diameter/2
+    obj_data.bevel_depth = diameter / 2
 
-    end1 = obj_data.splines[0].bezier_points[0]
-    end1.co = points[0]
-    end1.handle_left = points[0]
-    end1.handle_right = points[1]
+    n_points = len(points)
+    if n_points > 2:  # by default a curve has two points
+        obj_data.splines[0].bezier_points.add(n_points - 2)
 
-    end2 = obj_data.splines[0].bezier_points[1]
-    end2.co = points[1]
-    end2.handle_left = points[0]
-    end2.handle_right = points[1]
-    
-    if len(points)>2:
-        
-        end2.handle_right = points[2]
-        
-        for i in range(2,len(points)):
-            obj_data.splines[0].bezier_points.add(1)
-            end3 = obj_data.splines[0].bezier_points[i]
-            end3.co = points[i]
-            end3.handle_left = points[i-1]
-            if i < len(points)-1:
-                end3.handle_right = points[i+1]
-            else:
-                end3.handle_right = points[i]
+    bpy.ops.object.mode_set(mode='OBJECT')  # back to object mode
+
+    curve = bpy.context.active_object
+    bp = curve.data.splines[0].bezier_points
+
+    def setpoints(pts, directions):
+
+        L = 0.2*((pts[0][0]-pts[1][0])**2+(pts[0][1]-pts[1][1])**2+(pts[0][2]-pts[1][2])**2)**0.5
+
+        end1 = bp[0]
+        end1.co = pts[0]
+        end1.handle_left = (pts[0][0]-L*directions[0][0], pts[0][1]-L*directions[0][1],pts[0][2]-L*directions[0][2])
+        end1.handle_right = (pts[0][0]+L*directions[0][0], pts[0][1]+L*directions[0][1],pts[0][2]+L*directions[0][2])
+
+        end2 = bp[1]
+        end2.co = pts[1]
+        end2.handle_left = (pts[1][0]-L*directions[1][0], pts[1][1]-L*directions[1][1],pts[1][2]-L*directions[1][2])
+        end2.handle_right = (pts[1][0]+L*directions[1][0], pts[1][1]+L*directions[1][1],pts[1][2]+L*directions[1][2])
+
+    if ani_points is not None:
+        for i_frame, (cur_points, cur_dir) in enumerate(zip(ani_points, ani_directions)):
+
+            n_frame = i_frame * frames_per_entry
+            bpy.context.scene.frame_set(n_frame)
+
+            setpoints(cur_points, cur_dir)
+
+            # insert keyframes
+            for i_point in range(n_points):
+                bp[i_point].keyframe_insert(data_path='handle_left', index=-1)
+                bp[i_point].keyframe_insert(data_path='handle_right', index=-1)
+                bp[i_point].keyframe_insert(data_path='co', index=-1)
+
+    else:
+        setpoints(points, direction)
 
     if name is not None:
         bpy.context.active_object.name = name
 
     bpy.context.active_object.data.materials.append(bpy.data.materials['Cable'])
     bpy.ops.object.mode_set(mode='OBJECT')
-    
+
+
 """
-
-
 
 def _to_euler(rotation):
     r = Rotation.from_rotvec(deg2rad(rotation))
     return r.as_euler('zyx',degrees=False)
 
+def _to_quaternion(rotation):
+    r = Rotation.from_rotvec(deg2rad(rotation))
+    return r.as_quat()
 
-def create_blend_and_open(scene, blender_result_file = None, blender_base_file=None, blender_exe_path=None, camera=None):
+
+def _wavefield_to_blender(wavefield):
+    """Returns blender python code to generate the wavefield in Blender
+    
+    Args:
+        wavefield: DAVE.visual.wavefield object
+    
+    Returns:
+        str
+    """
+
+    wavefield.update(0)
+
+    wavefield.actor.GetMapper().Update()
+    data = wavefield.actor.GetMapper().GetInputAsDataSet()
+
+    code = '\n'
+    code += '\nvertices = np.array(['
+
+    for i in range(data.GetNumberOfPoints()):
+        point = data.GetPoint(i)
+        code += '\n    {}, {}, {},'.format(*point)
+
+    code = code[:-1]  # remove the last ,
+
+    code += """], dtype=np.float32)
+
+num_vertices = vertices.shape[0] // 3
+
+# Polygons are defined in loops. Here, we define one quad and two triangles
+vertex_index = np.array(["""
+
+    poly_length = []
+    counter = 0
+    poly_start = []
+
+    for i in range(data.GetNumberOfCells()):
+        cell = data.GetCell(i)
+
+        if isinstance(cell, vtk.vtkLine):
+            print("Cell nr {} is a line, not adding to mesh".format(i))
+            continue
+
+        code += '\n    '
+
+        for ip in range(cell.GetNumberOfPoints()):
+            code += '{},'.format(cell.GetPointId(ip))
+
+        poly_length.append(cell.GetNumberOfPoints())
+        poly_start.append(counter)
+        counter += cell.GetNumberOfPoints()
+
+    code = code[:-1]  # remove the last ,
+
+    code += """], dtype=np.int32)
+
+# For each polygon the start of its vertex indices in the vertex_index array
+loop_start = np.array([
+        """
+
+    for p in poly_start:
+        code += '{}, '.format(p)
+
+    code = code[:-1]  # remove the last ,
+
+    code += """], dtype=np.int32)
+
+# Length of each polygon in number of vertices
+loop_total = np.array([
+        """
+
+    for p in poly_length:
+        code += '{}, '.format(p)
+
+    code = code[:-1]  # remove the last ,
+
+    code += """], dtype=np.int32)
+
+num_vertex_indices = vertex_index.shape[0]
+num_loops = loop_start.shape[0]
+
+# Create mesh object based on the arrays above
+
+mesh = bpy.data.meshes.new(name='created mesh')
+
+mesh.vertices.add(num_vertices)
+mesh.vertices.foreach_set("co", vertices)
+
+mesh.loops.add(num_vertex_indices)
+mesh.loops.foreach_set("vertex_index", vertex_index)
+
+mesh.polygons.add(num_loops)
+mesh.polygons.foreach_set("loop_start", loop_start)
+mesh.polygons.foreach_set("loop_total", loop_total)
+
+"""
+
+    wavefield.nt  # number of key-frames
+
+    last_frame_nr = 0
+
+    for i_source_frame in range(wavefield.nt):
+        t = wavefield.period * i_source_frame / wavefield.nt
+
+        n_frame = consts.BLENDER_FPS * t
+
+        if n_frame - last_frame_nr < 5:
+            continue
+
+        last_frame_nr = n_frame
+
+        print('exporting wave-frame {} of {}'.format(n_frame,wavefield.nt))
+
+        # update wave-field
+        wavefield.update(t)
+        wavefield.actor.GetMapper().Update()
+
+        filename = consts.PATH_TEMP / 'waves_frame{}.npy'.format(n_frame)
+        # data = v.actor.GetMapper().GetInputAsDataSet()
+
+        #pre-allocate data
+        n_points = data.GetNumberOfPoints()
+        points = np.zeros((n_points, 3))
+
+        for i in range(n_points):
+            point = data.GetPoint(i)
+            points[i,:] = point
+
+        np.save(filename,np.ravel(points))
+
+        code += '\nprint("Importing wave-frame {} / {}")'.format(n_frame, wavefield.nt)
+
+        code += '\nvertices = np.load(r"{}")'.format(str(filename))
+        code += """
+        
+mesh.vertices.foreach_set("co", vertices)
+for vertex in mesh.vertices:
+    """
+        code += 'vertex.keyframe_insert(data_path="co", frame = {})'.format(np.round(n_frame))
+
+        # ============= END OF THE LOOP
+
+    code += """
+# We're done setting up the mesh values, update mesh object and 
+# let Blender do some checks on it
+mesh.update()
+mesh.validate()
+
+# Create Object whose Object Data is our new mesh
+obj = bpy.data.objects.new('created object', mesh)
+
+# Add *Object* to the scene, not the mesh
+scene = bpy.context.scene
+scene.collection.objects.link(obj)"""
+    
+    return code
+    
+
+
+def create_blend_and_open(scene, blender_result_file = None, blender_base_file=None, blender_exe_path=None, camera=None, animation_dofs=None, wavefield=None):
 
     if blender_base_file is None:
         blender_base_file = consts.BLENDER_BASE_SCENE
@@ -162,14 +434,14 @@ def create_blend_and_open(scene, blender_result_file = None, blender_base_file=N
     if blender_result_file is None:
         blender_result_file = consts.BLENDER_DEFAULT_OUTFILE
 
-    create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path,camera=camera)
+    create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield)
     command = '"{}"'.format(str(blender_result_file))
     system(command)
 
-def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None):
+def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None,animation_dofs=None, wavefield=None):
     tempfile = Path(consts.PATH_TEMP) / 'blender.py'
 
-    blender_py_file(scene, tempfile, blender_base_file, blender_result_file,camera=camera)
+    blender_py_file(scene, tempfile, blender_base_file, blender_result_file,camera=camera,animation_dofs=animation_dofs, wavefield=wavefield)
 
     if blender_exe_path is None:
         blender_exe_path = consts.BLENDER_EXEC
@@ -178,7 +450,7 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
     print(command)
     system(command)
 
-def blender_py_file(scene, python_file, blender_base_file, blender_result_file, camera = None):
+def blender_py_file(scene, python_file, blender_base_file, blender_result_file, camera = None, animation_dofs=None, wavefield=None):
 
     code = '# Auto-generated python file for blender\n# Execute using blender.exe -b --python "{}"\n\n'.format(python_file)
     code += 'import bpy\n'
@@ -212,21 +484,52 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
         name,_ = splitext(basename(visual.path))
 
-        filename = scene.get_resource_path(name + '.blend')  # raises exception if file is not found
+        try:
+            filename = scene.get_resource_path(name + '.blend')  # raises exception if file is not found
+        except:
+            filename = scene.get_resource_path(visual.path) # fall-back to .obj
 
         # the offset needs to be rotated.
 
         rot = Rotation.from_rotvec(deg2rad(visual.parent.global_rotation))
-        rotated_offset = rot.apply(visual.offset)
+        # rotated_offset = rot.apply(visual.offset)
+
+        if animation_dofs:
+            code += '\npositions = []'
+            code += '\norientations = []'
+            for dof in animation_dofs:
+                scene._vfc.set_dofs(dof)
+                scene.update()
+
+                code += '\norientations.append([{},{},{},{}])'.format(*_to_quaternion(visual.parent.global_rotation))
+
+                position = visual.parent.global_position
+                # global_offset = visual.parent.to_glob_direction(visual.offset)
+
+                glob_position = np.array(position) # + np.array(global_offset)
+
+                code += '\npositions.append([{},{},{}])'.format(*glob_position)
+
+            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations)'.format(
+                filename,
+                *visual.scale,
+                *_to_euler(visual.rotation),
+                *visual.offset,
+                *_to_quaternion(visual.parent.global_rotation),
+                *visual.parent.global_position)
 
 
-        code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{}), offset=({},{},{}), orientation=({},{},{}), position=({},{},{}))'.format(
-	                filename,
-                    *visual.scale,
-                    *_to_euler(visual.rotation),
-                    *rotated_offset,
-                    *_to_euler(visual.parent.global_rotation),
-                    *visual.parent.global_position)
+        else:
+            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}))'.format(
+                        filename,
+                        *visual.scale,
+                        *_to_euler(visual.rotation),
+                        *visual.offset,
+                        *_to_quaternion(visual.parent.global_rotation),
+                        *visual.parent.global_position)
+
+
+
 
 
     for cable in scene.nodes_of_type(dc.Cable):
@@ -239,11 +542,72 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
         code += '\npoints=['
         for p in points:
-            code += '({},{},{}),'.format(*p)
+            code += '({},{},{},1.0),'.format(*p)
         code = code[:-1]
         code += ']'
 
-        code += '\nadd_line(points, diameter={}, name = "{}")'.format(dia, cable.name)
+        if animation_dofs:
+            code += '\nani_points = []'
+            for dof in animation_dofs:
+                scene._vfc.set_dofs(dof)
+                scene.update()
+                points = cable.get_points_for_visual()
+                code += '\nframe_points=['
+                for p in points:
+                    code += '({},{},{},1.0),'.format(*p)
+                code = code[:-1]
+                code += ']'
+                code += '\nani_points.append(frame_points)'
+
+            code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points)'.format(dia, cable.name)
+
+        else:
+
+            code += '\nadd_line(points, diameter={}, name = "{}")'.format(dia, cable.name)
+
+
+    for beam in scene.nodes_of_type(dc.LinearBeam):
+        pa = beam.master.global_position
+        pb = beam.slave.global_position
+
+        code += '\npoints=['
+        code += '({},{},{}),'.format(*pa)
+        code += '({},{},{})]'.format(*pb)
+
+        code += '\ndirections=['
+        code += '({},{},{}),'.format(*beam.master.ux)
+        code += '({},{},{})]'.format(*beam.slave.ux)
+
+        dia = consts.BLENDER_BEAM_DIA
+
+        if animation_dofs:
+            code += '\nani_points = []'
+            code += '\nani_dirs = []'
+
+            for dof in animation_dofs:
+                scene._vfc.set_dofs(dof)
+                scene.update()
+                pa = beam.master.global_position
+                pb = beam.slave.global_position
+
+                code += '\nf_points=['
+                code += '({},{},{}),'.format(*pa)
+                code += '({},{},{})]'.format(*pb)
+
+                code += '\nf_directions=['
+                code += '({},{},{}),'.format(*beam.master.ux)
+                code += '({},{},{})]'.format(*beam.slave.ux)
+
+                code += '\nani_points.append(f_points)'
+                code += '\nani_dirs.append(f_directions)'
+
+
+
+            code += '\nadd_beam(points, directions, diameter={}, name = "{}", ani_points = ani_points,ani_directions = ani_dirs)'.format(dia, beam.name)
+        else:
+            code += '\nadd_beam(points, directions, diameter={}, name = "{}")'.format(dia, beam.name)
+
+
 
     if camera is not None:
         pos = camera['position']
@@ -254,6 +618,13 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
         code += '\nobj_camera.location = ({},{},{})'.format(*pos)
         code += '\ndir = Vector(({},{},{}))\n'.format(*dir)
         code += "\nq = dir.to_track_quat('-Z','Y')\nobj_camera.rotation_euler = q.to_euler()"
+        
+    # Add the wave-plane
+    if wavefield is not None:
+        
+        code += '\n# wavefield'
+        code += _wavefield_to_blender(wavefield)
+        
 
     code += '\nbpy.ops.wm.save_mainfile(filepath=r"{}")'.format(blender_result_file)
     # bpy.ops.wm.quit_blender() # not needed

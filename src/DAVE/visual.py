@@ -97,7 +97,7 @@ def actor_from_trimesh(trimesh):
     for i in range(trimesh.nFaces):
         faces.append(trimesh.GetFace(i))
 
-    return vp.actors.Actor([vertices, faces]).alpha(vc.ALPHA_BUOYANCY)
+    return vp.Mesh([vertices, faces]).alpha(vc.ALPHA_BUOYANCY)
 
 def vp_actor_from_obj(filename):
     # load the data
@@ -113,7 +113,7 @@ def vp_actor_from_obj(filename):
     mapper.Update()
     # actor = vtk.vtkActor()
     # actor.SetMapper(mapper)
-    vpa = vp.actors.Actor(mapper.GetInputAsDataSet())
+    vpa = vp.Mesh(mapper.GetInputAsDataSet())
     vpa.flat()
     return vpa
 
@@ -124,6 +124,7 @@ class ActorType(Enum):
     GLOBAL = 4
     CABLE = 5
     NOT_GLOBAL = 6
+    BALLASTTANK = 7
 
 class VisualOutline:
     parent_vp_actor = None
@@ -135,88 +136,112 @@ class VisualActor:
     def __init__(self, actors, node):
         self.actors = actors  # vtkplotter actors
         self.node = node      # Node
-        self.visible = True
+        # self.visible = True
         self._original_colors = list()
-        self._original_alpha = list()    # used by select
-        self._original_opacity = list()  # overwritten by set-alpha
+        self._is_selected = False
+        self._is_transparent = False
 
     def select(self):
 
-        self._original_colors = list()
-        self._original_alpha = list()
+        if self._is_selected:
+            return
 
-        if self.node is not None:
-            print('storing ' + str(self.node.name))
-        else:
-            print('storing properties')
+        self._original_colors = list()
+
+        # if self.node is not None:
+        #     print('storing ' + str(self.node.name))
+        # else:
+        #     print('storing properties')
 
         for actor in self.actors:
             self._original_colors.append(actor.color())
-            self._original_alpha.append(actor.alpha())
             actor.color(vc.COLOR_SELECT)
+
+        self._is_selected = True
 
 
     def deselect(self):
 
+        # print('resetting original colors 1')
+
+        if not self._is_selected:
+            return
+
+        # print('resetting original colors 2')
+
+        self._is_selected = False
+
         if self._original_colors:
 
-            if self.node is not None:
-                print('setting ' + str(self.node.name))
-            else:
-                print('setting properties')
+            # if self.node is not None:
+            #     print('setting ' + str(self.node.name))
+            # else:
+            #     print('setting properties')
 
 
-            for actor, color, alpha in zip(self.actors, self._original_colors, self._original_alpha):
+            for actor, color in zip(self.actors, self._original_colors):
                 actor.color(color)
-                actor.alpha(alpha)
-
-            self._original_colors = list()
-            self._original_alpha = list()
 
         else:
-            for a in self.actors:
-                if a.actor_type == ActorType.GLOBAL:
-                    a.alpha(0.4)
-                else:
-                    a.alpha(1)
+            raise Exception("Original color not stored for visual belonging to {}".format(self.node.name))
 
 
     def make_transparent(self):
 
-        self._original_opacity = []
+        if self._is_transparent:
+            return
+
         for a in self.actors:
-            self._original_opacity.append(a.alpha())
             a.alpha(0.4)
+
+        self._is_transparent = True
 
     def reset_opacity(self):
 
-        if self._original_opacity:
-            for a,alp in zip(self.actors, self._original_opacity):
-                a.alpha(alp)
-            self._original_opacity = []
-        else:
-            for a in self.actors:
-                if a.actor_type == ActorType.GLOBAL:
-                    a.alpha(0.4)
-                else:
-                    a.alpha(1)
+        if not self._is_transparent:
+            return
+
+        for a in self.actors:
+            if a.actor_type == ActorType.GLOBAL:
+                a.alpha(0.4)
+            else:
+                a.alpha(1)
+
+        self._is_transparent = False
 
     def set_dsa(self, d,s,a):
         for act in self.actors:
             act.lighting(diffuse=vc.VISUAL_DIFFUSE, ambient=vc.VISUAL_AMBIENT, specular=vc.VISUAL_SPECULAR, enabled=True)
+
+    def on(self):
+        for a in self.actors:
+            a.on()
+
+    def off(self):
+        for a in self.actors:
+            a.off()
+
+    @property
+    def visible(self):
+        return self.actors[0].GetVisibility()
 
 
 class Viewport:
 
     def __init__(self, scene, jupyter = False):
         self.scene = scene
-        self.visuals = []
-        self.outlines = []
+        self.visuals = list()
+        self.outlines = list()
         self.screen = None
         """Becomes assigned when a screen is active (or was active...)"""
 
+        self.global_visual = None
+        """Visuals for the global environment"""
+
         self.mouseLeftEvent = None
         self.mouseRightEvent = None
+        self.onEscapeKey = None
+        "Function handles"
 
         self.Jupyter = jupyter
 
@@ -233,6 +258,8 @@ class Viewport:
 
         self.quick_updates_only = False # Do not perform slow updates ( make animations quicker)
 
+        self._wavefield = None
+        """WaveField object"""
 
     def update_outlines(self):
         if self.screen is None:
@@ -242,6 +269,9 @@ class Viewport:
             for outline in self.outlines:
                 outline.outline_actor.SetVisibility(False)
             return
+
+        for outline in self.outlines:
+            outline.outline_actor.SetVisibility(outline.parent_vp_actor.GetVisibility())
 
         # list of already existing outlines
         _outlines = [a.parent_vp_actor for a in self.outlines]
@@ -326,7 +356,7 @@ class Viewport:
         world_actors = []
 
         plane = vp.Plane(pos=(0,0,0), normal=(0,0,1), sx=1000, sy=1000).c(vc.COLOR_WATER)
-        plane.texture('blue') # vc.TEXTURE_SEA)
+        plane.texture(vc.TEXTURE_SEA)
         plane.lighting(ambient=1.0, diffuse=0.0, specular=0.0)
         plane.alpha(0.4)
 
@@ -338,26 +368,100 @@ class Viewport:
         else:
             world_actors[0].off()
 
+        world_actors.append(vp.Line((0, 0, 0), (10, 0, 0)).c('red'))
+        world_actors[-1].actor_type = ActorType.GEOMETRY
+
+        world_actors.append(vp.Line((0, 0, 0), (0, 10, 0)).c('green'))
+        world_actors[-1].actor_type = ActorType.GEOMETRY
+
+        world_actors.append(vp.Line((0, 0, 0), (0, 0, 10)).c('blue'))
+        world_actors[-1].actor_type = ActorType.GEOMETRY
+
         v = VisualActor(world_actors, None)
         self.visuals.append(v)
+
+        self.global_visual = v
 
     def deselect_all(self):
         for v in self.visuals:
             v.deselect()
 
+    def node_from_vtk_actor(self, actor):
+        """
+        Given a vkt actor, find the corresponding node
+        Args:
+            actor: vtkActor
+
+        Returns:
+
+        """
+        for v in self.visuals:
+            for a in v.actors:
+                if a == actor:
+                    return v.node
+        return None
+
+    def actor_from_node(self, node):
+        """Finds the VisualActor belonging to node"""
+        for v in self.visuals:
+            if v.node is node:
+                return v
+        return None
+
+    def add_dynamic_wave_plane(self, waveplane):
+        self.remove_dynamic_wave_plane()
+        self.screen.renderer.AddActor(waveplane.actor)
+        self._wavefield = waveplane
+
+        if self.global_visual.visible:
+            self._staticwaveplane = True
+            self.global_visual.off()
+        else:
+            self._staticwaveplane = False
+
+    def remove_dynamic_wave_plane(self):
+        if self._wavefield is not None:
+            self.screen.renderer.RemoveActor(self._wavefield.actor)
+            self._wavefield = None
+
+            if self._staticwaveplane:
+                self.global_visual.on()
 
 
-    # def set_alpha(self, alpha_nodes, alpha_visuals):
-    #     """Sets the alpha (transparency) of element-type nodes and visual-type nodes to the given values"""
-    #
-    #     for V in self.visuals:
-    #         if isinstance(V.node, vf.Visual):
-    #             a = alpha_visuals
-    #         else:
-    #             a = alpha_nodes
-    #
-    #         for A in V.actors:
-    #             A.alpha(a)
+
+
+    def update_dynamic_waveplane(self, t):
+        if self._wavefield is not None:
+            self._wavefield.update(t)
+
+
+    def hide_actors_of_type(self, types):
+        for V in self.visuals:
+            for A in V.actors:
+                if A.actor_type in types:
+                    A.off()
+
+
+    def show_actors_of_type(self, types):
+        for V in self.visuals:
+            for A in V.actors:
+                    if A.actor_type in types:
+                        A.on()
+
+    def set_alpha(self, alpha, exclude_nodes=None):
+        """Sets the alpha (transparency) of for ALL actors in all visuals except the GLOBAL actors or visuals belonging to a node in exclude_nodes"""
+
+        if exclude_nodes is None:
+            exclude_nodes = []
+        for V in self.visuals:
+            for A in V.actors:
+
+                if V.node in exclude_nodes:
+                    continue
+
+                if A.actor_type == ActorType.GLOBAL:
+                    continue
+                A.alpha(alpha)
 
 
     def level_camera(self):
@@ -472,7 +576,6 @@ class Viewport:
 
             if isinstance(N, vf.RigidBody):
                 size = 1
-                # box = vp.Box(pos=(0,0,0), length=size, width=size, height= size).c(vc.COLOR_COG)
 
                 box = vp_actor_from_obj(self.scene.get_resource_path('cog.obj'))
                 box.color(vc.COLOR_COG)
@@ -486,6 +589,30 @@ class Viewport:
                 p.c(vc.COLOR_POI)
                 p.actor_type = ActorType.GEOMETRY
                 actors.append(p)
+
+            if isinstance(N, vf.WaveInteraction1):
+                size = 2
+                p = vp.Sphere(pos=(0,0,0), r=size/2, res = vc.RESOLUTION_SPHERE)
+                p.c(vc.COLOR_WAVEINTERACTION)
+                p.actor_type = ActorType.FORCE
+                actors.append(p)
+
+            if isinstance(N, vf.BallastSystem):
+
+                for t in N._tanks:
+
+                    capacity = t.max
+                    volume = capacity / (1.025 * 9.81)
+                    side = volume**(1/3)
+
+                    scale = 0.7
+                    p = vp.Cube(pos=(0,0,0), side=scale*side)
+                    p.c(vc.COLOR_POI)
+                    p.actor_type = ActorType.BALLASTTANK
+                    actors.append(p)
+
+                    # attach reference to the visual to the ballast tank as they may change position
+                    t.actor = p
 
             if isinstance(N, vf.Force):
 
@@ -520,11 +647,6 @@ class Viewport:
 
             if isinstance(N, vf.Cable):
 
-                # points = list()
-                # for p in N._pois:
-                #     points.append(p.global_position)
-                #
-
                 if N._vfNode.global_points:
                     a = vp.Line(N._vfNode.global_points, lw=3).c(vc.COLOR_CABLE)
                 else:
@@ -540,7 +662,7 @@ class Viewport:
                 for i in range(4):
                     points.append((0,0,0))
 
-                a = vp.Line(points, lw=5).c(vc.COLOR_VISUAL)
+                a = vp.Line(points, lw=5).c(vc.COLOR_BEAM)
                 a.actor_type = ActorType.CABLE
 
                 actors.append(a)
@@ -685,7 +807,7 @@ class Viewport:
                     continue
 
                 n_points = A.NPoints()
-                A.setPoints(points)   # points can be set without allocation
+                A.points(points)   # points can be set without allocation
 
                 if n_points != len(points): # equal number of points
                     # different number of points in line
@@ -695,7 +817,7 @@ class Viewport:
                     for i in range(len(points)):
                         # print('inserting point {} {} {}'.format(*i))
                         lines.InsertCellPoint(i)
-                    A.poly.SetLines(lines)
+                    A.polydata().SetLines(lines)
 
                 continue
 
@@ -709,27 +831,16 @@ class Viewport:
 
                 A = V.actors[0]
 
+                d = 0
+
                 points = list()
                 points.append(node.master.to_glob_position((0,0,0)))
-                points.append(node.master.to_glob_position((0.1*node.L, 0, 0)))
-                points.append(node.slave.to_glob_position((-0.1 * node.L, 0, 0)))
+                points.append(node.master.to_glob_position((d*node.L, 0, 0)))
+                points.append(node.slave.to_glob_position((-d * node.L, 0, 0)))
                 points.append(node.slave.to_glob_position((0, 0, 0)))
 
 
-                A.setPoints(points)
-
-                # work-around
-                # (re-create the poly-line)
-                # if n_points != len(points):
-
-                n_points = A.NPoints()
-
-                lines = vtk.vtkCellArray()  # Create the polyline.
-                lines.InsertNextCell(n_points)
-                for i in range(len(points)):
-                    lines.InsertCellPoint(i)
-                A.poly.SetLines(lines)
-
+                A.points(points)
                 continue
 
             if isinstance(V.node, vf.Connector2d):
@@ -739,19 +850,7 @@ class Viewport:
                 points.append(node.master.to_glob_position((0,0,0)))
                 points.append(node.slave.to_glob_position((0, 0, 0)))
 
-                A.setPoints(points)
-
-                # work-around
-                # (re-create the poly-line)
-                # if n_points != len(points):
-
-                n_points = A.NPoints()
-
-                lines = vtk.vtkCellArray()  # Create the polyline.
-                lines.InsertNextCell(n_points)
-                for i in range(len(points)):
-                    lines.InsertCellPoint(i)
-                A.poly.SetLines(lines)
+                A.points(points)
 
                 continue
 
@@ -762,31 +861,64 @@ class Viewport:
                 points.append(node.master.to_glob_position((0,0,0)))
                 points.append(node.slave.to_glob_position((0, 0, 0)))
 
-                A.setPoints(points)
+                A.points(points)
 
-                # work-around
-                # (re-create the poly-line)
-                # if n_points != len(points):
+                continue
 
-                n_points = A.NPoints()
 
-                lines = vtk.vtkCellArray()  # Create the polyline.
-                lines.InsertNextCell(n_points)
-                for i in range(len(points)):
-                    lines.InsertCellPoint(i)
-                A.poly.SetLines(lines)
+            if isinstance(V.node, vf.BallastSystem):
+
+                tr = V.node.parent.global_transform
+                mat4x4 = transform_to_mat4x4(tr)
+
+                for tnk in V.node._tanks:
+
+                    # t = vtk.vtkTransform()
+                    # t.Identity()
+                    # local_position = np.array(V.node.position, dtype=float) + np.array(tnk.position, dtype=float)
+                    # pos = V.node.parent.to_glob_position(local_position)
+                    # t.Translate(pos)
+
+                    actor = tnk.actor
+
+                    # actor.setTransform(t)
+                    # actor.SetScale(4)
+
+                    if tnk.is_partial():
+                        actor.color([1,1,0])
+                    if tnk.is_full():
+                        actor.color([0,0,0.2])
+                    if tnk.is_empty():
+                        actor.color([0.8,0.9,1])
+
+                    # get the local (user set) transform
+                    t = vtk.vtkTransform()
+                    t.Identity()
+                    t.Translate(tnk.position)
+
+                    # Get the parent matrix (if any)
+                    if V.node.parent is not None:
+                        apply_parent_tranlation_on_transform(V.node.parent, t)
+
+                    actor.setTransform(t.GetMatrix())
 
                 continue
 
 
             if isinstance(V.node, vf.Poi):
-                t = V.actors[0].getTransform()
+                t = vtk.vtkTransform()
                 t.Identity()
                 t.Translate(V.node.global_position)
                 V.actors[0].setTransform(t)
-
                 V.actors[0].SetScale(self.geometry_scale)
+                continue
 
+            if isinstance(V.node, vf.WaveInteraction1):
+                t = vtk.vtkTransform()
+                t.Identity()
+                t.Translate(V.node.parent.to_glob_position(V.node.offset))
+                V.actors[0].setTransform(t)
+                V.actors[0].SetScale(self.geometry_scale)
                 continue
 
 
@@ -893,7 +1025,12 @@ class Viewport:
                     V.actors[0].wireframe()
 
                 if self.quick_updates_only:
+                    for a in V.actors:
+                        a.off()
                     continue
+                else:
+                    for a in V.actors:
+                        a.on()
 
                 # move the CoB to the new (global!) position
                 cob = V.node.cob
@@ -914,10 +1051,11 @@ class Viewport:
                 p3 = V.node.parent.to_glob_position((x2, y2, 0))
                 p4 = V.node.parent.to_glob_position((x1, y2, 0))
 
-                V.actors[2].setPoint(0,(p1[0],p1[1], 0))
-                V.actors[2].setPoint(1,(p2[0],p2[1], 0))
-                V.actors[2].setPoint(2,(p4[0],p4[1], 0))
-                V.actors[2].setPoint(3,(p3[0],p3[1], 0))
+                corners = [(p1[0],p1[1], 0),
+                            (p2[0],p2[1], 0),
+                            (p4[0],p4[1], 0),
+                            (p3[0],p3[1], 0)]
+                V.actors[2].points(corners)
 
                 # create the actual buoyancy mesh as a new actor
 
@@ -938,8 +1076,8 @@ class Viewport:
                     for i in range(mesh.nFaces):
                         faces.append(mesh.GetFace(i))
 
-                    # vis = vp.actors.Actor([vertices, faces], wire=True).c((0, 0, 1))
-                    vis = vp.actors.Actor([vertices, faces]).c(vc.COLOR_BUOYANCY_MESH_LINES)
+                    # vis = vp.Mesh([vertices, faces], wire=True).c((0, 0, 1))
+                    vis = vp.Mesh([vertices, faces]).c(vc.COLOR_BUOYANCY_MESH_LINES)
                     vis.actor_type = ActorType.FORCE
                     vis.wireframe()
                     vis.lw(vc.LINEWIDTH_SUBMERGED_MESH)
@@ -988,7 +1126,7 @@ class Viewport:
 
         if self.screen:
 
-            actors = self.screen.getActors()
+            actors = self.screen.getMeshes()
             for va in self.visuals:
                 for a in va.actors:
                     if not (a in actors):
@@ -1204,6 +1342,7 @@ class Viewport:
         iren.AddObserver("LeftButtonPressEvent", screen._mouseleft)
         iren.AddObserver("RightButtonPressEvent", screen._mouseright)
         iren.AddObserver("MiddleButtonPressEvent", screen._mousemiddle)
+        iren.AddObserver("KeyPressEvent", self.keyPressFunction)
 
         for r in screen.renderers:
             r.ResetCamera()
@@ -1225,6 +1364,14 @@ class Viewport:
         self.renderer.AddLight(light1)
 
         self.light = light1
+
+    def keyPressFunction(self, obj, event):
+        key = obj.GetKeySym()
+        if key == 'Escape':
+            if self.onEscapeKey is not None:
+                self.onEscapeKey()
+
+
 
 
     def refresh_embeded_view(self):
@@ -1266,14 +1413,25 @@ class Viewport:
                 elif a.actor_type == ActorType.GEOMETRY:
                     if self.show_geometry:
                         a.on()
+
                     else:
                         a.off()
 
                 elif a.actor_type == ActorType.GLOBAL:
                     if self.show_global:
                         a.on()
+
+                        arenderer = self.vtkWidget.GetRenderWindow().GetRenderers().GetFirstRenderer()
+                        arenderer.GradientBackgroundOn()
+                        arenderer.SetBackground2(vc.COLOR_BG2_ENV)
+                        arenderer.SetBackground2(vc.COLOR_BG1_ENV)
                     else:
                         a.off()
+
+                        arenderer = self.vtkWidget.GetRenderWindow().GetRenderers().GetFirstRenderer()
+                        arenderer.GradientBackgroundOn()
+                        arenderer.SetBackground2(vc.COLOR_BG2)
+                        arenderer.SetBackground2(vc.COLOR_BG1)
 
                 elif a.actor_type == ActorType.NOT_GLOBAL:
                     if self.show_global:
@@ -1300,6 +1458,246 @@ class Viewport:
 
     def set_default_dsa(self):
         self.set_dsa(vc.VISUAL_DIFFUSE, vc.VISUAL_SPECULAR, vc.VISUAL_AMBIENT)
+
+
+class WaveField():
+
+    def __init__(self):
+        self.actor = None
+        self.pts = None
+        self.nt = 0
+        self.elevation = None
+
+        self.texture = vtk.vtkTexture()
+        input = vtk.vtkJPEGReader()
+        input.SetFileName(vc.TEXTURE_SEA)
+        self.texture.SetInputConnection(input.GetOutputPort())
+        self.ttp = vtk.vtkTextureMapToPlane()
+
+
+    def update(self, t):
+        t = np.mod(t, self.period)
+        i = int(self.nt * t/self.period)
+
+        count = 0
+        for ix,xx in enumerate(self.x):
+            for iy, yy in enumerate(self.y):
+                self.pts.SetPoint(count, xx,yy,self.elevation[iy,ix,i])
+                count += 1
+        self.pts.Modified()
+
+    def create_waveplane(self, wave_direction, wave_amplitude, wave_length, wave_period, nt, nx, ny, dx,dy):
+
+        x = np.linspace(-dx, dx, nx)
+        y = np.linspace(-dy, dy, ny)
+        xv, yv = np.meshgrid(x, y)
+
+        u = np.array((np.cos(np.deg2rad(wave_direction)), np.sin(np.deg2rad(wave_direction))))
+
+        dist_phasor = np.exp(1j * (xv*u[0] + yv*u[1]) * (2*np.pi/ wave_length))
+
+        t = np.linspace(0,wave_period, nt)
+        time_phasor = np.exp(-1j * (2 * np.pi * t / wave_period))
+
+        elevation = np.zeros((*xv.shape, nt))
+
+        for i in range(nt):
+            elevation[:,:,i] = wave_amplitude * np.real(time_phasor[i] * dist_phasor)
+
+
+        # the vtk stuff
+
+        # make grid
+        pts = vtk.vtkPoints()
+        for ix,xx in enumerate(x):
+            for iy, yy in enumerate(y):
+                pts.InsertNextPoint(yy,xx,elevation[iy,ix,1])
+
+        grid = vtk.vtkStructuredGrid()
+        grid.SetDimensions(ny,nx,1)
+        grid.SetPoints(pts)
+
+        # make mapper
+        filter = vtk.vtkStructuredGridGeometryFilter()
+        filter.SetInputData(grid)
+
+        # texture stuff
+        self.ttp.SetInputConnection(filter.GetOutputPort())
+
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputConnection(self.ttp.GetOutputPort())
+
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+        actor.SetTexture(self.texture)
+
+        actor.GetProperty().SetAmbient(1.0)
+        actor.GetProperty().SetDiffuse(0.0)
+        actor.GetProperty().SetSpecular(0.0)
+
+        self.pts = pts
+        self.actor = actor
+        self.elevation = elevation
+        self.nt = nt
+        self.period = wave_period
+        self.x = x
+        self.y = y
+
+
+if __name__ == "__main__":
+
+    wavefield = WaveField()
+
+
+    # def create_waveplane(self, wave_direction, wave_amplitude, wave_length, wave_period, nt, nx, ny, dx, dy):
+    wavefield.create_waveplane(30, 2, 100, 7, 50, 40, 40, 100, 100)
+    wavefield.update(0)
+
+    wavefield.actor.GetMapper().Update()
+    data = wavefield.actor.GetMapper().GetInputAsDataSet()
+
+    code = 'import numpy as np\nimport bpy\n'
+    code += '\nvertices = np.array(['
+
+    for i in range(data.GetNumberOfPoints()):
+        point = data.GetPoint(i)
+        code += '\n    {}, {}, {},'.format(*point)
+
+    code = code[:-1] # remove the last ,
+
+    code += """], dtype=np.float32)
+
+
+num_vertices = vertices.shape[0] // 3
+
+# Polygons are defined in loops. Here, we define one quad and two triangles
+vertex_index = np.array(["""
+
+    poly_length = []
+    counter = 0
+    poly_start = []
+
+    for i in range(data.GetNumberOfCells()):
+        cell = data.GetCell(i)
+
+        if isinstance(cell, vtk.vtkLine):
+            print("Cell nr {} is a line, not adding to mesh".format(i))
+            continue
+
+        code += '\n    '
+
+        for ip in range(cell.GetNumberOfPoints()):
+            code += '{},'.format(cell.GetPointId(ip))
+
+        poly_length.append(cell.GetNumberOfPoints())
+        poly_start.append(counter)
+        counter += cell.GetNumberOfPoints()
+
+    code = code[:-1]  # remove the last ,
+
+    code += """], dtype=np.int32)
+
+# For each polygon the start of its vertex indices in the vertex_index array
+loop_start = np.array([
+    """
+
+    for p in poly_start:
+        code += '{}, '.format(p)
+
+    code = code[:-1]  # remove the last ,
+
+    code += """], dtype=np.int32)
+
+# Length of each polygon in number of vertices
+loop_total = np.array([
+    """
+
+    for p in poly_length:
+        code += '{}, '.format(p)
+
+    code = code[:-1]  # remove the last ,
+
+    code += """], dtype=np.int32)
+
+num_vertex_indices = vertex_index.shape[0]
+num_loops = loop_start.shape[0]
+
+# Create mesh object based on the arrays above
+
+mesh = bpy.data.meshes.new(name='created mesh')
+
+mesh.vertices.add(num_vertices)
+mesh.vertices.foreach_set("co", vertices)
+
+mesh.loops.add(num_vertex_indices)
+mesh.loops.foreach_set("vertex_index", vertex_index)
+
+mesh.polygons.add(num_loops)
+mesh.polygons.foreach_set("loop_start", loop_start)
+mesh.polygons.foreach_set("loop_total", loop_total)
+
+
+"""
+
+    wavefield.nt  # number of key-frames
+
+
+    for i_source_frame in range(wavefield.nt):
+        t = wavefield.period * i_source_frame / wavefield.nt
+
+        n_frame = 30 * t # todo: replace with frames per second
+
+        # update wave-field
+        wavefield.update(t)
+        wavefield.actor.GetMapper().Update()
+        # data = v.actor.GetMapper().GetInputAsDataSet()
+
+
+        code += '\nvertices = np.array(['
+
+        for i in range(data.GetNumberOfPoints()):
+            point = data.GetPoint(i)
+            code += '\n    {}, {}, {},'.format(*point)
+
+        code = code[:-1]  # remove the last ,
+
+        code += """], dtype=np.float32)
+        
+mesh.vertices.foreach_set("co", vertices)
+for vertex in mesh.vertices:
+        """
+        code += 'vertex.keyframe_insert(data_path="co", frame = {})'.format(np.round(n_frame))
+
+
+    code += """
+# We're done setting up the mesh values, update mesh object and 
+# let Blender do some checks on it
+mesh.update()
+mesh.validate()
+
+# Create Object whose Object Data is our new mesh
+obj = bpy.data.objects.new('created object', mesh)
+
+# Add *Object* to the scene, not the mesh
+scene = bpy.context.scene
+scene.collection.objects.link(obj)
+
+# Select the new object and make it active
+bpy.ops.object.select_all(action='DESELECT')
+obj.select_set(True)
+bpy.context.view_layer.objects.active = obj"""
+
+    with open('c:/data/test.py', 'w') as data:
+        data.write(code)
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,0 +1,98 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'widget_tank_order.ui',
+# licensing of 'widget_tank_order.ui' applies.
+#
+# Created: Thu Jan 16 14:19:52 2020
+#      by: pyside2-uic  running on PySide2 5.13.1
+#
+# WARNING! All changes made in this file will be lost!
+
+from PySide2 import QtCore, QtGui, QtWidgets
+
+class Ui_widget_tank_order(object):
+    def setupUi(self, widget_tank_order):
+        widget_tank_order.setObjectName("widget_tank_order")
+        widget_tank_order.resize(378, 755)
+        widget_tank_order.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
+        self.verticalLayout = QtWidgets.QVBoxLayout(widget_tank_order)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.label = QtWidgets.QLabel(widget_tank_order)
+        self.label.setWordWrap(True)
+        self.label.setObjectName("label")
+        self.verticalLayout.addWidget(self.label)
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem)
+        self.pbElevation = QtWidgets.QPushButton(widget_tank_order)
+        self.pbElevation.setObjectName("pbElevation")
+        self.verticalLayout.addWidget(self.pbElevation)
+        self.pbMinimizeRadii = QtWidgets.QPushButton(widget_tank_order)
+        self.pbMinimizeRadii.setObjectName("pbMinimizeRadii")
+        self.verticalLayout.addWidget(self.pbMinimizeRadii)
+        self.pbMaximizeRadii = QtWidgets.QPushButton(widget_tank_order)
+        self.pbMaximizeRadii.setObjectName("pbMaximizeRadii")
+        self.verticalLayout.addWidget(self.pbMaximizeRadii)
+        self.widget_3 = QtWidgets.QWidget(widget_tank_order)
+        self.widget_3.setObjectName("widget_3")
+        self.gridLayout = QtWidgets.QGridLayout(self.widget_3)
+        self.gridLayout.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout.setObjectName("gridLayout")
+        self.dsX = QtWidgets.QDoubleSpinBox(self.widget_3)
+        self.dsX.setMinimum(-999.0)
+        self.dsX.setMaximum(999.0)
+        self.dsX.setSingleStep(10.0)
+        self.dsX.setObjectName("dsX")
+        self.gridLayout.addWidget(self.dsX, 1, 1, 1, 1)
+        self.dsX_2 = QtWidgets.QDoubleSpinBox(self.widget_3)
+        self.dsX_2.setMinimum(-999.0)
+        self.dsX_2.setMaximum(999.0)
+        self.dsX_2.setSingleStep(10.0)
+        self.dsX_2.setObjectName("dsX_2")
+        self.gridLayout.addWidget(self.dsX_2, 2, 1, 1, 1)
+        self.dsX_3 = QtWidgets.QDoubleSpinBox(self.widget_3)
+        self.dsX_3.setMinimum(-999.0)
+        self.dsX_3.setMaximum(999.0)
+        self.dsX_3.setSingleStep(10.0)
+        self.dsX_3.setObjectName("dsX_3")
+        self.gridLayout.addWidget(self.dsX_3, 3, 1, 1, 1)
+        self.label_2 = QtWidgets.QLabel(self.widget_3)
+        self.label_2.setObjectName("label_2")
+        self.gridLayout.addWidget(self.label_2, 1, 0, 1, 1)
+        self.label_3 = QtWidgets.QLabel(self.widget_3)
+        self.label_3.setObjectName("label_3")
+        self.gridLayout.addWidget(self.label_3, 2, 0, 1, 1)
+        self.label_4 = QtWidgets.QLabel(self.widget_3)
+        self.label_4.setObjectName("label_4")
+        self.gridLayout.addWidget(self.label_4, 3, 0, 1, 1)
+        self.verticalLayout.addWidget(self.widget_3)
+        self.pbNearest = QtWidgets.QPushButton(widget_tank_order)
+        self.pbNearest.setObjectName("pbNearest")
+        self.verticalLayout.addWidget(self.pbNearest)
+        self.pbFurthest = QtWidgets.QPushButton(widget_tank_order)
+        self.pbFurthest.setObjectName("pbFurthest")
+        self.verticalLayout.addWidget(self.pbFurthest)
+        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem1)
+
+        self.retranslateUi(widget_tank_order)
+        QtCore.QMetaObject.connectSlotsByName(widget_tank_order)
+        widget_tank_order.setTabOrder(self.pbElevation, self.pbMinimizeRadii)
+        widget_tank_order.setTabOrder(self.pbMinimizeRadii, self.pbMaximizeRadii)
+        widget_tank_order.setTabOrder(self.pbMaximizeRadii, self.dsX)
+        widget_tank_order.setTabOrder(self.dsX, self.dsX_2)
+        widget_tank_order.setTabOrder(self.dsX_2, self.dsX_3)
+        widget_tank_order.setTabOrder(self.dsX_3, self.pbNearest)
+        widget_tank_order.setTabOrder(self.pbNearest, self.pbFurthest)
+
+    def retranslateUi(self, widget_tank_order):
+        widget_tank_order.setWindowTitle(QtWidgets.QApplication.translate("widget_tank_order", "Form", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("widget_tank_order", "<html><head/><body><p>The order of the tanks in the table determines how eager the auto-ballast algorithm is to fill that tank.</p><p>Tanks higher on the list are more likely to be filled than tanks lower on the list.</p><p>The order of the list can be changed by using one of the buttons or by dragging the tanks up or down in the list by selecting their name.</p></body></html>", None, -1))
+        self.pbElevation.setText(QtWidgets.QApplication.translate("widget_tank_order", "Order by elevation", None, -1))
+        self.pbMinimizeRadii.setText(QtWidgets.QApplication.translate("widget_tank_order", "Minimize radii of gyration", None, -1))
+        self.pbMaximizeRadii.setText(QtWidgets.QApplication.translate("widget_tank_order", "Maximize radii of gyration", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("widget_tank_order", "X", None, -1))
+        self.label_3.setText(QtWidgets.QApplication.translate("widget_tank_order", "Y", None, -1))
+        self.label_4.setText(QtWidgets.QApplication.translate("widget_tank_order", "Z", None, -1))
+        self.pbNearest.setText(QtWidgets.QApplication.translate("widget_tank_order", "Nearest to point", None, -1))
+        self.pbFurthest.setText(QtWidgets.QApplication.translate("widget_tank_order", "Furthest from point", None, -1))
+

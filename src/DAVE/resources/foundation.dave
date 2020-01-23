@@ -1,0 +1,39 @@
+# code for foundation_jacket
+s.new_rigidbody(name='foundation_jacket',
+                mass=700.0,
+                cog=(0.0,
+                     0.0,
+                     24.0),
+                     inertia_radii = (20.0, 20.0, 8.0),
+                fixed = False)
+# code for foundation_lp1
+s.new_poi(name='foundation_lp1',
+          parent='foundation_jacket',
+          position=(5.0,
+                    5.0,
+                    51.0))
+# code for foundation_lp4
+s.new_poi(name='foundation_lp4',
+          parent='foundation_jacket',
+          position=(5.0,
+                    -5.0,
+                    51.0))
+# code for foundation_lp3
+s.new_poi(name='foundation_lp3',
+          parent='foundation_jacket',
+          position=(-5.0,
+                    -5.0,
+                    51.0))
+# code for foundation_lp2
+s.new_poi(name='foundation_lp2',
+          parent='foundation_jacket',
+          position=(-5.0,
+                    5.0,
+                    51.0))
+# code for foundation_Visual
+s.new_visual(name='foundation_Visual',
+            parent='foundation_jacket',
+            path=r'foundation.obj',
+            offset=(0, 0, 0),
+            rotation=(0, 0, 0),
+            scale=(1, 1, 1) )

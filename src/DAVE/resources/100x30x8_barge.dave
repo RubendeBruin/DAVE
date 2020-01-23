@@ -1,0 +1,64 @@
+# code for Barge
+s.new_rigidbody(name='Barge',
+                mass=5000.0,
+                cog=(50.0,
+                     0.0,
+                     5.0),
+                inertia_radii = (10,40,40),
+                fixed=False)
+# code for global_springs
+s.new_axis(name='barge_positioning_target',
+           position=(0.0,
+                     0.0,
+                     0.0),
+           rotation=(0.0,
+                     0.0,
+                     0.0),
+           fixed=True)
+
+# code for Buoyancy mesh
+mesh = s.new_buoyancy(name='Buoyancy mesh',
+                      parent='Barge')
+mesh.trimesh.load_obj(s.get_resource_path(r'cube.obj'), scale=(100.0, 30.0, 8.0), rotation=(0.0, 0.0, 0.0),
+                      offset=(50.0, 0.0, 4.0))
+
+s.new_linear_connector_6d(name='Barge positioning springs',
+            master='Barge',
+            slave='barge_positioning_target',
+            stiffness=(100.0, 100.0, 0.0,
+                       0.0, 0.0, 10000.0) )
+
+
+# code for Hyd
+s.new_waveinteraction(name='Hyd',
+                      parent='Barge',
+                      path=r'barge_100_30_4.dhyd',
+                      offset=(50, 0, 4))
+# code for Visual
+s.new_visual(name='Barge Visual',
+            parent='Barge',
+            path=r'barge.obj',
+            offset=(0.0, 0.0, 0.0),
+            rotation=(0, 0, 0),
+            scale=(1.0, 0.75, 0.8) )
+
+## Tanks
+
+bs = s.new_ballastsystem('Barge Ballast system', parent='Barge')
+
+# Barge length = 100m
+# 8 tanks of 12.5m in length
+# 4 tanks of 30/4 = 7.5m in width
+# and 7.5m height
+
+volume = 12.5*7.5* 7.5 * 0.8  # 0.8 such that the barge just does not sink when all tanks are full
+
+
+for i in range(8):
+
+    capacity = volume*9.81*1.025
+
+    bs.new_tank('ps_inner{}'.format(i+1), (6.25 + 12.5*i,7.5/2 , 4), capacity)
+    bs.new_tank('ps_outer{}'.format(i+1), (6.25 + 12.5*i,7.5/2 + 7.5, 4), capacity)
+    bs.new_tank('sb_inner{}'.format(i+1), (6.25 + 12.5*i,-7.5/2 ,  4), capacity)
+    bs.new_tank('sb_outer{}'.format(i+1), (6.25 + 12.5*i,-7.5/2 -7.5,  4), capacity)

@@ -1,0 +1,5 @@
+
+s.import_scene('cheetah.dave',containerize=False)
+s.import_scene(s.get_resource_path("mast crane.dave"), containerize=False, prefix="")
+s['crane_mast'].parent = s['Cheetah']
+s['crane_mast'].position = (61.0, 18.0, 12.0)

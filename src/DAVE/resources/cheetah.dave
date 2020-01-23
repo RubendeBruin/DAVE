@@ -1,0 +1,67 @@
+# code for Cheetah
+s.new_rigidbody(name='Cheetah',
+                mass=20000.0,  # light ship weight
+                cog=(106.0,
+                     0.0,
+                     7.0),
+                position=(0.0,
+                          0.0,
+                          -6.75),
+                rotation=(0, 0, 0),
+                inertia_radii=(20, 80, 80),
+                fixed=False)
+
+
+s.new_axis('DP reference point', parent = 'Cheetah',
+            position = (100,0,0))
+
+s.new_axis('DP setpoint for cheetah',position = (100,0,0))
+
+s.new_linear_connector_6d('DP springs cheetah', master = 'DP reference point',
+           slave = 'DP setpoint for cheetah',
+           stiffness = (100,100,0,0,0,10000))
+
+# code for buoyancy
+mesh = s.new_buoyancy(name='buoyancy',
+                      parent='Cheetah')
+mesh.trimesh.load_obj(s.get_resource_path(r'buoyancy cheetah.obj'), scale=(1, 1, 1), rotation=(0.0, 0.0, 0.0),
+                      offset=(0.0, 0.0, 0.0))
+
+
+# Define the ballast system
+
+# displacement at 6.75m draft = 53290.760 m3
+#
+
+bs = s.new_ballastsystem('Ballast_system', parent='Cheetah')
+
+for i in range(8):
+
+
+    capacity = 15*10*10*9.81*1.025
+    if i > 1:
+        capacity = 10*20*10*9.81*1.025
+
+    bs.new_tank('ps{}'.format(i+1), (10 + 20*i,12,5), capacity)
+    bs.new_tank('sb{}'.format(i + 1), (10 + 20*i, -12, 5), capacity)
+    bs.new_tank('mid{}'.format(i + 1), (10 + 20*i, 0, 5), capacity)
+
+
+bs.new_tank('ps9', (170, 8, 5), 15 * 15 * 10 * 9.81 * 1.025)
+bs.new_tank('sb9', (170, -8, 5), 15 * 15 * 10 * 9.81 * 1.025)
+
+bs.new_tank('bow', (190, 0, 5), 10 * 10 * 6 * 9.81 * 1.025)
+
+# code for visual - vessel
+s.new_visual(name='visual - vessel',
+             parent='Cheetah',
+             path=r'visual vessel cheetah.obj',
+             offset=(0, 0, 0),
+             rotation=(0, 0, 0),
+             scale=(1.0, 1.0, 1.0))
+
+# code for WaveInteraction
+s.new_waveinteraction(name='Wave Interaction draft 6.75',
+                      parent='Cheetah',
+                      path=r'cheetah.dhyd',
+                      offset=(100.0, 0.0, 6.75))

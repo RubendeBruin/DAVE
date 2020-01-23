@@ -10,6 +10,8 @@ dependencies:
   - scipy
   - ipython
   - matplotlib
-  - prettytable 
+  - prettytable
+  - xarray
   - pip:
     - vtkplotter
+    - mafredo

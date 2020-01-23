@@ -1,0 +1,30 @@
+s.import_scene('cheetah with crane.dave',containerize=False)
+
+s['crane_slew'].rotation = (0.0, 0.0, 50.0)
+s['crane_Crane_susp_wire'].length = 50.0
+
+s.import_scene(s.get_resource_path("crane block 4p.dave"), containerize=False, prefix="")
+s['Upper block'].fixed = False
+
+# Make connection
+
+# code for hw1
+s.new_poi(name='hw1',
+          parent='crane_boom',
+          position=(52.0,
+                    2.0,
+                    0.0))
+# code for hw2
+s.new_poi(name='hw2',
+          parent='crane_boom',
+          position=(52.0,
+                    -2.0,
+                    0.0))
+# code for Hoist wire
+s.new_cable(name='Hoist wire',
+            poiA='hw1',
+            poiB='hw2',
+            length=39.0,
+            EA=100000.0,
+            sheaves = ['Hoist sheeve 1',
+                       'Hoist sheeve 2'])

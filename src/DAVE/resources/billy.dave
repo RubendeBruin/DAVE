@@ -1,0 +1,146 @@
+
+s.import_scene(s.get_resource_path("100x30x8_barge.dave"), containerize=False, prefix="")
+
+# rename as Billy
+s['Barge'].name = 'Billy'
+s['Barge Ballast system'].name = 'Billy Ballast system'
+s['Buoyancy mesh'].name = 'Billy Buoyancy mesh'
+s['Barge Visual'].name = 'Billy Visual'
+s['barge_positioning_target'].name = 'billy_positioning_target'
+s['Barge positioning springs'].name = 'Billy positioning springs'
+
+
+s.new_rigidbody('Billy A frame', parent = 'Billy')
+s['Billy A frame'].position = (92.5, 0.0, 8.0)
+s['Billy A frame'].cog = (28.0, 0.0, 0.0)
+s['Billy A frame'].rotation = (0.0, -45.0, 0.0)
+s['Billy A frame'].cog = (35.0, 0.0, 0.0)
+s['Billy A frame'].cog = (35.0, 0.0, 0.0)
+s["Billy A frame"].mass = 1000
+s["Billy A frame"].inertia_radii = (10.0,30.0,30)
+s.new_visual('A-frame visual', parent = 'Billy A frame', path = r'wirecube.obj')
+
+s['A-frame visual'].path = r'visual crane-boom.obj'
+s['A-frame visual'].scale = (1.0, 2.0, 1.0)
+s['A-frame visual'].offset = (4.0, 0.0, 0.0)
+s['A-frame visual'].scale = (0.9, 2.0, 1.0)
+s['A-frame visual'].scale = (0.8, 2.0, 1.0)
+
+
+s.new_poi('Billy liftpoint_ps', parent = 'Billy A frame')
+s['Billy liftpoint_ps'].position = (68.0, 1.0, -2.0)
+s.new_poi('Billy liftpoint_sb', parent = 'Billy A frame')
+s['Billy liftpoint_sb'].position = (68.0, -1.0, -2.0)
+
+
+
+s.new_poi('Tieback padeye PS', parent = 'Billy')
+
+s['Tieback padeye PS'].position = (0.0, 7.0, 9.0)
+
+s.new_poi(name='Tieback padeye SB',
+          parent='Billy',
+          position=(0.0,
+                    -7.0,
+                    9.0))
+
+s.new_rigidbody('Billy spreaderbar', parent = 'Billy')
+s["Billy spreaderbar"].mass = 50
+s["Billy spreaderbar"].inertia_radii = (1.0,10.0,10)
+s['Billy spreaderbar'].position = (45.0, 0.0, 27.0)
+
+s.new_visual('Billy spreaderbar Visual', parent = 'Billy spreaderbar', path = r'wirecube.obj')
+s['Billy spreaderbar Visual'].path = r'cylinder 1x1x1.obj'
+s['Billy spreaderbar Visual'].rotation = (90.0, 0.0, 0.0)
+s['Billy spreaderbar Visual'].scale = (1.0, 14.0, 1.0)
+s['Billy spreaderbar Visual'].offset = (0.0, 7.0, 0.0)
+
+s.new_poi('billy spreaderbar end PS', parent = 'Billy spreaderbar')
+
+s['billy spreaderbar end PS'].position = (0.0, 7.0, 0.0)
+# code for billy spreaderbar end PS_1
+s.new_poi(name='billy spreaderbar end SB',
+          parent='Billy spreaderbar',
+          position=(0.0,
+                    -7.0,
+                    0.0))
+
+s.new_cable('Tieback SB', poiA = 'billy spreaderbar end SB', poiB= 'Tieback padeye SB', EA=100000000)
+s.new_cable('Tieback PS', poiA = 'billy spreaderbar end PS', poiB= 'Tieback padeye PS', EA=100000000)
+s.new_poi('Crane susp. wire poi', parent = 'Billy A frame')
+
+s['Crane susp. wire poi'].position = (65.0, 0.0, 1.0)
+s.new_cable('Billy crane susp. wire', poiA = 'billy spreaderbar end SB', poiB= 'Crane susp. wire poi', EA=100000000, length=180)
+s['Billy crane susp. wire'].clear_connections()
+s['Billy crane susp. wire'].add_connection(s['billy spreaderbar end SB'])
+s['Billy crane susp. wire'].add_connection(s['Crane susp. wire poi'])
+s['Billy crane susp. wire'].add_connection(s['billy spreaderbar end PS'])
+s['Billy crane susp. wire'].check_endpoints()
+
+s['Billy spreaderbar'].fixed = (False, False, False, False, True, False)
+s['Billy A frame'].fixed = (True, True, True, True, False, True)
+
+
+
+# Import the 4p hook and modify it
+s.import_scene(s.get_resource_path("crane block 4p.dave"), containerize=False, prefix="")
+s['Upper block'].position = (120.0, 0.0, 40)
+
+# delete mid section (lower block)
+s['hook4p'].change_parent_to(s['Upper block'])
+s.delete("Lower block")
+
+# create a new pivot
+s.new_axis('pivot', parent = 'Upper block')
+s['pivot'].fixed = (True, True, True, False, True, True)
+
+s['hook4p'].change_parent_to(s['pivot'])
+s['hook4p'].fixed = (True, True, True, True, True, True)
+s['hook4p'].rotation = (0.0, 0.0, 90.0)
+s['hook4p'].position = (0.0, 0.0, 0.0)
+
+s['Hoist sheeve 2'].position = (-1.0, 0.0, 1.5)
+s['Hoist sheeve 1'].position = (1.0, 0.0, 1.5)
+
+s['Upper block'].fixed = False
+
+# Add new cranewire
+s.new_cable('HoistWire', poiA = 'Billy liftpoint_ps',
+ poiB= 'Billy liftpoint_sb',
+ sheaves = ['Hoist sheeve 1','Hoist sheeve 2'],
+ length = 30, EA=100000000)
+
+
+# Ballasting to 4m draft
+s["Billy Ballast system"]["sb_outer8"].pct = 16.883637845898846
+s["Billy Ballast system"]["ps_outer1"].pct = 100
+s["Billy Ballast system"]["ps_outer8"].pct = 0.0
+s["Billy Ballast system"]["sb_outer1"].pct = 100
+s["Billy Ballast system"]["ps_inner8"].pct = 68.17698275958254
+s["Billy Ballast system"]["sb_inner8"].pct = 100
+s["Billy Ballast system"]["ps_inner1"].pct = 100
+s["Billy Ballast system"]["sb_inner1"].pct = 100
+s["Billy Ballast system"]["sb_outer2"].pct = 100
+s["Billy Ballast system"]["ps_outer7"].pct = 100
+s["Billy Ballast system"]["sb_outer7"].pct = 100
+s["Billy Ballast system"]["ps_outer2"].pct = 100.0
+s["Billy Ballast system"]["ps_inner2"].pct = 82.47325472694139
+s["Billy Ballast system"]["sb_inner7"].pct = 0
+s["Billy Ballast system"]["ps_inner7"].pct = 0
+s["Billy Ballast system"]["sb_inner2"].pct = 0
+s["Billy Ballast system"]["ps_outer3"].pct = 0
+s["Billy Ballast system"]["ps_outer6"].pct = 0
+s["Billy Ballast system"]["sb_outer3"].pct = 0
+s["Billy Ballast system"]["sb_outer6"].pct = 0
+s["Billy Ballast system"]["sb_inner3"].pct = 0
+s["Billy Ballast system"]["sb_inner6"].pct = 0
+s["Billy Ballast system"]["ps_inner3"].pct = 0
+s["Billy Ballast system"]["ps_inner6"].pct = 0
+s["Billy Ballast system"]["sb_outer5"].pct = 0
+s["Billy Ballast system"]["ps_outer5"].pct = 0
+s["Billy Ballast system"]["ps_outer4"].pct = 0
+s["Billy Ballast system"]["sb_outer4"].pct = 0
+s["Billy Ballast system"]["ps_inner5"].pct = 0
+s["Billy Ballast system"]["sb_inner4"].pct = 0
+s["Billy Ballast system"]["ps_inner4"].pct = 0
+s["Billy Ballast system"]["sb_inner5"].pct = 0

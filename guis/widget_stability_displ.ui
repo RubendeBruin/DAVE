@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>WidgetDispDrivenStability</class>
+ <widget class="QWidget" name="WidgetDispDrivenStability">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>566</width>
+    <height>528</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="locale">
+   <locale language="English" country="UnitedStates"/>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="2" colspan="3">
+    <widget class="QComboBox" name="node_name"/>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_18">
+     <property name="text">
+      <string>Steps</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="2" colspan="2">
+    <widget class="QCheckBox" name="stability_surge">
+     <property name="text">
+      <string>Allow Surge</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="2" colspan="2">
+    <widget class="QCheckBox" name="stability_sway">
+     <property name="text">
+      <string>Allow Sway</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="2" colspan="2">
+    <widget class="QCheckBox" name="stability_yaw">
+     <property name="text">
+      <string>Allow Yaw</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="2" colspan="2">
+    <widget class="QCheckBox" name="stability_trim">
+     <property name="text">
+      <string>Allow Trim</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
+    <widget class="QLabel" name="label_13">
+     <property name="text">
+      <string>Tear-down</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2" colspan="2">
+    <widget class="QSpinBox" name="stability_n_steps">
+     <property name="maximum">
+      <number>1000</number>
+     </property>
+     <property name="value">
+      <number>40</number>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_11">
+     <property name="text">
+      <string>Node</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="2" colspan="2">
+    <widget class="QCheckBox" name="stability_do_teardown">
+     <property name="text">
+      <string>Delete temporary nodes</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="4" colspan="2">
+    <widget class="QPushButton" name="stability_go">
+     <property name="text">
+      <string>Displacement driven curve</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_16">
+     <property name="text">
+      <string>Displacement</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QSpinBox" name="stability_heel_start">
+     <property name="minimum">
+      <number>-180</number>
+     </property>
+     <property name="maximum">
+      <number>20</number>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="5">
+    <widget class="QLabel" name="label_17">
+     <property name="text">
+      <string>[kN]</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="3">
+    <widget class="QLabel" name="label_14">
+     <property name="text">
+      <string>till</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="4">
+    <widget class="QSpinBox" name="stability_heel_max">
+     <property name="maximum">
+      <number>180</number>
+     </property>
+     <property name="value">
+      <number>40</number>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="5">
+    <widget class="QLabel" name="label_15">
+     <property name="text">
+      <string>[degrees]</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_12">
+     <property name="text">
+      <string>Range</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2" colspan="3">
+    <widget class="QDoubleSpinBox" name="stability_displacement">
+     <property name="maximum">
+      <double>999999999999999.000000000000000</double>
+     </property>
+     <property name="value">
+      <double>1.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="5">
+    <widget class="QLabel" name="label_10">
+     <property name="text">
+      <string>[Axis or Rigid-body]</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="4" colspan="2">
+    <widget class="QPushButton" name="pushButton">
+     <property name="text">
+      <string>Visualize [destructive]</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>node_name</tabstop>
+  <tabstop>stability_displacement</tabstop>
+  <tabstop>stability_heel_start</tabstop>
+  <tabstop>stability_heel_max</tabstop>
+  <tabstop>stability_n_steps</tabstop>
+  <tabstop>stability_surge</tabstop>
+  <tabstop>stability_sway</tabstop>
+  <tabstop>stability_yaw</tabstop>
+  <tabstop>stability_trim</tabstop>
+  <tabstop>stability_do_teardown</tabstop>
+  <tabstop>stability_go</tabstop>
+  <tabstop>pushButton</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

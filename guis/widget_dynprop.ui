@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>widget_dynprop</class>
+ <widget class="QWidget" name="widget_dynprop">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1293</width>
+    <height>1074</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="spacing">
+       <number>9</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="lblChangeDynamicInfo">
+        <property name="text">
+         <string>Note: For RigidBody type nodes the inertia properties are coupled to the weight properties.
+Changing the intertia properties changes the weight properties as well</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTableWidget" name="tableDynProp">
+        <attribute name="horizontalHeaderMinimumSectionSize">
+         <number>20</number>
+        </attribute>
+        <attribute name="verticalHeaderVisible">
+         <bool>true</bool>
+        </attribute>
+        <column>
+         <property name="text">
+          <string>F</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>I</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>X</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>E</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>D</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string/>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Inertia (weight)</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>x (cog)</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>y (cog)</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string> (cog)</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>rxx</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>ryy</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>rzz</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

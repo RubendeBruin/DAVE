@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>widget_ballastsystem</class>
+ <widget class="QWidget" name="widget_ballastsystem">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1270</width>
+    <height>1320</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="locale">
+   <locale language="English" country="UnitedStates"/>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QWidget" name="widget_2" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QPushButton" name="pbFillAll">
+        <property name="text">
+         <string>Fill all</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pbEmptyAll">
+        <property name="text">
+         <string>Empty all</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pbToggleFreeze">
+        <property name="text">
+         <string>Toggle freeze</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pbUnfreezeAll">
+        <property name="text">
+         <string>Unfreeze all</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pbFreezeAll">
+        <property name="text">
+         <string>Freeze all</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTableWidget" name="tableWidget">
+     <property name="dragEnabled">
+      <bool>true</bool>
+     </property>
+     <property name="dragDropOverwriteMode">
+      <bool>false</bool>
+     </property>
+     <property name="dragDropMode">
+      <enum>QAbstractItemView::InternalMove</enum>
+     </property>
+     <row>
+      <property name="text">
+       <string>Tank1</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Tank2</string>
+      </property>
+     </row>
+     <column>
+      <property name="text">
+       <string>Capacity [kN]</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Fill [%]</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Frozen</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>X [m]</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Y [m]</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Z [m]</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pbGenerate">
+     <property name="text">
+      <string>Generate tank-fill python code</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>tableWidget</tabstop>
+  <tabstop>pbFillAll</tabstop>
+  <tabstop>pbEmptyAll</tabstop>
+  <tabstop>pbToggleFreeze</tabstop>
+  <tabstop>pbUnfreezeAll</tabstop>
+  <tabstop>pbFreezeAll</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>
