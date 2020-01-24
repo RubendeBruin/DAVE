@@ -10,7 +10,7 @@ dependencies:
   - numpy
   - scipy
   - ipython
-  - matplotlib
+  - matplotlib-base
   - prettytable
   - xarray
   - netCDF4
