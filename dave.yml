@@ -3,6 +3,7 @@ channels:
   - conda
   - conda-forge
 dependencies:
+  - python=3.7
   - pip
   - pyside2
   - vtk
@@ -12,6 +13,7 @@ dependencies:
   - matplotlib
   - prettytable
   - xarray
+  - netCDF4
   - pip:
     - vtkplotter
     - mafredo
