@@ -2,7 +2,7 @@
 
    This is the root module for the graphical user interface.
 
-   The GUI is build using QT / PySide2 and is set-up to be easily to extent.
+   The GUI is build using QT / PySide2 and is set-up to be easy to extent.
 
    The main module (this file) provides the main screen with:
      - A 3D viewer with interaction
@@ -12,7 +12,7 @@
      - A timer and animation mechanism
      - A method to switch between workspaces
      - An event system for communication between dock-widgets
-     - An data-source for teh dock-widgets
+     - A data-source for the dock-widgets
 
     The interface is extended by dockwidgets. These are gui elements (widgets) that can be shown inside the main window.
     Some of the dock-widgets are:
