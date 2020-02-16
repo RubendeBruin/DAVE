@@ -61,7 +61,7 @@ def transform_from_direction(axis):
     Returns:
         vtk.vtkTransform
     """
-    theta = np.arccos(axis[2])
+    theta = np.arcsin(axis[2])
     phi = np.arctan2(axis[1], axis[0])
     t = vtk.vtkTransform()
     t.PostMultiply()

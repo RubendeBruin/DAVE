@@ -375,8 +375,10 @@ mesh.polygons.foreach_set("loop_total", loop_total)
 
         n_frame = consts.BLENDER_FPS * t
 
-        if n_frame - last_frame_nr < 5:
-            continue
+        if i_source_frame != wavefield.nt-1:
+            if i_source_frame != 0:
+                if n_frame - last_frame_nr < 5:
+                    continue
 
         last_frame_nr = n_frame
 
@@ -403,8 +405,9 @@ mesh.polygons.foreach_set("loop_total", loop_total)
 
         code += '\nvertices = np.load(r"{}")'.format(str(filename))
         code += """
-        
+print("applying vertices")        
 mesh.vertices.foreach_set("co", vertices)
+print("creating keyframes")
 for vertex in mesh.vertices:
     """
         code += 'vertex.keyframe_insert(data_path="co", frame = {})'.format(np.round(n_frame))

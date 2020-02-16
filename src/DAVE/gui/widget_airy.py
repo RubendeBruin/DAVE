@@ -118,7 +118,7 @@ plt.show()
                             wave_length=wave_length,
                             wave_period = period,
                             nt = n_frames,
-                            nx = 100, ny = 100, dx=400,dy=400)
+                            nx = 50, ny = 50, dx=400,dy=400)
 
         self.gui.animation_terminate()
         self.gui.visual.add_dynamic_wave_plane(wf)
