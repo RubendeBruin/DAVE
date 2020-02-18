@@ -350,9 +350,21 @@
     <property name="title">
      <string>View</string>
     </property>
+    <widget class="QMenu" name="menuLook_towards">
+     <property name="title">
+      <string>Look in direction</string>
+     </property>
+     <addaction name="actionX"/>
+     <addaction name="action_x"/>
+     <addaction name="actionY"/>
+     <addaction name="action_Y"/>
+     <addaction name="actionZ"/>
+     <addaction name="action_Z"/>
+    </widget>
     <addaction name="actionHorizontal_camera"/>
     <addaction name="separator"/>
     <addaction name="action2D_mode"/>
+    <addaction name="menuLook_towards"/>
     <addaction name="separator"/>
     <addaction name="actionAdd_light"/>
     <addaction name="actionDark_mode"/>
@@ -373,6 +385,7 @@
     <addaction name="actionSet_all_hidden"/>
     <addaction name="separator"/>
     <addaction name="actionFull_refresh"/>
+    <addaction name="actionCamera_reset"/>
    </widget>
    <addaction name="menuSolve_Statics"/>
    <addaction name="menuView"/>
@@ -687,6 +700,46 @@
   <action name="actionsee_open_ocean_org">
    <property name="text">
     <string>see open-ocean.org</string>
+   </property>
+  </action>
+  <action name="actionX">
+   <property name="text">
+    <string>X</string>
+   </property>
+  </action>
+  <action name="action_x">
+   <property name="text">
+    <string>-X</string>
+   </property>
+  </action>
+  <action name="actionY">
+   <property name="text">
+    <string>Y</string>
+   </property>
+  </action>
+  <action name="action_Y">
+   <property name="text">
+    <string>-Y</string>
+   </property>
+  </action>
+  <action name="actionZ">
+   <property name="text">
+    <string>From top</string>
+   </property>
+  </action>
+  <action name="action_Z">
+   <property name="text">
+    <string>From bottom</string>
+   </property>
+  </action>
+  <action name="actionLook_towards_center">
+   <property name="text">
+    <string>Look towards center</string>
+   </property>
+  </action>
+  <action name="actionCamera_reset">
+   <property name="text">
+    <string>Camera reset</string>
    </property>
   </action>
  </widget>

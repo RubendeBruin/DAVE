@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Tue Jan  7 20:50:38 2020
+# Created: Tue Feb 18 16:48:15 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -135,6 +135,8 @@ class Ui_MainWindow(object):
         self.menuSolve_Statics.setObjectName("menuSolve_Statics")
         self.menuView = QtWidgets.QMenu(self.menubar)
         self.menuView.setObjectName("menuView")
+        self.menuLook_towards = QtWidgets.QMenu(self.menuView)
+        self.menuLook_towards.setObjectName("menuLook_towards")
         MainWindow.setMenuBar(self.menubar)
         self.dockWidget_2 = QtWidgets.QDockWidget(MainWindow)
         self.dockWidget_2.setObjectName("dockWidget_2")
@@ -262,6 +264,22 @@ class Ui_MainWindow(object):
         self.actionSave_actions_as.setObjectName("actionSave_actions_as")
         self.actionsee_open_ocean_org = QtWidgets.QAction(MainWindow)
         self.actionsee_open_ocean_org.setObjectName("actionsee_open_ocean_org")
+        self.actionX = QtWidgets.QAction(MainWindow)
+        self.actionX.setObjectName("actionX")
+        self.action_x = QtWidgets.QAction(MainWindow)
+        self.action_x.setObjectName("action_x")
+        self.actionY = QtWidgets.QAction(MainWindow)
+        self.actionY.setObjectName("actionY")
+        self.action_Y = QtWidgets.QAction(MainWindow)
+        self.action_Y.setObjectName("action_Y")
+        self.actionZ = QtWidgets.QAction(MainWindow)
+        self.actionZ.setObjectName("actionZ")
+        self.action_Z = QtWidgets.QAction(MainWindow)
+        self.action_Z.setObjectName("action_Z")
+        self.actionLook_towards_center = QtWidgets.QAction(MainWindow)
+        self.actionLook_towards_center.setObjectName("actionLook_towards_center")
+        self.actionCamera_reset = QtWidgets.QAction(MainWindow)
+        self.actionCamera_reset.setObjectName("actionCamera_reset")
         self.menuSolve_Statics.addAction(self.actionNew)
         self.menuSolve_Statics.addSeparator()
         self.menuSolve_Statics.addAction(self.actionOpen)
@@ -270,9 +288,16 @@ class Ui_MainWindow(object):
         self.menuSolve_Statics.addSeparator()
         self.menuSolve_Statics.addAction(self.actionSave_scene)
         self.menuSolve_Statics.addAction(self.actionSave_actions_as)
+        self.menuLook_towards.addAction(self.actionX)
+        self.menuLook_towards.addAction(self.action_x)
+        self.menuLook_towards.addAction(self.actionY)
+        self.menuLook_towards.addAction(self.action_Y)
+        self.menuLook_towards.addAction(self.actionZ)
+        self.menuLook_towards.addAction(self.action_Z)
         self.menuView.addAction(self.actionHorizontal_camera)
         self.menuView.addSeparator()
         self.menuView.addAction(self.action2D_mode)
+        self.menuView.addAction(self.menuLook_towards.menuAction())
         self.menuView.addSeparator()
         self.menuView.addAction(self.actionAdd_light)
         self.menuView.addAction(self.actionDark_mode)
@@ -293,6 +318,7 @@ class Ui_MainWindow(object):
         self.menuView.addAction(self.actionSet_all_hidden)
         self.menuView.addSeparator()
         self.menuView.addAction(self.actionFull_refresh)
+        self.menuView.addAction(self.actionCamera_reset)
         self.menubar.addAction(self.menuSolve_Statics.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
         self.toolBar.addSeparator()
@@ -312,6 +338,7 @@ class Ui_MainWindow(object):
         self.btnStopAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "X", None, -1))
         self.menuSolve_Statics.setTitle(QtWidgets.QApplication.translate("MainWindow", "File", None, -1))
         self.menuView.setTitle(QtWidgets.QApplication.translate("MainWindow", "View", None, -1))
+        self.menuLook_towards.setTitle(QtWidgets.QApplication.translate("MainWindow", "Look in direction", None, -1))
         self.dockWidget_2.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Engine internals", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("MainWindow", "Code:", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("MainWindow", "Output:", None, -1))
@@ -357,4 +384,13 @@ class Ui_MainWindow(object):
         self.actionInertia_properties.setText(QtWidgets.QApplication.translate("MainWindow", "Inertia properties", None, -1))
         self.actionSave_actions_as.setText(QtWidgets.QApplication.translate("MainWindow", "Save actions as", None, -1))
         self.actionsee_open_ocean_org.setText(QtWidgets.QApplication.translate("MainWindow", "see open-ocean.org", None, -1))
+        self.actionX.setText(QtWidgets.QApplication.translate("MainWindow", "X", None, -1))
+        self.action_x.setText(QtWidgets.QApplication.translate("MainWindow", "-X", None, -1))
+        self.actionY.setText(QtWidgets.QApplication.translate("MainWindow", "Y", None, -1))
+        self.action_Y.setText(QtWidgets.QApplication.translate("MainWindow", "-Y", None, -1))
+        self.actionZ.setText(QtWidgets.QApplication.translate("MainWindow", "From top", None, -1))
+        self.action_Z.setText(QtWidgets.QApplication.translate("MainWindow", "From bottom", None, -1))
+        self.actionLook_towards_center.setText(QtWidgets.QApplication.translate("MainWindow", "Look towards center", None, -1))
+        self.actionCamera_reset.setText(QtWidgets.QApplication.translate("MainWindow", "Camera reset", None, -1))
 
+import DAVE.gui.forms.resources_rc

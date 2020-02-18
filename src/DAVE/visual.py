@@ -468,6 +468,10 @@ class Viewport:
         self.vtkWidget.GetRenderWindow().GetRenderers().GetFirstRenderer().GetActiveCamera().SetViewUp([0, 0, 1])
         self.refresh_embeded_view()
 
+    def camera_reset(self):
+        self.vtkWidget.GetRenderWindow().GetRenderers().GetFirstRenderer().ResetCamera()
+
+
 
     def toggle_2D(self):
         camera = self.renderer.GetActiveCamera()
@@ -475,6 +479,27 @@ class Viewport:
             camera.ParallelProjectionOff()
         else:
             camera.ParallelProjectionOn()
+
+    def set_camera_direction(self, vector):
+        # Points the camera in the given direction
+        camera = self.vtkWidget.GetRenderWindow().GetRenderers().GetFirstRenderer().GetActiveCamera()
+        vector = np.array(vector)
+        vector = vector / np.linalg.norm(vector)
+
+        if np.linalg.norm(np.cross(vector, (0,0,1))) < 1e-8:
+            up = (0,-1,0)
+        else:
+            up = (0,0,1)
+
+        camera.SetViewUp(up)
+        tar = np.array(camera.GetFocalPoint())
+        pos = np.array(camera.GetPosition())
+        dist = np.linalg.norm(tar-pos)
+
+        camera_position = tar - dist * vector
+
+        camera.SetPosition(camera_position)
+
 
 
     def _scaled_force_vector(self, vector):
