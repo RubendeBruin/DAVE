@@ -574,6 +574,18 @@ class Viewport:
                 p.actor_type = ActorType.NOT_GLOBAL
                 actors.append(p)
 
+            if isinstance(N, vf.ContactMesh):
+
+                # 0 : source-mesh
+
+                # This is the source-mesh. Connect it to the parent
+                vis = actor_from_trimesh(N.trimesh._TriMesh)
+
+                vis.actor_type = ActorType.FORCE
+
+                if vis is not None:
+                    actors.append(vis)
+
 
             if isinstance(N, vf.Visual):
                 file = self.scene.get_resource_path(N.path)
@@ -614,6 +626,18 @@ class Viewport:
                 p.c(vc.COLOR_POI)
                 p.actor_type = ActorType.GEOMETRY
                 actors.append(p)
+
+            if isinstance(N, vf.ContactBall):
+                p = vp.Sphere(pos=(0,0,0), r=N.radius, res = vc.RESOLUTION_SPHERE)
+                p.c(vc.COLOR_FORCE)
+                p.actor_type = ActorType.FORCE
+                actors.append(p)
+
+                point1 = ((0,0,0))
+                a = vp.Line([point1, point1], lw=5).c(vc.COLOR_FORCE)
+                a.actor_type = ActorType.FORCE
+
+                actors.append(a)
 
             if isinstance(N, vf.WaveInteraction1):
                 size = 2
@@ -936,6 +960,25 @@ class Viewport:
                 t.Translate(V.node.global_position)
                 V.actors[0].setTransform(t)
                 V.actors[0].SetScale(self.geometry_scale)
+                continue
+
+            if isinstance(V.node, vf.ContactBall):
+                t = vtk.vtkTransform()
+                t.Identity()
+                t.Translate(V.node.parent.global_position)
+                V.actors[0].setTransform(t)
+
+                V.actors[0].wireframe(V.node.has_contact)
+
+                if V.node.has_contact:
+                    point1 =  V.node.parent.global_position
+                    point2 = V.node.contactpoint
+                    V.actors[1].points([point1, point2])
+                    V.actors[1].on()
+                else:
+                    V.actors[1].off()
+
+
                 continue
 
             if isinstance(V.node, vf.WaveInteraction1):
