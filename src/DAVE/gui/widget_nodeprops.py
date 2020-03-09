@@ -1210,8 +1210,8 @@ class WidgetNodeProps(guiDockWidget):
         to_be_removed = self._open_edit_widgets.copy()
 
 
-        for item in to_be_removed:
-            print('to be removed: ' + str(type(item)))
+        #for item in to_be_removed:
+        #    print('to be removed: ' + str(type(item)))
 
         self._node_editors.clear()
         self._open_edit_widgets.clear()
@@ -1269,8 +1269,8 @@ class WidgetNodeProps(guiDockWidget):
         for editor in self._node_editors:
             to_be_added.append(editor.create_widget())
 
-        for item in to_be_added:
-            print('to be added: ' + str(type(item)))
+        #for item in to_be_added:
+        #    print('to be added: ' + str(type(item)))
 
         for widget in to_be_removed:
             if widget in to_be_added:

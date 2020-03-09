@@ -1368,6 +1368,7 @@ class Viewport:
         iren.AddObserver("RightButtonPressEvent", screen._mouseright)
         iren.AddObserver("MiddleButtonPressEvent", screen._mousemiddle)
         iren.AddObserver("KeyPressEvent", self.keyPressFunction)
+        iren.AddObserver(vtk.vtkCommand.InteractionEvent, self.keep_up_up)
 
         for r in screen.renderers:
             r.ResetCamera()
@@ -1389,6 +1390,20 @@ class Viewport:
         self.renderer.AddLight(light1)
 
         self.light = light1
+
+    def keep_up_up(self,obj, event_type):
+        """Force z-axis up"""
+
+        camera = self.screen.camera
+
+        up = camera.GetViewUp()
+        if abs(up[2]) < 0.2:
+            factor = 1-(5*abs(up[2]))
+            camera.SetViewUp(factor * up[0],
+                             factor * up[1],
+                            (1-factor) + factor*up[2])
+        else:
+            camera.SetViewUp(0,0,1)
 
     def keyPressFunction(self, obj, event):
         key = obj.GetKeySym()
