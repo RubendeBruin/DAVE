@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="icons">
+    <file>contactball.png</file>
+    <file>contactmesh.png</file>
     <file>waveinteraction.png</file>
     <file>python logo klein.png</file>
     <file>splashscreen.png</file>

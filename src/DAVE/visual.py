@@ -579,9 +579,14 @@ class Viewport:
                 # 0 : source-mesh
 
                 # This is the source-mesh. Connect it to the parent
+
                 vis = actor_from_trimesh(N.trimesh._TriMesh)
+                if not vis:
+                    vis = vp.Cube(side=0.00001)
 
                 vis.actor_type = ActorType.FORCE
+
+                vis.loaded_obj = True
 
                 if vis is not None:
                     actors.append(vis)
@@ -631,6 +636,7 @@ class Viewport:
                 p = vp.Sphere(pos=(0,0,0), r=N.radius, res = vc.RESOLUTION_SPHERE)
                 p.c(vc.COLOR_FORCE)
                 p.actor_type = ActorType.FORCE
+                p._r = N.radius
                 actors.append(p)
 
                 point1 = ((0,0,0))
@@ -966,9 +972,16 @@ class Viewport:
                 t = vtk.vtkTransform()
                 t.Identity()
                 t.Translate(V.node.parent.global_position)
-                V.actors[0].setTransform(t)
 
-                V.actors[0].wireframe(V.node.has_contact)
+                # check radius
+                if V.actors[0]._r != V.node.radius:
+                    temp = vp.Sphere(pos=(0,0,0), r=V.node.radius, res = vc.RESOLUTION_SPHERE)
+                    V.actors[0].points(temp.points())
+                    V.actors[0]._r = V.node.radius
+
+
+                V.actors[0].setTransform(t)
+                V.actors[0].wireframe(V.node.force>0)
 
                 if V.node.has_contact:
                     point1 =  V.node.parent.global_position
@@ -1203,7 +1216,7 @@ class Viewport:
                         #print('adding actor for {}'.format(va.node.name))
             self.screen.add(to_be_added)
 
-            # check if objs need to be re-loaded
+            # check if objs or meshes need to be re-loaded
             for va in self.visuals:
                 if isinstance(va.node, vf.Visual):
 
@@ -1225,7 +1238,7 @@ class Viewport:
 
                     self.screen.add(va.actors[0])
 
-                if isinstance(va.node, vf.Buoyancy):
+                if isinstance(va.node, vf.Buoyancy) or  isinstance(va.node, vf.ContactMesh):
                     if va.node.trimesh._new_mesh:
 
                         new_mesh = actor_from_trimesh(va.node.trimesh._TriMesh)

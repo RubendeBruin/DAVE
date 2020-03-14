@@ -164,8 +164,6 @@ def add_poi(scene, selection=None):
     ui.btnOk.clicked.connect(ok)
     ui.tbName.setText(scene.available_name_like('Poi'))
 
-
-
     if (AddNode.exec() == QtWidgets.QDialog.Accepted):
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()
@@ -223,7 +221,32 @@ def add_force(scene, selection=None):
 
     else:
         return None
-    
+
+
+def add_contactball(scene, selection=None):
+
+    ui, AddNode = add_node(scene,selection)
+
+    ui.frmParentPoi.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/contactball.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Contactball'))
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        poi = ui.cbParentPoi.currentText()
+        name = ui.tbName.text()
+
+        return "new_contactball('{}', parent = '{}')".format(name, poi)
+
+    else:
+        return None
+
+
+
 def add_sheave(scene, selection=None):
 
     ui, AddNode = add_node(scene,selection)
@@ -386,6 +409,32 @@ def add_buoyancy(scene, selection=None):
     else:
         return None
 
+def add_contactmesh(scene, selection=None):
+    ui, AddNode = add_node(scene,selection)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/contact_mesh.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Contactmesh'))
+
+
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+
+        if parent:
+            return "new_contactmesh('{}', parent = '{}')".format(name, parent)
+        else:
+            return "new_contactmesh('{}')".format(name)
+
+
+    else:
+        return None
 
 
 def add_waveinteraction(scene, selection=None):

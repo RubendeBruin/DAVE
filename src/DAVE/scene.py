@@ -1629,9 +1629,11 @@ class ContactMesh(NodeWithParent):
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
-        code += "\nmesh = s.new_contactmesh(name='{}',".format(self.name)
+        code += "\nmesh = s.new_contactmesh(name='{}'".format(self.name)
         if self.parent:
-            code += "\n          parent='{}')".format(self.parent.name)
+            code += ", parent='{}')".format(self.parent.name)
+        else:
+            code += ')'
         code += "\nmesh.trimesh.load_obj(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
             self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
 
@@ -1661,17 +1663,27 @@ class ContactBall(NodeWithParent):
 
     def add_contactmesh(self, mesh):
 
-        if isinstance(mesh, str):
-            mesh = self._scene[mesh]
+        mesh = self._scene._node_from_node(mesh, ContactMesh)
 
-        assert isinstance(mesh, ContactMesh), "Mesh should be an instance of ContactMesh or its name"
-
-        self._meshes.append(mesh)
-        self._vfNode.add_contactmesh(mesh._vfNode)
+        if mesh not in self._meshes:
+            self._meshes.append(mesh)
+            self._vfNode.add_contactmesh(mesh._vfNode)
+        else:
+            Warning('mesh already present, not adding again')
 
     def clear_contactmeshes(self):
         self._meshes.clear()
         self._vfNode.clear_contactmeshes()
+
+    @property
+    def meshes_names(self) -> list:
+        """returns a list with the names of the meshes"""
+        return [m.name for m in self._meshes]
+
+
+    @property
+    def force(self):
+        return self._vfNode.force
 
     @property
     def radius(self):
@@ -1705,8 +1717,8 @@ class ContactBall(NodeWithParent):
         code += "\n                  meshes = ["
 
         for m in self._meshes:
-            code += m.name + '","'
-        code = code[:-3] + '])'
+            code += '"' + m.name + '","'
+        code = code[:-2] + '])'
 
         return code
 
@@ -4226,7 +4238,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_contactball(self, name, parent=None, radius=1, k=9999):
+    def new_contactball(self, name, parent=None, radius=1, k=9999, meshes = None):
         """Creates a new *force* node and adds it to the scene.
 
         Args:
@@ -4252,6 +4264,9 @@ class Scene:
         assert1f_positive(radius, "Radius ")
         assert1f_positive(k, "k ")
 
+        for mesh in meshes:
+            test = self._node_from_node(mesh, ContactMesh)
+
         # then create
         a = self._vfc.new_contactball(name)
 
@@ -4264,6 +4279,9 @@ class Scene:
             new_node.k = k
         if radius is not None:
             new_node.radius = radius
+
+        for mesh in meshes:
+            new_node.add_contactmesh(self._node_from_node(mesh, ContactMesh))
 
         self._nodes.append(new_node)
         return new_node

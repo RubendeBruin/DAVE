@@ -1,5 +1,5 @@
 from DAVE.gui.dockwidget import *
-from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon
+from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag
 from PySide2.QtCore import QMimeData, Qt, QItemSelectionModel
 from PySide2.QtWidgets import QTreeWidgetItem
 import DAVE.scene as ds
@@ -8,15 +8,29 @@ import DAVE.scene as ds
 
 class NodeTreeWidget(QtWidgets.QTreeWidget):
 
+    def dragEnterEvent(self, event):
+        if event.source() is not self:
+            print("Not accepting external data")
+            event.setDropAction(Qt.IgnoreAction)
+            return
+        else:
+            event.accept()
+
+    def dragMoveEvent(self, event):
+        if event.source() is not self:
+            print("Not accepting external data")
+            event.setDropAction(Qt.IgnoreAction)
+            return
+        else:
+            event.accept()
+
     def dropEvent(self, event):
         if event.source() is not self:
             print("Not accepting external data")
             event.setDropAction(Qt.IgnoreAction)
             return
 
-        # item being dragged is the selected item
-        dragged = self.selectedItems()[0]
-        dragged_name = dragged.text(0)
+        dragged_name = event.mimeData().text()
 
         # dropped onto
         point = event.pos()
@@ -31,6 +45,17 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
         event.setDropAction(Qt.IgnoreAction)
 
         self.parentcallback(dragged_name, drop_onto_name)
+
+    def startDrag(self, supportedActions):
+
+        dragged = self.selectedItems()[0]
+        mimeData = QMimeData()
+        mimeData.setText(dragged.text(0))
+
+        drag = QDrag(self)
+        drag.setMimeData(mimeData)
+
+        drag.exec_(supportedActions=supportedActions, defaultAction=Qt.MoveAction)
 
 
 
@@ -162,6 +187,10 @@ class WidgetNodeTree(guiDockWidget):
                 item.setIcon(0,QIcon(":/icons/trimesh.png"))
             if isinstance(node, ds.WaveInteraction1):
                 item.setIcon(0,QIcon(":/icons/waveinteraction.png"))
+            if isinstance(node, ds.ContactBall):
+                item.setIcon(0,QIcon(":/icons/contactball.png"))
+            if isinstance(node, ds.ContactMesh):
+                item.setIcon(0,QIcon(":/icons/contactmesh.png"))
 
             try:
                 parent = node.parent
