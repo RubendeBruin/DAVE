@@ -360,17 +360,17 @@ class EditBuoyancyOrContactMesh(NodeEditor):
         except:
             pass # no connections yet
 
-        # ui.doubleSpinBox_1.setValue(self.node.offset[0])
-        # ui.doubleSpinBox_2.setValue(self.node.offset[1])
-        # ui.doubleSpinBox_3.setValue(self.node.offset[2])
-        #
-        # ui.doubleSpinBox_4.setValue(self.node.rotation[0])
-        # ui.doubleSpinBox_5.setValue(self.node.rotation[1])
-        # ui.doubleSpinBox_6.setValue(self.node.rotation[2])
-        #
-        # ui.doubleSpinBox_7.setValue(self.node.scale[0])
-        # ui.doubleSpinBox_8.setValue(self.node.scale[1])
-        # ui.doubleSpinBox_9.setValue(self.node.scale[2])
+        ui.doubleSpinBox_1.setValue(self.node.trimesh._offset[0])
+        ui.doubleSpinBox_2.setValue(self.node.trimesh._offset[1])
+        ui.doubleSpinBox_3.setValue(self.node.trimesh._offset[2])
+
+        ui.doubleSpinBox_4.setValue(self.node.trimesh._rotation[0])
+        ui.doubleSpinBox_5.setValue(self.node.trimesh._rotation[1])
+        ui.doubleSpinBox_6.setValue(self.node.trimesh._rotation[2])
+
+        ui.doubleSpinBox_7.setValue(self.node.trimesh._scale[0])
+        ui.doubleSpinBox_8.setValue(self.node.trimesh._scale[1])
+        ui.doubleSpinBox_9.setValue(self.node.trimesh._scale[2])
 
 
 
@@ -1193,7 +1193,13 @@ class EditContactBall(NodeEditor):
 
     def dragEnter(self, event):
         dragged_name = event.mimeData().text()
-        event.accept()
+
+        try:
+            a = self.scene[dragged_name]
+            if isinstance(a, vfs.ContactMesh):
+                event.accept()
+        except:
+            return
 
 
     def onDrop(self,  event):

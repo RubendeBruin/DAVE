@@ -1182,4 +1182,6 @@ if __name__ == '__main__':
 
     s['mesh'].change_parent_to(s['Body'])
 
+    s['mesh'].change_parent_to(None)
+
     Gui(s)

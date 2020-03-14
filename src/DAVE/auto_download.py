@@ -1,7 +1,23 @@
+"""
+This module tries to import pyo3d. If it can not be imported, then it attempts to download is after the user
+accepts it.
 
+This module is imported by the Gui, so it only works when using the gui. It needs to because it uses a popup for
+user notifications.
+
+Only supported on windows
+"""
+
+"""
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+  Ruben de Bruin - 2020
+"""
 
 try:
-    import pyo3dt
+    import pyo3d
 except ModuleNotFoundError:
 
     print("module pyo3d is not found on your system. No problem, we can download and install it automatically for you, proceed?")
