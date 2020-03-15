@@ -612,6 +612,9 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
         else:
             code += '\nadd_beam(points, directions, diameter={}, name = "{}")'.format(dia, beam.name)
 
+    for contactball in scene.nodes_of_type(dc.ContactBall):
+
+        code += '\nbpy.ops.mesh.primitive_uv_sphere_add(radius={}, enter_editmode=False, location=({}, {}, {}))'.format(contactball.radius,*contactball.parent.global_position)
 
 
     if camera is not None:

@@ -372,8 +372,6 @@ class EditBuoyancyOrContactMesh(NodeEditor):
         ui.doubleSpinBox_8.setValue(self.node.trimesh._scale[1])
         ui.doubleSpinBox_9.setValue(self.node.trimesh._scale[2])
 
-
-
         ui.comboBox.clear()
         ui.comboBox.addItems(self.scene.get_resource_list('obj'))
 

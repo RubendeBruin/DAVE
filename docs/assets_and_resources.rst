@@ -39,7 +39,7 @@ It is also possible to load or save resources using the full path. In that case 
 
 Subfolders
 ~~~~~~~~~~~
-The Scene object will not walk through sub-folders when looking for an asset or resource. This means that subfolders add to the uniqueness of the filename.
+The Scene object will *not* walk through sub-folders when looking for an asset or resource. This means that subfolders add to the uniqueness of the filename.
 A file called `attempt1/box.obj` is different from a file `attempt2/box.obj`
 
 
