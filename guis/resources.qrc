@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="icons">
+    <file>fish.png</file>
+    <file>blender_icon_64x64.png</file>
+    <file>icon_undo.png</file>
+    <file>icon_copy.png</file>
     <file>contactball.png</file>
     <file>contactmesh.png</file>
     <file>waveinteraction.png</file>

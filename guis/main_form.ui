@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1905</width>
-    <height>1677</height>
+    <width>1799</width>
+    <height>1702</height>
    </rect>
   </property>
   <property name="acceptDrops">
@@ -90,7 +90,12 @@
        <item>
         <widget class="QPushButton" name="btnUndoStatics">
          <property name="text">
-          <string>undo</string>
+          <string>Undo</string>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normalon>:/icons/icon_undo.png</normalon>
+          </iconset>
          </property>
         </widget>
        </item>
@@ -123,7 +128,7 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>30</width>
+           <width>60</width>
            <height>16777215</height>
           </size>
          </property>
@@ -134,41 +139,12 @@
           </size>
          </property>
          <property name="text">
-          <string>~</string>
+          <string/>
          </property>
-         <property name="flat">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btnLevelCamera">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>30</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>30</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="baseSize">
-          <size>
-           <width>30</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>__</string>
+         <property name="icon">
+          <iconset>
+           <normalon>:/icons/fish.png</normalon>
+          </iconset>
          </property>
          <property name="flat">
           <bool>true</bool>
@@ -179,12 +155,17 @@
         <widget class="QPushButton" name="btnBlender">
          <property name="maximumSize">
           <size>
-           <width>60</width>
+           <width>100</width>
            <height>16777215</height>
           </size>
          </property>
          <property name="text">
           <string>blender</string>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normalon>:/icons/blender_icon_64x64.png</normalon>
+          </iconset>
          </property>
          <property name="flat">
           <bool>true</bool>
@@ -329,7 +310,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1905</width>
+     <width>1799</width>
      <height>31</height>
     </rect>
    </property>
@@ -400,23 +381,64 @@
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
-      <widget class="QWidget" name="widget" native="true">
-       <layout class="QVBoxLayout" name="verticalLayout">
+      <widget class="QWidget" name="widget_5" native="true">
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Code:</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
-          </property>
+         <widget class="QWidget" name="widget_6" native="true">
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Code</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="pbExecute">
+             <property name="text">
+              <string>Execute</string>
+             </property>
+             <property name="icon">
+              <iconset resource="resources.qrc">
+               <normaloff>:/icons/python logo klein.png</normaloff>:/icons/python logo klein.png</iconset>
+             </property>
+             <property name="toolButtonStyle">
+              <enum>Qt::ToolButtonTextBesideIcon</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
+        </item>
+        <item>
+         <widget class="QTextEdit" name="teCode"/>
         </item>
        </layout>
       </widget>
-     </item>
-     <item>
-      <widget class="QTextEdit" name="teCode"/>
      </item>
      <item>
       <widget class="QFrame" name="frame_3">
@@ -426,39 +448,81 @@
        <property name="frameShadow">
         <enum>QFrame::Raised</enum>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="leftMargin">
+         <number>13</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>13</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Output:</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
-          </property>
+         <widget class="QWidget" name="widget_7" native="true">
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>Output:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="pbGenerateSceneCode">
+             <property name="text">
+              <string>Generate scene code</string>
+             </property>
+             <property name="icon">
+              <iconset>
+               <normalon>:/icons/cube.png</normalon>
+              </iconset>
+             </property>
+             <property name="toolButtonStyle">
+              <enum>Qt::ToolButtonTextBesideIcon</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="pbCopyOutput">
+             <property name="text">
+              <string>Copy</string>
+             </property>
+             <property name="icon">
+              <iconset>
+               <normalon>:/icons/icon_copy.png</normalon>
+              </iconset>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pbGenerateSceneCode">
-          <property name="text">
-           <string>Generate Scene Code</string>
+         <widget class="QTextEdit" name="teFeedback">
+          <property name="autoFillBackground">
+           <bool>false</bool>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pbCopyFeedback">
-          <property name="text">
-           <string>Copy output</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pbExecute">
-          <property name="text">
-           <string>Execute</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/icons/python logo klein.png</normaloff>:/icons/python logo klein.png</iconset>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
           </property>
          </widget>
         </item>
@@ -466,13 +530,61 @@
       </widget>
      </item>
      <item>
-      <widget class="QTextEdit" name="teFeedback">
-       <property name="autoFillBackground">
-        <bool>false</bool>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::StyledPanel</enum>
-       </property>
+      <widget class="QWidget" name="widget_4" native="true">
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QWidget" name="widget" native="true">
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>History (actions)</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="pbCopyHistory">
+             <property name="text">
+              <string>Copy</string>
+             </property>
+             <property name="icon">
+              <iconset>
+               <normalon>:/icons/icon_copy.png</normalon>
+              </iconset>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTextEdit" name="teHistory"/>
+        </item>
+       </layout>
       </widget>
      </item>
     </layout>
@@ -743,10 +855,6 @@
    </property>
   </action>
  </widget>
- <tabstops>
-  <tabstop>pbCopyFeedback</tabstop>
-  <tabstop>teFeedback</tabstop>
- </tabstops>
  <resources>
   <include location="resources.qrc"/>
  </resources>

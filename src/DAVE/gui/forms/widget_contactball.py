@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_contactball.ui',
 # licensing of 'widget_contactball.ui' applies.
 #
-# Created: Tue Mar 10 09:23:21 2020
+# Created: Mon Mar 16 10:15:56 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!

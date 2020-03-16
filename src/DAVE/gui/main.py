@@ -72,7 +72,7 @@
 import DAVE.auto_download
 
 from PySide2.QtCore import Qt
-from PySide2.QtGui import QIcon, QPixmap
+from PySide2.QtGui import QIcon, QPixmap, QFont,QFontMetricsF
 from PySide2.QtWidgets import QDialog,QFileDialog
 from DAVE.scene import Scene
 
@@ -83,6 +83,8 @@ import DAVE.gui.standard_assets
 from DAVE.gui.forms.dlg_solver import Ui_Dialog
 import DAVE.settings
 
+from DAVE.gui.helpers.highlighter import PythonHighlighter
+from DAVE.gui.helpers.ctrl_enter import CtrlEnterKeyPressFilter
 
 from IPython.utils.capture import capture_output
 import datetime
@@ -202,7 +204,6 @@ class Gui():
 
         # ------ viewport buttons ------
 
-        self.ui.btnLevelCamera.pressed.connect(self.visual.level_camera)
         self.ui.btnWater.pressed.connect(self.toggle_show_global)
         self.ui.btnBlender.pressed.connect(self.to_blender)
 
@@ -225,7 +226,8 @@ class Gui():
 
         # --- buttons
         self.ui.pbExecute.pressed.connect(self.run_code_in_teCode)
-        self.ui.pbCopyFeedback.pressed.connect(self.feedback_copy)
+        self.ui.pbCopyOutput.pressed.connect(self.feedback_copy)
+        self.ui.pbCopyHistory.pressed.connect(self.history_copy)
         self.ui.pbGenerateSceneCode.pressed.connect(self.generate_scene_code)
 
         #
@@ -276,6 +278,20 @@ class Gui():
             self.run_code('self.visual.geometry_scale = 0.9*self.visual.geometry_scale',guiEventType.VIEWER_SETTINGS_UPDATE)
 
         self.ui.actionDecrease_Geometry_size.triggered.connect(decrease_geo_size)
+
+        # ======================= Code-highlighter ==============
+
+        font = QFont()
+        font.setPointSize(10)
+        font.setFamily('Consolas')
+        self.ui.teCode.setFont(font)
+        self.ui.teCode.setTabStopDistance(QFontMetricsF(self.ui.teCode.font()).width(' ') * 4)
+
+        self.highlight = PythonHighlighter(self.ui.teCode.document())
+
+        self.eventFilter = CtrlEnterKeyPressFilter()
+        self.eventFilter.callback = self.run_code_in_teCode
+        self.ui.teCode.installEventFilter(self.eventFilter)
 
         # ======================== Docks ====================
         self.guiWidgets = dict()
@@ -581,24 +597,23 @@ class Gui():
 
 
     def run_code(self, code, event):
+        """Runs the provided code
+
+        If succesful, add code to history
+        If not, set code as current code
+        """
 
         before = self.scene._nodes.copy()
 
         s = self.scene
 
-        self.ui.teCode.append('# ------------------')
         self.ui.pbExecute.setStyleSheet("background-color: yellow;")
+
         self.ui.teFeedback.setStyleSheet("")
         self.ui.teFeedback.clear()
-        self.ui.teFeedback.update()
-        self.ui.teCode.append(code)
-        self.ui.teCode.append('\n')
-        self.ui.teCode.verticalScrollBar().setValue(
-            self.ui.teCode.verticalScrollBar().maximum())  # scroll down all the way
-        self.ui.teCode.update()
-        self.ui.teCode.repaint()
 
-        # self.app.processEvents()
+
+
 
         with capture_output() as c:
 
@@ -612,6 +627,13 @@ class Gui():
                     self.ui.teFeedback.append("Succes at " + str(datetime.datetime.now()))
 
                 self._codelog.append(code)
+                self.ui.teHistory.append(code)
+
+                self.ui.teHistory.verticalScrollBar().setValue(
+                    self.ui.teHistory.verticalScrollBar().maximum())  # scroll down all the way
+
+
+                self.ui.teCode.clear()
 
                 # See if selected nodes are still valid and identical to the ones
                 to_be_removed = []
@@ -636,6 +658,12 @@ class Gui():
                     self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
 
             except Exception as E:
+
+                self.ui.teCode.clear()
+                self.ui.teCode.append(code)
+
+                self.ui.teCode.update()
+                self.ui.teCode.repaint()
 
                 self.ui.teFeedback.setText(c.stdout + '\n' + str(E) + '\n\nWhen running: \n\n' + code)
                 self.ui.teFeedback.setStyleSheet("background-color: pink;")
@@ -757,7 +785,6 @@ class Gui():
         if self.animation_running():
             dofs = []
 
-            # assume 24 frames per second for rendering
             n_frames = self._animation_length * DAVE.settings.BLENDER_FPS
             for t in np.linspace(0,self._animation_length, n_frames):
                 dofs.append(self._animation_keyframe_interpolation_object(t))
@@ -843,6 +870,9 @@ class Gui():
 
     def feedback_copy(self):
         self.app.clipboard().setText(self.ui.teFeedback.toPlainText())
+
+    def history_copy(self):
+        self.app.clipboard().setText(self.ui.teHistory.toPlainText())
 
     def generate_scene_code(self):
         self.ui.teFeedback.setText(self.scene.give_python_code())
