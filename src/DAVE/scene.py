@@ -4264,8 +4264,11 @@ class Scene:
         assert1f_positive(radius, "Radius ")
         assert1f_positive(k, "k ")
 
-        for mesh in meshes:
-            test = self._node_from_node(mesh, ContactMesh)
+
+        if meshes is not None:
+            meshes = make_iterable(meshes)
+            for mesh in meshes:
+                test = self._node_from_node(mesh, ContactMesh)
 
         # then create
         a = self._vfc.new_contactball(name)
@@ -4280,8 +4283,9 @@ class Scene:
         if radius is not None:
             new_node.radius = radius
 
-        for mesh in meshes:
-            new_node.add_contactmesh(self._node_from_node(mesh, ContactMesh))
+        if meshes is not None:
+            for mesh in meshes:
+                new_node.add_contactmesh(self._node_from_node(mesh, ContactMesh))
 
         self._nodes.append(new_node)
         return new_node
