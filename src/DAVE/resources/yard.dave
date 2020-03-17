@@ -1,0 +1,130 @@
+# auto generated pyhton code
+# By beneden
+# Time: 2020-03-15 23:04:04 UTC
+
+# To be able to distinguish the important number (eg: fixed positions) from
+# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
+# For anything written as solved(number) that actual number does not influence the static solution
+def solved(number):
+    return number
+
+# code for Yard
+s.new_axis(name='Yard',
+           position=(0.0,
+                     0.0,
+                     0.0),
+           rotation=(0.0,
+                     0.0,
+                     0.0),
+           fixed =(True, True, True, True, True, True) )
+# code for Axis - visuals
+s.new_axis(name='Axis - visuals',
+           parent='Yard',
+           position=(0.0,
+                     0.0,
+                     1.0),
+           rotation=(0.0,
+                     0.0,
+                     0.0),
+           fixed =(True, True, True, True, True, True) )
+# code for Quay Contactmesh
+mesh = s.new_contactmesh(name='Quay Contactmesh', parent='Yard')
+mesh.trimesh.load_obj(s.get_resource_path(r'cube.obj'), scale = (250.0,10.0,6.0), rotation = (0.0,0.0,0.0), offset = (0.0,-5.0,0.0))
+# code for MP
+s.new_poi(name='MP',
+          parent='Yard',
+          position=(10.0,
+                    -1.0,
+                    4.0))
+# code for MP_1
+s.new_poi(name='MP_1',
+          parent='Yard',
+          position=(-50.0,
+                    -1.0,
+                    4.0))
+# code for MP_2
+s.new_poi(name='MP_2',
+          parent='Yard',
+          position=(-10.0,
+                    -1.0,
+                    4.0))
+# code for MP_3
+s.new_poi(name='MP_3',
+          parent='Yard',
+          position=(10.0,
+                    -1.0,
+                    4.0))
+# code for MP_4
+s.new_poi(name='MP_4',
+          parent='Yard',
+          position=(40.0,
+                    -1.0,
+                    4.0))
+# code for MP_5
+s.new_poi(name='MP_5',
+          parent='Yard',
+          position=(70.0,
+                    -1.0,
+                    4.0))
+# code for MP_6
+s.new_poi(name='MP_6',
+          parent='Yard',
+          position=(90.0,
+                    -1.0,
+                    4.0))
+# code for Quay visuals
+s.new_visual(name='Quay visuals',
+            parent='Axis - visuals',
+            path=r'cube.obj',
+            offset=(0.0, -15.0, 0.0), 
+            rotation=(0.0, 0.0, 0.0), 
+            scale=(200.0, 30.0, 4.0) )
+# code for Mooring pile visual
+s.new_visual(name='Mooring pile visual',
+            parent='Axis - visuals',
+            path=r'cylinder 1x1x1.obj',
+            offset=(10.0, -1.0, 0.0), 
+            rotation=(0.0, 0.0, 0.0), 
+            scale=(1.0, 1.0, 3.0) )
+# code for Mooring pile visual_1
+s.new_visual(name='Mooring pile visual_1',
+            parent='Axis - visuals',
+            path=r'cylinder 1x1x1.obj',
+            offset=(70.0, -1.0, 0.0), 
+            rotation=(0.0, 0.0, 0.0), 
+            scale=(1.0, 1.0, 3.0) )
+# code for Mooring pile visual_1_1
+s.new_visual(name='Mooring pile visual_1_1',
+            parent='Axis - visuals',
+            path=r'cylinder 1x1x1.obj',
+            offset=(40.0, -1.0, 0.0), 
+            rotation=(0.0, 0.0, 0.0), 
+            scale=(1.0, 1.0, 3.0) )
+# code for Mooring pile visual_2
+s.new_visual(name='Mooring pile visual_2',
+            parent='Axis - visuals',
+            path=r'cylinder 1x1x1.obj',
+            offset=(-10.0, -1.0, 0.0), 
+            rotation=(0.0, 0.0, 0.0), 
+            scale=(1.0, 1.0, 3.0) )
+# code for Mooring pile visual_2_1
+s.new_visual(name='Mooring pile visual_2_1',
+            parent='Axis - visuals',
+            path=r'cylinder 1x1x1.obj',
+            offset=(-50.0, -1.0, 0.0), 
+            rotation=(0.0, 0.0, 0.0), 
+            scale=(1.0, 1.0, 3.0) )
+# code for Mooring pile visual_1_1_1
+s.new_visual(name='Mooring pile visual_1_1_1',
+            parent='Axis - visuals',
+            path=r'cylinder 1x1x1.obj',
+            offset=(90.0, -1.0, 0.0), 
+            rotation=(0.0, 0.0, 0.0), 
+            scale=(1.0, 1.0, 3.0) )
+# code for Visual - worker
+s.new_visual(name='Visual - worker',
+            parent='Axis - visuals',
+            path=r'worker.obj',
+            offset=(10.0, -1.0, 3.5), 
+            rotation=(0.0, 0.0, 170.0), 
+            scale=(1, 1, 1) )
