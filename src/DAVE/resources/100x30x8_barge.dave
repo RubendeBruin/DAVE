@@ -62,3 +62,11 @@ for i in range(8):
     bs.new_tank('ps_outer{}'.format(i+1), (6.25 + 12.5*i,7.5/2 + 7.5, 4), capacity)
     bs.new_tank('sb_inner{}'.format(i+1), (6.25 + 12.5*i,-7.5/2 ,  4), capacity)
     bs.new_tank('sb_outer{}'.format(i+1), (6.25 + 12.5*i,-7.5/2 -7.5,  4), capacity)
+
+## Bollards
+
+for i in range(4):
+	s.new_poi(name = f"bollard_ps{i}", position = (5 + 30*i, -15, 8), parent='Barge')
+	s.new_poi(name = f"bollard_sb{i}", position = (5 + 30*i, 15, 8), parent='Barge')
+s.new_poi('towpoint_ps', position = (100,10,8), parent='Barge')
+s.new_poi('towpoint_sb', position = (100,-10,8), parent='Barge')

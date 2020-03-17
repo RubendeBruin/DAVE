@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>file_new.png</file>
     <file>fish.png</file>
     <file>blender_icon_64x64.png</file>
     <file>icon_undo.png</file>

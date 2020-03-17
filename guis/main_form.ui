@@ -139,7 +139,7 @@
           </size>
          </property>
          <property name="text">
-          <string/>
+          <string>sea</string>
          </property>
          <property name="icon">
           <iconset>
@@ -373,7 +373,7 @@
   </widget>
   <widget class="QDockWidget" name="dockWidget_2">
    <property name="windowTitle">
-    <string>Engine internals</string>
+    <string>Python engine</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
@@ -418,6 +418,21 @@
             </widget>
            </item>
            <item>
+            <widget class="QToolButton" name="pbClearCode">
+             <property name="text">
+              <string>&amp;Clear</string>
+             </property>
+             <property name="icon">
+              <iconset>
+               <normalon>:/icons/file_new.png</normalon>
+              </iconset>
+             </property>
+             <property name="toolButtonStyle">
+              <enum>Qt::ToolButtonTextBesideIcon</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QToolButton" name="pbExecute">
              <property name="text">
               <string>Execute</string>
@@ -435,7 +450,17 @@
          </widget>
         </item>
         <item>
-         <widget class="QTextEdit" name="teCode"/>
+         <widget class="QTextEdit" name="teCode">
+          <property name="html">
+           <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;print(&amp;quot;type python code here&amp;quot;)&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;# press ctrl+enter to execute&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;# press alt+c to clear and focus here&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -479,7 +504,7 @@
            <item>
             <widget class="QLabel" name="label_2">
              <property name="text">
-              <string>Output:</string>
+              <string>Output</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>

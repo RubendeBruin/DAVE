@@ -229,6 +229,7 @@ class Gui():
         self.ui.pbCopyOutput.pressed.connect(self.feedback_copy)
         self.ui.pbCopyHistory.pressed.connect(self.history_copy)
         self.ui.pbGenerateSceneCode.pressed.connect(self.generate_scene_code)
+        self.ui.pbClearCode.pressed.connect(self.clear_code)
 
         #
         self.ui.btnSolveStatics.clicked.connect(self.solve_statics)
@@ -632,9 +633,6 @@ class Gui():
                 self.ui.teHistory.verticalScrollBar().setValue(
                     self.ui.teHistory.verticalScrollBar().maximum())  # scroll down all the way
 
-
-                self.ui.teCode.clear()
-
                 # See if selected nodes are still valid and identical to the ones
                 to_be_removed = []
                 for node in self.selected_nodes:
@@ -873,6 +871,11 @@ class Gui():
 
     def history_copy(self):
         self.app.clipboard().setText(self.ui.teHistory.toPlainText())
+
+    def clear_code(self):
+        self.ui.teCode.clear()
+        self.ui.teCode.setFocus()
+
 
     def generate_scene_code(self):
         self.ui.teFeedback.setText(self.scene.give_python_code())
