@@ -3,8 +3,8 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Mon Mar 16 10:15:56 2020
-#      by: pyside2-uic  running on PySide2 5.13.1
+# Created: Wed Mar 18 09:05:11 2020
+#      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -127,7 +127,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.addWidget(self.frameAni)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1799, 31))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1799, 21))
         self.menubar.setObjectName("menubar")
         self.menuSolve_Statics = QtWidgets.QMenu(self.menubar)
         self.menuSolve_Statics.setObjectName("menuSolve_Statics")
@@ -432,4 +432,3 @@ class Ui_MainWindow(object):
         self.action_Z.setText(QtWidgets.QApplication.translate("MainWindow", "From bottom", None, -1))
         self.actionLook_towards_center.setText(QtWidgets.QApplication.translate("MainWindow", "Look towards center", None, -1))
         self.actionCamera_reset.setText(QtWidgets.QApplication.translate("MainWindow", "Camera reset", None, -1))
-
