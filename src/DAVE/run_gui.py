@@ -8,7 +8,7 @@
   File to open the Gui
 
 """
-
+import DAVE.auto_download
 import DAVE.gui.forms.resources_rc
 from PySide2.QtWidgets import QSplashScreen, QApplication
 from PySide2.QtGui import QPixmap

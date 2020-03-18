@@ -213,13 +213,17 @@ if platform.system().lower().startswith('win'):
     # on windows we can possible get blender from the registry
     import winreg
     pt = ''
+
     try:
-        pt = winreg.QueryValue(winreg.HKEY_CURRENT_USER,r'SOFTWARE\Classes\blendfile\shell\open\command')
+        pt = winreg.QueryValue(winreg.HKEY_CLASSES_ROOT, r'Applications\blender.exe\shell\open\command')
     except:
         try:
-            pt = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\Classes\blendfile\shell\open\command')
+            pt = winreg.QueryValue(winreg.HKEY_CURRENT_USER,r'SOFTWARE\Classes\blendfile\shell\open\command')
         except:
-            pass
+            try:
+                pt = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\Classes\blendfile\shell\open\command')
+            except:
+                pass
     if pt:
         BLENDER_EXEC = pt[1:-6]
     else:
@@ -231,7 +235,7 @@ if platform.system().lower().startswith('win'):
     else:
         print("! Blender not found - please either:\n"
               "   edit BLENDER_EXEC_DEFAULT_WIN in settings.py or \n"
-              "   set setting.BLENDER_EXEC or\n"
+              "   set settings.BLENDER_EXEC or\n"
               "   configure windows to open .blend files with blender automatically")
 else: # assume we're on linux
     BLENDER_EXEC = 'blender'

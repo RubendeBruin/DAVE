@@ -1178,43 +1178,4 @@ class Gui():
 # ====== main code ======
 
 if __name__ == '__main__':
-
-    def solved(x):
-        return x
-
-    s = Scene()
-
-    mesh = s.new_contactmesh(name='mesh')
-    mesh.trimesh.load_obj(s.get_resource_path(r'cube.obj'), scale=(20.0, 21.0, 1.0),
-                                                   rotation=(0.0, 0.0, 0.0), offset=(0.0, 0.0, 0.0))
-    # code for Body
-    s.new_rigidbody(name='Body',
-                    mass=1.0,
-                    cog=(0.0,
-                         0.0,
-                         0.0),
-                    position=(solved(2.0),
-                              solved(2.0),
-                              solved(10.0)),
-                    rotation=(solved(0.0),
-                              solved(0.0),
-                              solved(0.0)),
-                    fixed=(False, False, False, False, False, False))
-    # code for p
-    s.new_poi(name='p',
-              parent='Body',
-              position=(0.0,
-                        0.0,
-                        0.0))
-    # code for cb
-    s.new_contactball(name='cb',
-                      parent='p',
-                      radius=1.0,
-                      k=9999.0,
-                      meshes=[mesh])
-
-    s['mesh'].change_parent_to(s['Body'])
-
-    s['mesh'].change_parent_to(None)
-
-    Gui(s)
+    pass

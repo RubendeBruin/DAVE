@@ -3,8 +3,8 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Tue Mar 17 15:15:26 2020
-#      by: pyside2-uic  running on PySide2 5.13.1
+# Created: Wed Mar 18 09:05:11 2020
+#      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -59,6 +59,7 @@ class Ui_MainWindow(object):
         self.btnWater.setMinimumSize(QtCore.QSize(30, 0))
         self.btnWater.setMaximumSize(QtCore.QSize(60, 16777215))
         self.btnWater.setBaseSize(QtCore.QSize(30, 0))
+        self.btnWater.setText("")
         icon2 = QtGui.QIcon()
         icon2.addPixmap(QtGui.QPixmap(":/icons/fish.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
         self.btnWater.setIcon(icon2)
@@ -126,7 +127,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.addWidget(self.frameAni)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1799, 31))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1799, 21))
         self.menubar.setObjectName("menubar")
         self.menuSolve_Statics = QtWidgets.QMenu(self.menubar)
         self.menuSolve_Statics.setObjectName("menuSolve_Statics")
@@ -154,17 +155,10 @@ class Ui_MainWindow(object):
         self.label_3 = QtWidgets.QLabel(self.widget_6)
         self.label_3.setObjectName("label_3")
         self.horizontalLayout_3.addWidget(self.label_3)
-        self.pbClearCode = QtWidgets.QToolButton(self.widget_6)
-        icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap(":/icons/file_new.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        self.pbClearCode.setIcon(icon4)
-        self.pbClearCode.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
-        self.pbClearCode.setObjectName("pbClearCode")
-        self.horizontalLayout_3.addWidget(self.pbClearCode)
         self.pbExecute = QtWidgets.QToolButton(self.widget_6)
-        icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap(":/icons/python logo klein.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.pbExecute.setIcon(icon5)
+        icon4 = QtGui.QIcon()
+        icon4.addPixmap(QtGui.QPixmap(":/icons/python logo klein.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.pbExecute.setIcon(icon4)
         self.pbExecute.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.pbExecute.setObjectName("pbExecute")
         self.horizontalLayout_3.addWidget(self.pbExecute)
@@ -190,16 +184,16 @@ class Ui_MainWindow(object):
         self.label_2.setObjectName("label_2")
         self.horizontalLayout_5.addWidget(self.label_2)
         self.pbGenerateSceneCode = QtWidgets.QToolButton(self.widget_7)
-        icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap(":/icons/cube.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        self.pbGenerateSceneCode.setIcon(icon6)
+        icon5 = QtGui.QIcon()
+        icon5.addPixmap(QtGui.QPixmap(":/icons/cube.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        self.pbGenerateSceneCode.setIcon(icon5)
         self.pbGenerateSceneCode.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.pbGenerateSceneCode.setObjectName("pbGenerateSceneCode")
         self.horizontalLayout_5.addWidget(self.pbGenerateSceneCode)
         self.pbCopyOutput = QtWidgets.QToolButton(self.widget_7)
-        icon7 = QtGui.QIcon()
-        icon7.addPixmap(QtGui.QPixmap(":/icons/icon_copy.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
-        self.pbCopyOutput.setIcon(icon7)
+        icon6 = QtGui.QIcon()
+        icon6.addPixmap(QtGui.QPixmap(":/icons/icon_copy.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
+        self.pbCopyOutput.setIcon(icon6)
         self.pbCopyOutput.setObjectName("pbCopyOutput")
         self.horizontalLayout_5.addWidget(self.pbCopyOutput)
         self.verticalLayout.addWidget(self.widget_7)
@@ -224,7 +218,7 @@ class Ui_MainWindow(object):
         self.label.setObjectName("label")
         self.horizontalLayout_6.addWidget(self.label)
         self.pbCopyHistory = QtWidgets.QToolButton(self.widget)
-        self.pbCopyHistory.setIcon(icon7)
+        self.pbCopyHistory.setIcon(icon6)
         self.pbCopyHistory.setObjectName("pbCopyHistory")
         self.horizontalLayout_6.addWidget(self.pbCopyHistory)
         self.verticalLayout_5.addWidget(self.widget)
@@ -377,25 +371,16 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "DAVE", None, -1))
         self.btnSolveStatics.setText(QtWidgets.QApplication.translate("MainWindow", "Solve &statics", None, -1))
         self.btnUndoStatics.setText(QtWidgets.QApplication.translate("MainWindow", "Undo", None, -1))
-        self.btnWater.setText(QtWidgets.QApplication.translate("MainWindow", "sea", None, -1))
         self.btnBlender.setText(QtWidgets.QApplication.translate("MainWindow", "blender", None, -1))
         self.btnPauseAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "||", None, -1))
         self.btnStopAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "X", None, -1))
         self.menuSolve_Statics.setTitle(QtWidgets.QApplication.translate("MainWindow", "File", None, -1))
         self.menuView.setTitle(QtWidgets.QApplication.translate("MainWindow", "View", None, -1))
         self.menuLook_towards.setTitle(QtWidgets.QApplication.translate("MainWindow", "Look in direction", None, -1))
-        self.dockWidget_2.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Python engine", None, -1))
+        self.dockWidget_2.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Engine internals", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("MainWindow", "Code", None, -1))
-        self.pbClearCode.setText(QtWidgets.QApplication.translate("MainWindow", "&Clear", None, -1))
         self.pbExecute.setText(QtWidgets.QApplication.translate("MainWindow", "Execute", None, -1))
-        self.teCode.setHtml(QtWidgets.QApplication.translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">print(&quot;type python code here&quot;)</p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"># press ctrl+enter to execute</p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"># press alt+c to clear and focus here</p></body></html>", None, -1))
-        self.label_2.setText(QtWidgets.QApplication.translate("MainWindow", "Output", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("MainWindow", "Output:", None, -1))
         self.pbGenerateSceneCode.setText(QtWidgets.QApplication.translate("MainWindow", "Generate scene code", None, -1))
         self.pbCopyOutput.setText(QtWidgets.QApplication.translate("MainWindow", "Copy", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("MainWindow", "History (actions)", None, -1))
@@ -447,4 +432,3 @@ class Ui_MainWindow(object):
         self.action_Z.setText(QtWidgets.QApplication.translate("MainWindow", "From bottom", None, -1))
         self.actionLook_towards_center.setText(QtWidgets.QApplication.translate("MainWindow", "Look towards center", None, -1))
         self.actionCamera_reset.setText(QtWidgets.QApplication.translate("MainWindow", "Camera reset", None, -1))
-
