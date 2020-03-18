@@ -237,6 +237,8 @@ if platform.system().lower().startswith('win'):
               "   edit BLENDER_EXEC_DEFAULT_WIN in settings.py or \n"
               "   set settings.BLENDER_EXEC or\n"
               "   configure windows to open .blend files with blender automatically")
+
+        print('\nLoading DAVE...')
 else: # assume we're on linux
     BLENDER_EXEC = 'blender'
 
