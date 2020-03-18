@@ -117,6 +117,8 @@ class WidgetDerivedProperties(guiDockWidget):
             props.extend(ds.PROPS_LINEARBEAM)
         if isinstance(node, nodes.Force):
             props.extend(ds.PROPS_FORCE)
+        if isinstance(node, nodes.ContactBall):
+            props.extend(ds.PROPS_CONTACTBALL)
 
         # evaluate properties
         for p in props:

@@ -1613,6 +1613,115 @@ class Force(NodeWithParent):
         code += "\n            moment=({}, {}, {}) )".format(*self.moment)
         return code
 
+
+class ContactMesh(NodeWithParent):
+    """A ContactMesh is a tri-mesh with an axis parent"""
+
+    def __init__(self, scene, vfContactMesh):
+        super().__init__(scene, vfContactMesh)
+        self._None_parent_acceptable = True
+        self._trimesh = TriMeshSource(self._scene, self._vfNode.trimesh) # the tri-mesh is wrapped in a custom object
+
+    @property
+    def trimesh(self):
+        return self._trimesh
+
+
+    def give_python_code(self):
+        code = "# code for {}".format(self.name)
+        code += "\nmesh = s.new_contactmesh(name='{}'".format(self.name)
+        if self.parent:
+            code += ", parent='{}')".format(self.parent.name)
+        else:
+            code += ')'
+        code += "\nmesh.trimesh.load_obj(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
+            self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
+
+        return code
+
+
+
+class ContactBall(NodeWithParent):
+    """A ContactBall is a linear elastic ball which can contact with ContactMeshes.
+
+    It is modelled as a sphere around a Poi. Radius and stiffness can be controlled using radius and k.
+
+    The force is applied on the Poi and it not registered separately.
+    """
+
+    def __init__(self, scene, node):
+        super().__init__(scene, node)
+        self._meshes = list()
+
+    @property
+    def has_contact(self) -> bool:
+        return self._vfNode.has_contact
+
+    @property
+    def contactpoint(self):
+        return self._vfNode.contact_point
+
+    def add_contactmesh(self, mesh):
+
+        mesh = self._scene._node_from_node(mesh, ContactMesh)
+
+        if mesh not in self._meshes:
+            self._meshes.append(mesh)
+            self._vfNode.add_contactmesh(mesh._vfNode)
+        else:
+            Warning('mesh already present, not adding again')
+
+    def clear_contactmeshes(self):
+        self._meshes.clear()
+        self._vfNode.clear_contactmeshes()
+
+    @property
+    def meshes_names(self) -> list:
+        """returns a list with the names of the meshes"""
+        return [m.name for m in self._meshes]
+
+
+    @property
+    def force(self):
+        return self._vfNode.force
+
+    @property
+    def radius(self):
+        return self._vfNode.radius
+
+    @radius.setter
+    def radius(self, value):
+        assert1f_positive(value,'radius')
+        self._vfNode.radius = value
+        pass
+
+    @property
+    def k(self):
+        return self._vfNode.k
+
+    @k.setter
+    def k(self, value):
+        assert1f_positive(value, 'k')
+        self._vfNode.k = value
+        pass
+
+    def give_python_code(self):
+        code = "# code for {}".format(self.name)
+
+        # new_contactball(self, name, parent=None, radius=None, k=None):
+
+        code += "\ns.new_contactball(name='{}',".format(self.name)
+        code += "\n                  parent='{}',".format(self.parent.name)
+        code += "\n                  radius={},".format(self.radius)
+        code += "\n                  k={},".format(self.k)
+        code += "\n                  meshes = ["
+
+        for m in self._meshes:
+            code += '"' + m.name + '","'
+        code = code[:-2] + '])'
+
+        return code
+
 class Sheave(NodeWithParent):
     """A Sheave models sheave with axis and diameter.
 
@@ -2217,6 +2326,7 @@ class TriMeshSource(Node):
             scale:  scale
 
         """
+
         if not exists(filename):
             raise ValueError('File {} does not exit'.format(filename))
 
@@ -2305,14 +2415,6 @@ class Buoyancy(NodeWithParent):
         """Returns displaced volume in m^3"""
         return self._vfNode.displacement
 
-    # @trimesh.setter
-    # def trimesh(self, new_mesh):
-    #     raise Exception()
-    #     if isinstance(new_mesh, TriMeshSource):
-    #         self._vfNode.trimesh = new_mesh._TriMesh
-    #         self._trimesh = new_mesh
-    #     else:
-    #         raise TypeError('new_mesh should be a TriMeshSource object but is a {}'.format(type(new_mesh)))
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -2752,10 +2854,6 @@ class WaveInteraction1(Node):
         self.parent = new_parent
         self.offset = new_parent.to_loc_position(cur_position)
 
-
-
-
-#
 
 # ===============
 
@@ -4078,12 +4176,11 @@ class Scene:
 
 
     def new_buoyancy(self, name, parent=None):
-        """Creates a new *poi* node and adds it to the scene.
+        """Creates a new *buoyancy* node and adds it to the scene.
 
         Args:
             name: Name for the node, should be unique
             parent: optional, name of the parent of the node
-            trimesh: optional, TriMesh object
 
 
         Returns:
@@ -4106,6 +4203,89 @@ class Scene:
         # and set properties
         if b is not None:
             new_node.parent = b
+
+        self._nodes.append(new_node)
+        return new_node
+
+    def new_contactmesh(self, name, parent=None):
+        """Creates a new *contactmesh* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: optional, name of the parent of the node
+
+        Returns:
+            Reference to newly created contact mesh
+
+        """
+
+        # apply prefixes
+        name = self._prefix_name(name)
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._parent_from_node(parent)
+
+        # then create
+        a = self._vfc.new_contactmesh(name)
+        new_node = ContactMesh(self, a)
+
+        # and set properties
+        if b is not None:
+            new_node.parent = b
+
+        self._nodes.append(new_node)
+        return new_node
+
+    def new_contactball(self, name, parent=None, radius=1, k=9999, meshes = None):
+        """Creates a new *force* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: name of the parent of the node [Poi]
+            force: optional, global force on the node (x,y,z)
+            moment: optional, global force on the node (x,y,z)
+
+
+        Returns:
+            Reference to newly created force
+
+        """
+
+        # apply prefixes
+        name = self._prefix_name(name)
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._poi_from_node(parent)
+
+        assert1f_positive(radius, "Radius ")
+        assert1f_positive(k, "k ")
+
+
+        if meshes is not None:
+            meshes = make_iterable(meshes)
+            for mesh in meshes:
+                test = self._node_from_node(mesh, ContactMesh)
+
+        # then create
+        a = self._vfc.new_contactball(name)
+
+        new_node = ContactBall(self, a)
+
+        # and set properties
+        if b is not None:
+            new_node.parent = b
+        if k is not None:
+            new_node.k = k
+        if radius is not None:
+            new_node.radius = radius
+
+        if meshes is not None:
+            for mesh in meshes:
+                new_node.add_contactmesh(self._node_from_node(mesh, ContactMesh))
 
         self._nodes.append(new_node)
         return new_node

@@ -39,6 +39,20 @@ A first video tutorial is available at: https://youtu.be/f-dQaaepsrk
 Installation
 ============
 
+Quick instuctions:
+
+    conda install -c conda-forge DAVE
+
+or (in its own environment)
+
+    conda create -n DAVE DAVE -c conda-forge
+
+To run the Gui:
+
+    python -m DAVE.run_gui
+
+elaborate instructions:
+
 https://www.open-ocean.org/dave-installation/
 
 

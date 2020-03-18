@@ -69,8 +69,10 @@
   Ruben de Bruin - 2019
 """
 
+import DAVE.auto_download
+
 from PySide2.QtCore import Qt
-from PySide2.QtGui import QIcon, QPixmap
+from PySide2.QtGui import QIcon, QPixmap, QFont,QFontMetricsF
 from PySide2.QtWidgets import QDialog,QFileDialog
 from DAVE.scene import Scene
 
@@ -81,6 +83,8 @@ import DAVE.gui.standard_assets
 from DAVE.gui.forms.dlg_solver import Ui_Dialog
 import DAVE.settings
 
+from DAVE.gui.helpers.highlighter import PythonHighlighter
+from DAVE.gui.helpers.ctrl_enter import CtrlEnterKeyPressFilter
 
 from IPython.utils.capture import capture_output
 import datetime
@@ -121,7 +125,11 @@ class Gui():
     def __init__(self, scene, splash=None, app=None):
 
         if app is None:
-            self.app = QtWidgets.QApplication()
+
+            if QtWidgets.QApplication.instance() is not None:
+                self.app = QtWidgets.QApplication.instance()
+            else:
+                self.app = QtWidgets.QApplication()
         else:
             self.app = app
         self.app.aboutToQuit.connect(self.onClose)
@@ -196,7 +204,6 @@ class Gui():
 
         # ------ viewport buttons ------
 
-        self.ui.btnLevelCamera.pressed.connect(self.visual.level_camera)
         self.ui.btnWater.pressed.connect(self.toggle_show_global)
         self.ui.btnBlender.pressed.connect(self.to_blender)
 
@@ -219,7 +226,8 @@ class Gui():
 
         # --- buttons
         self.ui.pbExecute.pressed.connect(self.run_code_in_teCode)
-        self.ui.pbCopyFeedback.pressed.connect(self.feedback_copy)
+        self.ui.pbCopyOutput.pressed.connect(self.feedback_copy)
+        self.ui.pbCopyHistory.pressed.connect(self.history_copy)
         self.ui.pbGenerateSceneCode.pressed.connect(self.generate_scene_code)
 
         #
@@ -270,6 +278,20 @@ class Gui():
             self.run_code('self.visual.geometry_scale = 0.9*self.visual.geometry_scale',guiEventType.VIEWER_SETTINGS_UPDATE)
 
         self.ui.actionDecrease_Geometry_size.triggered.connect(decrease_geo_size)
+
+        # ======================= Code-highlighter ==============
+
+        font = QFont()
+        font.setPointSize(10)
+        font.setFamily('Consolas')
+        self.ui.teCode.setFont(font)
+        self.ui.teCode.setTabStopDistance(QFontMetricsF(self.ui.teCode.font()).width(' ') * 4)
+
+        self.highlight = PythonHighlighter(self.ui.teCode.document())
+
+        self.eventFilter = CtrlEnterKeyPressFilter()
+        self.eventFilter.callback = self.run_code_in_teCode
+        self.ui.teCode.installEventFilter(self.eventFilter)
 
         # ======================== Docks ====================
         self.guiWidgets = dict()
@@ -575,24 +597,23 @@ class Gui():
 
 
     def run_code(self, code, event):
+        """Runs the provided code
+
+        If succesful, add code to history
+        If not, set code as current code
+        """
 
         before = self.scene._nodes.copy()
 
         s = self.scene
 
-        self.ui.teCode.append('# ------------------')
         self.ui.pbExecute.setStyleSheet("background-color: yellow;")
+
         self.ui.teFeedback.setStyleSheet("")
         self.ui.teFeedback.clear()
-        self.ui.teFeedback.update()
-        self.ui.teCode.append(code)
-        self.ui.teCode.append('\n')
-        self.ui.teCode.verticalScrollBar().setValue(
-            self.ui.teCode.verticalScrollBar().maximum())  # scroll down all the way
-        self.ui.teCode.update()
-        self.ui.teCode.repaint()
 
-        # self.app.processEvents()
+
+
 
         with capture_output() as c:
 
@@ -606,6 +627,13 @@ class Gui():
                     self.ui.teFeedback.append("Succes at " + str(datetime.datetime.now()))
 
                 self._codelog.append(code)
+                self.ui.teHistory.append(code)
+
+                self.ui.teHistory.verticalScrollBar().setValue(
+                    self.ui.teHistory.verticalScrollBar().maximum())  # scroll down all the way
+
+
+                self.ui.teCode.clear()
 
                 # See if selected nodes are still valid and identical to the ones
                 to_be_removed = []
@@ -630,6 +658,12 @@ class Gui():
                     self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
 
             except Exception as E:
+
+                self.ui.teCode.clear()
+                self.ui.teCode.append(code)
+
+                self.ui.teCode.update()
+                self.ui.teCode.repaint()
 
                 self.ui.teFeedback.setText(c.stdout + '\n' + str(E) + '\n\nWhen running: \n\n' + code)
                 self.ui.teFeedback.setStyleSheet("background-color: pink;")
@@ -751,7 +785,6 @@ class Gui():
         if self.animation_running():
             dofs = []
 
-            # assume 24 frames per second for rendering
             n_frames = self._animation_length * DAVE.settings.BLENDER_FPS
             for t in np.linspace(0,self._animation_length, n_frames):
                 dofs.append(self._animation_keyframe_interpolation_object(t))
@@ -838,6 +871,9 @@ class Gui():
     def feedback_copy(self):
         self.app.clipboard().setText(self.ui.teFeedback.toPlainText())
 
+    def history_copy(self):
+        self.app.clipboard().setText(self.ui.teHistory.toPlainText())
+
     def generate_scene_code(self):
         self.ui.teFeedback.setText(self.scene.give_python_code())
 
@@ -905,14 +941,22 @@ class Gui():
         menu.addAction("New RigidBody", self.new_body)
         menu.addAction("New Poi", self.new_poi)
         menu.addAction("New Sheave", self.new_sheave)
+
+        menu.addSeparator()
+
         menu.addAction("New Cable", self.new_cable)
         menu.addAction("New Force", self.new_force)
+        menu.addAction("New Contact-Ball", self.new_contactball)
         menu.addAction("New Beam", self.new_beam)
         menu.addAction("New 2d Connector", self.new_connector2d)
         menu.addAction("New 6d Connector", self.new_linear_connector)
         menu.addAction("New Linear Hydrostatics", self.new_linear_hydrostatics)
+
+        menu.addSeparator()
+
         menu.addAction("New Visual", self.new_visual)
         menu.addAction("New Buoyancy mesh", self.new_buoyancy_mesh)
+        menu.addAction("New Contact mesh", self.new_contactmesh)
         menu.addAction("New Wave Interaction", self.new_waveinteraction)
 
         menu.exec_(globLoc)
@@ -953,6 +997,13 @@ class Gui():
 
     def new_buoyancy_mesh(self):
         self.new_something(new_node_dialog.add_buoyancy)
+
+    def new_contactmesh(self):
+        self.new_something(new_node_dialog.add_contactmesh)
+
+    def new_contactball(self):
+        self.new_something(new_node_dialog.add_contactball)
+
 
     def new_waveinteraction(self):
         self.new_something(new_node_dialog.add_waveinteraction)
@@ -1125,550 +1176,42 @@ class Gui():
 
 if __name__ == '__main__':
 
+    def solved(x):
+        return x
+
     s = Scene()
 
-    #
-    # # auto generated pyhton code
-    # # By beneden
-    # # Time: 2020-01-21 20:18:09 UTC
-    #
-    # # To be able to distinguish the important number (eg: fixed positions) from
-    # # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
-    # # For anything written as solved(number) that actual number does not influence the static solution
-    # def solved(number):
-    #     return number
-    #
-    #
-    # # code for DP setpoint for cheetah
-    # s.new_axis(name='DP setpoint for cheetah',
-    #            position=(100.0,
-    #                      0.0,
-    #                      0.0),
-    #            rotation=(0.0,
-    #                      0.0,
-    #                      0.0),
-    #            fixed=(True, True, True, True, True, True))
-    # # code for Upper block
-    # s.new_rigidbody(name='Upper block',
-    #                 mass=15.0,
-    #                 cog=(0.0,
-    #                      0.0,
-    #                      1.0),
-    #                 position=(solved(91.47145805478816),
-    #                           solved(54.31446960837708),
-    #                           solved(22.77605203647996)),
-    #                 rotation=(solved(-5.960501687511513e-15),
-    #                           solved(-3.307757108321435e-15),
-    #                           solved(139.99999999999955)),
-    #                 inertia_radii=(2.0, 2.0, 2.0),
-    #                 fixed=(False, False, False, False, False, False))
-    # # code for Lower block
-    # s.new_rigidbody(name='Lower block',
-    #                 mass=5.0,
-    #                 cog=(0.0,
-    #                      0.0,
-    #                      -1.0),
-    #                 parent='Upper block',
-    #                 position=(0.0,
-    #                           0.0,
-    #                           0.0),
-    #                 rotation=(solved(0.0),
-    #                           0.0,
-    #                           0.0),
-    #                 inertia_radii=(2.0, 2.0, 2.0),
-    #                 fixed=(True, True, True, False, True, True))
-    # # code for hook4p
-    # s.new_rigidbody(name='hook4p',
-    #                 mass=80.0,
-    #                 cog=(0.0,
-    #                      0.0,
-    #                      -1.3),
-    #                 parent='Lower block',
-    #                 position=(0.0,
-    #                           0.0,
-    #                           -1.5),
-    #                 rotation=(0.0,
-    #                           solved(0.0),
-    #                           0.0),
-    #                 inertia_radii=(2.0, 2.0, 2.0),
-    #                 fixed=(True, True, True, True, False, True))
-    # # code for prong1
-    # s.new_poi(name='prong1',
-    #           parent='hook4p',
-    #           position=(1.2,
-    #                     0.0,
-    #                     -1.3))
-    # # code for prong2
-    # s.new_poi(name='prong2',
-    #           parent='hook4p',
-    #           position=(0.0,
-    #                     1.2,
-    #                     -1.3))
-    # # code for prong3
-    # s.new_poi(name='prong3',
-    #           parent='hook4p',
-    #           position=(-1.2,
-    #                     0.0,
-    #                     -1.3))
-    # # code for prong4
-    # s.new_poi(name='prong4',
-    #           parent='hook4p',
-    #           position=(0.0,
-    #                     -1.2,
-    #                     -1.3))
-    # # code for Hoist sheeve 1
-    # s.new_poi(name='Hoist sheeve 1',
-    #           parent='Upper block',
-    #           position=(2.0,
-    #                     0.0,
-    #                     1.5))
-    # # code for Hoist sheeve 2
-    # s.new_poi(name='Hoist sheeve 2',
-    #           parent='Upper block',
-    #           position=(-2.0,
-    #                     0.0,
-    #                     1.5))
-    # # code for prong1_axis
-    # s.new_axis(name='prong1_axis',
-    #            parent='hook4p',
-    #            position=(1.2,
-    #                      0.0,
-    #                      -1.3),
-    #            rotation=(0.0,
-    #                      0.0,
-    #                      0.0),
-    #            fixed=(True, True, True, True, True, True))
-    # # code for prong1_sheave_att
-    # s.new_axis(name='prong1_sheave_att',
-    #            parent='prong1_axis',
-    #            position=(0.0,
-    #                      0.0,
-    #                      0.0),
-    #            rotation=(0.0,
-    #                      solved(0.0),
-    #                      0.0),
-    #            fixed=(True, True, True, True, False, True))
-    # # code for prong1_sheave_poi
-    # s.new_poi(name='prong1_sheave_poi',
-    #           parent='prong1_sheave_att',
-    #           position=(0.0,
-    #                     0.0,
-    #                     -0.7))
-    # # code for prong1_sheave
-    # s.new_sheave(name='prong1_sheave',
-    #              parent='prong1_sheave_poi',
-    #              axis=(1.0, 0.0, 0.0),
-    #              radius=0.4)
-    # # code for prong3_axis
-    # s.new_axis(name='prong3_axis',
-    #            parent='hook4p',
-    #            position=(-1.2,
-    #                      0.0,
-    #                      -1.3),
-    #            rotation=(0.0,
-    #                      0.0,
-    #                      180.0),
-    #            fixed=(True, True, True, True, True, True))
-    # # code for prong3_sheave_att
-    # s.new_axis(name='prong3_sheave_att',
-    #            parent='prong3_axis',
-    #            position=(0.0,
-    #                      0.0,
-    #                      0.0),
-    #            rotation=(0.0,
-    #                      solved(0.0),
-    #                      0.0),
-    #            fixed=(True, True, True, True, False, True))
-    # # code for prong3_sheave_poi
-    # s.new_poi(name='prong3_sheave_poi',
-    #           parent='prong3_sheave_att',
-    #           position=(0.0,
-    #                     0.0,
-    #                     -0.7))
-    # # code for prong3_sheave
-    # s.new_sheave(name='prong3_sheave',
-    #              parent='prong3_sheave_poi',
-    #              axis=(1.0, 0.0, 0.0),
-    #              radius=0.4)
-    # # code for prong2_axis
-    # s.new_axis(name='prong2_axis',
-    #            parent='hook4p',
-    #            position=(0.0,
-    #                      1.2,
-    #                      -1.3),
-    #            rotation=(0.0,
-    #                      0.0,
-    #                      90.0),
-    #            fixed=(True, True, True, True, True, True))
-    # # code for prong2_sheave_att
-    # s.new_axis(name='prong2_sheave_att',
-    #            parent='prong2_axis',
-    #            position=(0.0,
-    #                      0.0,
-    #                      0.0),
-    #            rotation=(0.0,
-    #                      solved(0.0),
-    #                      0.0),
-    #            fixed=(True, True, True, True, False, True))
-    # # code for prong2_sheave_poi
-    # s.new_poi(name='prong2_sheave_poi',
-    #           parent='prong2_sheave_att',
-    #           position=(0.0,
-    #                     0.0,
-    #                     -0.7))
-    # # code for prong2_sheave
-    # s.new_sheave(name='prong2_sheave',
-    #              parent='prong2_sheave_poi',
-    #              axis=(1.0, 0.0, 0.0),
-    #              radius=0.4)
-    # # code for prong4_axis
-    # s.new_axis(name='prong4_axis',
-    #            parent='hook4p',
-    #            position=(0.0,
-    #                      -1.2,
-    #                      -1.3),
-    #            rotation=(0.0,
-    #                      0.0,
-    #                      -90.0),
-    #            fixed=(True, True, True, True, True, True))
-    # # code for prong4_sheave_att
-    # s.new_axis(name='prong4_sheave_att',
-    #            parent='prong4_axis',
-    #            position=(0.0,
-    #                      0.0,
-    #                      0.0),
-    #            rotation=(0.0,
-    #                      solved(0.0),
-    #                      0.0),
-    #            fixed=(True, True, True, True, False, True))
-    # # code for prong4_sheave_poi
-    # s.new_poi(name='prong4_sheave_poi',
-    #           parent='prong4_sheave_att',
-    #           position=(0.0,
-    #                     0.0,
-    #                     -0.7))
-    # # code for prong4_sheave
-    # s.new_sheave(name='prong4_sheave',
-    #              parent='prong4_sheave_poi',
-    #              axis=(1.0, 0.0, 0.0),
-    #              radius=0.4)
-    # # code for Cheetah
-    # s.new_rigidbody(name='Cheetah',
-    #                 mass=20000.0,
-    #                 cog=(106.0,
-    #                      0.0,
-    #                      7.0),
-    #                 position=(solved(5.939226716278977e-16),
-    #                           solved(8.668206202061682e-13),
-    #                           solved(-6.5)),
-    #                 rotation=(solved(0.0),
-    #                           solved(0.0),
-    #                           solved(-4.968366816592441e-13)),
-    #                 inertia_radii=(20.0, 80.0, 80.0),
-    #                 fixed=(False, False, False, False, False, False))
-    # # code for DP reference point
-    # s.new_axis(name='DP reference point',
-    #            parent='Cheetah',
-    #            position=(100.0,
-    #                      0.0,
-    #                      0.0),
-    #            rotation=(0.0,
-    #                      0.0,
-    #                      0.0),
-    #            fixed=(True, True, True, True, True, True))
-    # # code for DP springs cheetah
-    # s.new_linear_connector_6d(name='DP springs cheetah',
-    #                           master='DP reference point',
-    #                           slave='DP setpoint for cheetah',
-    #                           stiffness=(100.0, 100.0, 0.0,
-    #                                      0.0, 0.0, 10000.0))
-    # # code for buoyancy
-    # mesh = s.new_buoyancy(name='buoyancy',
-    #                       parent='Cheetah')
-    # mesh.trimesh.load_obj(s.get_resource_path(r'buoyancy cheetah.obj'), scale=(1, 1, 1), rotation=(0.0, 0.0, 0.0),
-    #                       offset=(0.0, 0.0, 0.0))
-    #
-    # # code for Ballast_system and its tanks
-    # bs = s.new_ballastsystem('Ballast_system', parent='Cheetah',
-    #                          position=(0.0, 0.0, 0.0))
-    # bs.new_tank('ps1', position=(10, 12, 5),
-    #             capacity_kN=15082.874999999998, frozen=False, actual_fill=0)
-    # bs.new_tank('sb1', position=(10, -12, 5),
-    #             capacity_kN=15082.874999999998, frozen=False, actual_fill=22.52548406558962)
-    # bs.new_tank('mid1', position=(10, 0, 5),
-    #             capacity_kN=15082.874999999998, frozen=False, actual_fill=26.21807740677705)
-    # bs.new_tank('ps2', position=(30, 12, 5),
-    #             capacity_kN=15082.874999999998, frozen=False, actual_fill=0.0)
-    # bs.new_tank('sb2', position=(30, -12, 5),
-    #             capacity_kN=15082.874999999998, frozen=False, actual_fill=100)
-    # bs.new_tank('mid2', position=(30, 0, 5),
-    #             capacity_kN=15082.874999999998, frozen=False, actual_fill=0.0)
-    # bs.new_tank('ps3', position=(50, 12, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=0.0)
-    # bs.new_tank('sb3', position=(50, -12, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=96.18183861502062)
-    # bs.new_tank('mid3', position=(50, 0, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=0)
-    # bs.new_tank('ps4', position=(70, 12, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=0)
-    # bs.new_tank('sb4', position=(70, -12, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=100)
-    # bs.new_tank('mid4', position=(70, 0, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=0.0)
-    # bs.new_tank('ps5', position=(90, 12, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=0)
-    # bs.new_tank('sb5', position=(90, -12, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=100)
-    # bs.new_tank('mid5', position=(90, 0, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=100.0)
-    # bs.new_tank('ps6', position=(110, 12, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=0)
-    # bs.new_tank('sb6', position=(110, -12, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=100.0)
-    # bs.new_tank('mid6', position=(110, 0, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=100.0)
-    # bs.new_tank('ps7', position=(130, 12, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=0)
-    # bs.new_tank('sb7', position=(130, -12, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=100.0)
-    # bs.new_tank('mid7', position=(130, 0, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=100.0)
-    # bs.new_tank('ps8', position=(150, 12, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=100.0)
-    # bs.new_tank('sb8', position=(150, -12, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=100.0)
-    # bs.new_tank('mid8', position=(150, 0, 5),
-    #             capacity_kN=20110.5, frozen=False, actual_fill=100.0)
-    # bs.new_tank('ps9', position=(170, 8, 5),
-    #             capacity_kN=22624.312499999996, frozen=False, actual_fill=100)
-    # bs.new_tank('sb9', position=(170, -8, 5),
-    #             capacity_kN=22624.312499999996, frozen=False, actual_fill=0)
-    # bs.new_tank('bow', position=(190, 0, 5),
-    #             capacity_kN=6033.15, frozen=False, actual_fill=0)
-    # # code for crane_mast
-    # s.new_rigidbody(name='crane_mast',
-    #                 mass=4000.0,
-    #                 cog=(0.0,
-    #                      0.0,
-    #                      25.0),
-    #                 parent='Cheetah',
-    #                 position=(61.0,
-    #                           18.0,
-    #                           12.0),
-    #                 rotation=(0.0,
-    #                           0.0,
-    #                           0.0),
-    #                 fixed=(True, True, True, True, True, True))
-    # # code for crane_top
-    # s.new_poi(name='crane_top',
-    #           parent='crane_mast',
-    #           position=(0.0,
-    #                     0.0,
-    #                     61.0))
-    # # code for crane_slew
-    # s.new_axis(name='crane_slew',
-    #            parent='crane_mast',
-    #            position=(0.0,
-    #                      0.0,
-    #                      15.0),
-    #            rotation=(0.0,
-    #                      0.0,
-    #                      50.0),
-    #            fixed=(True, True, True, True, True, True))
-    # # code for crane_boom
-    # s.new_rigidbody(name='crane_boom',
-    #                 mass=1200.0,
-    #                 cog=(33.0,
-    #                      0.0,
-    #                      0.0),
-    #                 parent='crane_slew',
-    #                 position=(0.0,
-    #                           0.0,
-    #                           0.0),
-    #                 rotation=(0.0,
-    #                           solved(-24.267305577838556),
-    #                           0.0),
-    #                 fixed=(True, True, True, True, False, True))
-    # # code for susp_wire_connection
-    # s.new_poi(name='susp_wire_connection',
-    #           parent='crane_boom',
-    #           position=(49.0,
-    #                     0.0,
-    #                     2.0))
-    # # code for crane_Crane_susp_wire
-    # s.new_cable(name='crane_Crane_susp_wire',
-    #             poiA='susp_wire_connection',
-    #             poiB='crane_top',
-    #             length=50.0,
-    #             EA=100000000.0)
-    # # code for hw1
-    # s.new_poi(name='hw1',
-    #           parent='crane_boom',
-    #           position=(52.0,
-    #                     2.0,
-    #                     0.0))
-    # # code for hw2
-    # s.new_poi(name='hw2',
-    #           parent='crane_boom',
-    #           position=(52.0,
-    #                     -2.0,
-    #                     0.0))
-    # # code for Hoist wire
-    # s.new_cable(name='Hoist wire',
-    #             poiA='hw1',
-    #             poiB='hw2',
-    #             length=39.0,
-    #             EA=100000.0,
-    #             sheaves=['Hoist sheeve 1',
-    #                      'Hoist sheeve 2']),
-    # # code for visual - vessel
-    # s.new_visual(name='visual - vessel',
-    #              parent='Cheetah',
-    #              path=r'visual vessel cheetah.obj',
-    #              offset=(0, 0, 0),
-    #              rotation=(0, 0, 0),
-    #              scale=(1.0, 1.0, 1.0))
-    # # code for Wave Interaction draft 6.75
-    # s.new_waveinteraction(name='Wave Interaction draft 6.75',
-    #                       parent='Cheetah',
-    #                       path=r'cheetah.dhyd',
-    #                       offset=(100.0, 0.0, 6.75))
-    # # code for visual - crane mast
-    # s.new_visual(name='visual - crane mast',
-    #              parent='crane_mast',
-    #              path=r'visual crane mast and boomrest.obj',
-    #              offset=(0, 0, 0),
-    #              rotation=(0, 0, 0),
-    #              scale=(1, 1, 1))
-    # # code for visual - crane boom
-    # s.new_visual(name='visual - crane boom',
-    #              parent='crane_boom',
-    #              path=r'visual crane-boom.obj',
-    #              offset=(0, 0, 0),
-    #              rotation=(0, 0, 0),
-    #              scale=(1, 1, 1))
-    # # code for Visual
-    # s.new_visual(name='Visual',
-    #              parent='hook4p',
-    #              path=r'hook4p.obj',
-    #              offset=(0, 0, 0),
-    #              rotation=(0, 0, 0),
-    #              scale=(1, 1, 1))
-    # # code for Upper block visual
-    # s.new_visual(name='Upper block visual',
-    #              parent='Upper block',
-    #              path=r'upper_block.obj',
-    #              offset=(0, 0, 0),
-    #              rotation=(0, 0, 0),
-    #              scale=(1, 1, 1))
-    # # code for Lower block visual
-    # s.new_visual(name='Lower block visual',
-    #              parent='Lower block',
-    #              path=r'lower_block.obj',
-    #              offset=(0.0, 0.0, -1.5),
-    #              rotation=(0, 0, 0),
-    #              scale=(1, 1, 1))
+    mesh = s.new_contactmesh(name='mesh')
+    mesh.trimesh.load_obj(s.get_resource_path(r'cube.obj'), scale=(20.0, 21.0, 1.0),
+                                                   rotation=(0.0, 0.0, 0.0), offset=(0.0, 0.0, 0.0))
+    # code for Body
+    s.new_rigidbody(name='Body',
+                    mass=1.0,
+                    cog=(0.0,
+                         0.0,
+                         0.0),
+                    position=(solved(2.0),
+                              solved(2.0),
+                              solved(10.0)),
+                    rotation=(solved(0.0),
+                              solved(0.0),
+                              solved(0.0)),
+                    fixed=(False, False, False, False, False, False))
+    # code for p
+    s.new_poi(name='p',
+              parent='Body',
+              position=(0.0,
+                        0.0,
+                        0.0))
+    # code for cb
+    s.new_contactball(name='cb',
+                      parent='p',
+                      radius=1.0,
+                      k=9999.0,
+                      meshes=[mesh])
 
-    #
-    # s.resources_paths.append(r'C:\data\Dave\Public\Blender visuals')
-    # # s.import_scene(s.get_resource_path("billy.dave"), containerize=False, prefix="")
-    # Gui(s)
-    #
-    # # ------------------
-    # s.import_scene(s.get_resource_path("billy.dave"), containerize=False, prefix="")
-    #
-    # # ------------------
-    #
-    # s['Billy'].fixed = (False, True, False, False, False, False)
-    #
-    # # ------------------
-    #
-    # s['Billy'].fixed = (False, False, False, False, False, False)
-    #
-    # # ------------------
-    #
-    # s['Billy'].fixed = (False, False, False, True, False, False)
-    #
-    # # ------------------
-    #
-    # s['Billy'].fixed = (False, False, False, True, True, False)
-    #
-    # # ------------------
-    #
-    # s['Billy'].position = (0.0, 0.0, 0.0)
-    # s['Billy'].fixed = (False, False, False, False, True, False)
-    #
-    # # ------------------
-    #
-    # s['Billy'].fixed = (False, False, False, False, False, False)
-    #
-    # # ------------------
-    # s.import_scene(s.get_resource_path("billy.dave"), containerize=False, prefix="2_")
-    #
-    # # ------------------
-    #
-    # s['2_Billy'].fixed = (False, False, False, True, False, False)
-    #
-    # # ------------------
-    #
-    # s['2_Billy'].fixed = (False, False, False, True, True, False)
-    #
-    # # ------------------
-    #
-    # s['2_Billy'].position = (0.0, 0.0, 0.0)
-    # s['2_Billy'].rotation = (0.0, 0.0, 0.0)
-    # s['2_Billy'].fixed = (False, False, False, False, True, False)
-    #
-    # # ------------------
-    #
-    # s['2_Billy'].fixed = (False, False, False, False, False, False)
-    #
-    # # ------------------
-    #
-    # s['2_billy_positioning_target'].position = (0.0, 1.0, 0.0)
-    #
-    # # ------------------
-    #
-    # s['2_billy_positioning_target'].position = (0.0, 10.0, 0.0)
-    #
-    # # ------------------
-    #
-    # s['2_billy_positioning_target'].position = (0.0, 100.0, 0.0)
-    #
-    # # code for Tower
-    # s.new_rigidbody(name='Tower',
-    #                 mass=800.0,
-    #                 cog=(0.0,
-    #                      0.0,
-    #                      90.0),
-    #                 position=(120.0,
-    #                           0.0,
-    #                           0.0),
-    #                 rotation=(-90.0,
-    #                           0.0,
-    #                           0.0),
-    #                 fixed=False)
-    #
-    # # code for Visual_1
-    # s.new_visual(name='Visual_1',
-    #              parent='Tower',
-    #              path=r'cone chopped.obj',
-    #              offset=(0, 0, 0),
-    #              rotation=(0, 0, 0),
-    #              scale=(5.0, 5.0, 120.0))
-    # # code for Nacelle
-    # s.new_visual(name='Nacelle',
-    #              parent='Tower',
-    #              path=r'cube_with_bevel.obj',
-    #              offset=(0.0, -2.0, 122.0),
-    #              rotation=(0, 0, 0),
-    #              scale=(4.0, 6.0, 4.0))
-    # # code for Hub
-    # s.new_visual(name='Hub',
-    #              parent='Tower',
-    #              path=r'cone chopped.obj',
-    #              offset=(0.0, 4.0, 122.0),
-    #              rotation=(-90.0, 0.0, 0.0),
-    #              scale=(3.0, 3.0, 3.0))
+    s['mesh'].change_parent_to(s['Body'])
+
+    s['mesh'].change_parent_to(None)
 
     Gui(s)

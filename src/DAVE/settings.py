@@ -196,6 +196,7 @@ PROPS_CON2D = ['angle','moment','force']
 PROPS_BODY = ['cog', 'cogx', 'cogy', 'cogz', 'mass']
 PROPS_BUOY_MESH = ['cob', 'displacement', 'cob_local']
 PROPS_LINEARBEAM = ['tension','torsion','moment_on_master','moment_on_slave']
+PROPS_CONTACTBALL = ['has_contact','contactpoint','force']
 
 # ======= Animate after solving =========
 GUI_DO_ANIMATE = True

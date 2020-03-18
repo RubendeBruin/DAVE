@@ -14,8 +14,11 @@ import DAVE.gui.forms.widget_beam
 import DAVE.gui.forms.widget_con2d
 import DAVE.gui.forms.widget_sheave
 import DAVE.gui.forms.widget_waveinteraction
+import DAVE.gui.forms.widget_contactball
 
 import numpy as np
+
+from PySide2.QtWidgets import QListWidgetItem
 
 
 class NodeEditor:
@@ -32,10 +35,11 @@ class NodeEditor:
     """
 
 
-    def __init__(self, node, callback, scene):
+    def __init__(self, node, callback, scene, run_code):
         self.node = node
         self.callback = callback
         self.scene = scene
+        self.run_code = run_code
 
     def create_widget(self):
         """Creates and returns the widget"""
@@ -323,23 +327,23 @@ class EditWaveInteraction(NodeEditor):
         return code
 
 
-class EditBuoyancy(NodeEditor):
+class EditBuoyancyOrContactMesh(NodeEditor):
 
     _ui = None
 
     def create_widget(self):
 
         # Prevents the ui from being created more than once
-        if EditBuoyancy._ui is None:
+        if EditBuoyancyOrContactMesh._ui is None:
 
             widget = QtWidgets.QWidget()
             ui = DAVE.gui.forms.widget_visual.Ui_widget_axis() # same as visual widget!
             ui.setupUi(widget)
-            EditBuoyancy._ui = ui
+            EditBuoyancyOrContactMesh._ui = ui
             ui._widget = widget
 
         else:
-            ui = EditBuoyancy._ui
+            ui = EditBuoyancyOrContactMesh._ui
 
         try:
             ui.doubleSpinBox_1.valueChanged.disconnect()
@@ -356,19 +360,17 @@ class EditBuoyancy(NodeEditor):
         except:
             pass # no connections yet
 
-        # ui.doubleSpinBox_1.setValue(self.node.offset[0])
-        # ui.doubleSpinBox_2.setValue(self.node.offset[1])
-        # ui.doubleSpinBox_3.setValue(self.node.offset[2])
-        #
-        # ui.doubleSpinBox_4.setValue(self.node.rotation[0])
-        # ui.doubleSpinBox_5.setValue(self.node.rotation[1])
-        # ui.doubleSpinBox_6.setValue(self.node.rotation[2])
-        #
-        # ui.doubleSpinBox_7.setValue(self.node.scale[0])
-        # ui.doubleSpinBox_8.setValue(self.node.scale[1])
-        # ui.doubleSpinBox_9.setValue(self.node.scale[2])
+        ui.doubleSpinBox_1.setValue(self.node.trimesh._offset[0])
+        ui.doubleSpinBox_2.setValue(self.node.trimesh._offset[1])
+        ui.doubleSpinBox_3.setValue(self.node.trimesh._offset[2])
 
+        ui.doubleSpinBox_4.setValue(self.node.trimesh._rotation[0])
+        ui.doubleSpinBox_5.setValue(self.node.trimesh._rotation[1])
+        ui.doubleSpinBox_6.setValue(self.node.trimesh._rotation[2])
 
+        ui.doubleSpinBox_7.setValue(self.node.trimesh._scale[0])
+        ui.doubleSpinBox_8.setValue(self.node.trimesh._scale[1])
+        ui.doubleSpinBox_9.setValue(self.node.trimesh._scale[2])
 
         ui.comboBox.clear()
         ui.comboBox.addItems(self.scene.get_resource_list('obj'))
@@ -409,6 +411,7 @@ class EditBuoyancy(NodeEditor):
         code = element + ".trimesh.load_obj(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(new_path, *scale, *rotation, *offset)
 
         return code
+
 
 
 
@@ -1146,6 +1149,96 @@ class EditBeam(NodeEditor):
 
         return code
 
+class EditContactBall(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditContactBall._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.gui.forms.widget_contactball.Ui_widget_contactball()
+            ui.setupUi(widget)
+            EditForce._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditContactBall._ui
+
+        try:
+            ui.sbR.valueChanged.disconnect()
+            ui.sbK.valueChanged.disconnect()
+
+        except:
+            pass # no connections yet
+
+        ui.sbR.setValue(self.node.radius)
+        ui.sbK.setValue(self.node.k)
+
+        ui.sbR.valueChanged.connect(self.callback)
+        ui.sbK.valueChanged.connect(self.callback)
+
+        ui.lwMeshes.dropEvent = self.onDrop
+        ui.lwMeshes.dragEnterEvent = self.dragEnter
+        ui.lwMeshes.dragMoveEvent = self.dragEnter
+
+        self.ui = ui
+        self.update_meshes_list()
+
+        return ui._widget
+
+    def dragEnter(self, event):
+        dragged_name = event.mimeData().text()
+
+        try:
+            a = self.scene[dragged_name]
+            if isinstance(a, vfs.ContactMesh):
+                event.accept()
+        except:
+            return
+
+
+    def onDrop(self,  event):
+
+        try:
+            dragged_name = event.mimeData().text()
+        except:
+            event.ignore()
+            return
+
+        code = "\ns['{}'].add_contactmesh('{}')".format(self.node.name,dragged_name)
+        self.run_code(code)
+
+        # update the contents of this widget
+        self.update_meshes_list()
+
+    def update_meshes_list(self):
+        self.ui.lwMeshes.clear()
+        for name in self.node.meshes_names:
+            self.ui.lwMeshes.addItem(QListWidgetItem(name) )
+
+
+
+        
+
+    def generate_code(self):
+
+        code = ""
+        element = "\ns['{}']".format(self.node.name)
+
+        new_r = self.ui.sbR.value()
+        new_k = self.ui.sbK.value()
+
+        if new_r != self.node.radius:
+            code += element + '.radius = {}'.format(new_r)
+        if new_k != self.node.k:
+            code += element + '.k = {}'.format(new_k)
+
+        return code
+
+
 # ===========================================
 
 class WidgetNodeProps(guiDockWidget):
@@ -1193,11 +1286,13 @@ class WidgetNodeProps(guiDockWidget):
             self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
 
     def node_property_changed(self):
-
         code = ""
         for editor in self._node_editors:
             code += editor.generate_code()
 
+        self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
+
+    def run_code(self, code):
         self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
 
 
@@ -1210,8 +1305,8 @@ class WidgetNodeProps(guiDockWidget):
         to_be_removed = self._open_edit_widgets.copy()
 
 
-        for item in to_be_removed:
-            print('to be removed: ' + str(type(item)))
+        #for item in to_be_removed:
+        #    print('to be removed: ' + str(type(item)))
 
         self._node_editors.clear()
         self._open_edit_widgets.clear()
@@ -1221,56 +1316,59 @@ class WidgetNodeProps(guiDockWidget):
             self._node_name_editor.node = node
             self._node_name_editor.create_widget()
         except:
-            self._node_name_editor = EditNode(node, self.node_name_changed, self.guiScene)
+            self._node_name_editor = EditNode(node, self.node_name_changed, self.guiScene, self.run_code)
             self._node_name_editor.create_widget()
             self.layout.addWidget(self._node_name_editor.ui._widget)
 
         if isinstance(node, vfs.Visual):
-            self._node_editors.append(EditVisual(node, self.node_property_changed, self.guiScene))
+            self._node_editors.append(EditVisual(node, self.node_property_changed, self.guiScene, self.run_code))
 
         if isinstance(node, vfs.WaveInteraction1):
-            self._node_editors.append(EditWaveInteraction(node, self.node_property_changed, self.guiScene))
+            self._node_editors.append(EditWaveInteraction(node, self.node_property_changed, self.guiScene, self.run_code))
 
         if isinstance(node, vfs.Axis):
-            self._node_editors.append(EditAxis(node, self.node_property_changed, self.guiScene))
+            self._node_editors.append(EditAxis(node, self.node_property_changed, self.guiScene, self.run_code))
 
         if isinstance(node, vfs.RigidBody):
-            self._node_editors.append(EditBody(node, self.node_property_changed, self.guiScene))
+            self._node_editors.append(EditBody(node, self.node_property_changed, self.guiScene, self.run_code))
 
         if isinstance(node, vfs.Poi):
-            self._node_editors.append(EditPoi(node, self.node_property_changed, self.guiScene))
+            self._node_editors.append(EditPoi(node, self.node_property_changed, self.guiScene, self.run_code))
 
         if isinstance(node, vfs.Cable):
-            self._node_editors.append(EditCable(node, self.node_property_changed, self.guiScene))
+            self._node_editors.append(EditCable(node, self.node_property_changed, self.guiScene, self.run_code))
 
         if isinstance(node, vfs.Force):
-            self._node_editors.append(EditForce(node, self.node_property_changed, self.guiScene))
+            self._node_editors.append(EditForce(node, self.node_property_changed, self.guiScene, self.run_code))
 
         if isinstance(node, vfs.Sheave):
-            self._node_editors.append(EditSheave(node, self.node_property_changed, self.guiScene))
-
+            self._node_editors.append(EditSheave(node, self.node_property_changed, self.guiScene, self.run_code))
 
         if isinstance(node, vfs.HydSpring):
-            self._node_editors.append(EditHydSpring(node, self.node_property_changed, self.guiScene))
+            self._node_editors.append(EditHydSpring(node, self.node_property_changed, self.guiScene, self.run_code))
 
         if isinstance(node, vfs.LC6d):
-            self._node_editors.append(EditLC6d(node, self.node_property_changed, self.guiScene))
+            self._node_editors.append(EditLC6d(node, self.node_property_changed, self.guiScene, self.run_code))
 
         if isinstance(node, vfs.Connector2d):
-            self._node_editors.append(EditConnector2d(node, self.node_property_changed, self.guiScene))
+            self._node_editors.append(EditConnector2d(node, self.node_property_changed, self.guiScene, self.run_code))
 
         if isinstance(node, vfs.LinearBeam):
-            self._node_editors.append(EditBeam(node, self.node_property_changed, self.guiScene))
+            self._node_editors.append(EditBeam(node, self.node_property_changed, self.guiScene, self.run_code))
 
-        if isinstance(node, vfs.Buoyancy):
-            self._node_editors.append(EditBuoyancy(node, self.node_property_changed, self.guiScene))
+        if isinstance(node, vfs.ContactBall):
+            self._node_editors.append(EditContactBall(node, self.node_property_changed, self.guiScene, self.run_code))
+
+
+        if isinstance(node, vfs.Buoyancy) or isinstance(node, vfs.ContactMesh):
+            self._node_editors.append(EditBuoyancyOrContactMesh(node, self.node_property_changed, self.guiScene, self.run_code))
 
         to_be_added = []
         for editor in self._node_editors:
             to_be_added.append(editor.create_widget())
 
-        for item in to_be_added:
-            print('to be added: ' + str(type(item)))
+        #for item in to_be_added:
+        #    print('to be added: ' + str(type(item)))
 
         for widget in to_be_removed:
             if widget in to_be_added:

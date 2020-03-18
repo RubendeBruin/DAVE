@@ -574,6 +574,23 @@ class Viewport:
                 p.actor_type = ActorType.NOT_GLOBAL
                 actors.append(p)
 
+            if isinstance(N, vf.ContactMesh):
+
+                # 0 : source-mesh
+
+                # This is the source-mesh. Connect it to the parent
+
+                vis = actor_from_trimesh(N.trimesh._TriMesh)
+                if not vis:
+                    vis = vp.Cube(side=0.00001)
+
+                vis.actor_type = ActorType.FORCE
+
+                vis.loaded_obj = True
+
+                if vis is not None:
+                    actors.append(vis)
+
 
             if isinstance(N, vf.Visual):
                 file = self.scene.get_resource_path(N.path)
@@ -614,6 +631,19 @@ class Viewport:
                 p.c(vc.COLOR_POI)
                 p.actor_type = ActorType.GEOMETRY
                 actors.append(p)
+
+            if isinstance(N, vf.ContactBall):
+                p = vp.Sphere(pos=(0,0,0), r=N.radius, res = vc.RESOLUTION_SPHERE)
+                p.c(vc.COLOR_FORCE)
+                p.actor_type = ActorType.FORCE
+                p._r = N.radius
+                actors.append(p)
+
+                point1 = ((0,0,0))
+                a = vp.Line([point1, point1], lw=5).c(vc.COLOR_FORCE)
+                a.actor_type = ActorType.FORCE
+
+                actors.append(a)
 
             if isinstance(N, vf.WaveInteraction1):
                 size = 2
@@ -938,6 +968,32 @@ class Viewport:
                 V.actors[0].SetScale(self.geometry_scale)
                 continue
 
+            if isinstance(V.node, vf.ContactBall):
+                t = vtk.vtkTransform()
+                t.Identity()
+                t.Translate(V.node.parent.global_position)
+
+                # check radius
+                if V.actors[0]._r != V.node.radius:
+                    temp = vp.Sphere(pos=(0,0,0), r=V.node.radius, res = vc.RESOLUTION_SPHERE)
+                    V.actors[0].points(temp.points())
+                    V.actors[0]._r = V.node.radius
+
+
+                V.actors[0].setTransform(t)
+                V.actors[0].wireframe(V.node.force>0)
+
+                if V.node.has_contact:
+                    point1 =  V.node.parent.global_position
+                    point2 = V.node.contactpoint
+                    V.actors[1].points([point1, point2])
+                    V.actors[1].on()
+                else:
+                    V.actors[1].off()
+
+
+                continue
+
             if isinstance(V.node, vf.WaveInteraction1):
                 t = vtk.vtkTransform()
                 t.Identity()
@@ -1160,7 +1216,7 @@ class Viewport:
                         #print('adding actor for {}'.format(va.node.name))
             self.screen.add(to_be_added)
 
-            # check if objs need to be re-loaded
+            # check if objs or meshes need to be re-loaded
             for va in self.visuals:
                 if isinstance(va.node, vf.Visual):
 
@@ -1182,7 +1238,7 @@ class Viewport:
 
                     self.screen.add(va.actors[0])
 
-                if isinstance(va.node, vf.Buoyancy):
+                if isinstance(va.node, vf.Buoyancy) or  isinstance(va.node, vf.ContactMesh):
                     if va.node.trimesh._new_mesh:
 
                         new_mesh = actor_from_trimesh(va.node.trimesh._TriMesh)
@@ -1368,6 +1424,7 @@ class Viewport:
         iren.AddObserver("RightButtonPressEvent", screen._mouseright)
         iren.AddObserver("MiddleButtonPressEvent", screen._mousemiddle)
         iren.AddObserver("KeyPressEvent", self.keyPressFunction)
+        iren.AddObserver(vtk.vtkCommand.InteractionEvent, self.keep_up_up)
 
         for r in screen.renderers:
             r.ResetCamera()
@@ -1389,6 +1446,20 @@ class Viewport:
         self.renderer.AddLight(light1)
 
         self.light = light1
+
+    def keep_up_up(self,obj, event_type):
+        """Force z-axis up"""
+
+        camera = self.screen.camera
+
+        up = camera.GetViewUp()
+        if abs(up[2]) < 0.2:
+            factor = 1-(5*abs(up[2]))
+            camera.SetViewUp(factor * up[0],
+                             factor * up[1],
+                            (1-factor) + factor*up[2])
+        else:
+            camera.SetViewUp(0,0,1)
 
     def keyPressFunction(self, obj, event):
         key = obj.GetKeySym()
