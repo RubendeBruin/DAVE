@@ -20,7 +20,14 @@ from DAVE.rigging import *
 from DAVE.frequency_domain import *
 
 def run():
-    app = QApplication()
+
+    # create application
+    # note that the auto_download window may have already created one
+
+    if QApplication.instance() is not None:
+        app = QApplication.instance()
+    else:
+        app = QApplication()
 
     splash = QSplashScreen(QPixmap(":/icons/splashscreen.png"))
     splash.show()

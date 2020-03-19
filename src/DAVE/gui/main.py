@@ -393,7 +393,7 @@ class Gui():
             self.show_guiWidget('Explore 1-to-1', WidgetExplore)
 
         if name == 'DYNAMICS':
-            self.show_guiWidget('Properties - dyanmic', WidgetDynamicProperties)
+            self.show_guiWidget('Properties - dynamic', WidgetDynamicProperties)
             self.show_guiWidget('Mode-shapes', WidgetModeShapes)
 
         if name == 'BALLAST':
