@@ -1461,6 +1461,18 @@ class Viewport:
         else:
             camera.SetViewUp(0,0,1)
 
+        z = camera.GetPosition()[2]
+        alpha = 1
+        if z<0:
+
+            dz = camera.GetDirectionOfProjection()[2]
+
+            # alpha = (z + 10)/10
+            alpha = 1-(10*dz)
+            if alpha<0:
+                alpha = 0
+        self.global_visual.actors[0].alpha(alpha)
+
     def keyPressFunction(self, obj, event):
         key = obj.GetKeySym()
         if key == 'Escape':

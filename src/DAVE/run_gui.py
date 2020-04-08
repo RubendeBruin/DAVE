@@ -36,6 +36,7 @@ def run():
     import numpy as np
 
     s = Scene()
+    s.resources_paths.append(r'C:\data\Dave\Public\Blender visuals')
     g = Gui(s,splash=splash, app = app)
 
 
