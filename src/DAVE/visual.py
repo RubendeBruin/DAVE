@@ -211,7 +211,7 @@ class VisualActor:
 
     def set_dsa(self, d,s,a):
         for act in self.actors:
-            act.lighting(diffuse=vc.VISUAL_DIFFUSE, ambient=vc.VISUAL_AMBIENT, specular=vc.VISUAL_SPECULAR, enabled=True)
+            act.lighting(diffuse=d, ambient=a, specular=s, enabled=True)
 
     def on(self):
         for a in self.actors:
@@ -1250,6 +1250,11 @@ class Viewport:
                             self.screen.clear(va.actors[0])
                             va.actors[0] = new_mesh
                             va.actors[0].actor_type = ActorType.FORCE
+
+                            tr = va.node.parent.global_transform
+                            mat4x4 = transform_to_mat4x4(tr)
+                            va.actors[0].setTransform(mat4x4)
+
                             self.screen.add(va.actors[0])
                             va.node.trimesh._new_mesh = False
 
