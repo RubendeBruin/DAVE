@@ -184,10 +184,10 @@ class Gui():
 
 
         self.visual.create_visuals(recreate=True)
-        self.visual.position_visuals()
         self.visual.mouseLeftEvent = self.view3d_select_element
 
         self.visual.show_embedded(self.ui.frame3d)
+        self.visual.position_visuals()
         self.visual.update_visibility()
 
         # right-click event for

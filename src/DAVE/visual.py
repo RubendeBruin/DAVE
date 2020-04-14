@@ -343,10 +343,10 @@ class Viewport:
                 to_be_deleted.append(record)
 
         # Remove obsolete outlines
+        to_be_deleted_actors = [oa.outline_actor for oa in to_be_deleted]
+        self.screen.remove(to_be_deleted_actors)
 
         for record in to_be_deleted:
-            # remove actor
-            self.screen.renderer.RemoveActor(record.outline_actor)
             self.outlines.remove(record)
 
 
@@ -758,7 +758,6 @@ class Viewport:
         """All visuals are aligned with their node"""
 
         to_be_removed = []
-        to_be_removed_actors = []
 
         for V in self.visuals:
 
@@ -1192,11 +1191,16 @@ class Viewport:
                 A.setTransform(mat4x4)
 
 
-        for V in to_be_removed:
+        # for V in to_be_removed:
+        #     self.visuals.remove(V)
+        #     self.screen.remove(V.actors)
+
+        acs = list()
+        for V in  to_be_removed:
             self.visuals.remove(V)
-            self.screen.remove(V.actors)
+            acs.extend(V.actors)
 
-
+        self.screen.remove(acs)
 
         self.update_outlines()
 
