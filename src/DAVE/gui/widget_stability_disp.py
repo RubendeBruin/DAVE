@@ -35,6 +35,8 @@ class WidgetDisplacedStability(guiDockWidget):
         self.ui.stability_go.pressed.connect(self.action)
         self.ui.pushButton.pressed.connect(self.movie)
 
+        self._previously_selected = None
+
 
     def guiProcessEvent(self, event):
         """
@@ -58,10 +60,58 @@ class WidgetDisplacedStability(guiDockWidget):
 
         # display the name of the selected node
         self.ui.node_name.clear()
-        for n in self.guiScene.nodes_of_type(nodes.Axis):
-            self.ui.node_name.addItem(n.name)
+
+        # try to intelligently select the right axis
+        #
+        # Indicators are:
+        # - axis is free
+        # - axis has a buoyancy module or hydspring as child
+        # - axis does not have a parent
+
+        axis = self.guiScene.nodes_of_type(nodes.Axis)
+        if axis:
+            names = [a.name for a in axis]
+            score = dict.fromkeys(names, 0)
+
+            score_no_parent = 1
+            score_free = 5
+            score_buoyancy_child = 3
+
+            for a in axis:
+                if a.parent is None:
+                    score[a.name] += score_no_parent
+                if not np.any(a.fixed): # all are False
+                    score[a.name] += score_free
+
+            for bs in [*self.guiScene.nodes_of_type(nodes.Buoyancy), *self.guiScene.nodes_of_type(nodes.HydSpring)]:
+                score[bs.parent.name] += score_buoyancy_child
+
+            # find the winner
+            most_likely_vessel = axis[0].name
+            max_score = 0
+
+            for key, value in score.items():
+                if value > max_score:
+                    most_likely_vessel = key
+                    max_score = value
+
+            self.ui.node_name.addItems(names)
+
+            if self._previously_selected not in names:
+                self._previously_selected = None
+
+            if self._previously_selected:
+                self.ui.node_name.setCurrentText(self._previously_selected)
+            else:
+                self.ui.node_name.setCurrentText(most_likely_vessel)
+
+
 
     def action(self):
+
+        self.gui.savepoint_restore()
+
+        self._previously_selected = self.ui.node_name.currentText()
 
         code = 'from DAVE.marine import GZcurve_DisplacementDriven\n'
         code += """GZcurve_DisplacementDriven(scene = s,
@@ -97,6 +147,7 @@ class WidgetDisplacedStability(guiDockWidget):
         self.gui.savepoint_restore()
         self.guiScene.savepoint_make()
 
+        self._previously_selected = self.ui.node_name.currentText()
 
         self.guiScene._gui_stability_dofs = None
 

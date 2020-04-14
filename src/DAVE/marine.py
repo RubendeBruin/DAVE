@@ -23,6 +23,11 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
     The vessel is free to heave, trim, and
     Only the vessels heel angle is fixed. The vessel is free to heave and trim.
 
+    Notes:
+        The reported heel is relative to the initial equilibrium position of the vessel. So if the initial heel
+        of the vessel is not zero (vessel not even keel) then the reported heel is the heel relative to that
+        initial heel.
+
     Args:
         scene:          the scene
         vessel_node:    the vessel node or vessel node name
@@ -50,7 +55,6 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
 
     # --------- verify input -----------
 
-
     s = scene # lazy
     doflog = []
 
@@ -62,10 +66,15 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
     if vessel.parent is not None:
         raise ValueError("Vessel should not have a parent. Got {} as vessel which has parent {}.".format(vessel.name, vessel.parent.name))
 
+    # make sure that we are in equilibrium before we start
+    s.solve_statics()
+
     no_displacement = False
     if displacement_kN is None: # default value
-        no_displacement = True
         displacement_kN = 1
+
+    if displacement_kN == 1:
+        no_displacement = True
 
     if minimum_heel == maximum_heel and steps>1:
         raise ValueError("Can not take multiple steps of min and max value are identical")
@@ -105,6 +114,10 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
     heel_node.set_fixed()
     vessel.change_parent_to(heel_node)
     vessel.set_fixed()
+
+    # check initial heel
+    initial_rotation = global_motion.rotation
+
 
     # record dofs
     s._vfc.state_update()
@@ -150,8 +163,13 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
 
     if not noplot:
 
+        if np.max(np.abs(initial_rotation)) > 0.01:
+            lbl = "Initial rotation = {:.2f}, {:.2f}. {:.2f} [deg]".format(*initial_rotation)
+        else:
+            lbl = None
+
         if allow_trim:
-            plt.plot(heel, trim, color='black', marker='+')
+            plt.plot(heel, trim, color='black', marker='+', label = lbl)
             plt.xlabel('Imposed Heel angle [deg]')
             plt.ylabel('Solved trim angle [deg]')
             plt.title('Trim resulting from imposed heel')
@@ -161,10 +179,10 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
         plt.xlabel('Heel angle [deg]')
         what = 'moment'
         if no_displacement:
-            plt.plot(heel, moment, color='black', marker='+')
+            plt.plot(heel, moment, color='black', marker='+', label = lbl)
             plt.ylabel('Restoring moment [kN*m]')
         else:
-            plt.plot(heel, GZ, color='black', marker='+')
+            plt.plot(heel, GZ, color='black', marker='+', label = lbl)
             what = 'arm'
             plt.ylabel('GZ [m]')
 
@@ -183,7 +201,9 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
 
         plt.title('Restoring {} curve for {}'.format(what, vessel.name))
 
-        plt.grid()
+        plt.grid('on')
+        if lbl:
+            plt.legend(facecolor='gold')
         if not noshow:
             plt.show()
 
@@ -193,10 +213,11 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
         vessel.change_parent_to(None)
         s.delete(global_motion)
 
-        # store current vessel props
+        # restore current vessel props
         vessel.position = _position
         vessel.rotation = _rotation
         vessel.fixed = _fixed
+        s.solve_statics()
     else:
         heel_node.fixed = (True, True, True, False, True, True)
         s._gui_stability_dofs = doflog
