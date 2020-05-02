@@ -1379,8 +1379,8 @@ class WidgetNodeProps(guiDockWidget):
                 widget.setVisible(False)
 
         for widget in to_be_added:
-            widget.setVisible(True)
             self.layout.addWidget(widget)
             self._open_edit_widgets.append(widget)
+            widget.setVisible(True)
 
         self.resize(0, 0)  # set the size of the floating dock widget to its minimum size

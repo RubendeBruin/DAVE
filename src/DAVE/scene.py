@@ -781,6 +781,14 @@ class Axis(NodeWithParent):
 
     @parent.setter
     def parent(self, val):
+
+        if val is not None:
+            # Circular reference check: are we trying to make self depend on val while val depends on self?
+            if self._scene.node_A_core_depends_on_B_core(val, self):
+                if isinstance(val, Axis): # it better be
+                    val.change_parent_to(None) # change the parent of other to None, this breaks the previous dependancy
+
+
         NodeWithParent.parent.fset(self, val)
         self._scene._geometry_changed()
 
@@ -3171,6 +3179,19 @@ class Scene:
                 return name
             counter += 1
 
+    def node_A_core_depends_on_B_core(self, A, B):
+        """Returns True if the node core of node A depends on the core node of node B"""
+
+        A = self._node_from_node_or_str(A)
+        B = self._node_from_node_or_str(B)
+
+        if not isinstance(A,CoreConnectedNode):
+            raise ValueError(f'{A.name} is not connected to a core node. Dependancies can not be traced using this function')
+        if not isinstance(B,CoreConnectedNode):
+            raise ValueError(f'{B.name} is not connected to a core node. Dependancies can not be traced using this function')
+
+        return self._vfc.element_A_depends_on_B(A._vfNode.name, B._vfNode.name)
+
     def nodes_depending_on(self, node):
         """Returns a list of nodes that physically depend on node. Only direct dependants are obtained with a connection to the core.
         This function should be used to determine dependencies of Core-connected elements.
@@ -3194,7 +3215,7 @@ class Scene:
         if not isinstance(_node, CoreConnectedNode):
             return []
         else:
-            names =  self._vfc.elements_depending_on(node)
+            names =  self._vfc.elements_depending_directly_on(node)
 
         r = []
         for name in names:

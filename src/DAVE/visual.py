@@ -1258,7 +1258,6 @@ class Viewport:
                             self.screen.add(va.actors[0])
                             va.node.trimesh._new_mesh = False
 
-
             self.set_default_dsa()
 
 
