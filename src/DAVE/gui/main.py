@@ -856,6 +856,7 @@ class Gui():
             f = open(filename, 'w+')
             for s in self._codelog:
 
+                # filter repeated assignments to same target
                 if s.split('=')[0] == prev_line.split('=')[0]:
                     prev_line = s
                     continue

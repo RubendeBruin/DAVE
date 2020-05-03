@@ -13,6 +13,7 @@
 import numbers
 from DAVE.scene import *
 import DAVE.settings as ds
+import numpy as np
 
 def assert1f(var, name = "Variable"):
     if not isinstance(var, numbers.Number):
@@ -94,3 +95,29 @@ def radii_to_positions(rxx,ryy,rzz):
     ps.append([0, 0, -z])
 
     return ps
+
+def rotation_from_y_axis_direction(direction):
+    """Returns a rotation vector that rotates the Y-axis (0,1,0) into the given direction"""
+
+    # the direction of the rotation is the cross product between y and target
+    axis = np.cross(direction, (0,1,0))
+
+    if np.linalg.norm(axis) < 1e-9:
+        return (0,0,0)
+
+    axis = axis / np.linalg.norm(axis)  # normalize
+
+    # the required angle of rotation is best calcualted using the atan2
+
+    # construct the y / target plane
+    perp = np.cross(axis, (0,1,0))  # no need to normalize
+
+    compx = np.dot(direction, (0,1,0))
+    compy = np.dot(direction, perp)
+
+    angle = np.arctan2(compy, compx)
+
+    return np.rad2deg(angle * axis)
+
+
+
