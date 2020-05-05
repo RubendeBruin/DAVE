@@ -1362,6 +1362,97 @@ class RigidBody(Axis):
 
         return code
 
+
+class ContactHinge(Axis):
+    """
+    ContactHinge
+
+    A contact-hinge can be used to construct hinging connections between:
+	- 	steel bars and holes, such as a shackle pin in a padeye (pin-hole)
+	-	steel bars and steel bars, such as a shackle-shackle connection
+
+
+    """
+
+    def __init__(self, scene, vfAxis):
+
+        super().__init__(scene, vfAxis)
+        self._None_parent_acceptable = False
+
+        name_prefix = self.name + vfc.VF_NAME_SPLIT
+        core = scene._vfc
+
+        # hole axis      : center of hole
+        # hole rotation  : rotating axis at center of hole
+        # pin axis       : axis at center of pin  ---> this is the _node axis
+
+        self._hole_axis = core.new_axis(name_prefix + '_hole')
+        self._hole_rotation = core.new_axis(name_prefix + '_hole_rotation')
+
+    def _delete_vfc(self):
+        self._scene._vfc.delete(self._hole_axis.name)
+        self._scene._vfc.delete(self._hole_rotation.name)
+
+        super()._delete_vfc()
+
+    @property
+    def parent(self):
+        parent_name = self._hole_axis.parent.name
+        return self._scene[parent_name]
+
+    @parent.setter
+    def parent(self, var):
+        raise ValueError('Parent of a ContactHinge can not be set directly. Use one of the connection functions to create or update the connection')
+
+    def change_parent_to(self, new_parent):
+        raise ValueError('Parent of a ContactHinge can not be set directly. Use one of the connection functions to create or update the connection')
+
+
+    def connect_pin_in_hole(self, pin, hole ):
+        """Sets the connection to be of type pin-in-hole"""
+
+        # --------- prepare hole
+
+        # Position "hole_axis" at the center of the hole
+        # Orient the axis such that the Y-direction is the axis direction of the hole
+        self._hole_axis.parent = hole.parent.parent._vfNode
+        self._hole_axis.position = hole.parent.position
+        self._hole_axis.fixed = (True, True, True, True, True, True)
+
+        y = np.array((0, 1, 0))
+        self._hole_axis.rotation = rotation_from_y_axis_direction(hole.axis)
+
+        # Position hole rotation at the hole axis
+        # and allow it to rotate
+        self._hole_rotation.position = (0,0,0)
+        self._hole_rotation.parent = self._hole_axis
+        self._hole_rotation.fixed = (True, True, True,
+                                    True, False, True)
+
+        # Position the connection pin (self) on the target pin and
+        # place the parent of the parent of the pin (the axis) on the connection axis
+        # and fix it
+
+        self._vfNode.parent = None
+        self._vfNode.position = pin.parent.global_position # position of the poi
+        self._vfNode.rotation = pin.parent.parent.to_glob_rotation(rotation_from_y_axis_direction(pin.axis))
+
+        pin.parent.parent.change_parent_to(self)
+        pin.parent.parent.fixed = True
+
+        # Place the
+
+        self._vfNode.parent = self._hole_rotation
+        self._vfNode.rotation = (0, 0, 0)
+        self._vfNode.fixed = (True, True, True,
+                              True, False, True)
+
+        self._vfNode.position = (hole.radius - pin.radius, 0, 0)
+
+
+
+
+
 class Cable(CoreConnectedNode):
     """A Cable represents a linear elastic wire running from a Poi to another Poi.
 
@@ -3591,6 +3682,32 @@ class Scene:
         else:
             new_node.fixed = fixed
 
+
+        self._nodes.append(new_node)
+        return new_node
+
+    def new_contacthinge(self, name):
+        """Creates a new *new_contacthinge* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+
+        Returns:
+            Reference to newly created new_contacthinge
+
+        """
+
+        # apply prefixes
+        name = self._prefix_name(name)
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+
+        # then create
+        a = self._vfc.new_axis(name)
+
+        new_node = ContactHinge(self, a)
 
         self._nodes.append(new_node)
         return new_node

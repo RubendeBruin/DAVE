@@ -90,6 +90,9 @@ pin_axis.rotation = (0,0,0)
 
 pin_axis.position = (hole.radius - pin.radius,0,0)
 
+
+print(s._vfc.to_string())
+
 from DAVE.gui.main import Gui
 Gui(s)
 
