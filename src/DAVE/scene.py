@@ -1419,8 +1419,7 @@ class ContactHinge(Axis):
         self._hole_axis.position = hole.parent.position
         self._hole_axis.fixed = (True, True, True, True, True, True)
 
-        y = np.array((0, 1, 0))
-        self._hole_axis.rotation = rotation_from_y_axis_direction(hole.axis)
+        self._hole_axis.rotation = np.deg2rad(rotation_from_y_axis_direction(hole.axis))
 
         # Position hole rotation at the hole axis
         # and allow it to rotate
@@ -1435,7 +1434,7 @@ class ContactHinge(Axis):
 
         self._vfNode.parent = None
         self._vfNode.position = pin.parent.global_position # position of the poi
-        self._vfNode.rotation = pin.parent.parent.to_glob_rotation(rotation_from_y_axis_direction(pin.axis))
+        self._vfNode.rotation = np.deg2rad(pin.parent.parent.to_glob_rotation(rotation_from_y_axis_direction(pin.axis)))
 
         pin.parent.parent.change_parent_to(self)
         pin.parent.parent.fixed = True
@@ -3097,6 +3096,15 @@ class Scene:
 
         return self._node_from_node(node, [Poi, Sheave])
 
+    def _sheave_from_node(self, node):
+        """Returns None if node is None
+        Returns node if node is an poi type node
+        Else returns the poi with the given name
+
+        Raises Exception if anything is not ok"""
+
+        return self._node_from_node(node, Sheave)
+
     def _geometry_changed(self):
         """Notify the scene that the geometry has changed and that the global transforms are invalid"""
         self._vfc.geometry_changed()
@@ -3686,7 +3694,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_contacthinge(self, name):
+    def new_contacthinge(self, name, pin , hole):
         """Creates a new *new_contacthinge* node and adds it to the scene.
 
         Args:
@@ -3704,10 +3712,22 @@ class Scene:
         assertValidName(name)
         self._verify_name_available(name)
 
+        pin = self._sheave_from_node(pin)
+        hole = self._sheave_from_node(hole)
+
+        if pin is None:
+            raise ValueError('Pin needs to be a sheave-type node')
+        if hole is None:
+            raise ValueError('Hole needs to be a sheave-type node')
+
+
+
         # then create
         a = self._vfc.new_axis(name)
 
         new_node = ContactHinge(self, a)
+        new_node.connect_pin_in_hole(pin=pin, hole=hole)
+
 
         self._nodes.append(new_node)
         return new_node
