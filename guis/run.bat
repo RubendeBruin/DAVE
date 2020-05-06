@@ -1,6 +1,6 @@
 call conda activate deploy
 
-call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
+echo call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
 echo call pyside2-uic widget_modeshapes.ui -o "..\src\DAVE\gui\forms\widgetUI_modeshapes.py"
 echo call pyside2-uic widget_ballastconfiguration.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastconfiguration.py"
 echo call pyside2-uic widget_ballastsolver.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastsolver.py"
@@ -28,7 +28,8 @@ echo call pyside2-uic frm_standard_assets.ui -o "..\src\DAVE\gui\forms\frm_stand
 echo call pyside2-uic dlg_solver.ui -o "..\src\DAVE\gui\forms\dlg_solver.py"
 echo call pyside2-uic frm_animation.ui -o "..\src\DAVE\gui\forms\frm_animation.py"
 echo call pyside2-uic widget_dynprop.ui -o "..\src\DAVE\gui\forms\widget_dynprop.py"
-call pyside2-uic widget_contactball.ui -o "..\src\DAVE\gui\forms\widget_contactball.py"
+echo call pyside2-uic widget_contactball.ui -o "..\src\DAVE\gui\forms\widget_contactball.py"
+call pyside2-uic widget_geometricconnection.ui -o "..\src\DAVE\gui\forms\widget_geometricconnection.py"
 
 
-call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"
+echo call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"

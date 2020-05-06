@@ -44,7 +44,7 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
         print('dragged {} onto {}'.format(dragged_name,drop_onto_name))
         event.setDropAction(Qt.IgnoreAction)
 
-        self.parentcallback(dragged_name, drop_onto_name)
+        self.parentcallback(dragged_name, drop_onto_name, event)
 
     def startDrag(self, supportedActions):
 
@@ -98,15 +98,48 @@ class WidgetNodeTree(guiDockWidget):
 
     # ======= custom
 
-    def dragDropCallback(self, drop, onto):
+    def dragDropCallback(self, drop, onto, event):
 
-        if onto is None:
-            code = "s['{}'].change_parent_to(None)".format(drop)
+        # are we dropping a sheave onto a sheave?
+
+        node_drop = self.guiScene[drop]
+        node_onto = self.guiScene[onto]
+
+        if isinstance(node_drop, ds.Sheave) and isinstance(node_onto, ds.Sheave):
+
+            # pop up a contect menu
+            menu = QtWidgets.QMenu()
+
+            info = f"... About create a Pin-Hole connection with {drop} as pin and and {onto} as hole:"
+
+            menu.addAction(info, None)
+            menu.addSeparator()
+
+            name = f"{drop} inside {onto}"
+
+            def create_master():
+                code = f"s.new_geometriccontact('{name}','{drop}','{onto}')"
+                self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+            def create_slave():
+                code = f"s.new_geometriccontact('{name}','{drop}','{onto}', inverse_relation = True)"
+                self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+            menu.addAction(f"Create pin-hole connection with {onto} as master", create_master)
+            menu.addAction(f"Create pin-hole connection with {drop} as master", create_slave)
+
+            globLoc = self.treeView.mapToGlobal(event.pos())
+            menu.exec_(globLoc)
+
         else:
-            code = "s['{}'].change_parent_to(s['{}'])".format(drop, onto)
-        print(code)
 
-        self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+            if onto is None:
+                code = "s['{}'].change_parent_to(None)".format(drop)
+            else:
+                code = "s['{}'].change_parent_to(s['{}'])".format(drop, onto)
+            print(code)
+
+            self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
 
     def tree_select_node(self, index):

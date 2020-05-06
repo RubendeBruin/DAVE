@@ -423,7 +423,7 @@ class NodeWithParent(CoreConnectedNode):
             self._parent = None
             self._vfNode.parent = None
         else:
-            if isinstance(var, Axis):
+            if isinstance(var, Axis) or isinstance(var, GeometricContact):
                 self._parent = var
                 self._vfNode.parent = var._vfNode
             elif isinstance(var, Poi):
@@ -1059,7 +1059,7 @@ class Axis(NodeWithParent):
 
         # check new_parent
         if new_parent is not None:
-            if not isinstance(new_parent, Axis):
+            if not (isinstance(new_parent, Axis) or isinstance(new_parent, GeometricContact)):
                 raise TypeError(
                     'Only None or Axis-type nodes (or derived types) can be used as parent. You tried to use a {} as parent'.format(
                     type(new_parent)))
@@ -1363,18 +1363,19 @@ class RigidBody(Axis):
         return code
 
 
-class ContactHinge(Axis):
+class GeometricContact(NodeWithParent):
     """
-    ContactHinge
+    GeometricContact
 
-    A contact-hinge can be used to construct hinging connections between:
+    A GeometricContact can be used to construct geometric connections between circular members:
 	- 	steel bars and holes, such as a shackle pin in a padeye (pin-hole)
 	-	steel bars and steel bars, such as a shackle-shackle connection
 
 
+
     """
 
-    def __init__(self, scene, vfAxis):
+    def __init__(self, scene, vfAxis, circle1, circle2):
 
         super().__init__(scene, vfAxis)
         self._None_parent_acceptable = False
@@ -1382,18 +1383,32 @@ class ContactHinge(Axis):
         name_prefix = self.name + vfc.VF_NAME_SPLIT
         core = scene._vfc
 
+        self._circle1 = circle1
+        self._circle2 = circle2
+        self._flipped = False
+
         # hole axis      : center of hole
         # hole rotation  : rotating axis at center of hole
         # pin axis       : axis at center of pin  ---> this is the _node axis
 
         self._hole_axis = core.new_axis(name_prefix + '_hole')
-        self._hole_rotation = core.new_axis(name_prefix + '_hole_rotation')
+        self._pin_position_in_hole = core.new_axis(name_prefix + '_hole_rotation')
 
     def _delete_vfc(self):
         self._scene._vfc.delete(self._hole_axis.name)
-        self._scene._vfc.delete(self._hole_rotation.name)
+        self._scene._vfc.delete(self._pin_position_in_hole.name)
 
         super()._delete_vfc()
+
+    # The axis slaved to this axis may treat GeometricContact as if it is an axis system
+    # make sure it can
+    def to_loc_position(self, value):
+        # noinspection PyTypeChecker,PyCallByClass
+        return Axis.to_loc_position(self, value) # this is valid because  _vfNode is an axis
+
+    def to_loc_rotation(self, value):
+        # noinspection PyTypeChecker,PyCallByClass
+        return Axis.to_loc_rotation(self, value) # this is valid because  _vfNode is an axis
 
     @property
     def parent(self):
@@ -1408,8 +1423,11 @@ class ContactHinge(Axis):
         raise ValueError('Parent of a ContactHinge can not be set directly. Use one of the connection functions to create or update the connection')
 
 
-    def connect_pin_in_hole(self, pin, hole ):
+    def set_pin_in_hole_connection(self):
         """Sets the connection to be of type pin-in-hole"""
+
+        pin = self._circle1
+        hole = self._circle2
 
         # --------- prepare hole
 
@@ -1419,14 +1437,17 @@ class ContactHinge(Axis):
         self._hole_axis.position = hole.parent.position
         self._hole_axis.fixed = (True, True, True, True, True, True)
 
-        self._hole_axis.rotation = np.deg2rad(rotation_from_y_axis_direction(hole.axis))
+        if self._flipped:
+            self._hole_axis.rotation = np.deg2rad(rotation_from_y_axis_direction(-np.array(hole.axis)))
+        else:
+            self._hole_axis.rotation = np.deg2rad(rotation_from_y_axis_direction(hole.axis))
 
         # Position hole rotation at the hole axis
         # and allow it to rotate
-        self._hole_rotation.position = (0,0,0)
-        self._hole_rotation.parent = self._hole_axis
-        self._hole_rotation.fixed = (True, True, True,
-                                    True, False, True)
+        self._pin_position_in_hole.position = (0, 0, 0)
+        self._pin_position_in_hole.parent = self._hole_axis
+        self._pin_position_in_hole.fixed = (True, True, True,
+                                            True, False, True)
 
         # Position the connection pin (self) on the target pin and
         # place the parent of the parent of the pin (the axis) on the connection axis
@@ -1439,15 +1460,29 @@ class ContactHinge(Axis):
         pin.parent.parent.change_parent_to(self)
         pin.parent.parent.fixed = True
 
-        # Place the
+        # Place the pin in the hole
 
-        self._vfNode.parent = self._hole_rotation
+        self._vfNode.parent = self._pin_position_in_hole
         self._vfNode.rotation = (0, 0, 0)
         self._vfNode.fixed = (True, True, True,
                               True, False, True)
 
         self._vfNode.position = (hole.radius - pin.radius, 0, 0)
 
+    @property
+    def flipped(self):
+        return self._flipped
+
+    @flipped.setter
+    def flipped(self, value):
+        self._flipped = value
+
+        if self._flipped:
+            self._hole_axis.rotation = np.deg2rad(rotation_from_y_axis_direction(-np.array(self._circle2.axis)))
+        else:
+            self._hole_axis.rotation = np.deg2rad(rotation_from_y_axis_direction(self._circle2.axis))
+
+        print(self._hole_axis.rotation)
 
 
 
@@ -3694,11 +3729,13 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_contacthinge(self, name, pin , hole):
-        """Creates a new *new_contacthinge* node and adds it to the scene.
+    def new_geometriccontact(self, name, item1 , item2):
+        """Creates a new *new_geometriccontact* node and adds it to the scene.
 
         Args:
             name: Name for the node, should be unique
+            item1 : a sheave
+            item2 : another sheave
 
         Returns:
             Reference to newly created new_contacthinge
@@ -3712,22 +3749,21 @@ class Scene:
         assertValidName(name)
         self._verify_name_available(name)
 
-        pin = self._sheave_from_node(pin)
-        hole = self._sheave_from_node(hole)
+        item1 = self._sheave_from_node(item1)
+        item2 = self._sheave_from_node(item2)
 
-        if pin is None:
-            raise ValueError('Pin needs to be a sheave-type node')
-        if hole is None:
-            raise ValueError('Hole needs to be a sheave-type node')
+        if item1 is None:
+            raise ValueError('Item1 needs to be a sheave-type node')
+        if item2 is None:
+            raise ValueError('Item2 needs to be a sheave-type node')
 
 
 
         # then create
         a = self._vfc.new_axis(name)
 
-        new_node = ContactHinge(self, a)
-        new_node.connect_pin_in_hole(pin=pin, hole=hole)
-
+        new_node = GeometricContact(self, a, item1, item2)
+        new_node.set_pin_in_hole_connection()
 
         self._nodes.append(new_node)
         return new_node

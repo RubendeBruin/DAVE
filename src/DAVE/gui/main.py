@@ -1114,6 +1114,7 @@ class Gui():
 
         if event == guiEventType.VIEWER_SETTINGS_UPDATE:
             self.visual.update_visibility()
+            self.visual.position_visuals()
             self.refresh_3dview()
             return
 

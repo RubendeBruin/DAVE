@@ -1055,10 +1055,10 @@ class Viewport:
                 t = vtk.vtkTransform()
                 t.Identity()
 
-                scale = V.node.mass / 8050  # density of steel
+                scale = (V.node.mass / 8.050)**(1/3)  # density of steel
 
-                if scale < 0.8:
-                    scale = 0.8
+                if scale < 0.01:
+                    scale = 0.01
 
                 t.Translate(V.node.cog)
                 mat4x4 = transform_to_mat4x4(V.node.global_transform)

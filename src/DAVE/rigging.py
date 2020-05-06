@@ -94,3 +94,119 @@ def create_sling(s, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA
     s.new_cable(name + '_eyeA', poiA = a1, poiB=a2, length = LeyeA * 2 - diameter, EA=EA, diameter=diameter, sheaves = endA)
     s.new_cable(name + '_eyeB', poiA=b1, poiB=b2, length=LeyeB * 2 - diameter, EA = EA, diameter=diameter, sheaves = endB)
 
+
+
+
+def create_shackle_gphd(s, name, wll):
+    """
+    Green-Pin Heavy Duty Bow Shackle BN
+
+    visual from: https://www.traceparts.com/en/product/green-pinr-p-6036-green-pinr-heavy-duty-bow-shackle-bn-hdgphm0800-mm?CatalogPath=TRACEPARTS%3ATP04001002006&Product=10-04072013-086517&PartNumber=HDGPHM0800
+    details from: https://www.greenpin.com/sites/default/files/2019-04/brochure-april-2019.pdf
+
+    wll a b c d e f g h i j k weight
+    [t] [mm]  [kg]
+    120 95 95 208 95 147 400 238 647 453 428 50 110
+    150 105 108 238 105 169 410 275 688 496 485 50 160
+    200 120 130 279 120 179 513 290 838 564 530 70 235
+    250 130 140 299 130 205 554 305 904 614 565 70 295
+    300 140 150 325 140 205 618 305 996 644 585 80 368
+    400 170 175 376 164 231 668 325 1114 690 665 70 560
+    500 180 185 398 164 256 718 350 1190 720 710 70 685
+    600 200 205 444 189 282 718 375 1243 810 775 70 880
+    700 210 215 454 204 308 718 400 1263 870 820 70 980
+    800 210 220 464 204 308 718 400 1270 870 820 70 1100
+    900 220 230 485 215 328 718 420 1296 920 860 70 1280
+    1000 240 240 515 215 349 718 420 1336 940 900 70 1460
+    1250 260 270 585 230 369 768 450 1456 1025 970 70 1990
+    1500 280 290 625 230 369 818 450 1556 1025 1010 70 2400
+
+    Returns:
+
+    """
+    data = dict()
+    # key = wll in t
+    # dimensions a..k in [mm]
+    #             a     b    c   d     e    f    g    h     i     j    k   weight[kg]
+    # index       0     1    2    3    4    5    6    7     8     9    10   11
+    data[120] =  (95 ,  95, 208, 95 , 147, 400, 238, 647 , 453 , 428 , 50, 110)
+    data[150] =  (105, 108, 238, 105, 169, 410, 275, 688 , 496 , 485 , 50, 160)
+    data[200] =  (120, 130, 279, 120, 179, 513, 290, 838 , 564 , 530 , 70, 235)
+    data[250] =  (130, 140, 299, 130, 205, 554, 305, 904 , 614 , 565 , 70, 295)
+    data[300] =  (140, 150, 325, 140, 205, 618, 305, 996 , 644 , 585 , 80, 368)
+    data[400] =  (170, 175, 376, 164, 231, 668, 325, 1114, 690 , 665 , 70, 560)
+    data[500] =  (180, 185, 398, 164, 256, 718, 350, 1190, 720 , 710 , 70, 685)
+    data[600] =  (200, 205, 444, 189, 282, 718, 375, 1243, 810 , 775 , 70, 880)
+    data[700] =  (210, 215, 454, 204, 308, 718, 400, 1263, 870 , 820 , 70, 980)
+    data[800] =  (210, 220, 464, 204, 308, 718, 400, 1270, 870 , 820 , 70, 1100)
+    data[900] =  (220, 230, 485, 215, 328, 718, 420, 1296, 920 , 860 , 70, 1280)
+    data[1000] = (240, 240, 515, 215, 349, 718, 420, 1336, 940 , 900 , 70, 1460)
+    data[1250] = (260, 270, 585, 230, 369, 768, 450, 1456, 1025, 970 , 70, 1990)
+    data[1500] = (280, 290, 625, 230, 369, 818, 450, 1556, 1025, 1010, 70, 2400)
+
+    if wll not in data:
+        for key in data.keys():
+            print(key)
+        raise ValueError('No data available for a Green-Pin Heavy Duty Bow Shackle BN with wll {wll}. Available values printed above')
+
+    values = data[wll]
+
+    weight = values[11] / 1000  # convert to tonne
+    pin_dia = values[1] / 1000
+    bow_dia = values[0] / 1000
+    bow_length_inside = values[5] / 1000
+    bow_circle_inside = values[6] / 1000
+
+    cogz = 0.5 * pin_dia + bow_length_inside / 3  # estimated
+
+    # origin is at center of pin
+    # z-axis up
+    # y-axis in direction of pin
+
+
+    body = s.new_rigidbody(name=name,
+                    mass=weight,
+                    cog=(0.0,
+                         0.0,
+                         cogz))
+    # pin
+    pin_poi = s.new_poi(name=name + 'pin_poi',
+              parent=body,
+              position=(0.0,
+                        0.0,
+                        0.0))
+    s.new_sheave(name=name + 'pin',
+                 parent=pin_poi,
+                 axis=(0.0, 1.0, 0.0),
+                 radius=pin_dia/2)
+
+    # bow
+    bow_poi = s.new_poi(name=name + 'bow_poi',
+              parent=body,
+              position=(0.0,
+                        0.0,
+                        0.5*pin_dia + bow_length_inside + 0.5 * bow_dia))
+    s.new_sheave(name=name + 'bow',
+                 parent=bow_poi,
+                 axis=(0.0, 1.0, 0.0),
+                 radius=bow_dia/2)
+
+    # inside circle
+    inside_poi = s.new_poi(name = name + 'inside_circle_center',
+                           parent = body,
+                           position = (0,0,
+                                       0.5*pin_dia + bow_length_inside - 0.5*bow_circle_inside))
+    s.new_sheave(name = name + 'inside',
+                 parent = inside_poi,
+                 axis = (1.0,0,0),
+                 radius = bow_circle_inside/2  )
+
+    # code for GP800_visual
+    s.new_visual(name='GP800_visual',
+                 parent=body,
+                 path=r'shackle_gp800.obj',
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))
+
+    return body

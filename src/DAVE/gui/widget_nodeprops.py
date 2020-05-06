@@ -15,6 +15,7 @@ import DAVE.gui.forms.widget_con2d
 import DAVE.gui.forms.widget_sheave
 import DAVE.gui.forms.widget_waveinteraction
 import DAVE.gui.forms.widget_contactball
+import DAVE.gui.forms.widget_geometricconnection
 
 import numpy as np
 
@@ -1149,6 +1150,49 @@ class EditBeam(NodeEditor):
 
         return code
 
+class EditGeometricContact(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditGeometricContact._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.gui.forms.widget_geometricconnection.Ui_GeometricConnection()
+            ui.setupUi(widget)
+            EditGeometricContact._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditGeometricContact._ui
+
+        try:
+            ui.cbFlip.toggled.disconnect()
+
+        except:
+            pass # no connections yet
+
+        ui.cbFlip.setChecked(self.node.flipped)
+        ui.cbFlip.toggled.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = ""
+        element = "\ns['{}']".format(self.node.name)
+
+        new_flipped = self.ui.cbFlip.isChecked()
+
+        if not new_flipped == self.node.flipped:
+            code += element + '.flipped = ' + str(new_flipped)
+
+        return code
+
 class EditContactBall(NodeEditor):
 
     _ui = None
@@ -1358,6 +1402,9 @@ class WidgetNodeProps(guiDockWidget):
 
         if isinstance(node, vfs.ContactBall):
             self._node_editors.append(EditContactBall(node, self.node_property_changed, self.guiScene, self.run_code))
+
+        if isinstance(node, vfs.GeometricContact):
+            self._node_editors.append(EditGeometricContact(node, self.node_property_changed, self.guiScene, self.run_code))
 
 
         if isinstance(node, vfs.Buoyancy) or isinstance(node, vfs.ContactMesh):

@@ -103,7 +103,12 @@ def rotation_from_y_axis_direction(direction):
     axis = np.cross(direction, (0,1,0))
 
     if np.linalg.norm(axis) < 1e-9:
-        return (0,0,0)
+        # axis are perpendicular
+        # but may still be in exacly opposite direction
+        if np.dot(direction, (0,1,0)) > 0:
+            return (0,0,0)
+        else:
+            return (0,0,180)
 
     axis = axis / np.linalg.norm(axis)  # normalize
 
