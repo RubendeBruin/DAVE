@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Wed Mar 18 13:55:09 2020
+# Created: Mon May 11 19:49:03 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -327,6 +327,8 @@ class Ui_MainWindow(object):
         self.actionLook_towards_center.setObjectName("actionLook_towards_center")
         self.actionCamera_reset = QtWidgets.QAction(MainWindow)
         self.actionCamera_reset.setObjectName("actionCamera_reset")
+        self.actionShow_CoG_positions = QtWidgets.QAction(MainWindow)
+        self.actionShow_CoG_positions.setObjectName("actionShow_CoG_positions")
         self.menuSolve_Statics.addAction(self.actionNew)
         self.menuSolve_Statics.addSeparator()
         self.menuSolve_Statics.addAction(self.actionOpen)
@@ -341,23 +343,11 @@ class Ui_MainWindow(object):
         self.menuLook_towards.addAction(self.action_Y)
         self.menuLook_towards.addAction(self.actionZ)
         self.menuLook_towards.addAction(self.action_Z)
-        self.menuView.addAction(self.actionHorizontal_camera)
-        self.menuView.addSeparator()
         self.menuView.addAction(self.action2D_mode)
         self.menuView.addAction(self.menuLook_towards.menuAction())
         self.menuView.addSeparator()
-        self.menuView.addAction(self.actionAdd_light)
-        self.menuView.addAction(self.actionDark_mode)
-        self.menuView.addSeparator()
-        self.menuView.addAction(self.actionShow_all_forces_at_same_size)
-        self.menuView.addAction(self.actionIncrease_force_size)
-        self.menuView.addAction(self.actionDecrease_force_size)
-        self.menuView.addSeparator()
-        self.menuView.addAction(self.actionIncrease_Geometry_size)
-        self.menuView.addAction(self.actionDecrease_Geometry_size)
         self.menuView.addSeparator()
         self.menuView.addAction(self.actionShow_visuals)
-        self.menuView.addAction(self.actionShow_Geometry_elements)
         self.menuView.addAction(self.actionShow_force_applyting_element)
         self.menuView.addAction(self.actionShow_water_plane)
         self.menuView.addSeparator()
@@ -412,7 +402,7 @@ class Ui_MainWindow(object):
         self.actionDark_mode.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Alt+-", None, -1))
         self.actionShow_visuals.setText(QtWidgets.QApplication.translate("MainWindow", "Show visuals", None, -1))
         self.actionShow_Geometry_elements.setText(QtWidgets.QApplication.translate("MainWindow", "Show Geometry elements", None, -1))
-        self.actionShow_force_applyting_element.setText(QtWidgets.QApplication.translate("MainWindow", "Show non-geometry elements", None, -1))
+        self.actionShow_force_applyting_element.setText(QtWidgets.QApplication.translate("MainWindow", "Show non-geometry elements (forces, meshes)", None, -1))
         self.actionSet_all_visible.setText(QtWidgets.QApplication.translate("MainWindow", "Set all visible", None, -1))
         self.actionSet_all_hidden.setText(QtWidgets.QApplication.translate("MainWindow", "Set all hidden", None, -1))
         self.actionFull_refresh.setText(QtWidgets.QApplication.translate("MainWindow", "Full refresh", None, -1))
@@ -447,4 +437,6 @@ class Ui_MainWindow(object):
         self.action_Z.setText(QtWidgets.QApplication.translate("MainWindow", "From bottom", None, -1))
         self.actionLook_towards_center.setText(QtWidgets.QApplication.translate("MainWindow", "Look towards center", None, -1))
         self.actionCamera_reset.setText(QtWidgets.QApplication.translate("MainWindow", "Camera reset", None, -1))
+        self.actionShow_CoG_positions.setText(QtWidgets.QApplication.translate("MainWindow", "Show CoGs", None, -1))
 
+import DAVE.gui.forms.resources_rc

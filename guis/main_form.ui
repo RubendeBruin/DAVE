@@ -342,23 +342,11 @@
      <addaction name="actionZ"/>
      <addaction name="action_Z"/>
     </widget>
-    <addaction name="actionHorizontal_camera"/>
-    <addaction name="separator"/>
     <addaction name="action2D_mode"/>
     <addaction name="menuLook_towards"/>
     <addaction name="separator"/>
-    <addaction name="actionAdd_light"/>
-    <addaction name="actionDark_mode"/>
-    <addaction name="separator"/>
-    <addaction name="actionShow_all_forces_at_same_size"/>
-    <addaction name="actionIncrease_force_size"/>
-    <addaction name="actionDecrease_force_size"/>
-    <addaction name="separator"/>
-    <addaction name="actionIncrease_Geometry_size"/>
-    <addaction name="actionDecrease_Geometry_size"/>
     <addaction name="separator"/>
     <addaction name="actionShow_visuals"/>
-    <addaction name="actionShow_Geometry_elements"/>
     <addaction name="actionShow_force_applyting_element"/>
     <addaction name="actionShow_water_plane"/>
     <addaction name="separator"/>
@@ -704,7 +692,7 @@ p, li { white-space: pre-wrap; }
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show non-geometry elements</string>
+    <string>Show non-geometry elements (forces, meshes)</string>
    </property>
   </action>
   <action name="actionSet_all_visible">
@@ -877,6 +865,11 @@ p, li { white-space: pre-wrap; }
   <action name="actionCamera_reset">
    <property name="text">
     <string>Camera reset</string>
+   </property>
+  </action>
+  <action name="actionShow_CoG_positions">
+   <property name="text">
+    <string>Show CoGs</string>
    </property>
   </action>
  </widget>

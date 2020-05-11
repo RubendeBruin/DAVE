@@ -250,7 +250,10 @@ class Viewport:
         self.show_force = True        # show or hide forces and connectors
         self.show_visual = True       # show or hide visuals
         self.show_global = False      # show or hide the environment (sea)
+        self.show_cog = True
         self.force_do_normalize = True # Normalize force size to 1.0 for plotting
+        self.cog_do_normalize = False
+        self.cog_scale = 1.0
         self.force_scale = 1.6        # Scale to be applied on (normalized) force magnitude
         self.geometry_scale = 1.0          # poi radius of the pois
         self.outline_width = vc.OUTLINE_WIDTH      # line-width of the outlines (cell-like shading)
@@ -1055,10 +1058,10 @@ class Viewport:
                 t = vtk.vtkTransform()
                 t.Identity()
 
-                scale = (V.node.mass / 8.050)**(1/3)  # density of steel
-
-                if scale < 0.01:
-                    scale = 0.01
+                if self.cog_do_normalize:
+                    scale = 1
+                else:
+                    scale = (V.node.mass / 8.050)**(1/3)  # density of steel
 
                 t.Translate(V.node.cog)
                 mat4x4 = transform_to_mat4x4(V.node.global_transform)
@@ -1068,6 +1071,8 @@ class Viewport:
 
                 t.PostMultiply()
                 t.Concatenate(mat4x4)
+
+                scale = scale * self.cog_scale
 
                 V.actors[3].SetScale(scale)
                 V.actors[3].setTransform(t)
@@ -1383,23 +1388,23 @@ class Viewport:
         if self.mouseRightEvent is not None:
             self.mouseRightEvent(info)
 
-    def make_lighter(self):
-        """Increase light intensity for embedded mode"""
-        C = self.light.GetIntensity()
-        C += 0.05
-        self.light.SetIntensity(C)
-        print('Light intensity = {}'.format(C))
-        self.refresh_embeded_view()
-
-    def make_darker(self):
-        """Decrease light intensity for embedded mode"""
-        C = self.light.GetIntensity()
-        C -= 0.05
-        if C <= 0:
-            C = 0
-        self.light.SetIntensity(C)
-        print('Light intensity = {}'.format(C))
-        self.refresh_embeded_view()
+    # def make_lighter(self):
+    #     """Increase light intensity for embedded mode"""
+    #     C = self.light.GetIntensity()
+    #     C += 0.05
+    #     self.light.SetIntensity(C)
+    #     print('Light intensity = {}'.format(C))
+    #     self.refresh_embeded_view()
+    #
+    # def make_darker(self):
+    #     """Decrease light intensity for embedded mode"""
+    #     C = self.light.GetIntensity()
+    #     C -= 0.05
+    #     if C <= 0:
+    #         C = 0
+    #     self.light.SetIntensity(C)
+    #     print('Light intensity = {}'.format(C))
+    #     self.refresh_embeded_view()
 
     def show_embedded(self, target_frame):
         """target frame : QFrame """

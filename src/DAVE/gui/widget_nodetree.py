@@ -2,6 +2,7 @@ from DAVE.gui.dockwidget import *
 from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag
 from PySide2.QtCore import QMimeData, Qt, QItemSelectionModel
 from PySide2.QtWidgets import QTreeWidgetItem
+from DAVE.rigging import sheave_connect_context_menu
 import DAVE.scene as ds
 
 
@@ -107,29 +108,9 @@ class WidgetNodeTree(guiDockWidget):
 
         if isinstance(node_drop, ds.Sheave) and isinstance(node_onto, ds.Sheave):
 
-            # pop up a contect menu
-            menu = QtWidgets.QMenu()
-
-            info = f"... About create a Pin-Hole connection with {drop} as pin and and {onto} as hole:"
-
-            menu.addAction(info, None)
-            menu.addSeparator()
-
-            name = f"{drop} inside {onto}"
-
-            def create_master():
-                code = f"s.new_geometriccontact('{name}','{drop}','{onto}')"
-                self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
-
-            def create_slave():
-                code = f"s.new_geometriccontact('{name}','{drop}','{onto}', inverse_relation = True)"
-                self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
-
-            menu.addAction(f"Create pin-hole connection with {onto} as master", create_master)
-            menu.addAction(f"Create pin-hole connection with {drop} as master", create_slave)
-
-            globLoc = self.treeView.mapToGlobal(event.pos())
-            menu.exec_(globLoc)
+            sheave_connect_context_menu(node_drop, node_onto,
+                                        lambda x : self.guiRunCodeCallback(x, guiEventType.MODEL_STRUCTURE_CHANGED),
+                                        self.treeView.mapToGlobal(event.pos()))
 
         else:
 

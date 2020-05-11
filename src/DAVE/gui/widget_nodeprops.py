@@ -1205,7 +1205,7 @@ class EditContactBall(NodeEditor):
             widget = QtWidgets.QWidget()
             ui = DAVE.gui.forms.widget_contactball.Ui_widget_contactball()
             ui.setupUi(widget)
-            EditForce._ui = ui
+            EditContactBall._ui = ui
             ui._widget = widget
 
         else:

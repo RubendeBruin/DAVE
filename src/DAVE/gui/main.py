@@ -85,6 +85,7 @@ import DAVE.settings
 
 from DAVE.gui.helpers.highlighter import PythonHighlighter
 from DAVE.gui.helpers.ctrl_enter import CtrlEnterKeyPressFilter
+from DAVE.gui.helpers.qmenu import MenuSlider
 
 from IPython.utils.capture import capture_output
 import datetime
@@ -105,6 +106,9 @@ from DAVE.gui.widget_airy import WidgetAiry
 from DAVE.gui.widget_stability_disp import WidgetDisplacedStability
 from DAVE.gui.widget_explore import WidgetExplore
 from DAVE.gui.widget_tank_order import WidgetTankOrder
+from DAVE.gui.widget_selection_action import WidgetSelectionActions
+
+
 
 import numpy as np
 
@@ -237,13 +241,82 @@ class Gui():
 
         # -- visuals
         self.ui.actionShow_water_plane.triggered.connect(self.toggle_show_global_from_menu)
-        self.ui.actionShow_visuals.triggered.connect(self.toggle_show_visuals)
-        self.ui.actionShow_Geometry_elements.triggered.connect(self.toggle_show_geometry)
-        self.ui.actionShow_force_applyting_element.triggered.connect(self.toggle_show_force)
+
+
+        self.ui.sliderGeometrySize = MenuSlider('Geometry size')
+        self.ui.sliderGeometrySize.setMin(0)
+        def set_geo_size(value):
+            if value < 1:
+                self.visual.show_geometry = False
+                self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
+            else:
+                self.visual.show_geometry = True
+                self.run_code(f'self.visual.geometry_scale = {value**(1.3)/100}',guiEventType.VIEWER_SETTINGS_UPDATE)
+
+        self.ui.sliderGeometrySize.connectvalueChanged(set_geo_size)
+        self.ui.menuView.addAction(self.ui.sliderGeometrySize)
+
+        # force size
+        self.ui.menuView.addSeparator()
+
+        def normalize_force():
+            self.run_code('self.visual.force_do_normalize = not self.visual.force_do_normalize',guiEventType.VIEWER_SETTINGS_UPDATE)
+
+        forcenormalize= self.ui.menuView.addAction("View all forces at same size")
+        forcenormalize.setCheckable(True)
+        forcenormalize.setChecked(True)
+        forcenormalize.triggered.connect(normalize_force)
+
+        self.ui.sliderForceSize = MenuSlider('Force size')
+        self.ui.sliderForceSize.setMin(0)
+
+        def set_force_size(value):
+            if value < 1:
+                self.visual.show_force = False
+                self.visual.refresh_embeded_view()
+            else:
+                self.visual.show_force = True
+                self.run_code(f'self.visual.force_scale = {value ** (1.3) / 10}', guiEventType.VIEWER_SETTINGS_UPDATE)
+
+        self.ui.sliderForceSize.connectvalueChanged(set_force_size)
+        self.ui.menuView.addAction(self.ui.sliderForceSize)
+
+        # cog size
+        self.ui.menuView.addSeparator()
+
+        def normalize_cog():
+            self.run_code('self.visual.cog_do_normalize = not self.visual.cog_do_normalize',
+                          guiEventType.VIEWER_SETTINGS_UPDATE)
+
+        cognormalize = self.ui.menuView.addAction("View all cogs at same size")
+        cognormalize.setCheckable(True)
+        cognormalize.setChecked(False)
+        cognormalize.triggered.connect(normalize_cog)
+
+        self.ui.sliderCoGSize = MenuSlider('CoG size')
+        self.ui.sliderCoGSize.setMin(0)
+
+        def set_cog_size(value):
+            if value < 1:
+                self.visual.show_cog = False
+                self.visual.refresh_embeded_view()
+            else:
+                self.visual.show_cog = True
+                self.run_code(f'self.visual.cog_scale = {value ** (1.3) / 100}', guiEventType.VIEWER_SETTINGS_UPDATE)
+
+        self.ui.sliderCoGSize.connectvalueChanged(set_cog_size)
+        self.ui.menuView.addAction(self.ui.sliderCoGSize)
+
+        # light
+        self.ui.sliderBrightness = MenuSlider('Sunshine')
+        self.ui.sliderBrightness.setMin(0)
+        def set_brightness(value):
+            self.visual.light.SetIntensity(value/100)
+            self.visual.refresh_embeded_view()
+        self.ui.sliderBrightness.connectvalueChanged(set_brightness)
+        self.ui.menuView.addAction(self.ui.sliderBrightness)
 
         self.ui.actionHorizontal_camera.triggered.connect(self.visual.level_camera)
-        self.ui.actionAdd_light.triggered.connect(self.visual.make_lighter)
-        self.ui.actionDark_mode.triggered.connect(self.visual.make_darker)
         self.ui.action2D_mode.triggered.connect(self.visual.toggle_2D)
 
         self.ui.actionX.triggered.connect(lambda : self.camera_set_direction((1,0,0)))
@@ -255,30 +328,8 @@ class Gui():
         self.ui.actionCamera_reset.triggered.connect(self.camera_reset)
         #
 
-        def normalize_force():
-            self.run_code('self.visual.force_do_normalize = not self.visual.force_do_normalize',guiEventType.VIEWER_SETTINGS_UPDATE)
 
-        self.ui.actionShow_all_forces_at_same_size.triggered.connect(normalize_force)
 
-        def increase_force_size():
-            self.run_code('self.visual.force_scale = 1.1*self.visual.force_scale',guiEventType.VIEWER_SETTINGS_UPDATE)
-
-        self.ui.actionIncrease_force_size.triggered.connect(increase_force_size)
-
-        def decrease_force_size():
-            self.run_code('self.visual.force_scale = 0.9*self.visual.force_scale',guiEventType.VIEWER_SETTINGS_UPDATE)
-
-        self.ui.actionDecrease_force_size.triggered.connect(decrease_force_size)
-
-        def increase_geo_size():
-            self.run_code('self.visual.geometry_scale = 1.1*self.visual.geometry_scale',guiEventType.VIEWER_SETTINGS_UPDATE)
-
-        self.ui.actionIncrease_Geometry_size.triggered.connect(increase_geo_size)
-
-        def decrease_geo_size():
-            self.run_code('self.visual.geometry_scale = 0.9*self.visual.geometry_scale',guiEventType.VIEWER_SETTINGS_UPDATE)
-
-        self.ui.actionDecrease_Geometry_size.triggered.connect(decrease_geo_size)
 
         # ======================= Code-highlighter ==============
 
@@ -387,6 +438,7 @@ class Gui():
             self.show_guiWidget('Node Tree', WidgetNodeTree)
             self.show_guiWidget('Derived Properties', WidgetDerivedProperties)
             self.show_guiWidget('Properties', WidgetNodeProps)
+            self.show_guiWidget('Selection Actions', WidgetSelectionActions)
 
         if name == 'EXPLORE':
             self.show_guiWidget('Derived Properties', WidgetDerivedProperties)
@@ -794,13 +846,13 @@ class Gui():
 
 
 
-    def toggle_show_force(self):
-        self.visual.show_force = self.ui.actionShow_force_applyting_element.isChecked()
-        self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
-
-    def toggle_show_geometry(self):
-        self.visual.show_geometry = self.ui.actionShow_Geometry_elements.isChecked()
-        self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
+    # def toggle_show_force(self):
+    #     self.visual.show_force = self.ui.actionShow_force_applyting_element.isChecked()
+    #     self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
+    #
+    # def toggle_show_geometry(self):
+    #     self.visual.show_geometry = self.ui.actionShow_Geometry_elements.isChecked()
+    #     self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def toggle_show_global(self):
         self.ui.actionShow_water_plane.setChecked(not self.ui.actionShow_water_plane.isChecked())

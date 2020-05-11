@@ -15,6 +15,8 @@ This module supplies additional functionality for working with rigging.
   Ruben de Bruin - 2019
 """
 
+from PySide2.QtWidgets import QMenu
+
 def create_sling(s, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheave=None):
     """
     Creates a new sling and adds it to scene s.
@@ -201,12 +203,54 @@ def create_shackle_gphd(s, name, wll):
                  axis = (1.0,0,0),
                  radius = bow_circle_inside/2  )
 
+    # determine the scale for the shackle
+    # based on a GP800
+    #
+
+    actual_size = 0.5*pin_dia + 0.5*bow_dia + bow_length_inside
+    gp800_size = 0.5 * 0.210 + 0.5 * 0.220 + 0.718
+
+    scale = actual_size / gp800_size
+
     # code for GP800_visual
-    s.new_visual(name='GP800_visual',
+    s.new_visual(name=name + '_visual',
                  parent=body,
                  path=r'shackle_gp800.obj',
                  offset=(0, 0, 0),
                  rotation=(0, 0, 0),
-                 scale=(1, 1, 1))
+                 scale=(scale, scale, scale))
 
     return body
+
+def sheave_connect_context_menu(sheave1, sheave2, callback, pos):
+    # sheave1, sheave2 : sheave elements
+    # callback : function to be called with code to run
+    # pos : globLoc = self.treeView.mapToGlobal(event.pos())
+
+    drop = sheave1.name
+    onto = sheave2.name
+
+    # pop up a contect menu
+    menu = QMenu()
+
+    info = f"... About create a Pin-Hole connection with {drop} as pin and and {onto} as hole:"
+
+    menu.addAction(info, None)
+    menu.addSeparator()
+
+    name = f"{drop} inside {onto}"
+
+    def create_master():
+        code = f"s.new_geometriccontact('{name}','{drop}','{onto}')"
+        callback(code)
+
+
+    def create_slave():
+        code = f"s.new_geometriccontact('{name}','{drop}','{onto}', inverse_relation = True)"
+        callback(code)
+
+    menu.addAction(f"Create pin-hole connection with {onto} as master", create_master)
+    menu.addAction(f"Create pin-hole connection with {drop} as master", create_slave)
+
+
+    menu.exec_(pos)
