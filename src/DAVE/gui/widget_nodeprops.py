@@ -42,9 +42,12 @@ class NodeEditor:
         self.scene = scene
         self.run_code = run_code
 
+
     def create_widget(self):
         """Creates and returns the widget"""
         raise Exception('Show() method not defined in derived class')
+
+
 
 
 class EditNode(NodeEditor):
@@ -1299,6 +1302,9 @@ class WidgetNodeProps(guiDockWidget):
         self.layout = QtWidgets.QVBoxLayout()
         self.contents.setLayout(self.layout)
 
+        self.positioned = False
+
+
     def guiProcessEvent(self, event):
 
         if event in [guiEventType.SELECTION_CHANGED,guiEventType.FULL_UPDATE]:
@@ -1307,7 +1313,18 @@ class WidgetNodeProps(guiDockWidget):
                 self.select_node(self.guiSelection[0])
 
         if self._open_edit_widgets:
+
             self.setVisible(True)
+
+            # first time, position the widget at the upper-right corner of the 3d view
+            if not self.positioned:
+                point = QtCore.QPoint(self.gui.ui.frame3d.width() - self.width(), 0)
+                point = self.gui.ui.frame3d.mapToGlobal(point)
+                self.move(point)
+                self.positioned = True
+
+
+
         else:
             self.setVisible(False)
 

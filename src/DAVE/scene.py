@@ -4064,13 +4064,9 @@ class Scene:
         pois.append(poiB)
 
         # default options
-        if length == -1:
-            length = 1e-8
-
-
-        # more checks
-        if length<1e-9:
-            raise Exception('Length should be more than 0')
+        if length > -1:
+            if length<1e-9:
+                raise Exception('Length should be more than 0')
 
         if EA<0:
             raise Exception('EA should be more than 0')
@@ -4083,7 +4079,8 @@ class Scene:
         # then create
         a = self._vfc.new_cable(name)
         new_node = Cable(self, a)
-        new_node.length = length
+        if length>0:
+            new_node.length = length
         new_node.EA = EA
         new_node.diameter = diameter
 
@@ -4093,7 +4090,8 @@ class Scene:
         # and add to the scene
         self._nodes.append(new_node)
 
-        if length <= 1e-7:
+        if length <0:
+            new_node.length = 1e-8
             self._vfc.state_update()
             new_node.length = new_node.stretch + 1e-8
 
