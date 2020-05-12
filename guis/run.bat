@@ -10,10 +10,10 @@ echo call pyside2-uic widget_explore.ui -o "..\src\DAVE\gui\forms\widgetUI_explo
 echo call pyside2-uic widget_tank_order.ui -o "..\src\DAVE\gui\forms\widgetUI_tank_order.py"
 
 echo call pyside2-uic widget_waveinteraction.ui -o "..\src\DAVE\gui\forms\widget_waveinteraction.py"
-echo call pyside2-uic widget_axis.ui -o "..\src\DAVE\gui\forms\widget_axis.py"
+call pyside2-uic widget_axis.ui -o "..\src\DAVE\gui\forms\widget_axis.py"
 echo call pyside2-uic widget_body.ui -o "..\src\DAVE\gui\forms\widget_body.py"
 echo call pyside2-uic widget_poi.ui -o "..\src\DAVE\gui\forms\widget_poi.py"
-call pyside2-uic widget_cable.ui -o "..\src\DAVE\gui\forms\widget_cable.py"
+echo call pyside2-uic widget_cable.ui -o "..\src\DAVE\gui\forms\widget_cable.py"
 echo call pyside2-uic addnode_form.ui -o "..\src\DAVE\gui\forms\addnode_form.py"
 echo call pyside2-uic widget_name.ui -o "..\src\DAVE\gui\forms\widget_name.py"
 echo call pyside2-uic widget_visual.ui -o "..\src\DAVE\gui\forms\widget_visual.py"

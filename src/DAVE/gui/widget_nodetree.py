@@ -101,26 +101,27 @@ class WidgetNodeTree(guiDockWidget):
 
     def dragDropCallback(self, drop, onto, event):
 
-        # are we dropping a sheave onto a sheave?
-
-        node_drop = self.guiScene[drop]
-        node_onto = self.guiScene[onto]
-
-        if isinstance(node_drop, ds.Sheave) and isinstance(node_onto, ds.Sheave):
-
-            sheave_connect_context_menu(node_drop, node_onto,
-                                        lambda x : self.guiRunCodeCallback(x, guiEventType.MODEL_STRUCTURE_CHANGED),
-                                        self.treeView.mapToGlobal(event.pos()))
+        if onto is None:
+            code = "s['{}'].change_parent_to(None)".format(drop)
+            self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
         else:
 
-            if onto is None:
-                code = "s['{}'].change_parent_to(None)".format(drop)
+            node_drop = self.guiScene[drop]
+            node_onto = self.guiScene[onto]
+
+            # are we dropping a sheave onto a sheave?
+
+            if isinstance(node_drop, ds.Sheave) and isinstance(node_onto, ds.Sheave):
+
+                # open an context menu
+
+                sheave_connect_context_menu(node_drop, node_onto,
+                                            lambda x : self.guiRunCodeCallback(x, guiEventType.MODEL_STRUCTURE_CHANGED),
+                                            self.treeView.mapToGlobal(event.pos()))
             else:
                 code = "s['{}'].change_parent_to(s['{}'])".format(drop, onto)
-            print(code)
-
-            self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+                self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
 
     def tree_select_node(self, index):

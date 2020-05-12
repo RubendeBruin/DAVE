@@ -244,7 +244,6 @@ def sheave_connect_context_menu(sheave1, sheave2, callback, pos):
         code = f"s.new_geometriccontact('{name}','{drop}','{onto}')"
         callback(code)
 
-
     def create_slave():
         code = f"s.new_geometriccontact('{name}','{drop}','{onto}', inverse_relation = True)"
         callback(code)

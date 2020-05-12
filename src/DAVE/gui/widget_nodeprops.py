@@ -118,6 +118,14 @@ class EditAxis(NodeEditor):
         except:
             pass # no connections yet
 
+        if isinstance(self.node.parent, GeometricContact):
+            ui.frame.setVisible(False)
+            ui.lblGeometricConnection.setVisible(True)
+        else:
+            ui.frame.setVisible(True)
+            ui.lblGeometricConnection.setVisible(False)
+
+
         ui.doubleSpinBox_1.setValue(self.node.position[0])
         ui.doubleSpinBox_2.setValue(self.node.position[1])
         ui.doubleSpinBox_3.setValue(self.node.position[2])
