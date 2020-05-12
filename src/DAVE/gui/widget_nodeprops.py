@@ -546,20 +546,10 @@ class EditCable(NodeEditor):
         else:
             ui = EditCable._ui
 
-        self.plist = [""]
-
-        for poi in self.scene.nodes_of_type(vfs.Sheave):
-            self.plist.append(poi.name)
-
-        for poi in self.scene.nodes_of_type(vfs.Poi):
-            self.plist.append(poi.name)
-
         try:
             ui.doubleSpinBox_1.valueChanged.disconnect()
             ui.doubleSpinBox_2.valueChanged.disconnect()
             ui.doubleSpinBox.valueChanged.disconnect()
-            ui.comboBox_2.currentIndexChanged.disconnect()
-            ui.comboBox.currentIndexChanged.disconnect()
 
         except:
             pass # no connections yet
@@ -568,62 +558,86 @@ class EditCable(NodeEditor):
             ui.poiLayout.removeWidget(ddb)
             ddb.deleteLater()
 
-        ui.additional_pois.clear()
-
-        ui.comboBox.clear()
-
-        ui.comboBox.addItems(self.plist)
-
-        ui.comboBox_2.clear()
-        ui.comboBox_2.addItems(self.plist)
-
         ui.doubleSpinBox_1.setValue(self.node.length)
         ui.doubleSpinBox_2.setValue(self.node.EA)
         ui.doubleSpinBox.setValue(self.node.diameter)
 
-        self.ui = ui  # needs to be done here as self.add_poi_dropdown modifies this
-
-        # Add as many drop-down boxes as needed
-        poi_names = self.node.give_poi_names()
-        for i in range(len(poi_names)-2):
-            self.add_poi_dropdown()
-
-        self.ui.comboBox.setCurrentText(poi_names[0])
-        self.ui.comboBox_2.setCurrentText(poi_names[1])
-
-        for i,name in enumerate(poi_names[2:]):
-            self.ui.additional_pois[i].setCurrentText(name)
-            # self.ui.additional_pois[i].currentIndexChanged.connect(self.callback)
-
         # Set events
-        ui.btnAdd.clicked.connect(self.add_poi_dropdown)
-        ui.btnRemove.clicked.connect(self.delete_poi_dropdown)
+        ui.pbRemoveSelected.clicked.connect(self.delete_selected)
 
         ui.doubleSpinBox_1.valueChanged.connect(self.callback)
         ui.doubleSpinBox_2.valueChanged.connect(self.callback)
         ui.doubleSpinBox.valueChanged.connect(self.callback)
 
-        ui.comboBox.currentIndexChanged.connect(self.callback)
-        ui.comboBox_2.currentIndexChanged.connect(self.callback)
-        for cbx in self.ui.additional_pois:
-            cbx.currentIndexChanged.connect(self.callback)
+
+        # ------- setup the drag-and-drop code ---------
+
+        ui.list.dropEvent = self.dropEvent
+        ui.list.dragEnterEvent = self.dragEnterEvent
+        ui.list.dragMoveEvent = self.dragEnterEvent
+
+        ui.list.setDragEnabled(True)
+        ui.list.setAcceptDrops(True)
+        ui.list.setDragEnabled(True)
+
+        ui.list.clear()
+        for item in self.node.give_poi_names():
+            ui.list.addItem(item)
+
+        self.ui = ui  # needs to be done here as self.add_poi_dropdown modifies this
 
         return ui._widget
 
-    def add_poi_dropdown(self):
-        cbx = QtWidgets.QComboBox(self.ui.frame)
-        self.ui.poiLayout.addWidget(cbx)
-        cbx.addItems(self.plist)
+    def dropEvent(self,event):
 
-        self.ui.additional_pois.append(cbx)
+        list = self.ui.list
+
+        # dropping onto something?
+        point = event.pos()
+        drop_onto = list.itemAt(point)
+
+        if drop_onto:
+            row = list.row(drop_onto)
+        else:
+            row = -1
+
+        if event.source() == list:
+            item = list.currentItem()
+            name = item.text()
+            delrow = list.row(item)
+            list.takeItem(delrow)
+        else:
+            name = event.mimeData().text()
+
+        if row >= 0:
+            list.insertItem(row, name)
+        else:
+            list.addItem(name)
+
+        self.callback()
+
+    def dragEnterEvent(self, event):
+        if event.source() == self.ui.list:
+            event.accept()
+        else:
+            try:
+                name = event.mimeData().text()
+                node = self.scene[name]
+                if isinstance(node,Sheave) or isinstance(node, Poi):
+                    event.accept()
+            except:
+                return
 
 
-    def delete_poi_dropdown(self):
-        if self.ui.additional_pois:
-            last_item = self.ui.additional_pois.pop()
-            self.ui.poiLayout.removeWidget(last_item)
-            last_item.deleteLater()
-            self.callback()
+    # def dragMoveEvent(self, event):
+    #     event.accept()
+
+    def delete_selected(self):
+        row = self.ui.list.currentRow()
+        if row > -1:
+            self.ui.list.takeItem(row)
+        self.callback()
+
 
     def generate_code(self):
         code = ""
@@ -645,17 +659,14 @@ class EditCable(NodeEditor):
         # get the poi names
         # new_names = [self.ui.comboBox.currentText(),self.ui.comboBox_2.currentText()]
         new_names = []
-        for cbx in [self.ui.comboBox, self.ui.comboBox_2, *self.ui.additional_pois]:
-            ct = cbx.currentText()
-            if ct: # skip empty
-                new_names.append(ct)
+        for i in range(self.ui.list.count()):
+            new_names.append(self.ui.list.item(i).text())
 
         if not (new_names == self.node.give_poi_names):
-            code += element + '.clear_connections()'
+            code += element + '.connections = ('
             for name in new_names:
-                code += element + ".add_connection(s['{}'])".format(name)
-
-        code += '\n' + element + ".check_endpoints()"
+                code += "'{}',".format(name)
+            code = code[:-1] + ')'
 
         return code
 

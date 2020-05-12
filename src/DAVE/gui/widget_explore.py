@@ -38,6 +38,7 @@ class WidgetExplore(guiDockWidget):
 
 
 
+
     def guiProcessEvent(self, event):
         """
         Add processing that needs to be done.

@@ -106,14 +106,30 @@ class WidgetSelectionActions(guiDockWidget):
         #
         # each quick-action defines its own button
 
-        # p2 = self.find_nodes([nodes.Poi, nodes.Poi])
-        # if p2:
-        #     button = QPushButton('Create cable', self.ui.frame)
-        #
-        #     code = f's.new_cable("{name}", poiA="{p2[0].name}", poiB = "{p2[1].name}")'
-        #     button.pressed.connect(lambda : self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED))
-        #
-        #     self.buttons.append(button)
+        p2 = self.find_nodes([nodes.Sheave, nodes.Sheave])
+        if p2:
+
+            if p2[0].radius < p2[1].radius:
+                pin = p2[0]
+                hole = p2[1]
+            else:
+                pin = p2[1]
+                hole = p2[0]
+
+            # pin shall have a parent axis
+            if pin.parent.parent is not None:
+
+                button = QPushButton('Create pin-hole connection', self.ui.frame)
+
+                pin_hole_code = f's.new_geometriccontact("{name}", "{pin.name}", "{hole.name}")'
+                button.pressed.connect(lambda : self.guiRunCodeCallback(pin_hole_code, guiEventType.MODEL_STRUCTURE_CHANGED))
+
+                #  sheave poi   axis
+                if pin.parent.parent.parent is not None:
+                    button.setStyleSheet("background: yellow")
+                    button.setToolTip(f"Warning: {pin.parent.parent.parent.name} will be disconnected from its parent")
+
+                self.buttons.append(button)
 
         # creating cables between points and sheaves
         poi_and_sheave = self.all_of_type([Poi, Sheave])
@@ -127,8 +143,8 @@ class WidgetSelectionActions(guiDockWidget):
                     sheaves = ''
                     button = QPushButton('Create cable', self.ui.frame)
 
-                code = f's.new_cable("{name}", poiA="{poi_and_sheave[0].name}", poiB = "{poi_and_sheave[-1].name}"{sheaves})'
-                button.pressed.connect(lambda: self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED))
+                cable_code = f's.new_cable("{name}", poiA="{poi_and_sheave[0].name}", poiB = "{poi_and_sheave[-1].name}"{sheaves})'
+                button.pressed.connect(lambda: self.guiRunCodeCallback(cable_code, guiEventType.MODEL_STRUCTURE_CHANGED))
 
                 self.buttons.append(button)
 

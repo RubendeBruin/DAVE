@@ -341,8 +341,8 @@ class Node:
     Master class for all nodes"""
 
     def __init__(self, scene):
-        self._scene = scene
-        self._name = 'no name'
+        self._scene : Scene = scene
+        self._name : str = 'no name'
 
     def give_python_code(self):
         """Returns the python code that can be executed to re-create this node"""
@@ -1433,7 +1433,8 @@ class GeometricContact(NodeWithParent):
 
         # Position "hole_axis" at the center of the hole
         # Orient the axis such that the Y-direction is the axis direction of the hole
-        self._hole_axis.parent = hole.parent.parent._vfNode
+        if hole.parent.parent is not None:
+            self._hole_axis.parent = hole.parent.parent._vfNode
         self._hole_axis.position = hole.parent.position
         self._hole_axis.fixed = (True, True, True, True, True, True)
 
@@ -1552,6 +1553,42 @@ class Cable(CoreConnectedNode):
     def diameter(self, diameter):
         self._vfNode.diameter = diameter
 
+    @property
+    def connections(self):
+        return tuple(self._pois)
+
+    @connections.setter
+    def connections(self, value):
+        if len(value)<2:
+            raise ValueError('At least two connections required')
+
+        nodes = []
+        for p in value:
+            n = self._scene._node_from_node_or_str(p)
+            if not (isinstance(n, Poi) or isinstance(n,Sheave)):
+                raise ValueError(f'Only Sheaves and Pois can be used as connection, but {n.name} is a {type(n)}')
+            nodes.append(n)
+
+        # check for repeated nodes
+        n = len(nodes)
+        for i in range(n-1):
+            node1 = nodes[i]
+            node2 = nodes[i+1]
+
+            # if first or last node is a sheave, the this will be replaced by the poi of the sheave
+            if i == 0 and isinstance(node1, Sheave):
+                node1 = node1.parent
+            if i == n-2 and isinstance(node2, Sheave):
+                node2 = node2.parent
+
+            if node1 == node2:
+                raise ValueError(f'It is not allowed to have the same node - you have {node1.name} and {node2.name}')
+
+        self._pois.clear()
+        self._pois.extend(nodes)
+        self._update_pois()
+
+
     def get_points_for_visual(self):
         """Returns an list of 3D locations which can be used for visualization
         """
@@ -1584,26 +1621,26 @@ class Cable(CoreConnectedNode):
         self._add_connection_to_core(point)
 
 
-    def add_connection(self, apoi):
-        """Adds a poi to the list of connection points"""
-
-        if isinstance(apoi, str):
-            apoi = self._scene[apoi]
-
-        if not (isinstance(apoi, Poi) or isinstance(apoi, Sheave)):
-            raise TypeError('Provided point should be a Poi or a Sheave')
-
-        if self._pois:  # check for not empty
-            if self._pois[-1] == apoi:
-                raise Exception('The same poi can not be added directly after itself: {}'.format(apoi.name))
-
-        self._pois.append(apoi)
-        self._update_pois()
-
-    def clear_connections(self):
-        """Removes all connections"""
-        self._pois.clear()
-        self._update_pois()
+    # def add_connection(self, apoi):
+    #     """Adds a poi to the list of connection points"""
+    #
+    #     if isinstance(apoi, str):
+    #         apoi = self._scene[apoi]
+    #
+    #     if not (isinstance(apoi, Poi) or isinstance(apoi, Sheave)):
+    #         raise TypeError('Provided point should be a Poi or a Sheave')
+    #
+    #     if self._pois:  # check for not empty
+    #         if self._pois[-1] == apoi:
+    #             raise Exception('The same poi can not be added directly after itself: {}'.format(apoi.name))
+    #
+    #     self._pois.append(apoi)
+    #     self._update_pois()
+    #
+    # def clear_connections(self):
+    #     """Removes all connections"""
+    #     self._pois.clear()
+    #     self._update_pois()
 
     def give_poi_names(self):
         """Returns a list with the names of all the pois"""
@@ -4084,8 +4121,7 @@ class Scene:
         new_node.EA = EA
         new_node.diameter = diameter
 
-        for poi in pois:
-            new_node.add_connection(poi)
+        new_node.connections = pois
 
         # and add to the scene
         self._nodes.append(new_node)
