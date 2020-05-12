@@ -1557,29 +1557,32 @@ class Cable(CoreConnectedNode):
         """
         return self._vfNode.global_points
 
-    def check_endpoints(self):
-        """Verifies that the endpoints are Pois"""
-        if isinstance(self._pois[0], Sheave):
-            raise ValueError(
-                'First and last connection of a cable {} should be of type <Poi>. It is not allowed to use Sheave {} as start'.format(self.name, self._pois[0].name))
-
-        if isinstance(self._pois[-1], Sheave):
-            raise ValueError(
-                'First and last connection of a cable {} should be of type <Poi>. It is not allowed to use Sheave {} as endpoint'.format(self.name, self._pois[-1].name))
-
+    def _add_connection_to_core(self, connection):
+        if isinstance(connection, Poi):
+            self._vfNode.add_connection_poi(connection._vfNode)
+        if isinstance(connection, Sheave):
+            self._vfNode.add_connection_sheave(connection._vfNode)
 
 
     def _update_pois(self):
         self._vfNode.clear_connections()
-        for point in self._pois:
 
-            if isinstance(point, Poi):
-                try:
-                    self._vfNode.add_connection_poi(point._vfNode)
-                except:
-                    self._vfNode.add_connection(point._vfNode)
-            if isinstance(point, Sheave):
-                self._vfNode.add_connection_sheave(point._vfNode)
+        # add first point
+        point = self._pois[0]
+        if isinstance(point, Sheave):
+            point = point.parent # connect to parent poi of sheave instead
+        self._add_connection_to_core(point)
+
+        # add sheaves
+        for point in self._pois[1:-1]:
+            self._add_connection_to_core(point)
+
+        # add last point
+        point = self._pois[-1]
+        if isinstance(point, Sheave):
+            point = point.parent # connect to parent poi of sheave instead
+        self._add_connection_to_core(point)
+
 
     def add_connection(self, apoi):
         """Adds a poi to the list of connection points"""
@@ -1588,7 +1591,7 @@ class Cable(CoreConnectedNode):
             apoi = self._scene[apoi]
 
         if not (isinstance(apoi, Poi) or isinstance(apoi, Sheave)):
-            raise TypeError('Provided point should be a Poi')
+            raise TypeError('Provided point should be a Poi or a Sheave')
 
         if self._pois:  # check for not empty
             if self._pois[-1] == apoi:
@@ -1895,6 +1898,12 @@ class Sheave(NodeWithParent):
         code += "\n            axis=({}, {}, {}),".format(*self.axis)
         code += "\n            radius={} )".format(self.radius)
         return code
+
+    @property
+    def global_position(self):
+        """Returns the global position of the center of the sheave"""
+        return self.parent.global_position
+
 
 class HydSpring(NodeWithParent):
     """A HydSpring models a linearized hydrostatic spring.
@@ -4030,8 +4039,8 @@ class Scene:
         assert1f(length, 'length')
         assert1f(EA, 'EA')
 
-        poiA = self._poi_from_node(poiA)
-        poiB = self._poi_from_node(poiB)
+        poiA = self._poi_or_sheave_from_node(poiA)
+        poiB = self._poi_or_sheave_from_node(poiB)
 
         pois = [poiA]
         if sheaves is not None:
@@ -4056,11 +4065,7 @@ class Scene:
 
         # default options
         if length == -1:
-            length = np.linalg.norm(np.array(poiA.global_position) - np.array(poiB.global_position))
-
-            if length<1e-9:
-                raise Exception('Length not provided and endpoints are at the same global position. Can not determine a suitable default length (>0)')
-
+            length = 1e-8
 
 
         # more checks
@@ -4087,6 +4092,12 @@ class Scene:
 
         # and add to the scene
         self._nodes.append(new_node)
+
+        if length <= 1e-7:
+            self._vfc.state_update()
+            new_node.length = new_node.stretch + 1e-8
+
+
         return new_node
 
     def new_force(self, name, parent=None, force=None, moment=None):
