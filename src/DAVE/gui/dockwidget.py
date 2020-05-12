@@ -1,5 +1,6 @@
 from PySide2 import QtWidgets, QtCore
 from enum import Enum
+from DAVE.scene import *
 
 class guiEventType(Enum):
     NOTHING = -1                 # no changes, for example model saved
@@ -26,7 +27,7 @@ class guiDockWidget(QtWidgets.QDockWidget):
         """will be set to a function that runs python code with signature func(code, eventype).
         Func returns True if succes, false otherwise"""
 
-        self.guiScene = None
+        self.guiScene : Scene = None
         """will point to the singleton Scene object"""
 
         self.guiSelection = list()
