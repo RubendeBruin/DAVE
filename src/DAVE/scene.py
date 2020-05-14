@@ -1431,7 +1431,15 @@ class GeometricContact(NodeWithParent):
             self.set_pin_in_hole_connection_master_hole()
 
     def set_pin_in_hole_connection_master_pin(self):
-        """Sets the connection to be of type pin-in-hole"""
+        """Sets the connection to be of type pin-in-hole
+
+        The axes of the two sheaves are aligned
+        The axes of the two sheaves are placed at a distance hole_dia - pin_dia apart, perpendicular to the axis direction
+        An axes is created at the centers of the two sheaves
+        These axes are connected with a shore axis which is allowed to rotate relative to the master axis
+        the slave axis is fixed to this rotating axis
+
+        """
 
         pin = self._circle1
         hole = self._circle2
@@ -1480,7 +1488,10 @@ class GeometricContact(NodeWithParent):
 
 
     def set_pin_in_hole_connection_master_hole(self):
-        """Sets the connection to be of type pin-in-hole"""
+        """Sets the connection to be of type pin-in-hole
+
+        see set_pin_in_hole_connection_master_pin
+        """
 
         pin = self._circle1
         hole = self._circle2
@@ -3834,13 +3845,19 @@ class Scene:
     def new_geometriccontact(self, name, item1 , item2, pin_as_master=False):
         """Creates a new *new_geometriccontact* node and adds it to the scene.
 
+        By default a pin-hole connection is created in which item1 is the pin and
+        item2 is the hole.
+
+
+
         Args:
             name: Name for the node, should be unique
-            item1 : a sheave
-            item2 : another sheave
+            item1 : PIN  (a sheave)
+            item2 : HOLE (another sheave)
+            pin_as_master [False] : use Pin as master and Hole as slave
 
         Returns:
-            Reference to newly created new_contacthinge
+            Reference to newly created new_geometriccontact
 
         """
 
