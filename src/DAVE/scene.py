@@ -1424,77 +1424,21 @@ class GeometricContact(NodeWithParent):
     def change_parent_to(self, new_parent):
         raise ValueError('Parent of a ContactHinge can not be set directly. Use one of the connection functions to create or update the connection')
 
-    def set_pin_in_hole_connection(self, pin_as_master=False):
-        if pin_as_master:
-            self.set_pin_in_hole_connection_master_pin()
-        else:
-            self.set_pin_in_hole_connection_master_hole()
-
-    def set_pin_in_hole_connection_master_pin(self):
+    def set_pin_in_hole_connection(self):
         """Sets the connection to be of type pin-in-hole
 
-        The axes of the two sheaves are aligned
+        The axes of the two sheaves are aligned by rotating the slaved body
         The axes of the two sheaves are placed at a distance hole_dia - pin_dia apart, perpendicular to the axis direction
         An axes is created at the centers of the two sheaves
         These axes are connected with a shore axis which is allowed to rotate relative to the master axis
         the slave axis is fixed to this rotating axis
-
         """
 
-        pin = self._circle1
-        hole = self._circle2
+        pin = self._circle1  # slave
+        hole = self._circle2 # master
 
-        # --------- prepare pin
-
-        # Position "pin_axis" at the center of the pin
-        # Orient the axis such that the Y-direction is the axis direction of the hole
-        if pin.parent.parent is not None:
-            self._master_axis.parent = pin.parent.parent._vfNode
-
-        self._master_axis.position = pin.parent.position
-        self._master_axis.fixed = (True, True, True, True, True, True)
-
-        if self._flipped:
-            self._master_axis.rotation = np.deg2rad(rotation_from_y_axis_direction(-np.array(hole.axis)))
-        else:
-            self._master_axis.rotation = np.deg2rad(rotation_from_y_axis_direction(hole.axis))
-
-        # Position hole rotation at the hole axis
-        # and allow it to rotate
-        self._pin_hole_connection.position = (0, 0, 0)
-        self._pin_hole_connection.parent = self._master_axis
-        self._pin_hole_connection.fixed = (True, True, True,
-                                           True, False, True)
-
-        # Position the connection hole (self) on the target pin and
-        # place the parent of the parent of the pin (the axis) on the connection axis
-        # and fix it
-
-        self._vfNode.parent = None
-        self._vfNode.position = hole.parent.global_position  # position of the poi
-        self._vfNode.rotation = np.deg2rad(hole.parent.parent.to_glob_rotation(rotation_from_y_axis_direction(hole.axis)))
-
-        hole.parent.parent.change_parent_to(self)
-        hole.parent.parent.fixed = True
-
-        # Place the pin in the hole
-
-        self._vfNode.parent = self._pin_hole_connection
-        self._vfNode.rotation = (0, 0, 0)
-        self._vfNode.fixed = (True, True, True,
-                              True, False, True)
-
-        self._vfNode.position = (hole.radius - pin.radius, 0, 0)
-
-
-    def set_pin_in_hole_connection_master_hole(self):
-        """Sets the connection to be of type pin-in-hole
-
-        see set_pin_in_hole_connection_master_pin
-        """
-
-        pin = self._circle1
-        hole = self._circle2
+        if pin.parent.parent is None:
+            raise ValueError('The slaved circle is not located on an axis. Can not create the connectino because there is no axis to slave')
 
         # --------- prepare hole
 
@@ -1525,6 +1469,9 @@ class GeometricContact(NodeWithParent):
         self._vfNode.position = pin.parent.global_position # position of the poi
         self._vfNode.rotation = np.deg2rad(pin.parent.parent.to_glob_rotation(rotation_from_y_axis_direction(pin.axis)))
 
+        # store the original pin orientation
+        g0 = np.array(pin.parent.parent.global_rotation, dtype=float)
+
         pin.parent.parent.change_parent_to(self)
         pin.parent.parent.fixed = True
 
@@ -1536,6 +1483,21 @@ class GeometricContact(NodeWithParent):
                               True, False, True)
 
         self._vfNode.position = (hole.radius - pin.radius, 0, 0)
+
+        # now we may rotate self.ry such that the original global axis of the slaved body are as close to their original
+        # values as possible
+
+        # g0 is the original global rotation vector
+        # g1 is the current rotation vector
+        g1 = np.array(pin.parent.parent.global_rotation, dtype=float)
+        difference = g1-g0
+        direction = np.array(pin.parent.parent.to_glob_rotation((1,0,0)))
+
+        y = np.dot(difference, direction)
+        self._vfNode.rotation = (0,y,0)
+
+
+
 
     @property
     def flipped(self):
@@ -3845,16 +3807,16 @@ class Scene:
     def new_geometriccontact(self, name, item1 , item2, pin_as_master=False):
         """Creates a new *new_geometriccontact* node and adds it to the scene.
 
-        By default a pin-hole connection is created in which item1 is the pin and
-        item2 is the hole.
+        By default a pin-hole connection is created between item1 and item2
 
-
+        Note:
+            geometrically there is no difference between the pin and the hole. Therefore it is not needed to specify
+            which is the pin and which is the hole
 
         Args:
             name: Name for the node, should be unique
-            item1 : PIN  (a sheave)
-            item2 : HOLE (another sheave)
-            pin_as_master [False] : use Pin as master and Hole as slave
+            item1 : [Sheave] will be the master of the connection
+            item2 : [Sheave] will be the slave of the connection
 
         Returns:
             Reference to newly created new_geometriccontact
@@ -3880,7 +3842,7 @@ class Scene:
         a = self._vfc.new_axis(name)
 
         new_node = GeometricContact(self, a, item1, item2)
-        new_node.set_pin_in_hole_connection(pin_as_master)
+        new_node.set_pin_in_hole_connection()
 
         self._nodes.append(new_node)
         return new_node

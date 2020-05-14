@@ -2,10 +2,7 @@ from DAVE.gui.dockwidget import *
 from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag
 from PySide2.QtCore import QMimeData, Qt, QItemSelectionModel
 from PySide2.QtWidgets import QTreeWidgetItem
-from DAVE.rigging import sheave_connect_context_menu
 import DAVE.scene as ds
-
-
 
 class NodeTreeWidget(QtWidgets.QTreeWidget):
 
@@ -113,15 +110,10 @@ class WidgetNodeTree(guiDockWidget):
             # are we dropping a sheave onto a sheave?
 
             if isinstance(node_drop, ds.Sheave) and isinstance(node_onto, ds.Sheave):
-
-                # open an context menu
-
-                sheave_connect_context_menu(node_drop, node_onto,
-                                            lambda x : self.guiRunCodeCallback(x, guiEventType.MODEL_STRUCTURE_CHANGED),
-                                            self.treeView.mapToGlobal(event.pos()))
+                code = f"s.new_geometriccontact('Geometric_connection of :{drop} on {onto}','{drop}','{onto}')"
             else:
                 code = "s['{}'].change_parent_to(s['{}'])".format(drop, onto)
-                self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+            self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
 
     def tree_select_node(self, index):

@@ -221,35 +221,35 @@ def create_shackle_gphd(s, name, wll):
                  scale=(scale, scale, scale))
 
     return body
-
-def sheave_connect_context_menu(sheave1, sheave2, callback, pos):
-    # sheave1, sheave2 : sheave elements
-    # callback : function to be called with code to run
-    # pos : globLoc = self.treeView.mapToGlobal(event.pos())
-
-    drop = sheave1.name
-    onto = sheave2.name
-
-    # pop up a contect menu
-    menu = QMenu()
-
-    info = f"... About create a Pin-Hole connection with {drop} as pin and and {onto} as hole:"
-
-    menu.addAction(info, None)
-    menu.addSeparator()
-
-    name = f"{drop} inside {onto}"
-
-    def create_master():
-        code = f"s.new_geometriccontact('{name}','{drop}','{onto}')"
-        callback(code)
-
-    def create_slave():
-        code = f"s.new_geometriccontact('{name}','{drop}','{onto}', inverse_relation = True)"
-        callback(code)
-
-    menu.addAction(f"Create pin-hole connection with {onto} as master", create_master)
-    menu.addAction(f"Create pin-hole connection with {drop} as master", create_slave)
-
-
-    menu.exec_(pos)
+#
+# # def sheave_connect_context_menu(sheave1, sheave2, callback, pos):
+# #     # sheave1, sheave2 : sheave elements
+# #     # callback : function to be called with code to run
+# #     # pos : globLoc = self.treeView.mapToGlobal(event.pos())
+# #
+#     drop = sheave1.name
+#     onto = sheave2.name
+# #
+# #     # pop up a contect menu
+# #     menu = QMenu()
+# #
+# #     info = f"... About create a Pin-Hole connection with {drop} as pin and and {onto} as hole:"
+# #
+# #     menu.addAction(info, None)
+# #     menu.addSeparator()
+# #
+# #     name = f"{drop} inside {onto}"
+# #
+# #     def create_master():
+# #         code = f"s.new_geometriccontact('{name}','{drop}','{onto}')"
+# #         callback(code)
+# #
+# #     def create_slave():
+#         code = f"s.new_geometriccontact('{name}','{drop}','{onto}', inverse_relation = True)"
+# #         callback(code)
+# #
+# #     menu.addAction(f"Create pin-hole connection with {onto} as master", create_master)
+# #     menu.addAction(f"Create pin-hole connection with {drop} as master", create_slave)
+# #
+# #
+# #     menu.exec_(pos)
