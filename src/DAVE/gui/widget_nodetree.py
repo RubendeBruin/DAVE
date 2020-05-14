@@ -178,34 +178,36 @@ class WidgetNodeTree(guiDockWidget):
             item.setIcon(0, QIcon(":/icons/redball.png"))
             if isinstance(node, ds.Axis):
                 item.setIcon(0, QIcon(":/icons/axis.png"))
-            if isinstance(node, ds.RigidBody):
+            elif isinstance(node, ds.RigidBody):
                 item.setIcon(0, QIcon(":/icons/cube.png"))
-            if isinstance(node, ds.Poi):
+            elif isinstance(node, ds.Poi):
                 item.setIcon(0,QIcon(":/icons/poi.png"))
-            if isinstance(node, ds.Cable):
+            elif isinstance(node, ds.Cable):
                 item.setIcon(0,QIcon(":/icons/cable.png"))
-            if isinstance(node, ds.Visual):
+            elif isinstance(node, ds.Visual):
                 item.setIcon(0,QIcon(":/icons/visual.png"))
-            if isinstance(node, ds.LC6d):
+            elif isinstance(node, ds.LC6d):
                 item.setIcon(0,QIcon(":/icons/lincon6.png"))
-            if isinstance(node, ds.Connector2d):
+            elif isinstance(node, ds.Connector2d):
                 item.setIcon(0,QIcon(":/icons/con2d.png"))
-            if isinstance(node, ds.LinearBeam):
+            elif isinstance(node, ds.LinearBeam):
                 item.setIcon(0,QIcon(":/icons/beam.png"))
-            if isinstance(node, ds.HydSpring):
+            elif isinstance(node, ds.HydSpring):
                 item.setIcon(0,QIcon(":/icons/linhyd.png"))
-            if isinstance(node, ds.Force):
+            elif isinstance(node, ds.Force):
                 item.setIcon(0,QIcon(":/icons/force.png"))
-            if isinstance(node, ds.Sheave):
+            elif isinstance(node, ds.Sheave):
                 item.setIcon(0,QIcon(":/icons/sheave.png"))
-            if isinstance(node, ds.Buoyancy):
+            elif isinstance(node, ds.Buoyancy):
                 item.setIcon(0,QIcon(":/icons/trimesh.png"))
-            if isinstance(node, ds.WaveInteraction1):
+            elif isinstance(node, ds.WaveInteraction1):
                 item.setIcon(0,QIcon(":/icons/waveinteraction.png"))
-            if isinstance(node, ds.ContactBall):
+            elif isinstance(node, ds.ContactBall):
                 item.setIcon(0,QIcon(":/icons/contactball.png"))
-            if isinstance(node, ds.ContactMesh):
+            elif isinstance(node, ds.ContactMesh):
                 item.setIcon(0,QIcon(":/icons/contactmesh.png"))
+            elif isinstance(node, ds.GeometricContact):
+                item.setIcon(0,QIcon(":/icons/pin_hole.png"))
 
             try:
                 parent = node.parent

@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>pin_hole.png</file>
     <file>file_new.png</file>
     <file>fish.png</file>
     <file>blender_icon_64x64.png</file>

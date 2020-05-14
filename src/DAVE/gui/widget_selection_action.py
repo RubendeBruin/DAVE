@@ -52,6 +52,10 @@ class WidgetSelectionActions(guiDockWidget):
     # ======
 
     def find_nodes(self, types):
+        """Returns nodes of given types. Only the first node per given type is returned and no duplicates.
+
+        Returns None if not all types could be found
+        """
         r = []
         source = self.guiSelection.copy()
 
@@ -70,19 +74,13 @@ class WidgetSelectionActions(guiDockWidget):
     def all_of_type(self, types):
         source = self.guiSelection.copy()
 
-        r = None
+        types = tuple(types)
 
-        for t in types:
-            check = [isinstance(e, t) for e in source]
-            if r is None:
-                r = check
-            else:
-                r = np.logical_or(r, check)
-
-        if np.all(r):
+        if np.all( [isinstance(e, types) for e in source] ):
             return source
         else:
             return None
+
 
 
 
@@ -152,9 +150,3 @@ class WidgetSelectionActions(guiDockWidget):
 
         for button in self.buttons:
             self.ui.frame.layout().addWidget(button)
-
-
-
-
-
-

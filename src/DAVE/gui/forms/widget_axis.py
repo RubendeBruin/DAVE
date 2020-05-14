@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_axis.ui',
 # licensing of 'widget_axis.ui' applies.
 #
-# Created: Tue May 12 19:14:32 2020
+# Created: Thu May 14 16:14:05 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!

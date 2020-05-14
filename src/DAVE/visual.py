@@ -183,7 +183,8 @@ class VisualActor:
                 actor.color(color)
 
         else:
-            raise Exception("Original color not stored for visual belonging to {}".format(self.node.name))
+            if self.actors:
+                raise Exception("Original color not stored for visual belonging to {}".format(self.node.name))
 
 
     def make_transparent(self):

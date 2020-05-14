@@ -33,4 +33,4 @@ echo call pyside2-uic widget_geometricconnection.ui -o "..\src\DAVE\gui\forms\wi
 call pyside2-uic widget_selection_actions.ui -o "..\src\DAVE\gui\forms\widget_selection_actions.py"
 
 
-echo call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"
+call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"
