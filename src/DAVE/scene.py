@@ -342,7 +342,13 @@ class Node:
 
     def __init__(self, scene):
         self._scene : Scene = scene
+        """reference to the scene that the node lives is"""
+
         self._name : str = 'no name'
+        """Unique name of the node"""
+
+        self._manager : Node or None = None
+        """Reference to a node that controls this node"""
 
     def give_python_code(self):
         """Returns the python code that can be executed to re-create this node"""

@@ -20,6 +20,7 @@ import DAVE.gui.forms.widget_geometricconnection
 import numpy as np
 
 from PySide2.QtWidgets import QListWidgetItem
+from PySide2.QtCore import Qt
 
 
 class NodeEditor:
@@ -1321,6 +1322,12 @@ class WidgetNodeProps(guiDockWidget):
         self.layout = QtWidgets.QVBoxLayout()
         self.contents.setLayout(self.layout)
 
+        self.managed_label = QtWidgets.QLabel(self.contents)
+        self.managed_label.setWordWrap(True)
+        self.managed_label.setFrameShape(QtWidgets.QFrame.Box)
+        self.managed_label.setStyleSheet("background: gold;")
+        self.layout.addWidget(self.managed_label)
+
         self.positioned = False
 
 
@@ -1341,8 +1348,6 @@ class WidgetNodeProps(guiDockWidget):
                 point = self.gui.ui.frame3d.mapToGlobal(point)
                 self.move(point)
                 self.positioned = True
-
-
 
         else:
             self.setVisible(False)
@@ -1378,15 +1383,17 @@ class WidgetNodeProps(guiDockWidget):
 
     def select_node(self, node):
         
-        # for widget in self._open_edit_widgets:
-        #     self.layout.removeWidget(widget)
-        #     widget.setVisible(False)
-
         to_be_removed = self._open_edit_widgets.copy()
 
+        if node._manager:
+            self.managed_label.setText(
+                f"The properties of this node are managed by node '{node._manager.name}' and should not be changed manually")
+            self.managed_label.setVisible(True)
+            self.setEnabled(False)
+        else:
+            self.managed_label.setVisible(False)
+            self.setEnabled(True)
 
-        #for item in to_be_removed:
-        #    print('to be removed: ' + str(type(item)))
 
         self._node_editors.clear()
         self._open_edit_widgets.clear()
