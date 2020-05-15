@@ -95,6 +95,8 @@ Node-name settings
 
 VF_NAME_SPLIT = "-->"    # used for node-names, eg:    Body23-->Cog
 
+MANAGED_NODE_IDENTIFIER = ">>>"  # used for managed nodes, eg: SlingSL1242>>>eyeA
+
 """
  =========== Visuals ==================
  

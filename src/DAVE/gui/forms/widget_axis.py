@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_axis.ui',
 # licensing of 'widget_axis.ui' applies.
 #
-# Created: Thu May 14 16:14:05 2020
+# Created: Fri May 15 10:16:21 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -21,11 +21,6 @@ class Ui_widget_axis(object):
         self.label_7.setWordWrap(True)
         self.label_7.setObjectName("label_7")
         self.verticalLayout.addWidget(self.label_7)
-        self.lblGeometricConnection = QtWidgets.QLabel(widget_axis)
-        self.lblGeometricConnection.setStyleSheet("background: gold")
-        self.lblGeometricConnection.setWordWrap(True)
-        self.lblGeometricConnection.setObjectName("lblGeometricConnection")
-        self.verticalLayout.addWidget(self.lblGeometricConnection)
         self.frame = QtWidgets.QFrame(widget_axis)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -161,7 +156,6 @@ class Ui_widget_axis(object):
     def retranslateUi(self, widget_axis):
         widget_axis.setWindowTitle(QtWidgets.QApplication.translate("widget_axis", "Form", None, -1))
         self.label_7.setText(QtWidgets.QApplication.translate("widget_axis", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Set position and rotation.</span></p><p>Modes that are &quot;<span style=\" font-weight:600;\">fixed</span>&quot; will not move when solving statics</p></body></html>", None, -1))
-        self.lblGeometricConnection.setText(QtWidgets.QApplication.translate("widget_axis", "The position and fixities of this axis system are controlled by the geometric-connection and can not be changed here.", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("widget_axis", "X - translation", None, -1))
         self.checkBox_1.setText(QtWidgets.QApplication.translate("widget_axis", "Fixed", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("widget_axis", "Y - translation", None, -1))

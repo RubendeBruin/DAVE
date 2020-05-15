@@ -1,7 +1,7 @@
 from DAVE.gui.dockwidget import *
 from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag
 from PySide2.QtCore import QMimeData, Qt, QItemSelectionModel
-from PySide2.QtWidgets import QTreeWidgetItem
+from PySide2.QtWidgets import QTreeWidgetItem, QCheckBox
 import DAVE.scene as ds
 
 class NodeTreeWidget(QtWidgets.QTreeWidget):
@@ -47,8 +47,15 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
     def startDrag(self, supportedActions):
 
         dragged = self.selectedItems()[0]
+
+        node_name = dragged.text(0)
+        node = self.guiScene[node_name]
+
+        if node._manager:
+            return
+
         mimeData = QMimeData()
-        mimeData.setText(dragged.text(0))
+        mimeData.setText(node_name)
 
         drag = QDrag(self)
         drag.setMimeData(mimeData)
@@ -81,8 +88,16 @@ class WidgetNodeTree(guiDockWidget):
 
         self.treeView.parentcallback = self.dragDropCallback
 
+
+        self.checkbox = QCheckBox(self.contents)
+        self.checkbox.setText('show managed nodes')
+        self.checkbox.setChecked(False)
+        self.checkbox.toggled.connect(self.update_node_data_and_tree)
+
+
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.treeView)
+        layout.addWidget(self.checkbox)
         self.contents.setLayout(layout)
 
     def guiProcessEvent(self, event):
@@ -156,6 +171,9 @@ class WidgetNodeTree(guiDockWidget):
 
         self.guiScene.sort_nodes_by_dependency()
         self.treeView.clear()
+        self.treeView.guiScene = self.guiScene
+
+        show_managed_nodes = self.checkbox.isChecked()
 
         for node in self.guiScene._nodes:
 
@@ -206,15 +224,26 @@ class WidgetNodeTree(guiDockWidget):
             except:
                 parent = None
 
-            self.items[node.name] = item
+            if node._manager:
+                item.setTextColor(0,Qt.gray)
 
-            if parent is not None:
-                try:
-                    self.items[node.parent.name].addChild(item)
-                except:
-                    print('stop here')
-            else:
-                self.treeView.invisibleRootItem().addChild(item)
+
+            if (node._manager is None) or show_managed_nodes:
+
+                self.items[node.name] = item
+
+                if parent is not None:
+
+                    while True:
+                        if parent.name in self.items:
+                            break
+                        else:
+                            parent = parent.parent
+
+                    self.items[parent.name].addChild(item)
+
+                else:
+                    self.treeView.invisibleRootItem().addChild(item)
 
         # self.treeView.resizeColumnToContents(0)
         self.treeView.expandAll()

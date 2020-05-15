@@ -28,19 +28,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="lblGeometricConnection">
-     <property name="styleSheet">
-      <string notr="true">background: gold</string>
-     </property>
-     <property name="text">
-      <string>The position and fixities of this axis system are controlled by the geometric-connection and can not be changed here.</string>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QFrame" name="frame">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
