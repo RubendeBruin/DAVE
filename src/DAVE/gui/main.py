@@ -707,6 +707,9 @@ class Gui():
                 if to_be_removed and not emitted:
                     self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
 
+                if event is not None:
+                    self.guiEmitEvent(event)
+
             except Exception as E:
 
                 self.ui.teCode.clear()
@@ -722,8 +725,7 @@ class Gui():
             self.ui.pbExecute.update()
             self.ui.teFeedback.verticalScrollBar().setValue(self.ui.teFeedback.verticalScrollBar().maximum()) # scroll down all the way
 
-            if event is not None:
-                self.guiEmitEvent(event)
+
 
 
 

@@ -169,7 +169,7 @@ class WidgetNodeTree(guiDockWidget):
 
         self.items = dict()
 
-        self.guiScene.sort_nodes_by_dependency()
+        self.guiScene.sort_nodes_by_parent()
         self.treeView.clear()
         self.treeView.guiScene = self.guiScene
 
@@ -234,11 +234,13 @@ class WidgetNodeTree(guiDockWidget):
 
                 if parent is not None:
 
-                    while True:
-                        if parent.name in self.items:
-                            break
-                        else:
-                            parent = parent.parent
+                    # parent may be invisible if find the first visible parent
+                    if not show_managed_nodes:
+                        while True:
+                            if parent.name in self.items:
+                                break
+                            else:
+                                parent = parent.parent
 
                     self.items[parent.name].addChild(item)
 

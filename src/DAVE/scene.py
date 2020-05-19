@@ -1388,9 +1388,11 @@ class RigidBody(Axis):
 
         return code
 
+class Manager():
+    pass # only used in isinstance
 
 
-class GeometricContact(NodeWithParent):
+class GeometricContact(NodeWithParent, Manager):
     """
     GeometricContact
 
@@ -1401,9 +1403,34 @@ class GeometricContact(NodeWithParent):
     GeometricContact can act as a parent for axes via duck-typing. For that purpose it implements some
     of the properties and methods of class Axis
 
+
+    parent_parent_of_circle2 [axis]  <-- not managed
+       - parent_of_circle2 [poi]
+           - circle2 [circle]
+
+           - SELF__pin_hole_connection
+               - SELF_slaved_axis
+                   - parent_of_parent_of_circle1 [axis]
+                     - parent_of_circle_1 [poi]
+                       - circle1 [circle]
+
+
+
+
     """
 
     def __init__(self, scene, vfAxis, circle1, circle2):
+        """
+        circle1 becomes the slave
+        circle2 becomes the master
+
+        (attach circle 1 to circle 2)
+        Args:
+            scene:
+            vfAxis:
+            circle1:
+            circle2:
+        """
 
         super().__init__(scene, vfAxis)
         self._None_parent_acceptable = False
@@ -1414,7 +1441,7 @@ class GeometricContact(NodeWithParent):
         self._circle2 = circle2
         self._flipped = False
 
-        self._master_axis = self._scene.new_axis(name_prefix + '_slaved_axis')
+        self._master_axis = self._scene.new_axis(name_prefix + '_master_axis')
         """axis to which the slaved body is connected. Either the center of the hole or the center of the pin """
         self._master_axis._manager = self
 
@@ -1426,8 +1453,13 @@ class GeometricContact(NodeWithParent):
         circle1._manager = self
         circle2._manager = self
         circle1.parent._manager = self
+        self._circle1_parent = circle1.parent
         circle2.parent._manager = self
+        self._circle2_parent = circle2.parent
         circle1.parent.parent._manager = self
+        self._circle1_parent_parent = circle1.parent.parent
+
+
 
     # The axis slaved to this axis may treat GeometricContact as if it is an axis system
     # make sure it can
@@ -1539,6 +1571,11 @@ class GeometricContact(NodeWithParent):
             self._master_axis.rotation = rotation_from_y_axis_direction(self._circle2.axis)
 
         print(self._master_axis.rotation)
+
+
+    def give_python_code(self):
+        return ""
+
 
 
 
@@ -3388,13 +3425,61 @@ class Scene:
                 r.append(n)
         return r
 
-    def sort_nodes_by_dependency(self):
-        """Sorts the nodes such that a node only depends on nodes earlier in the list."""
+
+    def sort_nodes_by_parent(self):
+        """Sorts the nodes such that the parent of this node (if any) occurs earlier in the list.
+
+            See Also:
+                sort_nodes_by_dependency
+        """
 
         exported = []
         to_be_exported = self._nodes.copy()
+        counter = 0
 
         while to_be_exported:
+
+            counter += 1
+            if counter > len(self._nodes):
+                raise Exception('Could not sort nodes by dependency, circular references exist?')
+
+            can_be_exported = []
+
+            for node in to_be_exported:
+
+                if hasattr(node, 'parent'):
+                    parent = node.parent
+
+                    if parent is None or parent in exported:
+                        can_be_exported.append(node)
+                else:
+                    can_be_exported.append(node)
+
+            # remove exported nodes from
+            for n in can_be_exported:
+                to_be_exported.remove(n)
+
+            exported.extend(can_be_exported)
+
+        self._nodes = exported
+
+    def sort_nodes_by_dependency(self):
+        """Sorts the nodes such that a node only depends on nodes earlier in the list.
+
+        See Also:
+            sort_nodes_by_parent
+        """
+
+        exported = []
+        to_be_exported = self._nodes.copy()
+        counter = 0
+
+        while to_be_exported:
+
+            counter += 1
+            if counter > len(self._nodes):
+                raise Exception('Could not sort nodes by dependency, circular references exist?')
+
 
             can_be_exported = []
 
