@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>592</width>
-    <height>1249</height>
+    <width>593</width>
+    <height>1102</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,10 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;1-to-1 relations&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Set any settable scalar property in the scene, for example s['cable'].length&lt;/p&gt;&lt;p&gt;(Hint, drag and drop this from the &amp;quot;derived properties&amp;quot; widget).&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Solve statics&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Evaluate another property of the scene (scalar) or python expression.&lt;/p&gt;&lt;p&gt;(Hint, drag and drop this from the &amp;quot;derived properties&amp;quot; widget).&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;Explore or solve 1-to-1 relations&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Set any settable scalar property in the scene, for example s['cable'].length&lt;/p&gt;&lt;p&gt;Solve statics&lt;/p&gt;&lt;p&gt;Evaluate another property of the scene (scalar) or python expression&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -42,7 +45,11 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="editSet"/>
+       <widget class="QLineEdit" name="editSet">
+        <property name="placeholderText">
+         <string> (Hint, drag and drop this from the &quot;derived properties&quot; widget).</string>
+        </property>
+       </widget>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_3">
@@ -53,13 +60,28 @@
       </item>
       <item row="1" column="1">
        <widget class="QPlainTextEdit" name="editEvaluate">
+        <property name="lineWrapMode">
+         <enum>QPlainTextEdit::WidgetWidth</enum>
+        </property>
         <property name="placeholderText">
-         <string>For example: s['cable1'].tension   or   s['flare'].tilt_x</string>
+         <string>(Hint, drag and drop this from the &quot;derived properties&quot; widget).</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
        <widget class="QPlainTextEdit" name="editResult">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>40</height>
+         </size>
+        </property>
         <property name="placeholderText">
          <string>The result of the evaluation will appear here</string>
         </property>
@@ -71,15 +93,15 @@
    <item>
     <widget class="QToolBox" name="toolBox">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="page">
       <property name="geometry">
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>566</width>
-        <height>306</height>
+        <width>567</width>
+        <height>416</height>
        </rect>
       </property>
       <attribute name="label">
@@ -160,8 +182,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>566</width>
-        <height>306</height>
+        <width>567</width>
+        <height>401</height>
        </rect>
       </property>
       <attribute name="label">

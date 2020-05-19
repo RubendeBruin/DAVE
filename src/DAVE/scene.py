@@ -1400,26 +1400,25 @@ class GeometricContact(Node, Manager):
 	- 	steel bars and holes, such as a shackle pin in a padeye (pin-hole)
 	-	steel bars and steel bars, such as a shackle-shackle connection
 
-    GeometricContact can act as a parent for axes via duck-typing. For that purpose it implements some
-    of the properties and methods of class Axis
-
 
     parent_parent_of_circle2 [axis]  <-- not managed
        - parent_of_circle2 [poi]
-           - circle2 [circle]
+           - circle2 [circle]        <--- input for creation
 
-           - SELF__pin_hole_connection
-               - SELF_slaved_axis
-                   - parent_of_parent_of_circle1 [axis]
-                     - parent_of_circle_1 [poi]
-                       - circle1 [circle]
+           - SELF_master_axis           <--- created
+                - SELF__pin_hole_connection  <--- created
+                    - SELF_slaved_axis       <--- created
+
+                       - parent_of_parent_of_circle1 [axis]
+                         - parent_of_circle_1 [poi]
+                           - circle1 [circle]               <--- input for creation
 
 
 
 
     """
 
-    def __init__(self, scene, circle1, circle2):
+    def __init__(self, scene, circle1, circle2, name):
         """
         circle1 becomes the slave
         circle2 becomes the master
@@ -1433,6 +1432,7 @@ class GeometricContact(Node, Manager):
         """
 
         super().__init__(scene)
+        self.name = name
 
         name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
 
@@ -1547,6 +1547,8 @@ class GeometricContact(Node, Manager):
         self._slaved_axis.rotation = (0,y,0)
 
 
+
+
     def depends_on(self):
         return [self.parent]
 
@@ -1567,9 +1569,42 @@ class GeometricContact(Node, Manager):
 
 
     def give_python_code(self):
-        return ""
 
+        """
+    parent_parent_of_circle2 [axis]  <-- not managed
+       * parent_of_circle2 [poi]
+           * circle2 [circle]        <--- input for creation
 
+           - SELF_master_axis           <--- created
+                - SELF__pin_hole_connection  <--- created
+                    - SELF_slaved_axis       <--- created
+
+                       * parent_of_parent_of_circle1 [axis]
+                         * parent_of_circle_1 [poi]
+                           * circle1 [circle]               <--- input for creation
+"""
+
+        code = []
+        code.append(f'# This is the code for the elements managed by {self.name}')
+        code.append(f'# First create the elements that need to exist before the connection can be made')
+
+        code.append('# The slaved system is here created with None as parent. This will be changed when the connection is created')
+        remember = self._circle1_parent_parent.parent
+        self._circle1_parent_parent.parent = None
+        code.append(self._circle1_parent_parent.give_python_code())
+        self._circle1_parent_parent.parent = remember
+
+        code.append(self._circle1_parent.give_python_code())  # poi
+        code.append(self._circle1.give_python_code())  # circle
+
+        code.append(self._circle2_parent.give_python_code())  # poi
+        code.append(self._circle2.give_python_code())  # circle
+
+        code.append('# now create the connection')
+        code.append(f"s.new_geometriccontact(name = '{self.name}',")
+        code.append(f"                       item1 = '{self._circle1.name}',")
+        code.append(f"                       item2 = '{self._circle2.name}')")
+        return '\n'.join(code)
 
 
 
@@ -3980,8 +4015,9 @@ class Scene:
         if item2 is None:
             raise ValueError('Item2 needs to be a sheave-type node')
 
-        new_node = GeometricContact(self, item1, item2)
+        new_node = GeometricContact(self, item1, item2, name)
         new_node.set_pin_in_hole_connection()
+
 
         self._nodes.append(new_node)
         return new_node

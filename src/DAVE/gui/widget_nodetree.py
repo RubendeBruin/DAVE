@@ -90,7 +90,7 @@ class WidgetNodeTree(guiDockWidget):
 
 
         self.checkbox = QCheckBox(self.contents)
-        self.checkbox.setText('show managed nodes')
+        self.checkbox.setText('show all managed nodes')
         self.checkbox.setChecked(False)
         self.checkbox.toggled.connect(self.update_node_data_and_tree)
 
@@ -123,7 +123,6 @@ class WidgetNodeTree(guiDockWidget):
             node_onto = self.guiScene[onto]
 
             # are we dropping a sheave onto a sheave?
-
             if isinstance(node_drop, ds.Sheave) and isinstance(node_onto, ds.Sheave):
                 code = f"s.new_geometriccontact('Geometric_connection of :{drop} on {onto}','{drop}','{onto}')"
             else:

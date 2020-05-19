@@ -54,7 +54,7 @@ class WidgetBallastSystemSelect(guiDockWidget):
         layout.addWidget(self.lblHeel)
         layout.addWidget(self.lblTrim)
 
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         layout.addItem(spacerItem)
 
         self.contents.setLayout(layout)

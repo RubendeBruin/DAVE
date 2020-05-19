@@ -251,7 +251,7 @@ class Gui():
                 self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
             else:
                 self.visual.show_geometry = True
-                self.run_code(f'self.visual.geometry_scale = {value**(1.3)/100}',guiEventType.VIEWER_SETTINGS_UPDATE)
+                self.run_code(f'self.visual.geometry_scale = {value**(1.3)/100 : .2f}',guiEventType.VIEWER_SETTINGS_UPDATE)
 
         self.ui.sliderGeometrySize.connectvalueChanged(set_geo_size)
         self.ui.menuView.addAction(self.ui.sliderGeometrySize)
@@ -276,7 +276,7 @@ class Gui():
                 self.visual.refresh_embeded_view()
             else:
                 self.visual.show_force = True
-                self.run_code(f'self.visual.force_scale = {value ** (1.3) / 10}', guiEventType.VIEWER_SETTINGS_UPDATE)
+                self.run_code(f'self.visual.force_scale = {value ** (2) / 10 : .2f}', guiEventType.VIEWER_SETTINGS_UPDATE)
 
         self.ui.sliderForceSize.connectvalueChanged(set_force_size)
         self.ui.menuView.addAction(self.ui.sliderForceSize)

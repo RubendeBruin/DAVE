@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_tank_order.ui',
 # licensing of 'widget_tank_order.ui' applies.
 #
-# Created: Thu Jan 16 14:19:52 2020
+# Created: Tue May 19 21:07:47 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,16 +13,19 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_widget_tank_order(object):
     def setupUi(self, widget_tank_order):
         widget_tank_order.setObjectName("widget_tank_order")
-        widget_tank_order.resize(378, 755)
+        widget_tank_order.resize(378, 703)
         widget_tank_order.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.verticalLayout = QtWidgets.QVBoxLayout(widget_tank_order)
         self.verticalLayout.setObjectName("verticalLayout")
         self.label = QtWidgets.QLabel(widget_tank_order)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.MinimumExpanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
+        self.label.setSizePolicy(sizePolicy)
         self.label.setWordWrap(True)
         self.label.setObjectName("label")
         self.verticalLayout.addWidget(self.label)
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem)
         self.pbElevation = QtWidgets.QPushButton(widget_tank_order)
         self.pbElevation.setObjectName("pbElevation")
         self.verticalLayout.addWidget(self.pbElevation)
@@ -71,8 +74,8 @@ class Ui_widget_tank_order(object):
         self.pbFurthest = QtWidgets.QPushButton(widget_tank_order)
         self.pbFurthest.setObjectName("pbFurthest")
         self.verticalLayout.addWidget(self.pbFurthest)
-        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem1)
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem)
 
         self.retranslateUi(widget_tank_order)
         QtCore.QMetaObject.connectSlotsByName(widget_tank_order)

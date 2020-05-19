@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_ballastsolver.ui',
 # licensing of 'widget_ballastsolver.ui' applies.
 #
-# Created: Thu Dec 12 17:35:25 2019
+# Created: Tue May 19 21:07:47 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_BallastSolver(object):
     def setupUi(self, BallastSolver):
         BallastSolver.setObjectName("BallastSolver")
-        BallastSolver.resize(266, 488)
+        BallastSolver.resize(585, 500)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -41,15 +41,20 @@ class Ui_BallastSolver(object):
         self.doubleSpinBox.setObjectName("doubleSpinBox")
         self.verticalLayout.addWidget(self.doubleSpinBox)
         self.tableWidget = QtWidgets.QTableWidget(BallastSolver)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.tableWidget.sizePolicy().hasHeightForWidth())
         self.tableWidget.setSizePolicy(sizePolicy)
+        self.tableWidget.setMaximumSize(QtCore.QSize(16777215, 174))
         self.tableWidget.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.tableWidget.setLineWidth(1)
         self.tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.tableWidget.setProperty("showDropIndicator", True)
         self.tableWidget.setAlternatingRowColors(False)
         self.tableWidget.setShowGrid(True)
+        self.tableWidget.setGridStyle(QtCore.Qt.SolidLine)
+        self.tableWidget.setWordWrap(False)
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(1)
         self.tableWidget.setRowCount(3)
@@ -61,8 +66,12 @@ class Ui_BallastSolver(object):
         self.tableWidget.setVerticalHeaderItem(2, item)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget.setHorizontalHeaderItem(0, item)
+        self.tableWidget.horizontalHeader().setDefaultSectionSize(150)
         self.tableWidget.horizontalHeader().setStretchLastSection(True)
-        self.tableWidget.verticalHeader().setStretchLastSection(True)
+        self.tableWidget.verticalHeader().setVisible(True)
+        self.tableWidget.verticalHeader().setHighlightSections(False)
+        self.tableWidget.verticalHeader().setMinimumSectionSize(0)
+        self.tableWidget.verticalHeader().setStretchLastSection(False)
         self.verticalLayout.addWidget(self.tableWidget)
         self.pushButton = QtWidgets.QPushButton(BallastSolver)
         self.pushButton.setObjectName("pushButton")
