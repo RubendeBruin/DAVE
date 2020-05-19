@@ -350,6 +350,11 @@ class Node:
         self._manager : Node or None = None
         """Reference to a node that controls this node"""
 
+    def depends_on(self):
+        """Returns a list of nodes that need to be available before the node can be created"""
+        raise ValueError(f'Derived class should implement this method, but {type(self)} does not')
+
+
     def give_python_code(self):
         """Returns the python code that can be executed to re-create this node"""
         return "# No python code generated for element {}".format(self.name)
@@ -404,6 +409,13 @@ class NodeWithParent(CoreConnectedNode):
         super().__init__(scene, vfNode)
         self._parent = None
         self._None_parent_acceptable = False
+
+    def depends_on(self):
+        if self._parent is not None:
+            return [self._parent]
+        else:
+            return []
+
 
     @property
     def parent(self):
@@ -539,6 +551,9 @@ class Visual(Node):
         self.parent = None
         """Parent : Axis-type"""
 
+    def depends_on(self):
+        return [self.parent]
+
     def give_python_code(self):
         code = "# code for {}".format(self.name)
 
@@ -605,6 +620,11 @@ class Axis(NodeWithParent):
             self._pointmasses.append(p)
         self._update_inertia()
 
+    def depends_on(self):
+        if self.parent is None:
+            return []
+        else:
+            return [self.parent]
 
     def _delete_vfc(self):
         for p in self._pointmasses:
@@ -1369,6 +1389,7 @@ class RigidBody(Axis):
         return code
 
 
+
 class GeometricContact(NodeWithParent):
     """
     GeometricContact
@@ -1547,6 +1568,9 @@ class Cable(CoreConnectedNode):
     def __init__(self, scene, node):
         super().__init__(scene, node)
         self._pois = list()
+
+    def depends_on(self):
+        return [*self._pois]
 
     @property
     def tension(self):
@@ -2097,6 +2121,9 @@ class LC6d(CoreConnectedNode):
         self._master = None
         self._slave = None
 
+    def depends_on(self):
+        return [self._master, self._slave]
+
     @property
     def stiffness(self):
         """Stiffness of the connector (kx, ky, kz, krx, kry, krz)"""
@@ -2156,6 +2183,9 @@ class Connector2d(CoreConnectedNode):
         super().__init__(scene, node)
         self._master = None
         self._slave = None
+
+    def depends_on(self):
+        return
 
     @property
     def angle(self):
@@ -2269,6 +2299,9 @@ class LinearBeam(CoreConnectedNode):
         super().__init__(scene, node)
         self._master = None
         self._slave = None
+
+    def depends_on(self):
+        return
 
     @property
     def EIy(self):
@@ -3044,6 +3077,9 @@ class WaveInteraction1(Node):
         self.path = None
         """Filename of a file that can be read by a Hyddb1 object"""
 
+    def depends_on(self):
+        return [self.parent]
+
     def give_python_code(self):
         code = "# code for {}".format(self.name)
 
@@ -3355,26 +3391,49 @@ class Scene:
     def sort_nodes_by_dependency(self):
         """Sorts the nodes such that a node only depends on nodes earlier in the list."""
 
-        scene_names = [n.name for n in self._nodes]
+        exported = []
+        to_be_exported = self._nodes.copy()
 
-        self._vfc.state_update()  # use the function from the core.
-        new_list = []
-        for name in self._vfc.names:  # and then build a new list using the names
-            if vfc.VF_NAME_SPLIT in name:
-                continue
+        while to_be_exported:
 
-            if name not in scene_names:
-                raise Exception('Something went wrong with sorting the the nodes by dependency. '
-                                'Node naming between core and scene is inconsistent for node {}'.format(name))
+            can_be_exported = []
 
-            new_list.append(self[name])
+            for node in to_be_exported:
+                if node._manager:
+                    if node._manager in exported:
+                        can_be_exported.append(node)
+                elif all(el in exported for el in node.depends_on()):
+                            can_be_exported.append(node)
 
-        # and add the nodes without a vfc-core connection
-        for node in self._nodes:
-            if not node in new_list:
-                new_list.append(node)
+            # remove exported nodes from
+            for n in can_be_exported:
+                to_be_exported.remove(n)
 
-        self._nodes = new_list
+            exported.extend(can_be_exported)
+
+
+        self._nodes = exported
+
+        # scene_names = [n.name for n in self._nodes]
+        #
+        # self._vfc.state_update()  # use the function from the core.
+        # new_list = []
+        # for name in self._vfc.names:  # and then build a new list using the names
+        #     if vfc.VF_NAME_SPLIT in name:
+        #         continue
+        #
+        #     if name not in scene_names:
+        #         raise Exception('Something went wrong with sorting the the nodes by dependency. '
+        #                         'Node naming between core and scene is inconsistent for node {}'.format(name))
+        #
+        #     new_list.append(self[name])
+        #
+        # # and add the nodes without a vfc-core connection
+        # for node in self._nodes:
+        #     if not node in new_list:
+        #         new_list.append(node)
+        #
+        # self._nodes = new_list
 
     def name_available(self, name):
         """Returns True if the name is still available"""
@@ -4645,7 +4704,14 @@ class Scene:
         code += "\ndef solved(number):\n    return number\n"
 
         for n in self._nodes:
-            code += '\n' + n.give_python_code()
+
+            if n._manager is None:
+                print(f'code for {n.name}')
+                code += '\n' + n.give_python_code()
+            else:
+                print(f'skipping {n.name} ')
+
+
 
         return code
 

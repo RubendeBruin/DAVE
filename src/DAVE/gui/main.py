@@ -953,67 +953,71 @@ class Gui():
 
         if node_name is not None:
 
-            def delete():
-                self.run_code('s.delete("{}")'.format(node_name), guiEventType.MODEL_STRUCTURE_CHANGED)
+            node = self.scene[node_name]
 
-            def dissolve():
-                self.run_code('s.dissolve("{}")'.format(node_name), guiEventType.MODEL_STRUCTURE_CHANGED)
+            if node._manager is None:
 
-            def edit():
-                self.selected_nodes.clear()
-                self.guiSelectNode(node_name)
+                def delete():
+                    self.run_code('s.delete("{}")'.format(node_name), guiEventType.MODEL_STRUCTURE_CHANGED)
 
-            menu.addAction("Delete {}".format(node_name), delete)
-            menu.addAction("Dissolve (Evaporate) {}".format(node_name), dissolve)
-            menu.addAction("Edit {}".format(node_name), edit)
+                def dissolve():
+                    self.run_code('s.dissolve("{}")'.format(node_name), guiEventType.MODEL_STRUCTURE_CHANGED)
 
-            menu.addSeparator()
+                def edit():
+                    self.selected_nodes.clear()
+                    self.guiSelectNode(node_name)
 
-            def copy_python_code():
-                code = self.scene[node_name].give_python_code()
-                print(code)
-                self.app.clipboard().setText(code)
+                menu.addAction("Delete {}".format(node_name), delete)
+                menu.addAction("Dissolve (Evaporate) {}".format(node_name), dissolve)
+                menu.addAction("Edit {}".format(node_name), edit)
 
-            menu.addAction("Copy python code", copy_python_code)
-            menu.addSeparator()
+                menu.addSeparator()
 
-            def duplicate():
-                name = node_name
-                name_of_duplicate = self.scene.available_name_like(name)
+                def copy_python_code():
+                    code = self.scene[node_name].give_python_code()
+                    print(code)
+                    self.app.clipboard().setText(code)
 
-                node = self.scene[node_name]
-                node.name = name_of_duplicate
-                code = node.give_python_code()
-                node.name = name
-                self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+                menu.addAction("Copy python code", copy_python_code)
+                menu.addSeparator()
 
-                self.guiSelectNode(name_of_duplicate)
+                def duplicate():
+                    name = node_name
+                    name_of_duplicate = self.scene.available_name_like(name)
+
+                    node = self.scene[node_name]
+                    node.name = name_of_duplicate
+                    code = node.give_python_code()
+                    node.name = name
+                    self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+                    self.guiSelectNode(name_of_duplicate)
 
 
-            menu.addAction("Duplicate", duplicate)
-            menu.addSeparator()
+                menu.addAction("Duplicate", duplicate)
+                menu.addSeparator()
 
         menu.addAction("New Axis", self.new_axis)
-        menu.addAction("New RigidBody", self.new_body)
         menu.addAction("New Poi", self.new_poi)
         menu.addAction("New Sheave", self.new_sheave)
+        menu.addAction("New RigidBody", self.new_body)
 
         menu.addSeparator()
 
         menu.addAction("New Cable", self.new_cable)
+        menu.addAction("New Beam", self.new_beam)
         menu.addAction("New Force", self.new_force)
         menu.addAction("New Contact-Ball", self.new_contactball)
-        menu.addAction("New Beam", self.new_beam)
         menu.addAction("New 2d Connector", self.new_connector2d)
         menu.addAction("New 6d Connector", self.new_linear_connector)
-        menu.addAction("New Linear Hydrostatics", self.new_linear_hydrostatics)
 
         menu.addSeparator()
 
-        menu.addAction("New Visual", self.new_visual)
+        menu.addAction("New Linear Hydrostatics", self.new_linear_hydrostatics)
         menu.addAction("New Buoyancy mesh", self.new_buoyancy_mesh)
         menu.addAction("New Contact mesh", self.new_contactmesh)
         menu.addAction("New Wave Interaction", self.new_waveinteraction)
+        menu.addAction("New Visual", self.new_visual)
 
         menu.exec_(globLoc)
 
