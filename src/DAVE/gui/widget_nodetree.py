@@ -224,28 +224,44 @@ class WidgetNodeTree(guiDockWidget):
             except:
                 parent = None
 
+            # node is managed by a manager
+            show_managed_node = show_managed_nodes
+
+            # custom work-around for showing the "out-frame" for managed geometric connectors
+            if isinstance(node._manager, GeometricContact):
+                if node == node._manager._circle1_parent_parent:
+                    show_managed_node = True
+
+
+
             if node._manager:
-                item.setTextColor(0,Qt.gray)
 
+                # are we showing managed nodes?
+                if show_managed_node:
 
-            if (node._manager is None) or show_managed_nodes:
+                    item.setTextColor(0,Qt.gray)
 
-                self.items[node.name] = item
+                    # if the item does not have a parent, then show it under the manager
+                    if parent is None:
+                        parent = node._manager
 
-                if parent is not None:
+                    if parent.name not in self.items:
+                        parent = node._manager
 
-                    # parent may be invisible if find the first visible parent
-                    if not show_managed_nodes:
-                        while True:
-                            if parent.name in self.items:
-                                break
-                            else:
-                                parent = parent.parent
-
+                    self.items[node.name] = item
                     self.items[parent.name].addChild(item)
 
-                else:
+            else:
+                self.items[node.name] = item
+
+                if parent is None:
                     self.treeView.invisibleRootItem().addChild(item)
+                else:
+                    if parent.name in self.items:
+                        self.items[parent.name].addChild(item)
+                    else:  # if the parent is not there, then it must be a managed node
+                        self.items[parent._manager.name].addChild(item)
+
 
         # self.treeView.resizeColumnToContents(0)
         self.treeView.expandAll()
