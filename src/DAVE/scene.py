@@ -1392,9 +1392,17 @@ class Manager():
 
     def managed_nodes(self):
         """Returns a list of managed nodes"""
+        raise Exception("derived class shall override this method")
+
+    def delete(self):
+        """Carefully remove the manager, reinstate situation as before"""
+
+        raise Exception("derived class shall override this method")
 
 
-    pass # only used in isinstance
+
+
+
 
 
 class GeometricContact(Node, Manager):
@@ -1447,14 +1455,11 @@ class GeometricContact(Node, Manager):
 
         self._master_axis = self._scene.new_axis(name_prefix + '_master_axis')
         """Axis on the master axis at the location of the center of hole or pin"""
-        self._master_axis._manager = self
 
         self._pin_hole_connection = self._scene.new_axis(name_prefix + '_pin_hole_connection')
-        self._pin_hole_connection._manager = self
         """axis between the center of the hole and the center of the pin. Free to rotate about the center of the hole as well as the pin"""
 
         self._slaved_axis = self._scene.new_axis(name_prefix + '_slaved_axis')
-        self._slaved_axis._manager = self
         """axis to which the slaved body is connected. Either the center of the hole or the center of the pin """
 
         # prohibit changes to nodes that were used in the creation of this connection
@@ -1477,6 +1482,19 @@ class GeometricContact(Node, Manager):
 
     def change_parent_to(self, new_parent):
         raise ValueError('Parent of a ContactHinge can not be set directly. Use one of the connection functions to create or update the connection')
+
+    def delete(self):
+
+        # release management
+        for node in self.managed_nodes():
+            node._manager = None
+
+        self._circle1_parent_parent.change_parent_to(None)
+
+        self._scene.delete(self._slaved_axis)
+        self._scene.delete(self._pin_hole_connection)
+        self._scene.delete(self._master_axis)
+
 
     def set_pin_in_hole_connection(self):
         """Sets the connection to be of type pin-in-hole
@@ -1557,7 +1575,10 @@ class GeometricContact(Node, Manager):
                 self._circle2,
                 self._circle2_parent,
                 self._circle1_parent,
-                self._circle1_parent_parent]
+                self._circle1_parent_parent,
+                self._master_axis,
+                self._slaved_axis,
+                self._pin_hole_connection]
 
 
     def depends_on(self):
@@ -3668,10 +3689,15 @@ class Scene:
             dissolve
         """
 
-        depending_nodes = self.nodes_depending_on(node)
-
         if isinstance(node, str):
             node = self[node]
+
+        if isinstance(node, Manager):
+            node.delete()
+
+        depending_nodes = self.nodes_depending_on(node)
+
+
 
         self._print('Deleting {} [{}]'.format(node.name, str(type(node)).split('.')[-1][:-2]))
 
@@ -3681,7 +3707,7 @@ class Scene:
                 self.delete(d)
 
         # then remove the vtk node itself
-        self._print('removing vfc node')
+        # self._print('removing vfc node')
         node._delete_vfc()
         self._nodes.remove(node)
 
