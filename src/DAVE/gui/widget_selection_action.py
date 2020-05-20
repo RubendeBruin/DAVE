@@ -107,27 +107,41 @@ class WidgetSelectionActions(guiDockWidget):
         p2 = self.find_nodes([nodes.Sheave, nodes.Sheave])
         if p2:
 
-            if p2[0].radius < p2[1].radius:
-                pin = p2[0]
-                hole = p2[1]
-            else:
-                pin = p2[1]
-                hole = p2[0]
+            p0 = p2[0]
+            p1 = p2[1]
 
-            # pin shall have a parent axis
-            if pin.parent.parent is not None:
+            # p0 -> p1
+            if p0.parent.parent is not None:
 
-                button = QPushButton('Create pin-hole connection', self.ui.frame)
+                button = QPushButton(f'Create pin-hole connection with {p1.name} as master', self.ui.frame)
 
-                pin_hole_code = f's.new_geometriccontact("{name}", "{pin.name}", "{hole.name}")'
-                button.pressed.connect(lambda : self.guiRunCodeCallback(pin_hole_code, guiEventType.MODEL_STRUCTURE_CHANGED))
+
+                pin_hole_code_p0p1 = f's.new_geometriccontact("{name}", "{p0.name}", "{p1.name}")'
+                button.pressed.connect(lambda : self.guiRunCodeCallback(pin_hole_code_p0p1, guiEventType.MODEL_STRUCTURE_CHANGED))
 
                 #  sheave poi   axis
-                if pin.parent.parent.parent is not None:
+                if p0.parent.parent.parent is not None:
                     button.setStyleSheet("background: yellow")
-                    button.setToolTip(f"Warning: {pin.parent.parent.parent.name} will be disconnected from its parent")
+                    button.setToolTip(f"Warning: {p0.parent.parent.parent.name} will be disconnected from its parent")
 
                 self.buttons.append(button)
+
+                # p1 -> p0
+                if p1.parent.parent is not None:
+
+                    button = QPushButton(f'Create pin-hole connection with {p0.name} as master', self.ui.frame)
+
+                    pin_hole_codep1p0 = f's.new_geometriccontact("{name}", "{p1.name}", "{p0.name}")'
+                    button.pressed.connect(
+                        lambda: self.guiRunCodeCallback(pin_hole_codep1p0, guiEventType.MODEL_STRUCTURE_CHANGED))
+
+                    #  sheave poi   axis
+                    if p1.parent.parent.parent is not None:
+                        button.setStyleSheet("background: yellow")
+                        button.setToolTip(
+                            f"Warning: {p1.parent.parent.parent.name} will be disconnected from its parent")
+
+                    self.buttons.append(button)
 
         # creating cables between points and sheaves
         poi_and_sheave = self.all_of_type([Poi, Sheave])

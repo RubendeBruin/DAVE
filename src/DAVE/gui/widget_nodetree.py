@@ -154,6 +154,7 @@ class WidgetNodeTree(guiDockWidget):
 
             if name in selected_names:
                 self.items[name].setSelected(True)
+                self.treeView.scrollToItem(self.items[name])
             else:
                 self.items[name].setSelected(False)
 

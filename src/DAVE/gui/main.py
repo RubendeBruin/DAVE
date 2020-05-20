@@ -126,7 +126,7 @@ class SolverDialog(QDialog, Ui_Dialog):
 
 class Gui():
 
-    def __init__(self, scene, splash=None, app=None):
+    def __init__(self, scene, splash=None, app=None, geometry_scale = -1, cog_scale = -1):
 
         if app is None:
 
@@ -185,6 +185,12 @@ class Gui():
         # ======================== Create 3D viewpower ====================
         self.visual = Viewport(scene)
         """Reference to a viewport"""
+
+        if cog_scale > 0:
+            self.visual.cog_scale = cog_scale
+
+        if geometry_scale > 0:
+            self.visual.geometry_scale = geometry_scale
 
 
         self.visual.create_visuals(recreate=True)

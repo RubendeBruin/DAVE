@@ -1366,6 +1366,18 @@ class Viewport:
         for r in screen.renderers:
             r.ResetCamera()
 
+            # # Add SAOO
+            #
+            # basicPasses = vtk.vtkRenderStepsPass()
+            # ssao = vtk.vtkSSAOPass()
+            # ssao.SetRadius(5)
+            # ssao.SetDelegatePass(basicPasses)
+            # ssao.SetBlur(True)
+            # ssao.SetKernelSize(8)
+            # # ssao.ComputeKernel()
+            #
+            # r.SetPass(ssao)
+
         self.update_outlines()
 
         return screen

@@ -1522,9 +1522,9 @@ class GeometricContact(Node, Manager):
         self._master_axis.fixed = (True, True, True, True, True, True)
 
         if self._flipped:
-            self._master_axis.rotation = np.deg2rad(rotation_from_y_axis_direction(-np.array(hole.axis)))
+            self._master_axis.rotation = rotation_from_y_axis_direction(-np.array(hole.axis))
         else:
-            self._master_axis.rotation = np.deg2rad(rotation_from_y_axis_direction(hole.axis))
+            self._master_axis.rotation = rotation_from_y_axis_direction(hole.axis)
 
         # Position hole rotation at the hole axis
         # and allow it to rotate
@@ -1580,7 +1580,6 @@ class GeometricContact(Node, Manager):
                 self._slaved_axis,
                 self._pin_hole_connection]
 
-
     def depends_on(self):
         return [self.parent]
 
@@ -1601,21 +1600,6 @@ class GeometricContact(Node, Manager):
 
 
     def give_python_code(self):
-
-        """
-    parent_parent_of_circle2 [axis]  <-- not managed
-       * parent_of_circle2 [poi]
-           * circle2 [circle]        <--- input for creation
-
-           - SELF_master_axis           <--- created
-                - SELF__pin_hole_connection  <--- created
-                    - SELF_slaved_axis       <--- created
-
-                       * parent_of_parent_of_circle1 [axis]
-                         * parent_of_circle_1 [poi]
-                           * circle1 [circle]               <--- input for creation
-"""
-
         code = []
         code.append(f'# This is the code for the elements managed by {self.name}')
         code.append(f'# First create the elements that need to exist before the connection can be made')
