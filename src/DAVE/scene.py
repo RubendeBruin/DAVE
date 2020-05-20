@@ -1389,6 +1389,11 @@ class RigidBody(Axis):
         return code
 
 class Manager():
+
+    def managed_nodes(self):
+        """Returns a list of managed nodes"""
+
+
     pass # only used in isinstance
 
 
@@ -1453,14 +1458,13 @@ class GeometricContact(Node, Manager):
         """axis to which the slaved body is connected. Either the center of the hole or the center of the pin """
 
         # prohibit changes to nodes that were used in the creation of this connection
-        circle1._manager = self
-        circle2._manager = self
-        circle1.parent._manager = self
+
         self._circle1_parent = circle1.parent
-        circle2.parent._manager = self
         self._circle2_parent = circle2.parent
-        circle1.parent.parent._manager = self
         self._circle1_parent_parent = circle1.parent.parent
+
+        for node in self.managed_nodes():
+            node._manager = self
 
 
     @property
@@ -1546,7 +1550,14 @@ class GeometricContact(Node, Manager):
         y = np.dot(difference, direction)
         self._slaved_axis.rotation = (0,y,0)
 
+    def managed_nodes(self):
+        """Returns a list of managed nodes"""
 
+        return [self._circle1,
+                self._circle2,
+                self._circle2_parent,
+                self._circle1_parent,
+                self._circle1_parent_parent]
 
 
     def depends_on(self):
@@ -2250,7 +2261,7 @@ class Connector2d(CoreConnectedNode):
         self._slave = None
 
     def depends_on(self):
-        return
+        return [self._master, self._slave]
 
     @property
     def angle(self):
@@ -2366,7 +2377,7 @@ class LinearBeam(CoreConnectedNode):
         self._slave = None
 
     def depends_on(self):
-        return
+        return [self._master, self._slave]
 
     @property
     def EIy(self):

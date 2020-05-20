@@ -1309,17 +1309,41 @@ class WidgetNodeProps(guiDockWidget):
 
         self._open_edit_widgets = list()
         self._node_editors = list()
-        
-        self.layout = QtWidgets.QVBoxLayout()
-        self.contents.setLayout(self.layout)
 
-        self.managed_label = QtWidgets.QLabel(self.contents)
+        self.main_layout = QtWidgets.QVBoxLayout()
+
+        self.manager_widget = QtWidgets.QWidget()
+        self.manager_layout = QtWidgets.QVBoxLayout()
+        self.manager_widget.setLayout(self.manager_layout)
+
+        self.managed_label = QtWidgets.QLabel(self.manager_widget)
         self.managed_label.setWordWrap(True)
         self.managed_label.setFrameShape(QtWidgets.QFrame.Box)
         self.managed_label.setStyleSheet("background: gold;")
-        self.layout.addWidget(self.managed_label)
+        self.manager_layout.addWidget(self.managed_label)
+
+        self.manager_link_label = QtWidgets.QPushButton(self.contents)
+        self.manager_link_label.setText("Select manager")
+        self.manager_link_label.clicked.connect(self.select_manager)
+        self.manager_layout.addWidget(self.manager_link_label)
+
+        self.props_widget = QtWidgets.QWidget()
+
+        self.main_layout.addWidget(self.manager_widget)
+        self.main_layout.addWidget(self.props_widget)
+
+        self.contents.setLayout(self.main_layout)
+
+
+        self.layout = QtWidgets.QVBoxLayout()
+        self.props_widget.setLayout(self.layout)
 
         self.positioned = False
+
+    def select_manager(self):
+        node = self.guiSelection[0]
+        manager = node._manager
+        self.guiSelectNode(manager)
 
 
     def guiProcessEvent(self, event):
@@ -1379,11 +1403,11 @@ class WidgetNodeProps(guiDockWidget):
         if node._manager:
             self.managed_label.setText(
                 f"The properties of this node are managed by node '{node._manager.name}' and should not be changed manually")
-            self.managed_label.setVisible(True)
-            self.setEnabled(False)
+            self.manager_widget.setVisible(True)
+            self.props_widget.setEnabled(False)
         else:
-            self.managed_label.setVisible(False)
-            self.setEnabled(True)
+            self.manager_widget.setVisible(False)
+            self.props_widget.setEnabled(True)
 
 
         self._node_editors.clear()

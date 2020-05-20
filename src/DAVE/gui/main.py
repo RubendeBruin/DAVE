@@ -1122,14 +1122,17 @@ class Gui():
             self.guiSelectNode(node.name)
 
     def visual_update_selection(self):
+
+        visually_selected_nodes = self.selected_nodes.copy()
+
+        for node in self.selected_nodes:
+            if isinstance(node, Manager):
+                visually_selected_nodes.extend(node.managed_nodes())
+
         for v in self.visual.visuals:
-            if v.node in self.selected_nodes:
-                # if v.node is not None:
-                #     print('selecting {}'.format(v.node.name))
+            if v.node in visually_selected_nodes:
                 v.select()
             else:
-                # if v.node is not None:
-                #     print('deselecting {}'.format(v.node.name))
                 v.deselect()
 
         for v in self.visual.visuals:
@@ -1138,7 +1141,7 @@ class Gui():
             except:
                 continue
 
-            if parent in self.selected_nodes:
+            if parent in visually_selected_nodes:
                 v.make_transparent()
             else:
                 v.reset_opacity()

@@ -148,11 +148,6 @@ class VisualActor:
 
         self._original_colors = list()
 
-        # if self.node is not None:
-        #     print('storing ' + str(self.node.name))
-        # else:
-        #     print('storing properties')
-
         for actor in self.actors:
             self._original_colors.append(actor.color())
             actor.color(vc.COLOR_SELECT)

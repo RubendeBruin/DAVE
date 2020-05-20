@@ -9,21 +9,13 @@ A managed node:
 
 - should not be edited directly
 - shall not export python code (give_python_code returns an empty string)
-- depends on its manager
 
 Managers shall:
+
+- Derive from Manager
 - take care of the creation of their managed nodes when producing python code
-- implement "depends_on"
-
-The export python code routine
-
-- of the manager is called as soon a one of the managed nodes is encountered in the sorted node list, but only if
-  all its depends_on properties are satisfied.
-
-
-
-
-
+- implement "depends_on". This is used for sorting the nodes before creating python code
+- implement "managed_nodes"
 
 Mangers may:
 - change the nodes that they manage
