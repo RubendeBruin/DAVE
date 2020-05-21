@@ -354,10 +354,32 @@ class Node:
         """Returns a list of nodes that need to be available before the node can be created"""
         raise ValueError(f'Derived class should implement this method, but {type(self)} does not')
 
-
     def give_python_code(self):
         """Returns the python code that can be executed to re-create this node"""
         return "# No python code generated for element {}".format(self.name)
+
+    @property
+    def manager(self):
+        return self._manager
+
+    @manager.setter
+    def manager(self, value):
+        self._verify_change_allowed()
+        self._manager = value
+        pass
+
+    def _verify_change_allowed(self):
+        """Changing the state of a node is only allowed if either:
+        1. the node is not manages (node._manager is None)
+        2. the manager of the node is identical to scene.current_manager
+        """
+        if self._manager is not None:
+            if self._manager != self._scene.current_manager:
+                if self._scene.current_manager is None:
+                    name = None
+                else:
+                    name = self._scene.current_manager.name
+                raise Exception(f'Node {self.name} may not be changed because it is managed by {self._manager.name} and the current manager of the scene is {name}')
 
     @property
     def name(self):
@@ -366,6 +388,7 @@ class Node:
 
     @name.setter
     def name(self, name):
+        self._verify_change_allowed()
         self._name = name
 
     def _delete_vfc(self):
@@ -390,6 +413,7 @@ class CoreConnectedNode(Node):
 
     @name.setter
     def name(self, name):
+        self._verify_change_allowed()
         if not name == self._vfNode.name:
             self._scene._verify_name_available(name)
             self._vfNode.name = name
@@ -432,6 +456,7 @@ class NodeWithParent(CoreConnectedNode):
 
         See also: change_parent_to
         """
+        self._verify_change_allowed()
 
         if var is None:
 
@@ -459,6 +484,7 @@ class NodeWithParent(CoreConnectedNode):
             new_parent: new parent node
 
         """
+        self._verify_change_allowed()
 
         try:
             self.rotation
@@ -568,6 +594,7 @@ class Visual(Node):
         return code
 
     def change_parent_to(self, new_parent):
+        self._verify_change_allowed()
         if not (isinstance(new_parent, Axis) or new_parent is None):
             raise ValueError('Visuals can only be attached to an axis (or derived) or None')
 
@@ -638,6 +665,7 @@ class Axis(NodeWithParent):
 
     @inertia.setter
     def inertia(self,val):
+        self._verify_change_allowed()
         assert1f(val,"Inertia")
         self._inertia = val
         self._update_inertia()
@@ -648,6 +676,7 @@ class Axis(NodeWithParent):
 
     @inertia_position.setter
     def inertia_position(self, val):
+        self._verify_change_allowed()
         assert3f(val, "Inertia position")
         self._inertia_position = tuple(val)
         self._update_inertia()
@@ -658,6 +687,7 @@ class Axis(NodeWithParent):
 
     @inertia_radii.setter
     def inertia_radii(self, val):
+        self._verify_change_allowed()
         assert3f_positive(val, "Inertia radii of gyration")
         self._inertia_radii = val
         self._update_inertia()
@@ -696,6 +726,7 @@ class Axis(NodeWithParent):
 
     @fixed.setter
     def fixed(self, var):
+        self._verify_change_allowed()
         if var == True:
             var = (True,True,True,True,True,True)
         if var == False:
@@ -709,6 +740,7 @@ class Axis(NodeWithParent):
 
     def set_fixed(self):
         """Sets .fixed to (True,True,True,True,True,True)"""
+        self._verify_change_allowed()
         self._vfNode.set_fixed()
 
     @property
@@ -728,16 +760,19 @@ class Axis(NodeWithParent):
 
     @x.setter
     def x(self, var):
+        self._verify_change_allowed()
         a = self.position
         self.position = (var, a[1], a[2])
 
     @y.setter
     def y(self, var):
+        self._verify_change_allowed()
         a = self.position
         self.position = (a[0], var , a[2])
 
     @z.setter
     def z(self, var):
+        self._verify_change_allowed()
         a = self.position
         self.position = (a[0], a[1], var)
 
@@ -751,6 +786,7 @@ class Axis(NodeWithParent):
 
     @position.setter
     def position(self, var):
+        self._verify_change_allowed()
         assert3f(var, "Position ")
         self._vfNode.position = var
         self._scene._geometry_changed()
@@ -772,16 +808,19 @@ class Axis(NodeWithParent):
 
     @rx.setter
     def rx(self, var):
+        self._verify_change_allowed()
         a = self.rotation
         self.rotation = (var, a[1], a[2])
 
     @ry.setter
     def ry(self, var):
+        self._verify_change_allowed()
         a = self.rotation
         self.rotation = (a[0], var , a[2])
 
     @rz.setter
     def rz(self, var):
+        self._verify_change_allowed()
         a = self.rotation
         self.rotation = (a[0], a[1], var)
 
@@ -794,6 +833,7 @@ class Axis(NodeWithParent):
 
     @rotation.setter
     def rotation(self, var):
+        self._verify_change_allowed()
         # convert to degrees
         assert3f(var, "Rotation ")
         self._vfNode.rotation = np.deg2rad(var)
@@ -807,7 +847,7 @@ class Axis(NodeWithParent):
 
     @parent.setter
     def parent(self, val):
-
+        self._verify_change_allowed()
         if val is not None:
             # Circular reference check: are we trying to make self depend on val while val depends on self?
             if self._scene.node_A_core_depends_on_B_core(val, self):
@@ -835,16 +875,19 @@ class Axis(NodeWithParent):
 
     @gx.setter
     def gx(self, var):
+        self._verify_change_allowed()
         a = self.global_position
         self.global_position = (var, a[1], a[2])
 
     @gy.setter
     def gy(self, var):
+        self._verify_change_allowed()
         a = self.global_position
         self.global_position = (a[0], var, a[2])
 
     @gz.setter
     def gz(self, var):
+        self._verify_change_allowed()
         a = self.global_position
         self.global_position = (a[0], a[1], var)
 
@@ -855,6 +898,7 @@ class Axis(NodeWithParent):
 
     @global_position.setter
     def global_position(self, val):
+        self._verify_change_allowed()
         assert3f(val, "Global Position")
         if self.parent:
             self.position = self.parent.to_loc_position(val)
@@ -878,16 +922,19 @@ class Axis(NodeWithParent):
 
     @grx.setter
     def grx(self, var):
+        self._verify_change_allowed()
         a = self.global_rotation
         self.global_rotation = (var, a[1], a[2])
 
     @gry.setter
     def gry(self, var):
+        self._verify_change_allowed()
         a = self.global_rotation
         self.global_rotation = (a[0], var, a[2])
 
     @grz.setter
     def grz(self, var):
+        self._verify_change_allowed()
         a = self.global_rotation
         self.global_rotation = (a[0], a[1], var)
 
@@ -961,6 +1008,7 @@ class Axis(NodeWithParent):
 
     @global_rotation.setter
     def global_rotation(self, val):
+        self._verify_change_allowed()
         assert3f(val, "Global Rotation")
         if self.parent:
             self.rotation = self.parent.to_loc_rotation(val)
@@ -1082,6 +1130,7 @@ class Axis(NodeWithParent):
             new_parent: new parent node
 
         """
+        self._verify_change_allowed()
 
         # check new_parent
         if new_parent is not None:
@@ -1172,16 +1221,19 @@ class Poi(NodeWithParent):
 
     @x.setter
     def x(self, var):
+        self._verify_change_allowed()
         a = self.position
         self.position = (var, a[1], a[2])
 
     @y.setter
     def y(self, var):
+        self._verify_change_allowed()
         a = self.position
         self.position = (a[0], var, a[2])
 
     @z.setter
     def z(self, var):
+        self._verify_change_allowed()
         """z component of local position"""
         a = self.position
         self.position = (a[0], a[1], var)
@@ -1194,6 +1246,7 @@ class Poi(NodeWithParent):
 
     @position.setter
     def position(self, new_position):
+        self._verify_change_allowed()
         assert3f(new_position)
         self._vfNode.position = new_position
 
@@ -1219,16 +1272,19 @@ class Poi(NodeWithParent):
 
     @gx.setter
     def gx(self, var):
+        self._verify_change_allowed()
         a = self.global_position
         self.global_position = (var, a[1], a[2])
 
     @gy.setter
     def gy(self, var):
+        self._verify_change_allowed()
         a = self.global_position
         self.global_position = (a[0], var, a[2])
 
     @gz.setter
     def gz(self, var):
+        self._verify_change_allowed()
         a = self.global_position
         self.global_position = (a[0], a[1], var)
 
@@ -1239,6 +1295,7 @@ class Poi(NodeWithParent):
 
     @global_position.setter
     def global_position(self, val):
+        self._verify_change_allowed()
         assert3f(val, "Global Position")
         if self.parent:
             self.position = self.parent.to_loc_position(val)
@@ -1285,6 +1342,7 @@ class RigidBody(Axis):
 
     @name.setter
     def name(self, newname):
+        self._verify_change_allowed()
         # super().name = newname
         super(RigidBody, self.__class__).name.fset(self, newname)
         self._vfPoi.name = newname + vfc.VF_NAME_SPLIT + "cog"
@@ -1309,21 +1367,25 @@ class RigidBody(Axis):
 
     @cogx.setter
     def cogx(self, var):
+        self._verify_change_allowed()
         a = self.cog
         self.cog = (var, a[1], a[2])
 
     @cogy.setter
     def cogy(self, var):
+        self._verify_change_allowed()
         a = self.cog
         self.cog = (a[0], var, a[2])
 
     @cogz.setter
     def cogz(self, var):
+        self._verify_change_allowed()
         a = self.cog
         self.cog = (a[0], a[1], var)
 
     @cog.setter
     def cog(self, newcog):
+        self._verify_change_allowed()
         assert3f(newcog)
         self._vfPoi.position = newcog
         self.inertia_position = self.cog
@@ -1336,6 +1398,7 @@ class RigidBody(Axis):
 
     @mass.setter
     def mass(self, newmass):
+        self._verify_change_allowed()
         assert1f(newmass)
         self.inertia = newmass
         self._vfForce.force = (0, 0, -vfc.G * newmass)
@@ -1469,7 +1532,7 @@ class GeometricContact(Node, Manager):
         self._circle1_parent_parent = circle1.parent.parent
 
         for node in self.managed_nodes():
-            node._manager = self
+            node.manager = self
 
 
     @property
@@ -1505,6 +1568,9 @@ class GeometricContact(Node, Manager):
         These axes are connected with a shore axis which is allowed to rotate relative to the master axis
         the slave axis is fixed to this rotating axis
         """
+
+        remember = self._scene.current_manager
+        self._scene.current_manager = self # claim managment
 
         pin = self._circle1  # slave
         hole = self._circle2 # master
@@ -1568,6 +1634,8 @@ class GeometricContact(Node, Manager):
         y = np.dot(difference, direction)
         self._slaved_axis.rotation = (0,y,0)
 
+        self._scene.current_manager = remember
+
     def managed_nodes(self):
         """Returns a list of managed nodes"""
 
@@ -1589,6 +1657,10 @@ class GeometricContact(Node, Manager):
 
     @flipped.setter
     def flipped(self, value):
+
+        remember = self._scene.current_manager  # claim management
+        self._scene.current_manager = self
+
         self._flipped = value
 
         if self._flipped:
@@ -1596,10 +1668,15 @@ class GeometricContact(Node, Manager):
         else:
             self._master_axis.rotation = rotation_from_y_axis_direction(self._circle2.axis)
 
-        print(self._master_axis.rotation)
+        self._scene.current_manager = remember # restore old manager
 
 
     def give_python_code(self):
+
+        old_manger = self._scene.current_manager
+        self._scene.current_manager = self
+
+
         code = []
         code.append(f'# This is the code for the elements managed by {self.name}')
         code.append(f'# First create the elements that need to exist before the connection can be made')
@@ -1620,6 +1697,11 @@ class GeometricContact(Node, Manager):
         code.append(f"s.new_geometriccontact(name = '{self.name}',")
         code.append(f"                       item1 = '{self._circle1.name}',")
         code.append(f"                       item2 = '{self._circle2.name}')")
+
+        # TODO: Set actual geometry
+
+        self._scene.current_manager = old_manger
+
         return '\n'.join(code)
 
 
@@ -1670,6 +1752,7 @@ class Cable(CoreConnectedNode):
 
     @length.setter
     def length(self, val):
+        self._verify_change_allowed()
         if val < 1e-9:
             raise Exception('Length shall be more than 0 (otherwise stiffness EA/L becomes infinite)')
         self._vfNode.Length = val
@@ -1681,6 +1764,7 @@ class Cable(CoreConnectedNode):
 
     @EA.setter
     def EA(self, ea):
+        self._verify_change_allowed()
         self._vfNode.EA = ea
 
     @property
@@ -1690,6 +1774,7 @@ class Cable(CoreConnectedNode):
 
     @diameter.setter
     def diameter(self, diameter):
+        self._verify_change_allowed()
         self._vfNode.diameter = diameter
 
     @property
@@ -1698,6 +1783,7 @@ class Cable(CoreConnectedNode):
 
     @connections.setter
     def connections(self, value):
+        self._verify_change_allowed()
         if len(value)<2:
             raise ValueError('At least two connections required')
 
@@ -1836,6 +1922,7 @@ class Force(NodeWithParent):
 
     @force.setter
     def force(self, val):
+        self._verify_change_allowed()
         assert3f(val)
         self._vfNode.force = val
 
@@ -1846,6 +1933,7 @@ class Force(NodeWithParent):
 
     @fx.setter
     def fx(self, var):
+        self._verify_change_allowed()
         a = self.force
         self.force = (var, a[1], a[2])
 
@@ -1856,16 +1944,19 @@ class Force(NodeWithParent):
 
     @fy.setter
     def fy(self, var):
+        self._verify_change_allowed()
         a = self.force
         self.force = (a[0], var, a[2])
 
     @property
     def fz(self):
         """The global z-component of the force"""
+
         return self.force[2]
 
     @fz.setter
     def fz(self, var):
+        self._verify_change_allowed()
         a = self.force
         self.force = (a[0], a[1], var)
 
@@ -1880,6 +1971,7 @@ class Force(NodeWithParent):
 
     @moment.setter
     def moment(self, val):
+        self._verify_change_allowed()
         assert3f(val)
         self._vfNode.moment = val
 
@@ -1890,6 +1982,7 @@ class Force(NodeWithParent):
 
     @mx.setter
     def mx(self, var):
+        self._verify_change_allowed()
         a = self.moment
         self.moment = (var, a[1], a[2])
 
@@ -1900,6 +1993,7 @@ class Force(NodeWithParent):
 
     @my.setter
     def my(self, var):
+        self._verify_change_allowed()
         a = self.moment
         self.moment = (a[0], var, a[2])
 
@@ -1910,6 +2004,7 @@ class Force(NodeWithParent):
 
     @mz.setter
     def mz(self, var):
+        self._verify_change_allowed()
         a = self.moment
         self.moment = (a[0], a[1], var)
 
@@ -2003,6 +2098,7 @@ class ContactBall(NodeWithParent):
 
     @radius.setter
     def radius(self, value):
+        self._verify_change_allowed()
         assert1f_positive(value,'radius')
         self._vfNode.radius = value
         pass
@@ -2013,6 +2109,7 @@ class ContactBall(NodeWithParent):
 
     @k.setter
     def k(self, value):
+        self._verify_change_allowed()
         assert1f_positive(value, 'k')
         self._vfNode.k = value
         pass
@@ -2049,6 +2146,7 @@ class Sheave(NodeWithParent):
 
     @axis.setter
     def axis(self, val):
+        self._verify_change_allowed()
         assert3f(val)
         if np.linalg.norm(val) == 0:
             raise ValueError('Axis can not be 0,0,0')
@@ -2064,6 +2162,7 @@ class Sheave(NodeWithParent):
 
     @radius.setter
     def radius(self, val):
+        self._verify_change_allowed()
         assert1f(val)
         self._vfNode.radius = val
 
@@ -2096,6 +2195,7 @@ class HydSpring(NodeWithParent):
 
     @cob.setter
     def cob(self, val):
+        self._verify_change_allowed()
         assert3f(val)
         self._vfNode.position = val
 
@@ -2106,6 +2206,7 @@ class HydSpring(NodeWithParent):
 
     @BMT.setter
     def BMT(self, val):
+        self._verify_change_allowed()
         self._vfNode.BMT = val
 
     @property
@@ -2115,6 +2216,7 @@ class HydSpring(NodeWithParent):
 
     @BML.setter
     def BML(self, val):
+        self._verify_change_allowed()
         self._vfNode.BML = val
 
     @property
@@ -2124,6 +2226,7 @@ class HydSpring(NodeWithParent):
 
     @COFX.setter
     def COFX(self, val):
+        self._verify_change_allowed()
         self._vfNode.COFX = val
 
     @property
@@ -2133,6 +2236,7 @@ class HydSpring(NodeWithParent):
 
     @COFY.setter
     def COFY(self, val):
+        self._verify_change_allowed()
         self._vfNode.COFY = val
 
     @property
@@ -2142,6 +2246,7 @@ class HydSpring(NodeWithParent):
 
     @kHeave.setter
     def kHeave(self, val):
+        self._verify_change_allowed()
         self._vfNode.kHeave = val
 
     @property
@@ -2151,6 +2256,7 @@ class HydSpring(NodeWithParent):
 
     @waterline.setter
     def waterline(self, val):
+        self._verify_change_allowed()
         self._vfNode.waterline = val
 
     @property
@@ -2160,6 +2266,7 @@ class HydSpring(NodeWithParent):
 
     @displacement_kN.setter
     def displacement_kN(self, val):
+        self._verify_change_allowed()
         self._vfNode.displacement_kN = val
 
     def give_python_code(self):
@@ -2212,6 +2319,7 @@ class LC6d(CoreConnectedNode):
 
     @stiffness.setter
     def stiffness(self, val):
+        self._verify_change_allowed()
         self._vfNode.stiffness = val
 
     @property
@@ -2221,6 +2329,7 @@ class LC6d(CoreConnectedNode):
 
     @master.setter
     def master(self,val):
+        self._verify_change_allowed()
         if not isinstance(val, Axis):
             raise TypeError('Provided master should be a Axis')
 
@@ -2234,6 +2343,7 @@ class LC6d(CoreConnectedNode):
 
     @slave.setter
     def slave(self, val):
+        self._verify_change_allowed()
         if not isinstance(val, Axis):
             raise TypeError('Provided master should be a Axis')
 
@@ -2295,6 +2405,7 @@ class Connector2d(CoreConnectedNode):
 
     @k_linear.setter
     def k_linear(self, value):
+        self._verify_change_allowed()
         self._vfNode.k_linear = value
 
     @property
@@ -2304,6 +2415,7 @@ class Connector2d(CoreConnectedNode):
 
     @k_angular.setter
     def k_angular(self, value):
+        self._verify_change_allowed()
         self._vfNode.k_angular = value
 
     @property
@@ -2313,6 +2425,7 @@ class Connector2d(CoreConnectedNode):
 
     @master.setter
     def master(self, val):
+        self._verify_change_allowed()
         if not isinstance(val, Axis):
             raise TypeError('Provided master should be a Axis')
 
@@ -2326,6 +2439,7 @@ class Connector2d(CoreConnectedNode):
 
     @slave.setter
     def slave(self, val):
+        self._verify_change_allowed()
         if not isinstance(val, Axis):
             raise TypeError('Provided master should be a Axis')
 
@@ -2387,8 +2501,10 @@ class LinearBeam(CoreConnectedNode):
     @property
     def EIy(self):
         return self._vfNode.EIy
+
     @EIy.setter
     def EIy(self,value):
+        self._verify_change_allowed()
         self._vfNode.EIy = value
 
     @property
@@ -2397,6 +2513,7 @@ class LinearBeam(CoreConnectedNode):
 
     @EIz.setter
     def EIz(self, value):
+        self._verify_change_allowed()
         self._vfNode.EIz = value
 
     @property
@@ -2405,6 +2522,7 @@ class LinearBeam(CoreConnectedNode):
 
     @GIp.setter
     def GIp(self, value):
+        self._verify_change_allowed()
         self._vfNode.GIp = value
 
     @property
@@ -2413,6 +2531,7 @@ class LinearBeam(CoreConnectedNode):
 
     @EA.setter
     def EA(self, value):
+        self._verify_change_allowed()
         self._vfNode.EA = value
 
     @property
@@ -2425,10 +2544,12 @@ class LinearBeam(CoreConnectedNode):
 
     @L.setter
     def L(self, value):
+        self._verify_change_allowed()
         self._vfNode.L = value
 
     @master.setter
     def master(self,val):
+        self._verify_change_allowed()
         if not isinstance(val, Axis):
             raise TypeError('Provided master should be a Axis')
 
@@ -2441,6 +2562,7 @@ class LinearBeam(CoreConnectedNode):
 
     @slave.setter
     def slave(self, val):
+        self._verify_change_allowed()
         if not isinstance(val, Axis):
             raise TypeError('Provided master should be a Axis')
 
@@ -2686,6 +2808,7 @@ class TriMeshSource(Node):
         return code
 
     def change_parent_to(self, new_parent):
+        self._verify_change_allowed()
         if not (isinstance(new_parent, Axis) or new_parent is None):
             raise ValueError('Visuals can only be attached to an axis (or derived) or None')
 
@@ -2854,6 +2977,8 @@ class BallastSystem(Poi):
         See also: change_parent_to
         """
 
+        self._verify_change_allowed()
+
         super(Poi, type(self)).parent.fset(self, var)
         # update parent of other core nodes
         for tank in self._tanks:
@@ -2898,6 +3023,7 @@ class BallastSystem(Poi):
 
     @position.setter
     def position(self, new_position):
+        self._verify_change_allowed()
         assert3f(new_position)
         self._position = new_position
 
@@ -2907,6 +3033,7 @@ class BallastSystem(Poi):
 
     @name.setter
     def name(self, newname):
+        self._verify_change_allowed()
         super(Poi, self.__class__).name.fset(self, newname)
         self._vfForce.name = newname + vfc.VF_NAME_SPLIT + "gravity"
 
@@ -2925,6 +3052,7 @@ class BallastSystem(Poi):
 
         """
         # asserts
+        self._verify_change_allowed()
 
         assert3f(position, "position")
         assert1f(capacity_kN, "Capacity in kN")
@@ -3034,6 +3162,7 @@ class BallastSystem(Poi):
         return [tank.name for tank in self._tanks]
 
     def fill_tank(self, name, fill):
+        self._verify_change_allowed()
 
         assert1f(fill, "tank fill")
 
@@ -3070,11 +3199,13 @@ class BallastSystem(Poi):
 
 
     def empty_all_usable_tanks(self):
+        self._verify_change_allowed()
         for t in self._tanks:
             if not t.frozen:
                 t.make_empty()
 
     def tank(self, name):
+
         for t in self._tanks:
             if t.name == name:
                 return t
@@ -3172,6 +3303,7 @@ class WaveInteraction1(Node):
         return code
 
     def change_parent_to(self, new_parent):
+        self._verify_change_allowed()
         if not (isinstance(new_parent, Axis)):
             raise ValueError('Hydrodynamic databases can only be attached to an axis (or derived)')
 
@@ -3226,6 +3358,9 @@ class Scene:
 
         self._name_prefix = ""
         """An optional prefix to be applied to node names. Used when importing scenes."""
+
+        self.current_manager = None
+        """Setting this to an instance of a Manager allows nodes with that manager to be changed"""
 
         if filename is not None:
             self.load_scene(filename)
@@ -4038,7 +4173,6 @@ class Scene:
 
         new_node = GeometricContact(self, item1, item2, name)
         new_node.set_pin_in_hole_connection()
-
 
         self._nodes.append(new_node)
         return new_node

@@ -1366,16 +1366,16 @@ class Viewport:
         for r in screen.renderers:
             r.ResetCamera()
 
-            # # Add SAOO
-            #
+            # Add SAOO
+
             # basicPasses = vtk.vtkRenderStepsPass()
             # ssao = vtk.vtkSSAOPass()
             # ssao.SetRadius(5)
             # ssao.SetDelegatePass(basicPasses)
             # ssao.SetBlur(True)
             # ssao.SetKernelSize(8)
-            # # ssao.ComputeKernel()
-            #
+            # ssao.ComputeKernel()
+
             # r.SetPass(ssao)
 
         self.update_outlines()
@@ -1383,6 +1383,9 @@ class Viewport:
         return screen
 
     def onMouseLeft(self, info):
+
+
+
         if self.mouseLeftEvent is not None:
             self.mouseLeftEvent(info)
 
@@ -1441,7 +1444,7 @@ class Viewport:
         iren = self.renwin.GetInteractor()
         iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
 
-        iren.AddObserver("LeftButtonPressEvent", screen._mouseleft)
+        iren.AddObserver("LeftButtonPressEvent", self._leftmousepress)
         iren.AddObserver("RightButtonPressEvent", screen._mouseright)
         iren.AddObserver("MiddleButtonPressEvent", screen._mousemiddle)
         iren.AddObserver("KeyPressEvent", self.keyPressFunction)
@@ -1452,7 +1455,7 @@ class Viewport:
 
         iren.Start()
 
-        screen.mouseLeftClickFunction = self.onMouseLeft
+        # screen.mouseLeftClickFunction = self.onMouseLeft
         screen.mouseRightClickFunction = self.onMouseRight
 
         # Add some lights
@@ -1467,6 +1470,34 @@ class Viewport:
         self.renderer.AddLight(light1)
 
         self.light = light1
+
+    def _leftmousepress(self, iren, event):
+        """Implements a "fuzzy" mouse pick function"""
+
+        if self.mouseLeftEvent is not None:
+
+            pos = self.screen.interactor.GetEventPosition()
+            picker = vtk.vtkPropPicker()
+
+            for i in range(2):
+                print(i)
+                for j in range(4):
+
+                    if j==0:
+                        x,y = 1,1
+                    elif j == 1:
+                        x, y = -1, 1
+                    elif j == 2:
+                        x, y = -1, -1
+                    else:
+                        x, y = 1, -1
+
+                    picker.Pick(pos[0]+3*(i+1)*x, pos[1]+3*(i+1)*y, 0, self.screen.renderer)
+                    actor = picker.GetActor()  # gives an Actor
+                    if actor is not None:
+                        self.mouseLeftEvent(actor)
+                        return
+
 
     def keep_up_up(self,obj, event_type):
         """Force z-axis up"""
