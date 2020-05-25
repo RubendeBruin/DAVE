@@ -1479,22 +1479,23 @@ class Viewport:
             pos = self.screen.interactor.GetEventPosition()
             picker = vtk.vtkPropPicker()
 
-            for i in range(2):
-                print(i)
-                for j in range(4):
+            for j in range(5):
 
-                    if j==0:
-                        x,y = 1,1
-                    elif j == 1:
-                        x, y = -1, 1
-                    elif j == 2:
-                        x, y = -1, -1
-                    else:
-                        x, y = 1, -1
+                if j==0:
+                    x,y = 0,0
+                elif j == 1:
+                    x, y = -1, 1
+                elif j == 2:
+                    x, y = -1, -1
+                elif j==3:
+                    x, y = 1, 1
+                else:
+                    x, y = 1, -1
 
-                    picker.Pick(pos[0]+3*(i+1)*x, pos[1]+3*(i+1)*y, 0, self.screen.renderer)
+                if picker.Pick(pos[0]+2*x, pos[1]+2*y, 0, self.screen.renderer):
                     actor = picker.GetActor()  # gives an Actor
                     if actor is not None:
+                        print(j)
                         self.mouseLeftEvent(actor)
                         return
 
