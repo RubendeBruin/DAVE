@@ -3813,22 +3813,31 @@ class Scene:
 
         if isinstance(node, Manager):
             node.delete()
+            self._nodes.remove(node)
+            return
 
         depending_nodes = self.nodes_depending_on(node)
 
+        if node._manager:  # node, delete its manager
+            print('Deleting manager')
+            self.delete(node._manager)
+            try:
+                self.delete(node)  # node may have been deleted by the manager
+            except:
+                pass
 
+        else:
+            self._print('Deleting {} [{}]'.format(node.name, str(type(node)).split('.')[-1][:-2]))
 
-        self._print('Deleting {} [{}]'.format(node.name, str(type(node)).split('.')[-1][:-2]))
+            # First delete the dependencies
+            for d in depending_nodes:
+                if not self.name_available(d):  # element is still here
+                    self.delete(d)
 
-        # First delete the dependencies
-        for d in depending_nodes:
-            if not self.name_available(d):  # element is still here
-                self.delete(d)
-
-        # then remove the vtk node itself
-        # self._print('removing vfc node')
-        node._delete_vfc()
-        self._nodes.remove(node)
+            # then remove the vtk node itself
+            # self._print('removing vfc node')
+            node._delete_vfc()
+            self._nodes.remove(node)
 
 
 
