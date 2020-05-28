@@ -3594,12 +3594,13 @@ class Scene:
 
     # ======== element functions =========
 
-    def node_by_name(self, node_name):
+    def node_by_name(self, node_name, silent=False):
         for N in self._nodes:
             if N.name == node_name:
                 return N
 
-        self.print_node_tree()
+        if not silent:
+            self.print_node_tree()
         raise ValueError('No node with name "{}". Available names printed above.'.format(node_name))
 
     def __getitem__(self, node_name):
@@ -3772,7 +3773,8 @@ class Scene:
         r = []
         for name in names:
             try:
-                r.append(self[name].name)
+                node = self.node_by_name(name, silent=True)
+                r.append(node.name)
             except:
                 pass
 
@@ -3834,12 +3836,10 @@ class Scene:
         depending_nodes = self.nodes_depending_on(node)
 
         if node._manager:  # node, delete its manager
-            print('Deleting manager')
+            # print('Deleting manager')
             self.delete(node._manager)
-            try:
+            if node in self._nodes:
                 self.delete(node)  # node may have been deleted by the manager
-            except:
-                pass
 
         else:
             self._print('Deleting {} [{}]'.format(node.name, str(type(node)).split('.')[-1][:-2]))
@@ -4575,7 +4575,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_sheave(self, name, parent, axis, radius=0):
+    def new_sheave(self, name, parent, axis, radius=0.):
         """Creates a new *sheave* node and adds it to the scene.
 
         Args:
