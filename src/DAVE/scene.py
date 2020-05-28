@@ -2399,6 +2399,21 @@ class Connector2d(CoreConnectedNode):
         return self._vfNode.axis
 
     @property
+    def ax(self):
+        """X component of actual rotation axis between master and slave (read-only)"""
+        return self._vfNode.axis[0]
+
+    @property
+    def ay(self):
+        """Y component of actual rotation axis between master and slave (read-only)"""
+        return self._vfNode.axis[1]
+
+    @property
+    def az(self):
+        """Z component of actual rotation axis between master and slave (read-only)"""
+        return self._vfNode.axis[2]
+
+    @property
     def k_linear(self):
         """Linear stiffness [kN/m]"""
         return self._vfNode.k_linear
@@ -3905,7 +3920,16 @@ class Scene:
         if timeout is None:
             solve_func = self._vfc.state_solve_statics
         else:
-            solve_func = lambda : self._vfc.state_solve_statics_with_timeout(timeout, False)
+            #       bool doStabilityCheck,
+            #       double timeout,
+            # 		bool do_prepare_state,
+            # 		bool solve_linear_dofs_first,
+            # 		double stability_check_delta
+            solve_func = lambda : self._vfc.state_solve_statics_with_timeout(True,
+                                                                             timeout,
+                                                                             True,
+                                                                             True,
+                                                                             0)  # default stability value
 
 
         # pass 1
@@ -3919,7 +3943,6 @@ class Scene:
             # pass 2
             self._restore_original_fixes(orignal_fixes)
             succes = solve_func()
-
 
         if self.verify_equilibrium():
             if not silent:

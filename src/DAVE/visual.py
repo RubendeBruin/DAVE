@@ -625,7 +625,7 @@ class Viewport:
                 actors.append(box)
 
             if isinstance(N, vf.Poi):
-                size = 1
+                size = 0.5
                 p = vp.Sphere(pos=(0,0,0), r=size/2, res = vc.RESOLUTION_SPHERE)
                 p.c(vc.COLOR_POI)
                 p.actor_type = ActorType.GEOMETRY

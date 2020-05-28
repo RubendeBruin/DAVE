@@ -73,7 +73,7 @@ import DAVE.auto_download
 
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QIcon, QPixmap, QFont,QFontMetricsF
-from PySide2.QtWidgets import QDialog,QFileDialog
+from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox
 from DAVE.scene import Scene
 
 from DAVE.gui.forms.main_form import Ui_MainWindow
@@ -247,6 +247,7 @@ class Gui():
 
         # -- visuals
         self.ui.actionShow_water_plane.triggered.connect(self.toggle_show_global_from_menu)
+        self.ui.actionShow_visuals.triggered.connect(self.toggle_show_visuals)
 
 
         self.ui.sliderGeometrySize = MenuSlider('Geometry size')
@@ -743,6 +744,12 @@ class Gui():
         old_dofs = self.scene._vfc.get_dofs()
 
         if len(old_dofs) == 0:  # no degrees of freedom
+
+            msgBox = QMessageBox()
+            msgBox.setText("No degrees of freedom - nothing to solve")
+            msgBox.setWindowTitle("DAVE")
+            msgBox.exec_()
+
             print('No dofs')
             return
 
@@ -757,7 +764,32 @@ class Gui():
 
         while True:
 
-            status = self.scene._vfc.state_solve_statics_with_timeout(0.5, True)
+            # Returns
+            # -1  done, unstable solution
+            # 0   done, stable equilibrium (if checked) or unknonwn equilibrium (if not checked)
+            #
+            # 1   time-out or fail during linear-dof solve   - state not in equilibrium
+            # 2   time-out or fail during full-dof solve     - state not in equilibrium
+            #
+            # Positive (1,2) return argument can be passed as input (phases_completed) to continue where we timed-out.
+            #
+            # */
+            # int Scene::stateSolve(bool doStabilityCheck, double timeout,
+            # 	bool do_prepare_state,
+            # 	bool solve_linear_dofs_first,
+            # 	double stability_check_delta)
+
+            timeout = 0.5
+            do_stability_check = True
+            do_prepare_state = True
+            solve_linear_dofs_first = True
+            delta = 0 # default
+
+            status = self.scene._vfc.state_solve_statics_with_timeout(do_stability_check,
+                                                                      timeout,
+                                                                      do_prepare_state,
+                                                                      solve_linear_dofs_first,
+                                                                      delta)
 
             if self._terminate:
                 print('Terminating')
