@@ -19,11 +19,18 @@ def assert1f(var, name = "Variable"):
     if not isinstance(var, numbers.Number):
         raise ValueError(name + " should be a number but {} is not a number.".format(var))
 
-def assert1f_positive(var, name = "Variable"):
+def assert1f_positive_or_zero(var, name ="Variable"):
     if not isinstance(var, numbers.Number):
         raise ValueError(name + " should be a number but {} is not a number.".format(var))
     if var < 0:
         raise ValueError(name + " can not be negative.".format(var))
+
+def assert1f_positive(var, name ="Variable"):
+    if not isinstance(var, numbers.Number):
+        raise ValueError(name + " should be a number but {} is not a number.".format(var))
+    if var < 1e-6:
+        raise ValueError(name + " should be >= 1e-6.".format(var))
+
 
 def assert3f(var, name = "Variable"):
     """Asserts that variable has length three and contains only numbers"""

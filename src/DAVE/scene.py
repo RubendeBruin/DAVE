@@ -1845,7 +1845,7 @@ class ContactBall(NodeWithParent):
     @radius.setter
     def radius(self, value):
         self._verify_change_allowed()
-        assert1f_positive(value,'radius')
+        assert1f_positive_or_zero(value, 'radius')
         self._vfNode.radius = value
         pass
 
@@ -1856,7 +1856,7 @@ class ContactBall(NodeWithParent):
     @k.setter
     def k(self, value):
         self._verify_change_allowed()
-        assert1f_positive(value, 'k')
+        assert1f_positive_or_zero(value, 'k')
         self._vfNode.k = value
         pass
 
@@ -3382,30 +3382,30 @@ class Sling(Node, Manager):
 
         # create the two splices
 
-        self.sa = scene.new_rigidbody(name + '_spliceA', fixed=False)
-        self.a1 = scene.new_poi(name + '_spliceA1', parent=self.sa)
-        self.a2 = scene.new_poi(name + '_spliceA2', parent=self.sa)
-        self.am = scene.new_poi(name + '_spliceAM', parent=self.sa)
+        self.sa = scene.new_rigidbody(name_prefix + '_spliceA', fixed=False)
+        self.a1 = scene.new_poi(name_prefix + '_spliceA1', parent=self.sa)
+        self.a2 = scene.new_poi(name_prefix + '_spliceA2', parent=self.sa)
+        self.am = scene.new_poi(name_prefix + '_spliceAM', parent=self.sa)
 
         self.avis = scene.new_visual(name + '_spliceA_visual', parent=self.sa,  path=r'cylinder 1x1x1 lowres.obj',
                      offset=(-LspliceA/2, 0.0, 0.0),
                      rotation=(0.0, 90.0, 0.0),
                      scale=(LspliceA, 2*diameter, diameter))
 
-        self.sb = scene.new_rigidbody(name + '_spliceB', rotation = (0,0,180),fixed=False)
-        self.b1 = scene.new_poi(name + '_spliceB1', parent=self.sb)
-        self.b2 = scene.new_poi(name + '_spliceB2', parent=self.sb)
-        self.bm = scene.new_poi(name + '_spliceBM', parent=self.sb)
+        self.sb = scene.new_rigidbody(name_prefix + '_spliceB', rotation = (0,0,180),fixed=False)
+        self.b1 = scene.new_poi(name_prefix + '_spliceB1', parent=self.sb)
+        self.b2 = scene.new_poi(name_prefix + '_spliceB2', parent=self.sb)
+        self.bm = scene.new_poi(name_prefix + '_spliceBM', parent=self.sb)
 
-        self.bvis = scene.new_visual(name + '_spliceB_visual', parent=self.sb, path=r'cylinder 1x1x1 lowres.obj',
+        self.bvis = scene.new_visual(name_prefix + '_spliceB_visual', parent=self.sb, path=r'cylinder 1x1x1 lowres.obj',
                      offset=(-LspliceB / 2, 0.0, 0.0),
                      rotation=(0.0, 90.0, 0.0),
                      scale=(LspliceB, 2 * diameter, diameter))
 
-        self.main = scene.new_cable(name, poiA=self.am, poiB=self.bm, length=1, EA=1, diameter=diameter)
+        self.main = scene.new_cable(name_prefix + '_main_part', poiA=self.am, poiB=self.bm, length=1, EA=1, diameter=diameter)
 
-        self.eyeA = scene.new_cable(name + '_eyeA', poiA=self.a1, poiB=self.a2, length=1, EA=1)
-        self.eyeB = scene.new_cable(name + '_eyeB', poiA=self.b1, poiB=self.b2, length=1, EA=1)
+        self.eyeA = scene.new_cable(name_prefix + '_eyeA', poiA=self.a1, poiB=self.a2, length=1, EA=1)
+        self.eyeB = scene.new_cable(name_prefix + '_eyeB', poiA=self.b1, poiB=self.b2, length=1, EA=1)
 
         # Update properties
         self._update_properties()
@@ -3421,12 +3421,16 @@ class Sling(Node, Manager):
         # Springs in series: 1/Ktotal = 1/k1 + 1/k2 + 1/k3
 
         Lmain = self._Ltotal-self._LspliceA-self._LspliceB-self._LeyeA-self._LeyeB
-        ka = (2*self._EA / self._LspliceA)
-        kb = (2*self._EA / self._LspliceB)
-        kmain = (self._EA / Lmain)
-        k_total = 1 / ((1/ka) + (1/kmain) + (1/kb))
 
-        EAmain = k_total * Lmain
+        if self._EA == 0:
+            EAmain = 0
+        else:
+            ka = (2*self._EA / self._LspliceA)
+            kb = (2*self._EA / self._LspliceB)
+            kmain = (self._EA / Lmain)
+            k_total = 1 / ((1/ka) + (1/kmain) + (1/kb))
+
+            EAmain = k_total * Lmain
 
         self.sa.mass = self._mass / 2
         self.a1.position = (self._LspliceA/2, self._diameter/2, 0)
@@ -3468,20 +3472,27 @@ class Sling(Node, Manager):
             self.eyeB.connections = (self.b1, self.b2)
 
     def depends_on(self):
+        """Endpoints and sheaves are managed, so no dependency on those
+
+        however we do depend on their parents (if any)
+        """
+
         a = list()
         if self._endA is not None:
-            a.append(self._endA)
+            a.append(self._endA.parent)
         if self._endB is not None:
-            a.append(self._endB)
+            a.append(self._endB.parent)
+
+        for s in self.sheaves:
+            if s.parent is not None:
+                    a.append(s.parent)
+
+
+
         return a
 
     def managed_nodes(self):
         a = [self.sa,self.a1,self.a2,self.am,self.avis,self.sb,self.b1,self.b2,self.bm,self.bvis,self.main,self.eyeA,self.eyeB]
-        if self._endA is not None:
-            a.append(self._endA)
-        if self._endB is not None:
-            a.append(self._endB)
-        a.extend(self._sheaves)
 
         return a
 
@@ -3938,6 +3949,32 @@ class Scene:
                 r.append(n)
         return r
 
+    def assert_unique_names(self):
+        """Asserts that all names are unique"""
+        names = [n.name for n in self._nodes]
+        unique_names = set(names)
+
+        if len(unique_names) != len(names):
+            previous_name = ''
+            names.sort()
+            duplicates = ''
+            for name in names:
+                if name == previous_name:
+                    print(f'Duplicate: {name}')
+                    duplicates += name + ' '
+
+                    for n in self._nodes:
+                        if n.name == name:
+                            print(n)
+
+
+                previous_name = name
+            raise ValueError(f'Duplicate names exist: ' + duplicates)
+
+
+
+
+
 
     def sort_nodes_by_parent(self):
         """Sorts the nodes such that the parent of this node (if any) occurs earlier in the list.
@@ -3945,6 +3982,8 @@ class Scene:
             See Also:
                 sort_nodes_by_dependency
         """
+
+        self.assert_unique_names()
 
         exported = []
         to_be_exported = self._nodes.copy()
@@ -3962,11 +4001,14 @@ class Scene:
 
                 if hasattr(node, 'parent'):
                     parent = node.parent
+                    if parent is not None and parent not in exported:
+                        continue
 
-                    if parent is None or parent in exported:
-                        can_be_exported.append(node)
-                else:
-                    can_be_exported.append(node)
+                if node.manager is not None and node.manager not in exported:
+                    continue
+
+                # otherwise the node can be exported
+                can_be_exported.append(node)
 
             # remove exported nodes from
             for n in can_be_exported:
@@ -3982,6 +4024,8 @@ class Scene:
         See Also:
             sort_nodes_by_parent
         """
+
+        self.assert_unique_names()
 
         exported = []
         to_be_exported = self._nodes.copy()
@@ -4444,7 +4488,7 @@ class Scene:
             assert3f(rotation, "Rotation ")
 
         if inertia is not None:
-            assert1f_positive(inertia, "inertia ")
+            assert1f_positive_or_zero(inertia, "inertia ")
 
         if inertia_radii is not None:
             assert3f_positive(inertia_radii, "Radii of inertia")
@@ -5213,8 +5257,8 @@ class Scene:
         self._verify_name_available(name)
         b = self._poi_from_node(parent)
 
-        assert1f_positive(radius, "Radius ")
-        assert1f_positive(k, "k ")
+        assert1f_positive_or_zero(radius, "Radius ")
+        assert1f_positive_or_zero(k, "k ")
 
 
         if meshes is not None:
@@ -5289,6 +5333,91 @@ class Scene:
 
         self._nodes.append(r)
         return r
+
+    # code += f's.new_sling("{self.name}", Ltotal = {self.Ltotal},'
+    # code += f'            LeyeA = {self.LeyeA},'
+    # code += f'            LeyeB = {self.LeyeB},'
+    # code += f'            LspliceA = {self.LspliceA},'
+    # code += f'            LspliceB = {self.LspliceB},'
+    # code += f'            diameter = {self.diameter},'
+    # code += f'            EA = {self.EA},'
+    # code += f'            mass = {self.mass},'
+    # code += f'            endA = {self.endA},'
+    # code += f'            endB = {self.endB},'
+
+    def new_sling(self, name, length = -1, EA=0, mass = 0, endA = None, endB = None, LeyeA = None, LeyeB=None, LspliceA = None, LspliceB = None,
+                  diameter = 0, sheaves = None):
+        """
+
+        Args:
+            name:    name
+            length:  length of the sling [m], defaults to distance between endpoints
+            EA:      stiffness in kN, default 0
+            mass:    mass in mT, default to 0
+            endA:    element to connect end A to [poi, circle]
+            endB:    element to connect end B to [poi, circle]
+            LeyeA:   inside eye on side A length [m], defaults to 1/6th of length
+            LeyeB:   inside eye on side B length [m], defaults to 1/6th of length
+            LspliceA: splice length on side A [m] (the part where the cable is connected to itself)
+            LspliceB: splice length on side B [m] (the part where the cable is connected to itself)
+            diameter: cable diameter in m, default to 0
+            sheaves:  optional: list of sheaves/pois that the sling runs over
+
+        Returns:
+
+        """
+
+
+        # apply prefixes
+        name = self._prefix_name(name)
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+
+        endA = self._poi_or_sheave_from_node(endA)
+        endB = self._poi_or_sheave_from_node(endB)
+
+        if length==-1: # default
+            if endA is None or endB is None:
+                raise ValueError("Length for cable is not provided, so defaults to distance between endpoints; but at least one of the endpoints is None.")
+
+            length = np.linalg.norm(np.array(endA.global_position) - np.array(endB.global_position))
+
+        if LeyeA is None: # default
+            LeyeA = length / 6
+        if LeyeB is None:  # default
+            LeyeB = length / 6
+        if LspliceA is None:  # default
+            LspliceA = length / 6
+        if LspliceB is None:  # default
+            LspliceB = length / 6
+
+        if sheaves is None:
+            sheaves = []
+
+        assert1f_positive_or_zero(diameter, "Diameter")
+        assert1f_positive_or_zero(mass, "mass")
+
+        assert1f_positive(length, "Length")
+        assert1f_positive(LeyeA, "length of eye A")
+        assert1f_positive(LeyeB, "length of eye B")
+        assert1f_positive(LspliceA, "length of splice A")
+        assert1f_positive(LspliceB, "length of splice B")
+
+        for s in sheaves:
+            _ = self._poi_or_sheave_from_node(s)
+
+        # then make element
+        # __init__(self, scene, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
+
+        node = Sling(scene=self, name= name, Ltotal=length, LeyeA=LeyeA, LeyeB=LeyeB, LspliceA=LspliceA, LspliceB=LspliceB,
+                     diameter=diameter, EA=EA, mass=mass, endA=endA, endB=endB, sheaves=sheaves)
+        self._nodes.append(node)
+
+        return node
+
+
 
     def print_python_code(self):
         """Prints the python code that generates the current scene

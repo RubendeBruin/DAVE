@@ -17,7 +17,7 @@ Managers shall:
 - implement "depends_on". This is used for sorting the nodes before creating python code. These are the nodes that need to exist before the manager is created.
 - implement "managed_nodes" which return a list of all nodes that this manager manages.
 - implement "delete". This function deletes the manager and MAY delete managed nodes if needed. Typically a manager would delete the nodes it created.
-- delete shall remove management of any node that is managed by this manager and is not deleted.
+- for nodes that are not deleted: manager shall release management.
 
 **Editing**
 
