@@ -1451,260 +1451,6 @@ class RigidBody(Axis):
 
         return code
 
-class Manager():
-
-    def managed_nodes(self):
-        """Returns a list of managed nodes"""
-        raise Exception("derived class shall override this method")
-
-    def delete(self):
-        """Carefully remove the manager, reinstate situation as before"""
-
-        raise Exception("derived class shall override this method")
-
-
-
-
-
-
-
-class GeometricContact(Node, Manager):
-    """
-    GeometricContact
-
-    A GeometricContact can be used to construct geometric connections between circular members:
-	- 	steel bars and holes, such as a shackle pin in a padeye (pin-hole)
-	-	steel bars and steel bars, such as a shackle-shackle connection
-
-
-    parent_parent_of_circle2 [axis]  <-- not managed
-       - parent_of_circle2 [poi]
-           - circle2 [circle]        <--- input for creation
-
-           - SELF_master_axis           <--- created
-                - SELF__pin_hole_connection  <--- created
-                    - SELF_slaved_axis       <--- created
-
-                       - parent_of_parent_of_circle1 [axis]
-                         - parent_of_circle_1 [poi]
-                           - circle1 [circle]               <--- input for creation
-
-
-
-
-    """
-
-    def __init__(self, scene, circle1, circle2, name):
-        """
-        circle1 becomes the slave
-        circle2 becomes the master
-
-        (attach circle 1 to circle 2)
-        Args:
-            scene:
-            vfAxis:
-            circle1:
-            circle2:
-        """
-
-        super().__init__(scene)
-        self.name = name
-
-        name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
-
-        self._circle1 = circle1
-        self._circle2 = circle2
-        self._flipped = False
-
-        self._master_axis = self._scene.new_axis(name_prefix + '_master_axis')
-        """Axis on the master axis at the location of the center of hole or pin"""
-
-        self._pin_hole_connection = self._scene.new_axis(name_prefix + '_pin_hole_connection')
-        """axis between the center of the hole and the center of the pin. Free to rotate about the center of the hole as well as the pin"""
-
-        self._slaved_axis = self._scene.new_axis(name_prefix + '_slaved_axis')
-        """axis to which the slaved body is connected. Either the center of the hole or the center of the pin """
-
-        # prohibit changes to nodes that were used in the creation of this connection
-
-        self._circle1_parent = circle1.parent
-        self._circle2_parent = circle2.parent
-        self._circle1_parent_parent = circle1.parent.parent
-
-        for node in self.managed_nodes():
-            node.manager = self
-
-
-    @property
-    def parent(self):
-        return self._master_axis.parent
-
-    @parent.setter
-    def parent(self, var):
-        raise ValueError('Parent of a ContactHinge can not be set directly. Use one of the connection functions to create or update the connection')
-
-    def change_parent_to(self, new_parent):
-        raise ValueError('Parent of a ContactHinge can not be set directly. Use one of the connection functions to create or update the connection')
-
-    def delete(self):
-
-        # release management
-        for node in self.managed_nodes():
-            node._manager = None
-
-        self._circle1_parent_parent.change_parent_to(None)
-
-        self._scene.delete(self._slaved_axis)
-        self._scene.delete(self._pin_hole_connection)
-        self._scene.delete(self._master_axis)
-
-
-    def set_pin_in_hole_connection(self):
-        """Sets the connection to be of type pin-in-hole
-
-        The axes of the two sheaves are aligned by rotating the slaved body
-        The axes of the two sheaves are placed at a distance hole_dia - pin_dia apart, perpendicular to the axis direction
-        An axes is created at the centers of the two sheaves
-        These axes are connected with a shore axis which is allowed to rotate relative to the master axis
-        the slave axis is fixed to this rotating axis
-        """
-
-        remember = self._scene.current_manager
-        self._scene.current_manager = self # claim managment
-
-        pin = self._circle1  # slave
-        hole = self._circle2 # master
-
-        if pin.parent.parent is None:
-            raise ValueError('The slaved circle is not located on an axis. Can not create the connectino because there is no axis to slave')
-
-        # --------- prepare hole
-
-        # Position "hole_axis" at the center of the hole
-        # Orient the axis such that the Y-direction is the axis direction of the hole
-        if hole.parent.parent is not None:
-            self._master_axis.parent = hole.parent.parent
-        self._master_axis.position = hole.parent.position
-        self._master_axis.fixed = (True, True, True, True, True, True)
-
-        if self._flipped:
-            self._master_axis.rotation = rotation_from_y_axis_direction(-np.array(hole.axis))
-        else:
-            self._master_axis.rotation = rotation_from_y_axis_direction(hole.axis)
-
-        # Position hole rotation at the hole axis
-        # and allow it to rotate
-        self._pin_hole_connection.position = (0, 0, 0)
-        self._pin_hole_connection.parent = self._master_axis
-        self._pin_hole_connection.fixed = (True, True, True,
-                                           True, False, True)
-
-        # Position the connection pin (self) on the target pin and
-        # place the parent of the parent of the pin (the axis) on the connection axis
-        # and fix it
-
-        self._slaved_axis.parent = None
-        self._slaved_axis.position = pin.parent.global_position # position of the poi
-        self._slaved_axis.rotation = pin.parent.parent.to_glob_rotation(rotation_from_y_axis_direction(pin.axis))
-
-        # store the original pin orientation
-        g0 = np.array(pin.parent.parent.global_rotation, dtype=float)
-
-        pin.parent.parent.change_parent_to(self._slaved_axis)
-        pin.parent.parent.fixed = True
-
-        # Place the pin in the hole
-
-        self._slaved_axis.parent = self._pin_hole_connection
-        self._slaved_axis.rotation = (0, 0, 0)
-        self._slaved_axis.fixed = (True, True, True,
-                              True, False, True)
-
-        self._slaved_axis.position = (hole.radius - pin.radius, 0, 0)
-
-        # now we may rotate self.ry such that the original global axis of the slaved body are as close to their original
-        # values as possible
-
-        # g0 is the original global rotation vector
-        # g1 is the current rotation vector
-        g1 = np.array(pin.parent.parent.global_rotation, dtype=float)
-        difference = g1-g0
-        direction = np.array(pin.parent.parent.to_glob_rotation((1,0,0)))
-
-        y = np.dot(difference, direction)
-        self._slaved_axis.rotation = (0,y,0)
-
-        self._scene.current_manager = remember
-
-    def managed_nodes(self):
-        """Returns a list of managed nodes"""
-
-        return [self._circle1,
-                self._circle2,
-                self._circle2_parent,
-                self._circle1_parent,
-                self._circle1_parent_parent,
-                self._master_axis,
-                self._slaved_axis,
-                self._pin_hole_connection]
-
-    def depends_on(self):
-        return [self.parent]
-
-    @property
-    def flipped(self):
-        return self._flipped
-
-    @flipped.setter
-    def flipped(self, value):
-
-        remember = self._scene.current_manager  # claim management
-        self._scene.current_manager = self
-
-        self._flipped = value
-
-        if self._flipped:
-            self._master_axis.rotation = rotation_from_y_axis_direction(-np.array(self._circle2.axis))
-        else:
-            self._master_axis.rotation = rotation_from_y_axis_direction(self._circle2.axis)
-
-        self._scene.current_manager = remember # restore old manager
-
-
-    def give_python_code(self):
-
-        old_manger = self._scene.current_manager
-        self._scene.current_manager = self
-
-
-        code = []
-        code.append(f'# This is the code for the elements managed by {self.name}')
-        code.append(f'# First create the elements that need to exist before the connection can be made')
-
-        code.append('# The slaved system is here created with None as parent. This will be changed when the connection is created')
-        remember = self._circle1_parent_parent.parent
-        self._circle1_parent_parent.parent = None
-        code.append(self._circle1_parent_parent.give_python_code())
-        self._circle1_parent_parent.parent = remember
-
-        code.append(self._circle1_parent.give_python_code())  # poi
-        code.append(self._circle1.give_python_code())  # circle
-
-        code.append(self._circle2_parent.give_python_code())  # poi
-        code.append(self._circle2.give_python_code())  # circle
-
-        code.append('# now create the connection')
-        code.append(f"s.new_geometriccontact(name = '{self.name}',")
-        code.append(f"                       item1 = '{self._circle1.name}',")
-        code.append(f"                       item2 = '{self._circle2.name}')")
-
-        # TODO: Set actual geometry
-
-        self._scene.current_manager = old_manger
-
-        return '\n'.join(code)
-
-
 
 class Cable(CoreConnectedNode):
     """A Cable represents a linear elastic wire running from a Poi to another Poi.
@@ -3332,7 +3078,579 @@ class WaveInteraction1(Node):
         self.offset = new_parent.to_loc_position(cur_position)
 
 
-# ===============
+# ============== Managed nodes
+
+class Manager():
+
+    def managed_nodes(self):
+        """Returns a list of managed nodes"""
+        raise Exception("derived class shall override this method")
+
+    def delete(self):
+        """Carefully remove the manager, reinstate situation as before"""
+
+        raise Exception("derived class shall override this method")
+
+
+class GeometricContact(Node, Manager):
+    """
+    GeometricContact
+
+    A GeometricContact can be used to construct geometric connections between circular members:
+	- 	steel bars and holes, such as a shackle pin in a padeye (pin-hole)
+	-	steel bars and steel bars, such as a shackle-shackle connection
+
+
+    parent_parent_of_circle2 [axis]  <-- not managed
+       - parent_of_circle2 [poi]
+           - circle2 [circle]        <--- input for creation
+
+           - SELF_master_axis           <--- created
+                - SELF__pin_hole_connection  <--- created
+                    - SELF_slaved_axis       <--- created
+
+                       - parent_of_parent_of_circle1 [axis]
+                         - parent_of_circle_1 [poi]
+                           - circle1 [circle]               <--- input for creation
+
+
+
+
+    """
+
+    def __init__(self, scene, circle1, circle2, name):
+        """
+        circle1 becomes the slave
+        circle2 becomes the master
+
+        (attach circle 1 to circle 2)
+        Args:
+            scene:
+            vfAxis:
+            circle1:
+            circle2:
+        """
+
+        super().__init__(scene)
+        self.name = name
+
+        name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
+
+        self._circle1 = circle1
+        self._circle2 = circle2
+        self._flipped = False
+
+        self._master_axis = self._scene.new_axis(name_prefix + '_master_axis')
+        """Axis on the master axis at the location of the center of hole or pin"""
+
+        self._pin_hole_connection = self._scene.new_axis(name_prefix + '_pin_hole_connection')
+        """axis between the center of the hole and the center of the pin. Free to rotate about the center of the hole as well as the pin"""
+
+        self._slaved_axis = self._scene.new_axis(name_prefix + '_slaved_axis')
+        """axis to which the slaved body is connected. Either the center of the hole or the center of the pin """
+
+        # prohibit changes to nodes that were used in the creation of this connection
+
+        self._circle1_parent = circle1.parent
+        self._circle2_parent = circle2.parent
+        self._circle1_parent_parent = circle1.parent.parent
+
+        for node in self.managed_nodes():
+            node.manager = self
+
+
+    @property
+    def parent(self):
+        return self._master_axis.parent
+
+    @parent.setter
+    def parent(self, var):
+        raise ValueError('Parent of a ContactHinge can not be set directly. Use one of the connection functions to create or update the connection')
+
+    def change_parent_to(self, new_parent):
+        raise ValueError('Parent of a ContactHinge can not be set directly. Use one of the connection functions to create or update the connection')
+
+    def delete(self):
+
+        # release management
+        for node in self.managed_nodes():
+            node._manager = None
+
+        self._circle1_parent_parent.change_parent_to(None)
+
+        self._scene.delete(self._slaved_axis)
+        self._scene.delete(self._pin_hole_connection)
+        self._scene.delete(self._master_axis)
+
+
+    def set_pin_in_hole_connection(self):
+        """Sets the connection to be of type pin-in-hole
+
+        The axes of the two sheaves are aligned by rotating the slaved body
+        The axes of the two sheaves are placed at a distance hole_dia - pin_dia apart, perpendicular to the axis direction
+        An axes is created at the centers of the two sheaves
+        These axes are connected with a shore axis which is allowed to rotate relative to the master axis
+        the slave axis is fixed to this rotating axis
+        """
+
+        remember = self._scene.current_manager
+        self._scene.current_manager = self # claim managment
+
+        pin = self._circle1  # slave
+        hole = self._circle2 # master
+
+        if pin.parent.parent is None:
+            raise ValueError('The slaved circle is not located on an axis. Can not create the connectino because there is no axis to slave')
+
+        # --------- prepare hole
+
+        # Position "hole_axis" at the center of the hole
+        # Orient the axis such that the Y-direction is the axis direction of the hole
+        if hole.parent.parent is not None:
+            self._master_axis.parent = hole.parent.parent
+        self._master_axis.position = hole.parent.position
+        self._master_axis.fixed = (True, True, True, True, True, True)
+
+        if self._flipped:
+            self._master_axis.rotation = rotation_from_y_axis_direction(-np.array(hole.axis))
+        else:
+            self._master_axis.rotation = rotation_from_y_axis_direction(hole.axis)
+
+        # Position hole rotation at the hole axis
+        # and allow it to rotate
+        self._pin_hole_connection.position = (0, 0, 0)
+        self._pin_hole_connection.parent = self._master_axis
+        self._pin_hole_connection.fixed = (True, True, True,
+                                           True, False, True)
+
+        # Position the connection pin (self) on the target pin and
+        # place the parent of the parent of the pin (the axis) on the connection axis
+        # and fix it
+
+        self._slaved_axis.parent = None
+        self._slaved_axis.position = pin.parent.global_position # position of the poi
+        self._slaved_axis.rotation = pin.parent.parent.to_glob_rotation(rotation_from_y_axis_direction(pin.axis))
+
+        # store the original pin orientation
+        g0 = np.array(pin.parent.parent.global_rotation, dtype=float)
+
+        pin.parent.parent.change_parent_to(self._slaved_axis)
+        pin.parent.parent.fixed = True
+
+        # Place the pin in the hole
+
+        self._slaved_axis.parent = self._pin_hole_connection
+        self._slaved_axis.rotation = (0, 0, 0)
+        self._slaved_axis.fixed = (True, True, True,
+                              True, False, True)
+
+        self._slaved_axis.position = (hole.radius - pin.radius, 0, 0)
+
+        # now we may rotate self.ry such that the original global axis of the slaved body are as close to their original
+        # values as possible
+
+        # g0 is the original global rotation vector
+        # g1 is the current rotation vector
+        g1 = np.array(pin.parent.parent.global_rotation, dtype=float)
+        difference = g1-g0
+        direction = np.array(pin.parent.parent.to_glob_rotation((1,0,0)))
+
+        y = np.dot(difference, direction)
+        self._slaved_axis.rotation = (0,y,0)
+
+        self._scene.current_manager = remember
+
+    def managed_nodes(self):
+        """Returns a list of managed nodes"""
+
+        return [self._circle1,
+                self._circle2,
+                self._circle2_parent,
+                self._circle1_parent,
+                self._circle1_parent_parent,
+                self._master_axis,
+                self._slaved_axis,
+                self._pin_hole_connection]
+
+    def depends_on(self):
+        return [self.parent]
+
+    @property
+    def flipped(self):
+        return self._flipped
+
+    @flipped.setter
+    def flipped(self, value):
+
+        remember = self._scene.current_manager  # claim management
+        self._scene.current_manager = self
+
+        self._flipped = value
+
+        if self._flipped:
+            self._master_axis.rotation = rotation_from_y_axis_direction(-np.array(self._circle2.axis))
+        else:
+            self._master_axis.rotation = rotation_from_y_axis_direction(self._circle2.axis)
+
+        self._scene.current_manager = remember # restore old manager
+
+
+    def give_python_code(self):
+
+        old_manger = self._scene.current_manager
+        self._scene.current_manager = self
+
+
+        code = []
+        code.append(f'# This is the code for the elements managed by {self.name}')
+        code.append(f'# First create the elements that need to exist before the connection can be made')
+
+        code.append('# The slaved system is here created with None as parent. This will be changed when the connection is created')
+        remember = self._circle1_parent_parent.parent
+        self._circle1_parent_parent.parent = None
+        code.append(self._circle1_parent_parent.give_python_code())
+        self._circle1_parent_parent.parent = remember
+
+        code.append(self._circle1_parent.give_python_code())  # poi
+        code.append(self._circle1.give_python_code())  # circle
+
+        code.append(self._circle2_parent.give_python_code())  # poi
+        code.append(self._circle2.give_python_code())  # circle
+
+        code.append('# now create the connection')
+        code.append(f"s.new_geometriccontact(name = '{self.name}',")
+        code.append(f"                       item1 = '{self._circle1.name}',")
+        code.append(f"                       item2 = '{self._circle2.name}')")
+
+        # TODO: Set actual geometry
+
+        self._scene.current_manager = old_manger
+
+        return '\n'.join(code)
+
+
+class Sling(Node, Manager):
+
+    def __init__(self, scene, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
+        """
+        Creates a new sling with the following structure
+
+            endA
+            eyeA (cable)
+            splice (body , mass/2)
+            main (cable)     [optional: runs over sheave]
+            splice (body, mass/2)
+            eyeB (cable)
+            endB
+
+        Args:
+            scene:     The scene in which the sling should be created
+            name:  Name prefix
+            Ltotal: Total length measured between the inside of the eyes of the sling is pulled straight.
+            LeyeA: Total inside length in eye A if stretched flat
+            LeyeB: Total inside length in eye B if stretched flat
+            LspliceA: Length of the splice at end A
+            LspliceB: Length of the splice at end B
+            diameter: Diameter of the sling
+            EA: EA of the wire
+            mass: total mass
+            endA : Sheave or poi to fix end A of the sling to [optional]
+            endB : Sheave or poi to fix end A of the sling to [optional]
+            sheave : Sheave or poi for the main part of the sling
+
+        Returns:
+
+        """
+
+        super().__init__(scene)
+        self.name = name
+
+        name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
+
+        # store the properties
+        self._Ltotal=Ltotal
+        self._LeyeA=LeyeA
+        self._LeyeB=LeyeB
+        self._LspliceA=LspliceA
+        self._LspliceB=LspliceB
+        self._diameter=diameter
+        self._EA=EA
+        self._mass=mass
+        self._endA=endA
+        self._endB=endB
+        self._sheaves=sheaves
+
+        # create the two splices
+
+        self.sa = scene.new_rigidbody(name + '_spliceA', fixed=False)
+        self.a1 = scene.new_poi(name + '_spliceA1', parent=self.sa)
+        self.a2 = scene.new_poi(name + '_spliceA2', parent=self.sa)
+        self.am = scene.new_poi(name + '_spliceAM', parent=self.sa)
+
+        self.avis = scene.new_visual(name + '_spliceA_visual', parent=self.sa,  path=r'cylinder 1x1x1 lowres.obj',
+                     offset=(-LspliceA/2, 0.0, 0.0),
+                     rotation=(0.0, 90.0, 0.0),
+                     scale=(LspliceA, 2*diameter, diameter))
+
+        self.sb = scene.new_rigidbody(name + '_spliceB', rotation = (0,0,180),fixed=False)
+        self.b1 = scene.new_poi(name + '_spliceB1', parent=self.sb)
+        self.b2 = scene.new_poi(name + '_spliceB2', parent=self.sb)
+        self.bm = scene.new_poi(name + '_spliceBM', parent=self.sb)
+
+        self.bvis = scene.new_visual(name + '_spliceB_visual', parent=self.sb, path=r'cylinder 1x1x1 lowres.obj',
+                     offset=(-LspliceB / 2, 0.0, 0.0),
+                     rotation=(0.0, 90.0, 0.0),
+                     scale=(LspliceB, 2 * diameter, diameter))
+
+        self.main = scene.new_cable(name, poiA=self.am, poiB=self.bm, length=1, EA=1, diameter=diameter)
+
+        self.eyeA = scene.new_cable(name + '_eyeA', poiA=self.a1, poiB=self.a2, length=1, EA=1)
+        self.eyeB = scene.new_cable(name + '_eyeB', poiA=self.b1, poiB=self.b2, length=1, EA=1)
+
+        # Update properties
+        self._update_properties()
+
+        for n in self.managed_nodes():
+            n.manager = self
+
+    def _update_properties(self):
+
+        # The stiffness of the main part is corrected to account for the stiffness of the splices.
+        # It is considered that the stiffness of the splices is two times that of the wire.
+        #
+        # Springs in series: 1/Ktotal = 1/k1 + 1/k2 + 1/k3
+
+        Lmain = self._Ltotal-self._LspliceA-self._LspliceB-self._LeyeA-self._LeyeB
+        ka = (2*self._EA / self._LspliceA)
+        kb = (2*self._EA / self._LspliceB)
+        kmain = (self._EA / Lmain)
+        k_total = 1 / ((1/ka) + (1/kmain) + (1/kb))
+
+        EAmain = k_total * Lmain
+
+        self.sa.mass = self._mass / 2
+        self.a1.position = (self._LspliceA/2, self._diameter/2, 0)
+        self.a2.position=(self._LspliceA / 2, -self._diameter / 2, 0)
+        self.am.position=(-self._LspliceA / 2, 0, 0)
+
+        self.avis.offset=(-self._LspliceA/2, 0.0, 0.0)
+        self.avis.scale=(self._LspliceA, 2*self._diameter, self._diameter)
+
+        self.sb.mass = self._mass/2
+        self.b1.position = (self._LspliceB/2, self._diameter/2, 0)
+        self.b2.position=(self._LspliceB / 2, -self._diameter / 2, 0)
+        self.bm.position=(-self._LspliceB / 2, 0, 0)
+
+        self.bvis.offset=(-self._LspliceB / 2, 0.0, 0.0)
+        self.bvis.scale=(self._LspliceB, 2 * self._diameter, self._diameter)
+
+        self.main.length=Lmain
+        self.main.EA=EAmain
+        self.main.diameter=self._diameter
+        self.main.connections = tuple([self.am, *self._sheaves,self.bm])
+
+        self.eyeA.length=self._LeyeA * 2 - self._diameter
+        self.eyeA.EA=self._EA
+        self.eyeA.diameter=self._diameter
+
+        if self._endA is not None:
+            self.eyeA.connections = (self.a1, self._endA, self.a2)
+        else:
+            self.eyeA.connections = (self.a1, self.a2)
+
+        self.eyeB.length = self._LeyeB * 2 - self._diameter
+        self.eyeB.EA = self._EA
+        self.eyeB.diameter = self._diameter
+
+        if self._endB is not None:
+            self.eyeB.connections = (self.b1, self._endB, self.b2)
+        else:
+            self.eyeB.connections = (self.b1, self.b2)
+
+    def depends_on(self):
+        a = list()
+        if self._endA is not None:
+            a.append(self._endA)
+        if self._endB is not None:
+            a.append(self._endB)
+        return a
+
+    def managed_nodes(self):
+        a = [self.sa,self.a1,self.a2,self.am,self.avis,self.sb,self.b1,self.b2,self.bm,self.bvis,self.main,self.eyeA,self.eyeB]
+        if self._endA is not None:
+            a.append(self._endA)
+        if self._endB is not None:
+            a.append(self._endB)
+        a.extend(self._sheaves)
+
+        return a
+
+    def delete(self):
+
+        # delete created nodes
+        a = [self.sa, self.a1, self.a2, self.am, self.avis, self.sb, self.b1, self.b2, self.bm, self.bvis, self.main,
+         self.eyeA, self.eyeB]
+        for n in a:
+            self._scene.delete(n)
+
+        # release management
+        if self._endA is not None:
+            self._endA.manager = None
+        if self._endB is not None:
+            self._endB.manager = None
+        for s in self._sheaves:
+            s.manager = None
+
+
+    def give_python_code(self):
+        code = f'# Exporting {self.name}'
+        if self.endA is not None:
+            code += self.endA.give_python_code()
+        if self.endB is not None:
+            code += self.endB.give_python_code()
+        for s in self.sheaves:
+            code += s.give_python_code()
+
+        code += '\n# Create sling'
+
+        # (self, scene, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
+
+        code += f's.new_sling("{self.name}", Ltotal = {self.Ltotal},'
+        code += f'            LeyeA = {self.LeyeA},'
+        code += f'            LeyeB = {self.LeyeB},'
+        code += f'            LspliceA = {self.LspliceA},'
+        code += f'            LspliceB = {self.LspliceB},'
+        code += f'            diameter = {self.diameter},'
+        code += f'            EA = {self.EA},'
+        code += f'            mass = {self.mass},'
+        code += f'            endA = {self.endA},'
+        code += f'            endB = {self.endB},'
+
+
+        if self.sheaves:
+            sheaves = '['
+            for s in self.sheaves:
+                sheaves += f'{s.name}, '
+            sheaves = sheaves[:-2] + ']'
+        else:
+            sheaves = 'None'
+
+        code += f'            sheaves = {sheaves})'
+
+        return code
+
+    # properties
+    @property
+    def Ltotal(self):
+        return self._Ltotal
+
+    @Ltotal.setter
+    def Ltotal(self, value):
+        self._Ltotal = value
+        self._update_properties()
+
+    @property
+    def LeyeA(self):
+        return self._LeyeA
+
+    @LeyeA.setter
+    def LeyeA(self, value):
+        self._LeyeA = value
+        self._update_properties()
+
+    @property
+    def LeyeB(self):
+        return self._LeyeB
+
+    @LeyeB.setter
+    def LeyeB(self, value):
+        self._LeyeB = value
+        self._update_properties()
+
+    @property
+    def LspliceA(self):
+        return self._LspliceA
+
+    @LspliceA.setter
+    def LspliceA(self, value):
+        self._LspliceA = value
+        self._update_properties()
+
+    @property
+    def LspliceB(self):
+        return self._LspliceB
+
+    @LspliceB.setter
+    def LspliceB(self, value):
+        self._LspliceB = value
+        self._update_properties()
+
+    @property
+    def diameter(self):
+        return self._diameter
+
+    @diameter.setter
+    def diameter(self, value):
+        self._diameter = value
+        self._update_properties()
+
+    @property
+    def EA(self):
+        return self._EA
+
+    @EA.setter
+    def EA(self, value):
+        self._EA = value
+        self._update_properties()
+
+    @property
+    def mass(self):
+        return self._mass
+
+    @mass.setter
+    def mass(self, value):
+        self._mass = value
+        self._update_properties()
+
+    @property
+    def endA(self):
+        return self._endA
+
+    @endA.setter
+    def endA(self, value):
+        if self._endA is not None:
+            self._endA.manager = None
+        self._endA = value
+        self._endA.manger = self
+        self._update_properties()
+
+    @property
+    def endB(self):
+        return self._endB
+
+    @endB.setter
+    def endB(self, value):
+        if self._endB is not None:
+            self._endB.manager = None
+        self._endB = value
+        self._endB.manger = self
+        self._update_properties()
+
+    @property
+    def sheaves(self):
+        return self._sheaves
+
+    @sheaves.setter
+    def sheaves(self, value):
+        for s in self._sheaves:
+            s.manager = None
+        self._sheaves = [*value]
+        for s in self._sheaves:
+            s.manager = self
+        self._update_properties()
+
+
+# =============== Scene
 
 class Scene:
     """
@@ -5230,6 +5548,8 @@ class Scene:
         """Returns a list of modes (0=x ... 5=rotation z) associated with the rows/columns of M and K"""
         self.update()
         return self._vfc.get_dof_modes()
+
+
 
 
 
