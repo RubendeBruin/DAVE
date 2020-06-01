@@ -18,6 +18,7 @@ os.environ['DISPLAY'] = ':99'
 
 import DAVE.visual
 import vtkplotter as vtkp
+import vtk
 import DAVE.settings as vc
 
 def _setup_viewport(vp, what = 'all', sea=True):
@@ -43,83 +44,56 @@ def _setup_viewport(vp, what = 'all', sea=True):
 
     return vp
 
-def show(scene, what = 'all', sea=True):
+
+
+def show(scene, what = 'all', sea=True,camera_pos=(50,-25,10), lookat = (0,0,0)):
     """
     Creates a 3d view of the scene and shows in using k3d.
     """
+    return _view(scene, 'panel', what=what, sea=sea, width = 1024, height = 800, camera_pos=camera_pos, lookat=lookat)
 
-    vtkp.settings.embedWindow(backend='panel')
+def screenshot(scene, what = 'all', sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, height = 600,):
+    return _view(scene, backend= '2d', what=what, sea=sea, width = width, height = height, camera_pos=camera_pos, lookat=lookat)
 
-    vp = DAVE.visual.Viewport(scene, jupyter=True)
-    vp.screen = vtkp.Plotter(axes=4, bg=vc.COLOR_BG1, bg2=vc.COLOR_BG2)
-
-    _setup_viewport(vp, what=what, sea=sea)
-
-    camera = dict()
-    camera['viewup'] = [0, 0, 1]
-    camera['pos'] = [10, -10, 5]
-    camera['focalPoint'] = [0, 0, 0]
-
-    # show embedded
-    for va in vp.visuals:
-        for a in va.actors:
-            if a.GetVisibility():
-                vp.screen.add(a)
-
-    # vp.screen.camera.Reset()
-
-    return vp.show(camera=camera)
-
-def screenshot(scene, what = 'all', sea=True, width=1024, height = 600, camera_pos=(50,-25,10), lookat = (0,0,0)):
-
-    vp = DAVE.visual.Viewport(scene)
-
-    _setup_viewport(vp, what=what, sea=sea)
-
-    vtkp.settings.embedWindow(backend=None)
-    vtkp.settings.screeshotScale = 2
-    vtkp.settings.screeshotLargeImage = False
-    vtkp.settings.usingQt = False
-
-    vtkp.settings.lightFollowsCamera = True
-
-    vp.create_world_actors()
-
+def _view(scene, backend = '2d', what = 'all', sea=True, width=1024, height = 600, camera_pos=(50,-25,10), lookat = (0,0,0)):
     camera = dict()
     camera['viewup'] = [0, 0, 1]
     camera['pos'] = camera_pos
     camera['focalPoint'] = lookat
 
+    vtkp.embedWindow(backend=backend)  # screenshot
+    vtkp.settings.usingQt = False
+
+    vp = DAVE.visual.Viewport(scene)
+
+    vtkp.settings.lightFollowsCamera = True
+
     offscreen = vtkp.Plotter(axes=0, offscreen=True, size=(width, height))
 
+    _setup_viewport(vp, what=what, sea=sea)
+
     for va in vp.visuals:
+        print(va.node.name)
         for a in va.actors:
             if a.GetVisibility():
+
+                if backend == 'panel':
+
+                    # Work-around for panel
+
+                    tr = vtk.vtkTransform()
+                    tr.SetMatrix(a.GetMatrix())
+
+                    a.SetPosition(tr.GetPosition())
+                    a.SetOrientation(tr.GetOrientation())
+
+                    tr0 = vtk.vtkTransform()
+                    tr0.Identity()
+                    a.SetUserTransform(tr0)
+
+
                 offscreen.add(a)
 
-    offscreen.show(camera=camera)
-
-    for r in offscreen.renderers:
-        r.SetBackground(1, 1, 1)
-        r.UseFXAAOn()
-
-    vp.position_visuals()
-    vp.update_outlines()
-
-    filename = str(vc.PATH_TEMP_SCREENSHOT)
-
-    print('export')
-    # array = vp.screenshot(filename, returnNumpy=False)
-    vtkp.screenshot(filename, returnNumpy=False)
-
-    # import matplotlib.pyplot as plt
-    #
-    # plt.figure(figsize=(w/300,h/300), dpi=300)
-    # plt.axis(False)
-    # plt.imshow(array)
-    # plt.show()
-
-    from IPython.display import Image, display
-    display(Image(filename))
+    return offscreen.show(camera=camera)
 
 
