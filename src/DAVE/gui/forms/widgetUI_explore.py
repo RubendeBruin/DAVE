@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_explore.ui',
 # licensing of 'widget_explore.ui' applies.
 #
-# Created: Tue May 19 21:07:47 2020
+# Created: Fri May 29 08:47:57 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!

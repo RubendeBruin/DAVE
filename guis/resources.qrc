@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>sling.png</file>
     <file>pin_hole.png</file>
     <file>file_new.png</file>
     <file>fish.png</file>

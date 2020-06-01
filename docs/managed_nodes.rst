@@ -31,7 +31,7 @@ So typically the manager implements something like:
     backup = self._scene.current_manager # store
     self._scene.current_manager = self
     # perform changes to nodes
-    self._scene.current_manager = backup # restort
+    self._scene.current_manager = backup # restore
 
 **Deleting**
 

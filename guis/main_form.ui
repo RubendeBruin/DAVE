@@ -113,6 +113,20 @@
         </spacer>
        </item>
        <item>
+        <widget class="QPushButton" name="pbCopyViewCode">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/icons/icon_copy.png</normaloff>:/icons/icon_copy.png</iconset>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="btnWater">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">

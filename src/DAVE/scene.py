@@ -3330,8 +3330,35 @@ class GeometricContact(Node, Manager):
 
 
 class Sling(Node, Manager):
+    """A Sling is a single wire with an eye on each end. The eyes are created by splicing the end of the sling back
+    into the itself.
 
-    def __init__(self, scene, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
+    The geometry of a sling is defined as follows:
+
+    diameter : diameter of the wire
+    LeyeA, LeyeB : inside lengths of the eyes
+    LsplicaA, LspliceB : the length of the splices
+    Total : the distance between the insides of ends of the eyes A and B when pulled straight.
+
+    Stiffness:
+    The stiffness of the sling is specified by a single value: EA
+    This determines the stiffnesses of the individual parts as follows:
+    Wire in the eyes: EA
+    Splices: Infinity (rigid)
+    Main part: determined such that total stiffness (k) of the sling is EA/L
+
+
+      Eye A           Splice A             main part                   Splice B          Eye B
+
+    /---------------\                                                                /---------------\
+    |                =============-------------------------------------===============                |
+    \---------------/                                                                \---------------/
+
+    See Also: Grommet
+
+    """
+
+    def __init__(self, scene, name, length, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
         """
         Creates a new sling with the following structure
 
@@ -3346,13 +3373,13 @@ class Sling(Node, Manager):
         Args:
             scene:     The scene in which the sling should be created
             name:  Name prefix
-            Ltotal: Total length measured between the inside of the eyes of the sling is pulled straight.
+            length: Total length measured between the inside of the eyes of the sling is pulled straight.
             LeyeA: Total inside length in eye A if stretched flat
             LeyeB: Total inside length in eye B if stretched flat
             LspliceA: Length of the splice at end A
             LspliceB: Length of the splice at end B
             diameter: Diameter of the sling
-            EA: EA of the wire
+            EA: Effective mean EA of the sling
             mass: total mass
             endA : Sheave or poi to fix end A of the sling to [optional]
             endB : Sheave or poi to fix end A of the sling to [optional]
@@ -3368,7 +3395,7 @@ class Sling(Node, Manager):
         name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
 
         # store the properties
-        self._Ltotal=Ltotal
+        self._length=length
         self._LeyeA=LeyeA
         self._LeyeB=LeyeB
         self._LspliceA=LspliceA
@@ -3376,8 +3403,8 @@ class Sling(Node, Manager):
         self._diameter=diameter
         self._EA=EA
         self._mass=mass
-        self._endA=endA
-        self._endB=endB
+        self._endA=scene._poi_or_sheave_from_node(endA)
+        self._endB=scene._poi_or_sheave_from_node(endB)
         self._sheaves=sheaves
 
         # create the two splices
@@ -3420,7 +3447,10 @@ class Sling(Node, Manager):
         #
         # Springs in series: 1/Ktotal = 1/k1 + 1/k2 + 1/k3
 
-        Lmain = self._Ltotal-self._LspliceA-self._LspliceB-self._LeyeA-self._LeyeB
+        backup = self._scene.current_manager  # store
+        self._scene.current_manager = self
+
+        Lmain = self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
 
         if self._EA == 0:
             EAmain = 0
@@ -3470,6 +3500,8 @@ class Sling(Node, Manager):
             self.eyeB.connections = (self.b1, self._endB, self.b2)
         else:
             self.eyeB.connections = (self.b1, self.b2)
+
+        self._scene.current_manager = backup  # restore
 
     def depends_on(self):
         """Endpoints and sheaves are managed, so no dependency on those
@@ -3552,12 +3584,12 @@ class Sling(Node, Manager):
 
     # properties
     @property
-    def Ltotal(self):
-        return self._Ltotal
+    def length(self):
+        return self._length
 
-    @Ltotal.setter
-    def Ltotal(self, value):
-        self._Ltotal = value
+    @length.setter
+    def length(self, value):
+        self._length = value
         self._update_properties()
 
     @property
@@ -3629,10 +3661,7 @@ class Sling(Node, Manager):
 
     @endA.setter
     def endA(self, value):
-        if self._endA is not None:
-            self._endA.manager = None
-        self._endA = value
-        self._endA.manger = self
+        self._endA = self._scene._poi_or_sheave_from_node(value)
         self._update_properties()
 
     @property
@@ -3641,10 +3670,7 @@ class Sling(Node, Manager):
 
     @endB.setter
     def endB(self, value):
-        if self._endB is not None:
-            self._endB.manager = None
-        self._endB = value
-        self._endB.manger = self
+        self._endB = self._scene._poi_or_sheave_from_node(value)
         self._update_properties()
 
     @property
@@ -3653,11 +3679,10 @@ class Sling(Node, Manager):
 
     @sheaves.setter
     def sheaves(self, value):
-        for s in self._sheaves:
-            s.manager = None
-        self._sheaves = [*value]
-        for s in self._sheaves:
-            s.manager = self
+        s = []
+        for v in value:
+            s.append(self._scene._poi_or_sheave_from_node(v))
+        self._sheaves = s
         self._update_properties()
 
 
@@ -5411,7 +5436,7 @@ class Scene:
         # then make element
         # __init__(self, scene, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
 
-        node = Sling(scene=self, name= name, Ltotal=length, LeyeA=LeyeA, LeyeB=LeyeB, LspliceA=LspliceA, LspliceB=LspliceB,
+        node = Sling(scene=self, name= name, length=length, LeyeA=LeyeA, LeyeB=LeyeB, LspliceA=LspliceA, LspliceB=LspliceB,
                      diameter=diameter, EA=EA, mass=mass, endA=endA, endB=endB, sheaves=sheaves)
         self._nodes.append(node)
 

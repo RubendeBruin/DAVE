@@ -218,6 +218,8 @@ class WidgetNodeTree(guiDockWidget):
                 item.setIcon(0,QIcon(":/icons/contactmesh.png"))
             elif isinstance(node, ds.GeometricContact):
                 item.setIcon(0,QIcon(":/icons/pin_hole.png"))
+            elif isinstance(node, ds.Sling):
+                item.setIcon(0,QIcon(":/icons/sling.png"))
 
             try:
                 parent = node.parent

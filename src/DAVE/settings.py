@@ -131,7 +131,8 @@ _BLUE_LIGHT = [203,224,239]
 _BLUE_DARK = [57,76,90]
 _PINK = [247,17,228]
 _DARK_GRAY = [45,45,48]
-_LIGHT_GRAY = [200,200,203]
+_LIGHT_GRAY = [200,200,200]
+_MEDIUM_GRAY = [145,145,145]
 
 def rgb(col):
     return (col[0]/255, col[1]/255, col[2]/255)
@@ -161,6 +162,8 @@ COLOR_BG1 = rgb(_LIGHT_GRAY)
 
 COLOR_BG2_ENV = rgb(_WHITE)         # colors when global elements (waterplane) are shown
 COLOR_BG1_ENV = rgb(_BLUE_LIGHT)
+
+
 
 
 # COLOR_BG1 = rgb(_DARK_GRAY)

@@ -182,7 +182,7 @@ class Gui():
         self.scene = scene
         """Reference to a scene"""
 
-        # ======================== Create 3D viewpower ====================
+        # ======================== Create 3D viewport ====================
         self.visual = Viewport(scene)
         """Reference to a viewport"""
 
@@ -1135,6 +1135,12 @@ class Gui():
         _node = node
         if node in self.selected_nodes:
             # if the is already selected, then select something different
+
+            # if node has a manager, then select the manager
+            if node.manager is not None:
+                self.guiSelectNode(node.manager)
+                return
+
 
             # cycle between node and its parent
             try:

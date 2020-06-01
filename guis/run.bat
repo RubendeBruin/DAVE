@@ -3,14 +3,14 @@ call conda activate deploy
 echo call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
 echo call pyside2-uic widget_modeshapes.ui -o "..\src\DAVE\gui\forms\widgetUI_modeshapes.py"
 echo call pyside2-uic widget_ballastconfiguration.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastconfiguration.py"
-call pyside2-uic widget_ballastsolver.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastsolver.py"
+echo call pyside2-uic widget_ballastsolver.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastsolver.py"
 echo call pyside2-uic widget_airy.ui -o "..\src\DAVE\gui\forms\widgetUI_airy.py"
 echo echo call pyside2-uic widget_stability_displ.ui -o "..\src\DAVE\gui\forms\widget_stability_displUI.py"
-call pyside2-uic widget_explore.ui -o "..\src\DAVE\gui\forms\widgetUI_explore.py"
-call pyside2-uic widget_tank_order.ui -o "..\src\DAVE\gui\forms\widgetUI_tank_order.py"
+echo call pyside2-uic widget_explore.ui -o "..\src\DAVE\gui\forms\widgetUI_explore.py"
+echo call pyside2-uic widget_tank_order.ui -o "..\src\DAVE\gui\forms\widgetUI_tank_order.py"
 
 echo call pyside2-uic widget_waveinteraction.ui -o "..\src\DAVE\gui\forms\widget_waveinteraction.py"
-call pyside2-uic widget_axis.ui -o "..\src\DAVE\gui\forms\widget_axis.py"
+echo call pyside2-uic widget_axis.ui -o "..\src\DAVE\gui\forms\widget_axis.py"
 echo call pyside2-uic widget_body.ui -o "..\src\DAVE\gui\forms\widget_body.py"
 echo call pyside2-uic widget_poi.ui -o "..\src\DAVE\gui\forms\widget_poi.py"
 echo call pyside2-uic widget_cable.ui -o "..\src\DAVE\gui\forms\widget_cable.py"
@@ -29,6 +29,7 @@ echo call pyside2-uic frm_animation.ui -o "..\src\DAVE\gui\forms\frm_animation.p
 echo call pyside2-uic widget_dynprop.ui -o "..\src\DAVE\gui\forms\widget_dynprop.py"
 echo call pyside2-uic widget_contactball.ui -o "..\src\DAVE\gui\forms\widget_contactball.py"
 echo call pyside2-uic widget_geometricconnection.ui -o "..\src\DAVE\gui\forms\widget_geometricconnection.py"
+call pyside2-uic widget_sling.ui -o "..\src\DAVE\gui\forms\widget_sling.py"
 echo call pyside2-uic widget_selection_actions.ui -o "..\src\DAVE\gui\forms\widget_selection_actions.py"
 
 

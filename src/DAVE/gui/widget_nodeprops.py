@@ -16,6 +16,7 @@ import DAVE.gui.forms.widget_sheave
 import DAVE.gui.forms.widget_waveinteraction
 import DAVE.gui.forms.widget_contactball
 import DAVE.gui.forms.widget_geometricconnection
+import DAVE.gui.forms.widget_sling
 
 import numpy as np
 
@@ -1296,6 +1297,220 @@ class EditContactBall(NodeEditor):
 
         return code
 
+class EditSling(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditSling._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.gui.forms.widget_sling.Ui_Form()
+            ui.setupUi(widget)
+
+            EditSling._ui = ui
+            ui._widget = widget
+            ui.additional_pois = list()
+
+        else:
+            ui = EditSling._ui
+
+        try:
+            ui.sbLength.valueChanged.disconnect()
+            ui.sbEA.valueChanged.disconnect()
+            ui.sbDiameter.valueChanged.disconnect()
+            ui.sbMass.valueChanged.disconnect()
+            ui.sbLEyeA.valueChanged.disconnect()
+            ui.sbLEyeB.valueChanged.disconnect()
+            ui.sbLSpliceA.valueChanged.disconnect()
+            ui.sbLSpliceB.valueChanged.disconnect()
+
+        except:
+            pass # no connections yet
+
+        for ddb in ui.additional_pois:
+            ui.poiLayout.removeWidget(ddb)
+            ddb.deleteLater()
+
+        ui.sbLength.setValue(self.node.length)
+        ui.sbEA.setValue(self.node.EA)
+        ui.sbDiameter.setValue(self.node.diameter)
+        ui.sbMass.setValue(self.node.mass)
+        ui.sbLEyeA.setValue(self.node.LeyeA)
+        ui.sbLEyeB.setValue(self.node.LeyeB)
+        ui.sbLSpliceA.setValue(self.node.LspliceA)
+        ui.sbLSpliceB.setValue(self.node.LspliceB)
+
+
+        # Set events
+        ui.pbRemoveSelected.clicked.connect(self.delete_selected)
+
+        ui.sbLength.valueChanged.connect(self.callback)
+        ui.sbEA.valueChanged.connect(self.callback)
+        ui.sbDiameter.valueChanged.connect(self.callback)
+        ui.sbMass.valueChanged.connect(self.callback)
+        ui.sbLEyeA.valueChanged.connect(self.callback)
+        ui.sbLEyeB.valueChanged.connect(self.callback)
+        ui.sbLSpliceA.valueChanged.connect(self.callback)
+        ui.sbLSpliceB.valueChanged.connect(self.callback)
+
+
+        # ------- setup the drag-and-drop code ---------
+
+        ui.list.dropEvent = self.dropEvent
+        ui.list.dragEnterEvent = self.dragEnterEvent
+        ui.list.dragMoveEvent = self.dragEnterEvent
+
+        ui.list.setDragEnabled(True)
+        ui.list.setAcceptDrops(True)
+        ui.list.setDragEnabled(True)
+
+        ui.list.clear()
+
+        if self.node.endA is not None:
+            ui.list.addItem(self.node.endA.name)
+
+        for s in self.node.sheaves:
+            ui.list.addItem(s.name)
+
+        if self.node.endB is not None:
+            ui.list.addItem(self.node.endB.name)
+
+        self.ui = ui  # needs to be done here as self.add_poi_dropdown modifies this
+
+        return ui._widget
+
+    def dropEvent(self,event):
+
+        list = self.ui.list
+
+        # dropping onto something?
+        point = event.pos()
+        drop_onto = list.itemAt(point)
+
+        if drop_onto:
+            row = list.row(drop_onto)
+        else:
+            row = -1
+
+        if event.source() == list:
+            item = list.currentItem()
+            name = item.text()
+            delrow = list.row(item)
+            list.takeItem(delrow)
+        else:
+            name = event.mimeData().text()
+
+        if row >= 0:
+            list.insertItem(row, name)
+        else:
+            list.addItem(name)
+
+        self.callback()
+
+    def dragEnterEvent(self, event):
+        if event.source() == self.ui.list:
+            event.accept()
+        else:
+            try:
+                name = event.mimeData().text()
+                node = self.scene[name]
+                if isinstance(node,Sheave) or isinstance(node, Poi):
+                    event.accept()
+            except:
+                return
+
+
+    # def dragMoveEvent(self, event):
+    #     event.accept()
+
+    def delete_selected(self):
+        row = self.ui.list.currentRow()
+        if row > -1:
+            self.ui.list.takeItem(row)
+        self.callback()
+
+
+    def generate_code(self):
+        code = ""
+        element = "\ns['{}']".format(self.node.name)
+
+        node = self.node
+
+        new_length = self.ui.sbLength.value()
+        new_EA = self.ui.sbEA.value()
+        new_diameter = self.ui.sbDiameter.value()
+        new_mass = self.ui.sbMass.value()
+        new_LeyeA = self.ui.sbLEyeA.value()
+        new_LeyeB = self.ui.sbLEyeB.value()
+        new_LspliceA = self.ui.sbLSpliceA.value()
+        new_LspliceB = self.ui.sbLSpliceB.value()
+
+        if not new_length == self.node.length:
+            code += element + '.length = {}'.format(new_length)
+
+        if not new_EA == self.node.EA:
+            code += element + '.EA = {}'.format(new_EA)
+
+        if not new_diameter == self.node.diameter:
+            code += element + '.diameter = {}'.format(new_diameter)
+
+        if not new_mass == self.node.mass:
+            code += element + '.mass = {}'.format(new_mass)
+
+        if not new_LeyeA == self.node.LeyeA:
+            code += element + '.LeyeA = {}'.format(new_LeyeA)
+
+        if not new_LeyeB == self.node.LeyeB:
+            code += element + '.LeyeB = {}'.format(new_LeyeB)
+
+        if not new_LspliceA == self.node.LspliceA:
+            code += element + '.LspliceA = {}'.format(new_LspliceA)
+
+        if not new_LspliceB == self.node.LspliceB:
+            code += element + '.LspliceB = {}'.format(new_LspliceB)
+
+        # get the poi names
+        # new_names = [self.ui.comboBox.currentText(),self.ui.comboBox_2.currentText()]
+        new_names = []
+        for i in range(self.ui.list.count()):
+            new_names.append(self.ui.list.item(i).text())
+
+        new_endA = None
+        new_endB = None
+        new_sheaves = []
+
+        if len(new_names) > 0:
+            new_endA = new_names[0]
+
+        if len(new_names) > 1:
+            new_endB = new_names[-1]
+
+        if len(new_names) > 2:
+            new_sheaves = new_names[1:-1]
+
+        if not node.endA.name == new_endA:
+            code += element + '.endA = "{}"'.format(new_endA)
+
+        if not node.endB.name == new_endB:
+            code += element + '.endB = "{}"'.format(new_endB)
+
+        sheave_names = [n.name for n in node.sheaves]
+
+        if not sheave_names == new_sheaves:
+
+            if new_sheaves:
+                code += element + '.sheaves = ['
+                for s in new_sheaves:
+                    code += f'"{s}", '
+                code = code[:-2] + ']'
+            else:
+                code += element + '.sheaves = []'
+
+        return code
+
 
 # ===========================================
 
@@ -1464,6 +1679,8 @@ class WidgetNodeProps(guiDockWidget):
         if isinstance(node, vfs.GeometricContact):
             self._node_editors.append(EditGeometricContact(node, self.node_property_changed, self.guiScene, self.run_code))
 
+        if isinstance(node, vfs.Sling):
+            self._node_editors.append(EditSling(node, self.node_property_changed, self.guiScene, self.run_code))
 
         if isinstance(node, vfs.Buoyancy) or isinstance(node, vfs.ContactMesh):
             self._node_editors.append(EditBuoyancyOrContactMesh(node, self.node_property_changed, self.guiScene, self.run_code))

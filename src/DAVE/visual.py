@@ -852,16 +852,17 @@ class Viewport:
 
                 # points = list()
                 # for p in V.node._pois:
-                #     points.append(p.global_position)
+                #    points.append(p.global_position)
 
                 points = V.node.get_points_for_visual()
-                
+
+
                 if len(points)==0:  # not yet created
                     continue
 
                 n_points = A.NPoints()
                 A.points(points)   # points can be set without allocation
-
+                #
                 if n_points != len(points): # equal number of points
                     # different number of points in line
                     # (re-create the poly-line)
@@ -1201,7 +1202,8 @@ class Viewport:
             self.visuals.remove(V)
             acs.extend(V.actors)
 
-        self.screen.remove(acs)
+        if acs:
+            self.screen.remove(acs)
 
         self.update_outlines()
 
@@ -1273,114 +1275,134 @@ class Viewport:
             iren.TerminateApp()
 
 
-    def screenshot(self, w=800, h=600,camera_pos=(50,-25,10), lookat = (0,0,0)):
-        vp.settings.lightFollowsCamera = True
+    # def screenshot(self, w=800, h=600,camera_pos=(50,-25,10), lookat = (0,0,0)):
+    #     vp.settings.lightFollowsCamera = True
+    #
+    #     self.create_world_actors()
+    #
+    #     camera = dict()
+    #     camera['viewup'] = [0, 0, 1]
+    #     camera['pos'] = camera_pos
+    #     camera['focalPoint'] = lookat
+    #
+    #     offscreen = vp.Plotter(axes=0, offscreen=True, size=(w,h))
+    #
+    #     for va in self.visuals:
+    #         for a in va.actors:
+    #             if a.GetVisibility():
+    #                 offscreen.add(a)
+    #
+    #     print('show')
+    #     offscreen.show(camera=camera)
+    #
+    #
+    #     for r in offscreen.renderers:
+    #         r.SetBackground(1,1,1)
+    #         r.UseFXAAOn()
+    #
+    #     self.update_outlines()
+    #
+    #     # offscreen.renderer.Render()
+    #
+    #     filename = str(vc.PATH_TEMP_SCREENSHOT)
+    #
+    #     print('export')
+    #     array = vp.screenshot(filename, returnNumpy=False)
+    #
+    #     # import matplotlib.pyplot as plt
+    #     #
+    #     # plt.figure(figsize=(w/300,h/300), dpi=300)
+    #     # plt.axis(False)
+    #     # plt.imshow(array)
+    #     # plt.show()
+    #
+    #     from IPython.display import Image, display
+    #     display(Image(filename))
 
-        _notebook = vp.settings.notebookBackend
-        vp.settings.notebookBackend = False
-        vp.settings.screeshotScale = 2
 
-        self.create_world_actors()
+    def setup_screen(self,qtWidget = None):
+        """Creates the plotter instance and stores it in self.screen"""
 
-        camera = dict()
-        camera['viewup'] = [0, 0, 1]
-        camera['pos'] = camera_pos
-        camera['focalPoint'] = lookat
+        if self.Jupyter and qtWidget is None:  # it is possible to launch the Gui from jupyter, so check for both
 
-
-
-        offscreen = vp.Plotter(axes=0, offscreen=True, size=(h,w))
-
-        for va in self.visuals:
-            for a in va.actors:
-                if a.GetVisibility():
-                    offscreen.add(a)
-
-        offscreen.show(camera=camera)
-
-        for r in offscreen.renderers:
-            r.SetBackground(1,1,1)
-            r.UseFXAAOn()
-
-        self.update_outlines()
-
-        filename = str(vc.PATH_TEMP_SCREENSHOT)
-
-        vp.screenshot(filename)
-
-        vp.settings.notebookBackend = _notebook
-
-        from IPython.display import Image, display
-        display(Image(filename))
-
-        # import matplotlib.pyplot as plt
-        # plt.figure(figsize=(w/300,h/300), dpi=300)
-        # plt.imshow(plt.imread(filename))
-        #
-        # plt.axis(False)
-        # plt.show()
-
-    def show(self, qtWidget = None):
-
-        vp.settings.lightFollowsCamera = True
-
-        self.create_world_actors()
-
-        camera = dict()
-        camera['viewup'] = [0, 0, 1]
-        camera['pos'] = [10, -10, 5]
-        camera['focalPoint'] = [0, 0, 0]
-
-        if self.Jupyter:
-            vp.settings.embedWindow()
-            screen = vp.Plotter(axes = 4, bg=vc.COLOR_BG1, bg2=vc.COLOR_BG2)
-
-            # screen.add(self.create_world_actors())
-            # self.create_world_actors()
-
-            for va in self.visuals:
-                for a in va.actors:
-                    if a.GetVisibility():
-                        screen.add(a)
-
-            self.screen = screen
-            return screen.show(camera=camera)
+            # create embedded notebook (k3d) view
+            import vtkplotter as vtkp
+            vtkp.settings.embedWindow(backend='k3d')
+            self.screen = vp.Plotter(axes = 4, bg=vc.COLOR_BG1, bg2=vc.COLOR_BG2)
 
         else:
 
             if qtWidget is None:
-                screen = vp.plotter.Plotter(interactive=True, offscreen=False,
+
+                # create stand-alone interactive view
+                import vtkplotter as vtkp
+                vtkp.settings.embedWindow(backend=None)
+
+                self.screen = vp.plotter.Plotter(interactive=True, offscreen=False,
                     axes=4, bg=vc.COLOR_BG1, bg2=vc.COLOR_BG2)
+
             else:
-                screen = vp.plotter.Plotter(qtWidget=qtWidget,
+
+                # create embedded Qt view
+                import vtkplotter as vtkp
+                vtkp.settings.embedWindow(backend=None)
+
+                self.screen = vp.plotter.Plotter(qtWidget=qtWidget,
                                             axes=4, bg=vc.COLOR_BG1, bg2=vc.COLOR_BG2)
+
+    def show(self, qtWidget = None, camera = None):
+        """Add actors to screen and show"""
+        if self.screen is None:
+            raise Exception("Please call setup_screen first")
+
+        vp.settings.lightFollowsCamera = True
+
+        self.create_world_actors()
+
+        if camera is None:
+            camera = dict()
+            camera['viewup'] = [0, 0, 1]
+            camera['pos'] = [10, -10, 5]
+            camera['focalPoint'] = [0, 0, 0]
+
+        if self.Jupyter and qtWidget is None:
+
+            # show embedded
+            for va in self.visuals:
+                for a in va.actors:
+                    if a.GetVisibility():
+                        self.screen.add(a)
+
+            return self.screen.show(camera=camera)
+
+        else:
+
+            screen = self.screen
 
             for va in self.visuals:
                 for a in va.actors:
                     screen.add(a)
 
-        screen.show(camera=camera, verbose = False)
+            self.screen.show(camera=camera, verbose = False)
 
-        self.screen = screen
+            for r in self.screen.renderers:
+                r.ResetCamera()
 
-        for r in screen.renderers:
-            r.ResetCamera()
+                # Add SAOO
 
-            # Add SAOO
+                # basicPasses = vtk.vtkRenderStepsPass()
+                # ssao = vtk.vtkSSAOPass()
+                # ssao.SetRadius(5)
+                # ssao.SetDelegatePass(basicPasses)
+                # ssao.SetBlur(True)
+                # ssao.SetKernelSize(8)
+                # ssao.ComputeKernel()
 
-            # basicPasses = vtk.vtkRenderStepsPass()
-            # ssao = vtk.vtkSSAOPass()
-            # ssao.SetRadius(5)
-            # ssao.SetDelegatePass(basicPasses)
-            # ssao.SetBlur(True)
-            # ssao.SetKernelSize(8)
-            # ssao.ComputeKernel()
+                # r.SetPass(ssao)
 
-            # r.SetPass(ssao)
+            self.update_outlines()
 
-        self.update_outlines()
-
-        return screen
+            return screen
 
     def onMouseLeft(self, info):
 
@@ -1431,15 +1453,13 @@ class Viewport:
         vl.addWidget(self.vtkWidget)
         target_frame.setLayout(vl)
 
+        self.setup_screen(qtWidget=self.vtkWidget)
         screen = self.show(qtWidget=self.vtkWidget)
 
         self.renwin = self.vtkWidget.GetRenderWindow()
         self.renderer = screen.renderers[0]
 
         self.renwin.AddRenderer(self.renderer)
-
-        # for r in screen.renderers:
-        #     self.renwin.AddRenderer(r)
 
         iren = self.renwin.GetInteractor()
         iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
@@ -1459,8 +1479,6 @@ class Viewport:
         screen.mouseRightClickFunction = self.onMouseRight
 
         # Add some lights
-
-
         light1 = vtk.vtkLight()
 
         light1.SetIntensity(0.3)
