@@ -3405,36 +3405,39 @@ class Sling(Node, Manager):
         self._mass=mass
         self._endA=scene._poi_or_sheave_from_node(endA)
         self._endB=scene._poi_or_sheave_from_node(endB)
-        self._sheaves=sheaves
+
 
         # create the two splices
 
-        self.sa = scene.new_rigidbody(name_prefix + '_spliceA', fixed=False)
-        self.a1 = scene.new_poi(name_prefix + '_spliceA1', parent=self.sa)
-        self.a2 = scene.new_poi(name_prefix + '_spliceA2', parent=self.sa)
-        self.am = scene.new_poi(name_prefix + '_spliceAM', parent=self.sa)
+        self.sa = scene.new_rigidbody(scene.available_name_like(name_prefix + '_spliceA'), fixed=False)
+        self.a1 = scene.new_poi(scene.available_name_like(name_prefix + '_spliceA1'), parent=self.sa)
+        self.a2 = scene.new_poi(scene.available_name_like(name_prefix + '_spliceA2'), parent=self.sa)
+        self.am = scene.new_poi(scene.available_name_like(name_prefix + '_spliceAM'), parent=self.sa)
 
         self.avis = scene.new_visual(name + '_spliceA_visual', parent=self.sa,  path=r'cylinder 1x1x1 lowres.obj',
                      offset=(-LspliceA/2, 0.0, 0.0),
                      rotation=(0.0, 90.0, 0.0),
                      scale=(LspliceA, 2*diameter, diameter))
 
-        self.sb = scene.new_rigidbody(name_prefix + '_spliceB', rotation = (0,0,180),fixed=False)
-        self.b1 = scene.new_poi(name_prefix + '_spliceB1', parent=self.sb)
-        self.b2 = scene.new_poi(name_prefix + '_spliceB2', parent=self.sb)
-        self.bm = scene.new_poi(name_prefix + '_spliceBM', parent=self.sb)
+        self.sb = scene.new_rigidbody(scene.available_name_like(name_prefix + '_spliceB'), rotation = (0,0,180),fixed=False)
+        self.b1 = scene.new_poi(scene.available_name_like(name_prefix + '_spliceB1'), parent=self.sb)
+        self.b2 = scene.new_poi(scene.available_name_like(name_prefix + '_spliceB2'), parent=self.sb)
+        self.bm = scene.new_poi(scene.available_name_like(name_prefix + '_spliceBM'), parent=self.sb)
 
-        self.bvis = scene.new_visual(name_prefix + '_spliceB_visual', parent=self.sb, path=r'cylinder 1x1x1 lowres.obj',
+        self.bvis = scene.new_visual(scene.available_name_like(name_prefix + '_spliceB_visual'), parent=self.sb, path=r'cylinder 1x1x1 lowres.obj',
                      offset=(-LspliceB / 2, 0.0, 0.0),
                      rotation=(0.0, 90.0, 0.0),
                      scale=(LspliceB, 2 * diameter, diameter))
 
-        self.main = scene.new_cable(name_prefix + '_main_part', poiA=self.am, poiB=self.bm, length=1, EA=1, diameter=diameter)
+        self.main = scene.new_cable(scene.available_name_like(name_prefix + '_main_part'), poiA=self.am, poiB=self.bm, length=1, EA=1, diameter=diameter)
 
-        self.eyeA = scene.new_cable(name_prefix + '_eyeA', poiA=self.a1, poiB=self.a2, length=1, EA=1)
-        self.eyeB = scene.new_cable(name_prefix + '_eyeB', poiA=self.b1, poiB=self.b2, length=1, EA=1)
+        self.eyeA = scene.new_cable(scene.available_name_like(name_prefix + '_eyeA'), poiA=self.a1, poiB=self.a2, length=1, EA=1)
+        self.eyeB = scene.new_cable(scene.available_name_like(name_prefix + '_eyeB'), poiA=self.b1, poiB=self.b2, length=1, EA=1)
+
+
 
         # Update properties
+        self.sheaves = sheaves
         self._update_properties()
 
         for n in self.managed_nodes():
@@ -3510,16 +3513,20 @@ class Sling(Node, Manager):
         """
 
         a = list()
+        # if self._endA is not None:
+        #     a.append(self._endA.parent)
+        # if self._endB is not None:
+        #     a.append(self._endB.parent)
+        #
+        # for s in self.sheaves:
+        #     if s.parent is not None:
+        #             a.append(s.parent)
         if self._endA is not None:
-            a.append(self._endA.parent)
+            a.append(self._endA)
         if self._endB is not None:
-            a.append(self._endB.parent)
+            a.append(self._endB)
 
-        for s in self.sheaves:
-            if s.parent is not None:
-                    a.append(s.parent)
-
-
+        a.extend(self.sheaves)
 
         return a
 
@@ -3536,29 +3543,30 @@ class Sling(Node, Manager):
         for n in a:
             self._scene.delete(n)
 
-        # release management
-        if self._endA is not None:
-            self._endA.manager = None
-        if self._endB is not None:
-            self._endB.manager = None
-        for s in self._sheaves:
-            s.manager = None
+        # # release management
+        # if self._endA is not None:
+        #     self._endA.manager = None
+        # if self._endB is not None:
+        #     self._endB.manager = None
+        # for s in self._sheaves:
+        #     s.manager = None
 
 
     def give_python_code(self):
         code = f'# Exporting {self.name}'
-        if self.endA is not None:
-            code += self.endA.give_python_code()
-        if self.endB is not None:
-            code += self.endB.give_python_code()
-        for s in self.sheaves:
-            code += s.give_python_code()
+
+        # if self.endA is not None:
+        #     code += self.endA.give_python_code()
+        # if self.endB is not None:
+        #     code += self.endB.give_python_code()
+        # for s in self.sheaves:
+        #     code += s.give_python_code()
 
         code += '\n# Create sling'
 
         # (self, scene, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
 
-        code += f's.new_sling("{self.name}", Ltotal = {self.Ltotal},'
+        code += f'\ns.new_sling("{self.name}", length = {self.length},'
         code += f'            LeyeA = {self.LeyeA},'
         code += f'            LeyeB = {self.LeyeB},'
         code += f'            LspliceA = {self.LspliceA},'
@@ -3566,14 +3574,14 @@ class Sling(Node, Manager):
         code += f'            diameter = {self.diameter},'
         code += f'            EA = {self.EA},'
         code += f'            mass = {self.mass},'
-        code += f'            endA = {self.endA},'
-        code += f'            endB = {self.endB},'
+        code += f'            endA = "{self.endA.name}",'
+        code += f'            endB = "{self.endB.name}",'
 
 
         if self.sheaves:
             sheaves = '['
             for s in self.sheaves:
-                sheaves += f'{s.name}, '
+                sheaves += f'"{s.name}", '
             sheaves = sheaves[:-2] + ']'
         else:
             sheaves = 'None'

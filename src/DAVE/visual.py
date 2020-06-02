@@ -32,6 +32,9 @@ import vtkmodules.qt
 vtkmodules.qt.PyQtImpl = 'PySide2'
 
 import vtkplotter as vp   # ref: https://github.com/marcomusy/vtkplotter
+
+# vp.settings.renderLinesAsTubes = True
+
 import DAVE.scene as vf
 import DAVE.settings as vc
 import vtk
@@ -70,6 +73,20 @@ def transform_from_direction(axis):
     t.RotateZ(np.rad2deg(phi))
 
     return t
+
+def update_line_to_points(line_actor):
+
+
+    npt = line_actor._polydata.GetPoints().GetNumberOfPoints()
+
+    if line_actor._polydata.GetNumberOfLines() != npt - 1:  # number of lines has changed
+        lines = vtk.vtkCellArray()  # Create the polyline
+        lines.InsertNextCell(npt)
+        for i in range(npt):
+            lines.InsertCellPoint(i)
+        line_actor._polydata.SetLines(lines)
+        line_actor._polydata.Modified()
+
 
 
 def apply_parent_tranlation_on_transform(parent, t):
@@ -856,22 +873,14 @@ class Viewport:
 
                 points = V.node.get_points_for_visual()
 
-
                 if len(points)==0:  # not yet created
                     continue
 
-                n_points = A.NPoints()
-                A.points(points)   # points can be set without allocation
-                #
-                if n_points != len(points): # equal number of points
-                    # different number of points in line
-                    # (re-create the poly-line)
-                    lines = vtk.vtkCellArray()  # Create the polyline.
-                    lines.InsertNextCell(len(points))
-                    for i in range(len(points)):
-                        # print('inserting point {} {} {}'.format(*i))
-                        lines.InsertCellPoint(i)
-                    A.polydata().SetLines(lines)
+                A.points(points)   # points can be set without re-allocation
+
+                update_line_to_points(A)
+
+
 
                 continue
 

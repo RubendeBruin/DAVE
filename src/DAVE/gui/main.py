@@ -1136,6 +1136,8 @@ class Gui():
         if node in self.selected_nodes:
             # if the is already selected, then select something different
 
+            self.selected_nodes.remove(node)
+
             # if node has a manager, then select the manager
             if node.manager is not None:
                 self.guiSelectNode(node.manager)
@@ -1230,7 +1232,7 @@ class Gui():
         self.refresh_3dview()
 
     def guiSelectNode(self, node_name):
-        print('selecting a node with name {}'.format(node_name))
+        # print('selecting a node with name {}'.format(node_name))
 
         old_selection = self.selected_nodes.copy()
 
@@ -1242,7 +1244,6 @@ class Gui():
         if node not in self.selected_nodes:
             self.selected_nodes.append(node)
 
-        print(self.selected_nodes)
 
         if old_selection != self.selected_nodes:
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
