@@ -76,7 +76,6 @@ def transform_from_direction(axis):
 
 def update_line_to_points(line_actor):
 
-
     npt = line_actor._polydata.GetPoints().GetNumberOfPoints()
 
     if line_actor._polydata.GetNumberOfLines() != npt - 1:  # number of lines has changed
@@ -86,7 +85,6 @@ def update_line_to_points(line_actor):
             lines.InsertCellPoint(i)
         line_actor._polydata.SetLines(lines)
         line_actor._polydata.Modified()
-
 
 
 def apply_parent_tranlation_on_transform(parent, t):
