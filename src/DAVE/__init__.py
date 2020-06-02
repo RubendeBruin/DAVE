@@ -9,3 +9,9 @@ except DistributionNotFound:
     __version__ = 'unknown'
 finally:
     del get_distribution, DistributionNotFound
+
+from .scene import *
+from .gui.main import Gui
+from .jupyter import screenshot, show
+
+

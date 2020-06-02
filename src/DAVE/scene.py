@@ -373,6 +373,9 @@ class Node:
         1. the node is not manages (node._manager is None)
         2. the manager of the node is identical to scene.current_manager
         """
+        if self._scene._godmode:
+            return True
+
         if self._manager is not None:
             if self._manager != self._scene.current_manager:
                 if self._scene.current_manager is None:
@@ -3106,7 +3109,8 @@ class GeometricContact(Node, Manager):
            - circle2 [circle]        <--- input for creation
 
            - SELF_master_axis           <--- created
-                - SELF__pin_hole_connection  <--- created
+                - SELF_pin_hole_connection  <--- created
+                  -SELF_connection_axial_rotation
                     - SELF_slaved_axis       <--- created
 
                        - parent_of_parent_of_circle1 [axis]
@@ -3131,6 +3135,10 @@ class GeometricContact(Node, Manager):
             circle2:
         """
 
+        if circle1.parent.parent is None:
+            raise ValueError(
+                'The slaved pin is not located on an axis. Can not create the connection because there is no axis to slave')
+
         super().__init__(scene)
         self.name = name
 
@@ -3140,14 +3148,16 @@ class GeometricContact(Node, Manager):
         self._circle2 = circle2
         self._flipped = False
 
-        self._master_axis = self._scene.new_axis(name_prefix + '_master_axis')
+        self._master_axis = self._scene.new_axis(scene.available_name_like(name_prefix + '_master_axis'))
         """Axis on the master axis at the location of the center of hole or pin"""
 
-        self._pin_hole_connection = self._scene.new_axis(name_prefix + '_pin_hole_connection')
+        self._pin_hole_connection = self._scene.new_axis(scene.available_name_like(name_prefix + '_pin_hole_connection'))
         """axis between the center of the hole and the center of the pin. Free to rotate about the center of the hole as well as the pin"""
 
-        self._slaved_axis = self._scene.new_axis(name_prefix + '_slaved_axis')
+        self._slaved_axis = self._scene.new_axis(scene.available_name_like(name_prefix + '_slaved_axis'))
         """axis to which the slaved body is connected. Either the center of the hole or the center of the pin """
+
+        self._connection_axial_rotation = self._scene.new_axis(scene.available_name_like(name_prefix + '_connection_axial_rotation'))
 
         # prohibit changes to nodes that were used in the creation of this connection
 
@@ -3157,6 +3167,8 @@ class GeometricContact(Node, Manager):
 
         for node in self.managed_nodes():
             node.manager = self
+
+        self._make_connection()
 
 
     @property
@@ -3183,6 +3195,98 @@ class GeometricContact(Node, Manager):
         self._scene.delete(self._master_axis)
 
 
+
+    def _make_connection(self):
+
+        self._inside_connection = False
+
+        remember = self._scene.current_manager
+        self._scene.current_manager = self  # claim managment
+
+        pin1 = self._circle1  # slave
+        pin2 = self._circle2  # master
+
+        if pin1.parent.parent is None:
+            raise ValueError(
+                'The slaved pin is not located on an axis. Can not create the connection because there is no axis to slave')
+
+        # --------- prepare hole
+
+        if pin2.parent.parent is not None:
+            self._master_axis.parent = pin2.parent.parent
+        self._master_axis.position = pin2.parent.position
+        self._master_axis.fixed = (True, True, True, True, True, True)
+
+        self._master_axis.rotation = rotation_from_y_axis_direction(pin2.axis)
+
+        # Position connection axis at the center of the master axis (pin2)
+        # and allow it to rotate about the pin
+        self._pin_hole_connection.position = (0, 0, 0)
+        self._pin_hole_connection.parent = self._master_axis
+        self._pin_hole_connection.fixed = (True, True, True,
+                                           True, False, True)
+
+        self._connection_axial_rotation.parent = self._pin_hole_connection
+        self._connection_axial_rotation.position = (0, 0, 0)
+        # self._connection_axial_rotation.rotation = (90, 0, 0)  # < ===============================================
+
+        # Position the connection pin (self) on the target pin and
+        # place the parent of the parent of the pin (the axis) on the connection axis
+        # and fix it
+
+        self._slaved_axis.parent = None
+        self._slaved_axis.position = pin1.parent.global_position  # position of the poi
+        self._slaved_axis.rotation = pin1.parent.parent.to_glob_rotation(rotation_from_y_axis_direction(pin1.axis))
+
+        # # store the original pin orientation
+        # g0 = np.array(pin1.parent.parent.global_rotation, dtype=float)
+
+        pin1.parent.parent.change_parent_to(self._slaved_axis)
+        pin1.parent.parent.fixed = True
+
+        # Place the pin in the hole
+
+        self._slaved_axis.parent = self._connection_axial_rotation
+        self._slaved_axis.rotation = (0, 0, 0)
+        self._slaved_axis.fixed = (True, True, True,
+                                   True, False, True)
+
+
+        self._slaved_axis.position = (pin1.radius + pin2.radius, 0, 0)  # <=============================
+
+
+
+        # now we may rotate self.ry such that the original global axis of the slaved body are as close to their original
+        # values as possible
+
+        # g0 is the original global rotation vector
+        # g1 is the current rotation vector
+        # g1 = np.array(pin1.parent.parent.global_rotation, dtype=float)
+        # difference = g1 - g0
+        # direction = np.array(pin1.parent.parent.to_glob_rotation((1, 0, 0)))
+
+        # y = np.dot(difference, direction)
+        # self._slaved_axis.rotation = (0, y, 0)
+
+        self._scene.current_manager = remember
+
+
+    def set_pin_pin_connection(self):
+        """Sets the connection to be of type pin-pin"""
+
+        self._inside_connection = False
+        remember = self._scene.current_manager
+        self._scene.current_manager = self  # claim managment
+
+        pin1 = self._circle1  # slave
+        pin2 = self._circle2  # master
+
+        self._slaved_axis.position = (pin1.radius + pin2.radius, 0, 0)
+        self._connection_axial_rotation.rotation = (90, 0, 0)
+
+        self._scene.current_manager = remember
+
+
     def set_pin_in_hole_connection(self):
         """Sets the connection to be of type pin-in-hole
 
@@ -3192,6 +3296,7 @@ class GeometricContact(Node, Manager):
         These axes are connected with a shore axis which is allowed to rotate relative to the master axis
         the slave axis is fixed to this rotating axis
         """
+        self._inside_connection = True
 
         remember = self._scene.current_manager
         self._scene.current_manager = self # claim managment
@@ -3199,64 +3304,8 @@ class GeometricContact(Node, Manager):
         pin = self._circle1  # slave
         hole = self._circle2 # master
 
-        if pin.parent.parent is None:
-            raise ValueError('The slaved circle is not located on an axis. Can not create the connectino because there is no axis to slave')
-
-        # --------- prepare hole
-
-        # Position "hole_axis" at the center of the hole
-        # Orient the axis such that the Y-direction is the axis direction of the hole
-        if hole.parent.parent is not None:
-            self._master_axis.parent = hole.parent.parent
-        self._master_axis.position = hole.parent.position
-        self._master_axis.fixed = (True, True, True, True, True, True)
-
-        if self._flipped:
-            self._master_axis.rotation = rotation_from_y_axis_direction(-np.array(hole.axis))
-        else:
-            self._master_axis.rotation = rotation_from_y_axis_direction(hole.axis)
-
-        # Position hole rotation at the hole axis
-        # and allow it to rotate
-        self._pin_hole_connection.position = (0, 0, 0)
-        self._pin_hole_connection.parent = self._master_axis
-        self._pin_hole_connection.fixed = (True, True, True,
-                                           True, False, True)
-
-        # Position the connection pin (self) on the target pin and
-        # place the parent of the parent of the pin (the axis) on the connection axis
-        # and fix it
-
-        self._slaved_axis.parent = None
-        self._slaved_axis.position = pin.parent.global_position # position of the poi
-        self._slaved_axis.rotation = pin.parent.parent.to_glob_rotation(rotation_from_y_axis_direction(pin.axis))
-
-        # store the original pin orientation
-        g0 = np.array(pin.parent.parent.global_rotation, dtype=float)
-
-        pin.parent.parent.change_parent_to(self._slaved_axis)
-        pin.parent.parent.fixed = True
-
-        # Place the pin in the hole
-
-        self._slaved_axis.parent = self._pin_hole_connection
-        self._slaved_axis.rotation = (0, 0, 0)
-        self._slaved_axis.fixed = (True, True, True,
-                              True, False, True)
-
+        self._connection_axial_rotation.rotation = (0, 0, 0)
         self._slaved_axis.position = (hole.radius - pin.radius, 0, 0)
-
-        # now we may rotate self.ry such that the original global axis of the slaved body are as close to their original
-        # values as possible
-
-        # g0 is the original global rotation vector
-        # g1 is the current rotation vector
-        g1 = np.array(pin.parent.parent.global_rotation, dtype=float)
-        difference = g1-g0
-        direction = np.array(pin.parent.parent.to_glob_rotation((1,0,0)))
-
-        y = np.dot(difference, direction)
-        self._slaved_axis.rotation = (0,y,0)
 
         self._scene.current_manager = remember
 
@@ -3270,32 +3319,104 @@ class GeometricContact(Node, Manager):
                 self._circle1_parent_parent,
                 self._master_axis,
                 self._slaved_axis,
-                self._pin_hole_connection]
+                self._pin_hole_connection,
+                self._connection_axial_rotation]
 
     def depends_on(self):
         return [self.parent]
 
+    def flip(self):
+        self.swivel = np.mod(self.swivel + 180, 360)
+
+    def change_side(self):
+        self.master_rotation = np.mod(self.master_rotation + 180, 360)
+        self.slave_rotation = np.mod(self.slave_rotation + 180, 360)
+
     @property
-    def flipped(self):
-        return self._flipped
+    def swivel(self):
+        return self._connection_axial_rotation.rotation[0]
 
-    @flipped.setter
-    def flipped(self, value):
-
+    @swivel.setter
+    def swivel(self, value):
         remember = self._scene.current_manager  # claim management
         self._scene.current_manager = self
-
-        self._flipped = value
-
-        if self._flipped:
-            self._master_axis.rotation = rotation_from_y_axis_direction(-np.array(self._circle2.axis))
-        else:
-            self._master_axis.rotation = rotation_from_y_axis_direction(self._circle2.axis)
-
+        self._connection_axial_rotation.rx = value
         self._scene.current_manager = remember # restore old manager
 
+    @property
+    def swivel_fixed(self):
+        return self._connection_axial_rotation.fixed[3]
 
-    def give_python_code(self):
+    @swivel_fixed.setter
+    def swivel_fixed(self, value):
+        remember = self._scene.current_manager  # claim management
+        self._scene.current_manager = self
+        self._connection_axial_rotation.fixed = [True,True,True,value, True, True]
+        self._scene.current_manager = remember  # restore old manager
+
+    @property
+    def master_rotation(self):
+        return self._pin_hole_connection.ry
+
+    @master_rotation.setter
+    def master_rotation(self, value):
+        remember = self._scene.current_manager  # claim management
+        self._scene.current_manager = self
+        self._pin_hole_connection.ry = value
+        self._scene.current_manager = remember  # restore old manager
+
+    @property
+    def master_fixed(self):
+        return self._pin_hole_connection.fixed[4]
+
+    @master_fixed.setter
+    def master_fixed(self, value):
+        remember = self._scene.current_manager  # claim management
+        self._scene.current_manager = self
+        self._pin_hole_connection.fixed = [True,True,True,True, value,  True]
+        self._scene.current_manager = remember  # restore old manager
+
+
+    @property
+    def slave_rotation(self):
+        return self._slaved_axis.ry
+
+    @slave_rotation.setter
+    def slave_rotation(self, value):
+        remember = self._scene.current_manager  # claim management
+        self._scene.current_manager = self
+        self._slaved_axis.ry = value
+        self._scene.current_manager = remember  # restore old manager
+
+    @property
+    def slave_fixed(self):
+        return self._slaved_axis.fixed[4]
+
+    @slave_fixed.setter
+    def slave_fixed(self, value):
+        remember = self._scene.current_manager  # claim management
+        self._scene.current_manager = self
+        self._slaved_axis.fixed = [True, True, True, True, value, True]
+        self._scene.current_manager = remember  # restore old manager
+
+    @property
+    def inside(self):
+        return self._inside_connection
+
+    @inside.setter
+    def inside(self, value):
+        if value == self._inside_connection:
+            return
+
+        if value:
+            self.set_pin_in_hole_connection()
+        else:
+            self.set_pin_pin_connection()
+
+
+
+
+def give_python_code(self):
 
         old_manger = self._scene.current_manager
         self._scene.current_manager = self
@@ -3698,12 +3819,22 @@ class Sling(Node, Manager):
 
 class Scene:
     """
-    A Scene is the main component of virtual-float.
+    A Scene is the main component of DAVE.
 
     It provides a world to place nodes (elements) in.
-    It interfaces with the virtual-float core for all calculations.
+    It interfaces with the equilibrium core for all calculations.
 
-    _vfc : DAVE Core
+    By convention a Scene element is created with the name s, but create as many scenes as you want.
+
+    Examples:
+
+        s = Scene()
+        s.new_axis('my_axis', position = (0,0,1))
+
+        a = Scene() # another world
+        a.new_poi('a point')
+
+
     """
 
     def __init__(self, filename = None, copy_from = None):
@@ -3738,6 +3869,9 @@ class Scene:
 
         self.current_manager = None
         """Setting this to an instance of a Manager allows nodes with that manager to be changed"""
+
+        self._godmode = False
+        """Icarus warning, wear proper PPE"""
 
         if filename is not None:
             self.load_scene(filename)
@@ -4597,6 +4731,14 @@ class Scene:
             raise ValueError('Item1 needs to be a sheave-type node')
         if item2 is None:
             raise ValueError('Item2 needs to be a sheave-type node')
+
+        if item1.parent.parent is None:
+            raise ValueError(
+                f'The parent {item1.parent.name} of the slaved item {item1.name} is not located on an axis. Can not create the connection because there is no axis to slave')
+
+        if item1.parent.parent.manager is not None:
+            raise ValueError(
+                f'The parent {item1.parent.name} of the slaved item {item1.name} is a manged by {item1.parent.parent.manager.name} and can therefore not be changed - unable to create geometric contact')
 
         new_node = GeometricContact(self, item1, item2, name)
         new_node.set_pin_in_hole_connection()

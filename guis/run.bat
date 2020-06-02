@@ -28,7 +28,7 @@ echo call pyside2-uic dlg_solver.ui -o "..\src\DAVE\gui\forms\dlg_solver.py"
 echo call pyside2-uic frm_animation.ui -o "..\src\DAVE\gui\forms\frm_animation.py"
 echo call pyside2-uic widget_dynprop.ui -o "..\src\DAVE\gui\forms\widget_dynprop.py"
 echo call pyside2-uic widget_contactball.ui -o "..\src\DAVE\gui\forms\widget_contactball.py"
-echo call pyside2-uic widget_geometricconnection.ui -o "..\src\DAVE\gui\forms\widget_geometricconnection.py"
+call pyside2-uic widget_geometricconnection.ui -o "..\src\DAVE\gui\forms\widget_geometricconnection.py"
 call pyside2-uic widget_sling.ui -o "..\src\DAVE\gui\forms\widget_sling.py"
 echo call pyside2-uic widget_selection_actions.ui -o "..\src\DAVE\gui\forms\widget_selection_actions.py"
 

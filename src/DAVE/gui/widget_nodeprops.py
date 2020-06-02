@@ -1182,29 +1182,107 @@ class EditGeometricContact(NodeEditor):
 
         else:
             ui = EditGeometricContact._ui
+            ui.rbPinHole.toggled.connect(self.change_type)
+            ui.rbPinHole.toggled.disconnect()
+            # ui.rbPinPin.toggled.disconnect()
 
-        try:
-            ui.cbFlip.toggled.disconnect()
+            ui.cbMFix.toggled.disconnect()
+            ui.cbSFix.toggled.disconnect()
+            ui.cbSwivelFix.toggled.disconnect()
 
-        except:
-            pass # no connections yet
+            ui.sbMasterRotation.valueChanged.disconnect()
+            ui.sbSlaveRotation.valueChanged.disconnect()
+            ui.sbSwivel.valueChanged.disconnect()
 
-        ui.cbFlip.setChecked(self.node.flipped)
-        ui.cbFlip.toggled.connect(self.callback)
+
+        ui.rbPinHole.setChecked(self.node.inside)
+        ui.rbPinPin.setChecked(not self.node.inside)
+
+        ui.cbMFix.setChecked(self.node.master_fixed)
+        ui.cbSFix.setChecked(self.node.slave_fixed)
+        ui.cbSwivelFix.setChecked(self.node.swivel_fixed)
+
+        ui.sbMasterRotation.setValue(self.node.master_rotation)
+        ui.sbSlaveRotation.setValue(self.node.slave_rotation)
+        ui.sbSwivel.setValue(self.node.swivel)
+
+        ui.rbPinHole.toggled.connect(self.change_type)
+        # ui.rbPinPin.toggled.connect(self.callback) # only need to connect one of the group
+
+        ui.cbMFix.toggled.connect(self.callback)
+        ui.cbSFix.toggled.connect(self.callback)
+        ui.cbSwivelFix.toggled.connect(self.callback)
+
+        ui.sbMasterRotation.valueChanged.connect(self.callback)
+        ui.sbSlaveRotation.valueChanged.connect(self.callback)
+        ui.sbSwivel.valueChanged.connect(self.callback)
+
+        ui.pbFlip.pressed.connect(self.flip)
+        ui.pbChangeSide.pressed.connect(self.change_side)
 
         self.ui = ui
 
         return ui._widget
+
+    def flip(self):
+        code = "\ns['{}'].flip()".format(self.node.name)
+        self.run_code(code)
+
+        self.ui.sbSwivel.valueChanged.disconnect()
+        self.ui.sbSwivel.setValue(self.node.swivel)
+        self.ui.sbSwivel.valueChanged.connect(self.callback)
+
+    def change_side(self):
+        code = "\ns['{}'].change_side()".format(self.node.name)
+        self.run_code(code)
+        self.ui.sbSlaveRotation.valueChanged.disconnect()
+        self.ui.sbMasterRotation.valueChanged.disconnect()
+        self.ui.sbMasterRotation.setValue(self.node.master_rotation)
+        self.ui.sbSlaveRotation.setValue(self.node.slave_rotation)
+        self.ui.sbSlaveRotation.valueChanged.connect(self.callback)
+        self.ui.sbMasterRotation.valueChanged.connect(self.callback)
+
+    def change_type(self):
+        new_inside = self.ui.rbPinHole.isChecked()
+        if not new_inside == self.node.inside:
+            code = "\ns['{}']".format(self.node.name) + '.inside = ' + str(new_inside)
+            self.run_code(code)
+            self.ui.sbSwivel.valueChanged.disconnect()
+            self.ui.sbSwivel.setValue(self.node.swivel)
+            self.ui.sbSwivel.valueChanged.connect(self.callback)
+
 
     def generate_code(self):
 
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
-        new_flipped = self.ui.cbFlip.isChecked()
+        new_swivel = self.ui.sbSwivel.value()
+        new_master = self.ui.sbMasterRotation.value()
+        new_slave = self.ui.sbSlaveRotation.value()
 
-        if not new_flipped == self.node.flipped:
-            code += element + '.flipped = ' + str(new_flipped)
+        new_swivel_fixed = self.ui.cbSwivelFix.isChecked()
+        new_master_fixed = self.ui.cbMFix.isChecked()
+        new_slave_fixed = self.ui.cbSFix.isChecked()
+
+
+
+        if not new_swivel == self.node.swivel:
+            code += element + '.swivel = ' + str(new_swivel)
+        if not new_master == self.node.master_rotation:
+            code += element + '.master_rotation = ' + str(new_master)
+        if not new_slave == self.node.slave_rotation:
+            code += element + '.slave_rotation = ' + str(new_slave)
+
+        if not new_swivel_fixed == self.node.swivel_fixed:
+            code += element + '.swivel_fixed = ' + str(new_swivel_fixed)
+        if not new_master_fixed == self.node.master_fixed:
+            code += element + '.master_fixed = ' + str(new_master_fixed)
+        if not new_slave_fixed == self.node.slave_fixed:
+            code += element + '.slave_fixed = ' + str(new_slave_fixed)
+
+        # if not new_inside == self.node.inside:
+        #     code += element + '.inside = ' + str(new_inside)
 
         return code
 
@@ -1619,7 +1697,7 @@ class WidgetNodeProps(guiDockWidget):
             self.managed_label.setText(
                 f"The properties of this node are managed by node '{node._manager.name}' and should not be changed manually")
             self.manager_widget.setVisible(True)
-            self.props_widget.setEnabled(False)
+            self.props_widget.setEnabled(self.guiScene._godmode)
         else:
             self.manager_widget.setVisible(False)
             self.props_widget.setEnabled(True)

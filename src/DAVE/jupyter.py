@@ -19,32 +19,6 @@ os.environ['DISPLAY'] = ':99'
 import DAVE.visual
 import vtkplotter as vtkp
 import vtk
-import DAVE.settings as vc
-
-def _setup_viewport(vp, what = 'all', sea=True):
-
-    what = what.upper()
-
-    vp.show_global = sea
-
-    if what == 'ALL':
-        pass
-        # default
-    elif what == 'VISUALS':
-        vp.show_visual = True
-        vp.show_geometry = False
-        vp.show_force = False
-    elif True:
-        print('Unexpected what: {} '.format(what))
-        print('What should be "all","visuals"')
-
-    vp.create_visuals(recreate=True)
-    vp.position_visuals()
-    vp.update_visibility()
-
-    return vp
-
-
 
 def show(scene, what = 'all', sea=True,camera_pos=(50,-25,10), lookat = (0,0,0)):
     """
@@ -52,7 +26,7 @@ def show(scene, what = 'all', sea=True,camera_pos=(50,-25,10), lookat = (0,0,0))
     """
     return _view(scene, 'panel', what=what, sea=sea, width = 1024, height = 800, camera_pos=camera_pos, lookat=lookat)
 
-def screenshot(scene, what = 'all', sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, height = 600,):
+def screenshot(scene, what = 'all', sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, height = 600):
     return _view(scene, backend= '2d', what=what, sea=sea, width = width, height = height, camera_pos=camera_pos, lookat=lookat)
 
 def _view(scene, backend = '2d', what = 'all', sea=True, width=1024, height = 600, camera_pos=(50,-25,10), lookat = (0,0,0)):
@@ -70,7 +44,24 @@ def _view(scene, backend = '2d', what = 'all', sea=True, width=1024, height = 60
 
     offscreen = vtkp.Plotter(axes=0, offscreen=True, size=(width, height))
 
-    _setup_viewport(vp, what=what, sea=sea)
+    what = what.upper()
+
+    vp.show_global = sea
+
+    if what == 'ALL':
+        pass
+        # default
+    elif what == 'VISUALS':
+        vp.show_visual = True
+        vp.show_geometry = False
+        vp.show_force = False
+    else:
+        print('Unexpected what: {} '.format(what))
+        print('What should be "all","visuals"')
+
+    vp.create_visuals(recreate=True)
+    vp.position_visuals()
+    vp.update_visibility()
 
     for va in vp.visuals:
         print(va.node.name)
@@ -80,7 +71,6 @@ def _view(scene, backend = '2d', what = 'all', sea=True, width=1024, height = 60
                 if backend == 'panel':
 
                     # Work-around for panel
-
                     tr = vtk.vtkTransform()
                     tr.SetMatrix(a.GetMatrix())
 
@@ -90,7 +80,6 @@ def _view(scene, backend = '2d', what = 'all', sea=True, width=1024, height = 60
                     tr0 = vtk.vtkTransform()
                     tr0.Identity()
                     a.SetUserTransform(tr0)
-
 
                 offscreen.add(a)
 

@@ -216,6 +216,7 @@ class Gui():
 
         self.ui.btnWater.pressed.connect(self.toggle_show_global)
         self.ui.btnBlender.pressed.connect(self.to_blender)
+        self.ui.pbCopyViewCode.pressed.connect(self.copy_screenshot_code)
 
         # ------ animation buttons ------
 
@@ -410,6 +411,18 @@ class Gui():
         splash.finish(self.MainWindow)
         self.MainWindow.show()
         self.app.exec_()
+
+    def copy_screenshot_code(self):
+
+        # def screenshot(scene, what = 'all', sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, height = 600):
+        sea = self.visual.show_global
+        camera_pos = self.visual.screen.camera.GetPosition()
+        lookat = self.visual.screen.camera.GetFocalPoint()
+
+        code = f'screenshot(s, what = "all", sea = {sea}, camera_pos = {camera_pos}, lookat = {lookat})'
+        print(code)
+        self.app.clipboard().setText(code)
+
 
     def escPressed(self):
         self.animation_terminate()  # terminate any running animations
