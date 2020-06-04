@@ -15,18 +15,30 @@ from DAVE.scene import *
 import DAVE.settings as ds
 import numpy as np
 
+def assertBool(var, name = "Variable"):
+    if not isinstance(var, bool):
+        raise ValueError(name + " should be a boolean (True/False) but is {}".format(var))
+
+def is_number(var):
+    if isinstance(var, bool):
+        return False
+    if isinstance(var, numbers.Number):
+        return True
+    return False
+
 def assert1f(var, name = "Variable"):
-    if not isinstance(var, numbers.Number):
+    if not is_number(var):
         raise ValueError(name + " should be a number but {} is not a number.".format(var))
 
+
 def assert1f_positive_or_zero(var, name ="Variable"):
-    if not isinstance(var, numbers.Number):
+    if not is_number(var):
         raise ValueError(name + " should be a number but {} is not a number.".format(var))
     if var < 0:
         raise ValueError(name + " can not be negative.".format(var))
 
 def assert1f_positive(var, name ="Variable"):
-    if not isinstance(var, numbers.Number):
+    if not is_number(var):
         raise ValueError(name + " should be a number but {} is not a number.".format(var))
     if var < 1e-6:
         raise ValueError(name + " should be >= 1e-6.".format(var))
@@ -36,14 +48,14 @@ def assert3f(var, name = "Variable"):
     """Asserts that variable has length three and contains only numbers"""
     assert len(var) == 3, name + " should have length 3 but has length {}".format(len(var))
     for i in range(3):
-        if not isinstance(var[i], numbers.Number):
+        if not is_number(var[i]):
             raise ValueError(name + " should contain three numbers but {} is not a number.".format(var[i]))
 
 def assert3f_positive(var, name = "Variable"):
     """Asserts that variable has length three and contains only numbers"""
     assert len(var) == 3, name + " should have length 3 but has length {}".format(len(var))
     for i in range(3):
-        if not isinstance(var[i], numbers.Number):
+        if not is_number(var[i]):
             raise ValueError(name + " should contain three positive numbers but {} is not a number.".format(var[i]))
         if var[i]<0:
             raise ValueError(name + " should contain three positive numbers but {} is not > 0.".format(var[i]))
@@ -52,7 +64,7 @@ def assert6f(var, name = "Variable"):
     """Asserts that variable has length six and contains only numbers"""
     assert len(var) == 6, name + " should have length 6 but has length {}".format(len(var))
     for i in range(6):
-        if not isinstance(var[i], numbers.Number):
+        if not is_number(var[i]):
             raise ValueError(name + " should contain six numbers but {} is not a number.".format(var[i]))
 
 

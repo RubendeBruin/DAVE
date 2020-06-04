@@ -126,7 +126,7 @@ class SolverDialog(QDialog, Ui_Dialog):
 
 class Gui():
 
-    def __init__(self, scene, splash=None, app=None, geometry_scale = -1, cog_scale = -1):
+    def __init__(self, scene=None, splash=None, app=None, geometry_scale = -1, cog_scale = -1):
 
         if app is None:
 
@@ -142,6 +142,9 @@ class Gui():
             splash = QtWidgets.QSplashScreen()
             splash.setPixmap(QPixmap(":/icons/splashscreen.png"))
             splash.show()
+
+        if scene is None:
+            scene = Scene()
 
         # Main Window
         self.MainWindow = QtWidgets.QMainWindow()

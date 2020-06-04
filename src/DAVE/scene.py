@@ -3414,9 +3414,7 @@ class GeometricContact(Node, Manager):
             self.set_pin_pin_connection()
 
 
-
-
-def give_python_code(self):
+    def give_python_code(self):
 
         old_manger = self._scene.current_manager
         self._scene.current_manager = self
@@ -3440,10 +3438,33 @@ def give_python_code(self):
 
         code.append('# now create the connection')
         code.append(f"s.new_geometriccontact(name = '{self.name}',")
-        code.append(f"                       item1 = '{self._circle1.name}',")
-        code.append(f"                       item2 = '{self._circle2.name}')")
+        code.append(f"                       slave_item = '{self._circle1.name}',")
+        code.append(f"                       master_item = '{self._circle2.name}',")
+        code.append(f"                       inside={self.inside},")
 
-        # TODO: Set actual geometry
+        if self.inside and self.swivel == 0:
+            pass # default for inside
+        else:
+            if not self.inside and self.swivel==90:
+                pass # default for outside
+            else:
+                code.append(f"                       swivel={self.swivel},")
+
+        if not self.swivel_fixed:
+            code.append(f"                       swivel_fixed={self.swivel_fixed},")
+        if self.master_fixed:
+            code.append(f"                       master_rotation={self.master_rotation},")
+            code.append(f"                       master_fixed={self.master_fixed},")
+        else:
+            code.append(f"                       master_fixed=solved({self.master_fixed}),")
+        if self.slave_fixed:
+            code.append(f"                       slave_fixed={self.slave_fixed},")
+            code.append(f"                       slave_rotation={self.slave_rotation},")
+        else:
+            code.append(f"                       slave_rotation=solved({self.slave_rotation}),")
+
+        code = [*code[:-1], code[-1][:-1] + ' )']  # remove the , from the last entry [should be a quicker way to do this]
+
 
         self._scene.current_manager = old_manger
 
@@ -4698,19 +4719,35 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_geometriccontact(self, name, item1 , item2, pin_as_master=False):
+    def new_geometriccontact(self, name, slave_item, master_item,
+                             inside = False,
+                             swivel = None,
+                             master_rotation = None,
+                             slave_rotation = None,
+                             swivel_fixed = True,
+                             master_fixed = False,
+                             slave_fixed = False):
         """Creates a new *new_geometriccontact* node and adds it to the scene.
 
-        By default a pin-hole connection is created between item1 and item2
+        Geometric contact connects two circular elements and can be used to model bar-bar connections or pin-in-hole connections.
 
-        Note:
-            geometrically there is no difference between the pin and the hole. Therefore it is not needed to specify
-            which is the pin and which is the hole
+        By default a bar-bar connection is created between item1 and item2.
 
         Args:
             name: Name for the node, should be unique
-            item1 : [Sheave] will be the master of the connection
-            item2 : [Sheave] will be the slave of the connection
+            slave_item : [Sheave] will be the master of the connection
+            master_item : [Sheave] will be the slave of the connection
+            inside: [False] False creates a pinpin connection. True creates a pin-hole type of connection
+            swivel: Rotation angle between the two items. Defaults to 90 for pinpin and 0 for pin-hole
+            master_rotation: Angle of the connecting hinge relative to master or None for default
+            slave_rotation: Angle of the slave relative to the connecting hinge or None for default
+            swivel_fixed: Fix swivel [True] 
+            master_fixed: Fix connecting hinge to master [False]
+            slave_fixed: Fix slave to connecting hinge [False]
+
+        Note:
+            For pin-hole connections there is no geometrical difference between the pin and the hole. Therefore it is not needed to specify
+            which is the pin and which is the hole
 
         Returns:
             Reference to newly created new_geometriccontact
@@ -4724,24 +4761,56 @@ class Scene:
         assertValidName(name)
         self._verify_name_available(name)
 
-        item1 = self._sheave_from_node(item1)
-        item2 = self._sheave_from_node(item2)
+        slave_item = self._sheave_from_node(slave_item)
+        master_item = self._sheave_from_node(master_item)
 
-        if item1 is None:
+        assertBool(inside,'inside')
+        assertBool(swivel_fixed,'swivel_fixed')
+        assertBool(master_fixed,'master_fixed')
+        assertBool(slave_fixed,'slave_fixed')
+
+
+        if swivel is None:
+            if inside:
+                swivel=0
+            else:
+                swivel=90
+
+        assert1f(swivel, "swivel_angle")
+
+        if master_rotation is not None:
+            assert1f(master_rotation, "master_angle should be either None or ")
+        if slave_rotation is not None:
+            assert1f(slave_rotation, "slave_angle should be either None or ")
+
+        if slave_item is None:
             raise ValueError('Item1 needs to be a sheave-type node')
-        if item2 is None:
+        if master_item is None:
             raise ValueError('Item2 needs to be a sheave-type node')
 
-        if item1.parent.parent is None:
+        if slave_item.parent.parent is None:
             raise ValueError(
-                f'The parent {item1.parent.name} of the slaved item {item1.name} is not located on an axis. Can not create the connection because there is no axis to slave')
+                f'The parent {slave_item.parent.name} of the slaved item {slave_item.name} is not located on an axis. Can not create the connection because there is no axis to slave')
 
-        if item1.parent.parent.manager is not None:
+        if slave_item.parent.parent.manager is not None:
             raise ValueError(
-                f'The parent {item1.parent.name} of the slaved item {item1.name} is a manged by {item1.parent.parent.manager.name} and can therefore not be changed - unable to create geometric contact')
+                f'The parent {slave_item.parent.name} of the slaved item {slave_item.name} is a manged by {slave_item.parent.parent.manager.name} and can therefore not be changed - unable to create geometric contact')
 
-        new_node = GeometricContact(self, item1, item2, name)
-        new_node.set_pin_in_hole_connection()
+        new_node = GeometricContact(self, slave_item, master_item, name)
+        if inside:
+            new_node.set_pin_in_hole_connection()
+        else:
+            new_node.set_pin_pin_connection()
+
+        new_node.swivel = swivel
+        if master_rotation is not None:
+            new_node.master_rotation = master_rotation
+        if slave_rotation is not None:
+            new_node.slave_rotation = slave_rotation
+
+        new_node.master_fixed = master_fixed
+        new_node.slave_fixed = slave_fixed
+        new_node.swivel_fixed = swivel_fixed
 
         self._nodes.append(new_node)
         return new_node
