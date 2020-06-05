@@ -9,6 +9,12 @@ Core elements
 ~~~~~~~~~~~~~~
 Core elements are independent of any user interaction or visualization.
 
+Import using
+
+
+    from DAVE import *
+
+
 - scene.py    , :py:mod:`DAVE.scene` main unit. Contains all scene and all nodes. Communication with pyo3d
 - constants.py, :py:mod:`DAVE.constants` package-wide settings. Including settings for input/output packages
 - tools.py    , :py:mod:`DAVE.tools` small helper functions for scene or constants

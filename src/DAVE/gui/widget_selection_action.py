@@ -172,7 +172,7 @@ class WidgetSelectionActions(guiDockWidget):
                 def create_cable():
                     pos = self.mapToGlobal(QPoint(0,0))
                     name = get_text(pos = pos, suggestion=self.guiScene.available_name_like("cable"), input_valid_callback=valid_name)
-                    cable_code = f's.new_cable("{name}", poiA="{poi_and_sheave[0].name}", poiB = "{poi_and_sheave[-1].name}"{sheaves})'
+                    cable_code = f's.new_cable("{name}", endA="{poi_and_sheave[0].name}", endB = "{poi_and_sheave[-1].name}"{sheaves})'
                     self.guiRunCodeCallback(cable_code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
                 button.pressed.connect(create_cable)

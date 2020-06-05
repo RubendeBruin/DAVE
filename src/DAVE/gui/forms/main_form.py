@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Fri May 29 08:47:57 2020
+# Created: Fri Jun  5 16:57:48 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -231,6 +231,9 @@ class Ui_MainWindow(object):
         self.label.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
         self.label.setObjectName("label")
         self.horizontalLayout_6.addWidget(self.label)
+        self.tbTidyHistory = QtWidgets.QToolButton(self.widget)
+        self.tbTidyHistory.setObjectName("tbTidyHistory")
+        self.horizontalLayout_6.addWidget(self.tbTidyHistory)
         self.pbCopyHistory = QtWidgets.QToolButton(self.widget)
         self.pbCopyHistory.setIcon(icon8)
         self.pbCopyHistory.setObjectName("pbCopyHistory")
@@ -397,6 +400,7 @@ class Ui_MainWindow(object):
         self.pbGenerateSceneCode.setText(QtWidgets.QApplication.translate("MainWindow", "Generate scene code", None, -1))
         self.pbCopyOutput.setText(QtWidgets.QApplication.translate("MainWindow", "Copy", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("MainWindow", "History (actions)", None, -1))
+        self.tbTidyHistory.setText(QtWidgets.QApplication.translate("MainWindow", "tidy", None, -1))
         self.pbCopyHistory.setText(QtWidgets.QApplication.translate("MainWindow", "Copy", None, -1))
         self.toolBar.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "toolBar", None, -1))
         self.actionSave_scene.setText(QtWidgets.QApplication.translate("MainWindow", "Save as", None, -1))
@@ -447,4 +451,3 @@ class Ui_MainWindow(object):
         self.actionCamera_reset.setText(QtWidgets.QApplication.translate("MainWindow", "Camera reset", None, -1))
         self.actionShow_CoG_positions.setText(QtWidgets.QApplication.translate("MainWindow", "Show CoGs", None, -1))
 
-import DAVE.gui.forms.resources_rc

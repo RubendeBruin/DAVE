@@ -111,7 +111,7 @@
         s = Scene()                               # create an empty scene
         s.new_poi('point 1')                      # creates a poi with name anchor
         s.new_poi('point 2', position = (10,0,0)) # create a second poi at x=10
-        s.new_cable('line',poiA = 'point 1', poiB = 'point 2')
+        s.new_cable('line',endA = 'point 1', endB = 'point 2')
               # creates a cable between the two points
         s.save_scene(r'test.dave')              # save to file
 
@@ -198,6 +198,15 @@
     | `HydSpring` | A linear hydrostatic spring attached to an Axis  |  `Scene.new_hydspring` |
     | `Buoyancy` | A buoyancy mesh attached to an Axis  |  `Scene.new_buoyancy` |
 
+    ##Contact##
+
+    Basic elastic contact can be modelled using meshes and contact-balls.
+
+    |  Type | Provides  | Create using |
+    |:---------------- |:------------------------------- |:-----|
+    | `ContactBall` | A ball with a radius and a stiffness |  `Scene.new_contactball` |
+    | `ContactMesh` | A mesh that can contact a contact ball  |  `Scene.new_contactmesh` |
+
     ##Visuals##
 
     (Almost) Everything gets better when visualized :-).
@@ -205,6 +214,16 @@
     |  Type | Provides  | Create using |
     |:---------------- |:------------------------------- |:-----|
     | `Visual` | Obj type 3D visuals can be attached to an Axis |  `Scene.new_visual` |
+
+    ##Element groups##
+
+    Nodes or groups of nodes can be "managed" by another node. This makes it possible to standardize common groups of nodes.
+    For example the nodes that make up a shackle or sling.
+
+    |  Type | Provides  | Create using |
+    |:---------------- |:------------------------------- |:-----|
+    | `GeometricContact` | Bar-Bar or Pin-in-hole connections |  `Scene.new_geometriccontact` |
+    | `Sling` | A sling "splice" with eyes, mass, etc  |  `Scene.new_sling` |
 
     ##Inertia##
 
@@ -1545,6 +1564,7 @@ class Cable(CoreConnectedNode):
         nodes = []
         for p in value:
             n = self._scene._node_from_node_or_str(p)
+
             if not (isinstance(n, Poi) or isinstance(n,Sheave)):
                 raise ValueError(f'Only Sheaves and Pois can be used as connection, but {n.name} is a {type(n)}')
             nodes.append(n)
@@ -1562,7 +1582,7 @@ class Cable(CoreConnectedNode):
                 node2 = node2.parent
 
             if node1 == node2:
-                raise ValueError(f'It is not allowed to have the same node - you have {node1.name} and {node2.name}')
+                raise ValueError(f'It is not allowed to have the same node repeated - you have {node1.name} and {node2.name}')
 
         self._pois.clear()
         self._pois.extend(nodes)
@@ -4631,7 +4651,7 @@ class Scene:
 
     # ======== create functions =========
 
-    def new_axis(self, name, parent=None, position=None, rotation=None, inertia=None, inertia_radii=None, fixed = True):
+    def new_axis(self, name, parent=None, position=None, rotation=None, inertia=None, inertia_radii=None, fixed = True)->Axis:
         """Creates a new *axis* node and adds it to the scene.
 
         Args:
@@ -4710,7 +4730,7 @@ class Scene:
                              slave_rotation = None,
                              swivel_fixed = True,
                              master_fixed = False,
-                             slave_fixed = False):
+                             slave_fixed = False)->GeometricContact:
         """Creates a new *new_geometriccontact* node and adds it to the scene.
 
         Geometric contact connects two circular elements and can be used to model bar-bar connections or pin-in-hole connections.
@@ -4799,7 +4819,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_waveinteraction(self, name, path, parent=None, offset=None,):
+    def new_waveinteraction(self, name, path, parent=None, offset=None,)->WaveInteraction1:
             """Creates a new *wave interaction* node and adds it to the scene.
 
             Args:
@@ -4848,7 +4868,7 @@ class Scene:
             self._nodes.append(new_node)
             return new_node
 
-    def new_visual(self, name, path, parent=None, offset=None, rotation=None, scale = None):
+    def new_visual(self, name, path, parent=None, offset=None, rotation=None, scale = None)->Visual:
         """Creates a new *Visual* node and adds it to the scene.
 
         Args:
@@ -4902,7 +4922,7 @@ class Scene:
         return new_node
 
 
-    def new_poi(self, name, parent=None, position=None):
+    def new_poi(self, name, parent=None, position=None)->Poi:
         """Creates a new *poi* node and adds it to the scene.
 
         Args:
@@ -4942,7 +4962,7 @@ class Scene:
         return new_node
 
     def new_rigidbody(self, name, mass=0, cog=(0, 0, 0),
-                      parent=None, position=None, rotation=None, inertia_radii=None, fixed = True ):
+                      parent=None, position=None, rotation=None, inertia_radii=None, fixed = True )->RigidBody:
         """Creates a new *rigidbody* node and adds it to the scene.
 
         Args:
@@ -5024,7 +5044,7 @@ class Scene:
         self._nodes.append(r)
         return r
 
-    def new_cable(self, name, endA, endB, length=-1, EA=0, diameter=0, sheaves=None):
+    def new_cable(self, name, endA, endB, length=-1, EA=0, diameter=0, sheaves=None)->Cable:
         """Creates a new *cable* node and adds it to the scene.
 
         Args:
@@ -5034,7 +5054,7 @@ class Scene:
             length [-1] : un-stretched length of the cable in m; default [-1] create a cable with the current distance between the endpoints A and B
             EA [0] : stiffness of the cable in kN/m; default
 
-            sheaves : [optional] A list of pois, these are sheaves that the cable runs over. Defined from poiA to poiB
+            sheaves : [optional] A list of pois, these are sheaves that the cable runs over. Defined from endA to endB
 
         Examples:
 
@@ -5119,7 +5139,7 @@ class Scene:
 
         return new_node
 
-    def new_force(self, name, parent=None, force=None, moment=None):
+    def new_force(self, name, parent=None, force=None, moment=None)->Force:
         """Creates a new *force* node and adds it to the scene.
 
         Args:
@@ -5165,7 +5185,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_sheave(self, name, parent, axis, radius=0.):
+    def new_sheave(self, name, parent, axis, radius=0.)->Sheave:
         """Creates a new *sheave* node and adds it to the scene.
 
         Args:
@@ -5206,7 +5226,7 @@ class Scene:
         return new_node
 
     def new_hydspring(self, name, parent, cob,
-                      BMT, BML, COFX, COFY, kHeave, waterline, displacement_kN):
+                      BMT, BML, COFX, COFY, kHeave, waterline, displacement_kN)->HydSpring:
         """Creates a new *hydspring* node and adds it to the scene.
 
         Args:
@@ -5261,7 +5281,7 @@ class Scene:
 
         return new_node
 
-    def new_linear_connector_6d(self, name, slave, master, stiffness = None):
+    def new_linear_connector_6d(self, name, slave, master, stiffness = None)->LC6d:
         """Creates a new *linear connector 6d* node and adds it to the scene.
 
         Args:
@@ -5304,7 +5324,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_connector2d(self, name, master, slave, k_linear=0, k_angular=0):
+    def new_connector2d(self, name, master, slave, k_linear=0, k_angular=0)->Connector2d:
         """Creates a new *new_connector2d* node and adds it to the scene.
 
         Args:
@@ -5346,7 +5366,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_linear_beam(self, name, master, slave, EIy=0, EIz=0, GIp=0, EA=0, L=None):
+    def new_linear_beam(self, name, master, slave, EIy=0, EIz=0, GIp=0, EA=0, L=None)->LinearBeam:
         """Creates a new *linear beam* node and adds it to the scene.
 
         Args:
@@ -5399,7 +5419,7 @@ class Scene:
         return new_node
 
 
-    def new_buoyancy(self, name, parent=None):
+    def new_buoyancy(self, name, parent=None)->Buoyancy:
         """Creates a new *buoyancy* node and adds it to the scene.
 
         Args:
@@ -5431,7 +5451,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_contactmesh(self, name, parent=None):
+    def new_contactmesh(self, name, parent=None)->ContactMesh:
         """Creates a new *contactmesh* node and adds it to the scene.
 
         Args:
@@ -5462,7 +5482,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_contactball(self, name, parent=None, radius=1, k=9999, meshes = None):
+    def new_contactball(self, name, parent=None, radius=1, k=9999, meshes = None)->ContactBall:
         """Creates a new *force* node and adds it to the scene.
 
         Args:
@@ -5514,7 +5534,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_ballastsystem(self, name, parent=None, position=None):
+    def new_ballastsystem(self, name, parent=None, position=None) ->BallastSystem:
         """Creates a new *rigidbody* node and adds it to the scene.
 
         Args:
@@ -5562,36 +5582,31 @@ class Scene:
         self._nodes.append(r)
         return r
 
-    # code += f's.new_sling("{self.name}", Ltotal = {self.Ltotal},'
-    # code += f'            LeyeA = {self.LeyeA},'
-    # code += f'            LeyeB = {self.LeyeB},'
-    # code += f'            LspliceA = {self.LspliceA},'
-    # code += f'            LspliceB = {self.LspliceB},'
-    # code += f'            diameter = {self.diameter},'
-    # code += f'            EA = {self.EA},'
-    # code += f'            mass = {self.mass},'
-    # code += f'            endA = {self.endA},'
-    # code += f'            endB = {self.endB},'
 
-    def new_sling(self, name, length = -1, EA=1.0, mass = 0, endA = None, endB = None, LeyeA = None, LeyeB=None, LspliceA = None, LspliceB = None,
-                  diameter = 0, sheaves = None):
+    def new_sling(self, name, length = -1, EA=1.0, mass = 0.1, endA = None, endB = None, LeyeA = None, LeyeB=None, LspliceA = None, LspliceB = None,
+                  diameter = 0.1, sheaves = None) -> Sling:
         """
+        Creates a new sling, adds it to the scene and returns a reference to the newly created object.
+
+        See Also:
+            Sling
 
         Args:
             name:    name
             length:  length of the sling [m], defaults to distance between endpoints
             EA:      stiffness in kN, default: 1.0 (note: equilibrium will fail if mass >0 and EA=0)
-            mass:    mass in mT, default to 0
+            mass:    mass in mT, default  0.1
             endA:    element to connect end A to [poi, circle]
             endB:    element to connect end B to [poi, circle]
             LeyeA:   inside eye on side A length [m], defaults to 1/6th of length
             LeyeB:   inside eye on side B length [m], defaults to 1/6th of length
             LspliceA: splice length on side A [m] (the part where the cable is connected to itself)
             LspliceB: splice length on side B [m] (the part where the cable is connected to itself)
-            diameter: cable diameter in m, default to 0
+            diameter: cable diameter in m, defaul to 0.1
             sheaves:  optional: list of sheaves/pois that the sling runs over
 
         Returns:
+            a reference to the newly created Sling object.
 
         """
 

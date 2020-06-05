@@ -84,7 +84,7 @@ from DAVE.gui.forms.dlg_solver import Ui_Dialog
 import DAVE.settings
 
 from DAVE.gui.helpers.highlighter import PythonHighlighter
-from DAVE.gui.helpers.ctrl_enter import CtrlEnterKeyPressFilter
+from DAVE.gui.helpers.ctrl_enter import ShiftEnterKeyPressFilter
 from DAVE.gui.helpers.qmenu import MenuSlider
 
 from IPython.utils.capture import capture_output
@@ -243,6 +243,7 @@ class Gui():
         self.ui.pbCopyHistory.pressed.connect(self.history_copy)
         self.ui.pbGenerateSceneCode.pressed.connect(self.generate_scene_code)
         self.ui.pbClearCode.pressed.connect(self.clear_code)
+        self.ui.tbTidyHistory.pressed.connect(self.tidy_history)
 
         #
         self.ui.btnSolveStatics.clicked.connect(self.solve_statics)
@@ -351,7 +352,7 @@ class Gui():
 
         self.highlight = PythonHighlighter(self.ui.teCode.document())
 
-        self.eventFilter = CtrlEnterKeyPressFilter()
+        self.eventFilter = ShiftEnterKeyPressFilter()
         self.eventFilter.callback = self.run_code_in_teCode
         self.ui.teCode.installEventFilter(self.eventFilter)
 
@@ -663,7 +664,9 @@ class Gui():
     def onClose(self):
         self.visual.shutdown_qt()
         # self._logfile.close()
-        print('closing')
+        print('-- closing the gui : these were the actions you performed when the gui was open --')
+        print(self.give_clean_history())
+
 
     def show_exception(self, e):
         self.ui.teFeedback.setText(str(e))
@@ -954,6 +957,28 @@ class Gui():
             code = 's.save_scene(r"{}")'.format(filename)
             self.run_code(code, guiEventType.NOTHING)
 
+    def tidy_history(self):
+        self.ui.teHistory.setText(self.give_clean_history())
+
+    def give_clean_history(self):
+        prev_line = ''
+
+        f = []
+        for s in self._codelog:
+
+            # filter repeated assignments to same target
+            if s.split('=')[0] == prev_line.split('=')[0]:
+                prev_line = s
+                continue
+
+            f.append(prev_line)
+            prev_line = s
+
+        f.append(prev_line)
+
+        return '\n'.join(f)
+
+
     def menu_save_actions(self):
         filename, _ = QFileDialog.getSaveFileName(filter="*.dave", caption="Scene files",directory=self.scene.resources_paths[0])
         if filename:
@@ -1021,6 +1046,7 @@ class Gui():
                 def edit():
                     self.selected_nodes.clear()
                     self.guiSelectNode(node_name)
+                    self.show_guiWidget('Properties', WidgetNodeProps) # people often close this one
 
                 menu.addAction("Delete {}".format(node_name), delete)
                 menu.addAction("Dissolve (Evaporate) {}".format(node_name), dissolve)

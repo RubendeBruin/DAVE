@@ -96,7 +96,7 @@
       <item row="6" column="0">
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Stiffness EA [kN/m]</string>
+         <string>Stiffness EA [kN]</string>
         </property>
        </widget>
       </item>

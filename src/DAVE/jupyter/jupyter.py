@@ -62,17 +62,15 @@ def _view(scene, backend = '2d', what = 'all', sea=True, width=1024, height = 60
         print('Unexpected what: {} '.format(what))
         print('What should be "all","visuals"')
 
+    vp.create_world_actors()
     vp.create_visuals(recreate=True)
     vp.position_visuals()
     vp.update_visibility()
 
     for va in vp.visuals:
-        print(va.node.name)
         for a in va.actors:
             if a.GetVisibility():
-
                 if backend == 'panel':
-
                     # Work-around for panel
                     tr = vtk.vtkTransform()
                     tr.SetMatrix(a.GetMatrix())

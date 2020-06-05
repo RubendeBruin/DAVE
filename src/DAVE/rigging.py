@@ -86,7 +86,7 @@ This module supplies additional functionality for working with rigging.
 #
 #     EAmain = k_total * Lmain
 #
-#     s.new_cable(name, poiA = am, poiB = bm, length=Lmain, EA=EAmain, diameter=diameter, sheaves=sheave)
+#     s.new_cable(name, endA = am, endB = bm, length=Lmain, EA=EAmain, diameter=diameter, sheaves=sheave)
 #
 #     # eyes
 #     if endA is None:
@@ -94,8 +94,8 @@ This module supplies additional functionality for working with rigging.
 #     if endB is None:
 #         endB = []
 #
-#     s.new_cable(name + '_eyeA', poiA = a1, poiB=a2, length = LeyeA * 2 - diameter, EA=EA, diameter=diameter, sheaves = endA)
-#     s.new_cable(name + '_eyeB', poiA=b1, poiB=b2, length=LeyeB * 2 - diameter, EA = EA, diameter=diameter, sheaves = endB)
+#     s.new_cable(name + '_eyeA', endA = a1, endB=a2, length = LeyeA * 2 - diameter, EA=EA, diameter=diameter, sheaves = endA)
+#     s.new_cable(name + '_eyeB', endA=b1, endB=b2, length=LeyeB * 2 - diameter, EA = EA, diameter=diameter, sheaves = endB)
 #
 
 

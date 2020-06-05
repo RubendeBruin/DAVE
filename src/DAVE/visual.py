@@ -1520,7 +1520,6 @@ class Viewport:
                 if picker.Pick(pos[0]+2*x, pos[1]+2*y, 0, self.screen.renderer):
                     actor = picker.GetActor()  # gives an Actor
                     if actor is not None:
-                        print(j)
                         self.mouseLeftEvent(actor)
                         return
 

@@ -191,11 +191,11 @@ def add_cable(scene, selection=None):
 
 
     if (AddNode.exec() == QtWidgets.QDialog.Accepted):
-        poiA = ui.cbPoiA.currentText()
-        poiB = ui.cbPoiB.currentText()
+        endA = ui.cbPoiA.currentText()
+        endB = ui.cbPoiB.currentText()
         name = ui.tbName.text()
 
-        return "new_cable('{}', poiA = '{}', poiB= '{}')".format(name, poiA, poiB)
+        return "new_cable('{}', endA = '{}', endB= '{}')".format(name, endA, endB)
 
     else:
         return None
