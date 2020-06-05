@@ -298,44 +298,44 @@ s.new_poi(name='foundation_lp2',
                     51.0))
 # code for Cable
 s.new_cable(name='Cable',
-            poiA='MP_5',
-            poiB='bollard_ps3',
+            endA='MP_5',
+            endB='bollard_ps3',
             length=25.338,
             EA=10000.0)
 # code for Cable_1
 s.new_cable(name='Cable_1',
-            poiA='bollard_ps2',
-            poiB='MP_6',
+            endA='bollard_ps2',
+            endB='MP_6',
             length=25.338,
             EA=10000.0)
 # code for Cable_2
 s.new_cable(name='Cable_2',
-            poiA='bollard_ps1',
-            poiB='MP_3',
+            endA='bollard_ps1',
+            endB='MP_3',
             length=25.338,
             EA=10000.0)
 # code for Cable_3
 s.new_cable(name='Cable_3',
-            poiA='bollard_ps0',
-            poiB='MP_4',
+            endA='bollard_ps0',
+            endB='MP_4',
             length=35.242,
             EA=10000.0)
 # code for Cable_4
 s.new_cable(name='Cable_4',
-            poiA='bollard_ps0',
-            poiB='MP_2',
+            endA='bollard_ps0',
+            endB='MP_2',
             length=15.556,
             EA=10000.0)
 # code for Cable_5
 s.new_cable(name='Cable_5',
-            poiA='bollard_sb0',
-            poiB='MP_1',
+            endA='bollard_sb0',
+            endB='MP_1',
             length=65.0,
             EA=10000.0)
 # code for Cable_6
 s.new_cable(name='Cable_6',
-            poiA='MP_6',
-            poiB='bollard_ps3',
+            endA='MP_6',
+            endB='bollard_ps3',
             length=6.481,
             EA=10000.0)
 # code for Wind application point
@@ -357,8 +357,8 @@ s.new_poi(name='MP_7',
                     4.0))
 # code for Cable_7
 s.new_cable(name='Cable_7',
-            poiA='MP_7',
-            poiB='towpoint_ps',
+            endA='MP_7',
+            endB='towpoint_ps',
             length=36.0,
             EA=10000.0)
 # code for Hyd

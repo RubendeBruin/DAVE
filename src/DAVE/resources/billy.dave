@@ -65,17 +65,15 @@ s.new_poi(name='billy spreaderbar end SB',
                     -7.0,
                     0.0))
 
-s.new_cable('Tieback SB', poiA = 'billy spreaderbar end SB', poiB= 'Tieback padeye SB', EA=100000000)
-s.new_cable('Tieback PS', poiA = 'billy spreaderbar end PS', poiB= 'Tieback padeye PS', EA=100000000)
+s.new_cable('Tieback SB', endA = 'billy spreaderbar end SB', endB= 'Tieback padeye SB', EA=100000000)
+s.new_cable('Tieback PS', endA = 'billy spreaderbar end PS', endB= 'Tieback padeye PS', EA=100000000)
 s.new_poi('Crane susp. wire poi', parent = 'Billy A frame')
 
 s['Crane susp. wire poi'].position = (65.0, 0.0, 1.0)
-s.new_cable('Billy crane susp. wire', poiA = 'billy spreaderbar end SB', poiB= 'Crane susp. wire poi', EA=100000000, length=180)
-s['Billy crane susp. wire'].clear_connections()
-s['Billy crane susp. wire'].add_connection(s['billy spreaderbar end SB'])
-s['Billy crane susp. wire'].add_connection(s['Crane susp. wire poi'])
-s['Billy crane susp. wire'].add_connection(s['billy spreaderbar end PS'])
-s['Billy crane susp. wire'].check_endpoints()
+s.new_cable('Billy crane susp. wire', endA = 'billy spreaderbar end SB', endB= 'Crane susp. wire poi', EA=100000000, length=180)
+s['Billy crane susp. wire'].connections = ('billy spreaderbar end SB',
+                    'Crane susp. wire poi',
+                    'billy spreaderbar end PS')
 
 s['Billy spreaderbar'].fixed = (False, False, False, False, True, False)
 s['Billy A frame'].fixed = (True, True, True, True, False, True)
@@ -105,8 +103,8 @@ s['Hoist sheeve 1'].position = (1.0, 0.0, 1.5)
 s['Upper block'].fixed = False
 
 # Add new cranewire
-s.new_cable('HoistWire', poiA = 'Billy liftpoint_ps',
- poiB= 'Billy liftpoint_sb',
+s.new_cable('HoistWire', endA = 'Billy liftpoint_ps',
+ endB= 'Billy liftpoint_sb',
  sheaves = ['Hoist sheeve 1','Hoist sheeve 2'],
  length = 30, EA=100000000)
 

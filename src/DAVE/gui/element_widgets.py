@@ -532,7 +532,7 @@ class EditCable(NodeEditor):
         self.ui = ui  # needs to be done here as self.add_poi_dropdown modifies this
 
         # Add as many drop-down boxes as needed
-        poi_names = self.node.give_poi_names()
+        poi_names = self.node._give_poi_names()
         for i in range(len(poi_names)-2):
             self.add_poi_dropdown()
 
@@ -598,7 +598,7 @@ class EditCable(NodeEditor):
             if ct: # skip empty
                 new_names.append(ct)
 
-        if not (new_names == self.node.give_poi_names):
+        if not (new_names == self.node._give_poi_names):
             code += element + '.clear_connections()'
             for name in new_names:
                 code += element + ".add_connection(s['{}'])".format(name)

@@ -59,8 +59,8 @@ s.new_poi(name='susp_wire_connection',
                     2.0))
 # code for crane_Crane_susp_wire
 s.new_cable(name='crane_Crane_susp_wire',
-            poiA='susp_wire_connection',
-            poiB='crane_top',
+            endA='susp_wire_connection',
+            endB='crane_top',
             length=63.0,
             EA=100000000.0)
 # code for visual - crane mast

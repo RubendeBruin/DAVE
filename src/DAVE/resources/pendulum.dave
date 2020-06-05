@@ -34,8 +34,8 @@ s.new_poi(name='Poi_1',
                     0.0))
 # code for Cable
 s.new_cable(name='Cable',
-            poiA='Poi',
-            poiB='Poi_1',
+            endA='Poi',
+            endB='Poi_1',
             length=10.0,
             EA=100000.0)
 # code for Visual

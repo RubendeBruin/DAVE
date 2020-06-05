@@ -240,7 +240,7 @@ s.new_poi(name='Poi_1',
                     0.0))
 # code for Cable
 s.new_cable(name='Cable',
-            poiA='Poi_1',
-            poiB='Poi',
+            endA='Poi_1',
+            endB='Poi',
             length=7.0,
             EA=100000.0)

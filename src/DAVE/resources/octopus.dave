@@ -77,8 +77,8 @@ s.new_poi(name='SB_susp_wire_connection',
                     2.0))
 # code for SB_crane_Crane_susp_wire
 s.new_cable(name='SB_crane_Crane_susp_wire',
-            poiA='SB_susp_wire_connection',
-            poiB='SB_crane_top',
+            endA='SB_susp_wire_connection',
+            endB='SB_crane_top',
             length=50.0,
             EA=100000000.0)
 # code for PS_crane_mast
@@ -133,8 +133,8 @@ s.new_poi(name='PS_susp_wire_connection',
                     2.0))
 # code for PS_crane_Crane_susp_wire
 s.new_cable(name='PS_crane_Crane_susp_wire',
-            poiA='PS_susp_wire_connection',
-            poiB='PS_crane_top',
+            endA='PS_susp_wire_connection',
+            endB='PS_crane_top',
             length=50.0,
             EA=100000000.0)
 # code for visual - vessel

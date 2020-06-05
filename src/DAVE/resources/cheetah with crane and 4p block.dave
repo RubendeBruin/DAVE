@@ -22,8 +22,8 @@ s.new_poi(name='hw2',
                     0.0))
 # code for Hoist wire
 s.new_cable(name='Hoist wire',
-            poiA='hw1',
-            poiB='hw2',
+            endA='hw1',
+            endB='hw2',
             length=39.0,
             EA=100000.0,
             sheaves = ['Hoist sheeve 1',

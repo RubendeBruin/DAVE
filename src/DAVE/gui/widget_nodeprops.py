@@ -582,7 +582,7 @@ class EditCable(NodeEditor):
         ui.list.setDragEnabled(True)
 
         ui.list.clear()
-        for item in self.node.give_poi_names():
+        for item in self.node._give_poi_names():
             ui.list.addItem(item)
 
         self.ui = ui  # needs to be done here as self.add_poi_dropdown modifies this
@@ -663,7 +663,7 @@ class EditCable(NodeEditor):
         for i in range(self.ui.list.count()):
             new_names.append(self.ui.list.item(i).text())
 
-        if not (new_names == self.node.give_poi_names):
+        if not (new_names == self.node._give_poi_names):
             code += element + '.connections = ('
             for name in new_names:
                 code += "'{}',".format(name)

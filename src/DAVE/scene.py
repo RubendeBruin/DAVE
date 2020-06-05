@@ -1462,7 +1462,7 @@ class RigidBody(Axis):
 
 
 class Cable(CoreConnectedNode):
-    """A Cable represents a linear elastic wire running from a Poi to another Poi.
+    """A Cable represents a linear elastic wire running from a Poi or sheave to another Poi of sheave.
 
     A cable has a un-stretched length [length] and a stiffness [EA] and may have a diameter [m]. The tension in the cable is calculated.
 
@@ -1600,29 +1600,7 @@ class Cable(CoreConnectedNode):
             point = point.parent # connect to parent poi of sheave instead
         self._add_connection_to_core(point)
 
-
-    # def add_connection(self, apoi):
-    #     """Adds a poi to the list of connection points"""
-    #
-    #     if isinstance(apoi, str):
-    #         apoi = self._scene[apoi]
-    #
-    #     if not (isinstance(apoi, Poi) or isinstance(apoi, Sheave)):
-    #         raise TypeError('Provided point should be a Poi or a Sheave')
-    #
-    #     if self._pois:  # check for not empty
-    #         if self._pois[-1] == apoi:
-    #             raise Exception('The same poi can not be added directly after itself: {}'.format(apoi.name))
-    #
-    #     self._pois.append(apoi)
-    #     self._update_pois()
-    #
-    # def clear_connections(self):
-    #     """Removes all connections"""
-    #     self._pois.clear()
-    #     self._update_pois()
-
-    def give_poi_names(self):
+    def _give_poi_names(self):
         """Returns a list with the names of all the pois"""
         r = list()
         for p in self._pois:
@@ -1632,12 +1610,12 @@ class Cable(CoreConnectedNode):
     def give_python_code(self):
         code = "# code for {}".format(self.name)
 
-        poi_names = self.give_poi_names()
+        poi_names = self._give_poi_names()
         n_sheaves = len(poi_names)-2
 
         code += "\ns.new_cable(name='{}',".format(self.name)
-        code += "\n            poiA='{}',".format(poi_names[0])
-        code += "\n            poiB='{}',".format(poi_names[-1])
+        code += "\n            endA='{}',".format(poi_names[0])
+        code += "\n            endB='{}',".format(poi_names[-1])
         code += "\n            length={},".format(self.length)
 
         if self.diameter != 0:
@@ -3577,10 +3555,10 @@ class Sling(Node, Manager):
                      rotation=(0.0, 90.0, 0.0),
                      scale=(LspliceB, 2 * diameter, diameter))
 
-        self.main = scene.new_cable(scene.available_name_like(name_prefix + '_main_part'), poiA=self.am, poiB=self.bm, length=1, EA=1, diameter=diameter)
+        self.main = scene.new_cable(scene.available_name_like(name_prefix + '_main_part'), endA=self.am, endB=self.bm, length=1, EA=1, diameter=diameter)
 
-        self.eyeA = scene.new_cable(scene.available_name_like(name_prefix + '_eyeA'), poiA=self.a1, poiB=self.a2, length=1, EA=1)
-        self.eyeB = scene.new_cable(scene.available_name_like(name_prefix + '_eyeB'), poiA=self.b1, poiB=self.b2, length=1, EA=1)
+        self.eyeA = scene.new_cable(scene.available_name_like(name_prefix + '_eyeA'), endA=self.a1, endB=self.a2, length=1, EA=1)
+        self.eyeB = scene.new_cable(scene.available_name_like(name_prefix + '_eyeB'), endA=self.b1, endB=self.b2, length=1, EA=1)
 
 
 
@@ -5046,13 +5024,13 @@ class Scene:
         self._nodes.append(r)
         return r
 
-    def new_cable(self, name, poiA, poiB, length=-1, EA=0, diameter=0, sheaves=None):
+    def new_cable(self, name, endA, endB, length=-1, EA=0, diameter=0, sheaves=None):
         """Creates a new *cable* node and adds it to the scene.
 
         Args:
             name: Name for the node, should be unique
-            poiA : A Poi element to connect the first end of the cable to
-            poiB : A Poi element to connect the other end of the cable to
+            endA : A Poi element to connect the first end of the cable to
+            endB : A Poi element to connect the other end of the cable to
             length [-1] : un-stretched length of the cable in m; default [-1] create a cable with the current distance between the endpoints A and B
             EA [0] : stiffness of the cable in kN/m; default
 
@@ -5060,11 +5038,11 @@ class Scene:
 
         Examples:
 
-            scene.new_cable('cable_name' poiA='poi_start', poiB = 'poi_end')  # minimal use
+            scene.new_cable('cable_name' endA='poi_start', endB = 'poi_end')  # minimal use
 
-            scene.new_cable('cable_name', length=50, EA=1000, poiA=poi_start, poiB = poi_end, sheaves=[sheave1, sheave2])
+            scene.new_cable('cable_name', length=50, EA=1000, endA=poi_start, endB = poi_end, sheaves=[sheave1, sheave2])
 
-            scene.new_cable('cable_name', length=50, EA=1000, poiA='poi_start', poiB = 'poi_end', sheaves=['single_sheave']) # also a single sheave needs to be provided as a list
+            scene.new_cable('cable_name', length=50, EA=1000, endA='poi_start', endB = 'poi_end', sheaves=['single_sheave']) # also a single sheave needs to be provided as a list
 
         Notes:
             The default options for length and EA can be used to measure distances between points
@@ -5083,10 +5061,10 @@ class Scene:
         assert1f(length, 'length')
         assert1f(EA, 'EA')
 
-        poiA = self._poi_or_sheave_from_node(poiA)
-        poiB = self._poi_or_sheave_from_node(poiB)
+        endA = self._poi_or_sheave_from_node(endA)
+        endB = self._poi_or_sheave_from_node(endB)
 
-        pois = [poiA]
+        pois = [endA]
         if sheaves is not None:
 
             if isinstance(sheaves, Poi): # single sheave as poi or string
@@ -5105,7 +5083,7 @@ class Scene:
                 pois.append(self._poi_or_sheave_from_node(s))
 
 
-        pois.append(poiB)
+        pois.append(endB)
 
         # default options
         if length > -1:
@@ -5857,7 +5835,14 @@ class Scene:
         code = other.give_python_code()
 
         s = self
-        exec(code)
+        try:
+            exec(code)
+        except Exception as m:
+            lines = code.split('\n')
+            for i, line in enumerate(lines):
+                print(str(i) + '   ' + line)
+            raise(m)
+
 
         self._name_prefix = old_prefix # restore
 
