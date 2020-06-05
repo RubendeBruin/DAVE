@@ -18,9 +18,16 @@ Only supported on windows
 
 try:
     import pyo3d
+
+    try:
+        version = pyo3d.version()
+        print(f'Equilibrium-core version = {version}')
+    except:
+        raise ModuleNotFoundError
+
 except ModuleNotFoundError:
 
-    print("module pyo3d is not found on your system. No problem, we can download and install it automatically for you, proceed?")
+    print("The required version of pyo3d is not found on your system. No problem, we can download and install it automatically for you, proceed?")
 
     import os
     import sys
