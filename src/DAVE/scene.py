@@ -350,6 +350,12 @@ class Node:
         self._manager : Node or None = None
         """Reference to a node that controls this node"""
 
+    def __repr__(self):
+        return f'{self.name} <{str(type(self))[7:-2]}>'
+
+    def __str__(self):
+        return self.name
+
     def depends_on(self):
         """Returns a list of nodes that need to be available before the node can be created"""
         raise ValueError(f'Derived class should implement this method, but {type(self)} does not')
@@ -5589,14 +5595,14 @@ class Scene:
     # code += f'            endA = {self.endA},'
     # code += f'            endB = {self.endB},'
 
-    def new_sling(self, name, length = -1, EA=0, mass = 0, endA = None, endB = None, LeyeA = None, LeyeB=None, LspliceA = None, LspliceB = None,
+    def new_sling(self, name, length = -1, EA=1.0, mass = 0, endA = None, endB = None, LeyeA = None, LeyeB=None, LspliceA = None, LspliceB = None,
                   diameter = 0, sheaves = None):
         """
 
         Args:
             name:    name
             length:  length of the sling [m], defaults to distance between endpoints
-            EA:      stiffness in kN, default 0
+            EA:      stiffness in kN, default: 1.0 (note: equilibrium will fail if mass >0 and EA=0)
             mass:    mass in mT, default to 0
             endA:    element to connect end A to [poi, circle]
             endB:    element to connect end B to [poi, circle]

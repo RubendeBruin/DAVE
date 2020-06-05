@@ -9,9 +9,11 @@
 from DAVE.gui.dockwidget import *
 from PySide2 import QtGui, QtCore, QtWidgets
 from PySide2.QtWidgets import QPushButton
+from PySide2.QtCore import QPoint
 import DAVE.scene as nodes
 import DAVE.settings as ds
 from DAVE.gui.forms.widget_selection_actions import Ui_SelectionActions
+from DAVE.gui.helpers.popup_textbox import get_text
 
 class WidgetSelectionActions(guiDockWidget):
 
@@ -98,54 +100,66 @@ class WidgetSelectionActions(guiDockWidget):
 
         self.buttons.clear()
 
-        name = self.guiScene.available_name_like("quick_action")
+        style_warning = "color: darkred"
 
         # Here we manually define all the possible quick-actions
         #
         # each quick-action defines its own button
 
+        def valid_name(text):
+            return self.guiScene.name_available(text)
+
+        # At least two sheaves connected
         p2 = self.find_nodes([nodes.Sheave, nodes.Sheave])
         if p2:
 
             p0 = p2[0]
             p1 = p2[1]
 
-            # p0 -> p1
+            # Geometric contact between p0 -> p1
             if p0.parent.parent is not None:
 
-                button = QPushButton(f'Create pin-hole connection with {p1.name} as master', self.ui.frame)
+                button = QPushButton(f'Connection using {p1.name} as master', self.ui.frame)
+                def geometric_contact1():
+                    pos = self.mapToGlobal(QPoint(0,0))
+                    name = get_text(pos = pos, suggestion=self.guiScene.available_name_like("contact"), input_valid_callback=valid_name)
+                    pin_hole_code_p0p1 = f's.new_geometriccontact("{name}", "{p0.name}", "{p1.name}")'
+                    self.guiRunCodeCallback(pin_hole_code_p0p1, guiEventType.MODEL_STRUCTURE_CHANGED)
 
-
-                pin_hole_code_p0p1 = f's.new_geometriccontact("{name}", "{p0.name}", "{p1.name}")'
-                button.pressed.connect(lambda : self.guiRunCodeCallback(pin_hole_code_p0p1, guiEventType.MODEL_STRUCTURE_CHANGED))
+                button.pressed.connect(geometric_contact1)
 
                 #  sheave poi   axis
                 if p0.parent.parent.parent is not None:
-                    button.setStyleSheet("background: yellow")
+                    button.setStyleSheet(style_warning)
                     button.setToolTip(f"Warning: {p0.parent.parent.parent.name} will be disconnected from its parent")
 
                 self.buttons.append(button)
 
-                # p1 -> p0
-                if p1.parent.parent is not None:
+            # Geometric contact between p1 -> p0
+            if p1.parent.parent is not None:
 
-                    button = QPushButton(f'Create pin-hole connection with {p0.name} as master', self.ui.frame)
+                button = QPushButton(f'Connect using {p0.name} as master', self.ui.frame)
 
+                def geometric_contact2():
+                    pos = self.mapToGlobal(QPoint(0,0))
+                    name = get_text(pos = pos, suggestion=self.guiScene.available_name_like("contact"), input_valid_callback=valid_name)
                     pin_hole_codep1p0 = f's.new_geometriccontact("{name}", "{p1.name}", "{p0.name}")'
-                    button.pressed.connect(
-                        lambda: self.guiRunCodeCallback(pin_hole_codep1p0, guiEventType.MODEL_STRUCTURE_CHANGED))
+                    self.guiRunCodeCallback(pin_hole_codep1p0, guiEventType.MODEL_STRUCTURE_CHANGED)
 
-                    #  sheave poi   axis
-                    if p1.parent.parent.parent is not None:
-                        button.setStyleSheet("background: yellow")
-                        button.setToolTip(
-                            f"Warning: {p1.parent.parent.parent.name} will be disconnected from its parent")
+                button.pressed.connect(geometric_contact2)
 
-                    self.buttons.append(button)
+                #  sheave poi   axis
+                if p1.parent.parent.parent is not None:
+                    button.setStyleSheet(style_warning)
+                    button.setToolTip(
+                        f"Warning: {p1.parent.parent.parent.name} will be disconnected from its parent")
 
-        # creating cables between points and sheaves
+                self.buttons.append(button)
+
+        # Multiple points/sheaves selected
         poi_and_sheave = self.all_of_type([Poi, Sheave])
         if poi_and_sheave:
+
             if len(poi_and_sheave) > 1:
                 if len(poi_and_sheave) > 2:
                     names = ''.join([f'"{e.name}",' for e in poi_and_sheave[1:-1]])
@@ -155,10 +169,64 @@ class WidgetSelectionActions(guiDockWidget):
                     sheaves = ''
                     button = QPushButton('Create cable', self.ui.frame)
 
-                cable_code = f's.new_cable("{name}", poiA="{poi_and_sheave[0].name}", poiB = "{poi_and_sheave[-1].name}"{sheaves})'
-                button.pressed.connect(lambda: self.guiRunCodeCallback(cable_code, guiEventType.MODEL_STRUCTURE_CHANGED))
+                def create_cable():
+                    pos = self.mapToGlobal(QPoint(0,0))
+                    name = get_text(pos = pos, suggestion=self.guiScene.available_name_like("cable"), input_valid_callback=valid_name)
+                    cable_code = f's.new_cable("{name}", poiA="{poi_and_sheave[0].name}", poiB = "{poi_and_sheave[-1].name}"{sheaves})'
+                    self.guiRunCodeCallback(cable_code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
+                button.pressed.connect(create_cable)
                 self.buttons.append(button)
+
+        # creating sling between points and sheaves
+        poi_and_sheave = self.all_of_type([Poi, Sheave])
+        if poi_and_sheave:
+
+            if len(poi_and_sheave) > 1:
+                if len(poi_and_sheave) > 2:
+                    names = ''.join([f'"{e.name}",' for e in poi_and_sheave[1:-1]])
+                    sheaves = f', sheaves = [{names[:-1]}]'
+                    button = QPushButton('Create sling over sheaves', self.ui.frame)
+                else:
+                    sheaves = ''
+                    button = QPushButton('Create sling', self.ui.frame)
+
+                def create_sling():
+                    pos = self.mapToGlobal(QPoint(0, 0))
+                    name = get_text(pos=pos, suggestion=self.guiScene.available_name_like("sling"),
+                                    input_valid_callback=valid_name)
+                    sling_code = f's.new_sling("{name}", endA="{poi_and_sheave[0].name}", endB = "{poi_and_sheave[-1].name}"{sheaves})'
+                    self.guiRunCodeCallback(sling_code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+                button.pressed.connect(create_sling)
+                self.buttons.append(button)
+
+        # a single sheave selected
+        if len(self.guiSelection)==1:
+            if isinstance(self.guiSelection[0], Sheave):
+                sheave = self.guiSelection[0]
+
+                # def create_shackle_gphd(s, name, wll):
+                sizes = (120, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1250, 1500)
+
+                def insert_gp(wll):
+                    pos = self.mapToGlobal(QPoint(0, 0))
+                    name = get_text(pos=pos, suggestion=self.guiScene.available_name_like(f"GP{wll}"),
+                                    input_valid_callback=valid_name)
+                    code = f'create_shackle_gphd(s, name="{name}", wll = {wll})'
+                    pin_name = name + 'pin'
+                    code += f'\ns.new_geometriccontact("{name}" + "_connection", "{pin_name}", "{sheave.name}", inside=True)'
+                    self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+                for size in sizes:
+                    button = QPushButton(f'insert GP {size}', self.ui.frame)
+                    button.pressed.connect(lambda wll = size : insert_gp(wll=wll))
+                    self.buttons.append(button)
+
+
+
+
+
 
         # add all buttons to the layout
 

@@ -108,9 +108,8 @@ from DAVE.gui.widget_explore import WidgetExplore
 from DAVE.gui.widget_tank_order import WidgetTankOrder
 from DAVE.gui.widget_selection_action import WidgetSelectionActions
 
-
-
 import numpy as np
+from DAVE.rigging import create_shackle_gphd
 
 # resources
 import DAVE.gui.forms.resources_rc
@@ -461,7 +460,7 @@ class Gui():
             self.show_guiWidget('Node Tree', WidgetNodeTree)
             self.show_guiWidget('Derived Properties', WidgetDerivedProperties)
             self.show_guiWidget('Properties', WidgetNodeProps)
-            self.show_guiWidget('Selection Actions', WidgetSelectionActions)
+            self.show_guiWidget('Rigg-it-Right', WidgetSelectionActions)
 
         if name == 'EXPLORE':
             self.show_guiWidget('Derived Properties', WidgetDerivedProperties)
