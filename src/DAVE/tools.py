@@ -115,28 +115,40 @@ def radii_to_positions(rxx,ryy,rzz):
 
     return ps
 
+
+
 def rotation_from_y_axis_direction(direction):
-    """Returns a rotation vector that rotates the Y-axis (0,1,0) into the given direction"""
+    """Returns a rotation vector that rotates the Y-axis (0,1,0) to the given direction"""
+    return rotation_from_axis_direction(direction, (0,1,0))
+
+def rotation_from_x_axis_direction(direction):
+    """Returns a rotation vector that rotates the X-axis (1,0,0) to the given direction"""
+    return rotation_from_axis_direction(direction, (1,0,0))
+
+
+
+def rotation_from_axis_direction(direction, source_axis):
+    """Returns a rotation vector that rotates the source_axis to the given direction"""
 
     # the direction of the rotation is the cross product between y and target
-    axis = np.cross(direction, (0,1,0))
+    axis = np.cross(direction, source_axis)
 
     if np.linalg.norm(axis) < 1e-9:
         # axis are perpendicular
         # but may still be in exactly opposite direction
-        if np.dot(direction, (0,1,0)) > 0:
+        if np.dot(direction, source_axis) > 0:
             return (0,0,0)
         else:
             return (0,0,180)
 
     axis = axis / np.linalg.norm(axis)  # normalize
 
-    # the required angle of rotation is best calcualted using the atan2
+    # the required angle of rotation is best calculated using the atan2
 
     # construct the y / target plane
-    perp = np.cross(axis, (0,1,0))  # no need to normalize
+    perp = np.cross(axis, source_axis)  # no need to normalize
 
-    compx = np.dot(direction, (0,1,0))
+    compx = np.dot(direction, source_axis)
     compy = np.dot(direction, perp)
 
     angle = np.arctan2(compy, compx)

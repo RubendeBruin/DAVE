@@ -3636,7 +3636,18 @@ class Sling(Node, Manager):
         self.eyeA = scene.new_cable(scene.available_name_like(name_prefix + '_eyeA'), endA=self.a1, endB=self.a2, length=1, EA=1)
         self.eyeB = scene.new_cable(scene.available_name_like(name_prefix + '_eyeB'), endA=self.b1, endB=self.b2, length=1, EA=1)
 
+        # set initial positions of splices if we can
+        if self._endA is not None and self._endB is not None:
+            a = np.array(self._endA.global_position)
+            b = np.array(self._endB.global_position)
 
+            dir = b-a
+            dir /= np.linalg.norm(dir)
+
+            self.sa.rotation = rotation_from_x_axis_direction(-dir)
+            self.sb.rotation = rotation_from_x_axis_direction(dir)
+            self.sa.position = a + (LeyeA + 0.5 * LspliceA)* dir
+            self.sb.position = b - (LeyeB + 0.5 * LspliceB) * dir
 
         # Update properties
         self.sheaves = sheaves
@@ -3709,20 +3720,11 @@ class Sling(Node, Manager):
         self._scene.current_manager = backup  # restore
 
     def depends_on(self):
-        """Endpoints and sheaves are managed, so no dependency on those
-
-        however we do depend on their parents (if any)
+        """The sling depends on the endpoints and sheaves (if any)
         """
 
         a = list()
-        # if self._endA is not None:
-        #     a.append(self._endA.parent)
-        # if self._endB is not None:
-        #     a.append(self._endB.parent)
-        #
-        # for s in self.sheaves:
-        #     if s.parent is not None:
-        #             a.append(s.parent)
+
         if self._endA is not None:
             a.append(self._endA)
         if self._endB is not None:
@@ -3742,16 +3744,13 @@ class Sling(Node, Manager):
         # delete created nodes
         a = [self.sa, self.a1, self.a2, self.am, self.avis, self.sb, self.b1, self.b2, self.bm, self.bvis, self.main,
          self.eyeA, self.eyeB]
-        for n in a:
-            self._scene.delete(n)
 
-        # # release management
-        # if self._endA is not None:
-        #     self._endA.manager = None
-        # if self._endB is not None:
-        #     self._endB.manager = None
-        # for s in self._sheaves:
-        #     s.manager = None
+        for n in a:
+            n._manager = None
+
+        for n in a:
+            if n in self._scene._nodes:
+                self._scene.delete(n)   # delete if it is still available
 
 
     def give_python_code(self):
@@ -4466,6 +4465,9 @@ class Scene:
 
         if isinstance(node, str):
             node = self[node]
+
+        if node not in self._nodes:
+            raise ValueError('Can not delete node because it is not a node of this scene')
 
         if isinstance(node, Manager):
             node.delete()
