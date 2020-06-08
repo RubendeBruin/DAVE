@@ -2524,8 +2524,8 @@ class TriMeshSource(Node):
         r = vtk.vtkTransform()
         r.Identity()
 
-        scaleFilter.SetInputConnection(tri.GetOutputPort())
-        rotationFilter.SetInputConnection(scaleFilter.GetOutputPort())
+        rotationFilter.SetInputConnection(tri.GetOutputPort())
+        scaleFilter.SetInputConnection(rotationFilter.GetOutputPort())
 
         if scale is not None:
             s.Scale(*scale)
@@ -2541,9 +2541,9 @@ class TriMeshSource(Node):
 
         scaleFilter.SetTransform(s)
         rotationFilter.SetTransform(r)
-        rotationFilter.Update()
 
-        data = rotationFilter.GetOutput()
+        scaleFilter.Update()
+        data = scaleFilter.GetOutput()
         self._TriMesh.Clear()
 
         for i in range(data.GetNumberOfPoints()):

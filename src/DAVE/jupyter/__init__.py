@@ -1,1 +1,1 @@
-from .jupyter import screenshot, show
+from .jupyter import view, show

@@ -248,6 +248,9 @@ class Viewport:
         self.screen = None
         """Becomes assigned when a screen is active (or was active...)"""
 
+        self.vtkWidget = None
+        """Qt viewport, if any"""
+
         self.global_visual = None
         """Visuals for the global environment"""
 
@@ -1621,17 +1624,19 @@ class Viewport:
                     if self.show_global:
                         a.on()
 
-                        arenderer = self.vtkWidget.GetRenderWindow().GetRenderers().GetFirstRenderer()
-                        arenderer.GradientBackgroundOn()
-                        arenderer.SetBackground2(vc.COLOR_BG2_ENV)
-                        arenderer.SetBackground2(vc.COLOR_BG1_ENV)
+                        if self.vtkWidget is not None:
+                            arenderer = self.vtkWidget.GetRenderWindow().GetRenderers().GetFirstRenderer()
+                            arenderer.GradientBackgroundOn()
+                            arenderer.SetBackground2(vc.COLOR_BG2_ENV)
+                            arenderer.SetBackground2(vc.COLOR_BG1_ENV)
                     else:
                         a.off()
 
-                        arenderer = self.vtkWidget.GetRenderWindow().GetRenderers().GetFirstRenderer()
-                        arenderer.GradientBackgroundOn()
-                        arenderer.SetBackground2(vc.COLOR_BG2)
-                        arenderer.SetBackground2(vc.COLOR_BG1)
+                        if self.vtkWidget is not None:
+                            arenderer = self.vtkWidget.GetRenderWindow().GetRenderers().GetFirstRenderer()
+                            arenderer.GradientBackgroundOn()
+                            arenderer.SetBackground2(vc.COLOR_BG2)
+                            arenderer.SetBackground2(vc.COLOR_BG1)
 
                 elif a.actor_type == ActorType.NOT_GLOBAL:
                     if self.show_global:
