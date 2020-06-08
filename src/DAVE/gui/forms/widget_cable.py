@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_cable.ui',
 # licensing of 'widget_cable.ui' applies.
 #
-# Created: Tue May 12 16:54:23 2020
+# Created: Mon Jun  8 09:27:30 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -91,7 +91,7 @@ class Ui_Cable_form(object):
         Cable_form.setWindowTitle(QtWidgets.QApplication.translate("Cable_form", "Form", None, -1))
         self.label_7.setText(QtWidgets.QApplication.translate("Cable_form", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Cable properties</span></p></body></html>", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("Cable_form", "Length at rest [m]", None, -1))
-        self.label_2.setText(QtWidgets.QApplication.translate("Cable_form", "Stiffness EA [kN/m]", None, -1))
+        self.label_2.setText(QtWidgets.QApplication.translate("Cable_form", "Stiffness EA [kN]", None, -1))
         self.label_4.setText(QtWidgets.QApplication.translate("Cable_form", "Diameter [m]", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("Cable_form", "<html><head/><body><p>Points of the cable</p><p>drag/drop to modify</p></body></html>", None, -1))
         self.pbRemoveSelected.setText(QtWidgets.QApplication.translate("Cable_form", "remove selected point", None, -1))

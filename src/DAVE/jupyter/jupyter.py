@@ -23,44 +23,127 @@ import DAVE.visual
 import vtkplotter as vtkp
 import vtk
 
-def show(scene, what = 'all', sea=True,camera_pos=(50,-25,10), lookat = (0,0,0)):
-    """
-    Creates a 3d view of the scene and shows in using k3d.
-    """
-    return _view(scene, 'panel', what=what, sea=sea, width = 1024, height = 800, camera_pos=camera_pos, lookat=lookat)
+"""
+visuals [true/false]
+geometry_size
+normalize_force [true/false]
+force_size
+normalize_cog [true/false]
+cog_size
+orthographic [true/false]
+"""
 
-def screenshot(scene, what = 'all', sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, height = 600):
-    return _view(scene, backend= '2d', what=what, sea=sea, width = width, height = height, camera_pos=camera_pos, lookat=lookat)
+def view(scene, sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),
+         do_visuals = True,
+         do_meshes = True,
+         geometry_size=1,
+         force_normalize=False,
+         force_scale=1,
+         cog_normalize=False,
+         cog_scale=1,
+         ):
+    """
+    Creates a 3d view of the scene and shows in using panel.
 
-def _view(scene, backend = '2d', what = 'all', sea=True, width=1024, height = 600, camera_pos=(50,-25,10), lookat = (0,0,0)):
+
+    Args:
+        scene: the scene
+        sea:   plot sea [bool]
+        camera_pos: camera position [x,y,z]
+        lookat:  camera focal point [x,y,z]
+        do_visuals:  plot visuals
+        geometry_size: overall geometry size (set 0 for no geometry)
+        force_normalize: plot all forces at same scale [False]
+        force_scale: overall force scale (set 0 for no forces)
+        cog_normalize: plot all cogs at same scale [False]
+        cog_scale: overall cog scale (set 0 for no cog)
+
+    Returns:
+        A 3d view
+
+    """
+    return _view(scene, 'panel', sea=sea, width = 1024, height = 800, camera_pos=camera_pos, lookat=lookat,
+          do_visuals = do_visuals,
+          do_meshes = do_meshes,
+          geometry_size = geometry_size,
+          force_normalize = force_normalize,
+          force_scale = force_scale,
+          cog_normalize=cog_normalize,
+          cog_scale = cog_scale)
+
+def show(scene, sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, height = 600,
+         do_visuals=True,
+         do_meshes = True,
+         geometry_size=1,
+         force_normalize=False,
+         force_scale=1,
+         cog_normalize=False,
+         cog_scale=1):
+
+    """
+    Creates a 3d view of the scene and shows it as a static image.
+
+    Args:
+        scene: the scene
+        sea:   plot sea [bool]
+        camera_pos: camera position [x,y,z]
+        lookat:  camera focal point [x,y,z]
+        do_visuals:  plot visuals
+        geometry_size: overall geometry size (set 0 for no geometry)
+        force_normalize: plot all forces at same scale [False]
+        force_scale: overall force scale (set 0 for no forces)
+        cog_normalize: plot all cogs at same scale [False]
+        cog_scale: overall cog scale (set 0 for no cog)
+
+    Returns:
+        A 3d view
+
+    """
+
+    return _view(scene, backend= '2d', sea=sea, width = width, height = height, camera_pos=camera_pos, lookat=lookat,
+          do_visuals = do_visuals,
+          do_meshes = do_meshes,
+          geometry_size = geometry_size,
+          force_normalize = force_normalize,
+          force_scale = force_scale,
+          cog_normalize=cog_normalize,
+          cog_scale = cog_scale)
+
+def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=(50,-25,10), lookat = (0,0,0),
+          do_visuals = True,
+          do_meshes = True,
+          geometry_size = 1,
+          force_normalize = False,
+          force_scale = 1,
+          cog_normalize=False,
+          cog_scale = 1):
+
     camera = dict()
     camera['viewup'] = [0, 0, 1]
     camera['pos'] = camera_pos
     camera['focalPoint'] = lookat
+
 
     vtkp.embedWindow(backend=backend)  # screenshot
     vtkp.settings.usingQt = False
 
     vp = DAVE.visual.Viewport(scene)
 
+    vp.show_visual = do_visuals
+    vp.show_meshes = do_meshes
+    vp.show_geometry = (geometry_size > 0)
+    vp.geometry_scale = geometry_size
+    vp.force_do_normalize = force_normalize
+    vp.show_force = (force_scale > 0)
+    vp.force_scale = force_scale
+    vp.cog_scale = cog_scale
+    vp.cog_do_normalize = cog_normalize
+
     vtkp.settings.lightFollowsCamera = True
 
     offscreen = vtkp.Plotter(axes=0, offscreen=True, size=(width, height))
 
-    what = what.upper()
-
     vp.show_global = sea
-
-    if what == 'ALL':
-        pass
-        # default
-    elif what == 'VISUALS':
-        vp.show_visual = True
-        vp.show_geometry = False
-        vp.show_force = False
-    else:
-        print('Unexpected what: {} '.format(what))
-        print('What should be "all","visuals"')
 
     vp.create_world_actors()
     vp.create_visuals(recreate=True)

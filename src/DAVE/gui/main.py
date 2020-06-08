@@ -252,13 +252,16 @@ class Gui():
         # -- visuals
         self.ui.actionShow_water_plane.triggered.connect(self.toggle_show_global_from_menu)
         self.ui.actionShow_visuals.triggered.connect(self.toggle_show_visuals)
+        self.ui.actionShow_force_applying_element.triggered.connect(self.toggle_show_force_applying_elements)
 
 
         self.ui.sliderGeometrySize = MenuSlider('Geometry size')
         self.ui.sliderGeometrySize.setMin(0)
+        self.ui.sliderGeometrySize.slider.setValue(20)
         def set_geo_size(value):
             if value < 1:
                 self.visual.show_geometry = False
+                self.run_code('self.visual.geometry_scale = 0',guiEventType.VIEWER_SETTINGS_UPDATE)
                 self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
             else:
                 self.visual.show_geometry = True
@@ -280,10 +283,12 @@ class Gui():
 
         self.ui.sliderForceSize = MenuSlider('Force size')
         self.ui.sliderForceSize.setMin(0)
+        self.ui.sliderForceSize.slider.setValue(20.0)
 
         def set_force_size(value):
             if value < 1:
                 self.visual.show_force = False
+                self.run_code('self.visual.force_scale = 0', guiEventType.VIEWER_SETTINGS_UPDATE)
                 self.visual.refresh_embeded_view()
             else:
                 self.visual.show_force = True
@@ -299,17 +304,19 @@ class Gui():
             self.run_code('self.visual.cog_do_normalize = not self.visual.cog_do_normalize',
                           guiEventType.VIEWER_SETTINGS_UPDATE)
 
-        cognormalize = self.ui.menuView.addAction("View all cogs at same size")
+        cognormalize = self.ui.menuView.addAction("View all CoGs at same size")
         cognormalize.setCheckable(True)
         cognormalize.setChecked(False)
         cognormalize.triggered.connect(normalize_cog)
 
         self.ui.sliderCoGSize = MenuSlider('CoG size')
         self.ui.sliderCoGSize.setMin(0)
+        self.ui.sliderCoGSize.slider.setValue(20.0)
 
         def set_cog_size(value):
             if value < 1:
                 self.visual.show_cog = False
+                self.run_code(f'self.visual.cog_scale = 0', guiEventType.VIEWER_SETTINGS_UPDATE)
                 self.visual.refresh_embeded_view()
             else:
                 self.visual.show_cog = True
@@ -321,6 +328,7 @@ class Gui():
         # light
         self.ui.sliderBrightness = MenuSlider('Sunshine')
         self.ui.sliderBrightness.setMin(0)
+        self.ui.sliderBrightness.slider.setValue(20.0)
         def set_brightness(value):
             self.visual.light.SetIntensity(value/100)
             self.visual.refresh_embeded_view()
@@ -417,12 +425,27 @@ class Gui():
 
     def copy_screenshot_code(self):
 
-        # def screenshot(scene, what = 'all', sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, height = 600):
         sea = self.visual.show_global
         camera_pos = self.visual.screen.camera.GetPosition()
         lookat = self.visual.screen.camera.GetFocalPoint()
 
-        code = f'screenshot(s, what = "all", sea = {sea}, camera_pos = {camera_pos}, lookat = {lookat})'
+        code = f'show(s, sea = {sea}, camera_pos = {camera_pos}, lookat = {lookat}'
+        if not self.visual.show_visual:
+            code += ',do_visuals = False'
+        if not self.visual.show_meshes:
+            code += ',do_meshes = False'
+        if self.visual.geometry_scale != 1:
+            code += f', geometry_size = {self.visual.geometry_scale}'
+        if self.visual.force_do_normalize:
+            code += ', force_normalize = True'
+        if self.visual.force_scale != 1:
+            code += f', force_scale = {self.visual.force_scale}'
+        if self.visual.cog_do_normalize:
+            code += ', cog_normalize = True'
+        if self.visual.cog_scale != 1:
+            code += f', cog_scale = {self.visual.cog_scale}'
+        code += ')'
+
         print(code)
         self.app.clipboard().setText(code)
 
@@ -922,6 +945,10 @@ class Gui():
 
     def toggle_show_visuals(self):
         self.visual.show_visual = self.ui.actionShow_visuals.isChecked()
+        self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
+
+    def toggle_show_force_applying_elements(self):
+        self.visual.show_meshes = self.ui.actionShow_force_applying_element.isChecked()
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def camera_set_direction(self,vector):

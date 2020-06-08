@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Fri Jun  5 16:57:48 2020
+# Created: Mon Jun  8 09:27:30 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -272,10 +272,10 @@ class Ui_MainWindow(object):
         self.actionShow_Geometry_elements.setCheckable(True)
         self.actionShow_Geometry_elements.setChecked(True)
         self.actionShow_Geometry_elements.setObjectName("actionShow_Geometry_elements")
-        self.actionShow_force_applyting_element = QtWidgets.QAction(MainWindow)
-        self.actionShow_force_applyting_element.setCheckable(True)
-        self.actionShow_force_applyting_element.setChecked(True)
-        self.actionShow_force_applyting_element.setObjectName("actionShow_force_applyting_element")
+        self.actionShow_force_applying_element = QtWidgets.QAction(MainWindow)
+        self.actionShow_force_applying_element.setCheckable(True)
+        self.actionShow_force_applying_element.setChecked(True)
+        self.actionShow_force_applying_element.setObjectName("actionShow_force_applying_element")
         self.actionSet_all_visible = QtWidgets.QAction(MainWindow)
         self.actionSet_all_visible.setObjectName("actionSet_all_visible")
         self.actionSet_all_hidden = QtWidgets.QAction(MainWindow)
@@ -359,11 +359,8 @@ class Ui_MainWindow(object):
         self.menuView.addSeparator()
         self.menuView.addSeparator()
         self.menuView.addAction(self.actionShow_visuals)
-        self.menuView.addAction(self.actionShow_force_applyting_element)
+        self.menuView.addAction(self.actionShow_force_applying_element)
         self.menuView.addAction(self.actionShow_water_plane)
-        self.menuView.addSeparator()
-        self.menuView.addAction(self.actionSet_all_visible)
-        self.menuView.addAction(self.actionSet_all_hidden)
         self.menuView.addSeparator()
         self.menuView.addAction(self.actionFull_refresh)
         self.menuView.addAction(self.actionCamera_reset)
@@ -378,6 +375,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "DAVE", None, -1))
         self.btnSolveStatics.setText(QtWidgets.QApplication.translate("MainWindow", "Solve &statics", None, -1))
         self.btnUndoStatics.setText(QtWidgets.QApplication.translate("MainWindow", "Undo", None, -1))
+        self.pbCopyViewCode.setToolTip(QtWidgets.QApplication.translate("MainWindow", "Copy screenshot code", None, -1))
         self.btnWater.setText(QtWidgets.QApplication.translate("MainWindow", "sea", None, -1))
         self.btnBlender.setText(QtWidgets.QApplication.translate("MainWindow", "blender", None, -1))
         self.btnPauseAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "||", None, -1))
@@ -388,19 +386,23 @@ class Ui_MainWindow(object):
         self.dockWidget_2.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Python engine", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("MainWindow", "Code", None, -1))
         self.pbClearCode.setText(QtWidgets.QApplication.translate("MainWindow", "&Clear", None, -1))
+        self.pbExecute.setToolTip(QtWidgets.QApplication.translate("MainWindow", "Shift + Enter", None, -1))
         self.pbExecute.setText(QtWidgets.QApplication.translate("MainWindow", "Execute", None, -1))
         self.teCode.setHtml(QtWidgets.QApplication.translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">print(&quot;type python code here&quot;)</p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"># press ctrl+enter to execute</p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"># press shift+enter to execute</p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"># press alt+c to clear and focus here</p></body></html>", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("MainWindow", "Output", None, -1))
         self.pbGenerateSceneCode.setText(QtWidgets.QApplication.translate("MainWindow", "Generate scene code", None, -1))
+        self.pbCopyOutput.setToolTip(QtWidgets.QApplication.translate("MainWindow", "Copy text below", None, -1))
         self.pbCopyOutput.setText(QtWidgets.QApplication.translate("MainWindow", "Copy", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("MainWindow", "History (actions)", None, -1))
+        self.tbTidyHistory.setToolTip(QtWidgets.QApplication.translate("MainWindow", "Removes redundant code from history", None, -1))
         self.tbTidyHistory.setText(QtWidgets.QApplication.translate("MainWindow", "tidy", None, -1))
+        self.pbCopyHistory.setToolTip(QtWidgets.QApplication.translate("MainWindow", "Copy text below", None, -1))
         self.pbCopyHistory.setText(QtWidgets.QApplication.translate("MainWindow", "Copy", None, -1))
         self.toolBar.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "toolBar", None, -1))
         self.actionSave_scene.setText(QtWidgets.QApplication.translate("MainWindow", "Save as", None, -1))
@@ -414,7 +416,7 @@ class Ui_MainWindow(object):
         self.actionDark_mode.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Alt+-", None, -1))
         self.actionShow_visuals.setText(QtWidgets.QApplication.translate("MainWindow", "Show visuals", None, -1))
         self.actionShow_Geometry_elements.setText(QtWidgets.QApplication.translate("MainWindow", "Show Geometry elements", None, -1))
-        self.actionShow_force_applyting_element.setText(QtWidgets.QApplication.translate("MainWindow", "Show non-geometry elements (forces, meshes)", None, -1))
+        self.actionShow_force_applying_element.setText(QtWidgets.QApplication.translate("MainWindow", "Show physics only elements (connectors, meshes)", None, -1))
         self.actionSet_all_visible.setText(QtWidgets.QApplication.translate("MainWindow", "Set all visible", None, -1))
         self.actionSet_all_hidden.setText(QtWidgets.QApplication.translate("MainWindow", "Set all hidden", None, -1))
         self.actionFull_refresh.setText(QtWidgets.QApplication.translate("MainWindow", "Full refresh", None, -1))

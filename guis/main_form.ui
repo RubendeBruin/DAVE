@@ -364,11 +364,8 @@
     <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="actionShow_visuals"/>
-    <addaction name="actionShow_force_applyting_element"/>
+    <addaction name="actionShow_force_applying_element"/>
     <addaction name="actionShow_water_plane"/>
-    <addaction name="separator"/>
-    <addaction name="actionSet_all_visible"/>
-    <addaction name="actionSet_all_hidden"/>
     <addaction name="separator"/>
     <addaction name="actionFull_refresh"/>
     <addaction name="actionCamera_reset"/>
@@ -720,7 +717,7 @@ p, li { white-space: pre-wrap; }
     <string>Show Geometry elements</string>
    </property>
   </action>
-  <action name="actionShow_force_applyting_element">
+  <action name="actionShow_force_applying_element">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -728,7 +725,7 @@ p, li { white-space: pre-wrap; }
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show non-geometry elements (forces, meshes)</string>
+    <string>Show physics only elements (connectors, meshes)</string>
    </property>
   </action>
   <action name="actionSet_all_visible">

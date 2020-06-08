@@ -140,6 +140,8 @@ class ActorType(Enum):
     CABLE = 5
     NOT_GLOBAL = 6
     BALLASTTANK = 7
+    MESH_OR_CONNECTOR = 8
+    COG = 9
 
 class VisualOutline:
     parent_vp_actor = None
@@ -258,7 +260,8 @@ class Viewport:
 
         # Settings
         self.show_geometry = True     # show or hide geometry objects (axis, pois, etc)
-        self.show_force = True        # show or hide forces and connectors
+        self.show_force = True        # show forces
+        self.show_meshes = True       # show meshes and connectors
         self.show_visual = True       # show or hide visuals
         self.show_global = False      # show or hide the environment (sea)
         self.show_cog = True
@@ -563,7 +566,7 @@ class Viewport:
                 else:
                     vis.c(vc.COLOR_BUOYANCY_MESH_FILL)
 
-                vis.actor_type = ActorType.FORCE
+                vis.actor_type = ActorType.MESH_OR_CONNECTOR
 
                 if vc.COLOR_BUOYANCY_MESH_FILL is None:
                     vis.wireframe()
@@ -573,7 +576,7 @@ class Viewport:
 
                 # cob
                 c = vp.Sphere(r=0.5, res = vc.RESOLUTION_SPHERE).c(vc.COLOR_WATER)
-                c.actor_type = ActorType.FORCE
+                c.actor_type = ActorType.MESH_OR_CONNECTOR
                 actors.append(c)
 
                 # waterplane
@@ -598,7 +601,7 @@ class Viewport:
                 if not vis:
                     vis = vp.Cube(side=0.00001)
 
-                vis.actor_type = ActorType.FORCE
+                vis.actor_type = ActorType.MESH_OR_CONNECTOR
 
                 vis.loaded_obj = True
 
@@ -636,7 +639,7 @@ class Viewport:
                 box = vp_actor_from_obj(self.scene.get_resource_path('cog.obj'))
                 box.color(vc.COLOR_COG)
 
-                box.actor_type = ActorType.FORCE
+                box.actor_type = ActorType.COG
                 actors.append(box)
 
             if isinstance(N, vf.Poi):
@@ -649,13 +652,13 @@ class Viewport:
             if isinstance(N, vf.ContactBall):
                 p = vp.Sphere(pos=(0,0,0), r=N.radius, res = vc.RESOLUTION_SPHERE)
                 p.c(vc.COLOR_FORCE)
-                p.actor_type = ActorType.FORCE
+                p.actor_type = ActorType.MESH_OR_CONNECTOR
                 p._r = N.radius
                 actors.append(p)
 
                 point1 = ((0,0,0))
                 a = vp.Line([point1, point1], lw=5).c(vc.COLOR_FORCE)
-                a.actor_type = ActorType.FORCE
+                a.actor_type = ActorType.MESH_OR_CONNECTOR
 
                 actors.append(a)
 
@@ -1167,7 +1170,7 @@ class Viewport:
 
                     # vis = vp.Mesh([vertices, faces], wire=True).c((0, 0, 1))
                     vis = vp.Mesh([vertices, faces]).c(vc.COLOR_BUOYANCY_MESH_LINES)
-                    vis.actor_type = ActorType.FORCE
+                    vis.actor_type = ActorType.MESH_OR_CONNECTOR
                     vis.wireframe()
                     vis.lw(vc.LINEWIDTH_SUBMERGED_MESH)
                     V.actors.append(vis)
@@ -1259,7 +1262,7 @@ class Viewport:
                         if new_mesh is not None:
                             self.screen.clear(va.actors[0])
                             va.actors[0] = new_mesh
-                            va.actors[0].actor_type = ActorType.FORCE
+                            va.actors[0].actor_type = ActorType.MESH_OR_CONNECTOR
 
                             tr = va.node.parent.global_transform
                             mat4x4 = transform_to_mat4x4(tr)
@@ -1585,6 +1588,18 @@ class Viewport:
 
                 if a.actor_type == ActorType.FORCE:
                     if self.show_force:
+                        a.on()
+                    else:
+                        a.off()
+
+                elif a.actor_type == ActorType.MESH_OR_CONNECTOR:
+                    if self.show_meshes:
+                        a.on()
+                    else:
+                        a.off()
+
+                elif a.actor_type == ActorType.COG:
+                    if self.show_cog:
                         a.on()
                     else:
                         a.off()
