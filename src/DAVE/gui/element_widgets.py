@@ -496,10 +496,10 @@ class EditCable(NodeEditor):
 
         self.plist = [""]
 
-        for poi in self.scene.nodes_of_type(vfs.Sheave):
+        for poi in self.scene.nodes_of_type(vfs.Circle):
             self.plist.append(poi.name)
 
-        for poi in self.scene.nodes_of_type(vfs.Poi):
+        for poi in self.scene.nodes_of_type(vfs.Point):
             self.plist.append(poi.name)
 
         try:
@@ -1106,7 +1106,7 @@ def fill_dropdown_boxes(ui, scene):
     p = list()
     for e in scene.nodes_of_type(vfs.Axis):
         a.append(e.name)
-    for e in scene.nodes_of_type(vfs.Poi):
+    for e in scene.nodes_of_type(vfs.Point):
         p.append(e.name)
 
     ui.cbMasterAxis.addItems(a)
@@ -1234,9 +1234,9 @@ def add_poi(scene, parent = None):
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()
         if parent:
-            return "new_poi('{}', parent = '{}')".format(name, parent)
+            return "new_point('{}', parent = '{}')".format(name, parent)
         else:
-            return "new_poi('{}')".format(name)
+            return "new_point('{}')".format(name)
     else:
         return None
 
@@ -1316,7 +1316,7 @@ def add_sheave(scene, parent = None):
         poi = ui.cbParentPoi.currentText()
         name = ui.tbName.text()
 
-        return "new_sheave('{}', parent = '{}', axis = (0,1,0))".format(name, poi)
+        return "new_circle('{}', parent = '{}', axis = (0,1,0))".format(name, poi)
 
     else:
         return None

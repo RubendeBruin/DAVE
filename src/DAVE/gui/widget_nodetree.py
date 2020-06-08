@@ -123,7 +123,7 @@ class WidgetNodeTree(guiDockWidget):
             node_onto = self.guiScene[onto]
 
             # are we dropping a sheave onto a sheave?
-            if isinstance(node_drop, ds.Sheave) and isinstance(node_onto, ds.Sheave):
+            if isinstance(node_drop, ds.Circle) and isinstance(node_onto, ds.Circle):
                 code = f"s.new_geometriccontact('Geometric_connection of :{drop} on {onto}','{drop}','{onto}')"
             else:
                 code = "s['{}'].change_parent_to(s['{}'])".format(drop, onto)
@@ -187,11 +187,11 @@ class WidgetNodeTree(guiDockWidget):
 
             item.setIcon(0, QIcon(":/icons/redball.png"))
             if isinstance(node, ds.Axis):
-                item.setIcon(0, QIcon(":/icons/axis.png"))
+                item.setIcon(0, QIcon(":/icons/axis_blue.png"))
             elif isinstance(node, ds.RigidBody):
                 item.setIcon(0, QIcon(":/icons/cube.png"))
-            elif isinstance(node, ds.Poi):
-                item.setIcon(0,QIcon(":/icons/poi.png"))
+            elif isinstance(node, ds.Point):
+                item.setIcon(0,QIcon(":/icons/point_blue.png"))
             elif isinstance(node, ds.Cable):
                 item.setIcon(0,QIcon(":/icons/cable.png"))
             elif isinstance(node, ds.Visual):
@@ -206,8 +206,8 @@ class WidgetNodeTree(guiDockWidget):
                 item.setIcon(0,QIcon(":/icons/linhyd.png"))
             elif isinstance(node, ds.Force):
                 item.setIcon(0,QIcon(":/icons/force.png"))
-            elif isinstance(node, ds.Sheave):
-                item.setIcon(0,QIcon(":/icons/sheave.png"))
+            elif isinstance(node, ds.Circle):
+                item.setIcon(0,QIcon(":/icons/circle_blue.png"))
             elif isinstance(node, ds.Buoyancy):
                 item.setIcon(0,QIcon(":/icons/trimesh.png"))
             elif isinstance(node, ds.WaveInteraction1):

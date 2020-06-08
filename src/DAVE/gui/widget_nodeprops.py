@@ -624,7 +624,7 @@ class EditCable(NodeEditor):
             try:
                 name = event.mimeData().text()
                 node = self.scene[name]
-                if isinstance(node,Sheave) or isinstance(node, Poi):
+                if isinstance(node, Circle) or isinstance(node, Point):
                     event.accept()
             except:
                 return
@@ -1495,7 +1495,7 @@ class EditSling(NodeEditor):
             try:
                 name = event.mimeData().text()
                 node = self.scene[name]
-                if isinstance(node,Sheave) or isinstance(node, Poi):
+                if isinstance(node, Circle) or isinstance(node, Point):
                     event.accept()
             except:
                 return
@@ -1558,7 +1558,7 @@ class EditSling(NodeEditor):
 
         new_endA = None
         new_endB = None
-        new_sheaves = []
+        new_circles = []
 
         if len(new_names) > 0:
             new_endA = new_names[0]
@@ -1567,7 +1567,7 @@ class EditSling(NodeEditor):
             new_endB = new_names[-1]
 
         if len(new_names) > 2:
-            new_sheaves = new_names[1:-1]
+            new_circles = new_names[1:-1]
 
         if not node.endA.name == new_endA:
             code += element + '.endA = "{}"'.format(new_endA)
@@ -1577,11 +1577,11 @@ class EditSling(NodeEditor):
 
         sheave_names = [n.name for n in node.sheaves]
 
-        if not sheave_names == new_sheaves:
+        if not sheave_names == new_circles:
 
-            if new_sheaves:
+            if new_circles:
                 code += element + '.sheaves = ['
-                for s in new_sheaves:
+                for s in new_circles:
                     code += f'"{s}", '
                 code = code[:-2] + ']'
             else:
@@ -1727,7 +1727,7 @@ class WidgetNodeProps(guiDockWidget):
         if isinstance(node, vfs.RigidBody):
             self._node_editors.append(EditBody(node, self.node_property_changed, self.guiScene, self.run_code))
 
-        if isinstance(node, vfs.Poi):
+        if isinstance(node, vfs.Point):
             self._node_editors.append(EditPoi(node, self.node_property_changed, self.guiScene, self.run_code))
 
         if isinstance(node, vfs.Cable):
@@ -1736,7 +1736,7 @@ class WidgetNodeProps(guiDockWidget):
         if isinstance(node, vfs.Force):
             self._node_editors.append(EditForce(node, self.node_property_changed, self.guiScene, self.run_code))
 
-        if isinstance(node, vfs.Sheave):
+        if isinstance(node, vfs.Circle):
             self._node_editors.append(EditSheave(node, self.node_property_changed, self.guiScene, self.run_code))
 
         if isinstance(node, vfs.HydSpring):

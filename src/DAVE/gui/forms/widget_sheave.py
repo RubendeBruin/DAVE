@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_sheave.ui',
 # licensing of 'widget_sheave.ui' applies.
 #
-# Created: Thu Nov 14 12:46:54 2019
+# Created: Mon Jun  8 11:16:35 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -104,10 +104,10 @@ class Ui_widget_sheave(object):
 
     def retranslateUi(self, widget_sheave):
         widget_sheave.setWindowTitle(QtWidgets.QApplication.translate("widget_sheave", "Form", None, -1))
-        self.label_9.setText(QtWidgets.QApplication.translate("widget_sheave", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Sheave radius</span></p></body></html>", None, -1))
+        self.label_9.setText(QtWidgets.QApplication.translate("widget_sheave", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Circle radius</span></p></body></html>", None, -1))
         self.label_7.setText(QtWidgets.QApplication.translate("widget_sheave", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Axis direction</span></p></body></html>", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("widget_sheave", "X", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("widget_sheave", "Y", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("widget_sheave", "Z", None, -1))
-        self.label_8.setText(QtWidgets.QApplication.translate("widget_sheave", "<html><head/><body><p>Axis direction is defined in parent axis system.</p><p>Wire runs over the sheave in positive direction (apply right hand rule on axis direction).</p></body></html>", None, -1))
+        self.label_8.setText(QtWidgets.QApplication.translate("widget_sheave", "<html><head/><body><p>Axis direction is defined in parent axis system.</p><p>Wire runs over the circle in positive direction (apply right hand rule on axis direction).</p></body></html>", None, -1))
 

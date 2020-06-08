@@ -22,7 +22,7 @@ s.new_rigidbody(name='crane_mast',
                           0.0),
                 fixed =(True, True, True, True, True, True) )
 # code for crane_top
-s.new_poi(name='crane_top',
+s.new_point(name='crane_top',
           parent='crane_mast',
           position=(0.0,
                     0.0,
@@ -52,7 +52,7 @@ s.new_rigidbody(name='crane_boom',
                           0.0),
                 fixed =(True, True, True, True, False, True) )
 # code for susp_wire_connection
-s.new_poi(name='susp_wire_connection',
+s.new_point(name='susp_wire_connection',
           parent='crane_boom',
           position=(49.0,
                     0.0,

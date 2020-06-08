@@ -22,13 +22,13 @@ s.new_rigidbody(name='Body',
                           solved(35.628688665718165)),
                 fixed =(False, False, False, False, False, False) )
 # code for Poi
-s.new_poi(name='Poi',
+s.new_point(name='Poi',
           parent='Body',
           position=(1.0,
                     1.0,
                     0.0))
 # code for Poi_1
-s.new_poi(name='Poi_1',
+s.new_point(name='Poi_1',
           position=(0.0,
                     0.0,
                     0.0))

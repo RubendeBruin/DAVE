@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_poi.ui',
 # licensing of 'widget_poi.ui' applies.
 #
-# Created: Thu Oct 31 16:19:27 2019
+# Created: Mon Jun  8 11:16:35 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!

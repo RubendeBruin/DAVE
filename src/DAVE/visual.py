@@ -642,7 +642,7 @@ class Viewport:
                 box.actor_type = ActorType.COG
                 actors.append(box)
 
-            if isinstance(N, vf.Poi):
+            if isinstance(N, vf.Point):
                 size = 0.5
                 p = vp.Sphere(pos=(0,0,0), r=size/2, res = vc.RESOLUTION_SPHERE)
                 p.c(vc.COLOR_POI)
@@ -708,7 +708,7 @@ class Viewport:
                 p.c(vc.COLOR_FORCE)
                 actors.append(p)
 
-            if isinstance(N, vf.Sheave):
+            if isinstance(N, vf.Circle):
                 axis = np.array(N.axis)
                 axis /= np.linalg.norm(axis)
                 p = vp.Cylinder(r=1)
@@ -827,7 +827,7 @@ class Viewport:
                 A.setTransform(t.GetMatrix())
                 continue
 
-            if isinstance(V.node, vf.Sheave):
+            if isinstance(V.node, vf.Circle):
                 A = V.actors[0]
 
                 # get the local (user set) transform
@@ -969,7 +969,7 @@ class Viewport:
                 continue
 
 
-            if isinstance(V.node, vf.Poi):
+            if isinstance(V.node, vf.Point):
                 t = vtk.vtkTransform()
                 t.Identity()
                 t.Translate(V.node.global_position)

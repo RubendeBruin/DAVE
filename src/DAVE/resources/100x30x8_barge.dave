@@ -66,7 +66,7 @@ for i in range(8):
 ## Bollards
 
 for i in range(4):
-	s.new_poi(name = f"bollard_ps{i}", position = (5 + 30*i, -15, 8), parent='Barge')
-	s.new_poi(name = f"bollard_sb{i}", position = (5 + 30*i, 15, 8), parent='Barge')
-s.new_poi('towpoint_ps', position = (100,10,8), parent='Barge')
-s.new_poi('towpoint_sb', position = (100,-10,8), parent='Barge')
+	s.new_point(name = f"bollard_ps{i}", position = (5 + 30*i, -15, 8), parent='Barge')
+	s.new_point(name = f"bollard_sb{i}", position = (5 + 30*i, 15, 8), parent='Barge')
+s.new_point('towpoint_ps', position = (100,10,8), parent='Barge')
+s.new_point('towpoint_sb', position = (100,-10,8), parent='Barge')

@@ -40,7 +40,7 @@ s.new_rigidbody(name='SB_crane_mast',
                           0.0),
                 fixed =(True, True, True, True, True, True) )
 # code for SB_crane_top
-s.new_poi(name='SB_crane_top',
+s.new_point(name='SB_crane_top',
           parent='SB_crane_mast',
           position=(0.0,
                     0.0,
@@ -70,7 +70,7 @@ s.new_rigidbody(name='SB_crane_boom',
                           0.0),
                 fixed =(True, True, True, True, False, True) )
 # code for SB_susp_wire_connection
-s.new_poi(name='SB_susp_wire_connection',
+s.new_point(name='SB_susp_wire_connection',
           parent='SB_crane_boom',
           position=(49.0,
                     0.0,
@@ -96,7 +96,7 @@ s.new_rigidbody(name='PS_crane_mast',
                           0.0),
                 fixed =(True, True, True, True, True, True) )
 # code for PS_crane_top
-s.new_poi(name='PS_crane_top',
+s.new_point(name='PS_crane_top',
           parent='PS_crane_mast',
           position=(0.0,
                     0.0,
@@ -126,7 +126,7 @@ s.new_rigidbody(name='PS_crane_boom',
                           0.0),
                 fixed =(True, True, True, True, False, True) )
 # code for PS_susp_wire_connection
-s.new_poi(name='PS_susp_wire_connection',
+s.new_point(name='PS_susp_wire_connection',
           parent='PS_crane_boom',
           position=(49.0,
                     0.0,

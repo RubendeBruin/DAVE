@@ -52,9 +52,9 @@ This module supplies additional functionality for working with rigging.
 #     # create the two splices
 #
 #     sa = s.new_rigidbody(name + '_spliceA', mass = mass/2, fixed=False)
-#     a1= s.new_poi(name + '_spliceA1', parent=sa, position = (LspliceA/2, diameter/2, 0))
-#     a2 = s.new_poi(name + '_spliceA2', parent=sa, position=(LspliceA / 2, -diameter / 2, 0))
-#     am = s.new_poi(name + '_spliceAM', parent=sa, position=(-LspliceA / 2, 0, 0))
+#     a1= s.new_point(name + '_spliceA1', parent=sa, position = (LspliceA/2, diameter/2, 0))
+#     a2 = s.new_point(name + '_spliceA2', parent=sa, position=(LspliceA / 2, -diameter / 2, 0))
+#     am = s.new_point(name + '_spliceAM', parent=sa, position=(-LspliceA / 2, 0, 0))
 #
 #     s.new_visual(name + '_spliceA_visual', parent=sa,  path=r'cylinder 1x1x1 lowres.obj',
 #                  offset=(-LspliceA/2, 0.0, 0.0),
@@ -62,9 +62,9 @@ This module supplies additional functionality for working with rigging.
 #                  scale=(LspliceA, 2*diameter, diameter))
 #
 #     sb = s.new_rigidbody(name + '_spliceB', mass = mass/2, rotation = (0,0,180),fixed=False)
-#     b1 = s.new_poi(name + '_spliceB1', parent=sb, position = (LspliceB/2, diameter/2, 0))
-#     b2 = s.new_poi(name + '_spliceB2', parent=sb, position=(LspliceB / 2, -diameter / 2, 0))
-#     bm = s.new_poi(name + '_spliceBM', parent=sb, position=(-LspliceB / 2, 0, 0))
+#     b1 = s.new_point(name + '_spliceB1', parent=sb, position = (LspliceB/2, diameter/2, 0))
+#     b2 = s.new_point(name + '_spliceB2', parent=sb, position=(LspliceB / 2, -diameter / 2, 0))
+#     bm = s.new_point(name + '_spliceBM', parent=sb, position=(-LspliceB / 2, 0, 0))
 #
 #     s.new_visual(name + '_spliceB_visual', parent=sb, path=r'cylinder 1x1x1 lowres.obj',
 #                  offset=(-LspliceB / 2, 0.0, 0.0),
@@ -173,36 +173,36 @@ def create_shackle_gphd(s, name, wll):
                          0.0,
                          cogz))
     # pin
-    pin_poi = s.new_poi(name=name + 'pin_poi',
-              parent=body,
-              position=(0.0,
+    pin_poi = s.new_point(name=name + 'pin_poi',
+                          parent=body,
+                          position=(0.0,
                         0.0,
                         0.0))
-    s.new_sheave(name=name + 'pin',
+    s.new_circle(name=name + 'pin',
                  parent=pin_poi,
                  axis=(0.0, 1.0, 0.0),
                  radius=pin_dia/2)
 
     # bow
-    bow_poi = s.new_poi(name=name + 'bow_poi',
-              parent=body,
-              position=(0.0,
+    bow_poi = s.new_point(name=name + 'bow_poi',
+                          parent=body,
+                          position=(0.0,
                         0.0,
                         0.5*pin_dia + bow_length_inside + 0.5 * bow_dia))
-    s.new_sheave(name=name + 'bow',
+    s.new_circle(name=name + 'bow',
                  parent=bow_poi,
                  axis=(0.0, 1.0, 0.0),
                  radius=bow_dia/2)
 
     # inside circle
-    inside_poi = s.new_poi(name = name + 'inside_circle_center',
-                           parent = body,
-                           position = (0,0,
+    inside_poi = s.new_point(name =name + 'inside_circle_center',
+                             parent = body,
+                             position = (0,0,
                                        0.5*pin_dia + bow_length_inside - 0.5*bow_circle_inside))
-    s.new_sheave(name = name + 'inside',
+    s.new_circle(name =name + 'inside',
                  parent = inside_poi,
                  axis = (1.0,0,0),
-                 radius = bow_circle_inside/2  )
+                 radius = bow_circle_inside/2)
 
     # determine the scale for the shackle
     # based on a GP800

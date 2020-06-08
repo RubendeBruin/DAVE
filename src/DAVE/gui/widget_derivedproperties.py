@@ -105,7 +105,7 @@ class WidgetDerivedProperties(guiDockWidget):
             props.extend(ds.PROPS_AXIS)
         if isinstance(node, nodes.RigidBody):
             props.extend(ds.PROPS_BODY)
-        if isinstance(node, nodes.Poi):
+        if isinstance(node, nodes.Point):
             props.extend(ds.PROPS_POI)
         if isinstance(node, nodes.Cable):
             props.extend(ds.PROPS_CABLE)

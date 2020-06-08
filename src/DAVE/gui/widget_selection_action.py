@@ -110,7 +110,7 @@ class WidgetSelectionActions(guiDockWidget):
             return self.guiScene.name_available(text)
 
         # At least two sheaves connected
-        p2 = self.find_nodes([nodes.Sheave, nodes.Sheave])
+        p2 = self.find_nodes([nodes.Circle, nodes.Circle])
         if p2:
 
             p0 = p2[0]
@@ -157,7 +157,7 @@ class WidgetSelectionActions(guiDockWidget):
                 self.buttons.append(button)
 
         # Multiple points/sheaves selected
-        poi_and_sheave = self.all_of_type([Poi, Sheave])
+        poi_and_sheave = self.all_of_type([Point, Circle])
         if poi_and_sheave:
 
             if len(poi_and_sheave) > 1:
@@ -179,7 +179,7 @@ class WidgetSelectionActions(guiDockWidget):
                 self.buttons.append(button)
 
         # creating sling between points and sheaves
-        poi_and_sheave = self.all_of_type([Poi, Sheave])
+        poi_and_sheave = self.all_of_type([Point, Circle])
         if poi_and_sheave:
 
             if len(poi_and_sheave) > 1:
@@ -203,7 +203,7 @@ class WidgetSelectionActions(guiDockWidget):
 
         # a single sheave selected
         if len(self.guiSelection)==1:
-            if isinstance(self.guiSelection[0], Sheave):
+            if isinstance(self.guiSelection[0], Circle):
                 sheave = self.guiSelection[0]
 
                 # def create_shackle_gphd(s, name, wll):

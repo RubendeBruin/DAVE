@@ -31,43 +31,43 @@ s.new_axis(name='Axis - visuals',
 mesh = s.new_contactmesh(name='Quay Contactmesh', parent='Yard')
 mesh.trimesh.load_obj(s.get_resource_path(r'cube.obj'), scale = (250.0,10.0,6.0), rotation = (0.0,0.0,0.0), offset = (0.0,-5.0,0.0))
 # code for MP
-s.new_poi(name='MP',
+s.new_point(name='MP',
           parent='Yard',
           position=(10.0,
                     -1.0,
                     4.0))
 # code for MP_1
-s.new_poi(name='MP_1',
+s.new_point(name='MP_1',
           parent='Yard',
           position=(-50.0,
                     -1.0,
                     4.0))
 # code for MP_2
-s.new_poi(name='MP_2',
+s.new_point(name='MP_2',
           parent='Yard',
           position=(-10.0,
                     -1.0,
                     4.0))
 # code for MP_3
-s.new_poi(name='MP_3',
+s.new_point(name='MP_3',
           parent='Yard',
           position=(10.0,
                     -1.0,
                     4.0))
 # code for MP_4
-s.new_poi(name='MP_4',
+s.new_point(name='MP_4',
           parent='Yard',
           position=(40.0,
                     -1.0,
                     4.0))
 # code for MP_5
-s.new_poi(name='MP_5',
+s.new_point(name='MP_5',
           parent='Yard',
           position=(70.0,
                     -1.0,
                     4.0))
 # code for MP_6
-s.new_poi(name='MP_6',
+s.new_point(name='MP_6',
           parent='Yard',
           position=(90.0,
                     -1.0,

@@ -403,12 +403,12 @@ class Gui():
         set_pb_style(btnConstruct)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText('&5. Mode Shapes')
+        btnConstruct.setText('&5. Mode Shapes [beta]')
         btnConstruct.clicked.connect(lambda: self.activate_workspace("DYNAMICS"))
         set_pb_style(btnConstruct)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText('&6. Airy')
+        btnConstruct.setText('&6. Airy [beta]')
         btnConstruct.clicked.connect(lambda: self.activate_workspace("AIRY"))
         set_pb_style(btnConstruct)
 
@@ -1106,8 +1106,8 @@ class Gui():
                 menu.addSeparator()
 
         menu.addAction("New Axis", self.new_axis)
-        menu.addAction("New Poi", self.new_poi)
-        menu.addAction("New Sheave", self.new_sheave)
+        menu.addAction("New Poi", self.new_point)
+        menu.addAction("New Sheave", self.new_circle)
         menu.addAction("New RigidBody", self.new_body)
 
         menu.addSeparator()
@@ -1136,7 +1136,7 @@ class Gui():
     def new_body(self):
         self.new_something(new_node_dialog.add_body)
 
-    def new_poi(self):
+    def new_point(self):
         self.new_something(new_node_dialog.add_poi)
 
     def new_cable(self):
@@ -1145,7 +1145,7 @@ class Gui():
     def new_force(self):
         self.new_something(new_node_dialog.add_force)
 
-    def new_sheave(self):
+    def new_circle(self):
         self.new_something(new_node_dialog.add_sheave)
 
     def new_linear_connector(self):

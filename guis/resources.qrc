@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="icons">
+    <file>axis_blue.png</file>
+    <file>circle.png</file>
+    <file>circle_blue.png</file>
+    <file>point_blue.png</file>
     <file>sling.png</file>
     <file>pin_hole.png</file>
     <file>file_new.png</file>

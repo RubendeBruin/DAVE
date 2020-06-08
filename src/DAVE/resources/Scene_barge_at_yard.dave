@@ -31,43 +31,43 @@ s.new_axis(name='Axis - visuals',
 mesh = s.new_contactmesh(name='Quay Contactmesh', parent='Yard')
 mesh.trimesh.load_obj(s.get_resource_path(r'cube.obj'), scale = (250.0,10.0,6.0), rotation = (0.0,0.0,0.0), offset = (0.0,-5.0,-0.01))
 # code for MP
-s.new_poi(name='MP',
+s.new_point(name='MP',
           parent='Yard',
           position=(10.0,
                     -1.0,
                     4.0))
 # code for MP_1
-s.new_poi(name='MP_1',
+s.new_point(name='MP_1',
           parent='Yard',
           position=(-50.0,
                     -1.0,
                     4.0))
 # code for MP_2
-s.new_poi(name='MP_2',
+s.new_point(name='MP_2',
           parent='Yard',
           position=(-10.0,
                     -1.0,
                     4.0))
 # code for MP_3
-s.new_poi(name='MP_3',
+s.new_point(name='MP_3',
           parent='Yard',
           position=(10.0,
                     -1.0,
                     4.0))
 # code for MP_4
-s.new_poi(name='MP_4',
+s.new_point(name='MP_4',
           parent='Yard',
           position=(40.0,
                     -1.0,
                     4.0))
 # code for MP_5
-s.new_poi(name='MP_5',
+s.new_point(name='MP_5',
           parent='Yard',
           position=(70.0,
                     -1.0,
                     4.0))
 # code for MP_6
-s.new_poi(name='MP_6',
+s.new_point(name='MP_6',
           parent='Yard',
           position=(90.0,
                     -1.0,
@@ -174,67 +174,67 @@ bs.new_tank('sb_inner8', position = (93.75,-3.75,4),
 bs.new_tank('sb_outer8', position = (93.75,-11.25,4),
             capacity_kN = 5656.078124999999, frozen = False, actual_fill = 0)
 # code for bollard_ps0
-s.new_poi(name='bollard_ps0',
+s.new_point(name='bollard_ps0',
           parent='Barge',
           position=(5.0,
                     -15.0,
                     8.0))
 # code for bollard_sb0
-s.new_poi(name='bollard_sb0',
+s.new_point(name='bollard_sb0',
           parent='Barge',
           position=(5.0,
                     15.0,
                     8.0))
 # code for bollard_ps1
-s.new_poi(name='bollard_ps1',
+s.new_point(name='bollard_ps1',
           parent='Barge',
           position=(35.0,
                     -15.0,
                     8.0))
 # code for bollard_sb1
-s.new_poi(name='bollard_sb1',
+s.new_point(name='bollard_sb1',
           parent='Barge',
           position=(35.0,
                     15.0,
                     8.0))
 # code for bollard_ps2
-s.new_poi(name='bollard_ps2',
+s.new_point(name='bollard_ps2',
           parent='Barge',
           position=(65.0,
                     -15.0,
                     8.0))
 # code for bollard_sb2
-s.new_poi(name='bollard_sb2',
+s.new_point(name='bollard_sb2',
           parent='Barge',
           position=(65.0,
                     15.0,
                     8.0))
 # code for bollard_ps3
-s.new_poi(name='bollard_ps3',
+s.new_point(name='bollard_ps3',
           parent='Barge',
           position=(95.0,
                     -15.0,
                     8.0))
 # code for bollard_sb3
-s.new_poi(name='bollard_sb3',
+s.new_point(name='bollard_sb3',
           parent='Barge',
           position=(95.0,
                     15.0,
                     8.0))
 # code for towpoint_ps
-s.new_poi(name='towpoint_ps',
+s.new_point(name='towpoint_ps',
           parent='Barge',
           position=(100.0,
                     10.0,
                     8.0))
 # code for towpoint_sb
-s.new_poi(name='towpoint_sb',
+s.new_point(name='towpoint_sb',
           parent='Barge',
           position=(100.0,
                     -10.0,
                     8.0))
 # code for Fender position 1
-s.new_poi(name='Fender position 1',
+s.new_point(name='Fender position 1',
           parent='Barge',
           position=(80.0,
                     -16.0,
@@ -246,7 +246,7 @@ s.new_contactball(name='Contactball',
                   k=100000.0,
                   meshes = ["Quay Contactmesh"])
 # code for Fender position 1_1
-s.new_poi(name='Fender position 1_1',
+s.new_point(name='Fender position 1_1',
           parent='Barge',
           position=(20.0,
                     -16.0,
@@ -273,25 +273,25 @@ s.new_rigidbody(name='foundation_jacket',
                      inertia_radii = (20.0, 20.0, 8.0),
                 fixed =(True, True, True, True, True, True) )
 # code for foundation_lp1
-s.new_poi(name='foundation_lp1',
+s.new_point(name='foundation_lp1',
           parent='foundation_jacket',
           position=(5.0,
                     5.0,
                     51.0))
 # code for foundation_lp4
-s.new_poi(name='foundation_lp4',
+s.new_point(name='foundation_lp4',
           parent='foundation_jacket',
           position=(5.0,
                     -5.0,
                     51.0))
 # code for foundation_lp3
-s.new_poi(name='foundation_lp3',
+s.new_point(name='foundation_lp3',
           parent='foundation_jacket',
           position=(-5.0,
                     -5.0,
                     51.0))
 # code for foundation_lp2
-s.new_poi(name='foundation_lp2',
+s.new_point(name='foundation_lp2',
           parent='foundation_jacket',
           position=(-5.0,
                     5.0,
@@ -339,7 +339,7 @@ s.new_cable(name='Cable_6',
             length=6.481,
             EA=10000.0)
 # code for Wind application point
-s.new_poi(name='Wind application point',
+s.new_point(name='Wind application point',
           parent='foundation_jacket',
           position=(0.0,
                     0.0,
@@ -350,7 +350,7 @@ s.new_force(name='Wind-force',
             force=(0.0, -1000.0, 0.0),
             moment=(0.0, 0.0, 0.0) )
 # code for MP_7
-s.new_poi(name='MP_7',
+s.new_point(name='MP_7',
           parent='Yard',
           position=(121.0,
                     -1.0,

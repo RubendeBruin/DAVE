@@ -33,7 +33,7 @@ s.new_hydspring(name='Hydrostatics',
             waterline=2.5,
             displacement_kN=196200.0 )
 # code for Poi
-s.new_poi(name='Poi',
+s.new_point(name='Poi',
           parent='Barge',
           position=(0.0,
                     10.0,

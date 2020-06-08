@@ -9,13 +9,13 @@ s['Upper block'].fixed = False
 # Make connection
 
 # code for hw1
-s.new_poi(name='hw1',
+s.new_point(name='hw1',
           parent='crane_boom',
           position=(52.0,
                     2.0,
                     0.0))
 # code for hw2
-s.new_poi(name='hw2',
+s.new_point(name='hw2',
           parent='crane_boom',
           position=(52.0,
                     -2.0,

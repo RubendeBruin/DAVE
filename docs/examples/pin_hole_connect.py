@@ -12,15 +12,15 @@ s.new_axis(name='A1',
                      0.0,
                      30.0),
            fixed =(True, True, True, True, True, True) )
-s.new_poi(name='P1',
-          parent='A1',
-          position=(2.0,
+s.new_point(name='P1',
+            parent='A1',
+            position=(2.0,
                     0.0,
                     0.0))
-s.new_sheave(name='hole',
-            parent='P1',
-            axis=(1.0, 1.0, 0.0),
-            radius=3 )
+s.new_circle(name='hole',
+             parent='P1',
+             axis=(1.0, 1.0, 0.0),
+             radius=3)
 
 
 # code for A2
@@ -33,15 +33,15 @@ s.new_rigidbody(name='A2',
                      0.0),
            fixed =False,
                 mass=1)
-s.new_poi(name='P2',
-          parent='A2',
-          position=(10.0,
+s.new_point(name='P2',
+            parent='A2',
+            position=(10.0,
                     0.0,
                     0.0))
-s.new_sheave(name='pin',
-            parent='P2',
-            axis=(0.0, 1.0, 0.0),
-            radius=0.5 )
+s.new_circle(name='pin',
+             parent='P2',
+             axis=(0.0, 1.0, 0.0),
+             radius=0.5)
 
 
 # Connect pin to hole

@@ -108,7 +108,7 @@ s.new_rigidbody(name='vessel mass',
                           0.0),
                 fixed =(True, True, True, True, True, True) )
 # # code for crane tip
-# s.new_poi(name='crane tip',
+# s.new_point(name='crane tip',
 #           parent='Vessel',
 #           position=(0.0,
 #                     0.0,
@@ -128,7 +128,7 @@ s.new_rigidbody(name='vessel mass',
 #                           solved(0.0)),
 #                 fixed =(False, False, False, False, False, False) )
 # # code for liftpoint
-# s.new_poi(name='liftpoint',
+# s.new_point(name='liftpoint',
 #           parent='Cargo',
 #           position=(0.0,
 #                     0.0,

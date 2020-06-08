@@ -242,19 +242,19 @@ s.print_node_tree()
 #                           0.0),
 #                 fixed =(True, True, True, False, True, True) )
 # # code for sh120pin_poi
-# s.new_poi(name='sh120pin_poi',
+# s.new_point(name='sh120pin_poi',
 #           parent='sh120',
 #           position=(0.0,
 #                     0.0,
 #                     0.0))
 # # code for sh120bow_poi
-# s.new_poi(name='sh120bow_poi',
+# s.new_point(name='sh120bow_poi',
 #           parent='sh120',
 #           position=(0.0,
 #                     0.0,
 #                     0.495))
 # # code for sh120inside_circle_center
-# s.new_poi(name='sh120inside_circle_center',
+# s.new_point(name='sh120inside_circle_center',
 #           parent='sh120',
 #           position=(0.0,
 #                     0.0,
@@ -267,19 +267,19 @@ s.print_node_tree()
 #             rotation=(0, 0, 0),
 #             scale=(0.5305466237942122, 0.5305466237942122, 0.5305466237942122) )
 # # code for sh150pin_poi
-# s.new_poi(name='sh150pin_poi',
+# s.new_point(name='sh150pin_poi',
 #           parent='sh150',
 #           position=(0.0,
 #                     0.0,
 #                     0.0))
 # # code for sh150bow_poi
-# s.new_poi(name='sh150bow_poi',
+# s.new_point(name='sh150bow_poi',
 #           parent='sh150',
 #           position=(0.0,
 #                     0.0,
 #                     0.5165))
 # # code for sh150inside_circle_center
-# s.new_poi(name='sh150inside_circle_center',
+# s.new_point(name='sh150inside_circle_center',
 #           parent='sh150',
 #           position=(0.0,
 #                     0.0,
@@ -292,19 +292,19 @@ s.print_node_tree()
 #             rotation=(0, 0, 0),
 #             scale=(0.5535905680600214, 0.5535905680600214, 0.5535905680600214) )
 # # code for sh200pin_poi
-# s.new_poi(name='sh200pin_poi',
+# s.new_point(name='sh200pin_poi',
 #           parent='sh200',
 #           position=(0.0,
 #                     0.0,
 #                     0.0))
 # # code for sh200bow_poi
-# s.new_poi(name='sh200bow_poi',
+# s.new_point(name='sh200bow_poi',
 #           parent='sh200',
 #           position=(0.0,
 #                     0.0,
 #                     0.6380000000000001))
 # # code for sh200inside_circle_center
-# s.new_poi(name='sh200inside_circle_center',
+# s.new_point(name='sh200inside_circle_center',
 #           parent='sh200',
 #           position=(0.0,
 #                     0.0,
@@ -317,19 +317,19 @@ s.print_node_tree()
 #             rotation=(0, 0, 0),
 #             scale=(0.6838156484458736, 0.6838156484458736, 0.6838156484458736) )
 # # code for sh250pin_poi
-# s.new_poi(name='sh250pin_poi',
+# s.new_point(name='sh250pin_poi',
 #           parent='sh250',
 #           position=(0.0,
 #                     0.0,
 #                     0.0))
 # # code for sh250bow_poi
-# s.new_poi(name='sh250bow_poi',
+# s.new_point(name='sh250bow_poi',
 #           parent='sh250',
 #           position=(0.0,
 #                     0.0,
 #                     0.6890000000000001))
 # # code for sh250inside_circle_center
-# s.new_poi(name='sh250inside_circle_center',
+# s.new_point(name='sh250inside_circle_center',
 #           parent='sh250',
 #           position=(0.0,
 #                     0.0,
@@ -342,19 +342,19 @@ s.print_node_tree()
 #             rotation=(0, 0, 0),
 #             scale=(0.7384780278670955, 0.7384780278670955, 0.7384780278670955) )
 # # code for sh300pin_poi
-# s.new_poi(name='sh300pin_poi',
+# s.new_point(name='sh300pin_poi',
 #           parent='sh300',
 #           position=(0.0,
 #                     0.0,
 #                     0.0))
 # # code for sh300bow_poi
-# s.new_poi(name='sh300bow_poi',
+# s.new_point(name='sh300bow_poi',
 #           parent='sh300',
 #           position=(0.0,
 #                     0.0,
 #                     0.7629999999999999))
 # # code for sh300inside_circle_center
-# s.new_poi(name='sh300inside_circle_center',
+# s.new_point(name='sh300inside_circle_center',
 #           parent='sh300',
 #           position=(0.0,
 #                     0.0,
@@ -367,19 +367,19 @@ s.print_node_tree()
 #             rotation=(0, 0, 0),
 #             scale=(0.8177920685959272, 0.8177920685959272, 0.8177920685959272) )
 # # code for sh400pin_poi
-# s.new_poi(name='sh400pin_poi',
+# s.new_point(name='sh400pin_poi',
 #           parent='sh400',
 #           position=(0.0,
 #                     0.0,
 #                     0.0))
 # # code for sh400bow_poi
-# s.new_poi(name='sh400bow_poi',
+# s.new_point(name='sh400bow_poi',
 #           parent='sh400',
 #           position=(0.0,
 #                     0.0,
 #                     0.8405))
 # # code for sh400inside_circle_center
-# s.new_poi(name='sh400inside_circle_center',
+# s.new_point(name='sh400inside_circle_center',
 #           parent='sh400',
 #           position=(0.0,
 #                     0.0,
@@ -392,19 +392,19 @@ s.print_node_tree()
 #             rotation=(0, 0, 0),
 #             scale=(0.9008574490889605, 0.9008574490889605, 0.9008574490889605) )
 # # code for sh500pin_poi
-# s.new_poi(name='sh500pin_poi',
+# s.new_point(name='sh500pin_poi',
 #           parent='sh500',
 #           position=(0.0,
 #                     0.0,
 #                     0.0))
 # # code for sh500bow_poi
-# s.new_poi(name='sh500bow_poi',
+# s.new_point(name='sh500bow_poi',
 #           parent='sh500',
 #           position=(0.0,
 #                     0.0,
 #                     0.9005))
 # # code for sh500inside_circle_center
-# s.new_poi(name='sh500inside_circle_center',
+# s.new_point(name='sh500inside_circle_center',
 #           parent='sh500',
 #           position=(0.0,
 #                     0.0,
@@ -417,13 +417,13 @@ s.print_node_tree()
 #             rotation=(0, 0, 0),
 #             scale=(0.9651661307609861, 0.9651661307609861, 0.9651661307609861) )
 # # code for sh900bow_poi
-# s.new_poi(name='sh900bow_poi',
+# s.new_point(name='sh900bow_poi',
 #           parent='sh900',
 #           position=(0.0,
 #                     0.0,
 #                     0.943))
 # # code for sh900inside_circle_center
-# s.new_poi(name='sh900inside_circle_center',
+# s.new_point(name='sh900inside_circle_center',
 #           parent='sh900',
 #           position=(0.0,
 #                     0.0,
@@ -436,13 +436,13 @@ s.print_node_tree()
 #             rotation=(0, 0, 0),
 #             scale=(1.0107181136120043, 1.0107181136120043, 1.0107181136120043) )
 # # code for sh1250pin_poi
-# s.new_poi(name='sh1250pin_poi',
+# s.new_point(name='sh1250pin_poi',
 #           parent='sh1250',
 #           position=(0.0,
 #                     0.0,
 #                     0.0))
 # # code for sh1250bow_poi
-# s.new_poi(name='sh1250bow_poi',
+# s.new_point(name='sh1250bow_poi',
 #           parent='sh1250',
 #           position=(0.0,
 #                     0.0,
@@ -471,24 +471,24 @@ s.print_node_tree()
 #                           0.0),
 #                 fixed =(True, True, True, True, True, True) )
 # # code for sh1500pin_poi
-# s.new_poi(name='sh1500pin_poi',
+# s.new_point(name='sh1500pin_poi',
 #           parent='sh1500',
 #           position=(0.0,
 #                     0.0,
 #                     0.0))
 # # code for sh1500pin
-# s.new_sheave(name='sh1500pin',
+# s.new_circle(name='sh1500pin',
 #             parent='sh1500pin_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.145 )
 # # code for sh1250inside_circle_center
-# s.new_poi(name='sh1250inside_circle_center',
+# s.new_point(name='sh1250inside_circle_center',
 #           parent='sh1250',
 #           position=(0.0,
 #                     0.0,
 #                     0.678))
 # # code for sh1250inside
-# s.new_sheave(name='sh1250inside',
+# s.new_circle(name='sh1250inside',
 #             parent='sh1250inside_circle_center',
 #             axis=(1.0, 0.0, 0.0),
 #             radius=0.225 )
@@ -513,24 +513,24 @@ s.print_node_tree()
 #                           90.0),
 #                 fixed =(True, True, True, True, True, True) )
 # # code for sh1000inside_circle_center
-# s.new_poi(name='sh1000inside_circle_center',
+# s.new_point(name='sh1000inside_circle_center',
 #           parent='sh1000',
 #           position=(0.0,
 #                     0.0,
 #                     0.628))
 # # code for sh1000inside
-# s.new_sheave(name='sh1000inside',
+# s.new_circle(name='sh1000inside',
 #             parent='sh1000inside_circle_center',
 #             axis=(1.0, 0.0, 0.0),
 #             radius=0.21 )
 # # code for sh900pin_poi
-# s.new_poi(name='sh900pin_poi',
+# s.new_point(name='sh900pin_poi',
 #           parent='sh900',
 #           position=(0.0,
 #                     0.0,
 #                     0.0))
 # # code for sh900pin
-# s.new_sheave(name='sh900pin',
+# s.new_circle(name='sh900pin',
 #             parent='sh900pin_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.115 )
@@ -539,132 +539,132 @@ s.print_node_tree()
 #                        item1 = 'sh1000inside',
 #                        item2 = 'sh900pin')
 # # code for sh120pin
-# s.new_sheave(name='sh120pin',
+# s.new_circle(name='sh120pin',
 #             parent='sh120pin_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.0475 )
 # # code for sh120bow
-# s.new_sheave(name='sh120bow',
+# s.new_circle(name='sh120bow',
 #             parent='sh120bow_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.0475 )
 # # code for sh120inside
-# s.new_sheave(name='sh120inside',
+# s.new_circle(name='sh120inside',
 #             parent='sh120inside_circle_center',
 #             axis=(1.0, 0.0, 0.0),
 #             radius=0.119 )
 # # code for sh150pin
-# s.new_sheave(name='sh150pin',
+# s.new_circle(name='sh150pin',
 #             parent='sh150pin_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.054 )
 # # code for sh150bow
-# s.new_sheave(name='sh150bow',
+# s.new_circle(name='sh150bow',
 #             parent='sh150bow_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.0525 )
 # # code for sh150inside
-# s.new_sheave(name='sh150inside',
+# s.new_circle(name='sh150inside',
 #             parent='sh150inside_circle_center',
 #             axis=(1.0, 0.0, 0.0),
 #             radius=0.1375 )
 # # code for sh200pin
-# s.new_sheave(name='sh200pin',
+# s.new_circle(name='sh200pin',
 #             parent='sh200pin_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.065 )
 # # code for sh200bow
-# s.new_sheave(name='sh200bow',
+# s.new_circle(name='sh200bow',
 #             parent='sh200bow_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.06 )
 # # code for sh200inside
-# s.new_sheave(name='sh200inside',
+# s.new_circle(name='sh200inside',
 #             parent='sh200inside_circle_center',
 #             axis=(1.0, 0.0, 0.0),
 #             radius=0.145 )
 # # code for sh250pin
-# s.new_sheave(name='sh250pin',
+# s.new_circle(name='sh250pin',
 #             parent='sh250pin_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.07 )
 # # code for sh250bow
-# s.new_sheave(name='sh250bow',
+# s.new_circle(name='sh250bow',
 #             parent='sh250bow_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.065 )
 # # code for sh250inside
-# s.new_sheave(name='sh250inside',
+# s.new_circle(name='sh250inside',
 #             parent='sh250inside_circle_center',
 #             axis=(1.0, 0.0, 0.0),
 #             radius=0.1525 )
 # # code for sh300pin
-# s.new_sheave(name='sh300pin',
+# s.new_circle(name='sh300pin',
 #             parent='sh300pin_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.075 )
 # # code for sh300bow
-# s.new_sheave(name='sh300bow',
+# s.new_circle(name='sh300bow',
 #             parent='sh300bow_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.07 )
 # # code for sh300inside
-# s.new_sheave(name='sh300inside',
+# s.new_circle(name='sh300inside',
 #             parent='sh300inside_circle_center',
 #             axis=(1.0, 0.0, 0.0),
 #             radius=0.1525 )
 # # code for sh400pin
-# s.new_sheave(name='sh400pin',
+# s.new_circle(name='sh400pin',
 #             parent='sh400pin_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.0875 )
 # # code for sh400bow
-# s.new_sheave(name='sh400bow',
+# s.new_circle(name='sh400bow',
 #             parent='sh400bow_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.085 )
 # # code for sh400inside
-# s.new_sheave(name='sh400inside',
+# s.new_circle(name='sh400inside',
 #             parent='sh400inside_circle_center',
 #             axis=(1.0, 0.0, 0.0),
 #             radius=0.1625 )
 # # code for sh500pin
-# s.new_sheave(name='sh500pin',
+# s.new_circle(name='sh500pin',
 #             parent='sh500pin_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.0925 )
 # # code for sh500bow
-# s.new_sheave(name='sh500bow',
+# s.new_circle(name='sh500bow',
 #             parent='sh500bow_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.09 )
 # # code for sh500inside
-# s.new_sheave(name='sh500inside',
+# s.new_circle(name='sh500inside',
 #             parent='sh500inside_circle_center',
 #             axis=(1.0, 0.0, 0.0),
 #             radius=0.175 )
 # # code for sh900bow
-# s.new_sheave(name='sh900bow',
+# s.new_circle(name='sh900bow',
 #             parent='sh900bow_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.11 )
 # # code for sh900inside
-# s.new_sheave(name='sh900inside',
+# s.new_circle(name='sh900inside',
 #             parent='sh900inside_circle_center',
 #             axis=(1.0, 0.0, 0.0),
 #             radius=0.21 )
 # # code for sh1250pin
-# s.new_sheave(name='sh1250pin',
+# s.new_circle(name='sh1250pin',
 #             parent='sh1250pin_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.135 )
 # # code for sh1250bow
-# s.new_sheave(name='sh1250bow',
+# s.new_circle(name='sh1250bow',
 #             parent='sh1250bow_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.13 )
 # # code for sh1000bow_poi
-# s.new_poi(name='sh1000bow_poi',
+# s.new_point(name='sh1000bow_poi',
 #           parent='sh1000',
 #           position=(0.0,
 #                     0.0,
@@ -677,13 +677,13 @@ s.print_node_tree()
 #             rotation=(0, 0, 0),
 #             scale=(1.0267952840300107, 1.0267952840300107, 1.0267952840300107) )
 # # code for sh1500bow_poi
-# s.new_poi(name='sh1500bow_poi',
+# s.new_point(name='sh1500bow_poi',
 #           parent='sh1500',
 #           position=(0.0,
 #                     0.0,
 #                     1.103))
 # # code for sh1500inside_circle_center
-# s.new_poi(name='sh1500inside_circle_center',
+# s.new_point(name='sh1500inside_circle_center',
 #           parent='sh1500',
 #           position=(0.0,
 #                     0.0,
@@ -712,24 +712,24 @@ s.print_node_tree()
 #                           90.0),
 #                 fixed =(True, True, True, True, True, True) )
 # # code for sh800inside_circle_center
-# s.new_poi(name='sh800inside_circle_center',
+# s.new_point(name='sh800inside_circle_center',
 #           parent='sh800',
 #           position=(0.0,
 #                     0.0,
 #                     0.6279999999999999))
 # # code for sh800inside
-# s.new_sheave(name='sh800inside',
+# s.new_circle(name='sh800inside',
 #             parent='sh800inside_circle_center',
 #             axis=(1.0, 0.0, 0.0),
 #             radius=0.2 )
 # # code for sh1000pin_poi
-# s.new_poi(name='sh1000pin_poi',
+# s.new_point(name='sh1000pin_poi',
 #           parent='sh1000',
 #           position=(0.0,
 #                     0.0,
 #                     0.0))
 # # code for sh1000pin
-# s.new_sheave(name='sh1000pin',
+# s.new_circle(name='sh1000pin',
 #             parent='sh1000pin_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.12 )
@@ -738,22 +738,22 @@ s.print_node_tree()
 #                        item1 = 'sh800inside',
 #                        item2 = 'sh1000pin')
 # # code for sh1000bow
-# s.new_sheave(name='sh1000bow',
+# s.new_circle(name='sh1000bow',
 #             parent='sh1000bow_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.12 )
 # # code for sh1500bow
-# s.new_sheave(name='sh1500bow',
+# s.new_circle(name='sh1500bow',
 #             parent='sh1500bow_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.14 )
 # # code for sh1500inside
-# s.new_sheave(name='sh1500inside',
+# s.new_circle(name='sh1500inside',
 #             parent='sh1500inside_circle_center',
 #             axis=(1.0, 0.0, 0.0),
 #             radius=0.225 )
 # # code for sh800bow_poi
-# s.new_poi(name='sh800bow_poi',
+# s.new_point(name='sh800bow_poi',
 #           parent='sh800',
 #           position=(0.0,
 #                     0.0,
@@ -782,24 +782,24 @@ s.print_node_tree()
 #                           90.0),
 #                 fixed =(True, True, True, True, True, True) )
 # # code for sh700inside_circle_center
-# s.new_poi(name='sh700inside_circle_center',
+# s.new_point(name='sh700inside_circle_center',
 #           parent='sh700',
 #           position=(0.0,
 #                     0.0,
 #                     0.6255))
 # # code for sh700inside
-# s.new_sheave(name='sh700inside',
+# s.new_circle(name='sh700inside',
 #             parent='sh700inside_circle_center',
 #             axis=(1.0, 0.0, 0.0),
 #             radius=0.2 )
 # # code for sh800pin_poi
-# s.new_poi(name='sh800pin_poi',
+# s.new_point(name='sh800pin_poi',
 #           parent='sh800',
 #           position=(0.0,
 #                     0.0,
 #                     0.0))
 # # code for sh800pin
-# s.new_sheave(name='sh800pin',
+# s.new_circle(name='sh800pin',
 #             parent='sh800pin_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.11 )
@@ -808,12 +808,12 @@ s.print_node_tree()
 #                        item1 = 'sh700inside',
 #                        item2 = 'sh800pin')
 # # code for sh800bow
-# s.new_sheave(name='sh800bow',
+# s.new_circle(name='sh800bow',
 #             parent='sh800bow_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.105 )
 # # code for sh700bow_poi
-# s.new_poi(name='sh700bow_poi',
+# s.new_point(name='sh700bow_poi',
 #           parent='sh700',
 #           position=(0.0,
 #                     0.0,
@@ -842,24 +842,24 @@ s.print_node_tree()
 #                           90.0),
 #                 fixed =(True, True, True, True, True, True) )
 # # code for sh600inside_circle_center
-# s.new_poi(name='sh600inside_circle_center',
+# s.new_point(name='sh600inside_circle_center',
 #           parent='sh600',
 #           position=(0.0,
 #                     0.0,
 #                     0.633))
 # # code for sh600inside
-# s.new_sheave(name='sh600inside',
+# s.new_circle(name='sh600inside',
 #             parent='sh600inside_circle_center',
 #             axis=(1.0, 0.0, 0.0),
 #             radius=0.1875 )
 # # code for sh700pin_poi
-# s.new_poi(name='sh700pin_poi',
+# s.new_point(name='sh700pin_poi',
 #           parent='sh700',
 #           position=(0.0,
 #                     0.0,
 #                     0.0))
 # # code for sh700pin
-# s.new_sheave(name='sh700pin',
+# s.new_circle(name='sh700pin',
 #             parent='sh700pin_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.1075 )
@@ -868,18 +868,18 @@ s.print_node_tree()
 #                        item1 = 'sh600inside',
 #                        item2 = 'sh700pin')
 # # code for sh700bow
-# s.new_sheave(name='sh700bow',
+# s.new_circle(name='sh700bow',
 #             parent='sh700bow_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.105 )
 # # code for sh600pin_poi
-# s.new_poi(name='sh600pin_poi',
+# s.new_point(name='sh600pin_poi',
 #           parent='sh600',
 #           position=(0.0,
 #                     0.0,
 #                     0.0))
 # # code for sh600bow_poi
-# s.new_poi(name='sh600bow_poi',
+# s.new_point(name='sh600bow_poi',
 #           parent='sh600',
 #           position=(0.0,
 #                     0.0,
@@ -892,12 +892,12 @@ s.print_node_tree()
 #             rotation=(0, 0, 0),
 #             scale=(0.9866023579849947, 0.9866023579849947, 0.9866023579849947) )
 # # code for sh600pin
-# s.new_sheave(name='sh600pin',
+# s.new_circle(name='sh600pin',
 #             parent='sh600pin_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.1025 )
 # # code for sh600bow
-# s.new_sheave(name='sh600bow',
+# s.new_circle(name='sh600bow',
 #             parent='sh600bow_poi',
 #             axis=(0.0, 1.0, 0.0),
 #             radius=0.1 )

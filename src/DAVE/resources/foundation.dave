@@ -7,25 +7,25 @@ s.new_rigidbody(name='foundation_jacket',
                      inertia_radii = (20.0, 20.0, 8.0),
                 fixed = False)
 # code for foundation_lp1
-s.new_poi(name='foundation_lp1',
+s.new_point(name='foundation_lp1',
           parent='foundation_jacket',
           position=(5.0,
                     5.0,
                     51.0))
 # code for foundation_lp4
-s.new_poi(name='foundation_lp4',
+s.new_point(name='foundation_lp4',
           parent='foundation_jacket',
           position=(5.0,
                     -5.0,
                     51.0))
 # code for foundation_lp3
-s.new_poi(name='foundation_lp3',
+s.new_point(name='foundation_lp3',
           parent='foundation_jacket',
           position=(-5.0,
                     -5.0,
                     51.0))
 # code for foundation_lp2
-s.new_poi(name='foundation_lp2',
+s.new_point(name='foundation_lp2',
           parent='foundation_jacket',
           position=(-5.0,
                     5.0,

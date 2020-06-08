@@ -27,7 +27,7 @@ def fill_dropdown_boxes(ui, scene, selection=None):
     p = list()
     for e in scene.nodes_of_type(vfs.Axis):
         a.append(e.name)
-    for e in scene.nodes_of_type(vfs.Poi):
+    for e in scene.nodes_of_type(vfs.Point):
         p.append(e.name)
 
     ui.cbMasterAxis.addItems(a)
@@ -44,7 +44,7 @@ def fill_dropdown_boxes(ui, scene, selection=None):
     # see if we can do something with the selection
     if selection:
         node = selection[0]
-        if isinstance(node, vfs.Poi):
+        if isinstance(node, vfs.Point):
             ui.cbPoiA.setCurrentText(node.name)
             ui.cbParentPoi.setCurrentText(node.name)
         if isinstance(node, vfs.Axis):
@@ -53,7 +53,7 @@ def fill_dropdown_boxes(ui, scene, selection=None):
 
         if len(selection) > 1:
             node = selection[1]
-            if isinstance(node, vfs.Poi):
+            if isinstance(node, vfs.Point):
                 ui.cbPoiB.setCurrentText(node.name)
                 ui.cbParentPoi.setCurrentText(node.name)
             if isinstance(node, vfs.Axis):
@@ -168,9 +168,9 @@ def add_poi(scene, selection=None):
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()
         if parent:
-            return "new_poi('{}', parent = '{}')".format(name, parent)
+            return "new_point('{}', parent = '{}')".format(name, parent)
         else:
-            return "new_poi('{}')".format(name)
+            return "new_point('{}')".format(name)
     else:
         return None
 
@@ -264,7 +264,7 @@ def add_sheave(scene, selection=None):
         poi = ui.cbParentPoi.currentText()
         name = ui.tbName.text()
 
-        return "new_sheave('{}', parent = '{}', axis = (0,1,0))".format(name, poi)
+        return "new_circle('{}', parent = '{}', axis = (0,1,0))".format(name, poi)
 
     else:
         return None

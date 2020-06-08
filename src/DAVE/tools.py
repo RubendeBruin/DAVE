@@ -74,7 +74,7 @@ def assertValidName(var):
         raise ValueError('Name should not contain "{}", but "{}" does'.format(ds.VF_NAME_SPLIT, var))
 
 def assertPoi(var, name = "Node"):
-    if isinstance(var, Poi):
+    if isinstance(var, Point):
         return
     else:
         raise ValueError(name + " be of type Poi but is a ".format(type(var)))

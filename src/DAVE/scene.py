@@ -107,8 +107,8 @@
     A complete list of node types and corresponding functions is provided later.
 
         s = Scene()                               # create an empty scene
-        s.new_poi('point 1')                      # creates a poi with name anchor
-        s.new_poi('point 2', position = (10,0,0)) # create a second poi at x=10
+        s.new_point('point 1')                      # creates a poi with name anchor
+        s.new_point('point 2', position = (10,0,0)) # create a second poi at x=10
         s.new_cable('line',endA = 'point 1', endB = 'point 2')
               # creates a cable between the two points
         s.save_scene(r'test.dave')              # save to file
@@ -120,8 +120,8 @@
         a = s.new_axis('axis')
             # a is now a reference to node 'axis'
 
-        p1 = s.new_poi('poi_1', parent = a )       # refer by reference
-        p2 = s.new_poi('poi_2', parent = 'axis' )  # refer by name
+        p1 = s.new_point('poi_1', parent = a )       # refer by reference
+        p2 = s.new_point('poi_2', parent = 'axis' )  # refer by name
 
     A reference to a node can also be obtained from the scene using square brackets:
 
@@ -143,8 +143,8 @@
     |  Type | Provides  | Create using |
     |:---------------- |:------------------------------- |:-----|
     | `DAVE.scene.Axis` | Axis system with position and orientation  |  `DAVE.scene.Scene.new_axis` |
-    | `DAVE.scene.Poi` | A position  |  `DAVE.scene.Scene.new_poi` |
-    | `DAVE.scene.Sheave` | A disk with a radius and axis direction  |  `DAVE.scene.Scene.new_sheave` |
+    | `DAVE.scene.Poi` | A position  |  `DAVE.scene.Scene.new_point` |
+    | `DAVE.scene.Sheave` | A disk with a radius and axis direction  |  `DAVE.scene.Scene.new_circle` |
     | `RigidBody` | Same as axis system, but provides a weight as well  |  `DAVE.scene.Scene.new_rigidbody` |
 
     A RigidBody is technically idential to an axis system. So everything that applies to Axis also applies to RigidBody
@@ -262,7 +262,7 @@
 
     ##Adding content##
 
-    Nodes can be added to the scene using the s.new_poi, s.new_axis, etc.. functions which were introduced in the previous section.
+    Nodes can be added to the scene using the s.new_point, s.new_axis, etc.. functions which were introduced in the previous section.
 
 
     Multiple nodes can be imported from file or directly from another Scene object using `Scene.load_scene()` or `Scene.import_scene()` respectively.
@@ -553,7 +553,7 @@ class NodeWithParent(CoreConnectedNode):
             if isinstance(var, Axis) or isinstance(var, GeometricContact):
                 self._parent = var
                 self._vfNode.parent = var._vfNode
-            elif isinstance(var, Poi):
+            elif isinstance(var, Point):
                 self._parent = var
                 self._vfNode.parent = var._vfNode
             else:
@@ -593,7 +593,7 @@ class NodeWithParent(CoreConnectedNode):
 
             if not isinstance(new_parent, Axis):
                 if not has_rotation:
-                    if not isinstance(new_parent, Poi):
+                    if not isinstance(new_parent, Point):
                         raise TypeError(
                             'Only Poi-type nodes (or derived types) can be used as parent. You tried to use a {} as parent'.format(
                                 type(new_parent)))
@@ -1279,7 +1279,7 @@ class Axis(NodeWithParent):
 
         return code
 
-class Poi(NodeWithParent):
+class Point(NodeWithParent):
     """A location on an axis"""
 
     # init parent and name are fully derived from NodeWithParent
@@ -1388,7 +1388,7 @@ class Poi(NodeWithParent):
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
-        code += "\ns.new_poi(name='{}',".format(self.name)
+        code += "\ns.new_point(name='{}',".format(self.name)
         if self.parent:
             code += "\n          parent='{}',".format(self.parent.name)
 
@@ -1621,7 +1621,7 @@ class Cable(CoreConnectedNode):
         for p in value:
             n = self._scene._node_from_node_or_str(p)
 
-            if not (isinstance(n, Poi) or isinstance(n,Sheave)):
+            if not (isinstance(n, Point) or isinstance(n, Circle)):
                 raise ValueError(f'Only Sheaves and Pois can be used as connection, but {n.name} is a {type(n)}')
             nodes.append(n)
 
@@ -1632,9 +1632,9 @@ class Cable(CoreConnectedNode):
             node2 = nodes[i+1]
 
             # if first or last node is a sheave, the this will be replaced by the poi of the sheave
-            if i == 0 and isinstance(node1, Sheave):
+            if i == 0 and isinstance(node1, Circle):
                 node1 = node1.parent
-            if i == n-2 and isinstance(node2, Sheave):
+            if i == n-2 and isinstance(node2, Circle):
                 node2 = node2.parent
 
             if node1 == node2:
@@ -1651,9 +1651,9 @@ class Cable(CoreConnectedNode):
         return self._vfNode.global_points
 
     def _add_connection_to_core(self, connection):
-        if isinstance(connection, Poi):
+        if isinstance(connection, Point):
             self._vfNode.add_connection_poi(connection._vfNode)
-        if isinstance(connection, Sheave):
+        if isinstance(connection, Circle):
             self._vfNode.add_connection_sheave(connection._vfNode)
 
 
@@ -1662,7 +1662,7 @@ class Cable(CoreConnectedNode):
 
         # add first point
         point = self._pois[0]
-        if isinstance(point, Sheave):
+        if isinstance(point, Circle):
             point = point.parent # connect to parent poi of sheave instead
         self._add_connection_to_core(point)
 
@@ -1672,7 +1672,7 @@ class Cable(CoreConnectedNode):
 
         # add last point
         point = self._pois[-1]
-        if isinstance(point, Sheave):
+        if isinstance(point, Circle):
             point = point.parent # connect to parent poi of sheave instead
         self._add_connection_to_core(point)
 
@@ -1940,7 +1940,7 @@ class ContactBall(NodeWithParent):
 
         return code
 
-class Sheave(NodeWithParent):
+class Circle(NodeWithParent):
     """A Sheave models sheave with axis and diameter.
 
 
@@ -1977,7 +1977,7 @@ class Sheave(NodeWithParent):
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
-        code += "\ns.new_sheave(name='{}',".format(self.name)
+        code += "\ns.new_circle(name='{}',".format(self.name)
         code += "\n            parent='{}',".format(self.parent.name)
         code += "\n            axis=({}, {}, {}),".format(*self.axis)
         code += "\n            radius={} )".format(self.radius)
@@ -2699,7 +2699,7 @@ class Buoyancy(NodeWithParent):
 
         return code
 
-class BallastSystem(Poi):
+class BallastSystem(Point):
     """A BallastSystem
 
     The position of the axis system is the reference position for the tanks.
@@ -2794,7 +2794,7 @@ class BallastSystem(Poi):
         """The contents of a frozen tank should not be changed"""
 
     # override the following properties
-    @Poi.parent.setter
+    @Point.parent.setter
     def parent(self, var):
         """Assigns a new parent. Keeps the local position and rotations the same
 
@@ -2803,7 +2803,7 @@ class BallastSystem(Poi):
 
         self._verify_change_allowed()
 
-        super(Poi, type(self)).parent.fset(self, var)
+        super(Point, type(self)).parent.fset(self, var)
         # update parent of other core nodes
         for tank in self._tanks:
             tank._vfNode.parent = self.parent._vfNode
@@ -2858,7 +2858,7 @@ class BallastSystem(Poi):
     @name.setter
     def name(self, newname):
         self._verify_change_allowed()
-        super(Poi, self.__class__).name.fset(self, newname)
+        super(Point, self.__class__).name.fset(self, newname)
         self._vfForce.name = newname + vfc.VF_NAME_SPLIT + "gravity"
 
     def new_tank(self, name, position, capacity_kN, actual_fill = 0, frozen = False) :
@@ -3612,9 +3612,9 @@ class Sling(Node, Manager):
         # create the two splices
 
         self.sa = scene.new_rigidbody(scene.available_name_like(name_prefix + '_spliceA'), fixed=False)
-        self.a1 = scene.new_poi(scene.available_name_like(name_prefix + '_spliceA1'), parent=self.sa)
-        self.a2 = scene.new_poi(scene.available_name_like(name_prefix + '_spliceA2'), parent=self.sa)
-        self.am = scene.new_poi(scene.available_name_like(name_prefix + '_spliceAM'), parent=self.sa)
+        self.a1 = scene.new_point(scene.available_name_like(name_prefix + '_spliceA1'), parent=self.sa)
+        self.a2 = scene.new_point(scene.available_name_like(name_prefix + '_spliceA2'), parent=self.sa)
+        self.am = scene.new_point(scene.available_name_like(name_prefix + '_spliceAM'), parent=self.sa)
 
         self.avis = scene.new_visual(name + '_spliceA_visual', parent=self.sa,  path=r'cylinder 1x1x1 lowres.obj',
                      offset=(-LspliceA/2, 0.0, 0.0),
@@ -3622,9 +3622,9 @@ class Sling(Node, Manager):
                      scale=(LspliceA, 2*diameter, diameter))
 
         self.sb = scene.new_rigidbody(scene.available_name_like(name_prefix + '_spliceB'), rotation = (0,0,180),fixed=False)
-        self.b1 = scene.new_poi(scene.available_name_like(name_prefix + '_spliceB1'), parent=self.sb)
-        self.b2 = scene.new_poi(scene.available_name_like(name_prefix + '_spliceB2'), parent=self.sb)
-        self.bm = scene.new_poi(scene.available_name_like(name_prefix + '_spliceBM'), parent=self.sb)
+        self.b1 = scene.new_point(scene.available_name_like(name_prefix + '_spliceB1'), parent=self.sb)
+        self.b2 = scene.new_point(scene.available_name_like(name_prefix + '_spliceB2'), parent=self.sb)
+        self.bm = scene.new_point(scene.available_name_like(name_prefix + '_spliceBM'), parent=self.sb)
 
         self.bvis = scene.new_visual(scene.available_name_like(name_prefix + '_spliceB_visual'), parent=self.sb, path=r'cylinder 1x1x1 lowres.obj',
                      offset=(-LspliceB / 2, 0.0, 0.0),
@@ -3941,7 +3941,7 @@ class Scene:
         s.new_axis('my_axis', position = (0,0,1))
 
         a = Scene() # another world
-        a.new_poi('a point')
+        a.new_point('a point')
 
 
     """
@@ -4072,7 +4072,7 @@ class Scene:
 
         Raises Exception if anything is not ok"""
 
-        return self._node_from_node(node, Poi)
+        return self._node_from_node(node, Point)
 
     def _poi_or_sheave_from_node(self, node):
         """Returns None if node is None
@@ -4081,7 +4081,7 @@ class Scene:
 
         Raises Exception if anything is not ok"""
 
-        return self._node_from_node(node, [Poi, Sheave])
+        return self._node_from_node(node, [Point, Circle])
 
     def _sheave_from_node(self, node):
         """Returns None if node is None
@@ -4090,7 +4090,7 @@ class Scene:
 
         Raises Exception if anything is not ok"""
 
-        return self._node_from_node(node, Sheave)
+        return self._node_from_node(node, Circle)
 
     def _geometry_changed(self):
         """Notify the scene that the geometry has changed and that the global transforms are invalid"""
@@ -5009,7 +5009,7 @@ class Scene:
         return new_node
 
 
-    def new_poi(self, name, parent=None, position=None)->Poi:
+    def new_point(self, name, parent=None, position=None)->Point:
         """Creates a new *poi* node and adds it to the scene.
 
         Args:
@@ -5037,7 +5037,7 @@ class Scene:
         # then create
         a = self._vfc.new_poi(name)
 
-        new_node = Poi(self, a)
+        new_node = Point(self, a)
 
         # and set properties
         if b is not None:
@@ -5174,10 +5174,10 @@ class Scene:
         pois = [endA]
         if sheaves is not None:
 
-            if isinstance(sheaves, Poi): # single sheave as poi or string
+            if isinstance(sheaves, Point): # single sheave as poi or string
                 sheaves = [sheaves]
 
-            if isinstance(sheaves, Sheave): # single sheave as poi or string
+            if isinstance(sheaves, Circle): # single sheave as poi or string
                 sheaves = [sheaves]
 
 
@@ -5272,7 +5272,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_sheave(self, name, parent, axis, radius=0.)->Sheave:
+    def new_circle(self, name, parent, axis, radius=0.)->Circle:
         """Creates a new *sheave* node and adds it to the scene.
 
         Args:
@@ -5302,7 +5302,7 @@ class Scene:
         # then create
         a = self._vfc.new_sheave(name)
 
-        new_node = Sheave(self, a)
+        new_node = Circle(self, a)
 
         # and set properties
         new_node.parent = b

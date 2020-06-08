@@ -22,46 +22,46 @@ s.new_rigidbody(name='Spreaderbar',
                           0.0),
                 fixed =(True, True, True, True, True, True) )
 # code for lpA1_upper
-s.new_poi(name='lpA1_upper',
+s.new_point(name='lpA1_upper',
           parent='Spreaderbar',
           position=(9.0,
                     0.8,
                     0.0))
 # code for lpA2_upper
-s.new_poi(name='lpA2_upper',
+s.new_point(name='lpA2_upper',
           parent='Spreaderbar',
           position=(9.0,
                     -0.8,
                     0.0))
 # code for lpB1_upper
-s.new_poi(name='lpB1_upper',
+s.new_point(name='lpB1_upper',
           parent='Spreaderbar',
           position=(-9.0,
                     0.8,
                     0.0))
 # code for lpB2_upper
-s.new_poi(name='lpB2_upper',
+s.new_point(name='lpB2_upper',
           parent='Spreaderbar',
           position=(-9.0,
                     -0.8,
                     0.0))
 # code for Sheave
-s.new_sheave(name='Sheave',
+s.new_circle(name='Sheave',
             parent='lpA1_upper',
             axis=(0.0, 1.0, 0.0),
             radius=0.4 )
 # code for Sheave_1
-s.new_sheave(name='Sheave_1',
+s.new_circle(name='Sheave_1',
             parent='lpA2_upper',
             axis=(0.0, 1.0, 0.0),
             radius=0.4 )
 # code for Sheave_2
-s.new_sheave(name='Sheave_2',
+s.new_circle(name='Sheave_2',
             parent='lpB1_upper',
             axis=(0.0, 1.0, 0.0),
             radius=0.4 )
 # code for Sheave_2_1
-s.new_sheave(name='Sheave_2_1',
+s.new_circle(name='Sheave_2_1',
             parent='lpB2_upper',
             axis=(0.0, 1.0, 0.0),
             radius=0.4 )
