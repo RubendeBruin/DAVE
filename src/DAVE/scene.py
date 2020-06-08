@@ -5781,7 +5781,7 @@ class Scene:
         for n in self._nodes:
 
             if n._manager is None:
-                print(f'code for {n.name}')
+                # print(f'code for {n.name}')
                 code += '\n' + n.give_python_code()
             else:
                 print(f'skipping {n.name} ')

@@ -10,6 +10,8 @@ except DistributionNotFound:
 finally:
     del get_distribution, DistributionNotFound
 
+from . import auto_download
+
 from .scene import *
 # from .gui.main import Gui
 # from .jupyter import screenshot, show

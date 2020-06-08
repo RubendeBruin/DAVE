@@ -150,6 +150,8 @@ def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=
     vp.position_visuals()
     vp.update_visibility()
 
+    warningshown = False
+
     for va in vp.visuals:
         for a in va.actors:
             if a.GetVisibility():
@@ -165,13 +167,16 @@ def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=
                     scale = tr.GetScale()
                     orientation = tr.GetOrientation()
 
-                    if scale != (1, 1, 1):
-                        if orientation != (0, 0, 0):
-                            print(
-                                'WARNING: THIS INTERACTIVE VIEWER WRONGLY HANDLES SCALE IN COMBINATION WITH ORIENTATION.')
-                            if va.node is not None:
-                                print(f'VISUAL FOR {va.node.name} IS NOT DISPLAYED CORRECTLY.')
-                            print('USE show(...) or Gui for correct visualization')
+                    if not warningshown:
+                        if isinstance(va.node, DAVE.Visual):
+                            if scale != (1, 1, 1):
+                                if orientation != (0, 0, 0):
+                                    print(
+                                        'WARNING: THIS INTERACTIVE VIEWER WRONGLY HANDLES SCALE IN COMBINATION WITH ORIENTATION.')
+                                    if va.node is not None:
+                                        print(f'VISUAL FOR {va.node.name} IS NOT DISPLAYED CORRECTLY.')
+                                    print('USE show(...) or Gui for correct visualization')
+                                    warningshown = True
 
                     tr0 = vtk.vtkTransform()
                     tr0.Identity()

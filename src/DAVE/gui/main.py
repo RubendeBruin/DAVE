@@ -125,7 +125,29 @@ class SolverDialog(QDialog, Ui_Dialog):
 
 class Gui():
 
-    def __init__(self, scene=None, splash=None, app=None, geometry_scale = -1, cog_scale = -1):
+    def __init__(self, scene=None, splash=None, app=None, geometry_scale = -1, cog_scale = -1, block=True):
+        """
+        Starts the Gui on scene "scene".
+
+        Normal use:
+
+            Gui(s)
+
+        When stating from jupyter or ipython use:
+
+            %gui qt
+            Gui(scene=s, block=False)
+
+        to create a non-blocking ui.
+
+        Args:
+            scene:  [None] Scene to view. None creates a new scene
+            splash: [None] qt splash screen instance to close
+            app:    [None] qt application instance to use. None creates a new instance.
+            block:  [True] qt application _exec(). Set to False when using %gui qt in IPython/jupyter
+            geometry_scale: geometry scale (visual)
+            cog_scale: cog scale (visual)
+        """
 
         if app is None:
 
@@ -421,7 +443,9 @@ class Gui():
         # ======================== Finalize ========================
         splash.finish(self.MainWindow)
         self.MainWindow.show()
-        self.app.exec_()
+
+        if block:
+            self.app.exec_()
 
     def copy_screenshot_code(self):
 
