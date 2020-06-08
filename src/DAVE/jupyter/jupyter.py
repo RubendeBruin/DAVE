@@ -158,8 +158,20 @@ def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=
                     tr = vtk.vtkTransform()
                     tr.SetMatrix(a.GetMatrix())
 
+                    a.SetScale(tr.GetScale())
                     a.SetPosition(tr.GetPosition())
                     a.SetOrientation(tr.GetOrientation())
+
+                    scale = tr.GetScale()
+                    orientation = tr.GetOrientation()
+
+                    if scale != (1, 1, 1):
+                        if orientation != (0, 0, 0):
+                            print(
+                                'WARNING: THIS INTERACTIVE VIEWER WRONGLY HANDLES SCALE IN COMBINATION WITH ORIENTATION.')
+                            if va.node is not None:
+                                print(f'VISUAL FOR {va.node.name} IS NOT DISPLAYED CORRECTLY.')
+                            print('USE show(...) or Gui for correct visualization')
 
                     tr0 = vtk.vtkTransform()
                     tr0.Identity()
