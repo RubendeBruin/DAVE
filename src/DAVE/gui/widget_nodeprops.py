@@ -1569,10 +1569,16 @@ class EditSling(NodeEditor):
         if len(new_names) > 2:
             new_circles = new_names[1:-1]
 
-        if not node.endA.name == new_endA:
+        if node.endA is not None:
+            if not node.endA.name == new_endA:
+                code += element + '.endA = "{}"'.format(new_endA)
+        else:
             code += element + '.endA = "{}"'.format(new_endA)
 
-        if not node.endB.name == new_endB:
+        if node.endB is not None:
+            if not node.endB.name == new_endB:
+                code += element + '.endB = "{}"'.format(new_endB)
+        else:
             code += element + '.endB = "{}"'.format(new_endB)
 
         sheave_names = [n.name for n in node.sheaves]

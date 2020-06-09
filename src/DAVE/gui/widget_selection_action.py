@@ -45,7 +45,7 @@ class WidgetSelectionActions(guiDockWidget):
         After creation of the widget this event is called with guiEventType.FULL_UPDATE
         """
 
-        if event in [guiEventType.SELECTION_CHANGED]:
+        if event in [guiEventType.SELECTION_CHANGED, guiEventType.FULL_UPDATE]:
             self.fill()
 
     def guiDefaultLocation(self):
@@ -219,9 +219,38 @@ class WidgetSelectionActions(guiDockWidget):
                     self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
                 for size in sizes:
-                    button = QPushButton(f'insert GP {size}', self.ui.frame)
+                    button = QPushButton(f'insert GP {size} in {sheave.name}', self.ui.frame)
                     button.pressed.connect(lambda wll = size : insert_gp(wll=wll))
                     self.buttons.append(button)
+
+        # nothing selected
+        if len(self.guiSelection) == 0:
+
+            def create_sling():
+                pos = self.mapToGlobal(QPoint(0, 0))
+                name = get_text(pos=pos, suggestion=self.guiScene.available_name_like("sling"),
+                                input_valid_callback=valid_name)
+                sling_code = f's.new_sling("{name}", length=1)'
+                self.guiRunCodeCallback(sling_code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+            button = QPushButton('Create sling', self.ui.frame)
+            button.pressed.connect(create_sling)
+            self.buttons.append(button)
+
+            # def create_shackle_gphd(s, name, wll):
+            sizes = (120, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1250, 1500)
+
+            def insert_gp(wll):
+                pos = self.mapToGlobal(QPoint(0, 0))
+                name = get_text(pos=pos, suggestion=self.guiScene.available_name_like(f"GP{wll}"),
+                                input_valid_callback=valid_name)
+                code = f'create_shackle_gphd(s, name="{name}", wll = {wll})'
+                self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+            for size in sizes:
+                button = QPushButton(f'Create GP {size}', self.ui.frame)
+                button.pressed.connect(lambda wll=size: insert_gp(wll=wll))
+                self.buttons.append(button)
 
 
 
