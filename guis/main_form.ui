@@ -77,6 +77,17 @@
         <number>0</number>
        </property>
        <item>
+        <widget class="QPushButton" name="pbUpdate">
+         <property name="text">
+          <string>Update</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/icons/import.png</normaloff>:/icons/import.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="btnSolveStatics">
          <property name="text">
           <string>Solve &amp;statics</string>

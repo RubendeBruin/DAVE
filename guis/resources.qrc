@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>import.png</file>
     <file>axis_blue.png</file>
     <file>circle.png</file>
     <file>circle_blue.png</file>

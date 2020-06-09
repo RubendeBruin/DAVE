@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_cable.ui',
 # licensing of 'widget_cable.ui' applies.
 #
-# Created: Mon Jun  8 11:16:35 2020
+# Created: Tue Jun  9 08:30:22 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
