@@ -3612,7 +3612,7 @@ class Sling(Node, Manager):
         # create the two splices
 
         self.sa = scene.new_rigidbody(scene.available_name_like(name_prefix + '_spliceA'), fixed=False)
-        self.a1 = scene.new_point(scene.available_name_like(name_prefix + '_spliceA1'), parent=self.sa)
+        self.a1 = scene.new_point(scene.available_name_like(name_prefix + '_spliceA'), parent=self.sa)
         self.a2 = scene.new_point(scene.available_name_like(name_prefix + '_spliceA2'), parent=self.sa)
         self.am = scene.new_point(scene.available_name_like(name_prefix + '_spliceAM'), parent=self.sa)
 
@@ -4010,7 +4010,9 @@ class Scene:
 
     def _verify_name_available(self, name):
         """Throws an error if a node with name 'name' already exists"""
-        if name in self._vfc.names:
+        names = [n.name for n in self._nodes]
+        names.extend(self._vfc.names)
+        if name in names:
             raise Exception("The name '{}' is already in use. Pick a unique name".format(name))
 
     def _node_from_node_or_str(self, node):
@@ -4851,6 +4853,12 @@ class Scene:
         # first check
         assertValidName(name)
         self._verify_name_available(name)
+
+        name_prefix = name + vfc.MANAGED_NODE_IDENTIFIER
+        postfixes = ['_master_axis','_pin_hole_connection','_slaved_axis','_connection_axial_rotation']
+
+        for pf in postfixes:
+            self._verify_name_available(name_prefix + pf)
 
         slave_item = self._sheave_from_node(slave_item)
         master_item = self._sheave_from_node(master_item)
@@ -5704,6 +5712,15 @@ class Scene:
         # first check
         assertValidName(name)
         self._verify_name_available(name)
+
+        name_prefix = name + vfc.MANAGED_NODE_IDENTIFIER
+        postfixes = ['_spliceA', '_spliceA', '_spliceA2', '_spliceAM', '_spliceA_visual',
+                     'spliceB', '_spliceB1', '_spliceB2', '_spliceBM', '_spliceB_visual',
+                     '_main_part', '_eyeA', '_eyeB']
+
+        for pf in postfixes:
+            self._verify_name_available(name_prefix + pf)
+
 
         endA = self._poi_or_sheave_from_node(endA)
         endB = self._poi_or_sheave_from_node(endB)

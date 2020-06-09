@@ -1135,8 +1135,8 @@ class Gui():
                 menu.addSeparator()
 
         menu.addAction("New Axis", self.new_axis)
-        menu.addAction("New Poi", self.new_point)
-        menu.addAction("New Sheave", self.new_circle)
+        menu.addAction("New Point", self.new_point)
+        menu.addAction("New Circle", self.new_circle)
         menu.addAction("New RigidBody", self.new_body)
 
         menu.addSeparator()
