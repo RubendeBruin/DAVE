@@ -74,16 +74,30 @@ def transform_from_direction(axis):
 
     return t
 
-def update_line_to_points(line_actor):
+def update_line_to_points(line_actor, points):
 
-    npt = line_actor._polydata.GetPoints().GetNumberOfPoints()
+    pts = line_actor._polydata.GetPoints()
 
-    if line_actor._polydata.GetNumberOfLines() != npt - 1:  # number of lines has changed
-        lines = vtk.vtkCellArray()  # Create the polyline
-        lines.InsertNextCell(npt)
+    npt = len(points)
+
+    # check for number of points
+    if pts.GetNumberOfPoints() == npt:
+        line_actor.points(points)
+        return
+    else:
+
+        _points = vtk.vtkPoints()
+        _points.SetNumberOfPoints(npt)
+        for i, pt in enumerate(points):
+            _points.SetPoint(i, pt)
+
+        _lines = vtk.vtkCellArray()
+        _lines.InsertNextCell(npt)
         for i in range(npt):
-            lines.InsertCellPoint(i)
-        line_actor._polydata.SetLines(lines)
+            _lines.InsertCellPoint(i)
+        line_actor._polydata.SetLines(_lines)
+        line_actor._polydata.SetPoints(_points)
+
         line_actor._polydata.Modified()
 
 
@@ -880,11 +894,7 @@ class Viewport:
                 if len(points)==0:  # not yet created
                     continue
 
-                A.points(points)   # points can be set without re-allocation
-
-                update_line_to_points(A)
-
-
+                update_line_to_points(A, points)
 
                 continue
 

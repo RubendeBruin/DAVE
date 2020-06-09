@@ -3768,15 +3768,15 @@ class Sling(Node, Manager):
         # (self, scene, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
 
         code += f'\ns.new_sling("{self.name}", length = {self.length},'
-        code += f'            LeyeA = {self.LeyeA},'
-        code += f'            LeyeB = {self.LeyeB},'
-        code += f'            LspliceA = {self.LspliceA},'
-        code += f'            LspliceB = {self.LspliceB},'
-        code += f'            diameter = {self.diameter},'
-        code += f'            EA = {self.EA},'
-        code += f'            mass = {self.mass},'
-        code += f'            endA = "{self.endA.name}",'
-        code += f'            endB = "{self.endB.name}",'
+        code += f'\n            LeyeA = {self.LeyeA},'
+        code += f'\n            LeyeB = {self.LeyeB},'
+        code += f'\n            LspliceA = {self.LspliceA},'
+        code += f'\n            LspliceB = {self.LspliceB},'
+        code += f'\n            diameter = {self.diameter},'
+        code += f'\n            EA = {self.EA},'
+        code += f'\n            mass = {self.mass},'
+        code += f'\n            endA = "{self.endA.name}",'
+        code += f'\n            endB = "{self.endB.name}",'
 
 
         if self.sheaves:
@@ -3787,7 +3787,7 @@ class Sling(Node, Manager):
         else:
             sheaves = 'None'
 
-        code += f'            sheaves = {sheaves})'
+        code += f'\n            sheaves = {sheaves})'
 
         return code
 
