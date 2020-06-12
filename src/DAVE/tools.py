@@ -156,4 +156,3 @@ def rotation_from_axis_direction(direction, source_axis):
     return np.rad2deg(angle * axis)
 
 
-

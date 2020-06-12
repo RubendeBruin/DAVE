@@ -15,7 +15,7 @@ import DAVE.settings as ds
 from DAVE.gui.forms.widget_selection_actions import Ui_SelectionActions
 from DAVE.gui.helpers.popup_textbox import get_text
 
-class WidgetSelectionActions(guiDockWidget):
+class WidgetRiggItRight(guiDockWidget):
 
     def guiCreate(self):
         """

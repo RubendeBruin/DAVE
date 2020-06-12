@@ -106,7 +106,7 @@ from DAVE.gui.widget_airy import WidgetAiry
 from DAVE.gui.widget_stability_disp import WidgetDisplacedStability
 from DAVE.gui.widget_explore import WidgetExplore
 from DAVE.gui.widget_tank_order import WidgetTankOrder
-from DAVE.gui.widget_selection_action import WidgetSelectionActions
+from DAVE.gui.widget_rigg_it_right import WidgetRiggItRight
 
 import numpy as np
 from DAVE.rigging import create_shackle_gphd
@@ -513,7 +513,7 @@ class Gui():
             self.show_guiWidget('Node Tree', WidgetNodeTree)
             self.show_guiWidget('Derived Properties', WidgetDerivedProperties)
             self.show_guiWidget('Properties', WidgetNodeProps)
-            self.show_guiWidget('Rigg-it-Right', WidgetSelectionActions)
+            self.show_guiWidget('Rigg-it-Right', WidgetRiggItRight)
 
         if name == 'EXPLORE':
             self.show_guiWidget('Derived Properties', WidgetDerivedProperties)
@@ -542,7 +542,6 @@ class Gui():
 
 
     def import_browser(self):
-        self.activate_workspace('CONSTRUCT')
 
         G = DAVE.gui.standard_assets.Gui()
         r = G.showModal()
@@ -553,6 +552,8 @@ class Gui():
             prefix = r[2]
             code = 's.import_scene(s.get_resource_path("{}"), containerize={}, prefix="{}")'.format(file,container,prefix)
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+            self.activate_workspace('CONSTRUCT')
 
 
     # ============== Animation functions =============

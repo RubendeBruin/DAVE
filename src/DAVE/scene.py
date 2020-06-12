@@ -3946,13 +3946,23 @@ class Scene:
 
     """
 
-    def __init__(self, filename = None, copy_from = None):
+    def __init__(self, filename = None, copy_from = None, code = None):
         """Creates a new Scene
 
         Args:
             filename: (str or Path) Insert contents from this file into the newly created scene
             copy_from:  (Scene) Copy nodes from this other scene into the newly created scene
         """
+
+        count = 0
+        if filename:
+            count += 1
+        if copy_from:
+            count += 1
+        if code:
+            count += 1
+        if count>1:
+            raise ValueError('Only one of the named arguments (filename OR copy_from OR code) can be used')
 
         self.verbose = True
         """Report actions using print()"""
@@ -3987,6 +3997,10 @@ class Scene:
 
         if copy_from is not None:
             self.import_scene(copy_from, containerize=False)
+
+        if code is not None:
+            self.run_code(code)
+
 
     def clear(self):
         """Deletes all nodes"""
@@ -4248,11 +4262,6 @@ class Scene:
 
                 previous_name = name
             raise ValueError(f'Duplicate names exist: ' + duplicates)
-
-
-
-
-
 
     def sort_nodes_by_parent(self):
         """Sorts the nodes such that the parent of this node (if any) occurs earlier in the list.
@@ -5801,9 +5810,8 @@ class Scene:
                 # print(f'code for {n.name}')
                 code += '\n' + n.give_python_code()
             else:
-                print(f'skipping {n.name} ')
-
-
+                pass
+                # print(f'skipping {n.name} ')
 
         return code
 
@@ -5886,6 +5894,11 @@ class Scene:
             name = to_be_printed[0]
             print_deps(name, '')
 
+    def run_code(self, code):
+        """Runs the provided code with 's' as self"""
+        s = self
+        exec(code, {}, {'s': s})
+
     def load_scene(self, filename = None):
         """Loads the contents of filename into the current scene.
 
@@ -5909,13 +5922,12 @@ class Scene:
         print('Loading {}'.format(filename))
 
         f = open(file=filename, mode = 'r')
-        s = self
         code = ''
-
         for line in f:
             code += line + '\n'
 
-        exec(code, {}, {'s': s})
+        self.run_code(code)
+
 
     def import_scene(self, other, prefix = "", containerize = True):
         """Copy-paste all nodes of scene "other" into current scene.
