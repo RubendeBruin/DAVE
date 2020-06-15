@@ -17,8 +17,8 @@ s.new_axis('DP reference point', parent = 'Cheetah',
 
 s.new_axis('DP setpoint for cheetah',position = (100,0,0))
 
-s.new_linear_connector_6d('DP springs cheetah', master = 'DP reference point',
-           slave = 'DP setpoint for cheetah',
+s.new_linear_connector_6d('DP springs cheetah', main = 'DP reference point',
+           secondary = 'DP setpoint for cheetah',
            stiffness = (100,100,0,0,0,10000))
 
 # code for buoyancy

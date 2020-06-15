@@ -101,8 +101,8 @@ mesh = s.new_buoyancy(name='Buoyancy mesh',
 mesh.trimesh.load_obj(s.get_resource_path(r'cube.obj'), scale = (100.0,30.0,8.0), rotation = (0.0,0.0,0.0), offset = (50.0,0.0,4.0))
 # code for Barge positioning springs
 s.new_linear_connector_6d(name='Barge positioning springs',
-            master='Barge',
-            slave='barge_positioning_target',
+            main='Barge',
+            secondary='barge_positioning_target',
             stiffness=(100.0, 100.0, 0.0, 
                        0.0, 0.0, 10000.0) )
 
