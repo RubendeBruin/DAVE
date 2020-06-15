@@ -1,7 +1,7 @@
 
 
 """
-    This is the nodeA module of the engine. It contains both the nodes and the scene.
+    This is the main module of the engine. It contains both the nodes and the scene.
     For calculations, this, together with settings.py, are the only required files.
 
     If this is the first time you use DAVE, please use the Gui and youtube to experiment.
@@ -181,7 +181,7 @@
     |:---------------- |:------------------------------- |:-----|
     | `Cable` | A finite length cable with linear stiffness. A cable runs between two Poi nodes and can run over multiple pois or sheaves. A cable may have a diameter.   |  `Scene.new_cable` |
     | `LinearBeam` | A beam connects two axis systems with a linear beam element   |  `Scene.new_linear_beam` |
-    | `LC6d` | Connects two axis systems with six linear springs. Orientation of the springs is determined by the nodeA axis system   |  `Scene.new_linear_connector_6d` |
+    | `LC6d` | Connects two axis systems with six linear springs. Orientation of the springs is determined by the main axis system   |  `Scene.new_linear_connector_6d` |
     | `Connector2d` | Connects two axis systems with two linear springs. Orientation of the springs is determined by shortest distance between the two axis systems |  `Scene.new_connector2d` |
 
 
@@ -704,11 +704,11 @@ class Axis(NodeWithParent):
     """
     Axis
 
-    Axes are the nodeA building blocks of the geometry. They have a position and an rotation in space. Other nodes can be placed on them.
+    Axes are the main building blocks of the geometry. They have a position and an rotation in space. Other nodes can be placed on them.
     Axes can be nested by parent/child relationships meaning that an axis can be placed on an other axis.
     The possible movements of an axis can be controlled in each degree of freedom using the "fixed" property.
 
-    Axes are also the nodeA building block of inertia.
+    Axes are also the main building block of inertia.
     Dynamics are controlled using the inertia properties of an axis: inertia [mT], inertia_position[m,m,m] and inertia_radii [m,m,m]
 
 
@@ -2144,7 +2144,7 @@ class LC6d(CoreConnectedNode):
             raise TypeError('Provided nodeA should be a Axis')
 
         self._main = val
-        self._vfNode.nodeA = val._vfNode
+        self._vfNode.master = val._vfNode
 
     @property
     def secondary(self):
@@ -2158,7 +2158,7 @@ class LC6d(CoreConnectedNode):
             raise TypeError('Provided nodeA should be a Axis')
 
         self._secondary = val
-        self._vfNode.nodeB = val._vfNode
+        self._vfNode.slave = val._vfNode
 
 
     def give_python_code(self):
@@ -2255,7 +2255,7 @@ class Connector2d(CoreConnectedNode):
             raise TypeError('Provided nodeA should be a Axis')
 
         self._nodeA = val
-        self._vfNode.nodeA = val._vfNode
+        self._vfNode.master = val._vfNode
 
     @property
     def nodeB(self):
@@ -2269,7 +2269,7 @@ class Connector2d(CoreConnectedNode):
             raise TypeError('Provided nodeA should be a Axis')
 
         self._nodeB = val
-        self._vfNode.nodeB = val._vfNode
+        self._vfNode.slave = val._vfNode
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -2379,7 +2379,7 @@ class LinearBeam(CoreConnectedNode):
             raise TypeError('Provided nodeA should be a Axis')
 
         self._nodeA = val
-        self._vfNode.nodeA = val._vfNode
+        self._vfNode.master = val._vfNode
 
     @property
     def nodeB(self):
@@ -2392,7 +2392,7 @@ class LinearBeam(CoreConnectedNode):
             raise TypeError('Provided nodeA should be a Axis')
 
         self._nodeB = val
-        self._vfNode.nodeB = val._vfNode
+        self._vfNode.slave = val._vfNode
 
     # read-only
     @property
