@@ -231,7 +231,7 @@ class WidgetNodeTree(guiDockWidget):
 
             # custom work-around for showing the "out-frame" for managed geometric connectors
             if isinstance(node._manager, GeometricContact):
-                if node == node._manager._circle1_parent_parent:
+                if node == node._manager._parent_circle_parent_parent:
                     show_managed_node = True
 
 

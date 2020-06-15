@@ -1,0 +1,7 @@
+Class, Property, Read-Only, Format, Coordinate-System, Description, Notes_ref
+Point, x, False, f, parent, x-position,
+Point, y, False, f, parent, y-position,
+Point, z, False, f, parent, z-position,
+Point,gx, False, f, global, x-position,
+Point,gy, False, f, global, y-position,
+Point,gz, False, f, global, z-position,

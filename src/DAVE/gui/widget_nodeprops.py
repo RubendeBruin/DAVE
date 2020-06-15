@@ -935,8 +935,8 @@ class EditLC6d(NodeEditor):
         ui.cbMasterAxis.addItems(self.alist)
         ui.cbSlaveAxis.addItems(self.alist)
 
-        ui.cbMasterAxis.setCurrentText(self.node.master.name)
-        ui.cbSlaveAxis.setCurrentText(self.node.slave.name)
+        ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
+        ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
 
         ui.doubleSpinBox_1.setValue(self.node.stiffness[0])
         ui.doubleSpinBox_2.setValue(self.node.stiffness[1])
@@ -979,11 +979,11 @@ class EditLC6d(NodeEditor):
             code += element + '.stiffness = ({}, {}, {},'.format(*new_stiffness[:3])
             code += '                  {}, {}, {})'.format(*new_stiffness[3:])
 
-        if not new_master == self.node.master.name:
-            code += element + '.master = s["{}"]'.format(new_master)
+        if not new_master == self.node.nodeA.name:
+            code += element + '.nodeA = s["{}"]'.format(new_master)
 
-        if not new_slave == self.node.slave.name:
-            code += element + '.slave = s["{}"]'.format(new_slave)
+        if not new_slave == self.node.nodeB.name:
+            code += element + '.nodeB = s["{}"]'.format(new_slave)
 
 
         return code
@@ -1025,8 +1025,8 @@ class EditConnector2d(NodeEditor):
         ui.cbMasterAxis.addItems(self.alist)
         ui.cbSlaveAxis.addItems(self.alist)
 
-        ui.cbMasterAxis.setCurrentText(self.node.master.name)
-        ui.cbSlaveAxis.setCurrentText(self.node.slave.name)
+        ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
+        ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
 
         ui.doubleSpinBox_1.setValue(self.node.k_linear)
         ui.doubleSpinBox_4.setValue(self.node.k_angular)
@@ -1051,11 +1051,11 @@ class EditConnector2d(NodeEditor):
         new_master = self.ui.cbMasterAxis.currentText()
         new_slave = self.ui.cbSlaveAxis.currentText()
 
-        if not new_master == self.node.master.name:
-            code += element + '.master = s["{}"]'.format(new_master)
+        if not new_master == self.node.nodeA.name:
+            code += element + '.nodeA = s["{}"]'.format(new_master)
 
-        if not new_slave == self.node.slave.name:
-            code += element + '.slave = s["{}"]'.format(new_slave)
+        if not new_slave == self.node.nodeB.name:
+            code += element + '.nodeB = s["{}"]'.format(new_slave)
 
         if not new_k_lin == self.node.k_linear:
             code += element + '.k_linear = {}'.format(new_k_lin)
@@ -1105,8 +1105,8 @@ class EditBeam(NodeEditor):
         ui.cbMasterAxis.addItems(self.alist)
         ui.cbSlaveAxis.addItems(self.alist)
 
-        ui.cbMasterAxis.setCurrentText(self.node.master.name)
-        ui.cbSlaveAxis.setCurrentText(self.node.slave.name)
+        ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
+        ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
 
         ui.doubleSpinBox_1.setValue(self.node.L)
         ui.doubleSpinBox_2.setValue(self.node.EIy)
@@ -1157,11 +1157,11 @@ class EditBeam(NodeEditor):
         if not new_EA == self.node.EA:
             code += element + '.EA = {}'.format(new_EA)
 
-        if not new_master == self.node.master.name:
-            code += element + '.master = s["{}"]'.format(new_master)
+        if not new_master == self.node.nodeA.name:
+            code += element + '.nodeA = s["{}"]'.format(new_master)
 
-        if not new_slave == self.node.slave.name:
-            code += element + '.slave = s["{}"]'.format(new_slave)
+        if not new_slave == self.node.nodeB.name:
+            code += element + '.nodeB = s["{}"]'.format(new_slave)
 
         return code
 
@@ -1198,12 +1198,12 @@ class EditGeometricContact(NodeEditor):
         ui.rbPinHole.setChecked(self.node.inside)
         ui.rbPinPin.setChecked(not self.node.inside)
 
-        ui.cbMFix.setChecked(self.node.master_fixed)
-        ui.cbSFix.setChecked(self.node.slave_fixed)
+        ui.cbMFix.setChecked(self.node.fixed_to_parent)
+        ui.cbSFix.setChecked(self.node.child_fixed)
         ui.cbSwivelFix.setChecked(self.node.swivel_fixed)
 
-        ui.sbMasterRotation.setValue(self.node.master_rotation)
-        ui.sbSlaveRotation.setValue(self.node.slave_rotation)
+        ui.sbMasterRotation.setValue(self.node.rotation_on_parent)
+        ui.sbSlaveRotation.setValue(self.node.child_rotation)
         ui.sbSwivel.setValue(self.node.swivel)
 
         ui.rbPinHole.toggled.connect(self.change_type)
@@ -1237,8 +1237,8 @@ class EditGeometricContact(NodeEditor):
         self.run_code(code)
         self.ui.sbSlaveRotation.valueChanged.disconnect()
         self.ui.sbMasterRotation.valueChanged.disconnect()
-        self.ui.sbMasterRotation.setValue(self.node.master_rotation)
-        self.ui.sbSlaveRotation.setValue(self.node.slave_rotation)
+        self.ui.sbMasterRotation.setValue(self.node.rotation_on_parent)
+        self.ui.sbSlaveRotation.setValue(self.node.child_rotation)
         self.ui.sbSlaveRotation.valueChanged.connect(self.callback)
         self.ui.sbMasterRotation.valueChanged.connect(self.callback)
 
@@ -1269,17 +1269,17 @@ class EditGeometricContact(NodeEditor):
 
         if not new_swivel == self.node.swivel:
             code += element + '.swivel = ' + str(new_swivel)
-        if not new_master == self.node.master_rotation:
-            code += element + '.master_rotation = ' + str(new_master)
-        if not new_slave == self.node.slave_rotation:
-            code += element + '.slave_rotation = ' + str(new_slave)
+        if not new_master == self.node.rotation_on_parent:
+            code += element + '.rotation_on_parent = ' + str(new_master)
+        if not new_slave == self.node.child_rotation:
+            code += element + '.child_rotation = ' + str(new_slave)
 
         if not new_swivel_fixed == self.node.swivel_fixed:
             code += element + '.swivel_fixed = ' + str(new_swivel_fixed)
-        if not new_master_fixed == self.node.master_fixed:
-            code += element + '.master_fixed = ' + str(new_master_fixed)
-        if not new_slave_fixed == self.node.slave_fixed:
-            code += element + '.slave_fixed = ' + str(new_slave_fixed)
+        if not new_master_fixed == self.node.fixed_to_parent:
+            code += element + '.fixed_to_parent = ' + str(new_master_fixed)
+        if not new_slave_fixed == self.node.child_fixed:
+            code += element + '.child_fixed = ' + str(new_slave_fixed)
 
         # if not new_inside == self.node.inside:
         #     code += element + '.inside = ' + str(new_inside)

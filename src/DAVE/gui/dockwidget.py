@@ -21,7 +21,7 @@ class guiDockWidget(QtWidgets.QDockWidget):
         self.guiCreate()
 
         self.gui = None
-        """Will be set to main gui object"""
+        """Will be set to nodeA gui object"""
 
         self.guiRunCodeCallback = None
         """will be set to a function that runs python code with signature func(code, eventype).

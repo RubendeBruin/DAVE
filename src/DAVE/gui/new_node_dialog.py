@@ -288,7 +288,7 @@ def add_linear_connector(scene, selection=None):
         slave = ui.cbSlaveAxis.currentText()
         name = ui.tbName.text()
 
-        return "new_linear_connector_6d('{}', slave = '{}', master = '{}')".format(name, slave, master)
+        return "new_linear_connector_6d('{}', nodeB = '{}', nodeA = '{}')".format(name, slave, master)
 
     else:
         return None
@@ -312,7 +312,7 @@ def add_connector2d(scene, selection=None):
         slave = ui.cbSlaveAxis.currentText()
         name = ui.tbName.text()
 
-        return "new_connector2d('{}', slave = '{}', master = '{}')".format(name, slave, master)
+        return "new_connector2d('{}', nodeB = '{}', nodeA = '{}')".format(name, slave, master)
 
     else:
         return None
@@ -336,7 +336,7 @@ def add_beam_connector(scene, selection=None):
         slave = ui.cbSlaveAxis.currentText()
         name = ui.tbName.text()
 
-        return "new_linear_beam('{}', slave = '{}', master = '{}')".format(name, slave, master)
+        return "new_linear_beam('{}', nodeB = '{}', nodeA = '{}')".format(name, slave, master)
 
     else:
         return None

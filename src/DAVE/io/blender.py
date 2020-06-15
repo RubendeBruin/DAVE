@@ -572,16 +572,16 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
 
     for beam in scene.nodes_of_type(dc.LinearBeam):
-        pa = beam.master.global_position
-        pb = beam.slave.global_position
+        pa = beam.nodeA.global_position
+        pb = beam.nodeB.global_position
 
         code += '\npoints=['
         code += '({},{},{}),'.format(*pa)
         code += '({},{},{})]'.format(*pb)
 
         code += '\ndirections=['
-        code += '({},{},{}),'.format(*beam.master.ux)
-        code += '({},{},{})]'.format(*beam.slave.ux)
+        code += '({},{},{}),'.format(*beam.nodeA.ux)
+        code += '({},{},{})]'.format(*beam.nodeB.ux)
 
         dia = consts.BLENDER_BEAM_DIA
 
@@ -592,16 +592,16 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
             for dof in animation_dofs:
                 scene._vfc.set_dofs(dof)
                 scene.update()
-                pa = beam.master.global_position
-                pb = beam.slave.global_position
+                pa = beam.nodeA.global_position
+                pb = beam.nodeB.global_position
 
                 code += '\nf_points=['
                 code += '({},{},{}),'.format(*pa)
                 code += '({},{},{})]'.format(*pb)
 
                 code += '\nf_directions=['
-                code += '({},{},{}),'.format(*beam.master.ux)
-                code += '({},{},{})]'.format(*beam.slave.ux)
+                code += '({},{},{}),'.format(*beam.nodeA.ux)
+                code += '({},{},{})]'.format(*beam.nodeB.ux)
 
                 code += '\nani_points.append(f_points)'
                 code += '\nani_dirs.append(f_directions)'

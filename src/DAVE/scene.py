@@ -1,7 +1,7 @@
 
 
 """
-    This is the main module of the engine. It contains both the nodes and the scene.
+    This is the nodeA module of the engine. It contains both the nodes and the scene.
     For calculations, this, together with settings.py, are the only required files.
 
     If this is the first time you use DAVE, please use the Gui and youtube to experiment.
@@ -181,7 +181,7 @@
     |:---------------- |:------------------------------- |:-----|
     | `Cable` | A finite length cable with linear stiffness. A cable runs between two Poi nodes and can run over multiple pois or sheaves. A cable may have a diameter.   |  `Scene.new_cable` |
     | `LinearBeam` | A beam connects two axis systems with a linear beam element   |  `Scene.new_linear_beam` |
-    | `LC6d` | Connects two axis systems with six linear springs. Orientation of the springs is determined by the master axis system   |  `Scene.new_linear_connector_6d` |
+    | `LC6d` | Connects two axis systems with six linear springs. Orientation of the springs is determined by the nodeA axis system   |  `Scene.new_linear_connector_6d` |
     | `Connector2d` | Connects two axis systems with two linear springs. Orientation of the springs is determined by shortest distance between the two axis systems |  `Scene.new_connector2d` |
 
 
@@ -401,6 +401,7 @@ import datetime
 
 
 # we are wrapping all methods of pyo3d such that:
+# - it is more user-friendly
 # - code-completion is more robust
 # - we can do some additional checks. pyo3d is written for speed, not robustness.
 # - pyo3d is not a hard dependency
@@ -703,11 +704,11 @@ class Axis(NodeWithParent):
     """
     Axis
 
-    Axes are the main building blocks of the geometry. They have a position and an rotation in space. Other nodes can be placed on them.
+    Axes are the nodeA building blocks of the geometry. They have a position and an rotation in space. Other nodes can be placed on them.
     Axes can be nested by parent/child relationships meaning that an axis can be placed on an other axis.
     The possible movements of an axis can be controlled in each degree of freedom using the "fixed" property.
 
-    Axes are also the main building block of inertia.
+    Axes are also the nodeA building block of inertia.
     Dynamics are controlled using the inertia properties of an axis: inertia [mT], inertia_position[m,m,m] and inertia_radii [m,m,m]
 
 
@@ -2115,11 +2116,11 @@ class LC6d(CoreConnectedNode):
 
     def __init__(self, scene, node):
         super().__init__(scene, node)
-        self._master = None
-        self._slave = None
+        self._main = None
+        self._secondary = None
 
     def depends_on(self):
-        return [self._master, self._slave]
+        return [self._main, self._secondary]
 
     @property
     def stiffness(self):
@@ -2132,32 +2133,32 @@ class LC6d(CoreConnectedNode):
         self._vfNode.stiffness = val
 
     @property
-    def master(self):
+    def main(self):
         """Master axis system"""
-        return self._master
+        return self._main
 
-    @master.setter
-    def master(self,val):
+    @main.setter
+    def main(self, val):
         self._verify_change_allowed()
         if not isinstance(val, Axis):
-            raise TypeError('Provided master should be a Axis')
+            raise TypeError('Provided nodeA should be a Axis')
 
-        self._master = val
-        self._vfNode.master = val._vfNode
+        self._main = val
+        self._vfNode.nodeA = val._vfNode
 
     @property
-    def slave(self):
+    def secondary(self):
         """Slave axis system"""
-        return self._slave
+        return self._secondary
 
-    @slave.setter
-    def slave(self, val):
+    @secondary.setter
+    def secondary(self, val):
         self._verify_change_allowed()
         if not isinstance(val, Axis):
-            raise TypeError('Provided master should be a Axis')
+            raise TypeError('Provided nodeA should be a Axis')
 
-        self._slave = val
-        self._vfNode.slave = val._vfNode
+        self._secondary = val
+        self._vfNode.nodeB = val._vfNode
 
 
     def give_python_code(self):
@@ -2165,8 +2166,8 @@ class LC6d(CoreConnectedNode):
 
 
         code += "\ns.new_linear_connector_6d(name='{}',".format(self.name)
-        code += "\n            master='{}',".format(self.master.name)
-        code += "\n            slave='{}',".format(self.slave.name)
+        code += "\n            main='{}',".format(self.main.name)
+        code += "\n            secondary='{}',".format(self.secondary.name)
         code += "\n            stiffness=({}, {}, {}, ".format(*self.stiffness[:3])
         code += "\n                       {}, {}, {}) )".format(*self.stiffness[3:])
 
@@ -2175,51 +2176,51 @@ class LC6d(CoreConnectedNode):
 class Connector2d(CoreConnectedNode):
     """A Connector2d linear connector with acts both on linear displacement and angular displacement.
 
-    * the linear stiffness is defined by k_linear and is defined over the actual shortest direction between master and slave.
+    * the linear stiffness is defined by k_linear and is defined over the actual shortest direction between nodeA and nodeB.
     * the angular stiffness is defined by k_angular and is defined over the actual smallest angle between the two systems.
     """
 
     def __init__(self, scene, node):
         super().__init__(scene, node)
-        self._master = None
-        self._slave = None
+        self._nodeA = None
+        self._nodeB = None
 
     def depends_on(self):
-        return [self._master, self._slave]
+        return [self._nodeA, self._nodeB]
 
     @property
     def angle(self):
-        """Actual angle between master and slave [deg] (read-only)"""
+        """Actual angle between nodeA and nodeB [deg] (read-only)"""
         return np.rad2deg(self._vfNode.angle)
 
     @property
     def force(self):
-        """Actual force between master and slave [kN] (read-only)"""
+        """Actual force between nodeA and nodeB [kN] (read-only)"""
         return self._vfNode.force
 
     @property
     def moment(self):
-        """Actual moment between master and slave [kN*m] (read-only)"""
+        """Actual moment between nodeA and nodeB [kN*m] (read-only)"""
         return self._vfNode.moment
 
     @property
     def axis(self):
-        """Actual rotation axis between master and slave (read-only)"""
+        """Actual rotation axis between nodeA and nodeB (read-only)"""
         return self._vfNode.axis
 
     @property
     def ax(self):
-        """X component of actual rotation axis between master and slave (read-only)"""
+        """X component of actual rotation axis between nodeA and nodeB (read-only)"""
         return self._vfNode.axis[0]
 
     @property
     def ay(self):
-        """Y component of actual rotation axis between master and slave (read-only)"""
+        """Y component of actual rotation axis between nodeA and nodeB (read-only)"""
         return self._vfNode.axis[1]
 
     @property
     def az(self):
-        """Z component of actual rotation axis between master and slave (read-only)"""
+        """Z component of actual rotation axis between nodeA and nodeB (read-only)"""
         return self._vfNode.axis[2]
 
     @property
@@ -2243,39 +2244,39 @@ class Connector2d(CoreConnectedNode):
         self._vfNode.k_angular = value
 
     @property
-    def master(self):
+    def nodeA(self):
         """Master axis system"""
-        return self._master
+        return self._nodeA
 
-    @master.setter
-    def master(self, val):
+    @nodeA.setter
+    def nodeA(self, val):
         self._verify_change_allowed()
         if not isinstance(val, Axis):
-            raise TypeError('Provided master should be a Axis')
+            raise TypeError('Provided nodeA should be a Axis')
 
-        self._master = val
-        self._vfNode.master = val._vfNode
+        self._nodeA = val
+        self._vfNode.nodeA = val._vfNode
 
     @property
-    def slave(self):
+    def nodeB(self):
         """Slave axis system"""
-        return self._slave
+        return self._nodeB
 
-    @slave.setter
-    def slave(self, val):
+    @nodeB.setter
+    def nodeB(self, val):
         self._verify_change_allowed()
         if not isinstance(val, Axis):
-            raise TypeError('Provided master should be a Axis')
+            raise TypeError('Provided nodeA should be a Axis')
 
-        self._slave = val
-        self._vfNode.slave = val._vfNode
+        self._nodeB = val
+        self._vfNode.nodeB = val._vfNode
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
 
         code += "\ns.new_connector2d(name='{}',".format(self.name)
-        code += "\n            master='{}',".format(self.master.name)
-        code += "\n            slave='{}',".format(self.slave.name)
+        code += "\n            nodeA='{}',".format(self.nodeA.name)
+        code += "\n            nodeB='{}',".format(self.nodeB.name)
         code += "\n            k_linear ={},".format(self.k_linear)
         code += "\n            k_angular ={})".format(self.k_angular)
 
@@ -2286,7 +2287,7 @@ class LinearBeam(CoreConnectedNode):
 
     A LinearBeam node connects two Axis elements with six linear springs.
 
-    By definition the beam runs in the X-direction of the master axis system. So it may be needed to create a
+    By definition the beam runs in the X-direction of the nodeA axis system. So it may be needed to create a
     dedicated Axis element for the beam to control the orientation.
 
     The beam is defined using the following properties:
@@ -2297,18 +2298,18 @@ class LinearBeam(CoreConnectedNode):
     *  EA   - axis stiffness in x-direction
     *  L    - the un-stretched length of the beam
 
-    The beam element is in rest if the slave axis system
+    The beam element is in rest if the nodeB axis system
 
-    1. has the same global orientation as the master system
-    2. is at global position equal to the global position of local point (L,0,0) of the master axis. (aka: the end of the beam)
+    1. has the same global orientation as the nodeA system
+    2. is at global position equal to the global position of local point (L,0,0) of the nodeA axis. (aka: the end of the beam)
 
 
     The scene.new_linearbeam automatically creates a dedicated axis system for each end of the beam. The orientation of this axis-system
     is determined as follows:
 
-    First the direction from master to slave is determined: D
+    First the direction from nodeA to nodeB is determined: D
     The axis of rotation is the cross-product of the unit x-axis and D    AXIS = ux x D
-    The angle of rotation is the angle between the master x-axis and D
+    The angle of rotation is the angle between the nodeA x-axis and D
 
     The rotation about the rotated X-axis is undefined.
     
@@ -2316,11 +2317,11 @@ class LinearBeam(CoreConnectedNode):
 
     def __init__(self, scene, node):
         super().__init__(scene, node)
-        self._master = None
-        self._slave = None
+        self._nodeA = None
+        self._nodeB = None
 
     def depends_on(self):
-        return [self._master, self._slave]
+        return [self._nodeA, self._nodeB]
 
     @property
     def EIy(self):
@@ -2359,8 +2360,8 @@ class LinearBeam(CoreConnectedNode):
         self._vfNode.EA = value
 
     @property
-    def master(self):
-        return self._master
+    def nodeA(self):
+        return self._nodeA
 
     @property
     def L(self):
@@ -2371,36 +2372,36 @@ class LinearBeam(CoreConnectedNode):
         self._verify_change_allowed()
         self._vfNode.L = value
 
-    @master.setter
-    def master(self,val):
+    @nodeA.setter
+    def nodeA(self, val):
         self._verify_change_allowed()
         if not isinstance(val, Axis):
-            raise TypeError('Provided master should be a Axis')
+            raise TypeError('Provided nodeA should be a Axis')
 
-        self._master = val
-        self._vfNode.master = val._vfNode
+        self._nodeA = val
+        self._vfNode.nodeA = val._vfNode
 
     @property
-    def slave(self):
-        return self._slave
+    def nodeB(self):
+        return self._nodeB
 
-    @slave.setter
-    def slave(self, val):
+    @nodeB.setter
+    def nodeB(self, val):
         self._verify_change_allowed()
         if not isinstance(val, Axis):
-            raise TypeError('Provided master should be a Axis')
+            raise TypeError('Provided nodeA should be a Axis')
 
-        self._slave = val
-        self._vfNode.slave = val._vfNode
+        self._nodeB = val
+        self._vfNode.nodeB = val._vfNode
 
     # read-only
     @property
-    def moment_on_master(self):
-        return self._vfNode.moment_on_master
+    def moment_on_nodeA(self):
+        return self._vfNode.moment_on_nodeA
 
     @property
-    def moment_on_slave(self):
-        return self._vfNode.moment_on_slave
+    def moment_on_nodeB(self):
+        return self._vfNode.moment_on_nodeB
 
     @property
     def tension(self):
@@ -2419,8 +2420,8 @@ class LinearBeam(CoreConnectedNode):
         code = "# code for linear beam {}".format(self.name)
 
         code += "\ns.new_linear_beam(name='{}',".format(self.name)
-        code += "\n            master='{}',".format(self.master.name)
-        code += "\n            slave='{}',".format(self.slave.name)
+        code += "\n            nodeA='{}',".format(self.nodeA.name)
+        code += "\n            nodeB='{}',".format(self.nodeB.name)
         code += "\n            EIy ={},".format(self.EIy)
         code += "\n            EIz ={},".format(self.EIz)
         code += "\n            GIp ={},".format(self.GIp)
@@ -3143,7 +3144,7 @@ class WaveInteraction1(Node):
 
 # ============== Managed nodes
 
-class Manager():
+class Manager(Node):
 
     def managed_nodes(self):
         """Returns a list of managed nodes"""
@@ -3155,7 +3156,7 @@ class Manager():
         raise Exception("derived class shall override this method")
 
 
-class GeometricContact(Node, Manager):
+class GeometricContact(Manager):
     """
     GeometricContact
 
@@ -3164,66 +3165,55 @@ class GeometricContact(Node, Manager):
 	-	steel bars and steel bars, such as a shackle-shackle connection
 
 
-    parent_parent_of_circle2 [axis]  <-- not managed
-       - parent_of_circle2 [poi]
-           - circle2 [circle]        <--- input for creation
 
-           - SELF_master_axis           <--- created
-                - SELF_pin_hole_connection  <--- created
-                  -SELF_connection_axial_rotation
-                    - SELF_slaved_axis       <--- created
-
-                       - parent_of_parent_of_circle1 [axis]
-                         - parent_of_circle_1 [poi]
-                           - circle1 [circle]               <--- input for creation
 
 
 
 
     """
 
-    def __init__(self, scene, circle1, circle2, name):
+    def __init__(self, scene, parent_circle, child_circle, name):
         """
-        circle1 becomes the slave
-        circle2 becomes the master
+        circle1 becomes the nodeB
+        circle2 becomes the nodeA
 
         (attach circle 1 to circle 2)
         Args:
             scene:
             vfAxis:
-            circle1:
-            circle2:
+            parent_circle:
+            child_circle:
         """
 
-        if circle1.parent.parent is None:
+        if parent_circle.parent.parent is None:
             raise ValueError(
-                'The slaved pin is not located on an axis. Can not create the connection because there is no axis to slave')
+                'The slaved pin is not located on an axis. Can not create the connection because there is no axis to nodeB')
 
         super().__init__(scene)
         self.name = name
 
         name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
 
-        self._circle1 = circle1
-        self._circle2 = circle2
+        self._parent_circle = parent_circle
+        self._child_circle = child_circle
         self._flipped = False
 
-        self._master_axis = self._scene.new_axis(scene.available_name_like(name_prefix + '_master_axis'))
-        """Axis on the master axis at the location of the center of hole or pin"""
+        self._axis_on_parent = self._scene.new_axis(scene.available_name_like(name_prefix + '_axis_on_parent'))
+        """Axis on the nodeA axis at the location of the center of hole or pin"""
 
         self._pin_hole_connection = self._scene.new_axis(scene.available_name_like(name_prefix + '_pin_hole_connection'))
         """axis between the center of the hole and the center of the pin. Free to rotate about the center of the hole as well as the pin"""
 
-        self._slaved_axis = self._scene.new_axis(scene.available_name_like(name_prefix + '_slaved_axis'))
+        self._axis_on_child = self._scene.new_axis(scene.available_name_like(name_prefix + '_axis_on_child'))
         """axis to which the slaved body is connected. Either the center of the hole or the center of the pin """
 
         self._connection_axial_rotation = self._scene.new_axis(scene.available_name_like(name_prefix + '_connection_axial_rotation'))
 
         # prohibit changes to nodes that were used in the creation of this connection
 
-        self._circle1_parent = circle1.parent
-        self._circle2_parent = circle2.parent
-        self._circle1_parent_parent = circle1.parent.parent
+        self._parent_circle_parent = parent_circle.parent
+        self._child_circle_parent = child_circle.parent
+        self._parent_circle_parent_parent = parent_circle.parent.parent
 
         for node in self.managed_nodes():
             node.manager = self
@@ -3233,7 +3223,7 @@ class GeometricContact(Node, Manager):
 
     @property
     def parent(self):
-        return self._master_axis.parent
+        return self._axis_on_parent.parent
 
     @parent.setter
     def parent(self, var):
@@ -3248,11 +3238,11 @@ class GeometricContact(Node, Manager):
         for node in self.managed_nodes():
             node._manager = None
 
-        self._circle1_parent_parent.change_parent_to(None)
+        self._parent_circle_parent_parent.change_parent_to(None)
 
-        self._scene.delete(self._slaved_axis)
+        self._scene.delete(self._axis_on_child)
         self._scene.delete(self._pin_hole_connection)
-        self._scene.delete(self._master_axis)
+        self._scene.delete(self._axis_on_parent)
 
 
 
@@ -3263,26 +3253,26 @@ class GeometricContact(Node, Manager):
         remember = self._scene.current_manager
         self._scene.current_manager = self  # claim managment
 
-        pin1 = self._circle1  # slave
-        pin2 = self._circle2  # master
+        pin1 = self._parent_circle  # nodeB
+        pin2 = self._child_circle  # nodeA
 
         if pin1.parent.parent is None:
             raise ValueError(
-                'The slaved pin is not located on an axis. Can not create the connection because there is no axis to slave')
+                'The slaved pin is not located on an axis. Can not create the connection because there is no axis to nodeB')
 
         # --------- prepare hole
 
         if pin2.parent.parent is not None:
-            self._master_axis.parent = pin2.parent.parent
-        self._master_axis.position = pin2.parent.position
-        self._master_axis.fixed = (True, True, True, True, True, True)
+            self._axis_on_parent.parent = pin2.parent.parent
+        self._axis_on_parent.position = pin2.parent.position
+        self._axis_on_parent.fixed = (True, True, True, True, True, True)
 
-        self._master_axis.rotation = rotation_from_y_axis_direction(pin2.axis)
+        self._axis_on_parent.rotation = rotation_from_y_axis_direction(pin2.axis)
 
-        # Position connection axis at the center of the master axis (pin2)
+        # Position connection axis at the center of the nodeA axis (pin2)
         # and allow it to rotate about the pin
         self._pin_hole_connection.position = (0, 0, 0)
-        self._pin_hole_connection.parent = self._master_axis
+        self._pin_hole_connection.parent = self._axis_on_parent
         self._pin_hole_connection.fixed = (True, True, True,
                                            True, False, True)
 
@@ -3294,25 +3284,25 @@ class GeometricContact(Node, Manager):
         # place the parent of the parent of the pin (the axis) on the connection axis
         # and fix it
 
-        self._slaved_axis.parent = None
-        self._slaved_axis.position = pin1.parent.global_position  # position of the poi
-        self._slaved_axis.rotation = pin1.parent.parent.to_glob_rotation(rotation_from_y_axis_direction(pin1.axis))
+        self._axis_on_child.parent = None
+        self._axis_on_child.position = pin1.parent.global_position  # position of the poi
+        self._axis_on_child.rotation = pin1.parent.parent.to_glob_rotation(rotation_from_y_axis_direction(pin1.axis))
 
         # # store the original pin orientation
         # g0 = np.array(pin1.parent.parent.global_rotation, dtype=float)
 
-        pin1.parent.parent.change_parent_to(self._slaved_axis)
+        pin1.parent.parent.change_parent_to(self._axis_on_child)
         pin1.parent.parent.fixed = True
 
         # Place the pin in the hole
 
-        self._slaved_axis.parent = self._connection_axial_rotation
-        self._slaved_axis.rotation = (0, 0, 0)
-        self._slaved_axis.fixed = (True, True, True,
-                                   True, False, True)
+        self._axis_on_child.parent = self._connection_axial_rotation
+        self._axis_on_child.rotation = (0, 0, 0)
+        self._axis_on_child.fixed = (True, True, True,
+                                     True, False, True)
 
 
-        self._slaved_axis.position = (pin1.radius + pin2.radius, 0, 0)  # <=============================
+        self._axis_on_child.position = (pin1.radius + pin2.radius, 0, 0)  # <=============================
 
 
 
@@ -3338,10 +3328,10 @@ class GeometricContact(Node, Manager):
         remember = self._scene.current_manager
         self._scene.current_manager = self  # claim managment
 
-        pin1 = self._circle1  # slave
-        pin2 = self._circle2  # master
+        pin1 = self._parent_circle  # nodeB
+        pin2 = self._child_circle  # nodeA
 
-        self._slaved_axis.position = (pin1.radius + pin2.radius, 0, 0)
+        self._axis_on_child.position = (pin1.radius + pin2.radius, 0, 0)
         self._connection_axial_rotation.rotation = (90, 0, 0)
 
         self._scene.current_manager = remember
@@ -3353,32 +3343,32 @@ class GeometricContact(Node, Manager):
         The axes of the two sheaves are aligned by rotating the slaved body
         The axes of the two sheaves are placed at a distance hole_dia - pin_dia apart, perpendicular to the axis direction
         An axes is created at the centers of the two sheaves
-        These axes are connected with a shore axis which is allowed to rotate relative to the master axis
-        the slave axis is fixed to this rotating axis
+        These axes are connected with a shore axis which is allowed to rotate relative to the nodeA axis
+        the nodeB axis is fixed to this rotating axis
         """
         self._inside_connection = True
 
         remember = self._scene.current_manager
         self._scene.current_manager = self # claim managment
 
-        pin = self._circle1  # slave
-        hole = self._circle2 # master
+        pin = self._parent_circle  # nodeB
+        hole = self._child_circle # nodeA
 
         self._connection_axial_rotation.rotation = (0, 0, 0)
-        self._slaved_axis.position = (hole.radius - pin.radius, 0, 0)
+        self._axis_on_child.position = (hole.radius - pin.radius, 0, 0)
 
         self._scene.current_manager = remember
 
     def managed_nodes(self):
         """Returns a list of managed nodes"""
 
-        return [self._circle1,
-                self._circle2,
-                self._circle2_parent,
-                self._circle1_parent,
-                self._circle1_parent_parent,
-                self._master_axis,
-                self._slaved_axis,
+        return [self._parent_circle,
+                self._child_circle,
+                self._child_circle_parent,
+                self._parent_circle_parent,
+                self._parent_circle_parent_parent,
+                self._axis_on_parent,
+                self._axis_on_child,
                 self._pin_hole_connection,
                 self._connection_axial_rotation]
 
@@ -3389,8 +3379,8 @@ class GeometricContact(Node, Manager):
         self.swivel = np.mod(self.swivel + 180, 360)
 
     def change_side(self):
-        self.master_rotation = np.mod(self.master_rotation + 180, 360)
-        self.slave_rotation = np.mod(self.slave_rotation + 180, 360)
+        self.rotation_on_parent = np.mod(self.rotation_on_parent + 180, 360)
+        self.child_rotation = np.mod(self.child_rotation + 180, 360)
 
     @property
     def swivel(self):
@@ -3415,22 +3405,22 @@ class GeometricContact(Node, Manager):
         self._scene.current_manager = remember  # restore old manager
 
     @property
-    def master_rotation(self):
+    def rotation_on_parent(self):
         return self._pin_hole_connection.ry
 
-    @master_rotation.setter
-    def master_rotation(self, value):
+    @rotation_on_parent.setter
+    def rotation_on_parent(self, value):
         remember = self._scene.current_manager  # claim management
         self._scene.current_manager = self
         self._pin_hole_connection.ry = value
         self._scene.current_manager = remember  # restore old manager
 
     @property
-    def master_fixed(self):
+    def fixed_to_parent(self):
         return self._pin_hole_connection.fixed[4]
 
-    @master_fixed.setter
-    def master_fixed(self, value):
+    @fixed_to_parent.setter
+    def fixed_to_parent(self, value):
         remember = self._scene.current_manager  # claim management
         self._scene.current_manager = self
         self._pin_hole_connection.fixed = [True,True,True,True, value,  True]
@@ -3438,25 +3428,25 @@ class GeometricContact(Node, Manager):
 
 
     @property
-    def slave_rotation(self):
-        return self._slaved_axis.ry
+    def child_rotation(self):
+        return self._axis_on_child.ry
 
-    @slave_rotation.setter
-    def slave_rotation(self, value):
+    @child_rotation.setter
+    def child_rotation(self, value):
         remember = self._scene.current_manager  # claim management
         self._scene.current_manager = self
-        self._slaved_axis.ry = value
+        self._axis_on_child.ry = value
         self._scene.current_manager = remember  # restore old manager
 
     @property
-    def slave_fixed(self):
-        return self._slaved_axis.fixed[4]
+    def child_fixed(self):
+        return self._axis_on_child.fixed[4]
 
-    @slave_fixed.setter
-    def slave_fixed(self, value):
+    @child_fixed.setter
+    def child_fixed(self, value):
         remember = self._scene.current_manager  # claim management
         self._scene.current_manager = self
-        self._slaved_axis.fixed = [True, True, True, True, value, True]
+        self._axis_on_child.fixed = [True, True, True, True, value, True]
         self._scene.current_manager = remember  # restore old manager
 
     @property
@@ -3485,21 +3475,21 @@ class GeometricContact(Node, Manager):
         code.append(f'# First create the elements that need to exist before the connection can be made')
 
         code.append('# The slaved system is here created with None as parent. This will be changed when the connection is created')
-        remember = self._circle1_parent_parent.parent
-        self._circle1_parent_parent.parent = None
-        code.append(self._circle1_parent_parent.give_python_code())
-        self._circle1_parent_parent.parent = remember
+        remember = self._parent_circle_parent_parent.parent
+        self._parent_circle_parent_parent.parent = None
+        code.append(self._parent_circle_parent_parent.give_python_code())
+        self._parent_circle_parent_parent.parent = remember
 
-        code.append(self._circle1_parent.give_python_code())  # poi
-        code.append(self._circle1.give_python_code())  # circle
+        code.append(self._parent_circle_parent.give_python_code())  # poi
+        code.append(self._parent_circle.give_python_code())  # circle
 
-        code.append(self._circle2_parent.give_python_code())  # poi
-        code.append(self._circle2.give_python_code())  # circle
+        code.append(self._child_circle_parent.give_python_code())  # poi
+        code.append(self._child_circle.give_python_code())  # circle
 
         code.append('# now create the connection')
         code.append(f"s.new_geometriccontact(name = '{self.name}',")
-        code.append(f"                       slave_item = '{self._circle1.name}',")
-        code.append(f"                       master_item = '{self._circle2.name}',")
+        code.append(f"                       parent = '{self._parent_circle.name}',")
+        code.append(f"                       child = '{self._child_circle.name}',")
         code.append(f"                       inside={self.inside},")
 
         if self.inside and self.swivel == 0:
@@ -3512,16 +3502,16 @@ class GeometricContact(Node, Manager):
 
         if not self.swivel_fixed:
             code.append(f"                       swivel_fixed={self.swivel_fixed},")
-        if self.master_fixed:
-            code.append(f"                       master_rotation={self.master_rotation},")
-            code.append(f"                       master_fixed={self.master_fixed},")
+        if self.fixed_to_parent:
+            code.append(f"                       parent_rotation={self.rotation_on_parent},")
+            code.append(f"                       fixed_to_parent={self.fixed_to_parent},")
         else:
-            code.append(f"                       master_fixed=solved({self.master_fixed}),")
-        if self.slave_fixed:
-            code.append(f"                       slave_fixed={self.slave_fixed},")
-            code.append(f"                       slave_rotation={self.slave_rotation},")
+            code.append(f"                       fixed_to_parent=solved({self.fixed_to_parent}),")
+        if self.child_fixed:
+            code.append(f"                       child_fixed={self.child_fixed},")
+            code.append(f"                       child_rotation={self.child_rotation},")
         else:
-            code.append(f"                       slave_rotation=solved({self.slave_rotation}),")
+            code.append(f"                       child_rotation=solved({self.child_rotation}),")
 
         code = [*code[:-1], code[-1][:-1] + ' )']  # remove the , from the last entry [should be a quicker way to do this]
 
@@ -3531,7 +3521,7 @@ class GeometricContact(Node, Manager):
         return '\n'.join(code)
 
 
-class Sling(Node, Manager):
+class Sling(Manager):
     """A Sling is a single wire with an eye on each end. The eyes are created by splicing the end of the sling back
     into the itself.
 
@@ -3550,7 +3540,7 @@ class Sling(Node, Manager):
     Main part: determined such that total stiffness (k) of the sling is EA/L
 
 
-      Eye A           Splice A             main part                   Splice B          Eye B
+      Eye A           Splice A             nodeA part                   Splice B          Eye B
 
     /---------------\                                                                /---------------\
     |                =============-------------------------------------===============                |
@@ -3567,7 +3557,7 @@ class Sling(Node, Manager):
             endA
             eyeA (cable)
             splice (body , mass/2)
-            main (cable)     [optional: runs over sheave]
+            nodeA (cable)     [optional: runs over sheave]
             splice (body, mass/2)
             eyeB (cable)
             endB
@@ -3585,7 +3575,7 @@ class Sling(Node, Manager):
             mass: total mass
             endA : Sheave or poi to fix end A of the sling to [optional]
             endB : Sheave or poi to fix end A of the sling to [optional]
-            sheave : Sheave or poi for the main part of the sling
+            sheave : Sheave or poi for the nodeA part of the sling
 
         Returns:
 
@@ -3658,7 +3648,7 @@ class Sling(Node, Manager):
 
     def _update_properties(self):
 
-        # The stiffness of the main part is corrected to account for the stiffness of the splices.
+        # The stiffness of the nodeA part is corrected to account for the stiffness of the splices.
         # It is considered that the stiffness of the splices is two times that of the wire.
         #
         # Springs in series: 1/Ktotal = 1/k1 + 1/k2 + 1/k3
@@ -3928,7 +3918,7 @@ class Sling(Node, Manager):
 
 class Scene:
     """
-    A Scene is the main component of DAVE.
+    A Scene is the nodeA component of DAVE.
 
     It provides a world to place nodes (elements) in.
     It interfaces with the equilibrium core for all calculations.
@@ -4821,14 +4811,14 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_geometriccontact(self, name, slave_item, master_item,
+    def new_geometriccontact(self, name, child, parent,
                              inside = False,
                              swivel = None,
-                             master_rotation = None,
-                             slave_rotation = None,
+                             rotation_on_parent = None,
+                             child_rotation = None,
                              swivel_fixed = True,
-                             master_fixed = False,
-                             slave_fixed = False)->GeometricContact:
+                             fixed_to_parent = False,
+                             child_fixed = False)->GeometricContact:
         """Creates a new *new_geometriccontact* node and adds it to the scene.
 
         Geometric contact connects two circular elements and can be used to model bar-bar connections or pin-in-hole connections.
@@ -4837,15 +4827,15 @@ class Scene:
 
         Args:
             name: Name for the node, should be unique
-            slave_item : [Sheave] will be the master of the connection
-            master_item : [Sheave] will be the slave of the connection
+            child : [Sheave] will be the nodeA of the connection
+            parent : [Sheave] will be the nodeB of the connection
             inside: [False] False creates a pinpin connection. True creates a pin-hole type of connection
             swivel: Rotation angle between the two items. Defaults to 90 for pinpin and 0 for pin-hole
-            master_rotation: Angle of the connecting hinge relative to master or None for default
-            slave_rotation: Angle of the slave relative to the connecting hinge or None for default
+            rotation_on_parent: Angle of the connecting hinge relative to nodeA or None for default
+            child_rotation: Angle of the nodeB relative to the connecting hinge or None for default
             swivel_fixed: Fix swivel [True] 
-            master_fixed: Fix connecting hinge to master [False]
-            slave_fixed: Fix slave to connecting hinge [False]
+            fixed_to_parent: Fix connecting hinge to nodeA [False]
+            child_fixed: Fix nodeB to connecting hinge [False]
 
         Note:
             For pin-hole connections there is no geometrical difference between the pin and the hole. Therefore it is not needed to specify
@@ -4864,18 +4854,18 @@ class Scene:
         self._verify_name_available(name)
 
         name_prefix = name + vfc.MANAGED_NODE_IDENTIFIER
-        postfixes = ['_master_axis','_pin_hole_connection','_slaved_axis','_connection_axial_rotation']
+        postfixes = ['_axis_on_parent','_pin_hole_connection','_axis_on_child','_connection_axial_rotation']
 
         for pf in postfixes:
             self._verify_name_available(name_prefix + pf)
 
-        slave_item = self._sheave_from_node(slave_item)
-        master_item = self._sheave_from_node(master_item)
+        child = self._sheave_from_node(child)
+        parent = self._sheave_from_node(parent)
 
         assertBool(inside,'inside')
         assertBool(swivel_fixed,'swivel_fixed')
-        assertBool(master_fixed,'master_fixed')
-        assertBool(slave_fixed,'slave_fixed')
+        assertBool(fixed_to_parent, 'fixed_to_parent')
+        assertBool(child_fixed, 'child_fixed')
 
 
         if swivel is None:
@@ -4886,38 +4876,38 @@ class Scene:
 
         assert1f(swivel, "swivel_angle")
 
-        if master_rotation is not None:
-            assert1f(master_rotation, "master_angle should be either None or ")
-        if slave_rotation is not None:
-            assert1f(slave_rotation, "slave_angle should be either None or ")
+        if rotation_on_parent is not None:
+            assert1f(rotation_on_parent, "rotation_on_parent should be either None or ")
+        if child_rotation is not None:
+            assert1f(child_rotation, "child_rotation should be either None or ")
 
-        if slave_item is None:
-            raise ValueError('Item1 needs to be a sheave-type node')
-        if master_item is None:
-            raise ValueError('Item2 needs to be a sheave-type node')
+        if child is None:
+            raise ValueError('child needs to be a sheave-type node')
+        if parent is None:
+            raise ValueError('parent needs to be a sheave-type node')
 
-        if slave_item.parent.parent is None:
+        if child.parent.parent is None:
             raise ValueError(
-                f'The parent {slave_item.parent.name} of the slaved item {slave_item.name} is not located on an axis. Can not create the connection because there is no axis to slave')
+                f'The parent {child.parent.name} of the child item {child.name} is not located on an axis. Can not create the connection because there is no axis to nodeB')
 
-        if slave_item.parent.parent.manager is not None:
+        if child.parent.parent.manager is not None:
             raise ValueError(
-                f'The parent {slave_item.parent.name} of the slaved item {slave_item.name} is a manged by {slave_item.parent.parent.manager.name} and can therefore not be changed - unable to create geometric contact')
+                f'The parent {child.parent.name} of the child item {child.name} is a manged by {child.parent.parent.manager.name} and can therefore not be changed - unable to create geometric contact')
 
-        new_node = GeometricContact(self, slave_item, master_item, name)
+        new_node = GeometricContact(self, child, parent, name)
         if inside:
             new_node.set_pin_in_hole_connection()
         else:
             new_node.set_pin_pin_connection()
 
         new_node.swivel = swivel
-        if master_rotation is not None:
-            new_node.master_rotation = master_rotation
-        if slave_rotation is not None:
-            new_node.slave_rotation = slave_rotation
+        if rotation_on_parent is not None:
+            new_node.rotation_on_parent = rotation_on_parent
+        if child_rotation is not None:
+            new_node.child_rotation = child_rotation
 
-        new_node.master_fixed = master_fixed
-        new_node.slave_fixed = slave_fixed
+        new_node.fixed_to_parent = fixed_to_parent
+        new_node.child_fixed = child_fixed
         new_node.swivel_fixed = swivel_fixed
 
         self._nodes.append(new_node)
@@ -5385,13 +5375,13 @@ class Scene:
 
         return new_node
 
-    def new_linear_connector_6d(self, name, slave, master, stiffness = None)->LC6d:
+    def new_linear_connector_6d(self, name, main, secondary, stiffness = None)->LC6d:
         """Creates a new *linear connector 6d* node and adds it to the scene.
 
         Args:
             name: Name for the node, should be unique
-            slave: Slaved axis system [Axis]
-            master: Master axis system [Axis]
+            main: Main axis system [Axis]
+            secondary: Secondary axis system [Axis]
             stiffness: optional, connection stiffness (x,y,z, rx,ry,rz)
 
         See :py:class:`LC6d` for details
@@ -5407,8 +5397,8 @@ class Scene:
         # first check
         assertValidName(name)
         self._verify_name_available(name)
-        m = self._parent_from_node(master)
-        s = self._parent_from_node(slave)
+        m = self._parent_from_node(secondary)
+        s = self._parent_from_node(main)
 
         if stiffness is not None:
             assert6f(stiffness, "Stiffness ")
@@ -5421,20 +5411,20 @@ class Scene:
         new_node = LC6d(self, a)
 
         # and set properties
-        new_node.master = m
-        new_node.slave = s
+        new_node.main = m
+        new_node.secondary = s
         new_node.stiffness = stiffness
 
         self._nodes.append(new_node)
         return new_node
 
-    def new_connector2d(self, name, master, slave, k_linear=0, k_angular=0)->Connector2d:
+    def new_connector2d(self, name, nodeA, nodeB, k_linear=0, k_angular=0)->Connector2d:
         """Creates a new *new_connector2d* node and adds it to the scene.
 
         Args:
             name: Name for the node, should be unique
-            slave: Slaved axis system [Axis]
-            master: Master axis system [Axis]
+            nodeB: First axis system [Axis]
+            nodeA: Second axis system [Axis]
 
             k_linear : linear stiffness in kN/m
             k_angular : angular stiffness in kN*m / rad
@@ -5450,8 +5440,8 @@ class Scene:
         # first check
         assertValidName(name)
         self._verify_name_available(name)
-        m = self._parent_from_node(master)
-        s = self._parent_from_node(slave)
+        m = self._parent_from_node(nodeA)
+        s = self._parent_from_node(nodeB)
 
         assert1f(k_linear, "Linear stiffness")
         assert1f(k_angular, "Angular stiffness")
@@ -5462,24 +5452,24 @@ class Scene:
         new_node = Connector2d(self, a)
 
         # and set properties
-        new_node.master = m
-        new_node.slave = s
+        new_node.nodeA = m
+        new_node.nodeB = s
         new_node.k_linear = k_linear
         new_node.k_angular = k_angular
 
         self._nodes.append(new_node)
         return new_node
 
-    def new_linear_beam(self, name, master, slave, EIy=0, EIz=0, GIp=0, EA=0, L=None)->LinearBeam:
+    def new_linear_beam(self, name, nodeA, nodeB, EIy=0, EIz=0, GIp=0, EA=0, L=None)->LinearBeam:
         """Creates a new *linear beam* node and adds it to the scene.
 
         Args:
             name: Name for the node, should be unique
-            slave: Slaved axis system [Axis]
-            master: Master axis system [Axis]
+            nodeA: First axis system [Axis]
+            nodeB: Second axis system [Axis]
 
             All stiffness terms default to 0
-            The length defaults to the distance between master and slave
+            The length defaults to the distance between nodeA and nodeB
 
 
         See :py:class:`LinearBeam` for details
@@ -5495,8 +5485,8 @@ class Scene:
         # first check
         assertValidName(name)
         self._verify_name_available(name)
-        m = self._parent_from_node(master)
-        s = self._parent_from_node(slave)
+        m = self._parent_from_node(nodeA)
+        s = self._parent_from_node(nodeB)
 
         if L is None:
             L = np.linalg.norm(np.array(m.global_position)- np.array(s.global_position))
@@ -5511,8 +5501,8 @@ class Scene:
         new_node = LinearBeam(self, a)
 
         # and set properties
-        new_node.master = m
-        new_node.slave = s
+        new_node.nodeA = m
+        new_node.nodeB = s
         new_node.EIy = EIy
         new_node.EIz = EIz
         new_node.GIp = GIp

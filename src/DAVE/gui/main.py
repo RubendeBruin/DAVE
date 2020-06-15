@@ -4,7 +4,7 @@
 
    The GUI is build using QT / PySide2 and is set-up to be easy to extent.
 
-   The main module (this file) provides the main screen with:
+   The nodeA module (this file) provides the nodeA screen with:
      - A 3D viewer with interaction
      - A method to modify the scene by running python code
      - Opening and saving of models or actions
@@ -14,7 +14,7 @@
      - An event system for communication between dock-widgets
      - A data-source for the dock-widgets
 
-    The interface is extended by dockwidgets. These are gui elements (widgets) that can be shown inside the main window.
+    The interface is extended by dockwidgets. These are gui elements (widgets) that can be shown inside the nodeA window.
     Some of the dock-widgets are:
     - the node-tree
     - the node-properties (editor)
@@ -30,7 +30,7 @@
         - guiProcessEvent : is called when the model is changed. The widget should update itself accordingly.
              See guiEventType enum for details.
         - guiDefaultLocation : returns the location where the widget should be shown [optional]
-    - Provided interaction with the main module by sending python-code to guiRunCodeCallback()
+    - Provided interaction with the nodeA module by sending python-code to guiRunCodeCallback()
 
     EXAMPLE: widget_template_example.py
 
@@ -1381,7 +1381,7 @@ class Gui():
 
 # ======================================
 
-# ====== main code ======
+# ====== nodeA code ======
 
 if __name__ == '__main__':
     pass

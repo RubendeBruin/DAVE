@@ -25,7 +25,7 @@ This module supplies additional functionality for working with rigging.
 #     endA
 #     eyeA (cable)
 #     splice (body , mass/2)
-#     main (cable)     [optional: runs over sheave]
+#     nodeA (cable)     [optional: runs over sheave]
 #     splice (body, mass/2)
 #     eyeB (cable)
 #     endB
@@ -43,7 +43,7 @@ This module supplies additional functionality for working with rigging.
 #         mass: total mass
 #         endA : Sheave or poi to fix end A of the sling to [optional]
 #         endB : Sheave or poi to fix end A of the sling to [optional]
-#         sheave : Sheave or poi for the main part of the sling
+#         sheave : Sheave or poi for the nodeA part of the sling
 #
 #     Returns:
 #
@@ -71,9 +71,9 @@ This module supplies additional functionality for working with rigging.
 #                  rotation=(0.0, 90.0, 0.0),
 #                  scale=(LspliceB, 2 * diameter, diameter))
 #
-#     # main part
+#     # nodeA part
 #
-#     # The stiffness of the main part is corrected to account for the stiffness of the splices.
+#     # The stiffness of the nodeA part is corrected to account for the stiffness of the splices.
 #     # It is considered that the stiffness of the splices is two times that of the wire.
 #     #
 #     # Springs in series: 1/Ktotal = 1/k1 + 1/k2 + 1/k3
@@ -249,8 +249,8 @@ def create_shackle_gphd(s, name, wll):
 #         code = f"s.new_geometriccontact('{name}','{drop}','{onto}', inverse_relation = True)"
 # #         callback(code)
 # #
-# #     menu.addAction(f"Create pin-hole connection with {onto} as master", create_master)
-# #     menu.addAction(f"Create pin-hole connection with {drop} as master", create_slave)
+# #     menu.addAction(f"Create pin-hole connection with {onto} as nodeA", create_master)
+# #     menu.addAction(f"Create pin-hole connection with {drop} as nodeA", create_slave)
 # #
 # #
 # #     menu.exec_(pos)

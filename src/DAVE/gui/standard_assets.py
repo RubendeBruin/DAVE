@@ -101,7 +101,7 @@ class Gui:
         self.MainWindow.exec_()
         return self._result
 
-# ====== main code ======
+# ====== nodeA code ======
 
 if __name__ == '__main__':
 

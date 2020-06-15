@@ -871,8 +871,8 @@ class EditLC6d(NodeEditor):
         ui.cbMasterAxis.addItems(self.alist)
         ui.cbSlaveAxis.addItems(self.alist)
 
-        ui.cbMasterAxis.setCurrentText(self.node.master.name)
-        ui.cbSlaveAxis.setCurrentText(self.node.slave.name)
+        ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
+        ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
 
         ui.doubleSpinBox_1.setValue(self.node.stiffness[0])
         ui.doubleSpinBox_2.setValue(self.node.stiffness[1])
@@ -915,11 +915,11 @@ class EditLC6d(NodeEditor):
             code += element + '.stiffness = ({}, {}, {},'.format(*new_stiffness[:3])
             code += '                  {}, {}, {})'.format(*new_stiffness[3:])
 
-        if not new_master == self.node.master.name:
-            code += element + '.master = s["{}"]'.format(new_master)
+        if not new_master == self.node.nodeA.name:
+            code += element + '.nodeA = s["{}"]'.format(new_master)
 
-        if not new_slave == self.node.slave.name:
-            code += element + '.slave = s["{}"]'.format(new_slave)
+        if not new_slave == self.node.nodeB.name:
+            code += element + '.nodeB = s["{}"]'.format(new_slave)
 
 
         return code
@@ -961,8 +961,8 @@ class EditConnector2d(NodeEditor):
         ui.cbMasterAxis.addItems(self.alist)
         ui.cbSlaveAxis.addItems(self.alist)
 
-        ui.cbMasterAxis.setCurrentText(self.node.master.name)
-        ui.cbSlaveAxis.setCurrentText(self.node.slave.name)
+        ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
+        ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
 
         ui.doubleSpinBox_1.setValue(self.node.k_linear)
         ui.doubleSpinBox_4.setValue(self.node.k_angular)
@@ -987,11 +987,11 @@ class EditConnector2d(NodeEditor):
         new_master = self.ui.cbMasterAxis.currentText()
         new_slave = self.ui.cbSlaveAxis.currentText()
 
-        if not new_master == self.node.master.name:
-            code += element + '.master = s["{}"]'.format(new_master)
+        if not new_master == self.node.nodeA.name:
+            code += element + '.nodeA = s["{}"]'.format(new_master)
 
-        if not new_slave == self.node.slave.name:
-            code += element + '.slave = s["{}"]'.format(new_slave)
+        if not new_slave == self.node.nodeB.name:
+            code += element + '.nodeB = s["{}"]'.format(new_slave)
 
         if not new_k_lin == self.node.k_linear:
             code += element + '.k_linear = {}'.format(new_k_lin)
@@ -1041,8 +1041,8 @@ class EditBeam(NodeEditor):
         ui.cbMasterAxis.addItems(self.alist)
         ui.cbSlaveAxis.addItems(self.alist)
 
-        ui.cbMasterAxis.setCurrentText(self.node.master.name)
-        ui.cbSlaveAxis.setCurrentText(self.node.slave.name)
+        ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
+        ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
 
         ui.doubleSpinBox_1.setValue(self.node.L)
         ui.doubleSpinBox_2.setValue(self.node.EIy)
@@ -1093,11 +1093,11 @@ class EditBeam(NodeEditor):
         if not new_EA == self.node.EA:
             code += element + '.EA = {}'.format(new_EA)
 
-        if not new_master == self.node.master.name:
-            code += element + '.master = s["{}"]'.format(new_master)
+        if not new_master == self.node.nodeA.name:
+            code += element + '.nodeA = s["{}"]'.format(new_master)
 
-        if not new_slave == self.node.slave.name:
-            code += element + '.slave = s["{}"]'.format(new_slave)
+        if not new_slave == self.node.nodeB.name:
+            code += element + '.nodeB = s["{}"]'.format(new_slave)
 
         return code
 
@@ -1346,7 +1346,7 @@ def add_linear_connector(scene, parent = None):
         slave = ui.cbSlaveAxis.currentText()
         name = ui.tbName.text()
 
-        return "new_linear_connector_6d('{}', slave = '{}', master = '{}')".format(name, slave, master)
+        return "new_linear_connector_6d('{}', nodeB = '{}', nodeA = '{}')".format(name, slave, master)
 
     else:
         return None
@@ -1377,7 +1377,7 @@ def add_connector2d(scene, parent = None):
         slave = ui.cbSlaveAxis.currentText()
         name = ui.tbName.text()
 
-        return "new_connector2d('{}', slave = '{}', master = '{}')".format(name, slave, master)
+        return "new_connector2d('{}', nodeB = '{}', nodeA = '{}')".format(name, slave, master)
 
     else:
         return None
@@ -1407,7 +1407,7 @@ def add_beam_connector(scene, parent = None):
         slave = ui.cbSlaveAxis.currentText()
         name = ui.tbName.text()
 
-        return "new_linear_beam('{}', slave = '{}', master = '{}')".format(name, slave, master)
+        return "new_linear_beam('{}', nodeB = '{}', nodeA = '{}')".format(name, slave, master)
 
     else:
         return None

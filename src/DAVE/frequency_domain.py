@@ -285,7 +285,7 @@ def dynamics_quickfix(scene):
                 s = helper_spring[name]
             except KeyError:
                 name = scene.available_name_like('quickfix_' + entry['node'] + 'connector')
-                s = scene.new_linear_connector_6d(name, master=node, slave=a)
+                s = scene.new_linear_connector_6d(name, secondary=node, main=a)
 
             temp = np.array(s.stiffness)
             temp[mode] = K_LOW
@@ -346,7 +346,7 @@ def check_unconstrained(scene, V, D,K,M):
 
         print('Eigenvalue {}'.format(v))
 
-        # print('Mode {} Omega {} Inertia {} Stiffness {} main dof {}'.format(i, v, np.linalg.norm(mass_vector), np.linalg.norm(k_vector), main_dof))
+        # print('Mode {} Omega {} Inertia {} Stiffness {} nodeA dof {}'.format(i, v, np.linalg.norm(mass_vector), np.linalg.norm(k_vector), main_dof))
 
         if np.isnan(v):
             print("Unconstrained mode - modeshape: " + str(d))

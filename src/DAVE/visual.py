@@ -14,7 +14,7 @@
 visual visualizes a scene using vtkplotter
 
 
-main class is VisualActor
+nodeA class is VisualActor
 this class contains a reference to a Node and a list of actors
 
 a visual actor can be hidden by setting visible to False
@@ -911,10 +911,10 @@ class Viewport:
                 d = 0
 
                 points = list()
-                points.append(node.master.to_glob_position((0,0,0)))
-                points.append(node.master.to_glob_position((d*node.L, 0, 0)))
-                points.append(node.slave.to_glob_position((-d * node.L, 0, 0)))
-                points.append(node.slave.to_glob_position((0, 0, 0)))
+                points.append(node.nodeA.to_glob_position((0, 0, 0)))
+                points.append(node.nodeA.to_glob_position((d * node.L, 0, 0)))
+                points.append(node.nodeB.to_glob_position((-d * node.L, 0, 0)))
+                points.append(node.nodeB.to_glob_position((0, 0, 0)))
 
 
                 A.points(points)
@@ -924,8 +924,8 @@ class Viewport:
                 A = V.actors[0]
 
                 points = list()
-                points.append(node.master.to_glob_position((0,0,0)))
-                points.append(node.slave.to_glob_position((0, 0, 0)))
+                points.append(node.nodeA.to_glob_position((0, 0, 0)))
+                points.append(node.nodeB.to_glob_position((0, 0, 0)))
 
                 A.points(points)
 
@@ -935,8 +935,8 @@ class Viewport:
                 A = V.actors[0]
 
                 points = list()
-                points.append(node.master.to_glob_position((0,0,0)))
-                points.append(node.slave.to_glob_position((0, 0, 0)))
+                points.append(node.nodeA.to_glob_position((0, 0, 0)))
+                points.append(node.nodeB.to_glob_position((0, 0, 0)))
 
                 A.points(points)
 
