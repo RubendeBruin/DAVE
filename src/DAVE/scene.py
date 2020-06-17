@@ -2441,7 +2441,7 @@ class TriMeshSource(Node):
     def __init__(self, scene, source):
 
         # Note: Visual does not have a corresponding vfCore Node in the scene but does have a vfCore
-        self.scene = scene
+        self._scene = scene
         self._TriMesh = source
         self._new_mesh = True             # cheat for visuals
 
@@ -2567,6 +2567,7 @@ class TriMeshSource(Node):
         if self._TriMesh.nFaces == 0:
             raise Exception('No faces in poly-data - no geometry added (hint: empty obj file?)')
         self._new_mesh = True
+        self._scene.update()
 
     def load_vtk_polydataSource(self, polydata):
         """Fills the triangle data from a vtk polydata such as a cubeSource.
@@ -2670,8 +2671,14 @@ class Buoyancy(NodeWithParent):
         self._None_parent_acceptable = True
         self._trimesh = TriMeshSource(self._scene, self._vfNode.trimesh) # the tri-mesh is wrapped in a custom object
 
+    def update(self):
+        try:
+            self._vfNode.reloadTrimesh()
+        except:
+            print('Please update your version of pyo3d. ')
+
     @property
-    def trimesh(self):
+    def trimesh(self) -> TriMeshSource:
         return self._trimesh
 
     @property

@@ -1106,22 +1106,34 @@ class Viewport:
 
             if isinstance(V.node, vf.Buoyancy):
 
+                ## Buoyancy has multiple actors
+                #
+                # actor 0 : the source mesh
+                # actor 1 : the CoB
+                # actor 2 : the waterplane
+                # actor 3 : the submerged part of the source mesh
+                #
+                # If the source mesh has been updated, then V.node.trimesh._new_mesh is True
+
                 # move the full mesh with the parent
                 mat4x4 = transform_to_mat4x4(V.node.parent.global_transform)
                 current_transform = V.actors[0].getTransform().GetMatrix()
 
                 # if the current transform is identical to the new one,
                 # then we do not need to change anything (creating the mesh is slow)
+                if not V.node.trimesh._new_mesh:
+                    changed = False
+                    for i in range(4):
+                        for j in range(4):
+                            if current_transform.GetElement(i,j) != mat4x4.GetElement(i,j):
+                                changed = True
 
-                changed = False
-                for i in range(4):
-                    for j in range(4):
-                        if current_transform.GetElement(i,j) != mat4x4.GetElement(i,j):
-                            changed = True
+                    if not changed:
+                        continue
 
-                if not changed:
-                    continue
-
+                # Update the source-mesh position
+                #
+                # the source-mesh itself is updated in "add_new_actors_to_screen"
                 V.actors[0].setTransform(mat4x4)
                 V.actors[0].alpha(vc.ALPHA_BUOYANCY)
 
@@ -1137,6 +1149,7 @@ class Viewport:
                     for a in V.actors:
                         a.on()
 
+                # Update the CoB
                 # move the CoB to the new (global!) position
                 cob = V.node.cob
                 V.actors[1].setTransform(transform_from_point(*cob))
@@ -1162,8 +1175,9 @@ class Viewport:
                             (p3[0],p3[1], 0)]
                 V.actors[2].points(corners)
 
-                # create the actual buoyancy mesh as a new actor
+                # Instead of updating, remove the old actor and create a new one
 
+                # remove already existing submerged mesh (if any)
                 if len(V.actors) > 3:
                     if self.screen is not None:
                         self.screen.remove(V.actors[3])
@@ -1190,6 +1204,7 @@ class Viewport:
                     if self.screen is not None:
                         self.screen.add(vis)
 
+                node.trimesh._new_mesh = False
                 continue
 
             if isinstance(V.node, vf.Axis):
@@ -1268,7 +1283,7 @@ class Viewport:
 
                     self.screen.add(va.actors[0])
 
-                if isinstance(va.node, vf.Buoyancy) or  isinstance(va.node, vf.ContactMesh):
+                if isinstance(va.node, vf.Buoyancy) or isinstance(va.node, vf.ContactMesh):
                     if va.node.trimesh._new_mesh:
 
                         new_mesh = actor_from_trimesh(va.node.trimesh._TriMesh)
@@ -1282,7 +1297,8 @@ class Viewport:
                             va.actors[0].setTransform(mat4x4)
 
                             self.screen.add(va.actors[0])
-                            va.node.trimesh._new_mesh = False
+
+                            # va.node.trimesh._new_mesh = False  # is set to False by position_visuals
 
             self.set_default_dsa()
 
