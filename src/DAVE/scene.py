@@ -2707,6 +2707,96 @@ class Buoyancy(NodeWithParent):
 
         return code
 
+
+class Tank(NodeWithParent):
+    """Tank provides a fillable tank based on a mesh. The mesh is triangulated and chopped at the instantaneous flat fluid surface. Gravity is applied as an downwards force that the center of fluid.
+    The calculation of fluid volume and center is as accurate as the provided geometry.
+
+    There as no restrictions to the size or aspect ratio of the panels. It is excellent to model as box using 6 faces. Using smaller panels has a negative effect on performance.
+
+    The normals of the panels should point *away* from the fluid. This means that the same basic shapes can be used for both buoyancy and tanks. 
+    """
+
+    # init parent and name are fully derived from NodeWithParent
+    # _vfNode is a tank
+    def __init__(self, scene, vfTank):
+        super().__init__(scene, vfTank)
+        self._None_parent_acceptable = True
+        self._trimesh = TriMeshSource(self._scene, self._vfNode.trimesh) # the tri-mesh is wrapped in a custom object
+
+    def update(self):
+        self._vfNode.reloadTrimesh()
+
+    @property
+    def trimesh(self) -> TriMeshSource:
+        return self._trimesh
+
+    @property
+    def cog(self):
+        """Returns the GLOBAL position of the center of volume / gravity"""
+        return self._vfNode.cog
+
+    @property
+    def cob_local(self):
+        """Returns the local position of the center of gravity"""
+        return self.parent.to_loc_position(self.cog)
+
+    @property
+    def volume(self):
+        """The volume of fluid in the tank"""
+        return self._vfNode.volume
+    
+    @volume.setter
+    def volume(self, value):
+        assert1f_positive_or_zero(value,'Volume')
+        self._vfNode.volume = value
+        
+    @property
+    def density(self):
+        return self._vfNode.density
+    
+    @density.setter
+    def density(self, value):
+        assert1f(value)
+        self._vfNode.density = value
+        
+    @property
+    def capacity(self):
+        """Returns the capacity of the tank in m3"""
+        return self._vfNode.capacity
+
+
+    def give_python_code(self):
+        code = "# code for {}".format(self.name)
+        code += "\nmesh = s.new_tank(name='{}',".format(self.name)
+        if self.parent:
+            code += "\n          parent='{}')".format(self.parent.name)
+        code += "\nmesh.trimesh.load_obj(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
+
+        return code
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class BallastSystem(Point):
     """A BallastSystem
 
@@ -5544,6 +5634,41 @@ class Scene:
         # then create
         a = self._vfc.new_buoyancy(name)
         new_node = Buoyancy(self, a)
+
+        # and set properties
+        if b is not None:
+            new_node.parent = b
+
+        self._nodes.append(new_node)
+        return new_node
+
+    def new_tank(self, name, parent=None, density = 1.025)->Tank:
+        """Creates a new *buoyancy* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: optional, name of the parent of the node
+
+
+        Returns:
+            Reference to newly created buoyancy
+
+        """
+
+        # apply prefixes
+        name = self._prefix_name(name)
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._parent_from_node(parent)
+
+        assert1f(density, "density")
+
+        # then create
+        a = self._vfc.new_tank(name)
+        new_node = Tank(self, a)
+        new_node.density = density
 
         # and set properties
         if b is not None:

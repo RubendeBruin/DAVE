@@ -716,8 +716,7 @@ class Gui():
 
     def onClose(self):
         self.visual.shutdown_qt()
-        # self._logfile.close()
-        print('-- closing the gui : these were the actions you performed when the gui was open --')
+        print('-- closing the gui : these were the actions you performed while the gui was open --')
         print(self.give_clean_history())
 
 

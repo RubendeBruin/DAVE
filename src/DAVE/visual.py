@@ -116,7 +116,7 @@ def actor_from_trimesh(trimesh):
     """Creates a vtkplotter.Actor from a pyo3d.TriMesh"""
 
     if trimesh.nFaces == 0:
-        return None
+        return vp.Cube(side=0.00001)
 
     vertices = []
     for i in range(trimesh.nVertices):
@@ -608,6 +608,35 @@ class Viewport:
                 p.actor_type = ActorType.NOT_GLOBAL
                 actors.append(p)
 
+            if isinstance(N, vf.Tank):
+
+                # 0 : source-mesh
+                # 1 : cog
+                # 2 : filled part of mesh (added later)
+
+                # This is the source-mesh. Connect it to the parent
+                vis = actor_from_trimesh(N.trimesh._TriMesh)
+
+                if vc.COLOR_BUOYANCY_MESH_FILL is not None:
+                    vis.c(vc.COLOR_BUOYANCY_MESH_FILL)
+
+                vis.actor_type = ActorType.MESH_OR_CONNECTOR
+
+                if vc.COLOR_BUOYANCY_MESH_FILL is None:
+                    vis.wireframe()
+
+                if vis is not None:
+                    actors.append(vis)
+
+                # cog
+                c = vp.Sphere(r=0.5, res = vc.RESOLUTION_SPHERE).c(vc.COLOR_WATER)
+                c.actor_type = ActorType.MESH_OR_CONNECTOR
+                actors.append(c)
+
+
+
+
+
             if isinstance(N, vf.ContactMesh):
 
                 # 0 : source-mesh
@@ -784,6 +813,10 @@ class Viewport:
 
             va = VisualActor(actors, N)
             N.visual = va
+
+            N.visual.__just_created = True
+
+
             self.visuals.append(va)
 
             self.set_default_dsa()
@@ -1205,6 +1238,139 @@ class Viewport:
                         self.screen.add(vis)
 
                 node.trimesh._new_mesh = False
+                continue
+
+
+            if isinstance(V.node, vf.Tank):
+
+                ## Tank has multiple actors
+                #
+                # 0 : source-mesh
+                # 1 : cog
+                # 2 : filled part of mesh
+
+                # If the source mesh has been updated, then V.node.trimesh._new_mesh is True
+                if V.__just_created:
+                    V._visual_volume = -1
+
+                # move the full mesh with the parent
+                mat4x4 = transform_to_mat4x4(V.node.parent.global_transform)
+                current_transform = V.actors[0].getTransform().GetMatrix()
+
+                # if the current transform is identical to the new one,
+                # and the mesh has not changed
+                # and the volume has not changed
+                # then we do not need to change anything (creating the mesh is slow)
+                if not V.node.trimesh._new_mesh:
+                    if V._visual_volume == V.node.volume:
+                        changed = False
+                        for i in range(4):
+                            for j in range(4):
+                                if current_transform.GetElement(i,j) != mat4x4.GetElement(i,j):
+                                    changed = True
+
+                        if not changed:
+                            continue
+
+                # Update the actors
+                V.node.update()
+
+                # Update the source-mesh position
+                #
+                # the source-mesh itself is updated in "add_new_actors_to_screen"
+                V.actors[0].setTransform(mat4x4)
+                V.actors[0].alpha(vc.ALPHA_BUOYANCY)
+
+                if vc.COLOR_BUOYANCY_MESH_FILL is None:
+                    V.actors[0].c(vc.COLOR_BUOYANCY_MESH_LINES)
+                    V.actors[0].wireframe()
+
+                if self.quick_updates_only:
+                    for a in V.actors:
+                        a.off()
+                    continue
+                else:
+                    for a in V.actors:
+                        a.on()
+
+                # Update the CoB
+                # move the CoB to the new (global!) position
+                cob = V.node.cog
+
+                print(f'cob = {cob}')
+
+                V.actors[1].setTransform(transform_from_point(*cob))
+                if V.node.volume == 0:
+                    V.actors[1].off()
+                else:
+                    V.actors[1].on()
+
+                # Instead of updating, remove the old actor and create a new one
+
+                # remove already existing submerged mesh (if any)
+                if len(V.actors) > 2:
+                    if self.screen is not None:
+                        self.screen.remove(V.actors[2])  # remove sides
+                        V.actors.remove(V.actors[2])
+
+                mesh = V.node._vfNode.current_mesh
+
+                if mesh.nVertices > 0:  # only add when available
+
+                    vertices = []
+                    for i in range(mesh.nVertices):
+                        vertices.append(mesh.GetVertex(i))
+
+                    faces = []
+                    for i in range(mesh.nFaces):
+                        faces.append(mesh.GetFace(i))
+
+
+                    # create the lid using a convex hull
+                    thickness_tolerance = 1e-4  # for numerical accuracy
+
+                    verts = np.array(vertices)
+                    z = verts[:,2]
+                    maxz = np.max(z)
+                    top_plane_verts = verts[z>=maxz-thickness_tolerance]
+
+                    # make convex hull
+                    d2 = top_plane_verts[:,0:2]
+                    from scipy.spatial import ConvexHull
+                    hull = ConvexHull(d2)
+
+                    points = top_plane_verts[hull.vertices, :]   # for 2-D the vertices are guaranteed to be in counterclockwise order
+
+                    nVerts = len(vertices)
+
+                    for point in points:
+                        vertices.append([*point])
+
+                    # construct faces
+                    for i in range(len(points)-2):
+                        faces.append([nVerts,nVerts+i+2,nVerts+i+1])
+
+                    # top = vp.Mesh([vertices, faces])
+                    # top.c(vc.COLOR_WATER_TANK)
+                    #
+                    # top.actor_type = ActorType.MESH_OR_CONNECTOR
+
+
+                    vis = vp.Mesh([vertices, faces]).c(vc.COLOR_BUOYANCY_MESH_LINES)
+                    vis.actor_type = ActorType.MESH_OR_CONNECTOR
+                    # vis.wireframe()
+                    vis.lw(0)
+                    vis.c(vc.COLOR_WATER_TANK)
+                    vis.alpha(vc.ALPHA_WATER_TANK)
+
+                    V.actors.append(vis)
+
+                    if self.screen is not None:
+                        self.screen.add(vis)
+
+
+                node.trimesh._new_mesh = False
+                V._visual_volume = V.node.volume
                 continue
 
             if isinstance(V.node, vf.Axis):
