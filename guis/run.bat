@@ -30,7 +30,8 @@ echo call pyside2-uic widget_dynprop.ui -o "..\src\DAVE\gui\forms\widget_dynprop
 echo call pyside2-uic widget_contactball.ui -o "..\src\DAVE\gui\forms\widget_contactball.py"
 echo call pyside2-uic widget_geometricconnection.ui -o "..\src\DAVE\gui\forms\widget_geometricconnection.py"
 echo call pyside2-uic widget_sling.ui -o "..\src\DAVE\gui\forms\widget_sling.py"
-call pyside2-uic widget_selection_actions.ui -o "..\src\DAVE\gui\forms\widget_selection_actions.py"
+echo call pyside2-uic widget_selection_actions.ui -o "..\src\DAVE\gui\forms\widget_selection_actions.py"
+call pyside2-uic widget_tank.ui -o "..\src\DAVE\gui\forms\widget_tank.py"
 
 
 echo call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"

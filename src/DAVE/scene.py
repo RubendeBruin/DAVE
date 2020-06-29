@@ -2737,13 +2737,34 @@ class Tank(NodeWithParent):
         return self._vfNode.cog
 
     @property
-    def cob_local(self):
+    def cog_local(self):
         """Returns the local position of the center of gravity"""
         return self.parent.to_loc_position(self.cog)
 
     @property
+    def fill_pct(self):
+        return 100*self.volume / self.capacity
+
+    @fill_pct.setter
+    def fill_pct(self, value):
+        assert1f_positive_or_zero(value)
+        if value>100:
+            raise ValueError('Fill percentage should be between 0 and 100 [%]')
+        self.volume = value * self.capacity / 100
+
+    @property
+    def level_global(self):
+        """The fluid plane elevation in the global axis system. Setting this adjusts the volume"""
+        return self._vfNode.fluid_level_global
+
+    @level_global.setter
+    def level_global(self, value):
+        assert1f(value)
+        self._vfNode.fluid_level_global = value
+
+    @property
     def volume(self):
-        """The volume of fluid in the tank"""
+        """The volume of fluid in the tank in m3. Setting this adjusts the fluid level"""
         return self._vfNode.volume
     
     @volume.setter
@@ -2753,6 +2774,7 @@ class Tank(NodeWithParent):
         
     @property
     def density(self):
+        """Density of the fluid in the tank in mT/m3"""
         return self._vfNode.density
     
     @density.setter
@@ -2762,7 +2784,7 @@ class Tank(NodeWithParent):
         
     @property
     def capacity(self):
-        """Returns the capacity of the tank in m3"""
+        """Returns the capacity of the tank in m3. This is calculated from the defined geometry."""
         return self._vfNode.capacity
 
 

@@ -217,7 +217,7 @@ BLENDER_EXEC_DEFAULT_WIN = r"C:\Program Files\Blender Foundation\Blender\blender
 
 import platform
 if platform.system().lower().startswith('win'):
-    # on windows we can possible get blender from the registry
+    # on windows we can possibly get blender from the registry
     import winreg
     pt = ''
 
@@ -240,7 +240,7 @@ if platform.system().lower().startswith('win'):
     if path.exists(BLENDER_EXEC):
         print("Blender found at: {}".format(BLENDER_EXEC))
     else:
-        print("! Blender not found - please either:\n"
+        print("! Blender not found - if you want to be able to use blender then please either:\n"
               "   edit BLENDER_EXEC_DEFAULT_WIN in settings.py or \n"
               "   set settings.BLENDER_EXEC or\n"
               "   configure windows to open .blend files with blender automatically")

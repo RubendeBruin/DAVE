@@ -17,6 +17,7 @@ import DAVE.gui.forms.widget_waveinteraction
 import DAVE.gui.forms.widget_contactball
 import DAVE.gui.forms.widget_geometricconnection
 import DAVE.gui.forms.widget_sling
+import DAVE.gui.forms.widget_tank
 
 import numpy as np
 
@@ -47,6 +48,10 @@ class NodeEditor:
     def create_widget(self):
         """Creates and returns the widget"""
         raise Exception('Show() method not defined in derived class')
+
+    def post_update_event(self):
+        """Is executed after running the generated code"""
+        pass
 
 
 
@@ -332,6 +337,85 @@ class EditWaveInteraction(NodeEditor):
         return code
 
 
+# ======================================
+
+class EditTank(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditTank._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.gui.forms.widget_tank.Ui_Form()
+            ui.setupUi(widget)
+            EditLC6d._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditTank._ui
+
+
+
+
+        self.ui = ui
+        self.post_update_event() # update values
+
+        return ui._widget
+
+    def generate_code(self):
+
+        new_density = self.ui.sbDenstiy.value()
+        new_volume = self.ui.sbVolume.value()
+        new_pct = self.ui.sbPercentage.value()
+        new_elev = self.ui.sbElevation.value()
+
+        def add(name, value, ref, dec = 3):
+
+            current = getattr(self.node, ref)
+
+            if abs(value-current) > 10**(-dec):
+                return f"\ns['{name}'].{ref} = {value}"
+            else:
+                return ''
+
+        name = self.node.name
+        code = ""
+
+        code += add(name, new_density,'density')
+        code += add(name, new_volume,'volume')
+        code += add(name, new_pct,'fill_pct')
+        code += add(name, new_elev,'level_global')
+
+        return code
+
+    def post_update_event(self):
+
+        try:
+            self.ui.sbDenstiy.valueChanged.disconnect()
+            self.ui.sbVolume.valueChanged.disconnect()
+            self.ui.sbPercentage.valueChanged.disconnect()
+            self.ui.sbElevation.valueChanged.disconnect()
+
+        except:
+            pass # no connections yet
+
+        self.ui.sbDenstiy.setValue(self.node.density)
+        self.ui.sbVolume.setValue(self.node.volume)
+        self.ui.sbPercentage.setValue(self.node.fill_pct)
+        self.ui.sbElevation.setValue(self.node.level_global)
+
+        self.ui.sbDenstiy.valueChanged.connect(self.callback)
+        self.ui.sbVolume.valueChanged.connect(self.callback)
+        self.ui.sbPercentage.valueChanged.connect(self.callback)
+        self.ui.sbElevation.valueChanged.connect(self.callback)
+
+        self.ui.lblCapacity.setText(f"{self.node.capacity:.3f}")
+
+
+
 class EditBuoyancyOrContactMesh(NodeEditor):
 
     _ui = None
@@ -412,8 +496,14 @@ class EditBuoyancyOrContactMesh(NodeEditor):
         except:
             new_path = "FILE DOES NOT EXIST"
 
-        # load_obj(self, filename, offset = None, rotation = None, scale = None)
-        code = element + ".trimesh.load_obj(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(new_path, *scale, *rotation, *offset)
+        # check if we need to reload the mesh
+        if np.any(offset != self.node.trimesh._offset) or \
+           np.any(rotation != self.node.trimesh._rotation) or \
+           np.any(scale != self.node.trimesh._scale) or \
+           self.node.trimesh._path !=  new_path :
+
+            # load_obj(self, filename, offset = None, rotation = None, scale = None)
+            code = element + ".trimesh.load_obj(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(new_path, *scale, *rotation, *offset)
 
         return code
 
@@ -1691,6 +1781,10 @@ class WidgetNodeProps(guiDockWidget):
 
         self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
 
+        for editor in self._node_editors:
+            editor.post_update_event()
+
+
     def run_code(self, code):
         self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
 
@@ -1766,8 +1860,14 @@ class WidgetNodeProps(guiDockWidget):
         if isinstance(node, vfs.Sling):
             self._node_editors.append(EditSling(node, self.node_property_changed, self.guiScene, self.run_code))
 
-        if isinstance(node, vfs.Buoyancy) or isinstance(node, vfs.ContactMesh):
+        if isinstance(node, vfs.Tank):
+            self._node_editors.append(EditTank(node, self.node_property_changed, self.guiScene, self.run_code))
+
+
+        if isinstance(node, vfs.Buoyancy) or isinstance(node, vfs.ContactMesh) or isinstance(node, vfs.Tank):
             self._node_editors.append(EditBuoyancyOrContactMesh(node, self.node_property_changed, self.guiScene, self.run_code))
+
+
 
         to_be_added = []
         for editor in self._node_editors:
