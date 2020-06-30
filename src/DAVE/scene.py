@@ -2466,7 +2466,7 @@ class TriMeshSource(Node):
         t = self._TriMesh
 
         if t.nFaces == 0:
-            return (0,0,0,0)
+            return (0,0,0,0,0,0)
 
         v = t.GetVertex(0)
         xn = v[0]
@@ -2495,7 +2495,7 @@ class TriMeshSource(Node):
             if z > zp:
                 zp = z
 
-        return (xn,xp,yn,yp,zn, zp)
+        return (xn,xp,yn,yp,zn,zp)
 
 
 

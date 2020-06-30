@@ -175,7 +175,7 @@ COLOR_BG1_ENV = rgb(_BLUE_LIGHT)
 # COLOR_BG1 =rgb(_WHITE)
 ALPHA_VISUAL = 0.3 # standard alpha value for visual when a node is selected
 ALPHA_BUOYANCY = 1.0
-ALPHA_WATER_TANK = 0.7
+ALPHA_WATER_TANK = 0.9
 
 OUTLINE_WIDTH = 1
 

@@ -1335,24 +1335,26 @@ class Viewport:
 
                     # make convex hull
                     d2 = top_plane_verts[:,0:2]
-                    from scipy.spatial import ConvexHull
-                    hull = ConvexHull(d2)
 
-                    points = top_plane_verts[hull.vertices, :]   # for 2-D the vertices are guaranteed to be in counterclockwise order
+                    try:
+                        from scipy.spatial import ConvexHull
+                        hull = ConvexHull(d2)
 
-                    nVerts = len(vertices)
+                        points = top_plane_verts[hull.vertices, :]   # for 2-D the vertices are guaranteed to be in counterclockwise order
 
-                    for point in points:
-                        vertices.append([*point])
+                        nVerts = len(vertices)
 
-                    # construct faces
-                    for i in range(len(points)-2):
-                        faces.append([nVerts,nVerts+i+2,nVerts+i+1])
+                        for point in points:
+                            vertices.append([*point])
 
+                        # construct faces
+                        for i in range(len(points)-2):
+                            faces.append([nVerts,nVerts+i+2,nVerts+i+1])
+                    except:
+                        pass
 
                     vis = vp.Mesh([vertices, faces]).c(vc.COLOR_BUOYANCY_MESH_LINES)
                     vis.actor_type = ActorType.MESH_OR_CONNECTOR
-                    vis.lw(0)
                     vis.c(vc.COLOR_WATER_TANK)
                     vis.alpha(vc.ALPHA_WATER_TANK)
 
