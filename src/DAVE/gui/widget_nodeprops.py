@@ -1860,14 +1860,11 @@ class WidgetNodeProps(guiDockWidget):
         if isinstance(node, vfs.Sling):
             self._node_editors.append(EditSling(node, self.node_property_changed, self.guiScene, self.run_code))
 
-        if isinstance(node, vfs.Tank):
-            self._node_editors.append(EditTank(node, self.node_property_changed, self.guiScene, self.run_code))
-
-
         if isinstance(node, vfs.Buoyancy) or isinstance(node, vfs.ContactMesh) or isinstance(node, vfs.Tank):
             self._node_editors.append(EditBuoyancyOrContactMesh(node, self.node_property_changed, self.guiScene, self.run_code))
 
-
+        if isinstance(node, vfs.Tank):
+            self._node_editors.append(EditTank(node, self.node_property_changed, self.guiScene, self.run_code))
 
         to_be_added = []
         for editor in self._node_editors:

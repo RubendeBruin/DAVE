@@ -126,7 +126,11 @@ def actor_from_trimesh(trimesh):
     for i in range(trimesh.nFaces):
         faces.append(trimesh.GetFace(i))
 
-    return vp.Mesh([vertices, faces]).alpha(vc.ALPHA_BUOYANCY)
+
+    actor =  vp.Mesh([vertices, faces]).alpha(vc.ALPHA_BUOYANCY)
+
+    actor.no_outline = True
+    return actor
 
 def vp_actor_from_obj(filename):
     # load the data
@@ -312,6 +316,10 @@ class Viewport:
 
         # loop over actors, add outlines if needed
         for vp_actor in self.screen.actors:
+
+            if getattr(vp_actor, 'no_outline', False):
+                continue
+
             data = vp_actor.GetMapper().GetInputAsDataSet()
             if isinstance(data, vtk.vtkPolyData):
                 # this actor can have an outline
@@ -968,8 +976,8 @@ class Viewport:
                 A = V.actors[0]
 
                 points = list()
-                points.append(node.nodeA.to_glob_position((0, 0, 0)))
-                points.append(node.nodeB.to_glob_position((0, 0, 0)))
+                points.append(node.main.to_glob_position((0, 0, 0)))
+                points.append(node.secondary.to_glob_position((0, 0, 0)))
 
                 A.points(points)
 
@@ -1137,6 +1145,47 @@ class Viewport:
 
                 continue
 
+
+            if isinstance(V.node, vf.Buoyancy) or isinstance(V.node, vf.ContactMesh) or isinstance(V.node, vf.Tank):
+                # Source mesh update is common for all mesh-like nodes
+                #
+
+                changed = False
+
+                if node.trimesh._new_mesh:
+                    self.screen.add(V.actors[0])
+                    changed = True
+                    node.trimesh._new_mesh = False
+
+                else:
+
+                    # move the full mesh with the parent
+                    mat4x4 = transform_to_mat4x4(V.node.parent.global_transform)
+                    current_transform = V.actors[0].getTransform().GetMatrix()
+
+                    # if the current transform is identical to the new one,
+                    # then we do not need to change anything (creating the mesh is slow)
+
+                    for i in range(4):
+                        for j in range(4):
+                            if current_transform.GetElement(i, j) != mat4x4.GetElement(i, j):
+                                changed = True
+
+                    # move the full mesh with the parent
+                    mat4x4 = transform_to_mat4x4(V.node.parent.global_transform)
+
+                    # Update the source-mesh position
+                    #
+                    # the source-mesh itself is updated in "add_new_actors_to_screen"
+                    if changed:
+                        V.actors[0].setTransform(mat4x4)
+
+
+
+                if not changed:
+                    continue    # skip the other update functions
+
+
             if isinstance(V.node, vf.Buoyancy):
 
                 ## Buoyancy has multiple actors
@@ -1146,33 +1195,8 @@ class Viewport:
                 # actor 2 : the waterplane
                 # actor 3 : the submerged part of the source mesh
                 #
-                # If the source mesh has been updated, then V.node.trimesh._new_mesh is True
 
-                # move the full mesh with the parent
-                mat4x4 = transform_to_mat4x4(V.node.parent.global_transform)
-                current_transform = V.actors[0].getTransform().GetMatrix()
-
-                # if the current transform is identical to the new one,
-                # then we do not need to change anything (creating the mesh is slow)
-                if not V.node.trimesh._new_mesh:
-                    changed = False
-                    for i in range(4):
-                        for j in range(4):
-                            if current_transform.GetElement(i,j) != mat4x4.GetElement(i,j):
-                                changed = True
-
-                    if not changed:
-                        continue
-
-                # Update the source-mesh position
-                #
-                # the source-mesh itself is updated in "add_new_actors_to_screen"
-                V.actors[0].setTransform(mat4x4)
-                V.actors[0].alpha(vc.ALPHA_BUOYANCY)
-
-                if vc.COLOR_BUOYANCY_MESH_FILL is None:
-                    V.actors[0].c(vc.COLOR_BUOYANCY_MESH_LINES)
-                    V.actors[0].wireframe()
+                # If we are here then either the source-mesh has been updated or the position has changed
 
                 if self.quick_updates_only:
                     for a in V.actors:
@@ -1192,20 +1216,20 @@ class Viewport:
                     V.actors[1].on()
 
                 # update water-plane
-                x1,x2,y1,y2,_,_ = V.node.trimesh.get_extends()
+                x1, x2, y1, y2, _, _ = V.node.trimesh.get_extends()
                 x1 -= vc.VISUAL_BUOYANCY_PLANE_EXTEND
                 x2 += vc.VISUAL_BUOYANCY_PLANE_EXTEND
                 y1 -= vc.VISUAL_BUOYANCY_PLANE_EXTEND
                 y2 += vc.VISUAL_BUOYANCY_PLANE_EXTEND
-                p1 = V.node.parent.to_glob_position((x1,y1,0))
+                p1 = V.node.parent.to_glob_position((x1, y1, 0))
                 p2 = V.node.parent.to_glob_position((x2, y1, 0))
                 p3 = V.node.parent.to_glob_position((x2, y2, 0))
                 p4 = V.node.parent.to_glob_position((x1, y2, 0))
 
-                corners = [(p1[0],p1[1], 0),
-                            (p2[0],p2[1], 0),
-                            (p4[0],p4[1], 0),
-                            (p3[0],p3[1], 0)]
+                corners = [(p1[0], p1[1], 0),
+                           (p2[0], p2[1], 0),
+                           (p4[0], p4[1], 0),
+                           (p3[0], p3[1], 0)]
                 V.actors[2].points(corners)
 
                 # Instead of updating, remove the old actor and create a new one
@@ -1237,7 +1261,10 @@ class Viewport:
                     if self.screen is not None:
                         self.screen.add(vis)
 
-                node.trimesh._new_mesh = False
+                continue
+
+            if isinstance(V.node, vf.ContactMesh):
+
                 continue
 
 
@@ -1253,37 +1280,6 @@ class Viewport:
                 if V.__just_created:
                     V._visual_volume = -1
 
-                # move the full mesh with the parent
-                mat4x4 = transform_to_mat4x4(V.node.parent.global_transform)
-                current_transform = V.actors[0].getTransform().GetMatrix()
-
-                # if the current transform is identical to the new one,
-                # and the mesh has not changed
-                # and the volume has not changed
-                # then we do not need to change anything (creating the mesh is slow)
-                if not V.node.trimesh._new_mesh:
-                    if V._visual_volume == V.node.volume:
-                        changed = False
-                        for i in range(4):
-                            for j in range(4):
-                                if current_transform.GetElement(i,j) != mat4x4.GetElement(i,j):
-                                    changed = True
-
-                        if not changed:
-                            continue
-
-                # Update the actors
-                V.node.update()
-
-                # Update the source-mesh position
-                #
-                # the source-mesh itself is updated in "add_new_actors_to_screen"
-                V.actors[0].setTransform(mat4x4)
-                V.actors[0].alpha(vc.ALPHA_BUOYANCY)
-
-                if vc.COLOR_BUOYANCY_MESH_FILL is None:
-                    V.actors[0].c(vc.COLOR_BUOYANCY_MESH_LINES)
-                    V.actors[0].wireframe()
 
                 if self.quick_updates_only:
                     for a in V.actors:
@@ -1292,6 +1288,9 @@ class Viewport:
                 else:
                     for a in V.actors:
                         a.on()
+
+                # Update the actors
+                V.node.update()
 
                 # Update the CoB
                 # move the CoB to the new (global!) position
@@ -1310,7 +1309,7 @@ class Viewport:
                 # remove already existing submerged mesh (if any)
                 if len(V.actors) > 2:
                     if self.screen is not None:
-                        self.screen.remove(V.actors[2])  # remove sides
+                        self.screen.remove(V.actors[2])
                         V.actors.remove(V.actors[2])
 
                 mesh = V.node._vfNode.current_mesh
@@ -1350,15 +1349,9 @@ class Viewport:
                     for i in range(len(points)-2):
                         faces.append([nVerts,nVerts+i+2,nVerts+i+1])
 
-                    # top = vp.Mesh([vertices, faces])
-                    # top.c(vc.COLOR_WATER_TANK)
-                    #
-                    # top.actor_type = ActorType.MESH_OR_CONNECTOR
-
 
                     vis = vp.Mesh([vertices, faces]).c(vc.COLOR_BUOYANCY_MESH_LINES)
                     vis.actor_type = ActorType.MESH_OR_CONNECTOR
-                    # vis.wireframe()
                     vis.lw(0)
                     vis.c(vc.COLOR_WATER_TANK)
                     vis.alpha(vc.ALPHA_WATER_TANK)
@@ -1368,9 +1361,8 @@ class Viewport:
                     if self.screen is not None:
                         self.screen.add(vis)
 
-
-                node.trimesh._new_mesh = False
                 V._visual_volume = V.node.volume
+
                 continue
 
             if isinstance(V.node, vf.Axis):
@@ -1449,12 +1441,15 @@ class Viewport:
 
                     self.screen.add(va.actors[0])
 
-                if isinstance(va.node, vf.Buoyancy) or isinstance(va.node, vf.ContactMesh):
+                if isinstance(va.node, vf.Buoyancy) or isinstance(va.node, vf.ContactMesh) or isinstance(va.node, vf.Tank):
                     if va.node.trimesh._new_mesh:
 
                         new_mesh = actor_from_trimesh(va.node.trimesh._TriMesh)
+                        new_mesh.no_outline = True
+
                         if new_mesh is not None:
                             self.screen.clear(va.actors[0])
+
                             va.actors[0] = new_mesh
                             va.actors[0].actor_type = ActorType.MESH_OR_CONNECTOR
 
@@ -1462,7 +1457,25 @@ class Viewport:
                             mat4x4 = transform_to_mat4x4(tr)
                             va.actors[0].setTransform(mat4x4)
 
-                            self.screen.add(va.actors[0])
+                            if isinstance(va.node, vf.Buoyancy):
+                                va.actors[0].alpha(vc.ALPHA_BUOYANCY)
+                                if vc.COLOR_BUOYANCY_MESH_FILL is None:
+                                    va.actors[0].c(vc.COLOR_BUOYANCY_MESH_LINES)
+                                    va.actors[0].wireframe()
+
+                            elif isinstance(va.node, vf.ContactMesh):
+                                va.actors[0].c(vc.COLOR_CONTACT_MESH_FILL)
+
+                            elif isinstance(va.node, vf.Tank):
+
+                                if vc.COLOR_BUOYANCY_MESH_FILL is None:
+                                    va.actors[0].c(vc.COLOR_BUOYANCY_MESH_LINES)
+                                    va.actors[0].wireframe()
+
+                            else:
+                                raise Exception('Bug in add_new_actors_to_screen')
+
+                            self.screen.add(va.actors[0])  # add after positioning
 
                             # va.node.trimesh._new_mesh = False  # is set to False by position_visuals
 
@@ -1479,50 +1492,6 @@ class Viewport:
             ren.Finalize()
             iren.TerminateApp()
 
-
-    # def screenshot(self, w=800, h=600,camera_pos=(50,-25,10), lookat = (0,0,0)):
-    #     vp.settings.lightFollowsCamera = True
-    #
-    #     self.create_world_actors()
-    #
-    #     camera = dict()
-    #     camera['viewup'] = [0, 0, 1]
-    #     camera['pos'] = camera_pos
-    #     camera['focalPoint'] = lookat
-    #
-    #     offscreen = vp.Plotter(axes=0, offscreen=True, size=(w,h))
-    #
-    #     for va in self.visuals:
-    #         for a in va.actors:
-    #             if a.GetVisibility():
-    #                 offscreen.add(a)
-    #
-    #     print('show')
-    #     offscreen.show(camera=camera)
-    #
-    #
-    #     for r in offscreen.renderers:
-    #         r.SetBackground(1,1,1)
-    #         r.UseFXAAOn()
-    #
-    #     self.update_outlines()
-    #
-    #     # offscreen.renderer.Render()
-    #
-    #     filename = str(vc.PATH_TEMP_SCREENSHOT)
-    #
-    #     print('export')
-    #     array = vp.screenshot(filename, returnNumpy=False)
-    #
-    #     # import matplotlib.pyplot as plt
-    #     #
-    #     # plt.figure(figsize=(w/300,h/300), dpi=300)
-    #     # plt.axis(False)
-    #     # plt.imshow(array)
-    #     # plt.show()
-    #
-    #     from IPython.display import Image, display
-    #     display(Image(filename))
 
 
     def setup_screen(self,qtWidget = None):
@@ -1626,23 +1595,6 @@ class Viewport:
         if self.mouseRightEvent is not None:
             self.mouseRightEvent(info)
 
-    # def make_lighter(self):
-    #     """Increase light intensity for embedded mode"""
-    #     C = self.light.GetIntensity()
-    #     C += 0.05
-    #     self.light.SetIntensity(C)
-    #     print('Light intensity = {}'.format(C))
-    #     self.refresh_embeded_view()
-    #
-    # def make_darker(self):
-    #     """Decrease light intensity for embedded mode"""
-    #     C = self.light.GetIntensity()
-    #     C -= 0.05
-    #     if C <= 0:
-    #         C = 0
-    #     self.light.SetIntensity(C)
-    #     print('Light intensity = {}'.format(C))
-    #     self.refresh_embeded_view()
 
     def show_embedded(self, target_frame):
         """target frame : QFrame """
