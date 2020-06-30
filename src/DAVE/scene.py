@@ -2672,10 +2672,8 @@ class Buoyancy(NodeWithParent):
         self._trimesh = TriMeshSource(self._scene, self._vfNode.trimesh) # the tri-mesh is wrapped in a custom object
 
     def update(self):
-        try:
-            self._vfNode.reloadTrimesh()
-        except:
-            print('Please update your version of pyo3d. ')
+        self._vfNode.reloadTrimesh()
+
 
     @property
     def trimesh(self) -> TriMeshSource:

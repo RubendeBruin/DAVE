@@ -20,7 +20,7 @@ if system() == 'Linux':
     os.environ['DISPLAY'] = ':99'
 
 import DAVE.visual
-import vtkplotter as vtkp
+import vedo as vtkp
 import vtk
 
 """

@@ -11,7 +11,7 @@
 """
 
 """
-visual visualizes a scene using vtkplotter
+visual visualizes a scene using vedo
 
 
 nodeA class is VisualActor
@@ -31,7 +31,7 @@ code will change.
 import vtkmodules.qt
 vtkmodules.qt.PyQtImpl = 'PySide2'
 
-import vtkplotter as vp   # ref: https://github.com/marcomusy/vtkplotter
+import vedo as vp   # ref: https://github.com/marcomusy/vedo
 
 # vp.settings.renderLinesAsTubes = True
 
@@ -113,7 +113,7 @@ def apply_parent_tranlation_on_transform(parent, t):
     t.Concatenate(mat4x4)
 
 def actor_from_trimesh(trimesh):
-    """Creates a vtkplotter.Actor from a pyo3d.TriMesh"""
+    """Creates a vedo.Mesh from a pyo3d.TriMesh"""
 
     if trimesh.nFaces == 0:
         return vp.Cube(side=0.00001)
@@ -169,7 +169,7 @@ class VisualOutline:
 class VisualActor:
 
     def __init__(self, actors, node):
-        self.actors = actors  # vtkplotter actors
+        self.actors = actors  # vedo actors
         self.node = node      # Node
         # self.visible = True
         self._original_colors = list()
@@ -242,7 +242,7 @@ class VisualActor:
 
     def set_dsa(self, d,s,a):
         for act in self.actors:
-            act.lighting(diffuse=d, ambient=a, specular=s, enabled=True)
+            act.lighting(diffuse=d, ambient=a, specular=s)
 
     def on(self):
         for a in self.actors:
@@ -1446,6 +1446,8 @@ class Viewport:
                 if isinstance(va.node, vf.Buoyancy) or isinstance(va.node, vf.ContactMesh) or isinstance(va.node, vf.Tank):
                     if va.node.trimesh._new_mesh:
 
+                        # va.node.update() # the whole scene is already updated when executing code
+
                         new_mesh = actor_from_trimesh(va.node.trimesh._TriMesh)
                         new_mesh.no_outline = True
 
@@ -1464,6 +1466,8 @@ class Viewport:
                                 if vc.COLOR_BUOYANCY_MESH_FILL is None:
                                     va.actors[0].c(vc.COLOR_BUOYANCY_MESH_LINES)
                                     va.actors[0].wireframe()
+                                else:
+                                    va.actors[0].c(vc.COLOR_BUOYANCY_MESH_FILL)
 
                             elif isinstance(va.node, vf.ContactMesh):
                                 va.actors[0].c(vc.COLOR_CONTACT_MESH_FILL)
@@ -1502,7 +1506,7 @@ class Viewport:
         if self.Jupyter and qtWidget is None:  # it is possible to launch the Gui from jupyter, so check for both
 
             # create embedded notebook (k3d) view
-            import vtkplotter as vtkp
+            import vedo as vtkp
             vtkp.settings.embedWindow(backend='k3d')
             self.screen = vp.Plotter(axes = 4, bg=vc.COLOR_BG1, bg2=vc.COLOR_BG2)
 
@@ -1511,7 +1515,7 @@ class Viewport:
             if qtWidget is None:
 
                 # create stand-alone interactive view
-                import vtkplotter as vtkp
+                import vedo as vtkp
                 vtkp.settings.embedWindow(backend=None)
 
                 self.screen = vp.plotter.Plotter(interactive=True, offscreen=False,
@@ -1520,7 +1524,7 @@ class Viewport:
             else:
 
                 # create embedded Qt view
-                import vtkplotter as vtkp
+                import vedo as vtkp
                 vtkp.settings.embedWindow(backend=None)
 
                 self.screen = vp.plotter.Plotter(qtWidget=qtWidget,
