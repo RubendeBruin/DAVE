@@ -2741,6 +2741,8 @@ class Tank(NodeWithParent):
 
     @property
     def fill_pct(self):
+        if self.capacity == 0:
+            return 0
         return 100*self.volume / self.capacity
 
     @fill_pct.setter

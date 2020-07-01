@@ -1419,7 +1419,9 @@ class Viewport:
                         to_be_added.append(a)
                         # self.screen.add(a)   # do not add directly to avoid frequent updates
                         #print('adding actor for {}'.format(va.node.name))
-            self.screen.add(to_be_added)
+
+            if to_be_added:
+                self.screen.add(to_be_added)
 
             # check if objs or meshes need to be re-loaded
             for va in self.visuals:
@@ -1470,13 +1472,18 @@ class Viewport:
                                     va.actors[0].c(vc.COLOR_BUOYANCY_MESH_FILL)
 
                             elif isinstance(va.node, vf.ContactMesh):
-                                va.actors[0].c(vc.COLOR_CONTACT_MESH_FILL)
+                                if vc.COLOR_CONTACT_MESH_FILL is None:
+                                    va.actors[0].c(vc.COLOR_CONTACT_MESH_LINES)
+                                    va.actors[0].wireframe()
+                                else:
+                                    va.actors[0].c(vc.COLOR_CONTACT_MESH_FILL)
 
                             elif isinstance(va.node, vf.Tank):
-
-                                if vc.COLOR_BUOYANCY_MESH_FILL is None:
-                                    va.actors[0].c(vc.COLOR_BUOYANCY_MESH_LINES)
+                                if vc.COLOR_TANK_MESH_FILL is None:
+                                    va.actors[0].c(vc.COLOR_TANK_MESH_LINES)
                                     va.actors[0].wireframe()
+                                else:
+                                    va.actors[0].c(vc.COLOR_TANK_MESH_FILL)
 
                             else:
                                 raise Exception('Bug in add_new_actors_to_screen')
@@ -1530,6 +1537,7 @@ class Viewport:
                 self.screen = vp.plotter.Plotter(qtWidget=qtWidget,
                                             axes=4, bg=vc.COLOR_BG1, bg2=vc.COLOR_BG2)
 
+
     def show(self, qtWidget = None, camera = None):
         """Add actors to screen and show"""
         if self.screen is None:
@@ -1581,6 +1589,7 @@ class Viewport:
                 # r.SetPass(ssao)
 
             self.update_outlines()
+            screen.resetcam = False
 
             return screen
 
