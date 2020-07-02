@@ -218,11 +218,13 @@ class Gui():
 
 
         self.visual.create_visuals(recreate=True)
-        self.visual.mouseLeftEvent = self.view3d_select_element
-
         self.visual.show_embedded(self.ui.frame3d)
+
         self.visual.position_visuals()
         self.visual.update_visibility()
+
+        self.visual.mouseLeftEvent = self.view3d_select_element
+
 
         # right-click event for
         self.ui.frame3d.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -701,6 +703,11 @@ class Gui():
             self.animation_continue()
         else:
             self.animation_pause()
+            remember = self.visual.quick_updates_only
+            self.visual.quick_updates_only = False
+            self.animation_activate_time(self.ui.aniSlider.value() / 1000)
+            self.visual.quick_updates_only = remember
+
 
     def animation_change_time(self):
 
@@ -709,7 +716,10 @@ class Gui():
             return
 
         t = self.ui.aniSlider.value() / 1000
+        remember = self.visual.quick_updates_only
+        self.visual.quick_updates_only = False
         self.animation_activate_time(t)
+        self.visual.quick_updates_only = remember
 
     # =================================================== end of animation functions ==================
 

@@ -625,13 +625,13 @@ class Viewport:
                 # This is the source-mesh. Connect it to the parent
                 vis = actor_from_trimesh(N.trimesh._TriMesh)
 
-                if vc.COLOR_BUOYANCY_MESH_FILL is not None:
-                    vis.c(vc.COLOR_BUOYANCY_MESH_FILL)
+                if vc.COLOR_TANK_MESH_FILL is not None:
+                    vis.c(vc.COLOR_TANK_MESH_FILL)
+                else:
+                    vis.wireframe()
+                    vis.c(vc.COLOR_TANK_MESH_LINES)
 
                 vis.actor_type = ActorType.MESH_OR_CONNECTOR
-
-                if vc.COLOR_BUOYANCY_MESH_FILL is None:
-                    vis.wireframe()
 
                 if vis is not None:
                     actors.append(vis)
@@ -640,9 +640,6 @@ class Viewport:
                 c = vp.Sphere(r=0.5, res = vc.RESOLUTION_SPHERE).c(vc.COLOR_WATER)
                 c.actor_type = ActorType.MESH_OR_CONNECTOR
                 actors.append(c)
-
-
-
 
 
             if isinstance(N, vf.ContactMesh):
@@ -656,6 +653,12 @@ class Viewport:
                     vis = vp.Cube(side=0.00001)
 
                 vis.actor_type = ActorType.MESH_OR_CONNECTOR
+
+                if vc.COLOR_CONTACT_MESH_FILL is not None:
+                    vis.c(vc.COLOR_CONTACT_MESH_FILL)
+                else:
+                    vis.wireframe()
+                    vis.c(vc.COLOR_CONTACT_MESH_LINES)
 
                 vis.loaded_obj = True
 
@@ -1150,37 +1153,32 @@ class Viewport:
                 # Source mesh update is common for all mesh-like nodes
                 #
 
-                changed = False
+                changed = False   # anything changed?
 
                 if node.trimesh._new_mesh:
                     self.screen.add(V.actors[0])
-                    changed = True
+                    changed = True                  # yes, mesh has changed
                     node.trimesh._new_mesh = False
 
-                else:
 
-                    # move the full mesh with the parent
-                    mat4x4 = transform_to_mat4x4(V.node.parent.global_transform)
-                    current_transform = V.actors[0].getTransform().GetMatrix()
+                # move the full mesh with the parent
+                mat4x4 = transform_to_mat4x4(V.node.parent.global_transform)
+                current_transform = V.actors[0].getTransform().GetMatrix()
 
-                    # if the current transform is identical to the new one,
-                    # then we do not need to change anything (creating the mesh is slow)
+                # if the current transform is identical to the new one,
+                # then we do not need to change anything (creating the mesh is slow)
 
-                    for i in range(4):
-                        for j in range(4):
-                            if current_transform.GetElement(i, j) != mat4x4.GetElement(i, j):
-                                changed = True
+                for i in range(4):
+                    for j in range(4):
+                        if current_transform.GetElement(i, j) != mat4x4.GetElement(i, j):
+                            changed = True     # yes, transform has changed
+                            break
 
-                    # move the full mesh with the parent
-                    mat4x4 = transform_to_mat4x4(V.node.parent.global_transform)
-
-                    # Update the source-mesh position
-                    #
-                    # the source-mesh itself is updated in "add_new_actors_to_screen"
-                    if changed:
-                        V.actors[0].setTransform(mat4x4)
-
-
+                # Update the source-mesh position
+                #
+                # the source-mesh itself is updated in "add_new_actors_to_screen"
+                if changed:
+                    V.actors[0].setTransform(mat4x4)
 
                 if not changed:
                     continue    # skip the other update functions
@@ -1576,17 +1574,21 @@ class Viewport:
             for r in self.screen.renderers:
                 r.ResetCamera()
 
-                # Add SAOO
-
+                # # Add SSAO
+                # #
                 # basicPasses = vtk.vtkRenderStepsPass()
                 # ssao = vtk.vtkSSAOPass()
-                # ssao.SetRadius(5)
+                # ssao.SetRadius(1)
                 # ssao.SetDelegatePass(basicPasses)
                 # ssao.SetBlur(True)
                 # ssao.SetKernelSize(8)
-                # ssao.ComputeKernel()
 
                 # r.SetPass(ssao)
+                # # r.SetUseDepthPeeling(True)
+
+                r.SetUseDepthPeeling(True)
+                # r.SetMaximumNumberOfPeels(4)  # <-- default = 4
+
 
             self.update_outlines()
             screen.resetcam = False
