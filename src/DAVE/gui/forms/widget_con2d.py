@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_con2d.ui',
 # licensing of 'widget_con2d.ui' applies.
 #
-# Created: Thu Oct 31 16:19:28 2019
+# Created: Thu Jul  2 20:34:21 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -149,13 +149,13 @@ class Ui_widget_con2d(object):
 
     def retranslateUi(self, widget_con2d):
         widget_con2d.setWindowTitle(QtWidgets.QApplication.translate("widget_con2d", "Form", None, -1))
-        self.label_9.setText(QtWidgets.QApplication.translate("widget_con2d", "Master", None, -1))
+        self.label_9.setText(QtWidgets.QApplication.translate("widget_con2d", "Main", None, -1))
         self.label_10.setText(QtWidgets.QApplication.translate("widget_con2d", "[axis]", None, -1))
-        self.label_11.setText(QtWidgets.QApplication.translate("widget_con2d", "Slave", None, -1))
+        self.label_11.setText(QtWidgets.QApplication.translate("widget_con2d", "Secondary", None, -1))
         self.label_12.setText(QtWidgets.QApplication.translate("widget_con2d", "[axis]", None, -1))
         self.label_14.setText(QtWidgets.QApplication.translate("widget_con2d", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Linear stiffness</span></p></body></html>", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("widget_con2d", "kN/m", None, -1))
         self.label_13.setText(QtWidgets.QApplication.translate("widget_con2d", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Angular stiffness</span></p></body></html>", None, -1))
         self.label_4.setText(QtWidgets.QApplication.translate("widget_con2d", "kN.m/rad", None, -1))
-        self.label.setText(QtWidgets.QApplication.translate("widget_con2d", "2d-connector works on shortest distance or angle between two axis sytems.", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("widget_con2d", "2d-connector works on shortest distance and angle between two axis sytems.", None, -1))
 

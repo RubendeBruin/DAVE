@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_lincon6.ui',
 # licensing of 'widget_lincon6.ui' applies.
 #
-# Created: Thu Oct 31 16:19:27 2019
+# Created: Thu Jul  2 20:34:21 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -197,16 +197,16 @@ class Ui_widget_lincon6(object):
 
     def retranslateUi(self, widget_lincon6):
         widget_lincon6.setWindowTitle(QtWidgets.QApplication.translate("widget_lincon6", "Form", None, -1))
-        self.label_9.setText(QtWidgets.QApplication.translate("widget_lincon6", "Master", None, -1))
+        self.label_9.setText(QtWidgets.QApplication.translate("widget_lincon6", "Main", None, -1))
         self.label_10.setText(QtWidgets.QApplication.translate("widget_lincon6", "[axis]", None, -1))
-        self.label_11.setText(QtWidgets.QApplication.translate("widget_lincon6", "Slave", None, -1))
+        self.label_11.setText(QtWidgets.QApplication.translate("widget_lincon6", "Secondary", None, -1))
         self.label_12.setText(QtWidgets.QApplication.translate("widget_lincon6", "[axis]", None, -1))
         self.label_7.setText(QtWidgets.QApplication.translate("widget_lincon6", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Stiffness</span></p></body></html>", None, -1))
-        self.label.setText(QtWidgets.QApplication.translate("widget_lincon6", "X - translation", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("widget_lincon6", "X - translation [kN/m]", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("widget_lincon6", "Y - translation", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("widget_lincon6", "Z - translation", None, -1))
-        self.label_4.setText(QtWidgets.QApplication.translate("widget_lincon6", "X-rotation", None, -1))
+        self.label_4.setText(QtWidgets.QApplication.translate("widget_lincon6", "X-rotation [kNm/rad]", None, -1))
         self.label_5.setText(QtWidgets.QApplication.translate("widget_lincon6", "Y-rotation", None, -1))
         self.label_6.setText(QtWidgets.QApplication.translate("widget_lincon6", "Z-rotation", None, -1))
-        self.label_8.setText(QtWidgets.QApplication.translate("widget_lincon6", "<html><head/><body><p>Stiffness are defined in the axis system of MASTER</p><p>Rotations are the projected rotations. </p><p>rotation about Z is the arc-tan of the y-component of the rotated X unit axis divided by its x-component.</p></body></html>", None, -1))
+        self.label_8.setText(QtWidgets.QApplication.translate("widget_lincon6", "<html><head/><body><p>Stiffness are defined in the axis system of Main</p><p>Rotations are the projected rotations. </p><p>Rotation about Z is the arc-tan of the y-component of the rotated X unit axis divided by its x-component.</p></body></html>", None, -1))
 

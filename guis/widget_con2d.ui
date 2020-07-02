@@ -47,7 +47,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Master</string>
+         <string>Main</string>
         </property>
        </widget>
       </item>
@@ -100,7 +100,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Slave</string>
+         <string>Secondary</string>
         </property>
        </widget>
       </item>
@@ -258,7 +258,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>2d-connector works on shortest distance or angle between two axis sytems.</string>
+      <string>2d-connector works on shortest distance and angle between two axis sytems.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

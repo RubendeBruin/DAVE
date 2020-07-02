@@ -761,6 +761,8 @@ class Axis(NodeWithParent):
 
     @property
     def inertia(self):
+        """The linear inertia of the axis in [mT] Aka: "Mass"
+        - used only for dynamics """
         return self._inertia
 
     @inertia.setter
@@ -772,6 +774,9 @@ class Axis(NodeWithParent):
 
     @property
     def inertia_position(self):
+        """The position (x,y,z) of the center of inertia. Aka: "cog"
+        - used only for dynamics
+        - defined in local axis system"""
         return np.array(self._inertia_position,dtype=float)
 
     @inertia_position.setter
@@ -783,6 +788,18 @@ class Axis(NodeWithParent):
 
     @property
     def inertia_radii(self):
+        """The radii of gyration (rxx,ryy,rzz) of the inertia
+
+        Used to calculate the mass moments of inertia via
+
+        Ixx = rxx^2 * inertia
+        Iyy = rxx^2 * inertia
+        Izz = rxx^2 * inertia
+
+        Note that DAVE does not directly support cross terms in the interia matrix of an axis system. If you want to
+        use cross terms then combine multiple axis system to reach the same result. This is because inertia matrices with
+        diagonal terms can not be translated.
+        """
         return np.array(self._inertia_radii, dtype=float)
 
     @inertia_radii.setter
@@ -845,17 +862,17 @@ class Axis(NodeWithParent):
 
     @property
     def x(self):
-        """The x-component of the position vector"""
+        """The x-component of the position vector - local axis system of parent [m]"""
         return self.position[0]
 
     @property
     def y(self):
-        """The y-component of the position vector"""
+        """The y-component of the position vector - local axis system of parent [m]"""
         return self.position[1]
 
     @property
     def z(self):
-        """The y-component of the position vector"""
+        """The y-component of the position vector - local axis system of parent [m]"""
         return self.position[2]
 
     @x.setter
@@ -880,7 +897,8 @@ class Axis(NodeWithParent):
 
     @property
     def position(self):
-        """Position of the axis (x,y,z)
+        """Position of the axis (x,y,z) [m]
+
         These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)"""
         return self._vfNode.position
 
@@ -893,17 +911,17 @@ class Axis(NodeWithParent):
 
     @property
     def rx(self):
-        """The x-component of the rotation vector"""
+        """The x-component of the rotation vector [degrees, parent axis system]"""
         return self.rotation[0]
 
     @property
     def ry(self):
-        """The y-component of the rotation vector"""
+        """The y-component of the rotation vector [degrees, parent axis system]"""
         return self.rotation[1]
 
     @property
     def rz(self):
-        """The z-component of the rotation vector"""
+        """The z-component of the rotation vector [degrees, parent axis system]"""
         return self.rotation[2]
 
     @rx.setter
@@ -942,7 +960,21 @@ class Axis(NodeWithParent):
     # we need to over-ride the parent property to be able to call _geometry_changed afterwards
     @property
     def parent(self):
-        """Determines the parent of the axis. Should either be another axis or 'None'"""
+        """Determines the parent of the axis. Should either be another axis or 'None'
+
+        Other axis may be refered to by reference or by name (str). So the following are identical
+
+            p = s.new_axis('parent_axis')
+            c = s.new_axis('child axis')
+
+            c.parent = p
+            c.parent = 'parent_axis'
+
+        To define that an axis does not have a parent use
+
+            c.parent = None
+
+        """
         return super().parent
 
     @parent.setter
@@ -960,17 +992,17 @@ class Axis(NodeWithParent):
 
     @property
     def gx(self):
-        """The x-component of the global position vector"""
+        """The x-component of the global position vector [m, global axis system]"""
         return self.global_position[0]
 
     @property
     def gy(self):
-        """The y-component of the global position vector"""
+        """The y-component of the global position vector [m, global axis system]"""
         return self.global_position[1]
 
     @property
     def gz(self):
-        """The z-component of the global position vector"""
+        """The z-component of the global position vector [m, global axis system]"""
         return self.global_position[2]
 
     @gx.setter
@@ -993,7 +1025,7 @@ class Axis(NodeWithParent):
 
     @property
     def global_position(self):
-        """The global position of the origin."""
+        """The global position of the origin of the axis system  (m,m,m) - global axis system."""
         return self._vfNode.global_position
 
     @global_position.setter
@@ -1007,17 +1039,17 @@ class Axis(NodeWithParent):
 
     @property
     def grx(self):
-        """The x-component of the global rotation vector"""
+        """The x-component of the global rotation vector [degrees, global axis system]"""
         return self.global_rotation[0]
 
     @property
     def gry(self):
-        """The y-component of the global rotation vector"""
+        """The y-component of the global rotation vector [degrees, global axis system]"""
         return self.global_rotation[1]
 
     @property
     def grz(self):
-        """The z-component of the global rotation vector"""
+        """The z-component of the global rotation vector [degrees, global axis system]"""
         return self.global_rotation[2]
 
     @grx.setter
@@ -1062,7 +1094,7 @@ class Axis(NodeWithParent):
         """Returns the trim in [%]. This is the z-component of the unit -x vector. So a positive rotation about
         the y axis result in a positive tilt_y.
 
-        See Also: heel
+        See Also: trim
         """
         x = (-1, 0, 0)
         ux = self.to_glob_direction(x)
@@ -1117,63 +1149,80 @@ class Axis(NodeWithParent):
 
     @property
     def global_transform(self):
-        """Read-only: The global tranform of the axis system."""
+        """Read-only: The global transform of the axis system."""
         return self._vfNode.global_transform
 
     @property
     def connection_force(self):
-        """Returns the force and moment that this axis applies on its parent [Parent axis system]"""
+        """The forces and moments that this axis applies on its parent at the origin of this axis system. (kN, kN, kN, kNm, kNm, kNm) [Parent axis system]
+
+        If this axis would be connected to a point on its parent, and that point would be located at the location of the origin of this axis system
+        then the connection force equals the force and moment applied on that point.
+
+        Example:
+            parent axis with name A
+            this axis with name B
+            this axis is located on A at position (10,0,0)
+            there is a Point at the center of this axis system.
+            A force with Fz = -10 acts on the Point.
+
+            The connection_force is (-10,0,0,0,0,0)
+
+            This is the force and moment as applied on A at point (10,0,0)
+
+
+        """
         return self._vfNode.connection_force
 
     @property
     def connection_force_x(self):
-        """The x-component of the connection-force vector"""
+        """The x-component of the connection-force vector [kN]"""
         return self.connection_force[0]
 
     @property
     def connection_force_y(self):
-        """The y-component of the connection-force vector"""
+        """The y-component of the connection-force vector [kN]"""
         return self.connection_force[1]
 
     @property
     def connection_force_z(self):
-        """The z-component of the connection-force vector"""
+        """The z-component of the connection-force vector [kN]"""
         return self.connection_force[2]
 
     @property
     def connection_moment_x(self):
-        """The mx-component of the connection-force vector"""
+        """The mx-component of the connection-force vector [kNm]"""
         return self.connection_force[3]
 
     @property
     def connection_moment_y(self):
-        """The my-component of the connection-force vector"""
+        """The my-component of the connection-force vector [kNm]"""
         return self.connection_force[4]
 
     @property
     def connection_moment_z(self):
-        """The mx-component of the connection-force vector"""
+        """The mx-component of the connection-force vector [kNm]"""
         return self.connection_force[5]
 
     @property
     def applied_force(self):
-        """Returns the force and moment that is applied on this axis [Global axis system]
+        """Returns the force and moment that is applied on this axis at its origin (kN, kN, kN, kNm, kNm, kNm) [Global axis system]
         """
         return self._vfNode.applied_force
 
     @property
     def ux(self):
-        """The unit x axis in global coordinates"""
+        """The unit x axis in global coordinates [m,m,m]"""
         return self.to_glob_direction((1,0,0))
 
     @property
     def uy(self):
-        """The unit y axis in global coordinates"""
+        """The unit y axis in global coordinates [m,m,m]"""
         return self.to_glob_direction((0, 1, 0))
 
     @property
     def uz(self):
-        """The unit z axis in global coordinates"""
+        """The unit z axis in global coordinates [m,m,m]"""
         return self.to_glob_direction((0, 0, 1))
 
     @property
@@ -1307,16 +1356,17 @@ class Point(NodeWithParent):
 
     @property
     def x(self):
-        """x component of local position"""
+        """x component of local position [m, parent axis system]"""
         return self.position[0]
 
     @property
     def y(self):
-        """y component of local position"""
+        """y component of local position  [m, parent axis system]"""
         return self.position[1]
 
     @property
     def z(self):
+        """z component of local position  [m, parent axis system]"""
         return self.position[2]
 
     @x.setter
@@ -1341,7 +1391,7 @@ class Point(NodeWithParent):
 
     @property
     def position(self):
-        """Local position"""
+        """Local position (m,m,m) [parent axis system]"""
         return self._vfNode.position
 
     @position.setter
@@ -1352,22 +1402,22 @@ class Point(NodeWithParent):
 
     @property
     def applied_force_and_moment_global(self):
-        """Returns the applied force in the parent axis system"""
+        """Applied force and moment on this point (kN, kN, kN, kNm, kNm, kNm) [Global axis system]"""
         return self._vfNode.applied_force
 
     @property
     def gx(self):
-        """x component of global position"""
+        """x component of global position [m]"""
         return self.global_position[0]
 
     @property
     def gy(self):
-        """y component of global position"""
+        """y component of global position [m]"""
         return self.global_position[1]
 
     @property
     def gz(self):
-        """z component of global position"""
+        """z component of global position [m]"""
         return self.global_position[2]
 
     @gx.setter
@@ -1390,7 +1440,7 @@ class Point(NodeWithParent):
 
     @property
     def global_position(self):
-        """Global position"""
+        """Global position (m,m,m)"""
         return self._vfNode.global_position
 
     @global_position.setter
@@ -1417,7 +1467,7 @@ class Point(NodeWithParent):
         return code
 
 class RigidBody(Axis):
-    """A Rigid body, internally composed of an axis, a poi (cog) and a force (gravity)"""
+    """A Rigid body, internally composed of an axis, a point (cog) and a force (gravity)"""
 
     def __init__(self, scene, axis, poi, force):
         super().__init__(scene, axis)
@@ -1442,6 +1492,7 @@ class RigidBody(Axis):
 
     @name.setter
     def name(self, newname):
+        """Name of the node (str), must be unique"""
         self._verify_change_allowed()
         # super().name = newname
         super(RigidBody, self.__class__).name.fset(self, newname)
@@ -1450,19 +1501,22 @@ class RigidBody(Axis):
 
     @property
     def cogx(self):
+        """x-component of cog position [m, local axis system]"""
         return self.cog[0]
 
     @property
     def cogy(self):
+        """y-component of cog position [m, local axis system]"""
         return self.cog[1]
 
     @property
     def cogz(self):
+        """z-component of cog position [m, local axis system]"""
         return self.cog[2]
 
     @property
     def cog(self):
-        """Control the cog position of the body"""
+        """Center of Gravity position [m, local axis system]"""
         return self._vfPoi.position
 
     @cogx.setter
@@ -1493,7 +1547,10 @@ class RigidBody(Axis):
 
     @property
     def mass(self):
-        """Control the static mass of the body"""
+        """Control the static mass of the body
+
+        See Also: inertia
+        """
         return self._vfForce.force[2] / -vfc.G
 
     @mass.setter
@@ -1583,17 +1640,23 @@ class Cable(CoreConnectedNode):
 
     @property
     def tension(self):
-        """Tension in the cable in [kN] (Readonly, calculated)"""
+        """Tension in the cable in [kN]"""
         return self._vfNode.tension
 
     @property
     def stretch(self):
-        """Stretch of the cable in [m] (Readonly, calculated)"""
+        """Stretch of the cable in [m]
+
+        Tension [kN] = EA [kN] * stretch [m] / length [m]
+        """
         return self._vfNode.stretch
 
     @property
     def length(self):
-        """Length in rest [m]"""
+        """Length of the cable when in rest [m]
+
+        Tension [kN] = EA [kN] * stretch [m] / length [m]
+        """
         return self._vfNode.Length
 
     @length.setter
@@ -1605,7 +1668,10 @@ class Cable(CoreConnectedNode):
 
     @property
     def EA(self):
-        """Stiffness of the cable in [kN]"""
+        """Stiffness of the cable in [kN]
+
+        Tension [kN] = EA [kN] * stretch [m] / length [m]
+        """
         return self._vfNode.EA
 
     @EA.setter
@@ -1615,7 +1681,7 @@ class Cable(CoreConnectedNode):
 
     @property
     def diameter(self):
-        """Diameter of the cable [m]"""
+        """Diameter of the cable [m]. Used when a cable runs over a circle."""
         return self._vfNode.diameter
 
     @diameter.setter
@@ -1625,6 +1691,37 @@ class Cable(CoreConnectedNode):
 
     @property
     def connections(self):
+        """List or Tuple of nodes that this cable is connected to. Nodes may be passed by name (string) or by reference.
+
+        Example:
+            p1 = s.new_point('point 1')
+            p2 = s.new_point('point 2', position = (0,0,10)
+            p3 = s.new_point('point 3', position = (10,0,10)
+            c1 = s.new_circle('circle 1',parent = p3, axis = (0,1,0), radius = 1)
+            c = s.new_cable("cable_1", endA="Point", endB = "Circle", length = 1.2, EA = 10000)
+
+            c.connections = ('point 1', 'point 2', 'point 3')
+            # or
+            c.connections = (p1, p2,p3)
+            # or
+            c.connections = [p1, 'point 2', p3]  # all the same
+
+        Notes:
+            1. Circles can not be used as endpoins. If one of the endpoints is a Circle then the Point that that circle
+            is located on is used instead.
+            2. Points should not be repeated directly.
+
+        The following will fail:
+        c.connections = ('point 1', 'point 3', 'circle 1')
+
+        because the last point is a circle. So circle 1 will be replaced with the point that the circle is on: point 3.
+
+        so this becomes
+        ('point 1','point 3','point 3')
+
+        this is invalid because point 3 is repeated.
+
+        """
         return tuple(self._pois)
 
     @connections.setter
@@ -1662,8 +1759,7 @@ class Cable(CoreConnectedNode):
 
 
     def get_points_for_visual(self):
-        """Returns an list of 3D locations which can be used for visualization
-        """
+        """A list of 3D locations which can be used for visualization """
         return self._vfNode.global_points
 
     def _add_connection_to_core(self, connection):
@@ -1738,8 +1834,7 @@ class Force(NodeWithParent):
 
     @property
     def force(self):
-        """
-        Gets or sets the x,y and z force components.
+        """The x,y and z components of the force (kN,kN,kN) in the global axis system.
 
         Example s['wind'].force = (12,34,56)
         """
@@ -1753,7 +1848,7 @@ class Force(NodeWithParent):
 
     @property
     def fx(self):
-        """The global x-component of the force"""
+        """The global x-component of the force [kN]"""
         return self.force[0]
 
     @fx.setter
@@ -1764,7 +1859,7 @@ class Force(NodeWithParent):
 
     @property
     def fy(self):
-        """The global y-component of the force"""
+        """The global y-component of the force [kN]"""
         return self.force[1]
 
     @fy.setter
@@ -1775,7 +1870,7 @@ class Force(NodeWithParent):
 
     @property
     def fz(self):
-        """The global z-component of the force"""
+        """The global z-component of the force [kN]"""
 
         return self.force[2]
 
@@ -1787,8 +1882,7 @@ class Force(NodeWithParent):
 
     @property
     def moment(self):
-        """
-        Gets or sets the x,y and z moment components.
+        """The x,y and z components of the moment (kNm,kNm,kNm) in the global axis system.
 
         Example s['wind'].moment = (12,34,56)
         """
@@ -1802,7 +1896,7 @@ class Force(NodeWithParent):
 
     @property
     def mx(self):
-        """The global x-component of the force"""
+        """The global x-component of the moment [kNm]"""
         return self.moment[0]
 
     @mx.setter
@@ -1813,7 +1907,7 @@ class Force(NodeWithParent):
 
     @property
     def my(self):
-        """The global y-component of the force"""
+        """The global y-component of the moment [kNm]"""
         return self.moment[1]
 
     @my.setter
@@ -1824,7 +1918,7 @@ class Force(NodeWithParent):
 
     @property
     def mz(self):
-        """The global z-component of the force"""
+        """The global z-component of the moment [kNm]"""
         return self.moment[2]
 
     @mz.setter
@@ -1856,6 +1950,11 @@ class ContactMesh(NodeWithParent):
 
     @property
     def trimesh(self):
+        """The TriMeshSource object which can be used to change the mesh
+
+        Example:
+            s['Contactmesh'].trimesh.load_obj('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
+        """
         return self._trimesh
 
 
@@ -1886,39 +1985,81 @@ class ContactBall(NodeWithParent):
         self._meshes = list()
 
     @property
-    def has_contact(self) -> bool:
+    def can_contact(self) -> bool:
+        """True if the ball ball is perpendicular to at least one of the faces of one of the meshes. So when contact is possible. To check if there is contact use "force"
+        See Also: Force
+        """
         return self._vfNode.has_contact
 
     @property
-    def contactpoint(self):
-        return self._vfNode.contact_point
+    def contact_force(self) -> tuple:
+        """Returns the force on the ball (kN, kN, kN) [global axis system]
 
-    def add_contactmesh(self, mesh):
+        The force is applied at the center of the ball
 
-        mesh = self._scene._node_from_node(mesh, ContactMesh)
-
-        if mesh not in self._meshes:
-            self._meshes.append(mesh)
-            self._vfNode.add_contactmesh(mesh._vfNode)
-        else:
-            Warning('mesh already present, not adding again')
-
-    def clear_contactmeshes(self):
-        self._meshes.clear()
-        self._vfNode.clear_contactmeshes()
-
-    @property
-    def meshes_names(self) -> list:
-        """returns a list with the names of the meshes"""
-        return [m.name for m in self._meshes]
-
-
-    @property
-    def force(self):
+        See Also: contact_force_magnitude
+        """
         return self._vfNode.force
 
     @property
+    def contact_force_magnitude(self) -> float:
+        """Returns the absolute force on the ball, if any (kN)
+
+        The force is applied on the center of the ball
+
+        See Also: contact_force
+        """
+        return np.linalg.norm(self._vfNode.force)
+
+    @property
+    def compression(self) -> float:
+        """Returns the absolute compression of the ball, if any (m) """
+        return self._vfNode.force
+
+
+    @property
+    def contactpoint(self):
+        """The nearest point on the nearest mesh. Only defined  """
+        return self._vfNode.contact_point
+
+    def update(self):
+        """Updates the contact-points and applies forces on mesh and point"""
+        self._vfNode.update()
+
+    @property
+    def meshes(self) -> tuple:
+        return tuple(self._meshes)
+
+    @meshes.setter
+    def meshes(self, value):
+        self._verify_change_allowed()
+        meshes = []
+
+        for m in value:
+            cm = self._scene._node_from_node_or_str(m)
+
+            if not isinstance(cm, ContactMesh):
+                raise ValueError(f'Only ContactMesh nodes can be used as mesh, but {cm.name} is a {type(cm)}')
+            if cm in meshes:
+                raise ValueError(f'Can not add {cm.name} twice')
+
+            meshes.append(cm)
+
+        # copy to meshes
+        self._meshes.clear()
+        self._vfNode.clear_contactmeshes()
+        for mesh in meshes:
+            self._meshes.append(mesh)
+            self._vfNode.add_contactmesh(mesh._vfNode)
+
+    @property
+    def meshes_names(self) -> list:
+        """List with the names of the meshes"""
+        return [m.name for m in self._meshes]
+
+    @property
     def radius(self):
+        """Radius of the contact-ball [m]"""
         return self._vfNode.radius
 
     @radius.setter
@@ -1930,6 +2071,7 @@ class ContactBall(NodeWithParent):
 
     @property
     def k(self):
+        """Compression stiffness of the ball in force per meter of compression [kN/m]"""
         return self._vfNode.k
 
     @k.setter
@@ -1957,15 +2099,11 @@ class ContactBall(NodeWithParent):
         return code
 
 class Circle(NodeWithParent):
-    """A Sheave models sheave with axis and diameter.
-
-
-    """
+    """A Circle models a circle shape based on a diameter and an axis direction  """
 
     @property
-    def axis(self):
-        """
-        Gets or sets direction of the sheave axis
+    def axis(self) -> tuple:
+        """Direction of the sheave axis (x,y,z) in parent axis system
         """
         return self._vfNode.axis_direction
 
@@ -1979,11 +2117,8 @@ class Circle(NodeWithParent):
 
     @property
     def radius(self):
-        """
-        Gets or sets radius of the sheave
-        """
+        """Radius of the circle [m]"""
         return self._vfNode.radius
-
 
     @radius.setter
     def radius(self, val):
@@ -2015,7 +2150,7 @@ class HydSpring(NodeWithParent):
 
     @property
     def cob(self):
-        """Center of buoyancy in parent axis system"""
+        """Center of buoyancy in parent axis system (m,m,m)"""
         return self._vfNode.position
 
     @cob.setter
@@ -2026,7 +2161,7 @@ class HydSpring(NodeWithParent):
 
     @property
     def BMT(self):
-        """Vertical distance between cob and metacenter for roll"""
+        """Vertical distance between cob and metacenter for roll [m]"""
         return self._vfNode.BMT
 
     @BMT.setter
@@ -2036,7 +2171,7 @@ class HydSpring(NodeWithParent):
 
     @property
     def BML(self):
-        """Vertical distance between cob and metacenter for pitch"""
+        """Vertical distance between cob and metacenter for pitch [m]"""
         return self._vfNode.BML
 
     @BML.setter
@@ -2046,7 +2181,7 @@ class HydSpring(NodeWithParent):
 
     @property
     def COFX(self):
-        """Horizontal x-position Center of Floatation (center of waterplane area), relative to cob"""
+        """Horizontal x-position Center of Floatation (center of waterplane area), relative to cob [m]"""
         return self._vfNode.COFX
 
     @COFX.setter
@@ -2056,7 +2191,7 @@ class HydSpring(NodeWithParent):
 
     @property
     def COFY(self):
-        """Horizontal y-position Center of Floatation (center of waterplane area), relative to cob"""
+        """Horizontal y-position Center of Floatation (center of waterplane area), relative to cob [m]"""
         return self._vfNode.COFY
 
     @COFY.setter
@@ -2066,7 +2201,7 @@ class HydSpring(NodeWithParent):
 
     @property
     def kHeave(self):
-        """Heave stiffness in kN/m"""
+        """Heave stiffness in [kN/m]"""
         return self._vfNode.kHeave
 
     @kHeave.setter
@@ -2076,7 +2211,7 @@ class HydSpring(NodeWithParent):
 
     @property
     def waterline(self):
-        """Waterline-elevation relative to cob for un-stretched heave-spring. Positive if cob is below the waterline (which is where is normally is)"""
+        """Waterline-elevation relative to cob for un-stretched heave-spring. Positive if cob is below the waterline (which is where is normally is) [m]"""
         return self._vfNode.waterline
 
     @waterline.setter
@@ -2116,6 +2251,10 @@ class LC6d(CoreConnectedNode):
     """A LC6d models a Linear Connector with 6 dofs.
 
     It connects two Axis elements with six linear springs.
+
+    The first axis system is called "main", the second is called "secondary". The difference is that
+    the "main" axis system is used for the definition of the stiffness values.
+
     The translational-springs are easy. The rotational springs may not be as intuitive. They are defined as:
 
       - rotation_x = arc-tan ( uy[0] / uy[1] )
@@ -2124,8 +2263,8 @@ class LC6d(CoreConnectedNode):
 
     which works fine for small rotations and rotations about only a single axis.
 
-    Try to avoid using very high stiffness settings to create fixed connections. It is better to use use the "fixed"
-    property of axis systems to create joints.
+    Tip:
+    It is better to use use the "fixed" property of axis systems to create joints.
 
     """
 
@@ -2139,7 +2278,7 @@ class LC6d(CoreConnectedNode):
 
     @property
     def stiffness(self):
-        """Stiffness of the connector (kx, ky, kz, krx, kry, krz)"""
+        """Stiffness of the connector (kx, ky, kz, krx, kry, krz) in [kN/m] and [kNm/rad] (axis system of the main axis)"""
         return self._vfNode.stiffness
 
     @stiffness.setter
@@ -2149,12 +2288,13 @@ class LC6d(CoreConnectedNode):
 
     @property
     def main(self):
-        """Master axis system"""
+        """Main axis system. This axis system dictates the axis system that the stiffness is expressed in"""
         return self._main
 
     @main.setter
     def main(self, val):
         self._verify_change_allowed()
+        val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Axis):
             raise TypeError('Provided nodeA should be a Axis')
 
@@ -2163,12 +2303,13 @@ class LC6d(CoreConnectedNode):
 
     @property
     def secondary(self):
-        """Slave axis system"""
+        """Secondary (connected) axis system"""
         return self._secondary
 
     @secondary.setter
     def secondary(self, val):
         self._verify_change_allowed()
+        val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Axis):
             raise TypeError('Provided nodeA should be a Axis')
 
@@ -2215,7 +2356,7 @@ class Connector2d(CoreConnectedNode):
 
     @property
     def moment(self):
-        """Actual moment between nodeA and nodeB [kN*m] (read-only)"""
+        """Actual moment between nodeA and nodeB [kNm] (read-only)"""
         return self._vfNode.moment
 
     @property
@@ -2250,7 +2391,7 @@ class Connector2d(CoreConnectedNode):
 
     @property
     def k_angular(self):
-        """Linear stiffness [kN*m/rad]"""
+        """Linear stiffness [kNm/rad]"""
         return self._vfNode.k_angular
 
     @k_angular.setter
@@ -2259,13 +2400,14 @@ class Connector2d(CoreConnectedNode):
         self._vfNode.k_angular = value
 
     @property
-    def nodeA(self):
-        """Master axis system"""
+    def nodeA(self) -> Axis:
+        """Connected axis system A"""
         return self._nodeA
 
     @nodeA.setter
     def nodeA(self, val):
         self._verify_change_allowed()
+        val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Axis):
             raise TypeError('Provided nodeA should be a Axis')
 
@@ -2273,13 +2415,14 @@ class Connector2d(CoreConnectedNode):
         self._vfNode.master = val._vfNode
 
     @property
-    def nodeB(self):
-        """Slave axis system"""
+    def nodeB(self) -> Axis:
+        """Connected axis system B"""
         return self._nodeB
 
     @nodeB.setter
     def nodeB(self, val):
         self._verify_change_allowed()
+        val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Axis):
             raise TypeError('Provided nodeA should be a Axis')
 
@@ -2648,27 +2791,27 @@ class TriMeshSource(Node):
         code = "# No code generated for TriMeshSource"
         return code
 
-    def change_parent_to(self, new_parent):
-        self._verify_change_allowed()
-        if not (isinstance(new_parent, Axis) or new_parent is None):
-            raise ValueError('Visuals can only be attached to an axis (or derived) or None')
-
-        # get current position and orientation
-        if self.parent is not None:
-            cur_position = self.parent.to_glob_position(self.offset)
-            cur_rotation = self.parent.to_glob_direction(self.rotation)
-        else:
-            cur_position = self.offset
-            cur_rotation = self.rotation
-
-        self.parent = new_parent
-
-        if new_parent is None:
-            self.offset = cur_position
-            self.rotation = cur_rotation
-        else:
-            self.offset = new_parent.to_loc_position(cur_position)
-            self.rotation = new_parent.to_loc_direction(cur_rotation)
+    # def change_parent_to(self, new_parent):
+    #     self._verify_change_allowed()
+    #     if not (isinstance(new_parent, Axis) or new_parent is None):
+    #         raise ValueError('Visuals can only be attached to an axis (or derived) or None')
+    #
+    #     # get current position and orientation
+    #     if self.parent is not None:
+    #         cur_position = self.parent.to_glob_position(self.offset)
+    #         cur_rotation = self.parent.to_glob_direction(self.rotation)
+    #     else:
+    #         cur_position = self.offset
+    #         cur_rotation = self.rotation
+    #
+    #     self.parent = new_parent
+    #
+    #     if new_parent is None:
+    #         self.offset = cur_position
+    #         self.rotation = cur_rotation
+    #     else:
+    #         self.offset = new_parent.to_loc_position(cur_position)
+    #         self.rotation = new_parent.to_loc_direction(cur_rotation)
 
 class Buoyancy(NodeWithParent):
     """Buoyancy provides a buoyancy force based on a buoyancy mesh. The mesh is triangulated and chopped at the instantaneous flat water surface. Buoyancy is applied as an upwards force that the center of buoyancy.
@@ -5362,7 +5505,15 @@ class Scene:
         if length <0:
             new_node.length = 1e-8
             self._vfc.state_update()
-            new_node.length = new_node.stretch + 1e-8
+
+            new_length = new_node.stretch + 1e-8
+
+            if new_length > 0:
+                new_node.length = new_length
+            else:
+                # is is possible that all nodes are at the same location which means the total length becomes 0
+                self.delete(new_node.name)
+                raise ValueError("No lengh has been supplied and all connection points are at the same location - unable to determine a non-zero default length. Please supply a length")
 
 
         return new_node

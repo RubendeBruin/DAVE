@@ -47,7 +47,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Master</string>
+         <string>Main</string>
         </property>
        </widget>
       </item>
@@ -100,7 +100,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Slave</string>
+         <string>Secondary</string>
         </property>
        </widget>
       </item>
@@ -163,7 +163,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>X - translation</string>
+         <string>X - translation [kN/m]</string>
         </property>
        </widget>
       </item>
@@ -271,7 +271,7 @@
       <item row="4" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>X-rotation</string>
+         <string>X-rotation [kNm/rad]</string>
         </property>
        </widget>
       </item>
@@ -352,7 +352,7 @@
    <item>
     <widget class="QLabel" name="label_8">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Stiffness are defined in the axis system of MASTER&lt;/p&gt;&lt;p&gt;Rotations are the projected rotations. &lt;/p&gt;&lt;p&gt;rotation about Z is the arc-tan of the y-component of the rotated X unit axis divided by its x-component.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Stiffness are defined in the axis system of Main&lt;/p&gt;&lt;p&gt;Rotations are the projected rotations. &lt;/p&gt;&lt;p&gt;Rotation about Z is the arc-tan of the y-component of the rotated X unit axis divided by its x-component.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

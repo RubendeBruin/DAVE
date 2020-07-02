@@ -132,7 +132,7 @@
       <item>
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Points of the cable&lt;/p&gt;&lt;p&gt;drag/drop to modify&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Points of the cable&lt;/p&gt;&lt;p&gt;drag/drop to modify&lt;/p&gt;&lt;p&gt;Add points or circles by dragging and dropping them from the node-tree&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>

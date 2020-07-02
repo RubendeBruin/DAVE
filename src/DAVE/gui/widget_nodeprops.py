@@ -1407,6 +1407,7 @@ class EditContactBall(NodeEditor):
         ui.sbR.setValue(self.node.radius)
         ui.sbK.setValue(self.node.k)
 
+        ui.pbRemoveSelected.clicked.connect(self.delete_selected)
         ui.sbR.valueChanged.connect(self.callback)
         ui.sbK.valueChanged.connect(self.callback)
 
@@ -1438,20 +1439,29 @@ class EditContactBall(NodeEditor):
             event.ignore()
             return
 
-        code = "\ns['{}'].add_contactmesh('{}')".format(self.node.name,dragged_name)
-        self.run_code(code)
+        try:
+            dropped_node = self.scene[dragged_name]
+        except:
+            dropped_node = None
 
-        # update the contents of this widget
-        self.update_meshes_list()
+        if not isinstance(dropped_node, ContactMesh):
+            event.ignore()
+            return
+
+        self.ui.lwMeshes.addItem(QListWidgetItem(dragged_name))
+        self.callback()
+
+    def delete_selected(self):
+        row = self.ui.lwMeshes.currentRow()
+        if row > -1:
+            self.ui.lwMeshes.takeItem(row)
+        self.callback()
 
     def update_meshes_list(self):
         self.ui.lwMeshes.clear()
         for name in self.node.meshes_names:
-            self.ui.lwMeshes.addItem(QListWidgetItem(name) )
+            self.ui.lwMeshes.addItem(QListWidgetItem(name))
 
-
-
-        
 
     def generate_code(self):
 
@@ -1465,6 +1475,20 @@ class EditContactBall(NodeEditor):
             code += element + '.radius = {}'.format(new_r)
         if new_k != self.node.k:
             code += element + '.k = {}'.format(new_k)
+
+        new_names = []
+        for i in range(self.ui.lwMeshes.count()):
+            new_names.append(self.ui.lwMeshes.item(i).text())
+
+        if not (new_names == self.node.meshes_names):
+
+            if new_names:
+                code += element + '.meshes = ['
+                for name in new_names:
+                    code += "'{}',".format(name)
+                code = code[:-1] + ']'
+            else:
+                code += element + '.meshes = []'
 
         return code
 

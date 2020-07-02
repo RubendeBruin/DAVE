@@ -162,7 +162,7 @@ def add_poi(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Poi'))
+    ui.tbName.setText(scene.available_name_like('Point'))
 
     if (AddNode.exec() == QtWidgets.QDialog.Accepted):
         parent = ui.cbParentAxis.currentText()
@@ -258,7 +258,7 @@ def add_sheave(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Sheave'))
+    ui.tbName.setText(scene.available_name_like('Circle'))
 
     if (AddNode.exec() == QtWidgets.QDialog.Accepted):
         poi = ui.cbParentPoi.currentText()

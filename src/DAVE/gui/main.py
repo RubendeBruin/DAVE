@@ -1112,15 +1112,23 @@ class Gui():
 
             if node._manager is None:
 
+                def edit():
+                    self.selected_nodes.clear()
+                    self.guiSelectNode(node_name)
+                    self.show_guiWidget('Properties', WidgetNodeProps) # people often close this one
+
+                menu.addAction("Edit {}".format(node_name), edit)
+
                 showhide = menu.addAction("Visible")
                 showhide.setCheckable(True)
+
                 showhide.setChecked(node.visible)
+
 
                 if node.visible:
                     showhide.triggered.connect(lambda: self.run_code(f"s['{node_name}'].visible = False",guiEventType.VIEWER_SETTINGS_UPDATE))
                 else:
                     showhide.triggered.connect(lambda: self.run_code(f"s['{node_name}'].visible = True",guiEventType.VIEWER_SETTINGS_UPDATE))
-
 
                 def delete():
                     self.run_code('s.delete("{}")'.format(node_name), guiEventType.MODEL_STRUCTURE_CHANGED)
@@ -1128,14 +1136,9 @@ class Gui():
                 def dissolve():
                     self.run_code('s.dissolve("{}")'.format(node_name), guiEventType.MODEL_STRUCTURE_CHANGED)
 
-                def edit():
-                    self.selected_nodes.clear()
-                    self.guiSelectNode(node_name)
-                    self.show_guiWidget('Properties', WidgetNodeProps) # people often close this one
-
                 menu.addAction("Delete {}".format(node_name), delete)
                 menu.addAction("Dissolve (Evaporate) {}".format(node_name), dissolve)
-                menu.addAction("Edit {}".format(node_name), edit)
+
 
                 menu.addSeparator()
 
@@ -1378,7 +1381,9 @@ class Gui():
         if self.selected_nodes:
             if self._active_workspace == 'CONSTRUCT':
                 if 'Properties' in self.guiWidgets:
-                    self.guiWidgets['Properties'].setVisible(True)
+                    if not self.guiWidgets['Properties'].isVisible():
+                        self.guiWidgets['Properties'].setVisible(True)
+                        self.guiEmitEvent(guiEventType.SELECTION_CHANGED) # force update
 
         if old_selection != self.selected_nodes:
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)

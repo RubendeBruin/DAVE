@@ -1035,6 +1035,9 @@ class Viewport:
                 continue
 
             if isinstance(V.node, vf.ContactBall):
+
+                V.node.update()
+
                 t = vtk.vtkTransform()
                 t.Identity()
                 t.Translate(V.node.parent.global_position)
@@ -1047,9 +1050,9 @@ class Viewport:
 
 
                 V.actors[0].setTransform(t)
-                V.actors[0].wireframe(V.node.force>0)
+                V.actors[0].wireframe(V.node.contact_force_magnitude>0)
 
-                if V.node.has_contact:
+                if V.node.can_contact:
                     point1 =  V.node.parent.global_position
                     point2 = V.node.contactpoint
                     V.actors[1].points([point1, point2])
