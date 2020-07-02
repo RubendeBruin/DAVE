@@ -444,6 +444,7 @@ class Gui():
         space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         self.ui.toolBar.addWidget(space)
 
+        self._active_workspace = None
         self.activate_workspace('CONSTRUCT')
 
         # ======================== Finalize ========================
@@ -483,10 +484,16 @@ class Gui():
 
     def escPressed(self):
         self.animation_terminate()  # terminate any running animations
+        self.select_none()
 
+    def select_none(self):
         if self.selected_nodes:
             self.selected_nodes.clear()
+            if 'Properties' in self.guiWidgets:
+                self.guiWidgets['Properties'].setVisible(False)
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+
+
 
     def savepoint_restore(self):
 
@@ -494,15 +501,17 @@ class Gui():
             self.animation_terminate(keep_current_dofs=True)
 
         if self.scene.savepoint_restore():
-
-            self.selected_nodes.clear()
+            self.select_none()
             self.guiEmitEvent(guiEventType.MODEL_STRUCTURE_CHANGED)
 
 
     def activate_workspace(self, name):
 
+        self._active_workspace = name
+
         self.animation_terminate()
         self.savepoint_restore()
+
 
         self.visual.set_alpha(1.0)
         self.visual.hide_actors_of_type([ActorType.BALLASTTANK])
@@ -1103,6 +1112,16 @@ class Gui():
 
             if node._manager is None:
 
+                showhide = menu.addAction("Visible")
+                showhide.setCheckable(True)
+                showhide.setChecked(node.visible)
+
+                if node.visible:
+                    showhide.triggered.connect(lambda: self.run_code(f"s['{node_name}'].visible = False",guiEventType.VIEWER_SETTINGS_UPDATE))
+                else:
+                    showhide.triggered.connect(lambda: self.run_code(f"s['{node_name}'].visible = True",guiEventType.VIEWER_SETTINGS_UPDATE))
+
+
                 def delete():
                     self.run_code('s.delete("{}")'.format(node_name), guiEventType.MODEL_STRUCTURE_CHANGED)
 
@@ -1160,6 +1179,7 @@ class Gui():
 
         menu.addSeparator()
 
+        menu.addAction("New Tank", self.new_tank)
         menu.addAction("New Linear Hydrostatics", self.new_linear_hydrostatics)
         menu.addAction("New Buoyancy mesh", self.new_buoyancy_mesh)
         menu.addAction("New Contact mesh", self.new_contactmesh)
@@ -1204,6 +1224,9 @@ class Gui():
 
     def new_buoyancy_mesh(self):
         self.new_something(new_node_dialog.add_buoyancy)
+
+    def new_tank(self):
+        self.new_something(new_node_dialog.add_tank)
 
     def new_contactmesh(self):
         self.new_something(new_node_dialog.add_contactmesh)
@@ -1306,7 +1329,8 @@ class Gui():
     def guiEmitEvent(self, event, sender=None):
         for widget in self.guiWidgets.values():
             if not (widget is sender):
-                widget.guiEvent(event)
+                if widget.isVisible():
+                    widget.guiEvent(event)
 
 
         # update the visual as well
@@ -1351,6 +1375,10 @@ class Gui():
         if node not in self.selected_nodes:
             self.selected_nodes.append(node)
 
+        if self.selected_nodes:
+            if self._active_workspace == 'CONSTRUCT':
+                if 'Properties' in self.guiWidgets:
+                    self.guiWidgets['Properties'].setVisible(True)
 
         if old_selection != self.selected_nodes:
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)

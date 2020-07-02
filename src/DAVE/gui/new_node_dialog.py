@@ -409,6 +409,30 @@ def add_buoyancy(scene, selection=None):
     else:
         return None
 
+def add_tank(scene, selection=None):
+    ui, AddNode = add_node(scene,selection)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/tank.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Tank'))
+
+
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+
+        return "new_tank('{}', parent = '{}')".format(name, parent)
+
+    else:
+        return None
+
+
 def add_contactmesh(scene, selection=None):
     ui, AddNode = add_node(scene,selection)
 

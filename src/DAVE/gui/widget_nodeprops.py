@@ -76,12 +76,15 @@ class EditNode(NodeEditor):
 
         try:
             ui.tbName.textChanged.disconnect()
+            ui.cbVisible.toggled.disconnect()
         except:
             pass # no connections yet
 
         ui.tbName.setText(self.node.name)
+        ui.cbVisible.setChecked(self.node.visible)
 
         ui.tbName.textChanged.connect(self.callback)
+        ui.cbVisible.toggled.connect(self.callback)
 
         self.ui = ui
 
@@ -1773,6 +1776,11 @@ class WidgetNodeProps(guiDockWidget):
         if not new_name == node.name:
             code = element + ".name = '{}'".format(new_name)
             self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
+
+        new_visible = self._node_name_editor.ui.cbVisible.isChecked()
+        if not new_visible == node.visible:
+            code = element + ".visible = {}".format(new_visible)
+            self.guiRunCodeCallback(code, guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def node_property_changed(self):
         code = ""

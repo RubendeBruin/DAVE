@@ -1,5 +1,5 @@
 from DAVE.gui.dockwidget import *
-from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag
+from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag, QColor
 from PySide2.QtCore import QMimeData, Qt, QItemSelectionModel
 from PySide2.QtWidgets import QTreeWidgetItem, QCheckBox
 import DAVE.scene as ds
@@ -105,6 +105,10 @@ class WidgetNodeTree(guiDockWidget):
                      guiEventType.FULL_UPDATE,
                      guiEventType.SELECTED_NODE_MODIFIED]:
             self.update_node_data_and_tree()
+            self.update_node_visibility()
+
+        if event in [guiEventType.VIEWER_SETTINGS_UPDATE]:
+            self.update_node_visibility()
 
         if event in [guiEventType.SELECTION_CHANGED]:
             self.update_selection()
@@ -157,6 +161,18 @@ class WidgetNodeTree(guiDockWidget):
                 self.treeView.scrollToItem(self.items[name])
             else:
                 self.items[name].setSelected(False)
+
+    def update_node_visibility(self):
+
+        for name, item in self.items.items():
+
+            # item not visible? then mark gray
+            node = self.guiScene[name]
+            if not node.visible:
+                item.setTextColor(0, QColor(124, 124, 124))
+            else:
+                item.setTextColor(0, QColor(0,0,0))
+
 
     def update_node_data_and_tree(self):
         """
@@ -220,6 +236,8 @@ class WidgetNodeTree(guiDockWidget):
                 item.setIcon(0,QIcon(":/icons/pin_hole.png"))
             elif isinstance(node, ds.Sling):
                 item.setIcon(0,QIcon(":/icons/sling.png"))
+            elif isinstance(node, ds.Tank):
+                item.setIcon(0, QIcon(":/icons/tank.png"))
 
             try:
                 parent = node.parent
@@ -233,8 +251,6 @@ class WidgetNodeTree(guiDockWidget):
             if isinstance(node._manager, GeometricContact):
                 if node == node._manager._parent_circle_parent_parent:
                     show_managed_node = True
-
-
 
             if node._manager:
 

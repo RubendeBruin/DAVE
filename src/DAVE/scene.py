@@ -426,6 +426,9 @@ class Node:
         self._manager : Node or None = None
         """Reference to a node that controls this node"""
 
+        self._visible : bool = True
+        """Determines if the visual for of this node (if any) should be visible"""
+
     def __repr__(self):
         return f'{self.name} <{str(type(self))[7:-2]}>'
 
@@ -439,6 +442,18 @@ class Node:
     def give_python_code(self):
         """Returns the python code that can be executed to re-create this node"""
         return "# No python code generated for element {}".format(self.name)
+
+    @property
+    def visible(self):
+        if self.manager:
+            return self.manager.visible
+        return self._visible
+
+    @visible.setter
+    def visible(self, value):
+        self._verify_change_allowed()
+        self._visible = value
+
 
     @property
     def manager(self):
@@ -2787,13 +2802,13 @@ class Tank(NodeWithParent):
         """Returns the capacity of the tank in m3. This is calculated from the defined geometry."""
         return self._vfNode.capacity
 
-
     def give_python_code(self):
         code = "# code for {}".format(self.name)
         code += "\nmesh = s.new_tank(name='{}',".format(self.name)
         if self.parent:
             code += "\n          parent='{}')".format(self.parent.name)
         code += "\nmesh.trimesh.load_obj(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
+        code += f"\ns['{self.name}'].volume = {self.volume}   # first load mesh, then set volume"
 
         return code
 
@@ -5956,6 +5971,11 @@ class Scene:
             else:
                 pass
                 # print(f'skipping {n.name} ')
+
+        # store the visibility code separately
+
+        for n in self._nodes:
+            code += f"\ns['{n.name}'].visible = {n.visible}"
 
         return code
 

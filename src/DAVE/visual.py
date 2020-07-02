@@ -1156,7 +1156,7 @@ class Viewport:
                 changed = False   # anything changed?
 
                 if node.trimesh._new_mesh:
-                    self.screen.add(V.actors[0])
+                    # self.screen.add(V.actors[0])
                     changed = True                  # yes, mesh has changed
                     node.trimesh._new_mesh = False
 
@@ -1201,8 +1201,9 @@ class Viewport:
                         a.off()
                     continue
                 else:
-                    for a in V.actors:
-                        a.on()
+                    if V.node.visible:
+                        for a in V.actors:
+                            a.on()
 
                 # Update the CoB
                 # move the CoB to the new (global!) position
@@ -1230,6 +1231,9 @@ class Viewport:
                            (p3[0], p3[1], 0)]
                 V.actors[2].points(corners)
 
+                if not V.node.visible:
+                    V.actors[2].off()
+
                 # Instead of updating, remove the old actor and create a new one
 
                 # remove already existing submerged mesh (if any)
@@ -1256,6 +1260,10 @@ class Viewport:
                     vis.wireframe()
                     vis.lw(vc.LINEWIDTH_SUBMERGED_MESH)
                     V.actors.append(vis)
+
+                    if not V.node.visible:
+                        vis.off()
+
                     if self.screen is not None:
                         self.screen.add(vis)
 
@@ -1284,8 +1292,9 @@ class Viewport:
                         a.off()
                     continue
                 else:
-                    for a in V.actors:
-                        a.on()
+                    if V.node.visible:
+                        for a in V.actors:
+                            a.on()
 
                 # Update the actors
                 V.node.update()
@@ -1357,6 +1366,9 @@ class Viewport:
                     vis.alpha(vc.ALPHA_WATER_TANK)
 
                     V.actors.append(vis)
+
+                    if not V.node.visible:
+                        vis.off()
 
                     if self.screen is not None:
                         self.screen.add(vis)
@@ -1441,6 +1453,9 @@ class Viewport:
                     va.actors[0].color(vc.COLOR_VISUAL)
                     va.actors[0].actor_type = ActorType.VISUAL
 
+                    if not va.node.visible:
+                        va.actors[0].off()
+
                     self.screen.add(va.actors[0])
 
                 if isinstance(va.node, vf.Buoyancy) or isinstance(va.node, vf.ContactMesh) or isinstance(va.node, vf.Tank):
@@ -1485,6 +1500,9 @@ class Viewport:
 
                             else:
                                 raise Exception('Bug in add_new_actors_to_screen')
+
+                            if not va.node.visible:
+                                va.actors[0].off()
 
                             self.screen.add(va.actors[0])  # add after positioning
 
@@ -1715,7 +1733,7 @@ class Viewport:
             alpha = 1-(10*dz)
             if alpha<0:
                 alpha = 0
-        self.global_visual.actors[0].alpha(alpha)
+        self.global_visual.actors[0].alpha(vc.ALPHA_SEA*alpha)
 
     def keyPressFunction(self, obj, event):
         key = obj.GetKeySym()
@@ -1739,10 +1757,17 @@ class Viewport:
         self.show_force = True
         self.show_visual = True
         self.show_global = False
-
         """
 
         for v in self.visuals:
+
+            if v.node is not None:
+                if not v.node.visible:
+                    for a in v.actors:
+                        a.off()
+                    continue
+
+
             for i,a in enumerate(v.actors):
 
                 try:
