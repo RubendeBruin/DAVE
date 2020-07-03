@@ -566,6 +566,9 @@ class NodeWithParent(CoreConnectedNode):
             self._parent = None
             self._vfNode.parent = None
         else:
+
+            var = self._scene._node_from_node_or_str(var)
+
             if isinstance(var, Axis) or isinstance(var, GeometricContact):
                 self._parent = var
                 self._vfNode.parent = var._vfNode
@@ -2084,8 +2087,6 @@ class ContactBall(NodeWithParent):
     def give_python_code(self):
         code = "# code for {}".format(self.name)
 
-        # new_contactball(self, name, parent=None, radius=None, k=None):
-
         code += "\ns.new_contactball(name='{}',".format(self.name)
         code += "\n                  parent='{}',".format(self.parent.name)
         code += "\n                  radius={},".format(self.radius)
@@ -2103,7 +2104,14 @@ class Circle(NodeWithParent):
 
     @property
     def axis(self) -> tuple:
-        """Direction of the sheave axis (x,y,z) in parent axis system
+        """Direction of the sheave axis (x,y,z) in parent axis system.
+
+        Note:
+            The direction of the axis is also used to determine the positive direction over the circumference of the
+            circle. This is then used when cables run over the circle or the circle is used for geometric contacts. So
+            if a cable runs over the circle in the wrong direction then a solution is to change the axis direction to
+            its opposite:  circle.axis =- circle.axis. (another solution in that case is to define the connections of
+            the cable in the reverse order)
         """
         return self._vfNode.axis_direction
 
@@ -2136,7 +2144,10 @@ class Circle(NodeWithParent):
 
     @property
     def global_position(self):
-        """Returns the global position of the center of the sheave"""
+        """Returns the global position of the center of the sheave.
+
+        Note: this is the same as the global position of the parent point.
+        """
         return self.parent.global_position
 
 
@@ -2461,7 +2472,6 @@ class LinearBeam(CoreConnectedNode):
     1. has the same global orientation as the nodeA system
     2. is at global position equal to the global position of local point (L,0,0) of the nodeA axis. (aka: the end of the beam)
 
-
     The scene.new_linearbeam automatically creates a dedicated axis system for each end of the beam. The orientation of this axis-system
     is determined as follows:
 
@@ -2483,6 +2493,11 @@ class LinearBeam(CoreConnectedNode):
 
     @property
     def EIy(self):
+        """E * Iyy : bending stiffness in the XZ plane [kN m2]
+
+        E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
+        Iyy is the cross section moment of inertia [m4]
+        """
         return self._vfNode.EIy
 
     @EIy.setter
@@ -2492,6 +2507,11 @@ class LinearBeam(CoreConnectedNode):
 
     @property
     def EIz(self):
+        """E * Izz : bending stiffness in the XY plane [kN m2]
+
+        E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
+        Iyy is the cross section moment of inertia [m4]
+        """
         return self._vfNode.EIz
 
     @EIz.setter
@@ -2501,6 +2521,11 @@ class LinearBeam(CoreConnectedNode):
 
     @property
     def GIp(self):
+        """G * Ipp : torsional stiffness about the X (length) axis [kN m2]
+
+        G is the shear-modulus of elasticity; for steel 75-80 GPa (10^6 kN/m2)
+        Ip is the cross section polar moment of inertia [m4]
+        """
         return self._vfNode.GIp
 
     @GIp.setter
@@ -2510,6 +2535,11 @@ class LinearBeam(CoreConnectedNode):
 
     @property
     def EA(self):
+        """E * A : stiffness in the length direction [kN]
+
+        E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
+        A is the cross-section area in [m2]
+        """
         return self._vfNode.EA
 
     @EA.setter
@@ -2518,11 +2548,8 @@ class LinearBeam(CoreConnectedNode):
         self._vfNode.EA = value
 
     @property
-    def nodeA(self):
-        return self._nodeA
-
-    @property
     def L(self):
+        """Length of the beam in unloaded condition [m]"""
         return self._vfNode.L
 
     @L.setter
@@ -2530,9 +2557,17 @@ class LinearBeam(CoreConnectedNode):
         self._verify_change_allowed()
         self._vfNode.L = value
 
+    @property
+    def nodeA(self):
+        """The axis system that the A-end of the beam is connected to. The beam leaves this axis system along the X-axis"""
+        return self._nodeA
+
     @nodeA.setter
     def nodeA(self, val):
         self._verify_change_allowed()
+
+        val = self._scene._node_from_node_or_str(val)
+
         if not isinstance(val, Axis):
             raise TypeError('Provided nodeA should be a Axis')
 
@@ -2541,11 +2576,13 @@ class LinearBeam(CoreConnectedNode):
 
     @property
     def nodeB(self):
+        """The axis system that the B-end of the beam is connected to. The beam arrives at this axis system along the X-axis"""
         return self._nodeB
 
     @nodeB.setter
     def nodeB(self, val):
         self._verify_change_allowed()
+        val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Axis):
             raise TypeError('Provided nodeA should be a Axis')
 
@@ -2554,24 +2591,28 @@ class LinearBeam(CoreConnectedNode):
 
     # read-only
     @property
-    def moment_on_nodeA(self):
-        return self._vfNode.moment_on_nodeA
+    def moment_A(self):
+        """Moment on beam at node A (kNm, kNm, kNm) , axis system of node A"""
+        return self._vfNode.moment_on_master
 
     @property
-    def moment_on_nodeB(self):
-        return self._vfNode.moment_on_nodeB
+    def moment_B(self):
+        """Moment on beam at node B (kNm, kNm, kNm) , axis system of node B"""
+        return self._vfNode.moment_on_slave
 
     @property
     def tension(self):
+        """Tension in the beam [kN], negative for compression"""
         return self._vfNode.tension
 
     @property
     def torsion(self):
+        """Torsion moment in [kNm]. Positive if end B has a positive rotation about the x-axis of end A """
         return self._vfNode.torsion
 
     @property
     def torsion_angle(self):
-        """Torsion angle in degrees"""
+        """Torsion angle [deg]. Positive if end B has a positive rotation about the x-axis of end A """
         return np.rad2deg(self._vfNode.torsion_angle)
 
     def give_python_code(self):
@@ -2609,9 +2650,11 @@ class TriMeshSource(Node):
         self._rotation = (0,0,0)
 
     def AddVertex(self, x,y,z):
+        """Adds a vertex (point)"""
         self._TriMesh.AddVertex(x,y,z)
 
     def AddFace(self, i,j,k):
+        """Adds a triangular face between vertex numbers i,j and k"""
         self._TriMesh.AddFace(i,j,k)
 
     def get_extends(self):
@@ -6126,7 +6169,8 @@ class Scene:
         # store the visibility code separately
 
         for n in self._nodes:
-            code += f"\ns['{n.name}'].visible = {n.visible}"
+            if not n.visible:
+                code += f"\ns['{n.name}'].visible = False"  # only report is not the default value
 
         return code
 
