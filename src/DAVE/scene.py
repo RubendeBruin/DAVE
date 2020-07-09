@@ -2896,12 +2896,27 @@ class Buoyancy(NodeWithParent):
         """Returns displaced volume in m^3"""
         return self._vfNode.displacement
 
+    @property
+    def density(self):
+        """Density of surrounding fluid in [mT/m3].
+        Typical values: Seawater = 1.025, fresh water = 1.00
+        """
+        return self._vfNode.density
+
+    @density.setter
+    def density(self, value):
+        assert1f_positive_or_zero(value, 'density')
+        self._vfNode.density = value
+
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
         code += "\nmesh = s.new_buoyancy(name='{}',".format(self.name)
-        if self.parent:
-            code += "\n          parent='{}')".format(self.parent.name)
+
+        if self.density != 1.025:
+            code += f'\n          density={self.density},'
+
+        code += "\n          parent='{}')".format(self.parent.name)
         code += "\nmesh.trimesh.load_obj(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
 
         return code
@@ -2942,6 +2957,7 @@ class Tank(NodeWithParent):
 
     @property
     def fill_pct(self):
+        """Amount of volume in tank as percentage of capacity [%]"""
         if self.capacity == 0:
             return 0
         return 100*self.volume / self.capacity
@@ -2952,6 +2968,21 @@ class Tank(NodeWithParent):
         if value>100:
             raise ValueError('Fill percentage should be between 0 and 100 [%]')
         self.volume = value * self.capacity / 100
+
+    # @property
+    # def fill_ht_pct(self):
+    #     """Fill as percentage of tank height considering its current orientation [%]. Setting this property changes the
+    #     volume of fluid in the tank.
+    #     The tank height is the actual globlal vertical distance between its highest and lowest vertex. So this changes
+    #     when the vessel rolls/pitches."""
+    #     return self._vfNode.fill_ht_pct
+    #
+    # @fill_ht_pct.setter
+    # def fill_ht_pct(self, value):
+    #     assert1f_positive_or_zero(value)
+    #     if value>100:
+    #         raise ValueError('Fill percentage should be between 0 and 100 [%]')
+    #     self._vfNode.fill_ht_pct = value
 
     @property
     def level_global(self):
@@ -2991,8 +3022,11 @@ class Tank(NodeWithParent):
     def give_python_code(self):
         code = "# code for {}".format(self.name)
         code += "\nmesh = s.new_tank(name='{}',".format(self.name)
-        if self.parent:
-            code += "\n          parent='{}')".format(self.parent.name)
+
+        if self.density != 1.025:
+            code += f'\n          density={self.density},'
+
+        code += "\n          parent='{}')".format(self.parent.name)
         code += "\nmesh.trimesh.load_obj(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
         code += f"\ns['{self.name}'].volume = {self.volume}   # first load mesh, then set volume"
 
@@ -5841,7 +5875,7 @@ class Scene:
         return new_node
 
 
-    def new_buoyancy(self, name, parent=None)->Buoyancy:
+    def new_buoyancy(self, name, parent=None, density = 1.025)->Buoyancy:
         """Creates a new *buoyancy* node and adds it to the scene.
 
         Args:
@@ -5862,6 +5896,8 @@ class Scene:
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
+        assert1f_positive_or_zero(density, "density")
+
         # then create
         a = self._vfc.new_buoyancy(name)
         new_node = Buoyancy(self, a)
@@ -5869,6 +5905,8 @@ class Scene:
         # and set properties
         if b is not None:
             new_node.parent = b
+
+        new_node.density = density
 
         self._nodes.append(new_node)
         return new_node
@@ -5985,8 +6023,7 @@ class Scene:
             new_node.radius = radius
 
         if meshes is not None:
-            for mesh in meshes:
-                new_node.add_contactmesh(self._node_from_node(mesh, ContactMesh))
+            new_node.meshes = meshes
 
         self._nodes.append(new_node)
         return new_node

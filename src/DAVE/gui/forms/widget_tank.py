@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_tank.ui',
 # licensing of 'widget_tank.ui' applies.
 #
-# Created: Thu Jul  2 20:34:21 2020
+# Created: Sat Jul  4 14:51:56 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,14 +13,14 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(501, 698)
+        Form.resize(501, 467)
         Form.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.formLayout = QtWidgets.QFormLayout(Form)
         self.formLayout.setObjectName("formLayout")
         self.label_9 = QtWidgets.QLabel(Form)
         self.label_9.setWordWrap(True)
         self.label_9.setObjectName("label_9")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.SpanningRole, self.label_9)
+        self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_9)
         self.label = QtWidgets.QLabel(Form)
         self.label.setObjectName("label")
         self.formLayout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label)
@@ -38,7 +38,7 @@ class Ui_Form(object):
         self.label_10 = QtWidgets.QLabel(Form)
         self.label_10.setWordWrap(True)
         self.label_10.setObjectName("label_10")
-        self.formLayout.setWidget(2, QtWidgets.QFormLayout.SpanningRole, self.label_10)
+        self.formLayout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_10)
         self.label_5 = QtWidgets.QLabel(Form)
         self.label_5.setObjectName("label_5")
         self.formLayout.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_5)
@@ -48,9 +48,6 @@ class Ui_Form(object):
         self.label_2 = QtWidgets.QLabel(Form)
         self.label_2.setObjectName("label_2")
         self.formLayout.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.label_2)
-        self.label_3 = QtWidgets.QLabel(Form)
-        self.label_3.setObjectName("label_3")
-        self.formLayout.setWidget(5, QtWidgets.QFormLayout.LabelRole, self.label_3)
         self.sbVolume = QtWidgets.QDoubleSpinBox(Form)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -62,6 +59,9 @@ class Ui_Form(object):
         self.sbVolume.setMaximum(99999999999999.0)
         self.sbVolume.setObjectName("sbVolume")
         self.formLayout.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.sbVolume)
+        self.label_3 = QtWidgets.QLabel(Form)
+        self.label_3.setObjectName("label_3")
+        self.formLayout.setWidget(5, QtWidgets.QFormLayout.LabelRole, self.label_3)
         self.sbPercentage = QtWidgets.QDoubleSpinBox(Form)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -74,6 +74,9 @@ class Ui_Form(object):
         self.sbPercentage.setSingleStep(5.0)
         self.sbPercentage.setObjectName("sbPercentage")
         self.formLayout.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.sbPercentage)
+        self.label_4 = QtWidgets.QLabel(Form)
+        self.label_4.setObjectName("label_4")
+        self.formLayout.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.label_4)
         self.sbElevation = QtWidgets.QDoubleSpinBox(Form)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -85,9 +88,11 @@ class Ui_Form(object):
         self.sbElevation.setMaximum(99999999999999.0)
         self.sbElevation.setObjectName("sbElevation")
         self.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.sbElevation)
-        self.label_4 = QtWidgets.QLabel(Form)
-        self.label_4.setObjectName("label_4")
-        self.formLayout.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.label_4)
+        self.label_8 = QtWidgets.QLabel(Form)
+        self.label_8.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.label_8.setWordWrap(False)
+        self.label_8.setObjectName("label_8")
+        self.formLayout.setWidget(7, QtWidgets.QFormLayout.FieldRole, self.label_8)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -100,6 +105,8 @@ class Ui_Form(object):
         self.label_5.setText(QtWidgets.QApplication.translate("Form", "Maximum capacity [m3]", None, -1))
         self.lblCapacity.setText(QtWidgets.QApplication.translate("Form", "Calculated", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("Form", "Volume [m3]", None, -1))
-        self.label_3.setText(QtWidgets.QApplication.translate("Form", "Percentage [%]", None, -1))
+        self.label_3.setText(QtWidgets.QApplication.translate("Form", "Fill percentage [%]", None, -1))
         self.label_4.setText(QtWidgets.QApplication.translate("Form", "Global Elevation [m]", None, -1))
+        self.label_8.setToolTip(QtWidgets.QApplication.translate("Form", "<html><head/><body><p>Setting any of these values changes the amount of fluid in the tank. Global elevation may thus change if the vessel moves.</p></body></html>", None, -1))
+        self.label_8.setText(QtWidgets.QApplication.translate("Form", "note (hoover to show)", None, -1))
 
