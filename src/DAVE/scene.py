@@ -2031,6 +2031,12 @@ class ContactBall(NodeWithParent):
 
     @property
     def meshes(self) -> tuple:
+        """List of contact-mesh nodes.
+        When getting this will yield a list of node references.
+        When setting node references and node-names may be used.
+
+        eg: ball.meshes = [mesh1, 'mesh2']
+        """
         return tuple(self._meshes)
 
     @meshes.setter
@@ -3033,27 +3039,6 @@ class Tank(NodeWithParent):
         return code
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class BallastSystem(Point):
     """A BallastSystem
 
@@ -3066,8 +3051,6 @@ class BallastSystem(Point):
     - System is similar to the setup of RigidBody, but without the Axis
     - The class extends Poi, but overrides some of its properties
     - Update nees to be called to update the weight and cog
-
-    TODO: Inertia
 
     """
 
@@ -3184,7 +3167,7 @@ class BallastSystem(Point):
             tank._pointmass.inertia = tank.inertia
             tank._pointmass.position = pos
 
-        print('Weight {} cog {} {} {}'.format(self._weight, *self._cog))
+        # print('Weight {} cog {} {} {}'.format(self._weight, *self._cog))
 
     def _delete_vfc(self):
         super()._delete_vfc()
@@ -3197,7 +3180,7 @@ class BallastSystem(Point):
 
     @property
     def position(self):
-        """Local position"""
+        """Position of the origin of the ballast system. Parent axis system [m,m,m]"""
         return self._position
 
     @position.setter
@@ -3323,7 +3306,7 @@ class BallastSystem(Point):
         self._order_tanks_to_inertia_moment(maximize=False)
 
     def _order_tanks_to_inertia_moment(self, maximize = True):
-
+        """Re-order tanks such that tanks furthest away from center of system are first on the list"""
         pos = [tank.position for tank in self._tanks]
         m = [tank.max for tank in self._tanks]
         pos = np.array(pos, dtype=float)
@@ -3396,33 +3379,36 @@ class BallastSystem(Point):
 
     @property
     def cogx(self):
+        """X position of combined CoG of all tank contents in the ballast-system. (local coordinate system) [m]"""
         return self.cog[0]
 
     @property
     def cogy(self):
+        """Y position of combined CoG of all tank contents in the ballast-system. (local coordinate system) [m]"""
         return self.cog[1]
 
     @property
     def cogz(self):
+        """Z position of combined CoG of all tank contents in the ballast-system. (local coordinate system) [m]"""
         return self.cog[2]
 
     @property
     def cog(self):
-        """Returns the cog of the ballast-system"""
+        """Combined CoG of all tank contents in the ballast-system. (local coordinate system) [m,m,m]"""
         self.update()
         return (self._cog[0], self._cog[1], self._cog[2])
 
     @property
     def weight(self):
-        """Returns the cog of the ballast-system"""
+        """Total weight of all tank fillings in the ballast system [mT]"""
         self.update()
         return self._weight
 
 
-    @property
-    def mass(self):
-        """Control the static mass of the body"""
-        return self._vfForce.force[2] / -vfc.G
+    # @property
+    # def mass(self):
+    #     """Control the static mass of the body"""
+    #     return self._vfForce.force[2] / -vfc.G
 
 
 
@@ -3577,6 +3563,7 @@ class GeometricContact(Manager):
 
     @property
     def parent(self):
+        """Parent of the connection - [Axis or derived] - READ ONLY"""
         return self._axis_on_parent.parent
 
     @parent.setter
@@ -3730,6 +3717,7 @@ class GeometricContact(Manager):
         return [self.parent]
 
     def flip(self):
+        """Changes the swivel angle by 180 degrees"""
         self.swivel = np.mod(self.swivel + 180, 360)
 
     def change_side(self):
@@ -3738,6 +3726,7 @@ class GeometricContact(Manager):
 
     @property
     def swivel(self):
+        """Swivel angle between parent and child objects [degrees]"""
         return self._connection_axial_rotation.rotation[0]
 
     @swivel.setter
@@ -3749,6 +3738,7 @@ class GeometricContact(Manager):
 
     @property
     def swivel_fixed(self):
+        """Allow parent and child to swivel relative to eachother [boolean]"""
         return self._connection_axial_rotation.fixed[3]
 
     @swivel_fixed.setter
@@ -3760,6 +3750,7 @@ class GeometricContact(Manager):
 
     @property
     def rotation_on_parent(self):
+        """Angle between the line connecting the centers of the circles and the axis system of the parent node [degrees]"""
         return self._pin_hole_connection.ry
 
     @rotation_on_parent.setter
@@ -3771,6 +3762,7 @@ class GeometricContact(Manager):
 
     @property
     def fixed_to_parent(self):
+        """Allow rotation around parent [boolean] see also: rotation_on_parent"""
         return self._pin_hole_connection.fixed[4]
 
     @fixed_to_parent.setter
@@ -3783,6 +3775,7 @@ class GeometricContact(Manager):
 
     @property
     def child_rotation(self):
+        """Angle between the line connecting the centers of the circles and the axis system of the child node [degrees]"""
         return self._axis_on_child.ry
 
     @child_rotation.setter
@@ -3794,6 +3787,7 @@ class GeometricContact(Manager):
 
     @property
     def child_fixed(self):
+        """Allow rotation of child relative to connection, see also: child_rotation [boolean]"""
         return self._axis_on_child.fixed[4]
 
     @child_fixed.setter
@@ -3805,6 +3799,7 @@ class GeometricContact(Manager):
 
     @property
     def inside(self):
+        """Type of connection: True means child circle is inside parent circle, False means the child circle is outside but the circumferences contact [boolean]"""
         return self._inside_connection
 
     @inside.setter
@@ -4138,6 +4133,7 @@ class Sling(Manager):
     # properties
     @property
     def length(self):
+        """Total length measured between the INSIDE of the eyes of the sling is pulled straight. [m]"""
         return self._length
 
     @length.setter
@@ -4152,6 +4148,7 @@ class Sling(Manager):
 
     @property
     def LeyeA(self):
+        """Total length inside eye A if stretched flat [m]"""
         return self._LeyeA
 
     @LeyeA.setter
@@ -4167,6 +4164,7 @@ class Sling(Manager):
 
     @property
     def LeyeB(self):
+        """Total length inside eye B if stretched flat [m]"""
         return self._LeyeB
 
     @LeyeB.setter
@@ -4182,6 +4180,7 @@ class Sling(Manager):
 
     @property
     def LspliceA(self):
+        """Length of the splice at end A [m]"""
         return self._LspliceA
 
     @LspliceA.setter
@@ -4197,6 +4196,7 @@ class Sling(Manager):
 
     @property
     def LspliceB(self):
+        """Length of the splice at end B [m]"""
         return self._LspliceB
 
     @LspliceB.setter
@@ -4212,6 +4212,7 @@ class Sling(Manager):
 
     @property
     def diameter(self):
+        """Diameter of the sling (except the splices) [m]"""
         return self._diameter
 
     @diameter.setter
@@ -4221,6 +4222,8 @@ class Sling(Manager):
 
     @property
     def EA(self):
+        """Effective mean EA of the sling when eyes are flat [kN].
+        This is the EA that would be obtained when measuring the stiffness of the sling by putting zero-diameter pins in the eyes and stretching the sling and then using the length between the insides of the eyes."""
         return self._EA
 
     @EA.setter
@@ -4230,6 +4233,7 @@ class Sling(Manager):
 
     @property
     def mass(self):
+        """Mass and weight of the sling. This mass is discretized  distributed over the two splices [mT]"""
         return self._mass
 
     @mass.setter
@@ -4239,31 +4243,40 @@ class Sling(Manager):
 
     @property
     def endA(self):
+        """End A [circle or point node]"""
         return self._endA
 
     @endA.setter
     def endA(self, value):
-        self._endA = self._scene._poi_or_sheave_from_node(value)
+        node = self._scene._node_from_node_or_str(value)
+        self._endA = self._scene._poi_or_sheave_from_node(node)
         self._update_properties()
 
     @property
     def endB(self):
+        """End B [circle or point node]"""
         return self._endB
 
     @endB.setter
     def endB(self, value):
-        self._endB = self._scene._poi_or_sheave_from_node(value)
+        node = self._scene._node_from_node_or_str(value)
+        self._endB = self._scene._poi_or_sheave_from_node(node)
         self._update_properties()
 
     @property
     def sheaves(self):
+        """List of sheaves (circles, points) that the sling runs over bewteen the two ends.
+
+        May be provided as list of nodes or node-names.
+        """
         return self._sheaves
 
     @sheaves.setter
     def sheaves(self, value):
         s = []
         for v in value:
-            s.append(self._scene._poi_or_sheave_from_node(v))
+            node = self._scene._node_from_node_or_str(v)
+            s.append(self._scene._poi_or_sheave_from_node(node))
         self._sheaves = s
         self._update_properties()
 
