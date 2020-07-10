@@ -1956,7 +1956,7 @@ class ContactMesh(NodeWithParent):
         """The TriMeshSource object which can be used to change the mesh
 
         Example:
-            s['Contactmesh'].trimesh.load_obj('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
+            s['Contactmesh'].trimesh.load_file('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
         """
         return self._trimesh
 
@@ -1968,7 +1968,7 @@ class ContactMesh(NodeWithParent):
             code += ", parent='{}')".format(self.parent.name)
         else:
             code += ')'
-        code += "\nmesh.trimesh.load_obj(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
+        code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
             self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
 
         return code
@@ -2791,8 +2791,10 @@ class TriMeshSource(Node):
 
         self._fromVTKpolydata(polydata.GetOutputPort())
 
-
     def load_obj(self, filename, offset = None, rotation = None, scale = None):
+        self.load_file(filename, offset, rotation, scale)
+
+    def load_file(self, filename, offset = None, rotation = None, scale = None):
         """Loads an .obj file and and triangulates it.
 
         Order of modifications:
@@ -2815,8 +2817,16 @@ class TriMeshSource(Node):
         filename = str(filename)
 
         import vtk
-        obj = vtk.vtkOBJReader()
-        obj.SetFileName(filename)
+        ext = filename.lower()[-3:]
+        if ext == 'obj':
+            obj = vtk.vtkOBJReader()
+            obj.SetFileName(filename)
+        elif ext == 'stl':
+            obj = vtk.vtkSTLReader()
+            obj.SetFileName(filename)
+        else:
+            raise ValueError(f'File should be an .obj or .stl file but has extension {ext}')
+
 
         # Add cleaning
         cln = vtk.vtkCleanPolyData()
@@ -2923,7 +2933,7 @@ class Buoyancy(NodeWithParent):
             code += f'\n          density={self.density},'
 
         code += "\n          parent='{}')".format(self.parent.name)
-        code += "\nmesh.trimesh.load_obj(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
+        code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
 
         return code
 
@@ -3033,7 +3043,7 @@ class Tank(NodeWithParent):
             code += f'\n          density={self.density},'
 
         code += "\n          parent='{}')".format(self.parent.name)
-        code += "\nmesh.trimesh.load_obj(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
+        code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
         code += f"\ns['{self.name}'].volume = {self.volume}   # first load mesh, then set volume"
 
         return code
@@ -4560,7 +4570,7 @@ class Scene:
             try:
                 files = listdir(dir)
                 for file in files:
-                    if file.endswith(extension):
+                    if file.lower().endswith(extension):
                         if file not in r:
                             r.append(file)
             except FileNotFoundError:

@@ -1306,7 +1306,7 @@ class Viewport:
                 # move the CoB to the new (global!) position
                 cob = V.node.cog
 
-                print(f'cob = {cob}')
+                # print(f'cob = {cob}')
 
                 V.actors[1].setTransform(transform_from_point(*cob))
                 if V.node.volume == 0:

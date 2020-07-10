@@ -233,6 +233,7 @@ class EditVisual(NodeEditor):
         ui.doubleSpinBox_9.setValue(self.node.scale[2])
 
         ui.comboBox.clear()
+        ui.comboBox.addItems(self.scene.get_resource_list('stl'))
         ui.comboBox.addItems(self.scene.get_resource_list('obj'))
 
         ui.comboBox.setCurrentText(self.node.path)
@@ -508,6 +509,7 @@ class EditBuoyancyOrContactMesh(NodeEditor):
         ui.doubleSpinBox_9.setValue(self.node.trimesh._scale[2])
 
         ui.comboBox.clear()
+        ui.comboBox.addItems(self.scene.get_resource_list('stl'))
         ui.comboBox.addItems(self.scene.get_resource_list('obj'))
 
         ui.comboBox.setCurrentText(self.node.trimesh._path)
@@ -548,8 +550,8 @@ class EditBuoyancyOrContactMesh(NodeEditor):
            np.any(scale != self.node.trimesh._scale) or \
            self.node.trimesh._path !=  new_path :
 
-            # load_obj(self, filename, offset = None, rotation = None, scale = None)
-            code = element + ".trimesh.load_obj(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(new_path, *scale, *rotation, *offset)
+            # load_file(self, filename, offset = None, rotation = None, scale = None)
+            code = element + ".trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(new_path, *scale, *rotation, *offset)
 
         return code
 

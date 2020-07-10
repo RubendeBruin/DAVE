@@ -25,7 +25,7 @@ s.new_axis(name='Vessel',
 # code for Buoyancy mesh
 mesh = s.new_buoyancy(name='Buoyancy mesh',
           parent='Vessel')
-mesh.trimesh.load_obj(s.get_resource_path(r'cube.obj'), scale = (40.0,10.0,3.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
+mesh.trimesh.load_file(s.get_resource_path(r'cube.obj'), scale = (40.0, 10.0, 3.0), rotation = (0.0, 0.0, 0.0), offset = (0.0, 0.0, 0.0))
 
 BM = (1/12) * 10*10 / 1.5
 
@@ -92,7 +92,7 @@ s.new_axis(name='Vessel',
 # code for Buoyancy mesh
 mesh = s.new_buoyancy(name='Buoyancy mesh',
           parent='Vessel')
-mesh.trimesh.load_obj(s.get_resource_path(r'cube.obj'), scale = (40.0,10.0,3.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
+mesh.trimesh.load_file(s.get_resource_path(r'cube.obj'), scale = (40.0, 10.0, 3.0), rotation = (0.0, 0.0, 0.0), offset = (0.0, 0.0, 0.0))
 # code for vessel mass
 s.new_rigidbody(name='vessel mass',
                 mass=515.0,

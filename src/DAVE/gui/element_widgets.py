@@ -360,8 +360,8 @@ class EditBuoyancy(NodeEditor):
         except:
             new_path = "FILE DOES NOT EXIST"
 
-        # load_obj(self, filename, offset = None, rotation = None, scale = None)
-        code = element + ".trimesh.load_obj(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(new_path, *scale, *rotation, *offset)
+        # load_file(self, filename, offset = None, rotation = None, scale = None)
+        code = element + ".trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(new_path, *scale, *rotation, *offset)
 
         return code
 
