@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>310</width>
-    <height>497</height>
+    <width>458</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -160,10 +160,102 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_3">
+      <item row="0" column="3">
+       <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>EIz</string>
+         <string>[m]</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QLabel" name="label_13">
+        <property name="text">
+         <string>[kN*m2]</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="3">
+       <widget class="QLabel" name="label_14">
+        <property name="text">
+         <string>[kN*m2]</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="3">
+       <widget class="QLabel" name="label_15">
+        <property name="text">
+         <string>[kN*m2]</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>EA</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="2">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+        <property name="minimum">
+         <double>-999999999999.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>99999999999999.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>GIp</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1" colspan="2">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+        <property name="minimum">
+         <double>-999999999999.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>99999999999999.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="2">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+        <property name="minimum">
+         <double>-999999999999.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>99999999999999.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -174,10 +266,24 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="label_2">
         <property name="text">
          <string>EIy</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>EIz</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="3">
+       <widget class="QLabel" name="label_16">
+        <property name="text">
+         <string>[kN]</string>
         </property>
        </widget>
       </item>
@@ -200,33 +306,7 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>EA</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1" colspan="2">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-        <property name="minimum">
-         <double>-999999999999.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>99999999999999.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1" colspan="2">
+      <item row="5" column="1" colspan="2">
        <widget class="QDoubleSpinBox" name="doubleSpinBox_5">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -245,83 +325,30 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1" colspan="2">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-        <property name="minimum">
-         <double>-999999999999.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>99999999999999.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1" colspan="2">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-        <property name="minimum">
-         <double>-999999999999.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>99999999999999.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_4">
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_17">
         <property name="text">
-         <string>GIp</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>[m]</string>
+         <string>Mass</string>
         </property>
        </widget>
       </item>
       <item row="1" column="3">
-       <widget class="QLabel" name="label_13">
+       <widget class="QLabel" name="label_18">
         <property name="text">
-         <string>[kN*m2]</string>
+         <string>[mT]</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="3">
-       <widget class="QLabel" name="label_14">
-        <property name="text">
-         <string>[kN*m2]</string>
+      <item row="1" column="1" colspan="2">
+       <widget class="QDoubleSpinBox" name="sbMass">
+        <property name="decimals">
+         <number>5</number>
         </property>
-       </widget>
-      </item>
-      <item row="3" column="3">
-       <widget class="QLabel" name="label_15">
-        <property name="text">
-         <string>[kN*m2]</string>
+        <property name="maximum">
+         <double>999999.000000000000000</double>
         </property>
-       </widget>
-      </item>
-      <item row="4" column="3">
-       <widget class="QLabel" name="label_16">
-        <property name="text">
-         <string>[kN]</string>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
         </property>
        </widget>
       </item>
@@ -331,7 +358,7 @@
    <item>
     <widget class="QLabel" name="label_8">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;E(steel) is ~200 GPa = 200*10^6 kN/m2&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;E(steel) is ~210 GPa = 210*10^6 kN/m2&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
