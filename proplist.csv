@@ -237,7 +237,7 @@ ContactBall,k,False,Compression stiffness of the ball in force per meter of comp
 ContactMesh,trimesh,True,"The TriMeshSource object which can be used to change the mesh
 
         Example:
-            s['Contactmesh'].trimesh.load_obj('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
+            s['Contactmesh'].trimesh.load_file('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
         "
 CoreConnectedNode,name,False,"Name of the node (str), must be unique"
 Force,force,False,"The x,y and z components of the force (kN,kN,kN) in the global axis system.
@@ -292,6 +292,8 @@ LinearBeam,EA,False,"E * A : stiffness in the length direction [kN]
 
         E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
         A is the cross-section area in [m2]
+        "
+LinearBeam,mass,False,"Mass of the beam in [mT]
         "
 LinearBeam,L,False,Length of the beam in unloaded condition [m]
 LinearBeam,nodeA,False,The axis system that the A-end of the beam is connected to. The beam leaves this axis system along the X-axis

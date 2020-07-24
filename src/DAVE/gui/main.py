@@ -1335,7 +1335,6 @@ class Gui():
                 if widget.isVisible():
                     widget.guiEvent(event)
 
-
         # update the visual as well
         if event == guiEventType.SELECTION_CHANGED:
             self.visual_update_selection()
