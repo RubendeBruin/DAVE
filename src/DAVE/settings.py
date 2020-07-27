@@ -219,6 +219,7 @@ PROPS_LINEARBEAM = ['tension','torsion','moment_on_nodeA','moment_on_nodeB']
 PROPS_CONTACTBALL = ['can_contact','contactpoint','force']
 
 # ======= Animate after solving =========
+
 GUI_DO_ANIMATE = True
 GUI_SOLVER_ANIMATION_DURATION = 0.5 # S
 GUI_ANIMATION_FPS = 60

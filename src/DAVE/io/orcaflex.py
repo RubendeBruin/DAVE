@@ -29,6 +29,7 @@ from DAVE import *
 
 s = Scene()
 b = s.new_rigidbody('test', rotation = (10,10,0), mass = 5, fixed=False, cog = (0,-1,0))
+s.new_rigidbody('test2', mass = 5, cog = (0,-1,0), parent = 'test', position = (5,0,0), fixed = (True,True,True,True,False,True))
 
 s.new_point('p', position = (0,0,20))
 s.new_point('p2', parent = 'test', position = (1,1,1))
@@ -45,21 +46,76 @@ s.sort_nodes_by_dependency()
 
 buoys = []
 winches = []
+constraints = []
 
 for n in s._nodes:
 
-    if isinstance(n, RigidBody):
+    if isinstance(n, (RigidBody, Axis)):
 
-        mass = max(n.mass, OFX_ZERO_MASS)
-        I = (mass * n.inertia_radii**2)
+        if isinstance(n, RigidBody):
+            mass = max(n.mass, OFX_ZERO_MASS)
+            I = (mass * n.inertia_radii ** 2).tolist()
+            cog = [*n.cog]
+
+        else:
+            mass = OFX_ZERO_MASS
+            I = [OFX_ZERO_MASS, OFX_ZERO_MASS, OFX_ZERO_MASS]
+            cog = [0, 0, 0]
+
+
+
+        # check the connection
+
+        pos = [*n.position]
+        rot = [*rotation_to_attitude(n.rotation)]
+
+        if not any(n.fixed):
+            connection = 'Free'
+
+        elif np.all(n.fixed):
+            if n.parent is None:
+                connection = 'Fixed'
+            else:
+                connection = n.parent.name
+
+        else:
+            # Partially fixed - create constraint
+
+            cname = n.name + ' [fixes]'
+
+            if n.parent is None:
+                connection = 'Fixed'
+            else:
+                connection = n.parent.name
+
+            fixes = []
+            for f in n.fixed:
+                if f:
+                    fixes.append('No')
+                else:
+                    fixes.append('Yes')
+
+            c = {'Name': cname,
+                 'Connection': connection,
+                 'DOFFree': fixes,
+                 'InitialPosition': pos,
+                 'InitialAttitude': rot,
+                 }
+
+            constraints.append(c)
+
+            # set the props for the 6d buoy
+            connection = cname
+            pos = [0,0,0]
+            rot = [0,0,0]
 
         b = {'Name':n.name,
-             'Connection': 'Free',
-             'InitialPosition': [*n.position],
-             'InitialAttitude': [*rotation_to_attitude(n.rotation)],
+             'Connection': connection,
+             'InitialPosition': pos,
+             'InitialAttitude': rot,
              'Mass': mass,
-             'MomentsOfInertia': I.tolist(),
-             'CentreOfMass': [*n.cog]
+             'MomentsOfInertia': I,
+             'CentreOfMass': cog
              }
         buoys.append(b)
 
@@ -100,8 +156,17 @@ for n in s._nodes:
         winches.append(w)
 
 
-data = {'6DBuoys': buoys,
-        'Winches': winches}
+
+data = dict()
+
+if buoys:
+    data['6DBuoys'] = buoys
+if winches:
+    data['Winches'] = winches
+if constraints:
+    data['Constraints'] = constraints
+
+
 
 s = yaml.dump(data, explicit_start=True)
 
