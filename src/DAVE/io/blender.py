@@ -126,18 +126,25 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
         active_object = object
 
         # apply local transform
+        #
+        # Rotation is applied on the original object
+        # Scale is applied on the rotated object
+        # Offset is applied on the rotated and scaled object
+        # 
+              
 
-        bpy.ops.transform.translate(value=offset)  # translate
+        bpy.ops.transform.rotate(value=rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)... (2.83 this seems to be fixed)?
+        bpy.ops.transform.rotate(value=rotation[1], orient_axis='Y')
+        bpy.ops.transform.rotate(value=rotation[2], orient_axis='X')
 
-        bpy.ops.transform.rotate(value=-rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)
-        bpy.ops.transform.rotate(value=-rotation[1], orient_axis='Y')
-        bpy.ops.transform.rotate(value=-rotation[2], orient_axis='X')
+        bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)    
+
         bpy.ops.transform.resize(value=scale)
-
-        # bpy.ops.transform.translate(value=(-offset[0], -offset[1], -offset[2])) # and translate back
-        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-        # bpy.ops.transform.translate(value=offset)  # translate    
-
+        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+                
+        bpy.ops.transform.translate(value=offset)  # translate
+        bpy.ops.object.transform_apply(location=True, rotation=False, scale=False)    
+        
         # apply global transforms
 
         active_object.location = position

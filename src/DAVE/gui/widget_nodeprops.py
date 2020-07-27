@@ -1227,6 +1227,7 @@ class EditBeam(NodeEditor):
             ui.doubleSpinBox_3.valueChanged.disconnect()
             ui.doubleSpinBox_4.valueChanged.disconnect()
             ui.doubleSpinBox_5.valueChanged.disconnect()
+            ui.sbMass.valueChanged.disconnect()
 
             ui.cbMasterAxis.currentIndexChanged.disconnect()
             ui.cbSlaveAxis.currentIndexChanged.disconnect()
@@ -1253,11 +1254,14 @@ class EditBeam(NodeEditor):
         ui.doubleSpinBox_4.setValue(self.node.GIp)
         ui.doubleSpinBox_5.setValue(self.node.EA)
 
+        ui.sbMass.setValue(self.node.mass)
+
         ui.doubleSpinBox_1.valueChanged.connect(self.callback)
         ui.doubleSpinBox_2.valueChanged.connect(self.callback)
         ui.doubleSpinBox_3.valueChanged.connect(self.callback)
         ui.doubleSpinBox_4.valueChanged.connect(self.callback)
         ui.doubleSpinBox_5.valueChanged.connect(self.callback)
+        ui.sbMass.valueChanged.connect(self.callback)
 
         ui.cbMasterAxis.currentIndexChanged.connect(self.callback)
         ui.cbSlaveAxis.currentIndexChanged.connect(self.callback)
@@ -1276,6 +1280,7 @@ class EditBeam(NodeEditor):
         new_EIz = self.ui.doubleSpinBox_3.value()
         new_GIp = self.ui.doubleSpinBox_4.value()
         new_EA = self.ui.doubleSpinBox_5.value()
+        new_mass = self.ui.sbMass.value()
 
         new_master = self.ui.cbMasterAxis.currentText()
         new_slave = self.ui.cbSlaveAxis.currentText()
@@ -1294,6 +1299,9 @@ class EditBeam(NodeEditor):
 
         if not new_EA == self.node.EA:
             code += element + '.EA = {}'.format(new_EA)
+
+        if not new_mass == self.node.mass:
+            code += element + '.mass = {}'.format(new_mass)
 
         if not new_master == self.node.nodeA.name:
             code += element + '.nodeA = s["{}"]'.format(new_master)

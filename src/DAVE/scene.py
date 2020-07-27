@@ -2472,6 +2472,7 @@ class LinearBeam(CoreConnectedNode):
     *  GIp  - torsional stiffness about x-axis
     *  EA   - axis stiffness in x-direction
     *  L    - the un-stretched length of the beam
+    *  mass - mass of the beam in [mT]
 
     The beam element is in rest if the nodeB axis system
 
@@ -2552,6 +2553,19 @@ class LinearBeam(CoreConnectedNode):
     def EA(self, value):
         self._verify_change_allowed()
         self._vfNode.EA = value
+
+    @property
+    def mass(self):
+        """Mass of the beam in [mT]
+        """
+        return self._vfNode.Mass
+
+    @mass.setter
+    def mass(self, value):
+        self._verify_change_allowed()
+        assert1f(value, "Mass shall be a number")
+        self._vfNode.Mass = value
+        pass
 
     @property
     def L(self):
@@ -5845,7 +5859,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_linear_beam(self, name, nodeA, nodeB, EIy=0, EIz=0, GIp=0, EA=0, L=None)->LinearBeam:
+    def new_linear_beam(self, name, nodeA, nodeB, EIy=0, EIz=0, GIp=0, EA=0, L=None, mass = 0)->LinearBeam:
         """Creates a new *linear beam* node and adds it to the scene.
 
         Args:
@@ -5879,6 +5893,11 @@ class Scene:
             if L <= 0:
                 raise ValueError('L should be > 0 as stiffness is defined per length.')
 
+        assert1f_positive_or_zero(EIy,"EIy should be >= 0")
+        assert1f_positive_or_zero(EIz,"EIz should be >= 0")
+        assert1f_positive_or_zero(GIp,"GIp should be >= 0")
+        assert1f_positive_or_zero(EA,"EA should be >= 0")
+        assert1f(mass, "Mass shall be a number")
 
         # then create
         a = self._vfc.new_linearbeam(name)
@@ -5893,6 +5912,7 @@ class Scene:
         new_node.GIp = GIp
         new_node.EA = EA
         new_node.L = L
+        new_node.mass = mass
 
         self._nodes.append(new_node)
         return new_node
