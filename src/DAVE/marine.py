@@ -12,8 +12,36 @@
 from DAVE.scene import *
 import matplotlib.pyplot as plt
 
+def linearize_buoyancy(scene : Scene, node : Buoyancy, delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
+    """Replaces the given Buoyancy node with a HydSpring node. Uses even-keel (rotation = (0,0,0) ) as reference.
 
-def LinearizeBuoyancy(scene, node, delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
+    See Also: calculate_linearized_buoyancy_props
+    """
+
+    props = calculate_linearized_buoyancy_props(scene, node,
+                                                delta_draft=delta_draft, delta_roll = delta_roll, delta_pitch = delta_pitch)
+
+    parent = node.parent
+    name = node.name
+
+    scene.delete(node)  # remove buoyancy node
+
+    scene.new_hydspring(name = name,
+                        parent = parent,
+                        cob = props['cob'],
+                        BMT = props['BMT'],
+                        BML = props['BML'],
+                        COFX = props['COFX'],
+                        COFY = props['COFY'],
+                        kHeave=props['kHeave'],
+                        waterline=props['waterline'],
+                        displacement_kN=props['displacement_kN'])
+
+
+
+
+
+def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
     """Obtains the linearized buoyancy properties of a buoyant shape. The properties are derived for the current
     vertical position of the parent body (draft at origin) and even-keel.
 
@@ -49,7 +77,7 @@ def LinearizeBuoyancy(scene, node, delta_draft=1e-3, delta_roll = 1, delta_pitch
     # get buoyancy
     s.update()
 
-    displacement_kN = node.displacement
+    displacement_m3 = node.displacement
     cob = node.cob_local
     cob_global = node.cob
 
@@ -60,16 +88,17 @@ def LinearizeBuoyancy(scene, node, delta_draft=1e-3, delta_roll = 1, delta_pitch
     s.update()
 
     new_disp =  node.displacement
-    delta_disp = new_disp - displacement_kN
+    delta_disp = new_disp - displacement_m3
 
-    kHeave = delta_disp/delta_draft
-    Awl = kHeave / (9.81 * node.density)
+
+    Awl = delta_disp / delta_draft
+    kHeave = Awl * 9.81 * node.density
 
     # calcualte cofx and cofy from change of cob position
     # x_old * x_disp + cofx * dis_change = x_new * dis_new
 
-    COFX = (node.cob_local[0] * new_disp - cob[0] * displacement_kN) / delta_disp
-    COFY = (node.cob_local[1] * new_disp - cob[1] * displacement_kN) / delta_disp
+    COFX = (node.cob_local[0] * new_disp - cob[0] * displacement_m3) / delta_disp
+    COFY = (node.cob_local[1] * new_disp - cob[1] * displacement_m3) / delta_disp
 
     a.z = old_z # restore draft
 
@@ -109,8 +138,8 @@ def LinearizeBuoyancy(scene, node, delta_draft=1e-3, delta_roll = 1, delta_pitch
                'COFY' : COFY,
                'kHeave': kHeave,
                'Awl': Awl,
-               'displacement_kN': displacement_kN,
-               'displacement' : displacement_kN / (9.81 * node.density),
+               'displacement_kN': displacement_m3 * 9.81 * node.density,
+               'displacement' : displacement_m3 ,
                'waterline': -cob_global[2]}
 
     del s
@@ -131,7 +160,7 @@ def carene_table(scene, buoyancy_node, draft_min, draft_max,
         draft_min,draft_max: Draft range
         stepsize: Stepsize for drafts
 
-        delta_draft, delta_roll, delta_pitch: deltas used for derivation of linearized properties (see LinearizeBuoyancy)
+        delta_draft, delta_roll, delta_pitch: deltas used for derivation of linearized properties (see calculate_linearized_buoyancy_props)
 
     Returns:
         Pandas dataframe
@@ -147,7 +176,7 @@ def carene_table(scene, buoyancy_node, draft_min, draft_max,
 
     for z in zs:
         buoyancy_node.parent.z = -z
-        r = LinearizeBuoyancy(scene, buoyancy_node, delta_roll=delta_roll, delta_pitch=delta_pitch, delta_draft=delta_draft)
+        r = calculate_linearized_buoyancy_props(scene, buoyancy_node, delta_roll=delta_roll, delta_pitch=delta_pitch, delta_draft=delta_draft)
         r['CoB x [m]'] = r['cob'][0]
         r['CoB y [m]'] = r['cob'][1]
         r['CoB z [m]'] = r['cob'][2]
