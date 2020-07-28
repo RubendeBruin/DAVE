@@ -31,8 +31,8 @@ def linearize_buoyancy(scene : Scene, node : Buoyancy, delta_draft=1e-3, delta_r
                         cob = props['cob'],
                         BMT = props['BMT'],
                         BML = props['BML'],
-                        COFX = props['COFX'],
-                        COFY = props['COFY'],
+                        COFX = props['COFX'] - props['cob'][0],  # relative to CoB!
+                        COFY = props['COFY'] - props['cob'][1],
                         kHeave=props['kHeave'],
                         waterline=props['waterline'],
                         displacement_kN=props['displacement_kN'])
@@ -52,8 +52,8 @@ def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_dr
         cob,"Center of buoyancy in parent axis system (m,m,m)"
         BMT,Vertical distance between cob and metacenter for roll [m]
         BML,Vertical distance between cob and metacenter for pitch [m]
-        COFX,"Horizontal x-position Center of Floatation (center of waterplane area), relative to cob [m]"
-        COFY,"Horizontal y-position Center of Floatation (center of waterplane area), relative to cob [m]"
+        COFX,"Horizontal x-position Center of Floatation (center of waterplane area), parent axis system [m]"
+        COFY,"Horizontal y-position Center of Floatation (center of waterplane area), parent axis system [m]"
         kHeave,Heave stiffness in [kN/m]
         waterline,Waterline-elevation relative to cob for un-stretched heave-spring. Positive if cob is below the waterline (which is where is normally is) [m]
         displacement_kN,False,Displacement in [kN] when waterline is at waterline-elevation
@@ -121,16 +121,6 @@ def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_dr
     BML = delta_ML / np.sin(np.deg2rad(delta_pitch))
 
     # assemble resuls in a dict
-    """
-      cob,"Center of buoyancy in parent axis system (m,m,m)"
-        BMT,Vertical distance between cob and metacenter for roll [m]
-        BML,Vertical distance between cob and metacenter for pitch [m]
-        COFX,"Horizontal x-position Center of Floatation (center of waterplane area), relative to cob [m]"
-        COFY,"Horizontal y-position Center of Floatation (center of waterplane area), relative to cob [m]"
-        kHeave,Heave stiffness in [kN/m]
-        waterline,Waterline-elevation relative to cob for un-stretched heave-spring. Positive if cob is below the waterline (which is where is normally is) [m]
-        displacement_kN,False,Displacement in [kN] when waterline is at waterline-elevation"""
-
     results = {'cob': cob,
                'BMT': BMT,
                'BML': BML,
