@@ -25,7 +25,7 @@ from IPython.core.display import display, HTML
 cdir = Path(dirname(__file__))
 DAVE_REPORT_PROPS = pd.read_csv(cdir / '../resources/proplist.csv')
 
-def report(node, properties=None, short = True) -> None:
+def report(node, properties=None, long = False) -> None:
     """Produces a HTML table with properties of the provided node.
 
     The amount of properties that is reported may be limited by specifying the names of the the properties that should be reported.
@@ -33,7 +33,7 @@ def report(node, properties=None, short = True) -> None:
     Args:
         node : any Scene node
         properties : names of properties that should be reported. Can contain ? and * wildcards (? matches a single char, * matches any number of chars)
-        short : use short or long description
+        long : use short or long description
 
     Examples:
 
@@ -84,7 +84,7 @@ def report(node, properties=None, short = True) -> None:
             code = "node.{}".format(prop)
             value = eval(code)
 
-            if short:
+            if not long:
                 help = help.split('\n')[0]
 
             # split anything between [ ] or ( ) from the help

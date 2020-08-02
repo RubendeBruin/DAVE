@@ -2912,18 +2912,18 @@ class Buoyancy(NodeWithParent):
 
     @property
     def cob(self):
-        """Returns the GLOBAL position of the center of buoyancy"""
+        """GLOBAL position of the center of buoyancy [m,m,m] (global axis)"""
         return self._vfNode.cob
 
     @property
     def cob_local(self):
-        """Returns the local position of the center of buoyancy"""
+        """Position of the center of buoyancy [m,m,m] (local axis)"""
 
         return self.parent.to_loc_position(self.cob)
 
     @property
     def displacement(self):
-        """Returns displaced volume in m^3"""
+        """Displaced volume of fluid [m^3]"""
         return self._vfNode.displacement
 
     @property

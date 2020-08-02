@@ -132,9 +132,9 @@ BallastSystem,cogz,True,Z position of combined CoG of all tank contents in the b
 BallastSystem,cog,True,"Combined CoG of all tank contents in the ballast-system. (local coordinate) [m,m,m]"
 BallastSystem,weight,True,Total weight of all tank fillings in the ballast system [mT]
 Buoyancy,trimesh,True,
-Buoyancy,cob,True,Returns the GLOBAL position of the center of buoyancy
-Buoyancy,cob_local,True,Returns the local position of the center of buoyancy
-Buoyancy,displacement,True,Returns displaced volume in m^3
+Buoyancy,cob,True,"GLOBAL position of the center of buoyancy [m,m,m] (global axis)"
+Buoyancy,cob_local,True,"Position of the center of buoyancy [m,m,m] (local axis)"
+Buoyancy,displacement,True,Displaced volume of fluid [m^3]
 Buoyancy,density,False,"Density of surrounding fluid [mT/m3].
         Typical values: Seawater = 1.025, fresh water = 1.00
         "
