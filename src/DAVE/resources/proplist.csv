@@ -1,4 +1,4 @@
-class,property,readonly,0
+class,property,readonly,doc
 Axis,inertia,False,"The linear inertia of the axis in [mT] Aka: ""Mass""
         - used only for dynamics "
 Axis,inertia_position,False,"The position (x,y,z) of the center of inertia. Aka: ""cog""
@@ -125,7 +125,7 @@ Axis,equilibrium_error,True,"Returns the force and moment that remains on this a
         "
 BallastSystem,parent,False,Determines the parent of the node. Should be another axis or None
 BallastSystem,position,False,"Position of the origin of the ballast system. Parent axis system [m,m,m]"
-BallastSystem,name,False,
+BallastSystem,name,False,""
 BallastSystem,cogx,True,X position of combined CoG of all tank contents in the ballast-system. (local coordinate system) [m]
 BallastSystem,cogy,True,Y position of combined CoG of all tank contents in the ballast-system. (local coordinate system) [m]
 BallastSystem,cogz,True,Z position of combined CoG of all tank contents in the ballast-system. (local coordinate system) [m]

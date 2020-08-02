@@ -6,7 +6,7 @@
   Ruben de Bruin - 2019
 
 
-  Helper functions for running virtual-float from jupyter
+  Helper functions for running DAVE from jupyter
 
 """
 
