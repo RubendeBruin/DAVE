@@ -543,7 +543,7 @@ class NodeWithParent(CoreConnectedNode):
 
     @property
     def parent(self):
-        """Determines the parent of the node. Should be another axis or None"""
+        """Determines the parent of the node. Should be an axis or None"""
         if self._vfNode.parent is None:
             return None
         else:
@@ -780,7 +780,7 @@ class Axis(NodeWithParent):
         """The position of the center of inertia. Aka: "cog" [m,m,m] (local axis)
         - used only for dynamics
         - defined in local axis system"""
-        return np.array(self._inertia_position,dtype=float)
+        return tuple(self._inertia_position)
 
     @inertia_position.setter
     def inertia_position(self, val):

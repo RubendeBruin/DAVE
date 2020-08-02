@@ -123,7 +123,7 @@ Axis,uy,True,"The unit y axis [m,m,m] (Global axis)"
 Axis,uz,True,"The unit z axis [m,m,m] (Global axis)"
 Axis,equilibrium_error,True,"The unresolved force and moment that on this axis. Should be zero when in equilibrium  (applied-force minus connection force, Parent axis)
         "
-BallastSystem,parent,False,Determines the parent of the node. Should be another axis or None
+BallastSystem,parent,False,Determines the parent of the node. Should be an axis or None
 BallastSystem,position,False,"Position of the origin of the ballast system. (Parent axis) [m,m,m]"
 BallastSystem,name,False,
 BallastSystem,cogx,True,X position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]
@@ -308,7 +308,7 @@ LinearBeam,torsion_angle,True,Torsion angle [deg]. Positive if end B has a posit
 Node,visible,False,
 Node,manager,False,
 Node,name,False,"Name of the node (str), must be unique"
-NodeWithParent,parent,False,Determines the parent of the node. Should be another axis or None
+NodeWithParent,parent,False,Determines the parent of the node. Should be an axis or None
 Point,x,False,x component of local position [m] (parent axis)
 Point,y,False,y component of local position [m] (parent axis)
 Point,z,False,z component of local position [m] (parent axis)

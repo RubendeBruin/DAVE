@@ -16,12 +16,18 @@ from pathlib import Path
 
 import DAVE.scene as ds
 
+from IPython.core.display import display, HTML
+
 cdir = Path(dirname(__file__))
 DAVE_REPORT_PROPS = pd.read_csv(cdir / '../resources/proplist.csv')
 
 def report(node, properties=None, short = True):
 
-    result = pd.DataFrame(columns= ['value','unit','remarks','description'])
+    # result = pd.DataFrame(columns= ['value','unit','remarks','description'])
+
+    html = []
+    html.append('<table>')
+    html.append(f'<tr><td>Property</td><td>Value</td><td>Unit</td><td>Remarks</td><td>Explained</td></tr>')
 
     for index, row in DAVE_REPORT_PROPS.iterrows():
 
@@ -68,7 +74,12 @@ def report(node, properties=None, short = True):
             else:
                 remarks = ''
 
-            result.loc[prop] = (value, units, remarks, help)
+            units = str(units).replace(',','<br>')
+            value = str(value).replace(',','<br>')
 
-    return result
+            html.append(f'<tr><td>{prop}</td><td>{value}</td><td>{units}</td><td>{remarks}</td><td>{help}</td></tr>')
+
+    html.append('</table>')
+
+    display(HTML(''.join(html)))
 
