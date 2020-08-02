@@ -7,6 +7,17 @@
 
   Helper functions for Marine analysis
 
+
+
+  Main functionality:
+
+  - linearize_buoyancy
+  - calculate_linearized_buoyancy_props
+  - carene_table
+
+  - GZcurve_DisplacementDriven
+  - GZcurve_MomentDriven [TODO]
+
 """
 
 from DAVE.scene import *
