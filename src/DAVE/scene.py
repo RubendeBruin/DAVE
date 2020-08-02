@@ -777,7 +777,7 @@ class Axis(NodeWithParent):
 
     @property
     def inertia_position(self):
-        """The position (x,y,z) of the center of inertia. Aka: "cog"
+        """The position of the center of inertia. Aka: "cog" [m,m,m] (local axis)
         - used only for dynamics
         - defined in local axis system"""
         return np.array(self._inertia_position,dtype=float)
@@ -791,7 +791,7 @@ class Axis(NodeWithParent):
 
     @property
     def inertia_radii(self):
-        """The radii of gyration (rxx,ryy,rzz) of the inertia
+        """The radii of gyration of the inertia [m,m,m] (local axis)
 
         Used to calculate the mass moments of inertia via
 
@@ -865,17 +865,17 @@ class Axis(NodeWithParent):
 
     @property
     def x(self):
-        """The x-component of the position vector - local axis system of parent [m]"""
+        """The x-component of the position vector (parent axis) [m]"""
         return self.position[0]
 
     @property
     def y(self):
-        """The y-component of the position vector - local axis system of parent [m]"""
+        """The y-component of the position vector (parent axis) [m]"""
         return self.position[1]
 
     @property
     def z(self):
-        """The y-component of the position vector - local axis system of parent [m]"""
+        """The y-component of the position vector (parent axis) [m]"""
         return self.position[2]
 
     @x.setter
@@ -900,7 +900,7 @@ class Axis(NodeWithParent):
 
     @property
     def position(self):
-        """Position of the axis (x,y,z) [m]
+        """Position of the axis (parent axis) [m,m,m]
 
         These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)"""
         return self._vfNode.position
@@ -914,17 +914,17 @@ class Axis(NodeWithParent):
 
     @property
     def rx(self):
-        """The x-component of the rotation vector [degrees, parent axis system]"""
+        """The x-component of the rotation vector [degrees] (parent axis)"""
         return self.rotation[0]
 
     @property
     def ry(self):
-        """The y-component of the rotation vector [degrees, parent axis system]"""
+        """The y-component of the rotation vector [degrees] (parent axis)"""
         return self.rotation[1]
 
     @property
     def rz(self):
-        """The z-component of the rotation vector [degrees, parent axis system]"""
+        """The z-component of the rotation vector [degrees], (parent axis)"""
         return self.rotation[2]
 
     @rx.setter
@@ -995,17 +995,17 @@ class Axis(NodeWithParent):
 
     @property
     def gx(self):
-        """The x-component of the global position vector [m, global axis system]"""
+        """The x-component of the global position vector [m] (global axis )"""
         return self.global_position[0]
 
     @property
     def gy(self):
-        """The y-component of the global position vector [m, global axis system]"""
+        """The y-component of the global position vector [m] (global axis )"""
         return self.global_position[1]
 
     @property
     def gz(self):
-        """The z-component of the global position vector [m, global axis system]"""
+        """The z-component of the global position vector [m] (global axis )"""
         return self.global_position[2]
 
     @gx.setter
@@ -1028,7 +1028,7 @@ class Axis(NodeWithParent):
 
     @property
     def global_position(self):
-        """The global position of the origin of the axis system  (m,m,m) - global axis system."""
+        """The global position of the origin of the axis system  [m,m,m] (global axis)"""
         return self._vfNode.global_position
 
     @global_position.setter
@@ -1042,17 +1042,17 @@ class Axis(NodeWithParent):
 
     @property
     def grx(self):
-        """The x-component of the global rotation vector [degrees, global axis system]"""
+        """The x-component of the global rotation vector [degrees] (global axis)"""
         return self.global_rotation[0]
 
     @property
     def gry(self):
-        """The y-component of the global rotation vector [degrees, global axis system]"""
+        """The y-component of the global rotation vector [degrees] (global axis)"""
         return self.global_rotation[1]
 
     @property
     def grz(self):
-        """The z-component of the global rotation vector [degrees, global axis system]"""
+        """The z-component of the global rotation vector [degrees] (global axis)"""
         return self.global_rotation[2]
 
     @grx.setter
@@ -1075,7 +1075,7 @@ class Axis(NodeWithParent):
 
     @property
     def tilt_x(self):
-        """Returns the trim in [%]. This is the z-component of the unit y vector.
+        """Tilt percentage. This is the z-component of the unit y vector [%].
 
         See Also: heel
         """
@@ -1085,7 +1085,7 @@ class Axis(NodeWithParent):
 
     @property
     def heel(self):
-        """Returns the heel in [deg].  SB down is positive.
+        """Heel in degrees. SB down is positive [deg].
         This is the inverse sin of the unit y vector(This is the arcsin of the tiltx)
 
         See also: tilt_x
@@ -1094,8 +1094,8 @@ class Axis(NodeWithParent):
 
     @property
     def tilt_y(self):
-        """Returns the trim in [%]. This is the z-component of the unit -x vector. So a positive rotation about
-        the y axis result in a positive tilt_y.
+        """Tilt percentage. This is the z-component of the unit -x vector [%].
+        So a positive rotation about the y axis results in a positive tilt_y.
 
         See Also: trim
         """
@@ -1105,7 +1105,7 @@ class Axis(NodeWithParent):
 
     @property
     def trim(self):
-        """Returns the trim in [deg]. Bow-down is positive.
+        """Trim in degrees. Bow-down is positive [deg].
 
         This is the inverse sin of the unit -x vector(This is the arcsin of the tilt_y)
 
@@ -1115,7 +1115,7 @@ class Axis(NodeWithParent):
 
     @property
     def heading(self):
-        """Returns the direction (0..360) [deg] of the local x-axis relative to the global x axis. Measured about the global z axis
+        """Direction (0..360) [deg] of the local x-axis relative to the global x axis. Measured about the global z axis
 
         heading = atan(u_y,u_x)
 
@@ -1138,7 +1138,7 @@ class Axis(NodeWithParent):
 
     @property
     def global_rotation(self):
-        """The rotation of the axis in degrees. Expressed in the global axis system"""
+        """Rotation [deg,deg,deg] (global axis)"""
         return tuple(np.rad2deg(self._vfNode.global_rotation))
 
     @global_rotation.setter
@@ -1152,12 +1152,12 @@ class Axis(NodeWithParent):
 
     @property
     def global_transform(self):
-        """Read-only: The global transform of the axis system."""
+        """Read-only: The global transform of the axis system [matrix]"""
         return self._vfNode.global_transform
 
     @property
     def connection_force(self):
-        """The forces and moments that this axis applies on its parent at the origin of this axis system. (kN, kN, kN, kNm, kNm, kNm) [Parent axis system]
+        """The forces and moments that this axis applies on its parent at the origin of this axis system. [kN, kN, kN, kNm, kNm, kNm] (Parent axis)
 
         If this axis would be connected to a point on its parent, and that point would be located at the location of the origin of this axis system
         then the connection force equals the force and moment applied on that point.
@@ -1179,58 +1179,58 @@ class Axis(NodeWithParent):
 
     @property
     def connection_force_x(self):
-        """The x-component of the connection-force vector [kN]"""
+        """The x-component of the connection-force vector [kN] (Parent axis)"""
         return self.connection_force[0]
 
     @property
     def connection_force_y(self):
-        """The y-component of the connection-force vector [kN]"""
+        """The y-component of the connection-force vector [kN] (Parent axis)"""
         return self.connection_force[1]
 
     @property
     def connection_force_z(self):
-        """The z-component of the connection-force vector [kN]"""
+        """The z-component of the connection-force vector [kN] (Parent axis)"""
         return self.connection_force[2]
 
     @property
     def connection_moment_x(self):
-        """The mx-component of the connection-force vector [kNm]"""
+        """The mx-component of the connection-force vector [kNm] (Parent axis)"""
         return self.connection_force[3]
 
     @property
     def connection_moment_y(self):
-        """The my-component of the connection-force vector [kNm]"""
+        """The my-component of the connection-force vector [kNm] (Parent axis)"""
         return self.connection_force[4]
 
     @property
     def connection_moment_z(self):
-        """The mx-component of the connection-force vector [kNm]"""
+        """The mx-component of the connection-force vector [kNm] (Parent axis)"""
         return self.connection_force[5]
 
     @property
     def applied_force(self):
-        """Returns the force and moment that is applied on this axis at its origin (kN, kN, kN, kNm, kNm, kNm) [Global axis system]
+        """The force and moment that is applied on origin of this axis [kN, kN, kN, kNm, kNm, kNm] (Global axis)
         """
         return self._vfNode.applied_force
 
     @property
     def ux(self):
-        """The unit x axis in global coordinates [m,m,m]"""
+        """The unit x axis [m,m,m] (Global axis)"""
         return self.to_glob_direction((1,0,0))
 
     @property
     def uy(self):
-        """The unit y axis in global coordinates [m,m,m]"""
+        """The unit y axis [m,m,m] (Global axis)"""
         return self.to_glob_direction((0, 1, 0))
 
     @property
     def uz(self):
-        """The unit z axis in global coordinates [m,m,m]"""
+        """The unit z axis [m,m,m] (Global axis)"""
         return self.to_glob_direction((0, 0, 1))
 
     @property
     def equilibrium_error(self):
-        """Returns the force and moment that remains on this axis (applied-force minus connection force) [Parent axis system]
+        """The unresolved force and moment that on this axis. Should be zero when in equilibrium  (applied-force minus connection force, Parent axis)
         """
         return self._vfNode.equilibrium_error
 
@@ -1359,17 +1359,17 @@ class Point(NodeWithParent):
 
     @property
     def x(self):
-        """x component of local position [m, parent axis system]"""
+        """x component of local position [m] (parent axis)"""
         return self.position[0]
 
     @property
     def y(self):
-        """y component of local position  [m, parent axis system]"""
+        """y component of local position [m] (parent axis)"""
         return self.position[1]
 
     @property
     def z(self):
-        """z component of local position  [m, parent axis system]"""
+        """z component of local position [m] (parent axis)"""
         return self.position[2]
 
     @x.setter
@@ -1394,7 +1394,7 @@ class Point(NodeWithParent):
 
     @property
     def position(self):
-        """Local position (m,m,m) [parent axis system]"""
+        """Local position [m,m,m] (parent axis)"""
         return self._vfNode.position
 
     @position.setter
@@ -1405,22 +1405,22 @@ class Point(NodeWithParent):
 
     @property
     def applied_force_and_moment_global(self):
-        """Applied force and moment on this point (kN, kN, kN, kNm, kNm, kNm) [Global axis system]"""
+        """Applied force and moment on this point [kN, kN, kN, kNm, kNm, kNm] (Global axis)"""
         return self._vfNode.applied_force
 
     @property
     def gx(self):
-        """x component of global position [m]"""
+        """x component of position [m] (global axis)"""
         return self.global_position[0]
 
     @property
     def gy(self):
-        """y component of global position [m]"""
+        """y component of position [m] (global axis)"""
         return self.global_position[1]
 
     @property
     def gz(self):
-        """z component of global position [m]"""
+        """z component of position [m] (global axis)"""
         return self.global_position[2]
 
     @gx.setter
@@ -1443,7 +1443,7 @@ class Point(NodeWithParent):
 
     @property
     def global_position(self):
-        """Global position (m,m,m)"""
+        """Global position [m,m,m] (global axis)"""
         return self._vfNode.global_position
 
     @global_position.setter
@@ -1504,22 +1504,22 @@ class RigidBody(Axis):
 
     @property
     def cogx(self):
-        """x-component of cog position [m, local axis system]"""
+        """x-component of cog position [m] (local axis)"""
         return self.cog[0]
 
     @property
     def cogy(self):
-        """y-component of cog position [m, local axis system]"""
+        """y-component of cog position [m] (local axis)"""
         return self.cog[1]
 
     @property
     def cogz(self):
-        """z-component of cog position [m, local axis system]"""
+        """z-component of cog position [m] (local axis)"""
         return self.cog[2]
 
     @property
     def cog(self):
-        """Center of Gravity position [m, local axis system]"""
+        """Center of Gravity position [m,m,m] (local axis)"""
         return self._vfPoi.position
 
     @cogx.setter
@@ -1550,7 +1550,7 @@ class RigidBody(Axis):
 
     @property
     def mass(self):
-        """Control the static mass of the body
+        """Static mass of the body [mT]
 
         See Also: inertia
         """
@@ -1643,12 +1643,12 @@ class Cable(CoreConnectedNode):
 
     @property
     def tension(self):
-        """Tension in the cable in [kN]"""
+        """Tension in the cable [kN]"""
         return self._vfNode.tension
 
     @property
     def stretch(self):
-        """Stretch of the cable in [m]
+        """Stretch of the cable [m]
 
         Tension [kN] = EA [kN] * stretch [m] / length [m]
         """
@@ -1671,7 +1671,7 @@ class Cable(CoreConnectedNode):
 
     @property
     def EA(self):
-        """Stiffness of the cable in [kN]
+        """Stiffness of the cable [kN]
 
         Tension [kN] = EA [kN] * stretch [m] / length [m]
         """
@@ -1684,7 +1684,7 @@ class Cable(CoreConnectedNode):
 
     @property
     def diameter(self):
-        """Diameter of the cable [m]. Used when a cable runs over a circle."""
+        """Diameter of the cable. Used when a cable runs over a circle. [m]"""
         return self._vfNode.diameter
 
     @diameter.setter
@@ -1837,7 +1837,7 @@ class Force(NodeWithParent):
 
     @property
     def force(self):
-        """The x,y and z components of the force (kN,kN,kN) in the global axis system.
+        """The x,y and z components of the force [kN,kN,kN] (global axis)
 
         Example s['wind'].force = (12,34,56)
         """
@@ -1851,7 +1851,7 @@ class Force(NodeWithParent):
 
     @property
     def fx(self):
-        """The global x-component of the force [kN]"""
+        """The global x-component of the force [kN] (global axis)"""
         return self.force[0]
 
     @fx.setter
@@ -1862,7 +1862,7 @@ class Force(NodeWithParent):
 
     @property
     def fy(self):
-        """The global y-component of the force [kN]"""
+        """The global y-component of the force [kN]  (global axis)"""
         return self.force[1]
 
     @fy.setter
@@ -1873,7 +1873,7 @@ class Force(NodeWithParent):
 
     @property
     def fz(self):
-        """The global z-component of the force [kN]"""
+        """The global z-component of the force [kN]  (global axis)"""
 
         return self.force[2]
 
@@ -1899,7 +1899,7 @@ class Force(NodeWithParent):
 
     @property
     def mx(self):
-        """The global x-component of the moment [kNm]"""
+        """The global x-component of the moment [kNm]  (global axis)"""
         return self.moment[0]
 
     @mx.setter
@@ -1910,7 +1910,7 @@ class Force(NodeWithParent):
 
     @property
     def my(self):
-        """The global y-component of the moment [kNm]"""
+        """The global y-component of the moment [kNm]  (global axis)"""
         return self.moment[1]
 
     @my.setter
@@ -1921,7 +1921,7 @@ class Force(NodeWithParent):
 
     @property
     def mz(self):
-        """The global z-component of the moment [kNm]"""
+        """The global z-component of the moment [kNm]  (global axis)"""
         return self.moment[2]
 
     @mz.setter
@@ -1996,7 +1996,7 @@ class ContactBall(NodeWithParent):
 
     @property
     def contact_force(self) -> tuple:
-        """Returns the force on the ball (kN, kN, kN) [global axis system]
+        """Returns the force on the ball [kN, kN, kN] (global axis)
 
         The force is applied at the center of the ball
 
@@ -2006,7 +2006,7 @@ class ContactBall(NodeWithParent):
 
     @property
     def contact_force_magnitude(self) -> float:
-        """Returns the absolute force on the ball, if any (kN)
+        """Returns the absolute force on the ball, if any [kN]
 
         The force is applied on the center of the ball
 
@@ -2016,7 +2016,7 @@ class ContactBall(NodeWithParent):
 
     @property
     def compression(self) -> float:
-        """Returns the absolute compression of the ball, if any (m) """
+        """Returns the absolute compression of the ball, if any [m]"""
         return self._vfNode.force
 
 
@@ -2218,7 +2218,7 @@ class HydSpring(NodeWithParent):
 
     @property
     def kHeave(self):
-        """Heave stiffness in [kN/m]"""
+        """Heave stiffness [kN/m]"""
         return self._vfNode.kHeave
 
     @kHeave.setter
@@ -2238,7 +2238,7 @@ class HydSpring(NodeWithParent):
 
     @property
     def displacement_kN(self):
-        """Displacement in [kN] when waterline is at waterline-elevation"""
+        """Displacement when waterline is at waterline-elevation [kN]"""
         return self._vfNode.displacement_kN
 
     @displacement_kN.setter
@@ -2295,7 +2295,7 @@ class LC6d(CoreConnectedNode):
 
     @property
     def stiffness(self):
-        """Stiffness of the connector (kx, ky, kz, krx, kry, krz) in [kN/m] and [kNm/rad] (axis system of the main axis)"""
+        """Stiffness of the connector: kx, ky, kz, krx, kry, krz in [kN/m and kNm/rad] (axis system of the main axis)"""
         return self._vfNode.stiffness
 
     @stiffness.setter
@@ -2408,7 +2408,7 @@ class Connector2d(CoreConnectedNode):
 
     @property
     def k_angular(self):
-        """Linear stiffness [kNm/rad]"""
+        """Angular stiffness [kNm/rad]"""
         return self._vfNode.k_angular
 
     @k_angular.setter
@@ -2627,7 +2627,7 @@ class LinearBeam(CoreConnectedNode):
 
     @property
     def torsion(self):
-        """Torsion moment in [kNm]. Positive if end B has a positive rotation about the x-axis of end A """
+        """Torsion moment [kNm]. Positive if end B has a positive rotation about the x-axis of end A """
         return self._vfNode.torsion
 
     @property
@@ -2928,7 +2928,7 @@ class Buoyancy(NodeWithParent):
 
     @property
     def density(self):
-        """Density of surrounding fluid in [mT/m3].
+        """Density of surrounding fluid [mT/m3].
         Typical values: Seawater = 1.025, fresh water = 1.00
         """
         return self._vfNode.density
@@ -2998,21 +2998,6 @@ class Tank(NodeWithParent):
         if value>100:
             raise ValueError('Fill percentage should be between 0 and 100 [%]')
         self.volume = value * self.capacity / 100
-
-    # @property
-    # def fill_ht_pct(self):
-    #     """Fill as percentage of tank height considering its current orientation [%]. Setting this property changes the
-    #     volume of fluid in the tank.
-    #     The tank height is the actual globlal vertical distance between its highest and lowest vertex. So this changes
-    #     when the vessel rolls/pitches."""
-    #     return self._vfNode.fill_ht_pct
-    #
-    # @fill_ht_pct.setter
-    # def fill_ht_pct(self, value):
-    #     assert1f_positive_or_zero(value)
-    #     if value>100:
-    #         raise ValueError('Fill percentage should be between 0 and 100 [%]')
-    #     self._vfNode.fill_ht_pct = value
 
     @property
     def level_global(self):
@@ -3204,7 +3189,7 @@ class BallastSystem(Point):
 
     @property
     def position(self):
-        """Position of the origin of the ballast system. Parent axis system [m,m,m]"""
+        """Position of the origin of the ballast system. (Parent axis) [m,m,m]"""
         return self._position
 
     @position.setter
@@ -3403,22 +3388,22 @@ class BallastSystem(Point):
 
     @property
     def cogx(self):
-        """X position of combined CoG of all tank contents in the ballast-system. (local coordinate system) [m]"""
+        """X position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]"""
         return self.cog[0]
 
     @property
     def cogy(self):
-        """Y position of combined CoG of all tank contents in the ballast-system. (local coordinate system) [m]"""
+        """Y position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]"""
         return self.cog[1]
 
     @property
     def cogz(self):
-        """Z position of combined CoG of all tank contents in the ballast-system. (local coordinate system) [m]"""
+        """Z position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]"""
         return self.cog[2]
 
     @property
     def cog(self):
-        """Combined CoG of all tank contents in the ballast-system. (local coordinate system) [m,m,m]"""
+        """Combined CoG of all tank contents in the ballast-system. (local coordinate) [m,m,m]"""
         self.update()
         return (self._cog[0], self._cog[1], self._cog[2])
 
@@ -3786,7 +3771,9 @@ class GeometricContact(Manager):
 
     @property
     def fixed_to_parent(self):
-        """Allow rotation around parent [boolean] see also: rotation_on_parent"""
+        """Allow rotation around parent [boolean]
+
+        see also: rotation_on_parent"""
         return self._pin_hole_connection.fixed[4]
 
     @fixed_to_parent.setter

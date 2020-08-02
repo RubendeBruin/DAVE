@@ -14,25 +14,20 @@ import pandas as pd
 from os.path import dirname
 from pathlib import Path
 
+import DAVE.scene as ds
+
 cdir = Path(dirname(__file__))
 DAVE_REPORT_PROPS = pd.read_csv(cdir / '../resources/proplist.csv')
 
-###
-
-from DAVE import *
-
-import DAVE.scene as nodes
-
-s = Scene()
-node = s.new_rigidbody('demo')
-
-
 def report(node, properties=None, short = True):
+
+    result = pd.DataFrame(columns= ['value','unit','remarks','description'])
 
     for index, row in DAVE_REPORT_PROPS.iterrows():
 
         class_name = row['class']
-        class_type = eval(class_name)
+        code = 'ds.' + class_name
+        class_type = eval(code, {'ds':ds})
 
         if isinstance(node, class_type):
             prop = row['property']
@@ -41,23 +36,39 @@ def report(node, properties=None, short = True):
             if pd.isna(help):
                 continue
 
-            prop_ = prop + ' '
-            contains = [a in prop_ for a in properties]
+            if properties is not None:
 
-            if any(contains):
+                prop_ = prop + ' '
+                contains = [a in prop_ for a in properties]
 
-                code = "node.{}".format(prop)
-                result = eval(code)
+                if not any(contains):
+                    continue
 
-                if short:
-                    help = help.split('\n')[0]
+            code = "node.{}".format(prop)
+            value = eval(code)
 
-                print(f'{node.name} : {prop} : {result} : {help}')
+            if short:
+                help = help.split('\n')[0]
 
+            # split anything between [ ] or ( ) from the help
 
+            start = help.find('[')
+            end = help.find(']')
+            if end>start:
+                units = help[start+1:end]
+                help = help[:start] + help[end+1:]
+            else:
+                units = ''
 
-###
-properties = ['force ', 'moment ']
-short = True
+            start = help.find('(')
+            end = help.find(')')
+            if end > start:
+                remarks = help[start + 1:end]
+                help = help[:start] + help[end + 1:]
+            else:
+                remarks = ''
 
-report(node, properties, short = False)
+            result.loc[prop] = (value, units, remarks, help)
+
+    return result
+

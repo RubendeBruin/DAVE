@@ -1,10 +1,10 @@
 class,property,readonly,doc
 Axis,inertia,False,"The linear inertia of the axis in [mT] Aka: ""Mass""
         - used only for dynamics "
-Axis,inertia_position,False,"The position (x,y,z) of the center of inertia. Aka: ""cog""
+Axis,inertia_position,False,"The position of the center of inertia. Aka: ""cog"" [m,m,m] (local axis)
         - used only for dynamics
         - defined in local axis system"
-Axis,inertia_radii,False,"The radii of gyration (rxx,ryy,rzz) of the inertia
+Axis,inertia_radii,False,"The radii of gyration of the inertia [m,m,m] (local axis)
 
         Used to calculate the mass moments of inertia via
 
@@ -24,15 +24,15 @@ Axis,fixed,False,"Determines which of the six degrees of freedom are fixed, if a
 
         See Also: set_free, set_fixed
         "
-Axis,x,False,The x-component of the position vector - local axis system of parent [m]
-Axis,y,False,The y-component of the position vector - local axis system of parent [m]
-Axis,z,False,The y-component of the position vector - local axis system of parent [m]
-Axis,position,False,"Position of the axis (x,y,z) [m]
+Axis,x,False,The x-component of the position vector (parent axis) [m]
+Axis,y,False,The y-component of the position vector (parent axis) [m]
+Axis,z,False,The y-component of the position vector (parent axis) [m]
+Axis,position,False,"Position of the axis (parent axis) [m,m,m]
 
         These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)"
-Axis,rx,False,"The x-component of the rotation vector [degrees, parent axis system]"
-Axis,ry,False,"The y-component of the rotation vector [degrees, parent axis system]"
-Axis,rz,False,"The z-component of the rotation vector [degrees, parent axis system]"
+Axis,rx,False,The x-component of the rotation vector [degrees] (parent axis)
+Axis,ry,False,The y-component of the rotation vector [degrees] (parent axis)
+Axis,rz,False,"The z-component of the rotation vector [degrees], (parent axis)"
 Axis,rotation,False,"Rotation of the axis about its origin (rx,ry,rz).
         Defined as a rotation about an axis where the direction of the axis is (rx,ry,rz) and the angle of rotation is |(rx,ry,rz| degrees.
         These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)"
@@ -51,34 +51,34 @@ Axis,parent,False,"Determines the parent of the axis. Should either be another a
             c.parent = None
 
         "
-Axis,gx,False,"The x-component of the global position vector [m, global axis system]"
-Axis,gy,False,"The y-component of the global position vector [m, global axis system]"
-Axis,gz,False,"The z-component of the global position vector [m, global axis system]"
-Axis,global_position,False,"The global position of the origin of the axis system  (m,m,m) - global axis system."
-Axis,grx,False,"The x-component of the global rotation vector [degrees, global axis system]"
-Axis,gry,False,"The y-component of the global rotation vector [degrees, global axis system]"
-Axis,grz,False,"The z-component of the global rotation vector [degrees, global axis system]"
-Axis,tilt_x,True,"Returns the trim in [%]. This is the z-component of the unit y vector.
+Axis,gx,False,The x-component of the global position vector [m] (global axis )
+Axis,gy,False,The y-component of the global position vector [m] (global axis )
+Axis,gz,False,The z-component of the global position vector [m] (global axis )
+Axis,global_position,False,"The global position of the origin of the axis system  [m,m,m] (global axis)"
+Axis,grx,False,The x-component of the global rotation vector [degrees] (global axis)
+Axis,gry,False,The y-component of the global rotation vector [degrees] (global axis)
+Axis,grz,False,The z-component of the global rotation vector [degrees] (global axis)
+Axis,tilt_x,True,"Tilt percentage. This is the z-component of the unit y vector [%].
 
         See Also: heel
         "
-Axis,heel,True,"Returns the heel in [deg].  SB down is positive.
+Axis,heel,True,"Heel in degrees. SB down is positive [deg].
         This is the inverse sin of the unit y vector(This is the arcsin of the tiltx)
 
         See also: tilt_x
         "
-Axis,tilt_y,True,"Returns the trim in [%]. This is the z-component of the unit -x vector. So a positive rotation about
-        the y axis result in a positive tilt_y.
+Axis,tilt_y,True,"Tilt percentage. This is the z-component of the unit -x vector [%].
+        So a positive rotation about the y axis results in a positive tilt_y.
 
         See Also: trim
         "
-Axis,trim,True,"Returns the trim in [deg]. Bow-down is positive.
+Axis,trim,True,"Trim in degrees. Bow-down is positive [deg].
 
         This is the inverse sin of the unit -x vector(This is the arcsin of the tilt_y)
 
         See also: tilt_y
         "
-Axis,heading,True,"Returns the direction (0..360) [deg] of the local x-axis relative to the global x axis. Measured about the global z axis
+Axis,heading,True,"Direction (0..360) [deg] of the local x-axis relative to the global x axis. Measured about the global z axis
 
         heading = atan(u_y,u_x)
 
@@ -90,9 +90,9 @@ Axis,heading,True,"Returns the direction (0..360) [deg] of the local x-axis rela
         See also: heading_compass
         "
 Axis,heading_compass,True,The heading (0..360)[deg] assuming that the global y-axis is North and global x-axis is East and rotation accoring compass definition
-Axis,global_rotation,False,The rotation of the axis in degrees. Expressed in the global axis system
-Axis,global_transform,True,Read-only: The global transform of the axis system.
-Axis,connection_force,True,"The forces and moments that this axis applies on its parent at the origin of this axis system. (kN, kN, kN, kNm, kNm, kNm) [Parent axis system]
+Axis,global_rotation,False,"Rotation [deg,deg,deg] (global axis)"
+Axis,global_transform,True,Read-only: The global transform of the axis system [matrix]
+Axis,connection_force,True,"The forces and moments that this axis applies on its parent at the origin of this axis system. [kN, kN, kN, kNm, kNm, kNm] (Parent axis)
 
         If this axis would be connected to a point on its parent, and that point would be located at the location of the origin of this axis system
         then the connection force equals the force and moment applied on that point.
@@ -110,36 +110,36 @@ Axis,connection_force,True,"The forces and moments that this axis applies on its
 
 
         "
-Axis,connection_force_x,True,The x-component of the connection-force vector [kN]
-Axis,connection_force_y,True,The y-component of the connection-force vector [kN]
-Axis,connection_force_z,True,The z-component of the connection-force vector [kN]
-Axis,connection_moment_x,True,The mx-component of the connection-force vector [kNm]
-Axis,connection_moment_y,True,The my-component of the connection-force vector [kNm]
-Axis,connection_moment_z,True,The mx-component of the connection-force vector [kNm]
-Axis,applied_force,True,"Returns the force and moment that is applied on this axis at its origin (kN, kN, kN, kNm, kNm, kNm) [Global axis system]
+Axis,connection_force_x,True,The x-component of the connection-force vector [kN] (Parent axis)
+Axis,connection_force_y,True,The y-component of the connection-force vector [kN] (Parent axis)
+Axis,connection_force_z,True,The z-component of the connection-force vector [kN] (Parent axis)
+Axis,connection_moment_x,True,The mx-component of the connection-force vector [kNm] (Parent axis)
+Axis,connection_moment_y,True,The my-component of the connection-force vector [kNm] (Parent axis)
+Axis,connection_moment_z,True,The mx-component of the connection-force vector [kNm] (Parent axis)
+Axis,applied_force,True,"The force and moment that is applied on origin of this axis [kN, kN, kN, kNm, kNm, kNm] (Global axis)
         "
-Axis,ux,True,"The unit x axis in global coordinates [m,m,m]"
-Axis,uy,True,"The unit y axis in global coordinates [m,m,m]"
-Axis,uz,True,"The unit z axis in global coordinates [m,m,m]"
-Axis,equilibrium_error,True,"Returns the force and moment that remains on this axis (applied-force minus connection force) [Parent axis system]
+Axis,ux,True,"The unit x axis [m,m,m] (Global axis)"
+Axis,uy,True,"The unit y axis [m,m,m] (Global axis)"
+Axis,uz,True,"The unit z axis [m,m,m] (Global axis)"
+Axis,equilibrium_error,True,"The unresolved force and moment that on this axis. Should be zero when in equilibrium  (applied-force minus connection force, Parent axis)
         "
 BallastSystem,parent,False,Determines the parent of the node. Should be another axis or None
-BallastSystem,position,False,"Position of the origin of the ballast system. Parent axis system [m,m,m]"
-BallastSystem,name,False,""
-BallastSystem,cogx,True,X position of combined CoG of all tank contents in the ballast-system. (local coordinate system) [m]
-BallastSystem,cogy,True,Y position of combined CoG of all tank contents in the ballast-system. (local coordinate system) [m]
-BallastSystem,cogz,True,Z position of combined CoG of all tank contents in the ballast-system. (local coordinate system) [m]
-BallastSystem,cog,True,"Combined CoG of all tank contents in the ballast-system. (local coordinate system) [m,m,m]"
+BallastSystem,position,False,"Position of the origin of the ballast system. (Parent axis) [m,m,m]"
+BallastSystem,name,False,
+BallastSystem,cogx,True,X position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]
+BallastSystem,cogy,True,Y position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]
+BallastSystem,cogz,True,Z position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]
+BallastSystem,cog,True,"Combined CoG of all tank contents in the ballast-system. (local coordinate) [m,m,m]"
 BallastSystem,weight,True,Total weight of all tank fillings in the ballast system [mT]
 Buoyancy,trimesh,True,
 Buoyancy,cob,True,Returns the GLOBAL position of the center of buoyancy
 Buoyancy,cob_local,True,Returns the local position of the center of buoyancy
 Buoyancy,displacement,True,Returns displaced volume in m^3
-Buoyancy,density,False,"Density of surrounding fluid in [mT/m3].
+Buoyancy,density,False,"Density of surrounding fluid [mT/m3].
         Typical values: Seawater = 1.025, fresh water = 1.00
         "
-Cable,tension,True,Tension in the cable in [kN]
-Cable,stretch,True,"Stretch of the cable in [m]
+Cable,tension,True,Tension in the cable [kN]
+Cable,stretch,True,"Stretch of the cable [m]
 
         Tension [kN] = EA [kN] * stretch [m] / length [m]
         "
@@ -147,11 +147,11 @@ Cable,length,False,"Length of the cable when in rest [m]
 
         Tension [kN] = EA [kN] * stretch [m] / length [m]
         "
-Cable,EA,False,"Stiffness of the cable in [kN]
+Cable,EA,False,"Stiffness of the cable [kN]
 
         Tension [kN] = EA [kN] * stretch [m] / length [m]
         "
-Cable,diameter,False,Diameter of the cable [m]. Used when a cable runs over a circle.
+Cable,diameter,False,Diameter of the cable. Used when a cable runs over a circle. [m]
 Cable,connections,False,"List or Tuple of nodes that this cable is connected to. Nodes may be passed by name (string) or by reference.
 
         Example:
@@ -205,25 +205,25 @@ Connector2d,ax,True,X component of actual rotation axis between nodeA and nodeB 
 Connector2d,ay,True,Y component of actual rotation axis between nodeA and nodeB (read-only)
 Connector2d,az,True,Z component of actual rotation axis between nodeA and nodeB (read-only)
 Connector2d,k_linear,False,Linear stiffness [kN/m]
-Connector2d,k_angular,False,Linear stiffness [kNm/rad]
+Connector2d,k_angular,False,Angular stiffness [kNm/rad]
 Connector2d,nodeA,False,Connected axis system A
 Connector2d,nodeB,False,Connected axis system B
 ContactBall,can_contact,True,"True if the ball ball is perpendicular to at least one of the faces of one of the meshes. So when contact is possible. To check if there is contact use ""force""
         See Also: Force
         "
-ContactBall,contact_force,True,"Returns the force on the ball (kN, kN, kN) [global axis system]
+ContactBall,contact_force,True,"Returns the force on the ball [kN, kN, kN] (global axis)
 
         The force is applied at the center of the ball
 
         See Also: contact_force_magnitude
         "
-ContactBall,contact_force_magnitude,True,"Returns the absolute force on the ball, if any (kN)
+ContactBall,contact_force_magnitude,True,"Returns the absolute force on the ball, if any [kN]
 
         The force is applied on the center of the ball
 
         See Also: contact_force
         "
-ContactBall,compression,True,"Returns the absolute compression of the ball, if any (m) "
+ContactBall,compression,True,"Returns the absolute compression of the ball, if any [m]"
 ContactBall,contactpoint,True,The nearest point on the nearest mesh. Only defined  
 ContactBall,meshes,False,"List of contact-mesh nodes.
         When getting this will yield a list of node references.
@@ -240,25 +240,27 @@ ContactMesh,trimesh,True,"The TriMeshSource object which can be used to change t
             s['Contactmesh'].trimesh.load_file('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
         "
 CoreConnectedNode,name,False,"Name of the node (str), must be unique"
-Force,force,False,"The x,y and z components of the force (kN,kN,kN) in the global axis system.
+Force,force,False,"The x,y and z components of the force [kN,kN,kN] (global axis)
 
         Example s['wind'].force = (12,34,56)
         "
-Force,fx,False,The global x-component of the force [kN]
-Force,fy,False,The global y-component of the force [kN]
-Force,fz,False,The global z-component of the force [kN]
+Force,fx,False,The global x-component of the force [kN] (global axis)
+Force,fy,False,The global y-component of the force [kN]  (global axis)
+Force,fz,False,The global z-component of the force [kN]  (global axis)
 Force,moment,False,"The x,y and z components of the moment (kNm,kNm,kNm) in the global axis system.
 
         Example s['wind'].moment = (12,34,56)
         "
-Force,mx,False,The global x-component of the moment [kNm]
-Force,my,False,The global y-component of the moment [kNm]
-Force,mz,False,The global z-component of the moment [kNm]
+Force,mx,False,The global x-component of the moment [kNm]  (global axis)
+Force,my,False,The global y-component of the moment [kNm]  (global axis)
+Force,mz,False,The global z-component of the moment [kNm]  (global axis)
 GeometricContact,parent,False,Parent of the connection - [Axis or derived] - READ ONLY
 GeometricContact,swivel,False,Swivel angle between parent and child objects [degrees]
 GeometricContact,swivel_fixed,False,Allow parent and child to swivel relative to eachother [boolean]
 GeometricContact,rotation_on_parent,False,Angle between the line connecting the centers of the circles and the axis system of the parent node [degrees]
-GeometricContact,fixed_to_parent,False,Allow rotation around parent [boolean] see also: rotation_on_parent
+GeometricContact,fixed_to_parent,False,"Allow rotation around parent [boolean]
+
+        see also: rotation_on_parent"
 GeometricContact,child_rotation,False,Angle between the line connecting the centers of the circles and the axis system of the child node [degrees]
 GeometricContact,child_fixed,False,"Allow rotation of child relative to connection, see also: child_rotation [boolean]"
 GeometricContact,inside,False,"Type of connection: True means child circle is inside parent circle, False means the child circle is outside but the circumferences contact [boolean]"
@@ -267,10 +269,10 @@ HydSpring,BMT,False,Vertical distance between cob and metacenter for roll [m]
 HydSpring,BML,False,Vertical distance between cob and metacenter for pitch [m]
 HydSpring,COFX,False,"Horizontal x-position Center of Floatation (center of waterplane area), relative to cob [m]"
 HydSpring,COFY,False,"Horizontal y-position Center of Floatation (center of waterplane area), relative to cob [m]"
-HydSpring,kHeave,False,Heave stiffness in [kN/m]
+HydSpring,kHeave,False,Heave stiffness [kN/m]
 HydSpring,waterline,False,Waterline-elevation relative to cob for un-stretched heave-spring. Positive if cob is below the waterline (which is where is normally is) [m]
-HydSpring,displacement_kN,False,Displacement in [kN] when waterline is at waterline-elevation
-LC6d,stiffness,False,"Stiffness of the connector (kx, ky, kz, krx, kry, krz) in [kN/m] and [kNm/rad] (axis system of the main axis)"
+HydSpring,displacement_kN,False,Displacement when waterline is at waterline-elevation [kN]
+LC6d,stiffness,False,"Stiffness of the connector: kx, ky, kz, krx, kry, krz in [kN/m and kNm/rad] (axis system of the main axis)"
 LC6d,main,False,Main axis system. This axis system dictates the axis system that the stiffness is expressed in
 LC6d,secondary,False,Secondary (connected) axis system
 LinearBeam,EIy,False,"E * Iyy : bending stiffness in the XZ plane [kN m2]
@@ -301,27 +303,27 @@ LinearBeam,nodeB,False,The axis system that the B-end of the beam is connected t
 LinearBeam,moment_A,True,"Moment on beam at node A (kNm, kNm, kNm) , axis system of node A"
 LinearBeam,moment_B,True,"Moment on beam at node B (kNm, kNm, kNm) , axis system of node B"
 LinearBeam,tension,True,"Tension in the beam [kN], negative for compression"
-LinearBeam,torsion,True,Torsion moment in [kNm]. Positive if end B has a positive rotation about the x-axis of end A 
+LinearBeam,torsion,True,Torsion moment [kNm]. Positive if end B has a positive rotation about the x-axis of end A 
 LinearBeam,torsion_angle,True,Torsion angle [deg]. Positive if end B has a positive rotation about the x-axis of end A 
 Node,visible,False,
 Node,manager,False,
 Node,name,False,"Name of the node (str), must be unique"
 NodeWithParent,parent,False,Determines the parent of the node. Should be another axis or None
-Point,x,False,"x component of local position [m, parent axis system]"
-Point,y,False,"y component of local position  [m, parent axis system]"
-Point,z,False,"z component of local position  [m, parent axis system]"
-Point,position,False,"Local position (m,m,m) [parent axis system]"
-Point,applied_force_and_moment_global,True,"Applied force and moment on this point (kN, kN, kN, kNm, kNm, kNm) [Global axis system]"
-Point,gx,False,x component of global position [m]
-Point,gy,False,y component of global position [m]
-Point,gz,False,z component of global position [m]
-Point,global_position,False,"Global position (m,m,m)"
+Point,x,False,x component of local position [m] (parent axis)
+Point,y,False,y component of local position [m] (parent axis)
+Point,z,False,z component of local position [m] (parent axis)
+Point,position,False,"Local position [m,m,m] (parent axis)"
+Point,applied_force_and_moment_global,True,"Applied force and moment on this point [kN, kN, kN, kNm, kNm, kNm] (Global axis)"
+Point,gx,False,x component of position [m] (global axis)
+Point,gy,False,y component of position [m] (global axis)
+Point,gz,False,z component of position [m] (global axis)
+Point,global_position,False,"Global position [m,m,m] (global axis)"
 RigidBody,name,False,
-RigidBody,cogx,False,"x-component of cog position [m, local axis system]"
-RigidBody,cogy,False,"y-component of cog position [m, local axis system]"
-RigidBody,cogz,False,"z-component of cog position [m, local axis system]"
-RigidBody,cog,False,"Center of Gravity position [m, local axis system]"
-RigidBody,mass,False,"Control the static mass of the body
+RigidBody,cogx,False,x-component of cog position [m] (local axis)
+RigidBody,cogy,False,y-component of cog position [m] (local axis)
+RigidBody,cogz,False,z-component of cog position [m] (local axis)
+RigidBody,cog,False,"Center of Gravity position [m,m,m] (local axis)"
+RigidBody,mass,False,"Static mass of the body [mT]
 
         See Also: inertia
         "
