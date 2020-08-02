@@ -88,6 +88,50 @@ def make_iterable(v):
     except:
         return [v]
 
+def fancy_format(text, number='{:.3f}'):
+    # do some formatting
+    try:
+        a = float(text)
+        result = number.format(a)
+        return result
+
+    except:
+        pass
+
+
+    try:
+        len(text)
+    except:
+        return str(text)
+
+
+    if len(text) > 0:
+
+        try:
+            float(text[0])
+        except:
+            return text
+
+        a = []
+        for e in text:
+            try:
+                r = float(e)
+                a.append(number.format(r))
+            except:
+                a.append(e)
+
+        result = '('
+        for e in a:
+            result += e
+            result += ', '
+        result = result[:-2]
+        result += ' )'
+        return result
+
+
+    return text
+
+
 
 def radii_to_positions(rxx,ryy,rzz):
     """decouple radii of gyration into six point discrete positions"""

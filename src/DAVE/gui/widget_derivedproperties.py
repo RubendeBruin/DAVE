@@ -6,6 +6,8 @@ from PySide2.QtWidgets import QTreeWidgetItem
 import DAVE.scene as nodes
 import DAVE.settings as ds
 
+from DAVE.tools import fancy_format
+
 
 class TreeWithDragOut(QtWidgets.QTreeWidget):
 
@@ -174,42 +176,6 @@ class WidgetDerivedProperties(guiDockWidget):
 
 
 
-def fancy_format(text):
-    # do some formatting
-    try:
-        a = float(text)
-        result = '{:.3f}'.format(a)
-        return result
-
-    except:
-        pass
-
-
-    if len(text) > 0:
-
-        try:
-            float(text[0])
-        except:
-            return text
-
-        a = []
-        for e in text:
-            try:
-                r = float(e)
-                a.append('{:.3f}'.format(r))
-            except:
-                a.append(e)
-
-        result = '('
-        for e in a:
-            result += e
-            result += ', '
-        result = result[:-2]
-        result += ' )'
-        return result
-
-
-    return text
 
 
 

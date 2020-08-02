@@ -14,6 +14,10 @@ import pandas as pd
 from os.path import dirname
 from pathlib import Path
 
+import fnmatch
+
+from DAVE.tools import fancy_format, make_iterable
+
 import DAVE.scene as ds
 
 from IPython.core.display import display, HTML
@@ -21,13 +25,41 @@ from IPython.core.display import display, HTML
 cdir = Path(dirname(__file__))
 DAVE_REPORT_PROPS = pd.read_csv(cdir / '../resources/proplist.csv')
 
-def report(node, properties=None, short = True):
+def report(node, properties=None, short = True) -> None:
+    """Produces a HTML table with properties of the provided node.
 
-    # result = pd.DataFrame(columns= ['value','unit','remarks','description'])
+    The amount of properties that is reported may be limited by specifying the names of the the properties that should be reported.
+
+    Args:
+        node : any Scene node
+        properties : names of properties that should be reported. Can contain ? and * wildcards (? matches a single char, * matches any number of chars)
+        short : use short or long description
+
+    Examples:
+
+        >>> report(s['Cheetah'])
+
+        >>> report(s['Cheetah'], short=False)
+
+        >>> report(s['Cheetah'], properties='position')  # report only the position
+
+        >>> report(s['Cheetah'], properties='*position')  # report any property that ends with "position"
+
+        >>> report(s['Cheetah'], properties=['*position*', '*force??'])  # also report all properties that and with "force" and then two additional characters. For example force_x (but not force itself)
+
+
+
+
+    """
+
+    style = ' style="text-align:left"'
+    if properties is not None:
+        properties = make_iterable(properties)
 
     html = []
-    html.append('<table>')
-    html.append(f'<tr><td>Property</td><td>Value</td><td>Unit</td><td>Remarks</td><td>Explained</td></tr>')
+    html.append('<table align="left" border="1">')
+    html.append(f'<caption>Properties of {node.name}</caption>')
+    html.append(f'<tr><th{style}>Property</th><th{style}>Value</th><th{style}>Unit</th><th{style}>Remarks</th><th{style}>Explained</th></tr>')
 
     for index, row in DAVE_REPORT_PROPS.iterrows():
 
@@ -44,10 +76,9 @@ def report(node, properties=None, short = True):
 
             if properties is not None:
 
-                prop_ = prop + ' '
-                contains = [a in prop_ for a in properties]
+                matching = [fnmatch.fnmatch(prop, filter) for filter in properties]
 
-                if not any(contains):
+                if not any(matching):
                     continue
 
             code = "node.{}".format(prop)
@@ -74,12 +105,16 @@ def report(node, properties=None, short = True):
             else:
                 remarks = ''
 
-            units = str(units).replace(',','<br>')
-            value = str(value).replace(',','<br>')
+            value = fancy_format(value)
 
-            html.append(f'<tr><td>{prop}</td><td>{value}</td><td>{units}</td><td>{remarks}</td><td>{help}</td></tr>')
+            units = str(units).replace(',',',<br>')
+            value = str(value).replace(',',',<br>')
+
+
+            html.append(f'<tr><td{style}>{prop}</td><td{style}>{value}</td><td{style}>{units}</td><td{style}>{remarks}</td><td{style}>{help}</td></tr>')
 
     html.append('</table>')
 
     display(HTML(''.join(html)))
+
 
