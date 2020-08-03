@@ -3758,8 +3758,8 @@ class GeometricContact(Manager):
 
         name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
 
-        self._parent_circle = child_circle
-        self._child_circle = parent_circle
+        self._child_circle = child_circle
+        self._parent_circle = parent_circle
         self._flipped = False
         self._inside_connection = inside
 
@@ -3778,7 +3778,7 @@ class GeometricContact(Manager):
 
         self._parent_circle_parent = parent_circle.parent      # point
         self._child_circle_parent = child_circle.parent        # point
-        self._parent_circle_parent_parent = parent_circle.parent.parent  # axis
+        self._child_circle_parent_parent = child_circle.parent.parent  # axis
 
         for node in self.managed_nodes():
             node.manager = self
@@ -3815,7 +3815,7 @@ class GeometricContact(Manager):
         for node in self.managed_nodes():
             node._manager = None
 
-        self._parent_circle_parent_parent.change_parent_to(None)
+        self._child_circle_parent_parent.change_parent_to(None)
 
         self._scene.delete(self._axis_on_child)
         self._scene.delete(self._pin_hole_connection)
@@ -3837,8 +3837,8 @@ class GeometricContact(Manager):
         c_child_rotation = self.child_rotation
         c_child_fixed = self.child_fixed
 
-        pin1 = self._parent_circle  # nodeB
-        pin2 = self._child_circle  # nodeA
+        pin1 = self._child_circle  # nodeB
+        pin2 = self._parent_circle  # nodeA
 
         if pin1.parent.parent is None:
             raise ValueError(
@@ -3935,7 +3935,7 @@ class GeometricContact(Manager):
     def managed_nodes(self):
         """Returns a list of managed nodes"""
 
-        return [self._parent_circle_parent_parent,
+        return [self._child_circle_parent_parent,
                 self._axis_on_parent,
                 self._axis_on_child,
                 self._pin_hole_connection,
@@ -4068,21 +4068,21 @@ class GeometricContact(Manager):
         code.append(f'# First create the elements that need to exist before the connection can be made')
 
         code.append('# The slaved system is here created with None as parent. This will be changed when the connection is created')
-        remember = self._parent_circle_parent_parent.parent
-        self._parent_circle_parent_parent.parent = None
-        code.append(self._parent_circle_parent_parent.give_python_code())
-        self._parent_circle_parent_parent.parent = remember
+        remember = self._child_circle_parent_parent.parent
+        self._child_circle_parent_parent.parent = None
+        code.append(self._child_circle_parent_parent.give_python_code())
+        self._child_circle_parent_parent.parent = remember
 
         code.append(self._parent_circle_parent.give_python_code())  # poi
-        code.append(self._parent_circle.give_python_code())  # circle
+        code.append(self._child_circle.give_python_code())  # circle
 
         code.append(self._child_circle_parent.give_python_code())  # poi
-        code.append(self._child_circle.give_python_code())  # circle
+        code.append(self._parent_circle.give_python_code())  # circle
 
         code.append('# now create the connection')
         code.append(f"s.new_geometriccontact(name = '{self.name}',")
-        code.append(f"                       parent = '{self._parent_circle.name}',")
-        code.append(f"                       child = '{self._child_circle.name}',")
+        code.append(f"                       parent = '{self._child_circle.name}',")
+        code.append(f"                       child = '{self._parent_circle.name}',")
         code.append(f"                       inside={self.inside},")
 
         if self.inside and self.swivel == 0:
