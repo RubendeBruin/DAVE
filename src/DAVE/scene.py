@@ -4547,6 +4547,191 @@ class Sling(Manager):
         self._update_properties()
 
 
+class Shackle(Manager):
+    """
+        Green-Pin Heavy Duty Bow Shackle BN
+
+        visual from: https://www.traceparts.com/en/product/green-pinr-p-6036-green-pinr-heavy-duty-bow-shackle-bn-hdgphm0800-mm?CatalogPath=TRACEPARTS%3ATP04001002006&Product=10-04072013-086517&PartNumber=HDGPHM0800
+        details from: https://www.greenpin.com/sites/default/files/2019-04/brochure-april-2019.pdf
+
+        wll a b c d e f g h i j k weight
+        [t] [mm]  [kg]
+        120 95 95 208 95 147 400 238 647 453 428 50 110
+        150 105 108 238 105 169 410 275 688 496 485 50 160
+        200 120 130 279 120 179 513 290 838 564 530 70 235
+        250 130 140 299 130 205 554 305 904 614 565 70 295
+        300 140 150 325 140 205 618 305 996 644 585 80 368
+        400 170 175 376 164 231 668 325 1114 690 665 70 560
+        500 180 185 398 164 256 718 350 1190 720 710 70 685
+        600 200 205 444 189 282 718 375 1243 810 775 70 880
+        700 210 215 454 204 308 718 400 1263 870 820 70 980
+        800 210 220 464 204 308 718 400 1270 870 820 70 1100
+        900 220 230 485 215 328 718 420 1296 920 860 70 1280
+        1000 240 240 515 215 349 718 420 1336 940 900 70 1460
+        1250 260 270 585 230 369 768 450 1456 1025 970 70 1990
+        1500 280 290 625 230 369 818 450 1556 1025 1010 70 2400
+
+        Returns:
+
+        """
+    data = dict()
+    # key = wll in t
+    # dimensions a..k in [mm]
+    #             a     b    c   d     e    f    g    h     i     j    k   weight[kg]
+    # index       0     1    2    3    4    5    6    7     8     9    10   11
+    data['GP120'] = (95, 95, 208, 95, 147, 400, 238, 647, 453, 428, 50, 110)
+    data['GP150'] = (105, 108, 238, 105, 169, 410, 275, 688, 496, 485, 50, 160)
+    data['GP200'] = (120, 130, 279, 120, 179, 513, 290, 838, 564, 530, 70, 235)
+    data['GP250'] = (130, 140, 299, 130, 205, 554, 305, 904, 614, 565, 70, 295)
+    data['GP300'] = (140, 150, 325, 140, 205, 618, 305, 996, 644, 585, 80, 368)
+    data['GP400'] = (170, 175, 376, 164, 231, 668, 325, 1114, 690, 665, 70, 560)
+    data['GP500'] = (180, 185, 398, 164, 256, 718, 350, 1190, 720, 710, 70, 685)
+    data['GP600'] = (200, 205, 444, 189, 282, 718, 375, 1243, 810, 775, 70, 880)
+    data['GP700'] = (210, 215, 454, 204, 308, 718, 400, 1263, 870, 820, 70, 980)
+    data['GP800'] = (210, 220, 464, 204, 308, 718, 400, 1270, 870, 820, 70, 1100)
+    data['GP900'] = (220, 230, 485, 215, 328, 718, 420, 1296, 920, 860, 70, 1280)
+    data['GP1000'] = (240, 240, 515, 215, 349, 718, 420, 1336, 940, 900, 70, 1460)
+    data['GP1250'] = (260, 270, 585, 230, 369, 768, 450, 1456, 1025, 970, 70, 1990)
+    data['GP1500'] = (280, 290, 625, 230, 369, 818, 450, 1556, 1025, 1010, 70, 2400)
+
+
+    def _give_values(self, kind):
+        if kind not in Shackle.data:
+            for key in Shackle.data.keys():
+                print(key)
+            raise ValueError(
+                f'No data available for a Shackle of kind {kind}. Available values printed above')
+
+        return Shackle.data[kind]
+
+    def __init__(self, scene, name, kind):
+
+        super().__init__(scene)
+        self.name = name
+
+        _ = self._give_values(kind)  # to make sure it exists
+
+        # origin is at center of pin
+        # z-axis up
+        # y-axis in direction of pin
+
+        self.body = scene.new_rigidbody(name=name + '_body')
+        # pin
+        self.pin_point = scene.new_point(name=name + '_pin_point',
+                                         parent=self.body,
+                                         position=(0.0,
+                                        0.0,
+                                        0.0))
+        self.pin = scene.new_circle(name=name + '_pin',
+                                    parent=self.pin_point,
+                                    axis=(0.0, 1.0, 0.0))
+
+        # bow
+        self.bow_point = scene.new_point(name=name + '_bow_point',
+                                         parent=self.body)
+
+        self.bow = scene.new_circle(name=name + 'bow',
+                                    parent=self.bow_point,
+                                    axis=(0.0, 1.0, 0.0))
+
+        # inside circle
+        self.inside_point = scene.new_point(name=name + '_inside_circle_center',
+                                            parent=self.body)
+        self.inside = scene.new_circle(name=name + '_inside',
+                                       parent=self.inside_point,
+                                       axis=(1.0, 0, 0))
+
+        # code for GP800_visual
+        self.visual = scene.new_visual(name=name + '_visual',
+                     parent=self.body,
+                     path=r'shackle_gp800.obj',
+                     offset=(0, 0, 0),
+                     rotation=(0, 0, 0))
+
+        self.kind = kind
+
+        for n in self.managed_nodes():
+            n.manager = self
+
+    @property
+    def parent(self):
+        return self.body.parent
+
+    def depends_on(self):
+        return []
+
+    @property
+    def kind(self):
+        return self._kind
+
+    @kind.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def kind(self, kind):
+
+        values = self._give_values(kind)
+        weight = values[11] / 1000  # convert to tonne
+        pin_dia = values[1] / 1000
+        bow_dia = values[0] / 1000
+        bow_length_inside = values[5] / 1000
+        bow_circle_inside = values[6] / 1000
+
+        cogz = 0.5 * pin_dia + bow_length_inside / 3  # estimated
+
+        remember = self._scene.current_manager
+        self._scene.current_manager = self
+
+        self.body.mass = weight
+        self.body.cog = (0,0,cogz)
+        self.pin.radius = pin_dia/2
+        self.bow.position = (0.0, 0.0, 0.5 * pin_dia + bow_length_inside + 0.5 * bow_dia)
+        self.bow.radius =bow_dia / 2
+        self.inside_point.position=(0, 0, 0.5 * pin_dia + bow_length_inside - 0.5 * bow_circle_inside)
+        self.inside.radius=bow_circle_inside / 2
+
+        # determine the scale for the shackle
+        # based on a GP800
+        #
+        actual_size = 0.5 * pin_dia + 0.5 * bow_dia + bow_length_inside
+        gp800_size = 0.5 * 0.210 + 0.5 * 0.220 + 0.718
+
+        scale = actual_size / gp800_size
+
+        self.visual.scale = (scale, scale, scale)
+
+        self._scene.current_manager = remember
+
+        self._kind = kind
+
+    def managed_nodes(self):
+        return [self.body, self.pin_point, self.pin, self.bow_point, self.bow, self.inside_point, self.inside, self.visual]
+
+    def delete(self):
+
+        # delete created nodes
+        a = self.managed_nodes()
+
+        for n in a:
+            n._manager = None
+
+        for n in a:
+            if n in self._scene._nodes:
+                self._scene.delete(n)   # delete if it is still available
+
+    def give_python_code(self):
+        code = f'# Exporting {self.name}'
+
+        code += '\n# Create Shackle'
+
+        # (self, scene, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
+
+        code += f'\ns.new_shackle("{self.name}", kind = {self.kind})'
+
+        return code
+
+
+
+
 # =============== Scene
 
 class Scene:
@@ -5525,7 +5710,7 @@ class Scene:
 
         if child.parent.parent.manager is not None:
             raise ValueError(
-                f'The parent {child.parent.name} of the child item {child.name} is a manged by {child.parent.parent.manager.name} and can therefore not be changed - unable to create geometric contact')
+                f'The parent of {child.parent.name} of the child item {child.name} ({child.parent.parent.name}) is a manged by {child.parent.parent.manager.name} and can therefore not be changed - unable to create geometric contact')
 
         new_node = GeometricContact(self, child, parent, name)
         if inside:
@@ -6448,7 +6633,43 @@ class Scene:
 
         return node
 
+    def new_shackle(self, name, kind='GP500') -> Shackle:
+        """
+        Creates a new shackle, adds it to the scene and returns a reference to the newly created object.
 
+        See Also:
+            Shackle
+
+        Args:
+            name:   name
+            kind:  type of shackle; eg 'GP500'
+
+
+        Returns:
+            a reference to the newly created Shackle object.
+
+        """
+
+        # apply prefixes
+        name = self._prefix_name(name)
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+
+        name_prefix = name + vfc.MANAGED_NODE_IDENTIFIER
+        postfixes = ['_body', '_pin_point', '_bow_point', '_inside_circle_center', '_inside', '_visual']
+        for pf in postfixes:
+            self._verify_name_available(name_prefix + pf)
+
+
+        # then make element
+
+        node = Shackle(scene=self, name=name, kind=kind)
+
+        self._nodes.append(node)
+
+        return node
 
     def print_python_code(self):
         """Prints the python code that generates the current scene
