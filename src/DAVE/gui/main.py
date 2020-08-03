@@ -210,10 +210,10 @@ class Gui():
         self.visual = Viewport(scene)
         """Reference to a viewport"""
 
-        if cog_scale > 0:
+        if cog_scale >= 0:
             self.visual.cog_scale = cog_scale
 
-        if geometry_scale > 0:
+        if geometry_scale >= 0:
             self.visual.geometry_scale = geometry_scale
 
 

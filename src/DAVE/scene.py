@@ -1974,7 +1974,7 @@ class Force(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def force(self, val):
-        
+
         assert3f(val)
         self._vfNode.force = val
 
@@ -1987,7 +1987,7 @@ class Force(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def fx(self, var):
-        
+
         a = self.force
         self.force = (var, a[1], a[2])
 
@@ -2000,7 +2000,7 @@ class Force(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def fy(self, var):
-        
+
         a = self.force
         self.force = (a[0], var, a[2])
 
@@ -2014,7 +2014,7 @@ class Force(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def fz(self, var):
-        
+
         a = self.force
         self.force = (a[0], a[1], var)
 
@@ -2030,7 +2030,7 @@ class Force(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def moment(self, val):
-        
+
         assert3f(val)
         self._vfNode.moment = val
 
@@ -2043,7 +2043,7 @@ class Force(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def mx(self, var):
-        
+
         a = self.moment
         self.moment = (var, a[1], a[2])
 
@@ -2056,7 +2056,7 @@ class Force(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def my(self, var):
-        
+
         a = self.moment
         self.moment = (a[0], var, a[2])
 
@@ -2069,7 +2069,7 @@ class Force(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def mz(self, var):
-        
+
         a = self.moment
         self.moment = (a[0], a[1], var)
 
@@ -2186,7 +2186,7 @@ class ContactBall(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def meshes(self, value):
-        
+
         meshes = []
 
         for m in value:
@@ -2220,7 +2220,7 @@ class ContactBall(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def radius(self, value):
-        
+
         assert1f_positive_or_zero(value, 'radius')
         self._vfNode.radius = value
         pass
@@ -2234,7 +2234,7 @@ class ContactBall(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def k(self, value):
-        
+
         assert1f_positive_or_zero(value, 'k')
         self._vfNode.k = value
         pass
@@ -2274,7 +2274,7 @@ class Circle(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def axis(self, val):
-        
+
         assert3f(val)
         if np.linalg.norm(val) == 0:
             raise ValueError('Axis can not be 0,0,0')
@@ -2289,7 +2289,7 @@ class Circle(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def radius(self, val):
-        
+
         assert1f(val)
         self._vfNode.radius = val
 
@@ -2327,7 +2327,7 @@ class HydSpring(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def cob(self, val):
-        
+
         assert3f(val)
         self._vfNode.position = val
 
@@ -2340,7 +2340,7 @@ class HydSpring(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def BMT(self, val):
-        
+
         self._vfNode.BMT = val
 
     @property
@@ -2352,7 +2352,7 @@ class HydSpring(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def BML(self, val):
-        
+
         self._vfNode.BML = val
 
     @property
@@ -2364,7 +2364,7 @@ class HydSpring(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def COFX(self, val):
-        
+
         self._vfNode.COFX = val
 
     @property
@@ -2376,7 +2376,7 @@ class HydSpring(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def COFY(self, val):
-        
+
         self._vfNode.COFY = val
 
     @property
@@ -2388,7 +2388,7 @@ class HydSpring(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def kHeave(self, val):
-        
+
         self._vfNode.kHeave = val
 
     @property
@@ -2400,7 +2400,7 @@ class HydSpring(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def waterline(self, val):
-        
+
         self._vfNode.waterline = val
 
     @property
@@ -2412,7 +2412,7 @@ class HydSpring(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def displacement_kN(self, val):
-        
+
         self._vfNode.displacement_kN = val
 
     def give_python_code(self):
@@ -2471,7 +2471,7 @@ class LC6d(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def stiffness(self, val):
-        
+
         self._vfNode.stiffness = val
 
     @property
@@ -2483,7 +2483,7 @@ class LC6d(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def main(self, val):
-        
+
         val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Axis):
             raise TypeError('Provided nodeA should be a Axis')
@@ -2500,7 +2500,7 @@ class LC6d(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def secondary(self, val):
-        
+
         val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Axis):
             raise TypeError('Provided nodeA should be a Axis')
@@ -2580,7 +2580,7 @@ class Connector2d(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def k_linear(self, value):
-        
+
         self._vfNode.k_linear = value
 
     @property
@@ -2592,7 +2592,7 @@ class Connector2d(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def k_angular(self, value):
-        
+
         self._vfNode.k_angular = value
 
     @property
@@ -2604,7 +2604,7 @@ class Connector2d(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def nodeA(self, val):
-        
+
         val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Axis):
             raise TypeError('Provided nodeA should be a Axis')
@@ -2621,7 +2621,7 @@ class Connector2d(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def nodeB(self, val):
-        
+
         val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Axis):
             raise TypeError('Provided nodeA should be a Axis')
@@ -2694,7 +2694,7 @@ class LinearBeam(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def EIy(self,value):
-        
+
         self._vfNode.EIy = value
 
     @property
@@ -2710,7 +2710,7 @@ class LinearBeam(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def EIz(self, value):
-        
+
         self._vfNode.EIz = value
 
     @property
@@ -2726,7 +2726,7 @@ class LinearBeam(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def GIp(self, value):
-        
+
         self._vfNode.GIp = value
 
     @property
@@ -2742,7 +2742,7 @@ class LinearBeam(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def EA(self, value):
-        
+
         self._vfNode.EA = value
 
     @property
@@ -2755,7 +2755,7 @@ class LinearBeam(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def mass(self, value):
-        
+
         assert1f(value, "Mass shall be a number")
         self._vfNode.Mass = value
         pass
@@ -2769,7 +2769,7 @@ class LinearBeam(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def L(self, value):
-        
+
         self._vfNode.L = value
 
     @property
@@ -2781,7 +2781,7 @@ class LinearBeam(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def nodeA(self, val):
-        
+
 
         val = self._scene._node_from_node_or_str(val)
 
@@ -2800,7 +2800,7 @@ class LinearBeam(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def nodeB(self, val):
-        
+
         val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Axis):
             raise TypeError('Provided nodeA should be a Axis')
@@ -3218,26 +3218,26 @@ class Tank(NodeWithParent):
     def volume(self):
         """The volume of fluid in the tank in m3. Setting this adjusts the fluid level"""
         return self._vfNode.volume
-    
+
     @volume.setter
     @node_setter_manageable
     @node_setter_observable
     def volume(self, value):
         assert1f_positive_or_zero(value,'Volume')
         self._vfNode.volume = value
-        
+
     @property
     def density(self):
         """Density of the fluid in the tank in mT/m3"""
         return self._vfNode.density
-    
+
     @density.setter
     @node_setter_manageable
     @node_setter_observable
     def density(self, value):
         assert1f(value)
         self._vfNode.density = value
-        
+
     @property
     def capacity(self):
         """Returns the capacity of the tank in m3. This is calculated from the defined geometry."""
@@ -3359,7 +3359,7 @@ class BallastSystem(Point):
         See also: change_parent_to
         """
 
-        
+
 
         super(Point, type(self)).parent.fset(self, var)
         # update parent of other core nodes
@@ -3407,7 +3407,7 @@ class BallastSystem(Point):
     @node_setter_manageable
     @node_setter_observable
     def position(self, new_position):
-        
+
         assert3f(new_position)
         self._position = new_position
 
@@ -3419,7 +3419,7 @@ class BallastSystem(Point):
     @node_setter_manageable
     @node_setter_observable
     def name(self, newname):
-        
+
         super(Point, self.__class__).name.fset(self, newname)
         self._vfForce.name = newname + vfc.VF_NAME_SPLIT + "gravity"
 
@@ -3438,7 +3438,7 @@ class BallastSystem(Point):
 
         """
         # asserts
-        
+
 
         assert3f(position, "position")
         assert1f(capacity_kN, "Capacity in kN")
@@ -3548,7 +3548,7 @@ class BallastSystem(Point):
         return [tank.name for tank in self._tanks]
 
     def fill_tank(self, name, fill):
-        
+
 
         assert1f(fill, "tank fill")
 
@@ -3585,7 +3585,7 @@ class BallastSystem(Point):
 
 
     def empty_all_usable_tanks(self):
-        
+
         for t in self._tanks:
             if not t.frozen:
                 t.make_empty()
@@ -3692,7 +3692,7 @@ class WaveInteraction1(Node):
         return code
 
     def change_parent_to(self, new_parent):
-        
+
         if not (isinstance(new_parent, Axis)):
             raise ValueError('Hydrodynamic databases can only be attached to an axis (or derived)')
 
@@ -3736,7 +3736,7 @@ class GeometricContact(Manager):
 
     """
 
-    def __init__(self, scene, parent_circle, child_circle, name):
+    def __init__(self, scene, child_circle, parent_circle, name, inside=True):
         """
         circle1 becomes the nodeB
         circle2 becomes the nodeA
@@ -3758,9 +3758,10 @@ class GeometricContact(Manager):
 
         name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
 
-        self._parent_circle = parent_circle
-        self._child_circle = child_circle
+        self._parent_circle = child_circle
+        self._child_circle = parent_circle
         self._flipped = False
+        self._inside_connection = inside
 
         self._axis_on_parent = self._scene.new_axis(scene.available_name_like(name_prefix + '_axis_on_parent'))
         """Axis on the nodeA axis at the location of the center of hole or pin"""
@@ -3775,9 +3776,9 @@ class GeometricContact(Manager):
 
         # prohibit changes to nodes that were used in the creation of this connection
 
-        self._parent_circle_parent = parent_circle.parent
-        self._child_circle_parent = child_circle.parent
-        self._parent_circle_parent_parent = parent_circle.parent.parent
+        self._parent_circle_parent = parent_circle.parent      # point
+        self._child_circle_parent = child_circle.parent        # point
+        self._parent_circle_parent_parent = parent_circle.parent.parent  # axis
 
         for node in self.managed_nodes():
             node.manager = self
@@ -3789,20 +3790,15 @@ class GeometricContact(Manager):
         child_circle.observers.append(self)
         child_circle.parent.observers.append(self)
 
-        self._make_connection()
+        self._update_connection()
 
     def on_observed_node_changed(self, changed_node):
-
-        remember_inside = self._inside_connection
-        self._make_connection()
-
-        if not remember_inside:
-            self.set_pin_pin_connection()
+       self._update_connection()
 
     @property
     def parent(self):
         """Parent of the connection - [Axis or derived] - READ ONLY"""
-        return self._axis_on_parent.parent
+        return self._parent_circle
 
     @parent.setter
     @node_setter_manageable
@@ -3827,12 +3823,19 @@ class GeometricContact(Manager):
 
 
 
-    def _make_connection(self):
-
-        self._inside_connection = False
+    def _update_connection(self):
 
         remember = self._scene.current_manager
-        self._scene.current_manager = self  # claim managment
+        self._scene.current_manager = self  # claim management
+
+        # get current properties
+
+        c_swivel = self.swivel
+        c_swivel_fixed = self.swivel_fixed
+        c_rotation_on_parent = self.rotation_on_parent
+        c_fixed_to_parent = self.fixed_to_parent
+        c_child_rotation = self.child_rotation
+        c_child_fixed = self.child_fixed
 
         pin1 = self._parent_circle  # nodeB
         pin2 = self._child_circle  # nodeA
@@ -3859,45 +3862,42 @@ class GeometricContact(Manager):
 
         self._connection_axial_rotation.parent = self._pin_hole_connection
         self._connection_axial_rotation.position = (0, 0, 0)
-        # self._connection_axial_rotation.rotation = (90, 0, 0)  # < ===============================================
 
         # Position the connection pin (self) on the target pin and
         # place the parent of the parent of the pin (the axis) on the connection axis
         # and fix it
+        slaved_axis = pin1.parent.parent
 
-        self._axis_on_child.parent = None
-        self._axis_on_child.position = pin1.parent.global_position  # position of the poi
-        self._axis_on_child.rotation = pin1.parent.parent.to_glob_rotation(rotation_from_y_axis_direction(pin1.axis))
+        slaved_axis.parent = self._axis_on_child
+        slaved_axis.position = -np.array(pin1.parent.position)
+        slaved_axis.rotation = rotation_from_y_axis_direction(-1*np.array(pin1.axis))
 
-        # # store the original pin orientation
-        # g0 = np.array(pin1.parent.parent.global_rotation, dtype=float)
-
-        pin1.parent.parent.change_parent_to(self._axis_on_child)
-        pin1.parent.parent.fixed = True
-
-        # Place the pin in the hole
+        slaved_axis.fixed = True
 
         self._axis_on_child.parent = self._connection_axial_rotation
         self._axis_on_child.rotation = (0, 0, 0)
         self._axis_on_child.fixed = (True, True, True,
                                      True, False, True)
 
+        if self._inside_connection:
 
-        self._axis_on_child.position = (pin1.radius + pin2.radius, 0, 0)  # <=============================
+            # Place the pin in the hole
+            self._connection_axial_rotation.rotation = (0, 0, 0)
+            self._axis_on_child.position = (pin2.radius - pin1.radius, 0, 0)
 
+        else:
 
+            # pin-pin connection
+            self._axis_on_child.position = (pin1.radius + pin2.radius, 0, 0)
+            self._connection_axial_rotation.rotation = (90, 0, 0)
 
-        # now we may rotate self.ry such that the original global axis of the slaved body are as close to their original
-        # values as possible
-
-        # g0 is the original global rotation vector
-        # g1 is the current rotation vector
-        # g1 = np.array(pin1.parent.parent.global_rotation, dtype=float)
-        # difference = g1 - g0
-        # direction = np.array(pin1.parent.parent.to_glob_rotation((1, 0, 0)))
-
-        # y = np.dot(difference, direction)
-        # self._slaved_axis.rotation = (0, y, 0)
+        # restore settings
+        self.swivel = c_swivel
+        self.swivel_fixed = c_swivel_fixed
+        self.rotation_on_parent = c_rotation_on_parent
+        self.fixed_to_parent = c_fixed_to_parent
+        self.child_rotation = c_child_rotation
+        self.child_fixed = c_child_fixed
 
         self._scene.current_manager = remember
 
@@ -3906,17 +3906,12 @@ class GeometricContact(Manager):
         """Sets the connection to be of type pin-pin"""
 
         self._inside_connection = False
-        remember = self._scene.current_manager
-        self._scene.current_manager = self  # claim managment
+        if self.swivel == 0:
+            self.swivel = 90
+        elif self.swivel == 180:
+            self.swivel = 270
 
-        pin1 = self._parent_circle  # nodeB
-        pin2 = self._child_circle  # nodeA
-
-        self._axis_on_child.position = (pin1.radius + pin2.radius, 0, 0)
-        self._connection_axial_rotation.rotation = (90, 0, 0)
-
-        self._scene.current_manager = remember
-
+        self._update_connection()
 
     def set_pin_in_hole_connection(self):
         """Sets the connection to be of type pin-in-hole
@@ -3929,16 +3924,13 @@ class GeometricContact(Manager):
         """
         self._inside_connection = True
 
-        remember = self._scene.current_manager
-        self._scene.current_manager = self # claim managment
+        if self.swivel == 90:
+            self.swivel = 0
+        elif self.swivel == 270:
+            self.swivel = 180
 
-        pin = self._parent_circle  # nodeB
-        hole = self._child_circle # nodeA
+        self._update_connection()
 
-        self._connection_axial_rotation.rotation = (0, 0, 0)
-        self._axis_on_child.position = (hole.radius - pin.radius, 0, 0)
-
-        self._scene.current_manager = remember
 
     def managed_nodes(self):
         """Returns a list of managed nodes"""
@@ -5730,7 +5722,7 @@ class Scene:
             assert3f(position, "Position ")
         if rotation is not None:
             assert3f(rotation, "Rotation ")
-            
+
         if inertia_radii is not None:
             assert3f_positive(inertia_radii, "Radii of inertia")
             assert mass>0, ValueError("Can not set radii of gyration without specifying mass")
@@ -5764,7 +5756,7 @@ class Scene:
             r.position = position
         if rotation is not None:
             r.rotation = rotation
-            
+
         if inertia_radii is not None:
             r.inertia_radii = inertia_radii
 
