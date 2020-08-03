@@ -19,10 +19,12 @@ import DAVE.gui.forms.widget_geometricconnection
 import DAVE.gui.forms.widget_sling
 import DAVE.gui.forms.widget_tank
 import DAVE.gui.forms.widget_buoyancy
+import DAVE.gui.forms.widget_shackle
 
 import numpy as np
 
 from PySide2.QtWidgets import QListWidgetItem
+from PySide2 import QtWidgets
 
 
 class NodeEditor:
@@ -1766,6 +1768,52 @@ class EditSling(NodeEditor):
         return code
 
 
+class EditShackle(NodeEditor):
+
+    _ui = None
+
+    def create_widget(self):
+
+        # Prevents the ui from being created more than once
+        if EditShackle._ui is None:
+
+            widget = QtWidgets.QWidget()
+            ui = DAVE.gui.forms.widget_shackle.Ui_widgetShackle()
+            ui.setupUi(widget)
+            EditShackle._ui = ui
+            ui._widget = widget
+
+        else:
+            ui = EditShackle._ui
+
+        try:
+            ui.comboBox.currentTextChanged.disconnect()
+
+        except:
+            pass # no connections yet
+
+        ui.comboBox.clear()
+
+        ui.comboBox.addItems(self.node.defined_kinds())
+
+        ui.comboBox.setCurrentText(self.node.kind)
+        ui.comboBox.currentTextChanged.connect(self.callback)
+
+        self.ui = ui
+
+        return ui._widget
+
+    def generate_code(self):
+
+        code = ""
+
+        kind = self.ui.comboBox.currentText()
+        if kind != self.node.kind:
+            element = "\ns['{}']".format(self.node.name)
+            code = element + f".kind = '{kind}'"
+
+        return code
+
 # ===========================================
 
 class WidgetNodeProps(guiDockWidget):
@@ -1878,7 +1926,8 @@ class WidgetNodeProps(guiDockWidget):
         
         to_be_removed = self._open_edit_widgets.copy()
 
-        if node._manager:
+
+        if node._manager and not isinstance(node, vfs.Shackle):
             self.managed_label.setText(
                 f"The properties of this node are managed by node '{node._manager.name}' and should not be changed manually")
             self.manager_widget.setVisible(True)
@@ -1906,10 +1955,10 @@ class WidgetNodeProps(guiDockWidget):
         if isinstance(node, vfs.WaveInteraction1):
             self._node_editors.append(EditWaveInteraction(node, self.node_property_changed, self.guiScene, self.run_code))
 
-        if isinstance(node, vfs.Axis):
+        if isinstance(node, vfs.Axis) and not isinstance(node, vfs.Shackle):
             self._node_editors.append(EditAxis(node, self.node_property_changed, self.guiScene, self.run_code))
 
-        if isinstance(node, vfs.RigidBody):
+        if isinstance(node, vfs.RigidBody) and not isinstance(node, vfs.Shackle):
             self._node_editors.append(EditBody(node, self.node_property_changed, self.guiScene, self.run_code))
 
         if isinstance(node, vfs.Point):
@@ -1954,6 +2003,10 @@ class WidgetNodeProps(guiDockWidget):
 
         if isinstance(node, vfs.Tank):
             self._node_editors.append(EditTank(node, self.node_property_changed, self.guiScene, self.run_code))
+
+        if isinstance(node, vfs.Shackle):
+            self._node_editors.append(EditShackle(node, self.node_property_changed, self.guiScene, self.run_code))
+
 
         to_be_added = []
         for editor in self._node_editors:

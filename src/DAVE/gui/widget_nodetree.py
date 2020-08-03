@@ -252,6 +252,11 @@ class WidgetNodeTree(guiDockWidget):
                 if node == node._manager._child_circle_parent_parent:
                     show_managed_node = True
 
+            # custom work-around for showing the "circles" for managed shackles
+            if isinstance(node._manager, Shackle):
+                if node == node._manager.pin or node == node._manager.bow or node== node._manager.inside:
+                    show_managed_node = True
+
             if node._manager:
 
                 # are we showing managed nodes?

@@ -4547,7 +4547,7 @@ class Sling(Manager):
         self._update_properties()
 
 
-class Shackle(Manager):
+class Shackle(Manager, RigidBody):
     """
         Green-Pin Heavy Duty Bow Shackle BN
 
@@ -4594,6 +4594,10 @@ class Shackle(Manager):
     data['GP1250'] = (260, 270, 585, 230, 369, 768, 450, 1456, 1025, 970, 70, 1990)
     data['GP1500'] = (280, 290, 625, 230, 369, 818, 450, 1556, 1025, 1010, 70, 2400)
 
+    def defined_kinds(self):
+        """Defined shackle kinds"""
+        list = [a for a in Shackle.data.keys()]
+        return list
 
     def _give_values(self, kind):
         if kind not in Shackle.data:
@@ -4604,9 +4608,11 @@ class Shackle(Manager):
 
         return Shackle.data[kind]
 
-    def __init__(self, scene, name, kind):
+    def __init__(self, scene, name, kind,a,p,g):
 
-        super().__init__(scene)
+        Manager.__init__(self, scene)
+        RigidBody.__init__(self,scene,axis=a, poi=p, force=g)
+
         self.name = name
 
         _ = self._give_values(kind)  # to make sure it exists
@@ -4615,10 +4621,11 @@ class Shackle(Manager):
         # z-axis up
         # y-axis in direction of pin
 
-        self.body = scene.new_rigidbody(name=name + '_body')
+        # self.body = scene.new_rigidbody(name=name + '_body')
+
         # pin
         self.pin_point = scene.new_point(name=name + '_pin_point',
-                                         parent=self.body,
+                                         parent=self,
                                          position=(0.0,
                                         0.0,
                                         0.0))
@@ -4628,7 +4635,7 @@ class Shackle(Manager):
 
         # bow
         self.bow_point = scene.new_point(name=name + '_bow_point',
-                                         parent=self.body)
+                                         parent=self)
 
         self.bow = scene.new_circle(name=name + 'bow',
                                     parent=self.bow_point,
@@ -4636,14 +4643,14 @@ class Shackle(Manager):
 
         # inside circle
         self.inside_point = scene.new_point(name=name + '_inside_circle_center',
-                                            parent=self.body)
+                                            parent=self)
         self.inside = scene.new_circle(name=name + '_inside',
                                        parent=self.inside_point,
                                        axis=(1.0, 0, 0))
 
         # code for GP800_visual
-        self.visual = scene.new_visual(name=name + '_visual',
-                     parent=self.body,
+        self.visual_node = scene.new_visual(name=name + '_visual',
+                     parent=self,
                      path=r'shackle_gp800.obj',
                      offset=(0, 0, 0),
                      rotation=(0, 0, 0))
@@ -4653,10 +4660,6 @@ class Shackle(Manager):
         for n in self.managed_nodes():
             n.manager = self
 
-    @property
-    def parent(self):
-        return self.body.parent
-
     def depends_on(self):
         return []
 
@@ -4665,7 +4668,7 @@ class Shackle(Manager):
         return self._kind
 
     @kind.setter
-    @node_setter_manageable
+    # @node_setter_manageable   : allow changing of shackle kind
     @node_setter_observable
     def kind(self, kind):
 
@@ -4681,11 +4684,13 @@ class Shackle(Manager):
         remember = self._scene.current_manager
         self._scene.current_manager = self
 
-        self.body.mass = weight
-        self.body.cog = (0,0,cogz)
+        self.mass = weight
+        self.cog = (0,0,cogz)
         self.pin.radius = pin_dia/2
-        self.bow.position = (0.0, 0.0, 0.5 * pin_dia + bow_length_inside + 0.5 * bow_dia)
+
+        self.bow_point.position = (0.0, 0.0, 0.5 * pin_dia + bow_length_inside + 0.5 * bow_dia)
         self.bow.radius =bow_dia / 2
+
         self.inside_point.position=(0, 0, 0.5 * pin_dia + bow_length_inside - 0.5 * bow_circle_inside)
         self.inside.radius=bow_circle_inside / 2
 
@@ -4697,14 +4702,17 @@ class Shackle(Manager):
 
         scale = actual_size / gp800_size
 
-        self.visual.scale = (scale, scale, scale)
+        # TODO: scale is not updated in real object... why?
+        self.visual_node.scale = [scale, scale, scale]
+        # check1 =  self.visual.scale
+        # check2 = self._scene[self.visual.name].scale
 
         self._scene.current_manager = remember
 
         self._kind = kind
 
     def managed_nodes(self):
-        return [self.body, self.pin_point, self.pin, self.bow_point, self.bow, self.inside_point, self.inside, self.visual]
+        return [self.pin_point, self.pin, self.bow_point, self.bow, self.inside_point, self.inside, self.visual_node]
 
     def delete(self):
 
@@ -6665,7 +6673,18 @@ class Scene:
 
         # then make element
 
-        node = Shackle(scene=self, name=name, kind=kind)
+        # make elements
+
+        a = self._vfc.new_axis(name)
+
+        p = self._vfc.new_poi(name + vfc.VF_NAME_SPLIT + "cog")
+        p.parent = a
+
+        g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + "gravity")
+        g.parent = p
+
+
+        node = Shackle(scene=self, name=name, kind=kind, a=a, p=p, g=g)
 
         self._nodes.append(node)
 

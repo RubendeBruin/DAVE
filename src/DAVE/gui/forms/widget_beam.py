@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_beam.ui',
 # licensing of 'widget_beam.ui' applies.
 #
-# Created: Fri Jul 24 09:26:30 2020
+# Created: Mon Aug  3 20:56:04 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -194,7 +194,8 @@ class Ui_widget_beam(object):
         QtCore.QMetaObject.connectSlotsByName(widget_beam)
         widget_beam.setTabOrder(self.cbMasterAxis, self.cbSlaveAxis)
         widget_beam.setTabOrder(self.cbSlaveAxis, self.doubleSpinBox_1)
-        widget_beam.setTabOrder(self.doubleSpinBox_1, self.doubleSpinBox_2)
+        widget_beam.setTabOrder(self.doubleSpinBox_1, self.sbMass)
+        widget_beam.setTabOrder(self.sbMass, self.doubleSpinBox_2)
         widget_beam.setTabOrder(self.doubleSpinBox_2, self.doubleSpinBox_3)
         widget_beam.setTabOrder(self.doubleSpinBox_3, self.doubleSpinBox_4)
         widget_beam.setTabOrder(self.doubleSpinBox_4, self.doubleSpinBox_5)

@@ -22,6 +22,7 @@ echo call pyside2-uic widget_sheave.ui -o "..\src\DAVE\gui\forms\widget_sheave.p
 echo call pyside2-uic widget_linhyd.ui -o "..\src\DAVE\gui\forms\widget_linhyd.py"
 echo call pyside2-uic widget_lincon6.ui -o "..\src\DAVE\gui\forms\widget_lincon6.py"
 call pyside2-uic widget_beam.ui -o "..\src\DAVE\gui\forms\widget_beam.py"
+call pyside2-uic widget_shackle.ui -o "..\src\DAVE\gui\forms\widget_shackle.py"
 echo call pyside2-uic widget_con2d.ui -o "..\src\DAVE\gui\forms\widget_con2d.py"
 echo call pyside2-uic frm_standard_assets.ui -o "..\src\DAVE\gui\forms\frm_standard_assets.py"
 echo call pyside2-uic dlg_solver.ui -o "..\src\DAVE\gui\forms\dlg_solver.py"
