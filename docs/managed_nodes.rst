@@ -22,7 +22,7 @@ Managers shall:
 **Editing**
 
 Editing a managed node is only allowed when scene.current_manager is the same manager as the manager of the node.
-This is enforced.
+This is enforced by adding the @node_setter_manageable decorator to any setter of any node.
 
 So typically the manager implements something like:
 

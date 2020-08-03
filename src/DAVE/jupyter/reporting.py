@@ -53,8 +53,6 @@ def report(node, properties=None, long = False) -> None:
     """
 
     style = ' style="text-align:left"'
-    if properties is not None:
-        properties = make_iterable(properties)
 
     html = []
     html.append('<table align="left" border="1">')

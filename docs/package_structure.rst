@@ -24,6 +24,10 @@ GUI components
 ~~~~~~~~~~~~~~~
 Everything for the QT-based graphical user interface.
 
+Import using
+
+    from DAVE.gui import *
+
 - gui.py , :py:mod:`DAVE.gui` contains the main window and dialogs
 - element_widgets.py , :py:mod:`DAVE.element_widgets` contains the node-edit widgets
 - standard_assets.py , :py:mod:`DAVE.standard_assets` this is the asset browser
@@ -35,7 +39,14 @@ Jupyter components
 ~~~~~~~~~~~~~~~~~~~
 Everything for the Jupyter-based user interface
 
+Import using
+
+    from DAVE.jupyter import *
+
+- /jupyter
+
 - jupyer.py :py:mod:`DAVE.jupyter` Jupyter helper functions. Also contains the code for headless server config.
+- reporting.py :py:mod:`DAVE.jupyter` Reporting nodes
 - visuals.py :py:mod:`DAVE.visuals` (shared with gui)
 
 

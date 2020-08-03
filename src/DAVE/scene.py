@@ -411,6 +411,31 @@ import datetime
 #    --> node.position[2] = 5 is not allowed
 
 
+import functools
+
+
+# Wrapper (decorator) for managed nodes
+def node_setter_manageable(func):
+    @functools.wraps(func)
+    def wrapper_decorator(self, *args, **kwargs):
+        self._verify_change_allowed()
+        value = func(self,*args, **kwargs)
+        return value
+    return wrapper_decorator
+
+# Wrapper (decorator) observed nodes
+def node_setter_observable(func):
+    @functools.wraps(func)
+    def wrapper_decorator(self, *args, **kwargs):
+        value = func(self,*args, **kwargs)
+        # Do something after
+
+        print('notify observers (if any)')
+        self._notify_observers()
+
+        return value
+    return wrapper_decorator
+
 
 class Node:
     """ABSTRACT CLASS - Properties defined here are applicable to all derived classes
@@ -425,6 +450,9 @@ class Node:
 
         self._manager : Node or None = None
         """Reference to a node that controls this node"""
+
+        self.observers = list()
+        """List of nodes observing this node."""
 
         self._visible : bool = True
         """Determines if the visual for of this node (if any) should be visible"""
@@ -497,6 +525,15 @@ class Node:
     def update(self):
         """Performs internal updates relevant for physics. Called before solving statics or getting results"""
         pass
+
+    def _notify_observers(self):
+        for obs in self.observers:
+            obs.on_observed_node_changed(self)
+
+    def on_observed_node_changed(self, changed_node):
+        """"""
+        pass
+
 
 class CoreConnectedNode(Node):
     """ABSTRACT CLASS - Properties defined here are applicable to all derived classes
@@ -1356,6 +1393,8 @@ class Point(NodeWithParent):
         super().__init__(scene, vfPoi)
         self._None_parent_acceptable = True
 
+    def on_observed_node_changed(self, changed_node):
+        print(changed_node.name + " has changed")
 
     @property
     def x(self):
@@ -1384,9 +1423,11 @@ class Point(NodeWithParent):
         a = self.position
         self.position = (a[0], var, a[2])
 
+
     @z.setter
+    @node_setter_manageable
     def z(self, var):
-        self._verify_change_allowed()
+
         """z component of local position"""
         a = self.position
         self.position = (a[0], a[1], var)
@@ -1398,8 +1439,10 @@ class Point(NodeWithParent):
         return self._vfNode.position
 
     @position.setter
+    @node_setter_manageable
+    @node_setter_observable
     def position(self, new_position):
-        self._verify_change_allowed()
+
         assert3f(new_position)
         self._vfNode.position = new_position
 
