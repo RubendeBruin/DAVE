@@ -894,7 +894,13 @@ class Gui():
                     original_dofs = None
                     continue
                 else: # done
-                    break
+
+                    # see if all geometric conacts are ok
+                    # if not then continue
+                    if self.scene._check_and_fix_geometric_contact_orientations():
+                        continue
+                    else: # we are done!
+                        break
 
             if dialog is None:
                 dialog = SolverDialog()

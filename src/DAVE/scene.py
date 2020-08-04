@@ -2921,12 +2921,12 @@ class TriMeshSource(Node):
 
 
 
-    def make_cube(self):
-        """Sets the mesh to a cube"""
-
-        from vtk import vtkCubeSource
-        cube = vtkCubeSource()
-        self.load_vtk_polydataSource(cube)
+    # def make_cube(self):
+    #     """Sets the mesh to a cube"""
+    #
+    #     from vtk import vtkCubeSource
+    #     cube = vtkCubeSource()
+    #     self.load_vtk_polydataSource(cube)
 
     def _fromVTKpolydata(self,polydata, offset = None, rotation = None, scale = None):
 
@@ -3749,6 +3749,8 @@ class GeometricContact(Manager):
             child_circle:
         """
 
+
+
         if parent_circle.parent.parent is None:
             raise ValueError(
                 'The slaved pin is not located on an axis. Can not create the connection because there is no axis to nodeB')
@@ -3758,8 +3760,14 @@ class GeometricContact(Manager):
 
         name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
 
-        self._child_circle = child_circle
         self._parent_circle = parent_circle
+        self._parent_circle_parent = parent_circle.parent  # point
+
+        self._child_circle = child_circle
+        self._child_circle_parent = child_circle.parent  # point
+        self._child_circle_parent_parent = child_circle.parent.parent  # axis
+
+
         self._flipped = False
         self._inside_connection = inside
 
@@ -3775,39 +3783,101 @@ class GeometricContact(Manager):
         self._connection_axial_rotation = self._scene.new_axis(scene.available_name_like(name_prefix + '_connection_axial_rotation'))
 
         # prohibit changes to nodes that were used in the creation of this connection
-
-        self._parent_circle_parent = parent_circle.parent      # point
-        self._child_circle_parent = child_circle.parent        # point
-        self._child_circle_parent_parent = child_circle.parent.parent  # axis
-
         for node in self.managed_nodes():
             node.manager = self
 
         # observe circles and their points
-        parent_circle.observers.append(self)
-        parent_circle.parent.observers.append(self)
+        self._parent_circle.observers.append(self)
+        self._parent_circle_parent.observers.append(self)
 
-        child_circle.observers.append(self)
-        child_circle.parent.observers.append(self)
+        self._child_circle.observers.append(self)
+        self._child_circle_parent.observers.append(self)
 
         self._update_connection()
 
     def on_observed_node_changed(self, changed_node):
        self._update_connection()
 
+    @staticmethod
+    def _assert_parent_child_possible(parent, child):
+        if parent.parent.parent == child.parent.parent:
+            raise ValueError(f'A GeometricContact can not be created between two circles on the same axis or body. Both circles are located on {parent.parent.parent}')
+
+    @property
+    def child(self):
+        """The Circle that is connected to the GeometricContact [Node]
+
+        See Also: parent
+        """
+        return self._child_circle
+
+    @child.setter
+    def child(self, value):
+        new_child = self._scene._node_from_node_or_str(value)
+        if not isinstance(new_child, Circle):
+            raise ValueError(
+                f'Child of a geometric contact should be a Circle, but {new_child.name} is a {type(new_child)}')
+
+        if new_child.parent.parent is None:
+            raise ValueError(f'Child circle {new_child.name} is not located on an axis or body and can thus not be used as child')
+
+        self._assert_parent_child_possible(self.parent, new_child)
+
+        # release old child
+        self._child_circle.observers.remove(self)
+        self._child_circle_parent.observers.remove(self)
+
+        # set new parent
+        self._child_circle = new_child
+        self._child_circle_parent = new_child.parent
+        self._child_circle_parent_parent = new_child.parent.parent
+
+        # and observe
+        self._child_circle.observers.append(self)
+        self._child_circle_parent.observers.append(self)
+
+        self._update_connection()
+
     @property
     def parent(self):
-        """Parent of the connection - [Axis or derived] - READ ONLY"""
+        """The Circle that the GeometricConnection is connected to [Node]
+
+        See Also: child
+        """
         return self._parent_circle
 
     @parent.setter
     @node_setter_manageable
     @node_setter_observable
     def parent(self, var):
-        raise ValueError('Parent of a GeometricContact can not be set directly. Use one of the connection functions to create or update the connection')
+        if var is None:
+            raise ValueError('Parent of a geometric contact should be a Circle, not None')
+
+        new_parent = self._scene._node_from_node_or_str(var)
+        if not isinstance(new_parent, Circle):
+            raise ValueError(f'Parent of a geometric contact should be a Circle, but {new_parent.name} is a {type(new_parent)}')
+
+        self._assert_parent_child_possible(new_parent, self.child)
+
+        # release old parent
+        self._parent_circle.observers.remove(self)
+        self._parent_circle_parent.observers.remove(self)
+
+        # set new parent
+        self._parent_circle = new_parent
+        self._parent_circle_parent = new_parent.parent
+
+        # and observe
+        self._parent_circle.observers.append(self)
+        self._parent_circle_parent.observers.append(self)
+
+        self._update_connection()
+
+
 
     def change_parent_to(self, new_parent):
-        raise ValueError('Parent of a ContactHinge can not be set directly. Use one of the connection functions to create or update the connection')
+        # raise ValueError('Parent of a ContactHinge can not be set directly. Use one of the connection functions to create or update the connection')
+        self.parent = new_parent
 
     def delete(self):
 
@@ -4262,6 +4332,8 @@ class Sling(Manager):
             EAmain = k_total * Lmain
 
         self.sa.mass = self._mass / 2
+        self.sa.inertia_radii = (self._LspliceA/2, self._LspliceA/2,self._diameter/2)
+
         self.a1.position = (self._LspliceA/2, self._diameter/2, 0)
         self.a2.position=(self._LspliceA / 2, -self._diameter / 2, 0)
         self.am.position=(-self._LspliceA / 2, 0, 0)
@@ -4270,6 +4342,8 @@ class Sling(Manager):
         self.avis.scale=(self._LspliceA, 2*self._diameter, self._diameter)
 
         self.sb.mass = self._mass/2
+        self.sb.inertia_radii = (self._LspliceB/2, self._LspliceB/2,self._diameter/2)
+
         self.b1.position = (self._LspliceB/2, self._diameter/2, 0)
         self.b2.position=(self._LspliceB / 2, -self._diameter / 2, 0)
         self.bm.position=(-self._LspliceB / 2, 0, 0)
@@ -4974,6 +5048,26 @@ class Scene:
         for name in original_fixes.keys():
             self.node_by_name(name).fixed = original_fixes[name]
 
+    def _check_and_fix_geometric_contact_orientations(self):
+        """A Geometric pin on pin contact may end up with tension in the contact. Fix that by moving the child pin to the other side of the parent pin
+
+        Returns:
+            True if anything was changed; False otherwise
+        """
+
+        changed = False
+        for n in self.nodes_of_type(GeometricContact):
+            if not n.inside:
+
+                # connection force of the child is the
+                # force applied on the connecting rod
+                # in the axis system of the rod
+                if n._axis_on_child.connection_force_x > 0:
+                    n.change_side()
+                    changed = True
+
+        return changed
+
 
     # ======== resources =========
 
@@ -5417,6 +5511,12 @@ class Scene:
             succes = solve_func()
 
         if self.verify_equilibrium():
+
+            if self._check_and_fix_geometric_contact_orientations():
+                solve_func()
+                if not self.verify_equilibrium():
+                    return False
+
             if not silent:
                 self._print("Solved to {}.".format(self._vfc.Emaxabs))
             return True
@@ -5696,6 +5796,8 @@ class Scene:
         assertBool(swivel_fixed,'swivel_fixed')
         assertBool(fixed_to_parent, 'fixed_to_parent')
         assertBool(child_fixed, 'child_fixed')
+
+        GeometricContact._assert_parent_child_possible(parent, child)
 
 
         if swivel is None:

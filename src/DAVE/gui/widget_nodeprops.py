@@ -1955,7 +1955,7 @@ class WidgetNodeProps(guiDockWidget):
         if isinstance(node, vfs.WaveInteraction1):
             self._node_editors.append(EditWaveInteraction(node, self.node_property_changed, self.guiScene, self.run_code))
 
-        if isinstance(node, vfs.Axis) and not isinstance(node, vfs.Shackle):
+        if isinstance(node, vfs.Axis):
             self._node_editors.append(EditAxis(node, self.node_property_changed, self.guiScene, self.run_code))
 
         if isinstance(node, vfs.RigidBody) and not isinstance(node, vfs.Shackle):

@@ -201,7 +201,7 @@ def dynamics_summary_data(scene):
         if mode < 3:
             own = node.inertia
         else:
-            pos = node.inertia_position
+            pos = np.array(node.inertia_position, dtype=float)
             pos[mode-3]=0
             dist = np.linalg.norm(pos)
             own = node.inertia * node.inertia_radii[mode-3]**2 + node.inertia * dist**2

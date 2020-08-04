@@ -127,11 +127,22 @@ class WidgetNodeTree(guiDockWidget):
             node_drop = self.guiScene[drop]
             node_onto = self.guiScene[onto]
 
-            # are we dropping a sheave onto a sheave?
+            # Sheave --> Sheave : create geometric contact
             if isinstance(node_drop, ds.Circle) and isinstance(node_onto, ds.Circle):
                 code = f"s.new_geometriccontact('Geometric_connection of :{drop} on {onto}','{drop}','{onto}')"
+
+            # Sheave --> GeometricContact : set child of geometric contact
+            elif isinstance(node_drop, ds.Circle) and isinstance(node_onto, ds.GeometricContact):
+                code = f"s['{node_onto.name}'].child = '{node_drop.name}'"
+
+            # GeometricContact --> Sheave : set parent of geometric contact
+            elif isinstance(node_drop, ds.GeometricContact) and isinstance(node_onto, ds.Circle):
+                code = f"s['{node_drop.name}'].parent = '{node_onto.name}'"
+
+            # Default
             else:
                 code = "s['{}'].change_parent_to(s['{}'])".format(drop, onto)
+
             self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
 
