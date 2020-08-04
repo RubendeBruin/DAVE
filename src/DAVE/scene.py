@@ -3804,7 +3804,7 @@ class GeometricContact(Manager):
     @node_setter_manageable
     @node_setter_observable
     def parent(self, var):
-        raise ValueError('Parent of a ContactHinge can not be set directly. Use one of the connection functions to create or update the connection')
+        raise ValueError('Parent of a GeometricContact can not be set directly. Use one of the connection functions to create or update the connection')
 
     def change_parent_to(self, new_parent):
         raise ValueError('Parent of a ContactHinge can not be set directly. Use one of the connection functions to create or update the connection')
@@ -4637,7 +4637,7 @@ class Shackle(Manager, RigidBody):
         self.bow_point = scene.new_point(name=name + '_bow_point',
                                          parent=self)
 
-        self.bow = scene.new_circle(name=name + 'bow',
+        self.bow = scene.new_circle(name=name + '_bow',
                                     parent=self.bow_point,
                                     axis=(0.0, 1.0, 0.0))
 
@@ -4682,10 +4682,14 @@ class Shackle(Manager, RigidBody):
         cogz = 0.5 * pin_dia + bow_length_inside / 3  # estimated
 
         remember = self._scene.current_manager
-        self._scene.current_manager = self
+
+        self._scene.current_manager = self.manager  # WORK-AROUND : in case the shackle itself is managed, fake management
 
         self.mass = weight
         self.cog = (0,0,cogz)
+
+        self._scene.current_manager = self  # register self a manager (as it should)
+
         self.pin.radius = pin_dia/2
 
         self.bow_point.position = (0.0, 0.0, 0.5 * pin_dia + bow_length_inside + 0.5 * bow_dia)

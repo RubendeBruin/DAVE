@@ -76,3 +76,6 @@ if a1 is deleted:
 
 So, even though a2 is slaved to a1, deleting a1 does not result in the deletion of a2 because deleting the managed connection resets the parent of a2 setting is free from a1.
 
+**Issues**
+
+Managers can only manage WHOLE nodes, even though only a few properties need to be managed
