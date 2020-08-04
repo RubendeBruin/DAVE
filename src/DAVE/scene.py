@@ -3891,6 +3891,13 @@ class GeometricContact(Manager):
         self._scene.delete(self._pin_hole_connection)
         self._scene.delete(self._axis_on_parent)
 
+        # release observers
+        self._parent_circle.observers.remove(self)
+        self._parent_circle_parent.observers.remove(self)
+
+        self._child_circle.observers.remove(self)
+        self._child_circle_parent.observers.remove(self)
+
 
 
     def _update_connection(self):
@@ -4012,7 +4019,8 @@ class GeometricContact(Manager):
                 self._connection_axial_rotation]
 
     def depends_on(self):
-        return [self.parent]
+
+        return [self._parent_circle] # Node can not depend on self._child_circle because that would result in a circular reference
 
     def flip(self):
         """Changes the swivel angle by 180 degrees"""
@@ -5310,7 +5318,7 @@ class Scene:
 
     def nodes_depending_on(self, node):
         """Returns a list of nodes that physically depend on node. Only direct dependants are obtained with a connection to the core.
-        This function should be used to determine dependencies of Core-connected elements.
+        This function should be used to determine if a node can be created, deleted, exported.
 
         For making node-trees please use nodes_with_parent instead.
 
@@ -5341,11 +5349,16 @@ class Scene:
             except:
                 pass
 
-        # check visuals and wave-interaction as well (which are not core-connected)
+        # check all other nodes in the scene
 
-        for v in [*self.nodes_of_type(Visual), *self.nodes_of_type(WaveInteraction1)]:
-            if v.parent is _node:
-                r.append(v.name)
+        for n in self._nodes:
+            if _node in n.depends_on():
+                if n.name not in r:
+                    r.append(n.name)
+
+        # for v in [*self.nodes_of_type(Visual), *self.nodes_of_type(WaveInteraction1)]:
+        #     if v.parent is _node:
+        #         r.append(v.name)
 
         return r
 
@@ -5400,6 +5413,7 @@ class Scene:
             return
 
         depending_nodes = self.nodes_depending_on(node)
+        depending_nodes.extend([n.name for n in node.observers])
 
         if node._manager:  # node, delete its manager
             # print('Deleting manager')
