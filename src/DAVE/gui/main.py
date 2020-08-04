@@ -86,6 +86,7 @@ import DAVE.settings
 from DAVE.gui.helpers.highlighter import PythonHighlighter
 from DAVE.gui.helpers.ctrl_enter import ShiftEnterKeyPressFilter
 from DAVE.gui.helpers.qmenu import MenuSlider
+from DAVE.gui.forms.menu_nodetypes import Ui_MenuNodes
 
 from IPython.utils.capture import capture_output
 import datetime
@@ -1171,29 +1172,79 @@ class Gui():
 
                 menu.addAction("Duplicate", duplicate)
                 menu.addSeparator()
+                menu.addSeparator()
 
-        menu.addAction("New Axis", self.new_axis)
-        menu.addAction("New Point", self.new_point)
-        menu.addAction("New Circle", self.new_circle)
-        menu.addAction("New RigidBody", self.new_body)
+        # menu.addAction("New Axis", self.new_axis)
+        # menu.addAction("New Point", self.new_point)
+        # menu.addAction("New Circle", self.new_circle)
+        # menu.addAction("New RigidBody", self.new_body)
+        #
+        # menu.addSeparator()
+        #
+        # menu.addAction("New Cable", self.new_cable)
+        # menu.addAction("New Beam", self.new_beam)
+        # menu.addAction("New Sling", self.new_sling)
+        # menu.addAction("New Shackle", self.new_shackle)
+        #
+        # menu.addAction("New Force", self.new_force)
+        #
+        # menu.addSeparator()
+        #
+        # menu.addAction("New Contact-Ball", self.new_contactball)
+        # menu.addAction("New Contact mesh", self.new_contactmesh)
+        #
+        # menu.addSeparator()
+        #
+        # menu.addAction("New 2d Connector", self.new_connector2d)
+        # menu.addAction("New 6d Connector", self.new_linear_connector)
+        #
+        # menu.addSeparator()
+        #
+        # menu.addAction("New Buoyancy mesh", self.new_buoyancy_mesh)
+        # menu.addAction("New Linear Hydrostatics", self.new_linear_hydrostatics)
+        # menu.addAction("New Tank", self.new_tank)
+        #
+        # menu.addAction("New Wave Interaction", self.new_waveinteraction)
+        #
+        # menu.addSeparator()
+        #
+        # menu.addAction("New Visual", self.new_visual)
 
-        menu.addSeparator()
+        wa = QtWidgets.QWidgetAction(None)
 
-        menu.addAction("New Cable", self.new_cable)
-        menu.addAction("New Beam", self.new_beam)
-        menu.addAction("New Force", self.new_force)
-        menu.addAction("New Contact-Ball", self.new_contactball)
-        menu.addAction("New 2d Connector", self.new_connector2d)
-        menu.addAction("New 6d Connector", self.new_linear_connector)
+        ui = Ui_MenuNodes()
+        widget = QtWidgets.QWidget()
+        ui.setupUi(widget)
+        wa.setDefaultWidget(widget)
 
-        menu.addSeparator()
+        ui.pbPoint.pressed.connect(self.new_point)
+        ui.pbCircle.pressed.connect(self.new_circle)
+        ui.pbAxis.pressed.connect(self.new_axis)
+        ui.pbBody.pressed.connect(self.new_body)
 
-        menu.addAction("New Tank", self.new_tank)
-        menu.addAction("New Linear Hydrostatics", self.new_linear_hydrostatics)
-        menu.addAction("New Buoyancy mesh", self.new_buoyancy_mesh)
-        menu.addAction("New Contact mesh", self.new_contactmesh)
-        menu.addAction("New Wave Interaction", self.new_waveinteraction)
-        menu.addAction("New Visual", self.new_visual)
+        ui.pbSpring2D.pressed.connect(self.new_connector2d)
+        ui.pbSpring6D.pressed.connect(self.new_linear_connector)
+
+        ui.pbForce.pressed.connect(self.new_force)
+
+        ui.pbContactShape.pressed.connect(self.new_contactmesh)
+        ui.pbContactBall.pressed.connect(self.new_contactball)
+
+        ui.pbTank.pressed.connect(self.new_tank)
+        ui.pbBuoyancyShape.pressed.connect(self.new_buoyancy_mesh)
+        ui.pbLinearBuoyancy.pressed.connect(self.new_linear_hydrostatics)
+        ui.pbWaveInteraction.pressed.connect(self.new_waveinteraction)
+
+        ui.pbCable.pressed.connect(self.new_cable)
+        ui.pbSling.pressed.connect(self.new_sling)
+        ui.pbShackle.pressed.connect(self.new_shackle)
+        ui.pbBeam.pressed.connect(self.new_beam)
+
+        ui.pbVisual.pressed.connect(self.new_visual)
+
+
+
+        menu.addAction(wa)
 
         menu.exec_(globLoc)
 
@@ -1243,9 +1294,14 @@ class Gui():
     def new_contactball(self):
         self.new_something(new_node_dialog.add_contactball)
 
-
     def new_waveinteraction(self):
         self.new_something(new_node_dialog.add_waveinteraction)
+
+    def new_shackle(self):
+        self.new_something(new_node_dialog.add_shackle)
+
+    def new_sling(self):
+        self.new_something(new_node_dialog.add_sling)
 
     def new_something(self, what):
         r = what(self.scene, self.selected_nodes)

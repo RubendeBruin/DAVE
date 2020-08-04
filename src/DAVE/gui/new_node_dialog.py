@@ -27,7 +27,7 @@ def fill_dropdown_boxes(ui, scene, selection=None):
     p = list()
     for e in scene.nodes_of_type(vfs.Axis):
         a.append(e.name)
-    for e in scene.nodes_of_type(vfs.Point):
+    for e in scene.nodes_of_type((vfs.Point, vfs.Circle)):
         p.append(e.name)
 
     ui.cbMasterAxis.addItems(a)
@@ -483,6 +483,44 @@ def add_waveinteraction(scene, selection=None):
     else:
         return None
 
+def add_shackle(scene, selection=None):
+    ui, AddNode = add_node(scene,selection)
+    ui.btnOk.setIcon(QIcon(":/icons/shackle.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Shackle'))
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        name = ui.tbName.text()
+        return f"new_shackle('{name}')"
+
+    else:
+        return None
 
 
+def add_sling(scene, selection=None):
+
+    ui, AddNode = add_node(scene,selection)
+
+    ui.frmPoints.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/sling.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Sling'))
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        endA = ui.cbPoiA.currentText()
+        endB = ui.cbPoiB.currentText()
+        name = ui.tbName.text()
+
+        return "new_sling('{}', endA = '{}', endB= '{}')".format(name, endA, endB)
+
+    else:
+        return None
 

@@ -4819,7 +4819,7 @@ class Shackle(Manager, RigidBody):
 
         # (self, scene, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
 
-        code += f'\ns.new_shackle("{self.name}", kind = {self.kind})'
+        code += f'\ns.new_shackle("{self.name}", kind = "{self.kind}")'
 
         return code
 

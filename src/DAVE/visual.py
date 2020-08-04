@@ -102,6 +102,10 @@ def update_line_to_points(line_actor, points):
 
 
 def apply_parent_tranlation_on_transform(parent, t):
+
+    if parent is None:
+        return
+
     tr = parent.global_transform
 
     mat4x4 = vtk.vtkMatrix4x4()
@@ -1165,23 +1169,25 @@ class Viewport:
 
 
                 # move the full mesh with the parent
-                mat4x4 = transform_to_mat4x4(V.node.parent.global_transform)
-                current_transform = V.actors[0].getTransform().GetMatrix()
 
-                # if the current transform is identical to the new one,
-                # then we do not need to change anything (creating the mesh is slow)
+                if node.parent is not None:
+                    mat4x4 = transform_to_mat4x4(V.node.parent.global_transform)
+                    current_transform = V.actors[0].getTransform().GetMatrix()
 
-                for i in range(4):
-                    for j in range(4):
-                        if current_transform.GetElement(i, j) != mat4x4.GetElement(i, j):
-                            changed = True     # yes, transform has changed
-                            break
+                    # if the current transform is identical to the new one,
+                    # then we do not need to change anything (creating the mesh is slow)
 
-                # Update the source-mesh position
-                #
-                # the source-mesh itself is updated in "add_new_actors_to_screen"
-                if changed:
-                    V.actors[0].setTransform(mat4x4)
+                    for i in range(4):
+                        for j in range(4):
+                            if current_transform.GetElement(i, j) != mat4x4.GetElement(i, j):
+                                changed = True     # yes, transform has changed
+                                break
+
+                    # Update the source-mesh position
+                    #
+                    # the source-mesh itself is updated in "add_new_actors_to_screen"
+                    if changed:
+                        V.actors[0].setTransform(mat4x4)
 
                 if not changed:
                     continue    # skip the other update functions
@@ -1475,9 +1481,10 @@ class Viewport:
                             va.actors[0] = new_mesh
                             va.actors[0].actor_type = ActorType.MESH_OR_CONNECTOR
 
-                            tr = va.node.parent.global_transform
-                            mat4x4 = transform_to_mat4x4(tr)
-                            va.actors[0].setTransform(mat4x4)
+                            if va.node.parent is not None:
+                                tr = va.node.parent.global_transform
+                                mat4x4 = transform_to_mat4x4(tr)
+                                va.actors[0].setTransform(mat4x4)
 
                             if isinstance(va.node, vf.Buoyancy):
                                 va.actors[0].alpha(vc.ALPHA_BUOYANCY)
