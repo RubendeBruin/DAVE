@@ -101,7 +101,7 @@ def show(scene, sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, he
     """
 
     return _view(scene, backend= '2d', sea=sea, width = width, height = height, camera_pos=camera_pos, lookat=lookat,
-          visual_alpha = 1.0,
+          visual_alpha = visual_alpha,
           do_meshes = do_meshes,
           geometry_size = geometry_size,
           force_normalize = force_normalize,
