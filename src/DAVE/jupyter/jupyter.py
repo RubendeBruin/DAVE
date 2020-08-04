@@ -34,7 +34,7 @@ orthographic [true/false]
 """
 
 def view(scene, sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),
-         do_visuals = True,
+         visual_alpha = 1.0,
          do_meshes = True,
          geometry_size=1,
          force_normalize=False,
@@ -63,7 +63,7 @@ def view(scene, sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),
 
     """
     return _view(scene, 'panel', sea=sea, width = 1024, height = 800, camera_pos=camera_pos, lookat=lookat,
-          do_visuals = do_visuals,
+          visual_alpha = visual_alpha,
           do_meshes = do_meshes,
           geometry_size = geometry_size,
           force_normalize = force_normalize,
@@ -72,7 +72,7 @@ def view(scene, sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),
           cog_scale = cog_scale)
 
 def show(scene, sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, height = 600,
-         do_visuals=True,
+         visual_alpha=1.0,
          do_meshes = True,
          geometry_size=1,
          force_normalize=False,
@@ -101,7 +101,7 @@ def show(scene, sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, he
     """
 
     return _view(scene, backend= '2d', sea=sea, width = width, height = height, camera_pos=camera_pos, lookat=lookat,
-          do_visuals = do_visuals,
+          visual_alpha = 1.0,
           do_meshes = do_meshes,
           geometry_size = geometry_size,
           force_normalize = force_normalize,
@@ -110,7 +110,7 @@ def show(scene, sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, he
           cog_scale = cog_scale)
 
 def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=(50,-25,10), lookat = (0,0,0),
-          do_visuals = True,
+          visual_alpha = 1.0,
           do_meshes = True,
           geometry_size = 1,
           force_normalize = False,
@@ -129,7 +129,7 @@ def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=
 
     vp = DAVE.visual.Viewport(scene)
 
-    vp.show_visual = do_visuals
+    vp.visual_alpha = visual_alpha
     vp.show_meshes = do_meshes
     vp.show_geometry = (geometry_size > 0)
     vp.geometry_scale = geometry_size

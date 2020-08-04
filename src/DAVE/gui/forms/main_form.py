@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Tue Jun  9 08:30:22 2020
+# Created: Tue Aug  4 16:46:20 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -364,7 +364,6 @@ class Ui_MainWindow(object):
         self.menuView.addAction(self.menuLook_towards.menuAction())
         self.menuView.addSeparator()
         self.menuView.addSeparator()
-        self.menuView.addAction(self.actionShow_visuals)
         self.menuView.addAction(self.actionShow_force_applying_element)
         self.menuView.addAction(self.actionShow_water_plane)
         self.menuView.addSeparator()

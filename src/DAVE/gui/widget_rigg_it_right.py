@@ -213,8 +213,8 @@ class WidgetRiggItRight(guiDockWidget):
                     pos = self.mapToGlobal(QPoint(0, 0))
                     name = get_text(pos=pos, suggestion=self.guiScene.available_name_like(f"GP{wll}"),
                                     input_valid_callback=valid_name)
-                    code = f'create_shackle_gphd(s, name="{name}", wll = {wll})'
-                    pin_name = name + 'pin'
+                    code = f's.new_shackle(name="{name}", kind = "GP{wll}")'
+                    pin_name = name + '_pin'
                     code += f'\ns.new_geometriccontact("{name}" + "_connection", "{pin_name}", "{sheave.name}", inside=True)'
                     self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
@@ -244,7 +244,7 @@ class WidgetRiggItRight(guiDockWidget):
                 pos = self.mapToGlobal(QPoint(0, 0))
                 name = get_text(pos=pos, suggestion=self.guiScene.available_name_like(f"GP{wll}"),
                                 input_valid_callback=valid_name)
-                code = f'create_shackle_gphd(s, name="{name}", wll = {wll})'
+                code = f's.new_shackle(name="{name}", kind = "GP{wll}")'
                 self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
             for size in sizes:

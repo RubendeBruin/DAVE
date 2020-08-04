@@ -374,7 +374,6 @@
     <addaction name="menuLook_towards"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
-    <addaction name="actionShow_visuals"/>
     <addaction name="actionShow_force_applying_element"/>
     <addaction name="actionShow_water_plane"/>
     <addaction name="separator"/>

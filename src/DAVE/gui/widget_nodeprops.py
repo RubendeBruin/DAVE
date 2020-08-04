@@ -1698,8 +1698,6 @@ class EditSling(NodeEditor):
         new_LspliceA = self.ui.sbLSpliceA.value()
         new_LspliceB = self.ui.sbLSpliceB.value()
 
-        if not new_length == self.node.length:
-            code += element + '.length = {}'.format(new_length)
 
         if not new_EA == self.node.EA:
             code += element + '.EA = {}'.format(new_EA)
@@ -1722,8 +1720,11 @@ class EditSling(NodeEditor):
         if not new_LspliceB == self.node.LspliceB:
             code += element + '.LspliceB = {}'.format(new_LspliceB)
 
+        if not new_length == self.node.length:
+            code += element + '.length = {}'.format(new_length)
+
+
         # get the poi names
-        # new_names = [self.ui.comboBox.currentText(),self.ui.comboBox_2.currentText()]
         new_names = []
         for i in range(self.ui.list.count()):
             new_names.append(self.ui.list.item(i).text())

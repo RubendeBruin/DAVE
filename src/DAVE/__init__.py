@@ -13,8 +13,5 @@ finally:
 from . import auto_download
 
 from .scene import *
-# from .gui.nodeA import Gui
-# from .jupyter import screenshot, show
-from .rigging import create_shackle_gphd
 
 

@@ -44,7 +44,7 @@ def fill_dropdown_boxes(ui, scene, selection=None):
     # see if we can do something with the selection
     if selection:
         node = selection[0]
-        if isinstance(node, vfs.Point):
+        if isinstance(node, (vfs.Point, vfs.Circle)):
             ui.cbPoiA.setCurrentText(node.name)
             ui.cbParentPoi.setCurrentText(node.name)
         if isinstance(node, vfs.Axis):
@@ -53,7 +53,7 @@ def fill_dropdown_boxes(ui, scene, selection=None):
 
         if len(selection) > 1:
             node = selection[1]
-            if isinstance(node, vfs.Point):
+            if isinstance(node, (vfs.Point, vfs.Circle)):
                 ui.cbPoiB.setCurrentText(node.name)
                 ui.cbParentPoi.setCurrentText(node.name)
             if isinstance(node, vfs.Axis):

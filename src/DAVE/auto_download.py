@@ -25,7 +25,14 @@ try:
     except:
         raise ModuleNotFoundError
 
-except ModuleNotFoundError:
+except ImportError as err:
+
+    # we did find a file, but were unable to import it. Why?
+    if hasattr(err, 'path'):
+        print(f'Attempting to load:\n {err.path}\nfailed because:')
+        print(err)
+        print('If problems persist then removing this file from your system may help')
+
 
     print("The required version of pyo3d is not found on your system. No problem, we can download and install it automatically for you, proceed?")
 

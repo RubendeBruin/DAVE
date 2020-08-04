@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'menu_nodetypes.ui',
 # licensing of 'menu_nodetypes.ui' applies.
 #
-# Created: Tue Aug  4 14:27:52 2020
+# Created: Tue Aug  4 16:46:20 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -327,4 +327,3 @@ class Ui_MenuNodes(object):
         self.pbWaveInteraction.setStyleSheet(QtWidgets.QApplication.translate("MenuNodes", "text-align:left", None, -1))
         self.pbWaveInteraction.setText(QtWidgets.QApplication.translate("MenuNodes", "Wave interaction", None, -1))
 
-# import resources_rc

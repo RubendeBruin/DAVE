@@ -110,7 +110,6 @@ from DAVE.gui.widget_tank_order import WidgetTankOrder
 from DAVE.gui.widget_rigg_it_right import WidgetRiggItRight
 
 import numpy as np
-from DAVE.rigging import create_shackle_gphd
 
 # resources
 import DAVE.gui.forms.resources_rc
@@ -126,7 +125,7 @@ class SolverDialog(QDialog, Ui_Dialog):
 
 class Gui():
 
-    def __init__(self, scene=None, splash=None, app=None, geometry_scale = -1, cog_scale = -1, block=True):
+    def __init__(self, scene=None, splash=None, app=None, geometry_scale = -1, cog_scale = 0.25, block=True):
         """
         Starts the Gui on scene "scene".
 
@@ -280,7 +279,6 @@ class Gui():
 
         # -- visuals
         self.ui.actionShow_water_plane.triggered.connect(self.toggle_show_global_from_menu)
-        self.ui.actionShow_visuals.triggered.connect(self.toggle_show_visuals)
         self.ui.actionShow_force_applying_element.triggered.connect(self.toggle_show_force_applying_elements)
 
 
@@ -353,6 +351,19 @@ class Gui():
 
         self.ui.sliderCoGSize.connectvalueChanged(set_cog_size)
         self.ui.menuView.addAction(self.ui.sliderCoGSize)
+
+        # visual opacity
+        self.ui.sliderVisualAlpha = MenuSlider('Visual transparency')
+        self.ui.sliderVisualAlpha.setMin(0)
+        self.ui.sliderVisualAlpha.slider.setValue(100.0)
+
+        def set_visualalpha(value):
+            self.visual.visual_alpha = value / 100
+            self.visual.update_visibility()
+            self.visual.refresh_embeded_view()
+
+        self.ui.sliderVisualAlpha.connectvalueChanged(set_visualalpha)
+        self.ui.menuView.addAction(self.ui.sliderVisualAlpha)
 
         # light
         self.ui.sliderBrightness = MenuSlider('Sunshine')
@@ -463,8 +474,8 @@ class Gui():
         lookat = self.visual.screen.camera.GetFocalPoint()
 
         code = f'show(s, sea = {sea}, camera_pos = {camera_pos}, lookat = {lookat}'
-        if not self.visual.show_visual:
-            code += ',do_visuals = False'
+        if self.visual.visual_alpha < 1.0:
+            code += f',visual_alpha = {self.visual.visual_alpha}'
         if not self.visual.show_meshes:
             code += ',do_meshes = False'
         if self.visual.geometry_scale != 1:
@@ -980,26 +991,12 @@ class Gui():
 
         create_blend_and_open(self.scene, animation_dofs=dofs, wavefield=self.visual._wavefield)
 
-
-
-    # def toggle_show_force(self):
-    #     self.visual.show_force = self.ui.actionShow_force_applyting_element.isChecked()
-    #     self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
-    #
-    # def toggle_show_geometry(self):
-    #     self.visual.show_geometry = self.ui.actionShow_Geometry_elements.isChecked()
-    #     self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
-
     def toggle_show_global(self):
         self.ui.actionShow_water_plane.setChecked(not self.ui.actionShow_water_plane.isChecked())
         self.toggle_show_global_from_menu()
 
     def toggle_show_global_from_menu(self):
         self.visual.show_global = self.ui.actionShow_water_plane.isChecked()
-        self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
-
-    def toggle_show_visuals(self):
-        self.visual.show_visual = self.ui.actionShow_visuals.isChecked()
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def toggle_show_force_applying_elements(self):

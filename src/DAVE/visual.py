@@ -287,10 +287,10 @@ class Viewport:
         self.show_geometry = True     # show or hide geometry objects (axis, pois, etc)
         self.show_force = True        # show forces
         self.show_meshes = True       # show meshes and connectors
-        self.show_visual = True       # show or hide visuals
         self.show_global = False      # show or hide the environment (sea)
         self.show_cog = True
         self.force_do_normalize = True # Normalize force size to 1.0 for plotting
+        self.visual_alpha = 1.0       # show or hide visuals
         self.cog_do_normalize = False
         self.cog_scale = 1.0
         self.force_scale = 1.6        # Scale to be applied on (normalized) force magnitude
@@ -1804,10 +1804,12 @@ class Viewport:
                         a.off()
 
                 elif a.actor_type == ActorType.VISUAL:
-                    if self.show_visual:
-                        a.on()
-                    else:
+                    if self.visual_alpha == 0:
                         a.off()
+                    else:
+                        a.on()
+                        a.alpha(self.visual_alpha)
+
 
                 elif a.actor_type == ActorType.GEOMETRY:
                     if self.show_geometry:
@@ -1845,7 +1847,7 @@ class Viewport:
                 # Cables are a separate class
 
                 elif a.actor_type == ActorType.CABLE:
-                    if self.show_visual or self.show_force:
+                    if (self.visual_alpha>0) or self.show_force:
                         a.on()
                     else:
                         a.off()
