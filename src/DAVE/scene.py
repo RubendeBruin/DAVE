@@ -4747,6 +4747,7 @@ class Shackle(Manager, RigidBody):
 
     @property
     def kind(self):
+        """Type of shackle, for example GP800 [text] """
         return self._kind
 
     @kind.setter
@@ -4788,10 +4789,7 @@ class Shackle(Manager, RigidBody):
 
         scale = actual_size / gp800_size
 
-        # TODO: scale is not updated in real object... why?
         self.visual_node.scale = [scale, scale, scale]
-        # check1 =  self.visual.scale
-        # check2 = self._scene[self.visual.name].scale
 
         self._scene.current_manager = remember
 

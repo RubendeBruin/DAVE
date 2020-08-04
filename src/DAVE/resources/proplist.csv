@@ -254,7 +254,14 @@ Force,moment,False,"The x,y and z components of the moment (kNm,kNm,kNm) in the 
 Force,mx,False,The global x-component of the moment [kNm]  (global axis)
 Force,my,False,The global y-component of the moment [kNm]  (global axis)
 Force,mz,False,The global z-component of the moment [kNm]  (global axis)
-GeometricContact,parent,False,Parent of the connection - [Axis or derived] - READ ONLY
+GeometricContact,child,False,"The Circle that is connected to the GeometricContact [Node]
+
+        See Also: parent
+        "
+GeometricContact,parent,False,"The Circle that the GeometricConnection is connected to [Node]
+
+        See Also: child
+        "
 GeometricContact,swivel,False,Swivel angle between parent and child objects [degrees]
 GeometricContact,swivel_fixed,False,Allow parent and child to swivel relative to eachother [boolean]
 GeometricContact,rotation_on_parent,False,Angle between the line connecting the centers of the circles and the axis system of the parent node [degrees]
@@ -327,6 +334,7 @@ RigidBody,mass,False,"Static mass of the body [mT]
 
         See Also: inertia
         "
+Shackle,kind,False,"Type of shackle, for example GP800 [text] "
 Sling,length,False,Total length measured between the INSIDE of the eyes of the sling is pulled straight. [m]
 Sling,LeyeA,False,Total length inside eye A if stretched flat [m]
 Sling,LeyeB,False,Total length inside eye B if stretched flat [m]
