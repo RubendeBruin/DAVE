@@ -73,6 +73,10 @@ Managers shall:
 - implement "creates(node)". This function returns True if the manager creates node "node". This means no python code needs to be exported for node "node"
 - take care of the creation of the managed nodes for which creates(node) returns True.
 
+Managers may:
+
+- change the parent of a managed node and
+- change the _parent_for_code_export property of that node (see circular references)
 
 
 ### Editing

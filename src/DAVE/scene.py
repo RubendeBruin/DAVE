@@ -4184,8 +4184,8 @@ class GeometricContact(Manager):
 
         # code.append('#  create the connection')
         code.append(f"s.new_geometriccontact(name = '{self.name}',")
-        code.append(f"                       parent = '{self._child_circle.name}',")
-        code.append(f"                       child = '{self._parent_circle.name}',")
+        code.append(f"                       child = '{self._child_circle.name}',")
+        code.append(f"                       parent = '{self._parent_circle.name}',")
         code.append(f"                       inside={self.inside},")
 
         if self.inside and self.swivel == 0:
