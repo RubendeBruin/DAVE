@@ -62,16 +62,18 @@ A node is managed when its "manager" property is not None.
 A managed node:
 
 - shall not be edited directly.
-- shall not export python code (give_python_code returns an empty string)
+
 
 Managers shall:
 
 - Derive from Manager
-- take care of the creation of their managed nodes when producing python code
 - implement "depends_on". This is used for sorting the nodes before creating python code. These are the nodes that need to exist before the manager is created.
 - implement "managed_nodes" which return a list of all nodes that this manager manages.
 - implement "delete". This function deletes the manager and MAY delete managed nodes if needed. Typically a manager would delete the nodes it created.
-- for nodes that are not deleted: manager shall release management.
+- implement "creates(node)". This function returns True if the manager creates node "node". This means no python code needs to be exported for node "node"
+- take care of the creation of the managed nodes for which creates(node) returns True.
+
+
 
 ### Editing
 
@@ -94,6 +96,8 @@ deleting a manger:
 
 deleting a managed node:
 - calls delete of that manager
+
+- for nodes that are not deleted: manager shall release management.
 
 #### Example
 

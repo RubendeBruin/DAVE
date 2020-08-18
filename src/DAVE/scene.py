@@ -576,7 +576,9 @@ class NodeWithParent(CoreConnectedNode):
         self._parent = None
         self._None_parent_acceptable = False
         self._parent_for_code_export = True
-        """True : use parent, None : use None, Node : use that Node
+        """True : use parent, 
+        None : use None, 
+        Node : use that Node
         Used to prevent circular references, see groups section in documentation"""
 
     def depends_on(self):
@@ -3727,6 +3729,12 @@ class Manager(Node):
 
         raise Exception("derived class shall override this method")
 
+    def creates(self, node : Node):
+        """Returns True if node is created by this manager"""
+
+        raise Exception("derived class shall override this method")
+        # hint: return node in self.managed_nodes() # would be a good option, just not good enough as default
+
 
 class GeometricContact(Manager):
     """
@@ -3735,12 +3743,6 @@ class GeometricContact(Manager):
     A GeometricContact can be used to construct geometric connections between circular members:
 	- 	steel bars and holes, such as a shackle pin in a padeye (pin-hole)
 	-	steel bars and steel bars, such as a shackle-shackle connection
-
-
-
-
-
-
 
     """
 
@@ -3835,6 +3837,10 @@ class GeometricContact(Manager):
         self._child_circle.observers.remove(self)
         self._child_circle_parent.observers.remove(self)
 
+        # release the slaved axis system
+        self._child_circle_parent_parent._parent_for_code_export = True
+        self._child_circle_parent_parent.manager = None
+
         # set new parent
         self._child_circle = new_child
         self._child_circle_parent = new_child.parent
@@ -3843,6 +3849,10 @@ class GeometricContact(Manager):
         # and observe
         self._child_circle.observers.append(self)
         self._child_circle_parent.observers.append(self)
+
+        # and manage
+        self._child_circle_parent_parent._parent_for_code_export = None
+        self._child_circle_parent_parent.manager = self
 
         self._update_connection()
 
@@ -4027,8 +4037,14 @@ class GeometricContact(Manager):
                 self._connection_axial_rotation]
 
     def depends_on(self):
+        return [self._parent_circle, self._child_circle]
 
-        return [self._parent_circle] # Node can not depend on self._child_circle because that would result in a circular reference
+    def creates(self, node : Node):
+        return node in [self._axis_on_parent,
+                self._axis_on_child,
+                self._pin_hole_connection,
+                self._connection_axial_rotation]
+
 
     def flip(self):
         """Changes the swivel angle by 180 degrees"""
@@ -4412,11 +4428,13 @@ class Sling(Manager):
 
         return a
 
+    def creates(self, node : Node):
+        return node in self.managed_nodes()  # all these are created
+
     def delete(self):
 
         # delete created nodes
-        a = [self.sa, self.a1, self.a2, self.am, self.avis, self.sb, self.b1, self.b2, self.bm, self.bvis, self.main,
-         self.eyeA, self.eyeB]
+        a = self.managed_nodes()
 
         for n in a:
             n._manager = None
@@ -4805,6 +4823,9 @@ class Shackle(Manager, RigidBody):
 
     def managed_nodes(self):
         return [self.pin_point, self.pin, self.bow_point, self.bow, self.inside_point, self.inside, self.visual_node]
+
+    def creates(self, node : Node):
+        return node in self.managed_nodes() # all these are created
 
     def delete(self):
 
@@ -5252,15 +5273,24 @@ class Scene:
 
             counter += 1
             if counter > len(self._nodes):
+
+                for node in to_be_exported:
+                    print(f'Node : {node.name}')
+                    for d in node.depends_on():
+                        print(f'  depends on: {d.name}')
+                    if node._manager:
+                        print(f'   managed by: {node._manager.name}')
+
                 raise Exception('Could not sort nodes by dependency, circular references exist?')
 
             can_be_exported = []
 
             for node in to_be_exported:
-                if node._manager:
-                    if node._manager in exported:
-                        can_be_exported.append(node)
-                elif all(el in exported for el in node.depends_on()):
+                # if node._manager:
+                #     if node._manager in exported:
+                #         can_be_exported.append(node)
+                # el
+                if all(el in exported for el in node.depends_on()):
                             can_be_exported.append(node)
 
             # remove exported nodes from
@@ -6852,7 +6882,11 @@ class Scene:
                 # print(f'code for {n.name}')
                 code += '\n' + n.give_python_code()
             else:
-                pass
+                if n._manager.creates(n):
+                    pass
+                else:
+                    code += '\n' + n.give_python_code()
+
                 # print(f'skipping {n.name} ')
 
         # store the visibility code separately
