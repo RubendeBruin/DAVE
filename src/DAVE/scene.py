@@ -479,7 +479,6 @@ class Node:
     @node_setter_manageable
     @node_setter_observable
     def visible(self, value):
-        
         self._visible = value
 
 
@@ -4814,9 +4813,6 @@ class Shackle(Manager, RigidBody):
         code = f'# Exporting {self.name}'
 
         code += '\n# Create Shackle'
-
-        # (self, scene, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
-
         code += f'\ns.new_shackle("{self.name}", kind = "{self.kind}")'
 
         return code
@@ -5226,7 +5222,9 @@ class Scene:
         self._nodes = exported
 
     def sort_nodes_by_dependency(self):
-        """Sorts the nodes such that a node only depends on nodes earlier in the list.
+        """Sorts the nodes such that a nodes creation only depends on nodes earlier in the list.
+
+        This sorting is used for node creation order
 
         See Also:
             sort_nodes_by_parent
@@ -5243,7 +5241,6 @@ class Scene:
             counter += 1
             if counter > len(self._nodes):
                 raise Exception('Could not sort nodes by dependency, circular references exist?')
-
 
             can_be_exported = []
 
@@ -7026,11 +7023,13 @@ class Scene:
             for name in imported_element_names:
 
                 node = self[name]
-                if not isinstance(node, NodeWithParent):
-                    continue
 
-                if node.parent is None:
-                    node.change_parent_to(c)
+                if not node.manager:
+                    if not isinstance(node, NodeWithParent):
+                        continue
+
+                    if node.parent is None:
+                        node.change_parent_to(c)
 
             return c
 
