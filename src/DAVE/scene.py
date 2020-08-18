@@ -3777,7 +3777,6 @@ class GeometricContact(Manager):
         self._child_circle_parent = child_circle.parent  # point
         self._child_circle_parent_parent = child_circle.parent.parent  # axis
 
-
         self._flipped = False
         self._inside_connection = inside
 
@@ -3802,6 +3801,8 @@ class GeometricContact(Manager):
 
         self._child_circle.observers.append(self)
         self._child_circle_parent.observers.append(self)
+
+        self._child_circle_parent_parent._parent_for_code_export = None
 
         self._update_connection()
 
