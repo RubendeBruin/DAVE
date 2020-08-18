@@ -575,13 +575,22 @@ class NodeWithParent(CoreConnectedNode):
         super().__init__(scene, vfNode)
         self._parent = None
         self._None_parent_acceptable = False
+        self._parent_for_code_export = True
+        """True : use parent, None : use None, Node : use that Node
+        Used to prevent circular references, see groups section in documentation"""
 
     def depends_on(self):
-        if self._parent is not None:
-            return [self._parent]
+        if self.parent_for_export is not None:
+            return [self.parent_for_export]
         else:
             return []
 
+    @property
+    def parent_for_export(self):
+        if self._parent_for_code_export == True:
+            return self._parent
+        else:
+            return self._parent_for_code_export
 
     @property
     def parent(self):
@@ -1388,8 +1397,8 @@ class Axis(NodeWithParent):
     def give_python_code(self):
         code = "# code for {}".format(self.name)
         code += "\ns.new_axis(name='{}',".format(self.name)
-        if self.parent:
-            code += "\n           parent='{}',".format(self.parent.name)
+        if self.parent_for_export:
+            code += "\n           parent='{}',".format(self.parent_for_export.name)
 
         # position
 
@@ -1564,8 +1573,8 @@ class Point(NodeWithParent):
     def give_python_code(self):
         code = "# code for {}".format(self.name)
         code += "\ns.new_point(name='{}',".format(self.name)
-        if self.parent:
-            code += "\n          parent='{}',".format(self.parent.name)
+        if self.parent_for_export:
+            code += "\n          parent='{}',".format(self.parent_for_export.name)
 
         # position
 
@@ -1689,8 +1698,8 @@ class RigidBody(Axis):
         code += "\n                     {},".format(self.cog[1])
         code += "\n                     {}),".format(self.cog[2])
 
-        if self.parent:
-            code += "\n                parent='{}',".format(self.parent.name)
+        if self.parent_for_export:
+            code += "\n                parent='{}',".format(self.parent_for_export.name)
 
         # position
 
@@ -2079,7 +2088,7 @@ class Force(NodeWithParent):
         # new_force(self, name, parent=None, force=None, moment=None):
 
         code += "\ns.new_force(name='{}',".format(self.name)
-        code += "\n            parent='{}',".format(self.parent.name)
+        code += "\n            parent='{}',".format(self.parent_for_export.name)
         code += "\n            force=({}, {}, {}),".format(*self.force)
         code += "\n            moment=({}, {}, {}) )".format(*self.moment)
         return code
@@ -2106,8 +2115,8 @@ class ContactMesh(NodeWithParent):
     def give_python_code(self):
         code = "# code for {}".format(self.name)
         code += "\nmesh = s.new_contactmesh(name='{}'".format(self.name)
-        if self.parent:
-            code += ", parent='{}')".format(self.parent.name)
+        if self.parent_for_export:
+            code += ", parent='{}')".format(self.parent_for_export.name)
         else:
             code += ')'
         code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
@@ -2242,7 +2251,7 @@ class ContactBall(NodeWithParent):
         code = "# code for {}".format(self.name)
 
         code += "\ns.new_contactball(name='{}',".format(self.name)
-        code += "\n                  parent='{}',".format(self.parent.name)
+        code += "\n                  parent='{}',".format(self.parent_for_export.name)
         code += "\n                  radius={},".format(self.radius)
         code += "\n                  k={},".format(self.k)
         code += "\n                  meshes = [ "
@@ -2295,7 +2304,7 @@ class Circle(NodeWithParent):
     def give_python_code(self):
         code = "# code for {}".format(self.name)
         code += "\ns.new_circle(name='{}',".format(self.name)
-        code += "\n            parent='{}',".format(self.parent.name)
+        code += "\n            parent='{}',".format(self.parent_for_export.name)
         code += "\n            axis=({}, {}, {}),".format(*self.axis)
         code += "\n            radius={} )".format(self.radius)
         return code
@@ -2420,7 +2429,7 @@ class HydSpring(NodeWithParent):
         # new_force(self, name, parent=None, force=None, moment=None):
 
         code += "\ns.new_hydspring(name='{}',".format(self.name)
-        code += "\n            parent='{}',".format(self.parent.name)
+        code += "\n            parent='{}',".format(self.parent_for_export.name)
         code += "\n            cob=({}, {}, {}),".format(*self.cob)
         code += "\n            BMT={},".format(self.BMT)
         code += "\n            BML={},".format(self.BML)
@@ -3146,7 +3155,7 @@ class Buoyancy(NodeWithParent):
         if self.density != 1.025:
             code += f'\n          density={self.density},'
 
-        code += "\n          parent='{}')".format(self.parent.name)
+        code += "\n          parent='{}')".format(self.parent_for_export.name)
         code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
 
         return code
@@ -3249,7 +3258,7 @@ class Tank(NodeWithParent):
         if self.density != 1.025:
             code += f'\n          density={self.density},'
 
-        code += "\n          parent='{}')".format(self.parent.name)
+        code += "\n          parent='{}')".format(self.parent_for_export.name)
         code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
         code += f"\ns['{self.name}'].volume = {self.volume}   # first load mesh, then set volume"
 
@@ -3638,7 +3647,7 @@ class BallastSystem(Point):
     def give_python_code(self):
         code = "\n# code for {} and its tanks".format(self.name)
 
-        code += "\nbs = s.new_ballastsystem('{}', parent = '{}',".format(self.name, self.parent.name)
+        code += "\nbs = s.new_ballastsystem('{}', parent = '{}',".format(self.name, self.parent_for_export.name)
         code += "\n                         position = ({},{},{}))".format(*self.position)
 
         for tank in self._tanks:
@@ -4141,22 +4150,22 @@ class GeometricContact(Manager):
 
 
         code = []
-        code.append(f'# This is the code for the elements managed by {self.name}')
-        code.append(f'# First create the elements that need to exist before the connection can be made')
+        # code.append(f'# This is the code for the elements managed by {self.name}')
+        # code.append(f'# First create the elements that need to exist before the connection can be made')
+        #
+        # code.append('# The slaved system is here created with None as parent. This will be changed when the connection is created')
+        # remember = self._child_circle_parent_parent.parent
+        # self._child_circle_parent_parent.parent = None
+        # code.append(self._child_circle_parent_parent.give_python_code())
+        # self._child_circle_parent_parent.parent = remember
+        #
+        # code.append(self._parent_circle_parent.give_python_code())  # poi
+        # code.append(self._child_circle.give_python_code())  # circle
+        #
+        # code.append(self._child_circle_parent.give_python_code())  # poi
+        # code.append(self._parent_circle.give_python_code())  # circle
 
-        code.append('# The slaved system is here created with None as parent. This will be changed when the connection is created')
-        remember = self._child_circle_parent_parent.parent
-        self._child_circle_parent_parent.parent = None
-        code.append(self._child_circle_parent_parent.give_python_code())
-        self._child_circle_parent_parent.parent = remember
-
-        code.append(self._parent_circle_parent.give_python_code())  # poi
-        code.append(self._child_circle.give_python_code())  # circle
-
-        code.append(self._child_circle_parent.give_python_code())  # poi
-        code.append(self._parent_circle.give_python_code())  # circle
-
-        code.append('# now create the connection')
+        # code.append('#  create the connection')
         code.append(f"s.new_geometriccontact(name = '{self.name}',")
         code.append(f"                       parent = '{self._child_circle.name}',")
         code.append(f"                       child = '{self._parent_circle.name}',")
@@ -4814,6 +4823,9 @@ class Shackle(Manager, RigidBody):
 
         code += '\n# Create Shackle'
         code += f'\ns.new_shackle("{self.name}", kind = "{self.kind}")'
+
+        if self.parent_for_export:
+            code += f"\ns['{self.name}'].parent = s['{self.parent_for_export.name}']"
 
         return code
 

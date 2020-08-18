@@ -11,9 +11,13 @@ These mechanisms are:
 
 - Managers: A managed node is controlled completely by another node
 - Observers: An observed node will notify its observer of any changes
-- Node modification: A node may change other nodes when it is created. Most notably the geometric-contact node changes the parent of the child node. Not managing this correctly may result in circular references when trying to sort the nodes by dependancy. 
 
 These mechanisms are implemented at Node level and are thus available and should be implemented for every node type.
+
+And then there is the issue of Node modification
+
+- Node modification: A node may change other nodes when it is created. Most notably the geometric-contact node changes the parent of the child node. Not managing this correctly may result in circular references when trying to sort the nodes by dependancy. 
+
 
 ## Node modification example
 
@@ -31,16 +35,8 @@ Geometric contact depends on circle2. (can only be created when circle 2 exists)
 Circle 2 depends on point 2 and axis 2
 Axis 2 depends on the manager.
 
---> solution is to create axis2 without a parent.
+This is a circular reference, so something needs to take care of this. 
 
-To do so
-- sort_nodes_by_dependency needs to know that the parent of axis2 will be changed by geometric contact
-- the export code of axis 2 (Axis) needs to export parent as None
-
----> NodeWithParent._parent_for_export ==
-- True : use parent
-- None : use None
-- Node : use that Node
 
 
 ## Observed nodes
@@ -134,6 +130,22 @@ if a1 is deleted:
 
 So, even though a2 is slaved to a1, deleting a1 does not result in the deletion of a2 because deleting the managed connection resets the parent of a2 setting it free from a1.
 
-**Issues**
+### Issues with managers
 
 Managers can only manage WHOLE nodes, even though only a few properties need to be managed
+
+## The circular reference thing
+
+The solution is to create axis2 without a parent.
+
+To do so:
+
+- sort_nodes_by_dependency needs to know that the parent of axis2 will be changed by geometric contact
+- the export code of axis 2 (Axis) needs to export parent as None
+
+This is implemented as follows. 
+
+---> NodeWithParent._parent_for_export ==
+- True : use parent
+- None : use None
+- Node : use that Node
