@@ -50,7 +50,7 @@ class NodeEditor:
 
     def create_widget(self):
         """Creates and returns the widget"""
-        raise Exception('Show() method not defined in derived class')
+        raise Exception('create_widget() method not defined in derived class')
 
     def post_update_event(self):
         """Is executed after running the generated code"""
@@ -113,55 +113,59 @@ class EditAxis(NodeEditor):
         else:
             ui = EditAxis._ui
 
-        try:
-            ui.checkBox_1.stateChanged.disconnect()
-            ui.checkBox_2.stateChanged.disconnect()
-            ui.checkBox_3.stateChanged.disconnect()
-            ui.checkBox_4.stateChanged.disconnect()
-            ui.checkBox_5.stateChanged.disconnect()
-            ui.checkBox_6.stateChanged.disconnect()
 
-            ui.doubleSpinBox_1.valueChanged.disconnect()
-            ui.doubleSpinBox_2.valueChanged.disconnect()
-            ui.doubleSpinBox_3.valueChanged.disconnect()
-            ui.doubleSpinBox_4.valueChanged.disconnect()
-            ui.doubleSpinBox_5.valueChanged.disconnect()
-            ui.doubleSpinBox_6.valueChanged.disconnect()
+
+        self.ui = ui
+        self.post_update_event()
+
+        return ui._widget
+
+    def post_update_event(self):
+        try:
+            self.ui.checkBox_1.stateChanged.disconnect()
+            self.ui.checkBox_2.stateChanged.disconnect()
+            self.ui.checkBox_3.stateChanged.disconnect()
+            self.ui.checkBox_4.stateChanged.disconnect()
+            self.ui.checkBox_5.stateChanged.disconnect()
+            self.ui.checkBox_6.stateChanged.disconnect()
+
+            self.ui.doubleSpinBox_1.valueChanged.disconnect()
+            self.ui.doubleSpinBox_2.valueChanged.disconnect()
+            self.ui.doubleSpinBox_3.valueChanged.disconnect()
+            self.ui.doubleSpinBox_4.valueChanged.disconnect()
+            self.ui.doubleSpinBox_5.valueChanged.disconnect()
+            self.ui.doubleSpinBox_6.valueChanged.disconnect()
         except:
             pass # no connections yet
 
-        ui.doubleSpinBox_1.setValue(self.node.position[0])
-        ui.doubleSpinBox_2.setValue(self.node.position[1])
-        ui.doubleSpinBox_3.setValue(self.node.position[2])
+        self.ui.doubleSpinBox_1.setValue(self.node.position[0])
+        self.ui.doubleSpinBox_2.setValue(self.node.position[1])
+        self.ui.doubleSpinBox_3.setValue(self.node.position[2])
 
-        ui.doubleSpinBox_4.setValue(self.node.rotation[0])
-        ui.doubleSpinBox_5.setValue(self.node.rotation[1])
-        ui.doubleSpinBox_6.setValue(self.node.rotation[2])
+        self.ui.doubleSpinBox_4.setValue(self.node.rotation[0])
+        self.ui.doubleSpinBox_5.setValue(self.node.rotation[1])
+        self.ui.doubleSpinBox_6.setValue(self.node.rotation[2])
 
-        ui.checkBox_1.setChecked(self.node.fixed[0])
-        ui.checkBox_2.setChecked(self.node.fixed[1])
-        ui.checkBox_3.setChecked(self.node.fixed[2])
-        ui.checkBox_4.setChecked(self.node.fixed[3])
-        ui.checkBox_5.setChecked(self.node.fixed[4])
-        ui.checkBox_6.setChecked(self.node.fixed[5])
+        self.ui.checkBox_1.setChecked(self.node.fixed[0])
+        self.ui.checkBox_2.setChecked(self.node.fixed[1])
+        self.ui.checkBox_3.setChecked(self.node.fixed[2])
+        self.ui.checkBox_4.setChecked(self.node.fixed[3])
+        self.ui.checkBox_5.setChecked(self.node.fixed[4])
+        self.ui.checkBox_6.setChecked(self.node.fixed[5])
 
-        ui.checkBox_1.stateChanged.connect(self.callback)
-        ui.checkBox_2.stateChanged.connect(self.callback)
-        ui.checkBox_3.stateChanged.connect(self.callback)
-        ui.checkBox_4.stateChanged.connect(self.callback)
-        ui.checkBox_5.stateChanged.connect(self.callback)
-        ui.checkBox_6.stateChanged.connect(self.callback)
+        self.ui.checkBox_1.stateChanged.connect(self.callback)
+        self.ui.checkBox_2.stateChanged.connect(self.callback)
+        self.ui.checkBox_3.stateChanged.connect(self.callback)
+        self.ui.checkBox_4.stateChanged.connect(self.callback)
+        self.ui.checkBox_5.stateChanged.connect(self.callback)
+        self.ui.checkBox_6.stateChanged.connect(self.callback)
 
-        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_6.valueChanged.connect(self.callback)
-
-        self.ui = ui
-
-        return ui._widget
+        self.ui.doubleSpinBox_1.valueChanged.connect(self.callback)
+        self.ui.doubleSpinBox_2.valueChanged.connect(self.callback)
+        self.ui.doubleSpinBox_3.valueChanged.connect(self.callback)
+        self.ui.doubleSpinBox_4.valueChanged.connect(self.callback)
+        self.ui.doubleSpinBox_5.valueChanged.connect(self.callback)
+        self.ui.doubleSpinBox_6.valueChanged.connect(self.callback)
 
     def generate_code(self):
 
@@ -177,10 +181,10 @@ class EditAxis(NodeEditor):
                               self.ui.checkBox_5.isChecked(),
                               self.ui.checkBox_6.isChecked()))
 
-        if not np.all(new_position == self.node.position):
+        if not np.all(round3d(new_position) == round3d(self.node.position)):
             code += element + '.position = ({}, {}, {})'.format(*new_position)
 
-        if not np.all(new_rotation == self.node.rotation):
+        if not np.all(round3d(new_rotation) == round3d(self.node.rotation)):
             code += element + '.rotation = ({}, {}, {})'.format(*new_rotation)
 
         if not np.all(new_fixed == self.node.fixed):

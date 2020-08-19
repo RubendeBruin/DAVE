@@ -200,3 +200,10 @@ def rotation_from_axis_direction(direction, source_axis):
     return np.rad2deg(angle * axis)
 
 
+def round3d(value):
+    """Rounds to three decimal places, the expected way; not the numpy way (ie: 0.0005 --> 0.001)"""
+    value = np.array(value, dtype=float)
+    offset = 0.0005 * np.ones_like(value)
+
+    return np.floor(1000*np.array(value + offset, dtype=float))/1000
+
