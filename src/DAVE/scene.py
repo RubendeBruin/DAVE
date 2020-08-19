@@ -3744,6 +3744,36 @@ class GeometricContact(Manager):
 	- 	steel bars and holes, such as a shackle pin in a padeye (pin-hole)
 	-	steel bars and steel bars, such as a shackle-shackle connection
 
+
+    Situation before creation of geometric contact:
+
+    Axis1
+        Point1
+            Circle1
+    Axis2
+        Point2
+            Circle2
+
+    Create a geometric contact with Circle1 and parent and Circle2 as child
+
+    Axis1
+        Point1              : observed, referenced as parent_circle_parent
+            Circle1         : observed, referenced as parent_circle
+
+        _axis_on_parent                 : managed
+            _pin_hole_connection        : managed
+                _connection_axial_rotation : managed
+                    _axis_on_child      : managed
+                        Axis2           : managed    , referenced as child_circle_parent_parent
+                            Point2      : observed   , referenced as child_circle_parent
+                                Circle2 : observed   , referenced as child_circle
+
+
+
+
+
+
+
     """
 
     def __init__(self, scene, child_circle, parent_circle, name, inside=True):
@@ -3834,6 +3864,9 @@ class GeometricContact(Manager):
 
         self._assert_parent_child_possible(self.parent, new_child)
 
+        store = self._scene.current_manager
+        self._scene.current_manager = self
+
         # release old child
         self._child_circle.observers.remove(self)
         self._child_circle_parent.observers.remove(self)
@@ -3854,6 +3887,8 @@ class GeometricContact(Manager):
         # and manage
         self._child_circle_parent_parent._parent_for_code_export = None
         self._child_circle_parent_parent.manager = self
+
+        self._scene.current_manager = store
 
         self._update_connection()
 
@@ -3895,7 +3930,6 @@ class GeometricContact(Manager):
 
 
     def change_parent_to(self, new_parent):
-        # raise ValueError('Parent of a ContactHinge can not be set directly. Use one of the connection functions to create or update the connection')
         self.parent = new_parent
 
     def delete(self):
@@ -4165,22 +4199,7 @@ class GeometricContact(Manager):
         old_manger = self._scene.current_manager
         self._scene.current_manager = self
 
-
         code = []
-        # code.append(f'# This is the code for the elements managed by {self.name}')
-        # code.append(f'# First create the elements that need to exist before the connection can be made')
-        #
-        # code.append('# The slaved system is here created with None as parent. This will be changed when the connection is created')
-        # remember = self._child_circle_parent_parent.parent
-        # self._child_circle_parent_parent.parent = None
-        # code.append(self._child_circle_parent_parent.give_python_code())
-        # self._child_circle_parent_parent.parent = remember
-        #
-        # code.append(self._parent_circle_parent.give_python_code())  # poi
-        # code.append(self._child_circle.give_python_code())  # circle
-        #
-        # code.append(self._child_circle_parent.give_python_code())  # poi
-        # code.append(self._parent_circle.give_python_code())  # circle
 
         # code.append('#  create the connection')
         code.append(f"s.new_geometriccontact(name = '{self.name}',")
