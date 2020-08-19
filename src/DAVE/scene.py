@@ -5103,7 +5103,7 @@ class Scene:
         for name in original_fixes.keys():
             self.node_by_name(name).fixed = original_fixes[name]
 
-    def _check_and_fix_geometric_contact_orientations(self):
+    def _check_and_fix_geometric_contact_orientations(self) -> (bool, str):
         """A Geometric pin on pin contact may end up with tension in the contact. Fix that by moving the child pin to the other side of the parent pin
 
         Returns:
@@ -5111,6 +5111,7 @@ class Scene:
         """
 
         changed = False
+        message = ''
         for n in self.nodes_of_type(GeometricContact):
             if not n.inside:
 
@@ -5118,10 +5119,11 @@ class Scene:
                 # force applied on the connecting rod
                 # in the axis system of the rod
                 if n._axis_on_child.connection_force_x > 0:
+                    message += f"Changing side of pin-pin connection {n.name} due to tension in connection\n"
                     n.change_side()
                     changed = True
 
-        return changed
+        return (changed, message)
 
 
     # ======== resources =========

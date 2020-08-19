@@ -892,6 +892,8 @@ class Gui():
                                                                       solve_linear_dofs_first,
                                                                       delta)
 
+            message = 'Maximum error = {}'.format(self.scene._vfc.Emaxabs)
+
             if self._terminate:
                 print('Terminating')
                 self.scene._restore_original_fixes(original_dofs)
@@ -904,14 +906,15 @@ class Gui():
                 if original_dofs:  # reset original dofs and go to phase 2
                     self.scene._restore_original_fixes(original_dofs)
                     original_dofs = None
-                    continue
+                    # continue
                 else: # done
 
-                    # see if all geometric conacts are ok
+                    # see if all geometric contacts are ok
                     # if not then continue
-                    if self.scene._check_and_fix_geometric_contact_orientations():
-                        continue
-                    else: # we are done!
+                    changed, msg = self.scene._check_and_fix_geometric_contact_orientations()
+                    message += '\n' + msg
+                    if not changed:
+                        # we are done!
                         break
 
             if dialog is None:
@@ -920,7 +923,8 @@ class Gui():
                 dialog.show()
                 long_wait = True
 
-            dialog.label_2.setText('Maximum error = {}'.format(self.scene._vfc.Emaxabs))
+            dialog.label_2.setText(message)
+
             dialog.update()
 
             self.visual.position_visuals()
