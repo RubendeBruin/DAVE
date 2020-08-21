@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>368</width>
-    <height>675</height>
+    <width>470</width>
+    <height>687</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,6 +17,78 @@
    <locale language="English" country="UnitedStates"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="lblInfo_3">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>30</height>
+      </size>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; text-decoration: underline;&quot;&gt;Connected circles&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="widget_2" native="true">
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Parent</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="lblParent">
+        <property name="styleSheet">
+         <string notr="true">background: lightgray</string>
+        </property>
+        <property name="text">
+         <string>Parent Circle</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Child</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="lblChild">
+        <property name="styleSheet">
+         <string notr="true">background: lightgray</string>
+        </property>
+        <property name="text">
+         <string>Child circle</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_8">
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use the node-tree to change parent or child:&lt;/p&gt;&lt;p&gt;Change parent by dragging this node onto a circle&lt;/p&gt;&lt;p&gt;Change child by dragging a circle onto this node&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+   </item>
    <item>
     <widget class="QLabel" name="lblInfo">
      <property name="sizePolicy">
@@ -45,14 +117,14 @@
    <item>
     <widget class="QRadioButton" name="rbPinHole">
      <property name="text">
-      <string>Inside contact (Pin in Hole)</string>
+      <string>Inside contact (Child circle in parent circle)</string>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QRadioButton" name="rbPinPin">
      <property name="text">
-      <string>Outside contact (Pin on pin)</string>
+      <string>Outside contact (Child circle outside parent circle)</string>
      </property>
     </widget>
    </item>
@@ -87,7 +159,7 @@
       <item row="1" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Master rotation</string>
+         <string>Parent rotation</string>
         </property>
        </widget>
       </item>
@@ -108,7 +180,7 @@
       <item row="2" column="0">
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Slave rotation</string>
+         <string>Child rotation</string>
         </property>
        </widget>
       </item>

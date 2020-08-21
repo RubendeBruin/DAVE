@@ -1342,6 +1342,9 @@ class EditGeometricContact(NodeEditor):
             ui.sbSwivel.valueChanged.disconnect()
 
 
+        ui.lblParent.setText(self.node.parent.name)
+        ui.lblChild.setText(self.node.child.name)
+
         ui.rbPinHole.setChecked(self.node.inside)
         ui.rbPinPin.setChecked(not self.node.inside)
 

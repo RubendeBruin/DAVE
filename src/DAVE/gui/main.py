@@ -1175,41 +1175,6 @@ class Gui():
                 menu.addSeparator()
                 menu.addSeparator()
 
-        # menu.addAction("New Axis", self.new_axis)
-        # menu.addAction("New Point", self.new_point)
-        # menu.addAction("New Circle", self.new_circle)
-        # menu.addAction("New RigidBody", self.new_body)
-        #
-        # menu.addSeparator()
-        #
-        # menu.addAction("New Cable", self.new_cable)
-        # menu.addAction("New Beam", self.new_beam)
-        # menu.addAction("New Sling", self.new_sling)
-        # menu.addAction("New Shackle", self.new_shackle)
-        #
-        # menu.addAction("New Force", self.new_force)
-        #
-        # menu.addSeparator()
-        #
-        # menu.addAction("New Contact-Ball", self.new_contactball)
-        # menu.addAction("New Contact mesh", self.new_contactmesh)
-        #
-        # menu.addSeparator()
-        #
-        # menu.addAction("New 2d Connector", self.new_connector2d)
-        # menu.addAction("New 6d Connector", self.new_linear_connector)
-        #
-        # menu.addSeparator()
-        #
-        # menu.addAction("New Buoyancy mesh", self.new_buoyancy_mesh)
-        # menu.addAction("New Linear Hydrostatics", self.new_linear_hydrostatics)
-        # menu.addAction("New Tank", self.new_tank)
-        #
-        # menu.addAction("New Wave Interaction", self.new_waveinteraction)
-        #
-        # menu.addSeparator()
-        #
-        # menu.addAction("New Visual", self.new_visual)
 
         wa = QtWidgets.QWidgetAction(None)
 
@@ -1222,6 +1187,7 @@ class Gui():
         ui.pbCircle.pressed.connect(self.new_circle)
         ui.pbAxis.pressed.connect(self.new_axis)
         ui.pbBody.pressed.connect(self.new_body)
+        ui.pbGeometricContact.pressed.connect(self.new_geometric_contact)
 
         ui.pbSpring2D.pressed.connect(self.new_connector2d)
         ui.pbSpring6D.pressed.connect(self.new_linear_connector)
@@ -1303,6 +1269,13 @@ class Gui():
 
     def new_sling(self):
         self.new_something(new_node_dialog.add_sling)
+
+    def new_geometric_contact(self):
+        msgBox = QMessageBox()
+        msgBox.setText("To create a Geometric Contact:\n\nDrag a circle onto another circle (in the node-tree)")
+        msgBox.setWindowTitle("Geometric contact")
+        msgBox.exec_()
+
 
     def new_something(self, what):
         r = what(self.scene, self.selected_nodes)
