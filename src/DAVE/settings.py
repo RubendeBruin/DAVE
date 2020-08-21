@@ -57,7 +57,7 @@ if not default_user_dir.exists():
 # get the package directory
 cdir = Path(dirname(__file__))
 
-# get the current working directoryeeee
+# get the current working directory
 workdir = Path().absolute()
 
 # The RESOURCE PATH is the initial value for

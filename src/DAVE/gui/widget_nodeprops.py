@@ -113,8 +113,6 @@ class EditAxis(NodeEditor):
         else:
             ui = EditAxis._ui
 
-
-
         self.ui = ui
         self.post_update_event()
 
@@ -368,9 +366,6 @@ class EditTank(NodeEditor):
         else:
             ui = EditTank._ui
 
-
-
-
         self.ui = ui
         self.post_update_event() # update values
 
@@ -564,7 +559,7 @@ class EditBuoyancyOrContactMesh(NodeEditor):
 
 
 
-class EditBody(EditAxis):
+class EditBody(NodeEditor):
 
     _ui = None
 

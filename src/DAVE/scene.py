@@ -5896,8 +5896,9 @@ class Scene:
                 f'The parent {child.parent.name} of the child item {child.name} is not located on an axis. Can not create the connection because there is no axis to nodeB')
 
         if child.parent.parent.manager is not None:
+            self.print_node_tree()
             raise ValueError(
-                f'The parent of {child.parent.name} of the child item {child.name} ({child.parent.parent.name}) is a manged by {child.parent.parent.manager.name} and can therefore not be changed - unable to create geometric contact')
+                f'The axis or body that {child.name} is on is already managed by {child.parent.parent.manager.name} and can therefore not be changed - unable to create geometric contact')
 
         new_node = GeometricContact(self, child, parent, name)
         if inside:
