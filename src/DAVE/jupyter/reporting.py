@@ -111,7 +111,7 @@ def report(node, properties=None, long = False) -> None:
 
             html.append(f'<tr><td{style}>{prop}</td><td{style}>{value}</td><td{style}>{units}</td><td{style}>{remarks}</td><td{style}>{help}</td></tr>')
 
-    html.append('</table>')
+    html.append('</table><BR CLEAR=LEFT>')
 
     display(HTML(''.join(html)))
 

@@ -315,6 +315,7 @@ LinearBeam,torsion_angle,True,Torsion angle [deg]. Positive if end B has a posit
 Node,visible,False,
 Node,manager,False,
 Node,name,False,"Name of the node (str), must be unique"
+NodeWithParent,parent_for_export,True,
 NodeWithParent,parent,False,Determines the parent of the node. Should be an axis or None
 Point,x,False,x component of local position [m] (parent axis)
 Point,y,False,y component of local position [m] (parent axis)

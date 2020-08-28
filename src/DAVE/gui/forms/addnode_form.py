@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'addnode_form.ui',
 # licensing of 'addnode_form.ui' applies.
 #
-# Created: Thu Oct 31 16:19:27 2019
+# Created: Sun Aug 23 19:44:42 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -240,9 +240,9 @@ class Ui_Dialog(object):
         self.label_4.setText(QtWidgets.QApplication.translate("Dialog", "[axis]", None, -1))
         self.label_13.setText(QtWidgets.QApplication.translate("Dialog", "Parent", None, -1))
         self.label_14.setText(QtWidgets.QApplication.translate("Dialog", "[poi]", None, -1))
-        self.label_6.setText(QtWidgets.QApplication.translate("Dialog", "Master", None, -1))
+        self.label_6.setText(QtWidgets.QApplication.translate("Dialog", "Main", None, -1))
         self.label_5.setText(QtWidgets.QApplication.translate("Dialog", "[axis]", None, -1))
-        self.label_8.setText(QtWidgets.QApplication.translate("Dialog", "Slave", None, -1))
+        self.label_8.setText(QtWidgets.QApplication.translate("Dialog", "Secondary", None, -1))
         self.label_7.setText(QtWidgets.QApplication.translate("Dialog", "[axis]", None, -1))
         self.label_10.setText(QtWidgets.QApplication.translate("Dialog", "point 1", None, -1))
         self.label_9.setText(QtWidgets.QApplication.translate("Dialog", "[poi]", None, -1))

@@ -846,6 +846,8 @@ class Gui():
 
         if len(old_dofs) == 0:  # no degrees of freedom
 
+            self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)  # update the gui to reflect the scene.update
+
             msgBox = QMessageBox()
             msgBox.setText("No degrees of freedom - nothing to solve")
             msgBox.setWindowTitle("DAVE")

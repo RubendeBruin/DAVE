@@ -237,7 +237,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Master</string>
+         <string>Main</string>
         </property>
        </widget>
       </item>
@@ -290,7 +290,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Slave</string>
+         <string>Secondary</string>
         </property>
        </widget>
       </item>
