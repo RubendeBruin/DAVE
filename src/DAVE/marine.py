@@ -7,10 +7,199 @@
 
   Helper functions for Marine analysis
 
+
+
+  Main functionality:
+
+  - linearize_buoyancy
+  - calculate_linearized_buoyancy_props
+  - carene_table
+
+  - GZcurve_DisplacementDriven
+  - GZcurve_MomentDriven [TODO]
+
 """
 
 from DAVE.scene import *
 import matplotlib.pyplot as plt
+
+def linearize_buoyancy(scene : Scene, node : Buoyancy, delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
+    """Replaces the given Buoyancy node with a HydSpring node. Uses even-keel (rotation = (0,0,0) ) as reference.
+
+    See Also: calculate_linearized_buoyancy_props
+    """
+
+    props = calculate_linearized_buoyancy_props(scene, node,
+                                                delta_draft=delta_draft, delta_roll = delta_roll, delta_pitch = delta_pitch)
+
+    parent = node.parent
+    name = node.name
+
+    scene.delete(node)  # remove buoyancy node
+
+    scene.new_hydspring(name = name,
+                        parent = parent,
+                        cob = props['cob'],
+                        BMT = props['BMT'],
+                        BML = props['BML'],
+                        COFX = props['COFX'] - props['cob'][0],  # relative to CoB!
+                        COFY = props['COFY'] - props['cob'][1],
+                        kHeave=props['kHeave'],
+                        waterline=props['waterline'],
+                        displacement_kN=props['displacement_kN'])
+
+
+
+
+
+def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
+    """Obtains the linearized buoyancy properties of a buoyant shape. The properties are derived for the current
+    vertical position of the parent body (draft at origin) and even-keel.
+
+    COFX, COFY and kHeave are evaluated by increasing the draft by delta_draft.
+    BMT, BML are evaluated by increasing the roll/pitch by delta_roll/delta_pitch [deg]. So roll to sb, pitch to bow.
+    Note: negative values are allowed. Zero is not allowed and will result in division by zero.
+
+        cob,"Center of buoyancy in parent axis system (m,m,m)"
+        BMT,Vertical distance between cob and metacenter for roll [m]
+        BML,Vertical distance between cob and metacenter for pitch [m]
+        COFX,"Horizontal x-position Center of Floatation (center of waterplane area), parent axis system [m]"
+        COFY,"Horizontal y-position Center of Floatation (center of waterplane area), parent axis system [m]"
+        kHeave,Heave stiffness in [kN/m]
+        waterline,Waterline-elevation relative to cob for un-stretched heave-spring. Positive if cob is below the waterline (which is where is normally is) [m]
+        displacement_kN,False,Displacement in [kN] when waterline is at waterline-elevation
+    """
+
+    if not isinstance(node, Buoyancy):
+        raise ValueError(f"Node {node.name} should be a 'buoyancy' type of node but is a {type(node)}.")
+
+
+
+    pc = node.give_python_code()
+
+    s = Scene()
+    a = s.new_axis(node.parent.name, fixed=True)
+    a.z = node.parent.global_position[2]
+
+    exec(node.give_python_code())  # place a copy of the buoayncy node in scene "s"
+
+    node = s[node.name]
+
+    # get buoyancy
+    s.update()
+
+    displacement_m3 = node.displacement
+    cob = node.cob_local
+    cob_global = node.cob
+
+    # increase draft
+    old_z = a.z
+
+    a.z = a.z - delta_draft
+    s.update()
+
+    new_disp =  node.displacement
+    delta_disp = new_disp - displacement_m3
+
+
+    Awl = delta_disp / delta_draft
+    kHeave = Awl * 9.81 * node.density
+
+    # calcualte cofx and cofy from change of cob position
+    # x_old * x_disp + cofx * dis_change = x_new * dis_new
+
+    COFX = (node.cob_local[0] * new_disp - cob[0] * displacement_m3) / delta_disp
+    COFY = (node.cob_local[1] * new_disp - cob[1] * displacement_m3) / delta_disp
+
+    a.z = old_z # restore draft
+
+    # calculate BMT and BML by rotating about cob
+
+    rot = s.new_axis('rot', position = cob_global)
+    a.change_parent_to(rot)
+
+    rot.rotation = (delta_roll, 0,0) # impose heel
+    s.update()
+
+    delta_MT = node.cob[1] - cob_global[1]
+
+    rot.rotation = (0, delta_pitch, 0)  # impose trim
+    s.update()
+
+    delta_ML = node.cob[0] - cob_global[0]
+
+    BMT = -delta_MT / np.sin(np.deg2rad(delta_roll))
+    BML = delta_ML / np.sin(np.deg2rad(delta_pitch))
+
+    # assemble resuls in a dict
+    results = {'cob': cob,
+               'BMT': BMT,
+               'BML': BML,
+               'COFX' : COFX,
+               'COFY' : COFY,
+               'kHeave': kHeave,
+               'Awl': Awl,
+               'displacement_kN': displacement_m3 * 9.81 * node.density,
+               'displacement' : displacement_m3 ,
+               'waterline': -cob_global[2]}
+
+    del s
+
+    return results
+
+def carene_table(scene, buoyancy_node, draft_min, draft_max,
+                 stepsize=0.25,
+                 delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
+
+    """Creates a carene table for buoyancy node.
+
+    DRAFT refers the origin of the parent of the buoyancy node.
+
+    Args:
+        scene: reference to Scene object
+        buoyancy_node: reference to Buoyancy node in scene
+        draft_min,draft_max: Draft range
+        stepsize: Stepsize for drafts
+
+        delta_draft, delta_roll, delta_pitch: deltas used for derivation of linearized properties (see calculate_linearized_buoyancy_props)
+
+    Returns:
+        Pandas dataframe
+
+    """
+
+    zs = np.arange(draft_min, draft_max, stepsize )
+    if max(zs) < draft_max:
+        zs = np.append(zs,draft_max)
+    import pandas as pd
+
+    a = []
+
+    for z in zs:
+        buoyancy_node.parent.z = -z
+        r = calculate_linearized_buoyancy_props(scene, buoyancy_node, delta_roll=delta_roll, delta_pitch=delta_pitch, delta_draft=delta_draft)
+        r['CoB x [m]'] = r['cob'][0]
+        r['CoB y [m]'] = r['cob'][1]
+        r['CoB z [m]'] = r['cob'][2]
+        del r['cob']
+        r['draft'] = z
+        a.append(r)
+
+    df = pd.DataFrame(a)
+
+    df = df.rename(columns={'draft':'Draft [m]',
+                            'BMT': 'BM T [m]',
+                            'BML': 'BM L [m]',
+                            'COFX': 'CoF x [m]',
+                            'COFY': 'CoF y [m]',
+                            'displacement': 'Displacement [m3]',
+                            'Awl': 'Awl [m2]'})
+
+    df = df.set_index('Draft [m]')
+
+    return df.drop(columns=['waterline', 'displacement_kN','kHeave'])
+
+
 
 
 def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum_heel= 0, maximum_heel=90, steps=180,
