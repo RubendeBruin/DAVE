@@ -800,7 +800,7 @@ class Axis(NodeWithParent):
         """
         y = (0,1,0)
         uy = self.to_glob_direction(y)
-        return 100*uy[2]
+        return float(100*uy[2])
 
     @property
     def heel(self):
@@ -820,7 +820,7 @@ class Axis(NodeWithParent):
         """
         x = (-1, 0, 0)
         ux = self.to_glob_direction(x)
-        return 100 * ux[2]
+        return float(100 * ux[2])
 
     @property
     def trim(self):

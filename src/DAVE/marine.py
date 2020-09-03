@@ -24,9 +24,16 @@ from DAVE.scene import *
 import matplotlib.pyplot as plt
 
 def linearize_buoyancy(scene : Scene, node : Buoyancy, delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
-    """Replaces the given Buoyancy node with a HydSpring node. Uses even-keel (rotation = (0,0,0) ) as reference.
+    """Replaces the given Buoyancy node with a HydSpring node using even-keel (rotation = (0,0,0) ) as reference.
+
+    Args:
+        delta_draft: draft difference used in linearization [m]
+        delta_roll: roll difference used in linearization [deg]
+        delta_pitch pitch difference used in linearization [deg]
 
     See Also: calculate_linearized_buoyancy_props
+
+    Returns a reference to the newly created HydSpring node
     """
 
     props = calculate_linearized_buoyancy_props(scene, node,
@@ -37,7 +44,7 @@ def linearize_buoyancy(scene : Scene, node : Buoyancy, delta_draft=1e-3, delta_r
 
     scene.delete(node)  # remove buoyancy node
 
-    scene.new_hydspring(name = name,
+    return scene.new_hydspring(name = name,
                         parent = parent,
                         cob = props['cob'],
                         BMT = props['BMT'],
