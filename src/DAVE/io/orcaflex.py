@@ -197,6 +197,9 @@ for n in s._nodes:
             vt = {'Name': n.name + hyd_spring.name,
                   'Length':1,
                   # conventions
+                  'WavesReferredToBy':'frequency (rad/s)',
+                  'RAOPhaseConvention':'leads',
+                  'RAOPhaseUnitsConvention':'radians'
                   }
 
             # Stiffness, Added mass, damping
@@ -269,9 +272,166 @@ for n in s._nodes:
 
                  }
 
-            vt['Draughts'] = d
+            # Export hydrodynamics
+            if hyd_db is not None:
+
+                # Export
+                # Wave-forces (Force RAOs)
+                # Damping
+                # Added mass
+
+                LoadRAOs = {'RAOOriginX': ref_origin[0],
+                        'RAOOriginY': ref_origin[1],
+                        'RAOOriginZ': ref_origin[2]}
+
+                # load the database
+                from mafredo.hyddb1 import Hyddb1
+                database = s.get_resource_path(hyd_db.path)
+                db = Hyddb1()
+                db.load_from(database)
+
+                # get the available headings
+                a_headings = db.force_rao(0)._data['wave_direction'].values
+                a_frequencies = db.frequencies
+
+                rao_mode = []
+                for i in range(6):
+                    rao_mode.append(db.force_rao(i))
+
+                # RAOs = []
+                #
+                # for heading in a_headings:
+                #
+                #     rao = {'RAODirection':float(heading)}
+                #
+                #     RAOPeriodOrFrequency = []
+                #     RAOSurgeAmp = []
+                #     RAOSurgePhase = []
+                #     RAOSwayAmp = []
+                #     RAOSwayPhase = []
+                #     RAOHeaveAmp = []
+                #     RAOHeavePhase = []
+                #     RAORollAmp = []
+                #     RAORollPhase = []
+                #     RAOPitchAmp = []
+                #     RAOPitchPhase = []
+                #     RAOYawAmp = []
+                #     RAOYawPhase = []
+                #
+                #     for frequency in a_frequencies:
+                #         RAOPeriodOrFrequency.append(float(frequency))
+                #
+                #         r = rao_mode[0].get_value(wave_direction=heading, omega = frequency)
+                #         RAOSurgeAmp.append(float(np.abs(r)))
+                #         RAOSurgePhase.append(float(np.angle(r)))
+                #
+                #         r = rao_mode[1].get_value(wave_direction=heading, omega=frequency)
+                #         RAOSwayAmp.append(float(np.abs(r)))
+                #         RAOSwayPhase.append(float(np.angle(r)))
+                #
+                #         r = rao_mode[2].get_value(wave_direction=heading, omega=frequency)
+                #         RAOHeaveAmp.append(float(np.abs(r)))
+                #         RAOHeavePhase.append(float(np.angle(r)))
+                #
+                #         r = rao_mode[3].get_value(wave_direction=heading, omega=frequency)
+                #         RAORollAmp.append(float(np.abs(r)))
+                #         RAORollPhase.append(float(np.angle(r)))
+                #
+                #         r = rao_mode[4].get_value(wave_direction=heading, omega=frequency)
+                #         RAOPitchAmp.append(float(np.abs(r)))
+                #         RAOPitchPhase.append(float(np.angle(r)))
+                #
+                #         r = rao_mode[5].get_value(wave_direction=heading, omega=frequency)
+                #         RAOYawAmp.append(float(np.abs(r)))
+                #         RAOYawPhase.append(float(np.angle(r)))
+                #
+                #     rao['RAOPeriodOrFrequency'] = RAOPeriodOrFrequency
+                #     rao['RAOSurgeAmp'] = RAOSurgeAmp
+                #     rao['RAOSurgePhase'] = RAOSurgePhase
+                #     rao['RAOSwayAmp'] = RAOSwayAmp
+                #     rao['RAOSwayPhase'] = RAOSwayPhase
+                #     rao['RAOHeaveAmp'] = RAOHeaveAmp
+                #     rao['RAOHeavePhase'] = RAOHeavePhase
+                #     rao['RAORollAmp'] = RAORollAmp
+                #     rao['RAORollPhase'] = RAORollPhase
+                #     rao['RAOPitchAmp'] = RAOPitchAmp
+                #     rao['RAOPitchPhase'] = RAOPitchPhase
+                #     rao['RAOYawAmp'] = RAOYawAmp
+                #     rao['RAOYawPhase'] = RAOYawPhase
+                #     RAOs.append(rao)
+                #
+                # LoadRAOs['RAOs'] = RAOs
+                # d['LoadRAOs'] = LoadRAOs
+
+                # Added mass and Damping
+                FrequencyDependentAddedMassAndDamping = []
+                for frequency in [a_frequencies[0]]:
+                    entry = {'AMDPeriodOrFrequency': float(frequency)}
+                    B = db.damping(frequency)
+                    A = db.amass(frequency)
+
+                    # Make symmetric (else Orcaflex will not read the yml)
+
+                    A = 0.5 * A + 0.5 * A.transpose()
+                    B = 0.5 * B + 0.5 * B.transpose()
+
+                    A = np.around(A)
+                    B = np.around(B)
+
+                    oA = np.zeros((6,6))
+                    oB = np.zeros((6,6))
+
+                    oA[0, 0] = 1
+                    oA[1, 1] = 2
+                    oA[2, 2] = 3
+                    oA[3, 3] = 4
+                    oA[4, 4] = 5
+                    oA[5, 5] = 6
+
+                    # oA[0,2] = 7   # error
+                    oA[2,0] = 7
+
+                    oA[0,4] = 8
+                    oA[4,0] = 8
+
+                    oA[1, 3] = 9  # need both
+                    oA[3, 1] = 9
+
+                    oA[1, 5] = 10  # need both
+                    oA[5, 1] = 10
+
+                    oA[5, 3] = 11
+                    # oA[3, 5] = 11  # both give error
+
+                    oA[4,2] = 12 # need both
+                    oA[2,4] = 12
 
 
+                    # oA[6, 0] = 8
+
+                    entry['AddedMassMatrixX'] = oA[0].tolist()
+                    entry['AddedMassMatrixY'] = oA[1].tolist()
+                    entry['AddedMassMatrixZ'] = oA[2].tolist()
+                    entry['AddedMassMatrixRx'] = oA[3].tolist()
+                    entry['AddedMassMatrixRy'] = oA[4].tolist()
+                    entry['AddedMassMatrixRz'] = oA[5].tolist()
+
+                    entry['DampingX'] = oB[0].tolist()
+                    entry['DampingY'] = oB[1].tolist()
+                    entry['DampingZ'] = oB[2].tolist()
+                    entry['DampingRx'] = oB[3].tolist()
+                    entry['DampingRy'] = oB[4].tolist()
+                    entry['DampingRz'] = oB[5].tolist()
+
+                    FrequencyDependentAddedMassAndDamping.append(entry)
+
+            d['AMDMethod'] = 'Frequency Dependent'
+            d['FrequencyDependentAddedMassAndDamping'] = FrequencyDependentAddedMassAndDamping
+
+
+
+
+            vt['Draughts'] = [d]  # draughts is a list! Even though we only use one.
 
             # Create a vessel
 
@@ -382,6 +542,9 @@ if vessels:
     data['Vessels'] = vessels
 if Shapes:
     data['Shapes'] = Shapes
+#
+# with open(f'c:\data\example.yml','r') as f:
+#     comp = yaml.load(f)
 
 s = yaml.dump(data, explicit_start=True)
 
