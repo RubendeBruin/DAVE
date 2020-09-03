@@ -164,6 +164,7 @@ for n in s._nodes:
              'InitialPosition': pos,
              'InitialAttitude': rot,
              'Mass': mass,
+             'Volume': 0,
              'MomentsOfInertia': I,
              'CentreOfMass': cog
              }                       # create the basic buoy, but do not add it yet as some of the properties may be
@@ -280,7 +281,7 @@ for n in s._nodes:
                 # Damping
                 # Added mass
 
-                LoadRAOs = {'RAOOriginX': ref_origin[0],
+                LoadRAOs = {'RAOOriginX': ref_origin[0],  # TODO: These values do not seem to be loaded into OFX
                         'RAOOriginY': ref_origin[1],
                         'RAOOriginZ': ref_origin[2]}
 
@@ -365,49 +366,40 @@ for n in s._nodes:
 
                 # Added mass and Damping
                 FrequencyDependentAddedMassAndDamping = []
-                for frequency in [a_frequencies[0]]:
+                for frequency in a_frequencies:
                     entry = {'AMDPeriodOrFrequency': float(frequency)}
                     B = db.damping(frequency)
                     A = db.amass(frequency)
 
                     # Make symmetric (else Orcaflex will not read the yml)
 
-                    A = 0.5 * A + 0.5 * A.transpose()
-                    B = 0.5 * B + 0.5 * B.transpose()
+                    def make_orcaflex_happy(mat):
+                        mat = 0.5 * mat + 0.5 * mat.transpose()
+                        R = np.zeros((6, 6))
+                        R[0, 0] = mat[0, 0]
+                        R[1, 1] = mat[1, 1]
+                        R[2, 2] = mat[2, 2]
+                        R[3, 3] = mat[3, 3]
+                        R[4, 4] = mat[4, 4]
+                        R[5, 5] = mat[5, 5]
 
-                    A = np.around(A)
-                    B = np.around(B)
+                        # oA[0,2] = 7   # error
+                        R[2, 0] = mat[2, 0]
 
-                    oA = np.zeros((6,6))
-                    oB = np.zeros((6,6))
+                        R[0, 4] = mat[0, 4]
+                        R[4, 0] = mat[0, 4]
 
-                    oA[0, 0] = 1
-                    oA[1, 1] = 2
-                    oA[2, 2] = 3
-                    oA[3, 3] = 4
-                    oA[4, 4] = 5
-                    oA[5, 5] = 6
+                        R[1, 3] = mat[1, 3]  # need both
+                        R[3, 1] = mat[1, 3]
 
-                    # oA[0,2] = 7   # error
-                    oA[2,0] = 7
+                        R[1, 5] = mat[1, 5]  # need both
+                        R[5, 1] = mat[1, 5]
 
-                    oA[0,4] = 8
-                    oA[4,0] = 8
+                        R[5, 3] = mat[3, 5]
+                        return R
 
-                    oA[1, 3] = 9  # need both
-                    oA[3, 1] = 9
-
-                    oA[1, 5] = 10  # need both
-                    oA[5, 1] = 10
-
-                    oA[5, 3] = 11
-                    # oA[3, 5] = 11  # both give error
-
-                    oA[4,2] = 12 # need both
-                    oA[2,4] = 12
-
-
-                    # oA[6, 0] = 8
+                    oA = make_orcaflex_happy(A)
+                    oB = make_orcaflex_happy(B)
 
                     entry['AddedMassMatrixX'] = oA[0].tolist()
                     entry['AddedMassMatrixY'] = oA[1].tolist()
