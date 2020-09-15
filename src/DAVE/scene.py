@@ -562,7 +562,7 @@ class Axis(NodeWithParent):
 
     @property
     def z(self):
-        """The y-component of the position vector (parent axis) [m]"""
+        """The z-component of the position vector (parent axis) [m]"""
         return self.position[2]
 
     @x.setter
@@ -3258,7 +3258,7 @@ class BallastSystem(Point):
 
     @property
     def weight(self):
-        """Total weight of all tank fillings in the ballast system [mT]"""
+        """Total weight of all tank fillings in the ballast system [kN]"""
         self.update()
         return self._weight
 

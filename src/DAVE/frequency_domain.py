@@ -133,7 +133,7 @@ def generate_unitwave_response(s, d0, rao, wave_amplitude, n_frames):
 
         Args:
             d0: mean values of the dofs (static equilibrium)
-            rao: compelex rao for all dofs
+            rao: complex rao for all dofs for the given wave-period
             wave_amplitude : float
             n_frames: number of requested frames
 
@@ -144,15 +144,22 @@ def generate_unitwave_response(s, d0, rao, wave_amplitude, n_frames):
     core = s._vfc
     result = []
 
-    for i_frame in range(n_frames):
-        factor = i_frame / n_frames
+    rao = np.array(rao).flatten()
 
-        t = factor * 2 * np.pi
-        change = wave_amplitude * abs(rao) * np.cos(t + np.angle(rao))
+    t = np.linspace(0,2*np.pi, n_frames)
 
+    time_phasor = np.exp(1j * t)
+
+    motions = np.outer(time_phasor, rao)
+
+    for motion in motions:
         core.set_dofs(d0)
+        change = wave_amplitude * np.real(motion)
+
         core.change_dofs(change)
         result.append(core.get_dofs())
+
+    result = np.array(result)
 
     return result
 
@@ -530,8 +537,7 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0) -> np.ndarray:
         n_omega=1
         omegas = [omegas]
 
-    M = np.array(M, dtype=complex)  # change M to complex
-    B = np.zeros_like(M)
+    M = np.array(M, dtype=complex)  # change M to complex.. why?
 
     wis = s.nodes_of_type(node_class=WaveInteraction1)
 
@@ -611,13 +617,19 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0) -> np.ndarray:
                 print('Increasing diagonal damping for mode {} to {}'.format(i, min_damping[i]))
                 B[i,i] = min_damping[i]
 
-        A = np.zeros_like(M)
+        # A = np.zeros_like(M)
 
-        A += -(omega ** 2) * M_total  # inertia
-        A += 1j * omega * B  # damping
-        A += K               # stiffness
+        A = -(omega ** 2) * M_total  \
+            + 1j * omega * B  \
+            + K               # mass, damping, stiffness
 
-        x = np.linalg.solve(A, F_hyd[:,i_omega])  # solve
+        excitation = F_hyd[:,i_omega]
+
+        re = np.real(excitation)
+        im = np.imag(excitation)
+        excitation = re - 1j * im  # see https://github.com/mancellin/capytaine/issues/41
+
+        x = np.linalg.solve(A, excitation )  # solve
         RAO[:,i_omega] = x
 
     return RAO

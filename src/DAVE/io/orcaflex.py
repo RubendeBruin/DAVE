@@ -16,6 +16,9 @@ Supported are:
 """
 
 from DAVE import *
+from pathlib import Path
+from warnings import warn
+from shutil import copyfile
 
 def write_ofx_run_and_collect_script(py_file, yml_file, ofx_path=None):
     """Creates a .py file which will run the given orcaflex model (yml_file) and extract its data after solving statics.
@@ -120,12 +123,18 @@ def attitude_to_rotvec(rot123):
     return np.degrees(r.as_rotvec())
 
 def export_ofx_yml(s, filename):
-    """Convert the scene to a orcaflex .yml file. Only compatible nodes are exported. Make the scene  orcaflex compatible before exporting
+    """Convert the scene to a orcaflex .yml file. Only compatible nodes are exported. Make the scene  orcaflex compatible before exporting.
+
+    Visuals of .obj type are supported by orcaflex. These are copied to the same folder as the .yml file
 
     Args:
         s : Scene
         filename : file to write to (.yml)
     """
+
+    filename = Path(filename) # convert to path
+
+    # filename.parent : folder
 
     s.sort_nodes_by_dependency()
 
@@ -138,6 +147,41 @@ def export_ofx_yml(s, filename):
 
     for n in s._nodes:
 
+        if isinstance(n, BallastSystem):
+
+            # calculate the inertia
+            ixx = 0
+            iyy = 0
+            izz = 0
+            mass = 0
+            for tank in n._tanks:
+                mass += tank.inertia
+                inertia = tank.inertia
+                ixx += inertia * (tank.position[1] ** 2 + tank.position[2] ** 2)
+                iyy += inertia * (tank.position[0] ** 2 + tank.position[2] ** 2)
+                izz += inertia * (tank.position[0] ** 2 + tank.position[1] ** 2)
+
+            ixx = min(ixx, OFX_ZERO_MASS)
+            iyy = min(iyy, OFX_ZERO_MASS)
+            izz = min(izz, OFX_ZERO_MASS)
+
+            I = [ixx, iyy, izz]
+            pos = [*n.position]
+
+            cog = [float(i) for i in n.cog]
+
+            b = {'Name': n.name,
+                 'Connection': n.parent.name,
+                 'InitialPosition': pos,
+                 'Mass': mass,
+                 'Volume': 0,
+                 'MomentsOfInertia': I,
+                 'CentreOfMass': cog
+                 }
+
+            buoys.append(b)
+
+
         if isinstance(n, (RigidBody, Axis)):
 
             if isinstance(n, RigidBody):
@@ -145,10 +189,11 @@ def export_ofx_yml(s, filename):
                 I = (mass * n.inertia_radii ** 2).tolist()
                 cog = [*n.cog]
 
-            else:
+            elif isinstance(n, Axis):
                 mass = OFX_ZERO_MASS
                 I = [OFX_ZERO_MASS, OFX_ZERO_MASS, OFX_ZERO_MASS]
                 cog = [0, 0, 0]
+
 
             # check the connection
 
@@ -260,8 +305,9 @@ def export_ofx_yml(s, filename):
                 k[2,0] = k[0,2]
 
                 # BML and BMT
-                k[1,1] = hyd_spring.displacement_kN * hyd_spring.BMT # g * rho * disp * BMt
-                k[2, 2] = hyd_spring.displacement_kN * hyd_spring.BML  # g * rho * disp * BMt
+                k[1,1] = hyd_spring.displacement_kN * (hyd_spring.BMT - ref_origin[2] + hyd_spring.cob[2]) # g * rho * disp * BMt
+                k[2, 2] = hyd_spring.displacement_kN * (hyd_spring.BML - ref_origin[2] + hyd_spring.cob[2]) # g * rho * disp * BMt
+
 
                 d = {'Name':'Draught1',
                      'Mass':1e-6,
@@ -532,23 +578,35 @@ def export_ofx_yml(s, filename):
 
         if isinstance(n, Visual):
 
-            shape = { 'Name': n.name,
-                  'Connection':n.parent.name,
-                  'ShapeType':'Drawing',
-                  'Shape' : 'Block',
-                  'OriginX' : 0 ,
-                  'OriginY' : 0 ,
-                  'OriginZ' : 0 ,
-                  'Rotation1' : 0 ,
-                  'Rotation2' : 0 ,
-                  'Rotation3' : 0 ,
-                  'ShadedDrawingFileName' : str(s.get_resource_path(n.path)) ,
-                  'ShadedDrawingMirrorInPlane' : 'XZ plane' ,
-                  'ShadedDrawingRotation1' : 0 ,
-                  'ShadedDrawingRotation2' : 90 ,
-                  'ShadedDrawingRotation3' : -90 }
+            visualfile = s.get_resource_path(n.path)
 
-            Shapes.append(shape)
+            if 'obj' in visualfile.suffix:
+
+                # copy the .obj to the destination folder such that we have all required files in one place
+                copyfile(visualfile, filename.parent / visualfile.name)
+                print(f'created {filename.parent / visualfile.name}')
+
+                shape = { 'Name': n.name,
+                      'Connection':n.parent.name,
+                      'ShapeType':'Drawing',
+                      'Shape' : 'Block',
+                      'OriginX' : 0 ,
+                      'OriginY' : 0 ,
+                      'OriginZ' : 0 ,
+                      'Rotation1' : 0 ,
+                      'Rotation2' : 0 ,
+                      'Rotation3' : 0 ,
+                      'OutsidePenColour' : 55551,  # $00D8FF
+                      'ShadedDrawingFileName' : visualfile.name,
+                      'ShadedDrawingMirrorInPlane' : 'XZ plane' ,
+                      'ShadedDrawingRotation1' : 0 ,
+                      'ShadedDrawingRotation2' : 90 ,
+                      'ShadedDrawingRotation3' : -90 }
+
+                Shapes.append(shape)
+
+            else:
+                warn(f'Only .obj files can be used in orcaflex, not exporting visual "{n.name}"')
 
 
     # Write the yml
@@ -572,6 +630,7 @@ def export_ofx_yml(s, filename):
 
     with open(filename,'w') as f:
         f.write(s)
+        print(f'created {filename}')
 
 def run_statics_collect(s, filename=None, try_rerun = True):
     """Obtains the orcaflex static resuls for the given scene. Runs orcaflex if possible and try_rerun is not False
