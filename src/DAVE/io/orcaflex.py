@@ -280,7 +280,7 @@ def export_ofx_yml(s, filename):
                       'Length':1,
                       # conventions
                       'WavesReferredToBy':'frequency (rad/s)',
-                      'RAOPhaseConvention':'leads',
+                      'RAOPhaseConvention':'lags',
                       'RAOPhaseUnitsConvention':'radians'
                       }
 
