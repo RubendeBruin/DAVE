@@ -583,7 +583,14 @@ def export_ofx_yml(s, filename):
             if 'obj' in visualfile.suffix:
 
                 # copy the .obj to the destination folder such that we have all required files in one place
-                copyfile(visualfile, filename.parent / visualfile.name)
+
+                copy_from = visualfile
+                copy_to = filename.parent / visualfile.name
+
+                if copy_from == copy_to:
+                    pass
+                else:
+                    copyfile(visualfile, filename.parent / visualfile.name)
                 print(f'created {filename.parent / visualfile.name}')
 
                 shape = { 'Name': n.name,

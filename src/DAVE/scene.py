@@ -4769,8 +4769,10 @@ class Scene:
 
         """
 
-        if isfile(name):
-            return Path(name)
+        file = Path(name)
+
+        if file.exists():
+            return file
 
         for res in self.resources_paths:
             p = Path(res)
