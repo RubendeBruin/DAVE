@@ -4752,7 +4752,7 @@ class Scene:
 
     # ======== resources =========
 
-    def get_resource_path(self, name):
+    def get_resource_path(self, name) -> Path:
         """Looks for a file with "name" in the specified resource-paths and returns the full path to the the first one
         that is found.
         If name is a full path to an existing file, then that is returned.
@@ -4770,7 +4770,7 @@ class Scene:
         """
 
         if isfile(name):
-            return name
+            return Path(name)
 
         for res in self.resources_paths:
             p = Path(res)
