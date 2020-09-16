@@ -591,7 +591,7 @@ def export_ofx_yml(s, filename):
                     pass
                 else:
                     copyfile(visualfile, filename.parent / visualfile.name)
-                print(f'created {filename.parent / visualfile.name}')
+                    print(f'created {filename.parent / visualfile.name}')
 
                 shape = { 'Name': n.name,
                       'Connection':n.parent.name,
