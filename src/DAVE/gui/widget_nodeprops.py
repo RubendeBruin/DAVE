@@ -1223,6 +1223,7 @@ class EditBeam(NodeEditor):
             ui = EditBeam._ui
 
         try:
+            ui.sbnSegments.valueChanged.disconnect()
             ui.doubleSpinBox_1.valueChanged.disconnect()
             ui.doubleSpinBox_2.valueChanged.disconnect()
             ui.doubleSpinBox_3.valueChanged.disconnect()
@@ -1248,6 +1249,8 @@ class EditBeam(NodeEditor):
         ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
         ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
 
+        ui.sbnSegments.setValue(self.node.nSegments)
+
         ui.doubleSpinBox_1.setValue(self.node.L)
         ui.doubleSpinBox_2.setValue(self.node.EIy)
         ui.doubleSpinBox_3.setValue(self.node.EIz)
@@ -1266,6 +1269,7 @@ class EditBeam(NodeEditor):
 
         ui.cbMasterAxis.currentIndexChanged.connect(self.callback)
         ui.cbSlaveAxis.currentIndexChanged.connect(self.callback)
+        ui.sbnSegments.valueChanged.connect(self.callback)
 
         self.ui = ui
 
@@ -1282,6 +1286,7 @@ class EditBeam(NodeEditor):
         new_GIp = self.ui.doubleSpinBox_4.value()
         new_EA = self.ui.doubleSpinBox_5.value()
         new_mass = self.ui.sbMass.value()
+        new_n = self.ui.sbnSegments.value()
 
         new_master = self.ui.cbMasterAxis.currentText()
         new_slave = self.ui.cbSlaveAxis.currentText()
@@ -1309,6 +1314,9 @@ class EditBeam(NodeEditor):
 
         if not new_slave == self.node.nodeB.name:
             code += element + '.nodeB = s["{}"]'.format(new_slave)
+
+        if not new_n == self.node.nSegments:
+            code += element + '.nSegments = {}'.format(new_n)
 
         return code
 
@@ -2032,3 +2040,4 @@ class WidgetNodeProps(guiDockWidget):
             widget.setVisible(True)
 
         self.resize(0, 0)  # set the size of the floating dock widget to its minimum size
+        self.adjustSize()

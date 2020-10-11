@@ -790,15 +790,16 @@ class Viewport:
 
             if isinstance(N, vf.LinearBeam):
 
-                points = list()
+                gp = N.global_positions
 
-                for i in range(4):
-                    points.append((0,0,0))
+                if len(gp)>0:
+                    a = vp.Line(gp, lw=5).c(vc.COLOR_BEAM)
+                else:
+                    a = vp.Line([(0,0,0),(0,0,0.1),(0,0,0)], lw=5).c(vc.COLOR_BEAM)
 
-                a = vp.Line(points, lw=5).c(vc.COLOR_BEAM)
                 a.actor_type = ActorType.CABLE
-
                 actors.append(a)
+
 
             if isinstance(N, vf.Connector2d):
 
@@ -948,24 +949,28 @@ class Viewport:
 
             if isinstance(V.node, vf.LinearBeam):
 
-                # Each beam is visualized using FOUR points being
-                # 0. Endpoint A
-                # 1. local position (0.1*L,0,0) on endpoint A
-                # 2. local position (-0.1*L,0,0) on endpoint B
-                # 3. Endpoint B
-
+                points = V.node.global_positions
                 A = V.actors[0]
-
-                d = 0
-
-                points = list()
-                points.append(node.nodeA.to_glob_position((0, 0, 0)))
-                points.append(node.nodeA.to_glob_position((d * node.L, 0, 0)))
-                points.append(node.nodeB.to_glob_position((-d * node.L, 0, 0)))
-                points.append(node.nodeB.to_glob_position((0, 0, 0)))
-
-
-                A.points(points)
+                update_line_to_points(A, points)
+                #
+                # # Each beam is visualized using FOUR points being
+                # # 0. Endpoint A
+                # # 1. local position (0.1*L,0,0) on endpoint A
+                # # 2. local position (-0.1*L,0,0) on endpoint B
+                # # 3. Endpoint B
+                #
+                # A = V.actors[0]
+                #
+                # d = 0
+                #
+                # points = list()
+                # points.append(node.nodeA.to_glob_position((0, 0, 0)))
+                # points.append(node.nodeA.to_glob_position((d * node.L, 0, 0)))
+                # points.append(node.nodeB.to_glob_position((-d * node.L, 0, 0)))
+                # points.append(node.nodeB.to_glob_position((0, 0, 0)))
+                #
+                #
+                # A.points(points)
                 continue
 
             if isinstance(V.node, vf.Connector2d):

@@ -2277,7 +2277,7 @@ class Connector2d(CoreConnectedNode):
 class LinearBeam(CoreConnectedNode):
     """A LinearBeam models a FEM-like linear beam element.
 
-    A LinearBeam node connects two Axis elements with six linear springs.
+    A LinearBeam node connects two Axis elements
 
     By definition the beam runs in the X-direction of the nodeA axis system. So it may be needed to create a
     dedicated Axis element for the beam to control the orientation.
@@ -2314,6 +2314,16 @@ class LinearBeam(CoreConnectedNode):
 
     def depends_on(self):
         return [self._nodeA, self._nodeB]
+
+    @property
+    def nSegments(self):
+        return self._vfNode.nSegments
+
+    @nSegments.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def nSegments(self, value):
+        self._vfNode.nSegments = round(value)
 
     @property
     def EIy(self):
@@ -2455,20 +2465,48 @@ class LinearBeam(CoreConnectedNode):
 
     @property
     def tension(self):
-        """Tension in the beam [kN], negative for compression"""
+        """Tension in the beam [kN], negative for compression
+
+        tension is calculated at the midpoints of the beam segments.
+        """
         return self._vfNode.tension
 
     @property
     def torsion(self):
-        """Torsion moment [kNm]. Positive if end B has a positive rotation about the x-axis of end A """
+        """Torsion moment [kNm]. Positive if end B has a positive rotation about the x-axis of end A
+
+         torsion is calculated at the midpoints of the beam segments.
+         """
         return self._vfNode.torsion
 
     @property
-    def torsion_angle(self):
-        """Torsion angle [deg]. Positive if end B has a positive rotation about the x-axis of end A """
-        return np.rad2deg(self._vfNode.torsion_angle)
+    def X_nodes(self):
+        """Returns the x-positions of the end nodes and internal nodes along the length of the beam [m]"""
+        return self._vfNode.x
 
-    def give_python_code(self):
+    @property
+    def X_midpoints(self):
+        """X-positions of the beam centers measured along the length of the beam [m]"""
+        return tuple(0.5 * (np.array(self._vfNode.x[:-1]) + np.array(self._vfNode.x[1:])))
+
+    @property
+    def global_positions(self):
+        """Global-positions of the end nodes and internal nodes [m,m,m]"""
+        return np.array(self._vfNode.global_position, dtype=float)
+
+    @property
+    def global_orientations(self):
+        """Global-orientations of the end nodes and internal nodes [deg,deg,deg]"""
+        return np.rad2deg(self._vfNode.global_orientation)
+
+    @property
+    def bending(self):
+        """Bending forces of the end nodes and internal nodes [0, kNm, kNm]"""
+        return np.array(self._vfNode.bending)
+
+
+
+def give_python_code(self):
         code = "# code for linear beam {}".format(self.name)
 
         code += "\ns.new_linear_beam(name='{}',".format(self.name)
@@ -6100,7 +6138,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_linear_beam(self, name, nodeA, nodeB, EIy=0, EIz=0, GIp=0, EA=0, L=None, mass = 0)->LinearBeam:
+    def new_linear_beam(self, name, nodeA, nodeB, EIy=0, EIz=0, GIp=0, EA=0, L=None, mass = 0, n_segments=1)->LinearBeam:
         """Creates a new *linear beam* node and adds it to the scene.
 
         Args:
@@ -6154,6 +6192,7 @@ class Scene:
         new_node.EA = EA
         new_node.L = L
         new_node.mass = mass
+        new_node.nSegments = n_segments
 
         self._nodes.append(new_node)
         return new_node

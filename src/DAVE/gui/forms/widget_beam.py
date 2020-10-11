@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_beam.ui',
 # licensing of 'widget_beam.ui' applies.
 #
-# Created: Mon Aug  3 20:56:04 2020
+# Created: Sun Oct 11 13:30:35 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -23,16 +23,6 @@ class Ui_widget_beam(object):
         self.frmMasterSlave.setObjectName("frmMasterSlave")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.frmMasterSlave)
         self.gridLayout_2.setObjectName("gridLayout_2")
-        self.label_9 = QtWidgets.QLabel(self.frmMasterSlave)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label_9.sizePolicy().hasHeightForWidth())
-        self.label_9.setSizePolicy(sizePolicy)
-        self.label_9.setMinimumSize(QtCore.QSize(80, 0))
-        self.label_9.setMaximumSize(QtCore.QSize(80, 16777215))
-        self.label_9.setObjectName("label_9")
-        self.gridLayout_2.addWidget(self.label_9, 0, 0, 1, 1)
         self.cbMasterAxis = QtWidgets.QComboBox(self.frmMasterSlave)
         self.cbMasterAxis.setObjectName("cbMasterAxis")
         self.gridLayout_2.addWidget(self.cbMasterAxis, 0, 1, 1, 1)
@@ -46,6 +36,16 @@ class Ui_widget_beam(object):
         self.label_10.setMaximumSize(QtCore.QSize(60, 16777215))
         self.label_10.setObjectName("label_10")
         self.gridLayout_2.addWidget(self.label_10, 0, 2, 1, 1)
+        self.label_9 = QtWidgets.QLabel(self.frmMasterSlave)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_9.sizePolicy().hasHeightForWidth())
+        self.label_9.setSizePolicy(sizePolicy)
+        self.label_9.setMinimumSize(QtCore.QSize(80, 0))
+        self.label_9.setMaximumSize(QtCore.QSize(80, 16777215))
+        self.label_9.setObjectName("label_9")
+        self.gridLayout_2.addWidget(self.label_9, 0, 0, 1, 1)
         self.label_11 = QtWidgets.QLabel(self.frmMasterSlave)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -69,6 +69,17 @@ class Ui_widget_beam(object):
         self.label_12.setMaximumSize(QtCore.QSize(60, 16777215))
         self.label_12.setObjectName("label_12")
         self.gridLayout_2.addWidget(self.label_12, 1, 2, 1, 1)
+        self.sbnSegments = QtWidgets.QSpinBox(self.frmMasterSlave)
+        self.sbnSegments.setMinimum(1)
+        self.sbnSegments.setMaximum(1000)
+        self.sbnSegments.setObjectName("sbnSegments")
+        self.gridLayout_2.addWidget(self.sbnSegments, 2, 1, 1, 1)
+        self.label_19 = QtWidgets.QLabel(self.frmMasterSlave)
+        self.label_19.setObjectName("label_19")
+        self.gridLayout_2.addWidget(self.label_19, 2, 0, 1, 1)
+        self.label_20 = QtWidgets.QLabel(self.frmMasterSlave)
+        self.label_20.setObjectName("label_20")
+        self.gridLayout_2.addWidget(self.label_20, 2, 2, 1, 1)
         self.verticalLayout.addWidget(self.frmMasterSlave)
         self.label_7 = QtWidgets.QLabel(widget_beam)
         self.label_7.setWordWrap(True)
@@ -202,11 +213,13 @@ class Ui_widget_beam(object):
 
     def retranslateUi(self, widget_beam):
         widget_beam.setWindowTitle(QtWidgets.QApplication.translate("widget_beam", "Form", None, -1))
-        self.label_9.setText(QtWidgets.QApplication.translate("widget_beam", "Left connection", None, -1))
         self.label_10.setText(QtWidgets.QApplication.translate("widget_beam", "[axis]", None, -1))
+        self.label_9.setText(QtWidgets.QApplication.translate("widget_beam", "Left connection", None, -1))
         self.label_11.setText(QtWidgets.QApplication.translate("widget_beam", "Right connection", None, -1))
         self.label_12.setText(QtWidgets.QApplication.translate("widget_beam", "[axis]", None, -1))
-        self.label_7.setText(QtWidgets.QApplication.translate("widget_beam", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Properties</span></p></body></html>", None, -1))
+        self.label_19.setText(QtWidgets.QApplication.translate("widget_beam", "Number of Segments", None, -1))
+        self.label_20.setText(QtWidgets.QApplication.translate("widget_beam", "[-]", None, -1))
+        self.label_7.setText(QtWidgets.QApplication.translate("widget_beam", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Properties [total beam]</span></p></body></html>", None, -1))
         self.label_6.setText(QtWidgets.QApplication.translate("widget_beam", "[m]", None, -1))
         self.label_13.setText(QtWidgets.QApplication.translate("widget_beam", "[kN*m2]", None, -1))
         self.label_14.setText(QtWidgets.QApplication.translate("widget_beam", "[kN*m2]", None, -1))
