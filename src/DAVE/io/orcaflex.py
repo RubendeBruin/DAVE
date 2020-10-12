@@ -19,6 +19,9 @@ from DAVE import *
 from pathlib import Path
 from warnings import warn
 from shutil import copyfile
+from collections import OrderedDict
+
+
 
 def write_ofx_run_and_collect_script(py_file, yml_file, ofx_path=None):
     """Creates a .py file which will run the given orcaflex model (yml_file) and extract its data after solving statics.
@@ -106,9 +109,11 @@ import yaml
 from scipy.spatial.transform import Rotation
 
 OFX_ZERO_MASS = 1e-6
+OFX_SMALL = 1e-9
 RHO = 1.025
 G = 9.81
 
+# ============================= DAVE - Orcaflex angle conversion functions ============================
 
 def rotation_to_attitude(rotation):
     """Converts a rotation vector to orcaflex attitudes (rotation 1,2,3) [deg]"""
@@ -121,6 +126,49 @@ def attitude_to_rotvec(rot123):
     rx, ry, rz = rot123
     r = Rotation.from_euler(angles = (rz,ry,rx), seq='zyx', degrees=True)
     return np.degrees(r.as_rotvec())
+
+
+def attitude_to_az_dec_gam(attitude):
+    (S1, S2, S3) = np.sin(attitude)
+    (C1, C2, C3) = np.cos(attitude)
+    orientation = np.array([
+        [C2 * C3, C1 * S3 + S1 * S2 * C3, S1 * S3 - C1 * S2 * C3],
+        [-C2 * S3, C1 * C3 - S1 * S2 * S3, S1 * C3 + C1 * S2 * S3],
+        [S2, -S1 * C2, C1 * C2]
+    ])
+
+    return rotmat_to_az_dec_gam(orientation)
+
+def rotmat_to_az_dec_gam(orientation):
+
+    Rx = np.arctan2(+orientation[2][1], +orientation[2][0])  # = azimuth(+orientation[2]) [0,2*pi]
+    cosDeclination = +orientation[2][2]
+    Ry = np.arccos(cosDeclination)  # [0,pi]
+    if abs(cosDeclination) < 1.0 / 2.0 ** 0.5:
+        Rz = np.arctan2(+orientation[1][2], -orientation[0][2])  # [-pi,pi]
+    else:
+        cosAzimuth, sinAzimuth = np.cos(Rx), np.sin(Rx)
+        Rz = np.arctan2(
+            -(cosAzimuth * orientation[1][0] + sinAzimuth * orientation[1][1]) / cosDeclination,
+            +(cosAzimuth * orientation[0][0] + sinAzimuth * orientation[0][1]) / cosDeclination
+        )  # [-pi,pi]
+
+    return (float(np.rad2deg(Rx)), float(np.rad2deg(Ry)), float(np.rad2deg(Rz)))
+
+def rotvec_to_line_node_axis_az_dec_gam(rotvec):
+    r = Rotation.from_rotvec(np.deg2rad(rotvec))
+    m = r.as_dcm()
+
+    # re-arrange the matrix such that
+    # x -> z; y -> x ; z ->y
+    x = m[:,0]
+    y = m[:,1]
+    z = m[:,2]
+    ml = np.vstack((y,z,x)).transpose()
+
+    return rotmat_to_az_dec_gam(ml)
+# =====================================================================================================================
+
 
 def export_ofx_yml(s, filename):
     """Convert the scene to a orcaflex .yml file. Only compatible nodes are exported. Make the scene  orcaflex compatible before exporting.
@@ -144,6 +192,8 @@ def export_ofx_yml(s, filename):
     vessel_types = []
     vessels = []
     Shapes = []
+    line_types = []
+    lines = []
 
     for n in s._nodes:
 
@@ -615,6 +665,85 @@ def export_ofx_yml(s, filename):
             else:
                 warn(f'Only .obj files can be used in orcaflex, not exporting visual "{n.name}"')
 
+        if isinstance(n, LinearBeam):
+            # line-type
+            typename = f"LT_for_{n.name}"
+            mass_per_length = n.mass / n.L
+            if mass_per_length < OFX_SMALL:
+                print(f'Mass per length for {n.name} set to {OFX_SMALL}')
+                mass_per_length = OFX_SMALL
+
+            lt = {'Name' : typename,
+                  'OD' : OFX_SMALL,
+                  'ID' : 0,
+                  'MassPerUnitLength' : mass_per_length,
+                  'EIx': n.EIy,
+                  'EIy' : n.EIz,
+                  'GJ': n.GIp,
+                  'EA': n.EA }
+            line_types.append(lt)
+
+            line = OrderedDict({'Name':n.name,
+                    'EndAConnection':n.nodeA.name,
+                    'EndAX': 0,
+                    'EndAY': 0,
+                    'EndAZ': 0,
+                    'EndAAzimuth' : 0,
+                    'EndADeclination' : 90,
+                    'EndBConnection': n.nodeB.name,
+                    'EndBX': 0,
+                    'EndBY': 0,
+                    'EndBZ': 0,
+                    'EndBAzimuth': 0,
+                    'EndBDeclination': 90,
+                    'EndAxBendingStiffness' : 'Infinity',
+                    'EndBxBendingStiffness' : 'Infinity',
+                    'EndAyBendingStiffness' : 'Infinity',
+                    'EndByBendingStiffness' : 'Infinity',
+                    'NumberOfSections':1,
+                    'LineType[1]' : typename,
+                    'Length[1]' : n.L,
+                    'TargetSegmentLength[1]' : '~',
+                    'StaticsStep1':'User specified'
+                    })
+
+            do_torsion = n.GIp > 0
+
+            if do_torsion:
+                line['IncludeTorsion'] = 'Yes'
+                line['EndATwistingStiffness'] = 'Infinity'
+                line['EndBTwistingStiffness'] = 'Infinity'
+                line['StartingShapeOrientationsSpecified'] = 'Yes'
+
+            line['NumberOfSegments[1]'] = int(n.nSegments)
+
+            pos = n.global_positions
+            xx = pos[:,0]
+            yy = pos[:,1]
+            zz = pos[:,2]
+            line['StartingShapeX'] = xx.tolist()
+            line['StartingShapeY'] = yy.tolist()
+            line['StartingShapeZ'] = zz.tolist()
+
+            if do_torsion:
+                rot = n.global_orientations
+                rx = []
+                ry = []
+                rz = []
+                for r in rot:
+                    azdecgam = rotvec_to_line_node_axis_az_dec_gam(r)
+                    rx.append(azdecgam[0])
+                    ry.append(azdecgam[1])
+                    rz.append(azdecgam[2])
+                line['StartingShapeAzm'] = rx
+                line['StartingShapeDec'] = ry
+                line['StartingShapeGamma'] = rz
+
+            lines.append(line)
+
+
+
+
 
     # Write the yml
 
@@ -632,8 +761,19 @@ def export_ofx_yml(s, filename):
         data['Vessels'] = vessels
     if Shapes:
         data['Shapes'] = Shapes
+    if line_types:
+        data['LineTypes'] = line_types
+    if lines:
+        data['Lines'] = lines
 
-    s = yaml.dump(data, explicit_start=True)
+    from yaml import CDumper as Dumper
+
+    def dict_representer(dumper, data):
+        return dumper.represent_dict(data.items())
+
+    Dumper.add_representer(OrderedDict, dict_representer)
+
+    s = yaml.dump(data, explicit_start=True, Dumper=Dumper)
 
     with open(filename,'w') as f:
         f.write(s)

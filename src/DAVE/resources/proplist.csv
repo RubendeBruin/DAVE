@@ -26,7 +26,7 @@ Axis,fixed,False,"Determines which of the six degrees of freedom are fixed, if a
         "
 Axis,x,False,The x-component of the position vector (parent axis) [m]
 Axis,y,False,The y-component of the position vector (parent axis) [m]
-Axis,z,False,The y-component of the position vector (parent axis) [m]
+Axis,z,False,The z-component of the position vector (parent axis) [m]
 Axis,position,False,"Position of the axis (parent axis) [m,m,m]
 
         These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)"
@@ -130,7 +130,7 @@ BallastSystem,cogx,True,X position of combined CoG of all tank contents in the b
 BallastSystem,cogy,True,Y position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]
 BallastSystem,cogz,True,Z position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]
 BallastSystem,cog,True,"Combined CoG of all tank contents in the ballast-system. (local coordinate) [m,m,m]"
-BallastSystem,weight,True,Total weight of all tank fillings in the ballast system [mT]
+BallastSystem,weight,True,Total weight of all tank fillings in the ballast system [kN]
 Buoyancy,trimesh,True,
 Buoyancy,cob,True,"GLOBAL position of the center of buoyancy [m,m,m] (global axis)"
 Buoyancy,cob_local,True,"Position of the center of buoyancy [m,m,m] (local axis)"
@@ -282,6 +282,7 @@ HydSpring,displacement_kN,False,Displacement when waterline is at waterline-elev
 LC6d,stiffness,False,"Stiffness of the connector: kx, ky, kz, krx, kry, krz in [kN/m and kNm/rad] (axis system of the main axis)"
 LC6d,main,False,Main axis system. This axis system dictates the axis system that the stiffness is expressed in
 LC6d,secondary,False,Secondary (connected) axis system
+LinearBeam,nSegments,False,
 LinearBeam,EIy,False,"E * Iyy : bending stiffness in the XZ plane [kN m2]
 
         E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
@@ -309,9 +310,19 @@ LinearBeam,nodeA,False,The axis system that the A-end of the beam is connected t
 LinearBeam,nodeB,False,The axis system that the B-end of the beam is connected to. The beam arrives at this axis system along the X-axis
 LinearBeam,moment_A,True,"Moment on beam at node A (kNm, kNm, kNm) , axis system of node A"
 LinearBeam,moment_B,True,"Moment on beam at node B (kNm, kNm, kNm) , axis system of node B"
-LinearBeam,tension,True,"Tension in the beam [kN], negative for compression"
-LinearBeam,torsion,True,Torsion moment [kNm]. Positive if end B has a positive rotation about the x-axis of end A 
-LinearBeam,torsion_angle,True,Torsion angle [deg]. Positive if end B has a positive rotation about the x-axis of end A 
+LinearBeam,tension,True,"Tension in the beam [kN], negative for compression
+
+        tension is calculated at the midpoints of the beam segments.
+        "
+LinearBeam,torsion,True,"Torsion moment [kNm]. Positive if end B has a positive rotation about the x-axis of end A
+
+         torsion is calculated at the midpoints of the beam segments.
+         "
+LinearBeam,X_nodes,True,Returns the x-positions of the end nodes and internal nodes along the length of the beam [m]
+LinearBeam,X_midpoints,True,X-positions of the beam centers measured along the length of the beam [m]
+LinearBeam,global_positions,True,"Global-positions of the end nodes and internal nodes [m,m,m]"
+LinearBeam,global_orientations,True,"Global-orientations of the end nodes and internal nodes [deg,deg,deg]"
+LinearBeam,bending,True,"Bending forces of the end nodes and internal nodes [0, kNm, kNm]"
 Node,visible,False,
 Node,manager,False,
 Node,name,False,"Name of the node (str), must be unique"

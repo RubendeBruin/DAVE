@@ -210,12 +210,12 @@ PROPS_AXIS = ['global_position','global_rotation','applied_force','connection_fo
               'connection_force_x','connection_force_y','connection_force_z','connection_moment_x','connection_moment_y','connection_moment_z',
               'tilt_x','heel','tilt_y','trim','heading','heading_compass']
 PROPS_POI = ['global_position','applied_force_and_moment_global','x','y','z','gx','gy','gz']
-PROPS_CABLE = ['tension','stretch']
+PROPS_CABLE = ['tension','stretch','length']
 PROPS_FORCE = ['force','fx','fy','fz','moment','mx','my','mz']
 PROPS_CON2D = ['angle','moment','force','ax','ay','az']
 PROPS_BODY = ['cog', 'cogx', 'cogy', 'cogz', 'mass']
 PROPS_BUOY_MESH = ['cob', 'displacement', 'cob_local']
-PROPS_LINEARBEAM = ['tension','torsion','moment_on_nodeA','moment_on_nodeB']
+PROPS_LINEARBEAM = ['tension','torsion']
 PROPS_CONTACTBALL = ['can_contact','contactpoint','force']
 
 # ======= Animate after solving =========
