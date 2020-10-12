@@ -715,7 +715,7 @@ def export_ofx_yml(s, filename):
                 line['EndBTwistingStiffness'] = 'Infinity'
                 line['StartingShapeOrientationsSpecified'] = 'Yes'
 
-            line['NumberOfSegments[1]'] = int(n.nSegments)
+            line['NumberOfSegments[1]'] = int(n.n_segments)
 
             pos = n.global_positions
             xx = pos[:,0]

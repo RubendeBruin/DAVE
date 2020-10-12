@@ -2316,14 +2316,16 @@ class LinearBeam(CoreConnectedNode):
         return [self._nodeA, self._nodeB]
 
     @property
-    def nSegments(self):
+    def n_segments(self):
         return self._vfNode.nSegments
 
-    @nSegments.setter
+    @n_segments.setter
     @node_setter_manageable
     @node_setter_observable
-    def nSegments(self, value):
-        self._vfNode.nSegments = round(value)
+    def n_segments(self, value):
+        if value<1:
+            raise ValueError('Number of segments in beam should be 1 or more')
+        self._vfNode.nSegments = int(value)
 
     @property
     def EIy(self):
@@ -6192,7 +6194,7 @@ class Scene:
         new_node.EA = EA
         new_node.L = L
         new_node.mass = mass
-        new_node.nSegments = n_segments
+        new_node.n_segments = n_segments
 
         self._nodes.append(new_node)
         return new_node

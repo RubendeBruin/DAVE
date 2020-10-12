@@ -1249,7 +1249,7 @@ class EditBeam(NodeEditor):
         ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
         ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
 
-        ui.sbnSegments.setValue(self.node.nSegments)
+        ui.sbnSegments.setValue(self.node.n_segments)
 
         ui.doubleSpinBox_1.setValue(self.node.L)
         ui.doubleSpinBox_2.setValue(self.node.EIy)
@@ -1315,8 +1315,8 @@ class EditBeam(NodeEditor):
         if not new_slave == self.node.nodeB.name:
             code += element + '.nodeB = s["{}"]'.format(new_slave)
 
-        if not new_n == self.node.nSegments:
-            code += element + '.nSegments = {}'.format(new_n)
+        if not new_n == self.node.n_segments:
+            code += element + '.n_segments = {}'.format(new_n)
 
         return code
 
