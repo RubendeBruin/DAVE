@@ -1230,6 +1230,7 @@ class EditBeam(NodeEditor):
             ui.doubleSpinBox_4.valueChanged.disconnect()
             ui.doubleSpinBox_5.valueChanged.disconnect()
             ui.sbMass.valueChanged.disconnect()
+            ui.cbTensionOnly.stateChanged.disconnect()
 
             ui.cbMasterAxis.currentIndexChanged.disconnect()
             ui.cbSlaveAxis.currentIndexChanged.disconnect()
@@ -1258,6 +1259,8 @@ class EditBeam(NodeEditor):
         ui.doubleSpinBox_4.setValue(self.node.GIp)
         ui.doubleSpinBox_5.setValue(self.node.EA)
 
+        ui.cbTensionOnly.setChecked(self.node.tension_only)
+
         ui.sbMass.setValue(self.node.mass)
 
         ui.doubleSpinBox_1.valueChanged.connect(self.callback)
@@ -1266,6 +1269,7 @@ class EditBeam(NodeEditor):
         ui.doubleSpinBox_4.valueChanged.connect(self.callback)
         ui.doubleSpinBox_5.valueChanged.connect(self.callback)
         ui.sbMass.valueChanged.connect(self.callback)
+        ui.cbTensionOnly.stateChanged.connect(self.callback)
 
         ui.cbMasterAxis.currentIndexChanged.connect(self.callback)
         ui.cbSlaveAxis.currentIndexChanged.connect(self.callback)
@@ -1287,6 +1291,7 @@ class EditBeam(NodeEditor):
         new_EA = self.ui.doubleSpinBox_5.value()
         new_mass = self.ui.sbMass.value()
         new_n = self.ui.sbnSegments.value()
+        new_tensiononly = self.ui.cbTensionOnly.isChecked()
 
         new_master = self.ui.cbMasterAxis.currentText()
         new_slave = self.ui.cbSlaveAxis.currentText()
@@ -1317,6 +1322,9 @@ class EditBeam(NodeEditor):
 
         if not new_n == self.node.n_segments:
             code += element + '.n_segments = {}'.format(new_n)
+
+        if not new_tensiononly == self.node.tension_only:
+            code += element + '.tension_only = {}'.format(new_tensiononly)
 
         return code
 

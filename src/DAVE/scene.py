@@ -2392,6 +2392,21 @@ class LinearBeam(CoreConnectedNode):
         self._vfNode.EA = value
 
     @property
+    def tension_only(self):
+        """axial stiffness (EA) only applicable to tension [True/False]
+        """
+        return self._vfNode.tensionOnly
+
+    @tension_only.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def tension_only(self, value):
+        assert isinstance(value, bool), ValueError("Value for tension_only shall be True or False")
+        self._vfNode.tensionOnly = value
+
+
+
+    @property
     def mass(self):
         """Mass of the beam in [mT]
         """
