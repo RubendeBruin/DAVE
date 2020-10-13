@@ -788,7 +788,7 @@ class Viewport:
                 a.actor_type = ActorType.CABLE
                 actors.append(a)
 
-            if isinstance(N, vf.LinearBeam):
+            if isinstance(N, vf.Beam):
 
                 gp = N.global_positions
 
@@ -947,7 +947,7 @@ class Viewport:
 
                 continue
 
-            if isinstance(V.node, vf.LinearBeam):
+            if isinstance(V.node, vf.Beam):
 
                 points = V.node.global_positions
                 A = V.actors[0]

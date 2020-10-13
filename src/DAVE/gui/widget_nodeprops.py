@@ -2001,7 +2001,7 @@ class WidgetNodeProps(guiDockWidget):
         if isinstance(node, vfs.Connector2d):
             self._node_editors.append(EditConnector2d(node, self.node_property_changed, self.guiScene, self.run_code))
 
-        if isinstance(node, vfs.LinearBeam):
+        if isinstance(node, vfs.Beam):
             self._node_editors.append(EditBeam(node, self.node_property_changed, self.guiScene, self.run_code))
 
         if isinstance(node, vfs.ContactBall):

@@ -131,6 +131,49 @@ BallastSystem,cogy,True,Y position of combined CoG of all tank contents in the b
 BallastSystem,cogz,True,Z position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]
 BallastSystem,cog,True,"Combined CoG of all tank contents in the ballast-system. (local coordinate) [m,m,m]"
 BallastSystem,weight,True,Total weight of all tank fillings in the ballast system [kN]
+Beam,n_segments,False,
+Beam,EIy,False,"E * Iyy : bending stiffness in the XZ plane [kN m2]
+
+        E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
+        Iyy is the cross section moment of inertia [m4]
+        "
+Beam,EIz,False,"E * Izz : bending stiffness in the XY plane [kN m2]
+
+        E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
+        Iyy is the cross section moment of inertia [m4]
+        "
+Beam,GIp,False,"G * Ipp : torsional stiffness about the X (length) axis [kN m2]
+
+        G is the shear-modulus of elasticity; for steel 75-80 GPa (10^6 kN/m2)
+        Ip is the cross section polar moment of inertia [m4]
+        "
+Beam,EA,False,"E * A : stiffness in the length direction [kN]
+
+        E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
+        A is the cross-section area in [m2]
+        "
+Beam,tension_only,False,"axial stiffness (EA) only applicable to tension [True/False]
+        "
+Beam,mass,False,"Mass of the beam in [mT]
+        "
+Beam,L,False,Length of the beam in unloaded condition [m]
+Beam,nodeA,False,The axis system that the A-end of the beam is connected to. The beam leaves this axis system along the X-axis
+Beam,nodeB,False,The axis system that the B-end of the beam is connected to. The beam arrives at this axis system along the X-axis
+Beam,moment_A,True,"Moment on beam at node A (kNm, kNm, kNm) , axis system of node A"
+Beam,moment_B,True,"Moment on beam at node B (kNm, kNm, kNm) , axis system of node B"
+Beam,tension,True,"Tension in the beam [kN], negative for compression
+
+        tension is calculated at the midpoints of the beam segments.
+        "
+Beam,torsion,True,"Torsion moment [kNm]. Positive if end B has a positive rotation about the x-axis of end A
+
+         torsion is calculated at the midpoints of the beam segments.
+         "
+Beam,X_nodes,True,Returns the x-positions of the end nodes and internal nodes along the length of the beam [m]
+Beam,X_midpoints,True,X-positions of the beam centers measured along the length of the beam [m]
+Beam,global_positions,True,"Global-positions of the end nodes and internal nodes [m,m,m]"
+Beam,global_orientations,True,"Global-orientations of the end nodes and internal nodes [deg,deg,deg]"
+Beam,bending,True,"Bending forces of the end nodes and internal nodes [0, kNm, kNm]"
 Buoyancy,trimesh,True,
 Buoyancy,cob,True,"GLOBAL position of the center of buoyancy [m,m,m] (global axis)"
 Buoyancy,cob_local,True,"Position of the center of buoyancy [m,m,m] (local axis)"
@@ -282,47 +325,6 @@ HydSpring,displacement_kN,False,Displacement when waterline is at waterline-elev
 LC6d,stiffness,False,"Stiffness of the connector: kx, ky, kz, krx, kry, krz in [kN/m and kNm/rad] (axis system of the main axis)"
 LC6d,main,False,Main axis system. This axis system dictates the axis system that the stiffness is expressed in
 LC6d,secondary,False,Secondary (connected) axis system
-LinearBeam,nSegments,False,
-LinearBeam,EIy,False,"E * Iyy : bending stiffness in the XZ plane [kN m2]
-
-        E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
-        Iyy is the cross section moment of inertia [m4]
-        "
-LinearBeam,EIz,False,"E * Izz : bending stiffness in the XY plane [kN m2]
-
-        E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
-        Iyy is the cross section moment of inertia [m4]
-        "
-LinearBeam,GIp,False,"G * Ipp : torsional stiffness about the X (length) axis [kN m2]
-
-        G is the shear-modulus of elasticity; for steel 75-80 GPa (10^6 kN/m2)
-        Ip is the cross section polar moment of inertia [m4]
-        "
-LinearBeam,EA,False,"E * A : stiffness in the length direction [kN]
-
-        E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
-        A is the cross-section area in [m2]
-        "
-LinearBeam,mass,False,"Mass of the beam in [mT]
-        "
-LinearBeam,L,False,Length of the beam in unloaded condition [m]
-LinearBeam,nodeA,False,The axis system that the A-end of the beam is connected to. The beam leaves this axis system along the X-axis
-LinearBeam,nodeB,False,The axis system that the B-end of the beam is connected to. The beam arrives at this axis system along the X-axis
-LinearBeam,moment_A,True,"Moment on beam at node A (kNm, kNm, kNm) , axis system of node A"
-LinearBeam,moment_B,True,"Moment on beam at node B (kNm, kNm, kNm) , axis system of node B"
-LinearBeam,tension,True,"Tension in the beam [kN], negative for compression
-
-        tension is calculated at the midpoints of the beam segments.
-        "
-LinearBeam,torsion,True,"Torsion moment [kNm]. Positive if end B has a positive rotation about the x-axis of end A
-
-         torsion is calculated at the midpoints of the beam segments.
-         "
-LinearBeam,X_nodes,True,Returns the x-positions of the end nodes and internal nodes along the length of the beam [m]
-LinearBeam,X_midpoints,True,X-positions of the beam centers measured along the length of the beam [m]
-LinearBeam,global_positions,True,"Global-positions of the end nodes and internal nodes [m,m,m]"
-LinearBeam,global_orientations,True,"Global-orientations of the end nodes and internal nodes [deg,deg,deg]"
-LinearBeam,bending,True,"Bending forces of the end nodes and internal nodes [0, kNm, kNm]"
 Node,visible,False,
 Node,manager,False,
 Node,name,False,"Name of the node (str), must be unique"

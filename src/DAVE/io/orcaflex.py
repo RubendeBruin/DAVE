@@ -665,7 +665,7 @@ def export_ofx_yml(s, filename):
             else:
                 warn(f'Only .obj files can be used in orcaflex, not exporting visual "{n.name}"')
 
-        if isinstance(n, LinearBeam):
+        if isinstance(n, Beam):
             # line-type
             typename = f"LT_for_{n.name}"
             mass_per_length = n.mass / n.L

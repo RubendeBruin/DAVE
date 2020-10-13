@@ -228,7 +228,7 @@ class WidgetNodeTree(guiDockWidget):
                 item.setIcon(0,QIcon(":/icons/lincon6.png"))
             elif isinstance(node, ds.Connector2d):
                 item.setIcon(0,QIcon(":/icons/con2d.png"))
-            elif isinstance(node, ds.LinearBeam):
+            elif isinstance(node, ds.Beam):
                 item.setIcon(0,QIcon(":/icons/beam.png"))
             elif isinstance(node, ds.HydSpring):
                 item.setIcon(0,QIcon(":/icons/linhyd.png"))

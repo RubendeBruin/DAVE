@@ -620,7 +620,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
             code += '\nadd_line(points, diameter={}, name = "{}")'.format(dia, cable.name)
 
-    for beam in scene.nodes_of_type(dc.LinearBeam):
+    for beam in scene.nodes_of_type(dc.Beam):
 
         points = beam.global_positions
 

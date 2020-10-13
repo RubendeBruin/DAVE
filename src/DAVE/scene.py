@@ -2274,7 +2274,7 @@ class Connector2d(CoreConnectedNode):
 
         return code
 
-class LinearBeam(CoreConnectedNode):
+class Beam(CoreConnectedNode):
     """A LinearBeam models a FEM-like linear beam element.
 
     A LinearBeam node connects two Axis elements
@@ -2521,14 +2521,13 @@ class LinearBeam(CoreConnectedNode):
         """Bending forces of the end nodes and internal nodes [0, kNm, kNm]"""
         return np.array(self._vfNode.bending)
 
-
-
-def give_python_code(self):
-        code = "# code for linear beam {}".format(self.name)
-
-        code += "\ns.new_linear_beam(name='{}',".format(self.name)
+    def give_python_code(self):
+        code = "# code for beam {}".format(self.name)
+        code += "\ns.new_beam(name='{}',".format(self.name)
         code += "\n            nodeA='{}',".format(self.nodeA.name)
         code += "\n            nodeB='{}',".format(self.nodeB.name)
+        code += "\n            n_segments='{}',".format(self.n_segments)
+        code += "\n            tension_only={},".format(self.tension_only)
         code += "\n            EIy ={},".format(self.EIy)
         code += "\n            EIz ={},".format(self.EIz)
         code += "\n            GIp ={},".format(self.GIp)
@@ -6155,8 +6154,8 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_linear_beam(self, name, nodeA, nodeB, EIy=0, EIz=0, GIp=0, EA=0, L=None, mass = 0, n_segments=1)->LinearBeam:
-        """Creates a new *linear beam* node and adds it to the scene.
+    def new_beam(self, name, nodeA, nodeB, EIy=0, EIz=0, GIp=0, EA=0, L=None, mass = 0, n_segments=1,tension_only=False)->Beam:
+        """Creates a new *beam* node and adds it to the scene.
 
         Args:
             name: Name for the node, should be unique
@@ -6193,12 +6192,15 @@ class Scene:
         assert1f_positive_or_zero(EIz,"EIz should be >= 0")
         assert1f_positive_or_zero(GIp,"GIp should be >= 0")
         assert1f_positive_or_zero(EA,"EA should be >= 0")
+        assertBool(tension_only, "tension_only should be bool")
         assert1f(mass, "Mass shall be a number")
+        n_segments = int(n_segments)
+
 
         # then create
         a = self._vfc.new_linearbeam(name)
 
-        new_node = LinearBeam(self, a)
+        new_node = Beam(self, a)
 
         # and set properties
         new_node.nodeA = m
@@ -6210,6 +6212,7 @@ class Scene:
         new_node.L = L
         new_node.mass = mass
         new_node.n_segments = n_segments
+        new_node.tension_only = tension_only
 
         self._nodes.append(new_node)
         return new_node
