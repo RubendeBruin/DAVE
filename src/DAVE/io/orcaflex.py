@@ -167,6 +167,14 @@ def rotvec_to_line_node_axis_az_dec_gam(rotvec):
     ml = np.vstack((y,z,x)).transpose()
 
     return rotmat_to_az_dec_gam(ml)
+
+
+def yesno(b):
+    if b:
+        return 'Yes'
+    else:
+        return 'No'
+
 # =====================================================================================================================
 
 
@@ -680,6 +688,7 @@ def export_ofx_yml(s, filename):
                   'EIx': n.EIy,
                   'EIy' : n.EIz,
                   'GJ': n.GIp,
+                  'CompressionIsLimited': yesno(n.tension_only),
                   'EA': n.EA }
             line_types.append(lt)
 
@@ -891,27 +900,27 @@ def compare_statics(s, ofx_sum):
 
     return results
 
-
-if __name__ == "__main__":
-    s = Scene('barge with linear hydrostatics.dave')
-    s.solve_statics()
-
-    yml_filename = r"c:\data\barge.yml"
-    export_ofx_yml(s, yml_filename)
-
-    py_file = r"c:\data\run_barge.py"
-
-    ofx_api_path = r'C:\Program Files (x86)\Orcina\OrcaFlex\10.2\OrcFxAPI\Python'
-
-    write_ofx_run_and_collect_script(py_file=py_file, yml_file=yml_filename, ofx_path=ofx_api_path)
-
-    results = compare_statics(s, r"I:\barge_sum.yml")
-
-    import pandas as pd
-
-    df = pd.DataFrame.from_dict(results)
-
-    print(df)
+#
+# if __name__ == "__main__":
+#     s = Scene('barge with linear hydrostatics.dave')
+#     s.solve_statics()
+#
+#     yml_filename = r"c:\data\barge.yml"
+#     export_ofx_yml(s, yml_filename)
+#
+#     py_file = r"c:\data\run_barge.py"
+#
+#     ofx_api_path = r'C:\Program Files (x86)\Orcina\OrcaFlex\10.2\OrcFxAPI\Python'
+#
+#     write_ofx_run_and_collect_script(py_file=py_file, yml_file=yml_filename, ofx_path=ofx_api_path)
+#
+#     results = compare_statics(s, r"I:\barge_sum.yml")
+#
+#     import pandas as pd
+#
+#     df = pd.DataFrame.from_dict(results)
+#
+#     print(df)
 
 
 

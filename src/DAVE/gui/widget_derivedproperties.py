@@ -116,7 +116,7 @@ class WidgetDerivedProperties(guiDockWidget):
         if isinstance(node, nodes.Buoyancy):
             props.extend(ds.PROPS_BUOY_MESH)
         if isinstance(node, nodes.Beam):
-            props.extend(ds.PROPS_LINEARBEAM)
+            props.extend(ds.PROPS_BEAM)
         if isinstance(node, nodes.Force):
             props.extend(ds.PROPS_FORCE)
         if isinstance(node, nodes.ContactBall):

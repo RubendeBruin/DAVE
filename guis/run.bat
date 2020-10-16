@@ -1,6 +1,6 @@
 call conda activate deploy
 
-echo call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
+call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
 echo call pyside2-uic widget_modeshapes.ui -o "..\src\DAVE\gui\forms\widgetUI_modeshapes.py"
 echo call pyside2-uic widget_ballastconfiguration.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastconfiguration.py"
 echo call pyside2-uic widget_ballastsolver.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastsolver.py"
@@ -21,7 +21,7 @@ echo call pyside2-uic widget_force.ui -o "..\src\DAVE\gui\forms\widget_force.py"
 echo call pyside2-uic widget_sheave.ui -o "..\src\DAVE\gui\forms\widget_sheave.py"
 echo call pyside2-uic widget_linhyd.ui -o "..\src\DAVE\gui\forms\widget_linhyd.py"
 echo call pyside2-uic widget_lincon6.ui -o "..\src\DAVE\gui\forms\widget_lincon6.py"
-call pyside2-uic widget_beam.ui -o "..\src\DAVE\gui\forms\widget_beam.py"
+echo call pyside2-uic widget_beam.ui -o "..\src\DAVE\gui\forms\widget_beam.py"
 echo call pyside2-uic widget_shackle.ui -o "..\src\DAVE\gui\forms\widget_shackle.py"
 echo call pyside2-uic menu_nodetypes.ui -o "..\src\DAVE\gui\forms\menu_nodetypes.py"
 echo call pyside2-uic widget_con2d.ui -o "..\src\DAVE\gui\forms\widget_con2d.py"

@@ -2405,7 +2405,6 @@ class Beam(CoreConnectedNode):
         self._vfNode.tensionOnly = value
 
 
-
     @property
     def mass(self):
         """Mass of the beam in [mT]
@@ -2526,7 +2525,7 @@ class Beam(CoreConnectedNode):
         code += "\ns.new_beam(name='{}',".format(self.name)
         code += "\n            nodeA='{}',".format(self.nodeA.name)
         code += "\n            nodeB='{}',".format(self.nodeB.name)
-        code += "\n            n_segments='{}',".format(self.n_segments)
+        code += "\n            n_segments={},".format(self.n_segments)
         code += "\n            tension_only={},".format(self.tension_only)
         code += "\n            EIy ={},".format(self.EIy)
         code += "\n            EIz ={},".format(self.EIz)
@@ -6194,7 +6193,7 @@ class Scene:
         assert1f_positive_or_zero(EA,"EA should be >= 0")
         assertBool(tension_only, "tension_only should be bool")
         assert1f(mass, "Mass shall be a number")
-        n_segments = int(n_segments)
+        n_segments = int(round(n_segments))
 
 
         # then create
@@ -6828,7 +6827,16 @@ class Scene:
         """Returns a list of nodes associated with the rows/columns of M and K"""
         self.update()
         nodes = self._vfc.get_dof_elements()
-        r = [self[n.name] for n in nodes]
+
+        node_names = [n.name for n in self._nodes]
+
+        r = []
+        for n in nodes:
+            if n.name in node_names:
+                r.append(self[n.name])
+            else:
+                r.append(None)
+
         return r
 
     def dynamics_modes(self):

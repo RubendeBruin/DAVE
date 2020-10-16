@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Tue Aug  4 16:46:20 2020
+# Created: Fri Oct 16 12:56:15 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -144,6 +144,8 @@ class Ui_MainWindow(object):
         self.menubar.setObjectName("menubar")
         self.menuSolve_Statics = QtWidgets.QMenu(self.menubar)
         self.menuSolve_Statics.setObjectName("menuSolve_Statics")
+        self.menuExport = QtWidgets.QMenu(self.menuSolve_Statics)
+        self.menuExport.setObjectName("menuExport")
         self.menuView = QtWidgets.QMenu(self.menubar)
         self.menuView.setObjectName("menuView")
         self.menuLook_towards = QtWidgets.QMenu(self.menuView)
@@ -346,6 +348,15 @@ class Ui_MainWindow(object):
         self.actionCamera_reset.setObjectName("actionCamera_reset")
         self.actionShow_CoG_positions = QtWidgets.QAction(MainWindow)
         self.actionShow_CoG_positions.setObjectName("actionShow_CoG_positions")
+        self.actionBlender = QtWidgets.QAction(MainWindow)
+        self.actionBlender.setObjectName("actionBlender")
+        self.actionOrcaflex = QtWidgets.QAction(MainWindow)
+        self.actionOrcaflex.setObjectName("actionOrcaflex")
+        self.actionOrcaflex_package = QtWidgets.QAction(MainWindow)
+        self.actionOrcaflex_package.setObjectName("actionOrcaflex_package")
+        self.menuExport.addAction(self.actionBlender)
+        self.menuExport.addAction(self.actionOrcaflex)
+        self.menuExport.addAction(self.actionOrcaflex_package)
         self.menuSolve_Statics.addAction(self.actionNew)
         self.menuSolve_Statics.addSeparator()
         self.menuSolve_Statics.addAction(self.actionOpen)
@@ -354,6 +365,8 @@ class Ui_MainWindow(object):
         self.menuSolve_Statics.addSeparator()
         self.menuSolve_Statics.addAction(self.actionSave_scene)
         self.menuSolve_Statics.addAction(self.actionSave_actions_as)
+        self.menuSolve_Statics.addSeparator()
+        self.menuSolve_Statics.addAction(self.menuExport.menuAction())
         self.menuLook_towards.addAction(self.actionX)
         self.menuLook_towards.addAction(self.action_x)
         self.menuLook_towards.addAction(self.actionY)
@@ -387,6 +400,7 @@ class Ui_MainWindow(object):
         self.btnPauseAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "||", None, -1))
         self.btnStopAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "X", None, -1))
         self.menuSolve_Statics.setTitle(QtWidgets.QApplication.translate("MainWindow", "File", None, -1))
+        self.menuExport.setTitle(QtWidgets.QApplication.translate("MainWindow", "Export", None, -1))
         self.menuView.setTitle(QtWidgets.QApplication.translate("MainWindow", "View", None, -1))
         self.menuLook_towards.setTitle(QtWidgets.QApplication.translate("MainWindow", "Look in direction", None, -1))
         self.dockWidget_2.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Python engine", None, -1))
@@ -458,4 +472,8 @@ class Ui_MainWindow(object):
         self.actionLook_towards_center.setText(QtWidgets.QApplication.translate("MainWindow", "Look towards center", None, -1))
         self.actionCamera_reset.setText(QtWidgets.QApplication.translate("MainWindow", "Camera reset", None, -1))
         self.actionShow_CoG_positions.setText(QtWidgets.QApplication.translate("MainWindow", "Show CoGs", None, -1))
+        self.actionBlender.setText(QtWidgets.QApplication.translate("MainWindow", "Blender", None, -1))
+        self.actionOrcaflex.setText(QtWidgets.QApplication.translate("MainWindow", "Orcaflex .yml", None, -1))
+        self.actionOrcaflex_package.setText(QtWidgets.QApplication.translate("MainWindow", "Orcaflex run and collect package", None, -1))
 
+import DAVE.gui.forms.resources_rc

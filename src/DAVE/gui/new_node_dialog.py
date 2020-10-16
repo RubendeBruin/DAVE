@@ -336,7 +336,7 @@ def add_beam_connector(scene, selection=None):
         slave = ui.cbSlaveAxis.currentText()
         name = ui.tbName.text()
 
-        return "new_linear_beam('{}', nodeB = '{}', nodeA = '{}')".format(name, slave, master)
+        return "new_beam('{}', nodeB = '{}', nodeA = '{}')".format(name, slave, master)
 
     else:
         return None

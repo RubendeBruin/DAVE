@@ -184,12 +184,14 @@ class WidgetModeShapes(guiDockWidget):
         color = QColor.fromRgb(255 - 100 * factor, 255 - 100 * factor, 255)
 
         for b in summary:
-            rows += 1
-
             mode = b['mode']
             name = b['node'] + ' mode:' + str(mode)
-            node = self.guiScene[b['node']]
+            try:
+                node = self.guiScene[b['node']]
+            except:
+                continue
 
+            rows += 1
             self.ui.tableWidget.setRowCount(rows+1)
             self.ui.tableWidget.setVerticalHeaderItem(rows, QtWidgets.QTableWidgetItem(name))
             self.ui.tableWidget.setItem(rows, 1, QtWidgets.QTableWidgetItem('{:e}'.format(node.inertia)))

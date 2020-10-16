@@ -267,7 +267,7 @@ class Gui():
 
 
 
-        # ======================== Main Menu entries :: visuals ======
+        # ======================== Main Menu entries  ======
 
         self.ui.actionNew.triggered.connect(self.clear)
         self.ui.actionOpen.triggered.connect(self.open)
@@ -275,9 +275,12 @@ class Gui():
         self.ui.actionSave_actions_as.triggered.connect(self.menu_save_actions)
         self.ui.actionImport_sub_scene.triggered.connect(self.menu_import)
         self.ui.actionImport_browser.triggered.connect(self.import_browser)
+        self.ui.actionOrcaflex.triggered.connect(self.menu_export_orcaflex_yml)
+        self.ui.actionOrcaflex_package.triggered.connect(self.menu_export_orcaflex_package)
+        self.ui.actionBlender.triggered.connect(self.to_blender)
 
 
-        # -- visuals
+        # -- visuals --
         self.ui.actionShow_water_plane.triggered.connect(self.toggle_show_global_from_menu)
         self.ui.actionShow_force_applying_element.triggered.connect(self.toggle_show_force_applying_elements)
 
@@ -1041,6 +1044,22 @@ class Gui():
         if filename:
             code = 's.save_scene(r"{}")'.format(filename)
             self.run_code(code, guiEventType.NOTHING)
+
+    def menu_export_orcaflex_yml(self):
+        filename, _ = QFileDialog.getSaveFileName(filter="*.yml", caption="Orcaflex .yml file",directory=self.scene.resources_paths[0])
+        if filename:
+            code = 'from DAVE.io.orcaflex import export_ofx_yml\nexport_ofx_yml(s,r"{}")'.format(filename)
+            self.run_code(code, guiEventType.NOTHING)
+
+    def menu_export_orcaflex_package(self):
+        filename, _ = QFileDialog.getSaveFileName(filter="*.py", caption="Python files",directory=self.scene.resources_paths[0])
+        if filename:
+            python_file = filename
+            ofx_file = python_file + '.yml'
+            code = 'from DAVE.io.orcaflex import export_ofx_yml, write_ofx_run_and_collect_script\nexport_ofx_yml(s,r"{}")'.format(ofx_file)
+            code+= '\nwrite_ofx_run_and_collect_script(r"{}", r"{}")'.format(python_file, ofx_file)
+            self.run_code(code, guiEventType.NOTHING)
+
 
     def tidy_history(self):
         self.ui.teHistory.setText(self.give_clean_history())

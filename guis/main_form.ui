@@ -346,6 +346,14 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuExport">
+     <property name="title">
+      <string>Export</string>
+     </property>
+     <addaction name="actionBlender"/>
+     <addaction name="actionOrcaflex"/>
+     <addaction name="actionOrcaflex_package"/>
+    </widget>
     <addaction name="actionNew"/>
     <addaction name="separator"/>
     <addaction name="actionOpen"/>
@@ -354,6 +362,8 @@
     <addaction name="separator"/>
     <addaction name="actionSave_scene"/>
     <addaction name="actionSave_actions_as"/>
+    <addaction name="separator"/>
+    <addaction name="menuExport"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -913,6 +923,21 @@ p, li { white-space: pre-wrap; }
   <action name="actionShow_CoG_positions">
    <property name="text">
     <string>Show CoGs</string>
+   </property>
+  </action>
+  <action name="actionBlender">
+   <property name="text">
+    <string>Blender</string>
+   </property>
+  </action>
+  <action name="actionOrcaflex">
+   <property name="text">
+    <string>Orcaflex .yml</string>
+   </property>
+  </action>
+  <action name="actionOrcaflex_package">
+   <property name="text">
+    <string>Orcaflex run and collect package</string>
    </property>
   </action>
  </widget>

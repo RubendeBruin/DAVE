@@ -205,43 +205,58 @@ def dynamics_summary_data(scene):
         node = nodes[i]
         mode = modes[i]
 
-        if mode < 3:
-            own = node.inertia
+        if node is not None:
+
+            if mode < 3:
+                own = node.inertia
+            else:
+                pos = np.array(node.inertia_position, dtype=float)
+                pos[mode-3]=0
+                dist = np.linalg.norm(pos)
+                own = node.inertia * node.inertia_radii[mode-3]**2 + node.inertia * dist**2
+
+            total = M[i,i]
+            if abs(total-own) < 1e-9:
+                total = own
+                other = 0
+            else:
+                other = total - own
+
+            # print('Node {}; Mode {}; associated inertia {:.3f} (own) +   {:.3f} (children); associated stiffness {:.3f}'.format(node.name, mode, own, other, K[i,i]))
+
+            if K[i,i]<1e-9:
+                unc = 'X'
+            else:
+                unc = ''
+
+            if total<1e-9:
+                noi = 'X'
+            else:
+                noi = ''
+
+            info = {'node':node.name,
+                    'mode':mode,
+                    'own_inertia': own,
+                    'child_inertia':other,
+                    'total_inertia':total,
+                    'stiffness': K[i,i],
+                    'unconstrained': unc,
+                    'noinertia': noi}
+
+            summary.append(info)
+
         else:
-            pos = np.array(node.inertia_position, dtype=float)
-            pos[mode-3]=0
-            dist = np.linalg.norm(pos)
-            own = node.inertia * node.inertia_radii[mode-3]**2 + node.inertia * dist**2
+            info = {'node': 'internal node of beam',
+                    'mode': mode,
+                    'own_inertia': 0,
+                    'child_inertia': 0,
+                    'total_inertia': 0,
+                    'stiffness': 0,
+                    'unconstrained': False,
+                    'noinertia': False}
 
-        total = M[i,i]
-        if abs(total-own) < 1e-9:
-            total = own
-            other = 0
-        else:
-            other = total - own
+            summary.append(info)
 
-        # print('Node {}; Mode {}; associated inertia {:.3f} (own) +   {:.3f} (children); associated stiffness {:.3f}'.format(node.name, mode, own, other, K[i,i]))
-
-        if K[i,i]<1e-9:
-            unc = 'X'
-        else:
-            unc = ''
-
-        if total<1e-9:
-            noi = 'X'
-        else:
-            noi = ''
-
-        info = {'node':node.name,
-                'mode':mode,
-                'own_inertia': own,
-                'child_inertia':other,
-                'total_inertia':total,
-                'stiffness': K[i,i],
-                'unconstrained': unc,
-                'noinertia': noi}
-
-        summary.append(info)
 
     return summary
 
