@@ -450,10 +450,16 @@ def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
 
     # loop over nodes and modes and attach a figure to each of the nodes
 
+
+
     for i in range(len(nodes)):
 
         node = nodes[i]
-        node_name = node.name
+
+        if node is not None:
+            node_name = node.name
+        else:
+            node_name = 'noname'
 
         if node_name in figures.keys():
             figure = figures[node_name]
@@ -487,6 +493,9 @@ def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
             n_h = 2  # horizontal
             n_v = 3
             w, h = figaspect(1.5)
+        if n_plots>6:
+            print('Too many subplots, not plotting')
+            continue
 
         f = plt.figure(figsize=(w, h))
 
@@ -524,7 +533,11 @@ def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
             ax2 = ax1.twinx()
             ax2.plot(omegas, np.angle(a), label="phase", color='black', linestyle=':', linewidth=1)
 
-            plt.suptitle('{}\nIncoming wave direction = {}'.format(node.name, wave_direction))
+            if node is not None:
+                node_name = node.name
+            else:
+                node_name = 'noname'
+            plt.suptitle('{}\nIncoming wave direction = {}'.format(node_name, wave_direction))
 
         plt.figtext(0.995, 0.01, 'Amplitude (solid) in [m] or [deg] on left axis\nPhase (dashed) in [rad] on right axis', ha='right', va='bottom', fontsize=6)
         plt.tight_layout()
@@ -543,7 +556,16 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0) -> np.ndarray:
     K = s.dynamics_K(1e-6)
     nodes = s.dynamics_nodes()
     modes = s.dynamics_modes()
-    names = [node.name for node in nodes]
+
+    names = []
+    for node in nodes:
+        if node is not None:
+            names.append(node.name)
+        else:
+            names.append('noname')
+    # names = [node.name for node in nodes]
+
+
     n_dof = M.shape[0]
 
     try:
