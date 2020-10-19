@@ -616,7 +616,7 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0) -> np.ndarray:
 
             # phase shift due to distance from origin
             phase_global_origin = 2*np.pi * distance / wavelength(omega, waterdepth=waterdepth)
-            phasor_global_origin = np.exp(-1j * phase_global_origin)
+            phasor_global_origin = np.exp(1j * phase_global_origin)
 
             # add the components to system matrices
             for i in range(6):
