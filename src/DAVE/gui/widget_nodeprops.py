@@ -1074,8 +1074,8 @@ class EditLC6d(NodeEditor):
         ui.cbMasterAxis.addItems(self.alist)
         ui.cbSlaveAxis.addItems(self.alist)
 
-        ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
-        ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
+        ui.cbMasterAxis.setCurrentText(self.node.main.name)
+        ui.cbSlaveAxis.setCurrentText(self.node.secondary.name)
 
         ui.doubleSpinBox_1.setValue(self.node.stiffness[0])
         ui.doubleSpinBox_2.setValue(self.node.stiffness[1])
@@ -1119,10 +1119,10 @@ class EditLC6d(NodeEditor):
             code += '                  {}, {}, {})'.format(*new_stiffness[3:])
 
         if not new_master == self.node.nodeA.name:
-            code += element + '.nodeA = s["{}"]'.format(new_master)
+            code += element + '.main = s["{}"]'.format(new_master)
 
         if not new_slave == self.node.nodeB.name:
-            code += element + '.nodeB = s["{}"]'.format(new_slave)
+            code += element + '.secondary = s["{}"]'.format(new_slave)
 
 
         return code

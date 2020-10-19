@@ -4540,10 +4540,15 @@ class Shackle(Manager, RigidBody):
         code = f'# Exporting {self.name}'
 
         code += '\n# Create Shackle'
-        code += f'\ns.new_shackle("{self.name}", kind = "{self.kind}")'  # TODO: Add position and orientation
+        code += f'\ns.new_shackle("{self.name}", kind = "{self.kind}", elastic={self.elastic})'
 
         if self.parent_for_export:
             code += f"\ns['{self.name}'].parent = s['{self.parent_for_export.name}']"
+
+        code += "\ns['{}'].position = ({},{},{})".format(self.name,*self.position)
+        code += "\ns['{}'].rotation = ({},{},{})".format(self.name,*self.rotation)
+
+
 
         return code
 
