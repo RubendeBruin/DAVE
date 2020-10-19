@@ -2531,6 +2531,7 @@ class Beam(CoreConnectedNode):
         code += "\n            EIz ={},".format(self.EIz)
         code += "\n            GIp ={},".format(self.GIp)
         code += "\n            EA ={},".format(self.EA)
+        code += "\n            mass ={},".format(self.mass)
         code += "\n            L ={}) # L can possibly be omitted".format(self.L)
 
         return code

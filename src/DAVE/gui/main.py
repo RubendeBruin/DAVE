@@ -871,6 +871,7 @@ class Gui():
         while True:
 
             # Returns
+            # -2  done, unstable solution for unable to converge to another one
             # -1  done, unstable solution
             # 0   done, stable equilibrium (if checked) or unknonwn equilibrium (if not checked)
             #
@@ -904,7 +905,7 @@ class Gui():
                 self.scene._restore_original_fixes(original_dofs)
                 break
 
-            if status == 0:  # solving done
+            if (status == 0) or (status==-2):  # solving done
 
                 # solving exited with succes
 
