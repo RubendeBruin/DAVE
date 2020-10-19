@@ -1118,10 +1118,10 @@ class EditLC6d(NodeEditor):
             code += element + '.stiffness = ({}, {}, {},'.format(*new_stiffness[:3])
             code += '                  {}, {}, {})'.format(*new_stiffness[3:])
 
-        if not new_master == self.node.nodeA.name:
+        if not new_master == self.node.main.name:
             code += element + '.main = s["{}"]'.format(new_master)
 
-        if not new_slave == self.node.nodeB.name:
+        if not new_slave == self.node.secondary.name:
             code += element + '.secondary = s["{}"]'.format(new_slave)
 
 

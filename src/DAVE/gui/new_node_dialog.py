@@ -288,7 +288,7 @@ def add_linear_connector(scene, selection=None):
         slave = ui.cbSlaveAxis.currentText()
         name = ui.tbName.text()
 
-        return "new_linear_connector_6d('{}', nodeB = '{}', nodeA = '{}')".format(name, slave, master)
+        return "new_linear_connector_6d('{}', main = '{}', secondary = '{}')".format(name, slave, master)
 
     else:
         return None
