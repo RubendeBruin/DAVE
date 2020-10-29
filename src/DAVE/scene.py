@@ -1751,7 +1751,6 @@ class ContactMesh(NodeWithParent):
         return code
 
 
-
 class ContactBall(NodeWithParent):
     """A ContactBall is a linear elastic ball which can contact with ContactMeshes.
 
@@ -1884,6 +1883,197 @@ class ContactBall(NodeWithParent):
 
         for m in self._meshes:
             code += '"' + m.name + '",'
+        code = code[:-1] + '])'
+
+        return code
+
+    # =======================================================================
+
+
+
+class SPMT(NodeWithParent):
+    """An SPMT is a Self-propelled modular transporter
+
+        These are platform vehicles
+
+        ============  =======
+        0 0 0 0 0 0   0 0 0 0
+
+        A number of axles share a common suspension system.
+
+        The SPMT node models such a system of axles.
+
+        The SPMT is attached to an axis system.
+        The upper locations of the axles are given as an array of 3d vectors.
+
+        Rays are extended from these points in local -Z direction (down) until they hit a contact-shape.
+
+        If no contact shape is found (or not within the maximum distance per axles) then the maximum defined extension for that axle is used.
+
+        A shared pressure is obtained from the combination of all individual extensions.
+
+        Finally an equal force is applied on all the axle connection points. This force acts in local Z direction.
+
+    """
+
+    def __init__(self, scene, node):
+        super().__init__(scene, node)
+        self._meshes = list()
+
+    # read-only
+
+    @property
+    def axle_force(self) -> tuple:
+        """Returns the force on each of the axles [kN, kN, kN] (global axis)
+        """
+        return self._vfNode.force
+
+    @property
+    def compression(self) -> float:
+        """Returns the total compression of all the axles together [m]
+        """
+        return self._vfNode.compression
+
+    def get_actual_global_points(self):
+        """Returns a list of points: axle1, bottom wheels 1, axle2, bottom wheels 2, etc"""
+        return self._vfNode.get_points
+
+    # controllable
+
+    # name is derived
+    # parent is derived
+
+    @property
+    def k(self):
+        """Compression stiffness of the ball in force per meter of compression [kN/m]"""
+        return self._vfNode.k
+
+    @k.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def k(self, value):
+
+        assert1f_positive_or_zero(value, 'k')
+        self._vfNode.k = value
+        pass
+
+    @property
+    def nominal_length(self):
+        """Average Axle extension (defined point to bottom of wheel) for zero force [m]"""
+        return self._vfNode.nominal_length
+
+    @nominal_length.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def nominal_length(self, value):
+
+        assert1f_positive_or_zero(value, 'nominal_length')
+        self._vfNode.nominal_length = value
+        pass
+
+    @property
+    def max_length(self):
+        """Maximum axle extension per axle (defined point to bottom of wheel) [m]"""
+        return self._vfNode.max_length
+
+    @max_length.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def max_length(self, value):
+
+        assert1f_positive_or_zero(value, 'max_length')
+        self._vfNode.max_length = value
+        pass
+
+    # === control meshes ====
+
+    @property
+    def meshes(self) -> tuple:
+        """List of contact-mesh nodes.
+        When getting this will yield a list of node references.
+        When setting node references and node-names may be used.
+
+        eg: ball.meshes = [mesh1, 'mesh2']
+        """
+        return tuple(self._meshes)
+
+
+    @meshes.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def meshes(self, value):
+
+        meshes = []
+
+        for m in value:
+            cm = self._scene._node_from_node_or_str(m)
+
+            if not isinstance(cm, ContactMesh):
+                raise ValueError(f'Only ContactMesh nodes can be used as mesh, but {cm.name} is a {type(cm)}')
+            if cm in meshes:
+                raise ValueError(f'Can not add {cm.name} twice')
+
+            meshes.append(cm)
+
+        # copy to meshes
+        self._meshes.clear()
+        self._vfNode.clear_contactmeshes()
+        for mesh in meshes:
+            self._meshes.append(mesh)
+            self._vfNode.add_contactmesh(mesh._vfNode)
+
+    @property
+    def meshes_names(self) -> list:
+        """List with the names of the meshes"""
+        return [m.name for m in self._meshes]
+
+    # === control axles ====
+
+    @property
+    def axles(self):
+        """Axles is a list axle positions. Each entry is a (x,y,z) entry which determines the location of the axle on
+        SPMT. This is relative to the parent of the SPMT.
+
+        Example:
+            [(-10,0,0),(-5,0,0),(0,0,0)] for three axles
+        """
+        return self._vfNode.get_axles()
+
+    @axles.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def axles(self, value):
+        self._vfNode.clear_axles()
+        for v in value:
+            assert3f(v, "Each entry should contain three floating point numbers")
+            self._vfNode.add_axle(v)
+
+    # actions
+
+    def update(self):
+        """Updates the contact-points and applies forces on mesh and point"""
+        self._vfNode.update()
+
+
+    def give_python_code(self):
+        code = "# code for {}".format(self.name)
+
+        code += "\ns.new_spmt(name='{}',".format(self.name)
+        code += "\n                  parent='{}',".format(self.parent_for_export.name)
+        code += "\n                  maximal_length={},".format(self.max_length)
+        code += "\n                  nominal_length={},".format(self.nominal_length)
+        code += "\n                  k={},".format(self.k)
+        code += "\n                  meshes = [ "
+
+        for m in self._meshes:
+            code += '"' + m.name + '",'
+        code = code[:-1] + '])'
+
+        code += "\n                  axles = [ "
+
+        for p in self.axles:
+            code += f'({p[0]}, {p[1]}, {p[2]}),'
+
         code = code[:-1] + '])'
 
         return code
@@ -6321,6 +6511,64 @@ class Scene:
         # and set properties
         if b is not None:
             new_node.parent = b
+
+        self._nodes.append(new_node)
+        return new_node
+
+    def new_spmt(self, name, parent, maximal_length=1.8, nominal_length=1.5, k=1e6, meshes=None, axles = None) -> SPMT:
+        """Creates a new *SPMT* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: name of the parent of the node [Axis]
+            maximal_length: optional, maximum distance between top and bottom of wheel (1.5m + 300mm)
+            nominal_length: optional, nominal distance between top and bottom of wheel [1.5m]
+            k : stiffness per axle [kN/m]
+            meshes : list of contact meshes
+            axles  : list of axle locations [(x,y,z),(x,y,z), ... ]
+
+        Returns:
+            Reference to newly created SPMT
+
+        """
+
+        # apply prefixes
+        name = self._prefix_name(name)
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        parent = self._node_from_node_or_str(parent)
+        assert isinstance(parent, Axis), ValueError(f"Parent should be an axis system or derived, not a {type(parent)}")
+
+        assert1f_positive_or_zero(maximal_length, "maximal_length ")
+        assert1f_positive_or_zero(nominal_length, "nominal_length ")
+
+        if meshes is not None:
+            meshes = make_iterable(meshes)
+            for mesh in meshes:
+                test = self._node_from_node(mesh, ContactMesh)  # throws error if not found
+
+        if axles is not None:
+            for p in axles:
+                assert3f(p, "axle locations should be (x,y,z)")
+
+        # then create
+        a = self._vfc.new_spmt(name)
+
+        new_node = SPMT(self, a)
+
+        # and set properties
+        new_node.parent = parent
+        new_node.k = k
+        new_node.max_length = maximal_length
+        new_node.nominal_length = nominal_length
+
+        if meshes is not None:
+            new_node.meshes = meshes
+
+        if axles is not None:
+            new_node.axles = axles
 
         self._nodes.append(new_node)
         return new_node
