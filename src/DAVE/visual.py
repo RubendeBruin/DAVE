@@ -792,14 +792,7 @@ class Viewport:
 
                 gp = N.get_actual_global_points()
                 if gp:
-                    pts = []
-                    i = 0
-                    for p in gp:
-                        p.append(p)
-                        if i%2:  # odd
-                            p.append(p[-1])
-                        i += 1
-                    a = vp.Line(p, lw=3).c(vc.COLOR_CABLE)
+                    a = vp.Line(gp, lw=3).c(vc.COLOR_CABLE)
                 else:
                     a = vp.Line([(0,0,0),(0,0,0.1),(0,0,0)], lw=3).c(vc.COLOR_CABLE)
 
@@ -969,20 +962,13 @@ class Viewport:
 
                 A = V.actors[0]
 
-                gp = V.node.get_actual_global_points()
-                if len(gp)==0:
+                pts = V.node.get_actual_global_points()
+                if len(pts)==0:
                     continue
-
-                pts = []
-                i = 0
-                for p in gp:
-                    p.append(p)
-                    if i % 2:  # odd
-                        p.append(p[-1])
-                    i += 1
 
                 update_line_to_points(A, pts)
 
+                continue
 
             if isinstance(V.node, vf.Beam):
 

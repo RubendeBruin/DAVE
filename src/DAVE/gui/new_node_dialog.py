@@ -421,8 +421,6 @@ def add_tank(scene, selection=None):
     ui.btnOk.clicked.connect(ok)
     ui.tbName.setText(scene.available_name_like('Tank'))
 
-
-
     if (AddNode.exec() == QtWidgets.QDialog.Accepted):
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()

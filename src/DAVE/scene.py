@@ -1936,7 +1936,18 @@ class SPMT(NodeWithParent):
 
     def get_actual_global_points(self):
         """Returns a list of points: axle1, bottom wheels 1, axle2, bottom wheels 2, etc"""
-        return self._vfNode.get_points
+        gp = self._vfNode.actual_global_points
+
+        pts = []
+        n2 = int(len(gp)/2)
+        for i in range(n2):
+            pts.append(gp[2 * i + 1])
+            pts.append(gp[2*i])
+
+            if i < n2-1:
+                pts.append(gp[2*i+2])
+
+        return pts
 
     # controllable
 
@@ -2017,10 +2028,10 @@ class SPMT(NodeWithParent):
 
         # copy to meshes
         self._meshes.clear()
-        self._vfNode.clear_contactmeshes()
+        self._vfNode.clear_contact_meshes()
         for mesh in meshes:
             self._meshes.append(mesh)
-            self._vfNode.add_contactmesh(mesh._vfNode)
+            self._vfNode.add_contact_mesh(mesh._vfNode)
 
     @property
     def meshes_names(self) -> list:
@@ -2028,6 +2039,19 @@ class SPMT(NodeWithParent):
         return [m.name for m in self._meshes]
 
     # === control axles ====
+
+    def make_grid(self, nx=3, ny=1, dx=1.4, dy=1.45):
+        offx = nx * dx / 2
+        offy = ny * dy / 2
+        self._vfNode.clear_axles()
+
+        for ix in range(nx):
+            for iy in range(ny):
+                self._vfNode.add_axle(ix * dx - offx,
+                                      iy * dy - offy,
+                                      0)
+
+
 
     @property
     def axles(self):
@@ -2046,7 +2070,7 @@ class SPMT(NodeWithParent):
         self._vfNode.clear_axles()
         for v in value:
             assert3f(v, "Each entry should contain three floating point numbers")
-            self._vfNode.add_axle(v)
+            self._vfNode.add_axle(*v)
 
     # actions
 
@@ -2976,7 +3000,7 @@ class Buoyancy(NodeWithParent):
     # _vfNode is a buoyancy
     def __init__(self, scene, vfBuoyancy):
         super().__init__(scene, vfBuoyancy)
-        self._None_parent_acceptable = True
+        self._None_parent_acceptable = False
         self._trimesh = TriMeshSource(self._scene, self._vfNode.trimesh) # the tri-mesh is wrapped in a custom object
 
     def update(self):
@@ -3044,7 +3068,7 @@ class Tank(NodeWithParent):
     # _vfNode is a tank
     def __init__(self, scene, vfTank):
         super().__init__(scene, vfTank)
-        self._None_parent_acceptable = True
+        self._None_parent_acceptable = False
         self._trimesh = TriMeshSource(self._scene, self._vfNode.trimesh) # the tri-mesh is wrapped in a custom object
 
     def update(self):
@@ -6434,6 +6458,9 @@ class Scene:
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
+        if b is None:
+            raise ValueError('A valid parent must be defined for a Buoyancy node')
+
         assert1f_positive_or_zero(density, "density")
 
         # then create
@@ -6469,6 +6496,9 @@ class Scene:
         assertValidName(name)
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
+
+        if b is None:
+            raise ValueError('A valid parent must be defined for a Tank')
 
         assert1f(density, "density")
 
