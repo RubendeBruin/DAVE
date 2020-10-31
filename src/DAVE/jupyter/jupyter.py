@@ -123,7 +123,6 @@ def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=
     camera['pos'] = camera_pos
     camera['focalPoint'] = lookat
 
-
     vtkp.embedWindow(backend=backend)  # screenshot
     vtkp.settings.usingQt = False
 
