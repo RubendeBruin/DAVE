@@ -742,6 +742,7 @@ class Viewport:
                     p = vp.Cube(pos=(0,0,0), side=scale*side)
                     p.c(vc.COLOR_POI)
                     p.actor_type = ActorType.BALLASTTANK
+                    p._side = side
                     actors.append(p)
 
                     # attach reference to the visual to the ballast tank as they may change position
@@ -901,7 +902,7 @@ class Viewport:
                 if V.node.parent is not None:
                     apply_parent_tranlation_on_transform(V.node.parent, t)
 
-                A.setTransform(t.GetMatrix())
+                A.SetUserTransform(t)
                 continue
 
             if isinstance(V.node, vf.Circle):
@@ -935,9 +936,7 @@ class Viewport:
                 if V.node.parent.parent is not None:
                     apply_parent_tranlation_on_transform(V.node.parent.parent, t)
 
-                
-
-                A.setTransform(t.GetMatrix())
+                A.SetUserTransform(t)
                 continue
 
             if isinstance(V.node, vf.Cable):
@@ -1016,11 +1015,13 @@ class Viewport:
 
                     actor = tnk.actor
 
-                    # actor.setTransform(t)
+                    # actor.SetUserMatrix(t)
                     # actor.SetScale(4)
 
                     if tnk.is_partial():
+
                         actor.color([1,1,0])
+
                     if tnk.is_full():
                         actor.color([0,0,0.2])
                     if tnk.is_empty():
@@ -1035,7 +1036,7 @@ class Viewport:
                     if V.node.parent is not None:
                         apply_parent_tranlation_on_transform(V.node.parent, t)
 
-                    actor.setTransform(t.GetMatrix())
+                    actor.SetUserTransform(t)
 
                 continue
 
@@ -1044,7 +1045,7 @@ class Viewport:
                 t = vtk.vtkTransform()
                 t.Identity()
                 t.Translate(V.node.global_position)
-                V.actors[0].setTransform(t)
+                V.actors[0].SetUserTransform(t)
                 V.actors[0].SetScale(self.geometry_scale)
                 continue
 
@@ -1063,7 +1064,7 @@ class Viewport:
                     V.actors[0]._r = V.node.radius
 
 
-                V.actors[0].setTransform(t)
+                V.actors[0].SetUserTransform(t)
                 V.actors[0].wireframe(V.node.contact_force_magnitude>0)
 
                 if V.node.can_contact:
@@ -1081,7 +1082,7 @@ class Viewport:
                 t = vtk.vtkTransform()
                 t.Identity()
                 t.Translate(V.node.parent.to_glob_position(V.node.offset))
-                V.actors[0].setTransform(t)
+                V.actors[0].SetUserTransform(t)
                 V.actors[0].SetScale(self.geometry_scale)
                 continue
 
@@ -1127,7 +1128,7 @@ class Viewport:
                 t.Identity()
                 t.Translate(V.node.parent.global_position)
                 for a in V.actors:
-                    a.setTransform(t)
+                    a.SetUserTransform(t)
 
                 continue
 
@@ -1148,7 +1149,7 @@ class Viewport:
                 mat4x4 = transform_to_mat4x4(V.node.global_transform)
 
                 for A in V.actors:
-                    A.setTransform(mat4x4)
+                    A.SetUserMatrix(mat4x4)
 
                 t.PostMultiply()
                 t.Concatenate(mat4x4)
@@ -1156,7 +1157,7 @@ class Viewport:
                 scale = scale * self.cog_scale
 
                 V.actors[3].SetScale(scale)
-                V.actors[3].setTransform(t)
+                V.actors[3].SetUserTransform(t)
 
                 # scale the arrows
                 V.actors[0].SetScale(self.geometry_scale)
@@ -1197,7 +1198,7 @@ class Viewport:
                     #
                     # the source-mesh itself is updated in "add_new_actors_to_screen"
                     if changed:
-                        V.actors[0].setTransform(mat4x4)
+                        V.actors[0].SetUserMatrix(mat4x4)
 
                 if not changed:
                     continue    # skip the other update functions
@@ -1227,7 +1228,7 @@ class Viewport:
                 # Update the CoB
                 # move the CoB to the new (global!) position
                 cob = V.node.cob
-                V.actors[1].setTransform(transform_from_point(*cob))
+                V.actors[1].SetUserMatrix(transform_from_point(*cob))
                 if V.node.displacement == 0:
                     V.actors[1].off()
                 else:
@@ -1324,7 +1325,7 @@ class Viewport:
 
                 # print(f'cob = {cob}')
 
-                V.actors[1].setTransform(transform_from_point(*cob))
+                V.actors[1].SetUserMatrix(transform_from_point(*cob))
                 if V.node.volume == 0:
                     V.actors[1].off()
                 else:
@@ -1397,10 +1398,10 @@ class Viewport:
                 continue
 
             if isinstance(V.node, vf.Axis):
-                tr = transform_to_mat4x4(V.node.global_transform)
+                m44 = transform_to_mat4x4(V.node.global_transform)
                 for a in V.actors:
                     a.SetScale(self.geometry_scale)
-                    a.setTransform(tr)
+                    a.SetUserMatrix(m44)
 
                 continue
 
@@ -1417,7 +1418,7 @@ class Viewport:
             mat4x4 = transform_to_mat4x4(tr)
 
             for A in V.actors:
-                A.setTransform(mat4x4)
+                A.SetUserMatrix(mat4x4)
 
 
         # for V in to_be_removed:
@@ -1494,7 +1495,7 @@ class Viewport:
                             if va.node.parent is not None:
                                 tr = va.node.parent.global_transform
                                 mat4x4 = transform_to_mat4x4(tr)
-                                va.actors[0].setTransform(mat4x4)
+                                va.actors[0].SetUserMatrix(mat4x4)
 
                             if isinstance(va.node, vf.Buoyancy):
                                 va.actors[0].alpha(vc.ALPHA_BUOYANCY)

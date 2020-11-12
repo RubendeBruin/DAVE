@@ -2091,7 +2091,7 @@ class SPMT(NodeWithParent):
 
         for m in self._meshes:
             code += '"' + m.name + '",'
-        code = code[:-1] + '])'
+        code = code[:-1] + '],'
 
         code += "\n                  axles = [ "
 
@@ -3487,10 +3487,33 @@ class BallastSystem(Point):
 
 
     def empty_all_usable_tanks(self):
+        """Empties all non-frozen tanks.
+        Returns a list with tank number and fill percentage of all affected tanks. This can be used to restore the
+        ballast situation as it was before emptying.
 
-        for t in self._tanks:
+        See also: restore tank fillings
+        """
+        restore = []
+
+        for i,t in enumerate(self._tanks):
             if not t.frozen:
+                restore.append((i, t.pct))
                 t.make_empty()
+
+        return restore
+
+    def restore_tank_fillings(self, restore):
+        """Restores the tank fillings as per restore.
+
+        Restore is typically obtained from the "empty_all_usable_tanks" function.
+
+        See Also: empty_all_usable_tanks
+        """
+
+        for r in restore:
+            i, pct = r
+            self._tanks[i].pct = pct
+
 
     def tank(self, name):
 
@@ -4755,7 +4778,7 @@ class Shackle(Manager, RigidBody):
         code = f'# Exporting {self.name}'
 
         code += '\n# Create Shackle'
-        code += f'\ns.new_shackle("{self.name}", kind = "{self.kind}", elastic={self.elastic})'
+        code += f'\ns.new_shackle("{self.name}", kind = "{self.kind}")' #, elastic={self.elastic})'
 
         if self.parent_for_export:
             code += f"\ns['{self.name}'].parent = s['{self.parent_for_export.name}']"
@@ -4978,6 +5001,13 @@ class Scene:
             fixed = [*parent.fixed]
             fixed[3]=True
             fixed[4]=True
+
+            # if fixed[3] and fixed[4] are non-zero, then yaw has to be fixed as well.
+            # The solver does not support it when an angular dof is free, but one of the fixed
+            # angular dofs is non-zero
+
+            fixed[5] = True
+
             parent.fixed = fixed
 
         return r
@@ -5484,7 +5514,9 @@ class Scene:
 
         if self.verify_equilibrium():
 
-            if self._check_and_fix_geometric_contact_orientations():
+            changed, message = self._check_and_fix_geometric_contact_orientations()
+            if changed:
+                print(message)
                 solve_func()
                 if not self.verify_equilibrium():
                     return False

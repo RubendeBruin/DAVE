@@ -51,10 +51,12 @@ import DAVE.scene as dc
 import DAVE.settings as consts
 from scipy.spatial.transform import Rotation  # for conversion from axis-angle to euler
 from os.path import splitext, basename
-from os import system
+# from os import system
 from numpy import deg2rad
 from pathlib import Path
 import numpy as np
+
+import subprocess
 
 import vtk
 
@@ -483,27 +485,34 @@ scene.collection.objects.link(obj)"""
 
 def create_blend_and_open(scene, blender_result_file = None, blender_base_file=None, blender_exe_path=None, camera=None, animation_dofs=None, wavefield=None):
 
+    create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield, open_gui=True)
+    # command = 'explorer "{}"'.format(str(blender_result_file))
+    # subprocess.call(command, creationflags=subprocess.DETACHED_PROCESS)
+
+def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None,animation_dofs=None, wavefield=None, open_gui = False):
+    tempfile = Path(consts.PATH_TEMP) / 'blender.py'
+
     if blender_base_file is None:
         blender_base_file = consts.BLENDER_BASE_SCENE
 
     if blender_result_file is None:
         blender_result_file = consts.BLENDER_DEFAULT_OUTFILE
 
-    create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield)
-    command = '"{}"'.format(str(blender_result_file))
-    system(command)
-
-def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None,animation_dofs=None, wavefield=None):
-    tempfile = Path(consts.PATH_TEMP) / 'blender.py'
-
-    blender_py_file(scene, tempfile, blender_base_file, blender_result_file,camera=camera,animation_dofs=animation_dofs, wavefield=wavefield)
+    blender_py_file(scene, tempfile, blender_base_file = blender_base_file , blender_result_file = blender_result_file ,camera=camera,animation_dofs=animation_dofs, wavefield=wavefield)
 
     if blender_exe_path is None:
         blender_exe_path = consts.BLENDER_EXEC
 
-    command = '""{}" -b --python "{}""'.format(blender_exe_path, tempfile)
+    command = '"{}" -b --python "{}"'.format(blender_exe_path, tempfile)
+
     print(command)
-    system(command)
+
+    pid = subprocess.Popen(command)
+    pid.wait()
+
+    command = 'explorer "{}"'.format(blender_result_file)
+    subprocess.Popen(command)
+
 
 def blender_py_file(scene, python_file, blender_base_file, blender_result_file, camera = None, animation_dofs=None, wavefield=None):
 
