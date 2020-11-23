@@ -1154,7 +1154,6 @@ class Gui():
 
                 showhide.setChecked(node.visible)
 
-
                 if node.visible:
                     showhide.triggered.connect(lambda: self.run_code(f"s['{node_name}'].visible = False",guiEventType.VIEWER_SETTINGS_UPDATE))
                 else:

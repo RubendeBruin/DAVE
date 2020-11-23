@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_ballastconfiguration.ui',
 # licensing of 'widget_ballastconfiguration.ui' applies.
 #
-# Created: Thu Jan 16 14:19:52 2020
+# Created: Mon Nov 23 14:01:19 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -85,7 +85,7 @@ class Ui_widget_ballastsystem(object):
         self.pbFreezeAll.setText(QtWidgets.QApplication.translate("widget_ballastsystem", "Freeze all", None, -1))
         self.tableWidget.verticalHeaderItem(0).setText(QtWidgets.QApplication.translate("widget_ballastsystem", "Tank1", None, -1))
         self.tableWidget.verticalHeaderItem(1).setText(QtWidgets.QApplication.translate("widget_ballastsystem", "Tank2", None, -1))
-        self.tableWidget.horizontalHeaderItem(0).setText(QtWidgets.QApplication.translate("widget_ballastsystem", "Capacity [kN]", None, -1))
+        self.tableWidget.horizontalHeaderItem(0).setText(QtWidgets.QApplication.translate("widget_ballastsystem", "Capacity [m3]", None, -1))
         self.tableWidget.horizontalHeaderItem(1).setText(QtWidgets.QApplication.translate("widget_ballastsystem", "Fill [%]", None, -1))
         self.tableWidget.horizontalHeaderItem(2).setText(QtWidgets.QApplication.translate("widget_ballastsystem", "Frozen", None, -1))
         self.tableWidget.horizontalHeaderItem(3).setText(QtWidgets.QApplication.translate("widget_ballastsystem", "X [m]", None, -1))

@@ -212,7 +212,7 @@ def export_ofx_yml(s, filename):
             iyy = 0
             izz = 0
             mass = 0
-            for tank in n._tanks:
+            for tank in n.tanks:
                 mass += tank.inertia
                 inertia = tank.inertia
                 ixx += inertia * (tank.position[1] ** 2 + tank.position[2] ** 2)

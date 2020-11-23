@@ -732,21 +732,23 @@ class Viewport:
 
             if isinstance(N, vf.BallastSystem):
 
-                for t in N._tanks:
+                pass
 
-                    capacity = t.max
-                    volume = capacity / (1.025 * 9.81)
-                    side = volume**(1/3)
-
-                    scale = 0.7
-                    p = vp.Cube(pos=(0,0,0), side=scale*side)
-                    p.c(vc.COLOR_POI)
-                    p.actor_type = ActorType.BALLASTTANK
-                    p._side = side
-                    actors.append(p)
-
-                    # attach reference to the visual to the ballast tank as they may change position
-                    t.actor = p
+                # for t in N.tanks:
+                #
+                #     capacity = t.max
+                #     volume = capacity / (1.025 * 9.81)
+                #     side = volume**(1/3)
+                #
+                #     scale = 0.7
+                #     p = vp.Cube(pos=(0,0,0), side=scale*side)
+                #     p.c(vc.COLOR_POI)
+                #     p.actor_type = ActorType.BALLASTTANK
+                #     p._side = side
+                #     actors.append(p)
+                #
+                #     # attach reference to the visual to the ballast tank as they may change position
+                #     t.actor = p
 
             if isinstance(N, vf.Force):
 
@@ -1002,41 +1004,43 @@ class Viewport:
 
             if isinstance(V.node, vf.BallastSystem):
 
-                tr = V.node.parent.global_transform
-                mat4x4 = transform_to_mat4x4(tr)
-
-                for tnk in V.node._tanks:
-
-                    # t = vtk.vtkTransform()
-                    # t.Identity()
-                    # local_position = np.array(V.node.position, dtype=float) + np.array(tnk.position, dtype=float)
-                    # pos = V.node.parent.to_glob_position(local_position)
-                    # t.Translate(pos)
-
-                    actor = tnk.actor
-
-                    # actor.SetUserMatrix(t)
-                    # actor.SetScale(4)
-
-                    if tnk.is_partial():
-
-                        actor.color([1,1,0])
-
-                    if tnk.is_full():
-                        actor.color([0,0,0.2])
-                    if tnk.is_empty():
-                        actor.color([0.8,0.9,1])
-
-                    # get the local (user set) transform
-                    t = vtk.vtkTransform()
-                    t.Identity()
-                    t.Translate(tnk.position)
-
-                    # Get the parent matrix (if any)
-                    if V.node.parent is not None:
-                        apply_parent_tranlation_on_transform(V.node.parent, t)
-
-                    actor.SetUserTransform(t)
+                # pass
+                #
+                # tr = V.node.parent.global_transform
+                # mat4x4 = transform_to_mat4x4(tr)
+                #
+                # for tnk in V.node.tanks:
+                #
+                #     # t = vtk.vtkTransform()
+                #     # t.Identity()
+                #     # local_position = np.array(V.node.position, dtype=float) + np.array(tnk.position, dtype=float)
+                #     # pos = V.node.parent.to_glob_position(local_position)
+                #     # t.Translate(pos)
+                #
+                #     actor = tnk.actor
+                #
+                #     # actor.SetUserMatrix(t)
+                #     # actor.SetScale(4)
+                #
+                #     if tnk.is_partial():
+                #
+                #         actor.color([1,1,0])
+                #
+                #     if tnk.is_full():
+                #         actor.color([0,0,0.2])
+                #     if tnk.is_empty():
+                #         actor.color([0.8,0.9,1])
+                #
+                #     # get the local (user set) transform
+                #     t = vtk.vtkTransform()
+                #     t.Identity()
+                #     t.Translate(tnk.position)
+                #
+                #     # Get the parent matrix (if any)
+                #     if V.node.parent is not None:
+                #         apply_parent_tranlation_on_transform(V.node.parent, t)
+                #
+                #     actor.SetUserTransform(t)
 
                 continue
 
@@ -1382,7 +1386,14 @@ class Viewport:
 
                     vis = vp.Mesh([vertices, faces]).c(vc.COLOR_BUOYANCY_MESH_LINES)
                     vis.actor_type = ActorType.MESH_OR_CONNECTOR
-                    vis.c(vc.COLOR_WATER_TANK)
+
+                    if V.node.fill_pct > 94.9:
+                        vis.c(vc.COLOR_WATER_TANK_95PLUS)
+                    elif V.node.fill_pct < 5.1:
+                        vis.c(vc.COLOR_WATER_TANK_5MIN)
+                    else:
+                        vis.c(vc.COLOR_WATER_TANK_SLACK)
+
                     vis.alpha(vc.ALPHA_WATER_TANK)
 
                     V.actors.append(vis)
@@ -1660,6 +1671,7 @@ class Viewport:
 
         # add a widget to gui
         vl = QVBoxLayout()
+        vl.setContentsMargins(0,0,0,0)
         self.target_frame = target_frame
         self.vtkWidget = QVTKRenderWindowInteractor(target_frame)
 

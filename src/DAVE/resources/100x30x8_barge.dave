@@ -42,26 +42,26 @@ s.new_visual(name='Barge Visual',
             rotation=(0, 0, 0),
             scale=(1.0, 0.75, 0.8) )
 
-## Tanks
-
-bs = s.new_ballastsystem('Barge Ballast system', parent='Barge')
-
-# Barge length = 100m
-# 8 tanks of 12.5m in length
-# 4 tanks of 30/4 = 7.5m in width
-# and 7.5m height
-
-volume = 12.5*7.5* 7.5 * 0.8  # 0.8 such that the barge just does not sink when all tanks are full
-
-
-for i in range(8):
-
-    capacity = volume*9.81*1.025
-
-    bs.new_tank('ps_inner{}'.format(i+1), (6.25 + 12.5*i,7.5/2 , 4), capacity)
-    bs.new_tank('ps_outer{}'.format(i+1), (6.25 + 12.5*i,7.5/2 + 7.5, 4), capacity)
-    bs.new_tank('sb_inner{}'.format(i+1), (6.25 + 12.5*i,-7.5/2 ,  4), capacity)
-    bs.new_tank('sb_outer{}'.format(i+1), (6.25 + 12.5*i,-7.5/2 -7.5,  4), capacity)
+### Tanks
+#
+#bs = s.new_ballastsystem('Barge Ballast system', parent='Barge')
+#
+## Barge length = 100m
+## 8 tanks of 12.5m in length
+## 4 tanks of 30/4 = 7.5m in width
+## and 7.5m height
+#
+#volume = 12.5*7.5* 7.5 * 0.8  # 0.8 such that the barge just does not sink when all tanks are full
+#
+#
+#for i in range(8):
+#
+#    capacity = volume*9.81*1.025
+#
+#    bs.new_tank('ps_inner{}'.format(i+1), (6.25 + 12.5*i,7.5/2 , 4), capacity)
+#    bs.new_tank('ps_outer{}'.format(i+1), (6.25 + 12.5*i,7.5/2 + 7.5, 4), capacity)
+#    bs.new_tank('sb_inner{}'.format(i+1), (6.25 + 12.5*i,-7.5/2 ,  4), capacity)
+#    bs.new_tank('sb_outer{}'.format(i+1), (6.25 + 12.5*i,-7.5/2 -7.5,  4), capacity)
 
 ## Bollards
 

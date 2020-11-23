@@ -37,10 +37,6 @@ def run():
 
     s = Scene()
 
-    s.resources_paths.append(r'C:\data\Dave\Public\Blender visuals')
-
-    s.import_scene(s.get_resource_path("cheetah with crane and 4p block.dave"), containerize=False, prefix="")
-
     g = Gui(s,splash=splash, app = app)
 
 

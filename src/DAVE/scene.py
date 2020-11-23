@@ -3159,210 +3159,38 @@ class Tank(NodeWithParent):
         return code
 
 
-class BallastSystem(Point):
-    """A BallastSystem
+class BallastSystem(Node):
+    """A BallastSystem is a group of Tank objects.
 
-    The position of the axis system is the reference position for the tanks.
-
-    Tanks can be added using new_tank()
-
-
-    technical notes:
-    - System is similar to the setup of RigidBody, but without the Axis
-    - The class extends Poi, but overrides some of its properties
-    - Update nees to be called to update the weight and cog
+    The tank objects are created separately and only their references are assigned to this ballast-system object.
 
     """
 
-    # Tank is an inner class
-    class Tank:
 
-        def __init__(self):
-            self.name = "noname"
-            """Name of the tank"""
+    def __init__(self, scene, parent):
+        super().__init__(scene)
 
-            self.max = 0
-            """Maximum fill in [kN]"""
+        self.tanks = []
+        """List of Tank objects"""
 
-            self.pct = 0
-            """Actual fill percentage in [%]"""
+        self.frozen = []
+        """List of names of frozen tanks - The contents of a frozen tank should not be changed"""
 
-            self.position = np.array((0., 0., 0.))
-            """Tank CoG position relative to ballast system origin [m,m,m]"""
+        self.parent = parent
 
-            self.frozen = False
-            """The fill of frozen tanks should not be altered"""
+    # for gui
+    def change_parent_to(self, new_parent):
+        if not (isinstance(new_parent, Axis) or new_parent is None):
+            raise ValueError('Visuals can only be attached to an axis (or derived) or None')
+        self.parent = new_parent
 
-            self._pointmass = None
-            """Optional reference to pointmass node - handled by ballastsystem node"""
+    # for node
+    def depends_on(self):
+        return [self.parent, *self.tanks]
 
-
-        @property
-        def inertia(self):
-            return self.weight() / vfc.G
-
-        def weight(self):
-            """Returns the actual weight of tank contents in kN"""
-            return self.max * self.pct / 100
-
-        def is_full(self):
-            """Returns True of tank is (almost) full"""
-            return self.pct >= 100 - 1e-5
-
-        def is_empty(self):
-            """Returns True of tank is (almost) empty"""
-            return self.pct <= 1e-5
-
-        def is_partial(self):
-            """Returns True of tank not full but also not empty"""
-            return (not self.is_empty() and not self.is_full())
-
-        def mxmymz(self):
-            """Position times actual weight"""
-            return self.position * self.weight()
-
-        def make_empty(self):
-            """Empties the tank"""
-            self.pct = 0
-
-        def make_full(self):
-            """Fills the tank"""
-            self.pct = 100
-
-    def __init__(self, scene, poi, force):
-        super().__init__(scene, poi)
-
-        # The poi is the Node
-        # force is added separately
-        self._vfForce = force
-
-        self._tanks = []
-        """List of tank objects"""
-
-        self._position = (0., 0., 0.)
-        """Position is the origin of the ballast system"""
-
-        self._cog = (0., 0., 0.)
-        """Position of the CoG of the ballast-tanks relative to self._position, calculated when calling update()"""
-
-        self._weight = 0
-        """Weight [kN] of the ballast-tanks , calculated when calling update()"""
-
-        self.frozen = False
-        """The contents of a frozen tank should not be changed"""
-
-    # override the following properties
-    @Point.parent.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def parent(self, var):
-        """Assigns a new parent. Keeps the local position and rotations the same
-
-        See also: change_parent_to
-        """
-
-
-
-        super(Point, type(self)).parent.fset(self, var)
-        # update parent of other core nodes
-        for tank in self._tanks:
-            tank._vfNode.parent = self.parent._vfNode
-
-
-
-    def update(self):
-        self._cog, self._weight, = self.xyzw()
-        self._weight = np.around(self._weight, decimals=5)
-
-        # we are rounding a bit here to avoid very small numbers
-        # which would mess-up the solver
-        pos = np.array(self._cog) + np.array(self.position)
-        pos = np.around(pos, 5)
-
-        self._vfNode.position = pos
-
-        self._vfForce.force = (0, 0, -self._weight)
-
-        for tank in self._tanks:
-            I = tank.inertia
-            pos = np.array(tank.position) + np.array(self.position)
-            tank._pointmass.inertia = tank.inertia
-            tank._pointmass.position = pos
-
-        # print('Weight {} cog {} {} {}'.format(self._weight, *self._cog))
-
-    def _delete_vfc(self):
-        super()._delete_vfc()
-        self._scene._vfc.delete(self._vfForce.name)
-
-        # delete the pointmasses (if any)
-        for tank in self._tanks:
-            if tank._pointmass is not None:
-                self._scene._vfc.delete(tank._pointmass.name)
-
-    @property
-    def position(self):
-        """Position of the origin of the ballast system. (Parent axis) [m,m,m]"""
-        return self._position
-
-    @position.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def position(self, new_position):
-
-        assert3f(new_position)
-        self._position = new_position
-
-    @property
-    def name(self):
-        return super().name
-
-    @name.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def name(self, newname):
-
-        super(Point, self.__class__).name.fset(self, newname)
-        self._vfForce.name = newname + vfc.VF_NAME_SPLIT + "gravity"
-
-    def new_tank(self, name, position, capacity_kN, actual_fill = 0, frozen = False) :
-        """Creates a new tanks and adds it to the ballast-system
-        
-        Args:
-            name: (str) name of the tanks
-            position: (float[3]) position of the tank [m,m,m]
-            capacity_kN: (float) Maximum capacity of the tank in [kN]
-            actual_fill: (float) Optional, actual fill percentage of the tank [0] [%]
-            frozen: (bool) Optional, the contents of frozen tanks should not be altered
-
-        Returns:
-            BallastSystem.Tank object
-
-        """
-        # asserts
-
-
-        assert3f(position, "position")
-        assert1f(capacity_kN, "Capacity in kN")
-        assert1f(actual_fill, "Actual fill percentage")
-        assertValidName(name)
-
-        assert name not in [t.name for t in self._tanks], ValueError('Double names are not allowed, {} already exists'.format(name))
-
-        t = BallastSystem.Tank()
-        t.name = name
-        t.position = position
-        t.max = capacity_kN
-        t.pct = actual_fill
-        t.frozen = frozen
-
-        t._pointmass = \
-            self._scene._vfc.new_pointmass(self.name + vfc.VF_NAME_SPLIT + '_pointmass_{}'.format(name))
-        t._pointmass.parent = self.parent._vfNode # Axis
-
-        self._tanks.append(t)
-
-        return t
+    def is_frozen(self,name):
+        """Returns True if the tank with this name if frozen"""
+        return name in self.frozen
 
     def reorder_tanks(self, names):
         """Places tanks with given names at the top of the list. Other tanks are appended afterwards in original order.
@@ -3378,28 +3206,28 @@ class BallastSystem(Point):
             if name not in self.tank_names():
                 raise ValueError('No tank with name {}'.format(name))
 
-        old_tanks = self._tanks.copy()
-        self._tanks.clear()
+        old_tanks = self.tanks.copy()
+        self.tanks.clear()
         to_be_deleted = list()
 
         for name in names:
             for tank in old_tanks:
                 if tank.name == name:
-                    self._tanks.append(tank)
+                    self.tanks.append(tank)
                     to_be_deleted.append(tank)
 
         for tank in to_be_deleted:
             old_tanks.remove(tank)
 
         for tank in old_tanks:
-            self._tanks.append(tank)
+            self.tanks.append(tank)
 
     def order_tanks_by_elevation(self):
         """Re-orders the existing tanks such that the lowest tanks are higher in the list"""
 
-        zs = [tank.position[2] for tank in self._tanks]
+        zs = [tank.position[2] for tank in self.tanks]
         inds = np.argsort(zs)
-        self._tanks = [self._tanks[i] for i in inds]
+        self.tanks = [self.tanks[i] for i in inds]
 
     def order_tanks_by_distance_from_point(self, point, reverse=False):
         """Re-orders the existing tanks such that the tanks *furthest* from the point are first on the list
@@ -3410,7 +3238,7 @@ class BallastSystem(Point):
 
 
         """
-        pos = [tank.position for tank in self._tanks]
+        pos = [tank.position for tank in self.tanks]
         pos = np.array(pos, dtype=float)
         pos -= np.array(point)
 
@@ -3421,7 +3249,7 @@ class BallastSystem(Point):
         else:
             inds = np.argsort(-dist)
 
-        self._tanks = [self._tanks[i] for i in inds]
+        self.tanks = [self.tanks[i] for i in inds]
 
     def order_tanks_to_maximize_inertia_moment(self):
         """Re-order tanks such that tanks furthest from center of system are first on the list"""
@@ -3433,8 +3261,8 @@ class BallastSystem(Point):
 
     def _order_tanks_to_inertia_moment(self, maximize = True):
         """Re-order tanks such that tanks furthest away from center of system are first on the list"""
-        pos = [tank.position for tank in self._tanks]
-        m = [tank.max for tank in self._tanks]
+        pos = [tank.position for tank in self.tanks]
+        m = [tank.max for tank in self.tanks]
         pos = np.array(pos, dtype=float)
         mxmymz = np.vstack((m,m,m)).transpose() * pos
         total = np.sum(m)
@@ -3447,33 +3275,33 @@ class BallastSystem(Point):
 
 
     def tank_names(self):
-        return [tank.name for tank in self._tanks]
+        return [tank.name for tank in self.tanks]
 
     def fill_tank(self, name, fill):
 
 
         assert1f(fill, "tank fill")
 
-        for tank in self._tanks:
+        for tank in self.tanks:
             if tank.name == name:
                 tank.pct = fill
                 return
         raise ValueError('No tank with name {}'.format(name))
 
     def xyzw(self):
-        """Gets the current ballast cog and weight from the tanks
+        """Gets the current ballast cog in GLOBAL axis system weight from the tanks
 
                 Returns:
-                    (x,y,z), weight
+                    (x,y,z), weight [mT]
                 """
         """Calculates the weight and inertia properties of the tanks"""
 
         mxmymz = np.array((0., 0., 0.))
         wt = 0
 
-        for tank in self._tanks:
-            w = tank.weight()
-            p = np.array(tank.position, dtype=float)
+        for tank in self.tanks:
+            w = tank.volume * tank.density
+            p = np.array(tank.cog, dtype=float)
             mxmymz += p * w
 
             wt += w
@@ -3495,10 +3323,10 @@ class BallastSystem(Point):
         """
         restore = []
 
-        for i,t in enumerate(self._tanks):
-            if not t.frozen:
-                restore.append((i, t.pct))
-                t.make_empty()
+        for i,t in enumerate(self.tanks):
+            if not self.is_frozen(t.name):
+                restore.append((i, t.fill_pct))
+                t.fill_pct = 0
 
         return restore
 
@@ -3512,12 +3340,12 @@ class BallastSystem(Point):
 
         for r in restore:
             i, pct = r
-            self._tanks[i].pct = pct
+            self.tanks[i].fill_pct = pct
 
 
     def tank(self, name):
 
-        for t in self._tanks:
+        for t in self.tanks:
             if t.name == name:
                 return t
         raise ValueError('No tank with name {}'.format(name))
@@ -3525,41 +3353,32 @@ class BallastSystem(Point):
     def __getitem__(self, item):
         return self.tank(item)
 
-
     @property
     def cogx(self):
-        """X position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]"""
+        """X position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]"""
         return self.cog[0]
 
     @property
     def cogy(self):
-        """Y position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]"""
+        """Y position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]"""
         return self.cog[1]
 
     @property
     def cogz(self):
-        """Z position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]"""
+        """Z position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]"""
         return self.cog[2]
 
     @property
     def cog(self):
-        """Combined CoG of all tank contents in the ballast-system. (local coordinate) [m,m,m]"""
-        self.update()
-        return (self._cog[0], self._cog[1], self._cog[2])
+        """Combined CoG of all tank contents in the ballast-system. (global coordinate) [m,m,m]"""
+        cog, wt = self.xyzw()
+        return (cog[0], cog[1], cog[2])
 
     @property
     def weight(self):
         """Total weight of all tank fillings in the ballast system [kN]"""
-        self.update()
-        return self._weight
-
-
-    # @property
-    # def mass(self):
-    #     """Control the static mass of the body"""
-    #     return self._vfForce.force[2] / -vfc.G
-
-
+        cog, wt = self.xyzw()
+        return wt * 9.81
 
     def give_python_code(self):
         code = "\n# code for {} and its tanks".format(self.name)
@@ -3567,9 +3386,9 @@ class BallastSystem(Point):
         code += "\nbs = s.new_ballastsystem('{}', parent = '{}',".format(self.name, self.parent_for_export.name)
         code += "\n                         position = ({},{},{}))".format(*self.position)
 
-        for tank in self._tanks:
-            code += "\nbs.new_tank('{}', position = ({},{},{}),".format(tank.name, *tank.position)
-            code += "\n            capacity_kN = {}, frozen = {}, actual_fill = {})".format(tank.max, tank.frozen, tank.pct)
+        # for tank in self._tanks:
+        #     code += "\nbs.new_tank('{}', position = ({},{},{}),".format(tank.name, *tank.position)
+        #     code += "\n            capacity_kN = {}, frozen = {}, actual_fill = {})".format(tank.max, tank.frozen, tank.pct)
 
         return code
 
@@ -6686,13 +6505,12 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_ballastsystem(self, name, parent=None, position=None) ->BallastSystem:
+    def new_ballastsystem(self, name, parent : Axis) ->BallastSystem:
         """Creates a new *rigidbody* node and adds it to the scene.
 
         Args:
             name: Name for the node, should be unique
             parent: name of the parent of the ballast system (ie: the vessel axis system)
-            position: the reference system in which the tanks are defined [0,0,0]
 
         Examples:
             scene.new_ballastsystem("cheetah_ballast", parent="Cheetah")
@@ -6712,24 +6530,9 @@ class Scene:
 
         parent = self._parent_from_node(parent) # handles verification of type as well
 
-        if position is not None:
-            assert3f(position, "Position ")
 
         # make elements
-
-        p = self._vfc.new_poi(name)
-
-        g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + "gravity")
-        g.parent = p
-        g.force = (0, 0, 0)
-
-        r = BallastSystem(self, p, g)
-
-        # and set properties
-        r.parent = parent
-
-        if position is not None:
-            r.position = position
+        r = BallastSystem(self, parent)
 
         self._nodes.append(r)
         return r

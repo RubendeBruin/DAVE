@@ -94,7 +94,7 @@
      </row>
      <column>
       <property name="text">
-       <string>Capacity [kN]</string>
+       <string>Capacity [m3]</string>
       </property>
      </column>
      <column>
