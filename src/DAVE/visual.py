@@ -40,6 +40,7 @@ import DAVE.settings as vc
 import vtk
 import numpy as np
 from enum import Enum
+from scipy.spatial import ConvexHull
 
 def transform_to_mat4x4(transform):
     mat4x4 = vtk.vtkMatrix4x4()
@@ -179,6 +180,7 @@ class VisualActor:
         self._original_colors = list()
         self._is_selected = False
         self._is_transparent = False
+        self.label_actor = None
 
     def select(self):
 
@@ -260,6 +262,44 @@ class VisualActor:
     def visible(self):
         return self.actors[0].GetVisibility()
 
+    def setLabelPosition(self, position):
+        if self.label_actor is not None:
+            self.label_actor.SetAttachmentPoint(*position)
+
+    def setLabel(self, txt):
+        if self.label_actor is None:
+            la = vtk.vtkCaptionActor2D()
+            la.SetCaption(txt)
+
+            position = self.actors[0].GetPosition()
+
+            la.SetAttachmentPoint(*position)
+
+            la.SetPickable(True)
+
+            cap = la.GetTextActor().GetTextProperty()
+            la.GetTextActor().SetPickable(True)
+
+            size = 0.02
+
+            cap.SetColor(0, 0, 0)
+            la.SetWidth(100 * size)
+            la.SetHeight(size)
+            la.SetPosition(-size/2, -size/2)
+            la.SetBorder(False)
+            cap.SetBold(True)
+            cap.SetItalic(False)
+
+            la.no_outline = True
+
+            self.label_actor = la
+
+        else:
+            self.label_actor.SetCaption(txt)
+
+        return self.label_actor
+
+
 
 class Viewport:
 
@@ -302,6 +342,18 @@ class Viewport:
 
         self._wavefield = None
         """WaveField object"""
+
+    def show_only_labels_of_nodes_type(self, node_types):
+        for vis in self.visuals:
+            on = False
+
+            if node_types is not None:
+                if isinstance(vis.node, node_types):
+                    on = True
+
+            if vis.label_actor is not None:
+                vis.label_actor.SetVisibility(on)
+
 
     def update_outlines(self):
         if self.screen is None:
@@ -445,6 +497,9 @@ class Viewport:
             for a in v.actors:
                 if a == actor:
                     return v.node
+            if v.label_actor == actor:
+                return v.node
+
         return None
 
     def actor_from_node(self, node):
@@ -579,6 +634,7 @@ class Viewport:
                     pass
 
             actors = []
+            label_text = None
 
             if isinstance(N, vf.Buoyancy):
 
@@ -645,6 +701,8 @@ class Viewport:
                 c.actor_type = ActorType.MESH_OR_CONNECTOR
                 actors.append(c)
 
+                label_text = N.name
+
 
             if isinstance(N, vf.ContactMesh):
 
@@ -709,6 +767,8 @@ class Viewport:
                 p.c(vc.COLOR_POI)
                 p.actor_type = ActorType.GEOMETRY
                 actors.append(p)
+
+                label_text = N.name
 
             if isinstance(N, vf.ContactBall):
                 p = vp.Sphere(pos=(0,0,0), r=N.radius, res = vc.RESOLUTION_SPHERE)
@@ -791,6 +851,8 @@ class Viewport:
                 a.actor_type = ActorType.CABLE
                 actors.append(a)
 
+                label_text = N.name
+
             if isinstance(N, vf.SPMT):
 
                 gp = N.get_actual_global_points()
@@ -839,9 +901,9 @@ class Viewport:
 
                 actors.append(a)
 
-
-
             va = VisualActor(actors, N)
+            if label_text is not None:
+                va.setLabel(N.name)
             N.visual = va
 
             N.visual.__just_created = True
@@ -1327,6 +1389,9 @@ class Viewport:
                 # move the CoB to the new (global!) position
                 cob = V.node.cog
 
+                points = V.actors[0].points(True)
+                V.setLabelPosition(np.mean(points, axis=1))
+
                 # print(f'cob = {cob}')
 
                 V.actors[1].SetUserMatrix(transform_from_point(*cob))
@@ -1335,57 +1400,112 @@ class Viewport:
                 else:
                     V.actors[1].on()
 
-                # Instead of updating, remove the old actor and create a new one
 
-                # remove already existing submerged mesh (if any)
+                # Fluid in tank
+
+                # Construct a visual:
+                #   - vertices
+                #   - faces
+
+                # If tank is full, then simply copy the mesh from the tank itself
+
+                if V.node.fill_pct > 99.99:
+
+                    # tank is full
+                    vertices = points[0]
+                    faces = V.actors[0].faces()
+
+                else:
+
+                    mesh = V.node._vfNode.current_mesh
+
+                    if mesh.nVertices > 0:  # only add when available
+
+                        vertices = []
+                        for i in range(mesh.nVertices):
+                            vertices.append(mesh.GetVertex(i))
+
+                        faces = []
+                        for i in range(mesh.nFaces):
+                            faces.append(mesh.GetFace(i))
+
+
+                        # create the lid using a convex hull
+                        thickness_tolerance = 1e-4  # for numerical accuracy
+
+                        verts = np.array(vertices)
+                        z = verts[:,2]
+                        maxz = np.max(z)
+                        top_plane_verts = verts[z>=maxz-thickness_tolerance]
+
+                        # make convex hull
+                        d2 = top_plane_verts[:,0:2]
+
+                        try:
+
+                            hull = ConvexHull(d2)
+
+                            points = top_plane_verts[hull.vertices, :]   # for 2-D the vertices are guaranteed to be in counterclockwise order
+
+                            nVerts = len(vertices)
+
+                            for point in points:
+                                vertices.append([*point])
+
+                            # construct faces
+                            for i in range(len(points)-2):
+                                faces.append([nVerts,nVerts+i+2,nVerts+i+1])
+                        except:
+                            pass
+
+
+                    else:
+                        vertices = []
+                    # -------------------
+
+                # we now have vertices and points and faces
+
+                # do we already have an actor?
+                need_new = False
                 if len(V.actors) > 2:
-                    if self.screen is not None:
-                        self.screen.remove(V.actors[2])
-                        V.actors.remove(V.actors[2])
+                    print(f'Already have an actor for {V.node.name}')
+                    vis = V.actors[2]
+                    pts = vis._polydata.GetPoints()
+                    npt = len(vertices)
 
-                mesh = V.node._vfNode.current_mesh
+                    # Update the existing actor if the number of vertices stay the same
+                    # If not then delete the actor
 
-                if mesh.nVertices > 0:  # only add when available
+                    # check for number of points
+                    if pts.GetNumberOfPoints() == npt:
+                        print(f'setting points for {V.node.name}')
+                        vis.points(vertices)
 
-                    vertices = []
-                    for i in range(mesh.nVertices):
-                        vertices.append(mesh.GetVertex(i))
+                    else:
 
-                    faces = []
-                    for i in range(mesh.nFaces):
-                        faces.append(mesh.GetFace(i))
+                        print(f'Number of points changed: {pts.GetNumberOfPoints()} was {npt}')
 
+                        if self.screen is not None:
+                            print(f'Removing actor for for {V.node.name}')
+                            self.screen.remove(V.actors[2])
+                            V.actors.remove(V.actors[2])
+                            need_new = True
+                else:
+                    need_new = True
 
-                    # create the lid using a convex hull
-                    thickness_tolerance = 1e-4  # for numerical accuracy
+                if len(vertices)>0:  # if we have an actor
 
-                    verts = np.array(vertices)
-                    z = verts[:,2]
-                    maxz = np.max(z)
-                    top_plane_verts = verts[z>=maxz-thickness_tolerance]
+                    if need_new:
 
-                    # make convex hull
-                    d2 = top_plane_verts[:,0:2]
+                        print(f'Creating new actor for for {V.node.name}')
 
-                    try:
-                        from scipy.spatial import ConvexHull
-                        hull = ConvexHull(d2)
+                        vis = vp.Mesh([vertices, faces]).c(vc.COLOR_BUOYANCY_MESH_LINES)
+                        vis.actor_type = ActorType.MESH_OR_CONNECTOR
 
-                        points = top_plane_verts[hull.vertices, :]   # for 2-D the vertices are guaranteed to be in counterclockwise order
+                        V.actors.append(vis)
 
-                        nVerts = len(vertices)
-
-                        for point in points:
-                            vertices.append([*point])
-
-                        # construct faces
-                        for i in range(len(points)-2):
-                            faces.append([nVerts,nVerts+i+2,nVerts+i+1])
-                    except:
-                        pass
-
-                    vis = vp.Mesh([vertices, faces]).c(vc.COLOR_BUOYANCY_MESH_LINES)
-                    vis.actor_type = ActorType.MESH_OR_CONNECTOR
+                        if self.screen is not None:
+                            self.screen.add(vis, render=True)
 
                     if V.node.fill_pct > 94.9:
                         vis.c(vc.COLOR_WATER_TANK_95PLUS)
@@ -1396,13 +1516,10 @@ class Viewport:
 
                     vis.alpha(vc.ALPHA_WATER_TANK)
 
-                    V.actors.append(vis)
-
                     if not V.node.visible:
                         vis.off()
 
-                    if self.screen is not None:
-                        self.screen.add(vis)
+
 
                 V._visual_volume = V.node.volume
 
@@ -1432,14 +1549,13 @@ class Viewport:
                 A.SetUserMatrix(mat4x4)
 
 
-        # for V in to_be_removed:
-        #     self.visuals.remove(V)
-        #     self.screen.remove(V.actors)
 
         acs = list()
         for V in  to_be_removed:
             self.visuals.remove(V)
             acs.extend(V.actors)
+            if V.label_actor is not None:
+                acs.append(V.label_actor)
 
         if acs:
             self.screen.remove(acs)
@@ -1460,6 +1576,9 @@ class Viewport:
                         to_be_added.append(a)
                         # self.screen.add(a)   # do not add directly to avoid frequent updates
                         #print('adding actor for {}'.format(va.node.name))
+                if va.label_actor is not None:
+                    if va.label_actor not in actors:
+                        to_be_added.append(va.label_actor)
 
             if to_be_added:
                 self.screen.add(to_be_added)
@@ -1720,6 +1839,7 @@ class Viewport:
         if self.mouseLeftEvent is not None:
 
             pos = self.screen.interactor.GetEventPosition()
+
             picker = vtk.vtkPropPicker()
 
             for j in range(5):
@@ -1737,6 +1857,11 @@ class Viewport:
 
                 if picker.Pick(pos[0]+2*x, pos[1]+2*y, 0, self.screen.renderer):
                     actor = picker.GetActor()  # gives an Actor
+                    if actor is not None:
+                        self.mouseLeftEvent(actor)
+                        return
+
+                    actor = picker.GetActor2D()
                     if actor is not None:
                         self.mouseLeftEvent(actor)
                         return

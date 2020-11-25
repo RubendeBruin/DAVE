@@ -634,7 +634,7 @@ class BallastSystemSolver:
             old_fill = tank.fill_pct
             if tank.fill_pct < 1:
                 tank.fill_pct = 100
-            self.BallastSystem.new_tank(tank.name, position=tank.cog_local, capacity_kN=tank.volume * tank.density * 9.81, actual_fill=old_fill)
+            self.BallastSystem.new_tank(tank.name, position=tank.cog_local, capacity_kN=tank.volume * tank.density * 9.81, actual_fill=old_fill, frozen=self.ballast_system_node.is_frozen(tank.name))
             tank.fill_pct = old_fill
 
         _log = []
@@ -766,13 +766,25 @@ class BallastSystemSolver:
             if changed:
                 continue
 
+            # No workable option to get to anything better
+
+
+            print("Can not find a way to get closer to the intended solution. Giving up.")
             print([t.pct for t in optTanks])
             print(self._error())
             print(self.xyzw())
 
-            raise ArithmeticError('Optimization failed')
+            break
+
+
 
         self.print('Error = {}'.format(self._error()))
+
+        if self._error() < self.tolerance:
+            success = True
+        else:
+            success = False
+
         self.print(self.xyzw())
         print([t.pct for t in optTanks])
 
@@ -784,6 +796,7 @@ class BallastSystemSolver:
             plt.plot(_log)
             print('Error = {}'.format(self._error()))
             plt.show()
-            raise ArithmeticError('Optimization failed : too many iterations')
+
+        return success
 
 #

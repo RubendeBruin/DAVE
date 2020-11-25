@@ -3100,8 +3100,10 @@ class Tank(NodeWithParent):
     @node_setter_observable
     def fill_pct(self, value):
         assert1f_positive_or_zero(value)
+        if value>100.1:
+            raise ValueError(f'Fill percentage should be between 0 and 100 [%], {value} is not valid')
         if value>100:
-            raise ValueError('Fill percentage should be between 0 and 100 [%]')
+            value = 100
         self.volume = value * self.capacity / 100
 
     @property

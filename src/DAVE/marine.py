@@ -22,6 +22,7 @@
 
 from DAVE.scene import *
 import matplotlib.pyplot as plt
+from warnings import warn
 
 def linearize_buoyancy(scene : Scene, node : Buoyancy, delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
     """Replaces the given Buoyancy node with a HydSpring node using even-keel (rotation = (0,0,0) ) as reference.
@@ -85,10 +86,11 @@ def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_dr
     pc = node.give_python_code()
 
     s = Scene()
+    s.resources_paths = scene.resources_paths
     a = s.new_axis(node.parent.name, fixed=True)
     a.z = node.parent.global_position[2]
 
-    exec(node.give_python_code())  # place a copy of the buoayncy node in scene "s"
+    exec(node.give_python_code())  # place a copy of the buoyancy node in scene "s"
 
     node = s[node.name]
 
@@ -107,6 +109,10 @@ def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_dr
 
     new_disp =  node.displacement
     delta_disp = new_disp - displacement_m3
+
+    if abs(delta_disp) < 1e-6:
+        warn(f'Zero displacement change detected for vertical position of {a.z}m')
+        return None
 
 
     Awl = delta_disp / delta_draft
@@ -185,6 +191,10 @@ def carene_table(scene, buoyancy_node, draft_min, draft_max,
     for z in zs:
         buoyancy_node.parent.z = -z
         r = calculate_linearized_buoyancy_props(scene, buoyancy_node, delta_roll=delta_roll, delta_pitch=delta_pitch, delta_draft=delta_draft)
+
+        if r is None:
+            break
+
         r['CoB x [m]'] = r['cob'][0]
         r['CoB y [m]'] = r['cob'][1]
         r['CoB z [m]'] = r['cob'][2]
@@ -212,7 +222,8 @@ def carene_table(scene, buoyancy_node, draft_min, draft_max,
 def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum_heel= 0, maximum_heel=90, steps=180,
                                teardown=True,
                                allow_surge=False, allow_sway=False, allow_yaw=False, allow_trim=True,
-                               noplot = False, noshow = False):
+                               noplot = False, noshow = False,
+                               fig = None):
     """This works for vessels without a parent.
 
     The vessels slaved to an axis system and its heel angle is fixed and enforced. After solving statics the GZ
@@ -242,6 +253,7 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
         allow_trim:     (True)
         noplot:         Do not plot results [False]
         noshow:         Do plot but do not do plt.show() [False]
+        axes:           Axes instance to plot in
 
     Returns:
         dictionary with heel, moment, and GM
@@ -381,27 +393,39 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
         # else:
         #     lbl = None
 
-        if allow_trim:
-            plt.plot(heel + initial_heel, trim + initial_trim, color='black', marker='+')
-            plt.xlabel('Heel angle [deg]')
-            plt.ylabel('Solved trim angle [deg]\n(including initial trim of {:.2f} [deg])'.format(initial_trim))
-            plt.title('Trim resulting from imposed heel')
-            plt.grid()
-            plt.figure()
+        if fig is None:
+            fig = plt.figure()
+        else:
+            fig.clear()
 
-        plt.xlabel('Heel angle [deg] including initial heel of {:.2f} deg'.format(initial_heel))
+        if allow_trim:
+
+            ax_gz = fig.add_subplot(2,1,1,label='gz')
+            ax_trim = fig.add_subplot(2,1,2,label='trim')
+        else:
+            ax_gz = fig.add_subplot(1,1,1, label='gz')
+
+
+        if allow_trim:
+            ax_trim.plot(heel + initial_heel, trim + initial_trim, color='black', marker='+')
+            ax_trim.set_xlabel('Heel angle [deg]')
+            ax_trim.set_ylabel('Solved trim angle [deg]\n(including initial trim of {:.2f} [deg])'.format(initial_trim))
+            ax_trim.set_title('Trim resulting from imposed heel')
+            ax_trim.grid()
+
+        ax_gz.set_xlabel('Heel angle [deg] including initial heel of {:.2f} deg'.format(initial_heel))
 
         what = 'moment'
         if no_displacement:
-            plt.plot(heel + initial_heel, moment, color='black', marker='+')
-            plt.ylabel('Restoring moment [kN*m]')
+            ax_gz.plot(heel + initial_heel, moment, color='black', marker='+')
+            ax_gz.set_ylabel('Restoring moment [kN*m]')
         else:
-            plt.plot(heel + initial_heel, GZ, color='black', marker='+')
+            ax_gz.plot(heel + initial_heel, GZ, color='black', marker='+')
             what = 'arm'
-            plt.ylabel('GZ [m]')
+            ax_gz.set_ylabel('GZ [m]')
 
             # plot the GM line
-            yy = plt.ylim()
+            yy = ax_gz.get_ylim()
             xmax = np.rad2deg(yy[1] / GM)
             xmin = np.rad2deg(yy[0] / GM)
 
@@ -409,13 +433,13 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
             xmax = np.min([xmax, np.max(heel)])
 
 
-            plt.plot([xmin + initial_heel, xmax+ initial_heel], [np.deg2rad(xmin)*GM, np.deg2rad(xmax)*GM])
+            ax_gz.plot([xmin + initial_heel, xmax+ initial_heel], [np.deg2rad(xmin)*GM, np.deg2rad(xmax)*GM])
             box_props = dict(boxstyle='round', facecolor='gold', alpha=1)
-            plt.text(xmax,np.deg2rad(xmax)*GM,'GM = {:.2f}'.format(GM),horizontalalignment='left',bbox=box_props)
+            ax_gz.text(xmax,np.deg2rad(xmax)*GM,'GM = {:.2f}'.format(GM),horizontalalignment='left',bbox=box_props)
 
-        plt.title('Restoring {} curve for {};\n Displacement = {} [kN]'.format(what, vessel.name, round(100*displacement_kN)/100))
+        ax_gz.set_title('Restoring {} curve for {};\n Displacement = {} [kN]'.format(what, vessel.name, round(100*displacement_kN)/100))
 
-        plt.grid('on')
+        ax_gz.grid('on')
         # if lbl:
         #     plt.legend(facecolor='gold')
         if not noshow:
