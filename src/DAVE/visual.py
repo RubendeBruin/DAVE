@@ -1436,7 +1436,7 @@ class Viewport:
                 # do we already have an actor?
                 need_new = False
                 if len(V.actors) > 2:
-                    print(f'Already have an actor for {V.node.name}')
+                    # print(f'Already have an actor for {V.node.name}')
                     vis = V.actors[2]
                     pts = vis._polydata.GetPoints()
                     npt = len(vertices)
@@ -1446,15 +1446,15 @@ class Viewport:
 
                     # check for number of points
                     if pts.GetNumberOfPoints() == npt:
-                        print(f'setting points for {V.node.name}')
+                        # print(f'setting points for {V.node.name}')
                         vis.points(vertices)
 
                     else:
 
-                        print(f'Number of points changed: {pts.GetNumberOfPoints()} was {npt}')
+                        # print(f'Number of points changed: {pts.GetNumberOfPoints()} was {npt}')
 
                         if self.screen is not None:
-                            print(f'Removing actor for for {V.node.name}')
+                            # print(f'Removing actor for for {V.node.name}')
                             self.screen.remove(V.actors[2])
                             V.actors.remove(V.actors[2])
                             need_new = True
@@ -1465,7 +1465,7 @@ class Viewport:
 
                     if need_new:
 
-                        print(f'Creating new actor for for {V.node.name}')
+                        # print(f'Creating new actor for for {V.node.name}')
 
                         vis = vp.Mesh([vertices, faces]).c(vc.COLOR_BUOYANCY_MESH_LINES)
                         vis.actor_type = ActorType.MESH_OR_CONNECTOR

@@ -3099,7 +3099,12 @@ class Tank(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def fill_pct(self, value):
+
+        if value < 0 and value > -0.01:
+            value = 0
+
         assert1f_positive_or_zero(value)
+
         if value>100.1:
             raise ValueError(f'Fill percentage should be between 0 and 100 [%], {value} is not valid')
         if value>100:
@@ -6547,6 +6552,7 @@ class Scene:
 
         # make elements
         r = BallastSystem(self, parent)
+        r.name = name
 
         self._nodes.append(r)
         return r
