@@ -72,8 +72,8 @@
 import DAVE.auto_download
 
 from PySide2.QtCore import Qt
-from PySide2.QtGui import QIcon, QPixmap, QFont,QFontMetricsF
-from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox
+from PySide2.QtGui import QIcon, QPixmap, QFont, QFontMetricsF, QCursor
+from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox, QMenu, QWidgetAction
 from DAVE.scene import Scene
 
 from DAVE.gui.forms.main_form import Ui_MainWindow
@@ -244,6 +244,23 @@ class Gui():
         self.ui.btnWater.pressed.connect(self.toggle_show_global)
         self.ui.btnBlender.pressed.connect(self.to_blender)
         self.ui.pbCopyViewCode.pressed.connect(self.copy_screenshot_code)
+        self.ui.pbLabels.pressed.connect(self.show_labels_menu)
+
+        self.labels_menu = QMenu()
+        items = ('Tank','Point','Cable')
+
+        self.ui.label_menu_actions = []
+        for name in items:
+
+            lb = QWidgetAction(None)
+            lb.setCheckable(True)
+            lb.setChecked(True)
+            lb.setText(name)
+            lb.setData(name)
+            lb.toggled.connect(self.show_label_toggled)
+            self.ui.label_menu_actions.append(lb)
+            self.labels_menu.addAction(lb)
+
 
         # left
         self.ui.pbUpdate.pressed.connect(lambda: self.guiEmitEvent(guiEventType.FULL_UPDATE))
@@ -469,6 +486,29 @@ class Gui():
         if block:
             self.ui.pbUpdate.setVisible(False)
             self.app.exec_()
+
+    def show_labels_menu(self):
+        self.labels_menu.exec_(QCursor.pos())
+
+    def show_label_toggled(self):
+        types = []
+        for item in self.ui.label_menu_actions:
+            if item.isChecked():
+                name = item.data()
+                if name == 'Point':
+                    types.append(Point)
+                elif name == 'Cable':
+                    types.append(Cable)
+                elif name == 'Tank':
+                    types.append(Tank)
+                else:
+                    raise ValueError(name)
+
+        if types:
+            self.visual.show_only_labels_of_nodes_type(tuple(types))
+        else:
+            self.visual.show_only_labels_of_nodes_type(None)
+
 
     def copy_screenshot_code(self):
 

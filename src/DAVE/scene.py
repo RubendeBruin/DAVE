@@ -3180,6 +3180,20 @@ class BallastSystem(Node):
 
         self.parent = parent
 
+    def new_tank(self, name, position, capacity_kN, rho = 1.025):
+        """Adds a new cubic shaped tank with the given volume as derived from capacity and rho
+
+        Warning: provided for backwards compatibility only.
+        """
+
+        tnk = self._scene.new_tank(name, parent = self.parent, density=rho)
+        volume = capacity_kN / (9.81 * rho)
+        side = volume ** (1/3)
+        tnk.trimesh.load_file(self._scene.get_resource_path('cube.obj'),
+                                    scale=(side, side, side), rotation=(0.0, 0.0, 0.0), offset=position)
+
+        self.tanks.append(tnk)
+
     # for gui
     def change_parent_to(self, new_parent):
         if not (isinstance(new_parent, Axis) or new_parent is None):
@@ -3385,12 +3399,10 @@ class BallastSystem(Node):
     def give_python_code(self):
         code = "\n# code for {} and its tanks".format(self.name)
 
-        code += "\nbs = s.new_ballastsystem('{}', parent = '{}',".format(self.name, self.parent_for_export.name)
-        code += "\n                         position = ({},{},{}))".format(*self.position)
+        code += "\nbs = s.new_ballastsystem('{}', parent = '{}')".format(self.name, self.parent.name)
 
-        # for tank in self._tanks:
-        #     code += "\nbs.new_tank('{}', position = ({},{},{}),".format(tank.name, *tank.position)
-        #     code += "\n            capacity_kN = {}, frozen = {}, actual_fill = {})".format(tank.max, tank.frozen, tank.pct)
+        for tank in self.tanks:
+            code += "\nbs.tanks.append(s['{}']),".format(tank.name)
 
         return code
 
@@ -6807,7 +6819,12 @@ class Scene:
     def run_code(self, code):
         """Runs the provided code with 's' as self"""
         s = self
-        exec(code, {}, {'s': s})
+        try:
+            exec(code, {}, {'s': s})
+        except Exception as M:
+            for i,line in enumerate(code.split('\n')):
+                print(f'{i} {line}')
+            raise M
 
     def load_scene(self, filename = None):
         """Loads the contents of filename into the current scene.

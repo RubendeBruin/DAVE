@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Fri Oct 16 12:56:15 2020
+# Created: Wed Nov 25 13:31:01 2020
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -64,6 +64,16 @@ class Ui_MainWindow(object):
         self.pbCopyViewCode.setFlat(True)
         self.pbCopyViewCode.setObjectName("pbCopyViewCode")
         self.horizontalLayout_2.addWidget(self.pbCopyViewCode)
+        self.pbLabels = QtWidgets.QPushButton(self.widget_3)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.pbLabels.sizePolicy().hasHeightForWidth())
+        self.pbLabels.setSizePolicy(sizePolicy)
+        self.pbLabels.setMaximumSize(QtCore.QSize(40, 16777215))
+        self.pbLabels.setFlat(True)
+        self.pbLabels.setObjectName("pbLabels")
+        self.horizontalLayout_2.addWidget(self.pbLabels)
         self.btnWater = QtWidgets.QPushButton(self.widget_3)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -395,6 +405,7 @@ class Ui_MainWindow(object):
         self.btnSolveStatics.setText(QtWidgets.QApplication.translate("MainWindow", "Solve &statics", None, -1))
         self.btnUndoStatics.setText(QtWidgets.QApplication.translate("MainWindow", "Undo", None, -1))
         self.pbCopyViewCode.setToolTip(QtWidgets.QApplication.translate("MainWindow", "Copy screenshot code", None, -1))
+        self.pbLabels.setText(QtWidgets.QApplication.translate("MainWindow", "A", None, -1))
         self.btnWater.setText(QtWidgets.QApplication.translate("MainWindow", "sea", None, -1))
         self.btnBlender.setText(QtWidgets.QApplication.translate("MainWindow", "blender", None, -1))
         self.btnPauseAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "||", None, -1))

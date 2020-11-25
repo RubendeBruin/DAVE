@@ -1019,6 +1019,8 @@ class Viewport:
 
                 update_line_to_points(A, points)
 
+                V.setLabelPosition(np.mean(points, axis=0))
+
                 continue
 
             if isinstance(V.node, vf.SPMT):
@@ -1038,6 +1040,8 @@ class Viewport:
                 points = V.node.global_positions
                 A = V.actors[0]
                 update_line_to_points(A, points)
+
+                V.setLabelPosition(np.mean(points, axis=0))
 
                 continue
 
@@ -1066,44 +1070,6 @@ class Viewport:
 
             if isinstance(V.node, vf.BallastSystem):
 
-                # pass
-                #
-                # tr = V.node.parent.global_transform
-                # mat4x4 = transform_to_mat4x4(tr)
-                #
-                # for tnk in V.node.tanks:
-                #
-                #     # t = vtk.vtkTransform()
-                #     # t.Identity()
-                #     # local_position = np.array(V.node.position, dtype=float) + np.array(tnk.position, dtype=float)
-                #     # pos = V.node.parent.to_glob_position(local_position)
-                #     # t.Translate(pos)
-                #
-                #     actor = tnk.actor
-                #
-                #     # actor.SetUserMatrix(t)
-                #     # actor.SetScale(4)
-                #
-                #     if tnk.is_partial():
-                #
-                #         actor.color([1,1,0])
-                #
-                #     if tnk.is_full():
-                #         actor.color([0,0,0.2])
-                #     if tnk.is_empty():
-                #         actor.color([0.8,0.9,1])
-                #
-                #     # get the local (user set) transform
-                #     t = vtk.vtkTransform()
-                #     t.Identity()
-                #     t.Translate(tnk.position)
-                #
-                #     # Get the parent matrix (if any)
-                #     if V.node.parent is not None:
-                #         apply_parent_tranlation_on_transform(V.node.parent, t)
-                #
-                #     actor.SetUserTransform(t)
-
                 continue
 
 
@@ -1113,6 +1079,8 @@ class Viewport:
                 t.Translate(V.node.global_position)
                 V.actors[0].SetUserTransform(t)
                 V.actors[0].SetScale(self.geometry_scale)
+
+                V.setLabelPosition(V.node.global_position)
                 continue
 
             if isinstance(V.node, vf.ContactBall):

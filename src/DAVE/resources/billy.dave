@@ -107,38 +107,3 @@ s.new_cable('HoistWire', endA = 'Billy liftpoint_ps',
  endB= 'Billy liftpoint_sb',
  sheaves = ['Hoist sheeve 1','Hoist sheeve 2'],
  length = 30, EA=100000000)
-
-
-# Ballasting to 4m draft
-s["Billy Ballast system"]["sb_outer8"].pct = 16.883637845898846
-s["Billy Ballast system"]["ps_outer1"].pct = 100
-s["Billy Ballast system"]["ps_outer8"].pct = 0.0
-s["Billy Ballast system"]["sb_outer1"].pct = 100
-s["Billy Ballast system"]["ps_inner8"].pct = 68.17698275958254
-s["Billy Ballast system"]["sb_inner8"].pct = 100
-s["Billy Ballast system"]["ps_inner1"].pct = 100
-s["Billy Ballast system"]["sb_inner1"].pct = 100
-s["Billy Ballast system"]["sb_outer2"].pct = 100
-s["Billy Ballast system"]["ps_outer7"].pct = 100
-s["Billy Ballast system"]["sb_outer7"].pct = 100
-s["Billy Ballast system"]["ps_outer2"].pct = 100.0
-s["Billy Ballast system"]["ps_inner2"].pct = 82.47325472694139
-s["Billy Ballast system"]["sb_inner7"].pct = 0
-s["Billy Ballast system"]["ps_inner7"].pct = 0
-s["Billy Ballast system"]["sb_inner2"].pct = 0
-s["Billy Ballast system"]["ps_outer3"].pct = 0
-s["Billy Ballast system"]["ps_outer6"].pct = 0
-s["Billy Ballast system"]["sb_outer3"].pct = 0
-s["Billy Ballast system"]["sb_outer6"].pct = 0
-s["Billy Ballast system"]["sb_inner3"].pct = 0
-s["Billy Ballast system"]["sb_inner6"].pct = 0
-s["Billy Ballast system"]["ps_inner3"].pct = 0
-s["Billy Ballast system"]["ps_inner6"].pct = 0
-s["Billy Ballast system"]["sb_outer5"].pct = 0
-s["Billy Ballast system"]["ps_outer5"].pct = 0
-s["Billy Ballast system"]["ps_outer4"].pct = 0
-s["Billy Ballast system"]["sb_outer4"].pct = 0
-s["Billy Ballast system"]["ps_inner5"].pct = 0
-s["Billy Ballast system"]["sb_inner4"].pct = 0
-s["Billy Ballast system"]["ps_inner4"].pct = 0
-s["Billy Ballast system"]["sb_inner5"].pct = 0
