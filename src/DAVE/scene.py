@@ -147,10 +147,12 @@ class Node:
         self._name = name
 
     def _delete_vfc(self):
+        """Removes any internally created core objects"""
         pass
 
     def update(self):
-        """Performs internal updates relevant for physics. Called before solving statics or getting results"""
+        """Performs internal updates relevant for physics. Called before solving statics or getting results such as
+        forces or inertia"""
         pass
 
     def _notify_observers(self):
@@ -3071,12 +3073,32 @@ class Tank(NodeWithParent):
         self._None_parent_acceptable = False
         self._trimesh = TriMeshSource(self._scene, self._vfNode.trimesh) # the tri-mesh is wrapped in a custom object
 
+        self._inertia = scene._vfc.new_pointmass(self.name + vfc.VF_NAME_SPLIT + 'inertia')
+
     def update(self):
         self._vfNode.reloadTrimesh()
+
+        # update inertia
+        self._inertia.parent = self.parent._vfNode
+        self._inertia.position = self.cog_local
+        self._inertia.inertia = self.volume * self.density
+
+    def _delete_vfc(self):
+        self._scene._vfc.delete(self._inertia.name)
+        super()._delete_vfc()
 
     @property
     def trimesh(self) -> TriMeshSource:
         return self._trimesh
+
+    @property
+    def free_flooding(self):
+        return self._vfNode.free_flooding
+
+    @free_flooding.setter
+    def free_flooding(self, value):
+        assert isinstance(value, bool), ValueError(f'free_flooding shall be a bool, you passed a {type(value)}')
+        self._vfNode.free_flooding = value
 
     @property
     def cog(self):
@@ -3087,6 +3109,11 @@ class Tank(NodeWithParent):
     def cog_local(self):
         """Returns the local position of the center of gravity"""
         return self.parent.to_loc_position(self.cog)
+
+    @property
+    def cog_when_full(self):
+        """Returns the LOCAL position of the center of volume / gravity of the tank when it is filled"""
+        return self._vfNode.cog_when_full
 
     @property
     def fill_pct(self):
@@ -3159,9 +3186,14 @@ class Tank(NodeWithParent):
         if self.density != 1.025:
             code += f'\n          density={self.density},'
 
+        if self.free_flooding:
+            code += f'\n          free_flooding=True,'
+
         code += "\n          parent='{}')".format(self.parent_for_export.name)
         code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
         code += f"\ns['{self.name}'].volume = {self.volume}   # first load mesh, then set volume"
+
+
 
         return code
 
@@ -3185,7 +3217,7 @@ class BallastSystem(Node):
 
         self.parent = parent
 
-    def new_tank(self, name, position, capacity_kN, rho = 1.025):
+    def new_tank(self, name, position, capacity_kN, rho = 1.025, frozen=False, actual_fill = 0):
         """Adds a new cubic shaped tank with the given volume as derived from capacity and rho
 
         Warning: provided for backwards compatibility only.
@@ -3196,8 +3228,15 @@ class BallastSystem(Node):
         side = volume ** (1/3)
         tnk.trimesh.load_file(self._scene.get_resource_path('cube.obj'),
                                     scale=(side, side, side), rotation=(0.0, 0.0, 0.0), offset=position)
+        if actual_fill > 0:
+            tnk.fill_pct = actual_fill
+
+        if frozen:
+            tnk.frozen = frozen
 
         self.tanks.append(tnk)
+
+        return tnk
 
     # for gui
     def change_parent_to(self, new_parent):
@@ -3246,7 +3285,7 @@ class BallastSystem(Node):
     def order_tanks_by_elevation(self):
         """Re-orders the existing tanks such that the lowest tanks are higher in the list"""
 
-        zs = [tank.position[2] for tank in self.tanks]
+        zs = [tank.cog_when_full[2] for tank in self.tanks]
         inds = np.argsort(zs)
         self.tanks = [self.tanks[i] for i in inds]
 
@@ -3259,7 +3298,7 @@ class BallastSystem(Node):
 
 
         """
-        pos = [tank.position for tank in self.tanks]
+        pos = [tank.cog_when_full for tank in self.tanks]
         pos = np.array(pos, dtype=float)
         pos -= np.array(point)
 
@@ -3282,8 +3321,8 @@ class BallastSystem(Node):
 
     def _order_tanks_to_inertia_moment(self, maximize = True):
         """Re-order tanks such that tanks furthest away from center of system are first on the list"""
-        pos = [tank.position for tank in self.tanks]
-        m = [tank.max for tank in self.tanks]
+        pos = [tank.cog_when_full for tank in self.tanks]
+        m = [tank.capacity for tank in self.tanks]
         pos = np.array(pos, dtype=float)
         mxmymz = np.vstack((m,m,m)).transpose() * pos
         total = np.sum(m)
@@ -3407,7 +3446,7 @@ class BallastSystem(Node):
         code += "\nbs = s.new_ballastsystem('{}', parent = '{}')".format(self.name, self.parent.name)
 
         for tank in self.tanks:
-            code += "\nbs.tanks.append(s['{}']),".format(tank.name)
+            code += "\nbs.tanks.append(s['{}'])".format(tank.name)
 
         return code
 
@@ -6346,7 +6385,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_tank(self, name, parent=None, density = 1.025)->Tank:
+    def new_tank(self, name, parent=None, density = 1.025, free_flooding = False)->Tank:
         """Creates a new *buoyancy* node and adds it to the scene.
 
         Args:
@@ -6370,6 +6409,8 @@ class Scene:
         if b is None:
             raise ValueError('A valid parent must be defined for a Tank')
 
+        assert isinstance(free_flooding, bool), ValueError('free_flooding shall be True or False')
+
         assert1f(density, "density")
 
         # then create
@@ -6380,6 +6421,8 @@ class Scene:
         # and set properties
         if b is not None:
             new_node.parent = b
+
+        new_node.free_flooding = free_flooding
 
         self._nodes.append(new_node)
         return new_node

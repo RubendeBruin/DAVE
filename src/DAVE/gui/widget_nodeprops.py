@@ -377,6 +377,7 @@ class EditTank(NodeEditor):
         new_volume = self.ui.sbVolume.value()
         new_pct = self.ui.sbPercentage.value()
         new_elev = self.ui.sbElevation.value()
+        new_free_flooding = self.ui.cbFreeFlooding.isChecked()
         # new_ht_pct = self.ui.sbPercentage_ht.value()
 
         def add(name, value, ref, dec = 3):
@@ -391,6 +392,7 @@ class EditTank(NodeEditor):
         name = self.node.name
         code = ""
 
+        code += add(name, new_free_flooding, 'free_flooding')
         code += add(name, new_density,'density')
         code += add(name, new_volume,'volume')
         code += add(name, new_pct,'fill_pct')
@@ -406,6 +408,7 @@ class EditTank(NodeEditor):
             self.ui.sbVolume.valueChanged.disconnect()
             self.ui.sbPercentage.valueChanged.disconnect()
             self.ui.sbElevation.valueChanged.disconnect()
+            self.ui.cbFreeFlooding.toggled.disconnect()
             # self.ui.sbPercentage_ht.valueChanged.disconnect()
 
         except:
@@ -415,13 +418,17 @@ class EditTank(NodeEditor):
         self.ui.sbVolume.setValue(self.node.volume)
         self.ui.sbPercentage.setValue(self.node.fill_pct)
         self.ui.sbElevation.setValue(self.node.level_global)
+        self.ui.cbFreeFlooding.setChecked(self.node.free_flooding)
         # self.ui.sbPercentage_ht.setValue(self.node.fill_ht_pct)
 
         self.ui.sbDenstiy.valueChanged.connect(self.callback)
         self.ui.sbVolume.valueChanged.connect(self.callback)
         self.ui.sbPercentage.valueChanged.connect(self.callback)
         self.ui.sbElevation.valueChanged.connect(self.callback)
+        self.ui.cbFreeFlooding.toggled.connect(self.callback)
         # self.ui.sbPercentage_ht.valueChanged.connect(self.callback)
+
+        self.ui.widgetContents.setEnabled(not self.node.free_flooding)
 
         self.ui.lblCapacity.setText(f"{self.node.capacity:.3f}")
 

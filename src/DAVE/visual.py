@@ -1377,7 +1377,7 @@ class Viewport:
 
                 # If tank is full, then simply copy the mesh from the tank itself
 
-                if V.node.fill_pct > 99.99:
+                if V.node.fill_pct > 99.99 and not V.node.free_flooding:
 
                     # tank is full
                     vertices = points[0]
@@ -1475,12 +1475,15 @@ class Viewport:
                         if self.screen is not None:
                             self.screen.add(vis, render=True)
 
-                    if V.node.fill_pct > 94.9:
-                        vis.c(vc.COLOR_WATER_TANK_95PLUS)
-                    elif V.node.fill_pct < 5.1:
-                        vis.c(vc.COLOR_WATER_TANK_5MIN)
+                    if V.node.free_flooding:
+                        vis.c(vc.COLOR_WATER_TANK_FREEFLOODING)
                     else:
-                        vis.c(vc.COLOR_WATER_TANK_SLACK)
+                        if V.node.fill_pct > 94.9:
+                            vis.c(vc.COLOR_WATER_TANK_95PLUS)
+                        elif V.node.fill_pct < 5.1:
+                            vis.c(vc.COLOR_WATER_TANK_5MIN)
+                        else:
+                            vis.c(vc.COLOR_WATER_TANK_SLACK)
 
                     vis.alpha(vc.ALPHA_WATER_TANK)
 

@@ -20,7 +20,7 @@ s.new_rigidbody(name='Husky',
                 rotation=(solved(0.022627098474188267),
                           solved(-0.36240844461231014),
                           0.0),
-                fixed =(True, True, False, False, False, True) )
+                fixed =False )
 # code for Husky Buoyancy mesh
 mesh = s.new_buoyancy(name='Husky Buoyancy mesh',
           parent='Husky')
@@ -38,3 +38,10 @@ s.new_visual(name='Husky Visual',
             offset=(0.0, 0.0, 0.0), 
             rotation=(0.0, 0.0, 0.0), 
             scale=(1, 1, 1) )
+s["Husky"].inertia_radii = (10,30,30.0)
+s.new_waveinteraction('WaveInteraction', parent = 'Husky', path = r'husky.dhyd')
+s['WaveInteraction'].offset = (40.0, 0.0, 3.5)
+
+s.new_axis('Husky_target')
+s.new_linear_connector_6d('Husky_pos_springs', main = 'Husky_target', secondary = 'Husky')
+s['Husky_pos_springs'].stiffness = (100.0, 100.0, 0.0, 1.0, 1.0, 10.0)
