@@ -48,8 +48,9 @@ except ImportError as err:
 
     if (minor == 7):
         url = 'https://open-ocean.org/files/pyo3d.pyd'
-    if (minor == 8):
-        url = 'https://open-ocean.org/files/pyo3d.cp38-win_amd64.pyd'
+    else:
+        url = f'https://open-ocean.org/files/pyo3d.cp3{minor}-win_amd64.pyd'
+
 
 
     target = path + '\\' + os.path.basename(url)
