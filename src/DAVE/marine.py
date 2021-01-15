@@ -83,8 +83,6 @@ def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_dr
 
 
 
-    pc = node.give_python_code()
-
     s = Scene()
     s.resources_paths = scene.resources_paths
     a = s.new_axis(node.parent.name, fixed=True)
@@ -465,6 +463,9 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
     # --------- collect return values --------
     r = dict()
     r['heel'] = heel
+
+    if allow_trim:
+        r['trim'] = trim
 
     if not no_displacement:
         r['GM'] = GM
