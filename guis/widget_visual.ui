@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>444</width>
-    <height>894</height>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -37,6 +37,13 @@
        <string>wirecube.obj</string>
       </property>
      </item>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="cbInvertNormals">
+     <property name="text">
+      <string>Invert normals</string>
+     </property>
     </widget>
    </item>
    <item>
@@ -353,25 +360,12 @@
    <item>
     <widget class="QLabel" name="label_8">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;Notes:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Offset is applied on the scaled visual.&lt;/p&gt;&lt;p&gt;Rotation is defined as a rotation about a single axis.&lt;/p&gt;&lt;p&gt;- The axis of rotation is defined by the X,Y and Z components of the rotation.&lt;/p&gt;&lt;p&gt;- The angle or rotation is defined by the length of the rotation vector.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;Notes:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Offset is applied to the scaled visual.&lt;/p&gt;&lt;p&gt;Rotation is defined as a rotation about a single axis.&lt;/p&gt;&lt;p&gt;- The axis of rotation is defined by the X,Y and Z components of the rotation.&lt;/p&gt;&lt;p&gt;- The angle or rotation is defined by the length of the rotation vector.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
      </property>
     </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>163</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>

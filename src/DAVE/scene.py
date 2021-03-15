@@ -2772,6 +2772,8 @@ class TriMeshSource(Node):
         self._scale = (1,1,1)
         self._rotation = (0,0,0)
 
+        self._invert_normals = False
+
     def AddVertex(self, x,y,z):
         """Adds a vertex (point)"""
         self._TriMesh.AddVertex(x,y,z)
@@ -2822,24 +2824,13 @@ class TriMeshSource(Node):
         return (xn,xp,yn,yp,zn,zp)
 
 
-
-
-
-    # def make_cube(self):
-    #     """Sets the mesh to a cube"""
-    #
-    #     from vtk import vtkCubeSource
-    #     cube = vtkCubeSource()
-    #     self.load_vtk_polydataSource(cube)
-
-    def _fromVTKpolydata(self,polydata, offset = None, rotation = None, scale = None):
+    def _fromVTKpolydata(self,polydata, offset = None, rotation = None, scale = None, invert_normals=False):
 
         import vtk
 
         tri = vtk.vtkTriangleFilter()
 
         tri.SetInputConnection(polydata)
-
 
         scaleFilter = vtk.vtkTransformPolyDataFilter()
         rotationFilter = vtk.vtkTransformPolyDataFilter()
@@ -2882,16 +2873,71 @@ class TriMeshSource(Node):
                 print("Cell nr {} is a line, not adding to mesh".format(i))
                 continue
 
+            if isinstance(cell, vtk.vtkVertex):
+                print("Cell nr {} is a vertex, not adding to mesh".format(i))
+                continue
+
             id0 = cell.GetPointId(0)
             id1 = cell.GetPointId(1)
             id2 = cell.GetPointId(2)
-            self._TriMesh.AddFace(id0, id1, id2)
+
+            if invert_normals:
+                self._TriMesh.AddFace(id2, id1, id0)
+            else:
+                self._TriMesh.AddFace(id0, id1, id2)
 
         # check if anything was loaded
         if self._TriMesh.nFaces == 0:
             raise Exception('No faces in poly-data - no geometry added (hint: empty obj file?)')
         self._new_mesh = True
         self._scene.update()
+
+    def check_shape(self):
+        """Performs some checks on the shape in the trimesh
+        - Boundary edges (edge with only one face attached)
+        - Non-manifold edges (edit with more than two faces attached)
+        - Volume should be positive
+        """
+
+        tm = self._TriMesh
+
+        if tm.nFaces == 0:
+            return ['No mesh']
+
+        # Make a list of all boundaries using their vertex IDs
+        boundaries = np.zeros((3 * tm.nFaces, 2))
+        for i in range(tm.nFaces):
+            face = tm.GetFace(i)
+            boundaries[3 * i] = [face[0], face[1]]
+            boundaries[3 * i + 1] = [face[1], face[2]]
+            boundaries[3 * i + 2] = [face[2], face[0]]
+
+        # For an edge is doesn't matter in which direction it runs
+        boundaries.sort(axis=1)
+
+        rows_occurance_count = np.unique(boundaries, axis=0, return_counts=True)[1]  # count of rows
+
+        n_boundary = np.count_nonzero(rows_occurance_count == 1)
+        n_nonmanifold = np.count_nonzero(rows_occurance_count > 2)
+
+        messages = []
+
+        if n_boundary > 0:
+            messages.append(f'Mesh contains {n_boundary} boundary edges')
+        if n_nonmanifold > 0:
+            messages.append(f'Mesh contains {n_nonmanifold} non-manifold edges')
+
+        # Do not check for volume if we have nonmanifold geometry or boundary edges
+        try:
+            volume = tm.Volume()
+        except:
+            volume = 1  # no available in every pyo3d yet
+
+        if volume < 0:
+            messages.append(f'Total mesh volume is negative ({volume:.2f} m3 of enclosed volume).')
+            messages.append('Hint: Use invert-normals')
+
+        return messages
 
     def load_vtk_polydataSource(self, polydata):
         """Fills the triangle data from a vtk polydata such as a cubeSource.
@@ -2908,10 +2954,10 @@ class TriMeshSource(Node):
 
         self._fromVTKpolydata(polydata.GetOutputPort())
 
-    def load_obj(self, filename, offset = None, rotation = None, scale = None):
-        self.load_file(filename, offset, rotation, scale)
+    def load_obj(self, filename, offset = None, rotation = None, scale = None, invert_normals = False):
+        self.load_file(filename, offset, rotation, scale, invert_normals)
 
-    def load_file(self, filename, offset = None, rotation = None, scale = None):
+    def load_file(self, filename, offset = None, rotation = None, scale = None, invert_normals = False):
         """Loads an .obj file and and triangulates it.
 
         Order of modifications:
@@ -2949,7 +2995,7 @@ class TriMeshSource(Node):
         cln = vtk.vtkCleanPolyData()
         cln.SetInputConnection(obj.GetOutputPort())
 
-        self._fromVTKpolydata(cln.GetOutputPort(), offset=offset, rotation=rotation, scale=scale)
+        self._fromVTKpolydata(cln.GetOutputPort(), offset=offset, rotation=rotation, scale=scale, invert_normals=invert_normals)
 
         self._path = split(filename)[1]
         self._scale = scale
@@ -2962,6 +3008,7 @@ class TriMeshSource(Node):
             self._offset = (0.0, 0.0, 0.0)
         if self._rotation is None:
             self._rotation = (0.0, 0.0, 0.0)
+        self._invert_normals = invert_normals
 
     def give_python_code(self):
         code = "# No code generated for TriMeshSource"
@@ -3009,6 +3056,8 @@ class Buoyancy(NodeWithParent):
         self._vfNode.reloadTrimesh()
 
 
+
+
     @property
     def trimesh(self) -> TriMeshSource:
         return self._trimesh
@@ -3052,7 +3101,13 @@ class Buoyancy(NodeWithParent):
             code += f'\n          density={self.density},'
 
         code += "\n          parent='{}')".format(self.parent_for_export.name)
-        code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
+
+        if self.trimesh._invert_normals:
+            code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}), invert_normals=True)".format(
+                self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
+        else:
+            code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
+                self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
 
         return code
 
@@ -3190,7 +3245,13 @@ class Tank(NodeWithParent):
             code += f'\n          free_flooding=True,'
 
         code += "\n          parent='{}')".format(self.parent_for_export.name)
-        code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
+
+        if self.trimesh._invert_normals:
+            code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}), invert_normals=True)".format(
+                self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
+        else:
+            code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
+                self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
         code += f"\ns['{self.name}'].volume = {self.volume}   # first load mesh, then set volume"
 
 

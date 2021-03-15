@@ -845,21 +845,26 @@ class Gui():
                 for node in to_be_removed:
                     self.selected_nodes.remove(node)
 
+
+
                 # if we created something new, then select it
                 emitted = False
                 for node in self.scene._nodes:
                     if node not in before:
                         self.selected_nodes.clear()
-                        self.selected_nodes.append(node)
-                        self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+                        # self.selected_nodes.append(node)
+                        # self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+                        self.guiSelectNode(node)
                         emitted = True
                         break
+
+                if event is not None:
+                    self.guiEmitEvent(event)
 
                 if to_be_removed and not emitted:
                     self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
 
-                if event is not None:
-                    self.guiEmitEvent(event)
+
 
             except Exception as E:
 

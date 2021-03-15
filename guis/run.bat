@@ -16,7 +16,7 @@ echo call pyside2-uic widget_poi.ui -o "..\src\DAVE\gui\forms\widget_poi.py"
 echo call pyside2-uic widget_cable.ui -o "..\src\DAVE\gui\forms\widget_cable.py"
 echo call pyside2-uic addnode_form.ui -o "..\src\DAVE\gui\forms\addnode_form.py"
 echo call pyside2-uic widget_name.ui -o "..\src\DAVE\gui\forms\widget_name.py"
-echo call pyside2-uic widget_visual.ui -o "..\src\DAVE\gui\forms\widget_visual.py"
+call pyside2-uic widget_visual.ui -o "..\src\DAVE\gui\forms\widget_visual.py"
 echo call pyside2-uic widget_force.ui -o "..\src\DAVE\gui\forms\widget_force.py"
 echo call pyside2-uic widget_sheave.ui -o "..\src\DAVE\gui\forms\widget_sheave.py"
 echo call pyside2-uic widget_linhyd.ui -o "..\src\DAVE\gui\forms\widget_linhyd.py"
@@ -34,7 +34,7 @@ echo call pyside2-uic widget_geometricconnection.ui -o "..\src\DAVE\gui\forms\wi
 echo call pyside2-uic widget_sling.ui -o "..\src\DAVE\gui\forms\widget_sling.py"
 echo call pyside2-uic widget_buoyancy.ui -o "..\src\DAVE\gui\forms\widget_buoyancy.py"
 echo call pyside2-uic widget_selection_actions.ui -o "..\src\DAVE\gui\forms\widget_selection_actions.py"
-call pyside2-uic widget_tank.ui -o "..\src\DAVE\gui\forms\widget_tank.py"
+echo call pyside2-uic widget_tank.ui -o "..\src\DAVE\gui\forms\widget_tank.py"
 
 
 echo call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"

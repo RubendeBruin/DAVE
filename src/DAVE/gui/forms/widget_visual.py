@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_visual.ui',
 # licensing of 'widget_visual.ui' applies.
 #
-# Created: Thu Oct 31 16:19:27 2019
+# Created: Mon Mar 15 15:29:15 2021
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_widget_axis(object):
     def setupUi(self, widget_axis):
         widget_axis.setObjectName("widget_axis")
-        widget_axis.resize(444, 894)
+        widget_axis.resize(444, 700)
         widget_axis.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.verticalLayout = QtWidgets.QVBoxLayout(widget_axis)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -26,6 +26,9 @@ class Ui_widget_axis(object):
         self.comboBox.setObjectName("comboBox")
         self.comboBox.addItem("")
         self.verticalLayout.addWidget(self.comboBox)
+        self.cbInvertNormals = QtWidgets.QCheckBox(widget_axis)
+        self.cbInvertNormals.setObjectName("cbInvertNormals")
+        self.verticalLayout.addWidget(self.cbInvertNormals)
         self.label_7 = QtWidgets.QLabel(widget_axis)
         self.label_7.setWordWrap(True)
         self.label_7.setObjectName("label_7")
@@ -195,8 +198,6 @@ class Ui_widget_axis(object):
         self.label_8.setWordWrap(True)
         self.label_8.setObjectName("label_8")
         self.verticalLayout.addWidget(self.label_8)
-        spacerItem = QtWidgets.QSpacerItem(20, 163, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem)
 
         self.retranslateUi(widget_axis)
         QtCore.QMetaObject.connectSlotsByName(widget_axis)
@@ -205,6 +206,7 @@ class Ui_widget_axis(object):
         widget_axis.setWindowTitle(QtWidgets.QApplication.translate("widget_axis", "Form", None, -1))
         self.label_12.setText(QtWidgets.QApplication.translate("widget_axis", "<html><head/><body><p><span style=\" font-weight:600;\">Shape</span></p><p>Select one of the default shapes from the drop-down or manually enter a (relative) path to a file.</p></body></html>", None, -1))
         self.comboBox.setItemText(0, QtWidgets.QApplication.translate("widget_axis", "wirecube.obj", None, -1))
+        self.cbInvertNormals.setText(QtWidgets.QApplication.translate("widget_axis", "Invert normals", None, -1))
         self.label_7.setText(QtWidgets.QApplication.translate("widget_axis", "<html><head/><body><p><span style=\" font-weight:600;\">Placement and scale</span></p></body></html>", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("widget_axis", "X - offset", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("widget_axis", "Y - offset", None, -1))
@@ -215,5 +217,5 @@ class Ui_widget_axis(object):
         self.label_9.setText(QtWidgets.QApplication.translate("widget_axis", "Scale : X", None, -1))
         self.label_11.setText(QtWidgets.QApplication.translate("widget_axis", "Scale : Y", None, -1))
         self.label_10.setText(QtWidgets.QApplication.translate("widget_axis", "Scale : Z", None, -1))
-        self.label_8.setText(QtWidgets.QApplication.translate("widget_axis", "<html><head/><body><p><span style=\" text-decoration: underline;\">Notes:</span></p><p>Offset is applied on the scaled visual.</p><p>Rotation is defined as a rotation about a single axis.</p><p>- The axis of rotation is defined by the X,Y and Z components of the rotation.</p><p>- The angle or rotation is defined by the length of the rotation vector.</p></body></html>", None, -1))
+        self.label_8.setText(QtWidgets.QApplication.translate("widget_axis", "<html><head/><body><p><span style=\" text-decoration: underline;\">Notes:</span></p><p>Offset is applied to the scaled visual.</p><p>Rotation is defined as a rotation about a single axis.</p><p>- The axis of rotation is defined by the X,Y and Z components of the rotation.</p><p>- The angle or rotation is defined by the length of the rotation vector.</p></body></html>", None, -1))
 

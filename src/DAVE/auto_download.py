@@ -51,8 +51,6 @@ except ImportError as err:
     else:
         url = f'https://open-ocean.org/files/pyo3d.cp3{minor}-win_amd64.pyd'
 
-
-
     target = path + '\\' + os.path.basename(url)
 
     from PySide2.QtWidgets import QApplication

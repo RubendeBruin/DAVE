@@ -203,6 +203,7 @@ class EditVisual(NodeEditor):
             widget = QtWidgets.QWidget()
             ui = DAVE.gui.forms.widget_visual.Ui_widget_axis()
             ui.setupUi(widget)
+            ui.cbInvertNormals.setVisible(False)
             EditVisual._ui = ui
             ui._widget = widget
 
@@ -219,6 +220,7 @@ class EditVisual(NodeEditor):
             ui.doubleSpinBox_7.valueChanged.disconnect()
             ui.doubleSpinBox_8.valueChanged.disconnect()
             ui.doubleSpinBox_9.valueChanged.disconnect()
+
 
             ui.comboBox.editTextChanged.disconnect()
         except:
@@ -254,6 +256,7 @@ class EditVisual(NodeEditor):
 
         ui.comboBox.editTextChanged.connect(self.callback)
 
+
         self.ui = ui
 
         return ui._widget
@@ -280,7 +283,6 @@ class EditVisual(NodeEditor):
 
         if not np.all(new_scale == self.node.scale):
             code += element + '.scale = ({}, {}, {})'.format(*new_scale)
-
 
         return code
 
@@ -499,7 +501,7 @@ class EditBuoyancyOrContactMesh(NodeEditor):
             ui.doubleSpinBox_7.valueChanged.disconnect()
             ui.doubleSpinBox_8.valueChanged.disconnect()
             ui.doubleSpinBox_9.valueChanged.disconnect()
-
+            ui.cbInvertNormals.toggled.disconnect()
             ui.comboBox.editTextChanged.disconnect()
         except:
             pass # no connections yet
@@ -515,6 +517,8 @@ class EditBuoyancyOrContactMesh(NodeEditor):
         ui.doubleSpinBox_7.setValue(self.node.trimesh._scale[0])
         ui.doubleSpinBox_8.setValue(self.node.trimesh._scale[1])
         ui.doubleSpinBox_9.setValue(self.node.trimesh._scale[2])
+
+        ui.cbInvertNormals.setChecked(self.node.trimesh._invert_normals)
 
         ui.comboBox.clear()
         ui.comboBox.addItems(self.scene.get_resource_list('stl'))
@@ -533,6 +537,7 @@ class EditBuoyancyOrContactMesh(NodeEditor):
         ui.doubleSpinBox_9.valueChanged.connect(self.callback)
 
         ui.comboBox.editTextChanged.connect(self.callback)
+        ui.cbInvertNormals.toggled.connect(self.callback)
 
         self.ui = ui
 
@@ -546,6 +551,7 @@ class EditBuoyancyOrContactMesh(NodeEditor):
         offset = np.array((self.ui.doubleSpinBox_1.value(), self.ui.doubleSpinBox_2.value(),self.ui.doubleSpinBox_3.value()))
         rotation = np.array((self.ui.doubleSpinBox_4.value(), self.ui.doubleSpinBox_5.value(),self.ui.doubleSpinBox_6.value()))
         scale = np.array((self.ui.doubleSpinBox_7.value(), self.ui.doubleSpinBox_8.value(),self.ui.doubleSpinBox_9.value()))
+        invert_normals = self.ui.cbInvertNormals.isChecked()
 
         try:
             new_path = self.scene.get_resource_path(self.ui.comboBox.currentText())
@@ -556,10 +562,14 @@ class EditBuoyancyOrContactMesh(NodeEditor):
         if np.any(offset != self.node.trimesh._offset) or \
            np.any(rotation != self.node.trimesh._rotation) or \
            np.any(scale != self.node.trimesh._scale) or \
+           invert_normals != self.node.trimesh._invert_normals or \
            self.node.trimesh._path !=  new_path :
 
-            # load_file(self, filename, offset = None, rotation = None, scale = None)
-            code = element + ".trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(new_path, *scale, *rotation, *offset)
+            if invert_normals:
+                code = element + ".trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}), invert_normals=True)".format(
+                    new_path, *scale, *rotation, *offset)
+            else:
+                code = element + ".trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(new_path, *scale, *rotation, *offset)
 
         return code
 
@@ -1870,8 +1880,14 @@ class WidgetNodeProps(guiDockWidget):
         self.manager_link_label.clicked.connect(self.select_manager)
         self.manager_layout.addWidget(self.manager_link_label)
 
+        self.warning_label = QtWidgets.QLabel()
+        self.warning_label.setFrameShape(QtWidgets.QFrame.Box)
+        self.warning_label.setText("WARNING")
+        self.warning_label.setStyleSheet("background-color: rgb(255, 255, 185);\ncolor: rgb(200, 0, 127);")
+
         self.props_widget = QtWidgets.QWidget()
 
+        self.main_layout.addWidget(self.warning_label)
         self.main_layout.addWidget(self.manager_widget)
         self.main_layout.addWidget(self.props_widget)
 
@@ -1943,15 +1959,37 @@ class WidgetNodeProps(guiDockWidget):
         for editor in self._node_editors:
             editor.post_update_event()
 
+        self.check_for_warnings()
+
 
     def run_code(self, code):
         self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
 
 
+    def check_for_warnings(self):
+        """Controls the warning-label on top of the node-editor
+
+        Args:
+            node:
+
+        Returns:
+
+        """
+        node = self._node
+
+        self.warning_label.setVisible(False)
+        if isinstance(node, (Buoyancy, Tank)):
+            # check mesh
+            messages = node.trimesh.check_shape()
+            if messages:
+                self.warning_label.setText('\n'.join(messages))
+                self.warning_label.setVisible(True)
+
+
+
     def select_node(self, node):
         
         to_be_removed = self._open_edit_widgets.copy()
-
 
         if node._manager and not isinstance(node, vfs.Shackle):
             self.managed_label.setText(
@@ -2053,6 +2091,12 @@ class WidgetNodeProps(guiDockWidget):
             self.layout.addWidget(widget)
             self._open_edit_widgets.append(widget)
             widget.setVisible(True)
+
+        # Check for warnings
+
+        self._node = node
+        self.check_for_warnings()
+
 
         self.resize(0, 0)  # set the size of the floating dock widget to its minimum size
         self.adjustSize()
