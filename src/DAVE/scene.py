@@ -268,7 +268,9 @@ class NodeWithParent(CoreConnectedNode):
             new_parent: new parent node
 
         """
-        
+
+        if isinstance(self, Point) and isinstance(new_parent, Point):
+            raise TypeError('Points can not be placed on points')
 
         try:
             self.rotation
