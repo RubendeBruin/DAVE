@@ -11,7 +11,7 @@
 import DAVE.auto_download
 import DAVE.gui.forms.resources_rc
 from PySide2.QtWidgets import QSplashScreen, QApplication
-from PySide2.QtGui import QPixmap
+from PySide2.QtGui import QPixmap, QIcon
 
 # Items that need to be available in the scripts
 from DAVE.scene import *
@@ -28,6 +28,16 @@ def run():
         app = QApplication.instance()
     else:
         app = QApplication()
+
+    app.setWindowIcon(QIcon('DAVE.ico'))
+
+    try:
+        # Include in try/except block if you're also targeting Mac/Linux
+        from PySide2.QtWinExtras import QtWin
+        myappid = 'mycompany.myproduct.subproduct.version'
+        QtWin.setCurrentProcessExplicitAppUserModelID(myappid)
+    except ImportError:
+        pass
 
     splash = QSplashScreen(QPixmap(":/icons/splashscreen.png"))
     splash.show()
