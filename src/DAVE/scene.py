@@ -998,6 +998,27 @@ class Axis(NodeWithParent):
              """
         return np.rad2deg(self._vfNode.local_to_global_rotation(np.deg2rad(value)))
 
+    def give_load_shear_moment_diagram(self, axis_system = None) -> "LoadShearMomentDiagram":
+        """Returns a LoadShearMoment diagram
+
+        Args:
+            axis_system : optional : coordinate system [axis node] to be used for calculation of the diagram.
+            Defaults to the local axis system
+        """
+
+        if axis_system is None:
+            axis_system = self
+
+        assert isinstance(axis_system, Axis), ValueError(f"axis_system shall be an instance of Axis, but it is of type {type(axis_system)}")
+
+        # calculate in the right global direction
+        glob_dir = axis_system.to_glob_direction((1,0,0))
+        self._scene._vfc.calculateBendingMoments(*glob_dir)
+
+        lsm = self._vfNode.getBendingMomentDiagram(axis_system._vfNode)
+
+        return LoadShearMomentDiagram(lsm)
+
     def change_parent_to(self, new_parent):
         """Assigns a new parent to the node but keeps the global position and rotation the same.
 
@@ -7093,6 +7114,209 @@ class Scene:
         """Returns a list of modes (0=x ... 5=rotation z) associated with the rows/columns of M and K"""
         self.update()
         return self._vfc.get_dof_modes()
+
+# =================== None Node Classes
+
+"""This is a container for a pyo3d.MomentDiagram object providing plot methods"""
+class LoadShearMomentDiagram():
+
+    def __init__(self, datasource):
+        """
+
+        Args:
+            datasource: pyo3d.MomentDiagram object
+        """
+
+        self.datasource = datasource
+
+    def give_shear_and_moment(self,grid_n = 100):
+        """Returns (position, shear, moment)"""
+        x = self.datasource.grid(grid_n)
+        return x, self.datasource.Vz, self.datasource.My
+
+    def plot(self, grid_n = 100, merge_adjacent_loads = True):
+        m = self.datasource # alias
+
+        x = m.grid(grid_n)
+        linewidth = 1
+
+        n = m.nLoads
+
+        import matplotlib.pyplot as plt
+
+        #
+        plt.rcParams.update({'font.family': 'sans-serif'})
+        plt.rcParams.update({'font.sans-serif': 'consolas'})
+        plt.rcParams.update({'font.size': 6})
+
+        fig, (ax0, ax1, ax2) = plt.subplots(3, 1,figsize=(8.27,11.69))
+        textsize = 6
+
+        # get loads
+
+        loads = [m.load(i) for i in range(n)]
+
+        texts = []  # for label placement
+        texts_second = []  # for label placement
+
+        # merge loads with same source and matching endpoints
+
+        if merge_adjacent_loads:
+
+            to_be_plotted = [loads[0]]
+
+            for load in loads[1:]:
+                name = load[2]
+
+                # if the previous load is a continuous load from the same source
+                # and the current load is also a continuous load
+                # then merge the two.
+                prev_load = to_be_plotted[-1]
+
+                if len(prev_load[0]) != 2:  # not a point-load
+                    if len(load[0]) != 2:  # not a point-load
+                        if prev_load[2] == load[2]:  # same name
+
+                            # merge the two
+                            # remove the last (zero) entry of the previous lds
+                            # as well as the first entry of these
+
+                            # smoothed
+                            xx = [*prev_load[0][:-1], *load[0][2:]]
+                            yy = [*prev_load[1][:-2], 0.5 * (prev_load[1][-2] + load[1][1]), *load[1][2:]]
+
+                            to_be_plotted[-1] = (xx, yy, load[2])
+
+                            continue
+                # else
+                if np.max(np.abs(load[1])) > 1e-6:
+                    to_be_plotted.append(load)
+
+        else:
+            to_be_plotted = loads
+
+        #
+        from matplotlib import cm
+        colors = cm.get_cmap('hsv', lut=len(to_be_plotted))
+
+        from matplotlib.patches import Polygon
+
+        ax0_second = ax0.twinx()
+
+        for icol, ld in enumerate(to_be_plotted):
+
+            xx = ld[0]
+            yy = ld[1]
+            name = ld[2]
+
+            if np.max(np.abs(yy)) < 1e-6:
+                continue
+
+            is_concentrated = len(xx) == 2
+
+            # determine the name, default to Force / q-load if no name is present
+            if name == "":
+                if is_concentrated:
+                    name = "Force "
+                else:
+                    name = "q-load "
+
+            col = [0.8 * c for c in colors(icol)]
+            col[3] = 1.0  # alpha
+
+            if is_concentrated:   # concentrated loads on left axis
+                lbl = f" {name} {ld[1][1]:.2f}"
+                texts.append(ax0.text(xx[0], yy[1], lbl, fontsize=textsize,horizontalalignment='left'))
+                ax0.plot(xx, yy, label=lbl, color=col, linewidth=linewidth)
+                if yy[1]>0:
+                    ax0.plot(xx[1], yy[1], marker='^', color=col, linewidth=linewidth)
+                else:
+                    ax0.plot(xx[1], yy[1], marker='v', color=col, linewidth=linewidth)
+
+
+            else:  # distributed loads on right axis
+                lbl = f"{name}" # {yy[1]:.2f} kN/m at {xx[0]:.3f}m .. {yy[-2]:.2f} kN/m at {xx[-1]:.3f}m"
+
+                vertices = [(xx[i],yy[i]) for i in range(len(xx))]
+
+                ax0_second.add_patch(Polygon(vertices,  facecolor=[col[0], col[1],col[2], 0.2]))
+                ax0_second.plot(xx, yy, label=lbl, color=col, linewidth=linewidth)
+
+                lx = np.mean(xx)
+                ly = np.interp(lx, xx,yy)
+
+                texts_second.append(ax0_second.text(lx,ly , lbl, color = [0,0,0], horizontalalignment='center', fontsize=textsize))
+
+
+        ax0.grid()
+        ax0.set_title('Loads')
+        ax0.set_ylabel('Load [kN]')
+        ax0_second.set_ylabel('Load [kN/m]')
+
+        # plot moments
+        # each concentrated load may have a moment as well
+        for i in range(m.nLoads):
+            mom = m.moment(i)
+            if np.linalg.norm(mom) > 1e-6:
+                load = m.load(i)
+                xx = load[0][0]
+                lbl = f'{load[2]}, m = {mom[1]:.2f} kNm'
+                ax0.plot(xx,0,marker='x', label = lbl, color = (0,0,0,1))
+                texts.append(ax0.text(xx,0,lbl, horizontalalignment   = 'center', fontsize=textsize))
+
+        fig.legend(loc="upper right")
+
+        # align the axes such that 0 is in the center
+        y0n, y0p = ax0.get_ylim()
+        y1n, y1p = ax0_second.get_ylim()
+
+        y1n = min(y1n, -1e-3)
+        y0n = min(y0n, -1e-3)
+        y1p = max(y1p, 1e-3)
+        y0p = max(y0p, 1e-3)
+
+        a0p = y0p / (y0p - y0n)
+        a0n = -y0n / (y0p - y0n)
+
+        a1p = y1p / (y1p - y1n)
+        a1n = -y1n / (y1p - y1n)
+
+        a_above = max(a0p, a1p, 0)
+        a_below = max(a0n, a1n, 0)
+
+        ax0.set_ylim(y0n * a_below / a0n, y0p * a_above / a0p)
+        ax0_second.set_ylim(y1n * a_below / a1n, y1p * a_above / a1p)
+
+        from DAVE.reporting.utils.TextAvoidOverlap import minimizeTextOverlap
+        minimizeTextOverlap(texts_second, fig=fig, ax=ax0_second, vertical_only=True, optimize_initial_positions = False, annotate=False)
+        minimizeTextOverlap(texts, fig=fig, ax=ax0, vertical_only=True, optimize_initial_positions = False, annotate=False)
+
+        ax0.spines['top'].set_visible(False)
+        ax0.spines['bottom'].set_visible(False)
+
+        ax0_second.spines['top'].set_visible(False)
+        ax0_second.spines['bottom'].set_visible(False)
+
+        ax1.plot(x, m.Vz, 'k-', linewidth=linewidth)
+
+        i = np.argmax(np.abs(m.Vz))
+        ax1.plot(x[i], m.Vz[i], 'b*')
+        ax1.text(x[i], m.Vz[i], f'{m.Vz[i]:.2f}')
+
+        ax1.grid()
+        ax1.set_title('Shear')
+        ax1.set_ylabel('[kN]')
+
+        ax2.plot(x, m.My, 'k-', linewidth=linewidth)
+        i = np.argmax(np.abs(m.My))
+        ax2.plot(x[i], m.My[i], 'b*')
+        ax2.text(x[i], m.My[i], f'{m.My[i]:.2f}')
+
+        ax2.grid()
+        ax2.set_title('Moment')
+        ax2.set_ylabel('[kN*m]')
+        plt.show()
+
 
 
 
