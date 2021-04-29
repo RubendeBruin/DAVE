@@ -36,7 +36,7 @@ class TextInput():
         self.layout.addWidget(self.button)
         self.widget.setLayout(self.layout)
 
-        self.button.pressed.connect(self.done)
+        self.button.clicked.connect(self.done)
 
         self.le.textEdited.connect(self.check_input)
         self.eventFilter = EnterKeyPressFilter()

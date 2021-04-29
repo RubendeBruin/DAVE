@@ -40,11 +40,11 @@ class WidgetModeShapes(guiDockWidget):
         # or from a generated file
         self.ui = Ui_ModeShapesWidget()
         self.ui.setupUi(self.contents)
-        self.ui.btnCalc.pressed.connect(self.calc_modeshapes)
+        self.ui.btnCalc.clicked.connect(self.calc_modeshapes)
         self.ui.horizontalSlider.actionTriggered.connect(self.activate_modeshape)
         self.ui.sliderSize.actionTriggered.connect(self.activate_modeshape)
         self.ui.lblError.setText('')
-        self.ui.pushButton_2.pressed.connect(self.quickfix)
+        self.ui.pushButton_2.clicked.connect(self.quickfix)
         self._shapes_calculated = False
 
     def guiProcessEvent(self, event):

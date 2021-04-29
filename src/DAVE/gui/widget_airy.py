@@ -31,7 +31,7 @@ class WidgetAiry(guiDockWidget):
         self.ui.heading.valueChanged.connect(self.action)
         self.ui.amplitude.valueChanged.connect(self.action)
         self.ui.period.valueChanged.connect(self.action)
-        self.ui.pushButton_2.pressed.connect(self.plot_raos)
+        self.ui.pushButton_2.clicked.connect(self.plot_raos)
 
     def guiProcessEvent(self, event):
         """

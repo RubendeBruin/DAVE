@@ -34,8 +34,8 @@ class WidgetBallastSolver(guiDockWidget):
         self._vesselNode = None
         self._bs = None             # selected ballast system
 
-        self.ui.pushButton.pressed.connect(self.determineRequiredBallast)
-        self.ui.pushButton_2.pressed.connect(self.solveBallast)
+        self.ui.pushButton.clicked.connect(self.determineRequiredBallast)
+        self.ui.pushButton_2.clicked.connect(self.solveBallast)
         self.ui.doubleSpinBox.valueChanged.connect(self.determineRequiredBallast)
 
 

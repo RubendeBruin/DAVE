@@ -33,8 +33,8 @@ class WidgetExplore(guiDockWidget):
 
         # triggers
         self.ui.editEvaluate.textChanged.connect(self.test_evaluation)
-        self.ui.btnGoalSeek.pressed.connect(self.goalseek)
-        self.ui.btnGraph.pressed.connect(self.plot)
+        self.ui.btnGoalSeek.clicked.connect(self.goalseek)
+        self.ui.btnGraph.clicked.connect(self.plot)
 
 
 
