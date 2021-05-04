@@ -321,6 +321,40 @@ class NodeWithParent(CoreConnectedNode):
             if has_rotation:
                 self.rotation = new_parent.to_loc_direction(glob_rot)
 
+
+class NodeWithParentAndFootprint(NodeWithParent):
+    """
+    NodeWithParentAndFootprint
+
+    Do not use this class directly.
+    This is a base-class for all nodes that have a "footprint" property as well as a parent
+    """
+
+    def __init__(self, scene, vfNode):
+        super().__init__(scene, vfNode)
+
+    @property
+    def footprint(self):
+        """tuple of tuples ((x1,y1,z1), (x2,y2,z2), .... (xn,yn,zn)"""
+        r = []
+        for i in range(self._vfNode.nFootprintVertices):
+            r.append(self._vfNode.footprintVertexGet(i))
+        return tuple(r)
+
+    @footprint.setter
+    def footprint(self, value):
+        """Sets the footprint vertices. Supply as an iterable with each element containing three floats"""
+        for t in value:
+            assert3f(t, "Each entry of value assigned to footprints ")
+
+        self._vfNode.footprintVertexClearAll()
+        for t in value:
+            self._vfNode.footprintVertexAdd(*t)
+
+
+
+# ==============================================================
+
 class Visual(Node):
     """
     Visual
@@ -401,7 +435,7 @@ class Visual(Node):
             self.offset = new_parent.to_loc_position(cur_position)
             self.rotation = new_parent.to_loc_direction(cur_rotation)
 
-class Axis(NodeWithParent):
+class Axis(NodeWithParentAndFootprint):
     """
     Axis
 
@@ -1093,7 +1127,7 @@ class Axis(NodeWithParent):
 
         return code
 
-class Point(NodeWithParent):
+class Point(NodeWithParentAndFootprint):
     """A location on an axis"""
 
     # init parent and name are fully derived from NodeWithParent
@@ -7134,7 +7168,7 @@ class LoadShearMomentDiagram():
         x = self.datasource.grid(grid_n)
         return x, self.datasource.Vz, self.datasource.My
 
-    def plot(self, grid_n = 100, merge_adjacent_loads = True):
+    def plot(self, grid_n = 100, merge_adjacent_loads = True, filename = None):
         m = self.datasource # alias
 
         x = m.grid(grid_n)
@@ -7315,7 +7349,11 @@ class LoadShearMomentDiagram():
         ax2.grid()
         ax2.set_title('Moment')
         ax2.set_ylabel('[kN*m]')
-        plt.show()
+
+        if filename is None:
+            plt.show()
+        else:
+            fig.savefig(filename)
 
 
 

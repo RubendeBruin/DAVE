@@ -172,25 +172,42 @@ class VisualOutline:
     outline_transform = None
 
 class VisualActor:
+    """A VisualActor is the visual representation of a node or the global environment
 
-    def __init__(self, actors, node):
-        self.actors = actors  # vedo actors
+    node is a reference to the node it represents. If node is None then this is the global environment ("scenery")
+
+    a VisualActor can contain a number of vtk actors or vedo-actors. These are stored in a dictionary
+
+    An visualActor may have a label_actor. This is a 2D annotation
+
+    The appearance of a visual may change when it is selected. This is handled by select and deselect
+
+
+
+    """
+
+    def __init__(self, actors : dict, node):
+
+        # check if 'main' is available
+        assert 'main' in actors, 'one of the actors shall be called main'
+
+        self.actors = actors  # dict of vedo actors. There shall be one called 'main'
         self.node = node      # Node
-        # self.visible = True
-        self._original_colors = list()
-        self._is_selected = False
-        self._is_transparent = False
         self.label_actor = None
 
-    def select(self):
+        # self.visible = True
+        self._original_colors = dict()
+        self._is_selected = False
+        self._is_transparent = False
 
+    def select(self):
         if self._is_selected:
             return
 
         self._original_colors = list()
 
-        for actor in self.actors:
-            self._original_colors.append(actor.color())
+        for key, actor in self.actors.items():
+            self._original_colors[key] = actor.color()
             actor.color(vc.COLOR_SELECT)
 
         self._is_selected = True
@@ -208,15 +225,9 @@ class VisualActor:
         self._is_selected = False
 
         if self._original_colors:
+            for key, color in self._original_colors.items():
+                self.actors[key].color(color)
 
-            # if self.node is not None:
-            #     print('setting ' + str(self.node.name))
-            # else:
-            #     print('setting properties')
-
-
-            for actor, color in zip(self.actors, self._original_colors):
-                actor.color(color)
 
         else:
             if self.actors:
@@ -228,7 +239,7 @@ class VisualActor:
         if self._is_transparent:
             return
 
-        for a in self.actors:
+        for a in self.actors.values():
             a.alpha(0.4)
 
         self._is_transparent = True
@@ -238,7 +249,7 @@ class VisualActor:
         if not self._is_transparent:
             return
 
-        for a in self.actors:
+        for a in self.actors.values():
             if a.actor_type == ActorType.GLOBAL:
                 a.alpha(0.4)
             else:
@@ -247,20 +258,20 @@ class VisualActor:
         self._is_transparent = False
 
     def set_dsa(self, d,s,a):
-        for act in self.actors:
+        for act in self.actors.values():
             act.lighting(diffuse=d, ambient=a, specular=s)
 
     def on(self):
-        for a in self.actors:
+        for a in self.actors.values():
             a.on()
 
     def off(self):
-        for a in self.actors:
+        for a in self.actors.values():
             a.off()
 
     @property
     def visible(self):
-        return self.actors[0].GetVisibility()
+        return self.actors['main'].GetVisibility()
 
     def setLabelPosition(self, position):
         if self.label_actor is not None:
@@ -271,7 +282,7 @@ class VisualActor:
             la = vtk.vtkCaptionActor2D()
             la.SetCaption(txt)
 
-            position = self.actors[0].GetPosition()
+            position = self.actors['main'].GetPosition()
 
             la.SetAttachmentPoint(*position)
 

@@ -3,8 +3,8 @@
 # Form implementation generated from reading ui file 'widget_visual.ui',
 # licensing of 'widget_visual.ui' applies.
 #
-# Created: Mon Mar 15 15:29:15 2021
-#      by: pyside2-uic  running on PySide2 5.13.1
+# Created: Mon May  3 13:28:45 2021
+#      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
 

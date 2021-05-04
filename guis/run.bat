@@ -35,6 +35,7 @@ echo call pyside2-uic widget_sling.ui -o "..\src\DAVE\gui\forms\widget_sling.py"
 echo call pyside2-uic widget_buoyancy.ui -o "..\src\DAVE\gui\forms\widget_buoyancy.py"
 echo call pyside2-uic widget_selection_actions.ui -o "..\src\DAVE\gui\forms\widget_selection_actions.py"
 echo call pyside2-uic widget_tank.ui -o "..\src\DAVE\gui\forms\widget_tank.py"
+call pyside2-uic widget_footprints.ui -o "..\src\DAVE\gui\forms\widget_footprints.py"
 
 
 echo call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"

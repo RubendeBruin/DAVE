@@ -60,6 +60,7 @@
 
 
 """
+from DAVE.gui.widget_footprints import WidgetFootprints
 
 """
   This Source Code Form is subject to the terms of the Mozilla Public
@@ -125,7 +126,7 @@ class SolverDialog(QDialog, Ui_Dialog):
 
 class Gui():
 
-    def __init__(self, scene=None, splash=None, app=None, geometry_scale = -1, cog_scale = 0.25, block=True):
+    def __init__(self, scene=None, splash=None, app=None, geometry_scale = -1, cog_scale = 0.25, block=True, workspace=None):
         """
         Starts the Gui on scene "scene".
 
@@ -147,6 +148,7 @@ class Gui():
             block:  [True] qt application _exec(). Set to False when using %gui qt in IPython/jupyter
             geometry_scale: geometry scale (visual)
             cog_scale: cog scale (visual)
+            workspace (string) : open the workspace with this name
         """
 
         if app is None:
@@ -458,6 +460,11 @@ class Gui():
         set_pb_style(btnConstruct)
 
         btnConstruct = QtWidgets.QPushButton()
+        btnConstruct.setText('3.5 Shear and Bending')
+        btnConstruct.clicked.connect(lambda: self.activate_workspace("MOMENTS"))
+        set_pb_style(btnConstruct)
+
+        btnConstruct = QtWidgets.QPushButton()
         btnConstruct.setText('&4. Stability')
         btnConstruct.clicked.connect(lambda: self.activate_workspace("STABILITY"))
         set_pb_style(btnConstruct)
@@ -477,7 +484,11 @@ class Gui():
         self.ui.toolBar.addWidget(space)
 
         self._active_workspace = None
-        self.activate_workspace('CONSTRUCT')
+
+        if workspace is None:
+            self.activate_workspace('CONSTRUCT')
+        else:
+            self.activate_workspace(workspace)
 
         # ======================== Finalize ========================
         splash.finish(self.MainWindow)
@@ -598,6 +609,9 @@ class Gui():
 
         if name == 'STABILITY':
             self.show_guiWidget('Stability', WidgetDisplacedStability)
+
+        if name == 'MOMENTS':
+            self.show_guiWidget('Footprints', WidgetFootprints)
 
         if name == 'AIRY':
             self.scene.savepoint_make()
