@@ -9,6 +9,11 @@ DAVE is a software package designed to make engineering more fun. DAVE will take
 See https://open-ocean.org/dave
 Documentation: https://davedocs.online
 
+Download the compiled GUI
+==========================
+
+A compiled version of the graphical user interface can be downloaded here: https://www.open-ocean.org/dave-gui-standalone-portable/
+
 Description
 ===========
 

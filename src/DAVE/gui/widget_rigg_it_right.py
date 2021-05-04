@@ -126,7 +126,7 @@ class WidgetRiggItRight(guiDockWidget):
                     pin_hole_code_p0p1 = f's.new_geometriccontact("{name}", "{p0.name}", "{p1.name}")'
                     self.guiRunCodeCallback(pin_hole_code_p0p1, guiEventType.MODEL_STRUCTURE_CHANGED)
 
-                button.pressed.connect(geometric_contact1)
+                button.clicked.connect(geometric_contact1)
 
                 #  sheave poi   axis
                 if p0.parent.parent.parent is not None:
@@ -146,7 +146,7 @@ class WidgetRiggItRight(guiDockWidget):
                     pin_hole_codep1p0 = f's.new_geometriccontact("{name}", "{p1.name}", "{p0.name}")'
                     self.guiRunCodeCallback(pin_hole_codep1p0, guiEventType.MODEL_STRUCTURE_CHANGED)
 
-                button.pressed.connect(geometric_contact2)
+                button.clicked.connect(geometric_contact2)
 
                 #  sheave poi   axis
                 if p1.parent.parent.parent is not None:
@@ -175,7 +175,7 @@ class WidgetRiggItRight(guiDockWidget):
                     cable_code = f's.new_cable("{name}", endA="{poi_and_sheave[0].name}", endB = "{poi_and_sheave[-1].name}"{sheaves})'
                     self.guiRunCodeCallback(cable_code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
-                button.pressed.connect(create_cable)
+                button.clicked.connect(create_cable)
                 self.buttons.append(button)
 
         # creating sling between points and sheaves
@@ -198,7 +198,7 @@ class WidgetRiggItRight(guiDockWidget):
                     sling_code = f's.new_sling("{name}", endA="{poi_and_sheave[0].name}", endB = "{poi_and_sheave[-1].name}"{sheaves})'
                     self.guiRunCodeCallback(sling_code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
-                button.pressed.connect(create_sling)
+                button.clicked.connect(create_sling)
                 self.buttons.append(button)
 
         # a single sheave selected
@@ -220,7 +220,7 @@ class WidgetRiggItRight(guiDockWidget):
 
                 for size in sizes:
                     button = QPushButton(f'insert GP {size} in {sheave.name}', self.ui.frame)
-                    button.pressed.connect(lambda wll = size : insert_gp(wll=wll))
+                    button.clicked.connect(lambda wll = size : insert_gp(wll=wll))
                     self.buttons.append(button)
 
         # nothing selected
@@ -234,7 +234,7 @@ class WidgetRiggItRight(guiDockWidget):
                 self.guiRunCodeCallback(sling_code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
             button = QPushButton('Create sling', self.ui.frame)
-            button.pressed.connect(create_sling)
+            button.clicked.connect(create_sling)
             self.buttons.append(button)
 
             # def create_shackle_gphd(s, name, wll):
@@ -249,7 +249,7 @@ class WidgetRiggItRight(guiDockWidget):
 
             for size in sizes:
                 button = QPushButton(f'Create GP {size}', self.ui.frame)
-                button.pressed.connect(lambda wll=size: insert_gp(wll=wll))
+                button.clicked.connect(lambda wll=size: insert_gp(wll=wll))
                 self.buttons.append(button)
 
 

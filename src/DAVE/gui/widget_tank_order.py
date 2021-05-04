@@ -33,12 +33,12 @@ class WidgetTankOrder(guiDockWidget):
 
         self._bs = None  # selected ballast system
 
-        self.ui.pbElevation.pressed.connect(lambda : self.run_action("order_tanks_by_elevation()"))
-        self.ui.pbMaximizeRadii.pressed.connect(lambda: self.run_action("order_tanks_to_maximize_inertia_moment()"))
-        self.ui.pbMinimizeRadii.pressed.connect(lambda: self.run_action("order_tanks_to_minimize_inertia_moment()"))
+        self.ui.pbElevation.clicked.connect(lambda : self.run_action("order_tanks_by_elevation()"))
+        self.ui.pbMaximizeRadii.clicked.connect(lambda: self.run_action("order_tanks_to_maximize_inertia_moment()"))
+        self.ui.pbMinimizeRadii.clicked.connect(lambda: self.run_action("order_tanks_to_minimize_inertia_moment()"))
 
-        self.ui.pbFurthest.pressed.connect(lambda: self.point(", reverse=False"))
-        self.ui.pbNearest.pressed.connect(lambda: self.point(", reverse=True"))
+        self.ui.pbFurthest.clicked.connect(lambda: self.point(", reverse=False"))
+        self.ui.pbNearest.clicked.connect(lambda: self.point(", reverse=True"))
 
 
     def guiProcessEvent(self, event):

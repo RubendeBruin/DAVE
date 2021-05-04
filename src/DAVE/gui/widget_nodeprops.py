@@ -1400,8 +1400,8 @@ class EditGeometricContact(NodeEditor):
         ui.sbSlaveRotation.valueChanged.connect(self.callback)
         ui.sbSwivel.valueChanged.connect(self.callback)
 
-        ui.pbFlip.pressed.connect(self.flip)
-        ui.pbChangeSide.pressed.connect(self.change_side)
+        ui.pbFlip.clicked.connect(self.flip)
+        ui.pbChangeSide.clicked.connect(self.change_side)
 
         self.ui = ui
 

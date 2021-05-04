@@ -32,8 +32,8 @@ class WidgetDisplacedStability(guiDockWidget):
         self.ui = Ui_WidgetDispDrivenStability()
         self.ui.setupUi(self.contents)
 
-        self.ui.stability_go.pressed.connect(self.action)
-        self.ui.pushButton.pressed.connect(self.movie)
+        self.ui.stability_go.clicked.connect(self.action)
+        self.ui.pushButton.clicked.connect(self.movie)
 
         self._previously_selected = None
 

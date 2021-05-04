@@ -205,28 +205,19 @@ def export_ofx_yml(s, filename):
 
     for n in s._nodes:
 
-        if isinstance(n, BallastSystem):
+        if isinstance(n, Tank):
 
-            # calculate the inertia
-            ixx = 0
-            iyy = 0
-            izz = 0
-            mass = 0
-            for tank in n.tanks:
-                mass += tank.inertia
-                inertia = tank.inertia
-                ixx += inertia * (tank.position[1] ** 2 + tank.position[2] ** 2)
-                iyy += inertia * (tank.position[0] ** 2 + tank.position[2] ** 2)
-                izz += inertia * (tank.position[0] ** 2 + tank.position[1] ** 2)
+            # Point mass at cog of tank
+            # radii are zero
 
-            ixx = min(ixx, OFX_ZERO_MASS)
-            iyy = min(iyy, OFX_ZERO_MASS)
-            izz = min(izz, OFX_ZERO_MASS)
+            if n.volume == 0:  # skip empty tanks
+                continue
 
-            I = [ixx, iyy, izz]
-            pos = [*n.position]
+            I = [OFX_ZERO_MASS, OFX_ZERO_MASS, OFX_ZERO_MASS]
+            pos = [*n._inertia.position]
+            mass = n._inertia.inertia
 
-            cog = [float(i) for i in n.cog]
+            cog = [0,0,0]
 
             b = {'Name': n.name,
                  'Connection': n.parent.name,
@@ -238,6 +229,7 @@ def export_ofx_yml(s, filename):
                  }
 
             buoys.append(b)
+            continue
 
 
         if isinstance(n, (RigidBody, Axis)):

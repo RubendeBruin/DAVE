@@ -243,10 +243,10 @@ class Gui():
         # ------ viewport buttons ------
 
         # right
-        self.ui.btnWater.pressed.connect(self.toggle_show_global)
-        self.ui.btnBlender.pressed.connect(self.to_blender)
-        self.ui.pbCopyViewCode.pressed.connect(self.copy_screenshot_code)
-        self.ui.pbLabels.pressed.connect(self.show_labels_menu)
+        self.ui.btnWater.clicked.connect(self.toggle_show_global)
+        self.ui.btnBlender.clicked.connect(self.to_blender)
+        self.ui.pbCopyViewCode.clicked.connect(self.copy_screenshot_code)
+        self.ui.pbLabels.clicked.connect(self.show_labels_menu)
 
         self.labels_menu = QMenu()
         items = ('Tank','Point','Cable')
@@ -265,22 +265,22 @@ class Gui():
 
 
         # left
-        self.ui.pbUpdate.pressed.connect(lambda: self.guiEmitEvent(guiEventType.FULL_UPDATE))
+        self.ui.pbUpdate.clicked.connect(lambda: self.guiEmitEvent(guiEventType.FULL_UPDATE))
         self.ui.btnSolveStatics.clicked.connect(self.solve_statics)
         self.ui.btnUndoStatics.clicked.connect(self.undo_solve_statics)
 
         # bottom
-        self.ui.pbExecute.pressed.connect(self.run_code_in_teCode)
-        self.ui.pbCopyOutput.pressed.connect(self.feedback_copy)
-        self.ui.pbCopyHistory.pressed.connect(self.history_copy)
-        self.ui.pbGenerateSceneCode.pressed.connect(self.generate_scene_code)
-        self.ui.pbClearCode.pressed.connect(self.clear_code)
-        self.ui.tbTidyHistory.pressed.connect(self.tidy_history)
+        self.ui.pbExecute.clicked.connect(self.run_code_in_teCode)
+        self.ui.pbCopyOutput.clicked.connect(self.feedback_copy)
+        self.ui.pbCopyHistory.clicked.connect(self.history_copy)
+        self.ui.pbGenerateSceneCode.clicked.connect(self.generate_scene_code)
+        self.ui.pbClearCode.clicked.connect(self.clear_code)
+        self.ui.tbTidyHistory.clicked.connect(self.tidy_history)
 
         # ------ animation buttons ------
         self.ui.frameAni.setVisible(False)
-        self.ui.btnStopAnimation.pressed.connect(lambda :self.animation_terminate(False))
-        self.ui.btnPauseAnimation.pressed.connect(self.animation_pause_or_continue_click)
+        self.ui.btnStopAnimation.clicked.connect(lambda :self.animation_terminate(False))
+        self.ui.btnPauseAnimation.clicked.connect(self.animation_pause_or_continue_click)
         self.ui.aniSlider.valueChanged.connect(self.animation_change_time)
         self.ui.sbPlaybackspeed.valueChanged.connect(self.animation_speed_change)
 
@@ -1263,31 +1263,31 @@ class Gui():
         ui.setupUi(widget)
         wa.setDefaultWidget(widget)
 
-        ui.pbPoint.pressed.connect(self.new_point)
-        ui.pbCircle.pressed.connect(self.new_circle)
-        ui.pbAxis.pressed.connect(self.new_axis)
-        ui.pbBody.pressed.connect(self.new_body)
-        ui.pbGeometricContact.pressed.connect(self.new_geometric_contact)
+        ui.pbPoint.clicked.connect(self.new_point)
+        ui.pbCircle.clicked.connect(self.new_circle)
+        ui.pbAxis.clicked.connect(self.new_axis)
+        ui.pbBody.clicked.connect(self.new_body)
+        ui.pbGeometricContact.clicked.connect(self.new_geometric_contact)
 
-        ui.pbSpring2D.pressed.connect(self.new_connector2d)
-        ui.pbSpring6D.pressed.connect(self.new_linear_connector)
+        ui.pbSpring2D.clicked.connect(self.new_connector2d)
+        ui.pbSpring6D.clicked.connect(self.new_linear_connector)
 
-        ui.pbForce.pressed.connect(self.new_force)
+        ui.pbForce.clicked.connect(self.new_force)
 
-        ui.pbContactShape.pressed.connect(self.new_contactmesh)
-        ui.pbContactBall.pressed.connect(self.new_contactball)
+        ui.pbContactShape.clicked.connect(self.new_contactmesh)
+        ui.pbContactBall.clicked.connect(self.new_contactball)
 
-        ui.pbTank.pressed.connect(self.new_tank)
-        ui.pbBuoyancyShape.pressed.connect(self.new_buoyancy_mesh)
-        ui.pbLinearBuoyancy.pressed.connect(self.new_linear_hydrostatics)
-        ui.pbWaveInteraction.pressed.connect(self.new_waveinteraction)
+        ui.pbTank.clicked.connect(self.new_tank)
+        ui.pbBuoyancyShape.clicked.connect(self.new_buoyancy_mesh)
+        ui.pbLinearBuoyancy.clicked.connect(self.new_linear_hydrostatics)
+        ui.pbWaveInteraction.clicked.connect(self.new_waveinteraction)
 
-        ui.pbCable.pressed.connect(self.new_cable)
-        ui.pbSling.pressed.connect(self.new_sling)
-        ui.pbShackle.pressed.connect(self.new_shackle)
-        ui.pbBeam.pressed.connect(self.new_beam)
+        ui.pbCable.clicked.connect(self.new_cable)
+        ui.pbSling.clicked.connect(self.new_sling)
+        ui.pbShackle.clicked.connect(self.new_shackle)
+        ui.pbBeam.clicked.connect(self.new_beam)
 
-        ui.pbVisual.pressed.connect(self.new_visual)
+        ui.pbVisual.clicked.connect(self.new_visual)
 
 
 

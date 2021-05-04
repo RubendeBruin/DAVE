@@ -38,14 +38,14 @@ class WidgetBallastConfiguration(guiDockWidget):
 
         self.ui.tableWidget.cellChanged.connect(self.tankfillchanged)
 
-        self.ui.pbFreezeAll.pressed.connect(self.freeze_all)
-        self.ui.pbUnfreezeAll.pressed.connect(self.unfreeze_all)
-        self.ui.pbToggleFreeze.pressed.connect(self.toggle_freeze)
+        self.ui.pbFreezeAll.clicked.connect(self.freeze_all)
+        self.ui.pbUnfreezeAll.clicked.connect(self.unfreeze_all)
+        self.ui.pbToggleFreeze.clicked.connect(self.toggle_freeze)
 
-        self.ui.pbFillAll.pressed.connect(lambda : self.fill_all_to(100))
-        self.ui.pbEmptyAll.pressed.connect(lambda: self.fill_all_to(0))
+        self.ui.pbFillAll.clicked.connect(lambda : self.fill_all_to(100))
+        self.ui.pbEmptyAll.clicked.connect(lambda: self.fill_all_to(0))
 
-        self.ui.pbGenerate.pressed.connect(self.report_python)
+        self.ui.pbGenerate.clicked.connect(self.report_python)
 
         self._bs = None # active ballast system
         self._filling_table = True
