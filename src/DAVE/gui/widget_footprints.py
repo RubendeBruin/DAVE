@@ -21,8 +21,8 @@ from PySide2.QtWidgets import QTreeWidgetItem, QMessageBox
 from DAVE.gui.helpers.gridedit import GridEdit
 from DAVE import settings
 
-class WidgetFootprints(guiDockWidget):
 
+class WidgetFootprints(guiDockWidget):
     def guiCreate(self):
         """
         Add gui components to self.contents
@@ -54,12 +54,13 @@ class WidgetFootprints(guiDockWidget):
         self.grid.setData([[]], allow_add_or_remove_rows=True)
         self.grid.onChanged = self.update_footprint
 
-        self.ui.treeView.activated.connect(self.tree_select_node)  # fires when a user presses [enter]
+        self.ui.treeView.activated.connect(
+            self.tree_select_node
+        )  # fires when a user presses [enter]
         self.ui.treeView.doubleClicked.connect(self.tree_select_node)
         self.ui.treeView.itemClicked.connect(self.item_clicked)
 
         self.ui.pbCalc.clicked.connect(self.calc)
-
 
     def guiProcessEvent(self, event):
         """
@@ -68,8 +69,7 @@ class WidgetFootprints(guiDockWidget):
         After creation of the widget this event is called with guiEventType.FULL_UPDATE
         """
 
-        if event in [guiEventType.MODEL_STATE_CHANGED,
-                     guiEventType.FULL_UPDATE]:
+        if event in [guiEventType.MODEL_STATE_CHANGED, guiEventType.FULL_UPDATE]:
             self.fill()
 
         if event in [guiEventType.SELECTION_CHANGED]:
@@ -140,8 +140,7 @@ class WidgetFootprints(guiDockWidget):
         if text:
             self.ui.cbUseAxis.setCurrentText(text)
         else:
-            self.ui.cbUseAxis.setCurrentText('Default')
-
+            self.ui.cbUseAxis.setCurrentText("Default")
 
     def item_clicked(self, data):
         name = data.text(0)
@@ -164,8 +163,6 @@ class WidgetFootprints(guiDockWidget):
 
         self._element.footprint = valid_data
 
-
-
     # --------------------------------------
 
     def element_selected(self):
@@ -174,8 +171,11 @@ class WidgetFootprints(guiDockWidget):
         except:
             return
 
+        if not isinstance(element, (Axis, Point)):
+            return
+
         self._element = element
-        self.lblInfo.setText(f'Footprint for {self._element.name} :')
+        self.lblInfo.setText(f"Footprint for {self._element.name} :")
         self.grid.setData(self._element.footprint, allow_add_or_remove_rows=True)
         self.grid.grid.resizeColumnsToContents()
 
@@ -184,13 +184,13 @@ class WidgetFootprints(guiDockWidget):
         if self._element is not None:
             if isinstance(self._element, Axis):
                 target = self.ui.cbUseAxis.currentText()
-                if target == 'Default':
-                    target = ''
+                if target == "Default":
+                    target = ""
                 else:
                     target = f'axis_system = s["{target}"]'
 
-                filename = settings.PATH_TEMP / 'lsm.pdf'
-                code = 's.solve_statics()\n'
+                filename = settings.PATH_TEMP / "lsm.pdf"
+                code = "s.solve_statics()\n"
                 code += f's["{self._element.name}"].give_load_shear_moment_diagram({target}).plot(filename = r"{filename}")'
                 self.guiRunCodeCallback(code, None)
 
@@ -199,5 +199,6 @@ class WidgetFootprints(guiDockWidget):
 
                 return
 
-        QMessageBox.information(None,"can not do that","Please select an axis or rigidbody node")
-
+        QMessageBox.information(
+            None, "can not do that", "Please select an axis or rigidbody node"
+        )

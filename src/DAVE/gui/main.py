@@ -310,11 +310,11 @@ class Gui():
         def set_geo_size(value):
             if value < 1:
                 self.visual.show_geometry = False
-                self.run_code('self.visual.geometry_scale = 0',guiEventType.VIEWER_SETTINGS_UPDATE)
+                self.run_code('self.visual.settings.geometry_scale = 0',guiEventType.VIEWER_SETTINGS_UPDATE)
                 self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
             else:
                 self.visual.show_geometry = True
-                self.run_code(f'self.visual.geometry_scale = {value**(1.3)/100 : .2f}',guiEventType.VIEWER_SETTINGS_UPDATE)
+                self.run_code(f'self.visual.settings.geometry_scale = {value**(1.8)/100 : .2f}',guiEventType.VIEWER_SETTINGS_UPDATE)
 
         self.ui.sliderGeometrySize.connectvalueChanged(set_geo_size)
         self.ui.menuView.addAction(self.ui.sliderGeometrySize)
@@ -323,7 +323,7 @@ class Gui():
         self.ui.menuView.addSeparator()
 
         def normalize_force():
-            self.run_code('self.visual.force_do_normalize = not self.visual.force_do_normalize',guiEventType.VIEWER_SETTINGS_UPDATE)
+            self.run_code('self.visual.settings.force_do_normalize = not self.visual.settings.force_do_normalize',guiEventType.VIEWER_SETTINGS_UPDATE)
 
         forcenormalize= self.ui.menuView.addAction("View all forces at same size")
         forcenormalize.setCheckable(True)
@@ -337,11 +337,11 @@ class Gui():
         def set_force_size(value):
             if value < 1:
                 self.visual.show_force = False
-                self.run_code('self.visual.force_scale = 0', guiEventType.VIEWER_SETTINGS_UPDATE)
+                self.run_code('self.visual.settings.force_scale = 0', guiEventType.VIEWER_SETTINGS_UPDATE)
                 self.visual.refresh_embeded_view()
             else:
                 self.visual.show_force = True
-                self.run_code(f'self.visual.force_scale = {value ** (2) / 10 : .2f}', guiEventType.VIEWER_SETTINGS_UPDATE)
+                self.run_code(f'self.visual.settings.force_scale = {value ** (2) / 10 : .2f}', guiEventType.VIEWER_SETTINGS_UPDATE)
 
         self.ui.sliderForceSize.connectvalueChanged(set_force_size)
         self.ui.menuView.addAction(self.ui.sliderForceSize)
@@ -350,7 +350,7 @@ class Gui():
         self.ui.menuView.addSeparator()
 
         def normalize_cog():
-            self.run_code('self.visual.cog_do_normalize = not self.visual.cog_do_normalize',
+            self.run_code('self.visual.settings.cog_do_normalize = not self.visual.settings.cog_do_normalize',
                           guiEventType.VIEWER_SETTINGS_UPDATE)
 
         cognormalize = self.ui.menuView.addAction("View all CoGs at same size")
@@ -365,11 +365,11 @@ class Gui():
         def set_cog_size(value):
             if value < 1:
                 self.visual.show_cog = False
-                self.run_code(f'self.visual.cog_scale = 0', guiEventType.VIEWER_SETTINGS_UPDATE)
+                self.run_code(f'self.visual.settings.cog_scale = 0', guiEventType.VIEWER_SETTINGS_UPDATE)
                 self.visual.refresh_embeded_view()
             else:
                 self.visual.show_cog = True
-                self.run_code(f'self.visual.cog_scale = {value ** (1.3) / 100}', guiEventType.VIEWER_SETTINGS_UPDATE)
+                self.run_code(f'self.visual.settings.cog_scale = {value ** (1.3) / 100}', guiEventType.VIEWER_SETTINGS_UPDATE)
 
         self.ui.sliderCoGSize.connectvalueChanged(set_cog_size)
         self.ui.menuView.addAction(self.ui.sliderCoGSize)

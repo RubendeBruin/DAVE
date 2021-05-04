@@ -80,10 +80,14 @@ class Node:
         """Determines if the visual for of this node (if any) should be visible"""
 
     def __repr__(self):
-        return f'{self.name} <{str(type(self))[7:-2]}>'
+        return f'{self.name} <{self.__class__.__name__}>'
 
     def __str__(self):
         return self.name
+
+    @property
+    def class_name(self):
+        return self.__class__.__name__
 
     def depends_on(self):
         """Returns a list of nodes that need to be available before the node can be created"""
