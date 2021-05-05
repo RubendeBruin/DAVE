@@ -181,19 +181,18 @@ class ActorSettings:
     """This dataclass contains settings for an vtk actor"""
 
     # overall
-    alpha : float = 1    # alpha of the surface - 1.0 is totally opaque and 0.0 is completely transparent.
+    alpha: float = 1  # alpha of the surface - 1.0 is totally opaque and 0.0 is completely transparent.
+    xray: bool = False  # only outline visible
 
     # surface
-    xray : bool = False  # only outline visible
-    surfaceColor : tuple = vc.COLOR_COG # set to None for no surface
+    surfaceShow = True
+    surfaceColor: tuple = vc.COLOR_COG  # set to None for no surface
+    metallic : float = 1
+    roughness : float = 1
 
     # lines , set lineWidth to 0 for no line
     lineWidth = 1
-    lineColor = (100,0,0)
-
-
-
-
+    lineColor = (100, 0, 0)
 
 
 @dataclass
@@ -209,29 +208,30 @@ class ViewportSettings:
     with a ViewportSettings object as argument.
     """
 
-    show_force : bool = True  # show forces
-    show_meshes : bool= True  # show meshes and connectors
-    show_global : bool= False  # show or hide the environment (sea)
+    show_force: bool = True  # show forces
+    show_meshes: bool = True  # show meshes and connectors
+    show_global: bool = False  # show or hide the environment (sea)
 
     # cogs
-    show_cog : bool = True
-    cog_do_normalize : bool= False
-    cog_scale : float = 1.0
+    show_cog: bool = True
+    cog_do_normalize: bool = False
+    cog_scale: float = 1.0
 
     # force
     force_do_normalize: bool = True  # Normalize force size to 1.0 for plotting
-    force_scale : float = 1.6  # Scale to be applied on (normalized) force magnitude
+    force_scale: float = 1.6  # Scale to be applied on (normalized) force magnitude
 
     # geometry
-    show_geometry : bool= True  # show or hide geometry objects (axis, pois, etc)
-    geometry_scale : float = 1.0  # poi radius of the pois
+    show_geometry: bool = True  # show or hide geometry objects (axis, pois, etc)
+    geometry_scale: float = 1.0  # poi radius of the pois
 
-    outline_width : float =  vc.OUTLINE_WIDTH   # line-width of the outlines (cell-like shading)
+    outline_width: float = (
+        vc.OUTLINE_WIDTH
+    )  # line-width of the outlines (cell-like shading)
 
-    cable_line_width  : float = 3.0  # line-width used for cable elements
+    cable_line_width: float = 3.0  # line-width used for cable elements
 
-    painter_settings : dict = None
-
+    painter_settings: dict = None
 
 
 class VisualActor:
@@ -997,7 +997,7 @@ class Viewport:
 
             self.visuals.append(va)
 
-            self.set_default_dsa()
+            # self.set_default_dsa()
 
     def position_visuals(self):
         """All visuals are aligned with their node"""
@@ -1717,7 +1717,7 @@ class Viewport:
 
                             # va.node.trimesh._new_mesh = False  # is set to False by position_visuals
 
-            self.set_default_dsa()
+            # self.set_default_dsa()
 
     def shutdown_qt(self):
         """Stops the renderer such that the application can close without issues"""
@@ -1774,7 +1774,7 @@ class Viewport:
         if self.screen is None:
             raise Exception("Please call setup_screen first")
 
-        vp.settings.lightFollowsCamera = True
+        # vp.settings.lightFollowsCamera = True
 
         self.create_world_actors()
 
@@ -1806,10 +1806,50 @@ class Viewport:
                 for outline in self.outlines:
                     screen.add(outline.outline_actor)
 
+
+            # # load env texture
+            # cubemap_path_root = r'C:\Users\rubendb\AppData\Local\pyvista\pyvista\examples\skybox2-'
+            #
+            # files = [cubemap_path_root + name + '.jpg' for name in ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']]
+            #
+            # cubemap = vtk.vtkTexture()
+            # cubemap.SetCubeMap(True)
+            #
+            # for i,file in enumerate(files):
+            #     readerFactory = vtk.vtkImageReader2Factory()
+            #     # textureFile = readerFactory.CreateImageReader2(file)
+            #     textureFile = readerFactory.CreateImageReader2(r'c:\data\white.png')
+            #     textureFile.SetFileName(r'c:\data\white.png')
+            #     textureFile.Update()
+            #
+            #     cubemap.SetInputDataObject(i, textureFile.GetOutput())
+
+            # Make a white skybox texture for light emission
+            cubemap = vtk.vtkTexture()
+            cubemap.SetCubeMap(True)
+
+            readerFactory = vtk.vtkImageReader2Factory()
+            textureFile = readerFactory.CreateImageReader2(str(vc.LIGHT_TEXTURE_SKYBOX))
+            textureFile.SetFileName(str(vc.LIGHT_TEXTURE_SKYBOX))
+            textureFile.Update()
+
+            for i in range(6):
+                cubemap.SetInputDataObject(i, textureFile.GetOutput())
+
+            # # make skybox actor
+            # skybox = vtk.vtkSkybox()
+            # skybox.SetTexture(cubemap)
+            #
+            # self.screen.add(skybox)
+
             self.screen.show(camera=camera, verbose=False)
 
             for r in self.screen.renderers:
                 r.ResetCamera()
+
+                r.UseImageBasedLightingOn()
+                r.SetEnvironmentTexture(cubemap)
+
 
                 # # Add SSAO
                 # #
@@ -1819,12 +1859,15 @@ class Viewport:
                 # ssao.SetDelegatePass(basicPasses)
                 # ssao.SetBlur(True)
                 # ssao.SetKernelSize(8)
-
+                #
                 # r.SetPass(ssao)
-                # # r.SetUseDepthPeeling(True)
+                #
+
+
 
                 r.SetUseDepthPeeling(True)
-                # r.SetMaximumNumberOfPeels(4)  # <-- default = 4
+
+                r.Modified()
 
             self.update_outlines()
 
@@ -1885,16 +1928,16 @@ class Viewport:
         # screen.mouseLeftClickFunction = self.onMouseLeft
         screen.mouseRightClickFunction = self.onMouseRight
 
-        # Add some lights
-        light1 = vtk.vtkLight()
-
-        light1.SetIntensity(0.3)
-        light1.SetLightTypeToCameraLight()
-        light1.SetPosition(100, 100, 100)
-
-        self.renderer.AddLight(light1)
-
-        self.light = light1
+        # # Add some lights
+        # light1 = vtk.vtkLight()
+        #
+        # light1.SetIntensity(0.3)
+        # light1.SetLightTypeToCameraLight()
+        # light1.SetPosition(100, 100, 100)
+        #
+        # self.renderer.AddLight(light1)
+        #
+        # self.light = light1
 
     def _leftmousepress(self, iren, event):
         """Implements a "fuzzy" mouse pick function"""
@@ -2048,6 +2091,18 @@ class Viewport:
             ps = dict()
 
         for v in self.visuals:
+            for a in v.actors.values():
+                props = a.GetProperty()
+                props.SetInterpolationToPBR()
+                props.SetColor(0.5, 0.8, 0.5)
+                # props.SetColor((actor_settings.surfaceColor[0]/255, actor_settings.surfaceColor[1]/255, actor_settings.surfaceColor[2]/255))
+                # props.SetOpacity(actor_settings.alpha)
+                props.SetMetallic(0)  # actor_settings.metallic)
+                props.SetRoughness(1)  # actor_settings.roughness)
+
+        return
+
+        for v in self.visuals:
 
             if v.node is not None:
                 if not v.node.visible:
@@ -2057,7 +2112,7 @@ class Viewport:
                     continue
 
             if v.node is None:
-                node_class = 'global'
+                node_class = "global"
             else:
                 node_class = v.node.class_name
 
@@ -2075,17 +2130,20 @@ class Viewport:
                 else:
                     continue
 
-
-
-                if actor_settings.surfaceColor is None:
-                    actor.wireframe(True)
+                if actor_settings.surfaceShow:
+                    props = actor.GetProperty()
+                    props.SetInterpolationToPBR()
+                    props.SetColor(0.5,0.8,0.5)
+                    # props.SetColor((actor_settings.surfaceColor[0]/255, actor_settings.surfaceColor[1]/255, actor_settings.surfaceColor[2]/255))
+                    # props.SetOpacity(actor_settings.alpha)
+                    props.SetMetallic(0.8) # actor_settings.metallic)
+                    props.SetRoughness(0.1) # actor_settings.roughness)
                 else:
-                    actor.GetProperty().SetColor(actor_settings.surfaceColor)
-                    actor.GetProperty().SetOpacity(actor_settings.alpha)
+                    actor.wireframe(True)
 
                 actor.lineWidth(actor_settings.lineWidth)
                 if actor_settings.lineWidth > 0:
-                    actor.lineColor(actor_settings.lineColor)
+                    actor.lineColor((actor_settings.lineColor[0]/255, actor_settings.lineColor[1]/255, actor_settings.lineColor[2]/255))
 
                 # try:
                 #     a.actor_type
@@ -2095,16 +2153,6 @@ class Viewport:
                 #             i, v.node.name
                 #         )
                 #     )
-
-
-
-
-
-
-
-
-
-
 
                 # if a.actor_type == ActorType.FORCE:
                 #     if self.settings.show_force:
@@ -2179,8 +2227,6 @@ class Viewport:
                 #         a.off()
 
         # ---------- apply element only properties --------
-
-
 
         self.update_outlines()
 
@@ -2286,146 +2332,146 @@ class WaveField:
         self.y = y
 
 
-if __name__ == "__main__":
-
-    wavefield = WaveField()
-
-    # def create_waveplane(self, wave_direction, wave_amplitude, wave_length, wave_period, nt, nx, ny, dx, dy):
-    wavefield.create_waveplane(30, 2, 100, 7, 50, 40, 40, 100, 100)
-    wavefield.update(0)
-
-    wavefield.actor.GetMapper().Update()
-    data = wavefield.actor.GetMapper().GetInputAsDataSet()
-
-    code = "import numpy as np\nimport bpy\n"
-    code += "\nvertices = np.array(["
-
-    for i in range(data.GetNumberOfPoints()):
-        point = data.GetPoint(i)
-        code += "\n    {}, {}, {},".format(*point)
-
-    code = code[:-1]  # remove the last ,
-
-    code += """], dtype=np.float32)
-
-
-num_vertices = vertices.shape[0] // 3
-
-# Polygons are defined in loops. Here, we define one quad and two triangles
-vertex_index = np.array(["""
-
-    poly_length = []
-    counter = 0
-    poly_start = []
-
-    for i in range(data.GetNumberOfCells()):
-        cell = data.GetCell(i)
-
-        if isinstance(cell, vtk.vtkLine):
-            print("Cell nr {} is a line, not adding to mesh".format(i))
-            continue
-
-        code += "\n    "
-
-        for ip in range(cell.GetNumberOfPoints()):
-            code += "{},".format(cell.GetPointId(ip))
-
-        poly_length.append(cell.GetNumberOfPoints())
-        poly_start.append(counter)
-        counter += cell.GetNumberOfPoints()
-
-    code = code[:-1]  # remove the last ,
-
-    code += """], dtype=np.int32)
-
-# For each polygon the start of its vertex indices in the vertex_index array
-loop_start = np.array([
-    """
-
-    for p in poly_start:
-        code += "{}, ".format(p)
-
-    code = code[:-1]  # remove the last ,
-
-    code += """], dtype=np.int32)
-
-# Length of each polygon in number of vertices
-loop_total = np.array([
-    """
-
-    for p in poly_length:
-        code += "{}, ".format(p)
-
-    code = code[:-1]  # remove the last ,
-
-    code += """], dtype=np.int32)
-
-num_vertex_indices = vertex_index.shape[0]
-num_loops = loop_start.shape[0]
-
-# Create mesh object based on the arrays above
-
-mesh = bpy.data.meshes.new(name='created mesh')
-
-mesh.vertices.add(num_vertices)
-mesh.vertices.foreach_set("co", vertices)
-
-mesh.loops.add(num_vertex_indices)
-mesh.loops.foreach_set("vertex_index", vertex_index)
-
-mesh.polygons.add(num_loops)
-mesh.polygons.foreach_set("loop_start", loop_start)
-mesh.polygons.foreach_set("loop_total", loop_total)
-
-
-"""
-
-    wavefield.nt  # number of key-frames
-
-    for i_source_frame in range(wavefield.nt):
-        t = wavefield.period * i_source_frame / wavefield.nt
-
-        n_frame = 30 * t  # todo: replace with frames per second
-
-        # update wave-field
-        wavefield.update(t)
-        wavefield.actor.GetMapper().Update()
-        # data = v.actor.GetMapper().GetInputAsDataSet()
-
-        code += "\nvertices = np.array(["
-
-        for i in range(data.GetNumberOfPoints()):
-            point = data.GetPoint(i)
-            code += "\n    {}, {}, {},".format(*point)
-
-        code = code[:-1]  # remove the last ,
-
-        code += """], dtype=np.float32)
-        
-mesh.vertices.foreach_set("co", vertices)
-for vertex in mesh.vertices:
-        """
-        code += 'vertex.keyframe_insert(data_path="co", frame = {})'.format(
-            np.round(n_frame)
-        )
-
-    code += """
-# We're done setting up the mesh values, update mesh object and 
-# let Blender do some checks on it
-mesh.update()
-mesh.validate()
-
-# Create Object whose Object Data is our new mesh
-obj = bpy.data.objects.new('created object', mesh)
-
-# Add *Object* to the scene, not the mesh
-scene = bpy.context.scene
-scene.collection.objects.link(obj)
-
-# Select the new object and make it active
-bpy.ops.object.select_all(action='DESELECT')
-obj.select_set(True)
-bpy.context.view_layer.objects.active = obj"""
-
-    with open("c:/data/test.py", "w") as data:
-        data.write(code)
+# if __name__ == "__main__":
+#
+#     wavefield = WaveField()
+#
+#     # def create_waveplane(self, wave_direction, wave_amplitude, wave_length, wave_period, nt, nx, ny, dx, dy):
+#     wavefield.create_waveplane(30, 2, 100, 7, 50, 40, 40, 100, 100)
+#     wavefield.update(0)
+#
+#     wavefield.actor.GetMapper().Update()
+#     data = wavefield.actor.GetMapper().GetInputAsDataSet()
+#
+#     code = "import numpy as np\nimport bpy\n"
+#     code += "\nvertices = np.array(["
+#
+#     for i in range(data.GetNumberOfPoints()):
+#         point = data.GetPoint(i)
+#         code += "\n    {}, {}, {},".format(*point)
+#
+#     code = code[:-1]  # remove the last ,
+#
+#     code += """], dtype=np.float32)
+#
+#
+# num_vertices = vertices.shape[0] // 3
+#
+# # Polygons are defined in loops. Here, we define one quad and two triangles
+# vertex_index = np.array(["""
+#
+#     poly_length = []
+#     counter = 0
+#     poly_start = []
+#
+#     for i in range(data.GetNumberOfCells()):
+#         cell = data.GetCell(i)
+#
+#         if isinstance(cell, vtk.vtkLine):
+#             print("Cell nr {} is a line, not adding to mesh".format(i))
+#             continue
+#
+#         code += "\n    "
+#
+#         for ip in range(cell.GetNumberOfPoints()):
+#             code += "{},".format(cell.GetPointId(ip))
+#
+#         poly_length.append(cell.GetNumberOfPoints())
+#         poly_start.append(counter)
+#         counter += cell.GetNumberOfPoints()
+#
+#     code = code[:-1]  # remove the last ,
+#
+#     code += """], dtype=np.int32)
+#
+# # For each polygon the start of its vertex indices in the vertex_index array
+# loop_start = np.array([
+#     """
+#
+#     for p in poly_start:
+#         code += "{}, ".format(p)
+#
+#     code = code[:-1]  # remove the last ,
+#
+#     code += """], dtype=np.int32)
+#
+# # Length of each polygon in number of vertices
+# loop_total = np.array([
+#     """
+#
+#     for p in poly_length:
+#         code += "{}, ".format(p)
+#
+#     code = code[:-1]  # remove the last ,
+#
+#     code += """], dtype=np.int32)
+#
+# num_vertex_indices = vertex_index.shape[0]
+# num_loops = loop_start.shape[0]
+#
+# # Create mesh object based on the arrays above
+#
+# mesh = bpy.data.meshes.new(name='created mesh')
+#
+# mesh.vertices.add(num_vertices)
+# mesh.vertices.foreach_set("co", vertices)
+#
+# mesh.loops.add(num_vertex_indices)
+# mesh.loops.foreach_set("vertex_index", vertex_index)
+#
+# mesh.polygons.add(num_loops)
+# mesh.polygons.foreach_set("loop_start", loop_start)
+# mesh.polygons.foreach_set("loop_total", loop_total)
+#
+#
+# """
+#
+#     wavefield.nt  # number of key-frames
+#
+#     for i_source_frame in range(wavefield.nt):
+#         t = wavefield.period * i_source_frame / wavefield.nt
+#
+#         n_frame = 30 * t  # todo: replace with frames per second
+#
+#         # update wave-field
+#         wavefield.update(t)
+#         wavefield.actor.GetMapper().Update()
+#         # data = v.actor.GetMapper().GetInputAsDataSet()
+#
+#         code += "\nvertices = np.array(["
+#
+#         for i in range(data.GetNumberOfPoints()):
+#             point = data.GetPoint(i)
+#             code += "\n    {}, {}, {},".format(*point)
+#
+#         code = code[:-1]  # remove the last ,
+#
+#         code += """], dtype=np.float32)
+#
+# mesh.vertices.foreach_set("co", vertices)
+# for vertex in mesh.vertices:
+#         """
+#         code += 'vertex.keyframe_insert(data_path="co", frame = {})'.format(
+#             np.round(n_frame)
+#         )
+#
+#     code += """
+# # We're done setting up the mesh values, update mesh object and
+# # let Blender do some checks on it
+# mesh.update()
+# mesh.validate()
+#
+# # Create Object whose Object Data is our new mesh
+# obj = bpy.data.objects.new('created object', mesh)
+#
+# # Add *Object* to the scene, not the mesh
+# scene = bpy.context.scene
+# scene.collection.objects.link(obj)
+#
+# # Select the new object and make it active
+# bpy.ops.object.select_all(action='DESELECT')
+# obj.select_set(True)
+# bpy.context.view_layer.objects.active = obj"""
+#
+#     with open("c:/data/test.py", "w") as data:
+#         data.write(code)

@@ -351,7 +351,7 @@ class GridEdit(QWidget):
                         )
                 except Exception as E:
                     raise ValueError(
-                        f"Provided data does not match defined columns, setting data failed with error: {str(E)}"
+                        f"Provided data does not match defined columns, setting data failed with error: {str(E)}\n We were setting column {icol} with name {self._columns[icol]['id']}"
                     )
 
         if row_names is not None:
@@ -403,8 +403,8 @@ class GridEdit(QWidget):
         value = self.getCellValue(row, col, kind)
 
         # color cells that hold a value if the value that they hold is invalid.
-        # does not apply to color-buttons of course.
-        if kind != "color":
+        widget = self.grid.cellWidget(row, col)
+        if widget is None:
             if value is None:
                 self.grid.item(row, col).setBackground(ColorError)
             else:

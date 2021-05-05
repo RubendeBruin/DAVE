@@ -1098,6 +1098,7 @@ class Gui():
         if filename:
             code = 's.import_scene(r"{}")'.format(filename)
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+            self.visual.update_visibility()
 
     def menu_save(self):
         filename, _ = QFileDialog.getSaveFileName(filter="*.dave", caption="Scene files",directory=self.scene.resources_paths[0])

@@ -70,7 +70,7 @@ RESOURCE_PATH.append(cdir / 'resources')
 RESOURCE_PATH.append(default_user_dir)
 RESOURCE_PATH.append(workdir)
 
-
+LIGHT_TEXTURE_SKYBOX = cdir / 'resources' / 'white.png'
 
 
 print('default resource folders:')
