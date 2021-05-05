@@ -8,6 +8,7 @@
 from PySide2 import QtCore
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
+from PySide2.QtWidgets import QColorDialog
 
 import sys
 
@@ -43,7 +44,7 @@ set data[source] and [row-labels]
 
 datatypes
 
-type : bool ,str, float, int
+type : [bool ,str, float, int, 'color']
 
 Columns:
 - when using a DataModel: 'id' should correspond to a gettable and settable property of the provided data items.
@@ -74,14 +75,16 @@ class Table(QTableWidget):
             rows = [cell.row() for cell in self.selectedIndexes()]
             cols = [cell.column() for cell in self.selectedIndexes()]
 
-            data = "\n".join(
-                [
-                    "\t".join([self.item(row, col).text() for col in set(cols)])
-                    for row in set(rows)
-                ]
-            )
-
-            print(data)
+            try:
+                data = "\n".join(
+                    [
+                        "\t".join([self.item(row, col).text() for col in set(cols)])
+                        for row in set(rows)
+                    ]
+                )
+            except:
+                print("Can only copy ranges with numbers or text in the cells")
+                return
             QApplication.clipboard().setText(data)
 
             event.accept()
@@ -102,7 +105,14 @@ class Table(QTableWidget):
             for i_row, row_text in enumerate(rows):
                 cols = row_text.split("\t")
                 for i_col, cell in enumerate(cols):
+
+                    # can only past into cells without a custom widget
+                    widget = self.cellWidget(row + i_row, col + i_col)
+                    if widget is not None:
+                        continue
+
                     item = self.item(row + i_row, col + i_col)
+
                     if item is not None:
                         item.setText(cell)
                     else:
@@ -240,10 +250,32 @@ class GridEdit(QWidget):
         return tuple(data)
 
     def newRow(self, current_position):
+        """Adds a new row with default values"""
+
         if current_position < 0:
             self.grid.insertRow(0)
+            irow = 0
         else:
             self.grid.insertRow(current_position)
+            irow = current_position
+
+        # the new row is row i - fill with some dummy data
+        for icol, definition in enumerate(self._columns):
+            kind = definition["kind"]
+            if kind == int:
+                value = 0
+            elif kind == float:
+                value = 0
+            elif kind == str:
+                value = ""
+            elif kind == bool:
+                value = False
+            elif kind == "color":
+                value = (254, 216, 0)
+            else:
+                raise ValueError("Unknown columns type, can not add row")
+
+            self.setItem(irow, icol, definition["kind"], value)
 
     def deleteRow(self, current_position, void):
         self.grid.removeRow(current_position)
@@ -259,6 +291,38 @@ class GridEdit(QWidget):
                     self.grid.item(irow, icol).setBackground(ColorError)
 
         self.grid.blockSignals(False)
+
+    def onColorButtonClicked(self, event):
+
+        # get the button that we pressed from the active row and columns
+        button = self.grid.cellWidget(self.grid.currentRow(), self.grid.currentColumn())
+        color = button._color
+        qcolor = QColor(*color)
+        result = QColorDialog().getColor(initial=qcolor)
+
+        if result.isValid():
+            color = (result.red(), result.green(), result.blue())
+            button._color = color
+            button.setStyleSheet("background-color: rgb({}, {}, {});".format(*color))
+
+            self.onCellEdited()
+
+    def setItem(self, irow, icol, kind, value):
+        if kind == bool:
+            cb = QCheckBox()
+            cb.setChecked(value)
+            self.grid.setCellWidget(irow, icol, cb)
+            cb.toggled.connect(self.onCellEdited)
+        elif kind == "color":
+            cb = QPushButton()
+            cb.setStyleSheet("background-color: rgb({}, {}, {});".format(*value))
+            self.grid.setCellWidget(irow, icol, cb)
+            cb._color = value
+            cb.clicked.connect(self.onColorButtonClicked)
+        else:
+            tg = QTableWidgetItem(str(value))
+            self.grid.setItem(irow, icol, tg)
+
     def _setData(self, datasource, row_names):
 
         try:
@@ -269,28 +333,25 @@ class GridEdit(QWidget):
         self.grid.clearContents()
         self.grid.setRowCount(len(datasource))
 
-        def setItem(irow, icol, kind, value):
-            if kind == bool:
-                cb = QCheckBox()
-                cb.setChecked(value)
-                self.grid.setCellWidget(irow, icol, cb)
-                cb.toggled.connect(self.onCellEdited)
-            else:
-                tg = QTableWidgetItem(str(value))
-                self.grid.setItem(irow, icol, tg)
-
         for irow, row in enumerate(datasource):
             try:
+
                 for icol, item in enumerate(row):
-                    setItem(irow, icol, self._columns[icol]["kind"], item)
+                    self.setItem(irow, icol, self._columns[icol]["kind"], item)
             except:
 
-                for icol in range(len(self._columns)):  # iterate over columns
-                    setItem(
-                        irow,
-                        icol,
-                        self._columns[icol]["kind"],
-                        getattr(row, self._columns[icol]["id"]),
+                try:
+
+                    for icol in range(len(self._columns)):  # iterate over columns
+                        self.setItem(
+                            irow,
+                            icol,
+                            self._columns[icol]["kind"],
+                            getattr(row, self._columns[icol]["id"]),
+                        )
+                except Exception as E:
+                    raise ValueError(
+                        f"Provided data does not match defined columns, setting data failed with error: {str(E)}"
                     )
 
         if row_names is not None:
@@ -321,6 +382,8 @@ class GridEdit(QWidget):
                 value = self.grid.cellWidget(row, col).isChecked()
             elif kind == float:
                 value = float(self.grid.item(row, col).text())
+            elif kind == "color":
+                value = self.grid.cellWidget(row, col)._color
             else:
                 value = self.grid.item(row, col).text()
 
@@ -338,13 +401,17 @@ class GridEdit(QWidget):
         kind = self._columns[col]["kind"]
 
         value = self.getCellValue(row, col, kind)
-        if value is None:
-            self.grid.item(row, col).setBackground(ColorError)
-        else:
-            if self.grid.item(row, col).backgroundColor() == QColor():
-                pass
+
+        # color cells that hold a value if the value that they hold is invalid.
+        # does not apply to color-buttons of course.
+        if kind != "color":
+            if value is None:
+                self.grid.item(row, col).setBackground(ColorError)
             else:
-                self.grid.item(row, col).setData(QtCore.Qt.BackgroundRole, None)
+                if self.grid.item(row, col).backgroundColor() == QColor():
+                    pass
+                else:
+                    self.grid.item(row, col).setData(QtCore.Qt.BackgroundRole, None)
 
         old_value = None
 
@@ -430,12 +497,17 @@ if __name__ == "__main__":
         ge = GridEdit(None)
 
         # # Example with raw data
+        ge.addColumn("col", "color")
         ge.addColumn("x", float)
         ge.addColumn("y", float)
         ge.addColumn("z", float)
+
         ge.activateColumns()
 
-        ge.setData([[1, 2, 3], [4, 5, 6.789]], allow_add_or_remove_rows=True)
+        ge.setData(
+            [[(0, 0, 0), 1, 2, 3], [(254, 0, 0), 4, 5, 6.789]],
+            allow_add_or_remove_rows=True,
+        )
 
         def change(*x):
             print(ge.getData())
@@ -450,8 +522,6 @@ if __name__ == "__main__":
     else:  # example with model data
 
         ge = GridEdit(None)
-
-
 
         # Example with elements - These names correpond to properties of the objects
         ge.addColumn("name", str)
