@@ -10,13 +10,47 @@
 """
 visual visualizes a scene using vedo
 
+## Viewport
 
-nodeA class is VisualActor
+Viewport is the main class which handles the viewport (ie: Plotter)
+
+## Visual-Actors
+
+A viewport contains VisualActors.
 this class contains a reference to a Node and a list of actors
 
 a visual actor can be hidden by setting visible to False
 
-each of the individual vtk-plotter actors has a "actor_type" property which is a enum ActorType
+each of the individual vtk-plotter actors has a "actor_type" property which is a enum ActorType.
+
+ActorType is used for general control of these actors. At the moment this is only Scaling which is implemented in "postiion visuals"
+
+self.visuals contains a list of visuals
+
+       each visual
+       - may have a node. The node tells us exactly what the visual represents
+       - has a list of actors.
+       - each actor
+           - may have an ActorType property. This is yet another way to tell what kind of feature the visual represents
+           - from the node and the position in the list we know the same....
+
+       ActorType:
+       - set per actor. Allows control per feature-type: For example Axis and Points are both "Geometry"
+
+
+        # we have nodes
+        # every node has a type
+        # every node type has actors
+        #  every actor has a name which is the key in dict.
+        #
+        # Node-Type     Actor-Name   |    Visible    Alpha     Xray    Wireframe    Line-width
+        # point         main
+        
+        
+        Updates the visibility settings for all of the actors
+
+        A visual can be hidden completely by setting visible to false
+        An actor can be hidden depending on the actor-type using
 
 """
 
@@ -32,6 +66,8 @@ import vedo as vp  # ref: https://github.com/marcomusy/vedo
 import DAVE.scene as vf
 import DAVE.scene as dn
 import DAVE.settings as vc
+
+from typing import List
 
 import vtk
 import numpy as np
@@ -261,70 +297,23 @@ class VisualActor:
         self.node = node  # Node
         self.label_actor = None
 
-        # self.visible = True
-        self._original_colors = dict()
         self._is_selected = False
-        self._is_transparent = False
+        self._is_sub_selected = False # parent of this object is selected - render transparent
 
     def select(self):
         if self._is_selected:
             return
 
-        self._original_colors = dict()
-
         for key, actor in self.actors.items():
-            self._original_colors[key] = actor.color()
             actor.color(vc.COLOR_SELECT)
 
         self._is_selected = True
 
-    def deselect(self):
-
-        if not self._is_selected:
-            return
-
-        self._is_selected = False
-
-        if self._original_colors:
-            for key, color in self._original_colors.items():
-                self.actors[key].color(color)
-
-        else:
-            if self.actors:
-                raise Exception(
-                    "Original color not stored for visual belonging to {}".format(
-                        self.node.name
-                    )
-                )
-
     def make_transparent(self):
-        """Makes an actor transparent"""
-
-        if self._is_transparent:
-            return
+        """Makes an actor transparent - this can be done when a parent node is selected"""
 
         for a in self.actors.values():
             a.alpha(0.4)
-
-        self._is_transparent = True
-
-    def reset_opacity(self):
-        """Undoes make transparent"""
-
-        if not self._is_transparent:
-            return
-
-        for a in self.actors.values():
-            if a.actor_type == ActorType.GLOBAL:
-                a.alpha(0.4)
-            else:
-                a.alpha(1)
-
-        self._is_transparent = False
-
-    def set_dsa(self, d, s, a):
-        for act in self.actors.values():
-            act.lighting(diffuse=d, ambient=a, specular=s)
 
     def on(self):
         for a in self.actors.values():
@@ -379,8 +368,8 @@ class VisualActor:
 class Viewport:
     def __init__(self, scene, jupyter=False):
         self.scene = scene
-        self.visuals = list()
-        self.outlines = list()
+        self.visuals : List[VisualActor] = list()
+        self.outlines : List[VisualOutline]= list()
         self.screen = None
         """Becomes assigned when a screen is active (or was active...)"""
 
@@ -572,8 +561,11 @@ class Viewport:
         self.global_visual = v
 
     def deselect_all(self):
+
         for v in self.visuals:
-            v.deselect()
+            v._is_selected = False
+            self.update_painting()
+
 
     def node_from_vtk_actor(self, actor):
         """
@@ -1806,23 +1798,33 @@ class Viewport:
                 for outline in self.outlines:
                     screen.add(outline.outline_actor)
 
+            """ For reference: this is how to load an cubemap texture
 
-            # # load env texture
-            # cubemap_path_root = r'C:\Users\rubendb\AppData\Local\pyvista\pyvista\examples\skybox2-'
-            #
-            # files = [cubemap_path_root + name + '.jpg' for name in ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']]
-            #
-            # cubemap = vtk.vtkTexture()
-            # cubemap.SetCubeMap(True)
-            #
-            # for i,file in enumerate(files):
-            #     readerFactory = vtk.vtkImageReader2Factory()
-            #     # textureFile = readerFactory.CreateImageReader2(file)
-            #     textureFile = readerFactory.CreateImageReader2(r'c:\data\white.png')
-            #     textureFile.SetFileName(r'c:\data\white.png')
-            #     textureFile.Update()
-            #
-            #     cubemap.SetInputDataObject(i, textureFile.GetOutput())
+            Problem is that the default VTK orientation is not with the Z-axis up. So some magic needs to be done
+            to have the cubemap and environmental light texture in the right orientation
+
+            # load env texture
+            cubemap_path_root = r'C:\\datapath\\skybox2-'
+
+            files = [cubemap_path_root + name + '.jpg' for name in ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']]
+
+            cubemap = vtk.vtkTexture()
+            cubemap.SetCubeMap(True)
+
+            for i,file in enumerate(files):
+                readerFactory = vtk.vtkImageReader2Factory()
+                # textureFile = readerFactory.CreateImageReader2(file)
+                textureFile = readerFactory.CreateImageReader2(r'c:\data\white.png')
+                textureFile.SetFileName(r'c:\data\white.png')
+                textureFile.Update()
+
+                cubemap.SetInputDataObject(i, textureFile.GetOutput())
+
+            # make skybox actor
+            skybox = vtk.vtkSkybox()
+            skybox.SetTexture(cubemap)
+
+            self.screen.add(skybox)"""
 
             # Make a white skybox texture for light emission
             cubemap = vtk.vtkTexture()
@@ -1836,11 +1838,6 @@ class Viewport:
             for i in range(6):
                 cubemap.SetInputDataObject(i, textureFile.GetOutput())
 
-            # # make skybox actor
-            # skybox = vtk.vtkSkybox()
-            # skybox.SetTexture(cubemap)
-            #
-            # self.screen.add(skybox)
 
             self.screen.show(camera=camera, verbose=False)
 
@@ -1862,8 +1859,6 @@ class Viewport:
                 #
                 # r.SetPass(ssao)
                 #
-
-
 
                 r.SetUseDepthPeeling(True)
 
@@ -1925,19 +1920,8 @@ class Viewport:
 
         iren.Start()
 
-        # screen.mouseLeftClickFunction = self.onMouseLeft
         screen.mouseRightClickFunction = self.onMouseRight
 
-        # # Add some lights
-        # light1 = vtk.vtkLight()
-        #
-        # light1.SetIntensity(0.3)
-        # light1.SetLightTypeToCameraLight()
-        # light1.SetPosition(100, 100, 100)
-        #
-        # self.renderer.AddLight(light1)
-        #
-        # self.light = light1
 
     def _leftmousepress(self, iren, event):
         """Implements a "fuzzy" mouse pick function"""
@@ -2007,235 +1991,70 @@ class Viewport:
     def refresh_embeded_view(self):
         self.vtkWidget.update()
 
-    def update_viewport_settings(self, new_settings: ViewportSettings):
-        """Updates the settings of the viewport to reflect the settings provided
+    def update_painting(self, v):
+        """Updates the painting for this visual
 
-        self.visuals contains a list of visuals
+        Painting depends on the node type of this visual.
+        The properties for the individual actors of this visual are
+        stored in
 
-        each visual
-        - may have a node. The node tells us exactly what the visual represents
-        - has a list of actors.
-        - each actor
-            - may have an ActorType property. This is yet another way to tell what kind of feature the visual represents
-            - from the node and the position in the list we know the same....
-
-        ActorType:
-        - set per actor. Allows control per feature-type: For example Axis and Points are both "Geometry"
-
-
-
-        """
-
-        # we have nodes
-        # every node has a type
-        # every node type has actors
-        #  every actor has a name which is the key in dict.
-        #
-        # Node-Type     Actor-Name   |    Visible    Alpha     Xray    Wireframe    Line-width
-        # point         main
-
-        for v in self.visuals:
-
-            node = v.node
-
-            if node is None:
-                continue
-
-            print(node.class_name)
-            for key in v.actors.keys():
-                print(key)
-            #
-            # if v.node is None:
-            #     pass
-            # if isinstance(v.node, dn.Buoyancy):
-            #     ## Buoyancy has multiple actors
-            #     #
-            #     # actor 0 : the source mesh
-            #     # actor 1 : the CoB
-            #     # actor 2 : the waterplane
-            #     # actor 3 : the submerged part of the source mesh
-            #
-            #     source_mesh = v.actors["main"]
-            #     cob = v.actors["cob"]
-            #     wp = v.actors["waterplane"]
-            #     subm = v.actors["submerged_mesh"]
-            #
-            #     source_mesh.no_outline = False
-            #     subm.no_outline = True
-            #
-            #     source_mesh.off()
-            #     source_mesh.xray = True
-            #
-            #     subm.wireframe(False)
-            #     subm.xray = False
-            #     subm.on()
-            #     subm.alpha(0.4)
-            #     subm.lw(0)
-            #
-            #     wp.off()
-
-    def update_visibility(self):
-        """Updates the visibility settings for all of the actors
-
-        A visual can be hidden completely by setting visible to false
-        An actor can be hidden depending on the actor-type using
-
-        self.show_geometry = True
-        self.show_force = True
-        self.show_visual = True
-        self.show_global = False
         """
 
         ps = self.settings.painter_settings  # alias
         if ps is None:
-            ps = dict()
+            print('No painter settings, ugly world :(')
+            return
 
-        for v in self.visuals:
-            for a in v.actors.values():
-                props = a.GetProperty()
-                props.SetInterpolationToPBR()
-                props.SetColor(0.5, 0.8, 0.5)
-                # props.SetColor((actor_settings.surfaceColor[0]/255, actor_settings.surfaceColor[1]/255, actor_settings.surfaceColor[2]/255))
-                # props.SetOpacity(actor_settings.alpha)
-                props.SetMetallic(0)  # actor_settings.metallic)
-                props.SetRoughness(1)  # actor_settings.roughness)
+        if v.node is not None:
+            if not v.node.visible:
+                for a in v.actors.values():
+                    a.off()
+                    a.xray = False
+                return
 
-        return
+        if v.node is None:
+            node_class = "global"
+        else:
+            node_class = v.node.class_name
 
-        for v in self.visuals:
+        if node_class in ps:
+            node_painter_settings = ps[node_class]
+        else:
+            print(f'No settings available for nodes with class {node_class}')
+            return  # no settings available
 
-            if v.node is not None:
-                if not v.node.visible:
-                    for a in v.actors.values():
-                        a.off()
-                        a.xray = False
-                    continue
+        for key, actor in v.actors.items():
 
-            if v.node is None:
-                node_class = "global"
-            else:
-                node_class = v.node.class_name
-
-            print(node_class)
-
-            if node_class in ps:
-                node_painter_settings = ps[node_class]
+            if key in node_painter_settings:
+                actor_settings = node_painter_settings[key]
             else:
                 continue
 
-            for key, actor in v.actors.items():
+            if actor_settings.surfaceShow:
+                props = actor.GetProperty()
+                props.SetInterpolationToPBR()
+                props.SetColor((actor_settings.surfaceColor[0] / 255, actor_settings.surfaceColor[1] / 255,
+                                actor_settings.surfaceColor[2] / 255))
+                props.SetOpacity(actor_settings.alpha)
+                props.SetMetallic(actor_settings.metallic)
+                props.SetRoughness(actor_settings.roughness)
+            else:
+                actor.wireframe(True)
 
-                if key in node_painter_settings:
-                    actor_settings = node_painter_settings[key]
-                else:
-                    continue
+            actor.lineWidth(actor_settings.lineWidth)
+            if actor_settings.lineWidth > 0:
+                actor.lineColor((actor_settings.lineColor[0] / 255, actor_settings.lineColor[1] / 255,
+                                 actor_settings.lineColor[2] / 255))
 
-                if actor_settings.surfaceShow:
-                    props = actor.GetProperty()
-                    props.SetInterpolationToPBR()
-                    props.SetColor(0.5,0.8,0.5)
-                    # props.SetColor((actor_settings.surfaceColor[0]/255, actor_settings.surfaceColor[1]/255, actor_settings.surfaceColor[2]/255))
-                    # props.SetOpacity(actor_settings.alpha)
-                    props.SetMetallic(0.8) # actor_settings.metallic)
-                    props.SetRoughness(0.1) # actor_settings.roughness)
-                else:
-                    actor.wireframe(True)
+    def update_visibility(self):
+        """Updates the settings of the viewport to reflect the settings in self.settings.painter_settings
+        """
 
-                actor.lineWidth(actor_settings.lineWidth)
-                if actor_settings.lineWidth > 0:
-                    actor.lineColor((actor_settings.lineColor[0]/255, actor_settings.lineColor[1]/255, actor_settings.lineColor[2]/255))
-
-                # try:
-                #     a.actor_type
-                # except:
-                #     raise AttributeError(
-                #         "Missing actor_type for actor nr {} on node {}".format(
-                #             i, v.node.name
-                #         )
-                #     )
-
-                # if a.actor_type == ActorType.FORCE:
-                #     if self.settings.show_force:
-                #         a.on()
-                #     else:
-                #         a.off()
-                #
-                # elif a.actor_type == ActorType.MESH_OR_CONNECTOR:
-                #     if self.settings.show_meshes:
-                #         a.on()
-                #     else:
-                #         a.off()
-                #
-                # elif a.actor_type == ActorType.COG:
-                #     if self.settings.show_cog:
-                #         a.on()
-                #     else:
-                #         a.off()
-                #
-                # elif a.actor_type == ActorType.VISUAL:
-                #     if self.settings.visual_alpha == 0:
-                #         a.off()
-                #     else:
-                #         a.on()
-                #         a.alpha(self.settings.visual_alpha)
-                #
-                # elif a.actor_type == ActorType.GEOMETRY:
-                #     if self.settings.show_geometry:
-                #         a.on()
-                #
-                #     else:
-                #         a.off()
-                #
-                # elif a.actor_type == ActorType.GLOBAL:
-                #     if self.settings.show_global:
-                #         a.on()
-                #
-                #         if self.vtkWidget is not None:
-                #             arenderer = (
-                #                 self.vtkWidget.GetRenderWindow()
-                #                 .GetRenderers()
-                #                 .GetFirstRenderer()
-                #             )
-                #             arenderer.GradientBackgroundOn()
-                #             arenderer.SetBackground2(vc.COLOR_BG2_ENV)
-                #             arenderer.SetBackground2(vc.COLOR_BG1_ENV)
-                #     else:
-                #         a.off()
-                #
-                #         if self.vtkWidget is not None:
-                #             arenderer = (
-                #                 self.vtkWidget.GetRenderWindow()
-                #                 .GetRenderers()
-                #                 .GetFirstRenderer()
-                #             )
-                #             arenderer.GradientBackgroundOn()
-                #             arenderer.SetBackground2(vc.COLOR_BG2)
-                #             arenderer.SetBackground2(vc.COLOR_BG1)
-                #
-                # elif a.actor_type == ActorType.NOT_GLOBAL:
-                #     if self.settings.show_global:
-                #         a.off()
-                #     else:
-                #         a.on()
-
-                # # Cables are a separate class
-                #
-                # elif a.actor_type == ActorType.CABLE:
-                #     if (self.settings.visual_alpha > 0) or self.settings.show_force:
-                #         a.on()
-                #     else:
-                #         a.off()
-
-        # ---------- apply element only properties --------
+        for v in self.visuals:
+            if not (v._is_selected or v._is_sub_selected):
+                self.update_painting(v)
 
         self.update_outlines()
-
-    def set_dsa(self, d, s, a):
-        for v in self.visuals:
-            v.set_dsa(d, s, a)
-
-    def set_default_dsa(self):
-        self.set_dsa(vc.VISUAL_DIFFUSE, vc.VISUAL_SPECULAR, vc.VISUAL_AMBIENT)
 
 
 class WaveField:
@@ -2331,147 +2150,3 @@ class WaveField:
         self.x = x
         self.y = y
 
-
-# if __name__ == "__main__":
-#
-#     wavefield = WaveField()
-#
-#     # def create_waveplane(self, wave_direction, wave_amplitude, wave_length, wave_period, nt, nx, ny, dx, dy):
-#     wavefield.create_waveplane(30, 2, 100, 7, 50, 40, 40, 100, 100)
-#     wavefield.update(0)
-#
-#     wavefield.actor.GetMapper().Update()
-#     data = wavefield.actor.GetMapper().GetInputAsDataSet()
-#
-#     code = "import numpy as np\nimport bpy\n"
-#     code += "\nvertices = np.array(["
-#
-#     for i in range(data.GetNumberOfPoints()):
-#         point = data.GetPoint(i)
-#         code += "\n    {}, {}, {},".format(*point)
-#
-#     code = code[:-1]  # remove the last ,
-#
-#     code += """], dtype=np.float32)
-#
-#
-# num_vertices = vertices.shape[0] // 3
-#
-# # Polygons are defined in loops. Here, we define one quad and two triangles
-# vertex_index = np.array(["""
-#
-#     poly_length = []
-#     counter = 0
-#     poly_start = []
-#
-#     for i in range(data.GetNumberOfCells()):
-#         cell = data.GetCell(i)
-#
-#         if isinstance(cell, vtk.vtkLine):
-#             print("Cell nr {} is a line, not adding to mesh".format(i))
-#             continue
-#
-#         code += "\n    "
-#
-#         for ip in range(cell.GetNumberOfPoints()):
-#             code += "{},".format(cell.GetPointId(ip))
-#
-#         poly_length.append(cell.GetNumberOfPoints())
-#         poly_start.append(counter)
-#         counter += cell.GetNumberOfPoints()
-#
-#     code = code[:-1]  # remove the last ,
-#
-#     code += """], dtype=np.int32)
-#
-# # For each polygon the start of its vertex indices in the vertex_index array
-# loop_start = np.array([
-#     """
-#
-#     for p in poly_start:
-#         code += "{}, ".format(p)
-#
-#     code = code[:-1]  # remove the last ,
-#
-#     code += """], dtype=np.int32)
-#
-# # Length of each polygon in number of vertices
-# loop_total = np.array([
-#     """
-#
-#     for p in poly_length:
-#         code += "{}, ".format(p)
-#
-#     code = code[:-1]  # remove the last ,
-#
-#     code += """], dtype=np.int32)
-#
-# num_vertex_indices = vertex_index.shape[0]
-# num_loops = loop_start.shape[0]
-#
-# # Create mesh object based on the arrays above
-#
-# mesh = bpy.data.meshes.new(name='created mesh')
-#
-# mesh.vertices.add(num_vertices)
-# mesh.vertices.foreach_set("co", vertices)
-#
-# mesh.loops.add(num_vertex_indices)
-# mesh.loops.foreach_set("vertex_index", vertex_index)
-#
-# mesh.polygons.add(num_loops)
-# mesh.polygons.foreach_set("loop_start", loop_start)
-# mesh.polygons.foreach_set("loop_total", loop_total)
-#
-#
-# """
-#
-#     wavefield.nt  # number of key-frames
-#
-#     for i_source_frame in range(wavefield.nt):
-#         t = wavefield.period * i_source_frame / wavefield.nt
-#
-#         n_frame = 30 * t  # todo: replace with frames per second
-#
-#         # update wave-field
-#         wavefield.update(t)
-#         wavefield.actor.GetMapper().Update()
-#         # data = v.actor.GetMapper().GetInputAsDataSet()
-#
-#         code += "\nvertices = np.array(["
-#
-#         for i in range(data.GetNumberOfPoints()):
-#             point = data.GetPoint(i)
-#             code += "\n    {}, {}, {},".format(*point)
-#
-#         code = code[:-1]  # remove the last ,
-#
-#         code += """], dtype=np.float32)
-#
-# mesh.vertices.foreach_set("co", vertices)
-# for vertex in mesh.vertices:
-#         """
-#         code += 'vertex.keyframe_insert(data_path="co", frame = {})'.format(
-#             np.round(n_frame)
-#         )
-#
-#     code += """
-# # We're done setting up the mesh values, update mesh object and
-# # let Blender do some checks on it
-# mesh.update()
-# mesh.validate()
-#
-# # Create Object whose Object Data is our new mesh
-# obj = bpy.data.objects.new('created object', mesh)
-#
-# # Add *Object* to the scene, not the mesh
-# scene = bpy.context.scene
-# scene.collection.objects.link(obj)
-#
-# # Select the new object and make it active
-# bpy.ops.object.select_all(action='DESELECT')
-# obj.select_set(True)
-# bpy.context.view_layer.objects.active = obj"""
-#
-#     with open("c:/data/test.py", "w") as data:
-#         data.write(code)

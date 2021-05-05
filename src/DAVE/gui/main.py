@@ -1429,7 +1429,9 @@ class Gui():
             if v.node in visually_selected_nodes:
                 v.select()
             else:
-                v.deselect()
+                self.visual.update_painting(v)
+                v._is_selected = False
+                # v.deselect()
 
         for v in self.visual.visuals:
             try:
@@ -1439,8 +1441,11 @@ class Gui():
 
             if parent in visually_selected_nodes:
                 v.make_transparent()
+                v._is_sub_selected = True
             else:
-                v.reset_opacity()
+                v._is_sub_selected = False
+                self.visual.update_painting(v)
+                # v.reset_opacity()
 
 
 
