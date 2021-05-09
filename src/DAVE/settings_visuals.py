@@ -183,6 +183,10 @@ trans.lineWidth = 0
 trans.surfaceShow = True
 trans.alpha = 0.5
 
+xray = ActorSettings()
+xray.xray = True
+
+
 # ------ Point
 
 surf.surfaceColor = _LIGHT_GRAY
@@ -280,24 +284,23 @@ painters['Buoyancy']['submerged_mesh'] = copy(trans)
 # ---------- Tanks
 mesh.lineWidth = 1
 mesh.lineColor = _BLACK
-trans.surfaceColor = _RED
 surf.surfaceColor = _RED
 
-painters['Tank:freeflooding'] = {'main':copy(mesh), 'cog':copy(surf),'fluid':copy(trans)}
+painters['Tank:freeflooding'] = {'main':copy(mesh), 'cog':copy(surf),'fluid':copy(surf)}
 
-trans.surfaceColor = _BROWN
 surf.surfaceColor = _BROWN
-painters['Tank:empty'] = {'main':copy(mesh), 'cog':copy(surf),'fluid':copy(trans)}
+painters['Tank:empty'] = {'main':copy(mesh), 'cog':copy(surf),'fluid':copy(surf)}
 
-trans.surfaceColor = _ORANGE
 surf.surfaceColor = _ORANGE
-painters['Tank:partial'] = {'main':copy(mesh), 'cog':copy(surf),'fluid':copy(trans)}
+painters['Tank:partial'] = {'main':copy(mesh), 'cog':copy(surf),'fluid':copy(surf)}
 
-trans.surfaceColor = _BLUE_DARK
 surf.surfaceColor = _BLUE_DARK
-painters['Tank:full'] = {'main':copy(mesh), 'cog':copy(surf),'fluid':copy(trans)}
+painters['Tank:full'] = {'main':copy(mesh), 'cog':copy(surf),'fluid':copy(surf)}
 
+# WaveInteraction1
 
+surf.surfaceColor = _PURPLE
+painters['WaveInteraction1'] = {'main':copy(surf)}
 
 
 PAINTERS_DEFAULT = deepcopy(painters)

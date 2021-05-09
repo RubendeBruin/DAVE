@@ -74,7 +74,6 @@ class WidgetBallastConfiguration(guiDockWidget):
     def guiDefaultLocation(self):
         return QtCore.Qt.DockWidgetArea.RightDockWidgetArea
 
-    # ======
 
     def select_row_for_tank(self):
         if self.guiSelection:
