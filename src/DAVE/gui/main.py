@@ -83,6 +83,7 @@ from DAVE.gui import new_node_dialog
 import DAVE.gui.standard_assets
 from DAVE.gui.forms.dlg_solver import Ui_Dialog
 import DAVE.settings
+from DAVE.settings_visuals import PAINTERS_DEFAULT
 
 from DAVE.gui.helpers.highlighter import PythonHighlighter
 from DAVE.gui.helpers.ctrl_enter import ShiftEnterKeyPressFilter
@@ -212,6 +213,8 @@ class Gui():
         self.visual = Viewport(scene)
         """Reference to a viewport"""
 
+        self.visual.settings.painter_settings = PAINTERS_DEFAULT
+
         if cog_scale >= 0:
             self.visual.cog_scale = cog_scale
 
@@ -223,7 +226,7 @@ class Gui():
         self.visual.show_embedded(self.ui.frame3d)
 
         self.visual.position_visuals()
-        self.visual.update_visibility()
+        self.visual.update_visibility() # apply paint
 
         self.visual.mouseLeftEvent = self.view3d_select_element
 

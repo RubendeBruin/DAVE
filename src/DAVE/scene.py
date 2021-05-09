@@ -2419,6 +2419,11 @@ class LC6d(CoreConnectedNode):
         self._secondary = val
         self._vfNode.slave = val._vfNode
 
+    # TODO: Continue with these - need to be added yo pyo3d as well, currently nothing is exposed
+    # @property
+    # def fx(self):
+    #     return self._vfNode.force[0]
+
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)

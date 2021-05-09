@@ -113,6 +113,8 @@ class WidgetDerivedProperties(guiDockWidget):
             props.extend(ds.PROPS_CABLE)
         if isinstance(node, nodes.Connector2d):
             props.extend(ds.PROPS_CON2D)
+        if isinstance(node, nodes.LC6d):
+            props.extend(ds.PROPS_CON6D)
         if isinstance(node, nodes.Buoyancy):
             props.extend(ds.PROPS_BUOY_MESH)
         if isinstance(node, nodes.Beam):

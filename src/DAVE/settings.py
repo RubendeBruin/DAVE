@@ -13,8 +13,7 @@ Among which:
 ALL PROGRAM WIDE VARIABLES ARE DEFINED IN UPPERCASE
 
 """
-
-
+from copy import deepcopy, copy
 
 """
   This Source Code Form is subject to the terms of the Mozilla Public
@@ -70,7 +69,7 @@ RESOURCE_PATH.append(cdir / 'resources')
 RESOURCE_PATH.append(default_user_dir)
 RESOURCE_PATH.append(workdir)
 
-LIGHT_TEXTURE_SKYBOX = cdir / 'resources' / 'white.png'
+
 
 
 print('default resource folders:')
@@ -110,93 +109,6 @@ MANAGED_NODE_IDENTIFIER = ">>>"  # used for managed nodes, eg: SlingSL1242>>>eye
 """
 
 
-# ============ visuals :: sea ===========
-
-VISUAL_BUOYANCY_PLANE_EXTEND = 5
-TEXTURE_SEA = str(RESOURCE_PATH[0] / 'virtualSea.jpg')
-ALPHA_SEA = 0.8
-
-# ============ visuals :: geometry =========
-
-RESOLUTION_SPHERE = 12
-RESOLUTION_ARROW = 12
-
-# ============ visuals :: colors ===========
-
-_BLACK = [0,0,0]
-_RED = [144,33,30]
-_ORANGE = [200,80,33]
-_BROWN = [187,134,41]
-_GREEN = [0,127,14]
-_YELLOW = [255,216,0]
-_PURPLE = [87,0,127]
-_WHITE = [255,255,255]
-_BLUE = [12,106,146]
-_BLUE_LIGHT = [203,224,239]
-_BLUE_DARK = [57,76,90]
-_PINK = [247,17,228]
-_DARK_GRAY = [45,45,48]
-_LIGHT_GRAY = [200,200,200]
-_MEDIUM_GRAY = [145,145,145]
-
-def rgb(col):
-    return (col[0]/255, col[1]/255, col[2]/255)
-
-COLOR_SELECT = rgb(_YELLOW)
-COLOR_VISUAL = rgb(_BLUE_LIGHT)
-
-COLOR_CABLE = rgb(_BLACK)
-COLOR_POI   = rgb(_WHITE)
-COLOR_WAVEINTERACTION = rgb(_BLUE)
-COLOR_FORCE = rgb(_ORANGE)
-COLOR_SHEAVE = rgb(_WHITE)
-COLOR_COG = rgb(_PURPLE)
-COLOR_BEAM = rgb(_DARK_GRAY)
-
-COLOR_BUOYANCY_MESH_FILL = rgb(_YELLOW)
-COLOR_BUOYANCY_MESH_LINES = rgb(_BLUE_DARK)
-
-COLOR_CONTACT_MESH_FILL = rgb(_GREEN)
-COLOR_CONTACT_MESH_LINES = rgb(_BLUE_DARK)
-
-COLOR_TANK_MESH_FILL = None
-COLOR_TANK_MESH_LINES = rgb(_GREEN)
-
-LINEWIDTH_SUBMERGED_MESH = 3
-
-COLOR_X = rgb(_RED)
-COLOR_Y = rgb(_GREEN)
-COLOR_Z = rgb(_BLUE)
-
-COLOR_WATER = rgb(_BLUE_DARK)
-COLOR_WATER_TANK_5MIN = rgb(_BLUE_LIGHT)
-COLOR_WATER_TANK_SLACK = rgb(_PINK)
-COLOR_WATER_TANK_95PLUS = rgb(_BLUE_LIGHT)
-COLOR_WATER_TANK_FREEFLOODING = rgb((0,0,0))
-
-COLOR_BG2 = rgb(_LIGHT_GRAY)
-COLOR_BG1 = rgb(_LIGHT_GRAY)
-
-COLOR_BG2_ENV = rgb(_WHITE)         # colors when global elements (waterplane) are shown
-COLOR_BG1_ENV = rgb(_BLUE_LIGHT)
-
-
-
-
-# COLOR_BG1 = rgb(_DARK_GRAY)
-# COLOR_BG2 = rgb(_DARK_GRAY)
-# _DARK_GRAY
-
-# COLOR_BG1 =rgb(_WHITE)
-ALPHA_VISUAL = 0.3 # standard alpha value for visual when a node is selected
-ALPHA_BUOYANCY = 1.0
-ALPHA_WATER_TANK = 0.9
-
-OUTLINE_WIDTH = 1
-
-VISUAL_DIFFUSE = 0.4
-VISUAL_SPECULAR = 0.05
-VISUAL_AMBIENT = 0.5
 
 """
 ========= GUI =================
@@ -216,6 +128,7 @@ PROPS_POI = ['global_position','applied_force_and_moment_global','x','y','z','gx
 PROPS_CABLE = ['tension','stretch','length']
 PROPS_FORCE = ['force','fx','fy','fz','moment','mx','my','mz']
 PROPS_CON2D = ['angle','moment','force','ax','ay','az']
+PROPS_CON6D = [] # TODO
 PROPS_BODY = ['cog', 'cogx', 'cogy', 'cogz', 'mass']
 PROPS_BUOY_MESH = ['cob', 'displacement', 'cob_local']
 PROPS_BEAM = ['tension', 'torsion', 'L', 'EIy', 'EIz', 'EA', 'GIp', 'n_segments']

@@ -18,6 +18,8 @@ import DAVE.scene as nodes
 import DAVE.settings as ds
 import numpy as np
 
+from DAVE.settings_visuals import COLOR_WATER_TANK_5MIN, COLOR_WATER_TANK_SLACK,COLOR_WATER_TANK_95PLUS,COLOR_WATER_TANK_FREEFLOODING,COLOR_SELECT
+
 class WidgetBallastConfiguration(guiDockWidget):
 
     def guiCreate(self):
@@ -82,7 +84,6 @@ class WidgetBallastConfiguration(guiDockWidget):
                     self.ui.tableWidget.selectRow(i)
                     return
 
-
     def selection_changed(self,cur_row, cur_col, prev_row, prev_col):
         item = self.ui.tableWidget.verticalHeaderItem(cur_row)
         if item is not None:
@@ -94,30 +95,13 @@ class WidgetBallastConfiguration(guiDockWidget):
             return
 
         for tank in self._bs.tanks:
-            actor = tank.visual.actors[0]  # wireframe
 
             if tank.name == name:
+                actor = tank.visual.actors['main']  # the mesh
                 actor.lw(5)
                 actor.c((254,0,0))
             else:
-                actor.lw(1)
-                actor.c(ds.COLOR_TANK_MESH_LINES)
-
-            #
-            # outline_actor = None
-            # for outline in self.gui.visual.outlines:
-            #     if outline.parent_vp_actor == actor:
-            #         outline_actor = outline.outline_actor
-            #         break
-            #
-            #
-            # if outline_actor is not None:
-            #     if tank.name == name:
-            #         outline_actor.GetProperty().SetLineWidth(5)
-            #         outline_actor.GetProperty().SetColor(254,0,0)
-            #     else:
-            #         outline_actor.GetProperty().SetLineWidth(self.gui.visual.outline_width)
-            #         outline_actor.GetProperty().SetColor(0, 0, 0)
+                self.gui.visual.update_painting(tank.visual)
 
         self.gui.visual.refresh_embeded_view()
 
@@ -168,8 +152,8 @@ class WidgetBallastConfiguration(guiDockWidget):
 
         tw = self.ui.tableWidget
 
-        partial = QColor.fromRgb(*254*np.array(ds.COLOR_SELECT))
-        full    = QColor.fromRgb(*254*np.array(ds.COLOR_WATER))
+        partial = QColor.fromRgb(*254*np.array(COLOR_WATER_TANK_SLACK))
+        full    = QColor.fromRgb(*254*np.array(COLOR_WATER_TANK_95PLUS))
         empty = QColor.fromRgb(254,254,254)
 
         self._filling_table = True

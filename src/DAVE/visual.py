@@ -8,13 +8,27 @@
 """
 
 """
-visual visualizes a scene using vedo
+visual visualizes a scene using vtk and vedo helpers
 
-## Viewport
+Basic data structure:
 
-Viewport is the main class which handles the viewport (ie: Plotter)
 
-## Visual-Actors
+Viewport
+ - visuals (VisualActors)
+    - [node] -> reference to corresponding node 
+    - actors [dict]
+        - [ActorType]
+
+
+Viewport
+============
+
+Viewport is the main class which handles the viewport (ie: Plotter).
+It supports embedded plotting (in a qt application) as well as stand-alone or via Jupyter or screenshots
+
+
+Visual-Actors
+------------------
 
 A viewport contains VisualActors.
 this class contains a reference to a Node and a list of actors
@@ -23,39 +37,84 @@ a visual actor can be hidden by setting visible to False
 
 each of the individual vtk-plotter actors has a "actor_type" property which is a enum ActorType.
 
-ActorType is used for general control of these actors. At the moment this is only Scaling which is implemented in "postiion visuals"
+ActorType is used for general control of these actors. At the moment this is only Scaling which is implemented in "position visuals"
 
 self.visuals contains a list of visuals
 
        each visual
        - may have a node. The node tells us exactly what the visual represents
-       - has a list of actors.
+       - has a dict of actors. On of them is always called "main"
        - each actor
            - may have an ActorType property. This is yet another way to tell what kind of feature the visual represents
-           - from the node and the position in the list we know the same....
 
-       ActorType:
-       - set per actor. Allows control per feature-type: For example Axis and Points are both "Geometry"
-
-
-        # we have nodes
-        # every node has a type
-        # every node type has actors
-        #  every actor has a name which is the key in dict.
-        #
-        # Node-Type     Actor-Name   |    Visible    Alpha     Xray    Wireframe    Line-width
-        # point         main
-        
         
         Updates the visibility settings for all of the actors
 
         A visual can be hidden completely by setting visible to false
         An actor can be hidden depending on the actor-type using
 
+
+Creating and updating actors
+-----------------------------
+
+Creating and updating of actors is done by Viewport:
+
+When a new viewport has been created:
+- create_world_actors : Creates the global scenery
+
+When new nodes are added to the screen:
+- create_visuals      : Creates actors for nodes in the scene that do not yet have one
+
+When the nodes in the scene have moved:
+- position_visuals    : Updates the positions of existing visuals
+                        Removes visuals for which the node is no longer present in the scene
+                        Applies scaling for non-physical actors
+                        Updates the geometry for visuals where needed (meshes)
+                        Updates the "paint_state" property for tanks and contact nodes (see paint)
+                        
+When the nodes in the screen have changed:                    
+- add_new_actors_to_screen:
+                        Checks all visuals for actors that are not yet added to the screen. Adds them
+                        Checks for Visual and Mesh nodes that need to be reloaded by checking _new_mesh
+                            if so then only reloads the main component; the other components are handled by (position_visuals)                                                    
+  
+Painting
+
+-  update_painting : paints all actors of a visual according to the node-type
+                     and paint-definition in VieportSettings (called internally when needed)
+-  update_visibility : updates the paint for all non-selected nodes
+                       updates the outlines
+-  update_outlines : Updates the outlines of all actors
+                     Hides outlines for invisble actors, except if they are xray
+
+Painting definition
+
+Paint is stored in a nested dictionary.
+
+painters['node-class']['actor_key']
+
+- Some actors may change paint based on their state. This state gets post-fixed to the node-class
+    - Tanks will change color based on their fill
+        empty
+        partial
+        full
+        freeflooding
+    - Contact-balls will change color based on contact or not 
+        free
+        contact
+  
+  for these nodes the entry becomes:
+    painters['node-class:paint_state']['actor_key']
+  
+
 """
 
 import vtkmodules.qt
-from dataclasses import dataclass
+
+from DAVE.settings_visuals import ViewportSettings, ActorSettings, \
+    RESOLUTION_SPHERE, RESOLUTION_ARROW, COLOR_BG1, COLOR_BG2, COLOR_WATER, TEXTURE_SEA, VISUAL_BUOYANCY_PLANE_EXTEND, \
+    COLOR_SELECT,LIGHT_TEXTURE_SKYBOX, ALPHA_SEA
+
 
 vtkmodules.qt.PyQtImpl = "PySide2"
 
@@ -65,7 +124,6 @@ import vedo as vp  # ref: https://github.com/marcomusy/vedo
 
 import DAVE.scene as vf
 import DAVE.scene as dn
-import DAVE.settings as vc
 
 from typing import List
 
@@ -161,17 +219,19 @@ def actor_from_trimesh(trimesh):
     if trimesh.nFaces == 0:
         return vp.Cube(side=0.00001)
 
-    vertices = []
-    for i in range(trimesh.nVertices):
-        vertices.append(trimesh.GetVertex(i))
+    vertices = [trimesh.GetVertex(i) for i in range(trimesh.nVertices)]
+    # are the vertices unique?
+    unique_vertices = np.unique(vertices, axis = 0)
+    faces = [trimesh.GetFace(i) for i in range(trimesh.nFaces)]
 
-    faces = []
-    for i in range(trimesh.nFaces):
-        faces.append(trimesh.GetFace(i))
+    if len(unique_vertices) != len(vertices):  # reconstruct faces and vertices
+        unique_vertices, indices = np.unique(vertices, axis = 0, return_inverse=True)
+        f = np.array(faces)
+        better_faces = indices[f]
+        actor = vp.Mesh([unique_vertices, better_faces])
+    else:
+        actor = vp.Mesh([vertices, faces])
 
-    actor = vp.Mesh([vertices, faces]).alpha(vc.ALPHA_BUOYANCY)
-
-    actor.no_outline = True
     return actor
 
 
@@ -187,10 +247,11 @@ def vp_actor_from_obj(filename):
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputConnection(con.GetOutputPort())
     mapper.Update()
-    # actor = vtk.vtkActor()
-    # actor.SetMapper(mapper)
-    vpa = vp.Mesh(mapper.GetInputAsDataSet())
-    vpa.flat()
+
+    # We are not importing textures and materials.
+    # Set color to 'w' to enforce an uniform color
+    vpa = vp.Mesh(mapper.GetInputAsDataSet(), c='w')  # need to set color here
+
     return vpa
 
 
@@ -211,63 +272,6 @@ class VisualOutline:
     outline_actor = None
     outline_transform = None
 
-
-@dataclass
-class ActorSettings:
-    """This dataclass contains settings for an vtk actor"""
-
-    # overall
-    alpha: float = 1  # alpha of the surface - 1.0 is totally opaque and 0.0 is completely transparent.
-    xray: bool = False  # only outline visible
-
-    # surface
-    surfaceShow = True
-    surfaceColor: tuple = vc.COLOR_COG  # set to None for no surface
-    metallic : float = 1
-    roughness : float = 1
-
-    # lines , set lineWidth to 0 for no line
-    lineWidth = 1
-    lineColor = (100, 0, 0)
-
-
-@dataclass
-class ViewportSettings:
-    """This class holds all visual settings of a viewport.
-
-    It is a convenient way to handle all the different visual presets.
-
-    Standard configurations are hard-coded in this class and can be activated using
-    the static constructors.
-
-    The way to change the settings of a viewport is to call "activateSettings" on viewport
-    with a ViewportSettings object as argument.
-    """
-
-    show_force: bool = True  # show forces
-    show_meshes: bool = True  # show meshes and connectors
-    show_global: bool = False  # show or hide the environment (sea)
-
-    # cogs
-    show_cog: bool = True
-    cog_do_normalize: bool = False
-    cog_scale: float = 1.0
-
-    # force
-    force_do_normalize: bool = True  # Normalize force size to 1.0 for plotting
-    force_scale: float = 1.6  # Scale to be applied on (normalized) force magnitude
-
-    # geometry
-    show_geometry: bool = True  # show or hide geometry objects (axis, pois, etc)
-    geometry_scale: float = 1.0  # poi radius of the pois
-
-    outline_width: float = (
-        vc.OUTLINE_WIDTH
-    )  # line-width of the outlines (cell-like shading)
-
-    cable_line_width: float = 3.0  # line-width used for cable elements
-
-    painter_settings: dict = None
 
 
 class VisualActor:
@@ -297,15 +301,19 @@ class VisualActor:
         self.node = node  # Node
         self.label_actor = None
 
+        self.paint_state = '' # some nodes change paint depending on their state
+
         self._is_selected = False
-        self._is_sub_selected = False # parent of this object is selected - render transparent
+        self._is_sub_selected = (
+            False  # parent of this object is selected - render transparent
+        )
 
     def select(self):
         if self._is_selected:
             return
 
         for key, actor in self.actors.items():
-            actor.color(vc.COLOR_SELECT)
+            actor.color(COLOR_SELECT)
 
         self._is_selected = True
 
@@ -366,10 +374,20 @@ class VisualActor:
 
 
 class Viewport:
+    """
+    Viewport provides a view of a Scene.
+
+    Use:
+    v = Viewport(scene)
+    v.show()
+
+
+    """
+
     def __init__(self, scene, jupyter=False):
         self.scene = scene
-        self.visuals : List[VisualActor] = list()
-        self.outlines : List[VisualOutline]= list()
+        self.visuals: List[VisualActor] = list()
+        self.outlines: List[VisualOutline] = list()
         self.screen = None
         """Becomes assigned when a screen is active (or was active...)"""
 
@@ -394,6 +412,29 @@ class Viewport:
 
         self._wavefield = None
         """WaveField object"""
+
+    @staticmethod
+    def show_as_qt_app(s):
+        from PySide2.QtWidgets import QWidget, QApplication
+
+        app = QApplication()
+        widget = QWidget()
+        widget.show()
+
+        from DAVE.settings_visuals import PAINTERS_DEFAULT
+
+        v = Viewport(scene=s)
+        v.settings.painter_settings = PAINTERS_DEFAULT
+        v.show_embedded(widget)
+        v.quick_updates_only = False
+
+        v.create_world_actors()
+        v.create_visuals()
+        v.add_new_actors_to_screen()
+        v.position_visuals()
+        v.update_visibility()
+
+        app.exec_()
 
     def show_only_labels_of_nodes_type(self, node_types):
         for vis in self.visuals:
@@ -445,7 +486,7 @@ class Viewport:
             ):  # annotations
                 continue
 
-            if vp_actor.GetProperty().GetRepresentation() == 1:
+            if vp_actor.GetProperty().GetRepresentation() == 1:  # wireframe
                 continue
 
             if getattr(vp_actor, "no_outline", False):
@@ -528,13 +569,14 @@ class Viewport:
             self.outlines.remove(record)
 
     def create_world_actors(self):
+        """Creates the sea"""
 
         world_actors = dict()
 
         plane = vp.Plane(pos=(0, 0, 0), normal=(0, 0, 1), sx=1000, sy=1000).c(
-            vc.COLOR_WATER
+            COLOR_WATER
         )
-        plane.texture(vc.TEXTURE_SEA)
+        plane.texture(TEXTURE_SEA)
         plane.lighting(ambient=1.0, diffuse=0.0, specular=0.0)
         plane.alpha(0.4)
 
@@ -565,7 +607,6 @@ class Viewport:
         for v in self.visuals:
             v._is_selected = False
             self.update_painting()
-
 
     def node_from_vtk_actor(self, actor):
         """
@@ -695,7 +736,10 @@ class Viewport:
         return r
 
     def create_visuals(self, recreate=False):
-        """Visuals are created in their parent axis system
+        """Creates actors for nodes in the scene that do not yet have one
+
+        Visuals are created in their parent axis system
+
 
         Attributes:
             recreate : re-create already exisiting visuals
@@ -726,31 +770,29 @@ class Viewport:
                     N.trimesh._TriMesh
                 )  # returns a small cube if no trimesh is defined
 
-                if vc.COLOR_BUOYANCY_MESH_FILL is None:
-                    vis.wireframe()
-                else:
-                    vis.c(vc.COLOR_BUOYANCY_MESH_FILL)
+
 
                 vis.actor_type = ActorType.MESH_OR_CONNECTOR
 
                 actors["main"] = vis
 
                 # cob
-                c = vp.Sphere(r=0.5, res=vc.RESOLUTION_SPHERE).c(vc.COLOR_WATER)
+                c = vp.Sphere(r=0.5, res=RESOLUTION_SPHERE)
                 c.actor_type = ActorType.MESH_OR_CONNECTOR
                 actors["cob"] = c
 
                 # waterplane
-                exts = N.trimesh.get_extends()
+                #
+                (minimum_x, maximum_x, minimum_y, maximum_y, minimum_z, maximum_z) = N.trimesh.get_extends()
 
-                cx = 0.5 * (exts[0] + exts[1])
-                dx = exts[1] - exts[0]
-                cy = 0.5 * (exts[3] + exts[2])
-                dy = exts[3] - exts[2]
+                vertices = [(minimum_x, minimum_y, 0),
+                            (maximum_x, minimum_y, 0),
+                            (maximum_x, maximum_y, 0),
+                            (minimum_x, maximum_y, 0)]
+                faces = [(0,1,2,3)]
 
-                p = vp.Plane(
-                    pos=(cx, cy, 0), normal=(0, 0, 1), sx=dx * 1.1, sy=dy * 1.1
-                ).c(vc.COLOR_WATER)
+                p = vp.Mesh([vertices, faces])
+
                 p.actor_type = ActorType.NOT_GLOBAL
                 actors["waterplane"] = p
 
@@ -763,18 +805,12 @@ class Viewport:
                 # This is the source-mesh. Connect it to the parent
                 vis = actor_from_trimesh(N.trimesh._TriMesh)
 
-                if vc.COLOR_TANK_MESH_FILL is not None:
-                    vis.c(vc.COLOR_TANK_MESH_FILL)
-                else:
-                    vis.wireframe()
-                    vis.c(vc.COLOR_TANK_MESH_LINES)
-
                 vis.actor_type = ActorType.MESH_OR_CONNECTOR
 
                 actors["main"] = vis
 
                 # cog
-                c = vp.Sphere(r=0.5, res=vc.RESOLUTION_SPHERE).c(vc.COLOR_WATER)
+                c = vp.Sphere(r=0.1, res=RESOLUTION_SPHERE)
                 c.actor_type = ActorType.MESH_OR_CONNECTOR
                 actors["cog"] = c
 
@@ -792,12 +828,6 @@ class Viewport:
 
                 vis.actor_type = ActorType.MESH_OR_CONNECTOR
 
-                if vc.COLOR_CONTACT_MESH_FILL is not None:
-                    vis.c(vc.COLOR_CONTACT_MESH_FILL)
-                else:
-                    vis.wireframe()
-                    vis.c(vc.COLOR_CONTACT_MESH_LINES)
-
                 vis.loaded_obj = True
 
                 actors["main"] = vis
@@ -806,26 +836,23 @@ class Viewport:
                 file = self.scene.get_resource_path(N.path)
                 # visual = vp.vtkio.load(file)
                 visual = vp_actor_from_obj(file)
-                visual.color(vc.COLOR_VISUAL)
                 visual.loaded_obj = file
                 visual.actor_type = ActorType.VISUAL
                 actors["main"] = visual
 
             if isinstance(N, vf.Axis):
                 size = 1
-                ar = vp.Arrow((0, 0, 0), (size, 0, 0), res=vc.RESOLUTION_ARROW).c(
-                    vc.COLOR_X
-                )
-                ag = vp.Arrow((0, 0, 0), (0, size, 0), res=vc.RESOLUTION_ARROW).c(
-                    vc.COLOR_Y
-                )
-                ab = vp.Arrow((0, 0, 0), (0, 0, size), res=vc.RESOLUTION_ARROW).c(
-                    vc.COLOR_Z
-                )
+                ar = vp.Arrow((0, 0, 0), (size, 0, 0), res=RESOLUTION_ARROW)
+                ag = vp.Arrow((0, 0, 0), (0, size, 0), res=RESOLUTION_ARROW)
+                ab = vp.Arrow((0, 0, 0), (0, 0, size), res=RESOLUTION_ARROW)
 
                 ar.actor_type = ActorType.GEOMETRY
                 ag.actor_type = ActorType.GEOMETRY
                 ab.actor_type = ActorType.GEOMETRY
+
+                ar.PickableOn()
+                ag.PickableOn()
+                ab.PickableOn()
 
                 actors["main"] = ar
                 actors["y"] = ag
@@ -837,7 +864,6 @@ class Viewport:
                 # a rigidbody is also an axis
 
                 box = vp_actor_from_obj(self.scene.get_resource_path("cog.obj"))
-                box.color(vc.COLOR_COG)
 
                 box.actor_type = ActorType.COG
                 actors["x"] = actors["main"]
@@ -845,30 +871,27 @@ class Viewport:
 
             if isinstance(N, vf.Point):
                 size = 0.5
-                p = vp.Sphere(pos=(0, 0, 0), r=size / 2, res=vc.RESOLUTION_SPHERE)
-                p.c(vc.COLOR_POI)
+                p = vp.Sphere(pos=(0, 0, 0), r=size / 2, res=RESOLUTION_SPHERE)
                 p.actor_type = ActorType.GEOMETRY
                 actors["main"] = p
 
                 label_text = N.name
 
             if isinstance(N, vf.ContactBall):
-                p = vp.Sphere(pos=(0, 0, 0), r=N.radius, res=vc.RESOLUTION_SPHERE)
-                p.c(vc.COLOR_FORCE)
+                p = vp.Sphere(pos=(0, 0, 0), r=N.radius, res=RESOLUTION_SPHERE)
                 p.actor_type = ActorType.MESH_OR_CONNECTOR
                 p._r = N.radius
                 actors["main"] = p
 
                 point1 = (0, 0, 0)
-                a = vp.Line([point1, point1], lw=5).c(vc.COLOR_FORCE)
+                a = vp.Line([point1, point1], lw=5)
                 a.actor_type = ActorType.MESH_OR_CONNECTOR
 
                 actors["contact"] = a
 
             if isinstance(N, vf.WaveInteraction1):
                 size = 2
-                p = vp.Sphere(pos=(0, 0, 0), r=size / 2, res=vc.RESOLUTION_SPHERE)
-                p.c(vc.COLOR_WAVEINTERACTION)
+                p = vp.Sphere(pos=(0, 0, 0), r=size / 2, res=RESOLUTION_SPHERE)
                 p.actor_type = ActorType.FORCE
                 actors["main"] = p
 
@@ -876,9 +899,9 @@ class Viewport:
 
                 endpoint = self._scaled_force_vector(N.force)
                 p = vp.Arrow(
-                    startPoint=(0, 0, 0), endPoint=endpoint, res=vc.RESOLUTION_ARROW
+                    startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
                 )
-                p.c(vc.COLOR_FORCE)
+                p.PickableOn()
                 p.actor_type = ActorType.FORCE
                 p._force = endpoint
 
@@ -886,27 +909,26 @@ class Viewport:
 
                 endpoint = self._scaled_force_vector(N.moment)
                 p = vp.Arrow(
-                    startPoint=(0, 0, 0), endPoint=endpoint, res=vc.RESOLUTION_ARROW
+                    startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
                 )
+                p.PickableOn()
                 p.actor_type = ActorType.FORCE
                 p._moment = endpoint
-                p.c(vc.COLOR_FORCE)
                 actors["moment1"] = p
 
                 p = vp.Arrow(
                     startPoint=0.2 * endpoint,
                     endPoint=1.2 * endpoint,
-                    res=vc.RESOLUTION_ARROW,
+                    res=RESOLUTION_ARROW,
                 )
+                p.PickableOn()
                 p.actor_type = ActorType.FORCE
-                p.c(vc.COLOR_FORCE)
                 actors["moment2"] = p
 
             if isinstance(N, vf.Circle):
                 axis = np.array(N.axis)
                 axis /= np.linalg.norm(axis)
                 p = vp.Cylinder(r=1)
-                p.c(vc.COLOR_SHEAVE)
                 p.actor_type = ActorType.GEOMETRY
 
                 actors["main"] = p
@@ -914,11 +936,11 @@ class Viewport:
             if isinstance(N, vf.Cable):
 
                 if N._vfNode.global_points:
-                    a = vp.Line(N._vfNode.global_points, lw=3).c(vc.COLOR_CABLE)
+                    a = vp.Line(N._vfNode.global_points)
                 else:
-                    a = vp.Line([(0, 0, 0), (0, 0, 0.1), (0, 0, 0)], lw=3).c(
-                        vc.COLOR_CABLE
-                    )
+                    a = vp.Line([(0, 0, 0), (0, 0, 0.1), (0, 0, 0)])
+
+                a.PickableOn()
 
                 a.actor_type = ActorType.CABLE
                 actors["main"] = a
@@ -929,11 +951,9 @@ class Viewport:
 
                 gp = N.get_actual_global_points()
                 if gp:
-                    a = vp.Line(gp, lw=3).c(vc.COLOR_CABLE)
+                    a = vp.Line(gp, lw=3)
                 else:
-                    a = vp.Line([(0, 0, 0), (0, 0, 0.1), (0, 0, 0)], lw=3).c(
-                        vc.COLOR_CABLE
-                    )
+                    a = vp.Line([(0, 0, 0), (0, 0, 0.1), (0, 0, 0)], lw=3)
 
                 a.actor_type = ActorType.CABLE
                 actors["main"] = a
@@ -943,11 +963,9 @@ class Viewport:
                 gp = N.global_positions
 
                 if len(gp) > 0:
-                    a = vp.Line(gp, lw=5).c(vc.COLOR_BEAM)
+                    a = vp.Line(gp)
                 else:
-                    a = vp.Line([(0, 0, 0), (0, 0, 0.1), (0, 0, 0)], lw=5).c(
-                        vc.COLOR_BEAM
-                    )
+                    a = vp.Line([(0, 0, 0), (0, 0, 0.1), (0, 0, 0)])
 
                 a.actor_type = ActorType.CABLE
                 actors["main"] = a
@@ -959,7 +977,7 @@ class Viewport:
                 for i in range(2):
                     points.append((0, 0, 0))
 
-                a = vp.Line(points, lw=5).c(vc.COLOR_FORCE)
+                a = vp.Line(points)
                 a.actor_type = ActorType.CABLE
 
                 actors["main"] = a
@@ -971,7 +989,7 @@ class Viewport:
                 for i in range(2):
                     points.append((0, 0, 0))
 
-                a = vp.Line(points, lw=5).c(vc.COLOR_FORCE)
+                a = vp.Line(points)
                 a.actor_type = ActorType.CABLE
 
                 actors["main"] = a
@@ -992,7 +1010,13 @@ class Viewport:
             # self.set_default_dsa()
 
     def position_visuals(self):
-        """All visuals are aligned with their node"""
+        """ When the nodes in the scene have moved:
+                Updates the positions of existing visuals
+                Removes visuals for which the node is no longer present in the scene
+                Applies scaling for non-physical actors
+                Updates the geometry for visuals where needed (meshes)
+                Updates the "paint_state" property for tanks and contact nodes (see paint)
+"""
 
         to_be_removed = []
 
@@ -1166,13 +1190,13 @@ class Viewport:
                 # check radius
                 if V.actors["main"]._r != V.node.radius:
                     temp = vp.Sphere(
-                        pos=(0, 0, 0), r=V.node.radius, res=vc.RESOLUTION_SPHERE
+                        pos=(0, 0, 0), r=V.node.radius, res=RESOLUTION_SPHERE
                     )
                     V.actors["main"].points(temp.points())
                     V.actors["main"]._r = V.node.radius
 
                 V.actors["main"].SetUserTransform(t)
-                V.actors["main"].wireframe(V.node.contact_force_magnitude > 0)
+                # V.actors["main"].wireframe(V.node.contact_force_magnitude > 0)
 
                 if V.node.can_contact:
                     point1 = V.node.parent.global_position
@@ -1181,6 +1205,14 @@ class Viewport:
                     V.actors["contact"].on()
                 else:
                     V.actors["contact"].off()
+
+                # update paint settings
+                if V.node.contact_force_magnitude > 0:  # do we have contact?
+                    V.paint_state = "contact"
+                else:
+                    V.paint_state = "free"
+
+                self.update_painting(V)
 
                 continue
 
@@ -1204,11 +1236,11 @@ class Viewport:
                     endpoint = self._scaled_force_vector(V.node.force)
 
                     p = vp.Arrow(
-                        startPoint=(0, 0, 0), endPoint=endpoint, res=vc.RESOLUTION_ARROW
+                        startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
                     )
+                    p.PickableOn()
                     p.actor_type = ActorType.FORCE
                     p._force = endpoint
-                    p.c(vc.COLOR_FORCE)
 
                     V.actors["main"] = p
                     self.screen.add(V.actors["main"])
@@ -1223,20 +1255,20 @@ class Viewport:
 
                     endpoint = self._scaled_force_vector(V.node.moment)
                     p = vp.Arrow(
-                        startPoint=(0, 0, 0), endPoint=endpoint, res=vc.RESOLUTION_ARROW
+                        startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
                     )
+                    p.PickableOn()
                     p.actor_type = ActorType.FORCE
                     p._moment = endpoint
-                    p.c(vc.COLOR_FORCE)
                     V.actors["moment1"] = p
 
                     p = vp.Arrow(
                         startPoint=0.2 * endpoint,
                         endPoint=1.2 * endpoint,
-                        res=vc.RESOLUTION_ARROW,
+                        res=RESOLUTION_ARROW,
                     )
+                    p.PickableOn()
                     p.actor_type = ActorType.FORCE
-                    p.c(vc.COLOR_FORCE)
                     V.actors["moment2"] = p
                     self.screen.add(V.actors["moment1"])
                     self.screen.add(V.actors["moment2"])
@@ -1291,12 +1323,13 @@ class Viewport:
                 # Source mesh update is common for all mesh-like nodes
                 #
 
+                # print(f'Updating source mesh for {V.node.name}')
+
                 changed = False  # anything changed?
 
                 if node.trimesh._new_mesh:
-                    # self.screen.add(V.actors[0])
                     changed = True  # yes, mesh has changed
-                    node.trimesh._new_mesh = False
+                    node.trimesh._new_mesh = False  # one time only
 
                 # move the full mesh with the parent
 
@@ -1340,26 +1373,18 @@ class Viewport:
                     for a in V.actors.values():
                         a.off()
                     continue
-                else:
-                    if V.node.visible:
-                        for a in V.actors.values():
-                            a.on()
 
                 # Update the CoB
                 # move the CoB to the new (global!) position
                 cob = V.node.cob
                 V.actors["cob"].SetUserMatrix(transform_from_point(*cob))
-                if V.node.displacement == 0:
-                    V.actors["cob"].off()
-                else:
-                    V.actors["cob"].on()
 
                 # update water-plane
                 x1, x2, y1, y2, _, _ = V.node.trimesh.get_extends()
-                x1 -= vc.VISUAL_BUOYANCY_PLANE_EXTEND
-                x2 += vc.VISUAL_BUOYANCY_PLANE_EXTEND
-                y1 -= vc.VISUAL_BUOYANCY_PLANE_EXTEND
-                y2 += vc.VISUAL_BUOYANCY_PLANE_EXTEND
+                x1 -= VISUAL_BUOYANCY_PLANE_EXTEND
+                x2 += VISUAL_BUOYANCY_PLANE_EXTEND
+                y1 -= VISUAL_BUOYANCY_PLANE_EXTEND
+                y2 += VISUAL_BUOYANCY_PLANE_EXTEND
                 p1 = V.node.parent.to_glob_position((x1, y1, 0))
                 p2 = V.node.parent.to_glob_position((x2, y1, 0))
                 p3 = V.node.parent.to_glob_position((x2, y2, 0))
@@ -1368,13 +1393,10 @@ class Viewport:
                 corners = [
                     (p1[0], p1[1], 0),
                     (p2[0], p2[1], 0),
-                    (p4[0], p4[1], 0),
                     (p3[0], p3[1], 0),
+                    (p4[0], p4[1], 0),
                 ]
                 V.actors["waterplane"].points(corners)
-
-                if not V.node.visible:
-                    V.actors["waterplane"].off()
 
                 # Instead of updating, remove the old actor and create a new one
 
@@ -1388,23 +1410,11 @@ class Viewport:
 
                 if mesh.nVertices > 0:  # only add when available
 
-                    vertices = []
-                    for i in range(mesh.nVertices):
-                        vertices.append(mesh.GetVertex(i))
+                    vis = actor_from_trimesh(mesh)
 
-                    faces = []
-                    for i in range(mesh.nFaces):
-                        faces.append(mesh.GetFace(i))
-
-                    # vis = vp.Mesh([vertices, faces], wire=True).c((0, 0, 1))
-                    vis = vp.Mesh([vertices, faces]).c(vc.COLOR_BUOYANCY_MESH_LINES)
                     vis.actor_type = ActorType.MESH_OR_CONNECTOR
-                    vis.wireframe()
-                    vis.lw(vc.LINEWIDTH_SUBMERGED_MESH)
                     V.actors["submerged_mesh"] = vis
-
-                    if not V.node.visible:
-                        vis.off()
+                    self.update_painting(V)
 
                     if self.screen is not None:
                         self.screen.add(vis)
@@ -1419,9 +1429,9 @@ class Viewport:
 
                 ## Tank has multiple actors
                 #
-                # 0 : source-mesh
-                # 1 : cog
-                # 2 : filled part of mesh
+                # main : source-mesh
+                # cog : cog
+                # fluid : filled part of mesh
 
                 # If the source mesh has been updated, then V.node.trimesh._new_mesh is True
                 if V.__just_created:
@@ -1446,7 +1456,7 @@ class Viewport:
                 # move the CoG to the new (global!) position
                 V.actors["cog"].SetUserMatrix(transform_from_point(*V.node.cog))
 
-                if V.node.volume == 0:
+                if V.node.volume <= 1:  # the "cog node" has a volume of
                     V.actors["cog"].off()
                 else:
                     V.actors["cog"].on()
@@ -1513,6 +1523,18 @@ class Viewport:
                         vertices = []
                     # -------------------
 
+
+                # paint settings
+                if V.node.free_flooding:
+                    V.paint_state = 'freeflooding'
+                else:
+                    if V.node.fill_pct >= 95:
+                        V.paint_state = 'full'
+                    elif V.node.fill_pct <= 5:
+                        V.paint_state = 'empty'
+                    else:
+                        V.paint_state = 'partial'
+
                 # we now have vertices and points and faces
 
                 # do we already have an actor?
@@ -1546,7 +1568,7 @@ class Viewport:
 
                         # print(f'Creating new actor for for {V.node.name}')
 
-                        vis = vp.Mesh([vertices, faces]).c(vc.COLOR_BUOYANCY_MESH_LINES)
+                        vis = vp.Mesh([vertices, faces])
                         vis.actor_type = ActorType.MESH_OR_CONNECTOR
 
                         V.actors["fluid"] = vis
@@ -1554,22 +1576,12 @@ class Viewport:
                         if self.screen is not None:
                             self.screen.add(vis, render=True)
 
-                    if V.node.free_flooding:
-                        vis.c(vc.COLOR_WATER_TANK_FREEFLOODING)
-                    else:
-                        if V.node.fill_pct > 94.9:
-                            vis.c(vc.COLOR_WATER_TANK_95PLUS)
-                        elif V.node.fill_pct < 5.1:
-                            vis.c(vc.COLOR_WATER_TANK_5MIN)
-                        else:
-                            vis.c(vc.COLOR_WATER_TANK_SLACK)
-
-                    vis.alpha(vc.ALPHA_WATER_TANK)
-
                     if not V.node.visible:
                         vis.off()
 
                 V._visual_volume = V.node.volume
+
+                self.update_painting(V)
 
                 continue
 
@@ -1620,8 +1632,7 @@ class Viewport:
                 for a in va.actors.values():
                     if not (a in actors):
                         to_be_added.append(a)
-                        # self.screen.add(a)   # do not add directly to avoid frequent updates
-                        # print('adding actor for {}'.format(va.node.name))
+
                 if va.label_actor is not None:
                     if va.label_actor not in actors:
                         to_be_added.append(va.label_actor)
@@ -1646,7 +1657,6 @@ class Viewport:
                     # update the obj
                     va.actors["main"] = vp_actor_from_obj(file)
                     va.actors["main"].loaded_obj = file
-                    va.actors["main"].color(vc.COLOR_VISUAL)
                     va.actors["main"].actor_type = ActorType.VISUAL
 
                     if not va.node.visible:
@@ -1677,30 +1687,9 @@ class Viewport:
                                 mat4x4 = transform_to_mat4x4(tr)
                                 va.actors["main"].SetUserMatrix(mat4x4)
 
-                            if isinstance(va.node, vf.Buoyancy):
-                                va.actors["main"].alpha(vc.ALPHA_BUOYANCY)
-                                if vc.COLOR_BUOYANCY_MESH_FILL is None:
-                                    va.actors["main"].c(vc.COLOR_BUOYANCY_MESH_LINES)
-                                    va.actors["main"].wireframe()
-                                else:
-                                    va.actors["main"].c(vc.COLOR_BUOYANCY_MESH_FILL)
-
-                            elif isinstance(va.node, vf.ContactMesh):
-                                if vc.COLOR_CONTACT_MESH_FILL is None:
-                                    va.actors["main"].c(vc.COLOR_CONTACT_MESH_LINES)
-                                    va.actors["main"].wireframe()
-                                else:
-                                    va.actors["main"].c(vc.COLOR_CONTACT_MESH_FILL)
-
-                            elif isinstance(va.node, vf.Tank):
-                                if vc.COLOR_TANK_MESH_FILL is None:
-                                    va.actors["main"].c(vc.COLOR_TANK_MESH_LINES)
-                                    va.actors["main"].wireframe()
-                                else:
-                                    va.actors["main"].c(vc.COLOR_TANK_MESH_FILL)
-
                             else:
-                                raise Exception("Bug in add_new_actors_to_screen")
+                                print('Trimesh without a parent')
+
 
                             if not va.node.visible:
                                 va.actors["main"].off()
@@ -1720,8 +1709,10 @@ class Viewport:
             ren.Finalize()
             iren.TerminateApp()
 
-    def setup_screen(self, qtWidget=None):
+    def setup_screen(self):
         """Creates the plotter instance and stores it in self.screen"""
+
+        qtWidget = self.vtkWidget
 
         if (
             self.Jupyter and qtWidget is None
@@ -1731,7 +1722,7 @@ class Viewport:
             import vedo as vtkp
 
             vtkp.settings.embedWindow(backend="k3d")
-            self.screen = vp.Plotter(axes=4, bg=vc.COLOR_BG1, bg2=vc.COLOR_BG2)
+            self.screen = vp.Plotter(axes=4, bg=COLOR_BG1, bg2=COLOR_BG2)
 
         else:
 
@@ -1746,8 +1737,8 @@ class Viewport:
                     interactive=True,
                     offscreen=False,
                     axes=4,
-                    bg=vc.COLOR_BG1,
-                    bg2=vc.COLOR_BG2,
+                    bg=COLOR_BG1,
+                    bg2=COLOR_BG2,
                 )
 
             else:
@@ -1758,11 +1749,15 @@ class Viewport:
                 vtkp.settings.embedWindow(backend=None)
 
                 self.screen = vp.plotter.Plotter(
-                    qtWidget=qtWidget, axes=4, bg=vc.COLOR_BG1, bg2=vc.COLOR_BG2
+                    qtWidget=qtWidget, axes=4, bg=COLOR_BG1, bg2=COLOR_BG2
                 )
 
-    def show(self, qtWidget=None, camera=None, include_outlines=True):
-        """Add actors to screen and show"""
+
+    def show(self,camera=None, include_outlines=True):
+        """Add actors to screen and show
+
+        If purpose is to show embedded, then call show_embedded instead
+        """
         if self.screen is None:
             raise Exception("Please call setup_screen first")
 
@@ -1776,7 +1771,7 @@ class Viewport:
             camera["pos"] = [10, -10, 5]
             camera["focalPoint"] = [0, 0, 0]
 
-        if self.Jupyter and qtWidget is None:
+        if self.Jupyter and self.qtWidget is None:
 
             # show embedded
             for va in self.visuals:
@@ -1827,26 +1822,42 @@ class Viewport:
             self.screen.add(skybox)"""
 
             # Make a white skybox texture for light emission
-            cubemap = vtk.vtkTexture()
-            cubemap.SetCubeMap(True)
-
+            # cubemap = vtk.vtkTexture()
+            # cubemap.SetCubeMap(True)
+            #
             readerFactory = vtk.vtkImageReader2Factory()
-            textureFile = readerFactory.CreateImageReader2(str(vc.LIGHT_TEXTURE_SKYBOX))
-            textureFile.SetFileName(str(vc.LIGHT_TEXTURE_SKYBOX))
+
+            from pathlib import Path
+
+            if not Path.exists(LIGHT_TEXTURE_SKYBOX):
+                raise ValueError(f'No image found here: {LIGHT_TEXTURE_SKYBOX}')
+
+            textureFile = readerFactory.CreateImageReader2(str(LIGHT_TEXTURE_SKYBOX))
+            textureFile.SetFileName(str(LIGHT_TEXTURE_SKYBOX))
             textureFile.Update()
-
-            for i in range(6):
-                cubemap.SetInputDataObject(i, textureFile.GetOutput())
-
+            texture = vtk.vtkTexture()
+            texture.SetInputDataObject(textureFile.GetOutput())
+            #
+            # for i in range(6):
+            #     cubemap.SetInputDataObject(i, textureFile.GetOutput())
+            #
 
             self.screen.show(camera=camera, verbose=False)
+
+            # texture = vtk.vtkTexture()
+            # input = vtk.vtkPNGReader()
+            # input.SetFileName(str(LIGHT_TEXTURE_SKYBOX))
+            # input.Modified()
+            # texture.SetInputDataObject(input.GetOutput())
+
+
+
 
             for r in self.screen.renderers:
                 r.ResetCamera()
 
                 r.UseImageBasedLightingOn()
-                r.SetEnvironmentTexture(cubemap)
-
+                r.SetEnvironmentTexture(texture)
 
                 # # Add SSAO
                 # #
@@ -1889,6 +1900,8 @@ class Viewport:
         from PySide2.QtWidgets import QVBoxLayout
         from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
+
+
         # add a widget to gui
         vl = QVBoxLayout()
         vl.setContentsMargins(0, 0, 0, 0)
@@ -1898,8 +1911,8 @@ class Viewport:
         vl.addWidget(self.vtkWidget)
         target_frame.setLayout(vl)
 
-        self.setup_screen(qtWidget=self.vtkWidget)
-        screen = self.show(qtWidget=self.vtkWidget)
+        self.setup_screen()
+        screen = self.show()
 
         self.renwin = self.vtkWidget.GetRenderWindow()
         self.renderer = screen.renderers[0]
@@ -1921,7 +1934,6 @@ class Viewport:
         iren.Start()
 
         screen.mouseRightClickFunction = self.onMouseRight
-
 
     def _leftmousepress(self, iren, event):
         """Implements a "fuzzy" mouse pick function"""
@@ -1980,7 +1992,7 @@ class Viewport:
             alpha = 1 - (10 * dz)
             if alpha < 0:
                 alpha = 0
-        self.global_visual.actors["sea"].alpha(vc.ALPHA_SEA * alpha)
+        self.global_visual.actors["sea"].alpha(ALPHA_SEA * alpha)
 
     def keyPressFunction(self, obj, event):
         key = obj.GetKeySym()
@@ -2000,9 +2012,10 @@ class Viewport:
 
         """
 
+
         ps = self.settings.painter_settings  # alias
         if ps is None:
-            print('No painter settings, ugly world :(')
+            print("No painter settings, ugly world :(")
             return
 
         if v.node is not None:
@@ -2015,12 +2028,17 @@ class Viewport:
         if v.node is None:
             node_class = "global"
         else:
-            node_class = v.node.class_name
+            if isinstance(v.node, dn.ContactBall):
+                node_class = f"ContactBall:{v.paint_state}"
+            elif isinstance(v.node, dn.Tank):
+                node_class = f"Tank:{v.paint_state}"
+            else:
+                node_class = v.node.class_name
 
         if node_class in ps:
             node_painter_settings = ps[node_class]
         else:
-            print(f'No settings available for nodes with class {node_class}')
+            print(f"No paint for {node_class}")
             return  # no settings available
 
         for key, actor in v.actors.items():
@@ -2028,13 +2046,20 @@ class Viewport:
             if key in node_painter_settings:
                 actor_settings = node_painter_settings[key]
             else:
+                print(f"No paint for actor {node_class} {key}")
                 continue
 
             if actor_settings.surfaceShow:
+
                 props = actor.GetProperty()
                 props.SetInterpolationToPBR()
-                props.SetColor((actor_settings.surfaceColor[0] / 255, actor_settings.surfaceColor[1] / 255,
-                                actor_settings.surfaceColor[2] / 255))
+                props.SetColor(
+                    (
+                        actor_settings.surfaceColor[0] / 255,
+                        actor_settings.surfaceColor[1] / 255,
+                        actor_settings.surfaceColor[2] / 255,
+                    )
+                )
                 props.SetOpacity(actor_settings.alpha)
                 props.SetMetallic(actor_settings.metallic)
                 props.SetRoughness(actor_settings.roughness)
@@ -2042,13 +2067,20 @@ class Viewport:
                 actor.wireframe(True)
 
             actor.lineWidth(actor_settings.lineWidth)
+
             if actor_settings.lineWidth > 0:
-                actor.lineColor((actor_settings.lineColor[0] / 255, actor_settings.lineColor[1] / 255,
-                                 actor_settings.lineColor[2] / 255))
+                actor.lineColor(
+                    (
+                        actor_settings.lineColor[0] / 255,
+                        actor_settings.lineColor[1] / 255,
+                        actor_settings.lineColor[2] / 255,
+                    )
+                )
+            else:
+                actor.GetProperty().SetLineWidth(0)
 
     def update_visibility(self):
-        """Updates the settings of the viewport to reflect the settings in self.settings.painter_settings
-        """
+        """Updates the settings of the viewport to reflect the settings in self.settings.painter_settings"""
 
         for v in self.visuals:
             if not (v._is_selected or v._is_sub_selected):
@@ -2066,7 +2098,7 @@ class WaveField:
 
         self.texture = vtk.vtkTexture()
         input = vtk.vtkJPEGReader()
-        input.SetFileName(vc.TEXTURE_SEA)
+        input.SetFileName(TEXTURE_SEA)
         self.texture.SetInputConnection(input.GetOutputPort())
         self.ttp = vtk.vtkTextureMapToPlane()
 
@@ -2136,11 +2168,21 @@ class WaveField:
 
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
-        actor.SetTexture(self.texture)
-
+        #
+        #
         actor.GetProperty().SetAmbient(1.0)
         actor.GetProperty().SetDiffuse(0.0)
         actor.GetProperty().SetSpecular(0.0)
+        actor.SetTexture(self.texture)
+
+        # alternative: use PBR
+        #
+        # Does not render nicely: wave grid clearly visible
+        #
+        # props = actor.GetProperty()
+        # props.SetInterpolationToPBR()
+        # props.SetMetallic(0.8)
+        # props.SetRoughness(0.1)
 
         self.pts = pts
         self.actor = actor
@@ -2149,4 +2191,3 @@ class WaveField:
         self.period = wave_period
         self.x = x
         self.y = y
-
