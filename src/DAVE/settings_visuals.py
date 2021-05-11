@@ -118,7 +118,7 @@ class ActorSettings:
     xray: bool = False  # only outline visible
 
     # surface
-    surfaceShow = True
+    surfaceShow : bool = True
     surfaceColor: tuple = (247,17,228)  # Pink
     metallic: float = 0.4
     roughness: float = 0.9
@@ -302,5 +302,425 @@ painters['Tank:full'] = {'main':copy(mesh), 'cog':copy(surf),'fluid':copy(surf)}
 surf.surfaceColor = _PURPLE
 painters['WaveInteraction1'] = {'main':copy(surf)}
 
-
 PAINTERS_DEFAULT = deepcopy(painters)
+
+# exported python code for painters
+my_painers = dict()
+
+# --- paint for : {value} ---
+visual = dict()
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [200, 200, 200]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['main'] = paint
+my_painers['Point'] = visual
+
+# --- paint for : {value} ---
+visual = dict()
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [144, 33, 30]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['main'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [0, 127, 14]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['y'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [12, 106, 146]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['z'] = paint
+my_painers['Axis'] = visual
+
+# --- paint for : {value} ---
+visual = dict()
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [144, 33, 30]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['x'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [0, 127, 14]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['y'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [12, 106, 146]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['z'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [87, 0, 127]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['main'] = paint
+my_painers['RigidBody'] = visual
+
+# --- paint for : {value} ---
+visual = dict()
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [200, 200, 200]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['main'] = paint
+my_painers['Circle'] = visual
+
+# --- paint for : {value} ---
+visual = dict()
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [145, 145, 145]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['main'] = paint
+my_painers['Visual'] = visual
+
+# --- paint for : {value} ---
+visual = dict()
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [200, 80, 33]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['main'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [200, 80, 33]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['moment1'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [200, 80, 33]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['moment2'] = paint
+my_painers['Force'] = visual
+
+# --- paint for : {value} ---
+visual = dict()
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = (247, 17, 228)
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0.0
+paint.lineColor = [0, 0, 0]
+visual['main'] = paint
+my_painers['Cable'] = visual
+
+# --- paint for : {value} ---
+visual = dict()
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = (247, 17, 228)
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0.0
+paint.lineColor = [144, 33, 30]
+visual['main'] = paint
+my_painers['Connector2d'] = visual
+
+# --- paint for : {value} ---
+visual = dict()
+my_painers['LC6d'] = visual
+
+# --- paint for : {value} ---
+visual = dict()
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [0, 127, 14]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0.0
+paint.lineColor = [0, 110, 10]
+visual['main'] = paint
+my_painers['ContactMesh'] = visual
+
+# --- paint for : {value} ---
+visual = dict()
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [0, 110, 10]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['main'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = (247, 17, 228)
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0.0
+paint.lineColor = [200, 80, 33]
+visual['contact'] = paint
+my_painers['ContactBall:free'] = visual
+
+# --- paint for : {value} ---
+visual = dict()
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = (247, 17, 228)
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0.0
+paint.lineColor = [200, 80, 33]
+visual['main'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = (247, 17, 228)
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0.0
+paint.lineColor = [200, 80, 33]
+visual['contact'] = paint
+my_painers['ContactBall:contact'] = visual
+
+# --- paint for : {value} ---
+visual = dict()
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = (247, 17, 228)
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0.0
+paint.lineColor = [0, 0, 0]
+visual['main'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [57, 76, 90]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['cob'] = paint
+paint = ActorSettings()
+paint.alpha = 0.3
+paint.xray = False
+paint.surfaceShow = True
+paint.surfaceColor = [203, 224, 239]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['waterplane'] = paint
+paint = ActorSettings()
+paint.alpha = 0.25
+paint.xray = False
+paint.surfaceShow = True
+paint.surfaceColor = [128, 108, 0]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['submerged_mesh'] = paint
+my_painers['Buoyancy'] = visual
+
+# --- paint for : {value} ---
+visual = dict()
+paint = ActorSettings()
+paint.alpha = 0.2
+paint.xray = False
+paint.surfaceShow = True
+paint.surfaceColor = (255, 0, 127)
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0.0
+paint.lineColor = [0, 0, 0]
+visual['main'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = True
+paint.surfaceColor = [144, 33, 30]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['cog'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = True
+paint.surfaceColor = [144, 33, 30]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['fluid'] = paint
+my_painers['Tank:freeflooding'] = visual
+
+# --- paint for : {value} ---
+visual = dict()
+paint = ActorSettings()
+paint.alpha = 0.5
+paint.xray = True
+paint.surfaceShow = True
+paint.surfaceColor = (255, 255, 255)
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0.0
+paint.lineColor = [0, 0, 0]
+visual['main'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = True
+paint.surfaceColor = [187, 134, 41]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['cog'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = True
+paint.surfaceColor = [187, 134, 41]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['fluid'] = paint
+my_painers['Tank:empty'] = visual
+
+# --- paint for : {value} ---
+visual = dict()
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = True
+paint.surfaceShow = False
+paint.surfaceColor = (247, 17, 228)
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0.0
+paint.lineColor = [0, 0, 0]
+visual['main'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [200, 80, 33]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['cog'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = True
+paint.surfaceColor = [200, 80, 33]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['fluid'] = paint
+my_painers['Tank:partial'] = visual
+
+# --- paint for : {value} ---
+visual = dict()
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = True
+paint.surfaceShow = False
+paint.surfaceColor = (247, 17, 228)
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0.0
+paint.lineColor = [0, 0, 0]
+visual['main'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [57, 76, 90]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['cog'] = paint
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = True
+paint.surfaceColor = [57, 76, 90]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['fluid'] = paint
+my_painers['Tank:full'] = visual
+
+# --- paint for : {value} ---
+visual = dict()
+paint = ActorSettings()
+paint.alpha = 1
+paint.xray = False
+paint.surfaceShow = False
+paint.surfaceColor = [87, 0, 127]
+paint.metallic = 0.4
+paint.roughness = 0.9
+paint.lineWidth = 0
+visual['main'] = paint
+my_painers['WaveInteraction1'] = visual
+
+PAINTERS_BALLAST = my_painers

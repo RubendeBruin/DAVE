@@ -70,6 +70,12 @@ import numpy as np
 
 # These functions are inserted by DAVE.io.blender.py
 
+def get_context_area():
+    areas = [area for area in bpy.context.window.screen.areas if area.type == 'VIEW_3D']
+    if not areas:
+        raise ('No suitable context found to execute rotation transform in')
+    return areas[0]
+
 def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orientation=(0,0,0,0), position=(0,0,0), orientations=[], positions=[], frames_per_dof = 1 ):
     \"\"\"
     All meshes shall be joined
@@ -112,6 +118,7 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
     elif filepath.endwith('.stl'):
         print('STL not yet implemented')
         
+    view3d_area = get_context_area()
 
     for object in objects:
         print(object.name)
@@ -133,19 +140,20 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
         # Scale is applied on the rotated object
         # Offset is applied on the rotated and scaled object
         # 
-              
+        
+        context_override = {'active_object': object, 'area':view3d_area}
 
-        bpy.ops.transform.rotate(value=rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)... (2.83 this seems to be fixed)?
-        bpy.ops.transform.rotate(value=rotation[1], orient_axis='Y')
-        bpy.ops.transform.rotate(value=rotation[2], orient_axis='X')
+        bpy.ops.transform.rotate(context_override,value=rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)... (2.83 this seems to be fixed)?
+        bpy.ops.transform.rotate(context_override,value=rotation[1], orient_axis='Y')
+        bpy.ops.transform.rotate(context_override,value=rotation[2], orient_axis='X')
 
-        bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)    
+        bpy.ops.object.transform_apply(context_override,location=False, rotation=True, scale=False)    
 
-        bpy.ops.transform.resize(value=scale)
-        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+        bpy.ops.transform.resize(context_override,value=scale)
+        bpy.ops.object.transform_apply(context_override,location=False, rotation=False, scale=True)
                 
-        bpy.ops.transform.translate(value=offset)  # translate
-        bpy.ops.object.transform_apply(location=True, rotation=False, scale=False)    
+        bpy.ops.transform.translate(context_override,value=offset)  # translate
+        bpy.ops.object.transform_apply(context_override,location=True, rotation=False, scale=False)    
         
         # apply global transforms
 

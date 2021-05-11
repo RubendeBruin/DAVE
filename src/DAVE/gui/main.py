@@ -60,7 +60,10 @@
 
 
 """
+from copy import deepcopy
+
 from DAVE.gui.widget_footprints import WidgetFootprints
+from DAVE.gui.widget_painter import WidgetPainters
 
 """
   This Source Code Form is subject to the terms of the Mozilla Public
@@ -83,7 +86,7 @@ from DAVE.gui import new_node_dialog
 import DAVE.gui.standard_assets
 from DAVE.gui.forms.dlg_solver import Ui_Dialog
 import DAVE.settings
-from DAVE.settings_visuals import PAINTERS_DEFAULT
+from DAVE.settings_visuals import PAINTERS_DEFAULT, PAINTERS_BALLAST
 
 from DAVE.gui.helpers.highlighter import PythonHighlighter
 from DAVE.gui.helpers.ctrl_enter import ShiftEnterKeyPressFilter
@@ -482,6 +485,11 @@ class Gui():
         btnConstruct.clicked.connect(lambda: self.activate_workspace("AIRY"))
         set_pb_style(btnConstruct)
 
+        btnConstruct = QtWidgets.QPushButton()
+        btnConstruct.setText('Artists')
+        btnConstruct.clicked.connect(lambda: self.activate_workspace("PAINTERS"))
+        set_pb_style(btnConstruct)
+
         space = QtWidgets.QWidget()
         space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         self.ui.toolBar.addWidget(space)
@@ -581,13 +589,18 @@ class Gui():
         self.animation_terminate()
         self.savepoint_restore()
 
+        #
+        # self.visual.set_alpha(1.0)
+        # self.visual.hide_actors_of_type([ActorType.BALLASTTANK])
+        # self.visual.update_outlines()
 
-        self.visual.set_alpha(1.0)
-        self.visual.hide_actors_of_type([ActorType.BALLASTTANK])
-        self.visual.update_outlines()
+        self.visual.settings.painter_settings = deepcopy(PAINTERS_DEFAULT)
 
         for g in self.guiWidgets.values():
             g.close()
+
+        if name == 'PAINTERS':
+            self.show_guiWidget('vanGogh', WidgetPainters)
 
         if name == 'CONSTRUCT':
             self.show_guiWidget('Node Tree', WidgetNodeTree)
@@ -608,7 +621,9 @@ class Gui():
             self.show_guiWidget('Tanks', WidgetBallastConfiguration)
             self.show_guiWidget('Solver', WidgetBallastSolver)
             self.show_guiWidget('Tank order', WidgetTankOrder)
-            self.visual.show_actors_of_type([ActorType.BALLASTTANK])
+            self.visual.settings.painter_settings = deepcopy(PAINTERS_BALLAST)
+
+            # self.visual.show_actors_of_type([ActorType.BALLASTTANK])
 
         if name == 'STABILITY':
             self.show_guiWidget('Stability', WidgetDisplacedStability)
@@ -622,7 +637,7 @@ class Gui():
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
             self.show_guiWidget('Airy waves', WidgetAiry)
 
-
+        self.visual.update_visibility()
 
     def import_browser(self):
 

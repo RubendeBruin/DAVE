@@ -111,9 +111,20 @@ painters['node-class']['actor_key']
 
 import vtkmodules.qt
 
-from DAVE.settings_visuals import ViewportSettings, ActorSettings, \
-    RESOLUTION_SPHERE, RESOLUTION_ARROW, COLOR_BG1, COLOR_BG2, COLOR_WATER, TEXTURE_SEA, VISUAL_BUOYANCY_PLANE_EXTEND, \
-    COLOR_SELECT,LIGHT_TEXTURE_SKYBOX, ALPHA_SEA
+from DAVE.settings_visuals import (
+    ViewportSettings,
+    ActorSettings,
+    RESOLUTION_SPHERE,
+    RESOLUTION_ARROW,
+    COLOR_BG1,
+    COLOR_BG2,
+    COLOR_WATER,
+    TEXTURE_SEA,
+    VISUAL_BUOYANCY_PLANE_EXTEND,
+    COLOR_SELECT,
+    LIGHT_TEXTURE_SKYBOX,
+    ALPHA_SEA,
+)
 
 
 vtkmodules.qt.PyQtImpl = "PySide2"
@@ -221,11 +232,19 @@ def actor_from_trimesh(trimesh):
 
     vertices = [trimesh.GetVertex(i) for i in range(trimesh.nVertices)]
     # are the vertices unique?
-    unique_vertices = np.unique(vertices, axis = 0)
+
     faces = [trimesh.GetFace(i) for i in range(trimesh.nFaces)]
 
+    return actor_from_vertices_and_faces(vertices, faces)
+
+
+def actor_from_vertices_and_faces(vertices, faces):
+    """Creates a mesh based on the given vertices and faces. Cleans up
+    the structure before creating by removed duplicate vertices"""
+    unique_vertices = np.unique(vertices, axis=0)
+
     if len(unique_vertices) != len(vertices):  # reconstruct faces and vertices
-        unique_vertices, indices = np.unique(vertices, axis = 0, return_inverse=True)
+        unique_vertices, indices = np.unique(vertices, axis=0, return_inverse=True)
         f = np.array(faces)
         better_faces = indices[f]
         actor = vp.Mesh([unique_vertices, better_faces])
@@ -250,7 +269,7 @@ def vp_actor_from_obj(filename):
 
     # We are not importing textures and materials.
     # Set color to 'w' to enforce an uniform color
-    vpa = vp.Mesh(mapper.GetInputAsDataSet(), c='w')  # need to set color here
+    vpa = vp.Mesh(mapper.GetInputAsDataSet(), c="w")  # need to set color here
 
     return vpa
 
@@ -271,7 +290,6 @@ class VisualOutline:
     parent_vp_actor = None
     outline_actor = None
     outline_transform = None
-
 
 
 class VisualActor:
@@ -301,7 +319,7 @@ class VisualActor:
         self.node = node  # Node
         self.label_actor = None
 
-        self.paint_state = '' # some nodes change paint depending on their state
+        self.paint_state = ""  # some nodes change paint depending on their state
 
         self._is_selected = False
         self._is_sub_selected = (
@@ -462,18 +480,21 @@ class Viewport:
         if self.screen is None:
             return
 
+        # Hide and quit if only doing quick updates
         if self.quick_updates_only:
             for outline in self.outlines:
                 outline.outline_actor.SetVisibility(False)
             return
 
+        # Control outline visibility
         for outline in self.outlines:
             if getattr(outline.parent_vp_actor, "xray", False):
                 outline.outline_actor.SetVisibility(True)
             else:
-                outline.outline_actor.SetVisibility(
-                    outline.parent_vp_actor.GetVisibility()
-                )
+                if outline.parent_vp_actor.GetVisibility():
+                    outline.outline_actor.SetVisibility(True)
+                else:
+                    outline.outline_actor.SetVisibility(False)
 
         # list of already existing outlines
         _outlines = [a.parent_vp_actor for a in self.outlines]
@@ -770,8 +791,6 @@ class Viewport:
                     N.trimesh._TriMesh
                 )  # returns a small cube if no trimesh is defined
 
-
-
                 vis.actor_type = ActorType.MESH_OR_CONNECTOR
 
                 actors["main"] = vis
@@ -783,15 +802,24 @@ class Viewport:
 
                 # waterplane
                 #
-                (minimum_x, maximum_x, minimum_y, maximum_y, minimum_z, maximum_z) = N.trimesh.get_extends()
+                (
+                    minimum_x,
+                    maximum_x,
+                    minimum_y,
+                    maximum_y,
+                    minimum_z,
+                    maximum_z,
+                ) = N.trimesh.get_extends()
 
-                vertices = [(minimum_x, minimum_y, 0),
-                            (maximum_x, minimum_y, 0),
-                            (maximum_x, maximum_y, 0),
-                            (minimum_x, maximum_y, 0)]
-                faces = [(0,1,2,3)]
+                vertices = [
+                    (minimum_x, minimum_y, 0),
+                    (maximum_x, minimum_y, 0),
+                    (maximum_x, maximum_y, 0),
+                    (minimum_x, maximum_y, 0),
+                ]
+                faces = [(0, 1, 2, 3)]
 
-                p = vp.Mesh([vertices, faces])
+                p = vp.Mesh([vertices, faces])  # waterplane, ok to create like this
 
                 p.actor_type = ActorType.NOT_GLOBAL
                 actors["waterplane"] = p
@@ -1010,13 +1038,12 @@ class Viewport:
             # self.set_default_dsa()
 
     def position_visuals(self):
-        """ When the nodes in the scene have moved:
-                Updates the positions of existing visuals
-                Removes visuals for which the node is no longer present in the scene
-                Applies scaling for non-physical actors
-                Updates the geometry for visuals where needed (meshes)
-                Updates the "paint_state" property for tanks and contact nodes (see paint)
-"""
+        """When the nodes in the scene have moved:
+        Updates the positions of existing visuals
+        Removes visuals for which the node is no longer present in the scene
+        Applies scaling for non-physical actors
+        Updates the geometry for visuals where needed (meshes)
+        Updates the "paint_state" property for tanks and contact nodes (see paint)"""
 
         to_be_removed = []
 
@@ -1523,17 +1550,16 @@ class Viewport:
                         vertices = []
                     # -------------------
 
-
                 # paint settings
                 if V.node.free_flooding:
-                    V.paint_state = 'freeflooding'
+                    V.paint_state = "freeflooding"
                 else:
                     if V.node.fill_pct >= 95:
-                        V.paint_state = 'full'
+                        V.paint_state = "full"
                     elif V.node.fill_pct <= 5:
-                        V.paint_state = 'empty'
+                        V.paint_state = "empty"
                     else:
-                        V.paint_state = 'partial'
+                        V.paint_state = "partial"
 
                 # we now have vertices and points and faces
 
@@ -1568,7 +1594,8 @@ class Viewport:
 
                         # print(f'Creating new actor for for {V.node.name}')
 
-                        vis = vp.Mesh([vertices, faces])
+                        vis = actor_from_vertices_and_faces(vertices, faces)
+
                         vis.actor_type = ActorType.MESH_OR_CONNECTOR
 
                         V.actors["fluid"] = vis
@@ -1688,8 +1715,7 @@ class Viewport:
                                 va.actors["main"].SetUserMatrix(mat4x4)
 
                             else:
-                                print('Trimesh without a parent')
-
+                                print("Trimesh without a parent")
 
                             if not va.node.visible:
                                 va.actors["main"].off()
@@ -1752,8 +1778,7 @@ class Viewport:
                     qtWidget=qtWidget, axes=4, bg=COLOR_BG1, bg2=COLOR_BG2
                 )
 
-
-    def show(self,camera=None, include_outlines=True):
+    def show(self, camera=None, include_outlines=True):
         """Add actors to screen and show
 
         If purpose is to show embedded, then call show_embedded instead
@@ -1830,7 +1855,7 @@ class Viewport:
             from pathlib import Path
 
             if not Path.exists(LIGHT_TEXTURE_SKYBOX):
-                raise ValueError(f'No image found here: {LIGHT_TEXTURE_SKYBOX}')
+                raise ValueError(f"No image found here: {LIGHT_TEXTURE_SKYBOX}")
 
             textureFile = readerFactory.CreateImageReader2(str(LIGHT_TEXTURE_SKYBOX))
             textureFile.SetFileName(str(LIGHT_TEXTURE_SKYBOX))
@@ -1849,9 +1874,6 @@ class Viewport:
             # input.SetFileName(str(LIGHT_TEXTURE_SKYBOX))
             # input.Modified()
             # texture.SetInputDataObject(input.GetOutput())
-
-
-
 
             for r in self.screen.renderers:
                 r.ResetCamera()
@@ -1899,8 +1921,6 @@ class Viewport:
 
         from PySide2.QtWidgets import QVBoxLayout
         from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-
-
 
         # add a widget to gui
         vl = QVBoxLayout()
@@ -2012,7 +2032,6 @@ class Viewport:
 
         """
 
-
         ps = self.settings.painter_settings  # alias
         if ps is None:
             print("No painter settings, ugly world :(")
@@ -2049,10 +2068,21 @@ class Viewport:
                 print(f"No paint for actor {node_class} {key}")
                 continue
 
+            # set the "xray" property of the actor
+            actor.xray = actor_settings.xray
+
+            # on or off
+            if actor_settings.surfaceShow or actor_settings.lineWidth > 0:
+                actor.on()
+            else:
+                actor.off()
+                continue
+
             if actor_settings.surfaceShow:
 
                 props = actor.GetProperty()
                 props.SetInterpolationToPBR()
+                props.SetRepresentationToSurface()
                 props.SetColor(
                     (
                         actor_settings.surfaceColor[0] / 255,
@@ -2064,7 +2094,7 @@ class Viewport:
                 props.SetMetallic(actor_settings.metallic)
                 props.SetRoughness(actor_settings.roughness)
             else:
-                actor.wireframe(True)
+                actor.GetProperty().SetRepresentationToWireframe()
 
             actor.lineWidth(actor_settings.lineWidth)
 

@@ -377,19 +377,19 @@ class GridEdit(QWidget):
         return self._get_row_id(row)
 
     def getCellValue(self, row, col, kind):
-        try:
-            if kind == bool:
-                value = self.grid.cellWidget(row, col).isChecked()
-            elif kind == float:
-                value = float(self.grid.item(row, col).text())
-            elif kind == "color":
-                value = self.grid.cellWidget(row, col)._color
-            else:
-                value = self.grid.item(row, col).text()
+        if kind == bool:
+            return self.grid.cellWidget(row, col).isChecked()
+        elif kind == int:
+            return int(self.grid.item(row, col).text())
+        elif kind == float:
+            return float(self.grid.item(row, col).text())
+        elif kind == "color":
+            return self.grid.cellWidget(row, col)._color
+        elif kind == str:
+            return self.grid.item(row, col).text()
+        else:
+            raise ValueError(f'Unknown column kind: {str(kind)}')
 
-            return value
-        except:
-            return None
 
     def onCellEdited(self):
 

@@ -25,6 +25,14 @@ class WidgetPainters(guiDockWidget):
         # manual:
 
         self.panel = QtWidgets.QWidget()
+        self.buttonExport = QtWidgets.QPushButton()
+        self.panelLayout = QtWidgets.QHBoxLayout()
+        self.panelLayout.addWidget(self.buttonExport)
+        self.panel.setLayout(self.panelLayout)
+
+        self.buttonExport.clicked.connect(self.generate_python_code)
+
+
         self.grid = GridEdit(None)
 
         layout = QtWidgets.QVBoxLayout()
@@ -37,7 +45,7 @@ class WidgetPainters(guiDockWidget):
         ge = self.grid # alias
 
         ge.addColumn('surfaceShow', bool)
-        ge.addColumn('lineWidth', int)
+        ge.addColumn('lineWidth', float)
         ge.addColumn('xray',bool)
         ge.addColumn('surfaceColor', 'color')
         ge.addColumn('alpha', float)
@@ -66,7 +74,6 @@ class WidgetPainters(guiDockWidget):
         return None
 
     def update_display(self):
-        print('callback')
         self.gui.visual.update_visibility()
         self.gui.visual.refresh_embeded_view()
 
@@ -88,4 +95,31 @@ class WidgetPainters(guiDockWidget):
         print(collection)
 
         self.grid.setDataSource(collection, names)
+
+    def generate_python_code(self):
+
+        pc = []
+        pc.append('# exported python code for painters')
+        pc.append('my_painers = dict()')
+        for key, value in self.gui.visual.settings.painter_settings.items():
+
+            pc.append('\n# --- paint for : {value} --- ')
+
+            pc.append('visual = dict()')
+
+            for sub_key, sub_value in value.items():
+                pc.append('paint = ActorSettings()')
+
+                for prop, val in sub_value.__dict__.items():
+                    pc.append(f'paint.{prop} = {str(val)}')
+
+                pc.append(f"visual['{sub_key}'] = paint")
+
+            pc.append(f"my_painers['{key}'] = visual")
+
+        code = '\n'.join(pc)
+
+        self.gui.ui.teFeedback.append(code)
+
+
 
