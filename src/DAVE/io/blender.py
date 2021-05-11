@@ -1,40 +1,39 @@
 
-
 """
     Using this module a scene can be exported to Blender.
-    
+
     Blender is the free and open source 3D creation suite. It supports the entirety of the 3D pipeline—modeling, rigging, animation, simulation, rendering, compositing and motion tracking, video editing and 2D animation pipeline.
     It can be downloaded from https://www.blender.org
-    
+
     Only visuals will be exported.
-    
+
     For this to work every visual needs to have a corresponding .blend file. This file should be located in one of the resource-paths.
     The name of the .blend file should be the same as the name of the .obj file.
-    
+
     The blender model
     - should have the same origin as the .obj file
     - should have all transformations applied (select object, control+A, all transformation)
-    
+
     A base blender file needs to be provided. The visuals will be added to this model. It will then be saved under a different name.
-    
+
     Requirements for the base blender file:
     - Shall have a material called "Cable", this material will be assigned to each created cable.
 
     All functions in this file one or more of the following arguments
-    
+
     - camera : a dictionary with ['position'] and ['direction'] which specifies the camera position and look direction
     - python_file : location for the generated python file
     - blender_base_file : .blend file to be used a starting scene
     - blender_result_file : .blend file to write to
     - blender_exe_path : location of the blender executable. Defaults to DAVE.constants.BLENDER_EXEC
                        : probably r"C:\Program Files\Blender Foundation\Blender\\blender.exe"
-    
-    --- 
-    
-    
-    
 
-    
+    ---
+
+
+
+
+
 
 """
 
@@ -79,7 +78,7 @@ def get_context_area():
 def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orientation=(0,0,0,0), position=(0,0,0), orientations=[], positions=[], frames_per_dof = 1 ):
     \"\"\"
     All meshes shall be joined
-    
+
     First rotate (rotation)
     Then scale (scale)
     Then move (offset)
@@ -92,12 +91,12 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
     \"\"\"
     print('Loading {}'.format(filepath))
 
-   
+
     objects = []
     if filepath.endswith('.blend'):
         with bpy.data.libraries.load(filepath=filepath, relative=False) as (data_from, data_to):
             data_to.objects.extend(data_from.objects)
-        
+
         for object in data_to.objects:
 
             if object.type == 'MESH':  # only add meshes, materials are automatically included
@@ -113,11 +112,11 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
         for obj in bpy.context.selected_objects:
             obj.rotation_euler[0] = 0
             objects.append(obj)
-        
-        
+
+
     elif filepath.endwith('.stl'):
         print('STL not yet implemented')
-        
+
     view3d_area = get_context_area()
 
     for object in objects:
@@ -140,7 +139,7 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
         # Scale is applied on the rotated object
         # Offset is applied on the rotated and scaled object
         # 
-        
+
         context_override = {'active_object': object, 'area':view3d_area}
 
         bpy.ops.transform.rotate(context_override,value=rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)... (2.83 this seems to be fixed)?
@@ -151,10 +150,10 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
 
         bpy.ops.transform.resize(context_override,value=scale)
         bpy.ops.object.transform_apply(context_override,location=False, rotation=False, scale=True)
-                
+
         bpy.ops.transform.translate(context_override,value=offset)  # translate
         bpy.ops.object.transform_apply(context_override,location=True, rotation=False, scale=False)    
-        
+
         # apply global transforms
 
         active_object.location = position
@@ -179,10 +178,10 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
 
 
 
-            
+
 def add_line(points, diameter, name=None, ani_points = None, frames_per_entry=1):
     # Points should contain FOUR coordinates per point, the 4th one can be 1.0
-    
+
     curve = bpy.data.curves.new("Curve", type='CURVE')
     polyline = curve.splines.new(type='POLY')
 
@@ -225,7 +224,7 @@ def add_line(points, diameter, name=None, ani_points = None, frames_per_entry=1)
 
 def add_beam(points, diameter, name=None, ani_points = None, frames_per_entry=1):
     # Points should contain FOUR coordinates per point, the 4th one can be 1.0
-    
+
     curve = bpy.data.curves.new("Curve", type='CURVE')
     polyline = curve.splines.new(type='POLY')
 
@@ -323,7 +322,7 @@ def add_beam(points, diameter, name=None, ani_points = None, frames_per_entry=1)
 
 def _to_euler(rotation):
     r = Rotation.from_rotvec(deg2rad(rotation))
-    return r.as_euler('zyx',degrees=False)
+    return r.as_euler('zyx' ,degrees=False)
 
 def _to_quaternion(rotation):
     r = Rotation.from_rotvec(deg2rad(rotation))
@@ -332,10 +331,10 @@ def _to_quaternion(rotation):
 
 def _wavefield_to_blender(wavefield):
     """Returns blender python code to generate the wavefield in Blender
-    
+
     Args:
         wavefield: DAVE.visual.wavefield object
-    
+
     Returns:
         str
     """
@@ -435,14 +434,14 @@ mesh.polygons.foreach_set("loop_total", loop_total)
 
         n_frame = consts.BLENDER_FPS * t
 
-        if i_source_frame != wavefield.nt-1:
+        if i_source_frame != wavefield.nt -1:
             if i_source_frame != 0:
                 if n_frame - last_frame_nr < 5:
                     continue
 
         last_frame_nr = n_frame
 
-        print('exporting wave-frame {} of {}'.format(n_frame,wavefield.nt))
+        print('exporting wave-frame {} of {}'.format(n_frame ,wavefield.nt))
 
         # update wave-field
         wavefield.update(t)
@@ -451,15 +450,15 @@ mesh.polygons.foreach_set("loop_total", loop_total)
         filename = consts.PATH_TEMP / 'waves_frame{}.npy'.format(n_frame)
         # data = v.actor.GetMapper().GetInputAsDataSet()
 
-        #pre-allocate data
+        # pre-allocate data
         n_points = data.GetNumberOfPoints()
         points = np.zeros((n_points, 3))
 
         for i in range(n_points):
             point = data.GetPoint(i)
-            points[i,:] = point
+            points[i ,:] = point
 
-        np.save(filename,np.ravel(points))
+        np.save(filename ,np.ravel(points))
 
         code += '\nprint("Importing wave-frame {} / {}")'.format(n_frame, wavefield.nt)
 
@@ -486,18 +485,18 @@ obj = bpy.data.objects.new('created object', mesh)
 # Add *Object* to the scene, not the mesh
 scene = bpy.context.scene
 scene.collection.objects.link(obj)"""
-    
+
     return code
-    
+
 
 
 def create_blend_and_open(scene, blender_result_file = None, blender_base_file=None, blender_exe_path=None, camera=None, animation_dofs=None, wavefield=None):
 
-    create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield, open_gui=True)
+    create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path ,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield, open_gui=True)
     # command = 'explorer "{}"'.format(str(blender_result_file))
     # subprocess.call(command, creationflags=subprocess.DETACHED_PROCESS)
 
-def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None,animation_dofs=None, wavefield=None, open_gui = False):
+def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None ,animation_dofs=None, wavefield=None, open_gui = False):
     tempfile = Path(consts.PATH_TEMP) / 'blender.py'
 
     if blender_base_file is None:
@@ -506,7 +505,8 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
     if blender_result_file is None:
         blender_result_file = consts.BLENDER_DEFAULT_OUTFILE
 
-    blender_py_file(scene, tempfile, blender_base_file = blender_base_file , blender_result_file = blender_result_file ,camera=camera,animation_dofs=animation_dofs, wavefield=wavefield)
+    blender_py_file(scene, tempfile, blender_base_file = blender_base_file , blender_result_file = blender_result_file
+                    ,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield)
 
     if blender_exe_path is None:
         blender_exe_path = consts.BLENDER_EXEC
@@ -522,9 +522,10 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
     subprocess.Popen(command)
 
 
-def blender_py_file(scene, python_file, blender_base_file, blender_result_file, camera = None, animation_dofs=None, wavefield=None):
-
-    code = '# Auto-generated python file for blender\n# Execute using blender.exe -b --python "{}"\n\n'.format(python_file)
+def blender_py_file(scene, python_file, blender_base_file, blender_result_file, camera=None, animation_dofs=None,
+                    wavefield=None):
+    code = '# Auto-generated python file for blender\n# Execute using blender.exe -b --python "{}"\n\n'.format(
+        python_file)
     code += 'import bpy\n'
     code += 'bpy.ops.wm.open_mainfile(filepath=r"{}")\n'.format(blender_base_file)
     code += '\n'
@@ -537,16 +538,16 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
         """
         A Visual node contains a 3d visual, typically obtained from a .obj file.
         A visual node can be placed on an axis-type node.
-    
+
         It is used for visualization. It does not affect the forces, dynamics or statics.
-    
+
             visual.offset = [0, 0, 0] :: Offset (x,y,z) of the visual. Offset is applied after scaling
             visual.rotation = :: Rotation (rx,ry,rz) of the visual
             visual.scale :: Scaling of the visual. Scaling is applied before offset.
             visual.path :: Filename of the visual
-    
+
             visual.parent :: Parent : Axis-type
-    
+
             parent is an axis type and has .global_position and .global_rotation
         """
 
@@ -554,12 +555,12 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
         # look for the file
 
-        name,_ = splitext(basename(visual.path))
+        name, _ = splitext(basename(visual.path))
 
         try:
             filename = scene.get_resource_path(name + '.blend')  # raises exception if file is not found
         except:
-            filename = scene.get_resource_path(visual.path) # fall-back to .obj
+            filename = scene.get_resource_path(visual.path)  # fall-back to .obj
 
         # the offset needs to be rotated.
 
@@ -578,7 +579,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 position = visual.parent.global_position
                 # global_offset = visual.parent.to_glob_direction(visual.offset)
 
-                glob_position = np.array(position) # + np.array(global_offset)
+                glob_position = np.array(position)  # + np.array(global_offset)
 
                 code += '\npositions.append([{},{},{}])'.format(*glob_position)
 
@@ -593,16 +594,12 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
         else:
             code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}))'.format(
-                        filename,
-                        *visual.scale,
-                        *_to_euler(visual.rotation),
-                        *visual.offset,
-                        *_to_quaternion(visual.parent.global_rotation),
-                        *visual.parent.global_position)
-
-
-
-
+                filename,
+                *visual.scale,
+                *_to_euler(visual.rotation),
+                *visual.offset,
+                *_to_quaternion(visual.parent.global_rotation),
+                *visual.parent.global_position)
 
     for cable in scene.nodes_of_type(dc.Cable):
 
@@ -710,9 +707,8 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
     #         code += '\nadd_beam(points, directions, diameter={}, name = "{}")'.format(dia, beam.name)
 
     for contactball in scene.nodes_of_type(dc.ContactBall):
-
-        code += '\nbpy.ops.mesh.primitive_uv_sphere_add(radius={}, enter_editmode=False, location=({}, {}, {}))'.format(contactball.radius,*contactball.parent.global_position)
-
+        code += '\nbpy.ops.mesh.primitive_uv_sphere_add(radius={}, enter_editmode=False, location=({}, {}, {}))'.format(
+            contactball.radius, *contactball.parent.global_position)
 
     if camera is not None:
         pos = camera['position']
@@ -723,13 +719,11 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
         code += '\nobj_camera.location = ({},{},{})'.format(*pos)
         code += '\ndir = Vector(({},{},{}))\n'.format(*dir)
         code += "\nq = dir.to_track_quat('-Z','Y')\nobj_camera.rotation_euler = q.to_euler()"
-        
+
     # Add the wave-plane
     if wavefield is not None:
-        
         code += '\n# wavefield'
         code += _wavefield_to_blender(wavefield)
-        
 
     code += '\nbpy.ops.wm.save_mainfile(filepath=r"{}")'.format(blender_result_file)
     # bpy.ops.wm.quit_blender() # not needed
@@ -739,7 +733,3 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
     file = open(python_file, 'w+')
     file.write(code)
     file.close()
-
-
-
-
