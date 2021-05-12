@@ -97,7 +97,7 @@ class WidgetBallastConfiguration(guiDockWidget):
 
             if tank.name == name:
                 actor = tank.visual.actors['main']  # the mesh
-                actor.lw(5)
+                actor.lw(3)
                 actor.c((254,0,0))
             else:
                 self.gui.visual.update_painting(tank.visual)
@@ -151,9 +151,9 @@ class WidgetBallastConfiguration(guiDockWidget):
 
         tw = self.ui.tableWidget
 
-        partial = QColor.fromRgb(*254*np.array(COLOR_WATER_TANK_SLACK))
-        full    = QColor.fromRgb(*254*np.array(COLOR_WATER_TANK_95PLUS))
-        empty = QColor.fromRgb(254,254,254)
+        partial = QColor.fromRgb(*COLOR_WATER_TANK_SLACK)
+        full    = QColor.fromRgb(*COLOR_WATER_TANK_95PLUS)
+        empty   = QColor.fromRgb(254,254,254)
 
         self._filling_table = True
 

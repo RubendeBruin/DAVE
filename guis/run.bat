@@ -1,6 +1,6 @@
 call conda activate deploy
 
-echo call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
+call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
 echo call pyside2-uic widget_modeshapes.ui -o "..\src\DAVE\gui\forms\widgetUI_modeshapes.py"
 echo call pyside2-uic widget_ballastconfiguration.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastconfiguration.py"
 echo call pyside2-uic widget_ballastsolver.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastsolver.py"
@@ -16,7 +16,7 @@ echo call pyside2-uic widget_poi.ui -o "..\src\DAVE\gui\forms\widget_poi.py"
 echo call pyside2-uic widget_cable.ui -o "..\src\DAVE\gui\forms\widget_cable.py"
 echo call pyside2-uic addnode_form.ui -o "..\src\DAVE\gui\forms\addnode_form.py"
 echo call pyside2-uic widget_name.ui -o "..\src\DAVE\gui\forms\widget_name.py"
-call pyside2-uic widget_visual.ui -o "..\src\DAVE\gui\forms\widget_visual.py"
+echo call pyside2-uic widget_visual.ui -o "..\src\DAVE\gui\forms\widget_visual.py"
 echo call pyside2-uic widget_force.ui -o "..\src\DAVE\gui\forms\widget_force.py"
 echo call pyside2-uic widget_sheave.ui -o "..\src\DAVE\gui\forms\widget_sheave.py"
 echo call pyside2-uic widget_linhyd.ui -o "..\src\DAVE\gui\forms\widget_linhyd.py"

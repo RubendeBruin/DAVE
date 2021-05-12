@@ -86,7 +86,7 @@ from DAVE.gui import new_node_dialog
 import DAVE.gui.standard_assets
 from DAVE.gui.forms.dlg_solver import Ui_Dialog
 import DAVE.settings
-from DAVE.settings_visuals import PAINTERS_DEFAULT, PAINTERS_BALLAST
+from DAVE.settings_visuals import PAINTERS
 
 from DAVE.gui.helpers.highlighter import PythonHighlighter
 from DAVE.gui.helpers.ctrl_enter import ShiftEnterKeyPressFilter
@@ -216,7 +216,11 @@ class Gui():
         self.visual = Viewport(scene)
         """Reference to a viewport"""
 
-        self.visual.settings.painter_settings = PAINTERS_DEFAULT
+        self.visual.settings.painter_settings = PAINTERS['Construction']  # use as default
+
+        self.ui.cbPainerSelect.addItems([str(k) for k in PAINTERS.keys()])
+        self.ui.cbPainerSelect.currentIndexChanged.connect(self.change_paintset)
+
 
         if cog_scale >= 0:
             self.visual.cog_scale = cog_scale
@@ -509,6 +513,28 @@ class Gui():
             self.ui.pbUpdate.setVisible(False)
             self.app.exec_()
 
+    def change_paintset(self):
+
+        # Clear selection to make sure that the paint is updated for all actors
+        selected_node_names = [node.name for node in self.selected_nodes]
+        self.select_none()
+
+        current_set = self.ui.cbPainerSelect.currentText()
+        self.visual.settings.painter_settings = PAINTERS[current_set]
+        self.visual.update_visibility()
+
+        # and restore the selection afterwards
+        if selected_node_names:
+            self.guiSelectNode(selected_node_names[0])
+
+        self.visual.refresh_embeded_view()
+
+
+
+    def activate_paintset(self, name):
+        if 'custom' not in self.ui.cbPainerSelect.currentText():
+            self.ui.cbPainerSelect.setCurrentText(name)
+
     def show_labels_menu(self):
         self.labels_menu.exec_(QCursor.pos())
 
@@ -593,8 +619,7 @@ class Gui():
         # self.visual.set_alpha(1.0)
         # self.visual.hide_actors_of_type([ActorType.BALLASTTANK])
         # self.visual.update_outlines()
-
-        self.visual.settings.painter_settings = deepcopy(PAINTERS_DEFAULT)
+        self.activate_paintset('Construct')
 
         for g in self.guiWidgets.values():
             g.close()
@@ -621,7 +646,7 @@ class Gui():
             self.show_guiWidget('Tanks', WidgetBallastConfiguration)
             self.show_guiWidget('Solver', WidgetBallastSolver)
             self.show_guiWidget('Tank order', WidgetTankOrder)
-            self.visual.settings.painter_settings = deepcopy(PAINTERS_BALLAST)
+            self.activate_paintset('Ballasting')
 
             # self.visual.show_actors_of_type([ActorType.BALLASTTANK])
 
@@ -1449,7 +1474,6 @@ class Gui():
             else:
                 self.visual.update_painting(v)
                 v._is_selected = False
-                # v.deselect()
 
         for v in self.visual.visuals:
             try:
@@ -1463,7 +1487,7 @@ class Gui():
             else:
                 v._is_sub_selected = False
                 self.visual.update_painting(v)
-                # v.reset_opacity()
+
 
 
 

@@ -3,8 +3,8 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Wed Nov 25 13:31:01 2020
-#      by: pyside2-uic  running on PySide2 5.13.1
+# Created: Wed May 12 18:57:12 2021
+#      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -74,6 +74,11 @@ class Ui_MainWindow(object):
         self.pbLabels.setFlat(True)
         self.pbLabels.setObjectName("pbLabels")
         self.horizontalLayout_2.addWidget(self.pbLabels)
+        self.cbPainerSelect = QtWidgets.QComboBox(self.widget_3)
+        self.cbPainerSelect.setStyleSheet("")
+        self.cbPainerSelect.setFrame(True)
+        self.cbPainerSelect.setObjectName("cbPainerSelect")
+        self.horizontalLayout_2.addWidget(self.cbPainerSelect)
         self.btnWater = QtWidgets.QPushButton(self.widget_3)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -101,7 +106,7 @@ class Ui_MainWindow(object):
         self.frame3d = QtWidgets.QFrame(self.centralwidget)
         self.frame3d.setAcceptDrops(False)
         self.frame3d.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.frame3d.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame3d.setFrameShadow(QtWidgets.QFrame.Plain)
         self.frame3d.setLineWidth(0)
         self.frame3d.setObjectName("frame3d")
         self.verticalLayout_3.addWidget(self.frame3d)
@@ -150,7 +155,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.addWidget(self.frameAni)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1799, 31))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1799, 21))
         self.menubar.setObjectName("menubar")
         self.menuSolve_Statics = QtWidgets.QMenu(self.menubar)
         self.menuSolve_Statics.setObjectName("menuSolve_Statics")
@@ -422,10 +427,10 @@ class Ui_MainWindow(object):
         self.teCode.setHtml(QtWidgets.QApplication.translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">print(&quot;type python code here&quot;)</p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"># press shift+enter to execute</p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"># press alt+c to clear and focus here</p></body></html>", None, -1))
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">print(&quot;type python code here&quot;)</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\"># press shift+enter to execute</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\"># press alt+c to clear and focus here</span></p></body></html>", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("MainWindow", "Output", None, -1))
         self.pbGenerateSceneCode.setText(QtWidgets.QApplication.translate("MainWindow", "Generate scene code", None, -1))
         self.pbCopyOutput.setToolTip(QtWidgets.QApplication.translate("MainWindow", "Copy text below", None, -1))

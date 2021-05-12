@@ -496,6 +496,8 @@ class Viewport:
                 else:
                     outline.outline_actor.SetVisibility(False)
 
+
+
         # list of already existing outlines
         _outlines = [a.parent_vp_actor for a in self.outlines]
 
@@ -1500,7 +1502,7 @@ class Viewport:
 
                     # tank is full
                     vertices = points[0]
-                    faces = V.actors[0].faces()
+                    faces = V.actors['main'].faces()
 
                 else:
 
@@ -2023,7 +2025,7 @@ class Viewport:
     def refresh_embeded_view(self):
         self.vtkWidget.update()
 
-    def update_painting(self, v):
+    def update_painting(self, v : VisualActor):
         """Updates the painting for this visual
 
         Painting depends on the node type of this visual.
@@ -2031,6 +2033,10 @@ class Viewport:
         stored in
 
         """
+
+        if v._is_selected or v._is_sub_selected:
+            print('Not re-paining selected or sub-selected node')
+            return
 
         ps = self.settings.painter_settings  # alias
         if ps is None:
@@ -2061,6 +2067,7 @@ class Viewport:
             return  # no settings available
 
         for key, actor in v.actors.items():
+
 
             if key in node_painter_settings:
                 actor_settings = node_painter_settings[key]

@@ -1,12 +1,16 @@
-"""Contains the settings and data-classes used by the visuals
+"""Contains the settings and data-classes used by the visuals.
 
-separated from "settings" to avoid circular reference issues.
+Contains the pre-defined paints
+
+
 """
 
 from dataclasses import dataclass
 from copy import copy, deepcopy
-
 import DAVE.settings as ds
+
+
+PAINTERS = dict()  # this is the dictionary with sets of paint, it will be filled later
 
 # ============ visuals :: sea ===========
 
@@ -166,8 +170,10 @@ class ViewportSettings:
 
 
 # ============ Painters ================
+#
+#  Define some default paints
+#
 
-painters = dict()
 
 surf = ActorSettings()
 surf.lineWidth = 0
@@ -184,11 +190,22 @@ trans.surfaceShow = True
 trans.alpha = 0.5
 
 xray = ActorSettings()
+xray.lineWidth = 0
+xray.surfaceShow = 0
 xray.xray = True
 
+invisible = ActorSettings()
+invisible.xray = False
+invisible.surfaceShow = False
+invisible.lineWidth = 0
 
-# ------ Point
 
+# ======== Define the default palette =======
+#
+#   this is the "Construction" palette
+#
+#
+painters = dict()
 surf.surfaceColor = _LIGHT_GRAY
 painters['Point'] = {'main':copy(surf)}
 
@@ -302,246 +319,52 @@ painters['Tank:full'] = {'main':copy(mesh), 'cog':copy(surf),'fluid':copy(surf)}
 surf.surfaceColor = _PURPLE
 painters['WaveInteraction1'] = {'main':copy(surf)}
 
-PAINTERS_DEFAULT = deepcopy(painters)
+PAINTERS['Construction'] = deepcopy(painters)
 
-# exported python code for painters
-my_painers = dict()
+# Define the paint for ballasting
+# start with the active paints
+# override only what is needed
+ballast_painters = deepcopy(PAINTERS['Construction'])
 
-# --- paint for : {value} ---
-visual = dict()
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = [200, 200, 200]
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0
-visual['main'] = paint
-my_painers['Point'] = visual
+# Hide points
+ballast_painters['Point']['main'] = copy(invisible)
 
-# --- paint for : {value} ---
-visual = dict()
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = [144, 33, 30]
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0
-visual['main'] = paint
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = [0, 127, 14]
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0
-visual['y'] = paint
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = [12, 106, 146]
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0
-visual['z'] = paint
-my_painers['Axis'] = visual
+# Hide axis
+ballast_painters['Axis']['main'] = copy(invisible)
+ballast_painters['Axis']['y'] = copy(invisible)
+ballast_painters['Axis']['z'] = copy(invisible)
 
-# --- paint for : {value} ---
-visual = dict()
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = [144, 33, 30]
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0
-visual['x'] = paint
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = [0, 127, 14]
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0
-visual['y'] = paint
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = [12, 106, 146]
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0
-visual['z'] = paint
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = [87, 0, 127]
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0
-visual['main'] = paint
-my_painers['RigidBody'] = visual
+# Hide rigidbody
+ballast_painters['RigidBody']['main'] = copy(invisible)
+ballast_painters['RigidBody']['x'] = copy(invisible)
+ballast_painters['RigidBody']['y'] = copy(invisible)
+ballast_painters['RigidBody']['z'] = copy(invisible)
 
-# --- paint for : {value} ---
-visual = dict()
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = [200, 200, 200]
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0
-visual['main'] = paint
-my_painers['Circle'] = visual
+# Hide circle
+ballast_painters['Circle']['main'] = copy(invisible)
 
-# --- paint for : {value} ---
-visual = dict()
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = [145, 145, 145]
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0
-visual['main'] = paint
-my_painers['Visual'] = visual
+# Visuals: Xray
+ballast_painters['Visual']['main'] = copy(xray)
 
-# --- paint for : {value} ---
-visual = dict()
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = [200, 80, 33]
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0
-visual['main'] = paint
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = [200, 80, 33]
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0
-visual['moment1'] = paint
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = [200, 80, 33]
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0
-visual['moment2'] = paint
-my_painers['Force'] = visual
+# Forces: unchanged
 
-# --- paint for : {value} ---
-visual = dict()
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = (247, 17, 228)
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0.0
-paint.lineColor = [0, 0, 0]
-visual['main'] = paint
-my_painers['Cable'] = visual
+# Cables: thin gray lines
+ballast_painters['Cable']['main'].lineWidth = 1
+ballast_painters['Cable']['main'].lineColor = _MEDIUM_GRAY
 
-# --- paint for : {value} ---
-visual = dict()
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = (247, 17, 228)
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0.0
-paint.lineColor = [144, 33, 30]
-visual['main'] = paint
-my_painers['Connector2d'] = visual
+#
+ballast_painters['Connector2d']['main'] = copy(invisible)
+ballast_painters['ContactMesh']['main'] = copy(invisible)
 
-# --- paint for : {value} ---
-visual = dict()
-my_painers['LC6d'] = visual
+ballast_painters['ContactBall:free']['main'] = copy(invisible)
+ballast_painters['ContactBall:free']['contact'] = copy(invisible)
 
-# --- paint for : {value} ---
-visual = dict()
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = [0, 127, 14]
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0.0
-paint.lineColor = [0, 110, 10]
-visual['main'] = paint
-my_painers['ContactMesh'] = visual
+ballast_painters['ContactBall:contact']['main'] = copy(invisible)
+ballast_painters['ContactBall:contact']['contact'] = copy(invisible)
 
-# --- paint for : {value} ---
-visual = dict()
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = [0, 110, 10]
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0
-visual['main'] = paint
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = (247, 17, 228)
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0.0
-paint.lineColor = [200, 80, 33]
-visual['contact'] = paint
-my_painers['ContactBall:free'] = visual
+ballast_painters['WaveInteraction1']['main'] = copy(invisible)
 
-# --- paint for : {value} ---
-visual = dict()
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = (247, 17, 228)
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0.0
-paint.lineColor = [200, 80, 33]
-visual['main'] = paint
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = (247, 17, 228)
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0.0
-paint.lineColor = [200, 80, 33]
-visual['contact'] = paint
-my_painers['ContactBall:contact'] = visual
-
-# --- paint for : {value} ---
+# --- Buoyancy mesh
 visual = dict()
 paint = ActorSettings()
 paint.alpha = 1
@@ -580,9 +403,9 @@ paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
 visual['submerged_mesh'] = paint
-my_painers['Buoyancy'] = visual
+ballast_painters['Buoyancy'] = visual
 
-# --- paint for : {value} ---
+# --- Tanks
 visual = dict()
 paint = ActorSettings()
 paint.alpha = 0.2
@@ -612,7 +435,7 @@ paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
 visual['fluid'] = paint
-my_painers['Tank:freeflooding'] = visual
+ballast_painters['Tank:freeflooding'] = visual
 
 # --- paint for : {value} ---
 visual = dict()
@@ -644,7 +467,7 @@ paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
 visual['fluid'] = paint
-my_painers['Tank:empty'] = visual
+ballast_painters['Tank:empty'] = visual
 
 # --- paint for : {value} ---
 visual = dict()
@@ -676,7 +499,7 @@ paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
 visual['fluid'] = paint
-my_painers['Tank:partial'] = visual
+ballast_painters['Tank:partial'] = visual
 
 # --- paint for : {value} ---
 visual = dict()
@@ -689,6 +512,7 @@ paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0.0
 paint.lineColor = [0, 0, 0]
+
 visual['main'] = paint
 paint = ActorSettings()
 paint.alpha = 1
@@ -708,19 +532,25 @@ paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
 visual['fluid'] = paint
-my_painers['Tank:full'] = visual
+ballast_painters['Tank:full'] = visual
 
-# --- paint for : {value} ---
-visual = dict()
-paint = ActorSettings()
-paint.alpha = 1
-paint.xray = False
-paint.surfaceShow = False
-paint.surfaceColor = [87, 0, 127]
-paint.metallic = 0.4
-paint.roughness = 0.9
-paint.lineWidth = 0
-visual['main'] = paint
-my_painers['WaveInteraction1'] = visual
+PAINTERS['Ballast'] = deepcopy(ballast_painters)
 
-PAINTERS_BALLAST = my_painers
+# Make Visual and physical only palette
+
+# set all invisible
+animation_painters = deepcopy(PAINTERS['Construction'])
+for outer_key, visual in animation_painters.items():
+    for inner_key in visual.keys():
+        animation_painters[outer_key][inner_key] = copy(invisible)
+
+surf.surfaceColor = _LIGHT_GRAY
+animation_painters['Visual']['main'] = copy(surf)
+animation_painters['Cable'] = copy(PAINTERS['Construction']['Cable'])
+
+PAINTERS['Visual'] = animation_painters
+
+# Xray
+PAINTERS['X-ray'] =  deepcopy(PAINTERS['Construction'])
+PAINTERS['X-ray']['Visual']['main'].surfaceShow = False
+PAINTERS['X-ray']['Visual']['main'].xray = True
