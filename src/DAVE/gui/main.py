@@ -626,6 +626,7 @@ class Gui():
 
         if name == 'MOMENTS':
             self.show_guiWidget('Footprints', WidgetFootprints)
+            self.activate_paintset('Footprints')
 
         if name == 'AIRY':
             self.scene.savepoint_make()

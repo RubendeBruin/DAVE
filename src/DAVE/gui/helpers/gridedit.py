@@ -288,7 +288,13 @@ class GridEdit(QWidget):
             kind = self._columns[icol]["kind"]
             for irow in range(self.grid.rowCount()):
                 if self.getCellValue(irow, icol, kind) is None:
-                    self.grid.item(irow, icol).setBackground(ColorError)
+                    if self.grid.item(irow, icol) is not None:
+                        self.grid.item(irow, icol).setBackground(ColorError)
+                else: # valid
+                    if self.grid.item(irow, icol).backgroundColor() == QColor():
+                        pass
+                    else:
+                        self.grid.item(irow, icol).setData(QtCore.Qt.BackgroundRole, None)
 
         self.grid.blockSignals(False)
 
@@ -377,18 +383,23 @@ class GridEdit(QWidget):
         return self._get_row_id(row)
 
     def getCellValue(self, row, col, kind):
-        if kind == bool:
-            return self.grid.cellWidget(row, col).isChecked()
-        elif kind == int:
-            return int(self.grid.item(row, col).text())
-        elif kind == float:
-            return float(self.grid.item(row, col).text())
-        elif kind == "color":
-            return self.grid.cellWidget(row, col)._color
-        elif kind == str:
-            return self.grid.item(row, col).text()
-        else:
-            raise ValueError(f'Unknown column kind: {str(kind)}')
+
+        try:
+
+            if kind == bool:
+                return self.grid.cellWidget(row, col).isChecked()
+            elif kind == int:
+                return int(self.grid.item(row, col).text())
+            elif kind == float:
+                return float(self.grid.item(row, col).text())
+            elif kind == "color":
+                return self.grid.cellWidget(row, col)._color
+            elif kind == str:
+                return self.grid.item(row, col).text()
+            else:
+                raise Exception(f'Unknown column kind: {str(kind)}')
+        except (ValueError, AttributeError):
+            return None
 
 
     def onCellEdited(self):
@@ -404,14 +415,16 @@ class GridEdit(QWidget):
 
         # color cells that hold a value if the value that they hold is invalid.
         widget = self.grid.cellWidget(row, col)
+        item = self.grid.item(row, col)
         if widget is None:
             if value is None:
-                self.grid.item(row, col).setBackground(ColorError)
+                if item is not None:
+                    item.setBackground(ColorError)
             else:
-                if self.grid.item(row, col).backgroundColor() == QColor():
+                if item.backgroundColor() == QColor():
                     pass
                 else:
-                    self.grid.item(row, col).setData(QtCore.Qt.BackgroundRole, None)
+                    item.setData(QtCore.Qt.BackgroundRole, None)
 
         old_value = None
 

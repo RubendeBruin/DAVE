@@ -627,6 +627,36 @@ class VisualActor:
         if isinstance(self.node, vf.BallastSystem):
             return
 
+        # footprints
+        if isinstance(self.node, vf.NodeWithParentAndFootprint):
+
+            fp = self.node.footprint
+            if fp is not None:
+                n_points = len(fp)
+                current_n_points = self.actors["footprint"]._mapper.GetInput().GetNumberOfPoints()
+
+                if isinstance(self.node, vf.Point):
+                    p = self.node.position
+                    local_position = [(v[0]+p[0], v[1]+p[1], v[2]+p[2]) for v in fp]
+                    if self.node.parent:
+                        fp = [self.node.parent.to_glob_position(loc) for loc in local_position]
+                    else:
+                        fp = local_position
+
+
+                if n_points == current_n_points:
+                    self.actors["footprint"].points(fp)
+                else:
+                    # create a new actor
+                    new_actor = actor_from_vertices_and_faces(vertices=fp, faces=[range(n_points)])
+
+                    print('number of points changed, creating new')
+
+                    if viewport.screen is not None:
+                        viewport.screen.remove(self.actors["footprint"])
+                        self.actors["footprint"] = new_actor
+                        viewport.screen.add(self.actors["footprint"], render=True)
+
         if isinstance(self.node, vf.Point):
             t = vtk.vtkTransform()
             t.Identity()
@@ -1569,6 +1599,10 @@ class Viewport:
                 actors["y"] = ag
                 actors["z"] = ab
 
+                # footprint
+                actors["footprint"] = vp.Cube(side=0.00001) # dummy
+
+
             if isinstance(N, vf.RigidBody):
                 size = 1
 
@@ -1586,6 +1620,8 @@ class Viewport:
                 p.actor_type = ActorType.GEOMETRY
                 actors["main"] = p
 
+                # footprint
+                actors["footprint"] = vp.Cube(side=0.00001) # dummy
 
             if isinstance(N, vf.ContactBall):
                 p = vp.Sphere(pos=(0, 0, 0), r=N.radius, res=RESOLUTION_SPHERE)

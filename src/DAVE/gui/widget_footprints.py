@@ -51,8 +51,8 @@ class WidgetFootprints(guiDockWidget):
         self.grid.addColumn("y", float)
         self.grid.addColumn("z", float)
         self.grid.activateColumns()
-        self.grid.setData([[]], allow_add_or_remove_rows=True)
         self.grid.onChanged = self.update_footprint
+        self.grid.setData([[]], allow_add_or_remove_rows=True)
 
         self.ui.treeView.activated.connect(
             self.tree_select_node
@@ -154,6 +154,7 @@ class WidgetFootprints(guiDockWidget):
     def update_footprint(self):
         footprint = self.grid.getData()
         valid_data = []
+        invalid = False
         for row in footprint:
             try:
                 assert3f(row)
@@ -161,7 +162,14 @@ class WidgetFootprints(guiDockWidget):
             except:
                 pass
 
-        self._element.footprint = valid_data
+        self.grid.highlight_invalid_data()
+
+        code = f"s['{self._element.name}'].footprint = {str(valid_data)}"
+
+        # Safe, this widget itself does not
+        self.guiRunCodeCallback(code,
+                                event=guiEventType.SELECTED_NODE_MODIFIED,
+                                )
 
     # --------------------------------------
 

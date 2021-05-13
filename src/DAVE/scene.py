@@ -355,6 +355,13 @@ class NodeWithParentAndFootprint(NodeWithParent):
         for t in value:
             self._vfNode.footprintVertexAdd(*t)
 
+    def add_footprint_python_code(self):
+        if self.footprint:
+            return f"\ns['{self.name}'].footprint = {str(self.footprint)}"
+        else:
+            return ''
+
+
 
 
 # ==============================================================
@@ -1129,6 +1136,8 @@ class Axis(NodeWithParentAndFootprint):
         # fixeties
         code += "\n           fixed =({}, {}, {}, {}, {}, {}) )".format(*self.fixed)
 
+        code += self.add_footprint_python_code()
+
         return code
 
 class Point(NodeWithParentAndFootprint):
@@ -1270,6 +1279,8 @@ class Point(NodeWithParentAndFootprint):
         code += "\n          position=({},".format(self.position[0])
         code += "\n                    {},".format(self.position[1])
         code += "\n                    {}))".format(self.position[2])
+
+        code += self.add_footprint_python_code()
 
         return code
 
@@ -1424,6 +1435,8 @@ class RigidBody(Axis):
             code += "\n                     inertia_radii = ({}, {}, {}),".format(*self.inertia_radii)
 
         code += "\n                fixed =({}, {}, {}, {}, {}, {}) )".format(*self.fixed)
+
+        code += self.add_footprint_python_code()
 
         return code
 

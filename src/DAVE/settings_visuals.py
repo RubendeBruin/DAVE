@@ -213,9 +213,12 @@ invisible.lineWidth = 0
 #   this is the "Construction" palette
 #
 #
+
+
 painters = dict()
 surf.surfaceColor = _LIGHT_GRAY
 painters["Point"] = {"main": copy(surf)}
+painters["Point"]["footprint"] = copy(invisible)
 
 # ----- Axis
 
@@ -228,6 +231,8 @@ painters["Axis"]["y"] = copy(surf)
 surf.surfaceColor = _BLUE
 painters["Axis"]["z"] = copy(surf)
 
+painters["Axis"]["footprint"] = copy(invisible)
+
 # ---- body
 painters["RigidBody"] = dict()
 
@@ -239,6 +244,7 @@ surf.surfaceColor = _BLUE
 painters["RigidBody"]["z"] = copy(surf)
 surf.surfaceColor = _PURPLE
 painters["RigidBody"]["main"] = copy(surf)
+painters["RigidBody"]["footprint"] = copy(invisible)
 
 
 # ---- circle
@@ -333,9 +339,17 @@ painters["WaveInteraction1"] = {"main": copy(surf)}
 
 PAINTERS["Construction"] = deepcopy(painters)
 
+
+
+
+
 # Define the paint for ballasting
 # start with the active paints
 # override only what is needed
+
+
+
+
 ballast_painters = deepcopy(PAINTERS["Construction"])
 
 # Hide points
@@ -570,3 +584,17 @@ PAINTERS["Visual"] = animation_painters
 PAINTERS["X-ray"] = deepcopy(PAINTERS["Construction"])
 PAINTERS["X-ray"]["Visual"]["main"].surfaceShow = False
 PAINTERS["X-ray"]["Visual"]["main"].xray = True
+
+
+# Bendingmoment / footprints
+foot_painters = deepcopy(PAINTERS["X-ray"])
+
+footprint_paint = copy(surf)
+footprint_paint.surfaceColor = _PURPLE
+
+foot_painters['Point']['footprint'] = copy(footprint_paint)
+foot_painters['Axis']['footprint'] = copy(footprint_paint)
+foot_painters['RigidBody']['footprint'] = copy(footprint_paint)
+
+PAINTERS["Footprints"] = foot_painters
+
