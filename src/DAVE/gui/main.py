@@ -62,6 +62,7 @@
 """
 from copy import deepcopy
 
+from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
 from DAVE.gui.widget_footprints import WidgetFootprints
 from DAVE.gui.widget_painter import WidgetPainters
 
@@ -626,6 +627,7 @@ class Gui():
 
         if name == 'MOMENTS':
             self.show_guiWidget('Footprints', WidgetFootprints)
+            self.show_guiWidget('Graph', WidgetBendingMoment)
             self.activate_paintset('Footprints')
 
         if name == 'AIRY':
@@ -905,6 +907,8 @@ class Gui():
 
                 self.ui.teFeedback.setText(c.stdout + '\n' + str(E) + '\n\nWhen running: \n\n' + code)
                 self.ui.teFeedback.setStyleSheet("background-color: pink;")
+
+                raise(E)
 
             self.ui.pbExecute.setStyleSheet("")
             self.ui.pbExecute.update()

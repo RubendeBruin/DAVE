@@ -631,7 +631,7 @@ class VisualActor:
         if isinstance(self.node, vf.NodeWithParentAndFootprint):
 
             fp = self.node.footprint
-            if fp is not None:
+            if fp:
                 n_points = len(fp)
                 current_n_points = self.actors["footprint"]._mapper.GetInput().GetNumberOfPoints()
 

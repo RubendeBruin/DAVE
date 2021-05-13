@@ -60,7 +60,6 @@ class WidgetFootprints(guiDockWidget):
         self.ui.treeView.doubleClicked.connect(self.tree_select_node)
         self.ui.treeView.itemClicked.connect(self.item_clicked)
 
-        self.ui.pbCalc.clicked.connect(self.calc)
 
     def guiProcessEvent(self, event):
         """
@@ -130,18 +129,6 @@ class WidgetFootprints(guiDockWidget):
 
         self.ui.treeView.expandAll()
 
-        text = self.ui.cbUseAxis.currentText()
-        self.ui.cbUseAxis.clear()
-        nodes = self.guiScene.nodes_of_type((RigidBody, Axis))
-
-        self.ui.cbUseAxis.addItems([node.name for node in nodes])
-        self.ui.cbUseAxis.addItem("Default")
-
-        if text:
-            self.ui.cbUseAxis.setCurrentText(text)
-        else:
-            self.ui.cbUseAxis.setCurrentText("Default")
-
     def item_clicked(self, data):
         name = data.text(0)
         self.guiSelectNode(name)
@@ -154,7 +141,6 @@ class WidgetFootprints(guiDockWidget):
     def update_footprint(self):
         footprint = self.grid.getData()
         valid_data = []
-        invalid = False
         for row in footprint:
             try:
                 assert3f(row)
@@ -163,7 +149,6 @@ class WidgetFootprints(guiDockWidget):
                 pass
 
         self.grid.highlight_invalid_data()
-
         code = f"s['{self._element.name}'].footprint = {str(valid_data)}"
 
         # Safe, this widget itself does not
@@ -187,26 +172,17 @@ class WidgetFootprints(guiDockWidget):
         self.grid.setData(self._element.footprint, allow_add_or_remove_rows=True)
         self.grid.grid.resizeColumnsToContents()
 
-    def calc(self):
+        # select in the tree as well
+        self.ui.treeView.blockSignals(True)
 
-        if self._element is not None:
-            if isinstance(self._element, Axis):
-                target = self.ui.cbUseAxis.currentText()
-                if target == "Default":
-                    target = ""
-                else:
-                    target = f'axis_system = s["{target}"]'
+        # dict self.items[element.name]  # created then the tree was filled
+        for name in self.items.keys():
 
-                filename = settings.PATH_TEMP / "lsm.pdf"
-                code = "s.solve_statics()\n"
-                code += f's["{self._element.name}"].give_load_shear_moment_diagram({target}).plot(filename = r"{filename}")'
-                self.guiRunCodeCallback(code, None)
+            if name == element.name:
+                self.items[name].setSelected(True)
+                self.ui.treeView.scrollToItem(self.items[name])
+            else:
+                self.items[name].setSelected(False)
 
-                command = 'explorer "{}"'.format(filename)
-                subprocess.Popen(command)
+        self.ui.treeView.blockSignals(False)
 
-                return
-
-        QMessageBox.information(
-            None, "can not do that", "Please select an axis or rigidbody node"
-        )
