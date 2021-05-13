@@ -98,9 +98,10 @@ class WidgetBallastConfiguration(guiDockWidget):
             if tank.name == name:
                 actor = tank.visual.actors['main']  # the mesh
                 actor.lw(3)
-                actor.c((254,0,0))
+                actor.c(COLOR_SELECT)
             else:
-                self.gui.visual.update_painting(tank.visual)
+                tank.visual.update_paint(self.gui.visual.settings.painter_settings)
+                # self.gui.visual.update_painting(tank.visual)
 
         self.gui.visual.refresh_embeded_view()
 
@@ -225,7 +226,8 @@ class WidgetBallastConfiguration(guiDockWidget):
                 fill = 0
 
             code = 's["{}"].fill_pct = {}'.format(tank_name, fill)
-            self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
+            self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)  # but there is no selected node?
+
         else:
             raise Exception('This cell is not supposed to be editable')
 

@@ -234,6 +234,7 @@ class Gui():
 
         self.visual.position_visuals()
         self.visual.update_visibility() # apply paint
+        self.visual.add_new_actors_to_screen()
 
         self.visual.mouseLeftEvent = self.view3d_select_element
 
@@ -256,23 +257,6 @@ class Gui():
         self.ui.btnWater.clicked.connect(self.toggle_show_global)
         self.ui.btnBlender.clicked.connect(self.to_blender)
         self.ui.pbCopyViewCode.clicked.connect(self.copy_screenshot_code)
-        self.ui.pbLabels.clicked.connect(self.show_labels_menu)
-
-        self.labels_menu = QMenu()
-        items = ('Tank','Point','Cable')
-
-        self.ui.label_menu_actions = []
-        for name in items:
-
-            lb = QWidgetAction(None)
-            lb.setCheckable(True)
-            lb.setChecked(True)
-            lb.setText(name)
-            lb.setData(name)
-            lb.toggled.connect(self.show_label_toggled)
-            self.ui.label_menu_actions.append(lb)
-            self.labels_menu.addAction(lb)
-
 
         # left
         self.ui.pbUpdate.clicked.connect(lambda: self.guiEmitEvent(guiEventType.FULL_UPDATE))
@@ -532,31 +516,18 @@ class Gui():
 
 
     def activate_paintset(self, name):
-        if 'custom' not in self.ui.cbPainerSelect.currentText():
-            self.ui.cbPainerSelect.setCurrentText(name)
 
-    def show_labels_menu(self):
-        self.labels_menu.exec_(QCursor.pos())
+        cb = self.ui.cbPainerSelect # alias
 
-    def show_label_toggled(self):
-        types = []
-        for item in self.ui.label_menu_actions:
-            if item.isChecked():
-                name = item.data()
-                if name == 'Point':
-                    types.append(Point)
-                elif name == 'Cable':
-                    types.append(Cable)
-                elif name == 'Tank':
-                    types.append(Tank)
-                else:
-                    raise ValueError(name)
+        if 'custom' not in cb.currentText():  # do not change is set to custom
 
-        if types:
-            self.visual.show_only_labels_of_nodes_type(tuple(types))
-        else:
-            self.visual.show_only_labels_of_nodes_type(None)
+            items = [cb.itemText(i) for i in range(cb.count())]
 
+            if name in items:
+                self.ui.cbPainerSelect.setCurrentText(name)
+            else:
+                print(items)
+                raise ValueError(f'No paint-set with name {name}. Available names are printed above')
 
     def copy_screenshot_code(self):
 
@@ -619,7 +590,7 @@ class Gui():
         # self.visual.set_alpha(1.0)
         # self.visual.hide_actors_of_type([ActorType.BALLASTTANK])
         # self.visual.update_outlines()
-        self.activate_paintset('Construct')
+        self.activate_paintset('Construction')
 
         for g in self.guiWidgets.values():
             g.close()
@@ -646,7 +617,7 @@ class Gui():
             self.show_guiWidget('Tanks', WidgetBallastConfiguration)
             self.show_guiWidget('Solver', WidgetBallastSolver)
             self.show_guiWidget('Tank order', WidgetTankOrder)
-            self.activate_paintset('Ballasting')
+            self.activate_paintset('Ballast')
 
             # self.visual.show_actors_of_type([ActorType.BALLASTTANK])
 
@@ -1104,6 +1075,7 @@ class Gui():
         create_blend_and_open(self.scene, animation_dofs=dofs, wavefield=self.visual._wavefield)
 
     def toggle_show_global(self):
+        # TODO: fix
         self.ui.actionShow_water_plane.setChecked(not self.ui.actionShow_water_plane.isChecked())
         self.toggle_show_global_from_menu()
 
@@ -1472,7 +1444,8 @@ class Gui():
             if v.node in visually_selected_nodes:
                 v.select()
             else:
-                self.visual.update_painting(v)
+
+                v.update_paint(self.visual.settings.painter_settings)
                 v._is_selected = False
 
         for v in self.visual.visuals:
@@ -1486,7 +1459,8 @@ class Gui():
                 v._is_sub_selected = True
             else:
                 v._is_sub_selected = False
-                self.visual.update_painting(v)
+                v.update_paint(self.visual.settings.painter_settings)
+
 
 
 

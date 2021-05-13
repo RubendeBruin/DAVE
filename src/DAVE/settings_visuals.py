@@ -15,8 +15,8 @@ PAINTERS = dict()  # this is the dictionary with sets of paint, it will be fille
 # ============ visuals :: sea ===========
 
 VISUAL_BUOYANCY_PLANE_EXTEND = 5
-TEXTURE_SEA = str(ds.RESOURCE_PATH[0] / 'virtualSea.jpg')
-LIGHT_TEXTURE_SKYBOX = ds.RESOURCE_PATH[0] / 'white.png'
+TEXTURE_SEA = str(ds.RESOURCE_PATH[0] / "virtualSea.jpg")
+LIGHT_TEXTURE_SKYBOX = ds.RESOURCE_PATH[0] / "white.png"
 ALPHA_SEA = 0.8
 
 # ============ visuals :: geometry =========
@@ -26,26 +26,27 @@ RESOLUTION_ARROW = 12
 
 # ============ visuals :: colors ===========
 
-_BLACK = [0,0,0]
-_RED = [144,33,30]
-_ORANGE = [200,80,33]
-_BROWN = [187,134,41]
-_GREEN = [0,127,14]
-_GREEN_DARK = [0,110,10]
-_YELLOW = [255,216,0]
-_YELLOW_DARK = [128,108,0]
-_PURPLE = [87,0,127]
-_WHITE = [255,255,255]
-_BLUE = [12,106,146]
-_BLUE_LIGHT = [203,224,239]
-_BLUE_DARK = [57,76,90]
-_PINK = [247,17,228]
-_DARK_GRAY = [45,45,48]
-_LIGHT_GRAY = [200,200,200]
-_MEDIUM_GRAY = [145,145,145]
+_BLACK = [0, 0, 0]
+_RED = [144, 33, 30]
+_ORANGE = [200, 80, 33]
+_BROWN = [187, 134, 41]
+_GREEN = [0, 127, 14]
+_GREEN_DARK = [0, 110, 10]
+_YELLOW = [255, 216, 0]
+_YELLOW_DARK = [128, 108, 0]
+_PURPLE = [87, 0, 127]
+_WHITE = [255, 255, 255]
+_BLUE = [12, 106, 146]
+_BLUE_LIGHT = [203, 224, 239]
+_BLUE_DARK = [57, 76, 90]
+_PINK = [247, 17, 228]
+_DARK_GRAY = [45, 45, 48]
+_LIGHT_GRAY = [200, 200, 200]
+_MEDIUM_GRAY = [145, 145, 145]
+
 
 def rgb(col):
-    return (col[0]/255, col[1]/255, col[2]/255)
+    return (col[0] / 255, col[1] / 255, col[2] / 255)
 
 
 COLOR_WATER_TANK_5MIN = _BROWN
@@ -113,6 +114,7 @@ COLOR_WATER = rgb(_BLUE_DARK)
 
 # ------------
 
+
 @dataclass
 class ActorSettings:
     """This dataclass contains settings for an vtk actor"""
@@ -122,14 +124,20 @@ class ActorSettings:
     xray: bool = False  # only outline visible
 
     # surface
-    surfaceShow : bool = True
-    surfaceColor: tuple = (247,17,228)  # Pink
+    surfaceShow: bool = True
+    surfaceColor: tuple = (247, 17, 228)  # Pink
     metallic: float = 0.4
     roughness: float = 0.9
 
     # lines , set lineWidth to 0 for no line
     lineWidth = 1
     lineColor = (0, 0, 0)
+
+    # outline
+    outlineColor = (0, 0, 0)
+
+    # label
+    labelShow = False
 
 
 @dataclass
@@ -163,8 +171,8 @@ class ViewportSettings:
     geometry_scale: float = 1.0  # poi radius of the pois
 
     outline_width: float = (
-        OUTLINE_WIDTH
-    )  # line-width of the outlines (cell-like shading)
+        OUTLINE_WIDTH  # line-width of the outlines (cell-like shading)
+    )
 
     painter_settings: dict = None
 
@@ -207,61 +215,61 @@ invisible.lineWidth = 0
 #
 painters = dict()
 surf.surfaceColor = _LIGHT_GRAY
-painters['Point'] = {'main':copy(surf)}
+painters["Point"] = {"main": copy(surf)}
 
 # ----- Axis
 
-painters['Axis'] = dict()
+painters["Axis"] = dict()
 
 surf.surfaceColor = _RED
-painters['Axis']['main'] = copy(surf)
+painters["Axis"]["main"] = copy(surf)
 surf.surfaceColor = _GREEN
-painters['Axis']['y'] = copy(surf)
+painters["Axis"]["y"] = copy(surf)
 surf.surfaceColor = _BLUE
-painters['Axis']['z'] = copy(surf)
+painters["Axis"]["z"] = copy(surf)
 
 # ---- body
-painters['RigidBody'] = dict()
+painters["RigidBody"] = dict()
 
 surf.surfaceColor = _RED
-painters['RigidBody']['x'] = copy(surf)
+painters["RigidBody"]["x"] = copy(surf)
 surf.surfaceColor = _GREEN
-painters['RigidBody']['y'] = copy(surf)
+painters["RigidBody"]["y"] = copy(surf)
 surf.surfaceColor = _BLUE
-painters['RigidBody']['z'] = copy(surf)
+painters["RigidBody"]["z"] = copy(surf)
 surf.surfaceColor = _PURPLE
-painters['RigidBody']['main'] = copy(surf)
+painters["RigidBody"]["main"] = copy(surf)
 
 
 # ---- circle
 surf.surfaceColor = _LIGHT_GRAY
-painters['Circle'] = {'main':copy(surf)}
+painters["Circle"] = {"main": copy(surf)}
 
 # ---- visual
 surf.surfaceColor = _MEDIUM_GRAY
-painters['Visual'] = {'main':copy(surf)}
+painters["Visual"] = {"main": copy(surf)}
 
 # ---- force
 
 surf.surfaceColor = _ORANGE
-painters['Force'] = {'main':copy(surf), 'moment1':copy(surf), 'moment2':copy(surf)}
+painters["Force"] = {"main": copy(surf), "moment1": copy(surf), "moment2": copy(surf)}
 
 
 # --- cable
 mesh.lineWidth = 3
 mesh.lineColor = _BLACK
-painters['Cable'] = {'main':copy(mesh)}
+painters["Cable"] = {"main": copy(mesh)}
 
 
 # lincon2d
 
 mesh.lineColor = _RED
-painters['Connector2d'] = {'main':copy(mesh)}
+painters["Connector2d"] = {"main": copy(mesh)}
 
 # LC6D
 
 mesh.lineColor = _RED
-painters['LC6d'] = {'main':copy(mesh)}
+painters["LC6d"] = {"main": copy(mesh)}
 
 # ----- contact mesh
 
@@ -271,98 +279,103 @@ cm.surfaceColor = _GREEN
 cm.lineColor = _GREEN_DARK
 cm.surfaceShow = True
 
-painters['ContactMesh'] = {'main':cm}
+painters["ContactMesh"] = {"main": cm}
 
 # ----- contact ball
 
 surf.surfaceColor = _GREEN_DARK
 mesh.lineColor = _ORANGE
 mesh.lineWidth = 1
-painters['ContactBall:free'] = {'main':copy(surf), 'contact':copy(mesh)}
+painters["ContactBall:free"] = {"main": copy(surf), "contact": copy(mesh)}
 mesh.lineWidth = 2
-painters['ContactBall:contact'] = {'main':copy(mesh), 'contact':copy(mesh)}
+painters["ContactBall:contact"] = {"main": copy(mesh), "contact": copy(mesh)}
 
 
 # ---- buoyancy
 mesh.lineColor = _BLACK
 mesh.lineWidth = 1
 trans.surfaceColor = _YELLOW
-painters['Buoyancy'] = {'main':copy(mesh)}
+painters["Buoyancy"] = {"main": copy(mesh)}
 
 surf.surfaceColor = _BLUE_DARK
-painters['Buoyancy']['cob'] = copy(surf)
+painters["Buoyancy"]["cob"] = copy(surf)
 
 trans.surfaceColor = _BLUE_LIGHT
-painters['Buoyancy']['waterplane'] = copy(trans)
+painters["Buoyancy"]["waterplane"] = copy(trans)
 
 trans.surfaceColor = _YELLOW_DARK
-painters['Buoyancy']['submerged_mesh'] = copy(trans)
+painters["Buoyancy"]["submerged_mesh"] = copy(trans)
 
 # ---------- Tanks
 mesh.lineWidth = 1
 mesh.lineColor = _BLACK
 surf.surfaceColor = _RED
 
-painters['Tank:freeflooding'] = {'main':copy(mesh), 'cog':copy(surf),'fluid':copy(surf)}
+painters["Tank:freeflooding"] = {
+    "main": copy(mesh),
+    "cog": copy(surf),
+    "fluid": copy(surf),
+}
 
 surf.surfaceColor = _BROWN
-painters['Tank:empty'] = {'main':copy(mesh), 'cog':copy(surf),'fluid':copy(surf)}
+painters["Tank:empty"] = {"main": copy(mesh), "cog": copy(surf), "fluid": copy(surf)}
 
 surf.surfaceColor = _ORANGE
-painters['Tank:partial'] = {'main':copy(mesh), 'cog':copy(surf),'fluid':copy(surf)}
+painters["Tank:partial"] = {"main": copy(mesh), "cog": copy(surf), "fluid": copy(surf)}
 
 surf.surfaceColor = _BLUE_DARK
-painters['Tank:full'] = {'main':copy(mesh), 'cog':copy(surf),'fluid':copy(surf)}
+painters["Tank:full"] = {"main": copy(mesh), "cog": copy(surf), "fluid": copy(surf)}
 
 # WaveInteraction1
 
 surf.surfaceColor = _PURPLE
-painters['WaveInteraction1'] = {'main':copy(surf)}
+painters["WaveInteraction1"] = {"main": copy(surf)}
 
-PAINTERS['Construction'] = deepcopy(painters)
+PAINTERS["Construction"] = deepcopy(painters)
 
 # Define the paint for ballasting
 # start with the active paints
 # override only what is needed
-ballast_painters = deepcopy(PAINTERS['Construction'])
+ballast_painters = deepcopy(PAINTERS["Construction"])
 
 # Hide points
-ballast_painters['Point']['main'] = copy(invisible)
+ballast_painters["Point"]["main"] = copy(invisible)
 
 # Hide axis
-ballast_painters['Axis']['main'] = copy(invisible)
-ballast_painters['Axis']['y'] = copy(invisible)
-ballast_painters['Axis']['z'] = copy(invisible)
+ballast_painters["Axis"]["main"] = copy(invisible)
+ballast_painters["Axis"]["y"] = copy(invisible)
+ballast_painters["Axis"]["z"] = copy(invisible)
 
 # Hide rigidbody
-ballast_painters['RigidBody']['main'] = copy(invisible)
-ballast_painters['RigidBody']['x'] = copy(invisible)
-ballast_painters['RigidBody']['y'] = copy(invisible)
-ballast_painters['RigidBody']['z'] = copy(invisible)
+ballast_painters["RigidBody"]["main"] = copy(invisible)
+ballast_painters["RigidBody"]["x"] = copy(invisible)
+ballast_painters["RigidBody"]["y"] = copy(invisible)
+ballast_painters["RigidBody"]["z"] = copy(invisible)
 
 # Hide circle
-ballast_painters['Circle']['main'] = copy(invisible)
+ballast_painters["Circle"]["main"] = copy(invisible)
 
 # Visuals: Xray
-ballast_painters['Visual']['main'] = copy(xray)
+ballast_painters["Visual"]["main"] = copy(xray)
+ballast_painters["Visual"]["main"].outlineColor = _MEDIUM_GRAY
 
 # Forces: unchanged
 
 # Cables: thin gray lines
-ballast_painters['Cable']['main'].lineWidth = 1
-ballast_painters['Cable']['main'].lineColor = _MEDIUM_GRAY
+ballast_painters["Cable"]["main"].lineWidth = 1
+ballast_painters["Cable"]["main"].lineColor = _MEDIUM_GRAY
 
 #
-ballast_painters['Connector2d']['main'] = copy(invisible)
-ballast_painters['ContactMesh']['main'] = copy(invisible)
+ballast_painters["Connector2d"]["main"] = copy(invisible)
+ballast_painters["ContactMesh"]["main"] = copy(invisible)
 
-ballast_painters['ContactBall:free']['main'] = copy(invisible)
-ballast_painters['ContactBall:free']['contact'] = copy(invisible)
+ballast_painters["ContactBall:free"]["main"] = copy(invisible)
+ballast_painters["ContactBall:free"]["contact"] = copy(invisible)
 
-ballast_painters['ContactBall:contact']['main'] = copy(invisible)
-ballast_painters['ContactBall:contact']['contact'] = copy(invisible)
+ballast_painters["ContactBall:contact"]["main"] = copy(invisible)
+ballast_painters["ContactBall:contact"]["contact"] = copy(invisible)
 
-ballast_painters['WaveInteraction1']['main'] = copy(invisible)
+ballast_painters["WaveInteraction1"]["main"] = copy(invisible)
 
 # --- Buoyancy mesh
 visual = dict()
@@ -375,7 +388,7 @@ paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0.0
 paint.lineColor = [0, 0, 0]
-visual['main'] = paint
+visual["main"] = paint
 paint = ActorSettings()
 paint.alpha = 1
 paint.xray = False
@@ -384,7 +397,7 @@ paint.surfaceColor = [57, 76, 90]
 paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
-visual['cob'] = paint
+visual["cob"] = paint
 paint = ActorSettings()
 paint.alpha = 0.3
 paint.xray = False
@@ -393,7 +406,7 @@ paint.surfaceColor = [203, 224, 239]
 paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
-visual['waterplane'] = paint
+visual["waterplane"] = paint
 paint = ActorSettings()
 paint.alpha = 0.25
 paint.xray = False
@@ -402,8 +415,8 @@ paint.surfaceColor = [128, 108, 0]
 paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
-visual['submerged_mesh'] = paint
-ballast_painters['Buoyancy'] = visual
+visual["submerged_mesh"] = paint
+ballast_painters["Buoyancy"] = visual
 
 # --- Tanks
 visual = dict()
@@ -416,7 +429,8 @@ paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0.0
 paint.lineColor = [0, 0, 0]
-visual['main'] = paint
+paint.labelShow = True
+visual["main"] = paint
 paint = ActorSettings()
 paint.alpha = 1
 paint.xray = False
@@ -425,7 +439,7 @@ paint.surfaceColor = [144, 33, 30]
 paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
-visual['cog'] = paint
+visual["cog"] = paint
 paint = ActorSettings()
 paint.alpha = 1
 paint.xray = False
@@ -434,8 +448,8 @@ paint.surfaceColor = [144, 33, 30]
 paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
-visual['fluid'] = paint
-ballast_painters['Tank:freeflooding'] = visual
+visual["fluid"] = paint
+ballast_painters["Tank:freeflooding"] = visual
 
 # --- paint for : {value} ---
 visual = dict()
@@ -448,7 +462,8 @@ paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0.0
 paint.lineColor = [0, 0, 0]
-visual['main'] = paint
+paint.labelShow = True
+visual["main"] = paint
 paint = ActorSettings()
 paint.alpha = 1
 paint.xray = False
@@ -457,7 +472,7 @@ paint.surfaceColor = [187, 134, 41]
 paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
-visual['cog'] = paint
+visual["cog"] = paint
 paint = ActorSettings()
 paint.alpha = 1
 paint.xray = False
@@ -466,8 +481,8 @@ paint.surfaceColor = [187, 134, 41]
 paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
-visual['fluid'] = paint
-ballast_painters['Tank:empty'] = visual
+visual["fluid"] = paint
+ballast_painters["Tank:empty"] = visual
 
 # --- paint for : {value} ---
 visual = dict()
@@ -480,7 +495,8 @@ paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0.0
 paint.lineColor = [0, 0, 0]
-visual['main'] = paint
+paint.labelShow = True
+visual["main"] = paint
 paint = ActorSettings()
 paint.alpha = 1
 paint.xray = False
@@ -489,7 +505,7 @@ paint.surfaceColor = [200, 80, 33]
 paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
-visual['cog'] = paint
+visual["cog"] = paint
 paint = ActorSettings()
 paint.alpha = 1
 paint.xray = False
@@ -498,8 +514,8 @@ paint.surfaceColor = [200, 80, 33]
 paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
-visual['fluid'] = paint
-ballast_painters['Tank:partial'] = visual
+visual["fluid"] = paint
+ballast_painters["Tank:partial"] = visual
 
 # --- paint for : {value} ---
 visual = dict()
@@ -512,8 +528,8 @@ paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0.0
 paint.lineColor = [0, 0, 0]
-
-visual['main'] = paint
+paint.labelShow = True
+visual["main"] = paint
 paint = ActorSettings()
 paint.alpha = 1
 paint.xray = False
@@ -522,7 +538,7 @@ paint.surfaceColor = [57, 76, 90]
 paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
-visual['cog'] = paint
+visual["cog"] = paint
 paint = ActorSettings()
 paint.alpha = 1
 paint.xray = False
@@ -531,26 +547,26 @@ paint.surfaceColor = [57, 76, 90]
 paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
-visual['fluid'] = paint
-ballast_painters['Tank:full'] = visual
+visual["fluid"] = paint
+ballast_painters["Tank:full"] = visual
 
-PAINTERS['Ballast'] = deepcopy(ballast_painters)
+PAINTERS["Ballast"] = deepcopy(ballast_painters)
 
 # Make Visual and physical only palette
 
 # set all invisible
-animation_painters = deepcopy(PAINTERS['Construction'])
+animation_painters = deepcopy(PAINTERS["Construction"])
 for outer_key, visual in animation_painters.items():
     for inner_key in visual.keys():
         animation_painters[outer_key][inner_key] = copy(invisible)
 
 surf.surfaceColor = _LIGHT_GRAY
-animation_painters['Visual']['main'] = copy(surf)
-animation_painters['Cable'] = copy(PAINTERS['Construction']['Cable'])
+animation_painters["Visual"]["main"] = copy(surf)
+animation_painters["Cable"] = copy(PAINTERS["Construction"]["Cable"])
 
-PAINTERS['Visual'] = animation_painters
+PAINTERS["Visual"] = animation_painters
 
 # Xray
-PAINTERS['X-ray'] =  deepcopy(PAINTERS['Construction'])
-PAINTERS['X-ray']['Visual']['main'].surfaceShow = False
-PAINTERS['X-ray']['Visual']['main'].xray = True
+PAINTERS["X-ray"] = deepcopy(PAINTERS["Construction"])
+PAINTERS["X-ray"]["Visual"]["main"].surfaceShow = False
+PAINTERS["X-ray"]["Visual"]["main"].xray = True

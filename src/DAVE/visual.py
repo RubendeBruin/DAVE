@@ -354,41 +354,728 @@ class VisualActor:
         return self.actors["main"].GetVisibility()
 
     def setLabelPosition(self, position):
+
+        if len(position) != 3:
+            raise ValueError('Position should have length 3')
+
         if self.label_actor is not None:
             self.label_actor.SetAttachmentPoint(*position)
 
-    def setLabel(self, txt):
+
+    def labelCreate(self, txt):
+        la = vtk.vtkCaptionActor2D()
+        la.SetCaption(txt)
+
+        position = self.actors["main"].GetPosition()
+
+        la.SetAttachmentPoint(*position)
+
+        la.SetPickable(True)
+
+        cap = la.GetTextActor().GetTextProperty()
+        la.GetTextActor().SetPickable(True)
+
+        size = 0.02
+
+        cap.SetColor(0, 0, 0)
+        la.SetWidth(100 * size)
+        la.SetHeight(size)
+        la.SetPosition(-size / 2, -size / 2)
+        la.SetBorder(False)
+        cap.SetBold(True)
+        cap.SetItalic(False)
+
+        la.no_outline = True
+
+        self.label_actor = la
+
+
+    def labelUpdate(self, txt):
         if self.label_actor is None:
-            la = vtk.vtkCaptionActor2D()
-            la.SetCaption(txt)
-
-            position = self.actors["main"].GetPosition()
-
-            la.SetAttachmentPoint(*position)
-
-            la.SetPickable(True)
-
-            cap = la.GetTextActor().GetTextProperty()
-            la.GetTextActor().SetPickable(True)
-
-            size = 0.02
-
-            cap.SetColor(0, 0, 0)
-            la.SetWidth(100 * size)
-            la.SetHeight(size)
-            la.SetPosition(-size / 2, -size / 2)
-            la.SetBorder(False)
-            cap.SetBold(True)
-            cap.SetItalic(False)
-
-            la.no_outline = True
-
-            self.label_actor = la
-
+            self.labelCreate(txt)
         else:
-            self.label_actor.SetCaption(txt)
+            if self.label_actor.GetCaption() != txt:
+                self.label_actor.SetCaption(txt)
 
         return self.label_actor
+
+    def update_paint(self, ps):
+        """Updates the painting for this visual
+
+            Painting depends on the node type of this visual.
+            The properties for the individual actors of this visual are
+            stored in
+
+            ps is the painter_settings dictionary
+
+            """
+
+        if self._is_selected or self._is_sub_selected:
+            print('Not re-paining selected or sub-selected node')
+            return
+
+        if ps is None:
+            print("No painter settings, ugly world :(")
+            return
+
+        if self.node is not None:
+            if not self.node.visible:
+                for a in self.actors.values():
+                    a.off()
+                    a.xray = False
+                return
+
+        if self.node is None:
+            node_class = "global"
+        else:
+            if isinstance(self.node, dn.ContactBall):
+                node_class = f"ContactBall:{self.paint_state}"
+            elif isinstance(self.node, dn.Tank):
+                node_class = f"Tank:{self.paint_state}"
+            else:
+                node_class = self.node.class_name
+
+        if node_class in ps:
+            node_painter_settings = ps[node_class]
+        else:
+            print(f"No paint for {node_class}")
+            return  # no settings available
+
+        # label
+        self.label_actor.SetVisibility(node_painter_settings['main'].labelShow)
+
+        for key, actor in self.actors.items():
+
+            if key in node_painter_settings:
+                actor_settings = node_painter_settings[key]
+            else:
+                print(f"No paint for actor {node_class} {key}")
+                continue
+
+            # set the "xray" property of the actor
+            actor.xray = actor_settings.xray
+            actor._outline_color = actor_settings.outlineColor
+
+            # on or off
+            if actor_settings.surfaceShow or actor_settings.lineWidth > 0:
+                actor.on()
+            else:
+                actor.off()
+                continue
+
+            if actor_settings.surfaceShow:
+
+                props = actor.GetProperty()
+                props.SetInterpolationToPBR()
+                props.SetRepresentationToSurface()
+                props.SetColor(
+                    (
+                        actor_settings.surfaceColor[0] / 255,
+                        actor_settings.surfaceColor[1] / 255,
+                        actor_settings.surfaceColor[2] / 255,
+                    )
+                )
+                props.SetOpacity(actor_settings.alpha)
+                props.SetMetallic(actor_settings.metallic)
+                props.SetRoughness(actor_settings.roughness)
+            else:
+                actor.GetProperty().SetRepresentationToWireframe()
+
+            actor.lineWidth(actor_settings.lineWidth)
+
+            if actor_settings.lineWidth > 0:
+                actor.lineColor(
+                    (
+                        actor_settings.lineColor[0] / 255,
+                        actor_settings.lineColor[1] / 255,
+                        actor_settings.lineColor[2] / 255,
+                    )
+                )
+            else:
+                actor.GetProperty().SetLineWidth(0)
+
+
+
+
+    def update_geometry(self, viewport):
+        """Updates the geometry of the actors to the current state of the node.
+        This includes moving as well as changing meshes and volumes"""
+
+        # update label name if needed
+        self.labelUpdate(self.node.name) # does not do anything if the label-name is unchanged
+
+        if isinstance(self.node, vf.Visual):
+            A = self.actors["main"]
+
+            # get the local (user set) transform
+            t = vtk.vtkTransform()
+            t.Identity()
+            t.Translate(self.node.offset)
+            t.Scale(self.node.scale)
+
+            # # scale offset
+            # scaled_offset = [V.node.offset[i] / V.node.scale[i] for i in range(3)]
+
+            # calculate wxys from node.rotation
+            r = self.node.rotation
+            angle = (r[0] ** 2 + r[1] ** 2 + r[2] ** 2) ** (0.5)
+            if angle > 0:
+                t.RotateWXYZ(angle, r[0] / angle, r[1] / angle, r[2] / angle)
+
+            # elm_matrix = t.GetMatrix()
+
+            # Get the parent matrix (if any)
+            if self.node.parent is not None:
+                apply_parent_translation_on_transform(self.node.parent, t)
+
+            A.SetUserTransform(t)
+            return
+
+        if isinstance(self.node, vf.Circle):
+            A = self.actors["main"]
+
+            # get the local (user set) transform
+            t = vtk.vtkTransform()
+            t.Identity()
+
+            # scale to flat disk
+            t.Scale(self.node.radius, self.node.radius, 0.1)
+
+            # rotate z-axis (length axis is cylinder) is direction of axis
+            axis = self.node.axis / np.linalg.norm(self.node.axis)
+            z = (0, 0, 1)
+            rot_axis = np.cross(z, axis)
+            rot_dot = np.dot(z, axis)
+            if rot_dot > 1:
+                rot_dot = 1
+            if rot_dot < -1:
+                rot_dot = -1
+
+            angle = np.arccos(rot_dot)
+
+            t.PostMultiply()
+            t.RotateWXYZ(np.rad2deg(angle), rot_axis)
+
+            t.Translate(self.node.parent.position)
+
+            # Get the parent matrix (if any)
+            if self.node.parent.parent is not None:
+                apply_parent_translation_on_transform(self.node.parent.parent, t)
+
+            A.SetUserTransform(t)
+            return
+
+        if isinstance(self.node, vf.Cable):
+
+            # # check the number of points
+            A = self.actors["main"]
+
+            points = self.node.get_points_for_visual()
+
+            if len(points) == 0:  # not yet created
+                return
+
+            update_line_to_points(A, points)
+
+            self.setLabelPosition(np.mean(points, axis=0))
+
+            return
+
+        if isinstance(self.node, vf.SPMT):
+
+            A = self.actors["main"]
+
+            pts = self.node.get_actual_global_points()
+            if len(pts) == 0:
+                return
+
+            update_line_to_points(A, pts)
+
+            return
+
+        if isinstance(self.node, vf.Beam):
+            points = self.node.global_positions
+            A = self.actors["main"]
+            update_line_to_points(A, points)
+
+            self.setLabelPosition(np.mean(points, axis=0))
+
+            return
+
+        if isinstance(self.node, vf.Connector2d):
+            A = self.actors["main"]
+
+            points = list()
+            points.append(self.node.nodeA.to_glob_position((0, 0, 0)))
+            points.append(self.node.nodeB.to_glob_position((0, 0, 0)))
+
+            A.points(points)
+
+            return
+
+        if isinstance(self.node, vf.LC6d):
+            A = self.actors["main"]
+
+            points = list()
+            points.append(self.node.main.to_glob_position((0, 0, 0)))
+            points.append(self.node.secondary.to_glob_position((0, 0, 0)))
+
+            A.points(points)
+
+            return
+
+        if isinstance(self.node, vf.BallastSystem):
+            return
+
+        if isinstance(self.node, vf.Point):
+            t = vtk.vtkTransform()
+            t.Identity()
+            t.Translate(self.node.global_position)
+            self.actors["main"].SetUserTransform(t)
+            self.actors["main"].SetScale(viewport.settings.geometry_scale)
+
+            self.setLabelPosition(self.node.global_position)
+            return
+
+        if isinstance(self.node, vf.ContactBall):
+
+            self.node.update()
+
+            t = vtk.vtkTransform()
+            t.Identity()
+            t.Translate(self.node.parent.global_position)
+
+            # check radius
+            if self.actors["main"]._r != self.node.radius:
+                temp = vp.Sphere(
+                    pos=(0, 0, 0), r=self.node.radius, res=RESOLUTION_SPHERE
+                )
+                self.actors["main"].points(temp.points())
+                self.actors["main"]._r = self.node.radius
+
+            self.actors["main"].SetUserTransform(t)
+            # V.actors["main"].wireframe(V.node.contact_force_magnitude > 0)
+
+            if self.node.can_contact:
+                point1 = self.node.parent.global_position
+                point2 = self.node.contactpoint
+                self.actors["contact"].points([point1, point2])
+                self.actors["contact"].on()
+            else:
+                self.actors["contact"].off()
+
+            # update paint settings
+            if self.node.contact_force_magnitude > 0:  # do we have contact?
+                self.paint_state = "contact"
+            else:
+                self.paint_state = "free"
+
+            self.update_paint(viewport.settings.painter_settings)
+
+            return
+
+        if isinstance(self.node, vf.WaveInteraction1):
+            t = vtk.vtkTransform()
+            t.Identity()
+            t.Translate(self.node.parent.to_glob_position(self.node.offset))
+            self.actors["main"].SetUserTransform(t)
+            self.actors["main"].SetScale(viewport.settings.geometry_scale)
+            return
+
+        if isinstance(self.node, vf.Force):
+
+            # check is the arrows are still what they should be
+            if not np.all(
+                    self.actors["main"]._force == viewport._scaled_force_vector(self.node.force)
+            ):
+                viewport.screen.remove(self.actors["main"])
+
+                endpoint = viewport._scaled_force_vector(self.node.force)
+
+                p = vp.Arrow(
+                    startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
+                )
+                p.PickableOn()
+                p.actor_type = ActorType.FORCE
+                p._force = endpoint
+
+                self.actors["main"] = p
+                viewport.screen.add(self.actors["main"])
+
+            # check is the arrows are still what they should be
+            if not np.all(
+                    np.array(self.actors["moment1"]._moment)
+                    == viewport._scaled_force_vector(self.node.moment)
+            ):
+                viewport.screen.remove(self.actors["moment1"])
+                viewport.screen.remove(self.actors["moment2"])
+
+                endpoint = viewport._scaled_force_vector(self.node.moment)
+                p = vp.Arrow(
+                    startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
+                )
+                p.PickableOn()
+                p.actor_type = ActorType.FORCE
+                p._moment = endpoint
+                self.actors["moment1"] = p
+
+                p = vp.Arrow(
+                    startPoint=0.2 * endpoint,
+                    endPoint=1.2 * endpoint,
+                    res=RESOLUTION_ARROW,
+                )
+                p.PickableOn()
+                p.actor_type = ActorType.FORCE
+                self.actors["moment2"] = p
+                viewport.screen.add(self.actors["moment1"])
+                viewport.screen.add(self.actors["moment2"])
+
+            t = self.actors["main"].getTransform()
+            t.Identity()
+            t.Translate(self.node.parent.global_position)
+            for a in self.actors.values():
+                a.SetUserTransform(t)
+
+            return
+
+        if isinstance(self.node, vf.RigidBody):
+
+            # Some custom code to place and scale the Actor[3] of the body.
+            # This actor should be placed at the CoG position and scaled to a solid steel block
+
+            t = vtk.vtkTransform()
+            t.Identity()
+
+            if viewport.settings.cog_do_normalize:
+                scale = 1
+            else:
+                scale = (self.node.mass / 8.050) ** (1 / 3)  # density of steel
+
+            t.Translate(self.node.cog)
+            mat4x4 = transform_to_mat4x4(self.node.global_transform)
+
+            for A in self.actors.values():
+                A.SetUserMatrix(mat4x4)
+
+            t.PostMultiply()
+            t.Concatenate(mat4x4)
+
+            scale = scale * viewport.settings.cog_scale
+
+            self.actors["main"].SetScale(scale)
+            self.actors["main"].SetUserTransform(t)
+
+            # scale the arrows
+            self.actors["x"].SetScale(viewport.settings.geometry_scale)
+            self.actors["y"].SetScale(viewport.settings.geometry_scale)
+            self.actors["z"].SetScale(viewport.settings.geometry_scale)
+
+            return
+
+        if (
+                isinstance(self.node, vf.Buoyancy)
+                or isinstance(self.node, vf.ContactMesh)
+                or isinstance(self.node, vf.Tank)
+        ):
+            # Source mesh update is common for all mesh-like nodes
+            #
+
+            # print(f'Updating source mesh for {V.node.name}')
+
+            changed = False  # anything changed?
+
+            if self.node.trimesh._new_mesh:
+                changed = True  # yes, mesh has changed
+                self.node.trimesh._new_mesh = False  # one time only
+
+            # move the full mesh with the parent
+
+            if self.node.parent is not None:
+                mat4x4 = transform_to_mat4x4(self.node.parent.global_transform)
+                current_transform = self.actors["main"].getTransform().GetMatrix()
+
+                # if the current transform is identical to the new one,
+                # then we do not need to change anything (creating the mesh is slow)
+
+                for i in range(4):
+                    for j in range(4):
+                        if current_transform.GetElement(i, j) != mat4x4.GetElement(
+                                i, j
+                        ):
+                            changed = True  # yes, transform has changed
+                            break
+
+                # Update the source-mesh position
+                #
+                # the source-mesh itself is updated in "add_new_actors_to_screen"
+                if changed:
+                    self.actors["main"].SetUserMatrix(mat4x4)
+
+            if not changed:
+                if isinstance(self.node, vf.Tank):
+                    # the tank fill may have changed,
+                    # only skip if fill percentage has changed with less than 1e-3%
+                    vfp = getattr(self, '_visualized_fill_percentage', -1)
+                    if abs(self.node.fill_pct - vfp) < 1e-3:
+                        return
+
+                else:
+                    return  # skip the other update functions
+
+        if isinstance(self.node, vf.Buoyancy):
+
+            ## Buoyancy has multiple actors
+            #
+            # actor 0 : the source mesh :: main
+            # actor 1 : the CoB
+            # actor 2 : the waterplane
+            # actor 3 : the submerged part of the source mesh
+            #
+
+            # If we are here then either the source-mesh has been updated or the position has changed
+
+            if viewport.quick_updates_only:
+                for a in self.actors.values():
+                    a.off()
+                return
+
+            # Update the CoB
+            # move the CoB to the new (global!) position
+            cob = self.node.cob
+            self.actors["cob"].SetUserMatrix(transform_from_point(*cob))
+
+            # update water-plane
+            x1, x2, y1, y2, _, _ = self.node.trimesh.get_extends()
+            x1 -= VISUAL_BUOYANCY_PLANE_EXTEND
+            x2 += VISUAL_BUOYANCY_PLANE_EXTEND
+            y1 -= VISUAL_BUOYANCY_PLANE_EXTEND
+            y2 += VISUAL_BUOYANCY_PLANE_EXTEND
+            p1 = self.node.parent.to_glob_position((x1, y1, 0))
+            p2 = self.node.parent.to_glob_position((x2, y1, 0))
+            p3 = self.node.parent.to_glob_position((x2, y2, 0))
+            p4 = self.node.parent.to_glob_position((x1, y2, 0))
+
+            corners = [
+                (p1[0], p1[1], 0),
+                (p2[0], p2[1], 0),
+                (p3[0], p3[1], 0),
+                (p4[0], p4[1], 0),
+            ]
+            self.actors["waterplane"].points(corners)
+
+            # Instead of updating, remove the old actor and create a new one
+
+            # remove already existing submerged mesh (if any)
+            if "submerged_mesh" in self.actors:
+                if viewport.screen is not None:
+                    viewport.screen.remove(self.actors["submerged_mesh"])
+                    del self.actors["submerged_mesh"]
+
+            mesh = self.node._vfNode.current_mesh
+
+            if mesh.nVertices > 0:  # only add when available
+
+                vis = actor_from_trimesh(mesh)
+
+                vis.actor_type = ActorType.MESH_OR_CONNECTOR
+                self.actors["submerged_mesh"] = vis
+                self.update_paint(viewport.settings.painter_settings)
+
+                if viewport.screen is not None:
+                    viewport.screen.add(vis)
+
+            return
+
+        if isinstance(self.node, vf.ContactMesh):
+            return
+
+        if isinstance(self.node, vf.Tank):
+
+            ## Tank has multiple actors
+            #
+            # main : source-mesh
+            # cog : cog
+            # fluid : filled part of mesh
+
+            # If the source mesh has been updated, then V.node.trimesh._new_mesh is True
+            just_created = getattr(self, '__just_created', True)
+            if just_created:
+                self._visual_volume = -1
+
+            if viewport.quick_updates_only:
+                for a in self.actors.values():
+                    a.off()
+                return
+            else:
+                if self.node.visible:
+                    for a in self.actors.values():
+                        a.on()
+
+            # Update the actors
+            self.node.update()
+
+            points = self.actors["main"].points(True)
+            self.setLabelPosition(np.mean(points, axis=1).flatten())
+
+            # Update the CoG
+            # move the CoG to the new (global!) position
+            self.actors["cog"].SetUserMatrix(transform_from_point(*self.node.cog))
+
+            if self.node.volume <= 1:  # the "cog node" has a volume of
+                self.actors["cog"].off()
+            else:
+                self.actors["cog"].on()
+
+            # Fluid in tank
+
+            # Construct a visual:
+            #   - vertices
+            #   - faces
+
+            # If tank is full, then simply copy the mesh from the tank itself
+
+            if self.node.fill_pct > 99.99 and not self.node.free_flooding:
+
+                # tank is full
+                vertices = points[0]
+                faces = self.actors['main'].faces()
+
+            else:
+
+                mesh = self.node._vfNode.current_mesh
+
+                if mesh.nVertices > 0:  # only add when available
+
+                    vertices = []
+                    for i in range(mesh.nVertices):
+                        vertices.append(mesh.GetVertex(i))
+
+                    faces = []
+                    for i in range(mesh.nFaces):
+                        faces.append(mesh.GetFace(i))
+
+                    # create the lid using a convex hull
+                    thickness_tolerance = 1e-4  # for numerical accuracy
+
+                    verts = np.array(vertices)
+                    z = verts[:, 2]
+                    maxz = np.max(z)
+                    top_plane_verts = verts[z >= maxz - thickness_tolerance]
+
+                    # make convex hull
+                    d2 = top_plane_verts[:, 0:2]
+
+                    try:
+
+                        hull = ConvexHull(d2)
+
+                        points = top_plane_verts[
+                                 hull.vertices, :
+                                 ]  # for 2-D the vertices are guaranteed to be in counterclockwise order
+
+                        nVerts = len(vertices)
+
+                        for point in points:
+                            vertices.append([*point])
+
+                        # construct faces
+                        for i in range(len(points) - 2):
+                            faces.append([nVerts, nVerts + i + 2, nVerts + i + 1])
+                    except:
+                        pass
+
+                else:
+                    vertices = []
+                # -------------------
+
+            # paint settings
+            if self.node.free_flooding:
+                self.paint_state = "freeflooding"
+            else:
+                if self.node.fill_pct >= 95:
+                    self.paint_state = "full"
+                elif self.node.fill_pct <= 5:
+                    self.paint_state = "empty"
+                else:
+                    self.paint_state = "partial"
+
+            # we now have vertices and points and faces
+
+            # do we already have an actor?
+            need_new = False
+            if "fluid" in self.actors:
+                # print(f'Already have an actor for {V.node.name}')
+
+                self._visualized_fill_percentage = self.node.fill_pct  # store for "need_update" check
+
+                vis = self.actors["fluid"]
+                pts = vis._polydata.GetPoints()
+                npt = len(vertices)
+
+                # Update the existing actor if the number of vertices stay the same
+                # If not then delete the actor
+
+                # check for number of points
+                if pts.GetNumberOfPoints() == npt:
+                    # print(f'setting points for {V.node.name}')
+                    vis.points(vertices)
+
+                else:
+
+                    if viewport.screen is not None:
+                        viewport.screen.remove(self.actors["fluid"])
+                        del self.actors["fluid"]
+                        need_new = True
+            else:
+                need_new = True
+
+            if len(vertices) > 0:  # if we have an actor
+
+                if need_new:
+
+                    # print(f'Creating new actor for for {V.node.name}')
+
+                    vis = actor_from_vertices_and_faces(vertices, faces)
+
+                    vis.actor_type = ActorType.MESH_OR_CONNECTOR
+
+                    self.actors["fluid"] = vis
+
+                    if viewport.screen is not None:
+                        viewport.screen.add(vis, render=True)
+
+                if not self.node.visible:
+                    vis.off()
+
+            self._visual_volume = self.node.volume
+
+            # viewport.update_painting(self)
+            self.update_paint(viewport.settings.painter_settings)
+
+            return
+
+        if isinstance(self.node, vf.Axis):
+            m44 = transform_to_mat4x4(self.node.global_transform)
+            for a in self.actors.values():
+                a.SetScale(viewport.settings.geometry_scale)
+                a.SetUserMatrix(m44)
+
+            return
+
+        # --- default ---
+
+        try:
+            tr = self.node.global_transform
+        except AttributeError:
+            try:
+                tr = self.node.parent.global_transform
+            except AttributeError:
+                return
+
+        mat4x4 = transform_to_mat4x4(tr)
+
+        for A in self.actors.values():
+            A.SetUserMatrix(mat4x4)
 
 
 class Viewport:
@@ -432,17 +1119,19 @@ class Viewport:
         """WaveField object"""
 
     @staticmethod
-    def show_as_qt_app(s):
+    def show_as_qt_app(s, painters = None):
         from PySide2.QtWidgets import QWidget, QApplication
 
         app = QApplication()
         widget = QWidget()
         widget.show()
 
-        from DAVE.settings_visuals import PAINTERS_DEFAULT
+        if painters is None:
+            from DAVE.settings_visuals import PAINTERS
+            painters = PAINTERS['Construction']
 
         v = Viewport(scene=s)
-        v.settings.painter_settings = PAINTERS_DEFAULT
+        v.settings.painter_settings = painters
         v.show_embedded(widget)
         v.quick_updates_only = False
 
@@ -454,16 +1143,6 @@ class Viewport:
 
         app.exec_()
 
-    def show_only_labels_of_nodes_type(self, node_types):
-        for vis in self.visuals:
-            on = False
-
-            if node_types is not None:
-                if isinstance(vis.node, node_types):
-                    on = True
-
-            if vis.label_actor is not None:
-                vis.label_actor.SetVisibility(on)
 
     def update_outlines(self):
         """Updates the outlines of all actors in the viewport
@@ -579,6 +1258,10 @@ class Viewport:
                     getattr(record.parent_vp_actor, "xray", False)
                     or record.parent_vp_actor.GetVisibility()
                 )
+
+                # get color
+                color = getattr(record.parent_vp_actor, "_outline_color", (0,0,0))
+                record.outline_actor.GetProperty().SetColor(color[0]/255, color[1]/255, color[2]/255)
 
             else:
                 # mark for deletion
@@ -779,7 +1462,6 @@ class Viewport:
                     pass
 
             actors = dict()
-            label_text = None
 
             if isinstance(N, vf.Buoyancy):
 
@@ -844,7 +1526,6 @@ class Viewport:
                 c.actor_type = ActorType.MESH_OR_CONNECTOR
                 actors["cog"] = c
 
-                label_text = N.name
 
             if isinstance(N, vf.ContactMesh):
 
@@ -905,7 +1586,6 @@ class Viewport:
                 p.actor_type = ActorType.GEOMETRY
                 actors["main"] = p
 
-                label_text = N.name
 
             if isinstance(N, vf.ContactBall):
                 p = vp.Sphere(pos=(0, 0, 0), r=N.radius, res=RESOLUTION_SPHERE)
@@ -975,8 +1655,6 @@ class Viewport:
                 a.actor_type = ActorType.CABLE
                 actors["main"] = a
 
-                label_text = N.name
-
             if isinstance(N, vf.SPMT):
 
                 gp = N.get_actual_global_points()
@@ -1029,15 +1707,12 @@ class Viewport:
                 continue
 
             va = VisualActor(actors, N)
-            if label_text is not None:
-                va.setLabel(N.name)
+            va.labelUpdate(N.name)
             N.visual = va
-
             N.visual.__just_created = True
 
             self.visuals.append(va)
 
-            # self.set_default_dsa()
 
     def position_visuals(self):
         """When the nodes in the scene have moved:
@@ -1073,569 +1748,7 @@ class Viewport:
             if V.node is None:
                 continue
 
-            if isinstance(V.node, vf.Visual):
-                A = V.actors["main"]
-
-                # get the local (user set) transform
-                t = vtk.vtkTransform()
-                t.Identity()
-                t.Translate(V.node.offset)
-                t.Scale(V.node.scale)
-
-                # # scale offset
-                # scaled_offset = [V.node.offset[i] / V.node.scale[i] for i in range(3)]
-
-                # calculate wxys from node.rotation
-                r = V.node.rotation
-                angle = (r[0] ** 2 + r[1] ** 2 + r[2] ** 2) ** (0.5)
-                if angle > 0:
-                    t.RotateWXYZ(angle, r[0] / angle, r[1] / angle, r[2] / angle)
-
-                # elm_matrix = t.GetMatrix()
-
-                # Get the parent matrix (if any)
-                if V.node.parent is not None:
-                    apply_parent_translation_on_transform(V.node.parent, t)
-
-                A.SetUserTransform(t)
-                continue
-
-            if isinstance(V.node, vf.Circle):
-                A = V.actors["main"]
-
-                # get the local (user set) transform
-                t = vtk.vtkTransform()
-                t.Identity()
-
-                # scale to flat disk
-                t.Scale(V.node.radius, V.node.radius, 0.1)
-
-                # rotate z-axis (length axis is cylinder) is direction of axis
-                axis = V.node.axis / np.linalg.norm(V.node.axis)
-                z = (0, 0, 1)
-                rot_axis = np.cross(z, axis)
-                rot_dot = np.dot(z, axis)
-                if rot_dot > 1:
-                    rot_dot = 1
-                if rot_dot < -1:
-                    rot_dot = -1
-
-                angle = np.arccos(rot_dot)
-
-                t.PostMultiply()
-                t.RotateWXYZ(np.rad2deg(angle), rot_axis)
-
-                t.Translate(V.node.parent.position)
-
-                # Get the parent matrix (if any)
-                if V.node.parent.parent is not None:
-                    apply_parent_translation_on_transform(V.node.parent.parent, t)
-
-                A.SetUserTransform(t)
-                continue
-
-            if isinstance(V.node, vf.Cable):
-
-                # # check the number of points
-                A = V.actors["main"]
-
-                points = V.node.get_points_for_visual()
-
-                if len(points) == 0:  # not yet created
-                    continue
-
-                update_line_to_points(A, points)
-
-                V.setLabelPosition(np.mean(points, axis=0))
-
-                continue
-
-            if isinstance(V.node, vf.SPMT):
-
-                A = V.actors["main"]
-
-                pts = V.node.get_actual_global_points()
-                if len(pts) == 0:
-                    continue
-
-                update_line_to_points(A, pts)
-
-                continue
-
-            if isinstance(V.node, vf.Beam):
-
-                points = V.node.global_positions
-                A = V.actors["main"]
-                update_line_to_points(A, points)
-
-                V.setLabelPosition(np.mean(points, axis=0))
-
-                continue
-
-            if isinstance(V.node, vf.Connector2d):
-                A = V.actors["main"]
-
-                points = list()
-                points.append(node.nodeA.to_glob_position((0, 0, 0)))
-                points.append(node.nodeB.to_glob_position((0, 0, 0)))
-
-                A.points(points)
-
-                continue
-
-            if isinstance(V.node, vf.LC6d):
-                A = V.actors["main"]
-
-                points = list()
-                points.append(node.main.to_glob_position((0, 0, 0)))
-                points.append(node.secondary.to_glob_position((0, 0, 0)))
-
-                A.points(points)
-
-                continue
-
-            if isinstance(V.node, vf.BallastSystem):
-
-                continue
-
-            if isinstance(V.node, vf.Point):
-                t = vtk.vtkTransform()
-                t.Identity()
-                t.Translate(V.node.global_position)
-                V.actors["main"].SetUserTransform(t)
-                V.actors["main"].SetScale(self.settings.geometry_scale)
-
-                V.setLabelPosition(V.node.global_position)
-                continue
-
-            if isinstance(V.node, vf.ContactBall):
-
-                V.node.update()
-
-                t = vtk.vtkTransform()
-                t.Identity()
-                t.Translate(V.node.parent.global_position)
-
-                # check radius
-                if V.actors["main"]._r != V.node.radius:
-                    temp = vp.Sphere(
-                        pos=(0, 0, 0), r=V.node.radius, res=RESOLUTION_SPHERE
-                    )
-                    V.actors["main"].points(temp.points())
-                    V.actors["main"]._r = V.node.radius
-
-                V.actors["main"].SetUserTransform(t)
-                # V.actors["main"].wireframe(V.node.contact_force_magnitude > 0)
-
-                if V.node.can_contact:
-                    point1 = V.node.parent.global_position
-                    point2 = V.node.contactpoint
-                    V.actors["contact"].points([point1, point2])
-                    V.actors["contact"].on()
-                else:
-                    V.actors["contact"].off()
-
-                # update paint settings
-                if V.node.contact_force_magnitude > 0:  # do we have contact?
-                    V.paint_state = "contact"
-                else:
-                    V.paint_state = "free"
-
-                self.update_painting(V)
-
-                continue
-
-            if isinstance(V.node, vf.WaveInteraction1):
-                t = vtk.vtkTransform()
-                t.Identity()
-                t.Translate(V.node.parent.to_glob_position(V.node.offset))
-                V.actors["main"].SetUserTransform(t)
-                V.actors["main"].SetScale(self.settings.geometry_scale)
-                continue
-
-            if isinstance(V.node, vf.Force):
-
-                # check is the arrows are still what they should be
-                if not np.all(
-                    V.actors["main"]._force == self._scaled_force_vector(V.node.force)
-                ):
-
-                    self.screen.remove(V.actors["main"])
-
-                    endpoint = self._scaled_force_vector(V.node.force)
-
-                    p = vp.Arrow(
-                        startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
-                    )
-                    p.PickableOn()
-                    p.actor_type = ActorType.FORCE
-                    p._force = endpoint
-
-                    V.actors["main"] = p
-                    self.screen.add(V.actors["main"])
-
-                # check is the arrows are still what they should be
-                if not np.all(
-                    np.array(V.actors["moment1"]._moment)
-                    == self._scaled_force_vector(V.node.moment)
-                ):
-                    self.screen.remove(V.actors["moment1"])
-                    self.screen.remove(V.actors["moment2"])
-
-                    endpoint = self._scaled_force_vector(V.node.moment)
-                    p = vp.Arrow(
-                        startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
-                    )
-                    p.PickableOn()
-                    p.actor_type = ActorType.FORCE
-                    p._moment = endpoint
-                    V.actors["moment1"] = p
-
-                    p = vp.Arrow(
-                        startPoint=0.2 * endpoint,
-                        endPoint=1.2 * endpoint,
-                        res=RESOLUTION_ARROW,
-                    )
-                    p.PickableOn()
-                    p.actor_type = ActorType.FORCE
-                    V.actors["moment2"] = p
-                    self.screen.add(V.actors["moment1"])
-                    self.screen.add(V.actors["moment2"])
-
-                t = V.actors["main"].getTransform()
-                t.Identity()
-                t.Translate(V.node.parent.global_position)
-                for a in V.actors.values():
-                    a.SetUserTransform(t)
-
-                continue
-
-            if isinstance(V.node, vf.RigidBody):
-
-                # Some custom code to place and scale the Actor[3] of the body.
-                # This actor should be placed at the CoG position and scaled to a solid steel block
-
-                t = vtk.vtkTransform()
-                t.Identity()
-
-                if self.settings.cog_do_normalize:
-                    scale = 1
-                else:
-                    scale = (V.node.mass / 8.050) ** (1 / 3)  # density of steel
-
-                t.Translate(V.node.cog)
-                mat4x4 = transform_to_mat4x4(V.node.global_transform)
-
-                for A in V.actors.values():
-                    A.SetUserMatrix(mat4x4)
-
-                t.PostMultiply()
-                t.Concatenate(mat4x4)
-
-                scale = scale * self.settings.cog_scale
-
-                V.actors["main"].SetScale(scale)
-                V.actors["main"].SetUserTransform(t)
-
-                # scale the arrows
-                V.actors["x"].SetScale(self.settings.geometry_scale)
-                V.actors["y"].SetScale(self.settings.geometry_scale)
-                V.actors["z"].SetScale(self.settings.geometry_scale)
-
-                continue
-
-            if (
-                isinstance(V.node, vf.Buoyancy)
-                or isinstance(V.node, vf.ContactMesh)
-                or isinstance(V.node, vf.Tank)
-            ):
-                # Source mesh update is common for all mesh-like nodes
-                #
-
-                # print(f'Updating source mesh for {V.node.name}')
-
-                changed = False  # anything changed?
-
-                if node.trimesh._new_mesh:
-                    changed = True  # yes, mesh has changed
-                    node.trimesh._new_mesh = False  # one time only
-
-                # move the full mesh with the parent
-
-                if node.parent is not None:
-                    mat4x4 = transform_to_mat4x4(V.node.parent.global_transform)
-                    current_transform = V.actors["main"].getTransform().GetMatrix()
-
-                    # if the current transform is identical to the new one,
-                    # then we do not need to change anything (creating the mesh is slow)
-
-                    for i in range(4):
-                        for j in range(4):
-                            if current_transform.GetElement(i, j) != mat4x4.GetElement(
-                                i, j
-                            ):
-                                changed = True  # yes, transform has changed
-                                break
-
-                    # Update the source-mesh position
-                    #
-                    # the source-mesh itself is updated in "add_new_actors_to_screen"
-                    if changed:
-                        V.actors["main"].SetUserMatrix(mat4x4)
-
-                if not changed:
-                    continue  # skip the other update functions
-
-            if isinstance(V.node, vf.Buoyancy):
-
-                ## Buoyancy has multiple actors
-                #
-                # actor 0 : the source mesh :: main
-                # actor 1 : the CoB
-                # actor 2 : the waterplane
-                # actor 3 : the submerged part of the source mesh
-                #
-
-                # If we are here then either the source-mesh has been updated or the position has changed
-
-                if self.quick_updates_only:
-                    for a in V.actors.values():
-                        a.off()
-                    continue
-
-                # Update the CoB
-                # move the CoB to the new (global!) position
-                cob = V.node.cob
-                V.actors["cob"].SetUserMatrix(transform_from_point(*cob))
-
-                # update water-plane
-                x1, x2, y1, y2, _, _ = V.node.trimesh.get_extends()
-                x1 -= VISUAL_BUOYANCY_PLANE_EXTEND
-                x2 += VISUAL_BUOYANCY_PLANE_EXTEND
-                y1 -= VISUAL_BUOYANCY_PLANE_EXTEND
-                y2 += VISUAL_BUOYANCY_PLANE_EXTEND
-                p1 = V.node.parent.to_glob_position((x1, y1, 0))
-                p2 = V.node.parent.to_glob_position((x2, y1, 0))
-                p3 = V.node.parent.to_glob_position((x2, y2, 0))
-                p4 = V.node.parent.to_glob_position((x1, y2, 0))
-
-                corners = [
-                    (p1[0], p1[1], 0),
-                    (p2[0], p2[1], 0),
-                    (p3[0], p3[1], 0),
-                    (p4[0], p4[1], 0),
-                ]
-                V.actors["waterplane"].points(corners)
-
-                # Instead of updating, remove the old actor and create a new one
-
-                # remove already existing submerged mesh (if any)
-                if "submerged_mesh" in V.actors:
-                    if self.screen is not None:
-                        self.screen.remove(V.actors["submerged_mesh"])
-                        del V.actors["submerged_mesh"]
-
-                mesh = V.node._vfNode.current_mesh
-
-                if mesh.nVertices > 0:  # only add when available
-
-                    vis = actor_from_trimesh(mesh)
-
-                    vis.actor_type = ActorType.MESH_OR_CONNECTOR
-                    V.actors["submerged_mesh"] = vis
-                    self.update_painting(V)
-
-                    if self.screen is not None:
-                        self.screen.add(vis)
-
-                continue
-
-            if isinstance(V.node, vf.ContactMesh):
-
-                continue
-
-            if isinstance(V.node, vf.Tank):
-
-                ## Tank has multiple actors
-                #
-                # main : source-mesh
-                # cog : cog
-                # fluid : filled part of mesh
-
-                # If the source mesh has been updated, then V.node.trimesh._new_mesh is True
-                if V.__just_created:
-                    V._visual_volume = -1
-
-                if self.quick_updates_only:
-                    for a in V.actors.values():
-                        a.off()
-                    continue
-                else:
-                    if V.node.visible:
-                        for a in V.actors.values():
-                            a.on()
-
-                # Update the actors
-                V.node.update()
-
-                points = V.actors["main"].points(True)
-                V.setLabelPosition(np.mean(points, axis=1))
-
-                # Update the CoG
-                # move the CoG to the new (global!) position
-                V.actors["cog"].SetUserMatrix(transform_from_point(*V.node.cog))
-
-                if V.node.volume <= 1:  # the "cog node" has a volume of
-                    V.actors["cog"].off()
-                else:
-                    V.actors["cog"].on()
-
-                # Fluid in tank
-
-                # Construct a visual:
-                #   - vertices
-                #   - faces
-
-                # If tank is full, then simply copy the mesh from the tank itself
-
-                if V.node.fill_pct > 99.99 and not V.node.free_flooding:
-
-                    # tank is full
-                    vertices = points[0]
-                    faces = V.actors['main'].faces()
-
-                else:
-
-                    mesh = V.node._vfNode.current_mesh
-
-                    if mesh.nVertices > 0:  # only add when available
-
-                        vertices = []
-                        for i in range(mesh.nVertices):
-                            vertices.append(mesh.GetVertex(i))
-
-                        faces = []
-                        for i in range(mesh.nFaces):
-                            faces.append(mesh.GetFace(i))
-
-                        # create the lid using a convex hull
-                        thickness_tolerance = 1e-4  # for numerical accuracy
-
-                        verts = np.array(vertices)
-                        z = verts[:, 2]
-                        maxz = np.max(z)
-                        top_plane_verts = verts[z >= maxz - thickness_tolerance]
-
-                        # make convex hull
-                        d2 = top_plane_verts[:, 0:2]
-
-                        try:
-
-                            hull = ConvexHull(d2)
-
-                            points = top_plane_verts[
-                                hull.vertices, :
-                            ]  # for 2-D the vertices are guaranteed to be in counterclockwise order
-
-                            nVerts = len(vertices)
-
-                            for point in points:
-                                vertices.append([*point])
-
-                            # construct faces
-                            for i in range(len(points) - 2):
-                                faces.append([nVerts, nVerts + i + 2, nVerts + i + 1])
-                        except:
-                            pass
-
-                    else:
-                        vertices = []
-                    # -------------------
-
-                # paint settings
-                if V.node.free_flooding:
-                    V.paint_state = "freeflooding"
-                else:
-                    if V.node.fill_pct >= 95:
-                        V.paint_state = "full"
-                    elif V.node.fill_pct <= 5:
-                        V.paint_state = "empty"
-                    else:
-                        V.paint_state = "partial"
-
-                # we now have vertices and points and faces
-
-                # do we already have an actor?
-                need_new = False
-                if "fluid" in V.actors:
-                    # print(f'Already have an actor for {V.node.name}')
-                    vis = V.actors["fluid"]
-                    pts = vis._polydata.GetPoints()
-                    npt = len(vertices)
-
-                    # Update the existing actor if the number of vertices stay the same
-                    # If not then delete the actor
-
-                    # check for number of points
-                    if pts.GetNumberOfPoints() == npt:
-                        # print(f'setting points for {V.node.name}')
-                        vis.points(vertices)
-
-                    else:
-
-                        if self.screen is not None:
-                            self.screen.remove(V.actors["fluid"])
-                            del V.actors["fluid"]
-                            need_new = True
-                else:
-                    need_new = True
-
-                if len(vertices) > 0:  # if we have an actor
-
-                    if need_new:
-
-                        # print(f'Creating new actor for for {V.node.name}')
-
-                        vis = actor_from_vertices_and_faces(vertices, faces)
-
-                        vis.actor_type = ActorType.MESH_OR_CONNECTOR
-
-                        V.actors["fluid"] = vis
-
-                        if self.screen is not None:
-                            self.screen.add(vis, render=True)
-
-                    if not V.node.visible:
-                        vis.off()
-
-                V._visual_volume = V.node.volume
-
-                self.update_painting(V)
-
-                continue
-
-            if isinstance(V.node, vf.Axis):
-                m44 = transform_to_mat4x4(V.node.global_transform)
-                for a in V.actors.values():
-                    a.SetScale(self.settings.geometry_scale)
-                    a.SetUserMatrix(m44)
-
-                continue
-
-            # --- default ---
-
-            try:
-                tr = V.node.global_transform
-            except AttributeError:
-                try:
-                    tr = V.node.parent.global_transform
-                except AttributeError:
-                    continue
-
-            mat4x4 = transform_to_mat4x4(tr)
-
-            for A in V.actors.values():
-                A.SetUserMatrix(mat4x4)
+            V.update_geometry(viewport=self)
 
         acs = list()
         for V in to_be_removed:
@@ -2025,103 +2138,15 @@ class Viewport:
     def refresh_embeded_view(self):
         self.vtkWidget.update()
 
-    def update_painting(self, v : VisualActor):
-        """Updates the painting for this visual
-
-        Painting depends on the node type of this visual.
-        The properties for the individual actors of this visual are
-        stored in
-
-        """
-
-        if v._is_selected or v._is_sub_selected:
-            print('Not re-paining selected or sub-selected node')
-            return
-
-        ps = self.settings.painter_settings  # alias
-        if ps is None:
-            print("No painter settings, ugly world :(")
-            return
-
-        if v.node is not None:
-            if not v.node.visible:
-                for a in v.actors.values():
-                    a.off()
-                    a.xray = False
-                return
-
-        if v.node is None:
-            node_class = "global"
-        else:
-            if isinstance(v.node, dn.ContactBall):
-                node_class = f"ContactBall:{v.paint_state}"
-            elif isinstance(v.node, dn.Tank):
-                node_class = f"Tank:{v.paint_state}"
-            else:
-                node_class = v.node.class_name
-
-        if node_class in ps:
-            node_painter_settings = ps[node_class]
-        else:
-            print(f"No paint for {node_class}")
-            return  # no settings available
-
-        for key, actor in v.actors.items():
-
-
-            if key in node_painter_settings:
-                actor_settings = node_painter_settings[key]
-            else:
-                print(f"No paint for actor {node_class} {key}")
-                continue
-
-            # set the "xray" property of the actor
-            actor.xray = actor_settings.xray
-
-            # on or off
-            if actor_settings.surfaceShow or actor_settings.lineWidth > 0:
-                actor.on()
-            else:
-                actor.off()
-                continue
-
-            if actor_settings.surfaceShow:
-
-                props = actor.GetProperty()
-                props.SetInterpolationToPBR()
-                props.SetRepresentationToSurface()
-                props.SetColor(
-                    (
-                        actor_settings.surfaceColor[0] / 255,
-                        actor_settings.surfaceColor[1] / 255,
-                        actor_settings.surfaceColor[2] / 255,
-                    )
-                )
-                props.SetOpacity(actor_settings.alpha)
-                props.SetMetallic(actor_settings.metallic)
-                props.SetRoughness(actor_settings.roughness)
-            else:
-                actor.GetProperty().SetRepresentationToWireframe()
-
-            actor.lineWidth(actor_settings.lineWidth)
-
-            if actor_settings.lineWidth > 0:
-                actor.lineColor(
-                    (
-                        actor_settings.lineColor[0] / 255,
-                        actor_settings.lineColor[1] / 255,
-                        actor_settings.lineColor[2] / 255,
-                    )
-                )
-            else:
-                actor.GetProperty().SetLineWidth(0)
-
     def update_visibility(self):
         """Updates the settings of the viewport to reflect the settings in self.settings.painter_settings"""
 
         for v in self.visuals:
             if not (v._is_selected or v._is_sub_selected):
-                self.update_painting(v)
+                # self.update_painting(v)
+                v.update_paint(self.settings.painter_settings)
+            elif v._is_selected:
+                v.labelUpdate(v.node.name)
 
         self.update_outlines()
 
