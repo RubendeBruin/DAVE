@@ -2018,7 +2018,7 @@ class Viewport:
             #     cubemap.SetInputDataObject(i, textureFile.GetOutput())
             #
 
-            self.screen.show(camera=camera, verbose=False)
+            self.screen.show(camera=camera)
 
             # texture = vtk.vtkTexture()
             # input = vtk.vtkPNGReader()

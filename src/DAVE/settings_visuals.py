@@ -590,6 +590,8 @@ PAINTERS["X-ray"]["Visual"]["main"].xray = True
 foot_painters = deepcopy(PAINTERS["X-ray"])
 
 footprint_paint = copy(surf)
+footprint_paint.lineWidth = 3
+footprint_paint.lineColor = _PURPLE
 footprint_paint.surfaceColor = _PURPLE
 
 foot_painters['Point']['footprint'] = copy(footprint_paint)

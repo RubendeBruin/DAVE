@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_footprints.ui',
 # licensing of 'widget_footprints.ui' applies.
 #
-# Created: Thu May 13 15:28:37 2021
+# Created: Fri May 14 12:48:08 2021
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!

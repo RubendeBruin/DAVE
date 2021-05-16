@@ -1319,6 +1319,34 @@ class RigidBody(Axis):
         self._vfPoi.name = newname + vfc.VF_NAME_SPLIT + "cog"
         self._vfForce.name = newname + vfc.VF_NAME_SPLIT + "gravity"
 
+
+    @property
+    def footprint(self):
+        return super().footprint
+
+    @footprint.setter
+    def footprint(self, value):
+        """Sets the footprint vertices. Supply as an iterable with each element containing three floats"""
+        super(RigidBody, type(self)).footprint.fset(self, value) # https://bugs.python.org/issue14965
+
+        # assign the footprint to the CoG as well,
+        # but subtract the cog position as
+        self._sync_selfweight_footprint()
+
+
+    def _sync_selfweight_footprint(self):
+        """The footprint of the CoG is defined relative to the CoG, so its needs to be updated
+        whenever the CoG or the footprint changes"""
+
+        fp = self.footprint
+
+        self._vfPoi.footprintVertexClearAll()
+        for t in fp:
+            pos = np.array(t, dtype=float)
+            relpos = pos - self.cog
+            self._vfPoi.footprintVertexAdd(*relpos)
+
+
     @property
     def cogx(self):
         """x-component of cog position [m] (local axis)"""
@@ -1371,6 +1399,7 @@ class RigidBody(Axis):
         assert3f(newcog)
         self._vfPoi.position = newcog
         self.inertia_position = self.cog
+        self._sync_selfweight_footprint()
 
 
     @property
@@ -4823,7 +4852,7 @@ class Shackle(Manager, RigidBody):
 
 class Scene:
     """
-    A Scene is the nodeA component of DAVE.
+    A Scene is the main component of DAVE.
 
     It provides a world to place nodes (elements) in.
     It interfaces with the equilibrium core for all calculations.
@@ -7180,7 +7209,7 @@ class Scene:
         self.update()
         return self._vfc.get_dof_modes()
 
-# =================== None Node Classes
+# =================== None-Node Classes
 
 """This is a container for a pyo3d.MomentDiagram object providing plot methods"""
 class LoadShearMomentDiagram():
@@ -7198,6 +7227,37 @@ class LoadShearMomentDiagram():
         """Returns (position, shear, moment)"""
         x = self.datasource.grid(grid_n)
         return x, self.datasource.Vz, self.datasource.My
+
+    def plot_simple(self):
+        """Plots the bending moment and shear in a single yy-plot.
+
+        Creates a new figure, does not """
+        x,Vz, My = self.give_shear_and_moment()
+        import matplotlib.pyplot as plt
+
+        fig, ax1 = plt.subplots()
+        ax2 = ax1.twinx()
+
+        ax1.plot(x,My, 'g', lw = 1, label = 'Bending Moment')
+        ax2.plot(x,Vz, 'b', lw = 1, label = 'Shear Force')
+
+        from DAVE.gui.helpers.align_zeros_of_yyplots import align_y0_axis
+
+        align_y0_axis(ax1, ax2)
+
+        ax1.set_xlabel('Position [m]')
+        ax1.set_ylabel('Bending Moment [kNm]')
+        ax2.set_ylabel('Shear Force [kN]')
+
+        ax1.tick_params(axis='y', colors='g')
+        ax2.tick_params(axis='y', colors='b')
+
+        # fig.legend()  - obvious from the axis
+
+        ext = 0.1*(np.max(x) - np.min(x))
+        xx = [np.min(x)-ext, np.max(x)+ext]
+        ax1.plot(xx,[0,0],c = [.5,.5,.5],lw=1, linestyle= ':')
+        ax1.set_xlim(xx)
 
     def plot(self, grid_n = 100, merge_adjacent_loads = True, filename = None):
         m = self.datasource # alias
@@ -7331,26 +7391,13 @@ class LoadShearMomentDiagram():
 
         fig.legend(loc="upper right")
 
-        # align the axes such that 0 is in the center
-        y0n, y0p = ax0.get_ylim()
-        y1n, y1p = ax0_second.get_ylim()
+        # add a zero-line
+        xx = [np.min(x), np.max(x)]
+        ax0.plot(xx,(0,0), 'k-')
 
-        y1n = min(y1n, -1e-3)
-        y0n = min(y0n, -1e-3)
-        y1p = max(y1p, 1e-3)
-        y0p = max(y0p, 1e-3)
+        from DAVE.gui.helpers.align_zeros_of_yyplots import align_y0_axis
 
-        a0p = y0p / (y0p - y0n)
-        a0n = -y0n / (y0p - y0n)
-
-        a1p = y1p / (y1p - y1n)
-        a1n = -y1n / (y1p - y1n)
-
-        a_above = max(a0p, a1p, 0)
-        a_below = max(a0n, a1n, 0)
-
-        ax0.set_ylim(y0n * a_below / a0n, y0p * a_above / a0p)
-        ax0_second.set_ylim(y1n * a_below / a1n, y1p * a_above / a1p)
+        align_y0_axis(ax0, ax0_second)
 
         from DAVE.reporting.utils.TextAvoidOverlap import minimizeTextOverlap
         minimizeTextOverlap(texts_second, fig=fig, ax=ax0_second, vertical_only=True, optimize_initial_positions = False, annotate=False)

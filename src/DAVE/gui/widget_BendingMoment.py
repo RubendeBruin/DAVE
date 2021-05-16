@@ -51,11 +51,13 @@ class WidgetBendingMoment(guiDockWidget):
         After creation of the widget this event is called with guiEventType.FULL_UPDATE
         """
 
-        if event in [guiEventType.SELECTION_CHANGED,
-                     guiEventType.FULL_UPDATE,
+        if event in [guiEventType.FULL_UPDATE,
+                     guiEventType.MODEL_STRUCTURE_CHANGED]:
+            self.fill()
+        if event in [guiEventType.MODEL_STRUCTURE_CHANGED,
                      guiEventType.MODEL_STATE_CHANGED,
                      guiEventType.SELECTED_NODE_MODIFIED]:
-            self.fill()
+            self.autoupdate()
 
     def guiDefaultLocation(self):
         return QtCore.Qt.DockWidgetArea.RightDockWidgetArea
@@ -84,6 +86,10 @@ class WidgetBendingMoment(guiDockWidget):
 
         self.ui.cbAxis.blockSignals(False)
         self.ui.cbOrientation.blockSignals(False)
+
+    def autoupdate(self):
+        if self.ui.cbLiveUpdates.isChecked():
+            self.action()
 
     def action(self):
 

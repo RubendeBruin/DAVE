@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_bendingmomentpreview.ui',
 # licensing of 'widget_bendingmomentpreview.ui' applies.
 #
-# Created: Thu May 13 15:28:37 2021
+# Created: Fri May 14 12:48:07 2021
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -60,6 +60,10 @@ class Ui_WidgetBendingMomentPreview(object):
         self.sbScale.setProperty("value", 2.0)
         self.sbScale.setObjectName("sbScale")
         self.formLayout.setWidget(9, QtWidgets.QFormLayout.FieldRole, self.sbScale)
+        self.cbLiveUpdates = QtWidgets.QCheckBox(WidgetBendingMomentPreview)
+        self.cbLiveUpdates.setChecked(True)
+        self.cbLiveUpdates.setObjectName("cbLiveUpdates")
+        self.formLayout.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.cbLiveUpdates)
 
         self.retranslateUi(WidgetBendingMomentPreview)
         QtCore.QMetaObject.connectSlotsByName(WidgetBendingMomentPreview)
@@ -78,4 +82,5 @@ class Ui_WidgetBendingMomentPreview(object):
         self.rbBending.setText(QtWidgets.QApplication.translate("WidgetBendingMomentPreview", "Bending", None, -1))
         self.rbNothing.setText(QtWidgets.QApplication.translate("WidgetBendingMomentPreview", "Nothing", None, -1))
         self.label_4.setText(QtWidgets.QApplication.translate("WidgetBendingMomentPreview", "Scale max to [m]", None, -1))
+        self.cbLiveUpdates.setText(QtWidgets.QApplication.translate("WidgetBendingMomentPreview", "Live updates", None, -1))
 
