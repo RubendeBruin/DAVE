@@ -1709,7 +1709,7 @@ class Viewport:
                 for a in va.actors:
                     screen.add(a)
 
-            self.screen.show(camera=camera, verbose = False)
+            self.screen.show(camera=camera)
 
             for r in self.screen.renderers:
                 r.ResetCamera()
