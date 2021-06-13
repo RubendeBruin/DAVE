@@ -68,7 +68,9 @@ class WidgetFootprints(guiDockWidget):
         After creation of the widget this event is called with guiEventType.FULL_UPDATE
         """
 
-        if event in [guiEventType.MODEL_STATE_CHANGED, guiEventType.FULL_UPDATE]:
+        if event in [guiEventType.MODEL_STATE_CHANGED,
+                     guiEventType.FULL_UPDATE,
+                     guiEventType.MODEL_STRUCTURE_CHANGED]:
             self.fill()
 
         if event in [guiEventType.SELECTION_CHANGED]:

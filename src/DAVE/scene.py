@@ -2462,9 +2462,46 @@ class LC6d(CoreConnectedNode):
         self._vfNode.slave = val._vfNode
 
     # TODO: Continue with these - need to be added yo pyo3d as well, currently nothing is exposed
-    # @property
-    # def fx(self):
-    #     return self._vfNode.force[0]
+    @property
+    def fgx(self):
+        """Force on main in global coordinate frame [kN]"""
+        return self._vfNode.global_force[0]
+
+    @property
+    def fgy(self):
+        """Force on main in global coordinate frame [kN]"""
+        return self._vfNode.global_force[1]
+
+    @property
+    def fgz(self):
+        """Force on main in global coordinate frame [kN]"""
+        return self._vfNode.global_force[2]
+
+    @property
+    def force_global(self):
+        """Force on main in global coordinate frame [kN]"""
+        return self._vfNode.global_force
+
+
+    @property
+    def mgx(self):
+        """Moment on main in global coordinate frame [kNm]"""
+        return self._vfNode.global_moment[0]
+
+    @property
+    def mgy(self):
+        """Moment on main in global coordinate frame [kNm]"""
+        return self._vfNode.global_moment[1]
+
+    @property
+    def mgz(self):
+        """Moment on main in global coordinate frame [kNm]"""
+        return self._vfNode.global_moment[2]
+
+    @property
+    def moment_global(self):
+        """Moment on main in global coordinate frame [kNm]"""
+        return self._vfNode.global_moment
 
 
     def give_python_code(self):
@@ -3650,7 +3687,7 @@ class WaveInteraction1(Node):
         self.scene = scene
 
         self.offset = [0, 0, 0]
-        """Offset (x,y,z) of the visual. Offset is applied after scaling"""
+        """Position (x,y,z) of the hydrodynamic origin in its parents axis system"""
 
         self.parent = None
         """Parent : Axis-type"""

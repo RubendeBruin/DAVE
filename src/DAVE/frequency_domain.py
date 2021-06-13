@@ -69,7 +69,8 @@ def mode_shapes(scene):
     """Calculates the mode shapes and eigenvalues for scene.
     The output is sorted in order of increasing eigenvalue.
 
-    The natural period is sqrt(eigenvalue)
+    The natural frequency [rad/s] is sqrt(eigenvalue)
+    The natural period [s] is 2*pi / sqrt(eigenvalue)
 
     Returns: V (eigenvalues), D (eigenvectors)"""
 
@@ -390,7 +391,7 @@ def prepare_for_fd(s):
 
     All wave-interaction nodes shall be at the origin of an axis system.
     That axis system shall not have a parent
-    That axis systen shall have all dofs set to free
+    That axis system shall have all dofs set to free
 
     Raises:
         ValueError if the scene can not be prepared.
@@ -612,7 +613,7 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0) -> np.ndarray:
             F_omega = w._hyddb.force(omega, relative_heading)
 
             if np.any(np.isnan(F_omega)):
-                print('stop here')
+                raise ValueError('nan in excitation')
 
             # phase shift due to distance from origin
             phase_global_origin = 2*np.pi * distance / wavelength(omega, waterdepth=waterdepth)
