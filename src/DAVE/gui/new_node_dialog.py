@@ -475,7 +475,7 @@ def add_waveinteraction(scene, selection=None):
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()
 
-        return "new_waveinteraction('{}', parent = '{}', path = r'barge_100_30_5.dhyd')".format(
+        return "new_waveinteraction('{}', parent = '{}', path = '')".format(
             name, parent)
 
     else:

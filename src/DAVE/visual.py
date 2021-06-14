@@ -183,7 +183,9 @@ def transform_from_direction(axis):
 def update_line_to_points(line_actor, points):
     """Updates the points of a line-actor"""
 
-    pts = line_actor._polydata.GetPoints()
+    source = line_actor.GetMapper().GetInput()
+
+    pts = source.GetPoints()
 
     npt = len(points)
 
@@ -202,10 +204,10 @@ def update_line_to_points(line_actor, points):
         _lines.InsertNextCell(npt)
         for i in range(npt):
             _lines.InsertCellPoint(i)
-        line_actor._polydata.SetLines(_lines)
-        line_actor._polydata.SetPoints(_points)
+        source.SetLines(_lines)
+        source.SetPoints(_points)
 
-        line_actor._polydata.Modified()
+        source.Modified()
 
 
 def apply_parent_translation_on_transform(parent, t):
