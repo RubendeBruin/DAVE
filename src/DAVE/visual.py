@@ -77,7 +77,9 @@ def transform_from_direction(axis):
 
 def update_line_to_points(line_actor, points):
 
-    pts = line_actor._polydata.GetPoints()
+    source = line_actor.GetMapper().GetInput()
+
+    pts = source.GetPoints()
 
     npt = len(points)
 
@@ -96,10 +98,10 @@ def update_line_to_points(line_actor, points):
         _lines.InsertNextCell(npt)
         for i in range(npt):
             _lines.InsertCellPoint(i)
-        line_actor._polydata.SetLines(_lines)
-        line_actor._polydata.SetPoints(_points)
+        source.SetLines(_lines)
+        source.SetPoints(_points)
 
-        line_actor._polydata.Modified()
+        source.Modified()
 
 
 def apply_parent_tranlation_on_transform(parent, t):
@@ -1438,7 +1440,8 @@ class Viewport:
                 if len(V.actors) > 2:
                     # print(f'Already have an actor for {V.node.name}')
                     vis = V.actors[2]
-                    pts = vis._polydata.GetPoints()
+
+                    pts = vis.GetMapper().GetInput().GetPoints()
                     npt = len(vertices)
 
                     # Update the existing actor if the number of vertices stay the same
