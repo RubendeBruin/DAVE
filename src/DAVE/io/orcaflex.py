@@ -127,6 +127,20 @@ def attitude_to_rotvec(rot123):
     r = Rotation.from_euler(angles = (rz,ry,rx), seq='zyx', degrees=True)
     return np.degrees(r.as_rotvec())
 
+def visual_rotation_to_attitude(rotation):
+    """Converts rotation vector of DAVE-visual to Orcaflex shaded drawing rotation (rotation 1,2,3) [deg]
+     Step 1: Create Rotation object from rotation vector
+     Step 2: Create Rotation object from default Orcaflex shaded drawing rotation (rx=-90, ry=-90)
+
+     Multiply rotations and convert to new Euler angles (assuming XY-mirror)
+     """
+    orient = Rotation.from_rotvec(np.deg2rad(rotation))
+    ofx = Rotation.from_euler(angles=(-90, -90, 0), seq='xyz', degrees=True)
+
+    total = orient * ofx
+
+    eu = total.as_euler(seq='xyz', degrees=True).tolist()
+    return [eu[0], eu[1], eu[2]]
 
 def attitude_to_az_dec_gam(attitude):
     (S1, S2, S3) = np.sin(attitude)
@@ -643,6 +657,9 @@ def export_ofx_yml(s, filename):
                     copyfile(visualfile, filename.parent / visualfile.name)
                     print(f'created {filename.parent / visualfile.name}')
 
+                pos = [*n.offset]
+                rot = [*visual_rotation_to_attitude(n.rotation)]
+
                 shape = { 'Name': n.name,
                       'Connection':n.parent.name,
                       'ShapeType':'Drawing',
@@ -655,10 +672,14 @@ def export_ofx_yml(s, filename):
                       'Rotation3' : 0 ,
                       'OutsidePenColour' : 55551,  # $00D8FF
                       'ShadedDrawingFileName' : visualfile.name,
-                      'ShadedDrawingMirrorInPlane' : 'XZ plane' ,
-                      'ShadedDrawingRotation1' : 0 ,
-                      'ShadedDrawingRotation2' : 90 ,
-                      'ShadedDrawingRotation3' : -90 }
+                      'ShadedDrawingMirrorInPlane' : 'XY plane' ,
+                      'ShadedDrawingOriginX' : pos[0],
+                      'ShadedDrawingOriginY' : pos[1],
+                      'ShadedDrawingOriginZ' : pos[2],
+                      'ShadedDrawingRotation1' : rot[0],
+                      'ShadedDrawingRotation2' : rot[1],
+                      'ShadedDrawingRotation3' : rot[2],
+                        }
 
                 Shapes.append(shape)
 
