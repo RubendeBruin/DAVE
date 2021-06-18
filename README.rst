@@ -38,7 +38,7 @@ TUTORIAL
 A first video tutorial is available at: https://youtu.be/f-dQaaepsrk
 
 .. raw:: html
-   
+
    <iframe width="560" height="315" src="https://www.youtube.com/embed/f-dQaaepsrk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 
@@ -63,7 +63,7 @@ https://www.open-ocean.org/dave-installation/
 
 
 enjoy!
-   
+
 
 Future developments
 ===================

@@ -1041,7 +1041,7 @@ class VisualActor:
                 self._visualized_fill_percentage = self.node.fill_pct  # store for "need_update" check
 
                 vis = self.actors["fluid"]
-                pts = vis._polydata.GetPoints()
+                pts = vis.GetMapper().GetInput().GetPoints()
                 npt = len(vertices)
 
                 # Update the existing actor if the number of vertices stay the same

@@ -416,8 +416,7 @@ def prepare_for_fd(s):
             loaddb = True
 
         if loaddb:
-            w._hyddb = Hyddb1()
-            w._hyddb.load_from(s.get_resource_path(w.path))
+            w._hyddb = Hyddb1.create_from(s.get_resource_path(w.path))
 
         if np.all(w.offset == (0,0,0)):
             continue
@@ -602,9 +601,10 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0) -> np.ndarray:
         M_omegas = w._hyddb.amass(omegas)
         B_omegas = w._hyddb.damping(omegas)
 
-        if M_omegas.ndim == 2:
-            M_omegas = np.expand_dims(M_omegas,2)
-            B_omegas = np.expand_dims(B_omegas,2)
+        #
+        # if M_omegas.ndim == 2:
+        #     M_omegas = np.expand_dims(M_omegas,2)
+        #     B_omegas = np.expand_dims(B_omegas,2)
 
         for i_omega, omega in enumerate(omegas):
 
@@ -626,8 +626,11 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0) -> np.ndarray:
                 for j in range(6):
                     sys_j = inds[j]
 
-                    M_hyd[sys_i, sys_j,i_omega] += M_omegas[i,j,i_omega]
-                    B_hyd[sys_i, sys_j,i_omega] += B_omegas[i, j,i_omega]
+                    M_omega = M_omegas.sel(omega=omega).values
+                    B_omega = B_omegas.sel(omega=omega).values
+
+                    M_hyd[sys_i, sys_j,i_omega] += M_omega[i,j] # M_omegas[i,j,i_omega]
+                    B_hyd[sys_i, sys_j,i_omega] += B_omega[i,j] # B_omegas[i, j,i_omega]
 
 
                 # complex multiplication is equivalent to amplitude multiplication and phase addition
