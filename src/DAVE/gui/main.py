@@ -82,7 +82,7 @@ from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox, QMenu, QWidgetA
 from DAVE.scene import Scene
 
 from DAVE.gui.forms.main_form import Ui_MainWindow
-from DAVE.visual import Viewport, ActorType
+from DAVE.visual import Viewport, ActorType, DelayRenderingTillDone
 from DAVE.gui import new_node_dialog
 import DAVE.gui.standard_assets
 from DAVE.gui.forms.dlg_solver import Ui_Dialog
@@ -230,12 +230,12 @@ class Gui():
             self.visual.geometry_scale = geometry_scale
 
 
-        self.visual.create_visuals(recreate=True)
+        self.visual.create_node_visuals(recreate=True)
         self.visual.show_embedded(self.ui.frame3d)
 
         self.visual.position_visuals()
         self.visual.update_visibility() # apply paint
-        self.visual.add_new_actors_to_screen()
+        self.visual.add_new_node_actors_to_screen()
 
         self.visual.mouseLeftEvent = self.view3d_select_element
 
@@ -1085,7 +1085,7 @@ class Gui():
         self.toggle_show_global_from_menu()
 
     def toggle_show_global_from_menu(self):
-        self.visual.show_global = self.ui.actionShow_water_plane.isChecked()
+        self.visual.settings.show_global = self.ui.actionShow_water_plane.isChecked()
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def toggle_show_force_applying_elements(self):
@@ -1445,7 +1445,7 @@ class Gui():
             if isinstance(node, Manager):
                 visually_selected_nodes.extend(node.managed_nodes())
 
-        for v in self.visual.visuals:
+        for v in self.visual.node_visuals:
             if v.node in visually_selected_nodes:
                 v.select()
             else:
@@ -1453,7 +1453,7 @@ class Gui():
                 v.update_paint(self.visual.settings.painter_settings)
                 v._is_selected = False
 
-        for v in self.visual.visuals:
+        for v in self.visual.node_visuals:
             try:
                 parent = v.node.parent
             except:
@@ -1473,39 +1473,39 @@ class Gui():
     # ================= guiWidget codes
 
     def guiEmitEvent(self, event, sender=None):
-        for widget in self.guiWidgets.values():
-            if not (widget is sender):
-                if widget.isVisible():
-                    widget.guiEvent(event)
 
-        # update the visual as well
-        if event == guiEventType.SELECTION_CHANGED:
+        with DelayRenderingTillDone(self.visual):  # temporary freezes rendering and calls update afterwards
+
+            for widget in self.guiWidgets.values():
+                if not (widget is sender):
+                    if widget.isVisible():
+                        widget.guiEvent(event)
+
+
+            # update the visual as well
+            if event == guiEventType.SELECTION_CHANGED:
+                self.visual_update_selection()
+                return
+
+            if event == guiEventType.SELECTED_NODE_MODIFIED:
+                self.visual.add_new_node_actors_to_screen()
+                self.visual.position_visuals()
+                return
+
+            if event== guiEventType.MODEL_STATE_CHANGED:
+                self.visual.position_visuals()
+                return
+
+            if event == guiEventType.VIEWER_SETTINGS_UPDATE:
+                self.visual.update_visibility()
+                self.visual.position_visuals()
+                return
+
+            self.visual.create_node_visuals()
+            self.visual.add_new_node_actors_to_screen()
+            self.visual.position_visuals()
             self.visual_update_selection()
-            self.refresh_3dview()
-            return
 
-        if event == guiEventType.SELECTED_NODE_MODIFIED:
-            self.visual.add_new_actors_to_screen()
-            self.visual.position_visuals()
-            self.refresh_3dview()
-            return
-
-        if event== guiEventType.MODEL_STATE_CHANGED:
-            self.visual.position_visuals()
-            self.refresh_3dview()
-            return
-
-        if event == guiEventType.VIEWER_SETTINGS_UPDATE:
-            self.visual.update_visibility()
-            self.visual.position_visuals()
-            self.refresh_3dview()
-            return
-
-        self.visual.create_visuals()
-        self.visual.add_new_actors_to_screen()
-        self.visual.position_visuals()
-        self.visual_update_selection()
-        self.refresh_3dview()
 
     def guiSelectNode(self, node_name):
         # print('selecting a node with name {}'.format(node_name))

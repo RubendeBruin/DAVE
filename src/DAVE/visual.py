@@ -12,26 +12,38 @@ visual visualizes a scene using vtk and vedo helpers
 
 Basic data structure:
 
-
 Viewport
- - visuals (VisualActors)
+ - node_visuals (VisualActors)
     - [node] -> reference to corresponding node 
     - actors [dict]
         - [ActorType]
+        
+        <the appearance of these visuals is determined by painers which are activated by update_visibility>
+        
+ - private visuals (wave-plane, etc)
+ 
+       <the appearance of these visuals is determined by Viewport>
+       <set by update_global_visibility which is called bt update_visibility>
+
+
 
 
 Viewport
 ============
 
 Viewport is the main class which handles the viewport (ie: Plotter).
-It supports embedded plotting (in a qt application) as well as stand-alone or via Jupyter or screenshots
+It supports embedded plotting (in a qt application) as well as stand-alone or via Jupyter or Renders (offscreen renderer)
+
+A viewport contains VisualActors.
 
 
 Visual-Actors
 ------------------
 
-A viewport contains VisualActors.
-this class contains a reference to a Node and a list of actors
+this class contains a reference to a Node (optional) and a dict of actors
+
+Dict of actors: On of them is always called "main". This is used, among others, to determine the position of the label (if any) 
+    
 
 a visual actor can be hidden by setting visible to False
 
@@ -39,19 +51,29 @@ each of the individual vtk-plotter actors has a "actor_type" property which is a
 
 ActorType is used for general control of these actors. At the moment this is only Scaling which is implemented in "position visuals"
 
-self.visuals contains a list of visuals
 
-       each visual
-       - may have a node. The node tells us exactly what the visual represents
-       - has a dict of actors. On of them is always called "main"
-       - each actor
-           - may have an ActorType property. This is yet another way to tell what kind of feature the visual represents
+VISUALS FOR NODES
+==================
 
+
+
+     each actor:
+       - may have an ActorType property. This is yet another way to tell what kind of feature the visual represents
+    - has a property "node"
+   
+
+
+- A visual representing a Node has its node property set to a node (not None).
+  appearance of these nodes is controlled by Painters.
+- The visibility of these nodes may be overridden by the .visible setting of the node.
+  
+  
+   
+    Updates the visibility settings for all of the actors
+    A visual can be hidden completely by setting visible to false
+    An actor can be hidden depending on the actor-type using ????  <-- obsolete
         
-        Updates the visibility settings for all of the actors
-
-        A visual can be hidden completely by setting visible to false
-        An actor can be hidden depending on the actor-type using
+        
 
 
 Creating and updating actors
@@ -85,7 +107,7 @@ Painting
 -  update_visibility : updates the paint for all non-selected nodes
                        updates the outlines
 -  update_outlines : Updates the outlines of all actors
-                     Hides outlines for invisble actors, except if they are xray
+                     Hides outlines for invisible actors, except if they are xray
 
 Painting definition
 
@@ -142,6 +164,25 @@ import vtk
 import numpy as np
 from enum import Enum
 from scipy.spatial import ConvexHull
+
+class DelayRenderingTillDone():
+    """Little helper class to pause rendering and refresh using with(...)
+
+    with(DelayRenderingTillDone(Viewport):
+        do_updates
+
+
+    """
+    def __init__(self, viewport):
+        self.viewport = viewport
+
+    def __enter__(self):
+        self.viewport.screen.interactor.EnableRenderOff()
+
+    def __exit__(self, *args, **kwargs):
+        self.viewport.screen.interactor.EnableRenderOn()
+        self.viewport.refresh_embeded_view()
+
 
 
 def transform_to_mat4x4(transform):
@@ -419,13 +460,6 @@ class VisualActor:
         if ps is None:
             print("No painter settings, ugly world :(")
             return
-
-        if self.node is not None:
-            if not self.node.visible:
-                for a in self.actors.values():
-                    a.off()
-                    a.xray = False
-                return
 
         if self.node is None:
             node_class = "global"
@@ -1123,16 +1157,19 @@ class Viewport:
 
     def __init__(self, scene, jupyter=False):
         self.scene = scene
-        self.visuals: List[VisualActor] = list()
-        self.outlines: List[VisualOutline] = list()
+
+        """These are the visuals for the nodes"""
+        self.node_visuals: List[VisualActor] = list()
+        self.node_outlines: List[VisualOutline] = list()
+
+        """These are all non-node-bound visuals , visuals for the global environment"""
+        self.global_visuals = dict()
+
         self.screen = None
         """Becomes assigned when a screen is active (or was active...)"""
 
         self.vtkWidget = None
         """Qt viewport, if any"""
-
-        self.global_visual = None
-        """Visuals for the global environment"""
 
         self.mouseLeftEvent = None
         self.mouseRightEvent = None
@@ -1168,8 +1205,8 @@ class Viewport:
         v.quick_updates_only = False
 
         v.create_world_actors()
-        v.create_visuals()
-        v.add_new_actors_to_screen()
+        v.create_node_visuals()
+        v.add_new_node_actors_to_screen()
         v.position_visuals()
         v.update_visibility()
 
@@ -1193,12 +1230,12 @@ class Viewport:
 
         # Hide and quit if only doing quick updates
         if self.quick_updates_only:
-            for outline in self.outlines:
+            for outline in self.node_outlines:
                 outline.outline_actor.SetVisibility(False)
             return
 
         # Control outline visibility
-        for outline in self.outlines:
+        for outline in self.node_outlines:
             if getattr(outline.parent_vp_actor, "xray", False):
                 outline.outline_actor.SetVisibility(True)
             else:
@@ -1210,7 +1247,7 @@ class Viewport:
 
 
         # list of already existing outlines
-        _outlines = [a.parent_vp_actor for a in self.outlines]
+        _outlines = [a.parent_vp_actor for a in self.node_outlines]
 
         # loop over actors, add outlines if needed
         for vp_actor in self.screen.actors:
@@ -1264,11 +1301,11 @@ class Viewport:
                     record.outline_actor = actor
                     record.outline_transform = tr
                     record.parent_vp_actor = vp_actor
-                    self.outlines.append(record)
+                    self.node_outlines.append(record)
 
         # Update transforms for outlines
         to_be_deleted = []
-        for record in self.outlines:
+        for record in self.node_outlines:
             # is the parent actor still present?
             if record.parent_vp_actor in self.screen.actors:
                 # update transform
@@ -1304,12 +1341,10 @@ class Viewport:
         self.screen.remove(to_be_deleted_actors)
 
         for record in to_be_deleted:
-            self.outlines.remove(record)
+            self.node_outlines.remove(record)
 
     def create_world_actors(self):
         """Creates the sea"""
-
-        world_actors = dict()
 
         plane = vp.Plane(pos=(0, 0, 0), normal=(0, 0, 1), sx=1000, sy=1000).c(
             COLOR_WATER
@@ -1318,31 +1353,30 @@ class Viewport:
         plane.lighting(ambient=1.0, diffuse=0.0, specular=0.0)
         plane.alpha(0.4)
 
-        world_actors["sea"] = plane
-        world_actors["sea"].actor_type = ActorType.GLOBAL
+        self.global_visuals["sea"] = plane
+        self.global_visuals["sea"].actor_type = ActorType.GLOBAL
 
-        if self.settings.show_global:
-            world_actors["sea"].on()
-        else:
-            world_actors["sea"].off()
+        # if self.settings.show_global:
+        #     self.global_visuals["sea"].on()
+        # else:
+        #     self.global_visuals["sea"].off()
 
-        world_actors["main"] = vp.Line((0, 0, 0), (10, 0, 0)).c("red")
-        world_actors["main"].actor_type = ActorType.GEOMETRY
+        self.global_visuals["main"] = vp.Line((0, 0, 0), (10, 0, 0)).c("red")
+        self.global_visuals["main"].actor_type = ActorType.GEOMETRY
 
-        world_actors["y"] = vp.Line((0, 0, 0), (0, 10, 0)).c("green")
-        world_actors["y"].actor_type = ActorType.GEOMETRY
+        self.global_visuals["y"] = vp.Line((0, 0, 0), (0, 10, 0)).c("green")
+        self.global_visuals["y"].actor_type = ActorType.GEOMETRY
 
-        world_actors["z"] = vp.Line((0, 0, 0), (0, 0, 10)).c("blue")
-        world_actors["z"].actor_type = ActorType.GEOMETRY
+        self.global_visuals["z"] = vp.Line((0, 0, 0), (0, 0, 10)).c("blue")
+        self.global_visuals["z"].actor_type = ActorType.GEOMETRY
 
-        v = VisualActor(world_actors, None)
-        self.visuals.append(v)
+        for actor in self.global_visuals.values():
+            self.screen.add(actor)
 
-        self.global_visual = v
 
     def deselect_all(self):
 
-        for v in self.visuals:
+        for v in self.node_visuals:
             v._is_selected = False
             self.update_painting()
 
@@ -1355,7 +1389,7 @@ class Viewport:
         Returns:
 
         """
-        for v in self.visuals:
+        for v in self.node_visuals:
             for a in v.actors.values():
                 if a == actor:
                     return v.node
@@ -1366,7 +1400,7 @@ class Viewport:
 
     def actor_from_node(self, node):
         """Finds the VisualActor belonging to node"""
-        for v in self.visuals:
+        for v in self.node_visuals:
             if v.node is node:
                 return v
         return None
@@ -1376,32 +1410,34 @@ class Viewport:
         self.screen.renderer.AddActor(waveplane.actor)
         self._wavefield = waveplane
 
-        if self.global_visual.visible:
-            self._staticwaveplane = True
-            self.global_visual.off()
-        else:
-            self._staticwaveplane = False
+        self.settings.show_global = False
+        #
+        # if self.settings.show_global = False:
+        #     self._staticwaveplane = True
+        #     self.global_visual.off()
+        # else:
+        #     self._staticwaveplane = False
 
     def remove_dynamic_wave_plane(self):
         if self._wavefield is not None:
             self.screen.renderer.RemoveActor(self._wavefield.actor)
             self._wavefield = None
 
-            if self._staticwaveplane:
-                self.global_visual.on()
+            # if self._staticwaveplane:
+            #     self.global_visual.on()
 
     def update_dynamic_waveplane(self, t):
         if self._wavefield is not None:
             self._wavefield.update(t)
 
     def hide_actors_of_type(self, types):
-        for V in self.visuals:
+        for V in self.node_visuals:
             for A in V.actors.values():
                 if A.actor_type in types:
                     A.off()
 
     def show_actors_of_type(self, types):
-        for V in self.visuals:
+        for V in self.node_visuals:
             for A in V.actors.values():
                 if A.actor_type in types:
                     A.on()
@@ -1411,7 +1447,7 @@ class Viewport:
 
         if exclude_nodes is None:
             exclude_nodes = []
-        for V in self.visuals:
+        for V in self.node_visuals:
             for A in V.actors.values():
 
                 if V.node in exclude_nodes:
@@ -1473,7 +1509,7 @@ class Viewport:
         r *= self.settings.force_scale / 1000
         return r
 
-    def create_visuals(self, recreate=False):
+    def create_node_visuals(self, recreate=False):
         """Creates actors for nodes in the scene that do not yet have one
 
         Visuals are created in their parent axis system
@@ -1749,7 +1785,7 @@ class Viewport:
             N.visual = va
             N.visual.__just_created = True
 
-            self.visuals.append(va)
+            self.node_visuals.append(va)
 
 
     def position_visuals(self):
@@ -1762,7 +1798,7 @@ class Viewport:
 
         to_be_removed = []
 
-        for V in self.visuals:
+        for V in self.node_visuals:
 
             # check if the node still exists
             # if not, then remove the visual
@@ -1790,7 +1826,7 @@ class Viewport:
 
         acs = list()
         for V in to_be_removed:
-            self.visuals.remove(V)
+            self.node_visuals.remove(V)
             acs.extend(list(V.actors.values()))
             if V.label_actor is not None:
                 acs.append(V.label_actor)
@@ -1800,7 +1836,7 @@ class Viewport:
 
         self.update_outlines()
 
-    def add_new_actors_to_screen(self):
+    def add_new_node_actors_to_screen(self):
         """Updates the screen with added actors"""
 
         to_be_added = []
@@ -1808,7 +1844,7 @@ class Viewport:
         if self.screen:
 
             actors = self.screen.getMeshes()
-            for va in self.visuals:
+            for va in self.node_visuals:
                 for a in va.actors.values():
                     if not (a in actors):
                         to_be_added.append(a)
@@ -1821,7 +1857,7 @@ class Viewport:
                 self.screen.add(to_be_added)
 
             # check if objs or meshes need to be re-loaded
-            for va in self.visuals:
+            for va in self.node_visuals:
                 if isinstance(va.node, vf.Visual):
 
                     try:
@@ -1952,7 +1988,7 @@ class Viewport:
         if self.Jupyter and self.qtWidget is None:
 
             # show embedded
-            for va in self.visuals:
+            for va in self.node_visuals:
                 for a in va.actors.values():
                     if a.GetVisibility():
                         self.screen.add(a)
@@ -1963,12 +1999,12 @@ class Viewport:
 
             screen = self.screen
 
-            for va in self.visuals:
+            for va in self.node_visuals:
                 for a in va.actors.values():
                     screen.add(a)
 
             if include_outlines:
-                for outline in self.outlines:
+                for outline in self.node_outlines:
                     screen.add(outline.outline_actor)
 
             """ For reference: this is how to load an cubemap texture
@@ -2165,7 +2201,7 @@ class Viewport:
             alpha = 1 - (10 * dz)
             if alpha < 0:
                 alpha = 0
-        self.global_visual.actors["sea"].alpha(ALPHA_SEA * alpha)
+        self.global_visuals["sea"].alpha(ALPHA_SEA * alpha)
 
     def keyPressFunction(self, obj, event):
         key = obj.GetKeySym()
@@ -2179,14 +2215,36 @@ class Viewport:
     def update_visibility(self):
         """Updates the settings of the viewport to reflect the settings in self.settings.painter_settings"""
 
-        for v in self.visuals:
+        for v in self.node_visuals:
+
+            # on-off from node overrides everything
+            if v.node is not None:
+                for a in v.actors.values():
+                    a.SetVisibility(v.node.visible)
+                    a.xray = v.node.visible
+                v.label_actor.SetVisibility(v.node.visible)
+
+                if not v.node.visible:
+                    continue # no need to update paint on invisible actor
+
             if not (v._is_selected or v._is_sub_selected):
-                # self.update_painting(v)
                 v.update_paint(self.settings.painter_settings)
             elif v._is_selected:
                 v.labelUpdate(v.node.name)
 
         self.update_outlines()
+
+        self.update_global_visibility()
+
+    def update_global_visibility(self):
+        """Syncs the visibility of the global actors to Viewport-settings"""
+
+        if self.settings.show_global:
+            for actor in self.global_visuals.values():
+                actor.on()
+        else:
+            for actor in self.global_visuals.values():
+                actor.off()
 
 
 class WaveField:

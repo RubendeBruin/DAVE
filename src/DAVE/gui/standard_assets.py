@@ -82,8 +82,8 @@ class Gui:
             print('Error when loading file {}'.format(file))
             return
 
-        self.visual.create_visuals()
-        self.visual.add_new_actors_to_screen()
+        self.visual.create_node_visuals()
+        self.visual.add_new_node_actors_to_screen()
         self.visual.position_visuals()
         self.visual.update_visibility()
         self.visual.zoom_all()

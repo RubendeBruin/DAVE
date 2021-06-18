@@ -145,13 +145,13 @@ def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=
     vp.show_global = sea
 
     vp.create_world_actors()
-    vp.create_visuals(recreate=True)
+    vp.create_node_visuals(recreate=True)
     vp.position_visuals()
     vp.update_visibility()
 
     warningshown = False
 
-    for va in vp.visuals:
+    for va in vp.node_visuals:
         for a in va.actors:
             if a.GetVisibility():
                 if backend == 'panel':
