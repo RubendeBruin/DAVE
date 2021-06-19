@@ -1,6 +1,6 @@
 call conda activate deploy
 
-echo call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
+call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
 echo call pyside2-uic widget_modeshapes.ui -o "..\src\DAVE\gui\forms\widgetUI_modeshapes.py"
 echo call pyside2-uic widget_ballastconfiguration.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastconfiguration.py"
 echo call pyside2-uic widget_ballastsolver.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastsolver.py"
@@ -40,4 +40,4 @@ echo call pyside2-uic widget_tank.ui -o "..\src\DAVE\gui\forms\widget_tank.py"
 call pyside2-uic widget_footprints.ui -o "..\src\DAVE\gui\forms\widget_footprints.py"
 
 
-echo call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"
+call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"

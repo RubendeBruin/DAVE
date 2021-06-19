@@ -172,16 +172,32 @@ class DelayRenderingTillDone():
         do_updates
 
 
+    Creates an attribute _DelayRenderingTillDone_lock on the parent viewport to
+    keep this action exclusive to the first caller.
+
     """
     def __init__(self, viewport):
         self.viewport = viewport
+        self.inactive = False
 
     def __enter__(self):
+        try:
+            if self.viewport._DelayRenderingTillDone_lock:
+                self.inactive = True
+                return
+        except:
+            pass
+
+        self.viewport._DelayRenderingTillDone_lock = True # keep others from gaining control
         self.viewport.screen.interactor.EnableRenderOff()
+        self.viewport.screen.window
 
     def __exit__(self, *args, **kwargs):
+        if self.inactive:
+            return
         self.viewport.screen.interactor.EnableRenderOn()
         self.viewport.refresh_embeded_view()
+        self.viewport._DelayRenderingTillDone_lock = False # release lock
 
 
 
@@ -2064,23 +2080,26 @@ class Viewport:
             # input.Modified()
             # texture.SetInputDataObject(input.GetOutput())
 
+            # # Add SSAO
+            # # see: https://blog.kitware.com/ssao/
+            basicPasses = vtk.vtkRenderStepsPass()
+            self.ssao = vtk.vtkSSAOPass()
+
+            # Radius 20, Kernel 500 gives nice result - but slow
+            # Kernel size 50 less accurate bus faster
+            self.ssao.SetRadius(20)
+            self.ssao.SetDelegatePass(basicPasses)
+            self.ssao.SetBlur(True)
+            self.ssao.SetKernelSize(50)
+
             for r in self.screen.renderers:
                 r.ResetCamera()
 
                 r.UseImageBasedLightingOn()
                 r.SetEnvironmentTexture(texture)
 
-                # # Add SSAO
-                # #
-                # basicPasses = vtk.vtkRenderStepsPass()
-                # ssao = vtk.vtkSSAOPass()
-                # ssao.SetRadius(1)
-                # ssao.SetDelegatePass(basicPasses)
-                # ssao.SetBlur(True)
-                # ssao.SetKernelSize(8)
-                #
                 # r.SetPass(ssao)
-                #
+
 
                 r.SetUseDepthPeeling(True)
 
@@ -2091,6 +2110,16 @@ class Viewport:
             screen.resetcam = False
 
             return screen
+
+    def EnableSSAO(self):
+        for r in self.screen.renderers:
+            r.SetPass(self.ssao)
+            r.Modified()
+
+    def DisableSSAO(self):
+        for r in self.screen.renderers:
+            r.SetPass(None)
+            r.Modified()
 
     def onMouseLeft(self, info):
 

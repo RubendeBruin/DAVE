@@ -258,6 +258,8 @@ class Gui():
         self.ui.btnWater.clicked.connect(self.toggle_show_global)
         self.ui.btnBlender.clicked.connect(self.to_blender)
         self.ui.pbCopyViewCode.clicked.connect(self.copy_screenshot_code)
+        self.ui.btnSSAO.clicked.connect(self.toggle_SSAO)
+        self.ui.btnZoomFit.clicked.connect(self.camera_reset)
 
         # left
         self.ui.pbUpdate.clicked.connect(lambda: self.guiEmitEvent(guiEventType.FULL_UPDATE))
@@ -429,6 +431,7 @@ class Gui():
             pb.setFlat(True)
             pb.setCheckable(True)
             pb.setAutoExclusive(True)
+            pb.setStyleSheet("text-decoration: underline;")
             self.ui.toolBar.addWidget(pb)
 
         # Workspace buttons
@@ -469,19 +472,33 @@ class Gui():
         btnConstruct.clicked.connect(lambda: self.activate_workspace("DYNAMICS"))
         set_pb_style(btnConstruct)
 
+        lblInfo = QtWidgets.QLabel()
+        lblInfo.setText(" >> ")
+        self.ui.toolBar.addWidget(lblInfo)
+
+        space = QtWidgets.QWidget()
+        space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        self.ui.toolBar.addWidget(space)
+
+        lblInfo = QtWidgets.QLabel()
+        lblInfo.setText("(working in temporary copy)")
+        self.ui.toolBar.addWidget(lblInfo)
+
         btnConstruct = QtWidgets.QPushButton()
         btnConstruct.setText('&6. Airy [beta]')
         btnConstruct.clicked.connect(lambda: self.activate_workspace("AIRY"))
         set_pb_style(btnConstruct)
+
+        space = QtWidgets.QWidget()
+        space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        self.ui.toolBar.addWidget(space)
 
         btnConstruct = QtWidgets.QPushButton()
         btnConstruct.setText('Artists')
         btnConstruct.clicked.connect(lambda: self.activate_workspace("PAINTERS"))
         set_pb_style(btnConstruct)
 
-        space = QtWidgets.QWidget()
-        space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
-        self.ui.toolBar.addWidget(space)
+
 
         self._active_workspace = None
 
@@ -499,33 +516,39 @@ class Gui():
             self.app.exec_()
 
     def change_paintset(self):
+        """Updates the paintset of the viewport to the value of cbPainterSelect"""
 
-        # Clear selection to make sure that the paint is updated for all actors
-        selected_node_names = [node.name for node in self.selected_nodes]
-        self.select_none()
+        with DelayRenderingTillDone(self.visual):
 
-        current_set = self.ui.cbPainerSelect.currentText()
-        self.visual.settings.painter_settings = PAINTERS[current_set]
-        self.visual.update_visibility()
+            # Clear selection to make sure that the paint is updated for all actors
+            selected_node_names = [node.name for node in self.selected_nodes]
+            self.select_none()
 
-        # and restore the selection afterwards
-        if selected_node_names:
-            self.guiSelectNode(selected_node_names[0])
+            current_set = self.ui.cbPainerSelect.currentText()
+            self.visual.settings.painter_settings = PAINTERS[current_set]
+            self.visual.update_visibility()
 
-        self.visual.refresh_embeded_view()
+            # and restore the selection afterwards
+            if selected_node_names:
+                self.guiSelectNode(selected_node_names[0])
+
+
 
 
 
     def activate_paintset(self, name):
+        """Sets the current text of the checkbox to the given paint-set name. This triggers activation
+        of the new paint set.
+
+        This action is not executed if the currently active paint-set name contains "custom"
+        """
 
         cb = self.ui.cbPainerSelect # alias
 
-        if 'custom' not in cb.currentText():  # do not change is set to custom
-
+        if 'custom' not in cb.currentText():  # do not change if set to custom
             items = [cb.itemText(i) for i in range(cb.count())]
-
             if name in items:
-                self.ui.cbPainerSelect.setCurrentText(name)
+                self.ui.cbPainerSelect.setCurrentText(name)  # this triggers the change_paintset event
             else:
                 print(items)
                 raise ValueError(f'No paint-set with name {name}. Available names are printed above')
@@ -811,10 +834,12 @@ class Gui():
             return
 
         t = self.ui.aniSlider.value() / 1000
-        remember = self.visual.quick_updates_only
-        self.visual.quick_updates_only = False
-        self.animation_activate_time(t)
-        self.visual.quick_updates_only = remember
+
+        with DelayRenderingTillDone(self.visual):
+            remember = self.visual.quick_updates_only
+            self.visual.quick_updates_only = False
+            self.animation_activate_time(t)
+            self.visual.quick_updates_only = remember
 
     # =================================================== end of animation functions ==================
 
@@ -1098,6 +1123,14 @@ class Gui():
 
     def camera_reset(self):
         self.visual.camera_reset()
+        self.visual.refresh_embeded_view()
+
+    def toggle_SSAO(self):
+        if self.ui.btnSSAO.isChecked():
+            self.visual.EnableSSAO()
+        else:
+            self.visual.DisableSSAO()
+        self.visual.refresh_embeded_view()
 
 
     def undo_solve_statics(self):

@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_bendingmomentpreview.ui',
 # licensing of 'widget_bendingmomentpreview.ui' applies.
 #
-# Created: Fri May 14 12:48:07 2021
+# Created: Sat Jun 19 08:06:59 2021
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!

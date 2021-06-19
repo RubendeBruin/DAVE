@@ -141,6 +141,20 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="btnZoomFit">
+         <property name="text">
+          <string>Zoom fit</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/icons/circle_blue.png</normaloff>:/icons/circle_blue.png</iconset>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QComboBox" name="cbPainerSelect">
          <property name="styleSheet">
           <string notr="true"/>
@@ -183,6 +197,29 @@
           <iconset>
            <normalon>:/icons/fish.png</normalon>
           </iconset>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnSSAO">
+         <property name="text">
+          <string>shadows</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/icons/cube.png</normaloff>:/icons/cube.png</iconset>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
          </property>
          <property name="flat">
           <bool>true</bool>
