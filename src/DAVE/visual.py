@@ -190,13 +190,17 @@ class DelayRenderingTillDone():
 
         self.viewport._DelayRenderingTillDone_lock = True # keep others from gaining control
         self.viewport.screen.interactor.EnableRenderOff()
-        self.viewport.screen.window
+        for r in self.viewport.screen.renderers:
+            r.DrawOff()
+
 
     def __exit__(self, *args, **kwargs):
         if self.inactive:
             return
         self.viewport.screen.interactor.EnableRenderOn()
         self.viewport.refresh_embeded_view()
+        for r in self.viewport.screen.renderers:
+            r.DrawOn()
         self.viewport._DelayRenderingTillDone_lock = False # release lock
 
 
@@ -2112,6 +2116,13 @@ class Viewport:
             return screen
 
     def EnableSSAO(self):
+
+        # from documentation:
+        # virtual void 	UseSSAOOn ()
+        # virtual void 	UseSSAOOff ()
+        #
+        # but does not work
+
         for r in self.screen.renderers:
             r.SetPass(self.ssao)
             r.Modified()
