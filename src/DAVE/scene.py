@@ -391,9 +391,6 @@ class Visual(Node):
 
         super().__init__(scene)
 
-        # Note: Visual does not have a corresponding vfCore element
-        self.scene = scene
-
         self.offset = [0, 0, 0]
         """Offset (x,y,z) of the visual. Offset is applied after scaling"""
         self.rotation = [0, 0, 0]
@@ -407,6 +404,10 @@ class Visual(Node):
 
         self.parent = None
         """Parent : Axis-type"""
+
+    @property
+    def file_path(self):
+        return self._scene.get_resource_path(self.path)
 
     def depends_on(self):
         return [self.parent]
@@ -1850,7 +1851,7 @@ class ContactMesh(NodeWithParent):
             code += ", parent='{}')".format(self.parent_for_export.name)
         else:
             code += ')'
-        code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
+        code += "\nmesh.trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
             self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
 
         return code
@@ -2907,8 +2908,9 @@ class TriMeshSource(Node):
 
     def __init__(self, scene, source):
 
+        super().__init__(scene)
+
         # Note: Visual does not have a corresponding vfCore Node in the scene but does have a vfCore
-        self._scene = scene
         self._TriMesh = source
         self._new_mesh = True             # cheat for visuals
 
@@ -3102,8 +3104,8 @@ class TriMeshSource(Node):
     def load_obj(self, filename, offset = None, rotation = None, scale = None, invert_normals = False):
         self.load_file(filename, offset, rotation, scale, invert_normals)
 
-    def load_file(self, filename, offset = None, rotation = None, scale = None, invert_normals = False):
-        """Loads an .obj file and and triangulates it.
+    def load_file(self, url, offset = None, rotation = None, scale = None, invert_normals = False):
+        """Loads an .obj or .stl file and and triangulates it.
 
         Order of modifications:
 
@@ -3112,17 +3114,16 @@ class TriMeshSource(Node):
         3. offset
 
         Args:
-            filename: (str or path): file to load
+            url: (str or path or resource): file to load
             offset: : offset
             rotation:  : rotation
             scale:  scale
 
         """
 
-        if not exists(filename):
-            raise ValueError('File {} does not exit'.format(filename))
+        self._path = str(url)
 
-        filename = str(filename)
+        filename = str(self._scene.get_resource_path(url))
 
         import vtk
         ext = filename.lower()[-3:]
@@ -3142,7 +3143,7 @@ class TriMeshSource(Node):
 
         self._fromVTKpolydata(cln.GetOutputPort(), offset=offset, rotation=rotation, scale=scale, invert_normals=invert_normals)
 
-        self._path = split(filename)[1]
+
         self._scale = scale
         self._offset = offset
         self._rotation = rotation
@@ -3248,10 +3249,10 @@ class Buoyancy(NodeWithParent):
         code += "\n          parent='{}')".format(self.parent_for_export.name)
 
         if self.trimesh._invert_normals:
-            code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}), invert_normals=True)".format(
+            code += "\nmesh.trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}), invert_normals=True)".format(
                 self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
         else:
-            code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
+            code += "\nmesh.trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
                 self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
 
         return code
@@ -3401,10 +3402,10 @@ class Tank(NodeWithParent):
         code += "\n          parent='{}')".format(self.parent_for_export.name)
 
         if self.trimesh._invert_normals:
-            code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}), invert_normals=True)".format(
+            code += "\nmesh.trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}), invert_normals=True)".format(
                 self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
         else:
-            code += "\nmesh.trimesh.load_file(s.get_resource_path(r'{}'), scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
+            code += "\nmesh.trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
                 self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
         code += f"\ns['{self.name}'].volume = {self.volume}   # first load mesh, then set volume"
 
@@ -3684,7 +3685,6 @@ class WaveInteraction1(Node):
     def __init__(self, scene):
 
         super().__init__(scene)
-        self.scene = scene
 
         self.offset = [0, 0, 0]
         """Position (x,y,z) of the hydrodynamic origin in its parents axis system"""
@@ -3694,6 +3694,10 @@ class WaveInteraction1(Node):
 
         self.path = None
         """Filename of a file that can be read by a Hyddb1 object"""
+
+    @property
+    def file_path(self):
+        return self._scene.get_resource_path(self.path)
 
     def depends_on(self):
         return [self.parent]
@@ -5147,8 +5151,10 @@ class Scene:
 
     # ======== resources =========
 
-    def get_resource_path(self, name) -> Path:
-        """Looks for a file with "name" in the specified resource-paths and returns the full path to the the first one
+    def get_resource_path(self, url) -> Path:
+        """Resolves the path on disk for resource url. Urls statring with res: result in a file from the resources system.
+
+        Looks for a file with "name" in the specified resource-paths and returns the full path to the the first one
         that is found.
         If name is a full path to an existing file, then that is returned.
 
@@ -5164,27 +5170,54 @@ class Scene:
 
         """
 
-        file = Path(name)
+        # warning and work-around for backwards compatibility
+        # filenames without a path get res: in front of it
+        try:
+            if isinstance(url, Path):
+                test = str(url)
+            else:
+                test = url
+
+            if not test.startswith('res:'):
+                test = Path(test)
+                if str(test.parent) == '.':
+                    from warnings import warn
+                    warn(f'Resources should start with res: --> fixing "{url}" to "res: {url}"')
+                    url = 'res: ' + str(test)
+        except:
+            pass
+
+        if isinstance(url, Path):
+            file = url
+        elif isinstance(url, str):
+            if not url.startswith('res:'):
+                file = Path(url)
+            else:
+               # we have a string starting with 'res:'
+                filename = url[4:].strip()
+
+                for res in self.resources_paths:
+                    p = Path(res)
+
+                    file = p / filename
+                    if isfile(file):
+                        return file
+
+                # prepare feedback for error
+                ext = str(url).split('.')[-1]  # everything after the last .
+
+                print("The following resources with extension {} are available with ".format(ext))
+                available = self.get_resource_list(ext)
+                for a in available:
+                    print(a)
+                raise FileExistsError('Resource "{}" not found in resource paths. A list with available resources with this extension is printed above this error'.format(url))
+        else:
+            raise ValueError(f'Provided url shall be a Path or a string, not a {type(url)}')
 
         if file.exists():
             return file
 
-        for res in self.resources_paths:
-            p = Path(res)
-
-            full = p / name
-            if isfile(full):
-                return full
-
-        # prepare feedback for error
-        ext = str(name).split('.')[-1]  # everything after the last .
-
-        print("The following resources with extension {} are available with ".format(ext))
-        available = self.get_resource_list(ext)
-        for a in available:
-            print(a)
-
-        raise FileExistsError('Resource "{}" not found in resource paths'.format(name))
+        raise FileExistsError('File "{}" not found.\nHint: To obtain a resource put res: in front of the name.'.format(url))
 
     def get_resource_list(self, extension):
         """Returns a list of all file-paths (strings) given extension in any of the resource-paths"""
@@ -5197,7 +5230,7 @@ class Scene:
                 for file in files:
                     if file.lower().endswith(extension):
                         if file not in r:
-                            r.append(file)
+                            r.append('res: ' + file)
             except FileNotFoundError:
                 pass
 

@@ -553,10 +553,7 @@ class EditBuoyancyOrContactMesh(NodeEditor):
         scale = np.array((self.ui.doubleSpinBox_7.value(), self.ui.doubleSpinBox_8.value(),self.ui.doubleSpinBox_9.value()))
         invert_normals = self.ui.cbInvertNormals.isChecked()
 
-        try:
-            new_path = self.scene.get_resource_path(self.ui.comboBox.currentText())
-        except:
-            new_path = "FILE DOES NOT EXIST"
+        new_path = self.ui.comboBox.currentText()
 
         # check if we need to reload the mesh
         if np.any(offset != self.node.trimesh._offset) or \

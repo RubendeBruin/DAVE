@@ -27,6 +27,20 @@ The list is considered to be ordered from most-official to least-official. So, f
 
 In a typical workflow an asset would first be created in a local or project folder. Then it would be checked as approved. Once approved it would be moved to an official (write protected) folder.
 
+Files and resources
+--------------------
+So how do we differentiate a "file" from a "resource"? And how do we get from a "resource" to the corresponding file?
+
+Easy:
+- Anything that needs to be obtained from the resource system starts with `res:`
+- Anything else is a file.
+
+So `res: cube.obj` means the file `cube.obj` from the resource paths. Similarly `c:\data\cube.obj` means the the file cube.obj from c:\data
+
+Nodes that work with resources have a `.path` property. The path is read/write and can be set to either a file (str) or a resource (res: file). To obtain the file that the resource points to use the `.file_path` property. This is read-only.
+
+
+
 Loading and saving resources
 -----------------------------
 The path to a resource can be obtained using Scene.get_resource_path(name). This will loop over the resources_paths **from top to bottom**. It will return the full path to the first items found. More official assets or resources take precedence over less official ones.
