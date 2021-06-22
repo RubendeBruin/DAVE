@@ -319,7 +319,7 @@ class EditWaveInteraction(NodeEditor):
         ui.comboBox.clear()
         ui.comboBox.addItems(self.scene.get_resource_list('dhyd'))
 
-        ui.comboBox.setCurrentText(self.node.path)
+        ui.comboBox.setCurrentText(str(self.node.path))  # str because path may be a Path
 
         ui.doubleSpinBox_1.valueChanged.connect(self.callback)
         ui.doubleSpinBox_2.valueChanged.connect(self.callback)

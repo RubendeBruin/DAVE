@@ -511,6 +511,8 @@ class Gui():
         splash.finish(self.MainWindow)
         self.MainWindow.show()
 
+        self.visual.camera_reset()
+
         if block:
             self.ui.pbUpdate.setVisible(False)
             self.app.exec_()
