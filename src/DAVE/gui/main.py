@@ -672,7 +672,7 @@ class Gui():
             file = r[0]
             container = r[1]
             prefix = r[2]
-            code = 's.import_scene(s.get_resource_path("{}"), containerize={}, prefix="{}")'.format(file,container,prefix)
+            code = 's.import_scene("{}", containerize={}, prefix="{}")'.format(file,container,prefix)
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
             self.activate_workspace('CONSTRUCT')

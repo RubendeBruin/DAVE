@@ -24,7 +24,7 @@ s.new_linear_connector_6d('DP springs cheetah', main = 'DP reference point',
 # code for buoyancy
 mesh = s.new_buoyancy(name='buoyancy',
                       parent='Cheetah')
-mesh.trimesh.load_obj(s.get_resource_path(r'buoyancy cheetah.obj'), scale=(1, 1, 1), rotation=(0.0, 0.0, 0.0),
+mesh.trimesh.load_obj('res: buoyancy cheetah.obj', scale=(1, 1, 1), rotation=(0.0, 0.0, 0.0),
                       offset=(0.0, 0.0, 0.0))
 
 
@@ -55,7 +55,7 @@ bs.new_tank('bow', (190, 0, 5), 10 * 10 * 6 * 9.81 * 1.025)
 # code for visual - vessel
 s.new_visual(name='visual - vessel',
              parent='Cheetah',
-             path=r'visual vessel cheetah.obj',
+             path=r'res: visual vessel cheetah.obj',
              offset=(0, 0, 0),
              rotation=(0, 0, 0),
              scale=(1.0, 1.0, 1.0))
@@ -63,5 +63,5 @@ s.new_visual(name='visual - vessel',
 # code for WaveInteraction
 s.new_waveinteraction(name='Wave Interaction draft 6.75',
                       parent='Cheetah',
-                      path=r'cheetah.dhyd',
+                      path=r'res: cheetah.dhyd',
                       offset=(100.0, 0.0, 6.75))

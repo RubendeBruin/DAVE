@@ -1,5 +1,3 @@
-
-
 """
 
 
@@ -43,19 +41,22 @@ def node_setter_manageable(func):
     @functools.wraps(func)
     def wrapper_decorator(self, *args, **kwargs):
         self._verify_change_allowed()
-        value = func(self,*args, **kwargs)
+        value = func(self, *args, **kwargs)
         return value
+
     return wrapper_decorator
+
 
 # Wrapper (decorator) observed nodes
 def node_setter_observable(func):
     @functools.wraps(func)
     def wrapper_decorator(self, *args, **kwargs):
-        value = func(self,*args, **kwargs)
+        value = func(self, *args, **kwargs)
         # Do something after
         self._notify_observers()
 
         return value
+
     return wrapper_decorator
 
 
@@ -64,23 +65,23 @@ class Node:
     Master class for all nodes"""
 
     def __init__(self, scene):
-        self._scene : Scene = scene
+        self._scene: Scene = scene
         """reference to the scene that the node lives is"""
 
-        self._name : str = 'no name'
+        self._name: str = "no name"
         """Unique name of the node"""
 
-        self._manager : Node or None = None
+        self._manager: Node or None = None
         """Reference to a node that controls this node"""
 
         self.observers = list()
         """List of nodes observing this node."""
 
-        self._visible : bool = True
+        self._visible: bool = True
         """Determines if the visual for of this node (if any) should be visible"""
 
     def __repr__(self):
-        return f'{self.name} <{self.__class__.__name__}>'
+        return f"{self.name} <{self.__class__.__name__}>"
 
     def __str__(self):
         return self.name
@@ -91,7 +92,9 @@ class Node:
 
     def depends_on(self):
         """Returns a list of nodes that need to be available before the node can be created"""
-        raise ValueError(f'Derived class should implement this method, but {type(self)} does not')
+        raise ValueError(
+            f"Derived class should implement this method, but {type(self)} does not"
+        )
 
     def give_python_code(self):
         """Returns the python code that can be executed to re-create this node"""
@@ -109,7 +112,6 @@ class Node:
     def visible(self, value):
         self._visible = value
 
-
     @property
     def manager(self):
         return self._manager
@@ -118,7 +120,7 @@ class Node:
     @node_setter_manageable
     @node_setter_observable
     def manager(self, value):
-        
+
         self._manager = value
         pass
 
@@ -136,7 +138,9 @@ class Node:
                     name = None
                 else:
                     name = self._scene.current_manager.name
-                raise Exception(f'Node {self.name} may not be changed because it is managed by {self._manager.name} and the current manager of the scene is {name}')
+                raise Exception(
+                    f"Node {self.name} may not be changed because it is managed by {self._manager.name} and the current manager of the scene is {name}"
+                )
 
     @property
     def name(self):
@@ -147,7 +151,7 @@ class Node:
     @node_setter_manageable
     @node_setter_observable
     def name(self, name):
-        
+
         self._name = name
 
     def _delete_vfc(self):
@@ -164,7 +168,7 @@ class Node:
             obs.on_observed_node_changed(self)
 
     def on_observed_node_changed(self, changed_node):
-        """"""
+        """ """
         pass
 
 
@@ -185,13 +189,14 @@ class CoreConnectedNode(Node):
     @node_setter_manageable
     @node_setter_observable
     def name(self, name):
-        
+
         if not name == self._vfNode.name:
             self._scene._verify_name_available(name)
             self._vfNode.name = name
 
     def _delete_vfc(self):
         self._scene._vfc.delete(self._vfNode.name)
+
 
 class NodeWithParent(CoreConnectedNode):
     """
@@ -241,12 +246,15 @@ class NodeWithParent(CoreConnectedNode):
 
         See also: change_parent_to
         """
-        
 
         if var is None:
 
             if not self._None_parent_acceptable:
-                raise ValueError('None is not an acceptable parent for {} of {}'.format(self.name, type(self)))
+                raise ValueError(
+                    "None is not an acceptable parent for {} of {}".format(
+                        self.name, type(self)
+                    )
+                )
 
             self._parent = None
             self._vfNode.parent = None
@@ -261,7 +269,11 @@ class NodeWithParent(CoreConnectedNode):
                 self._parent = var
                 self._vfNode.parent = var._vfNode
             else:
-                raise Exception('Parent can only be set to an instance of Axis or Poi, not to a {}'.format(type(var)))
+                raise Exception(
+                    "Parent can only be set to an instance of Axis or Poi, not to a {}".format(
+                        type(var)
+                    )
+                )
 
     def change_parent_to(self, new_parent):
         """Assigns a new parent to the node but keeps the global position and rotation the same.
@@ -274,7 +286,7 @@ class NodeWithParent(CoreConnectedNode):
         """
 
         if isinstance(self, Point) and isinstance(new_parent, Point):
-            raise TypeError('Points can not be placed on points')
+            raise TypeError("Points can not be placed on points")
 
         try:
             self.rotation
@@ -301,12 +313,16 @@ class NodeWithParent(CoreConnectedNode):
                 if not has_rotation:
                     if not isinstance(new_parent, Point):
                         raise TypeError(
-                            'Only Poi-type nodes (or derived types) can be used as parent. You tried to use a {} as parent'.format(
-                                type(new_parent)))
+                            "Only Poi-type nodes (or derived types) can be used as parent. You tried to use a {} as parent".format(
+                                type(new_parent)
+                            )
+                        )
                 else:
                     raise TypeError(
-                        'Only None or Axis-type nodes (or derived types)  can be used as parent. You tried to use a {} as parent'.format(
-                            type(new_parent)))
+                        "Only None or Axis-type nodes (or derived types)  can be used as parent. You tried to use a {} as parent".format(
+                            type(new_parent)
+                        )
+                    )
 
         glob_pos = self.global_position
 
@@ -359,12 +375,11 @@ class NodeWithParentAndFootprint(NodeWithParent):
         if self.footprint:
             return f"\ns['{self.name}'].footprint = {str(self.footprint)}"
         else:
-            return ''
-
-
+            return ""
 
 
 # ==============================================================
+
 
 class Visual(Node):
     """
@@ -396,10 +411,10 @@ class Visual(Node):
         self.rotation = [0, 0, 0]
         """Rotation (rx,ry,rz) of the visual"""
 
-        self.scale = [1,1,1]
+        self.scale = [1, 1, 1]
         """Scaling of the visual. Scaling is applied before offset."""
 
-        self.path = ''
+        self.path = ""
         """Filename of the visual"""
 
         self.parent = None
@@ -415,7 +430,6 @@ class Visual(Node):
     def give_python_code(self):
         code = "# code for {}".format(self.name)
 
-
         code += "\ns.new_visual(name='{}',".format(self.name)
         code += "\n            parent='{}',".format(self.parent.name)
         code += "\n            path=r'{}',".format(self.path)
@@ -426,9 +440,11 @@ class Visual(Node):
         return code
 
     def change_parent_to(self, new_parent):
-        
+
         if not (isinstance(new_parent, Axis) or new_parent is None):
-            raise ValueError('Visuals can only be attached to an axis (or derived) or None')
+            raise ValueError(
+                "Visuals can only be attached to an axis (or derived) or None"
+            )
 
         # get current position and orientation
         if self.parent is not None:
@@ -446,6 +462,7 @@ class Visual(Node):
         else:
             self.offset = new_parent.to_loc_position(cur_position)
             self.rotation = new_parent.to_loc_direction(cur_rotation)
+
 
 class Axis(NodeWithParentAndFootprint):
     """
@@ -469,12 +486,14 @@ class Axis(NodeWithParentAndFootprint):
         self._None_parent_acceptable = True
 
         self._inertia = 0
-        self._inertia_position = (0,0,0)
-        self._inertia_radii = (0,0,0)
+        self._inertia_position = (0, 0, 0)
+        self._inertia_radii = (0, 0, 0)
 
         self._pointmasses = list()
         for i in range(6):
-            p = scene._vfc.new_pointmass(self.name + vfc.VF_NAME_SPLIT + 'pointmass_{}'.format(i))
+            p = scene._vfc.new_pointmass(
+                self.name + vfc.VF_NAME_SPLIT + "pointmass_{}".format(i)
+            )
             p.parent = vfAxis
             self._pointmasses.append(p)
         self._update_inertia()
@@ -494,15 +513,15 @@ class Axis(NodeWithParentAndFootprint):
     @property
     def inertia(self):
         """The linear inertia of the axis in [mT] Aka: "Mass"
-        - used only for dynamics """
+        - used only for dynamics"""
         return self._inertia
 
     @inertia.setter
     @node_setter_manageable
     @node_setter_observable
-    def inertia(self,val):
-        
-        assert1f(val,"Inertia")
+    def inertia(self, val):
+
+        assert1f(val, "Inertia")
         self._inertia = val
         self._update_inertia()
 
@@ -517,7 +536,7 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def inertia_position(self, val):
-        
+
         assert3f(val, "Inertia position")
         self._inertia_position = tuple(val)
         self._update_inertia()
@@ -542,11 +561,10 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def inertia_radii(self, val):
-        
+
         assert3f_positive(val, "Inertia radii of gyration")
         self._inertia_radii = val
         self._update_inertia()
-
 
     def _update_inertia(self):
         # update mass
@@ -559,13 +577,13 @@ class Axis(NodeWithParentAndFootprint):
         # update radii and position
         pos = radii_to_positions(*self._inertia_radii)
         for i in range(6):
-            p = (pos[i][0] + self._inertia_position[0],
-                 pos[i][1] + self._inertia_position[1],
-                 pos[i][2] + self._inertia_position[2])
+            p = (
+                pos[i][0] + self._inertia_position[0],
+                pos[i][1] + self._inertia_position[1],
+                pos[i][2] + self._inertia_position[2],
+            )
             self._pointmasses[i].position = p
             # print('{} at {} {} {}'.format(self._inertia/6, *p))
-
-
 
     @property
     def fixed(self):
@@ -583,9 +601,9 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def fixed(self, var):
-        
+
         if var == True:
-            var = (True,True,True,True,True,True)
+            var = (True, True, True, True, True, True)
         if var == False:
             var = (False, False, False, False, False, False)
 
@@ -597,7 +615,7 @@ class Axis(NodeWithParentAndFootprint):
 
     def set_fixed(self):
         """Sets .fixed to (True,True,True,True,True,True)"""
-        
+
         self._vfNode.set_fixed()
 
     @property
@@ -619,7 +637,7 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def x(self, var):
-        
+
         a = self.position
         self.position = (var, a[1], a[2])
 
@@ -627,19 +645,17 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def y(self, var):
-        
+
         a = self.position
-        self.position = (a[0], var , a[2])
+        self.position = (a[0], var, a[2])
 
     @z.setter
     @node_setter_manageable
     @node_setter_observable
     def z(self, var):
-        
+
         a = self.position
         self.position = (a[0], a[1], var)
-
-
 
     @property
     def position(self):
@@ -652,7 +668,7 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def position(self, var):
-        
+
         assert3f(var, "Position ")
         self._vfNode.position = var
         self._scene._geometry_changed()
@@ -676,7 +692,7 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def rx(self, var):
-        
+
         a = self.rotation
         self.rotation = (var, a[1], a[2])
 
@@ -684,15 +700,15 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def ry(self, var):
-        
+
         a = self.rotation
-        self.rotation = (a[0], var , a[2])
+        self.rotation = (a[0], var, a[2])
 
     @rz.setter
     @node_setter_manageable
     @node_setter_observable
     def rz(self, var):
-        
+
         a = self.rotation
         self.rotation = (a[0], a[1], var)
 
@@ -707,7 +723,7 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def rotation(self, var):
-        
+
         # convert to degrees
         assert3f(var, "Rotation ")
         self._vfNode.rotation = np.deg2rad(var)
@@ -737,13 +753,14 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def parent(self, val):
-        
+
         if val is not None:
             # Circular reference check: are we trying to make self depend on val while val depends on self?
             if self._scene.node_A_core_depends_on_B_core(val, self):
-                if isinstance(val, Axis): # it better be
-                    val.change_parent_to(None) # change the parent of other to None, this breaks the previous dependancy
-
+                if isinstance(val, Axis):  # it better be
+                    val.change_parent_to(
+                        None
+                    )  # change the parent of other to None, this breaks the previous dependancy
 
         NodeWithParent.parent.fset(self, val)
         self._scene._geometry_changed()
@@ -767,7 +784,7 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def gx(self, var):
-        
+
         a = self.global_position
         self.global_position = (var, a[1], a[2])
 
@@ -775,7 +792,7 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def gy(self, var):
-        
+
         a = self.global_position
         self.global_position = (a[0], var, a[2])
 
@@ -783,7 +800,7 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def gz(self, var):
-        
+
         a = self.global_position
         self.global_position = (a[0], a[1], var)
 
@@ -796,7 +813,7 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def global_position(self, val):
-        
+
         assert3f(val, "Global Position")
         if self.parent:
             self.position = self.parent.to_loc_position(val)
@@ -822,7 +839,7 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def grx(self, var):
-        
+
         a = self.global_rotation
         self.global_rotation = (var, a[1], a[2])
 
@@ -830,7 +847,7 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def gry(self, var):
-        
+
         a = self.global_rotation
         self.global_rotation = (a[0], var, a[2])
 
@@ -838,7 +855,7 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def grz(self, var):
-        
+
         a = self.global_rotation
         self.global_rotation = (a[0], a[1], var)
 
@@ -848,9 +865,9 @@ class Axis(NodeWithParentAndFootprint):
 
         See Also: heel
         """
-        y = (0,1,0)
+        y = (0, 1, 0)
         uy = self.to_glob_direction(y)
-        return float(100*uy[2])
+        return float(100 * uy[2])
 
     @property
     def heel(self):
@@ -859,7 +876,7 @@ class Axis(NodeWithParentAndFootprint):
 
         See also: tilt_x
         """
-        return np.rad2deg(np.arcsin(self.tilt_x/100))
+        return np.rad2deg(np.arcsin(self.tilt_x / 100))
 
     @property
     def tilt_y(self):
@@ -897,13 +914,13 @@ class Axis(NodeWithParentAndFootprint):
         """
         x = (1, 0, 0)
         ux = self.to_glob_direction(x)
-        heading = np.rad2deg(np.arctan2(ux[1],ux[0]))
-        return np.mod(heading,360)
+        heading = np.rad2deg(np.arctan2(ux[1], ux[0]))
+        return np.mod(heading, 360)
 
     @property
     def heading_compass(self):
         """The heading (0..360)[deg] assuming that the global y-axis is North and global x-axis is East and rotation accoring compass definition"""
-        return np.mod(90-self.heading,360)
+        return np.mod(90 - self.heading, 360)
 
     @property
     def global_rotation(self):
@@ -914,7 +931,7 @@ class Axis(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def global_rotation(self, val):
-        
+
         assert3f(val, "Global Rotation")
         if self.parent:
             self.rotation = self.parent.to_loc_rotation(val)
@@ -980,14 +997,13 @@ class Axis(NodeWithParentAndFootprint):
 
     @property
     def applied_force(self):
-        """The force and moment that is applied on origin of this axis [kN, kN, kN, kNm, kNm, kNm] (Global axis)
-        """
+        """The force and moment that is applied on origin of this axis [kN, kN, kN, kNm, kNm, kNm] (Global axis)"""
         return self._vfNode.applied_force
 
     @property
     def ux(self):
         """The unit x axis [m,m,m] (Global axis)"""
-        return self.to_glob_direction((1,0,0))
+        return self.to_glob_direction((1, 0, 0))
 
     @property
     def uy(self):
@@ -1001,8 +1017,7 @@ class Axis(NodeWithParentAndFootprint):
 
     @property
     def equilibrium_error(self):
-        """The unresolved force and moment that on this axis. Should be zero when in equilibrium  (applied-force minus connection force, Parent axis)
-        """
+        """The unresolved force and moment that on this axis. Should be zero when in equilibrium  (applied-force minus connection force, Parent axis)"""
         return self._vfNode.equilibrium_error
 
     def to_loc_position(self, value):
@@ -1034,17 +1049,19 @@ class Axis(NodeWithParentAndFootprint):
 
     def to_loc_rotation(self, value):
         """Returns the local rotation. Used for rotating rotations.
-            See Also: to_loc_position, to_loc_direction
-             """
+        See Also: to_loc_position, to_loc_direction
+        """
         return np.rad2deg(self._vfNode.global_to_local_rotation(np.deg2rad(value)))
 
     def to_glob_rotation(self, value):
         """Returns the global rotation. Used for rotating rotations.
-            See Also: to_loc_position, to_loc_direction
-             """
+        See Also: to_loc_position, to_loc_direction
+        """
         return np.rad2deg(self._vfNode.local_to_global_rotation(np.deg2rad(value)))
 
-    def give_load_shear_moment_diagram(self, axis_system = None) -> "LoadShearMomentDiagram":
+    def give_load_shear_moment_diagram(
+        self, axis_system=None
+    ) -> "LoadShearMomentDiagram":
         """Returns a LoadShearMoment diagram
 
         Args:
@@ -1055,10 +1072,12 @@ class Axis(NodeWithParentAndFootprint):
         if axis_system is None:
             axis_system = self
 
-        assert isinstance(axis_system, Axis), ValueError(f"axis_system shall be an instance of Axis, but it is of type {type(axis_system)}")
+        assert isinstance(axis_system, Axis), ValueError(
+            f"axis_system shall be an instance of Axis, but it is of type {type(axis_system)}"
+        )
 
         # calculate in the right global direction
-        glob_dir = axis_system.to_glob_direction((1,0,0))
+        glob_dir = axis_system.to_glob_direction((1, 0, 0))
         self._scene._vfc.calculateBendingMoments(*glob_dir)
 
         lsm = self._vfNode.getBendingMomentDiagram(axis_system._vfNode)
@@ -1074,22 +1093,23 @@ class Axis(NodeWithParentAndFootprint):
             new_parent: new parent node
 
         """
-        
 
         # check new_parent
         if new_parent is not None:
-            if not (isinstance(new_parent, Axis) or isinstance(new_parent, GeometricContact)):
+            if not (
+                isinstance(new_parent, Axis) or isinstance(new_parent, GeometricContact)
+            ):
                 raise TypeError(
-                    'Only None or Axis-type nodes (or derived types) can be used as parent. You tried to use a {} as parent'.format(
-                    type(new_parent)))
+                    "Only None or Axis-type nodes (or derived types) can be used as parent. You tried to use a {} as parent".format(
+                        type(new_parent)
+                    )
+                )
 
         glob_pos = self.global_position
         glob_rot = self.global_rotation
         self.parent = new_parent
         self.global_position = glob_pos
         self.global_rotation = glob_rot
-
-
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -1132,7 +1152,9 @@ class Axis(NodeWithParentAndFootprint):
             code += "\n                     inertia = {},".format(self.inertia)
 
         if np.any(self.inertia_radii > 0):
-            code += "\n                     inertia_radii = ({}, {}, {}),".format(*self.inertia_radii)
+            code += "\n                     inertia_radii = ({}, {}, {}),".format(
+                *self.inertia_radii
+            )
 
         # fixeties
         code += "\n           fixed =({}, {}, {}, {}, {}, {}) )".format(*self.fixed)
@@ -1140,6 +1162,7 @@ class Axis(NodeWithParentAndFootprint):
         code += self.add_footprint_python_code()
 
         return code
+
 
 class Point(NodeWithParentAndFootprint):
     """A location on an axis"""
@@ -1172,7 +1195,7 @@ class Point(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def x(self, var):
-        
+
         a = self.position
         self.position = (var, a[1], a[2])
 
@@ -1180,10 +1203,9 @@ class Point(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def y(self, var):
-        
+
         a = self.position
         self.position = (a[0], var, a[2])
-
 
     @z.setter
     @node_setter_manageable
@@ -1194,7 +1216,6 @@ class Point(NodeWithParentAndFootprint):
         """z component of local position"""
         a = self.position
         self.position = (a[0], a[1], var)
-
 
     @property
     def position(self):
@@ -1233,7 +1254,7 @@ class Point(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def gx(self, var):
-        
+
         a = self.global_position
         self.global_position = (var, a[1], a[2])
 
@@ -1241,7 +1262,7 @@ class Point(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def gy(self, var):
-        
+
         a = self.global_position
         self.global_position = (a[0], var, a[2])
 
@@ -1249,7 +1270,7 @@ class Point(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def gz(self, var):
-        
+
         a = self.global_position
         self.global_position = (a[0], a[1], var)
 
@@ -1262,7 +1283,7 @@ class Point(NodeWithParentAndFootprint):
     @node_setter_manageable
     @node_setter_observable
     def global_position(self, val):
-        
+
         assert3f(val, "Global Position")
         if self.parent:
             self.position = self.parent.to_loc_position(val)
@@ -1284,6 +1305,7 @@ class Point(NodeWithParentAndFootprint):
         code += self.add_footprint_python_code()
 
         return code
+
 
 class RigidBody(Axis):
     """A Rigid body, internally composed of an axis, a point (cog) and a force (gravity)"""
@@ -1314,12 +1336,11 @@ class RigidBody(Axis):
     @node_setter_observable
     def name(self, newname):
         """Name of the node (str), must be unique"""
-        
+
         # super().name = newname
         super(RigidBody, self.__class__).name.fset(self, newname)
         self._vfPoi.name = newname + vfc.VF_NAME_SPLIT + "cog"
         self._vfForce.name = newname + vfc.VF_NAME_SPLIT + "gravity"
-
 
     @property
     def footprint(self):
@@ -1328,12 +1349,13 @@ class RigidBody(Axis):
     @footprint.setter
     def footprint(self, value):
         """Sets the footprint vertices. Supply as an iterable with each element containing three floats"""
-        super(RigidBody, type(self)).footprint.fset(self, value) # https://bugs.python.org/issue14965
+        super(RigidBody, type(self)).footprint.fset(
+            self, value
+        )  # https://bugs.python.org/issue14965
 
         # assign the footprint to the CoG as well,
         # but subtract the cog position as
         self._sync_selfweight_footprint()
-
 
     def _sync_selfweight_footprint(self):
         """The footprint of the CoG is defined relative to the CoG, so its needs to be updated
@@ -1346,7 +1368,6 @@ class RigidBody(Axis):
             pos = np.array(t, dtype=float)
             relpos = pos - self.cog
             self._vfPoi.footprintVertexAdd(*relpos)
-
 
     @property
     def cogx(self):
@@ -1372,7 +1393,7 @@ class RigidBody(Axis):
     @node_setter_manageable
     @node_setter_observable
     def cogx(self, var):
-        
+
         a = self.cog
         self.cog = (var, a[1], a[2])
 
@@ -1380,7 +1401,7 @@ class RigidBody(Axis):
     @node_setter_manageable
     @node_setter_observable
     def cogy(self, var):
-        
+
         a = self.cog
         self.cog = (a[0], var, a[2])
 
@@ -1388,7 +1409,7 @@ class RigidBody(Axis):
     @node_setter_manageable
     @node_setter_observable
     def cogz(self, var):
-        
+
         a = self.cog
         self.cog = (a[0], a[1], var)
 
@@ -1396,12 +1417,11 @@ class RigidBody(Axis):
     @node_setter_manageable
     @node_setter_observable
     def cog(self, newcog):
-        
+
         assert3f(newcog)
         self._vfPoi.position = newcog
         self.inertia_position = self.cog
         self._sync_selfweight_footprint()
-
 
     @property
     def mass(self):
@@ -1415,7 +1435,7 @@ class RigidBody(Axis):
     @node_setter_manageable
     @node_setter_observable
     def mass(self, newmass):
-        
+
         assert1f(newmass)
         self.inertia = newmass
         self._vfForce.force = (0, 0, -vfc.G * newmass)
@@ -1462,9 +1482,13 @@ class RigidBody(Axis):
             code += "\n                          solved({})),".format(self.rotation[2])
 
         if np.any(self.inertia_radii > 0):
-            code += "\n                     inertia_radii = ({}, {}, {}),".format(*self.inertia_radii)
+            code += "\n                     inertia_radii = ({}, {}, {}),".format(
+                *self.inertia_radii
+            )
 
-        code += "\n                fixed =({}, {}, {}, {}, {}, {}) )".format(*self.fixed)
+        code += "\n                fixed =({}, {}, {}, {}, {}, {}) )".format(
+            *self.fixed
+        )
 
         code += self.add_footprint_python_code()
 
@@ -1525,9 +1549,11 @@ class Cable(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def length(self, val):
-        
+
         if val < 1e-9:
-            raise Exception('Length shall be more than 0 (otherwise stiffness EA/L becomes infinite)')
+            raise Exception(
+                "Length shall be more than 0 (otherwise stiffness EA/L becomes infinite)"
+            )
         self._vfNode.Length = val
 
     @property
@@ -1542,7 +1568,7 @@ class Cable(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def EA(self, ea):
-        
+
         self._vfNode.EA = ea
 
     @property
@@ -1554,7 +1580,7 @@ class Cable(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def diameter(self, diameter):
-        
+
         self._vfNode.diameter = diameter
 
     @property
@@ -1596,40 +1622,43 @@ class Cable(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def connections(self, value):
-        
-        if len(value)<2:
-            raise ValueError('At least two connections required')
+
+        if len(value) < 2:
+            raise ValueError("At least two connections required")
 
         nodes = []
         for p in value:
             n = self._scene._node_from_node_or_str(p)
 
             if not (isinstance(n, Point) or isinstance(n, Circle)):
-                raise ValueError(f'Only Sheaves and Pois can be used as connection, but {n.name} is a {type(n)}')
+                raise ValueError(
+                    f"Only Sheaves and Pois can be used as connection, but {n.name} is a {type(n)}"
+                )
             nodes.append(n)
 
         # check for repeated nodes
         n = len(nodes)
-        for i in range(n-1):
+        for i in range(n - 1):
             node1 = nodes[i]
-            node2 = nodes[i+1]
+            node2 = nodes[i + 1]
 
             # if first or last node is a sheave, the this will be replaced by the poi of the sheave
             if i == 0 and isinstance(node1, Circle):
                 node1 = node1.parent
-            if i == n-2 and isinstance(node2, Circle):
+            if i == n - 2 and isinstance(node2, Circle):
                 node2 = node2.parent
 
             if node1 == node2:
-                raise ValueError(f'It is not allowed to have the same node repeated - you have {node1.name} and {node2.name}')
+                raise ValueError(
+                    f"It is not allowed to have the same node repeated - you have {node1.name} and {node2.name}"
+                )
 
         self._pois.clear()
         self._pois.extend(nodes)
         self._update_pois()
 
-
     def get_points_for_visual(self):
-        """A list of 3D locations which can be used for visualization """
+        """A list of 3D locations which can be used for visualization"""
         return self._vfNode.global_points
 
     def _add_connection_to_core(self, connection):
@@ -1638,14 +1667,13 @@ class Cable(CoreConnectedNode):
         if isinstance(connection, Circle):
             self._vfNode.add_connection_sheave(connection._vfNode)
 
-
     def _update_pois(self):
         self._vfNode.clear_connections()
 
         # add first point
         point = self._pois[0]
         if isinstance(point, Circle):
-            point = point.parent # connect to parent poi of sheave instead
+            point = point.parent  # connect to parent poi of sheave instead
         self._add_connection_to_core(point)
 
         # add sheaves
@@ -1655,7 +1683,7 @@ class Cable(CoreConnectedNode):
         # add last point
         point = self._pois[-1]
         if isinstance(point, Circle):
-            point = point.parent # connect to parent poi of sheave instead
+            point = point.parent  # connect to parent poi of sheave instead
         self._add_connection_to_core(point)
 
     def _give_poi_names(self):
@@ -1669,7 +1697,7 @@ class Cable(CoreConnectedNode):
         code = "# code for {}".format(self.name)
 
         poi_names = self._give_poi_names()
-        n_sheaves = len(poi_names)-2
+        n_sheaves = len(poi_names) - 2
 
         code += "\ns.new_cable(name='{}',".format(self.name)
         code += "\n            endA='{}',".format(poi_names[0])
@@ -1688,12 +1716,12 @@ class Cable(CoreConnectedNode):
                 code += "\n            sheaves = ['{}'])".format(poi_names[1])
             else:
                 code += "\n            sheaves = ['{}',".format(poi_names[1])
-                for i in range(n_sheaves-2):
-                    code += "\n                       '{}',".format(poi_names[2+i])
+                for i in range(n_sheaves - 2):
+                    code += "\n                       '{}',".format(poi_names[2 + i])
                 code += "\n                       '{}']),".format(poi_names[-2])
 
-
         return code
+
 
 class Force(NodeWithParent):
     """A Force models a force and moment on a poi.
@@ -1813,7 +1841,6 @@ class Force(NodeWithParent):
         a = self.moment
         self.moment = (a[0], a[1], var)
 
-
     def give_python_code(self):
         code = "# code for {}".format(self.name)
 
@@ -1832,7 +1859,9 @@ class ContactMesh(NodeWithParent):
     def __init__(self, scene, vfContactMesh):
         super().__init__(scene, vfContactMesh)
         self._None_parent_acceptable = True
-        self._trimesh = TriMeshSource(self._scene, self._vfNode.trimesh) # the tri-mesh is wrapped in a custom object
+        self._trimesh = TriMeshSource(
+            self._scene, self._vfNode.trimesh
+        )  # the tri-mesh is wrapped in a custom object
 
     @property
     def trimesh(self):
@@ -1843,16 +1872,19 @@ class ContactMesh(NodeWithParent):
         """
         return self._trimesh
 
-
     def give_python_code(self):
         code = "# code for {}".format(self.name)
         code += "\nmesh = s.new_contactmesh(name='{}'".format(self.name)
         if self.parent_for_export:
             code += ", parent='{}')".format(self.parent_for_export.name)
         else:
-            code += ')'
+            code += ")"
         code += "\nmesh.trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
-            self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
+            self.trimesh._path,
+            *self.trimesh._scale,
+            *self.trimesh._rotation,
+            *self.trimesh._offset,
+        )
 
         return code
 
@@ -1901,10 +1933,9 @@ class ContactBall(NodeWithParent):
         """Returns the absolute compression of the ball, if any [m]"""
         return self._vfNode.force
 
-
     @property
     def contactpoint(self):
-        """The nearest point on the nearest mesh. Only defined  """
+        """The nearest point on the nearest mesh. Only defined"""
         return self._vfNode.contact_point
 
     def update(self):
@@ -1932,9 +1963,11 @@ class ContactBall(NodeWithParent):
             cm = self._scene._node_from_node_or_str(m)
 
             if not isinstance(cm, ContactMesh):
-                raise ValueError(f'Only ContactMesh nodes can be used as mesh, but {cm.name} is a {type(cm)}')
+                raise ValueError(
+                    f"Only ContactMesh nodes can be used as mesh, but {cm.name} is a {type(cm)}"
+                )
             if cm in meshes:
-                raise ValueError(f'Can not add {cm.name} twice')
+                raise ValueError(f"Can not add {cm.name} twice")
 
             meshes.append(cm)
 
@@ -1960,7 +1993,7 @@ class ContactBall(NodeWithParent):
     @node_setter_observable
     def radius(self, value):
 
-        assert1f_positive_or_zero(value, 'radius')
+        assert1f_positive_or_zero(value, "radius")
         self._vfNode.radius = value
         pass
 
@@ -1974,7 +2007,7 @@ class ContactBall(NodeWithParent):
     @node_setter_observable
     def k(self, value):
 
-        assert1f_positive_or_zero(value, 'k')
+        assert1f_positive_or_zero(value, "k")
         self._vfNode.k = value
         pass
 
@@ -1989,36 +2022,35 @@ class ContactBall(NodeWithParent):
 
         for m in self._meshes:
             code += '"' + m.name + '",'
-        code = code[:-1] + '])'
+        code = code[:-1] + "])"
 
         return code
 
     # =======================================================================
 
 
-
 class SPMT(NodeWithParent):
     """An SPMT is a Self-propelled modular transporter
 
-        These are platform vehicles
+    These are platform vehicles
 
-        ============  =======
-        0 0 0 0 0 0   0 0 0 0
+    ============  =======
+    0 0 0 0 0 0   0 0 0 0
 
-        A number of axles share a common suspension system.
+    A number of axles share a common suspension system.
 
-        The SPMT node models such a system of axles.
+    The SPMT node models such a system of axles.
 
-        The SPMT is attached to an axis system.
-        The upper locations of the axles are given as an array of 3d vectors.
+    The SPMT is attached to an axis system.
+    The upper locations of the axles are given as an array of 3d vectors.
 
-        Rays are extended from these points in local -Z direction (down) until they hit a contact-shape.
+    Rays are extended from these points in local -Z direction (down) until they hit a contact-shape.
 
-        If no contact shape is found (or not within the maximum distance per axles) then the maximum defined extension for that axle is used.
+    If no contact shape is found (or not within the maximum distance per axles) then the maximum defined extension for that axle is used.
 
-        A shared pressure is obtained from the combination of all individual extensions.
+    A shared pressure is obtained from the combination of all individual extensions.
 
-        Finally an equal force is applied on all the axle connection points. This force acts in local Z direction.
+    Finally an equal force is applied on all the axle connection points. This force acts in local Z direction.
 
     """
 
@@ -2030,14 +2062,12 @@ class SPMT(NodeWithParent):
 
     @property
     def axle_force(self) -> tuple:
-        """Returns the force on each of the axles [kN, kN, kN] (global axis)
-        """
+        """Returns the force on each of the axles [kN, kN, kN] (global axis)"""
         return self._vfNode.force
 
     @property
     def compression(self) -> float:
-        """Returns the total compression of all the axles together [m]
-        """
+        """Returns the total compression of all the axles together [m]"""
         return self._vfNode.compression
 
     def get_actual_global_points(self):
@@ -2045,13 +2075,13 @@ class SPMT(NodeWithParent):
         gp = self._vfNode.actual_global_points
 
         pts = []
-        n2 = int(len(gp)/2)
+        n2 = int(len(gp) / 2)
         for i in range(n2):
             pts.append(gp[2 * i + 1])
-            pts.append(gp[2*i])
+            pts.append(gp[2 * i])
 
-            if i < n2-1:
-                pts.append(gp[2*i+2])
+            if i < n2 - 1:
+                pts.append(gp[2 * i + 2])
 
         return pts
 
@@ -2070,7 +2100,7 @@ class SPMT(NodeWithParent):
     @node_setter_observable
     def k(self, value):
 
-        assert1f_positive_or_zero(value, 'k')
+        assert1f_positive_or_zero(value, "k")
         self._vfNode.k = value
         pass
 
@@ -2084,7 +2114,7 @@ class SPMT(NodeWithParent):
     @node_setter_observable
     def nominal_length(self, value):
 
-        assert1f_positive_or_zero(value, 'nominal_length')
+        assert1f_positive_or_zero(value, "nominal_length")
         self._vfNode.nominal_length = value
         pass
 
@@ -2098,7 +2128,7 @@ class SPMT(NodeWithParent):
     @node_setter_observable
     def max_length(self, value):
 
-        assert1f_positive_or_zero(value, 'max_length')
+        assert1f_positive_or_zero(value, "max_length")
         self._vfNode.max_length = value
         pass
 
@@ -2114,7 +2144,6 @@ class SPMT(NodeWithParent):
         """
         return tuple(self._meshes)
 
-
     @meshes.setter
     @node_setter_manageable
     @node_setter_observable
@@ -2126,9 +2155,11 @@ class SPMT(NodeWithParent):
             cm = self._scene._node_from_node_or_str(m)
 
             if not isinstance(cm, ContactMesh):
-                raise ValueError(f'Only ContactMesh nodes can be used as mesh, but {cm.name} is a {type(cm)}')
+                raise ValueError(
+                    f"Only ContactMesh nodes can be used as mesh, but {cm.name} is a {type(cm)}"
+                )
             if cm in meshes:
-                raise ValueError(f'Can not add {cm.name} twice')
+                raise ValueError(f"Can not add {cm.name} twice")
 
             meshes.append(cm)
 
@@ -2153,11 +2184,7 @@ class SPMT(NodeWithParent):
 
         for ix in range(nx):
             for iy in range(ny):
-                self._vfNode.add_axle(ix * dx - offx,
-                                      iy * dy - offy,
-                                      0)
-
-
+                self._vfNode.add_axle(ix * dx - offx, iy * dy - offy, 0)
 
     @property
     def axles(self):
@@ -2184,7 +2211,6 @@ class SPMT(NodeWithParent):
         """Updates the contact-points and applies forces on mesh and point"""
         self._vfNode.update()
 
-
     def give_python_code(self):
         code = "# code for {}".format(self.name)
 
@@ -2197,19 +2223,20 @@ class SPMT(NodeWithParent):
 
         for m in self._meshes:
             code += '"' + m.name + '",'
-        code = code[:-1] + '],'
+        code = code[:-1] + "],"
 
         code += "\n                  axles = [ "
 
         for p in self.axles:
-            code += f'({p[0]}, {p[1]}, {p[2]}),'
+            code += f"({p[0]}, {p[1]}, {p[2]}),"
 
-        code = code[:-1] + '])'
+        code = code[:-1] + "])"
 
         return code
 
+
 class Circle(NodeWithParent):
-    """A Circle models a circle shape based on a diameter and an axis direction  """
+    """A Circle models a circle shape based on a diameter and an axis direction"""
 
     @property
     def axis(self) -> tuple:
@@ -2231,7 +2258,7 @@ class Circle(NodeWithParent):
 
         assert3f(val)
         if np.linalg.norm(val) == 0:
-            raise ValueError('Axis can not be 0,0,0')
+            raise ValueError("Axis can not be 0,0,0")
         self._vfNode.axis_direction = val
 
     @property
@@ -2387,6 +2414,7 @@ class HydSpring(NodeWithParent):
 
         return code
 
+
 class LC6d(CoreConnectedNode):
     """A LC6d models a Linear Connector with 6 dofs.
 
@@ -2440,7 +2468,7 @@ class LC6d(CoreConnectedNode):
 
         val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Axis):
-            raise TypeError('Provided nodeA should be a Axis')
+            raise TypeError("Provided nodeA should be a Axis")
 
         self._main = val
         self._vfNode.master = val._vfNode
@@ -2457,12 +2485,11 @@ class LC6d(CoreConnectedNode):
 
         val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Axis):
-            raise TypeError('Provided nodeA should be a Axis')
+            raise TypeError("Provided nodeA should be a Axis")
 
         self._secondary = val
         self._vfNode.slave = val._vfNode
 
-    # TODO: Continue with these - need to be added yo pyo3d as well, currently nothing is exposed
     @property
     def fgx(self):
         """Force on main in global coordinate frame [kN]"""
@@ -2482,7 +2509,6 @@ class LC6d(CoreConnectedNode):
     def force_global(self):
         """Force on main in global coordinate frame [kN]"""
         return self._vfNode.global_force
-
 
     @property
     def mgx(self):
@@ -2504,10 +2530,8 @@ class LC6d(CoreConnectedNode):
         """Moment on main in global coordinate frame [kNm]"""
         return self._vfNode.global_moment
 
-
     def give_python_code(self):
         code = "# code for {}".format(self.name)
-
 
         code += "\ns.new_linear_connector_6d(name='{}',".format(self.name)
         code += "\n            main='{}',".format(self.main.name)
@@ -2516,6 +2540,7 @@ class LC6d(CoreConnectedNode):
         code += "\n                       {}, {}, {}) )".format(*self.stiffness[3:])
 
         return code
+
 
 class Connector2d(CoreConnectedNode):
     """A Connector2d linear connector with acts both on linear displacement and angular displacement.
@@ -2603,7 +2628,7 @@ class Connector2d(CoreConnectedNode):
 
         val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Axis):
-            raise TypeError('Provided nodeA should be a Axis')
+            raise TypeError("Provided nodeA should be a Axis")
 
         self._nodeA = val
         self._vfNode.master = val._vfNode
@@ -2620,7 +2645,7 @@ class Connector2d(CoreConnectedNode):
 
         val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Axis):
-            raise TypeError('Provided nodeA should be a Axis')
+            raise TypeError("Provided nodeA should be a Axis")
 
         self._nodeB = val
         self._vfNode.slave = val._vfNode
@@ -2635,6 +2660,7 @@ class Connector2d(CoreConnectedNode):
         code += "\n            k_angular ={})".format(self.k_angular)
 
         return code
+
 
 class Beam(CoreConnectedNode):
     """A LinearBeam models a FEM-like linear beam element.
@@ -2666,7 +2692,7 @@ class Beam(CoreConnectedNode):
     The angle of rotation is the angle between the nodeA x-axis and D
 
     The rotation about the rotated X-axis is undefined.
-    
+
     """
 
     def __init__(self, scene, node):
@@ -2685,8 +2711,8 @@ class Beam(CoreConnectedNode):
     @node_setter_manageable
     @node_setter_observable
     def n_segments(self, value):
-        if value<1:
-            raise ValueError('Number of segments in beam should be 1 or more')
+        if value < 1:
+            raise ValueError("Number of segments in beam should be 1 or more")
         self._vfNode.nSegments = int(value)
 
     @property
@@ -2701,7 +2727,7 @@ class Beam(CoreConnectedNode):
     @EIy.setter
     @node_setter_manageable
     @node_setter_observable
-    def EIy(self,value):
+    def EIy(self, value):
 
         self._vfNode.EIy = value
 
@@ -2755,22 +2781,21 @@ class Beam(CoreConnectedNode):
 
     @property
     def tension_only(self):
-        """axial stiffness (EA) only applicable to tension [True/False]
-        """
+        """axial stiffness (EA) only applicable to tension [True/False]"""
         return self._vfNode.tensionOnly
 
     @tension_only.setter
     @node_setter_manageable
     @node_setter_observable
     def tension_only(self, value):
-        assert isinstance(value, bool), ValueError("Value for tension_only shall be True or False")
+        assert isinstance(value, bool), ValueError(
+            "Value for tension_only shall be True or False"
+        )
         self._vfNode.tensionOnly = value
-
 
     @property
     def mass(self):
-        """Mass of the beam in [mT]
-        """
+        """Mass of the beam in [mT]"""
         return self._vfNode.Mass
 
     @mass.setter
@@ -2804,11 +2829,10 @@ class Beam(CoreConnectedNode):
     @node_setter_observable
     def nodeA(self, val):
 
-
         val = self._scene._node_from_node_or_str(val)
 
         if not isinstance(val, Axis):
-            raise TypeError('Provided nodeA should be a Axis')
+            raise TypeError("Provided nodeA should be a Axis")
 
         self._nodeA = val
         self._vfNode.master = val._vfNode
@@ -2825,7 +2849,7 @@ class Beam(CoreConnectedNode):
 
         val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Axis):
-            raise TypeError('Provided nodeA should be a Axis')
+            raise TypeError("Provided nodeA should be a Axis")
 
         self._nodeB = val
         self._vfNode.slave = val._vfNode
@@ -2853,8 +2877,8 @@ class Beam(CoreConnectedNode):
     def torsion(self):
         """Torsion moment [kNm]. Positive if end B has a positive rotation about the x-axis of end A
 
-         torsion is calculated at the midpoints of the beam segments.
-         """
+        torsion is calculated at the midpoints of the beam segments.
+        """
         return self._vfNode.torsion
 
     @property
@@ -2865,7 +2889,9 @@ class Beam(CoreConnectedNode):
     @property
     def X_midpoints(self):
         """X-positions of the beam centers measured along the length of the beam [m]"""
-        return tuple(0.5 * (np.array(self._vfNode.x[:-1]) + np.array(self._vfNode.x[1:])))
+        return tuple(
+            0.5 * (np.array(self._vfNode.x[:-1]) + np.array(self._vfNode.x[1:]))
+        )
 
     @property
     def global_positions(self):
@@ -2898,6 +2924,7 @@ class Beam(CoreConnectedNode):
 
         return code
 
+
 class TriMeshSource(Node):
     """
     TriMesh
@@ -2912,22 +2939,22 @@ class TriMeshSource(Node):
 
         # Note: Visual does not have a corresponding vfCore Node in the scene but does have a vfCore
         self._TriMesh = source
-        self._new_mesh = True             # cheat for visuals
+        self._new_mesh = True  # cheat for visuals
 
-        self._path = ''                   # stores the data that was used to load the obj
-        self._offset = (0,0,0)
-        self._scale = (1,1,1)
-        self._rotation = (0,0,0)
+        self._path = ""  # stores the data that was used to load the obj
+        self._offset = (0, 0, 0)
+        self._scale = (1, 1, 1)
+        self._rotation = (0, 0, 0)
 
         self._invert_normals = False
 
-    def AddVertex(self, x,y,z):
+    def AddVertex(self, x, y, z):
         """Adds a vertex (point)"""
-        self._TriMesh.AddVertex(x,y,z)
+        self._TriMesh.AddVertex(x, y, z)
 
-    def AddFace(self, i,j,k):
+    def AddFace(self, i, j, k):
         """Adds a triangular face between vertex numbers i,j and k"""
-        self._TriMesh.AddFace(i,j,k)
+        self._TriMesh.AddFace(i, j, k)
 
     def get_extends(self):
         """Returns the extends of the mesh in global coordinates
@@ -2939,7 +2966,7 @@ class TriMeshSource(Node):
         t = self._TriMesh
 
         if t.nFaces == 0:
-            return (0,0,0,0,0,0)
+            return (0, 0, 0, 0, 0, 0)
 
         v = t.GetVertex(0)
         xn = v[0]
@@ -2952,12 +2979,12 @@ class TriMeshSource(Node):
         for i in range(t.nVertices):
             v = t.GetVertex(i)
             x = v[0]
-            y= v[1]
+            y = v[1]
             z = v[2]
 
-            if x<xn:
+            if x < xn:
                 xn = x
-            if x>xp:
+            if x > xp:
                 xp = x
             if y < yn:
                 yn = y
@@ -2968,10 +2995,11 @@ class TriMeshSource(Node):
             if z > zp:
                 zp = z
 
-        return (xn,xp,yn,yp,zn,zp)
+        return (xn, xp, yn, yp, zn, zp)
 
-
-    def _fromVTKpolydata(self,polydata, offset = None, rotation = None, scale = None, invert_normals=False):
+    def _fromVTKpolydata(
+        self, polydata, offset=None, rotation=None, scale=None, invert_normals=False
+    ):
 
         import vtk
 
@@ -3000,7 +3028,7 @@ class TriMeshSource(Node):
                 r.RotateWXYZ(angle, q[0] / angle, q[1] / angle, q[2] / angle)
 
         if offset is None:
-            offset = [0,0,0]
+            offset = [0, 0, 0]
 
         scaleFilter.SetTransform(s)
         rotationFilter.SetTransform(r)
@@ -3011,12 +3039,14 @@ class TriMeshSource(Node):
 
         for i in range(data.GetNumberOfPoints()):
             point = data.GetPoint(i)
-            self._TriMesh.AddVertex(point[0] + offset[0], point[1] + offset[1], point[2] + offset[2])
+            self._TriMesh.AddVertex(
+                point[0] + offset[0], point[1] + offset[1], point[2] + offset[2]
+            )
 
         for i in range(data.GetNumberOfCells()):
             cell = data.GetCell(i)
 
-            if isinstance(cell,vtk.vtkLine):
+            if isinstance(cell, vtk.vtkLine):
                 print("Cell nr {} is a line, not adding to mesh".format(i))
                 continue
 
@@ -3035,7 +3065,9 @@ class TriMeshSource(Node):
 
         # check if anything was loaded
         if self._TriMesh.nFaces == 0:
-            raise Exception('No faces in poly-data - no geometry added (hint: empty obj file?)')
+            raise Exception(
+                "No faces in poly-data - no geometry added (hint: empty obj file?)"
+            )
         self._new_mesh = True
         self._scene.update()
 
@@ -3049,7 +3081,7 @@ class TriMeshSource(Node):
         tm = self._TriMesh
 
         if tm.nFaces == 0:
-            return ['No mesh']
+            return ["No mesh"]
 
         # Make a list of all boundaries using their vertex IDs
         boundaries = np.zeros((3 * tm.nFaces, 2))
@@ -3062,7 +3094,9 @@ class TriMeshSource(Node):
         # For an edge is doesn't matter in which direction it runs
         boundaries.sort(axis=1)
 
-        rows_occurance_count = np.unique(boundaries, axis=0, return_counts=True)[1]  # count of rows
+        rows_occurance_count = np.unique(boundaries, axis=0, return_counts=True)[
+            1
+        ]  # count of rows
 
         n_boundary = np.count_nonzero(rows_occurance_count == 1)
         n_nonmanifold = np.count_nonzero(rows_occurance_count > 2)
@@ -3070,9 +3104,9 @@ class TriMeshSource(Node):
         messages = []
 
         if n_boundary > 0:
-            messages.append(f'Mesh contains {n_boundary} boundary edges')
+            messages.append(f"Mesh contains {n_boundary} boundary edges")
         if n_nonmanifold > 0:
-            messages.append(f'Mesh contains {n_nonmanifold} non-manifold edges')
+            messages.append(f"Mesh contains {n_nonmanifold} non-manifold edges")
 
         # Do not check for volume if we have nonmanifold geometry or boundary edges
         try:
@@ -3081,8 +3115,10 @@ class TriMeshSource(Node):
             volume = 1  # no available in every pyo3d yet
 
         if volume < 0:
-            messages.append(f'Total mesh volume is negative ({volume:.2f} m3 of enclosed volume).')
-            messages.append('Hint: Use invert-normals')
+            messages.append(
+                f"Total mesh volume is negative ({volume:.2f} m3 of enclosed volume)."
+            )
+            messages.append("Hint: Use invert-normals")
 
         return messages
 
@@ -3101,10 +3137,14 @@ class TriMeshSource(Node):
 
         self._fromVTKpolydata(polydata.GetOutputPort())
 
-    def load_obj(self, filename, offset = None, rotation = None, scale = None, invert_normals = False):
+    def load_obj(
+        self, filename, offset=None, rotation=None, scale=None, invert_normals=False
+    ):
         self.load_file(filename, offset, rotation, scale, invert_normals)
 
-    def load_file(self, url, offset = None, rotation = None, scale = None, invert_normals = False):
+    def load_file(
+        self, url, offset=None, rotation=None, scale=None, invert_normals=False
+    ):
         """Loads an .obj or .stl file and and triangulates it.
 
         Order of modifications:
@@ -3126,23 +3166,30 @@ class TriMeshSource(Node):
         filename = str(self._scene.get_resource_path(url))
 
         import vtk
+
         ext = filename.lower()[-3:]
-        if ext == 'obj':
+        if ext == "obj":
             obj = vtk.vtkOBJReader()
             obj.SetFileName(filename)
-        elif ext == 'stl':
+        elif ext == "stl":
             obj = vtk.vtkSTLReader()
             obj.SetFileName(filename)
         else:
-            raise ValueError(f'File should be an .obj or .stl file but has extension {ext}')
-
+            raise ValueError(
+                f"File should be an .obj or .stl file but has extension {ext}"
+            )
 
         # Add cleaning
         cln = vtk.vtkCleanPolyData()
         cln.SetInputConnection(obj.GetOutputPort())
 
-        self._fromVTKpolydata(cln.GetOutputPort(), offset=offset, rotation=rotation, scale=scale, invert_normals=invert_normals)
-
+        self._fromVTKpolydata(
+            cln.GetOutputPort(),
+            offset=offset,
+            rotation=rotation,
+            scale=scale,
+            invert_normals=invert_normals,
+        )
 
         self._scale = scale
         self._offset = offset
@@ -3161,7 +3208,7 @@ class TriMeshSource(Node):
         return code
 
     # def change_parent_to(self, new_parent):
-    #     
+    #
     #     if not (isinstance(new_parent, Axis) or new_parent is None):
     #         raise ValueError('Visuals can only be attached to an axis (or derived) or None')
     #
@@ -3182,6 +3229,7 @@ class TriMeshSource(Node):
     #         self.offset = new_parent.to_loc_position(cur_position)
     #         self.rotation = new_parent.to_loc_direction(cur_rotation)
 
+
 class Buoyancy(NodeWithParent):
     """Buoyancy provides a buoyancy force based on a buoyancy mesh. The mesh is triangulated and chopped at the instantaneous flat water surface. Buoyancy is applied as an upwards force that the center of buoyancy.
     The calculation of buoyancy is as accurate as the provided geometry.
@@ -3196,13 +3244,12 @@ class Buoyancy(NodeWithParent):
     def __init__(self, scene, vfBuoyancy):
         super().__init__(scene, vfBuoyancy)
         self._None_parent_acceptable = False
-        self._trimesh = TriMeshSource(self._scene, self._vfNode.trimesh) # the tri-mesh is wrapped in a custom object
+        self._trimesh = TriMeshSource(
+            self._scene, self._vfNode.trimesh
+        )  # the tri-mesh is wrapped in a custom object
 
     def update(self):
         self._vfNode.reloadTrimesh()
-
-
-
 
     @property
     def trimesh(self) -> TriMeshSource:
@@ -3235,25 +3282,32 @@ class Buoyancy(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def density(self, value):
-        assert1f_positive_or_zero(value, 'density')
+        assert1f_positive_or_zero(value, "density")
         self._vfNode.density = value
-
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
         code += "\nmesh = s.new_buoyancy(name='{}',".format(self.name)
 
         if self.density != 1.025:
-            code += f'\n          density={self.density},'
+            code += f"\n          density={self.density},"
 
         code += "\n          parent='{}')".format(self.parent_for_export.name)
 
         if self.trimesh._invert_normals:
             code += "\nmesh.trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}), invert_normals=True)".format(
-                self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
+                self.trimesh._path,
+                *self.trimesh._scale,
+                *self.trimesh._rotation,
+                *self.trimesh._offset,
+            )
         else:
             code += "\nmesh.trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
-                self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
+                self.trimesh._path,
+                *self.trimesh._scale,
+                *self.trimesh._rotation,
+                *self.trimesh._offset,
+            )
 
         return code
 
@@ -3264,7 +3318,7 @@ class Tank(NodeWithParent):
 
     There as no restrictions to the size or aspect ratio of the panels. It is excellent to model as box using 6 faces. Using smaller panels has a negative effect on performance.
 
-    The normals of the panels should point *away* from the fluid. This means that the same basic shapes can be used for both buoyancy and tanks. 
+    The normals of the panels should point *away* from the fluid. This means that the same basic shapes can be used for both buoyancy and tanks.
     """
 
     # init parent and name are fully derived from NodeWithParent
@@ -3272,9 +3326,13 @@ class Tank(NodeWithParent):
     def __init__(self, scene, vfTank):
         super().__init__(scene, vfTank)
         self._None_parent_acceptable = False
-        self._trimesh = TriMeshSource(self._scene, self._vfNode.trimesh) # the tri-mesh is wrapped in a custom object
+        self._trimesh = TriMeshSource(
+            self._scene, self._vfNode.trimesh
+        )  # the tri-mesh is wrapped in a custom object
 
-        self._inertia = scene._vfc.new_pointmass(self.name + vfc.VF_NAME_SPLIT + 'inertia')
+        self._inertia = scene._vfc.new_pointmass(
+            self.name + vfc.VF_NAME_SPLIT + "inertia"
+        )
 
     def update(self):
         self._vfNode.reloadTrimesh()
@@ -3307,7 +3365,9 @@ class Tank(NodeWithParent):
 
     @free_flooding.setter
     def free_flooding(self, value):
-        assert isinstance(value, bool), ValueError(f'free_flooding shall be a bool, you passed a {type(value)}')
+        assert isinstance(value, bool), ValueError(
+            f"free_flooding shall be a bool, you passed a {type(value)}"
+        )
         self._vfNode.free_flooding = value
 
     @property
@@ -3330,7 +3390,7 @@ class Tank(NodeWithParent):
         """Amount of volume in tank as percentage of capacity [%]"""
         if self.capacity == 0:
             return 0
-        return 100*self.volume / self.capacity
+        return 100 * self.volume / self.capacity
 
     @fill_pct.setter
     @node_setter_manageable
@@ -3342,9 +3402,11 @@ class Tank(NodeWithParent):
 
         assert1f_positive_or_zero(value)
 
-        if value>100.1:
-            raise ValueError(f'Fill percentage should be between 0 and 100 [%], {value} is not valid')
-        if value>100:
+        if value > 100.1:
+            raise ValueError(
+                f"Fill percentage should be between 0 and 100 [%], {value} is not valid"
+            )
+        if value > 100:
             value = 100
         self.volume = value * self.capacity / 100
 
@@ -3369,7 +3431,7 @@ class Tank(NodeWithParent):
     @node_setter_manageable
     @node_setter_observable
     def volume(self, value):
-        assert1f_positive_or_zero(value,'Volume')
+        assert1f_positive_or_zero(value, "Volume")
         self._vfNode.volume = value
 
     @property
@@ -3394,22 +3456,28 @@ class Tank(NodeWithParent):
         code += "\nmesh = s.new_tank(name='{}',".format(self.name)
 
         if self.density != 1.025:
-            code += f'\n          density={self.density},'
+            code += f"\n          density={self.density},"
 
         if self.free_flooding:
-            code += f'\n          free_flooding=True,'
+            code += f"\n          free_flooding=True,"
 
         code += "\n          parent='{}')".format(self.parent_for_export.name)
 
         if self.trimesh._invert_normals:
             code += "\nmesh.trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}), invert_normals=True)".format(
-                self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
+                self.trimesh._path,
+                *self.trimesh._scale,
+                *self.trimesh._rotation,
+                *self.trimesh._offset,
+            )
         else:
             code += "\nmesh.trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
-                self.trimesh._path, *self.trimesh._scale, *self.trimesh._rotation, *self.trimesh._offset)
+                self.trimesh._path,
+                *self.trimesh._scale,
+                *self.trimesh._rotation,
+                *self.trimesh._offset,
+            )
         code += f"\ns['{self.name}'].volume = {self.volume}   # first load mesh, then set volume"
-
-
 
         return code
 
@@ -3420,7 +3488,6 @@ class BallastSystem(Node):
     The tank objects are created separately and only their references are assigned to this ballast-system object.
 
     """
-
 
     def __init__(self, scene, parent):
         super().__init__(scene)
@@ -3433,17 +3500,29 @@ class BallastSystem(Node):
 
         self.parent = parent
 
-    def new_tank(self, name, position, capacity_kN, rho = 1.025, frozen=False, actual_fill = 0):
+    def new_tank(
+        self, name, position, capacity_kN, rho=1.025, frozen=False, actual_fill=0
+    ):
         """Adds a new cubic shaped tank with the given volume as derived from capacity and rho
 
         Warning: provided for backwards compatibility only.
         """
 
-        tnk = self._scene.new_tank(name, parent = self.parent, density=rho)
+        from warnings import warn
+
+        warn(
+            "BallastSystem.new_tank is outdated and may be removed in a future version."
+        )
+
+        tnk = self._scene.new_tank(name, parent=self.parent, density=rho)
         volume = capacity_kN / (9.81 * rho)
-        side = volume ** (1/3)
-        tnk.trimesh.load_file(self._scene.get_resource_path('cube.obj'),
-                                    scale=(side, side, side), rotation=(0.0, 0.0, 0.0), offset=position)
+        side = volume ** (1 / 3)
+        tnk.trimesh.load_file(
+            "res: cube.obj",
+            scale=(side, side, side),
+            rotation=(0.0, 0.0, 0.0),
+            offset=position,
+        )
         if actual_fill > 0:
             tnk.fill_pct = actual_fill
 
@@ -3457,14 +3536,16 @@ class BallastSystem(Node):
     # for gui
     def change_parent_to(self, new_parent):
         if not (isinstance(new_parent, Axis) or new_parent is None):
-            raise ValueError('Visuals can only be attached to an axis (or derived) or None')
+            raise ValueError(
+                "Visuals can only be attached to an axis (or derived) or None"
+            )
         self.parent = new_parent
 
     # for node
     def depends_on(self):
         return [self.parent, *self.tanks]
 
-    def is_frozen(self,name):
+    def is_frozen(self, name):
         """Returns True if the tank with this name if frozen"""
         return name in self.frozen
 
@@ -3480,7 +3561,7 @@ class BallastSystem(Node):
         """
         for name in names:
             if name not in self.tank_names():
-                raise ValueError('No tank with name {}'.format(name))
+                raise ValueError("No tank with name {}".format(name))
 
         old_tanks = self.tanks.copy()
         self.tanks.clear()
@@ -3518,7 +3599,7 @@ class BallastSystem(Node):
         pos = np.array(pos, dtype=float)
         pos -= np.array(point)
 
-        dist = np.apply_along_axis(np.linalg.norm,1,pos)
+        dist = np.apply_along_axis(np.linalg.norm, 1, pos)
 
         if reverse:
             inds = np.argsort(dist)
@@ -3535,12 +3616,12 @@ class BallastSystem(Node):
         """Re-order tanks such that tanks nearest to center of system are first on the list"""
         self._order_tanks_to_inertia_moment(maximize=False)
 
-    def _order_tanks_to_inertia_moment(self, maximize = True):
+    def _order_tanks_to_inertia_moment(self, maximize=True):
         """Re-order tanks such that tanks furthest away from center of system are first on the list"""
         pos = [tank.cog_when_full for tank in self.tanks]
         m = [tank.capacity for tank in self.tanks]
         pos = np.array(pos, dtype=float)
-        mxmymz = np.vstack((m,m,m)).transpose() * pos
+        mxmymz = np.vstack((m, m, m)).transpose() * pos
         total = np.sum(m)
         point = sum(mxmymz) / total
 
@@ -3549,12 +3630,10 @@ class BallastSystem(Node):
         else:
             self.order_tanks_by_distance_from_point(point, reverse=True)
 
-
     def tank_names(self):
         return [tank.name for tank in self.tanks]
 
     def fill_tank(self, name, fill):
-
 
         assert1f(fill, "tank fill")
 
@@ -3562,17 +3641,17 @@ class BallastSystem(Node):
             if tank.name == name:
                 tank.pct = fill
                 return
-        raise ValueError('No tank with name {}'.format(name))
+        raise ValueError("No tank with name {}".format(name))
 
     def xyzw(self):
         """Gets the current ballast cog in GLOBAL axis system weight from the tanks
 
-                Returns:
-                    (x,y,z), weight [mT]
-                """
+        Returns:
+            (x,y,z), weight [mT]
+        """
         """Calculates the weight and inertia properties of the tanks"""
 
-        mxmymz = np.array((0., 0., 0.))
+        mxmymz = np.array((0.0, 0.0, 0.0))
         wt = 0
 
         for tank in self.tanks:
@@ -3583,12 +3662,11 @@ class BallastSystem(Node):
             wt += w
 
         if wt == 0:
-            xyz = np.array((0., 0., 0.))
+            xyz = np.array((0.0, 0.0, 0.0))
         else:
             xyz = mxmymz / wt
 
         return xyz, wt
-
 
     def empty_all_usable_tanks(self):
         """Empties all non-frozen tanks.
@@ -3599,7 +3677,7 @@ class BallastSystem(Node):
         """
         restore = []
 
-        for i,t in enumerate(self.tanks):
+        for i, t in enumerate(self.tanks):
             if not self.is_frozen(t.name):
                 restore.append((i, t.fill_pct))
                 t.fill_pct = 0
@@ -3618,13 +3696,12 @@ class BallastSystem(Node):
             i, pct = r
             self.tanks[i].fill_pct = pct
 
-
     def tank(self, name):
 
         for t in self.tanks:
             if t.name == name:
                 return t
-        raise ValueError('No tank with name {}'.format(name))
+        raise ValueError("No tank with name {}".format(name))
 
     def __getitem__(self, item):
         return self.tank(item)
@@ -3659,12 +3736,15 @@ class BallastSystem(Node):
     def give_python_code(self):
         code = "\n# code for {} and its tanks".format(self.name)
 
-        code += "\nbs = s.new_ballastsystem('{}', parent = '{}')".format(self.name, self.parent.name)
+        code += "\nbs = s.new_ballastsystem('{}', parent = '{}')".format(
+            self.name, self.parent.name
+        )
 
         for tank in self.tanks:
             code += "\nbs.tanks.append(s['{}'])".format(tank.name)
 
         return code
+
 
 class WaveInteraction1(Node):
     """
@@ -3715,7 +3795,9 @@ class WaveInteraction1(Node):
     def change_parent_to(self, new_parent):
 
         if not (isinstance(new_parent, Axis)):
-            raise ValueError('Hydrodynamic databases can only be attached to an axis (or derived)')
+            raise ValueError(
+                "Hydrodynamic databases can only be attached to an axis (or derived)"
+            )
 
         # get current position and orientation
         if self.parent is not None:
@@ -3729,8 +3811,8 @@ class WaveInteraction1(Node):
 
 # ============== Managed nodes
 
-class Manager(Node):
 
+class Manager(Node):
     def managed_nodes(self):
         """Returns a list of managed nodes"""
         raise Exception("derived class shall override this method")
@@ -3740,7 +3822,7 @@ class Manager(Node):
 
         raise Exception("derived class shall override this method")
 
-    def creates(self, node : Node):
+    def creates(self, node: Node):
         """Returns True if node is created by this manager"""
 
         raise Exception("derived class shall override this method")
@@ -3752,8 +3834,8 @@ class GeometricContact(Manager):
     GeometricContact
 
     A GeometricContact can be used to construct geometric connections between circular members:
-	- 	steel bars and holes, such as a shackle pin in a padeye (pin-hole)
-	-	steel bars and steel bars, such as a shackle-shackle connection
+        - 	steel bars and holes, such as a shackle pin in a padeye (pin-hole)
+        -	steel bars and steel bars, such as a shackle-shackle connection
 
 
     Situation before creation of geometric contact:
@@ -3800,11 +3882,10 @@ class GeometricContact(Manager):
             child_circle:
         """
 
-
-
         if parent_circle.parent.parent is None:
             raise ValueError(
-                'The slaved pin is not located on an axis. Can not create the connection because there is no axis to nodeB')
+                "The slaved pin is not located on an axis. Can not create the connection because there is no axis to nodeB"
+            )
 
         super().__init__(scene)
         self.name = name
@@ -3821,16 +3902,24 @@ class GeometricContact(Manager):
         self._flipped = False
         self._inside_connection = inside
 
-        self._axis_on_parent = self._scene.new_axis(scene.available_name_like(name_prefix + '_axis_on_parent'))
+        self._axis_on_parent = self._scene.new_axis(
+            scene.available_name_like(name_prefix + "_axis_on_parent")
+        )
         """Axis on the nodeA axis at the location of the center of hole or pin"""
 
-        self._pin_hole_connection = self._scene.new_axis(scene.available_name_like(name_prefix + '_pin_hole_connection'))
+        self._pin_hole_connection = self._scene.new_axis(
+            scene.available_name_like(name_prefix + "_pin_hole_connection")
+        )
         """axis between the center of the hole and the center of the pin. Free to rotate about the center of the hole as well as the pin"""
 
-        self._axis_on_child = self._scene.new_axis(scene.available_name_like(name_prefix + '_axis_on_child'))
+        self._axis_on_child = self._scene.new_axis(
+            scene.available_name_like(name_prefix + "_axis_on_child")
+        )
         """axis to which the slaved body is connected. Either the center of the hole or the center of the pin """
 
-        self._connection_axial_rotation = self._scene.new_axis(scene.available_name_like(name_prefix + '_connection_axial_rotation'))
+        self._connection_axial_rotation = self._scene.new_axis(
+            scene.available_name_like(name_prefix + "_connection_axial_rotation")
+        )
 
         # prohibit changes to nodes that were used in the creation of this connection
         for node in self.managed_nodes():
@@ -3848,12 +3937,14 @@ class GeometricContact(Manager):
         self._update_connection()
 
     def on_observed_node_changed(self, changed_node):
-       self._update_connection()
+        self._update_connection()
 
     @staticmethod
     def _assert_parent_child_possible(parent, child):
         if parent.parent.parent == child.parent.parent:
-            raise ValueError(f'A GeometricContact can not be created between two circles on the same axis or body. Both circles are located on {parent.parent.parent}')
+            raise ValueError(
+                f"A GeometricContact can not be created between two circles on the same axis or body. Both circles are located on {parent.parent.parent}"
+            )
 
     @property
     def child(self):
@@ -3868,10 +3959,13 @@ class GeometricContact(Manager):
         new_child = self._scene._node_from_node_or_str(value)
         if not isinstance(new_child, Circle):
             raise ValueError(
-                f'Child of a geometric contact should be a Circle, but {new_child.name} is a {type(new_child)}')
+                f"Child of a geometric contact should be a Circle, but {new_child.name} is a {type(new_child)}"
+            )
 
         if new_child.parent.parent is None:
-            raise ValueError(f'Child circle {new_child.name} is not located on an axis or body and can thus not be used as child')
+            raise ValueError(
+                f"Child circle {new_child.name} is not located on an axis or body and can thus not be used as child"
+            )
 
         self._assert_parent_child_possible(self.parent, new_child)
 
@@ -3916,11 +4010,15 @@ class GeometricContact(Manager):
     @node_setter_observable
     def parent(self, var):
         if var is None:
-            raise ValueError('Parent of a geometric contact should be a Circle, not None')
+            raise ValueError(
+                "Parent of a geometric contact should be a Circle, not None"
+            )
 
         new_parent = self._scene._node_from_node_or_str(var)
         if not isinstance(new_parent, Circle):
-            raise ValueError(f'Parent of a geometric contact should be a Circle, but {new_parent.name} is a {type(new_parent)}')
+            raise ValueError(
+                f"Parent of a geometric contact should be a Circle, but {new_parent.name} is a {type(new_parent)}"
+            )
 
         self._assert_parent_child_possible(new_parent, self.child)
 
@@ -3937,8 +4035,6 @@ class GeometricContact(Manager):
         self._parent_circle_parent.observers.append(self)
 
         self._update_connection()
-
-
 
     def change_parent_to(self, new_parent):
         self.parent = new_parent
@@ -3962,8 +4058,6 @@ class GeometricContact(Manager):
         self._child_circle.observers.remove(self)
         self._child_circle_parent.observers.remove(self)
 
-
-
     def _update_connection(self):
 
         remember = self._scene.current_manager
@@ -3983,7 +4077,8 @@ class GeometricContact(Manager):
 
         if pin1.parent.parent is None:
             raise ValueError(
-                'The slaved pin is not located on an axis. Can not create the connection because there is no axis to nodeB')
+                "The slaved pin is not located on an axis. Can not create the connection because there is no axis to nodeB"
+            )
 
         # --------- prepare hole
 
@@ -3998,8 +4093,7 @@ class GeometricContact(Manager):
         # and allow it to rotate about the pin
         self._pin_hole_connection.position = (0, 0, 0)
         self._pin_hole_connection.parent = self._axis_on_parent
-        self._pin_hole_connection.fixed = (True, True, True,
-                                           True, False, True)
+        self._pin_hole_connection.fixed = (True, True, True, True, False, True)
 
         self._connection_axial_rotation.parent = self._pin_hole_connection
         self._connection_axial_rotation.position = (0, 0, 0)
@@ -4011,14 +4105,13 @@ class GeometricContact(Manager):
 
         slaved_axis.parent = self._axis_on_child
         slaved_axis.position = -np.array(pin1.parent.position)
-        slaved_axis.rotation = rotation_from_y_axis_direction(-1*np.array(pin1.axis))
+        slaved_axis.rotation = rotation_from_y_axis_direction(-1 * np.array(pin1.axis))
 
         slaved_axis.fixed = True
 
         self._axis_on_child.parent = self._connection_axial_rotation
         self._axis_on_child.rotation = (0, 0, 0)
-        self._axis_on_child.fixed = (True, True, True,
-                                     True, False, True)
+        self._axis_on_child.fixed = (True, True, True, True, False, True)
 
         if self._inside_connection:
 
@@ -4041,7 +4134,6 @@ class GeometricContact(Manager):
         self.child_fixed = c_child_fixed
 
         self._scene.current_manager = remember
-
 
     def set_pin_pin_connection(self):
         """Sets the connection to be of type pin-pin"""
@@ -4072,25 +4164,27 @@ class GeometricContact(Manager):
 
         self._update_connection()
 
-
     def managed_nodes(self):
         """Returns a list of managed nodes"""
 
-        return [self._child_circle_parent_parent,
-                self._axis_on_parent,
-                self._axis_on_child,
-                self._pin_hole_connection,
-                self._connection_axial_rotation]
+        return [
+            self._child_circle_parent_parent,
+            self._axis_on_parent,
+            self._axis_on_child,
+            self._pin_hole_connection,
+            self._connection_axial_rotation,
+        ]
 
     def depends_on(self):
         return [self._parent_circle, self._child_circle]
 
-    def creates(self, node : Node):
-        return node in [self._axis_on_parent,
-                self._axis_on_child,
-                self._pin_hole_connection,
-                self._connection_axial_rotation]
-
+    def creates(self, node: Node):
+        return node in [
+            self._axis_on_parent,
+            self._axis_on_child,
+            self._pin_hole_connection,
+            self._connection_axial_rotation,
+        ]
 
     def flip(self):
         """Changes the swivel angle by 180 degrees"""
@@ -4112,7 +4206,7 @@ class GeometricContact(Manager):
         remember = self._scene.current_manager  # claim management
         self._scene.current_manager = self
         self._connection_axial_rotation.rx = value
-        self._scene.current_manager = remember # restore old manager
+        self._scene.current_manager = remember  # restore old manager
 
     @property
     def swivel_fixed(self):
@@ -4125,7 +4219,7 @@ class GeometricContact(Manager):
     def swivel_fixed(self, value):
         remember = self._scene.current_manager  # claim management
         self._scene.current_manager = self
-        self._connection_axial_rotation.fixed = [True,True,True,value, True, True]
+        self._connection_axial_rotation.fixed = [True, True, True, value, True, True]
         self._scene.current_manager = remember  # restore old manager
 
     @property
@@ -4155,9 +4249,8 @@ class GeometricContact(Manager):
     def fixed_to_parent(self, value):
         remember = self._scene.current_manager  # claim management
         self._scene.current_manager = self
-        self._pin_hole_connection.fixed = [True,True,True,True, value,  True]
+        self._pin_hole_connection.fixed = [True, True, True, True, value, True]
         self._scene.current_manager = remember  # restore old manager
-
 
     @property
     def child_rotation(self):
@@ -4204,7 +4297,6 @@ class GeometricContact(Manager):
         else:
             self.set_pin_pin_connection()
 
-
     def give_python_code(self):
 
         old_manger = self._scene.current_manager
@@ -4219,32 +4311,42 @@ class GeometricContact(Manager):
         code.append(f"                       inside={self.inside},")
 
         if self.inside and self.swivel == 0:
-            pass # default for inside
+            pass  # default for inside
         else:
-            if not self.inside and self.swivel==90:
-                pass # default for outside
+            if not self.inside and self.swivel == 90:
+                pass  # default for outside
             else:
                 code.append(f"                       swivel={self.swivel},")
 
         if not self.swivel_fixed:
             code.append(f"                       swivel_fixed={self.swivel_fixed},")
         if self.fixed_to_parent:
-            code.append(f"                       parent_rotation={self.rotation_on_parent},")
-            code.append(f"                       fixed_to_parent={self.fixed_to_parent},")
+            code.append(
+                f"                       parent_rotation={self.rotation_on_parent},"
+            )
+            code.append(
+                f"                       fixed_to_parent={self.fixed_to_parent},"
+            )
         else:
-            code.append(f"                       fixed_to_parent=solved({self.fixed_to_parent}),")
+            code.append(
+                f"                       fixed_to_parent=solved({self.fixed_to_parent}),"
+            )
         if self.child_fixed:
             code.append(f"                       child_fixed={self.child_fixed},")
             code.append(f"                       child_rotation={self.child_rotation},")
         else:
-            code.append(f"                       child_rotation=solved({self.child_rotation}),")
+            code.append(
+                f"                       child_rotation=solved({self.child_rotation}),"
+            )
 
-        code = [*code[:-1], code[-1][:-1] + ' )']  # remove the , from the last entry [should be a quicker way to do this]
-
+        code = [
+            *code[:-1],
+            code[-1][:-1] + " )",
+        ]  # remove the , from the last entry [should be a quicker way to do this]
 
         self._scene.current_manager = old_manger
 
-        return '\n'.join(code)
+        return "\n".join(code)
 
 
 class Sling(Manager):
@@ -4276,7 +4378,22 @@ class Sling(Manager):
 
     """
 
-    def __init__(self, scene, name, length, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
+    def __init__(
+        self,
+        scene,
+        name,
+        length,
+        LeyeA,
+        LeyeB,
+        LspliceA,
+        LspliceB,
+        diameter,
+        EA,
+        mass,
+        endA=None,
+        endB=None,
+        sheaves=None,
+    ):
         """
         Creates a new sling with the following structure
 
@@ -4313,56 +4430,100 @@ class Sling(Manager):
         name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
 
         # store the properties
-        self._length=length
-        self._LeyeA=LeyeA
-        self._LeyeB=LeyeB
-        self._LspliceA=LspliceA
-        self._LspliceB=LspliceB
-        self._diameter=diameter
-        self._EA=EA
-        self._mass=mass
-        self._endA=scene._poi_or_sheave_from_node(endA)
-        self._endB=scene._poi_or_sheave_from_node(endB)
-
+        self._length = length
+        self._LeyeA = LeyeA
+        self._LeyeB = LeyeB
+        self._LspliceA = LspliceA
+        self._LspliceB = LspliceB
+        self._diameter = diameter
+        self._EA = EA
+        self._mass = mass
+        self._endA = scene._poi_or_sheave_from_node(endA)
+        self._endB = scene._poi_or_sheave_from_node(endB)
 
         # create the two splices
 
-        self.sa = scene.new_rigidbody(scene.available_name_like(name_prefix + '_spliceA'), fixed=False)
-        self.a1 = scene.new_point(scene.available_name_like(name_prefix + '_spliceA'), parent=self.sa)
-        self.a2 = scene.new_point(scene.available_name_like(name_prefix + '_spliceA2'), parent=self.sa)
-        self.am = scene.new_point(scene.available_name_like(name_prefix + '_spliceAM'), parent=self.sa)
+        self.sa = scene.new_rigidbody(
+            scene.available_name_like(name_prefix + "_spliceA"), fixed=False
+        )
+        self.a1 = scene.new_point(
+            scene.available_name_like(name_prefix + "_spliceA"), parent=self.sa
+        )
+        self.a2 = scene.new_point(
+            scene.available_name_like(name_prefix + "_spliceA2"), parent=self.sa
+        )
+        self.am = scene.new_point(
+            scene.available_name_like(name_prefix + "_spliceAM"), parent=self.sa
+        )
 
-        self.avis = scene.new_visual(name + '_spliceA_visual', parent=self.sa,  path=r'cylinder 1x1x1 lowres.obj',
-                     offset=(-LspliceA/2, 0.0, 0.0),
-                     rotation=(0.0, 90.0, 0.0),
-                     scale=(LspliceA, 2*diameter, diameter))
+        self.avis = scene.new_visual(
+            name + "_spliceA_visual",
+            parent=self.sa,
+            path=r"cylinder 1x1x1 lowres.obj",
+            offset=(-LspliceA / 2, 0.0, 0.0),
+            rotation=(0.0, 90.0, 0.0),
+            scale=(LspliceA, 2 * diameter, diameter),
+        )
 
-        self.sb = scene.new_rigidbody(scene.available_name_like(name_prefix + '_spliceB'), rotation = (0,0,180),fixed=False)
-        self.b1 = scene.new_point(scene.available_name_like(name_prefix + '_spliceB1'), parent=self.sb)
-        self.b2 = scene.new_point(scene.available_name_like(name_prefix + '_spliceB2'), parent=self.sb)
-        self.bm = scene.new_point(scene.available_name_like(name_prefix + '_spliceBM'), parent=self.sb)
+        self.sb = scene.new_rigidbody(
+            scene.available_name_like(name_prefix + "_spliceB"),
+            rotation=(0, 0, 180),
+            fixed=False,
+        )
+        self.b1 = scene.new_point(
+            scene.available_name_like(name_prefix + "_spliceB1"), parent=self.sb
+        )
+        self.b2 = scene.new_point(
+            scene.available_name_like(name_prefix + "_spliceB2"), parent=self.sb
+        )
+        self.bm = scene.new_point(
+            scene.available_name_like(name_prefix + "_spliceBM"), parent=self.sb
+        )
 
-        self.bvis = scene.new_visual(scene.available_name_like(name_prefix + '_spliceB_visual'), parent=self.sb, path=r'cylinder 1x1x1 lowres.obj',
-                     offset=(-LspliceB / 2, 0.0, 0.0),
-                     rotation=(0.0, 90.0, 0.0),
-                     scale=(LspliceB, 2 * diameter, diameter))
+        self.bvis = scene.new_visual(
+            scene.available_name_like(name_prefix + "_spliceB_visual"),
+            parent=self.sb,
+            path=r"cylinder 1x1x1 lowres.obj",
+            offset=(-LspliceB / 2, 0.0, 0.0),
+            rotation=(0.0, 90.0, 0.0),
+            scale=(LspliceB, 2 * diameter, diameter),
+        )
 
-        self.main = scene.new_cable(scene.available_name_like(name_prefix + '_main_part'), endA=self.am, endB=self.bm, length=1, EA=1, diameter=diameter)
+        self.main = scene.new_cable(
+            scene.available_name_like(name_prefix + "_main_part"),
+            endA=self.am,
+            endB=self.bm,
+            length=1,
+            EA=1,
+            diameter=diameter,
+        )
 
-        self.eyeA = scene.new_cable(scene.available_name_like(name_prefix + '_eyeA'), endA=self.a1, endB=self.a2, length=1, EA=1)
-        self.eyeB = scene.new_cable(scene.available_name_like(name_prefix + '_eyeB'), endA=self.b1, endB=self.b2, length=1, EA=1)
+        self.eyeA = scene.new_cable(
+            scene.available_name_like(name_prefix + "_eyeA"),
+            endA=self.a1,
+            endB=self.a2,
+            length=1,
+            EA=1,
+        )
+        self.eyeB = scene.new_cable(
+            scene.available_name_like(name_prefix + "_eyeB"),
+            endA=self.b1,
+            endB=self.b2,
+            length=1,
+            EA=1,
+        )
 
         # set initial positions of splices if we can
         if self._endA is not None and self._endB is not None:
             a = np.array(self._endA.global_position)
             b = np.array(self._endB.global_position)
 
-            dir = b-a
+            dir = b - a
             dir /= np.linalg.norm(dir)
 
             self.sa.rotation = rotation_from_x_axis_direction(-dir)
             self.sb.rotation = rotation_from_x_axis_direction(dir)
-            self.sa.position = a + (LeyeA + 0.5 * LspliceA)* dir
+            self.sa.position = a + (LeyeA + 0.5 * LspliceA) * dir
             self.sb.position = b - (LeyeB + 0.5 * LspliceB) * dir
 
         # Update properties
@@ -4382,46 +4543,56 @@ class Sling(Manager):
         backup = self._scene.current_manager  # store
         self._scene.current_manager = self
 
-        Lmain = self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
+        Lmain = (
+            self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
+        )
 
         if self._EA == 0:
             EAmain = 0
         else:
-            ka = (2*self._EA / self._LspliceA)
-            kb = (2*self._EA / self._LspliceB)
-            kmain = (self._EA / Lmain)
-            k_total = 1 / ((1/ka) + (1/kmain) + (1/kb))
+            ka = 2 * self._EA / self._LspliceA
+            kb = 2 * self._EA / self._LspliceB
+            kmain = self._EA / Lmain
+            k_total = 1 / ((1 / ka) + (1 / kmain) + (1 / kb))
 
             EAmain = k_total * Lmain
 
         self.sa.mass = self._mass / 2
-        self.sa.inertia_radii = (self._LspliceA/2, self._LspliceA/2,self._diameter/2)
+        self.sa.inertia_radii = (
+            self._LspliceA / 2,
+            self._LspliceA / 2,
+            self._diameter / 2,
+        )
 
-        self.a1.position = (self._LspliceA/2, self._diameter/2, 0)
-        self.a2.position=(self._LspliceA / 2, -self._diameter / 2, 0)
-        self.am.position=(-self._LspliceA / 2, 0, 0)
+        self.a1.position = (self._LspliceA / 2, self._diameter / 2, 0)
+        self.a2.position = (self._LspliceA / 2, -self._diameter / 2, 0)
+        self.am.position = (-self._LspliceA / 2, 0, 0)
 
-        self.avis.offset=(-self._LspliceA/2, 0.0, 0.0)
-        self.avis.scale=(self._LspliceA, 2*self._diameter, self._diameter)
+        self.avis.offset = (-self._LspliceA / 2, 0.0, 0.0)
+        self.avis.scale = (self._LspliceA, 2 * self._diameter, self._diameter)
 
-        self.sb.mass = self._mass/2
-        self.sb.inertia_radii = (self._LspliceB/2, self._LspliceB/2,self._diameter/2)
+        self.sb.mass = self._mass / 2
+        self.sb.inertia_radii = (
+            self._LspliceB / 2,
+            self._LspliceB / 2,
+            self._diameter / 2,
+        )
 
-        self.b1.position = (self._LspliceB/2, self._diameter/2, 0)
-        self.b2.position=(self._LspliceB / 2, -self._diameter / 2, 0)
-        self.bm.position=(-self._LspliceB / 2, 0, 0)
+        self.b1.position = (self._LspliceB / 2, self._diameter / 2, 0)
+        self.b2.position = (self._LspliceB / 2, -self._diameter / 2, 0)
+        self.bm.position = (-self._LspliceB / 2, 0, 0)
 
-        self.bvis.offset=(-self._LspliceB / 2, 0.0, 0.0)
-        self.bvis.scale=(self._LspliceB, 2 * self._diameter, self._diameter)
+        self.bvis.offset = (-self._LspliceB / 2, 0.0, 0.0)
+        self.bvis.scale = (self._LspliceB, 2 * self._diameter, self._diameter)
 
-        self.main.length=Lmain
-        self.main.EA=EAmain
-        self.main.diameter=self._diameter
-        self.main.connections = tuple([self.am, *self._sheaves,self.bm])
+        self.main.length = Lmain
+        self.main.EA = EAmain
+        self.main.diameter = self._diameter
+        self.main.connections = tuple([self.am, *self._sheaves, self.bm])
 
-        self.eyeA.length=self._LeyeA * 2 - self._diameter
-        self.eyeA.EA=self._EA
-        self.eyeA.diameter=self._diameter
+        self.eyeA.length = self._LeyeA * 2 - self._diameter
+        self.eyeA.EA = self._EA
+        self.eyeA.diameter = self._diameter
 
         if self._endA is not None:
             self.eyeA.connections = (self.a1, self._endA, self.a2)
@@ -4440,8 +4611,7 @@ class Sling(Manager):
         self._scene.current_manager = backup  # restore
 
     def depends_on(self):
-        """The sling depends on the endpoints and sheaves (if any)
-        """
+        """The sling depends on the endpoints and sheaves (if any)"""
 
         a = list()
 
@@ -4455,11 +4625,25 @@ class Sling(Manager):
         return a
 
     def managed_nodes(self):
-        a = [self.sa,self.a1,self.a2,self.am,self.avis,self.sb,self.b1,self.b2,self.bm,self.bvis,self.main,self.eyeA,self.eyeB]
+        a = [
+            self.sa,
+            self.a1,
+            self.a2,
+            self.am,
+            self.avis,
+            self.sb,
+            self.b1,
+            self.b2,
+            self.bm,
+            self.bvis,
+            self.main,
+            self.eyeA,
+            self.eyeB,
+        ]
 
         return a
 
-    def creates(self, node : Node):
+    def creates(self, node: Node):
         return node in self.managed_nodes()  # all these are created
 
     def delete(self):
@@ -4472,11 +4656,10 @@ class Sling(Manager):
 
         for n in a:
             if n in self._scene._nodes:
-                self._scene.delete(n)   # delete if it is still available
-
+                self._scene.delete(n)  # delete if it is still available
 
     def give_python_code(self):
-        code = f'# Exporting {self.name}'
+        code = f"# Exporting {self.name}"
 
         # if self.endA is not None:
         #     code += self.endA.give_python_code()
@@ -4485,31 +4668,30 @@ class Sling(Manager):
         # for s in self.sheaves:
         #     code += s.give_python_code()
 
-        code += '\n# Create sling'
+        code += "\n# Create sling"
 
         # (self, scene, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
 
         code += f'\ns.new_sling("{self.name}", length = {self.length},'
-        code += f'\n            LeyeA = {self.LeyeA},'
-        code += f'\n            LeyeB = {self.LeyeB},'
-        code += f'\n            LspliceA = {self.LspliceA},'
-        code += f'\n            LspliceB = {self.LspliceB},'
-        code += f'\n            diameter = {self.diameter},'
-        code += f'\n            EA = {self.EA},'
-        code += f'\n            mass = {self.mass},'
+        code += f"\n            LeyeA = {self.LeyeA},"
+        code += f"\n            LeyeB = {self.LeyeB},"
+        code += f"\n            LspliceA = {self.LspliceA},"
+        code += f"\n            LspliceB = {self.LspliceB},"
+        code += f"\n            diameter = {self.diameter},"
+        code += f"\n            EA = {self.EA},"
+        code += f"\n            mass = {self.mass},"
         code += f'\n            endA = "{self.endA.name}",'
         code += f'\n            endB = "{self.endB.name}",'
 
-
         if self.sheaves:
-            sheaves = '['
+            sheaves = "["
             for s in self.sheaves:
                 sheaves += f'"{s.name}", '
-            sheaves = sheaves[:-2] + ']'
+            sheaves = sheaves[:-2] + "]"
         else:
-            sheaves = 'None'
+            sheaves = "None"
 
-        code += f'\n            sheaves = {sheaves})'
+        code += f"\n            sheaves = {sheaves})"
 
         return code
 
@@ -4526,7 +4708,9 @@ class Sling(Manager):
 
         min_length = self.LeyeA + self.LeyeB + self.LspliceA + self.LspliceB
         if value <= min_length:
-            raise ValueError('Total length of the sling should be at least the length of the eyes plus the length of the splices')
+            raise ValueError(
+                "Total length of the sling should be at least the length of the eyes plus the length of the splices"
+            )
 
         self._length = value
         self._update_properties()
@@ -4544,7 +4728,8 @@ class Sling(Manager):
         max_length = self.length - (self.LeyeB + self.LspliceA + self.LspliceB)
         if value >= max_length:
             raise ValueError(
-                'Total length of the sling should be at least the length of the eyes plus the length of the splices')
+                "Total length of the sling should be at least the length of the eyes plus the length of the splices"
+            )
 
         self._LeyeA = value
         self._update_properties()
@@ -4562,7 +4747,8 @@ class Sling(Manager):
         max_length = self.length - (self.LeyeA + self.LspliceA + self.LspliceB)
         if value >= max_length:
             raise ValueError(
-                'Total length of the sling should be at least the length of the eyes plus the length of the splices')
+                "Total length of the sling should be at least the length of the eyes plus the length of the splices"
+            )
 
         self._LeyeB = value
         self._update_properties()
@@ -4580,7 +4766,8 @@ class Sling(Manager):
         max_length = self.length - (self.LeyeA + self.LeyeB + self.LspliceB)
         if value >= max_length:
             raise ValueError(
-                'Total length of the sling should be at least the length of the eyes plus the length of the splices')
+                "Total length of the sling should be at least the length of the eyes plus the length of the splices"
+            )
 
         self._LspliceA = value
         self._update_properties()
@@ -4598,7 +4785,8 @@ class Sling(Manager):
         max_length = self.length - (self.LeyeA + self.LeyeB + self.LspliceA)
         if value >= max_length:
             raise ValueError(
-                'Total length of the sling should be at least the length of the eyes plus the length of the splices')
+                "Total length of the sling should be at least the length of the eyes plus the length of the splices"
+            )
 
         self._LspliceB = value
         self._update_properties()
@@ -4688,50 +4876,51 @@ class Sling(Manager):
 
 class Shackle(Manager, RigidBody):
     """
-        Green-Pin Heavy Duty Bow Shackle BN
+    Green-Pin Heavy Duty Bow Shackle BN
 
-        visual from: https://www.traceparts.com/en/product/green-pinr-p-6036-green-pinr-heavy-duty-bow-shackle-bn-hdgphm0800-mm?CatalogPath=TRACEPARTS%3ATP04001002006&Product=10-04072013-086517&PartNumber=HDGPHM0800
-        details from: https://www.greenpin.com/sites/default/files/2019-04/brochure-april-2019.pdf
+    visual from: https://www.traceparts.com/en/product/green-pinr-p-6036-green-pinr-heavy-duty-bow-shackle-bn-hdgphm0800-mm?CatalogPath=TRACEPARTS%3ATP04001002006&Product=10-04072013-086517&PartNumber=HDGPHM0800
+    details from: https://www.greenpin.com/sites/default/files/2019-04/brochure-april-2019.pdf
 
-        wll a b c d e f g h i j k weight
-        [t] [mm]  [kg]
-        120 95 95 208 95 147 400 238 647 453 428 50 110
-        150 105 108 238 105 169 410 275 688 496 485 50 160
-        200 120 130 279 120 179 513 290 838 564 530 70 235
-        250 130 140 299 130 205 554 305 904 614 565 70 295
-        300 140 150 325 140 205 618 305 996 644 585 80 368
-        400 170 175 376 164 231 668 325 1114 690 665 70 560
-        500 180 185 398 164 256 718 350 1190 720 710 70 685
-        600 200 205 444 189 282 718 375 1243 810 775 70 880
-        700 210 215 454 204 308 718 400 1263 870 820 70 980
-        800 210 220 464 204 308 718 400 1270 870 820 70 1100
-        900 220 230 485 215 328 718 420 1296 920 860 70 1280
-        1000 240 240 515 215 349 718 420 1336 940 900 70 1460
-        1250 260 270 585 230 369 768 450 1456 1025 970 70 1990
-        1500 280 290 625 230 369 818 450 1556 1025 1010 70 2400
+    wll a b c d e f g h i j k weight
+    [t] [mm]  [kg]
+    120 95 95 208 95 147 400 238 647 453 428 50 110
+    150 105 108 238 105 169 410 275 688 496 485 50 160
+    200 120 130 279 120 179 513 290 838 564 530 70 235
+    250 130 140 299 130 205 554 305 904 614 565 70 295
+    300 140 150 325 140 205 618 305 996 644 585 80 368
+    400 170 175 376 164 231 668 325 1114 690 665 70 560
+    500 180 185 398 164 256 718 350 1190 720 710 70 685
+    600 200 205 444 189 282 718 375 1243 810 775 70 880
+    700 210 215 454 204 308 718 400 1263 870 820 70 980
+    800 210 220 464 204 308 718 400 1270 870 820 70 1100
+    900 220 230 485 215 328 718 420 1296 920 860 70 1280
+    1000 240 240 515 215 349 718 420 1336 940 900 70 1460
+    1250 260 270 585 230 369 768 450 1456 1025 970 70 1990
+    1500 280 290 625 230 369 818 450 1556 1025 1010 70 2400
 
-        Returns:
+    Returns:
 
-        """
+    """
+
     data = dict()
     # key = wll in t
     # dimensions a..k in [mm]
     #             a     b    c   d     e    f    g    h     i     j    k   weight[kg]
     # index       0     1    2    3    4    5    6    7     8     9    10   11
-    data['GP120'] = (95, 95, 208, 95, 147, 400, 238, 647, 453, 428, 50, 110)
-    data['GP150'] = (105, 108, 238, 105, 169, 410, 275, 688, 496, 485, 50, 160)
-    data['GP200'] = (120, 130, 279, 120, 179, 513, 290, 838, 564, 530, 70, 235)
-    data['GP250'] = (130, 140, 299, 130, 205, 554, 305, 904, 614, 565, 70, 295)
-    data['GP300'] = (140, 150, 325, 140, 205, 618, 305, 996, 644, 585, 80, 368)
-    data['GP400'] = (170, 175, 376, 164, 231, 668, 325, 1114, 690, 665, 70, 560)
-    data['GP500'] = (180, 185, 398, 164, 256, 718, 350, 1190, 720, 710, 70, 685)
-    data['GP600'] = (200, 205, 444, 189, 282, 718, 375, 1243, 810, 775, 70, 880)
-    data['GP700'] = (210, 215, 454, 204, 308, 718, 400, 1263, 870, 820, 70, 980)
-    data['GP800'] = (210, 220, 464, 204, 308, 718, 400, 1270, 870, 820, 70, 1100)
-    data['GP900'] = (220, 230, 485, 215, 328, 718, 420, 1296, 920, 860, 70, 1280)
-    data['GP1000'] = (240, 240, 515, 215, 349, 718, 420, 1336, 940, 900, 70, 1460)
-    data['GP1250'] = (260, 270, 585, 230, 369, 768, 450, 1456, 1025, 970, 70, 1990)
-    data['GP1500'] = (280, 290, 625, 230, 369, 818, 450, 1556, 1025, 1010, 70, 2400)
+    data["GP120"] = (95, 95, 208, 95, 147, 400, 238, 647, 453, 428, 50, 110)
+    data["GP150"] = (105, 108, 238, 105, 169, 410, 275, 688, 496, 485, 50, 160)
+    data["GP200"] = (120, 130, 279, 120, 179, 513, 290, 838, 564, 530, 70, 235)
+    data["GP250"] = (130, 140, 299, 130, 205, 554, 305, 904, 614, 565, 70, 295)
+    data["GP300"] = (140, 150, 325, 140, 205, 618, 305, 996, 644, 585, 80, 368)
+    data["GP400"] = (170, 175, 376, 164, 231, 668, 325, 1114, 690, 665, 70, 560)
+    data["GP500"] = (180, 185, 398, 164, 256, 718, 350, 1190, 720, 710, 70, 685)
+    data["GP600"] = (200, 205, 444, 189, 282, 718, 375, 1243, 810, 775, 70, 880)
+    data["GP700"] = (210, 215, 454, 204, 308, 718, 400, 1263, 870, 820, 70, 980)
+    data["GP800"] = (210, 220, 464, 204, 308, 718, 400, 1270, 870, 820, 70, 1100)
+    data["GP900"] = (220, 230, 485, 215, 328, 718, 420, 1296, 920, 860, 70, 1280)
+    data["GP1000"] = (240, 240, 515, 215, 349, 718, 420, 1336, 940, 900, 70, 1460)
+    data["GP1250"] = (260, 270, 585, 230, 369, 768, 450, 1456, 1025, 970, 70, 1990)
+    data["GP1500"] = (280, 290, 625, 230, 369, 818, 450, 1556, 1025, 1010, 70, 2400)
 
     def defined_kinds(self):
         """Defined shackle kinds"""
@@ -4743,14 +4932,15 @@ class Shackle(Manager, RigidBody):
             for key in Shackle.data.keys():
                 print(key)
             raise ValueError(
-                f'No data available for a Shackle of kind {kind}. Available values printed above')
+                f"No data available for a Shackle of kind {kind}. Available values printed above"
+            )
 
         return Shackle.data[kind]
 
-    def __init__(self, scene, name, kind,a,p,g):
+    def __init__(self, scene, name, kind, a, p, g):
 
         Manager.__init__(self, scene)
-        RigidBody.__init__(self,scene,axis=a, poi=p, force=g)
+        RigidBody.__init__(self, scene, axis=a, poi=p, force=g)
 
         self.name = name
 
@@ -4763,36 +4953,36 @@ class Shackle(Manager, RigidBody):
         # self.body = scene.new_rigidbody(name=name + '_body')
 
         # pin
-        self.pin_point = scene.new_point(name=name + '_pin_point',
-                                         parent=self,
-                                         position=(0.0,
-                                        0.0,
-                                        0.0))
-        self.pin = scene.new_circle(name=name + '_pin',
-                                    parent=self.pin_point,
-                                    axis=(0.0, 1.0, 0.0))
+        self.pin_point = scene.new_point(
+            name=name + "_pin_point", parent=self, position=(0.0, 0.0, 0.0)
+        )
+        self.pin = scene.new_circle(
+            name=name + "_pin", parent=self.pin_point, axis=(0.0, 1.0, 0.0)
+        )
 
         # bow
-        self.bow_point = scene.new_point(name=name + '_bow_point',
-                                         parent=self)
+        self.bow_point = scene.new_point(name=name + "_bow_point", parent=self)
 
-        self.bow = scene.new_circle(name=name + '_bow',
-                                    parent=self.bow_point,
-                                    axis=(0.0, 1.0, 0.0))
+        self.bow = scene.new_circle(
+            name=name + "_bow", parent=self.bow_point, axis=(0.0, 1.0, 0.0)
+        )
 
         # inside circle
-        self.inside_point = scene.new_point(name=name + '_inside_circle_center',
-                                            parent=self)
-        self.inside = scene.new_circle(name=name + '_inside',
-                                       parent=self.inside_point,
-                                       axis=(1.0, 0, 0))
+        self.inside_point = scene.new_point(
+            name=name + "_inside_circle_center", parent=self
+        )
+        self.inside = scene.new_circle(
+            name=name + "_inside", parent=self.inside_point, axis=(1.0, 0, 0)
+        )
 
         # code for GP800_visual
-        self.visual_node = scene.new_visual(name=name + '_visual',
-                     parent=self,
-                     path=r'shackle_gp800.obj',
-                     offset=(0, 0, 0),
-                     rotation=(0, 0, 0))
+        self.visual_node = scene.new_visual(
+            name=name + "_visual",
+            parent=self,
+            path=r"shackle_gp800.obj",
+            offset=(0, 0, 0),
+            rotation=(0, 0, 0),
+        )
 
         self.kind = kind
 
@@ -4804,7 +4994,7 @@ class Shackle(Manager, RigidBody):
 
     @property
     def kind(self):
-        """Type of shackle, for example GP800 [text] """
+        """Type of shackle, for example GP800 [text]"""
         return self._kind
 
     @kind.setter
@@ -4823,20 +5013,30 @@ class Shackle(Manager, RigidBody):
 
         remember = self._scene.current_manager
 
-        self._scene.current_manager = self.manager  # WORK-AROUND : in case the shackle itself is managed, fake management
+        self._scene.current_manager = (
+            self.manager
+        )  # WORK-AROUND : in case the shackle itself is managed, fake management
 
         self.mass = weight
-        self.cog = (0,0,cogz)
+        self.cog = (0, 0, cogz)
 
         self._scene.current_manager = self  # register self a manager (as it should)
 
-        self.pin.radius = pin_dia/2
+        self.pin.radius = pin_dia / 2
 
-        self.bow_point.position = (0.0, 0.0, 0.5 * pin_dia + bow_length_inside + 0.5 * bow_dia)
-        self.bow.radius =bow_dia / 2
+        self.bow_point.position = (
+            0.0,
+            0.0,
+            0.5 * pin_dia + bow_length_inside + 0.5 * bow_dia,
+        )
+        self.bow.radius = bow_dia / 2
 
-        self.inside_point.position=(0, 0, 0.5 * pin_dia + bow_length_inside - 0.5 * bow_circle_inside)
-        self.inside.radius=bow_circle_inside / 2
+        self.inside_point.position = (
+            0,
+            0,
+            0.5 * pin_dia + bow_length_inside - 0.5 * bow_circle_inside,
+        )
+        self.inside.radius = bow_circle_inside / 2
 
         # determine the scale for the shackle
         # based on a GP800
@@ -4853,10 +5053,18 @@ class Shackle(Manager, RigidBody):
         self._kind = kind
 
     def managed_nodes(self):
-        return [self.pin_point, self.pin, self.bow_point, self.bow, self.inside_point, self.inside, self.visual_node]
+        return [
+            self.pin_point,
+            self.pin,
+            self.bow_point,
+            self.bow,
+            self.inside_point,
+            self.inside,
+            self.visual_node,
+        ]
 
-    def creates(self, node : Node):
-        return node in self.managed_nodes() # all these are created
+    def creates(self, node: Node):
+        return node in self.managed_nodes()  # all these are created
 
     def delete(self):
 
@@ -4868,28 +5076,25 @@ class Shackle(Manager, RigidBody):
 
         for n in a:
             if n in self._scene._nodes:
-                self._scene.delete(n)   # delete if it is still available
+                self._scene.delete(n)  # delete if it is still available
 
     def give_python_code(self):
-        code = f'# Exporting {self.name}'
+        code = f"# Exporting {self.name}"
 
-        code += '\n# Create Shackle'
-        code += f'\ns.new_shackle("{self.name}", kind = "{self.kind}")' #, elastic={self.elastic})'
+        code += "\n# Create Shackle"
+        code += f'\ns.new_shackle("{self.name}", kind = "{self.kind}")'  # , elastic={self.elastic})'
 
         if self.parent_for_export:
             code += f"\ns['{self.name}'].parent = s['{self.parent_for_export.name}']"
 
-        code += "\ns['{}'].position = ({},{},{})".format(self.name,*self.position)
-        code += "\ns['{}'].rotation = ({},{},{})".format(self.name,*self.rotation)
-
-
+        code += "\ns['{}'].position = ({},{},{})".format(self.name, *self.position)
+        code += "\ns['{}'].rotation = ({},{},{})".format(self.name, *self.rotation)
 
         return code
 
 
-
-
 # =============== Scene
+
 
 class Scene:
     """
@@ -4911,7 +5116,7 @@ class Scene:
 
     """
 
-    def __init__(self, filename = None, copy_from = None, code = None):
+    def __init__(self, filename=None, copy_from=None, code=None):
         """Creates a new Scene
 
         Args:
@@ -4926,8 +5131,10 @@ class Scene:
             count += 1
         if code:
             count += 1
-        if count>1:
-            raise ValueError('Only one of the named arguments (filename OR copy_from OR code) can be used')
+        if count > 1:
+            raise ValueError(
+                "Only one of the named arguments (filename OR copy_from OR code) can be used"
+            )
 
         self.verbose = True
         """Report actions using print()"""
@@ -4966,7 +5173,6 @@ class Scene:
         if code is not None:
             self.run_code(code)
 
-
     def clear(self):
         """Deletes all nodes"""
 
@@ -4974,13 +5180,12 @@ class Scene:
         del self._vfc
         self._vfc = pyo3d.Scene()
 
-
     # =========== private functions =============
 
     def _print_cpp(self):
         print(self._vfc.to_string())
 
-    def _print(self,what):
+    def _print(self, what):
         if self.verbose:
             print(what)
 
@@ -4992,7 +5197,9 @@ class Scene:
         names = [n.name for n in self._nodes]
         names.extend(self._vfc.names)
         if name in names:
-            raise Exception("The name '{}' is already in use. Pick a unique name".format(name))
+            raise Exception(
+                "The name '{}' is already in use. Pick a unique name".format(name)
+            )
 
     def _node_from_node_or_str(self, node):
         """If node is a string, then returns the node with that name,
@@ -5006,7 +5213,9 @@ class Scene:
             return node
         if isinstance(node, str):
             return self[node]
-        raise ValueError('Node should be a Node or a string, not a {}'.format(type(node)))
+        raise ValueError(
+            "Node should be a Node or a string, not a {}".format(type(node))
+        )
 
     def _node_from_node(self, node, reqtype):
         """Gets a node from the specified type
@@ -5033,9 +5242,11 @@ class Scene:
         if issubclass(type(node), Node):
             raise Exception(
                 "Element with name {} can not be used , it should be a {} or derived type but is a {}.".format(
-                    node.name, reqtype, type(node)))
+                    node.name, reqtype, type(node)
+                )
+            )
 
-        raise Exception('This is not an acceptable input argument {}'.format(node))
+        raise Exception("This is not an acceptable input argument {}".format(node))
 
     def _parent_from_node(self, node):
         """Returns None if node is None
@@ -5084,19 +5295,22 @@ class Scene:
             Dictionary with original fixed properties as dict({'node name',fixed[6]}) which can be passed to _restore_original_fixes
         """
 
-        vessel_indicators = [*self.nodes_of_type(Buoyancy), *self.nodes_of_type(HydSpring)]
+        vessel_indicators = [
+            *self.nodes_of_type(Buoyancy),
+            *self.nodes_of_type(HydSpring),
+        ]
         r = dict()
 
         for node in vessel_indicators:
-            parent = node.parent           # axis
+            parent = node.parent  # axis
 
             if parent.fixed[3] and parent.fixed[4]:
-                continue # already fixed
+                continue  # already fixed
 
             r[parent.name] = parent.fixed  # store original fixes
             fixed = [*parent.fixed]
-            fixed[3]=True
-            fixed[4]=True
+            fixed[3] = True
+            fixed[4] = True
 
             # if fixed[3] and fixed[4] are non-zero, then yaw has to be fixed as well.
             # The solver does not support it when an angular dof is free, but one of the fixed
@@ -5134,7 +5348,7 @@ class Scene:
         """
 
         changed = False
-        message = ''
+        message = ""
         for n in self.nodes_of_type(GeometricContact):
             if not n.inside:
 
@@ -5147,7 +5361,6 @@ class Scene:
                     changed = True
 
         return (changed, message)
-
 
     # ======== resources =========
 
@@ -5178,22 +5391,25 @@ class Scene:
             else:
                 test = url
 
-            if not test.startswith('res:'):
+            if not test.startswith("res:"):
                 test = Path(test)
-                if str(test.parent) == '.':
+                if str(test.parent) == ".":
                     from warnings import warn
-                    warn(f'Resources should start with res: --> fixing "{url}" to "res: {url}"')
-                    url = 'res: ' + str(test)
+
+                    warn(
+                        f'Resources should start with res: --> fixing "{url}" to "res: {url}"'
+                    )
+                    url = "res: " + str(test)
         except:
             pass
 
         if isinstance(url, Path):
             file = url
         elif isinstance(url, str):
-            if not url.startswith('res:'):
+            if not url.startswith("res:"):
                 file = Path(url)
             else:
-               # we have a string starting with 'res:'
+                # we have a string starting with 'res:'
                 filename = url[4:].strip()
 
                 for res in self.resources_paths:
@@ -5204,20 +5420,34 @@ class Scene:
                         return file
 
                 # prepare feedback for error
-                ext = str(url).split('.')[-1]  # everything after the last .
+                ext = str(url).split(".")[-1]  # everything after the last .
 
-                print("The following resources with extension {} are available with ".format(ext))
+                print(
+                    "The following resources with extension {} are available with ".format(
+                        ext
+                    )
+                )
                 available = self.get_resource_list(ext)
                 for a in available:
                     print(a)
-                raise FileExistsError('Resource "{}" not found in resource paths. A list with available resources with this extension is printed above this error'.format(url))
+                raise FileExistsError(
+                    'Resource "{}" not found in resource paths. A list with available resources with this extension is printed above this error'.format(
+                        url
+                    )
+                )
         else:
-            raise ValueError(f'Provided url shall be a Path or a string, not a {type(url)}')
+            raise ValueError(
+                f"Provided url shall be a Path or a string, not a {type(url)}"
+            )
 
         if file.exists():
             return file
 
-        raise FileExistsError('File "{}" not found.\nHint: To obtain a resource put res: in front of the name.'.format(url))
+        raise FileExistsError(
+            'File "{}" not found.\nHint: To obtain a resource put res: in front of the name.'.format(
+                url
+            )
+        )
 
     def get_resource_list(self, extension):
         """Returns a list of all file-paths (strings) given extension in any of the resource-paths"""
@@ -5230,13 +5460,11 @@ class Scene:
                 for file in files:
                     if file.lower().endswith(extension):
                         if file not in r:
-                            r.append('res: ' + file)
+                            r.append("res: " + file)
             except FileNotFoundError:
                 pass
 
         return r
-
-
 
     # ======== element functions =========
 
@@ -5247,7 +5475,9 @@ class Scene:
 
         if not silent:
             self.print_node_tree()
-        raise ValueError('No node with name "{}". Available names printed above.'.format(node_name))
+        raise ValueError(
+            'No node with name "{}". Available names printed above.'.format(node_name)
+        )
 
     def __getitem__(self, node_name):
         """Returns a node with name"""
@@ -5272,27 +5502,26 @@ class Scene:
         unique_names = set(names)
 
         if len(unique_names) != len(names):
-            previous_name = ''
+            previous_name = ""
             names.sort()
-            duplicates = ''
+            duplicates = ""
             for name in names:
                 if name == previous_name:
-                    print(f'Duplicate: {name}')
-                    duplicates += name + ' '
+                    print(f"Duplicate: {name}")
+                    duplicates += name + " "
 
                     for n in self._nodes:
                         if n.name == name:
                             print(n)
 
-
                 previous_name = name
-            raise ValueError(f'Duplicate names exist: ' + duplicates)
+            raise ValueError(f"Duplicate names exist: " + duplicates)
 
     def sort_nodes_by_parent(self):
         """Sorts the nodes such that the parent of this node (if any) occurs earlier in the list.
 
-            See Also:
-                sort_nodes_by_dependency
+        See Also:
+            sort_nodes_by_dependency
         """
 
         self.assert_unique_names()
@@ -5305,13 +5534,15 @@ class Scene:
 
             counter += 1
             if counter > len(self._nodes):
-                raise Exception('Could not sort nodes by dependency, circular references exist?')
+                raise Exception(
+                    "Could not sort nodes by dependency, circular references exist?"
+                )
 
             can_be_exported = []
 
             for node in to_be_exported:
 
-                if hasattr(node, 'parent'):
+                if hasattr(node, "parent"):
                     parent = node.parent
                     if parent is not None and parent not in exported:
                         continue
@@ -5351,13 +5582,15 @@ class Scene:
             if counter > len(self._nodes):
 
                 for node in to_be_exported:
-                    print(f'Node : {node.name}')
+                    print(f"Node : {node.name}")
                     for d in node.depends_on():
-                        print(f'  depends on: {d.name}')
+                        print(f"  depends on: {d.name}")
                     if node._manager:
-                        print(f'   managed by: {node._manager.name}')
+                        print(f"   managed by: {node._manager.name}")
 
-                raise Exception('Could not sort nodes by dependency, circular references exist?')
+                raise Exception(
+                    "Could not sort nodes by dependency, circular references exist?"
+                )
 
             can_be_exported = []
 
@@ -5367,14 +5600,13 @@ class Scene:
                 #         can_be_exported.append(node)
                 # el
                 if all(el in exported for el in node.depends_on()):
-                            can_be_exported.append(node)
+                    can_be_exported.append(node)
 
             # remove exported nodes from
             for n in can_be_exported:
                 to_be_exported.remove(n)
 
             exported.extend(can_be_exported)
-
 
         self._nodes = exported
 
@@ -5411,7 +5643,7 @@ class Scene:
             return like
         counter = 1
         while True:
-            name = like + '_' + str(counter)
+            name = like + "_" + str(counter)
             if self.name_available(name):
                 return name
             counter += 1
@@ -5422,10 +5654,14 @@ class Scene:
         A = self._node_from_node_or_str(A)
         B = self._node_from_node_or_str(B)
 
-        if not isinstance(A,CoreConnectedNode):
-            raise ValueError(f'{A.name} is not connected to a core node. Dependancies can not be traced using this function')
-        if not isinstance(B,CoreConnectedNode):
-            raise ValueError(f'{B.name} is not connected to a core node. Dependancies can not be traced using this function')
+        if not isinstance(A, CoreConnectedNode):
+            raise ValueError(
+                f"{A.name} is not connected to a core node. Dependancies can not be traced using this function"
+            )
+        if not isinstance(B, CoreConnectedNode):
+            raise ValueError(
+                f"{B.name} is not connected to a core node. Dependancies can not be traced using this function"
+            )
 
         return self._vfc.element_A_depends_on_B(A._vfNode.name, B._vfNode.name)
 
@@ -5452,7 +5688,7 @@ class Scene:
         if not isinstance(_node, CoreConnectedNode):
             return []
         else:
-            names =  self._vfc.elements_depending_directly_on(node)
+            names = self._vfc.elements_depending_directly_on(node)
 
         r = []
         for name in names:
@@ -5505,8 +5741,6 @@ class Scene:
 
         return r
 
-
-
     def delete(self, node):
         """Deletes the given node from the scene as well as all nodes depending on it.
 
@@ -5518,7 +5752,9 @@ class Scene:
             node = self[node]
 
         if node not in self._nodes:
-            raise ValueError('Can not delete node because it is not a node of this scene')
+            raise ValueError(
+                "Can not delete node because it is not a node of this scene"
+            )
 
         if isinstance(node, Manager):
             node.delete()
@@ -5535,7 +5771,11 @@ class Scene:
                 self.delete(node)  # node may have been deleted by the manager
 
         else:
-            self._print('Deleting {} [{}]'.format(node.name, str(type(node)).split('.')[-1][:-2]))
+            self._print(
+                "Deleting {} [{}]".format(
+                    node.name, str(type(node)).split(".")[-1][:-2]
+                )
+            )
 
             # First delete the dependencies
             for d in depending_nodes:
@@ -5546,8 +5786,6 @@ class Scene:
             # self._print('removing vfc node')
             node._delete_vfc()
             self._nodes.remove(node)
-
-
 
     def dissolve(self, node):
         """Attempts to delete the given node without affecting the rest of the model.
@@ -5564,10 +5802,10 @@ class Scene:
         """
 
         if isinstance(node, str):
-            node=  self[node]
+            node = self[node]
 
         if not type(node) == Axis:
-            raise TypeError('Only nodes of type Axis can be dissolved at this moment')
+            raise TypeError("Only nodes of type Axis can be dissolved at this moment")
 
         for d in self.nodes_depending_on(node):
             self[d].change_parent_to(node.parent)
@@ -5580,12 +5818,11 @@ class Scene:
     def savepoint_restore(self):
         if self._savepoint is not None:
             self.clear()
-            exec(self._savepoint, {}, {'s': self})
+            exec(self._savepoint, {}, {"s": self})
             self._savepoint = None
             return True
         else:
             return False
-
 
     # ========= The most important functions ========
 
@@ -5597,7 +5834,7 @@ class Scene:
             n.update()
         self._vfc.state_update()
 
-    def solve_statics(self, silent=False, timeout = None):
+    def solve_statics(self, silent=False, timeout=None):
         """Solves statics
 
         Args:
@@ -5609,7 +5846,6 @@ class Scene:
         """
         self.update()
 
-
         if timeout is None:
             solve_func = self._vfc.state_solve_statics
         else:
@@ -5618,12 +5854,9 @@ class Scene:
             # 		bool do_prepare_state,
             # 		bool solve_linear_dofs_first,
             # 		double stability_check_delta
-            solve_func = lambda : self._vfc.state_solve_statics_with_timeout(True,
-                                                                             timeout,
-                                                                             True,
-                                                                             True,
-                                                                             0)  # default stability value
-
+            solve_func = lambda: self._vfc.state_solve_statics_with_timeout(
+                True, timeout, True, True, 0
+            )  # default stability value
 
         # pass 1
         orignal_fixes = self._fix_vessel_heel_trim()
@@ -5651,13 +5884,15 @@ class Scene:
             return True
 
         d = np.array(self._vfc.get_dofs())
-        if np.any(np.abs(d)>2000):
-            print("Error: One of the degrees of freedom exceeded the boundary of 2000 [m]/[rad].")
+        if np.any(np.abs(d) > 2000):
+            print(
+                "Error: One of the degrees of freedom exceeded the boundary of 2000 [m]/[rad]."
+            )
             return False
 
         return False
 
-    def verify_equilibrium(self, tol = 1e-2):
+    def verify_equilibrium(self, tol=1e-2):
         """Checks if the current state is an equilibrium
 
         Returns:
@@ -5665,13 +5900,13 @@ class Scene:
 
         """
         self.update()
-        return (self._vfc.Emaxabs < tol)
-
-
+        return self._vfc.Emaxabs < tol
 
     # ====== goal seek ========
 
-    def goal_seek(self, evaluate, target, change_node, change_property, bracket=None, tol=1e-3):
+    def goal_seek(
+        self, evaluate, target, change_node, change_property, bracket=None, tol=1e-3
+    ):
         """goal_seek
 
         Goal seek is the classic goal-seek. It changes a single property of a single node in order to get
@@ -5702,40 +5937,49 @@ class Scene:
         try:
             float(test)
         except:
-            raise ValueError('Evaluation of {} does not result in a float')
+            raise ValueError("Evaluation of {} does not result in a float")
 
-        self._print('Attempting to evaluate {} to {} (now {})'.format(evaluate, target, test))
+        self._print(
+            "Attempting to evaluate {} to {} (now {})".format(evaluate, target, test)
+        )
 
         initial = getattr(change_node, change_property)
-        self._print('By changing the value of {}.{} (now {})'.format(change_node.name, change_property, initial))
+        self._print(
+            "By changing the value of {}.{} (now {})".format(
+                change_node.name, change_property, initial
+            )
+        )
 
         def set_and_get(x):
-            setattr(change_node, change_property,x)
+            setattr(change_node, change_property, x)
             self.solve_statics(silent=True)
             s = self
             result = eval(evaluate)
-            self._print('setting {} results in {}'.format(x,result))
-            return result-target
+            self._print("setting {} results in {}".format(x, result))
+            return result - target
 
         from scipy.optimize import root_scalar
+
         x0 = initial
-        x1 = initial+0.0001
+        x1 = initial + 0.0001
 
         if bracket is not None:
-            res = root_scalar(set_and_get, x0=x0, x1=x1, bracket=bracket,xtol = tol)
+            res = root_scalar(set_and_get, x0=x0, x1=x1, bracket=bracket, xtol=tol)
         else:
-            res = root_scalar(set_and_get, x0=x0, x1=x1,xtol = tol)
+            res = root_scalar(set_and_get, x0=x0, x1=x1, xtol=tol)
 
         self._print(res)
 
         # evaluate result
         final_value = eval(evaluate)
-        if abs(final_value-target) > 1e-3:
-            raise ValueError("Target not reached. Target was {}, reached value is {}".format(target, final_value))
-
+        if abs(final_value - target) > 1e-3:
+            raise ValueError(
+                "Target not reached. Target was {}, reached value is {}".format(
+                    target, final_value
+                )
+            )
 
         return True
-
 
     def plot_effect(self, evaluate, change_node, change_property, start, to, steps):
         """Produces a 2D plot with the relation between two properties of the scene. For example the length of a cable
@@ -5763,7 +6007,7 @@ class Scene:
             >>> plt.show()
 
         """
-        s=self
+        s = self
         change_node = self._node_from_node_or_str(change_node)
 
         # check that the attributes exist and are single numbers
@@ -5772,33 +6016,42 @@ class Scene:
         try:
             float(test)
         except:
-            raise ValueError('Evaluation of {} does not result in a float')
+            raise ValueError("Evaluation of {} does not result in a float")
 
         def set_and_get(x):
-            setattr(change_node, change_property,x)
+            setattr(change_node, change_property, x)
             self.solve_statics(silent=True)
             s = self
             result = eval(evaluate)
-            self._print('setting {} results in {}'.format(x,result))
+            self._print("setting {} results in {}".format(x, result))
             return result
 
-        xs = np.linspace(start,to,steps)
+        xs = np.linspace(start, to, steps)
         y = []
         for x in xs:
             y.append(set_and_get(x))
 
         y = np.array(y)
         import matplotlib.pyplot as plt
-        plt.plot(xs,y)
-        plt.xlabel('{} of {}'.format(change_property, change_node.name))
+
+        plt.plot(xs, y)
+        plt.xlabel("{} of {}".format(change_property, change_node.name))
         plt.ylabel(evaluate)
 
-        return (xs,y)
-
+        return (xs, y)
 
     # ======== create functions =========
 
-    def new_axis(self, name, parent=None, position=None, rotation=None, inertia=None, inertia_radii=None, fixed = True)->Axis:
+    def new_axis(
+        self,
+        name,
+        parent=None,
+        position=None,
+        rotation=None,
+        inertia=None,
+        inertia_radii=None,
+        fixed=True,
+    ) -> Axis:
         """Creates a new *axis* node and adds it to the scene.
 
         Args:
@@ -5831,14 +6084,15 @@ class Scene:
 
         if inertia_radii is not None:
             assert3f_positive(inertia_radii, "Radii of inertia")
-            assert inertia is not None, ValueError("Can not set radii of gyration without specifying inertia")
-
+            assert inertia is not None, ValueError(
+                "Can not set radii of gyration without specifying inertia"
+            )
 
         if not isinstance(fixed, bool):
             if len(fixed) != 6:
-                raise Exception('"fixed" parameter should either be True/False or a 6x bool sequence such as (True,True,False,False,True,False)')
-
-
+                raise Exception(
+                    '"fixed" parameter should either be True/False or a 6x bool sequence such as (True,True,False,False,True,False)'
+                )
 
         # then create
         a = self._vfc.new_axis(name)
@@ -5857,7 +6111,6 @@ class Scene:
         if inertia_radii is not None:
             new_node.inertia_radii = inertia_radii
 
-
         if isinstance(fixed, bool):
             if fixed:
                 new_node.set_fixed()
@@ -5866,18 +6119,22 @@ class Scene:
         else:
             new_node.fixed = fixed
 
-
         self._nodes.append(new_node)
         return new_node
 
-    def new_geometriccontact(self, name, child, parent,
-                             inside = False,
-                             swivel = None,
-                             rotation_on_parent = None,
-                             child_rotation = None,
-                             swivel_fixed = True,
-                             fixed_to_parent = False,
-                             child_fixed = False)->GeometricContact:
+    def new_geometriccontact(
+        self,
+        name,
+        child,
+        parent,
+        inside=False,
+        swivel=None,
+        rotation_on_parent=None,
+        child_rotation=None,
+        swivel_fixed=True,
+        fixed_to_parent=False,
+        child_fixed=False,
+    ) -> GeometricContact:
         """Creates a new *new_geometriccontact* node and adds it to the scene.
 
         Geometric contact connects two circular elements and can be used to model bar-bar connections or pin-in-hole connections.
@@ -5892,7 +6149,7 @@ class Scene:
             swivel: Rotation angle between the two items. Defaults to 90 for pinpin and 0 for pin-hole
             rotation_on_parent: Angle of the connecting hinge relative to nodeA or None for default
             child_rotation: Angle of the nodeB relative to the connecting hinge or None for default
-            swivel_fixed: Fix swivel [True] 
+            swivel_fixed: Fix swivel [True]
             fixed_to_parent: Fix connecting hinge to nodeA [False]
             child_fixed: Fix nodeB to connecting hinge [False]
 
@@ -5913,7 +6170,12 @@ class Scene:
         self._verify_name_available(name)
 
         name_prefix = name + vfc.MANAGED_NODE_IDENTIFIER
-        postfixes = ['_axis_on_parent','_pin_hole_connection','_axis_on_child','_connection_axial_rotation']
+        postfixes = [
+            "_axis_on_parent",
+            "_pin_hole_connection",
+            "_axis_on_child",
+            "_connection_axial_rotation",
+        ]
 
         for pf in postfixes:
             self._verify_name_available(name_prefix + pf)
@@ -5921,19 +6183,18 @@ class Scene:
         child = self._sheave_from_node(child)
         parent = self._sheave_from_node(parent)
 
-        assertBool(inside,'inside')
-        assertBool(swivel_fixed,'swivel_fixed')
-        assertBool(fixed_to_parent, 'fixed_to_parent')
-        assertBool(child_fixed, 'child_fixed')
+        assertBool(inside, "inside")
+        assertBool(swivel_fixed, "swivel_fixed")
+        assertBool(fixed_to_parent, "fixed_to_parent")
+        assertBool(child_fixed, "child_fixed")
 
         GeometricContact._assert_parent_child_possible(parent, child)
 
-
         if swivel is None:
             if inside:
-                swivel=0
+                swivel = 0
             else:
-                swivel=90
+                swivel = 90
 
         assert1f(swivel, "swivel_angle")
 
@@ -5943,18 +6204,20 @@ class Scene:
             assert1f(child_rotation, "child_rotation should be either None or ")
 
         if child is None:
-            raise ValueError('child needs to be a sheave-type node')
+            raise ValueError("child needs to be a sheave-type node")
         if parent is None:
-            raise ValueError('parent needs to be a sheave-type node')
+            raise ValueError("parent needs to be a sheave-type node")
 
         if child.parent.parent is None:
             raise ValueError(
-                f'The parent {child.parent.name} of the child item {child.name} is not located on an axis. Can not create the connection because there is no axis to nodeB')
+                f"The parent {child.parent.name} of the child item {child.name} is not located on an axis. Can not create the connection because there is no axis to nodeB"
+            )
 
         if child.parent.parent.manager is not None:
             self.print_node_tree()
             raise ValueError(
-                f'The axis or body that {child.name} is on is already managed by {child.parent.parent.manager.name} and can therefore not be changed - unable to create geometric contact')
+                f"The axis or body that {child.name} is on is already managed by {child.parent.parent.manager.name} and can therefore not be changed - unable to create geometric contact"
+            )
 
         new_node = GeometricContact(self, child, parent, name)
         if inside:
@@ -5975,56 +6238,64 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_waveinteraction(self, name, path, parent=None, offset=None,)->WaveInteraction1:
-            """Creates a new *wave interaction* node and adds it to the scene.
+    def new_waveinteraction(
+        self,
+        name,
+        path,
+        parent=None,
+        offset=None,
+    ) -> WaveInteraction1:
+        """Creates a new *wave interaction* node and adds it to the scene.
 
-            Args:
-                name: Name for the node, should be unique
-                path: Path to the hydrodynamic database
-                parent: optional, name of the parent of the node
-                offset: optional, position for the node (x,y,z)
+        Args:
+            name: Name for the node, should be unique
+            path: Path to the hydrodynamic database
+            parent: optional, name of the parent of the node
+            offset: optional, position for the node (x,y,z)
 
-            Returns:
-                Reference to newly created wave-interaction object
+        Returns:
+            Reference to newly created wave-interaction object
 
-            """
+        """
 
-            if not parent:
-                raise ValueError('Wave-interaction has to be located on an Axis')
+        if not parent:
+            raise ValueError("Wave-interaction has to be located on an Axis")
 
-            # apply prefixes
-            name = self._prefix_name(name)
+        # apply prefixes
+        name = self._prefix_name(name)
 
-            # first check
-            assertValidName(name)
-            self._verify_name_available(name)
-            b = self._parent_from_node(parent)
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._parent_from_node(parent)
 
-            if b is None:
-                raise ValueError('Wave-interaction has to be located on an Axis')
+        if b is None:
+            raise ValueError("Wave-interaction has to be located on an Axis")
 
-            if offset is not None:
-                assert3f(offset, "Offset ")
+        if offset is not None:
+            assert3f(offset, "Offset ")
 
-            self.get_resource_path(path)  # raises error when resource is not found
+        self.get_resource_path(path)  # raises error when resource is not found
 
-            # then create
+        # then create
 
-            new_node = WaveInteraction1(self)
+        new_node = WaveInteraction1(self)
 
-            new_node.name = name
-            new_node.path = path
-            new_node.parent = parent
+        new_node.name = name
+        new_node.path = path
+        new_node.parent = parent
 
-            # and set properties
-            new_node.parent = b
-            if offset is not None:
-                new_node.offset = offset
+        # and set properties
+        new_node.parent = b
+        if offset is not None:
+            new_node.offset = offset
 
-            self._nodes.append(new_node)
-            return new_node
+        self._nodes.append(new_node)
+        return new_node
 
-    def new_visual(self, name, path, parent=None, offset=None, rotation=None, scale = None)->Visual:
+    def new_visual(
+        self, name, path, parent=None, offset=None, rotation=None, scale=None
+    ) -> Visual:
         """Creates a new *Visual* node and adds it to the scene.
 
         Args:
@@ -6053,8 +6324,7 @@ class Scene:
         if rotation is not None:
             assert3f(rotation, "Rotation ")
 
-        self.get_resource_path(path) # raises error when resource is not found
-
+        self.get_resource_path(path)  # raises error when resource is not found
 
         # then create
 
@@ -6077,8 +6347,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-
-    def new_point(self, name, parent=None, position=None)->Point:
+    def new_point(self, name, parent=None, position=None) -> Point:
         """Creates a new *poi* node and adds it to the scene.
 
         Args:
@@ -6117,8 +6386,17 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_rigidbody(self, name, mass=0, cog=(0, 0, 0),
-                      parent=None, position=None, rotation=None, inertia_radii=None, fixed = True )->RigidBody:
+    def new_rigidbody(
+        self,
+        name,
+        mass=0,
+        cog=(0, 0, 0),
+        parent=None,
+        position=None,
+        rotation=None,
+        inertia_radii=None,
+        fixed=True,
+    ) -> RigidBody:
         """Creates a new *rigidbody* node and adds it to the scene.
 
         Args:
@@ -6154,12 +6432,15 @@ class Scene:
 
         if inertia_radii is not None:
             assert3f_positive(inertia_radii, "Radii of inertia")
-            assert mass>0, ValueError("Can not set radii of gyration without specifying mass")
+            assert mass > 0, ValueError(
+                "Can not set radii of gyration without specifying mass"
+            )
 
         if not isinstance(fixed, bool):
             if len(fixed) != 6:
-                raise Exception('"fixed" parameter should either be True/False or a 6x bool sequence such as (True,True,False,False,True,False)')
-
+                raise Exception(
+                    '"fixed" parameter should either be True/False or a 6x bool sequence such as (True,True,False,False,True,False)'
+                )
 
         # make elements
 
@@ -6200,7 +6481,9 @@ class Scene:
         self._nodes.append(r)
         return r
 
-    def new_cable(self, name, endA, endB, length=-1, EA=0, diameter=0, sheaves=None)->Cable:
+    def new_cable(
+        self, name, endA, endB, length=-1, EA=0, diameter=0, sheaves=None
+    ) -> Cable:
         """Creates a new *cable* node and adds it to the scene.
 
         Args:
@@ -6234,8 +6517,8 @@ class Scene:
         # first check
         assertValidName(name)
         self._verify_name_available(name)
-        assert1f(length, 'length')
-        assert1f(EA, 'EA')
+        assert1f(length, "length")
+        assert1f(EA, "EA")
 
         endA = self._poi_or_sheave_from_node(endA)
         endB = self._poi_or_sheave_from_node(endB)
@@ -6243,41 +6526,38 @@ class Scene:
         pois = [endA]
         if sheaves is not None:
 
-            if isinstance(sheaves, Point): # single sheave as poi or string
+            if isinstance(sheaves, Point):  # single sheave as poi or string
                 sheaves = [sheaves]
 
-            if isinstance(sheaves, Circle): # single sheave as poi or string
+            if isinstance(sheaves, Circle):  # single sheave as poi or string
                 sheaves = [sheaves]
-
 
             if isinstance(sheaves, str):
                 sheaves = [sheaves]
-
 
             for s in sheaves:
                 # s may be a poi or a sheave
                 pois.append(self._poi_or_sheave_from_node(s))
 
-
         pois.append(endB)
 
         # default options
         if length > -1:
-            if length<1e-9:
-                raise Exception('Length should be more than 0')
+            if length < 1e-9:
+                raise Exception("Length should be more than 0")
 
-        if EA<0:
-            raise Exception('EA should be more than 0')
+        if EA < 0:
+            raise Exception("EA should be more than 0")
 
         assert1f(diameter, "Diameter should be a number >= 0")
 
-        if diameter<0:
+        if diameter < 0:
             raise Exception("Diameter should be >= 0")
 
         # then create
         a = self._vfc.new_cable(name)
         new_node = Cable(self, a)
-        if length>0:
+        if length > 0:
             new_node.length = length
         new_node.EA = EA
         new_node.diameter = diameter
@@ -6287,7 +6567,7 @@ class Scene:
         # and add to the scene
         self._nodes.append(new_node)
 
-        if length <0:
+        if length < 0:
             new_node.length = 1e-8
             self._vfc.state_update()
 
@@ -6298,12 +6578,13 @@ class Scene:
             else:
                 # is is possible that all nodes are at the same location which means the total length becomes 0
                 self.delete(new_node.name)
-                raise ValueError("No lengh has been supplied and all connection points are at the same location - unable to determine a non-zero default length. Please supply a length")
-
+                raise ValueError(
+                    "No lengh has been supplied and all connection points are at the same location - unable to determine a non-zero default length. Please supply a length"
+                )
 
         return new_node
 
-    def new_force(self, name, parent=None, force=None, moment=None)->Force:
+    def new_force(self, name, parent=None, force=None, moment=None) -> Force:
         """Creates a new *force* node and adds it to the scene.
 
         Args:
@@ -6332,7 +6613,6 @@ class Scene:
         if moment is not None:
             assert3f(moment, "Moment ")
 
-
         # then create
         a = self._vfc.new_force(name)
 
@@ -6349,7 +6629,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_circle(self, name, parent, axis, radius=0.)->Circle:
+    def new_circle(self, name, parent, axis, radius=0.0) -> Circle:
         """Creates a new *sheave* node and adds it to the scene.
 
         Args:
@@ -6389,8 +6669,19 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_hydspring(self, name, parent, cob,
-                      BMT, BML, COFX, COFY, kHeave, waterline, displacement_kN)->HydSpring:
+    def new_hydspring(
+        self,
+        name,
+        parent,
+        cob,
+        BMT,
+        BML,
+        COFX,
+        COFY,
+        kHeave,
+        waterline,
+        displacement_kN,
+    ) -> HydSpring:
         """Creates a new *hydspring* node and adds it to the scene.
 
         Args:
@@ -6445,7 +6736,7 @@ class Scene:
 
         return new_node
 
-    def new_linear_connector_6d(self, name, main, secondary, stiffness = None)->LC6d:
+    def new_linear_connector_6d(self, name, main, secondary, stiffness=None) -> LC6d:
         """Creates a new *linear connector 6d* node and adds it to the scene.
 
         Args:
@@ -6473,7 +6764,7 @@ class Scene:
         if stiffness is not None:
             assert6f(stiffness, "Stiffness ")
         else:
-            stiffness = (0,0,0,0,0,0)
+            stiffness = (0, 0, 0, 0, 0, 0)
 
         # then create
         a = self._vfc.new_linearconnector6d(name)
@@ -6488,7 +6779,9 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_connector2d(self, name, nodeA, nodeB, k_linear=0, k_angular=0)->Connector2d:
+    def new_connector2d(
+        self, name, nodeA, nodeB, k_linear=0, k_angular=0
+    ) -> Connector2d:
         """Creates a new *new_connector2d* node and adds it to the scene.
 
         Args:
@@ -6530,7 +6823,20 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_beam(self, name, nodeA, nodeB, EIy=0, EIz=0, GIp=0, EA=0, L=None, mass = 0, n_segments=1,tension_only=False)->Beam:
+    def new_beam(
+        self,
+        name,
+        nodeA,
+        nodeB,
+        EIy=0,
+        EIz=0,
+        GIp=0,
+        EA=0,
+        L=None,
+        mass=0,
+        n_segments=1,
+        tension_only=False,
+    ) -> Beam:
         """Creates a new *beam* node and adds it to the scene.
 
         Args:
@@ -6559,19 +6865,20 @@ class Scene:
         s = self._parent_from_node(nodeB)
 
         if L is None:
-            L = np.linalg.norm(np.array(m.global_position)- np.array(s.global_position))
+            L = np.linalg.norm(
+                np.array(m.global_position) - np.array(s.global_position)
+            )
         else:
             if L <= 0:
-                raise ValueError('L should be > 0 as stiffness is defined per length.')
+                raise ValueError("L should be > 0 as stiffness is defined per length.")
 
-        assert1f_positive_or_zero(EIy,"EIy should be >= 0")
-        assert1f_positive_or_zero(EIz,"EIz should be >= 0")
-        assert1f_positive_or_zero(GIp,"GIp should be >= 0")
-        assert1f_positive_or_zero(EA,"EA should be >= 0")
+        assert1f_positive_or_zero(EIy, "EIy should be >= 0")
+        assert1f_positive_or_zero(EIz, "EIz should be >= 0")
+        assert1f_positive_or_zero(GIp, "GIp should be >= 0")
+        assert1f_positive_or_zero(EA, "EA should be >= 0")
         assertBool(tension_only, "tension_only should be bool")
         assert1f(mass, "Mass shall be a number")
         n_segments = int(round(n_segments))
-
 
         # then create
         a = self._vfc.new_linearbeam(name)
@@ -6593,8 +6900,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-
-    def new_buoyancy(self, name, parent=None, density = 1.025)->Buoyancy:
+    def new_buoyancy(self, name, parent=None, density=1.025) -> Buoyancy:
         """Creates a new *buoyancy* node and adds it to the scene.
 
         Args:
@@ -6616,7 +6922,7 @@ class Scene:
         b = self._parent_from_node(parent)
 
         if b is None:
-            raise ValueError('A valid parent must be defined for a Buoyancy node')
+            raise ValueError("A valid parent must be defined for a Buoyancy node")
 
         assert1f_positive_or_zero(density, "density")
 
@@ -6633,16 +6939,15 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_tank(self, name, parent=None, density = 1.025, free_flooding = False)->Tank:
-        """Creates a new *buoyancy* node and adds it to the scene.
+    def new_tank(self, name, parent=None, density=1.025, free_flooding=False) -> Tank:
+        """Creates a new *tank* node and adds it to the scene.
 
         Args:
             name: Name for the node, should be unique
             parent: optional, name of the parent of the node
 
-
         Returns:
-            Reference to newly created buoyancy
+            Reference to newly created Tank
 
         """
 
@@ -6655,9 +6960,11 @@ class Scene:
         b = self._parent_from_node(parent)
 
         if b is None:
-            raise ValueError('A valid parent must be defined for a Tank')
+            raise ValueError("A valid parent must be defined for a Tank")
 
-        assert isinstance(free_flooding, bool), ValueError('free_flooding shall be True or False')
+        assert isinstance(free_flooding, bool), ValueError(
+            "free_flooding shall be True or False"
+        )
 
         assert1f(density, "density")
 
@@ -6675,7 +6982,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_contactmesh(self, name, parent=None)->ContactMesh:
+    def new_contactmesh(self, name, parent=None) -> ContactMesh:
         """Creates a new *contactmesh* node and adds it to the scene.
 
         Args:
@@ -6706,7 +7013,16 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_spmt(self, name, parent, maximal_length=1.8, nominal_length=1.5, k=1e6, meshes=None, axles = None) -> SPMT:
+    def new_spmt(
+        self,
+        name,
+        parent,
+        maximal_length=1.8,
+        nominal_length=1.5,
+        k=1e6,
+        meshes=None,
+        axles=None,
+    ) -> SPMT:
         """Creates a new *SPMT* node and adds it to the scene.
 
         Args:
@@ -6730,7 +7046,9 @@ class Scene:
         assertValidName(name)
         self._verify_name_available(name)
         parent = self._node_from_node_or_str(parent)
-        assert isinstance(parent, Axis), ValueError(f"Parent should be an axis system or derived, not a {type(parent)}")
+        assert isinstance(parent, Axis), ValueError(
+            f"Parent should be an axis system or derived, not a {type(parent)}"
+        )
 
         assert1f_positive_or_zero(maximal_length, "maximal_length ")
         assert1f_positive_or_zero(nominal_length, "nominal_length ")
@@ -6738,7 +7056,9 @@ class Scene:
         if meshes is not None:
             meshes = make_iterable(meshes)
             for mesh in meshes:
-                test = self._node_from_node(mesh, ContactMesh)  # throws error if not found
+                test = self._node_from_node(
+                    mesh, ContactMesh
+                )  # throws error if not found
 
         if axles is not None:
             for p in axles:
@@ -6764,7 +7084,9 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_contactball(self, name, parent=None, radius=1, k=9999, meshes = None)->ContactBall:
+    def new_contactball(
+        self, name, parent=None, radius=1, k=9999, meshes=None
+    ) -> ContactBall:
         """Creates a new *force* node and adds it to the scene.
 
         Args:
@@ -6790,7 +7112,6 @@ class Scene:
         assert1f_positive_or_zero(radius, "Radius ")
         assert1f_positive_or_zero(k, "k ")
 
-
         if meshes is not None:
             meshes = make_iterable(meshes)
             for mesh in meshes:
@@ -6815,7 +7136,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_ballastsystem(self, name, parent : Axis) ->BallastSystem:
+    def new_ballastsystem(self, name, parent: Axis) -> BallastSystem:
         """Creates a new *rigidbody* node and adds it to the scene.
 
         Args:
@@ -6838,8 +7159,7 @@ class Scene:
         self._verify_name_available(name)
         b = self._parent_from_node(parent)
 
-        parent = self._parent_from_node(parent) # handles verification of type as well
-
+        parent = self._parent_from_node(parent)  # handles verification of type as well
 
         # make elements
         r = BallastSystem(self, parent)
@@ -6848,9 +7168,21 @@ class Scene:
         self._nodes.append(r)
         return r
 
-
-    def new_sling(self, name, length = -1, EA=1.0, mass = 0.1, endA = None, endB = None, LeyeA = None, LeyeB=None, LspliceA = None, LspliceB = None,
-                  diameter = 0.1, sheaves = None) -> Sling:
+    def new_sling(
+        self,
+        name,
+        length=-1,
+        EA=1.0,
+        mass=0.1,
+        endA=None,
+        endB=None,
+        LeyeA=None,
+        LeyeB=None,
+        LspliceA=None,
+        LspliceB=None,
+        diameter=0.1,
+        sheaves=None,
+    ) -> Sling:
         """
         Creates a new sling, adds it to the scene and returns a reference to the newly created object.
 
@@ -6876,7 +7208,6 @@ class Scene:
 
         """
 
-
         # apply prefixes
         name = self._prefix_name(name)
 
@@ -6885,24 +7216,39 @@ class Scene:
         self._verify_name_available(name)
 
         name_prefix = name + vfc.MANAGED_NODE_IDENTIFIER
-        postfixes = ['_spliceA', '_spliceA', '_spliceA2', '_spliceAM', '_spliceA_visual',
-                     'spliceB', '_spliceB1', '_spliceB2', '_spliceBM', '_spliceB_visual',
-                     '_main_part', '_eyeA', '_eyeB']
+        postfixes = [
+            "_spliceA",
+            "_spliceA",
+            "_spliceA2",
+            "_spliceAM",
+            "_spliceA_visual",
+            "spliceB",
+            "_spliceB1",
+            "_spliceB2",
+            "_spliceBM",
+            "_spliceB_visual",
+            "_main_part",
+            "_eyeA",
+            "_eyeB",
+        ]
 
         for pf in postfixes:
             self._verify_name_available(name_prefix + pf)
 
-
         endA = self._poi_or_sheave_from_node(endA)
         endB = self._poi_or_sheave_from_node(endB)
 
-        if length==-1: # default
+        if length == -1:  # default
             if endA is None or endB is None:
-                raise ValueError("Length for cable is not provided, so defaults to distance between endpoints; but at least one of the endpoints is None.")
+                raise ValueError(
+                    "Length for cable is not provided, so defaults to distance between endpoints; but at least one of the endpoints is None."
+                )
 
-            length = np.linalg.norm(np.array(endA.global_position) - np.array(endB.global_position))
+            length = np.linalg.norm(
+                np.array(endA.global_position) - np.array(endB.global_position)
+            )
 
-        if LeyeA is None: # default
+        if LeyeA is None:  # default
             LeyeA = length / 6
         if LeyeB is None:  # default
             LeyeB = length / 6
@@ -6929,13 +7275,26 @@ class Scene:
         # then make element
         # __init__(self, scene, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
 
-        node = Sling(scene=self, name= name, length=length, LeyeA=LeyeA, LeyeB=LeyeB, LspliceA=LspliceA, LspliceB=LspliceB,
-                     diameter=diameter, EA=EA, mass=mass, endA=endA, endB=endB, sheaves=sheaves)
+        node = Sling(
+            scene=self,
+            name=name,
+            length=length,
+            LeyeA=LeyeA,
+            LeyeB=LeyeB,
+            LspliceA=LspliceA,
+            LspliceB=LspliceB,
+            diameter=diameter,
+            EA=EA,
+            mass=mass,
+            endA=endA,
+            endB=endB,
+            sheaves=sheaves,
+        )
         self._nodes.append(node)
 
         return node
 
-    def new_shackle(self, name, kind='GP500') -> Shackle:
+    def new_shackle(self, name, kind="GP500") -> Shackle:
         """
         Creates a new shackle, adds it to the scene and returns a reference to the newly created object.
 
@@ -6960,10 +7319,16 @@ class Scene:
         self._verify_name_available(name)
 
         name_prefix = name + vfc.MANAGED_NODE_IDENTIFIER
-        postfixes = ['_body', '_pin_point', '_bow_point', '_inside_circle_center', '_inside', '_visual']
+        postfixes = [
+            "_body",
+            "_pin_point",
+            "_bow_point",
+            "_inside_circle_center",
+            "_inside",
+            "_visual",
+        ]
         for pf in postfixes:
             self._verify_name_available(name_prefix + pf)
-
 
         # then make element
 
@@ -6977,7 +7342,6 @@ class Scene:
         g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + "gravity")
         g.parent = p
 
-
         node = Shackle(scene=self, name=name, kind=kind, a=a, p=p, g=g)
 
         self._nodes.append(node)
@@ -6989,7 +7353,7 @@ class Scene:
 
         See also: give_python_code
         """
-        for line in self.give_python_code().split('\n'):
+        for line in self.give_python_code().split("\n"):
             print(line)
 
     def give_python_code(self):
@@ -7006,7 +7370,7 @@ class Scene:
         except:
             code += "\n# By an unknown"
 
-        code += "\n# Time: {} UTC".format(str(datetime.datetime.now()).split('.')[0])
+        code += "\n# Time: {} UTC".format(str(datetime.datetime.now()).split(".")[0])
 
         code += "\n\n# To be able to distinguish the important number (eg: fixed positions) from"
         code += "\n# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'."
@@ -7017,12 +7381,12 @@ class Scene:
 
             if n._manager is None:
                 # print(f'code for {n.name}')
-                code += '\n' + n.give_python_code()
+                code += "\n" + n.give_python_code()
             else:
                 if n._manager.creates(n):
                     pass
                 else:
-                    code += '\n' + n.give_python_code()
+                    code += "\n" + n.give_python_code()
 
                 # print(f'skipping {n.name} ')
 
@@ -7060,26 +7424,26 @@ class Scene:
         filename = Path(filename)
 
         # add .dave extension if needed
-        if filename.suffix != '.dave':
-            filename = Path(str(filename) + '.dave')
+        if filename.suffix != ".dave":
+            filename = Path(str(filename) + ".dave")
 
         # add path if not provided
         if not filename.is_absolute():
             try:
                 filename = Path(self.resources_paths[-1]) / filename
             except:
-                pass # save in current folder
+                pass  # save in current folder
 
         # make sure directory exists
         directory = filename.parent
         if not directory.exists():
             directory.mkdir()
 
-        f = open(filename,'w+')
+        f = open(filename, "w+")
         f.write(code)
         f.close()
 
-        self._print('Saved as {}'.format(filename))
+        self._print("Saved as {}".format(filename))
 
         return filename
 
@@ -7097,33 +7461,33 @@ class Scene:
 
             node = self[name]
             deps = self.nodes_with_parent(node)
-            print(spaces + name + ' [' + str(type(node)).split('.')[-1][:-2] + ']')
+            print(spaces + name + " [" + str(type(node)).split(".")[-1][:-2] + "]")
 
             if deps is not None:
                 for dep in deps:
                     if spaces == "":
-                        spaces_plus = ' |-> '
+                        spaces_plus = " |-> "
                     else:
-                        spaces_plus = ' |   ' + spaces
+                        spaces_plus = " |   " + spaces
                     print_deps(dep, spaces_plus)
 
             to_be_printed.remove(name)
 
         while to_be_printed:
             name = to_be_printed[0]
-            print_deps(name, '')
+            print_deps(name, "")
 
     def run_code(self, code):
         """Runs the provided code with 's' as self"""
         s = self
         try:
-            exec(code, {}, {'s': s})
+            exec(code, {}, {"s": s})
         except Exception as M:
-            for i,line in enumerate(code.split('\n')):
-                print(f'{i} {line}')
+            for i, line in enumerate(code.split("\n")):
+                print(f"{i} {line}")
             raise M
 
-    def load_scene(self, filename = None):
+    def load_scene(self, filename=None):
         """Loads the contents of filename into the current scene.
 
         This function is typically used on an empty scene.
@@ -7134,26 +7498,24 @@ class Scene:
         See also: import scene"""
 
         if filename is None:
-            raise Exception('Please provide a file-name')
+            raise Exception("Please provide a file-name")
 
-        filename = Path(filename)
+        try:
+            filename = self.get_resource_path(filename)
+        except:
+            if not str(filename).endswith(".dave"):
+                filename = Path(str(filename) + ".dave")
 
-        if filename.suffix != '.dave':
-            filename = Path(str(filename) + '.dave')
+        print("Loading {}".format(filename))
 
-        filename = self.get_resource_path(filename)
-
-        print('Loading {}'.format(filename))
-
-        f = open(file=filename, mode = 'r')
-        code = ''
+        f = open(file=filename, mode="r")
+        code = ""
         for line in f:
-            code += line + '\n'
+            code += line + "\n"
 
         self.run_code(code)
 
-
-    def import_scene(self, other, prefix = "", containerize = True):
+    def import_scene(self, other, prefix="", containerize=True):
         """Copy-paste all nodes of scene "other" into current scene.
 
         To avoid double names it is recommended to use a prefix. This prefix will be added to all element names.
@@ -7169,7 +7531,7 @@ class Scene:
             other = Scene(other)
 
         if not isinstance(other, Scene):
-            raise TypeError('Other should be a Scene but is a ' + str(type(other)))
+            raise TypeError("Other should be a Scene but is a " + str(type(other)))
 
         old_prefix = self._name_prefix
         imported_element_names = []
@@ -7177,13 +7539,15 @@ class Scene:
         for n in other._nodes:
             imported_element_names.append(prefix + n.name)
 
-
         # check for double names
 
         for new_node_name in imported_element_names:
             if not self.name_available(new_node_name):
-                raise NameError('An element with name "{}" is already present. Please use a prefix to avoid double names'.format(new_node_name))
-
+                raise NameError(
+                    'An element with name "{}" is already present. Please use a prefix to avoid double names'.format(
+                        new_node_name
+                    )
+                )
 
         self._name_prefix = prefix
 
@@ -7193,18 +7557,17 @@ class Scene:
         try:
             exec(code)
         except Exception as m:
-            lines = code.split('\n')
+            lines = code.split("\n")
             for i, line in enumerate(lines):
-                print(str(i) + '   ' + line)
-            raise(m)
+                print(str(i) + "   " + line)
+            raise (m)
 
-
-        self._name_prefix = old_prefix # restore
+        self._name_prefix = old_prefix  # restore
 
         # Move all imported elements without a parent into a newly created axis system
         if containerize:
 
-            container_name = s.available_name_like('import_container')
+            container_name = s.available_name_like("import_container")
 
             c = self.new_axis(prefix + container_name)
 
@@ -7237,17 +7600,15 @@ class Scene:
         c.import_scene(self)
         return c
 
-
-
     # =================== DYNAMICS ==================
 
-    def dynamics_M(self,delta = 1e-6):
+    def dynamics_M(self, delta=1e-6):
         """Returns the mass matrix of the scene"""
         self.update()
 
         return self._vfc.M(delta)
 
-    def dynamics_K(self, delta = 1e-6):
+    def dynamics_K(self, delta=1e-6):
         """Returns the stiffness matrix of the scene for a perturbation of delta
 
         A component is positive if a displacement introduces an reaction force in the opposite direction.
@@ -7279,11 +7640,13 @@ class Scene:
         self.update()
         return self._vfc.get_dof_modes()
 
+
 # =================== None-Node Classes
 
 """This is a container for a pyo3d.MomentDiagram object providing plot methods"""
-class LoadShearMomentDiagram():
 
+
+class LoadShearMomentDiagram:
     def __init__(self, datasource):
         """
 
@@ -7293,7 +7656,7 @@ class LoadShearMomentDiagram():
 
         self.datasource = datasource
 
-    def give_shear_and_moment(self,grid_n = 100):
+    def give_shear_and_moment(self, grid_n=100):
         """Returns (position, shear, moment)"""
         x = self.datasource.grid(grid_n)
         return x, self.datasource.Vz, self.datasource.My
@@ -7301,36 +7664,36 @@ class LoadShearMomentDiagram():
     def plot_simple(self):
         """Plots the bending moment and shear in a single yy-plot.
 
-        Creates a new figure, does not """
-        x,Vz, My = self.give_shear_and_moment()
+        Creates a new figure, does not"""
+        x, Vz, My = self.give_shear_and_moment()
         import matplotlib.pyplot as plt
 
         fig, ax1 = plt.subplots()
         ax2 = ax1.twinx()
 
-        ax1.plot(x,My, 'g', lw = 1, label = 'Bending Moment')
-        ax2.plot(x,Vz, 'b', lw = 1, label = 'Shear Force')
+        ax1.plot(x, My, "g", lw=1, label="Bending Moment")
+        ax2.plot(x, Vz, "b", lw=1, label="Shear Force")
 
         from DAVE.gui.helpers.align_zeros_of_yyplots import align_y0_axis
 
         align_y0_axis(ax1, ax2)
 
-        ax1.set_xlabel('Position [m]')
-        ax1.set_ylabel('Bending Moment [kNm]')
-        ax2.set_ylabel('Shear Force [kN]')
+        ax1.set_xlabel("Position [m]")
+        ax1.set_ylabel("Bending Moment [kNm]")
+        ax2.set_ylabel("Shear Force [kN]")
 
-        ax1.tick_params(axis='y', colors='g')
-        ax2.tick_params(axis='y', colors='b')
+        ax1.tick_params(axis="y", colors="g")
+        ax2.tick_params(axis="y", colors="b")
 
         # fig.legend()  - obvious from the axis
 
-        ext = 0.1*(np.max(x) - np.min(x))
-        xx = [np.min(x)-ext, np.max(x)+ext]
-        ax1.plot(xx,[0,0],c = [.5,.5,.5],lw=1, linestyle= ':')
+        ext = 0.1 * (np.max(x) - np.min(x))
+        xx = [np.min(x) - ext, np.max(x) + ext]
+        ax1.plot(xx, [0, 0], c=[0.5, 0.5, 0.5], lw=1, linestyle=":")
         ax1.set_xlim(xx)
 
-    def plot(self, grid_n = 100, merge_adjacent_loads = True, filename = None):
-        m = self.datasource # alias
+    def plot(self, grid_n=100, merge_adjacent_loads=True, filename=None):
+        m = self.datasource  # alias
 
         x = m.grid(grid_n)
         linewidth = 1
@@ -7340,11 +7703,11 @@ class LoadShearMomentDiagram():
         import matplotlib.pyplot as plt
 
         #
-        plt.rcParams.update({'font.family': 'sans-serif'})
-        plt.rcParams.update({'font.sans-serif': 'consolas'})
-        plt.rcParams.update({'font.size': 6})
+        plt.rcParams.update({"font.family": "sans-serif"})
+        plt.rcParams.update({"font.sans-serif": "consolas"})
+        plt.rcParams.update({"font.size": 6})
 
-        fig, (ax0, ax1, ax2) = plt.subplots(3, 1,figsize=(8.27,11.69))
+        fig, (ax0, ax1, ax2) = plt.subplots(3, 1, figsize=(8.27, 11.69))
         textsize = 6
 
         # get loads
@@ -7378,7 +7741,11 @@ class LoadShearMomentDiagram():
 
                             # smoothed
                             xx = [*prev_load[0][:-1], *load[0][2:]]
-                            yy = [*prev_load[1][:-2], 0.5 * (prev_load[1][-2] + load[1][1]), *load[1][2:]]
+                            yy = [
+                                *prev_load[1][:-2],
+                                0.5 * (prev_load[1][-2] + load[1][1]),
+                                *load[1][2:],
+                            ]
 
                             to_be_plotted[-1] = (xx, yy, load[2])
 
@@ -7392,7 +7759,8 @@ class LoadShearMomentDiagram():
 
         #
         from matplotlib import cm
-        colors = cm.get_cmap('hsv', lut=len(to_be_plotted))
+
+        colors = cm.get_cmap("hsv", lut=len(to_be_plotted))
 
         from matplotlib.patches import Polygon
 
@@ -7419,34 +7787,47 @@ class LoadShearMomentDiagram():
             col = [0.8 * c for c in colors(icol)]
             col[3] = 1.0  # alpha
 
-            if is_concentrated:   # concentrated loads on left axis
+            if is_concentrated:  # concentrated loads on left axis
                 lbl = f" {name} {ld[1][1]:.2f}"
-                texts.append(ax0.text(xx[0], yy[1], lbl, fontsize=textsize,horizontalalignment='left'))
+                texts.append(
+                    ax0.text(
+                        xx[0], yy[1], lbl, fontsize=textsize, horizontalalignment="left"
+                    )
+                )
                 ax0.plot(xx, yy, label=lbl, color=col, linewidth=linewidth)
-                if yy[1]>0:
-                    ax0.plot(xx[1], yy[1], marker='^', color=col, linewidth=linewidth)
+                if yy[1] > 0:
+                    ax0.plot(xx[1], yy[1], marker="^", color=col, linewidth=linewidth)
                 else:
-                    ax0.plot(xx[1], yy[1], marker='v', color=col, linewidth=linewidth)
-
+                    ax0.plot(xx[1], yy[1], marker="v", color=col, linewidth=linewidth)
 
             else:  # distributed loads on right axis
-                lbl = f"{name}" # {yy[1]:.2f} kN/m at {xx[0]:.3f}m .. {yy[-2]:.2f} kN/m at {xx[-1]:.3f}m"
+                lbl = f"{name}"  # {yy[1]:.2f} kN/m at {xx[0]:.3f}m .. {yy[-2]:.2f} kN/m at {xx[-1]:.3f}m"
 
-                vertices = [(xx[i],yy[i]) for i in range(len(xx))]
+                vertices = [(xx[i], yy[i]) for i in range(len(xx))]
 
-                ax0_second.add_patch(Polygon(vertices,  facecolor=[col[0], col[1],col[2], 0.2]))
+                ax0_second.add_patch(
+                    Polygon(vertices, facecolor=[col[0], col[1], col[2], 0.2])
+                )
                 ax0_second.plot(xx, yy, label=lbl, color=col, linewidth=linewidth)
 
                 lx = np.mean(xx)
-                ly = np.interp(lx, xx,yy)
+                ly = np.interp(lx, xx, yy)
 
-                texts_second.append(ax0_second.text(lx,ly , lbl, color = [0,0,0], horizontalalignment='center', fontsize=textsize))
-
+                texts_second.append(
+                    ax0_second.text(
+                        lx,
+                        ly,
+                        lbl,
+                        color=[0, 0, 0],
+                        horizontalalignment="center",
+                        fontsize=textsize,
+                    )
+                )
 
         ax0.grid()
-        ax0.set_title('Loads')
-        ax0.set_ylabel('Load [kN]')
-        ax0_second.set_ylabel('Load [kN/m]')
+        ax0.set_title("Loads")
+        ax0.set_ylabel("Load [kN]")
+        ax0_second.set_ylabel("Load [kN/m]")
 
         # plot moments
         # each concentrated load may have a moment as well
@@ -7455,57 +7836,69 @@ class LoadShearMomentDiagram():
             if np.linalg.norm(mom) > 1e-6:
                 load = m.load(i)
                 xx = load[0][0]
-                lbl = f'{load[2]}, m = {mom[1]:.2f} kNm'
-                ax0.plot(xx,0,marker='x', label = lbl, color = (0,0,0,1))
-                texts.append(ax0.text(xx,0,lbl, horizontalalignment   = 'center', fontsize=textsize))
+                lbl = f"{load[2]}, m = {mom[1]:.2f} kNm"
+                ax0.plot(xx, 0, marker="x", label=lbl, color=(0, 0, 0, 1))
+                texts.append(
+                    ax0.text(
+                        xx, 0, lbl, horizontalalignment="center", fontsize=textsize
+                    )
+                )
 
         fig.legend(loc="upper right")
 
         # add a zero-line
         xx = [np.min(x), np.max(x)]
-        ax0.plot(xx,(0,0), 'k-')
+        ax0.plot(xx, (0, 0), "k-")
 
         from DAVE.gui.helpers.align_zeros_of_yyplots import align_y0_axis
 
         align_y0_axis(ax0, ax0_second)
 
         from DAVE.reporting.utils.TextAvoidOverlap import minimizeTextOverlap
-        minimizeTextOverlap(texts_second, fig=fig, ax=ax0_second, vertical_only=True, optimize_initial_positions = False, annotate=False)
-        minimizeTextOverlap(texts, fig=fig, ax=ax0, vertical_only=True, optimize_initial_positions = False, annotate=False)
 
-        ax0.spines['top'].set_visible(False)
-        ax0.spines['bottom'].set_visible(False)
+        minimizeTextOverlap(
+            texts_second,
+            fig=fig,
+            ax=ax0_second,
+            vertical_only=True,
+            optimize_initial_positions=False,
+            annotate=False,
+        )
+        minimizeTextOverlap(
+            texts,
+            fig=fig,
+            ax=ax0,
+            vertical_only=True,
+            optimize_initial_positions=False,
+            annotate=False,
+        )
 
-        ax0_second.spines['top'].set_visible(False)
-        ax0_second.spines['bottom'].set_visible(False)
+        ax0.spines["top"].set_visible(False)
+        ax0.spines["bottom"].set_visible(False)
 
-        ax1.plot(x, m.Vz, 'k-', linewidth=linewidth)
+        ax0_second.spines["top"].set_visible(False)
+        ax0_second.spines["bottom"].set_visible(False)
+
+        ax1.plot(x, m.Vz, "k-", linewidth=linewidth)
 
         i = np.argmax(np.abs(m.Vz))
-        ax1.plot(x[i], m.Vz[i], 'b*')
-        ax1.text(x[i], m.Vz[i], f'{m.Vz[i]:.2f}')
+        ax1.plot(x[i], m.Vz[i], "b*")
+        ax1.text(x[i], m.Vz[i], f"{m.Vz[i]:.2f}")
 
         ax1.grid()
-        ax1.set_title('Shear')
-        ax1.set_ylabel('[kN]')
+        ax1.set_title("Shear")
+        ax1.set_ylabel("[kN]")
 
-        ax2.plot(x, m.My, 'k-', linewidth=linewidth)
+        ax2.plot(x, m.My, "k-", linewidth=linewidth)
         i = np.argmax(np.abs(m.My))
-        ax2.plot(x[i], m.My[i], 'b*')
-        ax2.text(x[i], m.My[i], f'{m.My[i]:.2f}')
+        ax2.plot(x[i], m.My[i], "b*")
+        ax2.text(x[i], m.My[i], f"{m.My[i]:.2f}")
 
         ax2.grid()
-        ax2.set_title('Moment')
-        ax2.set_ylabel('[kN*m]')
+        ax2.set_title("Moment")
+        ax2.set_ylabel("[kN*m]")
 
         if filename is None:
             plt.show()
         else:
             fig.savefig(filename)
-
-
-
-
-
-
-
