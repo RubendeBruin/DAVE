@@ -1666,7 +1666,7 @@ class Viewport:
 
                 # a rigidbody is also an axis
 
-                box = vp_actor_from_obj(self.scene.get_resource_path("cog.obj"))
+                box = vp_actor_from_obj(self.scene.get_resource_path("res: cog.obj"))
 
                 box.actor_type = ActorType.COG
                 actors["x"] = actors["main"]
@@ -1944,13 +1944,20 @@ class Viewport:
             ren.Finalize()
             iren.TerminateApp()
 
-    def setup_screen(self):
-        """Creates the plotter instance and stores it in self.screen"""
+    def setup_screen(self, offscreen = False, size = (800,500)):
+        """Creates the plotter instance and stores it in self.screen
 
-        qtWidget = self.vtkWidget
+        If offscreen = True then an offscreen plotter is made
+        """
+
+        if offscreen:
+            self.screen = vp.Plotter(axes=0, offscreen=True, size=size)
+            return
+
+
 
         if (
-            self.Jupyter and qtWidget is None
+            self.Jupyter and self.vtkWidget is None
         ):  # it is possible to launch the Gui from jupyter, so check for both
 
             # create embedded notebook (k3d) view
@@ -1961,7 +1968,7 @@ class Viewport:
 
         else:
 
-            if qtWidget is None:
+            if self.vtkWidget is None:
 
                 # create stand-alone interactive view
                 import vedo as vtkp
@@ -1984,7 +1991,7 @@ class Viewport:
                 vtkp.settings.embedWindow(backend=None)
 
                 self.screen = vp.plotter.Plotter(
-                    qtWidget=qtWidget, axes=4, bg=COLOR_BG1, bg2=COLOR_BG2
+                    qtWidget=self.vtkWidget, axes=4, bg=COLOR_BG1, bg2=COLOR_BG2
                 )
 
     def show(self, camera=None, include_outlines=True):
@@ -1997,6 +2004,89 @@ class Viewport:
 
         # vp.settings.lightFollowsCamera = True
 
+        """ For reference: this is how to load an cubemap texture
+
+                    Problem is that the default VTK orientation is not with the Z-axis up. So some magic needs to be done
+                    to have the cubemap and environmental light texture in the right orientation
+
+                    # load env texture
+                    cubemap_path_root = r'C:\\datapath\\skybox2-'
+
+                    files = [cubemap_path_root + name + '.jpg' for name in ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']]
+
+                    cubemap = vtk.vtkTexture()
+                    cubemap.SetCubeMap(True)
+
+                    for i,file in enumerate(files):
+                        readerFactory = vtk.vtkImageReader2Factory()
+                        # textureFile = readerFactory.CreateImageReader2(file)
+                        textureFile = readerFactory.CreateImageReader2(r'c:\data\white.png')
+                        textureFile.SetFileName(r'c:\data\white.png')
+                        textureFile.Update()
+
+                        cubemap.SetInputDataObject(i, textureFile.GetOutput())
+
+                    # make skybox actor
+                    skybox = vtk.vtkSkybox()
+                    skybox.SetTexture(cubemap)
+
+                    self.screen.add(skybox)"""
+
+        # Make a white skybox texture for light emission
+        # cubemap = vtk.vtkTexture()
+        # cubemap.SetCubeMap(True)
+        #
+        readerFactory = vtk.vtkImageReader2Factory()
+
+        from pathlib import Path
+
+        if not Path.exists(LIGHT_TEXTURE_SKYBOX):
+            raise ValueError(f"No image found here: {LIGHT_TEXTURE_SKYBOX}")
+
+        textureFile = readerFactory.CreateImageReader2(str(LIGHT_TEXTURE_SKYBOX))
+        textureFile.SetFileName(str(LIGHT_TEXTURE_SKYBOX))
+        textureFile.Update()
+        texture = vtk.vtkTexture()
+        texture.SetInputDataObject(textureFile.GetOutput())
+        #
+        # for i in range(6):
+        #     cubemap.SetInputDataObject(i, textureFile.GetOutput())
+        #
+
+
+
+        # self.screen.show(camera=camera)
+
+        # texture = vtk.vtkTexture()
+        # input = vtk.vtkPNGReader()
+        # input.SetFileName(str(LIGHT_TEXTURE_SKYBOX))
+        # input.Modified()
+        # texture.SetInputDataObject(input.GetOutput())
+
+        # # Add SSAO
+        # # see: https://blog.kitware.com/ssao/
+        basicPasses = vtk.vtkRenderStepsPass()
+        self.ssao = vtk.vtkSSAOPass()
+
+        # Radius 20, Kernel 500 gives nice result - but slow
+        # Kernel size 50 less accurate bus faster
+        self.ssao.SetRadius(20)
+        self.ssao.SetDelegatePass(basicPasses)
+        self.ssao.SetBlur(True)
+        self.ssao.SetKernelSize(50)
+
+        for r in self.screen.renderers:
+            r.ResetCamera()
+
+            r.UseImageBasedLightingOn()
+            r.SetEnvironmentTexture(texture)
+
+            # r.SetPass(ssao)
+
+            r.SetUseDepthPeeling(True)
+
+            r.Modified()
+
         self.create_world_actors()
 
         if camera is None:
@@ -2005,13 +2095,25 @@ class Viewport:
             camera["pos"] = [10, -10, 5]
             camera["focalPoint"] = [0, 0, 0]
 
-        if self.Jupyter and self.qtWidget is None:
+
+        if self.Jupyter and self.vtkWidget is None:
 
             # show embedded
             for va in self.node_visuals:
                 for a in va.actors.values():
                     if a.GetVisibility():
                         self.screen.add(a)
+
+            self.update_visibility()  # needs to be called after actors have been added to screen
+            self.update_global_visibility()
+
+            for outline in self.node_outlines:
+                self.screen.add(outline.outline_actor)
+
+            self.screen.resetcam = False
+
+            # TODO: Set camera
+            # TODO: Update outlines
 
             return self.screen.show(camera=camera)
 
@@ -2027,91 +2129,9 @@ class Viewport:
                 for outline in self.node_outlines:
                     screen.add(outline.outline_actor)
 
-            """ For reference: this is how to load an cubemap texture
-
-            Problem is that the default VTK orientation is not with the Z-axis up. So some magic needs to be done
-            to have the cubemap and environmental light texture in the right orientation
-
-            # load env texture
-            cubemap_path_root = r'C:\\datapath\\skybox2-'
-
-            files = [cubemap_path_root + name + '.jpg' for name in ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']]
-
-            cubemap = vtk.vtkTexture()
-            cubemap.SetCubeMap(True)
-
-            for i,file in enumerate(files):
-                readerFactory = vtk.vtkImageReader2Factory()
-                # textureFile = readerFactory.CreateImageReader2(file)
-                textureFile = readerFactory.CreateImageReader2(r'c:\data\white.png')
-                textureFile.SetFileName(r'c:\data\white.png')
-                textureFile.Update()
-
-                cubemap.SetInputDataObject(i, textureFile.GetOutput())
-
-            # make skybox actor
-            skybox = vtk.vtkSkybox()
-            skybox.SetTexture(cubemap)
-
-            self.screen.add(skybox)"""
-
-            # Make a white skybox texture for light emission
-            # cubemap = vtk.vtkTexture()
-            # cubemap.SetCubeMap(True)
-            #
-            readerFactory = vtk.vtkImageReader2Factory()
-
-            from pathlib import Path
-
-            if not Path.exists(LIGHT_TEXTURE_SKYBOX):
-                raise ValueError(f"No image found here: {LIGHT_TEXTURE_SKYBOX}")
-
-            textureFile = readerFactory.CreateImageReader2(str(LIGHT_TEXTURE_SKYBOX))
-            textureFile.SetFileName(str(LIGHT_TEXTURE_SKYBOX))
-            textureFile.Update()
-            texture = vtk.vtkTexture()
-            texture.SetInputDataObject(textureFile.GetOutput())
-            #
-            # for i in range(6):
-            #     cubemap.SetInputDataObject(i, textureFile.GetOutput())
-            #
-
-            self.screen.show(camera=camera)
-
-            # texture = vtk.vtkTexture()
-            # input = vtk.vtkPNGReader()
-            # input.SetFileName(str(LIGHT_TEXTURE_SKYBOX))
-            # input.Modified()
-            # texture.SetInputDataObject(input.GetOutput())
-
-            # # Add SSAO
-            # # see: https://blog.kitware.com/ssao/
-            basicPasses = vtk.vtkRenderStepsPass()
-            self.ssao = vtk.vtkSSAOPass()
-
-            # Radius 20, Kernel 500 gives nice result - but slow
-            # Kernel size 50 less accurate bus faster
-            self.ssao.SetRadius(20)
-            self.ssao.SetDelegatePass(basicPasses)
-            self.ssao.SetBlur(True)
-            self.ssao.SetKernelSize(50)
-
-            for r in self.screen.renderers:
-                r.ResetCamera()
-
-                r.UseImageBasedLightingOn()
-                r.SetEnvironmentTexture(texture)
-
-                # r.SetPass(ssao)
-
-
-                r.SetUseDepthPeeling(True)
-
-                r.Modified()
-
-            self.update_outlines()
-
             screen.resetcam = False
+
+            screen.show(camera=camera)
 
             return screen
 
