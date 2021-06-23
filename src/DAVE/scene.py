@@ -3342,14 +3342,6 @@ class Tank(NodeWithParent):
         self._inertia.position = self.cog_local
         self._inertia.inertia = self.volume * self.density
 
-    # @property
-    # def inertia(self):
-    #     """Inertia of the fluid in the tank - estimated by volume * density of fluid"""
-    #     return self.volume * self.density
-    #
-    # @property
-    # def position(self):
-    #     """Position of the center of mass"""
 
     def _delete_vfc(self):
         self._scene._vfc.delete(self._inertia.name)
@@ -7597,7 +7589,7 @@ class Scene:
         """
 
         c = Scene()
-        c.import_scene(self)
+        c.import_scene(self, containerize=False)
         return c
 
     # =================== DYNAMICS ==================
