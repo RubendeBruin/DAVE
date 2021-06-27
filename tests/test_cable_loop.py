@@ -92,5 +92,5 @@ def test_table_loop_solve():
                 length=22.0,
                 EA=100.0,
                 sheaves=['Circle_1_1',
-                         'Circle']),
+                         'Circle'])
     s.solve_statics()
