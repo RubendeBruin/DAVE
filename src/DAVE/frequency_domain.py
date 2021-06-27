@@ -416,7 +416,14 @@ def prepare_for_fd(s):
             loaddb = True
 
         if loaddb:
-            w._hyddb = Hyddb1.create_from(s.get_resource_path(w.path))
+            file_to_load = w.file_path
+
+            if file_to_load.name.lower().endswith('.dhyd'):
+                w._hyddb = Hyddb1.create_from(file_to_load)
+            elif file_to_load.name.lower().endswith('.hyd'):
+                w._hyddb = Hyddb1.create_from_hyd(file_to_load)
+
+            w._hyddb.expand360_using_symmetry()
 
         if np.all(w.offset == (0,0,0)):
             continue

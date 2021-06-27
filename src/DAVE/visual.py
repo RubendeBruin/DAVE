@@ -2068,12 +2068,12 @@ class Viewport:
         basicPasses = vtk.vtkRenderStepsPass()
         self.ssao = vtk.vtkSSAOPass()
 
-        # Radius 20, Kernel 500 gives nice result - but slow
+        # Radius 10, Kernel 500 gives nice result - but slow
         # Kernel size 50 less accurate bus faster
-        self.ssao.SetRadius(20)
+        self.ssao.SetRadius(10)
         self.ssao.SetDelegatePass(basicPasses)
-        self.ssao.SetBlur(True)
         self.ssao.SetKernelSize(50)
+        self.ssao.SetBlur(True)
 
         for r in self.screen.renderers:
             r.ResetCamera()
