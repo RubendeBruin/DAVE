@@ -1642,11 +1642,11 @@ class Cable(CoreConnectedNode):
             node1 = nodes[i]
             node2 = nodes[i + 1]
 
-            # if first or last node is a sheave, the this will be replaced by the poi of the sheave
-            if i == 0 and isinstance(node1, Circle):
-                node1 = node1.parent
-            if i == n - 2 and isinstance(node2, Circle):
-                node2 = node2.parent
+            # # if first or last node is a sheave, the this will be replaced by the poi of the sheave
+            # if i == 0 and isinstance(node1, Circle):
+            #     node1 = node1.parent
+            # if i == n - 2 and isinstance(node2, Circle):
+            #     node2 = node2.parent
 
             if node1 == node2:
                 raise ValueError(
@@ -1669,22 +1669,8 @@ class Cable(CoreConnectedNode):
 
     def _update_pois(self):
         self._vfNode.clear_connections()
-
-        # add first point
-        point = self._pois[0]
-        if isinstance(point, Circle):
-            point = point.parent  # connect to parent poi of sheave instead
-        self._add_connection_to_core(point)
-
-        # add sheaves
-        for point in self._pois[1:-1]:
+        for point in self._pois:
             self._add_connection_to_core(point)
-
-        # add last point
-        point = self._pois[-1]
-        if isinstance(point, Circle):
-            point = point.parent  # connect to parent poi of sheave instead
-        self._add_connection_to_core(point)
 
     def _give_poi_names(self):
         """Returns a list with the names of all the pois"""
