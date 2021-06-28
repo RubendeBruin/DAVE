@@ -716,6 +716,7 @@ class EditCable(NodeEditor):
         ui.doubleSpinBox_2.setValue(self.node.EA)
         ui.doubleSpinBox.setValue(self.node.diameter)
 
+
         # Set events
         ui.pbRemoveSelected.clicked.connect(self.delete_selected)
 
@@ -740,7 +741,16 @@ class EditCable(NodeEditor):
 
         self.ui = ui  # needs to be done here as self.add_poi_dropdown modifies this
 
+        self.set_colors()
+
         return ui._widget
+
+    def set_colors(self):
+        if (self.ui.doubleSpinBox_2.value() == 0):
+            self.ui.doubleSpinBox_2.setStyleSheet("background: orange")
+        else:
+            self.ui.doubleSpinBox_2.setStyleSheet("background: white")
+
 
     def dropEvent(self,event):
 
@@ -794,6 +804,9 @@ class EditCable(NodeEditor):
 
 
     def generate_code(self):
+
+        self.set_colors()
+
         code = ""
         element = "\ns['{}']".format(self.node.name)
 

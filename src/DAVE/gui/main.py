@@ -458,17 +458,17 @@ class Gui():
         set_pb_style(btnConstruct)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText('3.5 Shear and Bending')
+        btnConstruct.setText('&4. Shear and Bending')
         btnConstruct.clicked.connect(lambda: self.activate_workspace("MOMENTS"))
         set_pb_style(btnConstruct)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText('&4. Stability')
+        btnConstruct.setText('&5. Stability')
         btnConstruct.clicked.connect(lambda: self.activate_workspace("STABILITY"))
         set_pb_style(btnConstruct)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText('&5. Mode Shapes [beta]')
+        btnConstruct.setText('&6. Mode Shapes [beta]')
         btnConstruct.clicked.connect(lambda: self.activate_workspace("DYNAMICS"))
         set_pb_style(btnConstruct)
 
@@ -485,7 +485,7 @@ class Gui():
         self.ui.toolBar.addWidget(lblInfo)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText('&6. Airy [beta]')
+        btnConstruct.setText('&7. Airy [beta]')
         btnConstruct.clicked.connect(lambda: self.activate_workspace("AIRY"))
         set_pb_style(btnConstruct)
 
@@ -493,10 +493,10 @@ class Gui():
         space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         self.ui.toolBar.addWidget(space)
 
-        btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText('Artists')
-        btnConstruct.clicked.connect(lambda: self.activate_workspace("PAINTERS"))
-        set_pb_style(btnConstruct)
+        # btnConstruct = QtWidgets.QPushButton()
+        # btnConstruct.setText('(Artists)')
+        # btnConstruct.clicked.connect(lambda: self.activate_workspace("PAINTERS"))
+        # set_pb_style(btnConstruct)
 
 
 

@@ -109,12 +109,28 @@ class WidgetRiggItRight(guiDockWidget):
         def valid_name(text):
             return self.guiScene.name_available(text)
 
-        # At least two sheaves connected
+        # At least two sheaves selected
         p2 = self.find_nodes([nodes.Circle, nodes.Circle])
         if p2:
 
             p0 = p2[0]
             p1 = p2[1]
+
+            # Grommet
+            button = QPushButton('Create grommet', self.ui.frame)
+
+            def create_grommet():
+                pos = self.mapToGlobal(QPoint(0, 0))
+                name = get_text(pos=pos, suggestion=self.guiScene.available_name_like("grommet"),
+                                input_valid_callback=valid_name)
+                sling_code = f's.new_cable("{name}", endA="{p0.name}", endB = "{p0.name}", sheaves = ["{p1.name}"])'
+                self.guiRunCodeCallback(sling_code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+            button.clicked.connect(create_grommet)
+            self.buttons.append(button)
+
+
+
 
             # Geometric contact between p0 -> p1
             if p0.parent.parent is not None:
@@ -220,7 +236,7 @@ class WidgetRiggItRight(guiDockWidget):
 
                 for size in sizes:
                     button = QPushButton(f'insert GP {size} in {sheave.name}', self.ui.frame)
-                    button.clicked.connect(lambda wll = size : insert_gp(wll=wll))
+                    button.pressed.connect(lambda wll = size : insert_gp(wll=wll))
                     self.buttons.append(button)
 
         # nothing selected
@@ -249,7 +265,8 @@ class WidgetRiggItRight(guiDockWidget):
 
             for size in sizes:
                 button = QPushButton(f'Create GP {size}', self.ui.frame)
-                button.clicked.connect(lambda wll=size: insert_gp(wll=wll))
+
+                button.pressed.connect(lambda wll=size: insert_gp(wll=wll))
                 self.buttons.append(button)
 
 
