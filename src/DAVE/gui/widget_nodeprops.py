@@ -1,4 +1,5 @@
 from DAVE.gui.dockwidget import *
+from PySide2.QtCore import Qt
 import DAVE.scene as vfs
 
 import DAVE.gui.forms.widget_axis
@@ -1908,6 +1909,9 @@ class WidgetNodeProps(guiDockWidget):
         self.props_widget.setLayout(self.layout)
 
         self.positioned = False
+
+        # set allowed docking areas to only left and right
+        self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
 
     def select_manager(self):
         node = self.guiSelection[0]

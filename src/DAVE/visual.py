@@ -6,6 +6,42 @@
   Ruben de Bruin - 2019
 
 """
+from copy import copy
+from typing import List
+
+import numpy as np
+from enum import Enum
+from scipy.spatial import ConvexHull
+
+import vtkmodules.qt
+vtkmodules.qt.PyQtImpl = "PySide2"
+
+import vedo as vp  # ref: https://github.com/marcomusy/vedo
+import vtk
+
+from DAVE.settings_visuals import (
+    ViewportSettings,
+    ActorSettings,
+    RESOLUTION_SPHERE,
+    RESOLUTION_ARROW,
+    COLOR_BG1,
+    COLOR_BG2,
+    COLOR_WATER,
+    TEXTURE_SEA,
+    VISUAL_BUOYANCY_PLANE_EXTEND,
+    COLOR_SELECT,
+    LIGHT_TEXTURE_SKYBOX,
+    ALPHA_SEA,
+    COLOR_SELECT_255
+)
+
+
+# vp.settings.renderLinesAsTubes = True
+
+import DAVE.scene as vf
+import DAVE.scene as dn
+
+
 
 """
 visual visualizes a scene using vtk and vedo helpers
@@ -131,39 +167,7 @@ painters['node-class']['actor_key']
 
 """
 
-import vtkmodules.qt
 
-from DAVE.settings_visuals import (
-    ViewportSettings,
-    ActorSettings,
-    RESOLUTION_SPHERE,
-    RESOLUTION_ARROW,
-    COLOR_BG1,
-    COLOR_BG2,
-    COLOR_WATER,
-    TEXTURE_SEA,
-    VISUAL_BUOYANCY_PLANE_EXTEND,
-    COLOR_SELECT,
-    LIGHT_TEXTURE_SKYBOX,
-    ALPHA_SEA,
-)
-
-
-vtkmodules.qt.PyQtImpl = "PySide2"
-
-import vedo as vp  # ref: https://github.com/marcomusy/vedo
-
-# vp.settings.renderLinesAsTubes = True
-
-import DAVE.scene as vf
-import DAVE.scene as dn
-
-from typing import List
-
-import vtk
-import numpy as np
-from enum import Enum
-from scipy.spatial import ConvexHull
 
 class DelayRenderingTillDone():
     """Little helper class to pause rendering and refresh using with(...)
@@ -405,19 +409,7 @@ class VisualActor:
         )
 
     def select(self):
-        if self._is_selected:
-            return
-
-        for key, actor in self.actors.items():
-            actor.color(COLOR_SELECT)
-
         self._is_selected = True
-
-    def make_transparent(self):
-        """Makes an actor transparent - this can be done when a parent node is selected"""
-
-        for a in self.actors.values():
-            a.alpha(0.4)
 
     def on(self):
         for a in self.actors.values():
@@ -488,10 +480,6 @@ class VisualActor:
 
             """
 
-        if self._is_selected or self._is_sub_selected:
-            print('Not re-paining selected or sub-selected node')
-            return
-
         if ps is None:
             print("No painter settings, ugly world :(")
             return
@@ -511,6 +499,29 @@ class VisualActor:
         else:
             print(f"No paint for {node_class}")
             return  # no settings available
+
+        # Override paint settings if node is selected or sub-selected
+
+        if self._is_selected:
+            new_painter_settings = dict()
+            for k,value in node_painter_settings.items():
+                v = copy(value)
+                v.surfaceColor = COLOR_SELECT_255
+                v.lineColor = COLOR_SELECT_255
+                new_painter_settings[k] = v
+
+            new_painter_settings['main'].labelShow = True
+
+            node_painter_settings = new_painter_settings
+
+        if self._is_sub_selected:
+            new_painter_settings = dict()
+
+            for k, value in node_painter_settings.items():
+                v = copy(value)
+                v.alpha = min(v.alpha, 0.4)
+                new_painter_settings[k] = v
+            node_painter_settings = new_painter_settings
 
         # label
         self.label_actor.SetVisibility(node_painter_settings['main'].labelShow)
@@ -564,7 +575,6 @@ class VisualActor:
                 )
             else:
                 actor.GetProperty().SetLineWidth(0)
-
 
 
 
@@ -1311,6 +1321,7 @@ class Viewport:
 
                     # clean the input data to ensure continuous faces
                     # # clean the data
+
                     con = vtk.vtkCleanPolyData()
                     con.SetInputData(data)
                     con.Update()
@@ -1337,8 +1348,6 @@ class Viewport:
                     actor.SetMapper(mapper)
                     actor.GetProperty().SetColor(0, 0, 0)
                     actor.GetProperty().SetLineWidth(self.settings.outline_width)
-
-                    # print(f'Added outline for {vp_actor}')
 
                     self.screen.renderer.AddActor(actor)  # vtk actor
 
@@ -1404,11 +1413,6 @@ class Viewport:
 
         self.global_visuals["sea"] = plane
         self.global_visuals["sea"].actor_type = ActorType.GLOBAL
-
-        # if self.settings.show_global:
-        #     self.global_visuals["sea"].on()
-        # else:
-        #     self.global_visuals["sea"].off()
 
         self.global_visuals["main"] = vp.Line((0, 0, 0), (10, 0, 0)).c("red")
         self.global_visuals["main"].actor_type = ActorType.GEOMETRY
@@ -2311,14 +2315,13 @@ class Viewport:
                 if not v.node.visible:
                     continue # no need to update paint on invisible actor
 
-            if not (v._is_selected or v._is_sub_selected):
-                v.update_paint(self.settings.painter_settings)
-            elif v._is_selected:
+            v.update_paint(self.settings.painter_settings)
+
+            if v._is_selected:
                 v.labelUpdate(v.node.name)
 
         self.update_global_visibility()
         self.update_outlines()
-
 
     def update_global_visibility(self):
         """Syncs the visibility of the global actors to Viewport-settings"""
