@@ -10,14 +10,12 @@
 
 """
 
-
-
-# setup headless rendering if running in linux
-from platform import system
-if system() == 'Linux':
-    import os
-    os.system('/usr/bin/Xvfb :99 -screen 0 1024x768x24 &')
-    os.environ['DISPLAY'] = ':99'
+# # setup headless rendering if running in linux
+# from platform import system
+# if system() == 'Linux':
+#     import os
+#     os.system('/usr/bin/Xvfb :99 -screen 0 1024x768x24 &')
+#     os.environ['DISPLAY'] = ':99'
 
 from ..visual import Viewport
 import vedo
