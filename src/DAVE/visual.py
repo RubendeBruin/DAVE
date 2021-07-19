@@ -322,17 +322,32 @@ def vp_actor_from_obj(filename):
     filename = str(filename)
     source = vtk.vtkOBJReader()
     source.SetFileName(filename)
-    # clean the data
-    con = vtk.vtkCleanPolyData()
-    con.SetInputConnection(source.GetOutputPort())
-    con.Update()
-    mapper = vtk.vtkPolyDataMapper()
-    mapper.SetInputConnection(con.GetOutputPort())
-    mapper.Update()
 
-    # We are not importing textures and materials.
-    # Set color to 'w' to enforce an uniform color
+    # # clean the data
+    # con = vtk.vtkCleanPolyData()
+    # con.SetInputConnection(source.GetOutputPort())
+    # con.Update()
+    # #
+    #
+    # # data = normals.GetOutput()
+    # # for i in range(data.GetNumberOfPoints()):
+    # #     point = data.GetPoint(i)
+    # #     print(point)
+    #
+    # normals = vtk.vtkPolyDataNormals()
+    # normals.SetInputConnection(con.GetOutputPort())
+    # normals.ConsistencyOn()
+    # normals.AutoOrientNormalsOn()
+
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputConnection(source.GetOutputPort())
+    mapper.Update()
+    #
+    # # We are not importing textures and materials.
+    # # Set color to 'w' to enforce an uniform color
     vpa = vp.Mesh(mapper.GetInputAsDataSet(), c="w")  # need to set color here
+
+    # vpa = vp.Mesh(filename, c="w")
 
     return vpa
 
@@ -1208,7 +1223,7 @@ class Viewport:
         """WaveField object"""
 
     @staticmethod
-    def show_as_qt_app(s, painters = None):
+    def show_as_qt_app(s, painters = None, sea=False):
         from PySide2.QtWidgets import QWidget, QApplication
 
         app = QApplication()
@@ -1221,14 +1236,19 @@ class Viewport:
 
         v = Viewport(scene=s)
         v.settings.painter_settings = painters
+
+        v.settings.show_global = sea
+
         v.show_embedded(widget)
         v.quick_updates_only = False
 
-        v.create_world_actors()
         v.create_node_visuals()
         v.add_new_node_actors_to_screen()
+
         v.position_visuals()
         v.update_visibility()
+
+        v.zoom_all()
 
         app.exec_()
 
@@ -1289,9 +1309,15 @@ class Viewport:
                 if vp_actor not in _outlines:
                     # create outline and add to self.outlines
 
+                    # clean the input data to ensure continuous faces
+                    # # clean the data
+                    con = vtk.vtkCleanPolyData()
+                    con.SetInputData(data)
+                    con.Update()
+
                     tr = vtk.vtkTransformPolyDataFilter()
 
-                    tr.SetInputData(data)
+                    tr.SetInputData(con.GetOutput())
 
                     temp = vtk.vtkTransform()
                     temp.Identity()
@@ -1364,7 +1390,10 @@ class Viewport:
             self.node_outlines.remove(record)
 
     def create_world_actors(self):
-        """Creates the sea"""
+        """Creates the sea and global axes"""
+
+        if 'sea' in self.global_visuals:
+            raise ValueError('Global visuals already created - can not create again')
 
         plane = vp.Plane(pos=(0, 0, 0), normal=(0, 0, 1), sx=1000, sy=1000).c(
             COLOR_WATER
@@ -1952,85 +1981,74 @@ class Viewport:
 
         if offscreen:
             self.screen = vp.Plotter(axes=0, offscreen=True, size=size)
-            return
-
-
-
-        if (
-            self.Jupyter and self.vtkWidget is None
-        ):  # it is possible to launch the Gui from jupyter, so check for both
-
-            # create embedded notebook (k3d) view
-            import vedo as vtkp
-
-            vtkp.settings.embedWindow(backend="k3d")
-            self.screen = vp.Plotter(axes=4, bg=COLOR_BG1, bg2=COLOR_BG2)
 
         else:
 
-            if self.vtkWidget is None:
+            if (
+                self.Jupyter and self.vtkWidget is None
+            ):  # it is possible to launch the Gui from jupyter, so check for both
 
-                # create stand-alone interactive view
+                # create embedded notebook (k3d) view
                 import vedo as vtkp
 
-                vtkp.settings.embedWindow(backend=None)
-
-                self.screen = vp.plotter.Plotter(
-                    interactive=True,
-                    offscreen=False,
-                    axes=4,
-                    bg=COLOR_BG1,
-                    bg2=COLOR_BG2,
-                )
+                vtkp.settings.embedWindow(backend="k3d")
+                self.screen = vp.Plotter(axes=4, bg=COLOR_BG1, bg2=COLOR_BG2)
 
             else:
 
-                # create embedded Qt view
-                import vedo as vtkp
+                if self.vtkWidget is None:
 
-                vtkp.settings.embedWindow(backend=None)
+                    # create stand-alone interactive view
+                    import vedo as vtkp
 
-                self.screen = vp.plotter.Plotter(
-                    qtWidget=self.vtkWidget, axes=4, bg=COLOR_BG1, bg2=COLOR_BG2
-                )
+                    vtkp.settings.embedWindow(backend=None)
 
-    def show(self, camera=None, include_outlines=True):
-        """Add actors to screen and show
+                    self.screen = vp.plotter.Plotter(
+                        interactive=True,
+                        offscreen=False,
+                        axes=4,
+                        bg=COLOR_BG1,
+                        bg2=COLOR_BG2,
+                    )
 
-        If purpose is to show embedded, then call show_embedded instead
-        """
-        if self.screen is None:
-            raise Exception("Please call setup_screen first")
+                else:
 
-        # vp.settings.lightFollowsCamera = True
+                    # create embedded Qt view
+                    import vedo as vtkp
+
+                    vtkp.settings.embedWindow(backend=None)
+
+                    self.screen = vp.plotter.Plotter(
+                        qtWidget=self.vtkWidget, axes=4, bg=COLOR_BG1, bg2=COLOR_BG2
+                    )
 
         """ For reference: this is how to load an cubemap texture
 
-                    Problem is that the default VTK orientation is not with the Z-axis up. So some magic needs to be done
-                    to have the cubemap and environmental light texture in the right orientation
+            Problem is that the default VTK orientation is not with the Z-axis up. So some magic needs to be done
+            to have the cubemap and environmental light texture in the right orientation
 
-                    # load env texture
-                    cubemap_path_root = r'C:\\datapath\\skybox2-'
+            # load env texture
+            cubemap_path_root = r'C:\\datapath\\skybox2-'
 
-                    files = [cubemap_path_root + name + '.jpg' for name in ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']]
+            files = [cubemap_path_root + name + '.jpg' for name in ['posx', 'negx', 'posy', 'negy', 'posz', 'negz']]
 
-                    cubemap = vtk.vtkTexture()
-                    cubemap.SetCubeMap(True)
+            cubemap = vtk.vtkTexture()
+            cubemap.SetCubeMap(True)
 
-                    for i,file in enumerate(files):
-                        readerFactory = vtk.vtkImageReader2Factory()
-                        # textureFile = readerFactory.CreateImageReader2(file)
-                        textureFile = readerFactory.CreateImageReader2(r'c:\data\white.png')
-                        textureFile.SetFileName(r'c:\data\white.png')
-                        textureFile.Update()
+            for i,file in enumerate(files):
+                readerFactory = vtk.vtkImageReader2Factory()
+                # textureFile = readerFactory.CreateImageReader2(file)
+                textureFile = readerFactory.CreateImageReader2(r'c:\data\white.png')
+                textureFile.SetFileName(r'c:\data\white.png')
+                textureFile.Update()
 
-                        cubemap.SetInputDataObject(i, textureFile.GetOutput())
+                cubemap.SetInputDataObject(i, textureFile.GetOutput())
 
-                    # make skybox actor
-                    skybox = vtk.vtkSkybox()
-                    skybox.SetTexture(cubemap)
+            # make skybox actor
+            skybox = vtk.vtkSkybox()
+            skybox.SetTexture(cubemap)
 
-                    self.screen.add(skybox)"""
+            self.screen.add(skybox)"""
 
         # Make a white skybox texture for light emission
         # cubemap = vtk.vtkTexture()
@@ -2052,8 +2070,6 @@ class Viewport:
         # for i in range(6):
         #     cubemap.SetInputDataObject(i, textureFile.GetOutput())
         #
-
-
 
         # self.screen.show(camera=camera)
 
@@ -2081,11 +2097,19 @@ class Viewport:
             r.UseImageBasedLightingOn()
             r.SetEnvironmentTexture(texture)
 
-            # r.SetPass(ssao)
-
             r.SetUseDepthPeeling(True)
 
             r.Modified()
+
+    def show(self, camera=None, include_outlines=True):
+        """Add actors to screen and show
+
+        If purpose is to show embedded, then call show_embedded instead
+        """
+        if self.screen is None:
+            raise Exception("Please call setup_screen first")
+
+        # vp.settings.lightFollowsCamera = True
 
         self.create_world_actors()
 
@@ -2292,9 +2316,9 @@ class Viewport:
             elif v._is_selected:
                 v.labelUpdate(v.node.name)
 
+        self.update_global_visibility()
         self.update_outlines()
 
-        self.update_global_visibility()
 
     def update_global_visibility(self):
         """Syncs the visibility of the global actors to Viewport-settings"""

@@ -252,7 +252,7 @@ surf.surfaceColor = _LIGHT_GRAY
 painters["Circle"] = {"main": copy(surf)}
 
 # ---- visual
-surf.surfaceColor = _MEDIUM_GRAY
+surf.surfaceColor = _BLUE_LIGHT
 painters["Visual"] = {"main": copy(surf)}
 
 # ---- force
