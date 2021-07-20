@@ -1869,6 +1869,7 @@ class WidgetNodeProps(guiDockWidget):
 
     def guiCreate(self):
         self.setVisible(False)
+        self.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
 
         self._open_edit_widgets = list()
         self._node_editors = list()
@@ -1906,6 +1907,9 @@ class WidgetNodeProps(guiDockWidget):
 
         self.layout = QtWidgets.QVBoxLayout()
         self.props_widget.setLayout(self.layout)
+
+        self._Vspacer = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.layout.addSpacerItem(self._Vspacer)
 
         self.positioned = False
 
@@ -2023,6 +2027,8 @@ class WidgetNodeProps(guiDockWidget):
             self._node_name_editor.create_widget()
             self.layout.addWidget(self._node_name_editor.ui._widget)
 
+        self.layout.removeItem(self._Vspacer)
+
         if isinstance(node, vfs.Visual):
             self._node_editors.append(EditVisual(node, self.node_property_changed, self.guiScene, self.run_code))
 
@@ -2107,6 +2113,7 @@ class WidgetNodeProps(guiDockWidget):
         self._node = node
         self.check_for_warnings()
 
+        self.layout.addSpacerItem(self._Vspacer)  # add a spacer at the bottom
 
         self.resize(0, 0)  # set the size of the floating dock widget to its minimum size
         self.adjustSize()

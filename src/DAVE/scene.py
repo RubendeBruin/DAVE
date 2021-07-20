@@ -7639,14 +7639,21 @@ class LoadShearMomentDiagram:
         x = self.datasource.grid(grid_n)
         return x, self.datasource.Vz, self.datasource.My
 
-    def plot_simple(self):
+    def plot_simple(self, **kwargs):
         """Plots the bending moment and shear in a single yy-plot.
+        Creates a new figure
 
-        Creates a new figure, does not"""
+        any keyword arguments are passed to plt.figure(), so for example dpi=150 will increase the dpi
+
+        Returns: figure
+        """
         x, Vz, My = self.give_shear_and_moment()
         import matplotlib.pyplot as plt
+        plt.rcParams.update({"font.family": "sans-serif"})
+        plt.rcParams.update({"font.sans-serif": "consolas"})
+        plt.rcParams.update({"font.size": 10})
 
-        fig, ax1 = plt.subplots()
+        fig, ax1 = plt.subplots(1,1,**kwargs)
         ax2 = ax1.twinx()
 
         ax1.plot(x, My, "g", lw=1, label="Bending Moment")
@@ -7670,6 +7677,8 @@ class LoadShearMomentDiagram:
         ax1.plot(xx, [0, 0], c=[0.5, 0.5, 0.5], lw=1, linestyle=":")
         ax1.set_xlim(xx)
 
+        return fig
+
     def plot(self, grid_n=100, merge_adjacent_loads=True, filename=None):
         m = self.datasource  # alias
 
@@ -7685,7 +7694,7 @@ class LoadShearMomentDiagram:
         plt.rcParams.update({"font.sans-serif": "consolas"})
         plt.rcParams.update({"font.size": 6})
 
-        fig, (ax0, ax1, ax2) = plt.subplots(3, 1, figsize=(8.27, 11.69))
+        fig, (ax0, ax1, ax2) = plt.subplots(3, 1, figsize=(8.27, 11.69), dpi=100)
         textsize = 6
 
         # get loads
