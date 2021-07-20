@@ -5372,11 +5372,11 @@ class Scene:
             if not test.startswith("res:"):
                 test = Path(test)
                 if str(test.parent) == ".":
-                    from warnings import warn
-
-                    warn(
-                        f'Resources should start with res: --> fixing "{url}" to "res: {url}"'
-                    )
+                    # from warnings import warn
+                    #
+                    # warn(
+                    #     f'Resources should start with res: --> fixing "{url}" to "res: {url}"'
+                    # )
                     url = "res: " + str(test)
         except:
             pass
