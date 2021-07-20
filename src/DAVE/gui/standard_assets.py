@@ -34,6 +34,8 @@ class Gui:
         self.visual = dv.Viewport(self.scene)
         """Reference to a viewport"""
 
+        self.visual.settings.show_global = False
+
         self.ui = DAVE.gui.forms.frm_standard_assets.Ui_MainWindow()
         """Reference to the ui"""
         self.ui.visual = self.visual # pass a reference

@@ -10,18 +10,15 @@
 
 """
 
+# # setup headless rendering if running in linux
+# from platform import system
+# if system() == 'Linux':
+#     import os
+#     os.system('/usr/bin/Xvfb :99 -screen 0 1024x768x24 &')
+#     os.environ['DISPLAY'] = ':99'
 
-
-# setup headless rendering if running in linux
-from platform import system
-if system() == 'Linux':
-    import os
-    os.system('/usr/bin/Xvfb :99 -screen 0 1024x768x24 &')
-    os.environ['DISPLAY'] = ':99'
-
-import DAVE.visual
-import vedo as vtkp
-import vtk
+from ..visual import Viewport
+import vedo
 
 """
 visuals [true/false]
@@ -63,8 +60,6 @@ def view(scene, sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),
 
     """
     return _view(scene, 'panel', sea=sea, width = 1024, height = 800, camera_pos=camera_pos, lookat=lookat,
-          visual_alpha = visual_alpha,
-          do_meshes = do_meshes,
           geometry_size = geometry_size,
           force_normalize = force_normalize,
           force_scale = force_scale,
@@ -100,11 +95,12 @@ def show(scene, sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, he
     """
 
     return _view(scene, backend= '2d', sea=sea, width = width, height = height, camera_pos=camera_pos, lookat=lookat,
-          geometry_size = geometry_size,
-          force_normalize = force_normalize,
-          force_scale = force_scale,
-          cog_normalize=cog_normalize,
-          cog_scale = cog_scale)
+                geometry_size = geometry_size,
+                force_normalize = force_normalize,
+                force_scale = force_scale,
+                cog_normalize=cog_normalize,
+                cog_scale = cog_scale,
+                painters=painters)
 
 def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=(50,-25,10), lookat = (0,0,0),
           geometry_size = 1,
@@ -119,17 +115,17 @@ def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=
     camera['pos'] = camera_pos
     camera['focalPoint'] = lookat
 
-    vtkp.embedWindow(backend=backend)  # screenshot
-    vtkp.settings.usingQt = False
+    vedo.embedWindow(backend=backend, verbose=False)  # screenshot
+    vedo.settings.usingQt = False
 
-    vp = DAVE.visual.Viewport(scene, jupyter=True)
+    vp = Viewport(scene, jupyter=True)
 
     if painters is None:
         from DAVE.settings_visuals import PAINTERS
         painters = PAINTERS['Construction']
     elif isinstance(painters, str):
         from DAVE.settings_visuals import PAINTERS
-        painters = PAINTERS[str]
+        painters = PAINTERS[painters]
 
     vp.settings.painter_settings = painters
 
@@ -147,7 +143,9 @@ def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=
     vp.create_node_visuals(recreate=True)
     vp.position_visuals()
 
-    warningshown = False
+    vp.update_visibility()
+
+    # warningshown = False
 
     # for va in vp.node_visuals:
     #     for a in va.actors.values():
@@ -181,7 +179,7 @@ def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=
     #
     #             offscreen.add(a)
 
-    # vp.update_visibility()
+
     return vp.show(camera=camera)
 
 

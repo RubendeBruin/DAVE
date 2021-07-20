@@ -54,11 +54,12 @@ COLOR_WATER_TANK_SLACK = _YELLOW
 COLOR_WATER_TANK_95PLUS = _BLUE_DARK
 COLOR_WATER_TANK_FREEFLOODING = _RED
 COLOR_SELECT = rgb(_YELLOW)
+COLOR_SELECT_255 = _YELLOW
 
 OUTLINE_WIDTH = 1
 
-COLOR_BG2 = rgb(_LIGHT_GRAY)
-COLOR_BG1 = rgb(_LIGHT_GRAY)
+COLOR_BG2 = rgb(_WHITE)
+COLOR_BG1 = rgb(_BLUE_LIGHT)
 
 COLOR_WATER = rgb(_BLUE_DARK)
 
@@ -252,7 +253,7 @@ surf.surfaceColor = _LIGHT_GRAY
 painters["Circle"] = {"main": copy(surf)}
 
 # ---- visual
-surf.surfaceColor = _MEDIUM_GRAY
+surf.surfaceColor = _BLUE_LIGHT
 painters["Visual"] = {"main": copy(surf)}
 
 # ---- force

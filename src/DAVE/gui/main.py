@@ -1473,6 +1473,7 @@ class Gui():
             self.guiSelectNode(node.name)
 
     def visual_update_selection(self):
+        """Updates the _is_selected and _is_sub_selected properties of the visuals, then re-applies paint"""
 
         visually_selected_nodes = self.selected_nodes.copy()
 
@@ -1480,12 +1481,12 @@ class Gui():
             if isinstance(node, Manager):
                 visually_selected_nodes.extend(node.managed_nodes())
 
+        # loop over visuals, and set _is_selected or _is_sub_selected based on the referenced node
+
         for v in self.visual.node_visuals:
             if v.node in visually_selected_nodes:
-                v.select()
+                v._is_selected = True
             else:
-
-                v.update_paint(self.visual.settings.painter_settings)
                 v._is_selected = False
 
         for v in self.visual.node_visuals:
@@ -1495,13 +1496,11 @@ class Gui():
                 continue
 
             if parent in visually_selected_nodes:
-                v.make_transparent()
                 v._is_sub_selected = True
             else:
                 v._is_sub_selected = False
-                v.update_paint(self.visual.settings.painter_settings)
 
-
+        self.visual.update_visibility() # update paint
 
 
 
