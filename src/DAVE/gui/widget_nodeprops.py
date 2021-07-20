@@ -1914,8 +1914,6 @@ class WidgetNodeProps(guiDockWidget):
 
         self.positioned = False
 
-        # set allowed docking areas to only left and right
-        self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea )
 
     def select_manager(self):
         node = self.guiSelection[0]

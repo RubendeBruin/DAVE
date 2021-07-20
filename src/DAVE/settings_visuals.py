@@ -266,7 +266,13 @@ painters["Force"] = {"main": copy(surf), "moment1": copy(surf), "moment2": copy(
 mesh.lineWidth = 3
 mesh.lineColor = _BLACK
 painters["Cable"] = {"main": copy(mesh)}
+painters["Cable"]["main"].labelShow = True
 
+# --- beam
+mesh.lineWidth = 5
+mesh.lineColor = _BLACK
+painters["Beam"] = {"main": copy(mesh)}
+painters["Beam"]["main"].labelShow = True
 
 # lincon2d
 
@@ -578,6 +584,7 @@ for outer_key, visual in animation_painters.items():
 surf.surfaceColor = _LIGHT_GRAY
 animation_painters["Visual"]["main"] = copy(surf)
 animation_painters["Cable"] = copy(PAINTERS["Construction"]["Cable"])
+animation_painters["Beam"] = copy(PAINTERS["Construction"]["Beam"])
 
 PAINTERS["Visual"] = animation_painters
 
