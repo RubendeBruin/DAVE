@@ -116,9 +116,7 @@ class WidgetBendingMoment(guiDockWidget):
 
         x,Fz, My = lsm.give_shear_and_moment()
 
-        report_axis = self.guiScene.new_axis('__moment_graph_dummy_axis')
-        report_axis.position = target.position
-        report_axis.rotation = orientation.rotation
+        report_axis = orientation
 
         start = report_axis.to_glob_position((x[0],0,0))
         end = report_axis.to_glob_position((x[-1], 0, 0))
@@ -137,8 +135,6 @@ class WidgetBendingMoment(guiDockWidget):
 
         scale = scale / np.max(np.abs(value))
         line = [report_axis.to_glob_position((x[i], 0, scale * value[i])) for i in range(n)]
-
-        self.guiScene.delete('__moment_graph_dummy_axis')
 
         # add to screen
         self.actor_axis = vd.Line((start, end)).c('black')
