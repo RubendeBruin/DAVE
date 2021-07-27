@@ -90,6 +90,8 @@ class NodeEditor(ABC):
         self.scene = scene
         self._run_code = run_code
 
+        self.post_update_event()
+
         return self.widget
 
     @property
@@ -151,7 +153,7 @@ class EditNode(NodeEditor):
     def visible_changed(self):
         node = self.node
         element = "\ns['{}']".format(node.name)
-        new_visible = self._node_name_editor.ui.cbVisible.isChecked()
+        new_visible = self.ui.cbVisible.isChecked()
         if not new_visible == node.visible:
             code = element + ".visible = {}".format(new_visible)
             self.run_code(code,guiEventType.VIEWER_SETTINGS_UPDATE)
@@ -1927,7 +1929,13 @@ class WidgetNodeProps(guiDockWidget):
 
         self._node_name_editor = EditNode.Instance()
         self._node_name_editor.connect(node, self.guiScene, self.run_code)
-        self.layout.addWidget(self._node_name_editor.widget)
+
+        # add to layout if not already in
+        name_widget = getattr(self,'_name_widget', None)
+        if name_widget is None:
+            self._name_widget = self._node_name_editor.widget
+            self.layout.addWidget(self._name_widget)
+
 
         self.layout.removeItem(self._Vspacer)
 
