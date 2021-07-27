@@ -131,7 +131,12 @@ class SolverDialog(QDialog, Ui_Dialog):
 
 class Gui():
 
-    def __init__(self, scene=None, splash=None, app=None, geometry_scale = -1, cog_scale = 0.25, block=True, workspace=None):
+    def __init__(self, scene=None, splash=None, app=None,
+                 geometry_scale = -1, cog_scale = 0.25, block=True, workspace=None,
+                 plugins_init = (),
+                 plugins_workspace = (),
+                 plugins_context = (),
+                 plugins_editor = ()):
         """
         Starts the Gui on scene "scene".
 
@@ -154,7 +159,13 @@ class Gui():
             geometry_scale: geometry scale (visual)
             cog_scale: cog scale (visual)
             workspace (string) : open the workspace with this name
+            plugins_init [ () ] : iterable of functions that are to be called at the end of the __init__ function
+
         """
+
+        self.plugins_workspace = plugins_workspace
+        self.plugins_conext = plugins_context
+        self.plugins_editor = plugins_editor
 
         if app is None:
 
@@ -502,10 +513,19 @@ class Gui():
 
         self._active_workspace = None
 
+        # call plugin(s)
+
+        for plugin_init in plugins_init:
+            plugin_init(self)
+
+        # ---------- activate workspace (if any)
+
         if workspace is None:
             self.activate_workspace('CONSTRUCT')
         else:
             self.activate_workspace(workspace)
+
+
 
         # ======================== Finalize ========================
         splash.finish(self.MainWindow)
@@ -620,6 +640,10 @@ class Gui():
 
         for g in self.guiWidgets.values():
             g.close()
+
+
+        for plugin in self.plugins_workspace:
+            plugin(self, name)
 
         if name == 'PAINTERS':
             self.show_guiWidget('vanGogh', WidgetPainters)
@@ -1344,8 +1368,6 @@ class Gui():
         ui.pbBeam.clicked.connect(self.new_beam)
 
         ui.pbVisual.clicked.connect(self.new_visual)
-
-
 
         menu.addAction(wa)
 

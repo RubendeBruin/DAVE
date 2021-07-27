@@ -60,6 +60,27 @@ def node_setter_observable(func):
     return wrapper_decorator
 
 
+class ClaimManagement():
+    """Helper class for doing:
+
+    with ClaimManagement(scene, manager):
+        change nodes that belong to manager
+
+    """
+    def __init__(self, scene, manager):
+        assert isinstance(scene, Scene)
+        assert isinstance(manager, Manager)
+        self.scene = scene
+        self.manager= manager
+
+
+    def __enter__(self):
+        self._old_manager = self.scene.current_manager
+        self.scene.current_manager = self.manager
+
+    def __exit__(self, *args, **kwargs):
+        self.scene.current_manager = self._old_manager
+
 class Node:
     """ABSTRACT CLASS - Properties defined here are applicable to all derived classes
     Master class for all nodes"""

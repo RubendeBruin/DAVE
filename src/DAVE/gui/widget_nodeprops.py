@@ -27,6 +27,38 @@ import numpy as np
 from PySide2.QtWidgets import QListWidgetItem
 from PySide2 import QtWidgets
 
+"""
+In singleton:
+
+    e = Editor.Instance() 
+    - runs __init__() which creates the gui
+    
+    property widget : returns the main widget
+    
+    e.connect(node, callback, scene, run_code) --> returns widget"""
+
+
+# Singleton decorator, obtained from: https://betterprogramming.pub/singleton-in-python-5eaa66618e3d
+
+
+class Singleton:
+
+    def __init__(self, cls):
+        self._cls = cls
+
+    def Instance(self):
+        try:
+            return self._instance
+        except AttributeError:
+            self._instance = self._cls()
+            return self._instance
+
+    def __call__(self):
+        raise TypeError('Singletons must be accessed through `Instance()`.')
+
+    def __instancecheck__(self, inst):
+        return isinstance(inst, self._cls)
+
 
 class NodeEditor:
     """NodeEditor implements a "singleton" instance of NodeEditor-derived widget.
@@ -57,7 +89,11 @@ class NodeEditor:
         """Is executed after running the generated code"""
         pass
 
-
+    def generate_code(self) -> str:
+        """This method is called to get any python code that is needed to sync the node to the values currently in
+        the editor. If all values are already up-to-date then this method should return ""
+        """
+        raise Exception('generate_code() method not defined in derived class')
 
 
 class EditNode(NodeEditor):
@@ -256,7 +292,6 @@ class EditVisual(NodeEditor):
         ui.doubleSpinBox_9.valueChanged.connect(self.callback)
 
         ui.comboBox.editTextChanged.connect(self.callback)
-
 
         self.ui = ui
 
@@ -1869,6 +1904,7 @@ class WidgetNodeProps(guiDockWidget):
         return None # QtCore.Qt.DockWidgetArea.RightDockWidgetArea
 
     def guiCreate(self):
+
         self.setVisible(False)
         self.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
 
@@ -2031,6 +2067,13 @@ class WidgetNodeProps(guiDockWidget):
 
         self.layout.removeItem(self._Vspacer)
 
+        # check the plugins
+        for plugin in self.gui.plugins_editor:
+            cls = plugin(node)
+            if cls is not None:
+                self._node_editors.append(cls(node, self.node_property_changed, self.guiScene, self.run_code))
+
+
         if isinstance(node, vfs.Visual):
             self._node_editors.append(EditVisual(node, self.node_property_changed, self.guiScene, self.run_code))
 
@@ -2081,7 +2124,6 @@ class WidgetNodeProps(guiDockWidget):
 
         if isinstance(node, vfs.Buoyancy):
             self._node_editors.append(EditBuoyancyDensity(node, self.node_property_changed, self.guiScene, self.run_code))
-
 
         if isinstance(node, vfs.Tank):
             self._node_editors.append(EditTank(node, self.node_property_changed, self.guiScene, self.run_code))

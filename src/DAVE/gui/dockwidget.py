@@ -21,7 +21,7 @@ class guiDockWidget(QtWidgets.QDockWidget):
         self.guiCreate()
 
         self.gui = None
-        """Will be set to nodeA gui object"""
+        """Will be set to a gui object"""
 
         self.guiRunCodeCallback = None
         """will be set to a function that runs python code with signature func(code, eventype).
@@ -65,7 +65,7 @@ class guiDockWidget(QtWidgets.QDockWidget):
 
         :param event:  guiEventType
         """
-        print('{} event on {}'.format(event, self._id))
+        print('{} event on {}'.format(event, self.__class__))
 
     def guiCreate(self):
         """Is fired when created
