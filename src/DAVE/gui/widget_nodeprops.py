@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+
 from DAVE.gui.dockwidget import *
 from PySide2.QtCore import Qt
 import DAVE.scene as vfs
@@ -60,118 +62,145 @@ class Singleton:
         return isinstance(inst, self._cls)
 
 
-class NodeEditor:
+class NodeEditor(ABC):
     """NodeEditor implements a "singleton" instance of NodeEditor-derived widget.
 
-    This widget is shown in target_layout, which is a QtLayout
+
+    __init__ : creates the gui, connects the events  --> typically sets self._widget for the widget property
+    connect  : links the widget to the actual model and node
+    post_update_event : fill the contents
+
+
+
 
     properties:
     - node : the node being edited
-    - callback : a callback function being called when python code need to be executed
-
-    A create_widget() method shall be implemented. This function creates the widget and returns it. When th
+    - run_code : function to run code - running this function triggers the post_update event on all open editors
 
     """
 
-
-    def __init__(self, node, callback, scene, run_code):
-        self.node = node
-        self.callback = callback
-        self.scene = scene
-        self.run_code = run_code
-
-
-    def create_widget(self):
-        """Creates and returns the widget"""
-        raise Exception('create_widget() method not defined in derived class')
-
-    def post_update_event(self):
-        """Is executed after running the generated code"""
+    @abstractmethod
+    def __init__(self):
+        """Creates the gui and connects signals"""
         pass
 
-    def generate_code(self) -> str:
-        """This method is called to get any python code that is needed to sync the node to the values currently in
-        the editor. If all values are already up-to-date then this method should return ""
-        """
-        raise Exception('generate_code() method not defined in derived class')
+
+    def connect(self, node, scene, run_code):
+        self.node = node
+        self.scene = scene
+        self._run_code = run_code
+
+        return self.widget
+
+    @property
+    def widget(self) -> QtWidgets.QWidget:
+        return self._widget
+
+    def run_code(self, code, event=None):
+
+        if code == "":
+            return
+
+        if event is None:
+            self._run_code(code)
+        else:
+            self._run_code(code,event)
 
 
+    @abstractmethod
+    def post_update_event(self):
+        """Populates the controls to reflect the current state of the node"""
+        pass
+
+
+
+@Singleton
 class EditNode(NodeEditor):
+    """The basic settings of every node: Name and Visible"""
 
-    _ui = None
-
-    def create_widget(self):
-
-        # Prevents the ui from being created more than once
-        if EditNode._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_name.Ui_NameWidget()
-            ui.setupUi(widget)
-            EditNode._ui = ui
-            ui._widget = widget
-
-        else:
-            ui = EditNode._ui
-
-        try:
-            ui.tbName.textChanged.disconnect()
-            ui.cbVisible.toggled.disconnect()
-        except:
-            pass # no connections yet
-
-        ui.tbName.setText(self.node.name)
-        ui.cbVisible.setChecked(self.node.visible)
-
-        ui.tbName.textChanged.connect(self.callback)
-        ui.cbVisible.toggled.connect(self.callback)
-
+    def __init__(self):
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_name.Ui_NameWidget()
+        ui.setupUi(widget)
         self.ui = ui
+        self._widget = widget
 
-        return ui._widget
-
-
-
-class EditAxis(NodeEditor):
-
-    _ui = None
-
-    def create_widget(self):
-
-        # Prevents the ui from being created more than once
-        if EditAxis._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_axis.Ui_widget_axis()
-            ui.setupUi(widget)
-            EditAxis._ui = ui
-            ui._widget = widget
-
-        else:
-            ui = EditAxis._ui
-
-        self.ui = ui
-        self.post_update_event()
-
-        return ui._widget
+        ui.tbName.textChanged.connect(self.name_changed)
+        ui.cbVisible.toggled.connect(self.visible_changed)
 
     def post_update_event(self):
-        try:
-            self.ui.checkBox_1.stateChanged.disconnect()
-            self.ui.checkBox_2.stateChanged.disconnect()
-            self.ui.checkBox_3.stateChanged.disconnect()
-            self.ui.checkBox_4.stateChanged.disconnect()
-            self.ui.checkBox_5.stateChanged.disconnect()
-            self.ui.checkBox_6.stateChanged.disconnect()
 
-            self.ui.doubleSpinBox_1.valueChanged.disconnect()
-            self.ui.doubleSpinBox_2.valueChanged.disconnect()
-            self.ui.doubleSpinBox_3.valueChanged.disconnect()
-            self.ui.doubleSpinBox_4.valueChanged.disconnect()
-            self.ui.doubleSpinBox_5.valueChanged.disconnect()
-            self.ui.doubleSpinBox_6.valueChanged.disconnect()
-        except:
-            pass # no connections yet
+        self.ui.tbName.blockSignals(True)
+        self.ui.cbVisible.blockSignals(True)
+
+        self.ui.tbName.setText(self.node.name)
+        self.ui.cbVisible.setChecked(self.node.visible)
+
+        self.ui.tbName.blockSignals(False)
+        self.ui.cbVisible.blockSignals(False)
+
+    def name_changed(self):
+        node = self.node
+        element = "\ns['{}']".format(node.name)
+
+        new_name = self.ui.tbName.text()
+        if not new_name == node.name:
+            code = element + ".name = '{}'".format(new_name)
+            self.run_code(code)
+
+    def visible_changed(self):
+        node = self.node
+        element = "\ns['{}']".format(node.name)
+        new_visible = self._node_name_editor.ui.cbVisible.isChecked()
+        if not new_visible == node.visible:
+            code = element + ".visible = {}".format(new_visible)
+            self.run_code(code,guiEventType.VIEWER_SETTINGS_UPDATE)
+
+@Singleton
+class EditAxis(NodeEditor):
+
+    def __init__(self):
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_axis.Ui_widget_axis()
+        ui.setupUi(widget)
+
+        self.ui = ui
+
+        self.ui.checkBox_1.stateChanged.connect(self.generate_code)
+        self.ui.checkBox_2.stateChanged.connect(self.generate_code)
+        self.ui.checkBox_3.stateChanged.connect(self.generate_code)
+        self.ui.checkBox_4.stateChanged.connect(self.generate_code)
+        self.ui.checkBox_5.stateChanged.connect(self.generate_code)
+        self.ui.checkBox_6.stateChanged.connect(self.generate_code)
+
+        self.ui.doubleSpinBox_1.valueChanged.connect(self.generate_code)
+        self.ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
+        self.ui.doubleSpinBox_3.valueChanged.connect(self.generate_code)
+        self.ui.doubleSpinBox_4.valueChanged.connect(self.generate_code)
+        self.ui.doubleSpinBox_5.valueChanged.connect(self.generate_code)
+        self.ui.doubleSpinBox_6.valueChanged.connect(self.generate_code)
+
+        self._widget = widget
+
+
+    def post_update_event(self):
+
+        widgets = [self.ui.checkBox_1,
+        self.ui.checkBox_2,
+        self.ui.checkBox_3,
+        self.ui.checkBox_4,
+        self.ui.checkBox_5,
+        self.ui.checkBox_6,
+        self.ui.doubleSpinBox_1,
+        self.ui.doubleSpinBox_2,
+        self.ui.doubleSpinBox_3,
+        self.ui.doubleSpinBox_4,
+        self.ui.doubleSpinBox_5,
+        self.ui.doubleSpinBox_6]
+
+        for widget in widgets:
+            widget.blockSignals(True)
+
 
         self.ui.doubleSpinBox_1.setValue(self.node.position[0])
         self.ui.doubleSpinBox_2.setValue(self.node.position[1])
@@ -188,19 +217,8 @@ class EditAxis(NodeEditor):
         self.ui.checkBox_5.setChecked(self.node.fixed[4])
         self.ui.checkBox_6.setChecked(self.node.fixed[5])
 
-        self.ui.checkBox_1.stateChanged.connect(self.callback)
-        self.ui.checkBox_2.stateChanged.connect(self.callback)
-        self.ui.checkBox_3.stateChanged.connect(self.callback)
-        self.ui.checkBox_4.stateChanged.connect(self.callback)
-        self.ui.checkBox_5.stateChanged.connect(self.callback)
-        self.ui.checkBox_6.stateChanged.connect(self.callback)
-
-        self.ui.doubleSpinBox_1.valueChanged.connect(self.callback)
-        self.ui.doubleSpinBox_2.valueChanged.connect(self.callback)
-        self.ui.doubleSpinBox_3.valueChanged.connect(self.callback)
-        self.ui.doubleSpinBox_4.valueChanged.connect(self.callback)
-        self.ui.doubleSpinBox_5.valueChanged.connect(self.callback)
-        self.ui.doubleSpinBox_6.valueChanged.connect(self.callback)
+        for widget in widgets:
+            widget.blockSignals(False)
 
     def generate_code(self):
 
@@ -225,77 +243,67 @@ class EditAxis(NodeEditor):
         if not np.all(new_fixed == self.node.fixed):
             code += element + '.fixed = ({}, {}, {}, {}, {}, {})'.format(*new_fixed)
 
-        return code
+        self.run_code(code)
 
-
+@Singleton
 class EditVisual(NodeEditor):
 
-    _ui = None
-
-    def create_widget(self):
-
-        # Prevents the ui from being created more than once
-        if EditVisual._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_visual.Ui_widget_axis()
-            ui.setupUi(widget)
-            ui.cbInvertNormals.setVisible(False)
-            EditVisual._ui = ui
-            ui._widget = widget
-
-        else:
-            ui = EditVisual._ui
-
-        try:
-            ui.doubleSpinBox_1.valueChanged.disconnect()
-            ui.doubleSpinBox_2.valueChanged.disconnect()
-            ui.doubleSpinBox_3.valueChanged.disconnect()
-            ui.doubleSpinBox_4.valueChanged.disconnect()
-            ui.doubleSpinBox_5.valueChanged.disconnect()
-            ui.doubleSpinBox_6.valueChanged.disconnect()
-            ui.doubleSpinBox_7.valueChanged.disconnect()
-            ui.doubleSpinBox_8.valueChanged.disconnect()
-            ui.doubleSpinBox_9.valueChanged.disconnect()
-
-
-            ui.comboBox.editTextChanged.disconnect()
-        except:
-            pass # no connections yet
-
-        ui.doubleSpinBox_1.setValue(self.node.offset[0])
-        ui.doubleSpinBox_2.setValue(self.node.offset[1])
-        ui.doubleSpinBox_3.setValue(self.node.offset[2])
-
-        ui.doubleSpinBox_4.setValue(self.node.rotation[0])
-        ui.doubleSpinBox_5.setValue(self.node.rotation[1])
-        ui.doubleSpinBox_6.setValue(self.node.rotation[2])
-
-        ui.doubleSpinBox_7.setValue(self.node.scale[0])
-        ui.doubleSpinBox_8.setValue(self.node.scale[1])
-        ui.doubleSpinBox_9.setValue(self.node.scale[2])
-
-        ui.comboBox.clear()
-        ui.comboBox.addItems(self.scene.get_resource_list('stl'))
-        ui.comboBox.addItems(self.scene.get_resource_list('obj'))
-
-        ui.comboBox.setCurrentText(str(self.node.path))
-
-        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_6.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_7.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_8.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_9.valueChanged.connect(self.callback)
-
-        ui.comboBox.editTextChanged.connect(self.callback)
-
+    def __init__(self):
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_visual.Ui_widget_axis()
+        ui.setupUi(widget)
+        ui.cbInvertNormals.setVisible(False)
         self.ui = ui
+        self._widget = widget
 
-        return ui._widget
+        self.ui.doubleSpinBox_1.valueChanged.connect(self.generate_code)
+        self.ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
+        self.ui.doubleSpinBox_3.valueChanged.connect(self.generate_code)
+        self.ui.doubleSpinBox_4.valueChanged.connect(self.generate_code)
+        self.ui.doubleSpinBox_5.valueChanged.connect(self.generate_code)
+        self.ui.doubleSpinBox_6.valueChanged.connect(self.generate_code)
+        self.ui.doubleSpinBox_7.valueChanged.connect(self.generate_code)
+        self.ui.doubleSpinBox_8.valueChanged.connect(self.generate_code)
+        self.ui.doubleSpinBox_9.valueChanged.connect(self.generate_code)
+        self.ui.comboBox.editTextChanged.connect(self.generate_code)
+
+    def post_update_event(self):
+
+        widgets = [self.ui.doubleSpinBox_1,
+        self.ui.doubleSpinBox_2,
+        self.ui.doubleSpinBox_3,
+        self.ui.doubleSpinBox_4,
+        self.ui.doubleSpinBox_5,
+        self.ui.doubleSpinBox_6,
+        self.ui.doubleSpinBox_7,
+        self.ui.doubleSpinBox_8,
+        self.ui.doubleSpinBox_9,
+        self.ui.comboBox]
+
+        for widget in widgets:
+            widget.blockSignals(True)
+
+        self.ui.doubleSpinBox_1.setValue(self.node.offset[0])
+        self.ui.doubleSpinBox_2.setValue(self.node.offset[1])
+        self.ui.doubleSpinBox_3.setValue(self.node.offset[2])
+
+        self.ui.doubleSpinBox_4.setValue(self.node.rotation[0])
+        self.ui.doubleSpinBox_5.setValue(self.node.rotation[1])
+        self.ui.doubleSpinBox_6.setValue(self.node.rotation[2])
+
+        self.ui.doubleSpinBox_7.setValue(self.node.scale[0])
+        self.ui.doubleSpinBox_8.setValue(self.node.scale[1])
+        self.ui.doubleSpinBox_9.setValue(self.node.scale[2])
+
+        self.ui.comboBox.clear()
+        self.ui.comboBox.addItems(self.scene.get_resource_list('stl'))
+        self.ui.comboBox.addItems(self.scene.get_resource_list('obj'))
+
+        self.ui.comboBox.setCurrentText(str(self.node.path))
+
+        for widget in widgets:
+            widget.blockSignals(False)
+
 
     def generate_code(self):
 
@@ -320,51 +328,43 @@ class EditVisual(NodeEditor):
         if not np.all(new_scale == self.node.scale):
             code += element + '.scale = ({}, {}, {})'.format(*new_scale)
 
-        return code
+        self.run_code(code)
 
+@Singleton
 class EditWaveInteraction(NodeEditor):
 
-    _ui = None
+    def __init__(self):
 
-    def create_widget(self):
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_waveinteraction.Ui_widget_waveinteraction()
+        ui.setupUi(widget)
+        self._widget = widget
 
-        # Prevents the ui from being created more than once
-        if EditWaveInteraction._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_waveinteraction.Ui_widget_waveinteraction()
-            ui.setupUi(widget)
-            EditWaveInteraction._ui = ui
-            ui._widget = widget
-
-        else:
-            ui = EditWaveInteraction._ui
-
-        try:
-            ui.doubleSpinBox_1.valueChanged.disconnect()
-            ui.doubleSpinBox_2.valueChanged.disconnect()
-            ui.doubleSpinBox_3.valueChanged.disconnect()
-            ui.comboBox.editTextChanged.disconnect()
-        except:
-            pass # no connections yet
-
-        ui.doubleSpinBox_1.setValue(self.node.offset[0])
-        ui.doubleSpinBox_2.setValue(self.node.offset[1])
-        ui.doubleSpinBox_3.setValue(self.node.offset[2])
-
-        ui.comboBox.clear()
-        ui.comboBox.addItems(self.scene.get_resource_list('dhyd'))
-
-        ui.comboBox.setCurrentText(str(self.node.path))  # str because path may be a Path
-
-        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
-        ui.comboBox.editTextChanged.connect(self.callback)
+        ui.doubleSpinBox_1.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_3.valueChanged.connect(self.generate_code)
+        ui.comboBox.editTextChanged.connect(self.generate_code)
 
         self.ui = ui
 
-        return ui._widget
+    def post_update_event(self):
+
+        widgets = [self.ui.doubleSpinBox_1,self.ui.doubleSpinBox_2,self.ui.doubleSpinBox_3,self.ui.comboBox]
+
+        for widget in widgets:
+            widget.blockSignals(True)
+
+        self.ui.doubleSpinBox_1.setValue(self.node.offset[0])
+        self.ui.doubleSpinBox_2.setValue(self.node.offset[1])
+        self.ui.doubleSpinBox_3.setValue(self.node.offset[2])
+
+        self.ui.comboBox.clear()
+        self.ui.comboBox.addItems(self.scene.get_resource_list('dhyd'))
+        self.ui.comboBox.setCurrentText(str(self.node.path))  # str because path may be a Path
+
+        for widget in widgets:
+            widget.blockSignals(False)
+
 
     def generate_code(self):
 
@@ -381,33 +381,53 @@ class EditWaveInteraction(NodeEditor):
             code += element + '.offset = ({}, {}, {})'.format(*new_position)
 
 
-        return code
+        self.run_code(code)
 
 
 # ======================================
 
+@Singleton
 class EditTank(NodeEditor):
 
-    _ui = None
+    def __init__(self):
 
-    def create_widget(self):
-
-        # Prevents the ui from being created more than once
-        if EditTank._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_tank.Ui_Form()
-            ui.setupUi(widget)
-            EditLC6d._ui = ui
-            ui._widget = widget
-
-        else:
-            ui = EditTank._ui
-
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_tank.Ui_Form()
+        ui.setupUi(widget)
         self.ui = ui
-        self.post_update_event() # update values
+        self._widget = widget
 
-        return ui._widget
+        self.ui.sbDenstiy.valueChanged.connect(self.generate_code)
+        self.ui.sbVolume.valueChanged.connect(self.generate_code)
+        self.ui.sbPercentage.valueChanged.connect(self.generate_code)
+        self.ui.sbElevation.valueChanged.connect(self.generate_code)
+        self.ui.cbFreeFlooding.toggled.connect(self.generate_code)
+
+
+    def post_update_event(self):
+
+        widgets = [self.ui.sbDenstiy,
+            self.ui.sbVolume,
+            self.ui.sbPercentage,
+            self.ui.sbElevation,
+            self.ui.cbFreeFlooding]
+
+        for widget in widgets:
+            widget.blockSignals(True)
+
+
+        self.ui.sbDenstiy.setValue(self.node.density)
+        self.ui.sbVolume.setValue(self.node.volume)
+        self.ui.sbPercentage.setValue(self.node.fill_pct)
+        self.ui.sbElevation.setValue(self.node.level_global)
+        self.ui.cbFreeFlooding.setChecked(self.node.free_flooding)
+
+        for widget in widgets:
+            widget.blockSignals(False)
+
+        self.ui.widgetContents.setEnabled(not self.node.free_flooding)
+
+        self.ui.lblCapacity.setText(f"{self.node.capacity:.3f}")
 
     def generate_code(self):
 
@@ -437,147 +457,99 @@ class EditTank(NodeEditor):
         code += add(name, new_elev,'level_global')
         # code += add(name, new_ht_pct, 'fill_ht_pct')
 
-        return code
+        self.run_code(code)
 
-    def post_update_event(self):
-
-        try:
-            self.ui.sbDenstiy.valueChanged.disconnect()
-            self.ui.sbVolume.valueChanged.disconnect()
-            self.ui.sbPercentage.valueChanged.disconnect()
-            self.ui.sbElevation.valueChanged.disconnect()
-            self.ui.cbFreeFlooding.toggled.disconnect()
-            # self.ui.sbPercentage_ht.valueChanged.disconnect()
-
-        except:
-            pass # no connections yet
-
-        self.ui.sbDenstiy.setValue(self.node.density)
-        self.ui.sbVolume.setValue(self.node.volume)
-        self.ui.sbPercentage.setValue(self.node.fill_pct)
-        self.ui.sbElevation.setValue(self.node.level_global)
-        self.ui.cbFreeFlooding.setChecked(self.node.free_flooding)
-        # self.ui.sbPercentage_ht.setValue(self.node.fill_ht_pct)
-
-        self.ui.sbDenstiy.valueChanged.connect(self.callback)
-        self.ui.sbVolume.valueChanged.connect(self.callback)
-        self.ui.sbPercentage.valueChanged.connect(self.callback)
-        self.ui.sbElevation.valueChanged.connect(self.callback)
-        self.ui.cbFreeFlooding.toggled.connect(self.callback)
-        # self.ui.sbPercentage_ht.valueChanged.connect(self.callback)
-
-        self.ui.widgetContents.setEnabled(not self.node.free_flooding)
-
-        self.ui.lblCapacity.setText(f"{self.node.capacity:.3f}")
-
+@Singleton
 class EditBuoyancyDensity(NodeEditor):
 
-    _ui = None
+    def __init__(self):
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_buoyancy.Ui_Form()
+        ui.setupUi(widget)
 
-    def create_widget(self):
-
-        # Prevents the ui from being created more than once
-        if EditBuoyancyDensity._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_buoyancy.Ui_Form()
-            ui.setupUi(widget)
-            EditBuoyancyDensity._ui = ui
-            ui._widget = widget
-
-        else:
-            ui = EditBuoyancyDensity._ui
-
-        try:
-            ui.sbDenstiy.valueChanged.disconnect()
-        except:
-            pass
-
-        ui.sbDenstiy.setValue(self.node.density)
-        ui.sbDenstiy.valueChanged.connect(self.callback)
-
+        ui.sbDenstiy.valueChanged.connect(self.generate_code)
         self.ui = ui
-        return ui._widget
+        self._widget = widget
+
+    def post_update_event(self):
+        self.ui.sbDenstiy.blockSignals(True)
+        self.ui.sbDenstiy.setValue(self.node.density)
+        self.ui.sbDenstiy.blockSignals(False)
 
     def generate_code(self):
-
         code = ""
 
         if self.node.density != self.ui.sbDenstiy.value():
             element = "\ns['{}']".format(self.node.name)
             code = element + '.density = {}'.format(self.ui.sbDenstiy.value())
 
-        return code
+        self.run_code(code)
 
+@Singleton
 class EditBuoyancyOrContactMesh(NodeEditor):
 
-    _ui = None
+    def __init__(self):
 
-    def create_widget(self):
-
-        # Prevents the ui from being created more than once
-        if EditBuoyancyOrContactMesh._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_visual.Ui_widget_axis() # same as visual widget!
-            ui.setupUi(widget)
-            EditBuoyancyOrContactMesh._ui = ui
-            ui._widget = widget
-
-        else:
-            ui = EditBuoyancyOrContactMesh._ui
-
-        try:
-            ui.doubleSpinBox_1.valueChanged.disconnect()
-            ui.doubleSpinBox_2.valueChanged.disconnect()
-            ui.doubleSpinBox_3.valueChanged.disconnect()
-            ui.doubleSpinBox_4.valueChanged.disconnect()
-            ui.doubleSpinBox_5.valueChanged.disconnect()
-            ui.doubleSpinBox_6.valueChanged.disconnect()
-            ui.doubleSpinBox_7.valueChanged.disconnect()
-            ui.doubleSpinBox_8.valueChanged.disconnect()
-            ui.doubleSpinBox_9.valueChanged.disconnect()
-            ui.cbInvertNormals.toggled.disconnect()
-            ui.comboBox.editTextChanged.disconnect()
-        except:
-            pass # no connections yet
-
-        ui.doubleSpinBox_1.setValue(self.node.trimesh._offset[0])
-        ui.doubleSpinBox_2.setValue(self.node.trimesh._offset[1])
-        ui.doubleSpinBox_3.setValue(self.node.trimesh._offset[2])
-
-        ui.doubleSpinBox_4.setValue(self.node.trimesh._rotation[0])
-        ui.doubleSpinBox_5.setValue(self.node.trimesh._rotation[1])
-        ui.doubleSpinBox_6.setValue(self.node.trimesh._rotation[2])
-
-        ui.doubleSpinBox_7.setValue(self.node.trimesh._scale[0])
-        ui.doubleSpinBox_8.setValue(self.node.trimesh._scale[1])
-        ui.doubleSpinBox_9.setValue(self.node.trimesh._scale[2])
-
-        ui.cbInvertNormals.setChecked(self.node.trimesh._invert_normals)
-
-        ui.comboBox.clear()
-        ui.comboBox.addItems(self.scene.get_resource_list('stl'))
-        ui.comboBox.addItems(self.scene.get_resource_list('obj'))
-
-        ui.comboBox.setCurrentText(self.node.trimesh._path)
-
-        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_6.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_7.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_8.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_9.valueChanged.connect(self.callback)
-
-        ui.comboBox.editTextChanged.connect(self.callback)
-        ui.cbInvertNormals.toggled.connect(self.callback)
-
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_visual.Ui_widget_axis() # same as visual widget!
+        ui.setupUi(widget)
         self.ui = ui
+        self._widget = widget
 
-        return ui._widget
+        ui.doubleSpinBox_1.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_3.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_4.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_5.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_6.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_7.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_8.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_9.valueChanged.connect(self.generate_code)
+
+        ui.comboBox.editTextChanged.connect(self.generate_code)
+        ui.cbInvertNormals.toggled.connect(self.generate_code)
+
+    def post_update_event(self):
+
+        widgets = [
+            self.ui.doubleSpinBox_1,
+            self.ui.doubleSpinBox_2,
+            self.ui.doubleSpinBox_3,
+            self.ui.doubleSpinBox_4,
+            self.ui.doubleSpinBox_5,
+            self.ui.doubleSpinBox_6,
+            self.ui.doubleSpinBox_7,
+            self.ui.doubleSpinBox_8,
+            self.ui.doubleSpinBox_9,
+            self.ui.comboBox,
+            self.ui.cbInvertNormals,
+        ]
+
+        for widget in widgets:
+            widget.blockSignals(True)
+
+        self.ui.doubleSpinBox_1.setValue(self.node.trimesh._offset[0])
+        self.ui.doubleSpinBox_2.setValue(self.node.trimesh._offset[1])
+        self.ui.doubleSpinBox_3.setValue(self.node.trimesh._offset[2])
+
+        self.ui.doubleSpinBox_4.setValue(self.node.trimesh._rotation[0])
+        self.ui.doubleSpinBox_5.setValue(self.node.trimesh._rotation[1])
+        self.ui.doubleSpinBox_6.setValue(self.node.trimesh._rotation[2])
+
+        self.ui.doubleSpinBox_7.setValue(self.node.trimesh._scale[0])
+        self.ui.doubleSpinBox_8.setValue(self.node.trimesh._scale[1])
+        self.ui.doubleSpinBox_9.setValue(self.node.trimesh._scale[2])
+
+        self.ui.cbInvertNormals.setChecked(self.node.trimesh._invert_normals)
+
+        self.ui.comboBox.clear()
+        self.ui.comboBox.addItems(self.scene.get_resource_list('stl'))
+        self.ui.comboBox.addItems(self.scene.get_resource_list('obj'))
+
+        self.ui.comboBox.setCurrentText(self.node.trimesh._path)
+
+        for widget in widgets:
+            widget.blockSignals(False)
 
     def generate_code(self):
 
@@ -604,51 +576,45 @@ class EditBuoyancyOrContactMesh(NodeEditor):
             else:
                 code = element + ".trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(new_path, *scale, *rotation, *offset)
 
-        return code
+        self.run_code(code)
 
 
 
-
+@Singleton
 class EditBody(NodeEditor):
 
-    _ui = None
-
-    def create_widget(self):
-
-        # Prevents the ui from being created more than once
-        if EditBody._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_body.Ui_Form()
-            ui.setupUi(widget)
-            EditBody._ui = ui
-            ui._widget = widget
-
-        else:
-            ui = EditBody._ui
-
-        try:
-            ui.doubleSpinBox_1.valueChanged.disconnect()
-            ui.doubleSpinBox_2.valueChanged.disconnect()
-            ui.doubleSpinBox_3.valueChanged.disconnect()
-            ui.doubleSpinBox_mass.valueChanged.disconnect()
-        except:
-            pass # no connections yet
-
-        ui.doubleSpinBox_1.setValue(self.node.cog[0])
-        ui.doubleSpinBox_2.setValue(self.node.cog[1])
-        ui.doubleSpinBox_3.setValue(self.node.cog[2])
-
-        ui.doubleSpinBox_mass.setValue(self.node.mass)
-
-        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_mass.valueChanged.connect(self.callback)
-
+    def __init__(self):
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_body.Ui_Form()
+        ui.setupUi(widget)
         self.ui = ui
+        self._widget = widget
 
-        return ui._widget
+        ui.doubleSpinBox_1.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_3.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_mass.valueChanged.connect(self.generate_code)
+
+    def post_update_event(self):
+
+        widgets = [self.ui.doubleSpinBox_1,
+                   self.ui.doubleSpinBox_2,
+                   self.ui.doubleSpinBox_3,
+                   self.ui.doubleSpinBox_mass,
+                   ]
+
+
+        for widget in widgets:
+            widget.blockSignals(True)
+
+        self.ui.doubleSpinBox_1.setValue(self.node.cog[0])
+        self.ui.doubleSpinBox_2.setValue(self.node.cog[1])
+        self.ui.doubleSpinBox_3.setValue(self.node.cog[2])
+        self.ui.doubleSpinBox_mass.setValue(self.node.mass)
+
+        for widget in widgets:
+            widget.blockSignals(False)
+
 
     def generate_code(self):
         code = ""
@@ -664,44 +630,39 @@ class EditBody(NodeEditor):
         if not np.all(new_cog == self.node.cog):
             code += element + '.cog = ({}, {}, {})'.format(*new_cog)
 
-        return code
+        self.run_code(code)
 
+@Singleton
 class EditPoi(NodeEditor):
 
-    _ui = None
+    def __init__(self):
 
-    def create_widget(self):
-
-        # Prevents the ui from being created more than once
-        if EditPoi._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_poi.Ui_Poi()
-            ui.setupUi(widget)
-            EditPoi._ui = ui
-            ui._widget = widget
-
-        else:
-            ui = EditPoi._ui
-
-        try:
-            ui.doubleSpinBox_1.valueChanged.disconnect()
-            ui.doubleSpinBox_2.valueChanged.disconnect()
-            ui.doubleSpinBox_3.valueChanged.disconnect()
-        except:
-            pass # no connections yet
-
-        ui.doubleSpinBox_1.setValue(self.node.position[0])
-        ui.doubleSpinBox_2.setValue(self.node.position[1])
-        ui.doubleSpinBox_3.setValue(self.node.position[2])
-
-        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
-
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_poi.Ui_Poi()
+        ui.setupUi(widget)
         self.ui = ui
+        self._widget = widget
 
-        return ui._widget
+        ui.doubleSpinBox_1.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_3.valueChanged.connect(self.generate_code)
+
+    def post_update_event(self):
+
+        widgets = [self.ui.doubleSpinBox_1,
+                   self.ui.doubleSpinBox_2,
+                   self.ui.doubleSpinBox_3,]
+
+        for widget in widgets:
+            widget.blockSignals(True)
+
+        self.ui.doubleSpinBox_1.setValue(self.node.position[0])
+        self.ui.doubleSpinBox_2.setValue(self.node.position[1])
+        self.ui.doubleSpinBox_3.setValue(self.node.position[2])
+
+        for widget in widgets:
+            widget.blockSignals(False)
+
 
     def generate_code(self):
 
@@ -713,53 +674,27 @@ class EditPoi(NodeEditor):
         if not np.all(new_position == self.node.position):
             code += element + '.position = ({}, {}, {})'.format(*new_position)
 
-        return code
+        self.run_code(code)
 
-
+@Singleton
 class EditCable(NodeEditor):
 
-    _ui = None
+    def __init__(self):
 
-    def create_widget(self):
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_cable.Ui_Cable_form()
+        ui.setupUi(widget)
 
-        # Prevents the ui from being created more than once
-        if EditCable._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_cable.Ui_Cable_form()
-            ui.setupUi(widget)
-
-            EditCable._ui = ui
-            ui._widget = widget
-            ui.additional_pois = list()
-
-        else:
-            ui = EditCable._ui
-
-        try:
-            ui.doubleSpinBox_1.valueChanged.disconnect()
-            ui.doubleSpinBox_2.valueChanged.disconnect()
-            ui.doubleSpinBox.valueChanged.disconnect()
-
-        except:
-            pass # no connections yet
-
-        for ddb in ui.additional_pois:
-            ui.poiLayout.removeWidget(ddb)
-            ddb.deleteLater()
-
-        ui.doubleSpinBox_1.setValue(self.node.length)
-        ui.doubleSpinBox_2.setValue(self.node.EA)
-        ui.doubleSpinBox.setValue(self.node.diameter)
-
+        self.ui = ui
+        self._widget = widget
+        self.additional_pois = list()
 
         # Set events
         ui.pbRemoveSelected.clicked.connect(self.delete_selected)
 
-        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
-        ui.doubleSpinBox.valueChanged.connect(self.callback)
-
+        ui.doubleSpinBox_1.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox.valueChanged.connect(self.generate_code)
 
         # ------- setup the drag-and-drop code ---------
 
@@ -771,15 +706,30 @@ class EditCable(NodeEditor):
         ui.list.setAcceptDrops(True)
         ui.list.setDragEnabled(True)
 
-        ui.list.clear()
-        for item in self.node._give_poi_names():
-            ui.list.addItem(item)
+    def post_update_event(self):
 
-        self.ui = ui  # needs to be done here as self.add_poi_dropdown modifies this
+        widgets = [self.ui.doubleSpinBox_1,
+                  self.ui.doubleSpinBox_2,
+                  self.ui.doubleSpinBox]
+
+        for widget in widgets:
+            widget.blockSignals(True)
+
+        for ddb in self.additional_pois:
+            self.ui.poiLayout.removeWidget(ddb)
+            ddb.deleteLater()
+
+        self.ui.doubleSpinBox_1.setValue(self.node.length)
+        self.ui.doubleSpinBox_2.setValue(self.node.EA)
+        self.ui.doubleSpinBox.setValue(self.node.diameter)
+
+
+        self.ui.list.clear()
+        for item in self.node._give_poi_names():
+            self.ui.list.addItem(item)
 
         self.set_colors()
 
-        return ui._widget
 
     def set_colors(self):
         if (self.ui.doubleSpinBox_2.value() == 0):
@@ -814,7 +764,7 @@ class EditCable(NodeEditor):
         else:
             list.addItem(name)
 
-        self.callback()
+        self.generate_code()
 
     def dragEnterEvent(self, event):
         if event.source() == self.ui.list:
@@ -836,7 +786,7 @@ class EditCable(NodeEditor):
         row = self.ui.list.currentRow()
         if row > -1:
             self.ui.list.takeItem(row)
-        self.callback()
+        self.generate_code()
 
 
     def generate_code(self):
@@ -871,56 +821,52 @@ class EditCable(NodeEditor):
                 code += "'{}',".format(name)
             code = code[:-1] + ')'
 
-        return code
+        self.run_code(code)
 
 
+@Singleton
 class EditForce(NodeEditor):
 
-    _ui = None
+    def __init__(self):
 
-    def create_widget(self):
-
-        # Prevents the ui from being created more than once
-        if EditForce._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_force.Ui_widget_force()
-            ui.setupUi(widget)
-            EditForce._ui = ui
-            ui._widget = widget
-
-        else:
-            ui = EditForce._ui
-
-        try:
-            ui.doubleSpinBox_1.valueChanged.disconnect()
-            ui.doubleSpinBox_2.valueChanged.disconnect()
-            ui.doubleSpinBox_3.valueChanged.disconnect()
-            ui.doubleSpinBox_4.valueChanged.disconnect()
-            ui.doubleSpinBox_5.valueChanged.disconnect()
-            ui.doubleSpinBox_6.valueChanged.disconnect()
-        except:
-            pass # no connections yet
-
-        ui.doubleSpinBox_1.setValue(self.node.force[0])
-        ui.doubleSpinBox_2.setValue(self.node.force[1])
-        ui.doubleSpinBox_3.setValue(self.node.force[2])
-
-        ui.doubleSpinBox_4.setValue(self.node.moment[0])
-        ui.doubleSpinBox_5.setValue(self.node.moment[1])
-        ui.doubleSpinBox_6.setValue(self.node.moment[2])
-
-        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
-
-        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_6.valueChanged.connect(self.callback)
-
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_force.Ui_widget_force()
+        ui.setupUi(widget)
         self.ui = ui
+        self._widget = widget
 
-        return ui._widget
+        ui.doubleSpinBox_1.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_3.valueChanged.connect(self.generate_code)
+
+        ui.doubleSpinBox_4.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_5.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_6.valueChanged.connect(self.generate_code)
+
+    def post_update_event(self):
+
+        widgets = [self.ui.doubleSpinBox_1,
+                   self.ui.doubleSpinBox_2,
+                   self.ui.doubleSpinBox_3,
+                   self.ui.doubleSpinBox_4,
+                   self.ui.doubleSpinBox_5,
+                   self.ui.doubleSpinBox_6,
+                   ]
+
+        for widget in widgets:
+            widget.blockSignals(True)
+
+        self.ui.doubleSpinBox_1.setValue(self.node.force[0])
+        self.ui.doubleSpinBox_2.setValue(self.node.force[1])
+        self.ui.doubleSpinBox_3.setValue(self.node.force[2])
+
+        self.ui.doubleSpinBox_4.setValue(self.node.moment[0])
+        self.ui.doubleSpinBox_5.setValue(self.node.moment[1])
+        self.ui.doubleSpinBox_6.setValue(self.node.moment[2])
+
+        for widget in widgets:
+            widget.blockSignals(False)
+
 
     def generate_code(self):
 
@@ -937,49 +883,43 @@ class EditForce(NodeEditor):
         if not np.all(new_moment == self.node.moment):
             code += element + '.moment = ({}, {}, {})'.format(*new_moment)
 
-        return code
+        self.run_code(code)
 
+@Singleton
 class EditSheave(NodeEditor):
 
-    _ui = None
+    def __init__(self):
 
-    def create_widget(self):
-
-        # Prevents the ui from being created more than once
-        if EditSheave._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_sheave.Ui_widget_sheave()
-            ui.setupUi(widget)
-            EditSheave._ui = ui
-            ui._widget = widget
-
-        else:
-            ui = EditSheave._ui
-
-        try:
-            ui.sbAX.valueChanged.disconnect()
-            ui.sbAY.valueChanged.disconnect()
-            ui.sbAZ.valueChanged.disconnect()
-            ui.sbRadius.valueChanged.disconnect()
-        except:
-            pass # no connections yet
-
-        ui.sbAX.setValue(self.node.axis[0])
-        ui.sbAY.setValue(self.node.axis[1])
-        ui.sbAZ.setValue(self.node.axis[2])
-
-        ui.sbRadius.setValue(self.node.radius)
-
-        ui.sbAX.valueChanged.connect(self.callback)
-        ui.sbAY.valueChanged.connect(self.callback)
-        ui.sbAZ.valueChanged.connect(self.callback)
-
-        ui.sbRadius.valueChanged.connect(self.callback)
-
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_sheave.Ui_widget_sheave()
+        ui.setupUi(widget)
         self.ui = ui
+        self._widget = widget
 
-        return ui._widget
+        self.ui.sbAX.valueChanged.connect(self.generate_code)
+        self.ui.sbAY.valueChanged.connect(self.generate_code)
+        self.ui.sbAZ.valueChanged.connect(self.generate_code)
+
+        self.ui.sbRadius.valueChanged.connect(self.generate_code)
+
+    def post_update_event(self):
+
+        widgets = [self.ui.sbAX,
+                   self.ui.sbAY,
+                   self.ui.sbAZ,
+                   self.ui.sbRadius]
+
+        for widget in widgets:
+            widget.blockSignals(True)
+
+        self.ui.sbAX.setValue(self.node.axis[0])
+        self.ui.sbAY.setValue(self.node.axis[1])
+        self.ui.sbAZ.setValue(self.node.axis[2])
+        self.ui.sbRadius.setValue(self.node.radius)
+
+
+        for widget in widgets:
+            widget.blockSignals(False)
 
     def generate_code(self):
 
@@ -995,65 +935,62 @@ class EditSheave(NodeEditor):
         if not new_radius == self.node.radius:
             code += element + '.radius = {}'.format(new_radius)
 
-        return code
+        self.run_code(code)
 
+@Singleton
 class EditHydSpring(NodeEditor):
 
-    _ui = None
-
-    def create_widget(self):
-
-        # Prevents the ui from being created more than once
-        if EditHydSpring._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_linhyd.Ui_widget_linhyd()
-            ui.setupUi(widget)
-            EditHydSpring._ui = ui
-            ui._widget = widget
-
-        else:
-            ui = EditHydSpring._ui
-
-        try:
-            ui.doubleSpinBox_1.valueChanged.disconnect()
-            ui.doubleSpinBox_2.valueChanged.disconnect()
-            ui.doubleSpinBox_3.valueChanged.disconnect()
-            ui.BMT.valueChanged.disconnect()
-            ui.BML.valueChanged.disconnect()
-            ui.COFX.valueChanged.disconnect()
-            ui.COFY.valueChanged.disconnect()
-            ui.kHeave.valueChanged.disconnect()
-            ui.waterline.valueChanged.disconnect()
-            ui.disp.valueChanged.disconnect()
-        except:
-            pass # no connections yet
-
-        ui.doubleSpinBox_1.setValue(self.node.cob[0])
-        ui.doubleSpinBox_2.setValue(self.node.cob[1])
-        ui.doubleSpinBox_3.setValue(self.node.cob[2])
-        ui.BMT.setValue(self.node.BMT)
-        ui.BML.setValue(self.node.BML)
-        ui.COFX.setValue(self.node.COFX)
-        ui.COFY.setValue(self.node.COFY)
-        ui.kHeave.setValue(self.node.kHeave)
-        ui.waterline.setValue(self.node.waterline)
-        ui.disp.setValue(self.node.displacement_kN)
-
-        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
-        ui.BMT.valueChanged.connect(self.callback)
-        ui.BML.valueChanged.connect(self.callback)
-        ui.COFX.valueChanged.connect(self.callback)
-        ui.COFY.valueChanged.connect(self.callback)
-        ui.kHeave.valueChanged.connect(self.callback)
-        ui.waterline.valueChanged.connect(self.callback)
-        ui.disp.valueChanged.connect(self.callback)
-
+    def __init__(self):
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_linhyd.Ui_widget_linhyd()
+        ui.setupUi(widget)
         self.ui = ui
+        self._widget = widget
 
-        return ui._widget
+        ui.doubleSpinBox_1.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_3.valueChanged.connect(self.generate_code)
+        ui.BMT.valueChanged.connect(self.generate_code)
+        ui.BML.valueChanged.connect(self.generate_code)
+        ui.COFX.valueChanged.connect(self.generate_code)
+        ui.COFY.valueChanged.connect(self.generate_code)
+        ui.kHeave.valueChanged.connect(self.generate_code)
+        ui.waterline.valueChanged.connect(self.generate_code)
+        ui.disp.valueChanged.connect(self.generate_code)
+
+    def post_update_event(self):
+
+
+
+        widgets = [self.ui.doubleSpinBox_1,
+            self.ui.doubleSpinBox_2,
+            self.ui.doubleSpinBox_3,
+            self.ui.BMT,
+            self.ui.BML,
+            self.ui.COFX,
+            self.ui.COFY,
+            self.ui.kHeave,
+            self.ui.waterline,
+            self.ui.disp,
+        ]
+
+        for widget in widgets:
+            widget.blockSignals(True)
+
+        self.ui.doubleSpinBox_1.setValue(self.node.cob[0])
+        self.ui.doubleSpinBox_2.setValue(self.node.cob[1])
+        self.ui.doubleSpinBox_3.setValue(self.node.cob[2])
+        self.ui.BMT.setValue(self.node.BMT)
+        self.ui.BML.setValue(self.node.BML)
+        self.ui.COFX.setValue(self.node.COFX)
+        self.ui.COFY.setValue(self.node.COFY)
+        self.ui.kHeave.setValue(self.node.kHeave)
+        self.ui.waterline.setValue(self.node.waterline)
+        self.ui.disp.setValue(self.node.displacement_kN)
+
+        for widget in widgets:
+            widget.blockSignals(False)
+
 
     def generate_code(self):
 
@@ -1094,73 +1031,70 @@ class EditHydSpring(NodeEditor):
         if not new_dipl == self.node.displacement_kN:
             code += element + '.displacement_kN = {}'.format(new_dipl)
 
-        return code
+        self.run_code(code)
 
+@Singleton
 class EditLC6d(NodeEditor):
 
-    _ui = None
+    def __init__(self):
 
-    def create_widget(self):
 
-        # Prevents the ui from being created more than once
-        if EditLC6d._ui is None:
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_lincon6.Ui_widget_lincon6()
+        ui.setupUi(widget)
+        self.ui = ui
+        self._widget = widget
 
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_lincon6.Ui_widget_lincon6()
-            ui.setupUi(widget)
-            EditLC6d._ui = ui
-            ui._widget = widget
+        ui.doubleSpinBox_1.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_3.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_4.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_5.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_6.valueChanged.connect(self.generate_code)
 
-        else:
-            ui = EditLC6d._ui
+        ui.cbMasterAxis.currentIndexChanged.connect(self.generate_code)
+        ui.cbSlaveAxis.currentIndexChanged.connect(self.generate_code)
 
-        try:
-            ui.doubleSpinBox_1.valueChanged.disconnect()
-            ui.doubleSpinBox_2.valueChanged.disconnect()
-            ui.doubleSpinBox_3.valueChanged.disconnect()
-            ui.doubleSpinBox_4.valueChanged.disconnect()
-            ui.doubleSpinBox_5.valueChanged.disconnect()
-            ui.doubleSpinBox_6.valueChanged.disconnect()
+    def post_update_event(self):
 
-            ui.cbMasterAxis.currentIndexChanged.disconnect()
-            ui.cbSlaveAxis.currentIndexChanged.disconnect()
-        except:
-            pass # no connections yet
+
+        widgets = [
+            self.ui.doubleSpinBox_1,
+            self.ui.doubleSpinBox_2,
+            self.ui.doubleSpinBox_3,
+            self.ui.doubleSpinBox_4,
+            self.ui.doubleSpinBox_5,
+            self.ui.doubleSpinBox_6,
+            self.ui.cbMasterAxis,
+            self.ui.cbSlaveAxis,]
+
+        for widget in widgets:
+            widget.blockSignals(True)
 
         self.alist = list()
         for axis in self.scene.nodes_of_type(vfs.Axis):
             self.alist.append(axis.name)
 
-        ui.cbMasterAxis.clear()
-        ui.cbSlaveAxis.clear()
+        self.ui.cbMasterAxis.clear()
+        self.ui.cbSlaveAxis.clear()
 
-        ui.cbMasterAxis.addItems(self.alist)
-        ui.cbSlaveAxis.addItems(self.alist)
+        self.ui.cbMasterAxis.addItems(self.alist)
+        self.ui.cbSlaveAxis.addItems(self.alist)
 
-        ui.cbMasterAxis.setCurrentText(self.node.main.name)
-        ui.cbSlaveAxis.setCurrentText(self.node.secondary.name)
+        self.ui.cbMasterAxis.setCurrentText(self.node.main.name)
+        self.ui.cbSlaveAxis.setCurrentText(self.node.secondary.name)
 
-        ui.doubleSpinBox_1.setValue(self.node.stiffness[0])
-        ui.doubleSpinBox_2.setValue(self.node.stiffness[1])
-        ui.doubleSpinBox_3.setValue(self.node.stiffness[2])
+        self.ui.doubleSpinBox_1.setValue(self.node.stiffness[0])
+        self.ui.doubleSpinBox_2.setValue(self.node.stiffness[1])
+        self.ui.doubleSpinBox_3.setValue(self.node.stiffness[2])
 
-        ui.doubleSpinBox_4.setValue(self.node.stiffness[3])
-        ui.doubleSpinBox_5.setValue(self.node.stiffness[4])
-        ui.doubleSpinBox_6.setValue(self.node.stiffness[5])
+        self.ui.doubleSpinBox_4.setValue(self.node.stiffness[3])
+        self.ui.doubleSpinBox_5.setValue(self.node.stiffness[4])
+        self.ui.doubleSpinBox_6.setValue(self.node.stiffness[5])
 
-        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_6.valueChanged.connect(self.callback)
+        for widget in widgets:
+            widget.blockSignals(False)
 
-        ui.cbMasterAxis.currentIndexChanged.connect(self.callback)
-        ui.cbSlaveAxis.currentIndexChanged.connect(self.callback)
-
-        self.ui = ui
-
-        return ui._widget
 
     def generate_code(self):
 
@@ -1188,60 +1122,54 @@ class EditLC6d(NodeEditor):
             code += element + '.secondary = s["{}"]'.format(new_slave)
 
 
-        return code
+        self.run_code(code)
 
+@Singleton
 class EditConnector2d(NodeEditor):
 
-    _ui = None
+    def __init__(self):
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_con2d.Ui_widget_con2d()
+        ui.setupUi(widget)
+        self.ui = ui
+        self._widget = widget
 
-    def create_widget(self):
+        ui.doubleSpinBox_1.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_4.valueChanged.connect(self.generate_code)
 
-        # Prevents the ui from being created more than once
-        if EditConnector2d._ui is None:
+        ui.cbMasterAxis.currentIndexChanged.connect(self.generate_code)
+        ui.cbSlaveAxis.currentIndexChanged.connect(self.generate_code)
 
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_con2d.Ui_widget_con2d()
-            ui.setupUi(widget)
-            EditConnector2d._ui = ui
-            ui._widget = widget
+    def post_update_event(self):
 
-        else:
-            ui = EditConnector2d._ui
+        widgets = [self.ui.cbMasterAxis,
+                   self.ui.cbSlaveAxis,
+                   self.ui.doubleSpinBox_1,
+                   self.ui.doubleSpinBox_4
+                   ]
 
-        try:
-            ui.doubleSpinBox_1.valueChanged.disconnect()
-            ui.doubleSpinBox_4.valueChanged.disconnect()
-
-            ui.cbMasterAxis.currentIndexChanged.disconnect()
-            ui.cbSlaveAxis.currentIndexChanged.disconnect()
-        except:
-            pass # no connections yet
+        for widget in widgets:
+            widget.blockSignals(True)
 
         self.alist = list()
         for axis in self.scene.nodes_of_type(vfs.Axis):
             self.alist.append(axis.name)
 
-        ui.cbMasterAxis.clear()
-        ui.cbSlaveAxis.clear()
+        self.ui.cbMasterAxis.clear()
+        self.ui.cbSlaveAxis.clear()
 
-        ui.cbMasterAxis.addItems(self.alist)
-        ui.cbSlaveAxis.addItems(self.alist)
+        self.ui.cbMasterAxis.addItems(self.alist)
+        self.ui.cbSlaveAxis.addItems(self.alist)
 
-        ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
-        ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
+        self.ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
+        self.ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
 
-        ui.doubleSpinBox_1.setValue(self.node.k_linear)
-        ui.doubleSpinBox_4.setValue(self.node.k_angular)
+        self.ui.doubleSpinBox_1.setValue(self.node.k_linear)
+        self.ui.doubleSpinBox_4.setValue(self.node.k_angular)
 
-        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
+        for widget in widgets:
+            widget.blockSignals(False)
 
-        ui.cbMasterAxis.currentIndexChanged.connect(self.callback)
-        ui.cbSlaveAxis.currentIndexChanged.connect(self.callback)
-
-        self.ui = ui
-
-        return ui._widget
 
     def generate_code(self):
 
@@ -1265,82 +1193,76 @@ class EditConnector2d(NodeEditor):
         if not new_k_ang == self.node.k_angular:
             code += element + '.k_angular = {}'.format(new_k_ang)
 
-        return code
+        self.run_code(code)
 
+@Singleton
 class EditBeam(NodeEditor):
 
-    _ui = None
+    def __init__(self):
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_beam.Ui_widget_beam()
+        ui.setupUi(widget)
+        self.ui = ui
+        self._widget = widget
 
-    def create_widget(self):
+        ui.doubleSpinBox_1.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_3.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_4.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_5.valueChanged.connect(self.generate_code)
+        ui.sbMass.valueChanged.connect(self.generate_code)
+        ui.cbTensionOnly.stateChanged.connect(self.generate_code)
 
-        # Prevents the ui from being created more than once
-        if EditBeam._ui is None:
+        ui.cbMasterAxis.currentIndexChanged.connect(self.generate_code)
+        ui.cbSlaveAxis.currentIndexChanged.connect(self.generate_code)
+        ui.sbnSegments.valueChanged.connect(self.generate_code)
 
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_beam.Ui_widget_beam()
-            ui.setupUi(widget)
-            EditBeam._ui = ui
-            ui._widget = widget
+    def post_update_event(self):
 
-        else:
-            ui = EditBeam._ui
+        widgets = [
+            self.ui.sbnSegments,
+            self.ui.doubleSpinBox_1,
+            self.ui.doubleSpinBox_2,
+            self.ui.doubleSpinBox_3,
+            self.ui.doubleSpinBox_4,
+            self.ui.doubleSpinBox_5,
+            self.ui.sbMass,
+            self.ui.cbTensionOnly,
+            self.ui.cbMasterAxis,
+            self.ui.cbSlaveAxis,]
 
-        try:
-            ui.sbnSegments.valueChanged.disconnect()
-            ui.doubleSpinBox_1.valueChanged.disconnect()
-            ui.doubleSpinBox_2.valueChanged.disconnect()
-            ui.doubleSpinBox_3.valueChanged.disconnect()
-            ui.doubleSpinBox_4.valueChanged.disconnect()
-            ui.doubleSpinBox_5.valueChanged.disconnect()
-            ui.sbMass.valueChanged.disconnect()
-            ui.cbTensionOnly.stateChanged.disconnect()
-
-            ui.cbMasterAxis.currentIndexChanged.disconnect()
-            ui.cbSlaveAxis.currentIndexChanged.disconnect()
-        except:
-            pass # no connections yet
+        for widget in widgets:
+            widget.blockSignals(True)
 
         self.alist = list()
         for axis in self.scene.nodes_of_type(vfs.Axis):
             self.alist.append(axis.name)
 
-        ui.cbMasterAxis.clear()
-        ui.cbSlaveAxis.clear()
+        self.ui.cbMasterAxis.clear()
+        self.ui.cbSlaveAxis.clear()
 
-        ui.cbMasterAxis.addItems(self.alist)
-        ui.cbSlaveAxis.addItems(self.alist)
+        self.ui.cbMasterAxis.addItems(self.alist)
+        self.ui.cbSlaveAxis.addItems(self.alist)
 
-        ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
-        ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
+        self.ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
+        self.ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
 
-        ui.sbnSegments.setValue(self.node.n_segments)
+        self.ui.sbnSegments.setValue(self.node.n_segments)
 
-        ui.doubleSpinBox_1.setValue(self.node.L)
-        ui.doubleSpinBox_2.setValue(self.node.EIy)
-        ui.doubleSpinBox_3.setValue(self.node.EIz)
+        self.ui.doubleSpinBox_1.setValue(self.node.L)
+        self.ui.doubleSpinBox_2.setValue(self.node.EIy)
+        self.ui.doubleSpinBox_3.setValue(self.node.EIz)
 
-        ui.doubleSpinBox_4.setValue(self.node.GIp)
-        ui.doubleSpinBox_5.setValue(self.node.EA)
+        self.ui.doubleSpinBox_4.setValue(self.node.GIp)
+        self.ui.doubleSpinBox_5.setValue(self.node.EA)
 
-        ui.cbTensionOnly.setChecked(self.node.tension_only)
+        self.ui.cbTensionOnly.setChecked(self.node.tension_only)
 
-        ui.sbMass.setValue(self.node.mass)
+        self.ui.sbMass.setValue(self.node.mass)
 
-        ui.doubleSpinBox_1.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_2.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_3.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_4.valueChanged.connect(self.callback)
-        ui.doubleSpinBox_5.valueChanged.connect(self.callback)
-        ui.sbMass.valueChanged.connect(self.callback)
-        ui.cbTensionOnly.stateChanged.connect(self.callback)
+        for widget in widgets:
+            widget.blockSignals(False)
 
-        ui.cbMasterAxis.currentIndexChanged.connect(self.callback)
-        ui.cbSlaveAxis.currentIndexChanged.connect(self.callback)
-        ui.sbnSegments.valueChanged.connect(self.callback)
-
-        self.ui = ui
-
-        return ui._widget
 
     def generate_code(self):
 
@@ -1389,96 +1311,93 @@ class EditBeam(NodeEditor):
         if not new_tensiononly == self.node.tension_only:
             code += element + '.tension_only = {}'.format(new_tensiononly)
 
-        return code
+        self.run_code(code)
 
+@Singleton
 class EditGeometricContact(NodeEditor):
 
-    _ui = None
+    def __init__(self):
 
-    def create_widget(self):
-
-        # Prevents the ui from being created more than once
-        if EditGeometricContact._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_geometricconnection.Ui_GeometricConnection()
-            ui.setupUi(widget)
-            EditGeometricContact._ui = ui
-            ui._widget = widget
-
-        else:
-            ui = EditGeometricContact._ui
-            ui.rbPinHole.toggled.connect(self.change_type)
-            ui.rbPinHole.toggled.disconnect()
-            # ui.rbPinPin.toggled.disconnect()
-
-            ui.cbMFix.toggled.disconnect()
-            ui.cbSFix.toggled.disconnect()
-            ui.cbSwivelFix.toggled.disconnect()
-
-            ui.sbMasterRotation.valueChanged.disconnect()
-            ui.sbSlaveRotation.valueChanged.disconnect()
-            ui.sbSwivel.valueChanged.disconnect()
-
-
-        ui.lblParent.setText(self.node.parent.name)
-        ui.lblChild.setText(self.node.child.name)
-
-        ui.rbPinHole.setChecked(self.node.inside)
-        ui.rbPinPin.setChecked(not self.node.inside)
-
-        ui.cbMFix.setChecked(self.node.fixed_to_parent)
-        ui.cbSFix.setChecked(self.node.child_fixed)
-        ui.cbSwivelFix.setChecked(self.node.swivel_fixed)
-
-        ui.sbMasterRotation.setValue(self.node.rotation_on_parent)
-        ui.sbSlaveRotation.setValue(self.node.child_rotation)
-        ui.sbSwivel.setValue(self.node.swivel)
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_geometricconnection.Ui_GeometricConnection()
+        ui.setupUi(widget)
+        self.ui = ui
+        self._widget = widget
 
         ui.rbPinHole.toggled.connect(self.change_type)
-        # ui.rbPinPin.toggled.connect(self.callback) # only need to connect one of the group
 
-        ui.cbMFix.toggled.connect(self.callback)
-        ui.cbSFix.toggled.connect(self.callback)
-        ui.cbSwivelFix.toggled.connect(self.callback)
+        ui.cbMFix.toggled.connect(self.generate_code)
+        ui.cbSFix.toggled.connect(self.generate_code)
+        ui.cbSwivelFix.toggled.connect(self.generate_code)
 
-        ui.sbMasterRotation.valueChanged.connect(self.callback)
-        ui.sbSlaveRotation.valueChanged.connect(self.callback)
-        ui.sbSwivel.valueChanged.connect(self.callback)
+        ui.sbMasterRotation.valueChanged.connect(self.generate_code)
+        ui.sbSlaveRotation.valueChanged.connect(self.generate_code)
+        ui.sbSwivel.valueChanged.connect(self.generate_code)
 
         ui.pbFlip.clicked.connect(self.flip)
         ui.pbChangeSide.clicked.connect(self.change_side)
 
-        self.ui = ui
+    def post_update_event(self):
 
-        return ui._widget
+        widgets = [
+            self.ui.lblParent,
+            self.ui.lblChild,
+            self.ui.rbPinHole,
+            self.ui.rbPinPin,
+            self.ui.cbMFix,
+            self.ui.cbSFix,
+            self.ui.cbSwivelFix,
+            self.ui.sbMasterRotation,
+            self.ui.sbSlaveRotation,
+            self.ui.sbSwivel,
+        ]
+
+        for widget in widgets:
+            widget.blockSignals(True)
+
+        self.ui.lblParent.setText(self.node.parent.name)
+        self.ui.lblChild.setText(self.node.child.name)
+
+        self.ui.rbPinHole.setChecked(self.node.inside)
+        self.ui.rbPinPin.setChecked(not self.node.inside)
+
+        self.ui.cbMFix.setChecked(self.node.fixed_to_parent)
+        self.ui.cbSFix.setChecked(self.node.child_fixed)
+        self.ui.cbSwivelFix.setChecked(self.node.swivel_fixed)
+
+        self.ui.sbMasterRotation.setValue(self.node.rotation_on_parent)
+        self.ui.sbSlaveRotation.setValue(self.node.child_rotation)
+        self.ui.sbSwivel.setValue(self.node.swivel)
+
+        for widget in widgets:
+            widget.blockSignals(False)
+
 
     def flip(self):
         code = "\ns['{}'].flip()".format(self.node.name)
         self.run_code(code)
 
-        self.ui.sbSwivel.valueChanged.disconnect()
-        self.ui.sbSwivel.setValue(self.node.swivel)
-        self.ui.sbSwivel.valueChanged.connect(self.callback)
+        self.post_update_event()
 
     def change_side(self):
         code = "\ns['{}'].change_side()".format(self.node.name)
         self.run_code(code)
-        self.ui.sbSlaveRotation.valueChanged.disconnect()
-        self.ui.sbMasterRotation.valueChanged.disconnect()
-        self.ui.sbMasterRotation.setValue(self.node.rotation_on_parent)
-        self.ui.sbSlaveRotation.setValue(self.node.child_rotation)
-        self.ui.sbSlaveRotation.valueChanged.connect(self.callback)
-        self.ui.sbMasterRotation.valueChanged.connect(self.callback)
+
+        self.post_update_event() # no need, done automatically by run_code
+        #
+        # self.ui.sbSlaveRotation.valueChanged.disconnect()
+        # self.ui.sbMasterRotation.valueChanged.disconnect()
+        # self.ui.sbMasterRotation.setValue(self.node.rotation_on_parent)
+        # self.ui.sbSlaveRotation.setValue(self.node.child_rotation)
+        # self.ui.sbSlaveRotation.valueChanged.connect(self.callback)
+        # self.ui.sbMasterRotation.valueChanged.connect(self.callback)
 
     def change_type(self):
         new_inside = self.ui.rbPinHole.isChecked()
         if not new_inside == self.node.inside:
             code = "\ns['{}']".format(self.node.name) + '.inside = ' + str(new_inside)
             self.run_code(code)
-            self.ui.sbSwivel.valueChanged.disconnect()
-            self.ui.sbSwivel.setValue(self.node.swivel)
-            self.ui.sbSwivel.valueChanged.connect(self.callback)
+            # self.post_update_event() # no need, done automatically by run_code
 
 
     def generate_code(self):
@@ -1513,48 +1432,40 @@ class EditGeometricContact(NodeEditor):
         # if not new_inside == self.node.inside:
         #     code += element + '.inside = ' + str(new_inside)
 
-        return code
+        self.run_code(code)
 
+@Singleton
 class EditContactBall(NodeEditor):
 
-    _ui = None
+    def __init__(self):
 
-    def create_widget(self):
 
-        # Prevents the ui from being created more than once
-        if EditContactBall._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_contactball.Ui_widget_contactball()
-            ui.setupUi(widget)
-            EditContactBall._ui = ui
-            ui._widget = widget
-
-        else:
-            ui = EditContactBall._ui
-
-        try:
-            ui.sbR.valueChanged.disconnect()
-            ui.sbK.valueChanged.disconnect()
-
-        except:
-            pass # no connections yet
-
-        ui.sbR.setValue(self.node.radius)
-        ui.sbK.setValue(self.node.k)
-
-        ui.pbRemoveSelected.clicked.connect(self.delete_selected)
-        ui.sbR.valueChanged.connect(self.callback)
-        ui.sbK.valueChanged.connect(self.callback)
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_contactball.Ui_widget_contactball()
+        ui.setupUi(widget)
+        self.ui = ui
+        self._widget = widget
 
         ui.lwMeshes.dropEvent = self.onDrop
         ui.lwMeshes.dragEnterEvent = self.dragEnter
         ui.lwMeshes.dragMoveEvent = self.dragEnter
 
-        self.ui = ui
+        ui.pbRemoveSelected.clicked.connect(self.delete_selected)
+        ui.sbR.valueChanged.connect(self.generate_code)
+        ui.sbK.valueChanged.connect(self.generate_code)
+
+    def post_update_event(self):
+
+        self.ui.sbR.blockSignals(True)
+        self.ui.sbK.blockSignals(True)
+
+        self.ui.sbR.setValue(self.node.radius)
+        self.ui.sbK.setValue(self.node.k)
+
         self.update_meshes_list()
 
-        return ui._widget
+        self.ui.sbR.blockSignals(False)
+        self.ui.sbK.blockSignals(False)
 
     def dragEnter(self, event):
         dragged_name = event.mimeData().text()
@@ -1585,13 +1496,13 @@ class EditContactBall(NodeEditor):
             return
 
         self.ui.lwMeshes.addItem(QListWidgetItem(dragged_name))
-        self.callback()
+        self.generate_code()
 
     def delete_selected(self):
         row = self.ui.lwMeshes.currentRow()
         if row > -1:
             self.ui.lwMeshes.takeItem(row)
-        self.callback()
+        self.generate_code()
 
     def update_meshes_list(self):
         self.ui.lwMeshes.clear()
@@ -1626,67 +1537,32 @@ class EditContactBall(NodeEditor):
             else:
                 code += element + '.meshes = []'
 
-        return code
+        self.run_code(code)
 
+@Singleton
 class EditSling(NodeEditor):
 
-    _ui = None
+    def __init__(self):
 
-    def create_widget(self):
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_sling.Ui_Form()
+        ui.setupUi(widget)
 
-        # Prevents the ui from being created more than once
-        if EditSling._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_sling.Ui_Form()
-            ui.setupUi(widget)
-
-            EditSling._ui = ui
-            ui._widget = widget
-            ui.additional_pois = list()
-
-        else:
-            ui = EditSling._ui
-
-        try:
-            ui.sbLength.valueChanged.disconnect()
-            ui.sbEA.valueChanged.disconnect()
-            ui.sbDiameter.valueChanged.disconnect()
-            ui.sbMass.valueChanged.disconnect()
-            ui.sbLEyeA.valueChanged.disconnect()
-            ui.sbLEyeB.valueChanged.disconnect()
-            ui.sbLSpliceA.valueChanged.disconnect()
-            ui.sbLSpliceB.valueChanged.disconnect()
-
-        except:
-            pass # no connections yet
-
-        for ddb in ui.additional_pois:
-            ui.poiLayout.removeWidget(ddb)
-            ddb.deleteLater()
-
-        ui.sbLength.setValue(self.node.length)
-        ui.sbEA.setValue(self.node.EA)
-        ui.sbDiameter.setValue(self.node.diameter)
-        ui.sbMass.setValue(self.node.mass)
-        ui.sbLEyeA.setValue(self.node.LeyeA)
-        ui.sbLEyeB.setValue(self.node.LeyeB)
-        ui.sbLSpliceA.setValue(self.node.LspliceA)
-        ui.sbLSpliceB.setValue(self.node.LspliceB)
-
+        self.ui = ui
+        self._widget = widget
+        self.additional_pois = list()
 
         # Set events
         ui.pbRemoveSelected.clicked.connect(self.delete_selected)
 
-        ui.sbLength.valueChanged.connect(self.callback)
-        ui.sbEA.valueChanged.connect(self.callback)
-        ui.sbDiameter.valueChanged.connect(self.callback)
-        ui.sbMass.valueChanged.connect(self.callback)
-        ui.sbLEyeA.valueChanged.connect(self.callback)
-        ui.sbLEyeB.valueChanged.connect(self.callback)
-        ui.sbLSpliceA.valueChanged.connect(self.callback)
-        ui.sbLSpliceB.valueChanged.connect(self.callback)
-
+        ui.sbLength.valueChanged.connect(self.generate_code)
+        ui.sbEA.valueChanged.connect(self.generate_code)
+        ui.sbDiameter.valueChanged.connect(self.generate_code)
+        ui.sbMass.valueChanged.connect(self.generate_code)
+        ui.sbLEyeA.valueChanged.connect(self.generate_code)
+        ui.sbLEyeB.valueChanged.connect(self.generate_code)
+        ui.sbLSpliceA.valueChanged.connect(self.generate_code)
+        ui.sbLSpliceB.valueChanged.connect(self.generate_code)
 
         # ------- setup the drag-and-drop code ---------
 
@@ -1698,20 +1574,49 @@ class EditSling(NodeEditor):
         ui.list.setAcceptDrops(True)
         ui.list.setDragEnabled(True)
 
-        ui.list.clear()
+
+    def post_update_event(self):
+
+        widgets = [
+            self.ui.sbLength,
+            self.ui.sbEA,
+            self.ui.sbDiameter,
+            self.ui.sbMass,
+            self.ui.sbLEyeA,
+            self.ui.sbLEyeB,
+            self.ui.sbLSpliceA,
+            self.ui.sbLSpliceB]
+
+        for widget in widgets:
+            widget.blockSignals(True)
+
+        for ddb in self.additional_pois:
+            self.poiLayout.removeWidget(ddb)
+            ddb.deleteLater()
+
+        self.ui.sbLength.setValue(self.node.length)
+        self.ui.sbEA.setValue(self.node.EA)
+        self.ui.sbDiameter.setValue(self.node.diameter)
+        self.ui.sbMass.setValue(self.node.mass)
+        self.ui.sbLEyeA.setValue(self.node.LeyeA)
+        self.ui.sbLEyeB.setValue(self.node.LeyeB)
+        self.ui.sbLSpliceA.setValue(self.node.LspliceA)
+        self.ui.sbLSpliceB.setValue(self.node.LspliceB)
+
+
+        self.ui.list.clear()
 
         if self.node.endA is not None:
-            ui.list.addItem(self.node.endA.name)
+            self.ui.list.addItem(self.node.endA.name)
 
         for s in self.node.sheaves:
-            ui.list.addItem(s.name)
+            self.ui.list.addItem(s.name)
 
         if self.node.endB is not None:
-            ui.list.addItem(self.node.endB.name)
+            self.ui.list.addItem(self.node.endB.name)
 
-        self.ui = ui  # needs to be done here as self.add_poi_dropdown modifies this
-
-        return ui._widget
+        for widget in widgets:
+            widget.blockSignals(False)
 
     def dropEvent(self,event):
 
@@ -1739,7 +1644,7 @@ class EditSling(NodeEditor):
         else:
             list.addItem(name)
 
-        self.callback()
+        self.generate_code()
 
     def dragEnterEvent(self, event):
         if event.source() == self.ui.list:
@@ -1761,7 +1666,7 @@ class EditSling(NodeEditor):
         row = self.ui.list.currentRow()
         if row > -1:
             self.ui.list.takeItem(row)
-        self.callback()
+        self.generate_code()
 
 
     def generate_code(self):
@@ -1847,43 +1752,31 @@ class EditSling(NodeEditor):
             else:
                 code += element + '.sheaves = []'
 
-        return code
+        self.run_code(code)
 
-
+@Singleton
 class EditShackle(NodeEditor):
 
-    _ui = None
-
-    def create_widget(self):
-
-        # Prevents the ui from being created more than once
-        if EditShackle._ui is None:
-
-            widget = QtWidgets.QWidget()
-            ui = DAVE.gui.forms.widget_shackle.Ui_widgetShackle()
-            ui.setupUi(widget)
-            EditShackle._ui = ui
-            ui._widget = widget
-
-        else:
-            ui = EditShackle._ui
-
-        try:
-            ui.comboBox.currentTextChanged.disconnect()
-
-        except:
-            pass # no connections yet
-
-        ui.comboBox.clear()
-
-        ui.comboBox.addItems(self.node.defined_kinds())
-
-        ui.comboBox.setCurrentText(self.node.kind)
-        ui.comboBox.currentTextChanged.connect(self.callback)
-
+    def __init__(self):
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_shackle.Ui_widgetShackle()
+        ui.setupUi(widget)
         self.ui = ui
+        self._widget = widget
 
-        return ui._widget
+        self.ui.comboBox.currentTextChanged.connect(self.generate_code)
+
+    def post_update_event(self):
+
+        self.ui.comboBox.blockSignals(True)
+
+        self.ui.comboBox.clear()
+        self.ui.comboBox.addItems(self.node.defined_kinds())
+
+        self.ui.comboBox.setCurrentText(self.node.kind)
+
+        self.ui.comboBox.blockSignals(False)
+
 
     def generate_code(self):
 
@@ -1894,7 +1787,7 @@ class EditShackle(NodeEditor):
             element = "\ns['{}']".format(self.node.name)
             code = element + f".kind = '{kind}'"
 
-        return code
+        self.run_code(code)
 
 # ===========================================
 
@@ -1984,38 +1877,14 @@ class WidgetNodeProps(guiDockWidget):
 
 
 
-    # ======= custom
 
-    def node_name_changed(self):
-        """Triggered by changing the text in the node-name widget"""
-        node = self._node_name_editor.node
-        element = "\ns['{}']".format(node.name)
 
-        new_name = self._node_name_editor.ui.tbName.text()
-        if not new_name == node.name:
-            code = element + ".name = '{}'".format(new_name)
+    def run_code(self, code, event = None):
+        if event is None:
             self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
-
-        new_visible = self._node_name_editor.ui.cbVisible.isChecked()
-        if not new_visible == node.visible:
-            code = element + ".visible = {}".format(new_visible)
-            self.guiRunCodeCallback(code, guiEventType.VIEWER_SETTINGS_UPDATE)
-
-    def node_property_changed(self):
-        code = ""
-        for editor in self._node_editors:
-            code += editor.generate_code()
-
-        self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
-
-        for editor in self._node_editors:
-            editor.post_update_event()
-
+        else:
+            self.guiRunCodeCallback(code, event)
         self.check_for_warnings()
-
-
-    def run_code(self, code):
-        self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
 
 
     def check_for_warnings(self):
@@ -2056,14 +1925,9 @@ class WidgetNodeProps(guiDockWidget):
         self._node_editors.clear()
         self._open_edit_widgets.clear()
 
-        try:
-            self._node_name_editor
-            self._node_name_editor.node = node
-            self._node_name_editor.create_widget()
-        except:
-            self._node_name_editor = EditNode(node, self.node_name_changed, self.guiScene, self.run_code)
-            self._node_name_editor.create_widget()
-            self.layout.addWidget(self._node_name_editor.ui._widget)
+        self._node_name_editor = EditNode.Instance()
+        self._node_name_editor.connect(node, self.guiScene, self.run_code)
+        self.layout.addWidget(self._node_name_editor.widget)
 
         self.layout.removeItem(self._Vspacer)
 
@@ -2071,70 +1935,69 @@ class WidgetNodeProps(guiDockWidget):
         for plugin in self.gui.plugins_editor:
             cls = plugin(node)
             if cls is not None:
-                self._node_editors.append(cls(node, self.node_property_changed, self.guiScene, self.run_code))
-
+                self._node_editors.append(cls.Instance())
 
         if isinstance(node, vfs.Visual):
-            self._node_editors.append(EditVisual(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditVisual.Instance())
 
         if isinstance(node, vfs.WaveInteraction1):
-            self._node_editors.append(EditWaveInteraction(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditWaveInteraction.Instance())
 
         if isinstance(node, vfs.Axis):
-            self._node_editors.append(EditAxis(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditAxis.Instance())
 
         if isinstance(node, vfs.RigidBody) and not isinstance(node, vfs.Shackle):
-            self._node_editors.append(EditBody(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditBody.Instance())
 
         if isinstance(node, vfs.Point):
-            self._node_editors.append(EditPoi(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditPoi.Instance())
 
         if isinstance(node, vfs.Cable):
-            self._node_editors.append(EditCable(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditCable.Instance())
 
         if isinstance(node, vfs.Force):
-            self._node_editors.append(EditForce(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditForce.Instance())
 
         if isinstance(node, vfs.Circle):
-            self._node_editors.append(EditSheave(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditSheave.Instance())
 
         if isinstance(node, vfs.HydSpring):
-            self._node_editors.append(EditHydSpring(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditHydSpring.Instance())
 
         if isinstance(node, vfs.LC6d):
-            self._node_editors.append(EditLC6d(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditLC6d.Instance())
 
         if isinstance(node, vfs.Connector2d):
-            self._node_editors.append(EditConnector2d(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditConnector2d.Instance())
 
         if isinstance(node, vfs.Beam):
-            self._node_editors.append(EditBeam(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditBeam.Instance())
 
         if isinstance(node, vfs.ContactBall):
-            self._node_editors.append(EditContactBall(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditContactBall.Instance())
 
         if isinstance(node, vfs.GeometricContact):
-            self._node_editors.append(EditGeometricContact(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditGeometricContact.Instance())
 
         if isinstance(node, vfs.Sling):
-            self._node_editors.append(EditSling(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditSling.Instance())
 
         if isinstance(node, vfs.Buoyancy) or isinstance(node, vfs.ContactMesh) or isinstance(node, vfs.Tank):
-            self._node_editors.append(EditBuoyancyOrContactMesh(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditBuoyancyOrContactMesh.Instance())
 
         if isinstance(node, vfs.Buoyancy):
-            self._node_editors.append(EditBuoyancyDensity(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditBuoyancyDensity.Instance())
 
         if isinstance(node, vfs.Tank):
-            self._node_editors.append(EditTank(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditTank.Instance())
 
         if isinstance(node, vfs.Shackle):
-            self._node_editors.append(EditShackle(node, self.node_property_changed, self.guiScene, self.run_code))
+            self._node_editors.append(EditShackle.Instance())
 
 
         to_be_added = []
         for editor in self._node_editors:
-            to_be_added.append(editor.create_widget())
+            to_be_added.append(editor.connect(node, self.guiScene, self.run_code))  # this function returns the widget
 
         #for item in to_be_added:
         #    print('to be added: ' + str(type(item)))
