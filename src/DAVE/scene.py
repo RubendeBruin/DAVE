@@ -112,7 +112,7 @@ class Node:
         return self.__class__.__name__
 
     def depends_on(self):
-        """Returns a list of nodes that need to be available before the node can be created"""
+        """Returns a list of nodes that need to be available present for this node to exist"""
         raise ValueError(
             f"Derived class should implement this method, but {type(self)} does not"
         )
@@ -7478,9 +7478,14 @@ class Scene:
 
     def run_code(self, code):
         """Runs the provided code with 's' as self"""
-        s = self
+
+        import DAVE
+
+        locals = DAVE.__dict__
+        locals['s'] = self
+
         try:
-            exec(code, {}, {"s": s})
+            exec(code, {}, locals)
         except Exception as M:
             for i, line in enumerate(code.split("\n")):
                 print(f"{i} {line}")
@@ -7552,21 +7557,14 @@ class Scene:
 
         code = other.give_python_code()
 
-        s = self
-        try:
-            exec(code)
-        except Exception as m:
-            lines = code.split("\n")
-            for i, line in enumerate(lines):
-                print(str(i) + "   " + line)
-            raise (m)
+        self.run_code(code)
 
         self._name_prefix = old_prefix  # restore
 
         # Move all imported elements without a parent into a newly created axis system
         if containerize:
 
-            container_name = s.available_name_like("import_container")
+            container_name = self.available_name_like("import_container")
 
             c = self.new_axis(prefix + container_name)
 
