@@ -1501,7 +1501,7 @@ class Gui():
 
         for node in self.selected_nodes:
             if isinstance(node, Manager):
-                visually_selected_nodes.extend(node.managed_nodes())
+                visually_selected_nodes.extend(self.scene.nodes_managed_by(node))
 
         # loop over visuals, and set _is_selected or _is_sub_selected based on the referenced node
 

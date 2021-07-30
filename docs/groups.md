@@ -102,6 +102,11 @@ deleting a managed node:
 
 - for nodes that are not deleted: manager shall release management.
 
+A short-cut for releasing management of a managed node is `n._manager = None`
+
+When a manager is deleted it will delete all the nodes it created. This may trigger the deletion of
+depending nodes.
+
 #### Example
 
 ```python

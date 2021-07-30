@@ -3815,14 +3815,16 @@ class WaveInteraction1(Node):
 
 class Manager(Node, ABC):
 
-    @abstractmethod
-    def managed_nodes(self):
-        """Returns a list of managed nodes"""
-        raise Exception("derived class shall override this method")
+
+    # @abstractmethod                   not used anywhere outside the manager classes, so no requirement
+    # def managed_nodes(self):
+    #     """Returns a list of managed nodes"""
+    #     raise Exception("derived class shall override this method")
 
     @abstractmethod
     def delete(self):
-        """Carefully remove the manager, reinstate situation as before. Do not delete the manager itself"""
+        """Carefully remove the manager, reinstate situation as before. Do not delete the manager itself but do
+        delete all the nodes it created."""
         raise Exception("derived class shall override this method")
 
     @abstractmethod
@@ -5670,6 +5672,11 @@ class Scene:
 
         return self._vfc.element_A_depends_on_B(A._vfNode.name, B._vfNode.name)
 
+    def nodes_managed_by(self, manager : Manager):
+        """Returns a list of nodes managed by manager"""
+
+        return [node for node in self._nodes if node.manager == manager]
+
     def nodes_depending_on(self, node):
         """Returns a list of nodes that physically depend on node. Only direct dependants are obtained with a connection to the core.
         This function should be used to determine if a node can be created, deleted, exported.
@@ -5763,8 +5770,8 @@ class Scene:
 
         if isinstance(node, Manager):
             node.delete()
-            self._nodes.remove(node)
-            return
+            # self._nodes.remove(node)
+            # return <-- do not return
 
         depending_nodes = self.nodes_depending_on(node)
         depending_nodes.extend([n.name for n in node.observers])
@@ -5803,6 +5810,8 @@ class Scene:
         the element. For example a poi can only be dissolved when nothing is attached to it.
 
         For now this function only works on AXIS
+
+        #TODO: Add managers - just release management
 
         """
 
