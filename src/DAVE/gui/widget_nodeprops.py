@@ -725,6 +725,9 @@ class EditCable(NodeEditor):
         self.ui.doubleSpinBox_2.setValue(self.node.EA)
         self.ui.doubleSpinBox.setValue(self.node.diameter)
 
+        for widget in widgets:
+            widget.blockSignals(False)
+
 
         self.ui.list.clear()
         for item in self.node._give_poi_names():
