@@ -1,8 +1,3 @@
-"""
-
-
-
-"""
 
 """
   This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,6 +6,9 @@
 
   Ruben de Bruin - 2019
 """
+
+
+from abc import ABC, abstractmethod
 
 import pyo3d
 import numpy as np
@@ -81,7 +79,7 @@ class ClaimManagement():
     def __exit__(self, *args, **kwargs):
         self.scene.current_manager = self._old_manager
 
-class Node:
+class Node(ABC):
     """ABSTRACT CLASS - Properties defined here are applicable to all derived classes
     Master class for all nodes"""
 
@@ -89,7 +87,7 @@ class Node:
         self._scene: Scene = scene
         """reference to the scene that the node lives is"""
 
-        self._name: str = "no name"
+        self._name: str = "A manager without a name"
         """Unique name of the node"""
 
         self._manager: Node or None = None
@@ -111,7 +109,8 @@ class Node:
     def class_name(self):
         return self.__class__.__name__
 
-    def depends_on(self):
+    @abstractmethod
+    def depends_on(self) -> list:
         """Returns a list of nodes that need to be available present for this node to exist"""
         raise ValueError(
             f"Derived class should implement this method, but {type(self)} does not"
@@ -2955,6 +2954,9 @@ class TriMeshSource(Node):
 
         self._invert_normals = False
 
+    def depends_on(self) -> list:
+        return []
+
     def AddVertex(self, x, y, z):
         """Adds a vertex (point)"""
         self._TriMesh.AddVertex(x, y, z)
@@ -3811,21 +3813,25 @@ class WaveInteraction1(Node):
 # ============== Managed nodes
 
 
-class Manager(Node):
+class Manager(Node, ABC):
+
+    @abstractmethod
     def managed_nodes(self):
         """Returns a list of managed nodes"""
         raise Exception("derived class shall override this method")
 
+    @abstractmethod
     def delete(self):
-        """Carefully remove the manager, reinstate situation as before"""
-
+        """Carefully remove the manager, reinstate situation as before. Do not delete the manager itself"""
         raise Exception("derived class shall override this method")
 
+    @abstractmethod
     def creates(self, node: Node):
         """Returns True if node is created by this manager"""
 
         raise Exception("derived class shall override this method")
         # hint: return node in self.managed_nodes() # would be a good option, just not good enough as default
+
 
 
 class GeometricContact(Manager):

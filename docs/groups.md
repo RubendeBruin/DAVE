@@ -87,19 +87,18 @@ This is enforced by adding the @node_setter_manageable decorator to any setter o
 So typically the manager implements something like:
 
 ```python
-backup = self._scene.current_manager # store
-self._scene.current_manager = self
-# perform changes to nodes
-self._scene.current_manager = backup # restore
+with ClaimManagement(scene, manager):
+    # perform changes to nodes
+    managed_node.position = 23
 ```
 
 ### Deleting
 
 deleting a manger:
-- calls delete of that manager, then deletes the manger
+- calls delete method of that manager, then deletes the manger
 
 deleting a managed node:
-- calls delete of that manager
+- calls delete of the manager
 
 - for nodes that are not deleted: manager shall release management.
 
@@ -118,7 +117,7 @@ deleting a managed node:
  s.new_geometriccontact('connection',s1,s2)
 ```
 
-- The manager creates a few axis system to connect a1 and a2
+- The manager creates a few axis systems between a1 and a2
 - The manager sets .manager on s1 and s2, this is because changing one of these would make the connection outdated.
 
 If manager is deleted:
