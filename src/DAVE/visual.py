@@ -1415,6 +1415,7 @@ class Viewport:
 
         self.global_visuals["sea"] = plane
         self.global_visuals["sea"].actor_type = ActorType.GLOBAL
+        self.global_visuals["sea"].no_outline = True
 
         self.global_visuals["main"] = vp.Line((0, 0, 0), (10, 0, 0)).c("red")
         self.global_visuals["main"].actor_type = ActorType.GEOMETRY
@@ -2188,8 +2189,17 @@ class Viewport:
             self.mouseLeftEvent(info)
 
     def zoom_all(self):
+        """Set camera to view the whole scene (ignoring the sea)"""
+
+        store = self.settings.show_global
+        self.settings.show_global = False
+        self.update_global_visibility()
+
         for r in self.screen.renderers:
             r.ResetCamera()
+
+        self.settings.show_global = store
+        self.update_global_visibility()
 
     def onMouseRight(self, info):
         if self.mouseRightEvent is not None:

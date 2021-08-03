@@ -1148,7 +1148,7 @@ class Gui():
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def camera_reset(self):
-        self.visual.camera_reset()
+        self.visual.zoom_all()
         self.visual.refresh_embeded_view()
 
     def toggle_SSAO(self):
