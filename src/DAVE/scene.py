@@ -3372,6 +3372,16 @@ class Tank(NodeWithParent):
         self._vfNode.free_flooding = value
 
     @property
+    def permeability(self):
+        """Permeability is the fraction of the enclosed volume that can be filled with fluid [-]"""
+        return self._vfNode.permeability
+
+    @permeability.setter
+    def permeability(self, value):
+        assert1f_positive_or_zero(value)
+        self._vfNode.permeability = value
+
+    @property
     def cog(self):
         """Returns the GLOBAL position of the center of volume / gravity"""
         return self._vfNode.cog

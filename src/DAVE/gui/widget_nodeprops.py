@@ -399,6 +399,7 @@ class EditTank(NodeEditor):
         self.ui = ui
         self._widget = widget
 
+        self.ui.sbPermeability.valueChanged.connect(self.generate_code)
         self.ui.sbDenstiy.valueChanged.connect(self.generate_code)
         self.ui.sbVolume.valueChanged.connect(self.generate_code)
         self.ui.sbPercentage.valueChanged.connect(self.generate_code)
@@ -412,12 +413,13 @@ class EditTank(NodeEditor):
             self.ui.sbVolume,
             self.ui.sbPercentage,
             self.ui.sbElevation,
-            self.ui.cbFreeFlooding]
+            self.ui.cbFreeFlooding,
+            self.ui.sbPermeability]
 
         for widget in widgets:
             widget.blockSignals(True)
 
-
+        self.ui.sbPermeability.setValue(self.node.permeability)
         self.ui.sbDenstiy.setValue(self.node.density)
         self.ui.sbVolume.setValue(self.node.volume)
         self.ui.sbPercentage.setValue(self.node.fill_pct)
@@ -428,17 +430,16 @@ class EditTank(NodeEditor):
             widget.blockSignals(False)
 
         self.ui.widgetContents.setEnabled(not self.node.free_flooding)
-
-        self.ui.lblCapacity.setText(f"{self.node.capacity:.3f}")
+        self.ui.lblCapacity.setText(f"{self.node.capacity:.3f} m3")
 
     def generate_code(self):
 
         new_density = self.ui.sbDenstiy.value()
+        new_permeability = self.ui.sbPermeability.value()
         new_volume = self.ui.sbVolume.value()
         new_pct = self.ui.sbPercentage.value()
         new_elev = self.ui.sbElevation.value()
         new_free_flooding = self.ui.cbFreeFlooding.isChecked()
-        # new_ht_pct = self.ui.sbPercentage_ht.value()
 
         def add(name, value, ref, dec = 3):
 
@@ -452,12 +453,12 @@ class EditTank(NodeEditor):
         name = self.node.name
         code = ""
 
+        code += add(name, new_permeability, 'permeability', dec=8)
         code += add(name, new_free_flooding, 'free_flooding')
         code += add(name, new_density,'density')
         code += add(name, new_volume,'volume')
         code += add(name, new_pct,'fill_pct')
         code += add(name, new_elev,'level_global')
-        # code += add(name, new_ht_pct, 'fill_ht_pct')
 
         self.run_code(code)
 
@@ -1880,6 +1881,9 @@ class WidgetNodeProps(guiDockWidget):
             if self.guiSelection:
                 self.select_node(self.guiSelection[0])
 
+        if event in [guiEventType.SELECTED_NODE_MODIFIED]:
+            for w in self._node_editors:
+                w.post_update_event()
 
 
 
@@ -1901,7 +1905,7 @@ class WidgetNodeProps(guiDockWidget):
         Returns:
 
         """
-        node = self._node
+        node = self.node
 
         self.warning_label.setVisible(False)
         if isinstance(node, (Buoyancy, Tank)):
@@ -2028,7 +2032,7 @@ class WidgetNodeProps(guiDockWidget):
 
         # Check for warnings
 
-        self._node = node
+        self.node = node
         self.check_for_warnings()
 
         self.layout.addSpacerItem(self._Vspacer)  # add a spacer at the bottom
