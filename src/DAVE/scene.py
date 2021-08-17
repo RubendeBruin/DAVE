@@ -67,7 +67,8 @@ class ClaimManagement():
     """
     def __init__(self, scene, manager):
         assert isinstance(scene, Scene)
-        assert isinstance(manager, Manager)
+        if manager is not None:
+            assert isinstance(manager, Manager)
         self.scene = scene
         self.manager= manager
 
@@ -1662,11 +1663,15 @@ class Cable(CoreConnectedNode):
             node1 = nodes[i]
             node2 = nodes[i + 1]
 
-            # # if first or last node is a sheave, the this will be replaced by the poi of the sheave
-            # if i == 0 and isinstance(node1, Circle):
-            #     node1 = node1.parent
-            # if i == n - 2 and isinstance(node2, Circle):
-            #     node2 = node2.parent
+            # Taken care off in c++
+            # # # if first or last node is a sheave, the this will be replaced by the poi of the sheave
+            # # Except if the fist and the last sheave are the same (loop)
+            #
+            # if nodes[0] != nodes[-1]:  # first node is not the same as last node
+            #     if i == 0 and isinstance(node1, Circle):
+            #         node1 = node1.parent
+            #     if i == n - 2 and isinstance(node2, Circle):
+            #         node2 = node2.parent
 
             if node1 == node2:
                 raise ValueError(
@@ -2696,7 +2701,6 @@ class Beam(CoreConnectedNode):
     First the direction from nodeA to nodeB is determined: D
     The axis of rotation is the cross-product of the unit x-axis and D    AXIS = ux x D
     The angle of rotation is the angle between the nodeA x-axis and D
-
     The rotation about the rotated X-axis is undefined.
 
     """
@@ -3212,6 +3216,15 @@ class TriMeshSource(Node):
             self._rotation = (0.0, 0.0, 0.0)
         self._invert_normals = invert_normals
 
+    def _load_from_privates(self):
+        """(Re)Loads the mesh using the values currently stored in _scale, _offset, _rotation and _invert_normals"""
+        self.load_file(url = self._path,
+                       scale=self._scale,
+                       offset=self._offset,
+                       rotation=self._rotation,
+                       invert_normals=self._invert_normals)
+
+
     def give_python_code(self):
         code = "# No code generated for TriMeshSource"
         return code
@@ -3404,7 +3417,6 @@ class Tank(NodeWithParent):
         return 100 * self.volume / self.capacity
 
     @fill_pct.setter
-    @node_setter_manageable
     @node_setter_observable
     def fill_pct(self, value):
 
@@ -3439,7 +3451,6 @@ class Tank(NodeWithParent):
         return self._vfNode.volume
 
     @volume.setter
-    @node_setter_manageable
     @node_setter_observable
     def volume(self, value):
         assert1f_positive_or_zero(value, "Volume")
@@ -4873,7 +4884,7 @@ class Sling(Manager):
 
     @property
     def sheaves(self):
-        """List of sheaves (circles, points) that the sling runs over bewteen the two ends.
+        """List of sheaves (circles, points) that the sling runs over between the two ends.
 
         May be provided as list of nodes or node-names.
         """
@@ -5439,6 +5450,11 @@ class Scene:
                 # prepare feedback for error
                 ext = str(url).split(".")[-1]  # everything after the last .
 
+                print("Resource folders:")
+                for res in self.resources_paths:
+                    print(str(res))
+
+
                 print(
                     "The following resources with extension {} are available with ".format(
                         ext
@@ -5828,13 +5844,35 @@ class Scene:
         if isinstance(node, str):
             node = self[node]
 
-        if not type(node) == Axis:
-            raise TypeError("Only nodes of type Axis can be dissolved at this moment")
+        ok = False
+        if isinstance(node, Manager):
 
-        for d in self.nodes_depending_on(node):
-            self[d].change_parent_to(node.parent)
+            if isinstance(node, Axis):
+                p = self.new_axis(node.name + '_dissolved')
+            else:
+                p = None
 
-        self.delete(node)
+            for d in self.nodes_managed_by(node):
+                with ClaimManagement(self,node):
+                    if node in d.observers:
+                        d.observers.remove(node)
+                    d.manager = None
+
+                    if isinstance(d, NodeWithParent):
+                        if d.parent == node:
+                            d.parent = p
+
+            ok = True
+
+        if isinstance(node, Axis):
+            for d in self.nodes_depending_on(node):
+                self[d].change_parent_to(node.parent)
+            ok = True
+
+        if not ok:
+            raise TypeError("Only nodes of type Axis and Manager can be dissolved at this moment")
+
+        self._nodes.remove(node)  # do not call delete as that will fail on managers
 
     def savepoint_make(self):
         self._savepoint = self.give_python_code()

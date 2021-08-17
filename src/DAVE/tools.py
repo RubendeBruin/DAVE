@@ -9,7 +9,7 @@
   Some tools
 
 """
-
+import math
 import numbers
 from DAVE.scene import *
 import DAVE.settings as ds
@@ -140,9 +140,9 @@ def radii_to_positions(rxx,ryy,rzz):
     ryy2 = ryy ** 2
     rzz2 = rzz ** 2
 
-    assert (rxx2 <= (ryy2 + rzz2)) , ValueError('rxx^2 should be <= ryy^2 + rzz^2, but rxx={}, ryy={}, rzz={}'.format(rxx,ryy,rzz))
-    assert (ryy2 <= (rxx2 + rzz2)),  ValueError('ryy^2 should be <= rxx^2 + rzz^2, but rxx={}, ryy={}, rzz={}'.format(rxx,ryy,rzz))
-    assert (rzz2 <= (rxx2 + ryy2)),  ValueError('rzz^2 should be <= rxx^2 + ryy^2, but rxx={}, ryy={}, rzz={}'.format(rxx,ryy,rzz))
+    assert (rxx2 <= (ryy2 + rzz2)) , ValueError('rxx^2 should be <= ryy^2 + rzz^2, but rxx={}, ryy={}, rzz={}; maximum value for rxx = {}'.format(rxx,ryy,rzz, math.sqrt(ryy2+rzz2)))
+    assert (ryy2 <= (rxx2 + rzz2)),  ValueError('ryy^2 should be <= rxx^2 + rzz^2, but rxx={}, ryy={}, rzz={}; maximum value for ryy = {}'.format(rxx,ryy,rzz, math.sqrt(rxx2+rzz2)))
+    assert (rzz2 <= (rxx2 + ryy2)),  ValueError('rzz^2 should be <= rxx^2 + ryy^2, but rxx={}, ryy={}, rzz={}; maximum value for rzz = {}'.format(rxx,ryy,rzz, math.sqrt(rxx2+ryy2)))
 
     x = np.sqrt(0.5 * (-rxx2 + ryy2 + rzz2)) * np.sqrt(3)
     y = np.sqrt(0.5 * (rxx2 - ryy2 + rzz2)) * np.sqrt(3)

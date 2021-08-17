@@ -1,6 +1,6 @@
 class,property,readonly,doc
 Axis,inertia,False,"The linear inertia of the axis in [mT] Aka: ""Mass""
-        - used only for dynamics "
+        - used only for dynamics"
 Axis,inertia_position,False,"The position of the center of inertia. Aka: ""cog"" [m,m,m] (local axis)
         - used only for dynamics
         - defined in local axis system"
@@ -116,20 +116,15 @@ Axis,connection_force_z,True,The z-component of the connection-force vector [kN]
 Axis,connection_moment_x,True,The mx-component of the connection-force vector [kNm] (Parent axis)
 Axis,connection_moment_y,True,The my-component of the connection-force vector [kNm] (Parent axis)
 Axis,connection_moment_z,True,The mx-component of the connection-force vector [kNm] (Parent axis)
-Axis,applied_force,True,"The force and moment that is applied on origin of this axis [kN, kN, kN, kNm, kNm, kNm] (Global axis)
-        "
+Axis,applied_force,True,"The force and moment that is applied on origin of this axis [kN, kN, kN, kNm, kNm, kNm] (Global axis)"
 Axis,ux,True,"The unit x axis [m,m,m] (Global axis)"
 Axis,uy,True,"The unit y axis [m,m,m] (Global axis)"
 Axis,uz,True,"The unit z axis [m,m,m] (Global axis)"
-Axis,equilibrium_error,True,"The unresolved force and moment that on this axis. Should be zero when in equilibrium  (applied-force minus connection force, Parent axis)
-        "
-BallastSystem,parent,False,Determines the parent of the node. Should be an axis or None
-BallastSystem,position,False,"Position of the origin of the ballast system. (Parent axis) [m,m,m]"
-BallastSystem,name,False,
-BallastSystem,cogx,True,X position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]
-BallastSystem,cogy,True,Y position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]
-BallastSystem,cogz,True,Z position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]
-BallastSystem,cog,True,"Combined CoG of all tank contents in the ballast-system. (local coordinate) [m,m,m]"
+Axis,equilibrium_error,True,"The unresolved force and moment that on this axis. Should be zero when in equilibrium  (applied-force minus connection force, Parent axis)"
+BallastSystem,cogx,True,X position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]
+BallastSystem,cogy,True,Y position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]
+BallastSystem,cogz,True,Z position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]
+BallastSystem,cog,True,"Combined CoG of all tank contents in the ballast-system. (global coordinate) [m,m,m]"
 BallastSystem,weight,True,Total weight of all tank fillings in the ballast system [kN]
 Beam,n_segments,False,
 Beam,EIy,False,"E * Iyy : bending stiffness in the XZ plane [kN m2]
@@ -152,10 +147,8 @@ Beam,EA,False,"E * A : stiffness in the length direction [kN]
         E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
         A is the cross-section area in [m2]
         "
-Beam,tension_only,False,"axial stiffness (EA) only applicable to tension [True/False]
-        "
-Beam,mass,False,"Mass of the beam in [mT]
-        "
+Beam,tension_only,False,axial stiffness (EA) only applicable to tension [True/False]
+Beam,mass,False,Mass of the beam in [mT]
 Beam,L,False,Length of the beam in unloaded condition [m]
 Beam,nodeA,False,The axis system that the A-end of the beam is connected to. The beam leaves this axis system along the X-axis
 Beam,nodeB,False,The axis system that the B-end of the beam is connected to. The beam arrives at this axis system along the X-axis
@@ -167,8 +160,8 @@ Beam,tension,True,"Tension in the beam [kN], negative for compression
         "
 Beam,torsion,True,"Torsion moment [kNm]. Positive if end B has a positive rotation about the x-axis of end A
 
-         torsion is calculated at the midpoints of the beam segments.
-         "
+        torsion is calculated at the midpoints of the beam segments.
+        "
 Beam,X_nodes,True,Returns the x-positions of the end nodes and internal nodes along the length of the beam [m]
 Beam,X_midpoints,True,X-positions of the beam centers measured along the length of the beam [m]
 Beam,global_positions,True,"Global-positions of the end nodes and internal nodes [m,m,m]"
@@ -267,7 +260,7 @@ ContactBall,contact_force_magnitude,True,"Returns the absolute force on the ball
         See Also: contact_force
         "
 ContactBall,compression,True,"Returns the absolute compression of the ball, if any [m]"
-ContactBall,contactpoint,True,The nearest point on the nearest mesh. Only defined  
+ContactBall,contactpoint,True,The nearest point on the nearest mesh. Only defined
 ContactBall,meshes,False,"List of contact-mesh nodes.
         When getting this will yield a list of node references.
         When setting node references and node-names may be used.
@@ -325,11 +318,21 @@ HydSpring,displacement_kN,False,Displacement when waterline is at waterline-elev
 LC6d,stiffness,False,"Stiffness of the connector: kx, ky, kz, krx, kry, krz in [kN/m and kNm/rad] (axis system of the main axis)"
 LC6d,main,False,Main axis system. This axis system dictates the axis system that the stiffness is expressed in
 LC6d,secondary,False,Secondary (connected) axis system
+LC6d,fgx,True,Force on main in global coordinate frame [kN]
+LC6d,fgy,True,Force on main in global coordinate frame [kN]
+LC6d,fgz,True,Force on main in global coordinate frame [kN]
+LC6d,force_global,True,Force on main in global coordinate frame [kN]
+LC6d,mgx,True,Moment on main in global coordinate frame [kNm]
+LC6d,mgy,True,Moment on main in global coordinate frame [kNm]
+LC6d,mgz,True,Moment on main in global coordinate frame [kNm]
+LC6d,moment_global,True,Moment on main in global coordinate frame [kNm]
+Node,class_name,True,
 Node,visible,False,
 Node,manager,False,
 Node,name,False,"Name of the node (str), must be unique"
 NodeWithParent,parent_for_export,True,
 NodeWithParent,parent,False,Determines the parent of the node. Should be an axis or None
+NodeWithParentAndFootprint,footprint,False,"tuple of tuples ((x1,y1,z1), (x2,y2,z2), .... (xn,yn,zn)"
 Point,x,False,x component of local position [m] (parent axis)
 Point,y,False,y component of local position [m] (parent axis)
 Point,z,False,z component of local position [m] (parent axis)
@@ -340,6 +343,7 @@ Point,gy,False,y component of position [m] (global axis)
 Point,gz,False,z component of position [m] (global axis)
 Point,global_position,False,"Global position [m,m,m] (global axis)"
 RigidBody,name,False,
+RigidBody,footprint,False,
 RigidBody,cogx,False,x-component of cog position [m] (local axis)
 RigidBody,cogy,False,y-component of cog position [m] (local axis)
 RigidBody,cogz,False,z-component of cog position [m] (local axis)
@@ -348,7 +352,25 @@ RigidBody,mass,False,"Static mass of the body [mT]
 
         See Also: inertia
         "
-Shackle,kind,False,"Type of shackle, for example GP800 [text] "
+SPMT,axle_force,True,"Returns the force on each of the axles [kN, kN, kN] (global axis)"
+SPMT,compression,True,Returns the total compression of all the axles together [m]
+SPMT,k,False,Compression stiffness of the ball in force per meter of compression [kN/m]
+SPMT,nominal_length,False,Average Axle extension (defined point to bottom of wheel) for zero force [m]
+SPMT,max_length,False,Maximum axle extension per axle (defined point to bottom of wheel) [m]
+SPMT,meshes,False,"List of contact-mesh nodes.
+        When getting this will yield a list of node references.
+        When setting node references and node-names may be used.
+
+        eg: ball.meshes = [mesh1, 'mesh2']
+        "
+SPMT,meshes_names,True,List with the names of the meshes
+SPMT,axles,False,"Axles is a list axle positions. Each entry is a (x,y,z) entry which determines the location of the axle on
+        SPMT. This is relative to the parent of the SPMT.
+
+        Example:
+            [(-10,0,0),(-5,0,0),(0,0,0)] for three axles
+        "
+Shackle,kind,False,"Type of shackle, for example GP800 [text]"
 Sling,length,False,Total length measured between the INSIDE of the eyes of the sling is pulled straight. [m]
 Sling,LeyeA,False,Total length inside eye A if stretched flat [m]
 Sling,LeyeB,False,Total length inside eye B if stretched flat [m]
@@ -360,15 +382,20 @@ Sling,EA,False,"Effective mean EA of the sling when eyes are flat [kN].
 Sling,mass,False,Mass and weight of the sling. This mass is discretized  distributed over the two splices [mT]
 Sling,endA,False,End A [circle or point node]
 Sling,endB,False,End B [circle or point node]
-Sling,sheaves,False,"List of sheaves (circles, points) that the sling runs over bewteen the two ends.
+Sling,sheaves,False,"List of sheaves (circles, points) that the sling runs over between the two ends.
 
         May be provided as list of nodes or node-names.
         "
 Tank,trimesh,True,
+Tank,free_flooding,False,
+Tank,permeability,False,Permeability is the fraction of the enclosed volume that can be filled with fluid [-]
 Tank,cog,True,Returns the GLOBAL position of the center of volume / gravity
 Tank,cog_local,True,Returns the local position of the center of gravity
+Tank,cog_when_full,True,Returns the LOCAL position of the center of volume / gravity of the tank when it is filled
 Tank,fill_pct,False,Amount of volume in tank as percentage of capacity [%]
 Tank,level_global,False,The fluid plane elevation in the global axis system. Setting this adjusts the volume
 Tank,volume,False,The volume of fluid in the tank in m3. Setting this adjusts the fluid level
 Tank,density,False,Density of the fluid in the tank in mT/m3
 Tank,capacity,True,Returns the capacity of the tank in m3. This is calculated from the defined geometry.
+Visual,file_path,True,
+WaveInteraction1,file_path,True,

@@ -1,13 +1,5 @@
 """
-  This Source Code Form is subject to the terms of the Mozilla Public
-  License, v. 2.0. If a copy of the MPL was not distributed with this
-  file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-  Ruben de Bruin - 2019
-
   Helper functions for Marine analysis
-
-
 
   Main functionality:
 
@@ -20,9 +12,20 @@
 
 """
 
+"""
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+  Ruben de Bruin - 2019
+"""
+
 from DAVE.scene import *
 import matplotlib.pyplot as plt
 from warnings import warn
+
+
+
 
 def linearize_buoyancy(scene : Scene, node : Buoyancy = None, delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
     """Replaces the given Buoyancy node with a HydSpring node using even-keel (rotation = (0,0,0) ) as reference.

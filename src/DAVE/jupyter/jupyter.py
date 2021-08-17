@@ -125,7 +125,12 @@ def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=
         painters = PAINTERS['Construction']
     elif isinstance(painters, str):
         from DAVE.settings_visuals import PAINTERS
-        painters = PAINTERS[painters]
+
+        try:
+            painters = PAINTERS[painters]
+        except KeyError as E:
+            print(f'Available painters are: {PAINTERS.keys()}')
+            raise E
 
     vp.settings.painter_settings = painters
 

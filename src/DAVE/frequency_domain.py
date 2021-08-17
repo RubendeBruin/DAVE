@@ -42,8 +42,6 @@ For subsequent rotations the order in which they are applied matters, especially
 This is solved by adding the rotation VECTORS. A rotation of 30 degrees about the X axis in combination with an rotation
 of 30 degrees about the Y axis then becomes an rotation of sqrt(2)*30 degrees about the (1,1,0) axis.
 
-
-
 """
 
 

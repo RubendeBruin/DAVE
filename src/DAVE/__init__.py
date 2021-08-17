@@ -17,4 +17,3 @@ finally:
 
 from . import auto_download
 from .scene import *
-# from .rigging import create_shackle_gphd
