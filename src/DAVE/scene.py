@@ -1,4 +1,3 @@
-
 """
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -58,20 +57,20 @@ def node_setter_observable(func):
     return wrapper_decorator
 
 
-class ClaimManagement():
+class ClaimManagement:
     """Helper class for doing:
 
     with ClaimManagement(scene, manager):
         change nodes that belong to manager
 
     """
+
     def __init__(self, scene, manager):
         assert isinstance(scene, Scene)
         if manager is not None:
             assert isinstance(manager, Manager)
         self.scene = scene
-        self.manager= manager
-
+        self.manager = manager
 
     def __enter__(self):
         self._old_manager = self.scene.current_manager
@@ -79,6 +78,7 @@ class ClaimManagement():
 
     def __exit__(self, *args, **kwargs):
         self.scene.current_manager = self._old_manager
+
 
 class Node(ABC):
     """ABSTRACT CLASS - Properties defined here are applicable to all derived classes
@@ -219,7 +219,7 @@ class CoreConnectedNode(Node):
         self._scene._vfc.delete(self._vfNode.name)
 
 
-class NodeWithParent(CoreConnectedNode):
+class NodeWithCoreParent(CoreConnectedNode):
     """
     NodeWithParent
 
@@ -363,7 +363,7 @@ class NodeWithParent(CoreConnectedNode):
                 self.rotation = new_parent.to_loc_direction(glob_rot)
 
 
-class NodeWithParentAndFootprint(NodeWithParent):
+class NodeWithParentAndFootprint(NodeWithCoreParent):
     """
     NodeWithParentAndFootprint
 
@@ -783,7 +783,7 @@ class Axis(NodeWithParentAndFootprint):
                         None
                     )  # change the parent of other to None, this breaks the previous dependancy
 
-        NodeWithParent.parent.fset(self, val)
+        NodeWithCoreParent.parent.fset(self, val)
         self._scene._geometry_changed()
 
     @property
@@ -1734,7 +1734,7 @@ class Cable(CoreConnectedNode):
         return code
 
 
-class Force(NodeWithParent):
+class Force(NodeWithCoreParent):
     """A Force models a force and moment on a poi.
 
     Both are expressed in the global axis system.
@@ -1864,7 +1864,7 @@ class Force(NodeWithParent):
         return code
 
 
-class ContactMesh(NodeWithParent):
+class ContactMesh(NodeWithCoreParent):
     """A ContactMesh is a tri-mesh with an axis parent"""
 
     def __init__(self, scene, vfContactMesh):
@@ -1900,7 +1900,7 @@ class ContactMesh(NodeWithParent):
         return code
 
 
-class ContactBall(NodeWithParent):
+class ContactBall(NodeWithCoreParent):
     """A ContactBall is a linear elastic ball which can contact with ContactMeshes.
 
     It is modelled as a sphere around a Poi. Radius and stiffness can be controlled using radius and k.
@@ -2040,7 +2040,7 @@ class ContactBall(NodeWithParent):
     # =======================================================================
 
 
-class SPMT(NodeWithParent):
+class SPMT(NodeWithCoreParent):
     """An SPMT is a Self-propelled modular transporter
 
     These are platform vehicles
@@ -2246,7 +2246,7 @@ class SPMT(NodeWithParent):
         return code
 
 
-class Circle(NodeWithParent):
+class Circle(NodeWithCoreParent):
     """A Circle models a circle shape based on a diameter and an axis direction"""
 
     @property
@@ -2302,7 +2302,7 @@ class Circle(NodeWithParent):
         return self.parent.global_position
 
 
-class HydSpring(NodeWithParent):
+class HydSpring(NodeWithCoreParent):
     """A HydSpring models a linearized hydrostatic spring.
 
     The cob (center of buoyancy) is defined in the parent axis system.
@@ -3218,12 +3218,13 @@ class TriMeshSource(Node):
 
     def _load_from_privates(self):
         """(Re)Loads the mesh using the values currently stored in _scale, _offset, _rotation and _invert_normals"""
-        self.load_file(url = self._path,
-                       scale=self._scale,
-                       offset=self._offset,
-                       rotation=self._rotation,
-                       invert_normals=self._invert_normals)
-
+        self.load_file(
+            url=self._path,
+            scale=self._scale,
+            offset=self._offset,
+            rotation=self._rotation,
+            invert_normals=self._invert_normals,
+        )
 
     def give_python_code(self):
         code = "# No code generated for TriMeshSource"
@@ -3252,7 +3253,7 @@ class TriMeshSource(Node):
     #         self.rotation = new_parent.to_loc_direction(cur_rotation)
 
 
-class Buoyancy(NodeWithParent):
+class Buoyancy(NodeWithCoreParent):
     """Buoyancy provides a buoyancy force based on a buoyancy mesh. The mesh is triangulated and chopped at the instantaneous flat water surface. Buoyancy is applied as an upwards force that the center of buoyancy.
     The calculation of buoyancy is as accurate as the provided geometry.
 
@@ -3334,7 +3335,7 @@ class Buoyancy(NodeWithParent):
         return code
 
 
-class Tank(NodeWithParent):
+class Tank(NodeWithCoreParent):
     """Tank provides a fillable tank based on a mesh. The mesh is triangulated and chopped at the instantaneous flat fluid surface. Gravity is applied as an downwards force that the center of fluid.
     The calculation of fluid volume and center is as accurate as the provided geometry.
 
@@ -3363,7 +3364,6 @@ class Tank(NodeWithParent):
         self._inertia.parent = self.parent._vfNode
         self._inertia.position = self.cog_local
         self._inertia.inertia = self.volume * self.density
-
 
     def _delete_vfc(self):
         self._scene._vfc.delete(self._inertia.name)
@@ -3836,7 +3836,6 @@ class WaveInteraction1(Node):
 
 class Manager(Node, ABC):
 
-
     # @abstractmethod                   not used anywhere outside the manager classes, so no requirement
     # def managed_nodes(self):
     #     """Returns a list of managed nodes"""
@@ -3844,17 +3843,17 @@ class Manager(Node, ABC):
 
     @abstractmethod
     def delete(self):
-        """Carefully remove the manager, reinstate situation as before. Do not delete the manager itself but do
-        delete all the nodes it created."""
-        raise Exception("derived class shall override this method")
+        """Carefully remove the manager, reinstate situation as before.
+        - Delete all the nodes it created.
+        - Release management on all other nodes
+        - Do not delete the manager itself
+        """
+        pass
 
     @abstractmethod
     def creates(self, node: Node):
         """Returns True if node is created by this manager"""
-
-        raise Exception("derived class shall override this method")
-        # hint: return node in self.managed_nodes() # would be a good option, just not good enough as default
-
+        pass
 
 
 class GeometricContact(Manager):
@@ -5454,7 +5453,6 @@ class Scene:
                 for res in self.resources_paths:
                     print(str(res))
 
-
                 print(
                     "The following resources with extension {} are available with ".format(
                         ext
@@ -5698,7 +5696,7 @@ class Scene:
 
         return self._vfc.element_A_depends_on_B(A._vfNode.name, B._vfNode.name)
 
-    def nodes_managed_by(self, manager : Manager):
+    def nodes_managed_by(self, manager: Manager):
         """Returns a list of nodes managed by manager"""
 
         return [node for node in self._nodes if node.manager == manager]
@@ -5782,6 +5780,14 @@ class Scene:
     def delete(self, node):
         """Deletes the given node from the scene as well as all nodes depending on it.
 
+        Depending nodes are nodes that are physically connected to the deleted node or are observing the node.
+
+        About managed nodes:
+        - deleting a managed node will delete its manager
+        - deleting a manger will
+            - release management of all nodes managed by that manager
+            - delete all the nodes created by that manager
+
         See Also:
             dissolve
         """
@@ -5794,36 +5800,32 @@ class Scene:
                 "Can not delete node because it is not a node of this scene"
             )
 
+        if node._manager:  # managed node, delete its manager
+            self.delete(node._manager)
+
+            # after deleting the manager, the node itself may still be here but now un-managed
+            if node in self._nodes:
+                self.delete(node)
+            return
+
         if isinstance(node, Manager):
-            node.delete()
-            # self._nodes.remove(node)
-            # return <-- do not return
+            if not getattr(
+                node, "_dissolved", False
+            ):  # work-around for skipping removal of created nodes when dissolving
+                node.delete()  # deletes all created nodes, releases management
 
         depending_nodes = self.nodes_depending_on(node)
         depending_nodes.extend([n.name for n in node.observers])
 
-        if node._manager:  # node, delete its manager
-            # print('Deleting manager')
-            self.delete(node._manager)
-            if node in self._nodes:
-                self.delete(node)  # node may have been deleted by the manager
+        # First delete the dependencies
+        for d in depending_nodes:
+            if not self.name_available(d):  # element is still here
+                self.delete(d)
 
-        else:
-            self._print(
-                "Deleting {} [{}]".format(
-                    node.name, str(type(node)).split(".")[-1][:-2]
-                )
-            )
-
-            # First delete the dependencies
-            for d in depending_nodes:
-                if not self.name_available(d):  # element is still here
-                    self.delete(d)
-
-            # then remove the vtk node itself
-            # self._print('removing vfc node')
-            node._delete_vfc()
-            self._nodes.remove(node)
+        # then remove the vtk node itself
+        # self._print('removing vfc node')
+        node._delete_vfc()
+        self._nodes.remove(node)
 
     def dissolve(self, node):
         """Attempts to delete the given node without affecting the rest of the model.
@@ -5835,44 +5837,67 @@ class Scene:
         There are many situations in which this will fail because an it is impossible to dissolve
         the element. For example a poi can only be dissolved when nothing is attached to it.
 
-        For now this function only works on AXIS
-
-        #TODO: Add managers - just release management
-
+        For now this function only works on AXIS and Managers
         """
 
         if isinstance(node, str):
             node = self[node]
 
-        ok = False
+        if node.manager is not None:
+            raise Exception("Managed nodes can not be dissolved")
+
         if isinstance(node, Manager):
 
-            if isinstance(node, Axis):
-                p = self.new_axis(node.name + '_dissolved')
+            if isinstance(node, RigidBody):
+
+                p = self.new_rigidbody(
+                    node.name + "_dissolved",
+                    mass=node.mass,
+                    position=node.position,
+                    rotation=node.rotation,
+                    inertia_radii=node.inertia_radii,
+                    fixed=node.fixed,
+                    cog=node.cog,
+                    parent=node.parent,
+                )
+            elif isinstance(node, Axis):
+                p = self.new_axis(
+                    node.name + "_dissolved",
+                    position=node.position,
+                    rotation=node.rotation,
+                    inertia=node.inertia,
+                    inertia_radii=node.inertia_radii,
+                    fixed=node.fixed,
+                    parent=node.parent,
+                )
             else:
                 p = None
 
-            for d in self.nodes_managed_by(node):
-                with ClaimManagement(self,node):
+            with ClaimManagement(self, node):
+                for d in self.nodes_managed_by(node):
                     if node in d.observers:
                         d.observers.remove(node)
                     d.manager = None
 
-                    if isinstance(d, NodeWithParent):
+                    if hasattr(node,'parent'):
                         if d.parent == node:
                             d.parent = p
 
-            ok = True
+                for d in self.nodes_depending_on(node):
+                    self[d].change_parent_to(node.parent)
 
-        if isinstance(node, Axis):
+            node._dissolved = True  # signal for the .delete function to skip deletion of nodes created by the manager
+
+        elif isinstance(node, Axis):
             for d in self.nodes_depending_on(node):
                 self[d].change_parent_to(node.parent)
-            ok = True
 
-        if not ok:
-            raise TypeError("Only nodes of type Axis and Manager can be dissolved at this moment")
+        else:
+            raise TypeError(
+                "Only nodes of type Axis and Manager can be dissolved at this moment"
+            )
 
-        self._nodes.remove(node)  # do not call delete as that will fail on managers
+        self.delete(node)  # do not call delete as that will fail on managers
 
     def savepoint_make(self):
         self._savepoint = self.give_python_code()
@@ -7545,7 +7570,7 @@ class Scene:
         import DAVE
 
         locals = DAVE.__dict__
-        locals['s'] = self
+        locals["s"] = self
 
         try:
             exec(code, {}, locals)
@@ -7636,7 +7661,7 @@ class Scene:
                 node = self[name]
 
                 if not node.manager:
-                    if not isinstance(node, NodeWithParent):
+                    if not hasattr(node, 'parent'):
                         continue
 
                     if node.parent is None:
@@ -7731,11 +7756,12 @@ class LoadShearMomentDiagram:
         """
         x, Vz, My = self.give_shear_and_moment()
         import matplotlib.pyplot as plt
+
         plt.rcParams.update({"font.family": "sans-serif"})
         plt.rcParams.update({"font.sans-serif": "consolas"})
         plt.rcParams.update({"font.size": 10})
 
-        fig, ax1 = plt.subplots(1,1,**kwargs)
+        fig, ax1 = plt.subplots(1, 1, **kwargs)
         ax2 = ax1.twinx()
 
         ax1.plot(x, My, "g", lw=1, label="Bending Moment")
