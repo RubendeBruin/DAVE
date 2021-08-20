@@ -1450,7 +1450,7 @@ class RigidBody(Axis):
 
         See Also: inertia
         """
-        return self._vfForce.force[2] / -vfc.G
+        return self._vfForce.force[2] / -self._scene.g
 
     @mass.setter
     @node_setter_manageable
@@ -1459,7 +1459,7 @@ class RigidBody(Axis):
 
         assert1f(newmass)
         self.inertia = newmass
-        self._vfForce.force = (0, 0, -vfc.G * newmass)
+        self._vfForce.force = (0, 0, -self._scene.g * newmass)
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -3294,26 +3294,10 @@ class Buoyancy(NodeWithCoreParent):
         """Displaced volume of fluid [m^3]"""
         return self._vfNode.displacement
 
-    @property
-    def density(self):
-        """Density of surrounding fluid [mT/m3].
-        Typical values: Seawater = 1.025, fresh water = 1.00
-        """
-        return self._vfNode.density
-
-    @density.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def density(self, value):
-        assert1f_positive_or_zero(value, "density")
-        self._vfNode.density = value
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
         code += "\nmesh = s.new_buoyancy(name='{}',".format(self.name)
-
-        if self.density != 1.025:
-            code += f"\n          density={self.density},"
 
         code += "\n          parent='{}')".format(self.parent_for_export.name)
 
@@ -5207,6 +5191,65 @@ class Scene:
         del self._vfc
         self._vfc = pyo3d.Scene()
 
+    # =========== settings =============
+
+    @property
+    def g(self):
+        """Gravity in kg*m/s2"""
+        return self._vfc.g
+
+    @g.setter
+    def g(self, value):
+        assert1f(value)
+        rbs = self.nodes_of_type(RigidBody)
+        for n in rbs:
+            n._mass = n.mass
+        self._vfc.g = value
+        for n in rbs:
+            n.mass = n._mass
+
+    @property
+    def rho_water(self):
+        """Density of water [mT/m3]"""
+        return self._vfc.rho_water
+
+    @rho_water.setter
+    def rho_water(self, value):
+        assert1f_positive_or_zero(value)
+        self._vfc.rho_water = value
+
+    @property
+    def rho_air(self):
+        """Density of air [mT/m3]"""
+        return self._vfc.rho_air
+
+    @rho_air.setter
+    def rho_air(self, value):
+        assert1f_positive_or_zero(value)
+        self._vfc.rho_air = value
+
+
+    @property
+    def waterlevel(self):
+        """Elevation of the waterplane (global) [m]"""
+        return self._vfc.waterlevel
+
+    @waterlevel.setter
+    def waterlevel(self, value):
+        assert1f(value)
+        self._vfc.waterlevel = value
+
+    @property
+    def nFootprintSlices(self):
+        """Number of slices used in buoyancy discretization when calculating bending moments"""
+        return self._vfc.nFootprintSlices
+
+    @nFootprintSlices.setter
+    def nFootprintSlices(self, value):
+        assert isinstance(value, int), "needs to be integer"
+        self._vfc.nFootprintSlices = value
+
+
     # =========== private functions =============
 
     def _print_cpp(self):
@@ -6539,7 +6582,7 @@ class Scene:
 
         g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + "gravity")
         g.parent = p
-        g.force = (0, 0, -vfc.G * mass)
+        g.force = (0, 0, -self.g * mass)
 
         r = RigidBody(self, a, p, g)
 
@@ -6987,7 +7030,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_buoyancy(self, name, parent=None, density=1.025) -> Buoyancy:
+    def new_buoyancy(self, name, parent=None) -> Buoyancy:
         """Creates a new *buoyancy* node and adds it to the scene.
 
         Args:
@@ -7011,8 +7054,6 @@ class Scene:
         if b is None:
             raise ValueError("A valid parent must be defined for a Buoyancy node")
 
-        assert1f_positive_or_zero(density, "density")
-
         # then create
         a = self._vfc.new_buoyancy(name)
         new_node = Buoyancy(self, a)
@@ -7020,8 +7061,6 @@ class Scene:
         # and set properties
         if b is not None:
             new_node.parent = b
-
-        new_node.density = density
 
         self._nodes.append(new_node)
         return new_node

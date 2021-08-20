@@ -30,11 +30,6 @@ from os.path import dirname
 from os import mkdir
 from pathlib import Path
 
-# ======== Constants ===========
-
-G = 9.81
-RHO = 1.025
-
 # ======== Frequency domain ======
 
 # Minimum damping for frequency domain analysis, as fraction of critical damping based on diagonal terms.

@@ -128,7 +128,7 @@ def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_dr
 
 
     Awl = delta_disp / delta_draft
-    kHeave = Awl * 9.81 * node.density
+    kHeave = Awl * scene.g * scene.rho_water
 
     # calcualte cofx and cofy from change of cob position
     # x_old * x_disp + cofx * dis_change = x_new * dis_new
@@ -164,7 +164,7 @@ def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_dr
                'COFY' : COFY,
                'kHeave': kHeave,
                'Awl': Awl,
-               'displacement_kN': displacement_m3 * 9.81 * node.density,
+               'displacement_kN': displacement_m3 * scene.g * scene.rho_water,
                'displacement' : displacement_m3 ,
                'waterline': -cob_global[2]}
 
