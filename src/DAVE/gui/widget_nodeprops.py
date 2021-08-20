@@ -405,6 +405,7 @@ class EditTank(NodeEditor):
         self.ui.sbPercentage.valueChanged.connect(self.generate_code)
         self.ui.sbElevation.valueChanged.connect(self.generate_code)
         self.ui.cbFreeFlooding.toggled.connect(self.generate_code)
+        self.ui.cbUseOutsideDensity.toggled.connect(self.generate_code)
 
 
     def post_update_event(self):
@@ -426,9 +427,15 @@ class EditTank(NodeEditor):
         self.ui.sbElevation.setValue(self.node.level_global)
         self.ui.cbFreeFlooding.setChecked(self.node.free_flooding)
 
+        self.ui.cbUseOutsideDensity.setChecked(self.node.density < 0)
+
+        if self.node.density < 0:
+            self.ui.sbDenstiy.setValue(self.scene.rho_water)
+
         for widget in widgets:
             widget.blockSignals(False)
 
+        self.ui.sbDenstiy.setEnabled(self.node.density >= 0)
         self.ui.widgetContents.setEnabled(not self.node.free_flooding)
         self.ui.lblCapacity.setText(f"{self.node.capacity:.3f} m3")
 
@@ -440,6 +447,9 @@ class EditTank(NodeEditor):
         new_pct = self.ui.sbPercentage.value()
         new_elev = self.ui.sbElevation.value()
         new_free_flooding = self.ui.cbFreeFlooding.isChecked()
+
+        if self.ui.cbUseOutsideDensity.isChecked():
+            new_density = -1
 
         def add(name, value, ref, dec = 3):
 
@@ -459,32 +469,6 @@ class EditTank(NodeEditor):
         code += add(name, new_volume,'volume')
         code += add(name, new_pct,'fill_pct')
         code += add(name, new_elev,'level_global')
-
-        self.run_code(code)
-
-@Singleton
-class EditBuoyancyDensity(NodeEditor):
-
-    def __init__(self):
-        widget = QtWidgets.QWidget()
-        ui = DAVE.gui.forms.widget_buoyancy.Ui_Form()
-        ui.setupUi(widget)
-
-        ui.sbDenstiy.valueChanged.connect(self.generate_code)
-        self.ui = ui
-        self._widget = widget
-
-    def post_update_event(self):
-        self.ui.sbDenstiy.blockSignals(True)
-        self.ui.sbDenstiy.setValue(self.node.density)
-        self.ui.sbDenstiy.blockSignals(False)
-
-    def generate_code(self):
-        code = ""
-
-        if self.node.density != self.ui.sbDenstiy.value():
-            element = "\ns['{}']".format(self.node.name)
-            code = element + '.density = {}'.format(self.ui.sbDenstiy.value())
 
         self.run_code(code)
 
@@ -1999,9 +1983,6 @@ class WidgetNodeProps(guiDockWidget):
 
         if isinstance(node, vfs.Buoyancy) or isinstance(node, vfs.ContactMesh) or isinstance(node, vfs.Tank):
             self._node_editors.append(EditBuoyancyOrContactMesh.Instance())
-
-        if isinstance(node, vfs.Buoyancy):
-            self._node_editors.append(EditBuoyancyDensity.Instance())
 
         if isinstance(node, vfs.Tank):
             self._node_editors.append(EditTank.Instance())
