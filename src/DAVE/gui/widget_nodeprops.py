@@ -21,7 +21,6 @@ import DAVE.gui.forms.widget_contactball
 import DAVE.gui.forms.widget_geometricconnection
 import DAVE.gui.forms.widget_sling
 import DAVE.gui.forms.widget_tank
-import DAVE.gui.forms.widget_buoyancy
 import DAVE.gui.forms.widget_shackle
 
 import numpy as np
