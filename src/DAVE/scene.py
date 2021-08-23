@@ -3062,12 +3062,12 @@ class TriMeshSource(Node):
         clean.Update()
         data = clean.GetOutput()
 
-        writer = vtk.vtkSTLWriter()
-        writer.SetFileName(r'c:\data\debug.stl')
-        writer.SetInputData(data)
-        writer.Write()
-
-        print('Written debug .stl to c:/data/debug.stl')
+        # writer = vtk.vtkSTLWriter()
+        # writer.SetFileName(r'c:\data\debug.stl')
+        # writer.SetInputData(data)
+        # writer.Write()
+        #
+        # print('Written debug .stl to c:/data/debug.stl')
 
 
         self._TriMesh.Clear()
@@ -3169,6 +3169,10 @@ class TriMeshSource(Node):
                 v1 = tm.GetVertex(edge[0])
                 v2 = tm.GetVertex(edge[1])
                 non_manifold_edges.append((v1, v2))
+
+        if len(messages) == 2:
+            messages.append('Boundary edges are shown in Red')
+            messages.append('Non-manifold edges are shown in Pink')
 
         # Do not check for volume if we have nonmanifold geometry or boundary edges
         try:
@@ -8096,3 +8100,4 @@ class LoadShearMomentDiagram:
             plt.show()
         else:
             fig.savefig(filename)
+
