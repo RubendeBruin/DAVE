@@ -307,7 +307,7 @@ def actor_from_trimesh(trimesh):
 
 def actor_from_vertices_and_faces(vertices, faces):
     """Creates a mesh based on the given vertices and faces. Cleans up
-    the structure before creating by removed duplicate vertices"""
+    the structure before creating by removing duplicate vertices"""
     unique_vertices = np.unique(vertices, axis=0)
 
     if len(unique_vertices) != len(vertices):  # reconstruct faces and vertices
@@ -586,6 +586,24 @@ class VisualActor:
 
         # update label name if needed
         self.labelUpdate(self.node.name) # does not do anything if the label-name is unchanged
+
+        if viewport.show_boundary_edges:
+            if isinstance(self.node, (vf.Tank, vf.Buoyancy)):
+
+                N  = self.node
+
+                if getattr(N.trimesh, 'boundary_edges', []):
+                    v = vp.Lines(N.trimesh.boundary_edges, lw=5, c=(1, 0, 0))
+                    self.actors['boundary_edges'] = v
+
+                else:
+                    if 'boundary_edges' in self.actors:
+                        if viewport.screen is not None:
+                            viewport.screen.remove(self.actors["boundary_edges"])
+                            del self.actors['boundary_edges']
+
+
+        # the following ifs all end with Return
 
         if isinstance(self.node, vf.Visual):
             A = self.actors["main"]
@@ -1167,6 +1185,8 @@ class VisualActor:
 
             return
 
+
+
         if isinstance(self.node, vf.Axis):
             m44 = transform_to_mat4x4(self.node.global_transform)
             for a in self.actors.values():
@@ -1231,11 +1251,14 @@ class Viewport:
             False  # Do not perform slow updates ( make animations quicker)
         )
 
+        self.show_boundary_edges = False
+        """Implemented by not updated when mesh is updated. Use for static views only"""
+
         self._wavefield = None
         """WaveField object"""
 
     @staticmethod
-    def show_as_qt_app(s, painters = None, sea=False):
+    def show_as_qt_app(s, painters = None, sea=False, boundary_edges = False):
         from PySide2.QtWidgets import QWidget, QApplication
 
         app = QApplication()
@@ -1247,6 +1270,7 @@ class Viewport:
             painters = PAINTERS['Construction']
 
         v = Viewport(scene=s)
+        v.show_boundary_edges = boundary_edges
         v.settings.painter_settings = painters
 
         v.settings.show_global = sea
@@ -1255,9 +1279,10 @@ class Viewport:
         v.quick_updates_only = False
 
         v.create_node_visuals()
-        v.add_new_node_actors_to_screen()
+        # v.add_new_node_actors_to_screen()
 
         v.position_visuals()
+        v.add_new_node_actors_to_screen() # position visuals may create new actors
         v.update_visibility()
 
         v.zoom_all()
@@ -1831,6 +1856,8 @@ class Viewport:
                 a.actor_type = ActorType.CABLE
 
                 actors["main"] = a
+
+
 
             if not actors:  # no actors created
                 print(f"No actors created for node {N.name}")

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>316</width>
-    <height>323</height>
+    <width>321</width>
+    <height>301</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,15 +16,38 @@
   <property name="locale">
    <locale language="English" country="UnitedStates"/>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>Permeability</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QDoubleSpinBox" name="sbPermeability">
+     <property name="decimals">
+      <number>8</number>
+     </property>
+     <property name="maximum">
+      <double>2.000000000000000</double>
+     </property>
+     <property name="singleStep">
+      <double>0.000010000000000</double>
+     </property>
+     <property name="value">
+      <double>1.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
     <widget class="QCheckBox" name="cbFreeFlooding">
      <property name="text">
       <string>Free flooding (aka damaged)</string>
      </property>
     </widget>
    </item>
-   <item>
+   <item row="2" column="0" colspan="2">
     <widget class="QWidget" name="widgetContents" native="true">
      <layout class="QGridLayout" name="gridLayout">
       <property name="leftMargin">
@@ -33,13 +56,82 @@
       <property name="rightMargin">
        <number>0</number>
       </property>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_9">
+      <item row="1" column="1">
+       <widget class="QLabel" name="lblCapacity">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; text-decoration: underline;&quot;&gt;Fluid density&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>Calculated</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QDoubleSpinBox" name="sbDenstiy">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="decimals">
+         <number>3</number>
+        </property>
+        <property name="minimum">
+         <double>-999999999999.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>99999999999999.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="QDoubleSpinBox" name="sbPercentage">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="decimals">
+         <number>3</number>
+        </property>
+        <property name="minimum">
+         <double>0.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>100.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>5.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="cbUseOutsideDensity">
+        <property name="text">
+         <string>Same as outside water</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; text-decoration: underline;&quot;&gt;Fill&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Volume [m3]</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Maximum capacity</string>
         </property>
        </widget>
       </item>
@@ -81,73 +173,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QDoubleSpinBox" name="sbPermeability">
-        <property name="decimals">
-         <number>8</number>
-        </property>
-        <property name="maximum">
-         <double>2.000000000000000</double>
-        </property>
-        <property name="singleStep">
-         <double>0.000010000000000</double>
-        </property>
-        <property name="value">
-         <double>1.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Global Elevation [m]</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="label_10">
-        <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; text-decoration: underline;&quot;&gt;Fill&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QDoubleSpinBox" name="sbDenstiy">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="decimals">
-         <number>3</number>
-        </property>
-        <property name="minimum">
-         <double>-999999999999.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>99999999999999.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLabel" name="lblCapacity">
-        <property name="text">
-         <string>Calculated</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Permeability</string>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="1">
+      <item row="11" column="1">
        <widget class="QLabel" name="label_8">
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Setting any of these values changes the amount of fluid in the tank. Global elevation may thus change if the vessel moves.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -163,10 +189,20 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
-       <widget class="QLabel" name="label_2">
+      <item row="4" column="0">
+       <widget class="QLabel" name="label">
         <property name="text">
-         <string>Volume [m3]</string>
+         <string>Contents density [mT/m3]</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; text-decoration: underline;&quot;&gt;Fluid density&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -177,46 +213,24 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
-       <widget class="QDoubleSpinBox" name="sbPercentage">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="decimals">
-         <number>3</number>
-        </property>
-        <property name="minimum">
-         <double>0.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>100.000000000000000</double>
-        </property>
-        <property name="singleStep">
-         <double>5.000000000000000</double>
+      <item row="9" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Global Elevation [m]</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_5">
+      <item row="10" column="0">
+       <widget class="QLabel" name="label_7">
         <property name="text">
-         <string>Maximum capacity</string>
+         <string>Ullage</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label">
+      <item row="10" column="1">
+       <widget class="QLabel" name="lbUllage">
         <property name="text">
-         <string>Contents density [mT/m3]</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QCheckBox" name="cbUseOutsideDensity">
-        <property name="text">
-         <string>Same as outside water</string>
+         <string>Calculated</string>
         </property>
        </widget>
       </item>

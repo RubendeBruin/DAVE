@@ -3046,8 +3046,27 @@ class TriMeshSource(Node):
         scaleFilter.SetTransform(s)
         rotationFilter.SetTransform(r)
 
-        scaleFilter.Update()
-        data = scaleFilter.GetOutput()
+        clean = vtk.vtkCleanPolyData()
+        clean.SetInputConnection(scaleFilter.GetOutputPort())
+
+        clean.ConvertLinesToPointsOff()
+        clean.ConvertPolysToLinesOff()
+        clean.ConvertStripsToPolysOff()
+        clean.PointMergingOn()
+        clean.ToleranceIsAbsoluteOn()
+        clean.SetAbsoluteTolerance(0.001)
+
+        clean.Update()
+        data = clean.GetOutput()
+
+        writer = vtk.vtkSTLWriter()
+        writer.SetFileName(r'c:\data\debug.stl')
+        writer.SetInputData(data)
+        writer.Write()
+
+        print('Written debug .stl to c:/data/debug.stl')
+
+
         self._TriMesh.Clear()
 
         for i in range(data.GetNumberOfPoints()):
@@ -3096,8 +3115,18 @@ class TriMeshSource(Node):
         if tm.nFaces == 0:
             return ["No mesh"]
 
+        # # make sure the mesh is clean: vertices should be unique
+        # vertices = []
+        # for i in range(tm.nVertices):
+        #     vertex = np.array(tm.GetVertex(i))
+        #     for v in vertices:
+        #         if np.linalg.norm(vertex-v) < 0.001:
+        #             print("Duplicate vertex" + str(vertex-v))
+        #     else:
+        #         vertices.append(vertex)
+
         # Make a list of all boundaries using their vertex IDs
-        boundaries = np.zeros((3 * tm.nFaces, 2))
+        boundaries = np.zeros((3 * tm.nFaces, 2), dtype=int)
         for i in range(tm.nFaces):
             face = tm.GetFace(i)
             boundaries[3 * i] = [face[0], face[1]]
@@ -3107,17 +3136,27 @@ class TriMeshSource(Node):
         # For an edge is doesn't matter in which direction it runs
         boundaries.sort(axis=1)
 
-        rows_occurance_count = np.unique(boundaries, axis=0, return_counts=True)[
-            1
-        ]  # count of rows
+        # every boundary should be present twice
+
+        values , rows_occurance_count = np.unique(boundaries, axis=0, return_counts=True) # count of rows
 
         n_boundary = np.count_nonzero(rows_occurance_count == 1)
         n_nonmanifold = np.count_nonzero(rows_occurance_count > 2)
 
         messages = []
 
+        boundary_edges = []
+
         if n_boundary > 0:
             messages.append(f"Mesh contains {n_boundary} boundary edges")
+
+            i_boundary = np.argwhere(rows_occurance_count==1)
+            for i in i_boundary:
+                edge = values[i][0]
+                v1 = tm.GetVertex(edge[0])
+                v2 = tm.GetVertex(edge[1])
+                boundary_edges.append((v1, v2))
+
         if n_nonmanifold > 0:
             messages.append(f"Mesh contains {n_nonmanifold} non-manifold edges")
 
@@ -3132,6 +3171,8 @@ class TriMeshSource(Node):
                 f"Total mesh volume is negative ({volume:.2f} m3 of enclosed volume)."
             )
             messages.append("Hint: Use invert-normals")
+
+        self.boundary_edges = boundary_edges
 
         return messages
 
@@ -3294,7 +3335,6 @@ class Buoyancy(NodeWithCoreParent):
         """Displaced volume of fluid [m^3]"""
         return self._vfNode.displacement
 
-
     def give_python_code(self):
         code = "# code for {}".format(self.name)
         code += "\nmesh = s.new_buoyancy(name='{}',".format(self.name)
@@ -3456,6 +3496,17 @@ class Tank(NodeWithCoreParent):
     def capacity(self):
         """Returns the capacity of the tank in m3. This is calculated from the defined geometry."""
         return self._vfNode.capacity
+
+    @property
+    def ullage(self):
+        """Ullage of the tank [m].
+        The ullage is the distance between a measurement point and the fluid surface. The point is [xf,yf,zv] where
+        xf and yf are the x and y coordinates (local) of the center of fluid when the tank is full. zv is the largest z value
+        of all the vertices of the tank.
+        The measurement direction is in local z-direction. If the tank is under an angle then this is not perpendicular to the fluid.
+        Note: it is possible that this definition returns an ullage larger than the physical tank depth
+        """
+        return self._vfNode.ullage
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -5228,7 +5279,6 @@ class Scene:
         assert1f_positive_or_zero(value)
         self._vfc.rho_air = value
 
-
     @property
     def waterlevel(self):
         """Elevation of the waterplane (global) [m]"""
@@ -5248,7 +5298,6 @@ class Scene:
     def nFootprintSlices(self, value):
         assert isinstance(value, int), "needs to be integer"
         self._vfc.nFootprintSlices = value
-
 
     # =========== private functions =============
 
@@ -5922,7 +5971,7 @@ class Scene:
                         d.observers.remove(node)
                     d.manager = None
 
-                    if hasattr(node,'parent'):
+                    if hasattr(node, "parent"):
                         if d.parent == node:
                             d.parent = p
 
@@ -7700,7 +7749,7 @@ class Scene:
                 node = self[name]
 
                 if not node.manager:
-                    if not hasattr(node, 'parent'):
+                    if not hasattr(node, "parent"):
                         continue
 
                     if node.parent is None:
