@@ -56,6 +56,10 @@ Viewport
         
         <the appearance of these visuals is determined by painers which are activated by update_visibility>
         
+ - temporary_visuals (VisualActors)
+    These are visuals that are temporary added to the viewport. For example a moment-line or boundary edges of a mesh
+    these are automatically deleted when the viewport is updated (position_visuals) 
+        
  - private visuals (wave-plane, etc)
  
        <the appearance of these visuals is determined by Viewport>
@@ -164,6 +168,11 @@ painters['node-class']['actor_key']
   for these nodes the entry becomes:
     painters['node-class:paint_state']['actor_key']
   
+Temporary actors
+-----------------
+Actors (anything derived from vtkActor) can be added to the viewport by calling
+add_temporary_actor. Temporary actors are automatically removed when the viewport
+is updated or can be removed manaully be calling remove_temporary_actors
 
 """
 
@@ -223,6 +232,28 @@ def transform_from_point(x, y, z):
     mat4x4.SetElement(1, 3, y)
     mat4x4.SetElement(2, 3, z)
     return mat4x4
+
+def transform_from_node(node):
+    """Returns the vtkTransform that can be used to align the actor
+    to the node.
+
+    Actor.SetUserTransform(....)
+    """
+    t = vtk.vtkTransform()
+    t.Identity()
+    tr = node.global_transform
+
+    mat4x4 = vtk.vtkMatrix4x4()
+    for i in range(4):
+        for j in range(4):
+            mat4x4.SetElement(i, j, tr[j * 4 + i])
+
+    t.PostMultiply()
+    t.Concatenate(mat4x4)
+
+    return t
+
+
 
 
 def transform_from_direction(axis):
@@ -587,23 +618,7 @@ class VisualActor:
         # update label name if needed
         self.labelUpdate(self.node.name) # does not do anything if the label-name is unchanged
 
-        if viewport.show_boundary_edges:
-            if isinstance(self.node, (vf.Tank, vf.Buoyancy)):
-
-                N  = self.node
-
-                if getattr(N.trimesh, 'boundary_edges', []):
-                    v = vp.Lines(N.trimesh.boundary_edges, lw=5, c=(1, 0, 0))
-                    self.actors['boundary_edges'] = v
-
-                else:
-                    if 'boundary_edges' in self.actors:
-                        if viewport.screen is not None:
-                            viewport.screen.remove(self.actors["boundary_edges"])
-                            del self.actors['boundary_edges']
-
-
-        # the following ifs all end with Return
+        # the following ifs all end with Return, so only a single one is executed
 
         if isinstance(self.node, vf.Visual):
             A = self.actors["main"]
@@ -1229,6 +1244,9 @@ class Viewport:
         self.node_visuals: List[VisualActor] = list()
         self.node_outlines: List[VisualOutline] = list()
 
+        """These are the temporary visuals"""
+        self.temporary_actors: List[vtk.vtkActor] = list()
+
         """These are all non-node-bound visuals , visuals for the global environment"""
         self.global_visuals = dict()
 
@@ -1288,6 +1306,18 @@ class Viewport:
         v.zoom_all()
 
         app.exec_()
+
+
+    def add_temporary_actor(self, actor : vtk.vtkActor):
+        self.temporary_actors.append(actor)
+        if self.screen:
+            self.screen.add(actor)
+
+    def remove_temporary_actors(self):
+        if self.temporary_actors:
+            if self.screen:
+                self.screen.remove(self.temporary_actors)
+        self.temporary_actors.clear()
 
 
     def update_outlines(self):
@@ -1913,6 +1943,8 @@ class Viewport:
             acs.extend(list(V.actors.values()))
             if V.label_actor is not None:
                 acs.append(V.label_actor)
+
+        acs.extend(self.temporary_actors)
 
         if acs:
             self.screen.remove(acs)

@@ -2958,6 +2958,9 @@ class TriMeshSource(Node):
 
         self._invert_normals = False
 
+        self.boundary_edges = []
+        self.non_manifold_edges = []
+
     def depends_on(self) -> list:
         return []
 
@@ -3146,6 +3149,7 @@ class TriMeshSource(Node):
         messages = []
 
         boundary_edges = []
+        non_manifold_edges = []
 
         if n_boundary > 0:
             messages.append(f"Mesh contains {n_boundary} boundary edges")
@@ -3159,6 +3163,12 @@ class TriMeshSource(Node):
 
         if n_nonmanifold > 0:
             messages.append(f"Mesh contains {n_nonmanifold} non-manifold edges")
+            i_boundary = np.argwhere(rows_occurance_count > 2)
+            for i in i_boundary:
+                edge = values[i][0]
+                v1 = tm.GetVertex(edge[0])
+                v2 = tm.GetVertex(edge[1])
+                non_manifold_edges.append((v1, v2))
 
         # Do not check for volume if we have nonmanifold geometry or boundary edges
         try:
@@ -3173,6 +3183,7 @@ class TriMeshSource(Node):
             messages.append("Hint: Use invert-normals")
 
         self.boundary_edges = boundary_edges
+        self.non_manifold_edges = non_manifold_edges
 
         return messages
 

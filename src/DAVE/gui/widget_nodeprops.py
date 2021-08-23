@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import vedo as vp
 
 from DAVE.gui.dockwidget import *
 from PySide2.QtCore import Qt
@@ -22,6 +23,8 @@ import DAVE.gui.forms.widget_geometricconnection
 import DAVE.gui.forms.widget_sling
 import DAVE.gui.forms.widget_tank
 import DAVE.gui.forms.widget_shackle
+
+from DAVE.visual import transform_from_node
 
 import numpy as np
 
@@ -1899,7 +1902,16 @@ class WidgetNodeProps(guiDockWidget):
                 self.warning_label.setText('\n'.join(messages))
                 self.warning_label.setVisible(True)
 
+                self.gui.visual.remove_temporary_actors()
 
+                if node.trimesh.boundary_edges:
+                    actor = vp.Lines(node.trimesh.boundary_edges, lw=5, c=(1, 0, 0))
+                    actor.SetUserTransform(transform_from_node(node.parent))
+                    self.gui.visual.add_temporary_actor(actor)
+                if node.trimesh.non_manifold_edges:
+                    actor = vp.Lines(node.trimesh.non_manifold_edges, lw=5, c=(1, 0, 1))
+                    actor.SetUserTransform(transform_from_node(node.parent))
+                    self.gui.visual.add_temporary_actor(actor)
 
     def select_node(self, node):
         

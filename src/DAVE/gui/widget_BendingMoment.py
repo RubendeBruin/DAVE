@@ -93,10 +93,7 @@ class WidgetBendingMoment(guiDockWidget):
 
     def action(self):
 
-        if self.actor_graph is not None:
-            self.gui.visual.screen.remove(self.actor_graph)
-        if self.actor_axis is not None:
-            self.gui.visual.screen.remove(self.actor_axis)
+        self.gui.visual.remove_temporary_actors()
 
         if self.ui.rbNothing.isChecked():
             return
@@ -137,11 +134,12 @@ class WidgetBendingMoment(guiDockWidget):
         line = [report_axis.to_glob_position((x[i], 0, scale * value[i])) for i in range(n)]
 
         # add to screen
-        self.actor_axis = vd.Line((start, end)).c('black')
-        self.actor_graph = vd.Line(line).c(color)
+        actor_axis = vd.Line((start, end)).c('black')
+        actor_graph = vd.Line(line).c(color)
 
-        self.gui.visual.screen.add(self.actor_axis)
-        self.gui.visual.screen.add(self.actor_graph)
+
+        self.gui.visual.add_temporary_actor(actor_axis)
+        self.gui.visual.add_temporary_actor(actor_graph)
 
         self.gui.visual.refresh_embeded_view()
 
