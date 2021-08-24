@@ -89,7 +89,7 @@ s['hook4p'].change_parent_to(s['Upper block'])
 s.delete("Lower block")
 
 # create a new pivot
-s.new_axis('pivot', parent = 'Upper block')
+s.new_frame('pivot', parent = 'Upper block')
 s['pivot'].fixed = (True, True, True, False, True, True)
 
 s['hook4p'].change_parent_to(s['pivot'])

@@ -40,8 +40,8 @@ Axis,parent,False,"Determines the parent of the axis. Should either be another a
 
         Other axis may be refered to by reference or by name (str). So the following are identical
 
-            p = s.new_axis('parent_axis')
-            c = s.new_axis('child axis')
+            p = s.new_frame('parent_axis')
+            c = s.new_frame('child axis')
 
             c.parent = p
             c.parent = 'parent_axis'

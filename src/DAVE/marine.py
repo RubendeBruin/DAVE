@@ -99,7 +99,7 @@ def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_dr
 
     s = Scene()
     s.resources_paths = scene.resources_paths
-    a = s.new_axis(node.parent.name, fixed=True)
+    a = s.new_frame(node.parent.name, fixed=True)
     a.z = node.parent.global_position[2]
 
     exec(node.give_python_code())  # place a copy of the buoyancy node in scene "s"
@@ -140,7 +140,7 @@ def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_dr
 
     # calculate BMT and BML by rotating about cob
 
-    rot = s.new_axis('rot', position = cob_global)
+    rot = s.new_frame('rot', position = cob_global)
     a.change_parent_to(rot)
 
     rot.rotation = (delta_roll, 0,0) # impose heel
@@ -319,7 +319,7 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
 
     # construct axis system at vessel origin
     name = s.available_name_like(vessel.name + "_global_motion")
-    global_motion = s.new_axis(name, parent=vessel) # construct at vessel origin
+    global_motion = s.new_frame(name, parent=vessel) # construct at vessel origin
     global_motion.change_parent_to(None)
     global_motion.fixed = (not allow_surge,
                            not allow_sway,
@@ -327,7 +327,7 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
                            True, True,
                            not allow_yaw)
 
-    trim_motion = s.new_axis(s.available_name_like(vessel.name + "_trim_motion"), parent=global_motion)
+    trim_motion = s.new_frame(s.available_name_like(vessel.name + "_trim_motion"), parent=global_motion)
 
     if allow_trim:
         trim_motion.fixed = (True,True,True,
@@ -336,7 +336,7 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
         trim_motion.set_fixed()
 
     name = s.available_name_like(vessel.name + "_heel")
-    heel_node = s.new_axis(name, parent=trim_motion)
+    heel_node = s.new_frame(name, parent=trim_motion)
 
     heel_node.set_fixed()
     vessel.change_parent_to(heel_node)

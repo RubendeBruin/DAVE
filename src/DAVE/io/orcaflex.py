@@ -246,14 +246,14 @@ def export_ofx_yml(s, filename):
             continue
 
 
-        if isinstance(n, (RigidBody, Axis)):
+        if isinstance(n, (RigidBody, Frame)):
 
             if isinstance(n, RigidBody):
                 mass = max(n.mass, OFX_ZERO_MASS)
                 I = (mass * n.inertia_radii ** 2).tolist()
                 cog = [*n.cog]
 
-            elif isinstance(n, Axis):
+            elif isinstance(n, Frame):
                 mass = OFX_ZERO_MASS
                 I = [OFX_ZERO_MASS, OFX_ZERO_MASS, OFX_ZERO_MASS]
                 cog = [0, 0, 0]
@@ -877,7 +877,7 @@ def compare_statics(s, ofx_sum):
 
     for n in s._nodes:
 
-        if isinstance(n, Axis):
+        if isinstance(n, Frame):
             # Compare position and orientation
 
             d = ofx_sum[n.name]

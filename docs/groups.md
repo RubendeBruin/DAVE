@@ -111,15 +111,15 @@ depending nodes.
 
 ```python
  s = Scene()
- a1 = s.new_axis('a1')
- p1 = s.new_poi('p1',parent = a1)
- s1 = s.new_sheave('s1',parent=p1, axis=(0,1,0), radius=1.0)
+a1 = s.new_frame('a1')
+p1 = s.new_poi('p1', parent=a1)
+s1 = s.new_sheave('s1', parent=p1, axis=(0, 1, 0), radius=1.0)
 
- a2 = s.new_axis('a2')
- p2 = s.new_poi('p2', parent=a2)
- s2 = s.new_sheave('s2', parent=p2, axis=(0, 1, 0), radius=1.0)
+a2 = s.new_frame('a2')
+p2 = s.new_poi('p2', parent=a2)
+s2 = s.new_sheave('s2', parent=p2, axis=(0, 1, 0), radius=1.0)
 
- s.new_geometriccontact('connection',s1,s2)
+s.new_geometriccontact('connection', s1, s2)
 ```
 
 - The manager creates a few axis systems between a1 and a2

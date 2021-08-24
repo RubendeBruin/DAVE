@@ -9,7 +9,7 @@ def solved(number):
     return number
 
 # code for Yard
-s.new_axis(name='Yard',
+s.new_frame(name='Yard',
            position=(0.0,
                      0.0,
                      0.0),
@@ -18,7 +18,7 @@ s.new_axis(name='Yard',
                      0.0),
            fixed =(True, True, True, True, True, True) )
 # code for Axis - visuals
-s.new_axis(name='Axis - visuals',
+s.new_frame(name='Axis - visuals',
            parent='Yard',
            position=(0.0,
                      0.0,

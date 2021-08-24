@@ -221,18 +221,18 @@ surf.surfaceColor = _LIGHT_GRAY
 painters["Point"] = {"main": copy(surf)}
 painters["Point"]["footprint"] = copy(invisible)
 
-# ----- Axis
+# ----- Frame
 
-painters["Axis"] = dict()
+painters["Frame"] = dict()
 
 surf.surfaceColor = _RED
-painters["Axis"]["main"] = copy(surf)
+painters["Frame"]["main"] = copy(surf)
 surf.surfaceColor = _GREEN
-painters["Axis"]["y"] = copy(surf)
+painters["Frame"]["y"] = copy(surf)
 surf.surfaceColor = _BLUE
-painters["Axis"]["z"] = copy(surf)
+painters["Frame"]["z"] = copy(surf)
 
-painters["Axis"]["footprint"] = copy(invisible)
+painters["Frame"]["footprint"] = copy(invisible)
 
 # ---- body
 painters["RigidBody"] = dict()
@@ -363,9 +363,9 @@ ballast_painters = deepcopy(PAINTERS["Construction"])
 ballast_painters["Point"]["main"] = copy(invisible)
 
 # Hide axis
-ballast_painters["Axis"]["main"] = copy(invisible)
-ballast_painters["Axis"]["y"] = copy(invisible)
-ballast_painters["Axis"]["z"] = copy(invisible)
+ballast_painters["Frame"]["main"] = copy(invisible)
+ballast_painters["Frame"]["y"] = copy(invisible)
+ballast_painters["Frame"]["z"] = copy(invisible)
 
 # Hide rigidbody
 ballast_painters["RigidBody"]["main"] = copy(invisible)
@@ -603,7 +603,7 @@ footprint_paint.lineColor = _PURPLE
 footprint_paint.surfaceColor = _PURPLE
 
 foot_painters['Point']['footprint'] = copy(footprint_paint)
-foot_painters['Axis']['footprint'] = copy(footprint_paint)
+foot_painters['Frame']['footprint'] = copy(footprint_paint)
 foot_painters['RigidBody']['footprint'] = copy(footprint_paint)
 
 PAINTERS["Footprints"] = foot_painters

@@ -862,7 +862,7 @@ class EditLC6d(NodeEditor):
             pass # no connections yet
 
         self.alist = list()
-        for axis in self.scene.nodes_of_type(vfs.Axis):
+        for axis in self.scene.nodes_of_type(vfs.Frame):
             self.alist.append(axis.name)
 
         ui.cbMasterAxis.clear()
@@ -952,7 +952,7 @@ class EditConnector2d(NodeEditor):
             pass # no connections yet
 
         self.alist = list()
-        for axis in self.scene.nodes_of_type(vfs.Axis):
+        for axis in self.scene.nodes_of_type(vfs.Frame):
             self.alist.append(axis.name)
 
         ui.cbMasterAxis.clear()
@@ -1032,7 +1032,7 @@ class EditBeam(NodeEditor):
             pass # no connections yet
 
         self.alist = list()
-        for axis in self.scene.nodes_of_type(vfs.Axis):
+        for axis in self.scene.nodes_of_type(vfs.Frame):
             self.alist.append(axis.name)
 
         ui.cbMasterAxis.clear()
@@ -1104,7 +1104,7 @@ class EditBeam(NodeEditor):
 def fill_dropdown_boxes(ui, scene):
     a = list()
     p = list()
-    for e in scene.nodes_of_type(vfs.Axis):
+    for e in scene.nodes_of_type(vfs.Frame):
         a.append(e.name)
     for e in scene.nodes_of_type(vfs.Point):
         p.append(e.name)
@@ -1182,9 +1182,9 @@ def add_axis(scene, parent=None):
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()
         if parent:
-            return "new_axis('{}', parent = '{}')".format(name, parent)
+            return "new_frame('{}', parent = '{}')".format(name, parent)
         else:
-            return "new_axis('{}')".format(name)
+            return "new_frame('{}')".format(name)
     else:
         return None
 

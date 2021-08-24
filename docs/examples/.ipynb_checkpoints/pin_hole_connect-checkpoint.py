@@ -4,14 +4,14 @@ from DAVE.tools import rotation_from_y_axis_direction
 s = Scene()
 
 # code for A1
-s.new_axis(name='A1',
-           position=(0.0,
+s.new_frame(name='A1',
+            position=(0.0,
                      1.0,
                      3.0),
-           rotation=(10.0,
+            rotation=(10.0,
                      0.0,
                      30.0),
-           fixed =(True, True, True, True, True, True) )
+            fixed =(True, True, True, True, True, True))
 s.new_point(name='P1',
             parent='A1',
             position=(2.0,
@@ -54,7 +54,7 @@ pin = s['pin']
 
 # --------- prepare hole
 
-hole_axis = s.new_axis('hole_axis')
+hole_axis = s.new_frame('hole_axis')
 hole_axis.parent = hole.parent.parent
 hole_axis.position = hole.parent.position
 
@@ -68,14 +68,14 @@ print(hole_axis.to_glob_direction((0,1,0)))
 # rotation about Y-axis is allowed
 hole_axis.fixed = True
 
-hole_axis_rotation = s.new_axis('hole_axis_rotation')
+hole_axis_rotation = s.new_frame('hole_axis_rotation')
 hole_axis_rotation.parent = hole_axis
 hole_axis_rotation.fixed = (True, True, True,
                             True, False, True)
 
 # ----------- prepare pin
 
-pin_axis = s.new_axis('pin_axis')
+pin_axis = s.new_frame('pin_axis')
 pin_axis.position = pin.parent.global_position
 pin_axis.parent = pin.parent.parent
 pin_axis.rotation = rotation_from_y_axis_direction(pin.axis)

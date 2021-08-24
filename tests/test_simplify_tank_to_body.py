@@ -8,7 +8,7 @@ from DAVE.gui import *
 
 def test_tank_to_body():
     s = Scene()
-    s.new_axis('main')
+    s.new_frame('main')
     t = s.new_tank('tank',parent='main')
     t.trimesh.load_obj('res: cube.obj', offset=(10,5,2))
     t.volume = 0.5
@@ -26,7 +26,7 @@ def test_tank_to_body():
 
 def test_tank_to_body_empty():
     s = Scene()
-    s.new_axis('main')
+    s.new_frame('main')
     t = s.new_tank('tank',parent='main')
     t.trimesh.load_obj('res: cube.obj', offset=(10,5,2))
     t.volume = 0

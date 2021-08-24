@@ -68,7 +68,7 @@ class WidgetDisplacedStability(guiDockWidget):
         # - axis has a buoyancy module or hydspring as child
         # - axis does not have a parent
 
-        axis = self.guiScene.nodes_of_type(nodes.Axis)
+        axis = self.guiScene.nodes_of_type(nodes.Frame)
         if axis:
             names = [a.name for a in axis]
             score = dict.fromkeys(names, 0)

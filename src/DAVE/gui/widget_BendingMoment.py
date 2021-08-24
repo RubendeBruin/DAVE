@@ -66,7 +66,7 @@ class WidgetBendingMoment(guiDockWidget):
 
     def fill(self):
 
-        axes = [n.name for n in self.guiScene.nodes_of_type((nodes.Axis, nodes.RigidBody))]
+        axes = [n.name for n in self.guiScene.nodes_of_type((nodes.Frame, nodes.RigidBody))]
 
         self.ui.cbAxis.blockSignals(True)
         self.ui.cbOrientation.blockSignals(True)

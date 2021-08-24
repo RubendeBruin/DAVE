@@ -5,8 +5,7 @@
 
   Ruben de Bruin - 2019
 """
-
-
+import warnings
 from abc import ABC, abstractmethod
 
 import pyo3d
@@ -283,7 +282,7 @@ class NodeWithCoreParent(CoreConnectedNode):
 
             var = self._scene._node_from_node_or_str(var)
 
-            if isinstance(var, Axis) or isinstance(var, GeometricContact):
+            if isinstance(var, Frame) or isinstance(var, GeometricContact):
                 self._parent = var
                 self._vfNode.parent = var._vfNode
             elif isinstance(var, Point):
@@ -330,7 +329,7 @@ class NodeWithCoreParent(CoreConnectedNode):
         # check new_parent
         if new_parent is not None:
 
-            if not isinstance(new_parent, Axis):
+            if not isinstance(new_parent, Frame):
                 if not has_rotation:
                     if not isinstance(new_parent, Point):
                         raise TypeError(
@@ -462,7 +461,7 @@ class Visual(Node):
 
     def change_parent_to(self, new_parent):
 
-        if not (isinstance(new_parent, Axis) or new_parent is None):
+        if not (isinstance(new_parent, Frame) or new_parent is None):
             raise ValueError(
                 "Visuals can only be attached to an axis (or derived) or None"
             )
@@ -485,7 +484,7 @@ class Visual(Node):
             self.rotation = new_parent.to_loc_direction(cur_rotation)
 
 
-class Axis(NodeWithParentAndFootprint):
+class Frame(NodeWithParentAndFootprint):
     """
     Axis
 
@@ -757,8 +756,8 @@ class Axis(NodeWithParentAndFootprint):
 
         Other axis may be refered to by reference or by name (str). So the following are identical
 
-            p = s.new_axis('parent_axis')
-            c = s.new_axis('child axis')
+            p = s.new_frame('parent_axis')
+            c = s.new_frame('child axis')
 
             c.parent = p
             c.parent = 'parent_axis'
@@ -778,7 +777,7 @@ class Axis(NodeWithParentAndFootprint):
         if val is not None:
             # Circular reference check: are we trying to make self depend on val while val depends on self?
             if self._scene.node_A_core_depends_on_B_core(val, self):
-                if isinstance(val, Axis):  # it better be
+                if isinstance(val, Frame):  # it better be
                     val.change_parent_to(
                         None
                     )  # change the parent of other to None, this breaks the previous dependancy
@@ -1093,7 +1092,7 @@ class Axis(NodeWithParentAndFootprint):
         if axis_system is None:
             axis_system = self
 
-        assert isinstance(axis_system, Axis), ValueError(
+        assert isinstance(axis_system, Frame), ValueError(
             f"axis_system shall be an instance of Axis, but it is of type {type(axis_system)}"
         )
 
@@ -1118,7 +1117,7 @@ class Axis(NodeWithParentAndFootprint):
         # check new_parent
         if new_parent is not None:
             if not (
-                isinstance(new_parent, Axis) or isinstance(new_parent, GeometricContact)
+                    isinstance(new_parent, Frame) or isinstance(new_parent, GeometricContact)
             ):
                 raise TypeError(
                     "Only None or Axis-type nodes (or derived types) can be used as parent. You tried to use a {} as parent".format(
@@ -1134,7 +1133,7 @@ class Axis(NodeWithParentAndFootprint):
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
-        code += "\ns.new_axis(name='{}',".format(self.name)
+        code += "\ns.new_frame(name='{}',".format(self.name)
         if self.parent_for_export:
             code += "\n           parent='{}',".format(self.parent_for_export.name)
 
@@ -1328,7 +1327,7 @@ class Point(NodeWithParentAndFootprint):
         return code
 
 
-class RigidBody(Axis):
+class RigidBody(Frame):
     """A Rigid body, internally composed of an axis, a point (cog) and a force (gravity)"""
 
     def __init__(self, scene, axis, poi, force):
@@ -2478,7 +2477,7 @@ class LC6d(CoreConnectedNode):
     def main(self, val):
 
         val = self._scene._node_from_node_or_str(val)
-        if not isinstance(val, Axis):
+        if not isinstance(val, Frame):
             raise TypeError("Provided nodeA should be a Axis")
 
         self._main = val
@@ -2495,7 +2494,7 @@ class LC6d(CoreConnectedNode):
     def secondary(self, val):
 
         val = self._scene._node_from_node_or_str(val)
-        if not isinstance(val, Axis):
+        if not isinstance(val, Frame):
             raise TypeError("Provided nodeA should be a Axis")
 
         self._secondary = val
@@ -2628,7 +2627,7 @@ class Connector2d(CoreConnectedNode):
         self._vfNode.k_angular = value
 
     @property
-    def nodeA(self) -> Axis:
+    def nodeA(self) -> Frame:
         """Connected axis system A"""
         return self._nodeA
 
@@ -2638,14 +2637,14 @@ class Connector2d(CoreConnectedNode):
     def nodeA(self, val):
 
         val = self._scene._node_from_node_or_str(val)
-        if not isinstance(val, Axis):
+        if not isinstance(val, Frame):
             raise TypeError("Provided nodeA should be a Axis")
 
         self._nodeA = val
         self._vfNode.master = val._vfNode
 
     @property
-    def nodeB(self) -> Axis:
+    def nodeB(self) -> Frame:
         """Connected axis system B"""
         return self._nodeB
 
@@ -2655,7 +2654,7 @@ class Connector2d(CoreConnectedNode):
     def nodeB(self, val):
 
         val = self._scene._node_from_node_or_str(val)
-        if not isinstance(val, Axis):
+        if not isinstance(val, Frame):
             raise TypeError("Provided nodeA should be a Axis")
 
         self._nodeB = val
@@ -2841,7 +2840,7 @@ class Beam(CoreConnectedNode):
 
         val = self._scene._node_from_node_or_str(val)
 
-        if not isinstance(val, Axis):
+        if not isinstance(val, Frame):
             raise TypeError("Provided nodeA should be a Axis")
 
         self._nodeA = val
@@ -2858,7 +2857,7 @@ class Beam(CoreConnectedNode):
     def nodeB(self, val):
 
         val = self._scene._node_from_node_or_str(val)
-        if not isinstance(val, Axis):
+        if not isinstance(val, Frame):
             raise TypeError("Provided nodeA should be a Axis")
 
         self._nodeB = val
@@ -3061,14 +3060,6 @@ class TriMeshSource(Node):
 
         clean.Update()
         data = clean.GetOutput()
-
-        # writer = vtk.vtkSTLWriter()
-        # writer.SetFileName(r'c:\data\debug.stl')
-        # writer.SetInputData(data)
-        # writer.Write()
-        #
-        # print('Written debug .stl to c:/data/debug.stl')
-
 
         self._TriMesh.Clear()
 
@@ -3607,7 +3598,7 @@ class BallastSystem(Node):
 
     # for gui
     def change_parent_to(self, new_parent):
-        if not (isinstance(new_parent, Axis) or new_parent is None):
+        if not (isinstance(new_parent, Frame) or new_parent is None):
             raise ValueError(
                 "Visuals can only be attached to an axis (or derived) or None"
             )
@@ -3866,7 +3857,7 @@ class WaveInteraction1(Node):
 
     def change_parent_to(self, new_parent):
 
-        if not (isinstance(new_parent, Axis)):
+        if not (isinstance(new_parent, Frame)):
             raise ValueError(
                 "Hydrodynamic databases can only be attached to an axis (or derived)"
             )
@@ -3979,22 +3970,22 @@ class GeometricContact(Manager):
         self._flipped = False
         self._inside_connection = inside
 
-        self._axis_on_parent = self._scene.new_axis(
+        self._axis_on_parent = self._scene.new_frame(
             scene.available_name_like(name_prefix + "_axis_on_parent")
         )
         """Axis on the nodeA axis at the location of the center of hole or pin"""
 
-        self._pin_hole_connection = self._scene.new_axis(
+        self._pin_hole_connection = self._scene.new_frame(
             scene.available_name_like(name_prefix + "_pin_hole_connection")
         )
         """axis between the center of the hole and the center of the pin. Free to rotate about the center of the hole as well as the pin"""
 
-        self._axis_on_child = self._scene.new_axis(
+        self._axis_on_child = self._scene.new_frame(
             scene.available_name_like(name_prefix + "_axis_on_child")
         )
         """axis to which the slaved body is connected. Either the center of the hole or the center of the pin """
 
-        self._connection_axial_rotation = self._scene.new_axis(
+        self._connection_axial_rotation = self._scene.new_frame(
             scene.available_name_like(name_prefix + "_connection_axial_rotation")
         )
 
@@ -5185,7 +5176,7 @@ class Scene:
     Examples:
 
         s = Scene()
-        s.new_axis('my_axis', position = (0,0,1))
+        s.new_frame('my_axis', position = (0,0,1))
 
         a = Scene() # another world
         a.new_point('a point')
@@ -5389,7 +5380,7 @@ class Scene:
 
         Raises Exception if a node with name is not found"""
 
-        return self._node_from_node(node, Axis)
+        return self._node_from_node(node, Frame)
 
     def _poi_from_node(self, node):
         """Returns None if node is None
@@ -5967,8 +5958,8 @@ class Scene:
                     cog=node.cog,
                     parent=node.parent,
                 )
-            elif isinstance(node, Axis):
-                p = self.new_axis(
+            elif isinstance(node, Frame):
+                p = self.new_frame(
                     node.name + "_dissolved",
                     position=node.position,
                     rotation=node.rotation,
@@ -5995,7 +5986,7 @@ class Scene:
 
             node._dissolved = True  # signal for the .delete function to skip deletion of nodes created by the manager
 
-        elif isinstance(node, Axis):
+        elif isinstance(node, Frame):
             for d in self.nodes_depending_on(node):
                 self[d].change_parent_to(node.parent)
 
@@ -6236,6 +6227,8 @@ class Scene:
 
     # ======== create functions =========
 
+
+
     def new_axis(
         self,
         name,
@@ -6245,7 +6238,28 @@ class Scene:
         inertia=None,
         inertia_radii=None,
         fixed=True,
-    ) -> Axis:
+    ) -> Frame:
+
+        warnings.warn('new_frame is deprecated, use new_frame instead')
+
+        return self.new_frame(name,
+        parent,
+        position,
+        rotation,
+        inertia,
+        inertia_radii,
+        fixed)
+
+    def new_frame(
+        self,
+        name,
+        parent=None,
+        position=None,
+        rotation=None,
+        inertia=None,
+        inertia_radii=None,
+        fixed=True,
+    ) -> Frame:
         """Creates a new *axis* node and adds it to the scene.
 
         Args:
@@ -6291,7 +6305,7 @@ class Scene:
         # then create
         a = self._vfc.new_axis(name)
 
-        new_node = Axis(self, a)
+        new_node = Frame(self, a)
 
         # and set properties
         if b is not None:
@@ -7236,7 +7250,7 @@ class Scene:
         assertValidName(name)
         self._verify_name_available(name)
         parent = self._node_from_node_or_str(parent)
-        assert isinstance(parent, Axis), ValueError(
+        assert isinstance(parent, Frame), ValueError(
             f"Parent should be an axis system or derived, not a {type(parent)}"
         )
 
@@ -7326,7 +7340,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_ballastsystem(self, name, parent: Axis) -> BallastSystem:
+    def new_ballastsystem(self, name, parent: Frame) -> BallastSystem:
         """Creates a new *rigidbody* node and adds it to the scene.
 
         Args:
@@ -7757,7 +7771,7 @@ class Scene:
 
             container_name = self.available_name_like("import_container")
 
-            c = self.new_axis(prefix + container_name)
+            c = self.new_frame(prefix + container_name)
 
             for name in imported_element_names:
 
@@ -7780,7 +7794,7 @@ class Scene:
         Example:
             s = Scene()
             c = s.copy()
-            c.new_axis('only in c')
+            c.new_frame('only in c')
 
         """
 

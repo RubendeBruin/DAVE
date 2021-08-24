@@ -3,8 +3,8 @@ from DAVE.scene import *
 
 s = Scene()
 
-s.new_axis('Axis')
-s.new_axis('Axis_1', parent = 'Axis')
+s.new_frame('Axis')
+s.new_frame('Axis_1', parent ='Axis')
 
 s['Axis_1'].position = (0.0, 0.0, 2.0)
 s.new_rigidbody('Body', parent = 'Axis_1')

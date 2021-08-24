@@ -295,7 +295,7 @@ def dynamics_quickfix(scene):
                 position = (0,0,0)
                 if isinstance(node, RigidBody):
                     position = node.cog
-                a = scene.new_axis(name, position = node.to_glob_position(position), rotation = node.global_rotation)
+                a = scene.new_frame(name, position = node.to_glob_position(position), rotation = node.global_rotation)
 
                 # if node has a parent, then place the axis there (also works if parent is None)
                 a.change_parent_to(node.parent)
@@ -401,7 +401,7 @@ def prepare_for_fd(s):
     for w in wis:
 
         # checks
-        assert isinstance(w.parent, Axis), ValueError('Parent of "{}" shall be an axis or derived'.format(w.name))
+        assert isinstance(w.parent, Frame), ValueError('Parent of "{}" shall be an axis or derived'.format(w.name))
         assert not np.any(w.parent.fixed) , ValueError('Parent of "{}" shall have all its dofs set to free (not fixed)'.format(w.name))
 
         # loads hydrodynamic data
@@ -432,7 +432,7 @@ def prepare_for_fd(s):
 
         name = s.available_name_like('autocreated_parent_for_{}'.format(w.name))
 
-        new_parent = s.new_axis(name, position = glob_position, rotation = glob_rotation, fixed=False)
+        new_parent = s.new_frame(name, position = glob_position, rotation = glob_rotation, fixed=False)
 
         w.parent.change_parent_to(new_parent)
         w.parent.fixed = True

@@ -1,6 +1,6 @@
 import DAVE.gui.forms.widget_dynprop
 from PySide2.QtWidgets import QCheckBox
-from DAVE.scene import Axis
+from DAVE.scene import Frame
 
 from DAVE.gui.dockwidget import *
 
@@ -28,7 +28,7 @@ class WidgetDynamicProperties(guiDockWidget):
 
     def fill_nodes_table(self):
 
-        axes = self.guiScene.nodes_of_type(Axis)
+        axes = self.guiScene.nodes_of_type(Frame)
         self._filling_node_table = True
 
         store_scrollbar_position = self.ui.tableDynProp.verticalScrollBar().sliderPosition()

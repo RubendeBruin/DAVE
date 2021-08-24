@@ -28,7 +28,7 @@ s.new_point(name='crane_top',
                     0.0,
                     61.0))
 # code for crane_slew
-s.new_axis(name='crane_slew',
+s.new_frame(name='crane_slew',
            parent='crane_mast',
            position=(0.0,
                      0.0,

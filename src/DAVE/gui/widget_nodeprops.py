@@ -1065,7 +1065,7 @@ class EditLC6d(NodeEditor):
             widget.blockSignals(True)
 
         self.alist = list()
-        for axis in self.scene.nodes_of_type(vfs.Axis):
+        for axis in self.scene.nodes_of_type(vfs.Frame):
             self.alist.append(axis.name)
 
         self.ui.cbMasterAxis.clear()
@@ -1145,7 +1145,7 @@ class EditConnector2d(NodeEditor):
             widget.blockSignals(True)
 
         self.alist = list()
-        for axis in self.scene.nodes_of_type(vfs.Axis):
+        for axis in self.scene.nodes_of_type(vfs.Frame):
             self.alist.append(axis.name)
 
         self.ui.cbMasterAxis.clear()
@@ -1228,7 +1228,7 @@ class EditBeam(NodeEditor):
             widget.blockSignals(True)
 
         self.alist = list()
-        for axis in self.scene.nodes_of_type(vfs.Axis):
+        for axis in self.scene.nodes_of_type(vfs.Frame):
             self.alist.append(axis.name)
 
         self.ui.cbMasterAxis.clear()
@@ -1954,7 +1954,7 @@ class WidgetNodeProps(guiDockWidget):
         if isinstance(node, vfs.WaveInteraction1):
             self._node_editors.append(EditWaveInteraction.Instance())
 
-        if isinstance(node, vfs.Axis):
+        if isinstance(node, vfs.Frame):
             self._node_editors.append(EditAxis.Instance())
 
         if isinstance(node, vfs.RigidBody) and not isinstance(node, vfs.Shackle):

@@ -25,7 +25,7 @@ from PySide2 import QtWidgets
 def fill_dropdown_boxes(ui, scene, selection=None):
     a = list()
     p = list()
-    for e in scene.nodes_of_type(vfs.Axis):
+    for e in scene.nodes_of_type(vfs.Frame):
         a.append(e.name)
     for e in scene.nodes_of_type((vfs.Point, vfs.Circle)):
         p.append(e.name)
@@ -47,7 +47,7 @@ def fill_dropdown_boxes(ui, scene, selection=None):
         if isinstance(node, (vfs.Point, vfs.Circle)):
             ui.cbPoiA.setCurrentText(node.name)
             ui.cbParentPoi.setCurrentText(node.name)
-        if isinstance(node, vfs.Axis):
+        if isinstance(node, vfs.Frame):
             ui.cbMasterAxis.setCurrentText(node.name)
             ui.cbParentAxis.setCurrentText(node.name)
 
@@ -56,7 +56,7 @@ def fill_dropdown_boxes(ui, scene, selection=None):
             if isinstance(node, (vfs.Point, vfs.Circle)):
                 ui.cbPoiB.setCurrentText(node.name)
                 ui.cbParentPoi.setCurrentText(node.name)
-            if isinstance(node, vfs.Axis):
+            if isinstance(node, vfs.Frame):
                 ui.cbSlaveAxis.setCurrentText(node.name)
                 ui.cbParentAxis.setCurrentText(node.name)
 
@@ -122,9 +122,9 @@ def add_axis(scene, selection=None):
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()
         if parent:
-            return "new_axis('{}', parent = '{}')".format(name, parent)
+            return "new_frame('{}', parent = '{}')".format(name, parent)
         else:
-            return "new_axis('{}')".format(name)
+            return "new_frame('{}')".format(name)
     else:
         return None
 

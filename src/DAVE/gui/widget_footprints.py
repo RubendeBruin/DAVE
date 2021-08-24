@@ -107,7 +107,7 @@ class WidgetFootprints(guiDockWidget):
             # if we have a parent, then put the items under the parent,
             # else put it under the root
 
-            if isinstance(node, ds.Axis):
+            if isinstance(node, ds.Frame):
                 item.setIcon(0, QIcon(":/icons/axis_blue.png"))
             elif isinstance(node, ds.RigidBody):
                 item.setIcon(0, QIcon(":/icons/cube.png"))
@@ -166,7 +166,7 @@ class WidgetFootprints(guiDockWidget):
         except:
             return
 
-        if not isinstance(element, (Axis, Point)):
+        if not isinstance(element, (Frame, Point)):
             return
 
         self._element = element

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>703</width>
-    <height>539</height>
+    <width>446</width>
+    <height>266</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,6 +34,23 @@
         </property>
         <property name="text">
          <string>Structure</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pbAxis">
+        <property name="styleSheet">
+         <string>text-align:left</string>
+        </property>
+        <property name="text">
+         <string>Frame</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources.qrc">
+          <normaloff>:/icons/axis_blue.png</normaloff>:/icons/axis_blue.png</iconset>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -65,23 +82,6 @@
         <property name="icon">
          <iconset resource="resources.qrc">
           <normaloff>:/icons/circle_blue.png</normaloff>:/icons/circle_blue.png</iconset>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pbAxis">
-        <property name="styleSheet">
-         <string>text-align:left</string>
-        </property>
-        <property name="text">
-         <string>Axis</string>
-        </property>
-        <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/icons/axis_blue.png</normaloff>:/icons/axis_blue.png</iconset>
         </property>
         <property name="flat">
          <bool>true</bool>

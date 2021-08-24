@@ -7,7 +7,7 @@ s.new_rigidbody(name='Barge',
                 inertia_radii = (10,40,40),
                 fixed=False)
 # code for global_springs
-s.new_axis(name='barge_positioning_target',
+s.new_frame(name='barge_positioning_target',
            position=(0.0,
                      0.0,
                      0.0),

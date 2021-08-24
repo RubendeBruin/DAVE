@@ -278,7 +278,7 @@ def force_vessel_to_evenkeel_and_draft(scene, vessel, z):
 
     # Create a dummy at the vessel origin
     dummy_name = scene.available_name_like(vessel.name + "dummy")
-    dummy = scene.new_axis(dummy_name, parent = vessel)
+    dummy = scene.new_frame(dummy_name, parent = vessel)
     dummy.change_parent_to(None)
 
     # set dummy to even-keel

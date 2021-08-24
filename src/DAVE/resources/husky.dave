@@ -42,6 +42,6 @@ s["Husky"].inertia_radii = (10,30,30.0)
 s.new_waveinteraction('WaveInteraction', parent = 'Husky', path = r'husky.dhyd')
 s['WaveInteraction'].offset = (40.0, 0.0, 3.5)
 
-s.new_axis('Husky_target')
+s.new_frame('Husky_target')
 s.new_linear_connector_6d('Husky_pos_springs', main = 'Husky_target', secondary = 'Husky')
 s['Husky_pos_springs'].stiffness = (100.0, 100.0, 0.0, 1.0, 1.0, 10.0)

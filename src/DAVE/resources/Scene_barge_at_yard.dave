@@ -9,7 +9,7 @@ def solved(number):
     return number
 
 # code for Yard
-s.new_axis(name='Yard',
+s.new_frame(name='Yard',
            position=(0.0,
                      0.0,
                      0.0),
@@ -18,7 +18,7 @@ s.new_axis(name='Yard',
                      0.0),
            fixed =(True, True, True, True, True, True) )
 # code for Axis - visuals
-s.new_axis(name='Axis - visuals',
+s.new_frame(name='Axis - visuals',
            parent='Yard',
            position=(0.0,
                      0.0,
@@ -73,7 +73,7 @@ s.new_point(name='MP_6',
                     -1.0,
                     4.0))
 # code for barge_positioning_target
-s.new_axis(name='barge_positioning_target',
+s.new_frame(name='barge_positioning_target',
            position=(0.0,
                      0.0,
                      0.0),

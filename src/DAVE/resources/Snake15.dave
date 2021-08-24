@@ -9,7 +9,7 @@ def solved(number):
     return number
 
 # code for base0
-s.new_axis(name='base0',
+s.new_frame(name='base0',
            position=(0.0,
                      0.0,
                      0.0),

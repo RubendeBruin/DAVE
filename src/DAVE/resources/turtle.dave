@@ -26,7 +26,7 @@ s.new_buoyancy(name='buoyancy',
           parent='Turtle')
 s['buoyancy'].trimesh.load_obj(s.get_resource_path('buoyancy turtle.obj'), scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
 # code for import_container
-s.new_axis(name='import_container',
+s.new_frame(name='import_container',
            position=(0.0,
                      0.0,
                      0.0),

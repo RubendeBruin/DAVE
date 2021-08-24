@@ -101,7 +101,7 @@ s.new_visual(name='Lower block visual',
 # Construct sheaves for prongs
 
 # code for prong1_axis
-s.new_axis(name='prong1_axis',
+s.new_frame(name='prong1_axis',
            parent='hook4p',
            position=(1.2,
                      0.0,
@@ -111,7 +111,7 @@ s.new_axis(name='prong1_axis',
                      0.0),
            fixed =(True, True, True, True, True, True) )
 # code for prong1_sheave_att
-s.new_axis(name='prong1_sheave_att',
+s.new_frame(name='prong1_sheave_att',
            parent='prong1_axis',
            position=(0.0,
                      0.0,
@@ -134,7 +134,7 @@ s.new_circle(name='prong1_sheave',
 
 
 # code for prong3_axis
-s.new_axis(name='prong3_axis',
+s.new_frame(name='prong3_axis',
            parent='hook4p',
            position=(-1.2,
                      0.0,
@@ -144,7 +144,7 @@ s.new_axis(name='prong3_axis',
                      180.0),
            fixed =(True, True, True, True, True, True) )
 # code for prong3_sheave_att
-s.new_axis(name='prong3_sheave_att',
+s.new_frame(name='prong3_sheave_att',
            parent='prong3_axis',
            position=(0.0,
                      0.0,

@@ -214,7 +214,7 @@ class WidgetNodeTree(guiDockWidget):
             # else put it under the root
 
             item.setIcon(0, QIcon(":/icons/redball.png"))
-            if isinstance(node, ds.Axis):
+            if isinstance(node, ds.Frame):
                 item.setIcon(0, QIcon(":/icons/axis_blue.png"))
             elif isinstance(node, ds.RigidBody):
                 item.setIcon(0, QIcon(":/icons/cube.png"))

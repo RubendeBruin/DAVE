@@ -1202,7 +1202,7 @@ class VisualActor:
 
 
 
-        if isinstance(self.node, vf.Axis):
+        if isinstance(self.node, vf.Frame):
             m44 = transform_to_mat4x4(self.node.global_transform)
             for a in self.actors.values():
                 a.SetScale(viewport.settings.geometry_scale)
@@ -1730,7 +1730,7 @@ class Viewport:
                 visual.actor_type = ActorType.VISUAL
                 actors["main"] = visual
 
-            if isinstance(N, vf.Axis):
+            if isinstance(N, vf.Frame):
                 size = 1
                 ar = vp.Arrow((0, 0, 0), (size, 0, 0), res=RESOLUTION_ARROW)
                 ag = vp.Arrow((0, 0, 0), (0, size, 0), res=RESOLUTION_ARROW)

@@ -14,14 +14,14 @@ def solved(number):
     return number
 
 # code for Vessel
-s.new_axis(name='Vessel',
-           position=(0.0,
+s.new_frame(name='Vessel',
+            position=(0.0,
                      0.0,
                      0.0),
-           rotation=(0.0,
+            rotation=(0.0,
                      0.0,
                      0.0),
-           fixed =(True, True, True, True, True, True) )
+            fixed =(True, True, True, True, True, True))
 # code for Buoyancy mesh
 mesh = s.new_buoyancy(name='Buoyancy mesh',
           parent='Vessel')
@@ -51,44 +51,44 @@ def solved(number):
     return number
 
 # code for Vessel_global_motion
-s.new_axis(name='Vessel_global_motion',
-           position=(0.0,
+s.new_frame(name='Vessel_global_motion',
+            position=(0.0,
                      0.0,
                      solved(0.0)),
-           rotation=(0.0,
+            rotation=(0.0,
                      0.0,
                      0.0),
-           fixed =(True, True, False, True, True, True) )
+            fixed =(True, True, False, True, True, True))
 # code for Vessel_trim_motion
-s.new_axis(name='Vessel_trim_motion',
-           parent='Vessel_global_motion',
-           position=(0.0,
+s.new_frame(name='Vessel_trim_motion',
+            parent='Vessel_global_motion',
+            position=(0.0,
                      0.0,
                      0.0),
-           rotation=(0.0,
+            rotation=(0.0,
                      0.0,
                      0.0),
-           fixed =(True, True, True, True, True, True) )
+            fixed =(True, True, True, True, True, True))
 # code for Vessel_heel
-s.new_axis(name='Vessel_heel',
-           parent='Vessel_trim_motion',
-           position=(0.0,
+s.new_frame(name='Vessel_heel',
+            parent='Vessel_trim_motion',
+            position=(0.0,
                      0.0,
                      0.0),
-           rotation=(solved(40.0),
+            rotation=(solved(40.0),
                      0.0,
                      0.0),
-           fixed =(True, True, True, False, True, True) )
+            fixed =(True, True, True, False, True, True))
 # code for Vessel
-s.new_axis(name='Vessel',
-           parent='Vessel_heel',
-           position=(0.0,
+s.new_frame(name='Vessel',
+            parent='Vessel_heel',
+            position=(0.0,
                      0.0,
                      0.0),
-           rotation=(0.0,
+            rotation=(0.0,
                      0.0,
                      0.0),
-           fixed =(True, True, True, True, True, True) )
+            fixed =(True, True, True, True, True, True))
 # code for Buoyancy mesh
 mesh = s.new_buoyancy(name='Buoyancy mesh',
           parent='Vessel')
