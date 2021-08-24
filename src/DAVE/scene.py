@@ -1096,6 +1096,8 @@ class Frame(NodeWithParentAndFootprint):
             f"axis_system shall be an instance of Axis, but it is of type {type(axis_system)}"
         )
 
+        self._scene.update()
+
         # calculate in the right global direction
         glob_dir = axis_system.to_glob_direction((1, 0, 0))
         self._scene._vfc.calculateBendingMoments(*glob_dir)
@@ -5982,7 +5984,7 @@ class Scene:
                             d.parent = p
 
                 for d in self.nodes_depending_on(node):
-                    self[d].change_parent_to(node.parent)
+                    self[d].change_parent_to(p)
 
             node._dissolved = True  # signal for the .delete function to skip deletion of nodes created by the manager
 

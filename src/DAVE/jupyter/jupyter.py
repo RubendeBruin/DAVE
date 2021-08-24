@@ -16,6 +16,7 @@
 #     import os
 #     os.system('/usr/bin/Xvfb :99 -screen 0 1024x768x24 &')
 #     os.environ['DISPLAY'] = ':99'
+import warnings
 
 from ..visual import Viewport
 import vedo
@@ -66,13 +67,17 @@ def view(scene, sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),
           cog_normalize=cog_normalize,
           cog_scale = cog_scale)
 
-def show(scene, sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, height = 600,
+def show(scene, sea=False,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, height = 600,
          geometry_size=1,
          force_normalize=False,
          force_scale=1,
          cog_normalize=False,
          cog_scale=1,
-         painters = 'Construction'):
+         painters = 'Construction',
+         additional_actors = [],
+         projection = '3d',
+         zoom_fit = False,
+         scale = None):
 
     """
     Creates a 3d view of the scene and shows it as a static image.
@@ -81,13 +86,16 @@ def show(scene, sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, he
         scene: the scene
         sea:   plot sea [bool]
         camera_pos: camera position [x,y,z]
-        lookat:  camera focal point [x,y,z]
+        lookat:  camera focal point [x,y,z] OR 'y','-y','x','-x','z','-z' to go to 2D mode
         geometry_size: overall geometry size (set 0 for no geometry)
         force_normalize: plot all forces at same scale [False]
         force_scale: overall force scale (set 0 for no forces)
         cog_normalize: plot all cogs at same scale [False]
         cog_scale: overall cog scale (set 0 for no cog)
         painters : str with key of painters dict, or a painters instance
+        projection: '2d' or '3d'
+        zoom_fit: True/False - adjust camera to view full scene
+        scale : parallel scale for 2d views
 
     Returns:
         A 3d view
@@ -100,7 +108,11 @@ def show(scene, sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, he
                 force_scale = force_scale,
                 cog_normalize=cog_normalize,
                 cog_scale = cog_scale,
-                painters=painters)
+                painters=painters,
+                additional_actors = additional_actors,
+                zoom_fit=zoom_fit,
+                projection=projection,
+                scale = scale)
 
 def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=(50,-25,10), lookat = (0,0,0),
           geometry_size = 1,
@@ -108,12 +120,12 @@ def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=
           force_scale = 1,
           cog_normalize=False,
           cog_scale = 1,
-          painters = None):
+          painters = None,
+          additional_actors = (),
+          zoom_fit = True,
+          projection = '3d',
+          scale=None):
 
-    camera = dict()
-    camera['viewup'] = [0, 0, 1]
-    camera['pos'] = camera_pos
-    camera['focalPoint'] = lookat
 
     vedo.embedWindow(backend=backend, verbose=False)  # screenshot
     vedo.settings.usingQt = False
@@ -150,6 +162,9 @@ def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=
 
     vp.update_visibility()
 
+    for a in additional_actors:
+        vp.add_temporary_actor(actor=a)
+
     # warningshown = False
 
     # for va in vp.node_visuals:
@@ -184,7 +199,58 @@ def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=
     #
     #             offscreen.add(a)
 
+    c = vp.screen.camera
 
-    return vp.show(camera=camera)
+    if isinstance(lookat, str):  # go to 2d mode
+        c.SetPosition(*camera_pos)
+
+        if lookat == 'x':
+            c.SetViewUp(0,0,1)
+            c.SetFocalPoint(camera_pos[0]+1, camera_pos[1], camera_pos[2])
+        elif lookat == '-x':
+            c.SetViewUp(0, 0, 1)
+            c.SetFocalPoint(camera_pos[0]-1, camera_pos[1], camera_pos[2])
+        elif lookat == 'y':
+            c.SetViewUp(0, 0, 1)
+            c.SetFocalPoint(camera_pos[0], camera_pos[1]+1, camera_pos[2])
+        elif lookat == '-y':
+            c.SetViewUp(0, 0, 1)
+            c.SetFocalPoint(camera_pos[0], camera_pos[1]-1, camera_pos[2])
+        elif lookat == 'z':
+            c.SetViewUp(0, -1, 0)
+            c.SetFocalPoint(camera_pos[0], camera_pos[1], camera_pos[2]+1)
+        elif lookat == '-z':
+            c.SetViewUp(0, 1, 0)
+            c.SetFocalPoint(camera_pos[0], camera_pos[1], camera_pos[2]-1)
+        else:
+            raise ValueError('Value for "lookat" shall be x, -x, y, -y, z, -z')
+
+        projection='2d'
+
+    else:
+
+        c.SetPosition(*camera_pos)
+        c.SetFocalPoint(*lookat)
+        c.SetViewUp(0, 0, 1)
+
+    if projection=='2d':
+        from vedo import settings
+        settings.useParallelProjection = True
+        c.ParallelProjectionOn()
+        if scale is not None:
+            c.SetParallelScale(scale)
+    else:
+        from vedo import settings
+        settings.useParallelProjection = False
+
+        if scale is not None:
+            warnings.warn('Scale parameter is only used for 2d projections')
+
+    vp.update_outlines()
+
+    if zoom_fit and scale is not None:
+        warnings.warn('Both scale and zoom_fit have been defined. Scale will be ignored')
+
+    return vp.show(zoom_fit=zoom_fit)
 
 

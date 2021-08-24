@@ -386,6 +386,64 @@ def vp_actor_from_obj(filename):
 
     return vpa
 
+def _create_moment_or_shear_line(what, frame : dn.Frame, scale_to = 2, at=None):
+    """see create_momentline_actors, create_shearline_actors
+    """
+
+    if at is None:
+        at = frame
+
+    lsm = frame.give_load_shear_moment_diagram(at)
+
+    x, Fz, My = lsm.give_shear_and_moment()
+
+    report_axis = at
+
+    start = report_axis.to_glob_position((x[0], 0, 0))
+    end = report_axis.to_glob_position((x[-1], 0, 0))
+
+    n = len(x)
+    scale = scale_to
+
+    if what=='Moment':
+        value = My
+        color = 'green'
+    elif what=='Shear':
+        value = Fz
+        color = 'blue'
+    else:
+        raise ValueError(f'What should be Moment or Shear, not {what}')
+
+    if np.max(np.abs(value))<1e-6:
+        scale = 0
+    else:
+        scale = scale / np.max(np.abs(value))
+    line = [report_axis.to_glob_position((x[i], 0, scale * value[i])) for i in range(n)]
+
+    actor_axis = vp.Line((start, end)).c('black')
+    actor_graph = vp.Line(line).c(color)
+
+    return (actor_axis, actor_graph)
+
+def create_momentline_actors(frame : dn.Frame, scale_to = 2, at=None):
+    """Returns an actor that visualizes the moment-line for the given frame.
+
+    Args:
+        frame : Frame node to report the momentline for
+        scale_to : absolute maximum of the line [m]
+        at : Optional: [Frame] to report the momentline in
+        """
+    return _create_moment_or_shear_line('Moment', frame, scale_to, at)
+
+def create_shearline_actors(frame : dn.Frame, scale_to = 2, at=None):
+    """Returns an actor that visualizes the shear-line for the given frame.
+
+    Args:
+        frame : Frame node to report the shearline for
+        scale_to : absolute maximum of the line [m]
+        at : Optional: [Frame] to report the shearline in
+        """
+    return _create_moment_or_shear_line('Shear', frame, scale_to, at)
 
 class ActorType(Enum):
     FORCE = 1
@@ -2167,7 +2225,7 @@ class Viewport:
 
             r.Modified()
 
-    def show(self, camera=None, include_outlines=True):
+    def show(self, include_outlines=True, zoom_fit = False):
         """Add actors to screen and show
 
         If purpose is to show embedded, then call show_embedded instead
@@ -2179,11 +2237,11 @@ class Viewport:
 
         self.create_world_actors()
 
-        if camera is None:
-            camera = dict()
-            camera["viewup"] = [0, 0, 1]
-            camera["pos"] = [10, -10, 5]
-            camera["focalPoint"] = [0, 0, 0]
+        # if camera is None:
+        #     camera = dict()
+        #     camera["viewup"] = [0, 0, 1]
+        #     camera["pos"] = [10, -10, 5]
+        #     camera["focalPoint"] = [0, 0, 0]
 
 
         if self.Jupyter and self.vtkWidget is None:
@@ -2202,10 +2260,9 @@ class Viewport:
 
             self.screen.resetcam = False
 
-            # TODO: Set camera
-            # TODO: Update outlines
+            self.update_outlines()
 
-            return self.screen.show(camera=camera)
+            return self.screen.show(resetcam=zoom_fit)
 
         else:
 
@@ -2220,6 +2277,11 @@ class Viewport:
                     screen.add(outline.outline_actor)
 
             screen.resetcam = False
+
+            camera = dict()
+            camera["viewup"] = [0, 0, 1]
+            camera["pos"] = [10, -10, 5]
+            camera["focalPoint"] = [0, 0, 0]
 
             screen.show(camera=camera)
 
@@ -2507,3 +2569,4 @@ class WaveField:
         self.period = wave_period
         self.x = x
         self.y = y
+

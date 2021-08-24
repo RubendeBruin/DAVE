@@ -15,7 +15,7 @@ from DAVE.gui.dockwidget import *
 from DAVE.gui.forms.widget_bendingmomentpreview import Ui_WidgetBendingMomentPreview
 from PySide2 import QtGui, QtCore, QtWidgets
 import DAVE.scene as nodes
-import vedo as vd
+from DAVE.visual import create_momentline_actors, create_shearline_actors
 from DAVE import settings
 
 class WidgetBendingMoment(guiDockWidget):
@@ -109,34 +109,12 @@ class WidgetBendingMoment(guiDockWidget):
 
         self.guiScene.update()
 
-        lsm = target.give_load_shear_moment_diagram(orientation)
-
-        x,Fz, My = lsm.give_shear_and_moment()
-
-        report_axis = orientation
-
-        start = report_axis.to_glob_position((x[0],0,0))
-        end = report_axis.to_glob_position((x[-1], 0, 0))
-
-        n = len(x)
         scale = self.ui.sbScale.value()
 
         if self.ui.rbBending.isChecked():
-            value = My
-            color = 'green'
-        elif self.ui.rbShear.isChecked():
-            value = Fz
-            color = 'blue'
+            actor_axis, actor_graph = create_momentline_actors(target, scale_to=scale, at=orientation)
         else:
-            raise ValueError('Cannot be here')
-
-        scale = scale / np.max(np.abs(value))
-        line = [report_axis.to_glob_position((x[i], 0, scale * value[i])) for i in range(n)]
-
-        # add to screen
-        actor_axis = vd.Line((start, end)).c('black')
-        actor_graph = vd.Line(line).c(color)
-
+            actor_axis, actor_graph = create_shearline_actors(target, scale_to=scale, at=orientation)
 
         self.gui.visual.add_temporary_actor(actor_axis)
         self.gui.visual.add_temporary_actor(actor_graph)
