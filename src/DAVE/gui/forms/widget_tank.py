@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_tank.ui',
 # licensing of 'widget_tank.ui' applies.
 #
-# Created: Tue Aug 24 08:21:26 2021
+# Created: Wed Aug 25 09:16:15 2021
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!

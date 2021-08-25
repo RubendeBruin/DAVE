@@ -21,63 +21,28 @@ import warnings
 from ..visual import Viewport
 import vedo
 
-"""
-visuals [true/false]
-geometry_size
-normalize_force [true/false]
-force_size
-normalize_cog [true/false]
-cog_size
-orthographic [true/false]
-"""
 
-def view(scene, sea=True,camera_pos=(50,-25,10), lookat = (0,0,0),
-         visual_alpha = 1.0,
-         do_meshes = True,
-         geometry_size=1,
-         force_normalize=False,
-         force_scale=1,
-         cog_normalize=False,
-         cog_scale=1,
-         ):
-    """
-    Creates a 3d view of the scene and shows in using panel.
-
-
-    Args:
-        scene: the scene
-        sea:   plot sea [bool]
-        camera_pos: camera position [x,y,z]
-        lookat:  camera focal point [x,y,z]
-        do_visuals:  plot visuals
-        geometry_size: overall geometry size (set 0 for no geometry)
-        force_normalize: plot all forces at same scale [False]
-        force_scale: overall force scale (set 0 for no forces)
-        cog_normalize: plot all cogs at same scale [False]
-        cog_scale: overall cog scale (set 0 for no cog)
-
-    Returns:
-        A 3d view
-
-    """
-    return _view(scene, 'panel', sea=sea, width = 1024, height = 800, camera_pos=camera_pos, lookat=lookat,
-          geometry_size = geometry_size,
-          force_normalize = force_normalize,
-          force_scale = force_scale,
-          cog_normalize=cog_normalize,
-          cog_scale = cog_scale)
-
-def show(scene, sea=False,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, height = 600,
-         geometry_size=1,
-         force_normalize=False,
-         force_scale=1,
-         cog_normalize=False,
-         cog_scale=1,
-         painters = 'Construction',
-         additional_actors = [],
-         projection = '3d',
-         zoom_fit = False,
-         scale = None):
+def show(
+    scene,
+    camera_pos=(50, -25, 10),
+    lookat=(0, 0, 0),
+    width=1024,
+    height=600,
+    show_force: bool = True,  # show forces
+    show_meshes: bool = True,  # show meshes and connectors
+    show_global: bool = False,  # show or hide the environment (sea)
+    show_cog: bool = True,
+    cog_do_normalize: bool = False,
+    cog_scale: float = 1.0,
+    force_do_normalize: bool = True,  # Normalize force size to 1.0 for plotting
+    force_scale: float = 1.6,  # Scale to be applied on (normalized) force magnitude
+    geometry_scale: float = 1.0,  # poi radius of the pois
+    painters="Construction",
+    additional_actors=(),
+    projection="3d",
+    zoom_fit=False,
+    scale=None,
+):
 
     """
     Creates a 3d view of the scene and shows it as a static image.
@@ -87,12 +52,17 @@ def show(scene, sea=False,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, h
         sea:   plot sea [bool]
         camera_pos: camera position [x,y,z]
         lookat:  camera focal point [x,y,z] OR 'y','-y','x','-x','z','-z' to go to 2D mode
-        geometry_size: overall geometry size (set 0 for no geometry)
-        force_normalize: plot all forces at same scale [False]
-        force_scale: overall force scale (set 0 for no forces)
-        cog_normalize: plot all cogs at same scale [False]
-        cog_scale: overall cog scale (set 0 for no cog)
+        show_force: bool = True  # show forces
+        show_meshes: bool = True  # show meshes and connectors
+        show_global: bool = False  # show or hide the environment (sea)
+        show_cog: bool = True
+        cog_do_normalize: bool = False
+        cog_scale: float = 1.0
+        force_do_normalize: bool = True  # Normalize force size to 1.0 for plotting
+        force_scale: float = 1.6  # Scale to be applied on (normalized) force magnitude
+        geometry_scale: float = 1.0  # poi radius of the pois
         painters : str with key of painters dict, or a painters instance
+        additional_actors : list or tuple of actors that need to be added to the view,
         projection: '2d' or '3d'
         zoom_fit: True/False - adjust camera to view full scene
         scale : parallel scale for 2d views
@@ -102,130 +72,74 @@ def show(scene, sea=False,camera_pos=(50,-25,10), lookat = (0,0,0),width=1024, h
 
     """
 
-    return _view(scene, backend= '2d', sea=sea, width = width, height = height, camera_pos=camera_pos, lookat=lookat,
-                geometry_size = geometry_size,
-                force_normalize = force_normalize,
-                force_scale = force_scale,
-                cog_normalize=cog_normalize,
-                cog_scale = cog_scale,
-                painters=painters,
-                additional_actors = additional_actors,
-                zoom_fit=zoom_fit,
-                projection=projection,
-                scale = scale)
-
-def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=(50,-25,10), lookat = (0,0,0),
-          geometry_size = 1,
-          force_normalize = False,
-          force_scale = 1,
-          cog_normalize=False,
-          cog_scale = 1,
-          painters = None,
-          additional_actors = (),
-          zoom_fit = True,
-          projection = '3d',
-          scale=None):
-
-
-    vedo.embedWindow(backend=backend, verbose=False)  # screenshot
+    vedo.embedWindow(backend='2d', verbose=False)  # screenshot
     vedo.settings.usingQt = False
 
     vp = Viewport(scene, jupyter=True)
 
     if painters is None:
         from DAVE.settings_visuals import PAINTERS
-        painters = PAINTERS['Construction']
+
+        painters = PAINTERS["Construction"]
     elif isinstance(painters, str):
         from DAVE.settings_visuals import PAINTERS
 
         try:
             painters = PAINTERS[painters]
         except KeyError as E:
-            print(f'Available painters are: {PAINTERS.keys()}')
+            print(f"Available painters are: {PAINTERS.keys()}")
             raise E
 
     vp.settings.painter_settings = painters
 
-    vp.show_geometry = (geometry_size > 0)
-    vp.geometry_scale = geometry_size
-    vp.force_do_normalize = force_normalize
-    vp.show_force = (force_scale > 0)
-    vp.force_scale = force_scale
-    vp.cog_scale = cog_scale
-    vp.cog_do_normalize = cog_normalize
+    vp.settings.show_force = show_force
+    vp.settings.show_meshes = show_meshes
+    vp.settings.show_global = show_global
 
-    vp.settings.show_global = sea
-    vp.setup_screen(offscreen=True, size=(width,height))
+    vp.settings.show_cog = show_cog
+    vp.settings.cog_do_normalize = cog_do_normalize
+    vp.settings.cog_scale = cog_scale
+
+    vp.settings.force_do_normalize = force_do_normalize
+    vp.settings.force_scale = force_scale
+
+    vp.settings.geometry_scale = geometry_scale
+
+    vp.setup_screen(offscreen=True, size=(width, height))
 
     vp.create_node_visuals(recreate=True)
     vp.position_visuals()
 
-    vp.update_visibility()
-
     for a in additional_actors:
         vp.add_temporary_actor(actor=a)
-
-    # warningshown = False
-
-    # for va in vp.node_visuals:
-    #     for a in va.actors.values():
-    #         if a.GetVisibility():
-    #             if backend == 'panel':
-    #                 # Work-around for panel
-    #                 tr = vtk.vtkTransform()
-    #                 tr.SetMatrix(a.GetMatrix())
-    #
-    #                 a.SetScale(tr.GetScale())
-    #                 a.SetPosition(tr.GetPosition())
-    #                 a.SetOrientation(tr.GetOrientation())
-    #
-    #                 scale = tr.GetScale()
-    #                 orientation = tr.GetOrientation()
-    #
-    #                 if not warningshown:
-    #                     if isinstance(va.node, DAVE.Visual):
-    #                         if scale != (1, 1, 1):
-    #                             if orientation != (0, 0, 0):
-    #                                 print(
-    #                                     'WARNING: THIS INTERACTIVE VIEWER WRONGLY HANDLES SCALE IN COMBINATION WITH ORIENTATION.')
-    #                                 if va.node is not None:
-    #                                     print(f'VISUAL FOR {va.node.name} IS NOT DISPLAYED CORRECTLY.')
-    #                                 print('USE show(...) or Gui for correct visualization')
-    #                                 warningshown = True
-    #
-    #                 tr0 = vtk.vtkTransform()
-    #                 tr0.Identity()
-    #                 a.SetUserTransform(tr0)
-    #
-    #             offscreen.add(a)
 
     c = vp.screen.camera
 
     if isinstance(lookat, str):  # go to 2d mode
         c.SetPosition(*camera_pos)
 
-        if lookat == 'x':
-            c.SetViewUp(0,0,1)
-            c.SetFocalPoint(camera_pos[0]+1, camera_pos[1], camera_pos[2])
-        elif lookat == '-x':
+        if lookat == "x":
             c.SetViewUp(0, 0, 1)
-            c.SetFocalPoint(camera_pos[0]-1, camera_pos[1], camera_pos[2])
-        elif lookat == 'y':
+            c.SetFocalPoint(camera_pos[0] + 1, camera_pos[1], camera_pos[2])
+        elif lookat == "-x":
             c.SetViewUp(0, 0, 1)
-            c.SetFocalPoint(camera_pos[0], camera_pos[1]+1, camera_pos[2])
-        elif lookat == '-y':
+            c.SetFocalPoint(camera_pos[0] - 1, camera_pos[1], camera_pos[2])
+        elif lookat == "y":
             c.SetViewUp(0, 0, 1)
-            c.SetFocalPoint(camera_pos[0], camera_pos[1]-1, camera_pos[2])
-        elif lookat == 'z':
+            c.SetFocalPoint(camera_pos[0], camera_pos[1] + 1, camera_pos[2])
+        elif lookat == "-y":
+            c.SetViewUp(0, 0, 1)
+            c.SetFocalPoint(camera_pos[0], camera_pos[1] - 1, camera_pos[2])
+        elif lookat == "z":
             c.SetViewUp(0, -1, 0)
-            c.SetFocalPoint(camera_pos[0], camera_pos[1], camera_pos[2]+1)
-        elif lookat == '-z':
+            c.SetFocalPoint(camera_pos[0], camera_pos[1], camera_pos[2] + 1)
+        elif lookat == "-z":
             c.SetViewUp(0, 1, 0)
-            c.SetFocalPoint(camera_pos[0], camera_pos[1], camera_pos[2]-1)
+            c.SetFocalPoint(camera_pos[0], camera_pos[1], camera_pos[2] - 1)
         else:
             raise ValueError('Value for "lookat" shall be x, -x, y, -y, z, -z')
 
-        projection='2d'
+        projection = "2d"
 
     else:
 
@@ -233,24 +147,28 @@ def _view(scene, backend = '2d', sea=True, width=1024, height = 600, camera_pos=
         c.SetFocalPoint(*lookat)
         c.SetViewUp(0, 0, 1)
 
-    if projection=='2d':
+    if projection == "2d":
         from vedo import settings
+
         settings.useParallelProjection = True
         c.ParallelProjectionOn()
         if scale is not None:
             c.SetParallelScale(scale)
     else:
         from vedo import settings
+
         settings.useParallelProjection = False
 
         if scale is not None:
-            warnings.warn('Scale parameter is only used for 2d projections')
+            warnings.warn("Scale parameter is only used for 2d projections")
 
-    vp.update_outlines()
+    # vp.update_outlines()  # no need to update outlines. The actors are not yet in the scene, so no outlines to add
+
+    vp.update_visibility()
 
     if zoom_fit and scale is not None:
-        warnings.warn('Both scale and zoom_fit have been defined. Scale will be ignored')
+        warnings.warn(
+            "Both scale and zoom_fit have been defined. Scale will be ignored"
+        )
 
     return vp.show(zoom_fit=zoom_fit)
-
-

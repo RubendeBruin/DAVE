@@ -168,8 +168,7 @@ class ViewportSettings:
     force_scale: float = 1.6  # Scale to be applied on (normalized) force magnitude
 
     # geometry
-    show_geometry: bool = True  # show or hide geometry objects (axis, pois, etc)
-    geometry_scale: float = 1.0  # poi radius of the pois
+    geometry_scale: float = 1.0  # poi radius of the pois and axis  - setting this scale to zero hides all geometry
 
     outline_width: float = (
         OUTLINE_WIDTH  # line-width of the outlines (cell-like shading)

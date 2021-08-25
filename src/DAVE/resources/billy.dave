@@ -10,6 +10,8 @@ s['barge_positioning_target'].name = 'billy_positioning_target'
 s['Barge positioning springs'].name = 'Billy positioning springs'
 
 
+s['Billy'].footprint = [(0.0, 0.0, 0.0), (100.0, 0.0, 0.0)]
+
 s.new_rigidbody('Billy A frame', parent = 'Billy')
 s['Billy A frame'].position = (92.5, 0.0, 8.0)
 s['Billy A frame'].cog = (28.0, 0.0, 0.0)

@@ -420,8 +420,8 @@ def _create_moment_or_shear_line(what, frame : dn.Frame, scale_to = 2, at=None):
         scale = scale / np.max(np.abs(value))
     line = [report_axis.to_glob_position((x[i], 0, scale * value[i])) for i in range(n)]
 
-    actor_axis = vp.Line((start, end)).c('black')
-    actor_graph = vp.Line(line).c(color)
+    actor_axis = vp.Line((start, end)).c('black').lw(3)
+    actor_graph = vp.Line(line).c(color).lw(3)
 
     return (actor_axis, actor_graph)
 
@@ -1327,9 +1327,6 @@ class Viewport:
             False  # Do not perform slow updates ( make animations quicker)
         )
 
-        self.show_boundary_edges = False
-        """Implemented by not updated when mesh is updated. Use for static views only"""
-
         self._wavefield = None
         """WaveField object"""
 
@@ -1346,7 +1343,7 @@ class Viewport:
             painters = PAINTERS['Construction']
 
         v = Viewport(scene=s)
-        v.show_boundary_edges = boundary_edges
+
         v.settings.painter_settings = painters
 
         v.settings.show_global = sea
@@ -1392,6 +1389,8 @@ class Viewport:
         """
         if self.screen is None:
             return
+
+        camera = self.screen.camera
 
         # Hide and quit if only doing quick updates
         if self.quick_updates_only:
@@ -1453,7 +1452,7 @@ class Viewport:
                     ol = vtk.vtkPolyDataSilhouette()
                     ol.SetInputConnection(tr.GetOutputPort())
                     ol.SetEnableFeatureAngle(True)
-                    ol.SetCamera(self.screen.renderer.GetActiveCamera())
+                    ol.SetCamera(camera)
                     ol.SetBorderEdges(True)
 
                     mapper = vtk.vtkPolyDataMapper()
@@ -1636,11 +1635,14 @@ class Viewport:
         self.vtkWidget.GetRenderWindow().GetRenderers().GetFirstRenderer().ResetCamera()
 
     def toggle_2D(self):
+        """Toggles between 2d and 3d mode. Returns True if mode is 2d after toggling"""
         camera = self.renderer.GetActiveCamera()
         if camera.GetParallelProjection():
             camera.ParallelProjectionOff()
+            return False
         else:
             camera.ParallelProjectionOn()
+            return True
 
     def set_camera_direction(self, vector):
         # Points the camera in the given direction
@@ -2249,18 +2251,17 @@ class Viewport:
             # show embedded
             for va in self.node_visuals:
                 for a in va.actors.values():
-                    if a.GetVisibility():
-                        self.screen.add(a)
+                    # if a.GetVisibility():  # also invisible nodes need to be added because they may be x-rayed
+                    self.screen.add(a)
 
             self.update_visibility()  # needs to be called after actors have been added to screen
             self.update_global_visibility()
 
-            for outline in self.node_outlines:
-                self.screen.add(outline.outline_actor)
-
             self.screen.resetcam = False
 
-            self.update_outlines()
+
+            for outline in self.node_outlines:
+                self.screen.add(outline.outline_actor)
 
             return self.screen.show(resetcam=zoom_fit)
 

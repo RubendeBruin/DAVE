@@ -120,6 +120,7 @@ import numpy as np
 # resources
 import DAVE.gui.forms.resources_rc
 
+
 class SolverDialog(QDialog, Ui_Dialog):
     def __init__(self, parent=None):
         super(SolverDialog, self).__init__(parent)
@@ -129,14 +130,22 @@ class SolverDialog(QDialog, Ui_Dialog):
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.setWindowIcon(QIcon(":/icons/cube.png"))
 
-class Gui():
 
-    def __init__(self, scene=None, splash=None, app=None,
-                 geometry_scale = -1, cog_scale = 0.25, block=True, workspace=None,
-                 plugins_init = (),
-                 plugins_workspace = (),
-                 plugins_context = (),
-                 plugins_editor = ()):
+class Gui:
+    def __init__(
+        self,
+        scene=None,
+        splash=None,
+        app=None,
+        geometry_scale=-1,
+        cog_scale=0.25,
+        block=True,
+        workspace=None,
+        plugins_init=(),
+        plugins_workspace=(),
+        plugins_context=(),
+        plugins_editor=(),
+    ):
         """
         Starts the Gui on scene "scene".
 
@@ -216,7 +225,6 @@ class Gui():
 
         self._animation_speed = 1.0
 
-
         # ================= Create globally available properties =======
         self.selected_nodes = []
         """A list of selected nodes (if any)"""
@@ -228,11 +236,12 @@ class Gui():
         self.visual = Viewport(scene)
         """Reference to a viewport"""
 
-        self.visual.settings.painter_settings = PAINTERS['Construction']  # use as default
+        self.visual.settings.painter_settings = PAINTERS[
+            "Construction"
+        ]  # use as default
 
         self.ui.cbPainerSelect.addItems([str(k) for k in PAINTERS.keys()])
         self.ui.cbPainerSelect.currentIndexChanged.connect(self.change_paintset)
-
 
         if cog_scale >= 0:
             self.visual.cog_scale = cog_scale
@@ -240,16 +249,14 @@ class Gui():
         if geometry_scale >= 0:
             self.visual.geometry_scale = geometry_scale
 
-
         self.visual.create_node_visuals(recreate=True)
         self.visual.show_embedded(self.ui.frame3d)
 
         self.visual.position_visuals()
-        self.visual.update_visibility() # apply paint
+        self.visual.update_visibility()  # apply paint
         self.visual.add_new_node_actors_to_screen()
 
         self.visual.mouseLeftEvent = self.view3d_select_element
-
 
         # right-click event for
         self.ui.frame3d.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -257,7 +264,7 @@ class Gui():
 
         self._timerid = None
         iren = self.visual.renwin.GetInteractor()
-        iren.AddObserver('TimerEvent', self.timerEvent)
+        iren.AddObserver("TimerEvent", self.timerEvent)
 
         # ------ key-presses -----
 
@@ -273,7 +280,9 @@ class Gui():
         self.ui.btnZoomFit.clicked.connect(self.camera_reset)
 
         # left
-        self.ui.pbUpdate.clicked.connect(lambda: self.guiEmitEvent(guiEventType.FULL_UPDATE))
+        self.ui.pbUpdate.clicked.connect(
+            lambda: self.guiEmitEvent(guiEventType.FULL_UPDATE)
+        )
         self.ui.btnSolveStatics.clicked.connect(self.solve_statics)
         self.ui.btnUndoStatics.clicked.connect(self.undo_solve_statics)
 
@@ -287,12 +296,14 @@ class Gui():
 
         # ------ animation buttons ------
         self.ui.frameAni.setVisible(False)
-        self.ui.btnStopAnimation.clicked.connect(lambda :self.animation_terminate(False))
-        self.ui.btnPauseAnimation.clicked.connect(self.animation_pause_or_continue_click)
+        self.ui.btnStopAnimation.clicked.connect(
+            lambda: self.animation_terminate(False)
+        )
+        self.ui.btnPauseAnimation.clicked.connect(
+            self.animation_pause_or_continue_click
+        )
         self.ui.aniSlider.valueChanged.connect(self.animation_change_time)
         self.ui.sbPlaybackspeed.valueChanged.connect(self.animation_speed_change)
-
-
 
         # ======================== Main Menu entries  ======
 
@@ -303,26 +314,37 @@ class Gui():
         self.ui.actionImport_sub_scene.triggered.connect(self.menu_import)
         self.ui.actionImport_browser.triggered.connect(self.import_browser)
         self.ui.actionOrcaflex.triggered.connect(self.menu_export_orcaflex_yml)
-        self.ui.actionOrcaflex_package.triggered.connect(self.menu_export_orcaflex_package)
+        self.ui.actionOrcaflex_package.triggered.connect(
+            self.menu_export_orcaflex_package
+        )
         self.ui.actionBlender.triggered.connect(self.to_blender)
 
-
         # -- visuals --
-        self.ui.actionShow_water_plane.triggered.connect(self.toggle_show_global_from_menu)
-        self.ui.actionShow_force_applying_element.triggered.connect(self.toggle_show_force_applying_elements)
+        self.ui.actionShow_water_plane.triggered.connect(
+            self.toggle_show_global_from_menu
+        )
+        self.ui.actionShow_force_applying_element.triggered.connect(
+            self.toggle_show_force_applying_elements
+        )
 
-
-        self.ui.sliderGeometrySize = MenuSlider('Geometry size')
+        self.ui.sliderGeometrySize = MenuSlider("Geometry size")
         self.ui.sliderGeometrySize.setMin(0)
         self.ui.sliderGeometrySize.slider.setValue(20)
+
         def set_geo_size(value):
             if value < 1:
                 self.visual.show_geometry = False
-                self.run_code('self.visual.settings.geometry_scale = 0',guiEventType.VIEWER_SETTINGS_UPDATE)
+                self.run_code(
+                    "self.visual.settings.geometry_scale = 0",
+                    guiEventType.VIEWER_SETTINGS_UPDATE,
+                )
                 self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
             else:
                 self.visual.show_geometry = True
-                self.run_code(f'self.visual.settings.geometry_scale = {value**(1.8)/100 : .2f}',guiEventType.VIEWER_SETTINGS_UPDATE)
+                self.run_code(
+                    f"self.visual.settings.geometry_scale = {value**(1.8)/100 : .2f}",
+                    guiEventType.VIEWER_SETTINGS_UPDATE,
+                )
 
         self.ui.sliderGeometrySize.connectvalueChanged(set_geo_size)
         self.ui.menuView.addAction(self.ui.sliderGeometrySize)
@@ -331,25 +353,34 @@ class Gui():
         self.ui.menuView.addSeparator()
 
         def normalize_force():
-            self.run_code('self.visual.settings.force_do_normalize = not self.visual.settings.force_do_normalize',guiEventType.VIEWER_SETTINGS_UPDATE)
+            self.run_code(
+                "self.visual.settings.force_do_normalize = not self.visual.settings.force_do_normalize",
+                guiEventType.VIEWER_SETTINGS_UPDATE,
+            )
 
-        forcenormalize= self.ui.menuView.addAction("View all forces at same size")
+        forcenormalize = self.ui.menuView.addAction("View all forces at same size")
         forcenormalize.setCheckable(True)
         forcenormalize.setChecked(True)
         forcenormalize.triggered.connect(normalize_force)
 
-        self.ui.sliderForceSize = MenuSlider('Force size')
+        self.ui.sliderForceSize = MenuSlider("Force size")
         self.ui.sliderForceSize.setMin(0)
         self.ui.sliderForceSize.slider.setValue(20.0)
 
         def set_force_size(value):
             if value < 1:
                 self.visual.show_force = False
-                self.run_code('self.visual.settings.force_scale = 0', guiEventType.VIEWER_SETTINGS_UPDATE)
+                self.run_code(
+                    "self.visual.settings.force_scale = 0",
+                    guiEventType.VIEWER_SETTINGS_UPDATE,
+                )
                 self.visual.refresh_embeded_view()
             else:
                 self.visual.show_force = True
-                self.run_code(f'self.visual.settings.force_scale = {value ** (2) / 10 : .2f}', guiEventType.VIEWER_SETTINGS_UPDATE)
+                self.run_code(
+                    f"self.visual.settings.force_scale = {value ** (2) / 10 : .2f}",
+                    guiEventType.VIEWER_SETTINGS_UPDATE,
+                )
 
         self.ui.sliderForceSize.connectvalueChanged(set_force_size)
         self.ui.menuView.addAction(self.ui.sliderForceSize)
@@ -358,75 +389,66 @@ class Gui():
         self.ui.menuView.addSeparator()
 
         def normalize_cog():
-            self.run_code('self.visual.settings.cog_do_normalize = not self.visual.settings.cog_do_normalize',
-                          guiEventType.VIEWER_SETTINGS_UPDATE)
+            self.run_code(
+                "self.visual.settings.cog_do_normalize = not self.visual.settings.cog_do_normalize",
+                guiEventType.VIEWER_SETTINGS_UPDATE,
+            )
 
         cognormalize = self.ui.menuView.addAction("View all CoGs at same size")
         cognormalize.setCheckable(True)
         cognormalize.setChecked(False)
         cognormalize.triggered.connect(normalize_cog)
 
-        self.ui.sliderCoGSize = MenuSlider('CoG size')
+        self.ui.sliderCoGSize = MenuSlider("CoG size")
         self.ui.sliderCoGSize.setMin(0)
         self.ui.sliderCoGSize.slider.setValue(20.0)
 
         def set_cog_size(value):
             if value < 1:
                 self.visual.show_cog = False
-                self.run_code(f'self.visual.settings.cog_scale = 0', guiEventType.VIEWER_SETTINGS_UPDATE)
+                self.run_code(
+                    f"self.visual.settings.cog_scale = 0",
+                    guiEventType.VIEWER_SETTINGS_UPDATE,
+                )
                 self.visual.refresh_embeded_view()
             else:
                 self.visual.show_cog = True
-                self.run_code(f'self.visual.settings.cog_scale = {value ** (1.3) / 100}', guiEventType.VIEWER_SETTINGS_UPDATE)
+                self.run_code(
+                    f"self.visual.settings.cog_scale = {value ** (1.3) / 100}",
+                    guiEventType.VIEWER_SETTINGS_UPDATE,
+                )
 
         self.ui.sliderCoGSize.connectvalueChanged(set_cog_size)
         self.ui.menuView.addAction(self.ui.sliderCoGSize)
 
-        # visual opacity
-        self.ui.sliderVisualAlpha = MenuSlider('Visual transparency')
-        self.ui.sliderVisualAlpha.setMin(0)
-        self.ui.sliderVisualAlpha.slider.setValue(100.0)
-
-        def set_visualalpha(value):
-            self.visual.visual_alpha = value / 100
-            self.visual.update_visibility()
-            self.visual.refresh_embeded_view()
-
-        self.ui.sliderVisualAlpha.connectvalueChanged(set_visualalpha)
-        self.ui.menuView.addAction(self.ui.sliderVisualAlpha)
-
-        # light
-        self.ui.sliderBrightness = MenuSlider('Sunshine')
-        self.ui.sliderBrightness.setMin(0)
-        self.ui.sliderBrightness.slider.setValue(20.0)
-        def set_brightness(value):
-            self.visual.light.SetIntensity(value/100)
-            self.visual.refresh_embeded_view()
-        self.ui.sliderBrightness.connectvalueChanged(set_brightness)
-        self.ui.menuView.addAction(self.ui.sliderBrightness)
-
-        self.ui.actionHorizontal_camera.triggered.connect(self.visual.level_camera)
-        self.ui.action2D_mode.triggered.connect(self.visual.toggle_2D)
-
-        self.ui.actionX.triggered.connect(lambda : self.camera_set_direction((1,0,0)))
-        self.ui.action_x.triggered.connect(lambda : self.camera_set_direction((-1,0,0)))
-        self.ui.actionY.triggered.connect(lambda : self.camera_set_direction((0,1,0)))
-        self.ui.action_Y.triggered.connect(lambda : self.camera_set_direction((0,-1,0)))
-        self.ui.actionZ.triggered.connect(lambda : self.camera_set_direction((0,0,-1)))
-        self.ui.action_Z.triggered.connect(lambda : self.camera_set_direction((0,0,1)))
+        self.ui.action2D_mode.triggered.connect(self.toggle_2D)
+        self.ui.actionX.triggered.connect(lambda: self.camera_set_direction((1, 0, 0)))
+        self.ui.action_x.triggered.connect(
+            lambda: self.camera_set_direction((-1, 0, 0))
+        )
+        self.ui.actionY.triggered.connect(lambda: self.camera_set_direction((0, 1, 0)))
+        self.ui.action_Y.triggered.connect(
+            lambda: self.camera_set_direction((0, -1, 0))
+        )
+        self.ui.actionZ.triggered.connect(lambda: self.camera_set_direction((0, 0, -1)))
+        self.ui.action_Z.triggered.connect(lambda: self.camera_set_direction((0, 0, 1)))
         self.ui.actionCamera_reset.triggered.connect(self.camera_reset)
         #
 
-
-
+        self.ui.pbTop.clicked.connect(lambda: self.camera_set_direction((0, 0, -1)))
+        self.ui.pbFront.clicked.connect(lambda: self.camera_set_direction((-1, 0, 0)))
+        self.ui.pbSide.clicked.connect(lambda: self.camera_set_direction((0, 1, 0)))
+        self.ui.pb3D.clicked.connect(self.toggle_2D)
 
         # ======================= Code-highlighter ==============
 
         font = QFont()
         font.setPointSize(10)
-        font.setFamily('Consolas')
+        font.setFamily("Consolas")
         self.ui.teCode.setFont(font)
-        self.ui.teCode.setTabStopDistance(QFontMetricsF(self.ui.teCode.font()).width(' ') * 4)
+        self.ui.teCode.setTabStopDistance(
+            QFontMetricsF(self.ui.teCode.font()).width(" ") * 4
+        )
 
         self.highlight = PythonHighlighter(self.ui.teCode.document())
 
@@ -446,40 +468,40 @@ class Gui():
             self.ui.toolBar.addWidget(pb)
 
         # Workspace buttons
-        btnConstruct= QtWidgets.QPushButton()
-        btnConstruct.setText('&0. Library')
+        btnConstruct = QtWidgets.QPushButton()
+        btnConstruct.setText("&0. Library")
         btnConstruct.clicked.connect(self.import_browser)
         btnConstruct.setFlat(True)
         self.ui.toolBar.addWidget(btnConstruct)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText('&1. Construct')
+        btnConstruct.setText("&1. Construct")
         btnConstruct.clicked.connect(lambda: self.activate_workspace("CONSTRUCT"))
         set_pb_style(btnConstruct)
         btnConstruct.setChecked(True)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText('&2. Explore')
+        btnConstruct.setText("&2. Explore")
         btnConstruct.clicked.connect(lambda: self.activate_workspace("EXPLORE"))
         set_pb_style(btnConstruct)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText('&3. Ballast')
+        btnConstruct.setText("&3. Ballast")
         btnConstruct.clicked.connect(lambda: self.activate_workspace("BALLAST"))
         set_pb_style(btnConstruct)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText('&4. Shear and Bending')
+        btnConstruct.setText("&4. Shear and Bending")
         btnConstruct.clicked.connect(lambda: self.activate_workspace("MOMENTS"))
         set_pb_style(btnConstruct)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText('&5. Stability')
+        btnConstruct.setText("&5. Stability")
         btnConstruct.clicked.connect(lambda: self.activate_workspace("STABILITY"))
         set_pb_style(btnConstruct)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText('&6. Mode Shapes [beta]')
+        btnConstruct.setText("&6. Mode Shapes [beta]")
         btnConstruct.clicked.connect(lambda: self.activate_workspace("DYNAMICS"))
         set_pb_style(btnConstruct)
 
@@ -488,7 +510,9 @@ class Gui():
         self.ui.toolBar.addWidget(lblInfo)
 
         space = QtWidgets.QWidget()
-        space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        space.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
+        )
         self.ui.toolBar.addWidget(space)
 
         lblInfo = QtWidgets.QLabel()
@@ -496,20 +520,20 @@ class Gui():
         self.ui.toolBar.addWidget(lblInfo)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText('&7. Airy [beta]')
+        btnConstruct.setText("&7. Airy [beta]")
         btnConstruct.clicked.connect(lambda: self.activate_workspace("AIRY"))
         set_pb_style(btnConstruct)
 
         space = QtWidgets.QWidget()
-        space.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        space.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
+        )
         self.ui.toolBar.addWidget(space)
 
         # btnConstruct = QtWidgets.QPushButton()
         # btnConstruct.setText('(Artists)')
         # btnConstruct.clicked.connect(lambda: self.activate_workspace("PAINTERS"))
         # set_pb_style(btnConstruct)
-
-
 
         self._active_workspace = None
 
@@ -521,11 +545,9 @@ class Gui():
         # ---------- activate workspace (if any)
 
         if workspace is None:
-            self.activate_workspace('CONSTRUCT')
+            self.activate_workspace("CONSTRUCT")
         else:
             self.activate_workspace(workspace)
-
-
 
         # ======================== Finalize ========================
         splash.finish(self.MainWindow)
@@ -536,6 +558,11 @@ class Gui():
         if block:
             self.ui.pbUpdate.setVisible(False)
             self.app.exec_()
+
+    def toggle_2D(self):
+        flat = self.visual.toggle_2D()
+        self.ui.pb3D.setChecked(flat)
+        self.ui.action2D_mode.setChecked(flat)
 
     def change_paintset(self):
         """Updates the paintset of the viewport to the value of cbPainterSelect"""
@@ -554,10 +581,6 @@ class Gui():
             if selected_node_names:
                 self.guiSelectNode(selected_node_names[0])
 
-
-
-
-
     def activate_paintset(self, name):
         """Sets the current text of the checkbox to the given paint-set name. This triggers activation
         of the new paint set.
@@ -565,42 +588,74 @@ class Gui():
         This action is not executed if the currently active paint-set name contains "custom"
         """
 
-        cb = self.ui.cbPainerSelect # alias
+        cb = self.ui.cbPainerSelect  # alias
 
-        if 'custom' not in cb.currentText():  # do not change if set to custom
+        if "custom" not in cb.currentText():  # do not change if set to custom
             items = [cb.itemText(i) for i in range(cb.count())]
             if name in items:
-                self.ui.cbPainerSelect.setCurrentText(name)  # this triggers the change_paintset event
+                self.ui.cbPainerSelect.setCurrentText(
+                    name
+                )  # this triggers the change_paintset event
             else:
                 print(items)
-                raise ValueError(f'No paint-set with name {name}. Available names are printed above')
+                raise ValueError(
+                    f"No paint-set with name {name}. Available names are printed above"
+                )
 
     def copy_screenshot_code(self):
 
-        sea = self.visual.show_global
+        sea = self.visual.settings.show_global
         camera_pos = self.visual.screen.camera.GetPosition()
         lookat = self.visual.screen.camera.GetFocalPoint()
 
-        code = f'show(s, sea = {sea}, camera_pos = {camera_pos}, lookat = {lookat}'
-        if self.visual.visual_alpha < 1.0:
-            code += f',visual_alpha = {self.visual.visual_alpha}'
-        if not self.visual.show_meshes:
-            code += ',do_meshes = False'
-        if self.visual.geometry_scale != 1:
-            code += f', geometry_size = {self.visual.geometry_scale}'
-        if self.visual.force_do_normalize:
-            code += ', force_normalize = True'
-        if self.visual.force_scale != 1:
-            code += f', force_scale = {self.visual.force_scale}'
-        if self.visual.cog_do_normalize:
-            code += ', cog_normalize = True'
-        if self.visual.cog_scale != 1:
-            code += f', cog_scale = {self.visual.cog_scale}'
-        code += ')'
+        code = f"show(s, camera_pos = {camera_pos}, "
+
+        if self.visual.screen.camera.GetParallelProjection():
+            code += f"\n     projection = '2d',"
+            code += f"\n     scale = {self.visual.screen.camera.GetParallelScale()},"
+
+            direction = np.array(lookat) - np.array(camera_pos)
+            norm = np.linalg.norm(direction)
+            if norm > 1e-9:
+                direction = direction / norm
+            direction = np.round(direction, 2)
+            t = 0.98
+
+            if direction[0] > t:
+                lookat = "x"
+            elif direction[1] > t:
+                lookat = "y"
+            elif direction[2] > t:
+                lookat = "z"
+            if direction[0] < -t:
+                lookat = "-x"
+            elif direction[1] < -t:
+                lookat = "-y"
+            elif direction[2] < -t:
+                lookat = "-z"
+
+            if isinstance(lookat, str):
+                code += f"\n     lookat = '{lookat}',"
+            else:
+                code += f"\n     lookat = {lookat},"
+        else:
+            code += f"\n     lookat = {lookat},"
+
+        settings = self.visual.settings  # alias
+        defaults = DAVE.settings_visuals.ViewportSettings()
+
+        for key, value in settings.__dict__.items():
+            if key == "painter_settings":
+                continue
+
+            if value != getattr(defaults, key):
+                code += f"\n     {key} = {value},"
+
+        code += f"\n     painters = '{self.ui.cbPainerSelect.currentText()}',"
+        code += f"\n     zoom_fit = False)"
 
         print(code)
         self.app.clipboard().setText(code)
-
 
     def escPressed(self):
         self.animation_terminate()  # terminate any running animations
@@ -609,11 +664,9 @@ class Gui():
     def select_none(self):
         if self.selected_nodes:
             self.selected_nodes.clear()
-            if 'Properties' in self.guiWidgets:
-                self.guiWidgets['Properties'].setVisible(False)
+            if "Properties" in self.guiWidgets:
+                self.guiWidgets["Properties"].setVisible(False)
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
-
-
 
     def savepoint_restore(self):
 
@@ -623,7 +676,6 @@ class Gui():
         if self.scene.savepoint_restore():
             self.select_none()
             self.guiEmitEvent(guiEventType.MODEL_STRUCTURE_CHANGED)
-
 
     def activate_workspace(self, name):
 
@@ -636,54 +688,53 @@ class Gui():
         # self.visual.set_alpha(1.0)
         # self.visual.hide_actors_of_type([ActorType.BALLASTTANK])
         # self.visual.update_outlines()
-        self.activate_paintset('Construction')
+        self.activate_paintset("Construction")
 
         for g in self.guiWidgets.values():
             g.close()
 
-
         for plugin in self.plugins_workspace:
             plugin(self, name)
 
-        if name == 'PAINTERS':
-            self.show_guiWidget('vanGogh', WidgetPainters)
+        if name == "PAINTERS":
+            self.show_guiWidget("vanGogh", WidgetPainters)
 
-        if name == 'CONSTRUCT':
-            self.show_guiWidget('Node Tree', WidgetNodeTree)
-            self.show_guiWidget('Derived Properties', WidgetDerivedProperties)
-            self.show_guiWidget('Properties', WidgetNodeProps)
-            self.show_guiWidget('Rigg-it-Right', WidgetRiggItRight)
+        if name == "CONSTRUCT":
+            self.show_guiWidget("Node Tree", WidgetNodeTree)
+            self.show_guiWidget("Derived Properties", WidgetDerivedProperties)
+            self.show_guiWidget("Properties", WidgetNodeProps)
+            self.show_guiWidget("Rigg-it-Right", WidgetRiggItRight)
 
-        if name == 'EXPLORE':
-            self.show_guiWidget('Derived Properties', WidgetDerivedProperties)
-            self.show_guiWidget('Explore 1-to-1', WidgetExplore)
+        if name == "EXPLORE":
+            self.show_guiWidget("Derived Properties", WidgetDerivedProperties)
+            self.show_guiWidget("Explore 1-to-1", WidgetExplore)
 
-        if name == 'DYNAMICS':
-            self.show_guiWidget('Properties - dynamic', WidgetDynamicProperties)
-            self.show_guiWidget('Mode-shapes', WidgetModeShapes)
+        if name == "DYNAMICS":
+            self.show_guiWidget("Properties - dynamic", WidgetDynamicProperties)
+            self.show_guiWidget("Mode-shapes", WidgetModeShapes)
 
-        if name == 'BALLAST':
-            self.show_guiWidget('Ballast system', WidgetBallastSystemSelect)
-            self.show_guiWidget('Tanks', WidgetBallastConfiguration)
-            self.show_guiWidget('Solver', WidgetBallastSolver)
-            self.show_guiWidget('Tank order', WidgetTankOrder)
-            self.activate_paintset('Ballast')
+        if name == "BALLAST":
+            self.show_guiWidget("Ballast system", WidgetBallastSystemSelect)
+            self.show_guiWidget("Tanks", WidgetBallastConfiguration)
+            self.show_guiWidget("Solver", WidgetBallastSolver)
+            self.show_guiWidget("Tank order", WidgetTankOrder)
+            self.activate_paintset("Ballast")
 
             # self.visual.show_actors_of_type([ActorType.BALLASTTANK])
 
-        if name == 'STABILITY':
-            self.show_guiWidget('Stability', WidgetDisplacedStability)
+        if name == "STABILITY":
+            self.show_guiWidget("Stability", WidgetDisplacedStability)
 
-        if name == 'MOMENTS':
-            self.show_guiWidget('Footprints', WidgetFootprints)
-            self.show_guiWidget('Graph', WidgetBendingMoment)
-            self.activate_paintset('Footprints')
+        if name == "MOMENTS":
+            self.show_guiWidget("Footprints", WidgetFootprints)
+            self.show_guiWidget("Graph", WidgetBendingMoment)
+            self.activate_paintset("Footprints")
 
-        if name == 'AIRY':
+        if name == "AIRY":
             self.scene.savepoint_make()
             code = "from DAVE.frequency_domain import prepare_for_fd\nprepare_for_fd(s)"
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
-            self.show_guiWidget('Airy waves', WidgetAiry)
+            self.show_guiWidget("Airy waves", WidgetAiry)
 
         self.visual.update_visibility()
 
@@ -696,52 +747,53 @@ class Gui():
             file = r[0]
             container = r[1]
             prefix = r[2]
-            code = 's.import_scene("{}", containerize={}, prefix="{}")'.format(file,container,prefix)
+            code = 's.import_scene("{}", containerize={}, prefix="{}")'.format(
+                file, container, prefix
+            )
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
-            self.activate_workspace('CONSTRUCT')
-
+            self.activate_workspace("CONSTRUCT")
 
     # ============== Animation functions =============
-
 
     def animation_running(self):
         """Returns true is an animation is running"""
         return self._timerid is not None
 
-    def timerEvent(self,a,b):
+    def timerEvent(self, a, b):
 
         if self._timerid is None:  # timer is going to be destroyed
             return
 
-        t = time.time() - self._animation_start_time  # time since start of animation in [s]
+        t = (
+            time.time() - self._animation_start_time
+        )  # time since start of animation in [s]
 
         t *= self._animation_speed
 
         if self._animation_loop:
             t = np.mod(t, self._animation_length)
         else:
-            if t>self._animation_length:
+            if t > self._animation_length:
                 self.animation_terminate()
                 return
 
         self.animation_activate_time(t)
 
-        self.ui.aniSlider.setValue(t*1000)
+        self.ui.aniSlider.setValue(t * 1000)
 
     def animation_speed_change(self):
         self._animation_speed = self.ui.sbPlaybackspeed.value()
 
-    def animation_activate_time(self,t):
+    def animation_activate_time(self, t):
         dofs = self._animation_keyframe_interpolation_object(t)
         self.scene._vfc.set_dofs(dofs)
         self.visual.update_dynamic_waveplane(t)
         self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
 
+    def animation_terminate(self, keep_current_dofs=False):
 
-    def animation_terminate(self, keep_current_dofs = False):
-
-        #if not self.animation_running():
+        # if not self.animation_running():
         #    return # nothing to destroy
         if not self._animation_available:
             return
@@ -765,8 +817,15 @@ class Gui():
             self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
         self.visual.quick_updates_only = False
 
-
-    def animation_start(self, t, dofs, is_loop, final_dofs = None, do_not_reset_time=False, show_animation_bar = True):
+    def animation_start(
+        self,
+        t,
+        dofs,
+        is_loop,
+        final_dofs=None,
+        do_not_reset_time=False,
+        show_animation_bar=True,
+    ):
         """Start an new animation
 
         Args:
@@ -778,13 +837,15 @@ class Gui():
 
 
         """
-        self.animation_terminate(keep_current_dofs=True) # end old animation, if any
+        self.animation_terminate(keep_current_dofs=True)  # end old animation, if any
 
         if len(dofs) != len(t):
             raise ValueError("dofs and t should have the same length (list or tuple)")
 
         self._animation_length = np.max(t)
-        self._animation_keyframe_interpolation_object = scipy.interpolate.interp1d(t, dofs,axis=0)
+        self._animation_keyframe_interpolation_object = scipy.interpolate.interp1d(
+            t, dofs, axis=0
+        )
         self._animation_loop = is_loop
 
         if final_dofs is None:
@@ -796,12 +857,12 @@ class Gui():
 
         self.visual.quick_updates_only = True
 
-        self.ui.aniSlider.setMaximum(1000*self._animation_length)
+        self.ui.aniSlider.setMaximum(1000 * self._animation_length)
         self.ui.frameAni.setVisible(show_animation_bar)
 
         self._animation_available = True
 
-        if not show_animation_bar:          # override pause for short animations
+        if not show_animation_bar:  # override pause for short animations
             self.ui.btnPauseAnimation.setChecked(False)
             self._animation_paused = False
 
@@ -809,11 +870,12 @@ class Gui():
 
             iren = self.visual.renwin.GetInteractor()
             if self._timerid is None:
-                self._timerid = iren.CreateRepeatingTimer(round(1000 / DAVE.settings.GUI_ANIMATION_FPS))
+                self._timerid = iren.CreateRepeatingTimer(
+                    round(1000 / DAVE.settings.GUI_ANIMATION_FPS)
+                )
 
             else:
                 raise Exception("could not create new timer, old timer is still active")
-
 
     def animation_pause(self):
         """Pauses a running animation"""
@@ -837,7 +899,9 @@ class Gui():
         if self._animation_available:
             if self._timerid is None:
                 iren = self.visual.renwin.GetInteractor()
-                self._timerid = iren.CreateRepeatingTimer(round(1000 / DAVE.settings.GUI_ANIMATION_FPS))
+                self._timerid = iren.CreateRepeatingTimer(
+                    round(1000 / DAVE.settings.GUI_ANIMATION_FPS)
+                )
 
         self._animation_paused = False
 
@@ -851,7 +915,6 @@ class Gui():
             self.visual.quick_updates_only = False
             self.animation_activate_time(self.ui.aniSlider.value() / 1000)
             self.visual.quick_updates_only = remember
-
 
     def animation_change_time(self):
 
@@ -869,18 +932,16 @@ class Gui():
 
     # =================================================== end of animation functions ==================
 
-
     def onClose(self):
         self.visual.shutdown_qt()
-        print('-- closing the gui : these were the actions you performed while the gui was open --')
+        print(
+            "-- closing the gui : these were the actions you performed while the gui was open --"
+        )
         print(self.give_clean_history())
-
 
     def show_exception(self, e):
         self.ui.teFeedback.setText(str(e))
         self.ui.teFeedback.setStyleSheet("background-color: pink;")
-
-
 
     def run_code(self, code, event):
         """Runs the provided code
@@ -898,9 +959,6 @@ class Gui():
         self.ui.teFeedback.setStyleSheet("")
         self.ui.teFeedback.clear()
 
-
-
-
         with capture_output() as c:
 
             try:
@@ -910,13 +968,16 @@ class Gui():
                     self.ui.teFeedback.append(c.stdout)
                     self.ui.teFeedback.append(str(datetime.datetime.now()))
                 else:
-                    self.ui.teFeedback.append("Succes at " + str(datetime.datetime.now()))
+                    self.ui.teFeedback.append(
+                        "Succes at " + str(datetime.datetime.now())
+                    )
 
                 self._codelog.append(code)
                 self.ui.teHistory.append(code)
 
                 self.ui.teHistory.verticalScrollBar().setValue(
-                    self.ui.teHistory.verticalScrollBar().maximum())  # scroll down all the way
+                    self.ui.teHistory.verticalScrollBar().maximum()
+                )  # scroll down all the way
 
                 # See if selected nodes are still valid and identical to the ones
                 to_be_removed = []
@@ -926,8 +987,6 @@ class Gui():
 
                 for node in to_be_removed:
                     self.selected_nodes.remove(node)
-
-
 
                 # if we created something new, then select it
                 emitted = False
@@ -946,8 +1005,6 @@ class Gui():
                 if to_be_removed and not emitted:
                     self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
 
-
-
             except Exception as E:
 
                 self.ui.teCode.clear()
@@ -956,18 +1013,18 @@ class Gui():
                 self.ui.teCode.update()
                 self.ui.teCode.repaint()
 
-                self.ui.teFeedback.setText(c.stdout + '\n' + str(E) + '\n\nWhen running: \n\n' + code)
+                self.ui.teFeedback.setText(
+                    c.stdout + "\n" + str(E) + "\n\nWhen running: \n\n" + code
+                )
                 self.ui.teFeedback.setStyleSheet("background-color: pink;")
 
-                raise(E)
+                raise (E)
 
             self.ui.pbExecute.setStyleSheet("")
             self.ui.pbExecute.update()
-            self.ui.teFeedback.verticalScrollBar().setValue(self.ui.teFeedback.verticalScrollBar().maximum()) # scroll down all the way
-
-
-
-
+            self.ui.teFeedback.verticalScrollBar().setValue(
+                self.ui.teFeedback.verticalScrollBar().maximum()
+            )  # scroll down all the way
 
     def stop_solving(self):
         self._terminate = True
@@ -978,14 +1035,16 @@ class Gui():
 
         if len(old_dofs) == 0:  # no degrees of freedom
 
-            self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)  # update the gui to reflect the scene.update
+            self.guiEmitEvent(
+                guiEventType.MODEL_STATE_CHANGED
+            )  # update the gui to reflect the scene.update
 
             msgBox = QMessageBox()
             msgBox.setText("No degrees of freedom - nothing to solve")
             msgBox.setWindowTitle("DAVE")
             msgBox.exec_()
 
-            print('No dofs')
+            print("No dofs")
             return
 
         self._dofs = old_dofs.copy()
@@ -1019,22 +1078,24 @@ class Gui():
             do_stability_check = True
             do_prepare_state = True
             solve_linear_dofs_first = True
-            delta = 0 # default
+            delta = 0  # default
 
-            status = self.scene._vfc.state_solve_statics_with_timeout(do_stability_check,
-                                                                      timeout,
-                                                                      do_prepare_state,
-                                                                      solve_linear_dofs_first,
-                                                                      delta)
+            status = self.scene._vfc.state_solve_statics_with_timeout(
+                do_stability_check,
+                timeout,
+                do_prepare_state,
+                solve_linear_dofs_first,
+                delta,
+            )
 
-            message = 'Maximum error = {}'.format(self.scene._vfc.Emaxabs)
+            message = "Maximum error = {}".format(self.scene._vfc.Emaxabs)
 
             if self._terminate:
-                print('Terminating')
+                print("Terminating")
                 self.scene._restore_original_fixes(original_dofs)
                 break
 
-            if (status == 0) or (status==-2):  # solving done
+            if (status == 0) or (status == -2):  # solving done
 
                 # solving exited with succes
 
@@ -1042,12 +1103,15 @@ class Gui():
                     self.scene._restore_original_fixes(original_dofs)
                     original_dofs = None
                     # continue
-                else: # done
+                else:  # done
 
                     # see if all geometric contacts are ok
                     # if not then continue
-                    changed, msg = self.scene._check_and_fix_geometric_contact_orientations()
-                    message += '\n' + msg
+                    (
+                        changed,
+                        msg,
+                    ) = self.scene._check_and_fix_geometric_contact_orientations()
+                    message += "\n" + msg
                     if not changed:
                         # we are done!
                         break
@@ -1076,18 +1140,17 @@ class Gui():
             if n_steps <= 2:
                 new_dofs = self.scene._vfc.get_dofs()
                 self.animate_change(old_dofs, new_dofs, 10)
-                return # nothing to animate
+                return  # nothing to animate
 
-            ts = np.linspace(0,10,num=n_steps)
+            ts = np.linspace(0, 10, num=n_steps)
             self.animation_start(t=ts, dofs=dofs, is_loop=True)
         except AttributeError:
             if DAVE.settings.GUI_DO_ANIMATE and not long_wait:
                 new_dofs = self.scene._vfc.get_dofs()
                 self.animate_change(old_dofs, new_dofs, 10)
 
-
         self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
-        self._codelog.append('s.solve_statics()')
+        self._codelog.append("s.solve_statics()")
 
     def animate_change(self, old_dof, new_dof, n_steps):
         """Animates from old_dof to new_dofs in n_steps"""
@@ -1103,16 +1166,15 @@ class Gui():
         old_dof = np.array(old_dof)
         new_dof = np.array(new_dof)
 
-        for i in range(n_steps+1):
+        for i in range(n_steps + 1):
 
-            factor = i/n_steps
+            factor = i / n_steps
             old = 0.5 + 0.5 * np.cos(3.14159 * factor)
 
-            t.append(dt*i)
+            t.append(dt * i)
             dofs.append((1 - old) * new_dof + old * old_dof)
 
-        self.animation_start(t,dofs,is_loop=False, show_animation_bar=False)
-
+        self.animation_start(t, dofs, is_loop=False, show_animation_bar=False)
 
     def to_blender(self):
 
@@ -1122,17 +1184,21 @@ class Gui():
             dofs = []
 
             n_frames = np.round(self._animation_length * DAVE.settings.BLENDER_FPS)
-            for t in np.linspace(0,self._animation_length, int(n_frames)):
+            for t in np.linspace(0, self._animation_length, int(n_frames)):
                 dofs.append(self._animation_keyframe_interpolation_object(t))
 
         else:
             dofs = None
 
-        create_blend_and_open(self.scene, animation_dofs=dofs, wavefield=self.visual._wavefield)
+        create_blend_and_open(
+            self.scene, animation_dofs=dofs, wavefield=self.visual._wavefield
+        )
 
     def toggle_show_global(self):
         # TODO: fix
-        self.ui.actionShow_water_plane.setChecked(not self.ui.actionShow_water_plane.isChecked())
+        self.ui.actionShow_water_plane.setChecked(
+            not self.ui.actionShow_water_plane.isChecked()
+        )
         self.toggle_show_global_from_menu()
 
     def toggle_show_global_from_menu(self):
@@ -1143,7 +1209,7 @@ class Gui():
         self.visual.show_meshes = self.ui.actionShow_force_applying_element.isChecked()
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
-    def camera_set_direction(self,vector):
+    def camera_set_direction(self, vector):
         self.visual.set_camera_direction(vector)
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
@@ -1158,13 +1224,15 @@ class Gui():
             self.visual.DisableSSAO()
         self.visual.refresh_embeded_view()
 
-
     def undo_solve_statics(self):
         if self._dofs is not None:
-            self.run_code('s._vfc.set_dofs(self._dofs) # UNDO SOLVE STATICS', guiEventType.MODEL_STATE_CHANGED)
+            self.run_code(
+                "s._vfc.set_dofs(self._dofs) # UNDO SOLVE STATICS",
+                guiEventType.MODEL_STATE_CHANGED,
+            )
 
     def clear(self):
-        self.run_code('s.clear()', guiEventType.FULL_UPDATE)
+        self.run_code("s.clear()", guiEventType.FULL_UPDATE)
 
     def open(self):
         filename, _ = QFileDialog.getOpenFileName(filter="*.dave", caption="Assets")
@@ -1180,38 +1248,55 @@ class Gui():
             self.visual.update_visibility()
 
     def menu_save(self):
-        filename, _ = QFileDialog.getSaveFileName(filter="*.dave", caption="Scene files",directory=self.scene.resources_paths[0])
+        filename, _ = QFileDialog.getSaveFileName(
+            filter="*.dave",
+            caption="Scene files",
+            directory=self.scene.resources_paths[0],
+        )
         if filename:
             code = 's.save_scene(r"{}")'.format(filename)
             self.run_code(code, guiEventType.NOTHING)
 
     def menu_export_orcaflex_yml(self):
-        filename, _ = QFileDialog.getSaveFileName(filter="*.yml", caption="Orcaflex .yml file",directory=self.scene.resources_paths[0])
+        filename, _ = QFileDialog.getSaveFileName(
+            filter="*.yml",
+            caption="Orcaflex .yml file",
+            directory=self.scene.resources_paths[0],
+        )
         if filename:
-            code = 'from DAVE.io.orcaflex import export_ofx_yml\nexport_ofx_yml(s,r"{}")'.format(filename)
+            code = 'from DAVE.io.orcaflex import export_ofx_yml\nexport_ofx_yml(s,r"{}")'.format(
+                filename
+            )
             self.run_code(code, guiEventType.NOTHING)
 
     def menu_export_orcaflex_package(self):
-        filename, _ = QFileDialog.getSaveFileName(filter="*.py", caption="Python files",directory=self.scene.resources_paths[0])
+        filename, _ = QFileDialog.getSaveFileName(
+            filter="*.py",
+            caption="Python files",
+            directory=self.scene.resources_paths[0],
+        )
         if filename:
             python_file = filename
-            ofx_file = python_file + '.yml'
-            code = 'from DAVE.io.orcaflex import export_ofx_yml, write_ofx_run_and_collect_script\nexport_ofx_yml(s,r"{}")'.format(ofx_file)
-            code+= '\nwrite_ofx_run_and_collect_script(r"{}", r"{}")'.format(python_file, ofx_file)
+            ofx_file = python_file + ".yml"
+            code = 'from DAVE.io.orcaflex import export_ofx_yml, write_ofx_run_and_collect_script\nexport_ofx_yml(s,r"{}")'.format(
+                ofx_file
+            )
+            code += '\nwrite_ofx_run_and_collect_script(r"{}", r"{}")'.format(
+                python_file, ofx_file
+            )
             self.run_code(code, guiEventType.NOTHING)
-
 
     def tidy_history(self):
         self.ui.teHistory.setText(self.give_clean_history())
 
     def give_clean_history(self):
-        prev_line = ''
+        prev_line = ""
 
         f = []
         for s in self._codelog:
 
             # filter repeated assignments to same target
-            if s.split('=')[0] == prev_line.split('=')[0]:
+            if s.split("=")[0] == prev_line.split("=")[0]:
                 prev_line = s
                 continue
 
@@ -1220,27 +1305,30 @@ class Gui():
 
         f.append(prev_line)
 
-        return '\n'.join(f)
-
+        return "\n".join(f)
 
     def menu_save_actions(self):
-        filename, _ = QFileDialog.getSaveFileName(filter="*.dave", caption="Scene files",directory=self.scene.resources_paths[0])
+        filename, _ = QFileDialog.getSaveFileName(
+            filter="*.dave",
+            caption="Scene files",
+            directory=self.scene.resources_paths[0],
+        )
         if filename:
 
-            prev_line = ''
+            prev_line = ""
 
-            f = open(filename, 'w+')
+            f = open(filename, "w+")
             for s in self._codelog:
 
                 # filter repeated assignments to same target
-                if s.split('=')[0] == prev_line.split('=')[0]:
+                if s.split("=")[0] == prev_line.split("=")[0]:
                     prev_line = s
                     continue
 
-                f.write(prev_line + '\n')
+                f.write(prev_line + "\n")
                 prev_line = s
 
-            f.write(prev_line + '\n')
+            f.write(prev_line + "\n")
             f.close()
 
     def feedback_copy(self):
@@ -1253,13 +1341,12 @@ class Gui():
         self.ui.teCode.clear()
         self.ui.teCode.setFocus()
 
-
     def generate_scene_code(self):
         self.ui.teFeedback.setText(self.scene.give_python_code())
 
     def run_code_in_teCode(self):
         code = self.ui.teCode.toPlainText()
-        self.run_code(code,guiEventType.FULL_UPDATE)
+        self.run_code(code, guiEventType.FULL_UPDATE)
 
     def rightClickViewport(self, point):
         globLoc = self.ui.frame3d.mapToGlobal(point)
@@ -1270,7 +1357,6 @@ class Gui():
             pass
 
         self.openContextMenyAt(name, globLoc)
-
 
     def openContextMenyAt(self, node_name, globLoc):
         menu = QtWidgets.QMenu()
@@ -1284,7 +1370,9 @@ class Gui():
                 def edit():
                     self.selected_nodes.clear()
                     self.guiSelectNode(node_name)
-                    self.show_guiWidget('Properties', WidgetNodeProps) # people often close this one
+                    self.show_guiWidget(
+                        "Properties", WidgetNodeProps
+                    )  # people often close this one
 
                 menu.addAction("Edit {}".format(node_name), edit)
 
@@ -1294,19 +1382,34 @@ class Gui():
                 showhide.setChecked(node.visible)
 
                 if node.visible:
-                    showhide.triggered.connect(lambda: self.run_code(f"s['{node_name}'].visible = False",guiEventType.VIEWER_SETTINGS_UPDATE))
+                    showhide.triggered.connect(
+                        lambda: self.run_code(
+                            f"s['{node_name}'].visible = False",
+                            guiEventType.VIEWER_SETTINGS_UPDATE,
+                        )
+                    )
                 else:
-                    showhide.triggered.connect(lambda: self.run_code(f"s['{node_name}'].visible = True",guiEventType.VIEWER_SETTINGS_UPDATE))
+                    showhide.triggered.connect(
+                        lambda: self.run_code(
+                            f"s['{node_name}'].visible = True",
+                            guiEventType.VIEWER_SETTINGS_UPDATE,
+                        )
+                    )
 
                 def delete():
-                    self.run_code('s.delete("{}")'.format(node_name), guiEventType.MODEL_STRUCTURE_CHANGED)
+                    self.run_code(
+                        's.delete("{}")'.format(node_name),
+                        guiEventType.MODEL_STRUCTURE_CHANGED,
+                    )
 
                 def dissolve():
-                    self.run_code('s.dissolve("{}")'.format(node_name), guiEventType.MODEL_STRUCTURE_CHANGED)
+                    self.run_code(
+                        's.dissolve("{}")'.format(node_name),
+                        guiEventType.MODEL_STRUCTURE_CHANGED,
+                    )
 
                 menu.addAction("Delete {}".format(node_name), delete)
                 menu.addAction("Dissolve (Evaporate) {}".format(node_name), dissolve)
-
 
                 menu.addSeparator()
 
@@ -1330,11 +1433,9 @@ class Gui():
 
                     self.guiSelectNode(name_of_duplicate)
 
-
                 menu.addAction("Duplicate", duplicate)
                 menu.addSeparator()
                 menu.addSeparator()
-
 
         wa = QtWidgets.QWidgetAction(None)
 
@@ -1372,7 +1473,6 @@ class Gui():
         menu.addAction(wa)
 
         menu.exec_(globLoc)
-
 
     def new_axis(self):
         self.new_something(new_node_dialog.add_axis)
@@ -1430,10 +1530,11 @@ class Gui():
 
     def new_geometric_contact(self):
         msgBox = QMessageBox()
-        msgBox.setText("To create a Geometric Contact:\n\nDrag a circle onto another circle (in the node-tree)")
+        msgBox.setText(
+            "To create a Geometric Contact:\n\nDrag a circle onto another circle (in the node-tree)"
+        )
         msgBox.setWindowTitle("Geometric contact")
         msgBox.exec_()
-
 
     def new_something(self, what):
         r = what(self.scene, self.selected_nodes)
@@ -1443,8 +1544,7 @@ class Gui():
             # added_node = self.scene._nodes[-1]
             # self.guiSelectNode(added_node)
 
-
-# ================= viewer code ===================
+    # ================= viewer code ===================
 
     def view3d_select_element(self, vtkactor):
 
@@ -1454,10 +1554,9 @@ class Gui():
         node = self.visual.node_from_vtk_actor(vtkactor)
 
         if node is None:
-            print('Could not find node for this actor')
+            print("Could not find node for this actor")
             self.selected_nodes.clear()
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
-
 
         _node = node
         if node in self.selected_nodes:
@@ -1469,7 +1568,6 @@ class Gui():
             if node.manager is not None:
                 self.guiSelectNode(node.manager)
                 return
-
 
             # cycle between node and its parent
             try:
@@ -1489,7 +1587,7 @@ class Gui():
         if node is None:  # in case the parent or something was none
             node = _node
 
-        if node is None: # sea or something
+        if node is None:  # sea or something
             self.selected_nodes.clear()
         else:
             self.guiSelectNode(node.name)
@@ -1522,21 +1620,20 @@ class Gui():
             else:
                 v._is_sub_selected = False
 
-        self.visual.update_visibility() # update paint
-
-
+        self.visual.update_visibility()  # update paint
 
     # ================= guiWidget codes
 
     def guiEmitEvent(self, event, sender=None):
 
-        with DelayRenderingTillDone(self.visual):  # temporary freezes rendering and calls update afterwards
+        with DelayRenderingTillDone(
+            self.visual
+        ):  # temporary freezes rendering and calls update afterwards
 
             for widget in self.guiWidgets.values():
                 if not (widget is sender):
                     if widget.isVisible():
                         widget.guiEvent(event)
-
 
             # update the visual as well
             if event == guiEventType.SELECTION_CHANGED:
@@ -1548,7 +1645,7 @@ class Gui():
                 self.visual.position_visuals()
                 return
 
-            if event== guiEventType.MODEL_STATE_CHANGED:
+            if event == guiEventType.MODEL_STATE_CHANGED:
                 self.visual.position_visuals()
                 return
 
@@ -1562,36 +1659,37 @@ class Gui():
             self.visual.position_visuals()
             self.visual_update_selection()
 
-
     def guiSelectNode(self, node_name):
         # print('selecting a node with name {}'.format(node_name))
 
         old_selection = self.selected_nodes.copy()
 
-        if not (self.app.keyboardModifiers() and QtCore.Qt.KeyboardModifier.ControlModifier):
+        if not (
+            self.app.keyboardModifiers() and QtCore.Qt.KeyboardModifier.ControlModifier
+        ):
             self.selected_nodes.clear()
-
 
         node = self.scene._node_from_node_or_str(node_name)
         if node not in self.selected_nodes:
             self.selected_nodes.append(node)
 
         if self.selected_nodes:
-            if self._active_workspace == 'CONSTRUCT':
-                if 'Properties' in self.guiWidgets:
-                    if not self.guiWidgets['Properties'].isVisible():
-                        self.guiWidgets['Properties'].setVisible(True)
-                        self.guiEmitEvent(guiEventType.SELECTION_CHANGED) # force update
+            if self._active_workspace == "CONSTRUCT":
+                if "Properties" in self.guiWidgets:
+                    if not self.guiWidgets["Properties"].isVisible():
+                        self.guiWidgets["Properties"].setVisible(True)
+                        self.guiEmitEvent(
+                            guiEventType.SELECTION_CHANGED
+                        )  # force update
 
         if old_selection != self.selected_nodes:
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
-
 
     def show_guiWidget(self, name, widgetClass):
         if name in self.guiWidgets:
             d = self.guiWidgets[name]
         else:
-            print('Creating {}'.format(name))
+            print("Creating {}".format(name))
 
             d = widgetClass(self.MainWindow)
             d.setWindowTitle(name)
@@ -1613,7 +1711,7 @@ class Gui():
         d._active = True
         d.guiEvent(guiEventType.FULL_UPDATE)
 
-# =============================
+    # =============================
 
     def refresh_3dview(self):
         self.visual.refresh_embeded_view()
@@ -1623,5 +1721,5 @@ class Gui():
 
 # ====== nodeA code ======
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
