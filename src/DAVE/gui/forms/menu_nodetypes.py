@@ -3,8 +3,8 @@
 # Form implementation generated from reading ui file 'menu_nodetypes.ui',
 # licensing of 'menu_nodetypes.ui' applies.
 #
-# Created: Tue Aug  4 16:46:20 2020
-#      by: pyside2-uic  running on PySide2 5.13.1
+# Created: Thu Aug 26 07:59:50 2021
+#      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_MenuNodes(object):
     def setupUi(self, MenuNodes):
         MenuNodes.setObjectName("MenuNodes")
-        MenuNodes.resize(703, 539)
+        MenuNodes.resize(446, 266)
         self.gridLayout = QtWidgets.QGridLayout(MenuNodes)
         self.gridLayout.setObjectName("gridLayout")
         self.widget = QtWidgets.QWidget(MenuNodes)
@@ -29,27 +29,27 @@ class Ui_MenuNodes(object):
         self.label.setFont(font)
         self.label.setObjectName("label")
         self.verticalLayout.addWidget(self.label)
-        self.pbPoint = QtWidgets.QPushButton(self.widget)
+        self.pbAxis = QtWidgets.QPushButton(self.widget)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/icons/point_blue.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.pbPoint.setIcon(icon)
+        icon.addPixmap(QtGui.QPixmap(":/icons/axis_blue.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.pbAxis.setIcon(icon)
+        self.pbAxis.setFlat(True)
+        self.pbAxis.setObjectName("pbAxis")
+        self.verticalLayout.addWidget(self.pbAxis)
+        self.pbPoint = QtWidgets.QPushButton(self.widget)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/icons/point_blue.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.pbPoint.setIcon(icon1)
         self.pbPoint.setFlat(True)
         self.pbPoint.setObjectName("pbPoint")
         self.verticalLayout.addWidget(self.pbPoint)
         self.pbCircle = QtWidgets.QPushButton(self.widget)
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(":/icons/circle_blue.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.pbCircle.setIcon(icon1)
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap(":/icons/circle_blue.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.pbCircle.setIcon(icon2)
         self.pbCircle.setFlat(True)
         self.pbCircle.setObjectName("pbCircle")
         self.verticalLayout.addWidget(self.pbCircle)
-        self.pbAxis = QtWidgets.QPushButton(self.widget)
-        icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(":/icons/axis_blue.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.pbAxis.setIcon(icon2)
-        self.pbAxis.setFlat(True)
-        self.pbAxis.setObjectName("pbAxis")
-        self.verticalLayout.addWidget(self.pbAxis)
         self.pbBody = QtWidgets.QPushButton(self.widget)
         icon3 = QtGui.QIcon()
         icon3.addPixmap(QtGui.QPixmap(":/icons/cube.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -274,12 +274,12 @@ class Ui_MenuNodes(object):
         self.widget.setStyleSheet(QtWidgets.QApplication.translate("MenuNodes", "text-align:left", None, -1))
         self.label.setStyleSheet(QtWidgets.QApplication.translate("MenuNodes", "text-align:left", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("MenuNodes", "Structure", None, -1))
+        self.pbAxis.setStyleSheet(QtWidgets.QApplication.translate("MenuNodes", "text-align:left", None, -1))
+        self.pbAxis.setText(QtWidgets.QApplication.translate("MenuNodes", "Frame", None, -1))
         self.pbPoint.setStyleSheet(QtWidgets.QApplication.translate("MenuNodes", "text-align:left", None, -1))
         self.pbPoint.setText(QtWidgets.QApplication.translate("MenuNodes", "Point", None, -1))
         self.pbCircle.setStyleSheet(QtWidgets.QApplication.translate("MenuNodes", "text-align:left", None, -1))
         self.pbCircle.setText(QtWidgets.QApplication.translate("MenuNodes", "Circle", None, -1))
-        self.pbAxis.setStyleSheet(QtWidgets.QApplication.translate("MenuNodes", "text-align:left", None, -1))
-        self.pbAxis.setText(QtWidgets.QApplication.translate("MenuNodes", "Axis", None, -1))
         self.pbBody.setStyleSheet(QtWidgets.QApplication.translate("MenuNodes", "text-align:left", None, -1))
         self.pbBody.setText(QtWidgets.QApplication.translate("MenuNodes", "Body", None, -1))
         self.pbGeometricContact.setStyleSheet(QtWidgets.QApplication.translate("MenuNodes", "text-align:left", None, -1))
@@ -327,3 +327,4 @@ class Ui_MenuNodes(object):
         self.pbWaveInteraction.setStyleSheet(QtWidgets.QApplication.translate("MenuNodes", "text-align:left", None, -1))
         self.pbWaveInteraction.setText(QtWidgets.QApplication.translate("MenuNodes", "Wave interaction", None, -1))
 
+import DAVE.gui.forms.resources_rc

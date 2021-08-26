@@ -104,7 +104,7 @@ def add_node(scene, selection = None):
     return ui, AddNode
 
 
-def add_axis(scene, selection=None):
+def add_frame(scene, selection=None):
 
     ui, AddNode = add_node(scene, selection)
 
@@ -116,7 +116,7 @@ def add_axis(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Axis'))
+    ui.tbName.setText(scene.available_name_like('Frame'))
 
     if (AddNode.exec() == QtWidgets.QDialog.Accepted):
         parent = ui.cbParentAxis.currentText()

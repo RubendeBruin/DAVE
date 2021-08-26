@@ -1446,7 +1446,7 @@ class Gui:
 
         ui.pbPoint.clicked.connect(self.new_point)
         ui.pbCircle.clicked.connect(self.new_circle)
-        ui.pbAxis.clicked.connect(self.new_axis)
+        ui.pbAxis.clicked.connect(self.new_frame)
         ui.pbBody.clicked.connect(self.new_body)
         ui.pbGeometricContact.clicked.connect(self.new_geometric_contact)
 
@@ -1474,8 +1474,8 @@ class Gui:
 
         menu.exec_(globLoc)
 
-    def new_axis(self):
-        self.new_something(new_node_dialog.add_axis)
+    def new_frame(self):
+        self.new_something(new_node_dialog.add_frame)
 
     def new_body(self):
         self.new_something(new_node_dialog.add_body)

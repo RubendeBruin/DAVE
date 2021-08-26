@@ -1,6 +1,6 @@
 call conda activate pyside2
 
-call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
+echo call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
 echo call pyside2-uic widget_modeshapes.ui -o "..\src\DAVE\gui\forms\widgetUI_modeshapes.py"
 echo call pyside2-uic widget_ballastconfiguration.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastconfiguration.py"
 echo call pyside2-uic widget_ballastsolver.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastsolver.py"
@@ -25,7 +25,7 @@ echo call pyside2-uic widget_linhyd.ui -o "..\src\DAVE\gui\forms\widget_linhyd.p
 echo call pyside2-uic widget_lincon6.ui -o "..\src\DAVE\gui\forms\widget_lincon6.py"
 echo call pyside2-uic widget_beam.ui -o "..\src\DAVE\gui\forms\widget_beam.py"
 echo call pyside2-uic widget_shackle.ui -o "..\src\DAVE\gui\forms\widget_shackle.py"
-echo call pyside2-uic menu_nodetypes.ui -o "..\src\DAVE\gui\forms\menu_nodetypes.py"
+call pyside2-uic menu_nodetypes.ui -o "..\src\DAVE\gui\forms\menu_nodetypes.py"
 echo call pyside2-uic widget_con2d.ui -o "..\src\DAVE\gui\forms\widget_con2d.py"
 echo call pyside2-uic frm_standard_assets.ui -o "..\src\DAVE\gui\forms\frm_standard_assets.py"
 echo call pyside2-uic dlg_solver.ui -o "..\src\DAVE\gui\forms\dlg_solver.py"
@@ -36,8 +36,8 @@ echo call pyside2-uic widget_geometricconnection.ui -o "..\src\DAVE\gui\forms\wi
 echo call pyside2-uic widget_sling.ui -o "..\src\DAVE\gui\forms\widget_sling.py"
 echo call pyside2-uic widget_buoyancy.ui -o "..\src\DAVE\gui\forms\widget_buoyancy.py"
 echo call pyside2-uic widget_selection_actions.ui -o "..\src\DAVE\gui\forms\widget_selection_actions.py"
-call pyside2-uic widget_tank.ui -o "..\src\DAVE\gui\forms\widget_tank.py"
+echo call pyside2-uic widget_tank.ui -o "..\src\DAVE\gui\forms\widget_tank.py"
 echo call pyside2-uic widget_footprints.ui -o "..\src\DAVE\gui\forms\widget_footprints.py"
 
 
-call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"
+echo call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"
