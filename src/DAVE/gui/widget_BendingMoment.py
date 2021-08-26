@@ -36,13 +36,8 @@ class WidgetBendingMoment(guiDockWidget):
 
         self.ui.pbReport.clicked.connect(self.write_report)
 
-        self.ui.rbBending.toggled.connect(self.action)
-        self.ui.rbShear.toggled.connect(self.action)
-        self.ui.rbNothing.toggled.connect(self.action)
-        self.ui.sbScale.valueChanged.connect(self.action)
-        self.ui.cbAxis.currentIndexChanged.connect(self.action)
-        self.ui.cbOrientation.currentIndexChanged.connect(self.action)
-
+        self.ui.pbBending.clicked.connect(lambda : self._action(True))
+        self.ui.pbShear.clicked.connect(lambda : self._action(False))
 
     def guiProcessEvent(self, event):
         """
@@ -54,10 +49,7 @@ class WidgetBendingMoment(guiDockWidget):
         if event in [guiEventType.FULL_UPDATE,
                      guiEventType.MODEL_STRUCTURE_CHANGED]:
             self.fill()
-        if event in [guiEventType.MODEL_STRUCTURE_CHANGED,
-                     guiEventType.MODEL_STATE_CHANGED,
-                     guiEventType.SELECTED_NODE_MODIFIED]:
-            self.autoupdate()
+
 
     def guiDefaultLocation(self):
         return QtCore.Qt.DockWidgetArea.RightDockWidgetArea
@@ -87,16 +79,9 @@ class WidgetBendingMoment(guiDockWidget):
         self.ui.cbAxis.blockSignals(False)
         self.ui.cbOrientation.blockSignals(False)
 
-    def autoupdate(self):
-        if self.ui.cbLiveUpdates.isChecked():
-            self.action()
-
-    def action(self):
+    def _action(self, bending):
 
         self.gui.visual.remove_temporary_actors()
-
-        if self.ui.rbNothing.isChecked():
-            return
 
         target = self.ui.cbAxis.currentText()
         orientation = self.ui.cbOrientation.currentText()
@@ -111,7 +96,7 @@ class WidgetBendingMoment(guiDockWidget):
 
         scale = self.ui.sbScale.value()
 
-        if self.ui.rbBending.isChecked():
+        if bending:
             actor_axis, actor_graph = create_momentline_actors(target, scale_to=scale, at=orientation)
         else:
             actor_axis, actor_graph = create_shearline_actors(target, scale_to=scale, at=orientation)

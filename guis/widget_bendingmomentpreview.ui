@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>318</width>
-    <height>288</height>
+    <height>256</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item row="0" column="0" colspan="2">
     <widget class="QLabel" name="label_5">
      <property name="text">
-      <string>Load / Shear / Modem analysis can be performed for any body or axis system.</string>
+      <string>Load / Shear / Modem analysis can be performed for any body or frame.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -27,7 +27,7 @@
    <item row="1" column="0" colspan="2">
     <widget class="QLabel" name="label_6">
      <property name="text">
-      <string>Select the axis or body for which the analysis shall be performed from the list below.
+      <string>Select the frame or body for which the analysis shall be performed from the list below.
 </string>
      </property>
      <property name="wordWrap">
@@ -45,66 +45,35 @@
    <item row="2" column="1">
     <widget class="QComboBox" name="cbAxis"/>
    </item>
-   <item row="3" column="0">
+   <item row="4" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
       <string>Using orientation from:</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
+   <item row="4" column="1">
     <widget class="QComboBox" name="cbOrientation">
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default the analysis will be performed for the local X-axis.&lt;/p&gt;&lt;p&gt;If any other axis is required then select any other system from this drop-down box.&lt;/p&gt;&lt;p&gt;The calculation will then be performed using the local x-axis of that node.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="0">
-    <widget class="QPushButton" name="pbReport">
-     <property name="text">
-      <string>Write report</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
+   <item row="6" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
       <string>Preview</string>
      </property>
     </widget>
    </item>
-   <item row="6" column="0">
-    <widget class="QRadioButton" name="rbShear">
-     <property name="text">
-      <string>Shear</string>
-     </property>
-    </widget>
-   </item>
    <item row="7" column="0">
-    <widget class="QRadioButton" name="rbBending">
-     <property name="text">
-      <string>Bending</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="0">
-    <widget class="QRadioButton" name="rbNothing">
-     <property name="text">
-      <string>Nothing</string>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="0">
     <widget class="QLabel" name="label_4">
      <property name="text">
       <string>Scale max to [m]</string>
      </property>
     </widget>
    </item>
-   <item row="9" column="1">
+   <item row="7" column="1">
     <widget class="QDoubleSpinBox" name="sbScale">
      <property name="maximum">
       <double>100.000000000000000</double>
@@ -114,13 +83,24 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="1">
-    <widget class="QCheckBox" name="cbLiveUpdates">
+   <item row="9" column="1">
+    <widget class="QPushButton" name="pbShear">
      <property name="text">
-      <string>Live updates</string>
+      <string>Show Shear</string>
      </property>
-     <property name="checked">
-      <bool>true</bool>
+    </widget>
+   </item>
+   <item row="10" column="1">
+    <widget class="QPushButton" name="pbBending">
+     <property name="text">
+      <string>Show Bending</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QPushButton" name="pbReport">
+     <property name="text">
+      <string>Write report</string>
      </property>
     </widget>
    </item>
