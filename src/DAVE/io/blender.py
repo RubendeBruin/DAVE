@@ -75,7 +75,7 @@ def get_context_area():
         raise ('No suitable context found to execute rotation transform in')
     return areas[0]
 
-def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orientation=(0,0,0,0), position=(0,0,0), orientations=[], positions=[], frames_per_dof = 1 ):
+def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), orientation=(0,0,0,0), position=(0,0,0), orientations=[], positions=[], frames_per_dof = 1 ):
     \"\"\"
     All meshes shall be joined
 
@@ -142,9 +142,13 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0), offset=(0,0,0), orie
 
         context_override = {'active_object': object, 'area':view3d_area}
 
-        bpy.ops.transform.rotate(context_override,value=rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)... (2.83 this seems to be fixed)?
-        bpy.ops.transform.rotate(context_override,value=rotation[1], orient_axis='Y')
-        bpy.ops.transform.rotate(context_override,value=rotation[2], orient_axis='X')
+        # bpy.ops.transform.rotate(context_override,value=rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)... (2.83 this seems to be fixed)?
+        # bpy.ops.transform.rotate(context_override,value=rotation[1], orient_axis='Y')
+        # bpy.ops.transform.rotate(context_override,value=rotation[2], orient_axis='X')
+        
+        active_object.rotation_mode = 'QUATERNION'
+        active_object.rotation_quaternion = (rotation[3], rotation[0], rotation[1],rotation[2])
+       
 
         bpy.ops.object.transform_apply(context_override,location=False, rotation=True, scale=False)    
 
@@ -583,20 +587,20 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
                 code += '\npositions.append([{},{},{}])'.format(*glob_position)
 
-            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations)'.format(
+            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations)'.format(
                 filename,
                 *visual.scale,
-                *_to_euler(visual.rotation),
+                *_to_quaternion(visual.rotation),
                 *visual.offset,
                 *_to_quaternion(visual.parent.global_rotation),
                 *visual.parent.global_position)
 
 
         else:
-            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}))'.format(
+            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}))'.format(
                 filename,
                 *visual.scale,
-                *_to_euler(visual.rotation),
+                *_to_quaternion(visual.rotation),
                 *visual.offset,
                 *_to_quaternion(visual.parent.global_rotation),
                 *visual.parent.global_position)
