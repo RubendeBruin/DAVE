@@ -27,7 +27,7 @@ for c in clsmembers:
     if (cls == ds.Node) or \
         (cls == ds.CoreConnectedNode) or \
         (cls == ds.Manager) or \
-            (cls == ds.NodeWithParent) or \
+            (cls == ds.NodeWithCoreParent) or \
             (cls == ds.NodeWithParentAndFootprint):
         do_md = False
     else:

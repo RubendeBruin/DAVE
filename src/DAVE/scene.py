@@ -3512,7 +3512,8 @@ class Tank(NodeWithCoreParent):
         xf and yf are the x and y coordinates (local) of the center of fluid when the tank is full. zv is the largest z value
         of all the vertices of the tank.
         The measurement direction is in local z-direction. If the tank is under an angle then this is not perpendicular to the fluid.
-        Note: it is possible that this definition returns an ullage larger than the physical tank depth
+        It is possible that this definition returns an ullage larger than the physical tank depth. In that case the physical depth of
+        the tank is returned instead.
         """
         return self._vfNode.ullage
 
