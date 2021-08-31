@@ -222,6 +222,50 @@ def add_force(scene, selection=None):
     else:
         return None
 
+def add_windarea(scene, selection=None):
+
+    ui, AddNode = add_node(scene,selection)
+
+    ui.frmParentPoi.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/wind.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('WindArea'))
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        poi = ui.cbParentPoi.currentText()
+        name = ui.tbName.text()
+
+        return "new_windarea('{}', parent = '{}')".format(name, poi)
+
+    else:
+        return None
+
+def add_currentarea(scene, selection=None):
+
+    ui, AddNode = add_node(scene,selection)
+
+    ui.frmParentPoi.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/current.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('CurrentArea'))
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        poi = ui.cbParentPoi.currentText()
+        name = ui.tbName.text()
+
+        return "new_currentarea('{}', parent = '{}')".format(name, poi)
+
+    else:
+        return None
+
 
 def add_contactball(scene, selection=None):
 

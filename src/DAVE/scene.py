@@ -7,6 +7,7 @@
 """
 import warnings
 from abc import ABC, abstractmethod
+from enum import Enum
 
 import pyo3d
 import numpy as np
@@ -77,6 +78,12 @@ class ClaimManagement:
 
     def __exit__(self, *args, **kwargs):
         self.scene.current_manager = self._old_manager
+
+
+class AreaKind(Enum):
+    SPHERE = 1
+    PLANE = 2
+    CYLINDER = 3
 
 
 class Node(ABC):
@@ -1141,30 +1148,30 @@ class Frame(NodeWithParentAndFootprint):
 
         # position
 
-        if self.fixed[0]:
+        if self.fixed[0] or not self._scene._export_code_with_solved_function:
             code += "\n           position=({},".format(self.position[0])
         else:
             code += "\n           position=(solved({}),".format(self.position[0])
-        if self.fixed[1]:
+        if self.fixed[1] or not self._scene._export_code_with_solved_function:
             code += "\n                     {},".format(self.position[1])
         else:
             code += "\n                     solved({}),".format(self.position[1])
-        if self.fixed[2]:
+        if self.fixed[2] or not self._scene._export_code_with_solved_function:
             code += "\n                     {}),".format(self.position[2])
         else:
             code += "\n                     solved({})),".format(self.position[2])
 
         # rotation
 
-        if self.fixed[3]:
+        if self.fixed[3] or not self._scene._export_code_with_solved_function:
             code += "\n           rotation=({},".format(self.rotation[0])
         else:
             code += "\n           rotation=(solved({}),".format(self.rotation[0])
-        if self.fixed[4]:
+        if self.fixed[4] or not self._scene._export_code_with_solved_function:
             code += "\n                     {},".format(self.rotation[1])
         else:
             code += "\n                     solved({}),".format(self.rotation[1])
-        if self.fixed[5]:
+        if self.fixed[5] or not self._scene._export_code_with_solved_function:
             code += "\n                     {}),".format(self.rotation[2])
         else:
             code += "\n                     solved({})),".format(self.rotation[2])
@@ -1475,30 +1482,30 @@ class RigidBody(Frame):
 
         # position
 
-        if self.fixed[0]:
+        if self.fixed[0] or not self._scene._export_code_with_solved_function:
             code += "\n                position=({},".format(self.position[0])
         else:
             code += "\n                position=(solved({}),".format(self.position[0])
-        if self.fixed[1]:
+        if self.fixed[1] or not self._scene._export_code_with_solved_function:
             code += "\n                          {},".format(self.position[1])
         else:
             code += "\n                          solved({}),".format(self.position[1])
-        if self.fixed[2]:
+        if self.fixed[2] or not self._scene._export_code_with_solved_function:
             code += "\n                          {}),".format(self.position[2])
         else:
             code += "\n                          solved({})),".format(self.position[2])
 
         # rotation
 
-        if self.fixed[3]:
+        if self.fixed[3] or not self._scene._export_code_with_solved_function:
             code += "\n                rotation=({},".format(self.rotation[0])
         else:
             code += "\n                rotation=(solved({}),".format(self.rotation[0])
-        if self.fixed[4]:
+        if self.fixed[4] or not self._scene._export_code_with_solved_function:
             code += "\n                          {},".format(self.rotation[1])
         else:
             code += "\n                          solved({}),".format(self.rotation[1])
-        if self.fixed[5]:
+        if self.fixed[5] or not self._scene._export_code_with_solved_function:
             code += "\n                          {}),".format(self.rotation[2])
         else:
             code += "\n                          solved({})),".format(self.rotation[2])
@@ -1864,6 +1871,93 @@ class Force(NodeWithCoreParent):
         code += "\n            moment=({}, {}, {}) )".format(*self.moment)
         return code
 
+class _Area(NodeWithCoreParent):
+    """Abstract Based class for wind and current areas.
+    """
+
+    @property
+    def force(self):
+        """The x,y and z components of the force [kN,kN,kN] (global axis)
+
+        Example s['wind'].force = (12,34,56)
+        """
+        return self._vfNode.force
+
+    @property
+    def fx(self):
+        """The global x-component of the force [kN] (global axis)"""
+        return self.force[0]
+
+    @property
+    def fy(self):
+        """The global y-component of the force [kN]  (global axis)"""
+        return self.force[1]
+
+    @property
+    def fz(self):
+        """The global z-component of the force [kN]  (global axis)"""
+
+        return self.force[2]
+
+
+    @property
+    def A(self):
+        return self._vfNode.A0
+
+    @A.setter
+    def A(self, value):
+        assert1f_positive_or_zero(value, 'Area')
+        self._vfNode.A0 = value
+
+    @property
+    def Cd(self):
+        return self._vfNode.Cd
+
+    @Cd.setter
+    def Cd(self, value):
+        assert1f_positive_or_zero(value, 'Cd')
+        self._vfNode.Cd = value
+
+    @property
+    def direction(self):
+        return self._vfNode.direction
+
+    @direction.setter
+    def direction(self, value):
+        assert3f(value, "direction")
+        assert np.linalg.norm(value) >0, ValueError('direction can not be 0,0,0')
+
+        self._vfNode.direction = value
+
+    @property
+    def areakind(self):
+        return AreaKind(self._vfNode.type)
+
+    @areakind.setter
+    def areakind(self, value):
+        if not isinstance(value, AreaKind):
+            raise ValueError('kind shall be an instance of Area')
+        self._vfNode.type = value.value
+
+
+    def _give_python_code(self, new_command):
+        code = "# code for {}".format(self.name)
+
+        # new_force(self, name, parent=None, force=None, moment=None):
+
+        code += "\ns.{}}(name='{}',".format(new_command,self.name)
+        code += "\n            parent='{}',".format(self.parent_for_export.name)
+        code += "\n            force=({}, {}, {}),".format(*self.force)
+        code += "\n            moment=({}, {}, {}) )".format(*self.moment)
+        return code
+
+class WindArea(_Area):
+    def give_python_code(self):
+        return self._give_python_code('new_windarea')
+
+class CurrentArea(_Area):
+    def give_python_code(self):
+        return self._give_python_code('new_windcurrent')
 
 class ContactMesh(NodeWithCoreParent):
     """A ContactMesh is a tri-mesh with an axis parent"""
@@ -4629,10 +4723,11 @@ class Sling(Manager):
             EAmain = k_total * Lmain
 
         self.sa.mass = self._mass / 2
-        self.sa.inertia_radii = (
-            self._LspliceA / 2,
-            self._LspliceA / 2,
-            self._diameter / 2,
+
+        self.sa.inertia_radii = radii_from_box_shape(
+            self._LspliceA,
+            self._LspliceA,
+            self._diameter,
         )
 
         self.a1.position = (self._LspliceA / 2, self._diameter / 2, 0)
@@ -4643,11 +4738,13 @@ class Sling(Manager):
         self.avis.scale = (self._LspliceA, 2 * self._diameter, self._diameter)
 
         self.sb.mass = self._mass / 2
-        self.sb.inertia_radii = (
-            self._LspliceB / 2,
-            self._LspliceB / 2,
-            self._diameter / 2,
+
+        self.sb.inertia_radii = radii_from_box_shape(
+            self._LspliceB,
+            self._LspliceB,
+            self._diameter,
         )
+
 
         self.b1.position = (self._LspliceB / 2, self._diameter / 2, 0)
         self.b2.position = (self._LspliceB / 2, -self._diameter / 2, 0)
@@ -5235,6 +5332,9 @@ class Scene:
         self._godmode = False
         """Icarus warning, wear proper PPE"""
 
+        self._export_code_with_solved_function = True
+        """Wrap solved values in 'solved' function when exporting python code"""
+
         if filename is not None:
             self.load_scene(filename)
 
@@ -5307,6 +5407,42 @@ class Scene:
     def nFootprintSlices(self, value):
         assert isinstance(value, int), "needs to be integer"
         self._vfc.nFootprintSlices = value
+        
+    @property
+    def wind_direction(self):
+        return np.mod(np.rad2deg(self._vfc.wind_direction),360)
+    
+    @wind_direction.setter
+    def wind_direction(self, value):
+        assert1f(value,'wind direction')
+        self._vfc.wind_direction = np.deg2rad(value)
+
+    @property
+    def current_direction(self):
+        return np.mod(np.rad2deg(self._vfc.current_direction), 360)
+
+    @current_direction.setter
+    def current_direction(self, value):
+        assert1f(value, 'current direction')
+        self._vfc.current_direction = np.deg2rad(value)
+
+    @property
+    def wind_velocity(self):
+        return self._vfc.wind_velocity
+
+    @wind_velocity.setter
+    def wind_velocity(self, value):
+        assert1f_positive_or_zero(value, 'wind velocity')
+        self._vfc.wind_velocity = value
+
+    @property
+    def current_velocity(self):
+        return self._vfc.current_velocity
+
+    @current_velocity.setter
+    def current_velocity(self, value):
+        assert1f_positive_or_zero(value, 'current velocity')
+        self._vfc.current_velocity = value
 
     # =========== private functions =============
 
@@ -6840,6 +6976,93 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
+    def _new_area(self, is_wind, name, parent, direction, Cd, A, areakind):
+        """Creates a new WindArea* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: name of the parent of the node [Poi]
+            Cd : Cd-coefficient
+            A  : Area
+            kind : interpretation of the direction (Area.PLANE, AREA.SPHERE, AREA.CYLINDER)
+            direction : direction of the area
+
+        Returns:
+            Reference to newly created wind area
+
+        """
+
+        # apply prefixes
+        name = self._prefix_name(name)
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._poi_from_node(parent)
+
+        assert3f(direction, "Direction ")
+        assert np.linalg.norm(direction) > 0, ValueError('Direction shall not be 0,0,0')
+        assert1f_positive_or_zero(Cd, "Cd coefficient")
+        assert1f_positive_or_zero(A, "Area ")
+        assert isinstance(areakind, AreaKind)
+
+        a = self._vfc.new_wind(name)
+
+        if is_wind:
+            a.isWind = True
+            new_node = WindArea(self, a)
+        else:
+            a.isWind = False
+            new_node = CurrentArea(self, a)
+
+        # and set properties
+        if b is not None:
+            new_node.parent = b
+        new_node.areakind = areakind
+        new_node.direction = direction
+        new_node.Cd = Cd
+        new_node.A = A
+
+        self._nodes.append(new_node)
+        return new_node
+
+    def new_windarea(self, name, parent=None, direction = (0,1,0), Cd = 2, A = 10, areakind=AreaKind.PLANE) -> WindArea:
+        """Creates a new *WindArea* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: name of the parent of the node [Poi]
+            Cd : Cd-coefficient
+            A  : Area
+            kind : interpretation of the direction (Area.PLANE, AREA.SPHERE, AREA.CYLINDER)
+            direction : direction of the area
+
+        Returns:
+            Reference to newly created wind area
+
+        """
+
+        return self._new_area(True, name=name, parent=parent, direction=direction, Cd=Cd, A=A, areakind=areakind)
+
+    def new_currentarea(self, name, parent=None, direction = (0,1,0), Cd = 2, A = 10, areakind=AreaKind.PLANE) -> CurrentArea:
+        """Creates a new *CurrentArea* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: name of the parent of the node [Poi]
+            Cd : Cd-coefficient
+            A  : Area
+            kind : interpretation of the direction (Area.PLANE, AREA.SPHERE, AREA.CYLINDER)
+            direction : direction of the area
+
+        Returns:
+            Reference to newly created wind area
+
+        """
+
+        return self._new_area(False, name=name, parent=parent, direction=direction, Cd=Cd, A=A, areakind=areakind)
+
+
     def new_circle(self, name, parent, axis, radius=0.0) -> Circle:
         """Creates a new *sheave* node and adds it to the scene.
 
@@ -7579,10 +7802,12 @@ class Scene:
 
         code += "\n# Time: {} UTC".format(str(datetime.datetime.now()).split(".")[0])
 
-        code += "\n\n# To be able to distinguish the important number (eg: fixed positions) from"
-        code += "\n# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'."
-        code += "\n# For anything written as solved(number) that actual number does not influence the static solution"
-        code += "\ndef solved(number):\n    return number\n"
+        if self._export_code_with_solved_function:
+
+            code += "\n\n# To be able to distinguish the important number (eg: fixed positions) from"
+            code += "\n# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'."
+            code += "\n# For anything written as solved(number) that actual number does not influence the static solution"
+            code += "\ndef solved(number):\n    return number\n"
 
         for n in self._nodes:
 

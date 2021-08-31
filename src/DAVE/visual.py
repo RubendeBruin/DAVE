@@ -256,24 +256,50 @@ def transform_from_node(node):
 
 
 
-def transform_from_direction(axis):
+def transform_from_direction(axis, position = (0,0,0), right = None):
     """
     Creates a transform that rotates the X-axis to the given direction
     Args:
-        axis: requested direction
+        axis: requested direction, needs to be a unit vector
+        position : optional, (0,0,0)
+        right: optional: vector to right. Needs to be a unit vector
 
     Returns:
-        vtk.vtkTransform
+        vtk.vtkMatrix4x4
     """
-    theta = np.arcsin(axis[2])
-    phi = np.arctan2(axis[1], axis[0])
-    t = vtk.vtkTransform()
-    t.PostMultiply()
-    # t.RotateX(90)  # put it along Z
-    t.RotateY(np.rad2deg(theta))
-    t.RotateZ(np.rad2deg(phi))
 
-    return t
+    # copied from vtk / MatrixHelpers::ViewMatrix
+
+    viewDir = np.array(axis, dtype=float)
+
+    if right is None:
+        temp = np.array((1,0,0), dtype=float)
+        if np.dot(temp, viewDir) > 0.98:
+            temp[0]=0
+            temp[1]=1
+
+        right = np.cross(viewDir, temp)
+        right = right / np.linalg.norm(right)
+
+    up = np.cross(right, viewDir)
+
+    mat4x4 = vtk.vtkMatrix4x4()
+
+    mat4x4.SetElement(0, 0, right[0])
+    mat4x4.SetElement(1, 0, right[1])
+    mat4x4.SetElement(2, 0, right[2])
+    mat4x4.SetElement(0, 1, up[0])
+    mat4x4.SetElement(1, 1, up[1])
+    mat4x4.SetElement(2, 1, up[2])
+    mat4x4.SetElement(0, 2, viewDir[0])
+    mat4x4.SetElement(1, 2, viewDir[1])
+    mat4x4.SetElement(2, 2, viewDir[2])
+
+    mat4x4.SetElement(0, 3, position[0])
+    mat4x4.SetElement(1, 3, position[1])
+    mat4x4.SetElement(2, 3, position[2])
+
+    return mat4x4
 
 
 def update_line_to_points(line_actor, points):
@@ -461,6 +487,32 @@ class VisualOutline:
     parent_vp_actor = None
     outline_actor = None
     outline_transform = None
+
+    def update(self):
+
+        # update transform
+        userTransform = self.parent_vp_actor.GetUserTransform()
+
+        if userTransform is not None:
+            matrix = userTransform.GetMatrix()
+        else:
+            matrix = vtk.vtkMatrix4x4()
+
+        trans = vtk.vtkTransform()
+        trans.Identity()
+        trans.Concatenate(matrix)
+        trans.Scale(self.parent_vp_actor.GetScale())
+
+        self.outline_transform.SetTransform(trans)
+
+        self.outline_actor.SetVisibility(
+            getattr(self.parent_vp_actor, "xray", False)
+            or self.parent_vp_actor.GetVisibility()
+        )
+
+        # get color
+        color = getattr(self.parent_vp_actor, "_outline_color", (0, 0, 0))
+        self.outline_actor.GetProperty().SetColor(color[0] / 255, color[1] / 255, color[2] / 255)
 
 
 class VisualActor:
@@ -737,6 +789,10 @@ class VisualActor:
                 apply_parent_translation_on_transform(self.node.parent.parent, t)
 
             A.SetUserTransform(t)
+            return
+
+        if isinstance(self.node, vf._Area):
+            self.actors["main"].scale(self.node.A, absolute=True)
             return
 
         if isinstance(self.node, vf.Cable):
@@ -1470,6 +1526,7 @@ class Viewport:
                     record.outline_actor = actor
                     record.outline_transform = tr
                     record.parent_vp_actor = vp_actor
+                    vp_actor._outline = record
                     self.node_outlines.append(record)
 
         # Update transforms for outlines
@@ -1477,29 +1534,9 @@ class Viewport:
         for record in self.node_outlines:
             # is the parent actor still present?
             if record.parent_vp_actor in self.screen.actors:
-                # update transform
-                userTransform = record.parent_vp_actor.GetUserTransform()
 
-                if userTransform is not None:
-                    matrix = userTransform.GetMatrix()
-                else:
-                    matrix = vtk.vtkMatrix4x4()
+                record.update()
 
-                trans = vtk.vtkTransform()
-                trans.Identity()
-                trans.Concatenate(matrix)
-                trans.Scale(record.parent_vp_actor.GetScale())
-
-                record.outline_transform.SetTransform(trans)
-
-                record.outline_actor.SetVisibility(
-                    getattr(record.parent_vp_actor, "xray", False)
-                    or record.parent_vp_actor.GetVisibility()
-                )
-
-                # get color
-                color = getattr(record.parent_vp_actor, "_outline_color", (0,0,0))
-                record.outline_actor.GetProperty().SetColor(color[0]/255, color[1]/255, color[2]/255)
 
             else:
                 # mark for deletion
@@ -1811,6 +1848,10 @@ class Viewport:
                 # footprint
                 actors["footprint"] = vp.Cube(side=0.00001) # dummy
 
+            if isinstance(N, vf._Area): # wind or current area
+                actors["main"] = vp.Circle(res=36, r=0.5)
+                actors["main"].scale(N.A)
+
 
             if isinstance(N, vf.RigidBody):
                 size = 1
@@ -1980,7 +2021,7 @@ class Viewport:
             if node not in self.scene._nodes:
                 if V.actors:  # not all nodes have an actor
                     if (
-                        V.actors["main"].actor_type != ActorType.GLOBAL
+                            getattr(V.actors["main"],'actor_type', None)  != ActorType.GLOBAL
                     ):  # global visuals do not have a corresponding node
                         to_be_removed.append(V)
                         continue
@@ -2008,6 +2049,8 @@ class Viewport:
 
         if acs:
             self.screen.remove(acs)
+
+        self._rotate_actors_due_to_camera_movement()
 
         self.update_outlines()
 
@@ -2423,7 +2466,10 @@ class Viewport:
             alpha = 1 - (10 * dz)
             if alpha < 0:
                 alpha = 0
+
         self.global_visuals["sea"].alpha(ALPHA_SEA * alpha)
+
+        self._rotate_actors_due_to_camera_movement()
 
     def keyPressFunction(self, obj, event):
         key = obj.GetKeySym()
@@ -2466,6 +2512,49 @@ class Viewport:
         else:
             for actor in self.global_visuals.values():
                 actor.off()
+
+    def _rotate_actors_due_to_camera_movement(self):
+        """Gets called when the camera has moved"""
+
+        for V in self.node_visuals:
+            node = V.node
+
+            if isinstance(node, dn._Area):
+                actor = V.actors['main']
+
+                if node.areakind == dn.AreaKind.SPHERE:
+                    direction = self.screen.camera.GetDirectionOfProjection()
+                elif node.areakind == dn.AreaKind.PLANE:
+                    direction = node.direction
+                    if node.parent.parent is not None:
+                        direction = node.parent.parent.to_glob_direction(direction)
+                else:
+                    axis_direction = node.direction
+                    if node.parent.parent is not None:
+                        axis_direction = node.parent.parent.to_glob_direction(axis_direction)
+                    camera_direction = self.screen.camera.GetDirectionOfProjection()
+
+                    # the normal of the plane need to be
+                    # 1. perpendicular to "direction"
+                    # 2. in the same plane as "camera direction" and "direction"
+
+                    temp = np.cross(axis_direction, camera_direction)
+                    if np.linalg.norm(temp) < 1e-6: # axis and camera are perpendicular
+                        direction = self.screen.camera.GetViewUp()
+                    else:
+                        direction = np.cross(temp, axis_direction)
+                        direction = direction / np.linalg.norm(direction)
+
+                transform = transform_from_direction(direction, position=node.parent.global_position)
+
+                actor.SetUserMatrix(transform)
+                if hasattr(actor, '_outline'):
+                    actor._outline.update()
+
+
+
+
+
 
 
 class WaveField:

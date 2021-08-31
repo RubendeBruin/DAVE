@@ -63,56 +63,6 @@ COLOR_BG1 = rgb(_BLUE_LIGHT)
 
 COLOR_WATER = rgb(_BLUE_DARK)
 
-# -------- not used: -----
-#
-# COLOR_VISUAL = rgb(_BLUE_LIGHT)
-#
-# COLOR_CABLE = rgb(_BLACK)
-# COLOR_POI   = rgb(_WHITE)
-# COLOR_WAVEINTERACTION = rgb(_BLUE)
-# COLOR_FORCE = rgb(_ORANGE)
-# COLOR_COG = rgb(_PURPLE)
-# COLOR_BEAM = rgb(_DARK_GRAY)
-#
-# COLOR_BUOYANCY_MESH_FILL = rgb(_YELLOW)
-# COLOR_BUOYANCY_MESH_LINES = rgb(_BLUE_DARK)
-#
-# COLOR_CONTACT_MESH_FILL = rgb(_GREEN)
-# COLOR_CONTACT_MESH_LINES = rgb(_BLUE_DARK)
-#
-# COLOR_TANK_MESH_FILL = None
-# COLOR_TANK_MESH_LINES = rgb(_GREEN)
-#
-# LINEWIDTH_SUBMERGED_MESH = 3
-#
-# COLOR_X = rgb(_RED)
-# COLOR_Y = rgb(_GREEN)
-# COLOR_Z = rgb(_BLUE)
-#
-#
-#
-#
-
-#
-# COLOR_BG2_ENV = rgb(_WHITE)         # colors when global elements (waterplane) are shown
-# COLOR_BG1_ENV = rgb(_BLUE_LIGHT)
-#
-#
-# # COLOR_BG1 = rgb(_DARK_GRAY)
-# # COLOR_BG2 = rgb(_DARK_GRAY)
-# # _DARK_GRAY
-#
-# # COLOR_BG1 =rgb(_WHITE)
-# ALPHA_VISUAL = 0.3 # standard alpha value for visual when a node is selected
-# ALPHA_BUOYANCY = 1.0
-# ALPHA_WATER_TANK = 0.9
-#
-
-#
-# VISUAL_DIFFUSE = 0.4
-# VISUAL_SPECULAR = 0.05
-# VISUAL_AMBIENT = 0.5
-
 # ------------
 
 
@@ -342,6 +292,13 @@ painters["Tank:full"] = {"main": copy(mesh), "cog": copy(surf), "fluid": copy(su
 
 surf.surfaceColor = _PURPLE
 painters["WaveInteraction1"] = {"main": copy(surf)}
+
+surf.surfaceColor = _WHITE
+painters["WindArea"] = {"main": copy(surf)}
+
+surf.surfaceColor = _BLUE
+painters["CurrentArea"] = {"main": copy(surf)}
+
 
 PAINTERS["Construction"] = deepcopy(painters)
 

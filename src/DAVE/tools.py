@@ -131,6 +131,20 @@ def fancy_format(text, number='{:.3f}'):
 
     return text
 
+def radii_from_box_shape(dx,dy,dz,mass_distribution_factor=1.0):
+    """Returns the radii of gyration of a box with size dx,dy,dz.
+
+    For hollow boxes set mass_distribution_factor to 1.5, for solid set it to 1.0
+    """
+
+    f = mass_distribution_factor/12
+
+    rxx = math.sqrt(f * (dy*dy+dz*dz))
+    ryy = math.sqrt(f * (dx * dx+dz * dz))
+    rzz = math.sqrt(f * (dx * dx + dy * dy))
+
+    return (rxx,ryy,rzz)
+
 
 
 def radii_to_positions(rxx,ryy,rzz):

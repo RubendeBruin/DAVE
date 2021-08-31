@@ -1427,7 +1427,10 @@ class Gui:
 
                     node = self.scene[node_name]
                     node.name = name_of_duplicate
+
+                    self.scene._export_code_with_solved_function = False
                     code = node.give_python_code()
+                    self.scene._export_code_with_solved_function = True
                     node.name = name
                     self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
@@ -1454,6 +1457,8 @@ class Gui:
         ui.pbSpring6D.clicked.connect(self.new_linear_connector)
 
         ui.pbForce.clicked.connect(self.new_force)
+        ui.pbWindArea.pressed.connect(self.new_windarea)
+        ui.pbCurrentArea.pressed.connect(self.new_currentarea)
 
         ui.pbContactShape.clicked.connect(self.new_contactmesh)
         ui.pbContactBall.clicked.connect(self.new_contactball)
@@ -1488,6 +1493,12 @@ class Gui:
 
     def new_force(self):
         self.new_something(new_node_dialog.add_force)
+
+    def new_windarea(self):
+        self.new_something(new_node_dialog.add_windarea)
+
+    def new_currentarea(self):
+        self.new_something(new_node_dialog.add_currentarea)
 
     def new_circle(self):
         self.new_something(new_node_dialog.add_sheave)

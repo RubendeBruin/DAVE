@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="icons">
+    <file>current.png</file>
+    <file>wind.png</file>
     <file>front.png</file>
     <file>side.png</file>
     <file>top.png</file>

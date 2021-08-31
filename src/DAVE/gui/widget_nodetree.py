@@ -250,6 +250,11 @@ class WidgetNodeTree(guiDockWidget):
                 item.setIcon(0,QIcon(":/icons/sling.png"))
             elif isinstance(node, ds.Tank):
                 item.setIcon(0, QIcon(":/icons/tank.png"))
+            elif isinstance(node, ds.WindArea):
+                item.setIcon(0, QIcon(":/icons/wind.png"))
+            elif isinstance(node, ds.CurrentArea):
+                item.setIcon(0, QIcon(":/icons/current.png"))
+
 
             try:
                 parent = node.parent

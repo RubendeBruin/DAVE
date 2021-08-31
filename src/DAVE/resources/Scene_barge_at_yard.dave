@@ -107,8 +107,7 @@ s.new_linear_connector_6d(name='Barge positioning springs',
                        0.0, 0.0, 10000.0) )
 
 # code for Barge Ballast system and its tanks
-bs = s.new_ballastsystem('Barge Ballast system', parent = 'Barge',
-                         position = (0.0,0.0,0.0))
+bs = s.new_ballastsystem('Barge Ballast system', parent = 'Barge')
 bs.new_tank('ps_inner1', position = (6.25,3.75,4),
             capacity_kN = 5656.078124999999, frozen = False, actual_fill = 0.0)
 bs.new_tank('ps_outer1', position = (6.25,11.25,4),
