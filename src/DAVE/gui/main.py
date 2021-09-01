@@ -60,6 +60,7 @@
 
 
 """
+import subprocess
 from copy import deepcopy
 
 from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
@@ -114,6 +115,7 @@ from DAVE.gui.widget_stability_disp import WidgetDisplacedStability
 from DAVE.gui.widget_explore import WidgetExplore
 from DAVE.gui.widget_tank_order import WidgetTankOrder
 from DAVE.gui.widget_rigg_it_right import WidgetRiggItRight
+from DAVE.gui.widget_environment import WidgetEnvironment
 
 import numpy as np
 
@@ -440,6 +442,11 @@ class Gui:
         self.ui.pbSide.clicked.connect(lambda: self.camera_set_direction((0, 1, 0)))
         self.ui.pb3D.clicked.connect(self.toggle_2D)
 
+        self.ui.actionPython_console_2.triggered.connect(lambda: self.ui.dockWidget_2.show())
+
+        self.ui.actionVersion.setText(f'Version {DAVE.__version__}')
+        self.ui.actionOnline_help.triggered.connect(lambda: subprocess.Popen('explorer https://davedocs.online'))
+
         # ======================= Code-highlighter ==============
 
         font = QFont()
@@ -496,12 +503,17 @@ class Gui:
         set_pb_style(btnConstruct)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText("&5. Stability")
+        btnConstruct.setText("&5. Environment")
+        btnConstruct.clicked.connect(lambda: self.activate_workspace("ENVIRONMENT"))
+        set_pb_style(btnConstruct)
+
+        btnConstruct = QtWidgets.QPushButton()
+        btnConstruct.setText("&6. Stability")
         btnConstruct.clicked.connect(lambda: self.activate_workspace("STABILITY"))
         set_pb_style(btnConstruct)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText("&6. Mode Shapes [beta]")
+        btnConstruct.setText("&7. Mode Shapes [beta]")
         btnConstruct.clicked.connect(lambda: self.activate_workspace("DYNAMICS"))
         set_pb_style(btnConstruct)
 
@@ -721,6 +733,9 @@ class Gui:
             self.activate_paintset("Ballast")
 
             # self.visual.show_actors_of_type([ActorType.BALLASTTANK])
+
+        if name == "ENVIRONMENT":
+            self.show_guiWidget("Environment", WidgetEnvironment)
 
         if name == "STABILITY":
             self.show_guiWidget("Stability", WidgetDisplacedStability)

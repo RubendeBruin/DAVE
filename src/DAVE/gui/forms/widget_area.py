@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_area.ui',
 # licensing of 'widget_area.ui' applies.
 #
-# Created: Tue Aug 31 15:45:32 2021
+# Created: Wed Sep  1 08:45:43 2021
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!

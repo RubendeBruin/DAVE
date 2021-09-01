@@ -10,6 +10,7 @@ class guiEventType(Enum):
     MODEL_STATE_CHANGED = 3      # only change in dofs
     SELECTION_CHANGED = 4        # a different node is selected
     VIEWER_SETTINGS_UPDATE = 5   # the display settings for the viewer changed
+    ENVIRONMENT_CHANGED = 6      # one of the scene environment values changed (eg: g, wind_direction, ... )
 
 class guiDockWidget(QtWidgets.QDockWidget):
 

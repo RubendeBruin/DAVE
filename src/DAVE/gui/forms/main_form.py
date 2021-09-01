@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Wed Aug 25 09:16:15 2021
+# Created: Wed Sep  1 08:50:00 2021
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1099, 1318)
+        MainWindow.resize(1099, 913)
         MainWindow.setAcceptDrops(True)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/Dave_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -203,6 +203,8 @@ class Ui_MainWindow(object):
         self.menuView.setObjectName("menuView")
         self.menuLook_towards = QtWidgets.QMenu(self.menuView)
         self.menuLook_towards.setObjectName("menuLook_towards")
+        self.menuHelp = QtWidgets.QMenu(self.menubar)
+        self.menuHelp.setObjectName("menuHelp")
         MainWindow.setMenuBar(self.menubar)
         self.dockWidget_2 = QtWidgets.QDockWidget(MainWindow)
         self.dockWidget_2.setObjectName("dockWidget_2")
@@ -407,6 +409,12 @@ class Ui_MainWindow(object):
         self.actionOrcaflex.setObjectName("actionOrcaflex")
         self.actionOrcaflex_package = QtWidgets.QAction(MainWindow)
         self.actionOrcaflex_package.setObjectName("actionOrcaflex_package")
+        self.actionPython_console_2 = QtWidgets.QAction(MainWindow)
+        self.actionPython_console_2.setObjectName("actionPython_console_2")
+        self.actionVersion = QtWidgets.QAction(MainWindow)
+        self.actionVersion.setObjectName("actionVersion")
+        self.actionOnline_help = QtWidgets.QAction(MainWindow)
+        self.actionOnline_help.setObjectName("actionOnline_help")
         self.menuExport.addAction(self.actionBlender)
         self.menuExport.addAction(self.actionOrcaflex)
         self.menuExport.addAction(self.actionOrcaflex_package)
@@ -429,14 +437,19 @@ class Ui_MainWindow(object):
         self.menuView.addAction(self.action2D_mode)
         self.menuView.addAction(self.menuLook_towards.menuAction())
         self.menuView.addSeparator()
-        self.menuView.addSeparator()
         self.menuView.addAction(self.actionShow_force_applying_element)
         self.menuView.addAction(self.actionShow_water_plane)
         self.menuView.addSeparator()
         self.menuView.addAction(self.actionFull_refresh)
         self.menuView.addAction(self.actionCamera_reset)
+        self.menuView.addSeparator()
+        self.menuView.addAction(self.actionPython_console_2)
+        self.menuView.addSeparator()
+        self.menuHelp.addAction(self.actionVersion)
+        self.menuHelp.addAction(self.actionOnline_help)
         self.menubar.addAction(self.menuSolve_Statics.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
+        self.menubar.addAction(self.menuHelp.menuAction())
         self.toolBar.addSeparator()
 
         self.retranslateUi(MainWindow)
@@ -459,6 +472,7 @@ class Ui_MainWindow(object):
         self.menuExport.setTitle(QtWidgets.QApplication.translate("MainWindow", "Export", None, -1))
         self.menuView.setTitle(QtWidgets.QApplication.translate("MainWindow", "View", None, -1))
         self.menuLook_towards.setTitle(QtWidgets.QApplication.translate("MainWindow", "Look in direction", None, -1))
+        self.menuHelp.setTitle(QtWidgets.QApplication.translate("MainWindow", "Help", None, -1))
         self.dockWidget_2.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Python engine", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("MainWindow", "Code", None, -1))
         self.pbClearCode.setText(QtWidgets.QApplication.translate("MainWindow", "&Clear", None, -1))
@@ -531,5 +545,8 @@ class Ui_MainWindow(object):
         self.actionBlender.setText(QtWidgets.QApplication.translate("MainWindow", "Blender", None, -1))
         self.actionOrcaflex.setText(QtWidgets.QApplication.translate("MainWindow", "Orcaflex .yml", None, -1))
         self.actionOrcaflex_package.setText(QtWidgets.QApplication.translate("MainWindow", "Orcaflex run and collect package", None, -1))
+        self.actionPython_console_2.setText(QtWidgets.QApplication.translate("MainWindow", "Python console", None, -1))
+        self.actionVersion.setText(QtWidgets.QApplication.translate("MainWindow", "Version", None, -1))
+        self.actionOnline_help.setText(QtWidgets.QApplication.translate("MainWindow", "Online help", None, -1))
 
 import DAVE.gui.forms.resources_rc

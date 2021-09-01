@@ -4758,7 +4758,7 @@ class Sling(Manager):
         self.main.diameter = self._diameter
         self.main.connections = tuple([self.am, *self._sheaves, self.bm])
 
-        self.eyeA.length = self._LeyeA * 2 - self._diameter
+        self.eyeA.length = self._LeyeA * 2 + self._diameter
         self.eyeA.EA = self._EA
         self.eyeA.diameter = self._diameter
 
@@ -4767,7 +4767,7 @@ class Sling(Manager):
         else:
             self.eyeA.connections = (self.a1, self.a2)
 
-        self.eyeB.length = self._LeyeB * 2 - self._diameter
+        self.eyeB.length = self._LeyeB * 2 + self._diameter
         self.eyeB.EA = self._EA
         self.eyeB.diameter = self._diameter
 

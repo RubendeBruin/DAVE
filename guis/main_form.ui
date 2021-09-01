@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1099</width>
-    <height>1318</height>
+    <height>819</height>
    </rect>
   </property>
   <property name="acceptDrops">
@@ -494,15 +494,25 @@
     <addaction name="action2D_mode"/>
     <addaction name="menuLook_towards"/>
     <addaction name="separator"/>
-    <addaction name="separator"/>
     <addaction name="actionShow_force_applying_element"/>
     <addaction name="actionShow_water_plane"/>
     <addaction name="separator"/>
     <addaction name="actionFull_refresh"/>
     <addaction name="actionCamera_reset"/>
+    <addaction name="separator"/>
+    <addaction name="actionPython_console_2"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionVersion"/>
+    <addaction name="actionOnline_help"/>
    </widget>
    <addaction name="menuSolve_Statics"/>
    <addaction name="menuView"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget_2">
    <property name="windowTitle">
@@ -1049,6 +1059,21 @@ p, li { white-space: pre-wrap; }
   <action name="actionOrcaflex_package">
    <property name="text">
     <string>Orcaflex run and collect package</string>
+   </property>
+  </action>
+  <action name="actionPython_console_2">
+   <property name="text">
+    <string>Python console</string>
+   </property>
+  </action>
+  <action name="actionVersion">
+   <property name="text">
+    <string>Version</string>
+   </property>
+  </action>
+  <action name="actionOnline_help">
+   <property name="text">
+    <string>Online help</string>
    </property>
   </action>
  </widget>
