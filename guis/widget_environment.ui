@@ -250,6 +250,20 @@
         </property>
        </widget>
       </item>
+      <item row="15" column="1">
+       <widget class="QLabel" name="current_knots">
+        <property name="text">
+         <string>(knots)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="1">
+       <widget class="QLabel" name="wind_knots">
+        <property name="text">
+         <string>(knots)</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -261,7 +275,7 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>288</height>
+       <height>260</height>
       </size>
      </property>
     </spacer>

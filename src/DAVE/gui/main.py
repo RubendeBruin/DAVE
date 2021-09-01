@@ -1675,6 +1675,10 @@ class Gui:
                 self.visual.position_visuals()
                 return
 
+            if event == guiEventType.ENVIRONMENT_CHANGED:
+                self.visual.position_visuals()
+                return
+
             if event == guiEventType.VIEWER_SETTINGS_UPDATE:
                 self.visual.update_visibility()
                 self.visual.position_visuals()

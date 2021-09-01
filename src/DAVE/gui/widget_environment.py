@@ -74,6 +74,9 @@ class WidgetEnvironment(guiDockWidget):
             widget.setValue(getattr(self.guiScene, s))
             widget.blockSignals(False)
 
+        self.ui.wind_knots.setText(f'{self.guiScene.wind_velocity / 0.51444444:.2f} knots')
+        self.ui.current_knots.setText(f'{self.guiScene.current_velocity / 0.51444444:.2f} knots')
+
     def action(self, value, name):
         widget = getattr(self.ui, name)
         decs = widget.decimals()

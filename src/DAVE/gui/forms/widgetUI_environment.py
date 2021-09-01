@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_environment.ui',
 # licensing of 'widget_environment.ui' applies.
 #
-# Created: Wed Sep  1 10:31:35 2021
+# Created: Wed Sep  1 16:14:10 2021
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -130,8 +130,14 @@ class Ui_frmEnvironment(object):
         self.label_13 = QtWidgets.QLabel(self.widget)
         self.label_13.setObjectName("label_13")
         self.gridLayout.addWidget(self.label_13, 5, 2, 1, 1)
+        self.current_knots = QtWidgets.QLabel(self.widget)
+        self.current_knots.setObjectName("current_knots")
+        self.gridLayout.addWidget(self.current_knots, 15, 1, 1, 1)
+        self.wind_knots = QtWidgets.QLabel(self.widget)
+        self.wind_knots.setObjectName("wind_knots")
+        self.gridLayout.addWidget(self.wind_knots, 11, 1, 1, 1)
         self.verticalLayout.addWidget(self.widget)
-        spacerItem = QtWidgets.QSpacerItem(20, 288, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem = QtWidgets.QSpacerItem(20, 260, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
 
         self.retranslateUi(frmEnvironment)
@@ -164,4 +170,6 @@ class Ui_frmEnvironment(object):
         self.label_7.setText(QtWidgets.QApplication.translate("frmEnvironment", "Going to", None, -1))
         self.label_4.setText(QtWidgets.QApplication.translate("frmEnvironment", "water density", None, -1))
         self.label_13.setText(QtWidgets.QApplication.translate("frmEnvironment", "mT/m3", None, -1))
+        self.current_knots.setText(QtWidgets.QApplication.translate("frmEnvironment", "(knots)", None, -1))
+        self.wind_knots.setText(QtWidgets.QApplication.translate("frmEnvironment", "(knots)", None, -1))
 

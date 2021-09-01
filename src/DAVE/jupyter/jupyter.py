@@ -22,6 +22,7 @@ from ..visual import Viewport
 import vedo
 
 
+
 def show(
     scene,
     camera_pos=(50, -25, 10),
@@ -108,6 +109,8 @@ def show(
     vp.setup_screen(offscreen=True, size=(width, height))
 
     vp.create_node_visuals(recreate=True)
+    vp.create_world_actors()
+
     vp.position_visuals()
 
     for a in additional_actors:
@@ -170,5 +173,7 @@ def show(
         warnings.warn(
             "Both scale and zoom_fit have been defined. Scale will be ignored"
         )
+
+    # vp.add_wind_and_current_actors() <-- this crashes - the axis triad of vedo is also not supported
 
     return vp.show(zoom_fit=zoom_fit)

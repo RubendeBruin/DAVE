@@ -40,6 +40,7 @@ from DAVE.settings_visuals import (
 
 import DAVE.scene as vf
 import DAVE.scene as dn
+import DAVE.settings_visuals
 
 
 
@@ -1578,6 +1579,25 @@ class Viewport:
         for actor in self.global_visuals.values():
             self.screen.add(actor)
 
+        wind_actor = vp.Lines(startPoints=[(0, 0, 0), (0, 0, 0)],
+                              endPoints=[(10, 0, 0), (-0.5, 1, 0)])
+        wind_actor.c(DAVE.settings_visuals._DARK_GRAY)
+        wind_actor.lw(1)
+
+        points = [(3 + 4 * i / 36, 0.4 * np.cos(i / 4), 0) for i in range(36)]
+
+        current_actor = vp.Lines(startPoints=[(0, 0, 0), (10, 0, 0), (10, 0, 0), *points[:-1]],
+                                 endPoints=[(10, 0, 0), (9, 0.3, 0), (9, -0.3, 0), *points[1:]])
+        current_actor.c(DAVE.settings_visuals._BLUE_DARK)
+        current_actor.lw(1)
+
+        self.current_actor = current_actor
+        self.wind_actor = wind_actor
+
+    def add_wind_and_current_actors(self):
+        self.screen.addIcon(self.wind_actor, pos=2, size=0.06)
+        self.screen.addIcon(self.current_actor, pos=4, size=0.06)
+
 
     def deselect_all(self):
 
@@ -2054,6 +2074,27 @@ class Viewport:
 
         self.update_outlines()
 
+        # update wind and current actors
+        transform = vtk.vtkTransform()
+        transform.Identity()
+        transform.RotateZ(self.scene.wind_direction)
+        self.wind_actor.SetUserTransform(transform)
+
+        transform = vtk.vtkTransform()
+        transform.Identity()
+        transform.RotateZ(self.scene.current_direction)
+        self.current_actor.SetUserTransform(transform)
+
+        if self.scene.wind_velocity > 0:
+            self.wind_actor.SetScale(1.0)
+        else:
+            self.wind_actor.SetScale(0.0)
+
+        if self.scene.current_velocity > 0:
+            self.current_actor.SetScale(1.0)
+        else:
+            self.current_actor.SetScale(0.0)
+
     def add_new_node_actors_to_screen(self):
         """Updates the screen with added actors"""
 
@@ -2280,7 +2321,7 @@ class Viewport:
 
         # vp.settings.lightFollowsCamera = True
 
-        self.create_world_actors()
+        # self.create_world_actors()
 
         # if camera is None:
         #     camera = dict()
@@ -2408,6 +2449,9 @@ class Viewport:
         iren.Start()
 
         screen.mouseRightClickFunction = self.onMouseRight
+
+        self.add_wind_and_current_actors()
+
 
     def _leftmousepress(self, iren, event):
         """Implements a "fuzzy" mouse pick function"""
