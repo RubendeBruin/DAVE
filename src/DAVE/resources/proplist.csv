@@ -387,8 +387,7 @@ Sling,LeyeB,False,Total length inside eye B if stretched flat [m]
 Sling,LspliceA,False,Length of the splice at end A [m]
 Sling,LspliceB,False,Length of the splice at end B [m]
 Sling,diameter,False,Diameter of the sling (except the splices) [m]
-Sling,EA,False,"Effective mean EA of the sling when eyes are flat [kN].
-        This is the EA that would be obtained when measuring the stiffness of the sling by putting zero-diameter pins in the eyes and stretching the sling and then using the length between the insides of the eyes."
+Sling,EA,False,EA of the wire of the sling. See also: k_total
 Sling,mass,False,Mass and weight of the sling. This mass is discretized  distributed over the two splices [mT]
 Sling,endA,False,End A [circle or point node]
 Sling,endB,False,End B [circle or point node]

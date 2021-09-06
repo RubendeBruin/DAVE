@@ -4535,21 +4535,13 @@ class Sling(Manager):
     diameter : diameter of the wire
     LeyeA, LeyeB : inside lengths of the eyes
     LsplicaA, LspliceB : the length of the splices
-    Total : the distance between the insides of ends of the eyes A and B when pulled straight (= Ultimate Length).
+    Ultimate length : the distance between the insides of ends of the eyes A and B when pulled straight (= Ultimate Length).
 
     Stiffness:
-    The stiffness of the sling is specified by a single value: EA
+    The stiffness of the sling is specified by a single value: EA. EA can be set directly or by providing a k_total
     This determines the stiffnesses of the individual parts as follows:
     Wire in the eyes: EA
     Splices: Infinity (rigid)
-    Main part: determined such that total stiffness (k) of the sling is EA/L
-
-
-      Eye A           Splice A             nodeA part                   Splice B          Eye B
-
-    /---------------\                                                                /---------------\
-    |                =============-------------------------------------===============                |
-    \---------------/                                                                \---------------/
 
     See Also: Grommet
 
@@ -5017,8 +5009,7 @@ class Sling(Manager):
 
     @property
     def EA(self):
-        """Effective mean EA of the sling when eyes are flat [kN].
-        This is the EA that would be obtained when measuring the stiffness of the sling by putting zero-diameter pins in the eyes and stretching the sling and then using the length between the insides of the eyes."""
+        """EA of the wire of the sling. See also: k_total"""
         return self._EA
 
     @EA.setter
