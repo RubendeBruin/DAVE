@@ -294,9 +294,11 @@ surf.surfaceColor = _PURPLE
 painters["WaveInteraction1"] = {"main": copy(surf)}
 
 surf.surfaceColor = _WHITE
+surf.labelShow = False
 painters["WindArea"] = {"main": copy(surf)}
 
 surf.surfaceColor = _BLUE
+surf.labelShow = False
 painters["CurrentArea"] = {"main": copy(surf)}
 
 

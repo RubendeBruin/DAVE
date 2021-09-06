@@ -56,7 +56,7 @@ def report(node, properties=None, long = False) -> None:
 
     html = []
     html.append('<table align="left" border="1">')
-    html.append(f'<caption>Properties of {node.name}</caption>')
+    html.append(f'<caption>Properties of {node.name} ({str(node.class_name)})</caption>')
     html.append(f'<tr><th{style}>Property</th><th{style}>Value</th><th{style}>Unit</th><th{style}>Remarks</th><th{style}>Explained</th></tr>')
 
     for index, row in DAVE_REPORT_PROPS.iterrows():

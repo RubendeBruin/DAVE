@@ -258,7 +258,7 @@ class NodeWithCoreParent(CoreConnectedNode):
 
     @property
     def parent(self):
-        """Determines the parent of the node. Should be an axis or None"""
+        """Determines the parent of the node if any."""
         if self._vfNode.parent is None:
             return None
         else:
@@ -1878,8 +1878,6 @@ class _Area(NodeWithCoreParent):
     @property
     def force(self):
         """The x,y and z components of the force [kN,kN,kN] (global axis)
-
-        Example s['wind'].force = (12,34,56)
         """
         return self._vfNode.force
 
@@ -1902,6 +1900,7 @@ class _Area(NodeWithCoreParent):
 
     @property
     def A(self):
+        """Total area [m2]. See also Ae"""
         return self._vfNode.A0
 
     @A.setter
@@ -1910,7 +1909,13 @@ class _Area(NodeWithCoreParent):
         self._vfNode.A0 = value
 
     @property
+    def Ae(self):
+        """Effective area [m2]. This is the projection of the total to the actual wind/current direction. Read only."""
+        return self._vfNode.Ae
+
+    @property
     def Cd(self):
+        """Cd coefficient [-]"""
         return self._vfNode.Cd
 
     @Cd.setter
@@ -1920,6 +1925,8 @@ class _Area(NodeWithCoreParent):
 
     @property
     def direction(self):
+        """Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is
+        the direction of the axis and for 'sphere' this is not used [m,m,m]"""
         return self._vfNode.direction
 
     @direction.setter
@@ -1931,6 +1938,8 @@ class _Area(NodeWithCoreParent):
 
     @property
     def areakind(self):
+        """Defines how to interpret the area.
+        See also: `direction` """
         return AreaKind(self._vfNode.type)
 
     @areakind.setter
@@ -1939,16 +1948,19 @@ class _Area(NodeWithCoreParent):
             raise ValueError('kind shall be an instance of Area')
         self._vfNode.type = value.value
 
-
     def _give_python_code(self, new_command):
         code = "# code for {}".format(self.name)
 
         # new_force(self, name, parent=None, force=None, moment=None):
 
-        code += "\ns.{}}(name='{}',".format(new_command,self.name)
+        code += "\ns.{}(name='{}',".format(new_command,self.name)
         code += "\n            parent='{}',".format(self.parent_for_export.name)
-        code += "\n            force=({}, {}, {}),".format(*self.force)
-        code += "\n            moment=({}, {}, {}) )".format(*self.moment)
+        code += f"\n            A={self.A}, "
+        code += f"\n            Cd={self.Cd}, "
+        if self.areakind != AreaKind.SPHERE:
+            code += "\n            direction=({},{},{}),".format(*self.direction)
+        code += f"\n            areakind={str(self.areakind)})"
+
         return code
 
 class WindArea(_Area):
@@ -1957,7 +1969,7 @@ class WindArea(_Area):
 
 class CurrentArea(_Area):
     def give_python_code(self):
-        return self._give_python_code('new_windcurrent')
+        return self._give_python_code('new_currentarea')
 
 class ContactMesh(NodeWithCoreParent):
     """A ContactMesh is a tri-mesh with an axis parent"""
@@ -4523,7 +4535,7 @@ class Sling(Manager):
     diameter : diameter of the wire
     LeyeA, LeyeB : inside lengths of the eyes
     LsplicaA, LspliceB : the length of the splices
-    Total : the distance between the insides of ends of the eyes A and B when pulled straight.
+    Total : the distance between the insides of ends of the eyes A and B when pulled straight (= Ultimate Length).
 
     Stiffness:
     The stiffness of the sling is specified by a single value: EA
@@ -4684,12 +4696,13 @@ class Sling(Manager):
             b = np.array(self._endB.global_position)
 
             dir = b - a
-            dir /= np.linalg.norm(dir)
+            if np.linalg.norm(dir) > 1e-6:
+                dir /= np.linalg.norm(dir)
 
-            self.sa.rotation = rotation_from_x_axis_direction(-dir)
-            self.sb.rotation = rotation_from_x_axis_direction(dir)
-            self.sa.position = a + (LeyeA + 0.5 * LspliceA) * dir
-            self.sb.position = b - (LeyeB + 0.5 * LspliceB) * dir
+                self.sa.rotation = rotation_from_x_axis_direction(-dir)
+                self.sb.rotation = rotation_from_x_axis_direction(dir)
+                self.sa.position = a + (LeyeA + 0.5 * LspliceA) * dir
+                self.sb.position = b - (LeyeB + 0.5 * LspliceB) * dir
 
         # Update properties
         self.sheaves = sheaves
@@ -4698,15 +4711,53 @@ class Sling(Manager):
         for n in self.managed_nodes():
             n.manager = self
 
+    @property
+    def _Lmain(self):
+        """Length of the main section"""
+        return self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
+
+    @property
+    def _LwireEyeA(self):
+        return 2 * self._LeyeA + 0.5 * np.pi * self._diameter
+
+    @property
+    def _LwireEyeB(self):
+        return 2 * self._LeyeB + 0.5 * np.pi * self._diameter
+
+    @property
+    def k_total(self):
+        """Total stiffness of the sling in kN/m"""
+
+        k_eye_A = 4 * self._EA / self._LwireEyeA
+        k_eye_B = 4 * self._EA / self._LwireEyeB
+
+        k_splice_A = 2 * self._EA / (self._LspliceA )
+        k_splice_B = 2 * self._EA / (self._LspliceB )
+
+        k_main = self._EA / self._Lmain
+
+        k_total = 1 / (1/k_eye_A + 1/k_eye_B + 1/k_splice_A + 1/k_splice_B + 1/k_main)
+
+        return k_total
+    
+    @k_total.setter
+    def k_total(self, value):
+        assert1f_positive_or_zero(value)
+
+        EA =  0.25*value*(self._LwireEyeA + self._LwireEyeB + 4.0*self._Lmain + 2.0*self.LspliceA + 2.0*self._LspliceB)
+
+        self.EA = EA
+
     def _update_properties(self):
 
-        # The stiffness of the nodeA part is corrected to account for the stiffness of the splices.
+        # The stiffness of the main part is corrected to account for the stiffness of the splices.
         # It is considered that the stiffness of the splices is two times that of the wire.
         #
         # Springs in series: 1/Ktotal = 1/k1 + 1/k2 + 1/k3
 
         backup = self._scene.current_manager  # store
         self._scene.current_manager = self
+
 
         Lmain = (
             self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
@@ -4758,7 +4809,7 @@ class Sling(Manager):
         self.main.diameter = self._diameter
         self.main.connections = tuple([self.am, *self._sheaves, self.bm])
 
-        self.eyeA.length = self._LeyeA * 2 + self._diameter
+        self.eyeA.length = self._LwireEyeA
         self.eyeA.EA = self._EA
         self.eyeA.diameter = self._diameter
 
@@ -4767,7 +4818,7 @@ class Sling(Manager):
         else:
             self.eyeA.connections = (self.a1, self.a2)
 
-        self.eyeB.length = self._LeyeB * 2 + self._diameter
+        self.eyeB.length = self._LwireEyeB
         self.eyeB.EA = self._EA
         self.eyeB.diameter = self._diameter
 
@@ -4828,13 +4879,6 @@ class Sling(Manager):
 
     def give_python_code(self):
         code = f"# Exporting {self.name}"
-
-        # if self.endA is not None:
-        #     code += self.endA.give_python_code()
-        # if self.endB is not None:
-        #     code += self.endB.give_python_code()
-        # for s in self.sheaves:
-        #     code += s.give_python_code()
 
         code += "\n# Create sling"
 
@@ -6204,7 +6248,7 @@ class Scene:
                     return False
 
             if not silent:
-                self._print("Solved to {}.".format(self._vfc.Emaxabs))
+                self._print(f"Solved to {self._vfc.Emaxabs:.3e} kN")
             return True
 
         d = np.array(self._vfc.get_dofs())
@@ -7602,7 +7646,7 @@ class Scene:
         self,
         name,
         length=-1,
-        EA=1.0,
+        EA=None,
         mass=0.1,
         endA=None,
         endB=None,
@@ -7612,6 +7656,7 @@ class Scene:
         LspliceB=None,
         diameter=0.1,
         sheaves=None,
+        k_total = None,
     ) -> Sling:
         """
         Creates a new sling, adds it to the scene and returns a reference to the newly created object.
@@ -7623,6 +7668,7 @@ class Scene:
             name:    name
             length:  length of the sling [m], defaults to distance between endpoints
             EA:      stiffness in kN, default: 1.0 (note: equilibrium will fail if mass >0 and EA=0)
+            k_total: stiffness in kN/m, default: None
             mass:    mass in mT, default  0.1
             endA:    element to connect end A to [poi, circle]
             endB:    element to connect end B to [poi, circle]
@@ -7690,6 +7736,12 @@ class Scene:
         if sheaves is None:
             sheaves = []
 
+        if EA is not None and k_total is not None:
+            warnings.warn('Value for EA is given by will not be used as k_total is defined as well. Value for EA will be derived from k_total')
+
+        if EA is None:
+            EA = 1   # possibly overwritten by k_total
+
         assert1f_positive_or_zero(diameter, "Diameter")
         assert1f_positive_or_zero(mass, "mass")
 
@@ -7698,6 +7750,9 @@ class Scene:
         assert1f_positive(LeyeB, "length of eye B")
         assert1f_positive(LspliceA, "length of splice A")
         assert1f_positive(LspliceB, "length of splice B")
+
+        if k_total is not None:
+            assert1f_positive_or_zero(k_total, "Total stiffness (k_total)")
 
         for s in sheaves:
             _ = self._poi_or_sheave_from_node(s)
@@ -7720,6 +7775,10 @@ class Scene:
             endB=endB,
             sheaves=sheaves,
         )
+
+        if k_total is not None:
+            node.k_total = k_total
+
         self._nodes.append(node)
 
         return node
@@ -7809,10 +7868,16 @@ class Scene:
             code += "\n# For anything written as solved(number) that actual number does not influence the static solution"
             code += "\ndef solved(number):\n    return number\n"
 
+        code += "\n# Environment settings"
+
+        for prop in ds.ENVIRONMENT_PROPERTIES:
+            code += f'\ns.{prop} = {getattr(self, prop)}'
+
+        code += '\n'
+
         for n in self._nodes:
 
             if n._manager is None:
-                # print(f'code for {n.name}')
                 code += "\n" + n.give_python_code()
             else:
                 if n._manager.creates(n):

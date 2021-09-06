@@ -25,8 +25,8 @@ import vedo
 
 def show(
     scene,
-    camera_pos=(50, -25, 10),
-    lookat=(0, 0, 0),
+    camera_pos=None, #
+    lookat=None,
     width=1024,
     height=600,
     show_force: bool = True,  # show forces
@@ -72,6 +72,14 @@ def show(
         A 3d view
 
     """
+
+    if lookat is None and camera_pos is None:
+        zoom_fit = True
+
+    if lookat is None:
+        lookat = (0, 0, 0)
+    if camera_pos is None:
+        camera_pos = (50, -25, 10)
 
     vedo.embedWindow(backend='2d', verbose=False)  # screenshot
     vedo.settings.usingQt = False

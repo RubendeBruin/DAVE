@@ -104,7 +104,7 @@ class WidgetDerivedProperties(guiDockWidget):
         props = []
         props.extend(ds.PROPS_NODE)
         if isinstance(node, nodes.Frame):
-            props.extend(ds.PROPS_AXIS)
+            props.extend(ds.PROPS_FRAME)
         if isinstance(node, nodes.RigidBody):
             props.extend(ds.PROPS_BODY)
         if isinstance(node, nodes.Point):
@@ -123,6 +123,8 @@ class WidgetDerivedProperties(guiDockWidget):
             props.extend(ds.PROPS_FORCE)
         if isinstance(node, nodes.ContactBall):
             props.extend(ds.PROPS_CONTACTBALL)
+        if isinstance(node, nodes._Area):
+            props.extend(ds.PROPS__AREA)
 
         # evaluate properties
         for p in props:

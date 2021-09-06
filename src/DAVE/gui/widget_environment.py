@@ -30,18 +30,7 @@ class WidgetEnvironment(guiDockWidget):
         self.ui = Ui_frmEnvironment()
         self.ui.setupUi(self.contents)
 
-        self._settings = (
-            "g",
-            "waterlevel",
-            "rho_air",
-            "rho_water",
-            "wind_direction",
-            "wind_velocity",
-            "current_direction",
-            "current_velocity",
-        )
-
-        for s in self._settings:
+        for s in ds.ENVIRONMENT_PROPERTIES:
             widget = getattr(self.ui, s)
             widget.valueChanged.connect(
                 lambda x, n=s: self.action(x, n)

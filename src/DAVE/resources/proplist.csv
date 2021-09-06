@@ -151,6 +151,18 @@ ContactMesh,trimesh,True,"The TriMeshSource object which can be used to change t
             s['Contactmesh'].trimesh.load_file('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
         "
 CoreConnectedNode,name,False,"Name of the node (str), must be unique"
+CurrentArea,force,True,"The x,y and z components of the force [kN,kN,kN] (global axis)
+        "
+CurrentArea,fx,True,The global x-component of the force [kN] (global axis)
+CurrentArea,fy,True,The global y-component of the force [kN]  (global axis)
+CurrentArea,fz,True,The global z-component of the force [kN]  (global axis)
+CurrentArea,A,False,Total area [m2]. See also Ae
+CurrentArea,Ae,True,Effective area [m2]. This is the projection of the total to the actual wind/current direction. Read only.
+CurrentArea,Cd,False,Cd coefficient [-]
+CurrentArea,direction,False,"Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is
+        the direction of the axis and for 'sphere' this is not used [m,m,m]"
+CurrentArea,areakind,False,"Defines how to interpret the area.
+        See also: `direction` "
 Force,force,False,"The x,y and z components of the force [kN,kN,kN] (global axis)
 
         Example s['wind'].force = (12,34,56)
@@ -328,7 +340,7 @@ Node,visible,False,
 Node,manager,False,
 Node,name,False,"Name of the node (str), must be unique"
 NodeWithCoreParent,parent_for_export,True,
-NodeWithCoreParent,parent,False,Determines the parent of the node. Should be an axis or None
+NodeWithCoreParent,parent,False,Determines the parent of the node if any.
 NodeWithParentAndFootprint,footprint,False,"tuple of tuples ((x1,y1,z1), (x2,y2,z2), .... (xn,yn,zn)"
 Point,x,False,x component of local position [m] (parent axis)
 Point,y,False,y component of local position [m] (parent axis)
@@ -399,7 +411,20 @@ Tank,ullage,True,"Ullage of the tank [m].
         xf and yf are the x and y coordinates (local) of the center of fluid when the tank is full. zv is the largest z value
         of all the vertices of the tank.
         The measurement direction is in local z-direction. If the tank is under an angle then this is not perpendicular to the fluid.
-        Note: it is possible that this definition returns an ullage larger than the physical tank depth
+        It is possible that this definition returns an ullage larger than the physical tank depth. In that case the physical depth of
+        the tank is returned instead.
         "
 Visual,file_path,True,
 WaveInteraction1,file_path,True,
+WindArea,force,True,"The x,y and z components of the force [kN,kN,kN] (global axis)
+        "
+WindArea,fx,True,The global x-component of the force [kN] (global axis)
+WindArea,fy,True,The global y-component of the force [kN]  (global axis)
+WindArea,fz,True,The global z-component of the force [kN]  (global axis)
+WindArea,A,False,Total area [m2]. See also Ae
+WindArea,Ae,True,Effective area [m2]. This is the projection of the total to the actual wind/current direction. Read only.
+WindArea,Cd,False,Cd coefficient [-]
+WindArea,direction,False,"Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is
+        the direction of the axis and for 'sphere' this is not used [m,m,m]"
+WindArea,areakind,False,"Defines how to interpret the area.
+        See also: `direction` "

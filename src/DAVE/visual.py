@@ -2011,7 +2011,8 @@ class Viewport:
 
 
             if not actors:  # no actors created
-                print(f"No actors created for node {N.name}")
+                if not isinstance(N, dn.Manager):
+                    print(f"No actors created for node {N.name}")
                 continue
 
             va = VisualActor(actors, N)
@@ -2450,6 +2451,7 @@ class Viewport:
 
         screen.mouseRightClickFunction = self.onMouseRight
 
+        self.create_world_actors()
         self.add_wind_and_current_actors()
 
 

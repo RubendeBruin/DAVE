@@ -27,14 +27,23 @@ for c in clsmembers:
     if (cls == ds.Node) or \
         (cls == ds.CoreConnectedNode) or \
         (cls == ds.Manager) or \
-            (cls == ds.NodeWithCoreParent) or \
-            (cls == ds.NodeWithParentAndFootprint):
+        (cls == ds.NodeWithCoreParent) or \
+        (cls == ds._Area) or \
+        (cls == ds.NodeWithParentAndFootprint):
         do_md = False
     else:
         do_md = True
 
+    # Explicitly exclude _AREA
+    if cls==ds._Area:
+        continue
+
+    if cls == ds.WindArea or cls == ds.CurrentArea:
+            cls = ds._Area
+
     # markdown
     if do_md:
+
         md.append(f'#### {cls_name}')
         dc = cls.__doc__
         if dc:

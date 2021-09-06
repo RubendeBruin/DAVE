@@ -65,6 +65,19 @@ RESOURCE_PATH.append(cdir / 'resources')
 RESOURCE_PATH.append(default_user_dir)
 RESOURCE_PATH.append(workdir)
 
+# ============ ENVIRONMENT SETTINGS =========
+
+ENVIRONMENT_PROPERTIES = (
+    "g",
+    "waterlevel",
+    "rho_air",
+    "rho_water",
+    "wind_direction",
+    "wind_velocity",
+    "current_direction",
+    "current_velocity",
+)
+"""A list of all environment setting properties as available in Scene"""
 
 
 
@@ -116,7 +129,7 @@ Gui specific settings
 
 # displayed properties of nodes
 PROPS_NODE = ['name']
-PROPS_AXIS = ['global_position','global_rotation','applied_force','connection_force','equilibrium_error',
+PROPS_FRAME = ['global_position','global_rotation','applied_force','connection_force','equilibrium_error',
               'x','y','z','gz','gy','gz','rx','ry','rz','grx','gry','grz','ux','uy','uz',
               'connection_force_x','connection_force_y','connection_force_z','connection_moment_x','connection_moment_y','connection_moment_z',
               'tilt_x','heel','tilt_y','trim','heading','heading_compass']
@@ -129,6 +142,7 @@ PROPS_BODY = ['cog', 'cogx', 'cogy', 'cogz', 'mass']
 PROPS_BUOY_MESH = ['cob', 'displacement', 'cob_local']
 PROPS_BEAM = ['tension', 'torsion', 'L', 'EIy', 'EIz', 'EA', 'GIp', 'n_segments']
 PROPS_CONTACTBALL = ['can_contact','contactpoint','force']
+PROPS__AREA = ['A','Cd', 'Ae','fx','fy','fz','force']
 
 # ======= Animate after solving =========
 
