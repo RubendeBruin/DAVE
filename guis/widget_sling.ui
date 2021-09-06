@@ -51,10 +51,27 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="3" column="0">
-       <widget class="QLabel" name="label">
+      <item row="6" column="0">
+       <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Total length [m] *</string>
+         <string>EA [kN] **</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="QDoubleSpinBox" name="sbDiameter">
+        <property name="decimals">
+         <number>3</number>
+        </property>
+        <property name="singleStep">
+         <double>0.010000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Mass [mT]</string>
         </property>
        </widget>
       </item>
@@ -74,13 +91,33 @@
         </property>
        </widget>
       </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Total length [m] *</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="1">
+       <widget class="QDoubleSpinBox" name="sbMass">
+        <property name="decimals">
+         <number>3</number>
+        </property>
+        <property name="maximum">
+         <double>10000.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
+        </property>
+       </widget>
+      </item>
       <item row="6" column="1">
        <widget class="QDoubleSpinBox" name="sbEA">
         <property name="locale">
          <locale language="English" country="UnitedStates"/>
         </property>
         <property name="decimals">
-         <number>3</number>
+         <number>1</number>
         </property>
         <property name="minimum">
          <double>0.000000000000000</double>
@@ -93,47 +130,27 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
+      <item row="8" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
          <string>Diameter [m]</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>EA [kN] **</string>
-        </property>
-       </widget>
-      </item>
       <item row="7" column="1">
-       <widget class="QDoubleSpinBox" name="sbDiameter">
+       <widget class="QDoubleSpinBox" name="sbK">
         <property name="decimals">
-         <number>3</number>
-        </property>
-        <property name="singleStep">
-         <double>0.010000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Mass [mT]</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="1">
-       <widget class="QDoubleSpinBox" name="sbMass">
-        <property name="decimals">
-         <number>3</number>
+         <number>1</number>
         </property>
         <property name="maximum">
-         <double>10000.000000000000000</double>
+         <double>999999999999.000000000000000</double>
         </property>
-        <property name="singleStep">
-         <double>0.100000000000000</double>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_15">
+        <property name="text">
+         <string>Total stiffness [kN/m]</string>
         </property>
        </widget>
       </item>
@@ -153,7 +170,7 @@
    <item>
     <widget class="QLabel" name="label_14">
      <property name="text">
-      <string>** EA is the mean stiffness over the length of the sling</string>
+      <string>** EA is the stiffness over the wire</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -369,6 +386,19 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>sbLength</tabstop>
+  <tabstop>sbEA</tabstop>
+  <tabstop>sbK</tabstop>
+  <tabstop>sbDiameter</tabstop>
+  <tabstop>sbMass</tabstop>
+  <tabstop>sbLEyeA</tabstop>
+  <tabstop>sbLSpliceA</tabstop>
+  <tabstop>sbLEyeB</tabstop>
+  <tabstop>sbLSpliceB</tabstop>
+  <tabstop>list</tabstop>
+  <tabstop>pbRemoveSelected</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

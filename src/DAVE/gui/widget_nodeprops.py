@@ -1789,6 +1789,7 @@ class EditSling(NodeEditor):
         ui.sbLEyeB.valueChanged.connect(self.generate_code)
         ui.sbLSpliceA.valueChanged.connect(self.generate_code)
         ui.sbLSpliceB.valueChanged.connect(self.generate_code)
+        ui.sbK.valueChanged.connect(self.generate_code)
 
         # ------- setup the drag-and-drop code ---------
 
@@ -1811,6 +1812,7 @@ class EditSling(NodeEditor):
             self.ui.sbLEyeB,
             self.ui.sbLSpliceA,
             self.ui.sbLSpliceB,
+            self.ui.sbK,
         ]
 
         for widget in widgets:
@@ -1828,6 +1830,7 @@ class EditSling(NodeEditor):
         self.ui.sbLEyeB.setValue(self.node.LeyeB)
         self.ui.sbLSpliceA.setValue(self.node.LspliceA)
         self.ui.sbLSpliceB.setValue(self.node.LspliceB)
+        self.ui.sbK.setValue(self.node.k_total)
 
         self.ui.list.clear()
 
@@ -1906,30 +1909,19 @@ class EditSling(NodeEditor):
         new_LeyeB = self.ui.sbLEyeB.value()
         new_LspliceA = self.ui.sbLSpliceA.value()
         new_LspliceB = self.ui.sbLSpliceB.value()
+        new_k = self.ui.sbK.value()
 
-        if not new_EA == self.node.EA:
-            code += element + ".EA = {}".format(new_EA)
+        code += code_if_changed(node, new_k, 'k_total', 1)
+        code += code_if_changed(node, new_EA, 'EA', 1)
+        code += code_if_changed(node, new_diameter, 'diameter', 1)
 
-        if not new_diameter == self.node.diameter:
-            code += element + ".diameter = {}".format(new_diameter)
+        code += code_if_changed(node, new_mass, 'mass', 1)
+        code += code_if_changed(node, new_LeyeA, 'LeyeA', 3)
+        code += code_if_changed(node, new_LeyeB, 'LeyeB', 3)
+        code += code_if_changed(node, new_LspliceA, 'LspliceA', 3)
+        code += code_if_changed(node, new_LspliceB, 'LspliceB', 3)
+        code += code_if_changed(node, new_length, 'length', 3)
 
-        if not new_mass == self.node.mass:
-            code += element + ".mass = {}".format(new_mass)
-
-        if not new_LeyeA == self.node.LeyeA:
-            code += element + ".LeyeA = {}".format(new_LeyeA)
-
-        if not new_LeyeB == self.node.LeyeB:
-            code += element + ".LeyeB = {}".format(new_LeyeB)
-
-        if not new_LspliceA == self.node.LspliceA:
-            code += element + ".LspliceA = {}".format(new_LspliceA)
-
-        if not new_LspliceB == self.node.LspliceB:
-            code += element + ".LspliceB = {}".format(new_LspliceB)
-
-        if not new_length == self.node.length:
-            code += element + ".length = {}".format(new_length)
 
         # get the poi names
         new_names = []

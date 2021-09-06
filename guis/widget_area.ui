@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>151</width>
-    <height>298</height>
+    <height>314</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -265,6 +265,19 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>Cd</tabstop>
+  <tabstop>Area</tabstop>
+  <tabstop>rbNoOrientation</tabstop>
+  <tabstop>rbPlane</tabstop>
+  <tabstop>X</tabstop>
+  <tabstop>Y</tabstop>
+  <tabstop>Z</tabstop>
+  <tabstop>rbCylinder</tabstop>
+  <tabstop>X_2</tabstop>
+  <tabstop>Y_2</tabstop>
+  <tabstop>Z_2</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
