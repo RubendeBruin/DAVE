@@ -57,6 +57,9 @@ for c in clsmembers:
 
         if type(what) == property:
 
+            if name.startswith('_'):  # skip private props
+                continue
+
             md_line = f'{name}'
 
             if what.fset is None:

@@ -380,6 +380,7 @@ SPMT,axles,False,"Axles is a list axle positions. Each entry is a (x,y,z) entry 
             [(-10,0,0),(-5,0,0),(0,0,0)] for three axles
         "
 Shackle,kind,False,"Type of shackle, for example GP800 [text]"
+Sling,k_total,False,Total stiffness of the sling in kN/m
 Sling,length,False,Total length measured between the INSIDE of the eyes of the sling is pulled straight. [m]
 Sling,LeyeA,False,Total length inside eye A if stretched flat [m]
 Sling,LeyeB,False,Total length inside eye B if stretched flat [m]
