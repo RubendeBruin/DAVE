@@ -365,61 +365,131 @@ class BallastSystemSolver:
     def optimize_tank(self, tank):
 
         self.print('-- optimize tank -- {}'.format(tank.name))
-        E0 = self._error()
-        self.print('-- initial error {}'.format(E0))
+
         p0 = tank.pct
+        E0 = self._error()
 
-        was_partial = tank.is_partial()
-
-        # fill tank
-        tank.pct = 100
-        if self._error() < E0:
-            self.print('Tank {} set to FULL'.format(tank.name))
-            if self._error() < E0 - self.min_error_reduction:
-                return True
-            if was_partial:
-                return True
-
-
-        # empty tank
         tank.pct = 0
+
+        [Ox, Oy, _], Om = self.xyzw()
+        Tx = self._target_cog[0]
+        Ty = self._target_cog[1]
+        Tm = self._target_wt
+
+        x = tank.position[0]
+        y = tank.position[1]
+
+        # Optimum fill for combined cog position
+        denom = (Om*Ox*Tx - Om*Ox*x - Om*Tx*x - Om*Ty*y + Om*Ty + Om*x**2 + Om*y**2 - Om*y + Oy*Ty - Oy*y)
+
+        if denom != 0:
+            opt_pos = (Om**2*Ox**2 - Om**2*Ox*Tx - Om**2*Ox*x + Om**2*Tx*x + Om**2*Ty*y - Om**2*Ty - Om**2*y + Om**2 - Om*Oy*Ty - Om*Oy*y + 2*Om*Oy + Oy**2)/denom
+        else:
+            opt_pos = tank.max
+
+        # Optimum fill for mass
+        opt_mass = Tm - Om
+
+        # Tank in wrong quadrant (fill for mass and empty for position of vice versa)
+        if opt_mass * opt_pos < 0:
+            tank.pct = 0
+            return p0!=0
+
+        opt = 0.7 * opt_pos + 0.3 * opt_mass # combine
+
+        print(f'Optimum for tank {tank.name} = {100*opt / tank.max}')
+
+        opt_pct = 100*opt / tank.max
+        if abs(opt_pct-p0) < 1e-3:
+            tank.pct = p0
+            return False
+
+        if opt_pct>100:
+            if p0 < 100:
+                tank.pct=100
+            else:
+                tank.pct = p0
+                return False
+        elif opt_pct <= 0:
+            if p0 > 0:
+                tank.pct = 0
+            else:
+                tank.pct = p0
+                return False
+
+        else:
+            tank.pct = opt_pct
+
         if self._error() < E0:
-            self.print('Tank {} set to EMPTY'.format(tank.name, ))
-            if self._error() < E0 - self.min_error_reduction:
-                return True
-            if was_partial:
-                return True
-
-        # optimum must be somewhere in between
-
-        def fun(x):
-            tank.pct = x
-            return self._error()
-
-        res = minimize_scalar(fun, bounds=(0,100),method='Bounded')
-
-        if not res.success:
-            x = np.linspace(0,100,num=101)
-            funn = np.vectorize(fun)
-            y = funn(x)
-            plt.plot(x,y)
-            plt.show()
-            self.print('SUB-OPTIMIZATION FAILED FOR ONE TANK!!!')
-            # raise ArithmeticError('Optimization failed')
-
-        if res.x > 100 or res.x < 0:
-            self.print('error with bounds')
-
-        # Did the optimization result in a different tank fill
-        if self._error() < E0 - self.min_error_reduction:
-            self.print('Tank {} set to {}'.format(tank.name, res.x))
-            tank.pct = res.x
             return True
 
-        tank.pct = p0
-        return False
+        else:
+            tank.pct = p0
+            return False
+
+
+
+
+
+        # E0 = self._error()
+        # self.print('-- initial error {}'.format(E0))
+        # p0 = tank.pct
+        #
+        # was_partial = tank.is_partial()
+        #
+        # # fill tank
+        # tank.pct = 100
+        # if self._error() < E0:
+        #     self.print('Tank {} set to FULL'.format(tank.name))
+        #     if self._error() < E0 - self.min_error_reduction:
+        #         return True
+        #     if was_partial:
+        #         return True
+        #
+        #
+        # # empty tank
+        # tank.pct = 0
+        # if self._error() < E0:
+        #     self.print('Tank {} set to EMPTY'.format(tank.name, ))
+        #     if self._error() < E0 - self.min_error_reduction:
+        #         return True
+        #     if was_partial:
+        #         return True
+        #
+        # # optimum must be somewhere in between
+        #
+        # def fun(x):
+        #     tank.pct = x
+        #     return self._error()
+        #
+        # print(f'minimize scalar on tank {tank.name}')
+        # res = minimize_scalar(fun, bounds=(0,100),method='Bounded')
+        #
+        # if not res.success:
+        #     x = np.linspace(0,100,num=101)
+        #     funn = np.vectorize(fun)
+        #     y = funn(x)
+        #     plt.plot(x,y)
+        #     plt.show()
+        #     self.print('SUB-OPTIMIZATION FAILED FOR ONE TANK!!!')
+        #     # raise ArithmeticError('Optimization failed')
+        #
+        # if res.x > 100 or res.x < 0:
+        #     self.print('error with bounds')
+        #
+        # # Did the optimization result in a different tank fill
+        # if self._error() < E0 - self.min_error_reduction:
+        #     self.print('Tank {} set to {}'.format(tank.name, res.x))
+        #     tank.pct = res.x
+        #     return True
+        #
+        # tank.pct = p0
+        # return False
 
     def optimize_multiple_partial(self, tanks):
+
+        print([tank.name for tank in tanks])
+
         E0 = self._error()
         p0 = list()
         for tank in tanks:
@@ -532,14 +602,37 @@ class BallastSystemSolver:
         # Do an optimization over all the given tanks
 
 
+        # Get the combined properties off all other tanks together
+        for tank in tanks:
+            tank.pct = 0
+
+        [Ox, Oy, _], Om = self.xyzw()
+        Tx = self._target_cog[0]
+        Ty = self._target_cog[1]
+        Tm = self._target_wt
+
         # set original fillings
         for tank, fill in zip(tanks,p0):
             tank.pct = fill
 
         def fun(x):
+
+            mm = Om
+            xx = Ox * mm
+            yy = Oy * mm
+
             for i,tank in enumerate(tanks):
-                tank.pct = x[i]
-            return self._error()
+                mass = x[i] * tank.max / 100
+                mm += mass
+                xx += mass * tank.position[0]
+                yy += mass * tank.position[1]
+
+            cogx = xx/mm
+            cogy = yy/mm
+
+            error = (Tx - cogx)** 2 + (Ty-cogy)**2 + 0.1 * (mm-Tm)**2
+
+            return error
 
         x0 = []
         bnds = []
@@ -561,7 +654,8 @@ class BallastSystemSolver:
 
 
         # apply the result
-        fun(res.x)
+        for i, tank in enumerate(tanks):
+            tank.pct = res.x[i]
 
         # Did the optimization result in a different tank fill
         if self._error() < E0-self.min_error_reduction:
