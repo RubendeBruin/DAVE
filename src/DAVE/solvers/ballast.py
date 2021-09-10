@@ -397,7 +397,7 @@ class BallastSystemSolver:
 
         opt = 0.7 * opt_pos + 0.3 * opt_mass # combine
 
-        print(f'Optimum for tank {tank.name} = {100*opt / tank.max}')
+        # print(f'Optimum for tank {tank.name} = {100*opt / tank.max}')
 
         opt_pct = 100*opt / tank.max
         if abs(opt_pct-p0) < 1e-3:
@@ -488,7 +488,7 @@ class BallastSystemSolver:
 
     def optimize_multiple_partial(self, tanks):
 
-        print([tank.name for tank in tanks])
+        # print([tank.name for tank in tanks])
 
         E0 = self._error()
         p0 = list()
@@ -500,8 +500,8 @@ class BallastSystemSolver:
         self.print('Optimizing multiple ( n = {} ) tanks:'.format(n_tanks))
         self.print('Initial error {}'.format(E0))
 
-        for tank in tanks:
-            self.print('{} == {} '.format(tank.name, tank.pct))
+        # for tank in tanks:
+        #     self.print('{} == {} '.format(tank.name, tank.pct))
 
 
 
@@ -660,8 +660,8 @@ class BallastSystemSolver:
         # Did the optimization result in a different tank fill
         if self._error() < E0-self.min_error_reduction:
 
-            self.print('Before optimaliz = ', x0)
-            self.print('multi-opt result = ', res.x)
+            # self.print('Before optimaliz = ', x0)
+            # self.print('multi-opt result = ', res.x)
 
             return True
 
@@ -677,17 +677,44 @@ class BallastSystemSolver:
         names = ''
         for t in tanks:
             names += ' ' + t.name + '(' + str(t.pct) + ')'
-        print('Optimize using {} tanks: {}'.format(len(tanks), names))
+        # print('Optimize using {} tanks: {}'.format(len(tanks), names))
 
         E0 = self._error()
         p0 = list()
         for tank in tanks:
             p0.append(tank.pct)
 
+
+        # to get the properties of the other tanks,
+        # set the tanks to be optimized to zero
+
+        for tank in tanks:
+            tank.pct = 0
+
+        [Ox, Oy, _], Om = self.xyzw()
+        Tx = self._target_cog[0]
+        Ty = self._target_cog[1]
+        Tm = self._target_wt
+
         def fun(x):
+            # x is a vector with tank fill percentages for tanks
+
+            mm = Om
+            xx = Ox * mm
+            yy = Oy * mm
+
             for i, tank in enumerate(tanks):
-                tank.pct = x[i]
-            return self._error()
+                mass = x[i] * tank.max / 100
+                mm += mass
+                xx += mass * tank.position[0]
+                yy += mass * tank.position[1]
+
+            cogx = xx / mm
+            cogy = yy / mm
+
+            error = (Tx - cogx) ** 2 + (Ty - cogy) ** 2 + 0.1 * (mm - Tm) ** 2
+
+            return error
 
         x0 = []
         bnds = []
@@ -701,23 +728,25 @@ class BallastSystemSolver:
         if not res.success:
             self.print('SUB-OPTIMIZATION FAILED FOR {} TANKS'.format(len(tanks)))
 
-        # apply the result
-        fun(res.x)
+        for i,tank in enumerate(tanks):
+            tank.pct = res.x[i]
+
 
         # Did the optimization result in a different tank fill
         if self._error() < E0:
-            self.print('Before optimaliz = ', x0)
-            self.print('multi-opt result = ', res.x)
+            # self.print('Before optimaliz = ', x0)
+            # self.print('multi-opt result = ', res.x)
             return True
         else:
-            self.print('multi-opt result = ', res.x)
+            pass
+            # self.print('multi-opt result = ', res.x)
 
         # set original fillings
         for tank, fill in zip(tanks, p0):
             tank.pct = fill
         return False
 
-    def ballast_to(self, cogx, cogy, weight):
+    def ballast_to(self, cogx, cogy, weight, initial = None):
         """cogx, cogy : local position relative to parent"""
 
 
@@ -743,6 +772,9 @@ class BallastSystemSolver:
             if not tank.frozen:
                 optTanks.append(tank)
 
+        if initial is not None:
+            for i,tank in enumerate(optTanks):
+                tank.pct = initial[i]
 
 
         # print log:
@@ -754,7 +786,39 @@ class BallastSystemSolver:
             print('{} of {} [ {}% full ]at {} {} {}'.format(tank.name, tank.max, tank.pct, *tank.position))
         print('-----------------------------')
 
+        # =====================
+
+        self.optimize_alg1(optTanks)
+
+        # =======================
+
+        self.print('Error = {}'.format(self._error()))
+
+        if self._error() < self.tolerance:
+            success = True
+        else:
+            success = False
+
+        self.print(self.xyzw())
+        print([t.pct for t in optTanks])
+
+        s = self.ballast_system_node._scene
+        for t in self.BallastSystem._tanks:
+            s[t.name].fill_pct = t.pct
+
+
+
+        self.plot(optTanks)
+        plt.show()
+
+        return success
+
+#
+    def optimize_alg1(self, optTanks):
+
         maxit = 100
+        _log = []
+
         for it in range(maxit):
 
             print('Iteration = {}, Error = {} with tanks:'.format(it, self._error()))
@@ -763,7 +827,7 @@ class BallastSystemSolver:
             print(_log[-1])
 
             if self._error() < self.tolerance:
-                break
+                return True
 
             # optimize partially filled tanks
             partials = []
@@ -774,7 +838,6 @@ class BallastSystemSolver:
             if len(partials) == 1:
                 if self.optimize_tank(partials[0]):
                     continue
-
 
             if len(partials) > 1:
                 if self.optimize_multiple_partial(partials):
@@ -862,35 +925,124 @@ class BallastSystemSolver:
 
             # No workable option to get to anything better
 
-
             print("Can not find a way to get closer to the intended solution. Giving up.")
             print([t.pct for t in optTanks])
             print(self._error())
             print(self.xyzw())
 
-            break
+            return
+
+        # optimization has failed
+        plt.plot(_log)
+        print('Error = {}'.format(self._error()))
+        plt.show()
+
+        return False
+
+
+    def plot(self, optTanks):
+
+        plt.figure()
+
+        x = [tank.position[0] for tank in optTanks]
+        y = [tank.position[1] for tank in optTanks]
+        pct = [tank.pct for tank in optTanks]
+
+        plt.plot(x,y,'k.')
+
+        plt.scatter(x,y,pct)
+
+        [Ox, Oy, _], Om = self.xyzw()  # m,m,kN
+        Tx = self._target_cog[0]
+        Ty = self._target_cog[1]
+
+        plt.axis('equal')
+        plt.plot(Ox, Oy, 'rx')
+        plt.plot(Tx, Ty, 'go')
+
+        for tank in self._partial_tanks(optTanks):
+            plt.plot(tank.position[0], tank.position[1],'mx')
+
+    def _empty_tanks(self, optTanks):
+        tanks = []
+        for tank in optTanks:
+            if tank.is_empty():
+                tanks.append(tank)
+        return tanks
+
+    def _partial_tanks(self, optTanks):
+        tanks = []
+        for tank in optTanks:
+            if tank.is_partial():
+                tanks.append(tank)
+        return tanks
+
+    def _full_tanks(self, optTanks):
+        tanks = []
+        for tank in optTanks:
+            if tank.is_full():
+                tanks.append(tank)
+        return tanks
+
+    def fill_optimum_tanks(self, optTanks):
+        """Keep filling the best empty tank until we have at least the required amount of fluid
+        """
+
+        for i in range(len(optTanks)):
+
+            # get empty tanks
+            empty_tanks = self._empty_tanks(optTanks)
+            E = []
+
+            for tank in empty_tanks:
+                tank.pct=100
+                E.append(self._error())
+                tank.pct=0
+
+            i = np.argmin(E)
+            empty_tanks[i].pct=100
+
+            [Ox, Oy, _], Om = self.xyzw()
+
+            if Om >= self._target_wt:
+                return
+
+        raise ValueError('Filled all tanks but target weight not yet reached')
+
+    def digital_switch_tanks(self, optTanks):
+
+        empty_tanks = self._empty_tanks(optTanks)
+        full_tanks = self._full_tanks(optTanks)
+
+        E0 = self._error()
+        Eopt = E0
+
+        for empty in empty_tanks:
+            for full in full_tanks:
+
+                # switch tanks
+                empty.pct = 100
+                full.pct = 0
+
+                if self._error() < E0:
+                    optEmpty = empty
+                    optFull = full
+                    Eopt = self._error()
+
+                empty.pct = 0
+                full.pct = 100
+
+        if Eopt < E0:
+            optEmpty.pct = 100
+            optFull.pct = 0
+            return True
+
+        return False
 
 
 
-        self.print('Error = {}'.format(self._error()))
 
-        if self._error() < self.tolerance:
-            success = True
-        else:
-            success = False
 
-        self.print(self.xyzw())
-        print([t.pct for t in optTanks])
 
-        s = self.ballast_system_node._scene
-        for t in self.BallastSystem._tanks:
-            s[t.name].fill_pct = t.pct
 
-        if it == maxit-1:
-            plt.plot(_log)
-            print('Error = {}'.format(self._error()))
-            plt.show()
 
-        return success
-
-#
