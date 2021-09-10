@@ -746,9 +746,8 @@ class BallastSystemSolver:
             tank.pct = fill
         return False
 
-    def ballast_to(self, cogx, cogy, weight, initial = None):
+    def ballast_to(self, cogx, cogy, weight, initial = None, method = 1):
         """cogx, cogy : local position relative to parent"""
-
 
         # create an own ballast-system based on the tanks of the node
         self.BallastSystem = OptBallastSystem()
@@ -757,7 +756,7 @@ class BallastSystemSolver:
             old_fill = tank.fill_pct
             if tank.fill_pct < 1:
                 tank.fill_pct = 100
-            self.BallastSystem.new_tank(tank.name, position=tank.cog_local, capacity_kN=tank.volume * tank.density * 9.81, actual_fill=old_fill, frozen=self.ballast_system_node.is_frozen(tank.name))
+            self.BallastSystem.new_tank(tank.name, position=tank.cog_local, capacity_kN=tank.volume * tank.density * self.ballast_system_node._scene.g, actual_fill=old_fill, frozen=self.ballast_system_node.is_frozen(tank.name))
             tank.fill_pct = old_fill
 
         _log = []
@@ -788,7 +787,13 @@ class BallastSystemSolver:
 
         # =====================
 
-        self.optimize_alg1(optTanks)
+        if method == 1:  # prefer 1, fall-back to 2
+            if not self.optimize_alg1(optTanks):
+                self.optimize_alg2(optTanks)
+
+        if method == 2:  # prefer 2, fall-back to 1
+            if not self.optimize_alg2(optTanks):
+                self.optimize_alg1(optTanks)
 
         # =======================
 
@@ -805,11 +810,6 @@ class BallastSystemSolver:
         s = self.ballast_system_node._scene
         for t in self.BallastSystem._tanks:
             s[t.name].fill_pct = t.pct
-
-
-
-        self.plot(optTanks)
-        plt.show()
 
         return success
 
@@ -939,6 +939,172 @@ class BallastSystemSolver:
 
         return False
 
+    def optimize_alg2(self, optTanks):
+
+        _log = []
+        for it in range(100):
+
+            print('Iteration = {}, Error = {} with tanks:'.format(it, self._error()))
+
+            _log.append([tank.pct for tank in optTanks])
+            print(_log[-1])
+
+            if self._error() < self.tolerance:
+                return True
+
+            [Ox, Oy, _], Om = self.xyzw()
+
+            if Om < self._target_wt:  # Not enough water in yet
+
+                # Pass 0 - get optimum full tank distribution
+                self.fill_optimum_tanks(optTanks)
+
+            while self.digital_switch_tanks(optTanks):
+                pass
+
+            [Ox, Oy, _], Om = self.xyzw()
+
+            if Om != self._target_wt:  # We have too much fluid, find a tank to drain
+                # brute force
+
+                E0 = self._error()
+                Eopt = E0
+                optTank = None
+                for tank in self._full_tanks(optTanks):
+                    self.optimize_tank(tank)
+                    if self._error() < E0:
+                        Eopt = self._error()
+                        optTank = tank
+                    tank.pct = 100
+
+                if Eopt < E0:
+                    self.optimize_tank(optTank)
+                    # self.plot(optTanks)
+                    # plt.title(f'Optimized a single tank, error = {self._error()}')
+                    # plt.show()
+
+            [Ox, Oy, _], Om = self.xyzw()
+
+            partials = self._partial_tanks(optTanks)
+
+
+            if len(partials)==1:
+
+                # Two tank optimization (brute force again)
+
+                E0 = self._error()
+                Eopt = E0
+                tank1 = partials[0]
+
+                p1 = tank1.pct
+
+                for tank in optTanks:
+
+                    if tank == tank1:
+                        continue
+
+                    p2 = tank.pct
+
+                    self.optimize_two_tanks(tank1, tank)
+                    if self._error() < E0:
+                        Eopt = self._error()
+                        tank2 = tank
+
+
+                    tank1.pct = p1
+                    tank.pct = p2
+
+                if Eopt < E0:
+                    self.optimize_two_tanks(tank1, tank2)
+
+                    # self.plot(optTanks)
+                    # plt.title(f"Optimized two slack tanks from 1 slack: error = {self._error()}")
+                    # plt.show()
+
+                else:
+                    pass
+                    # self.plot(optTanks)
+                    # plt.title("Could not find a better 2 tank optimum")
+                    # plt.show()
+                    # raise ValueError("Could not find a better 2 tank optimum")
+
+
+            partials = self._partial_tanks(optTanks)
+
+            if len(partials) == 1:
+                # combine the one slack tank with any empty and any full tank
+
+                partial = partials[0]
+
+                empty_tanks = self._empty_tanks(optTanks)
+                full_tanks = self._full_tanks(optTanks)
+
+                E0 = self._error()
+                Eopt = E0
+                p0 = partial.pct
+
+                for empty in empty_tanks:
+                    for full in full_tanks:
+
+                        self.optimize_three_tanks(partial, empty, full)
+                        # self.optimize_using()
+                        if self._error() < Eopt:
+                            optEmpty = empty
+                            optFull = full
+                            Eopt = self._error()
+                        partial.pct = p0
+                        empty.pct = 0
+                        full.pct = 100
+
+                if Eopt < E0:
+                    self.optimize_three_tanks(partial, optEmpty, optFull)
+                    # self.plot(optTanks)
+                    # plt.title(f'Three tank optimum from 1 slack; E = {self._error()}')
+                    # plt.show()
+
+            partials = self._partial_tanks(optTanks)
+
+            if len(partials) == 2:
+
+                # Two tank optimization (brute force again)
+
+                E0 = self._error()
+                Eopt = E0
+                tank1 = partials[0]
+                tank2 = partials[1]
+
+                p1 = tank1.pct
+                p2 = tank2.pct
+
+                for tank in optTanks:
+
+                    if tank in partials:
+                        continue
+
+                    p3 = tank.pct
+
+                    self.optimize_three_tanks(tank1, tank2, tank)
+                    if self._error() < Eopt:
+                        Eopt = self._error()
+                        tank3 = tank
+
+                    tank1.pct= p1
+                    tank2.pct=p2
+                    tank.pct = p3
+
+                if Eopt < E0:
+                    self.optimize_three_tanks(tank1, tank2, tank3)
+                    # self.plot(optTanks)
+                    # plt.title(f'Three tank optimum from 2 slacks ; E = {self._error()}')
+                    # plt.show()
+
+
+
+    def optimize_two_tanks(self, tank1, tank2):
+        self.optimize_using([tank1, tank2])
+
+    def optimize_three_tanks(self, tank1, tank2, tank3):
+        self.optimize_using([tank1, tank2, tank3])
 
     def plot(self, optTanks):
 

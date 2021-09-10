@@ -3,8 +3,8 @@
 # Form implementation generated from reading ui file 'widget_ballastsolver.ui',
 # licensing of 'widget_ballastsolver.ui' applies.
 #
-# Created: Tue May 19 21:07:47 2020
-#      by: pyside2-uic  running on PySide2 5.13.1
+# Created: Fri Sep 10 15:20:41 2021
+#      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_BallastSolver(object):
     def setupUi(self, BallastSolver):
         BallastSolver.setObjectName("BallastSolver")
-        BallastSolver.resize(585, 500)
+        BallastSolver.resize(207, 598)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -73,12 +73,27 @@ class Ui_BallastSolver(object):
         self.tableWidget.verticalHeader().setMinimumSectionSize(0)
         self.tableWidget.verticalHeader().setStretchLastSection(False)
         self.verticalLayout.addWidget(self.tableWidget)
-        self.pushButton = QtWidgets.QPushButton(BallastSolver)
+        self.widget = QtWidgets.QWidget(BallastSolver)
+        self.widget.setObjectName("widget")
+        self.gridLayout = QtWidgets.QGridLayout(self.widget)
+        self.gridLayout.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout.setObjectName("gridLayout")
+        self.pushButton = QtWidgets.QPushButton(self.widget)
         self.pushButton.setObjectName("pushButton")
-        self.verticalLayout.addWidget(self.pushButton)
-        self.pushButton_2 = QtWidgets.QPushButton(BallastSolver)
+        self.gridLayout.addWidget(self.pushButton, 0, 0, 1, 2)
+        self.widget_2 = QtWidgets.QWidget(self.widget)
+        self.widget_2.setObjectName("widget_2")
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.widget_2)
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.pushButton_2 = QtWidgets.QPushButton(self.widget_2)
         self.pushButton_2.setObjectName("pushButton_2")
-        self.verticalLayout.addWidget(self.pushButton_2)
+        self.verticalLayout_2.addWidget(self.pushButton_2)
+        self.pushButton_3 = QtWidgets.QPushButton(self.widget_2)
+        self.pushButton_3.setObjectName("pushButton_3")
+        self.verticalLayout_2.addWidget(self.pushButton_3)
+        self.gridLayout.addWidget(self.widget_2, 1, 0, 1, 2)
+        self.verticalLayout.addWidget(self.widget)
         self.label_5 = QtWidgets.QLabel(BallastSolver)
         self.label_5.setObjectName("label_5")
         self.verticalLayout.addWidget(self.label_5)
@@ -97,7 +112,8 @@ class Ui_BallastSolver(object):
         self.tableWidget.verticalHeaderItem(1).setText(QtWidgets.QApplication.translate("BallastSolver", "X", None, -1))
         self.tableWidget.verticalHeaderItem(2).setText(QtWidgets.QApplication.translate("BallastSolver", "Y", None, -1))
         self.tableWidget.horizontalHeaderItem(0).setText(QtWidgets.QApplication.translate("BallastSolver", "Value", None, -1))
-        self.pushButton.setText(QtWidgets.QApplication.translate("BallastSolver", "1. Determine required ballast", None, -1))
-        self.pushButton_2.setText(QtWidgets.QApplication.translate("BallastSolver", "2. Solve tank fillings", None, -1))
+        self.pushButton.setText(QtWidgets.QApplication.translate("BallastSolver", "Determine required ballast", None, -1))
+        self.pushButton_2.setText(QtWidgets.QApplication.translate("BallastSolver", "Solve tank fillings", None, -1))
+        self.pushButton_3.setText(QtWidgets.QApplication.translate("BallastSolver", "Solve tank fillings (alt. method)", None, -1))
         self.label_5.setText(QtWidgets.QApplication.translate("BallastSolver", "Result", None, -1))
 
