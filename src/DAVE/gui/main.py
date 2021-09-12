@@ -970,7 +970,8 @@ class Gui:
         s = self.scene
 
         self.ui.pbExecute.setStyleSheet("background-color: yellow;")
-        self.ui.teCode.setPlainText(code)
+        if not self.ui.teCode.hasFocus():
+            self.ui.teCode.setPlainText(code)  # do not replace if we are currently editing
 
         self.app.processEvents()
 

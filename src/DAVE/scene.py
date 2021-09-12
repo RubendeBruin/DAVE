@@ -1126,7 +1126,8 @@ class Frame(NodeWithParentAndFootprint):
         # check new_parent
         if new_parent is not None:
             if not (
-                    isinstance(new_parent, Frame) or isinstance(new_parent, GeometricContact)
+                isinstance(new_parent, Frame)
+                or isinstance(new_parent, GeometricContact)
             ):
                 raise TypeError(
                     "Only None or Axis-type nodes (or derived types) can be used as parent. You tried to use a {} as parent".format(
@@ -1871,14 +1872,13 @@ class Force(NodeWithCoreParent):
         code += "\n            moment=({}, {}, {}) )".format(*self.moment)
         return code
 
+
 class _Area(NodeWithCoreParent):
-    """Abstract Based class for wind and current areas.
-    """
+    """Abstract Based class for wind and current areas."""
 
     @property
     def force(self):
-        """The x,y and z components of the force [kN,kN,kN] (global axis)
-        """
+        """The x,y and z components of the force [kN,kN,kN] (global axis)"""
         return self._vfNode.force
 
     @property
@@ -1897,7 +1897,6 @@ class _Area(NodeWithCoreParent):
 
         return self.force[2]
 
-
     @property
     def A(self):
         """Total area [m2]. See also Ae"""
@@ -1905,7 +1904,7 @@ class _Area(NodeWithCoreParent):
 
     @A.setter
     def A(self, value):
-        assert1f_positive_or_zero(value, 'Area')
+        assert1f_positive_or_zero(value, "Area")
         self._vfNode.A0 = value
 
     @property
@@ -1920,7 +1919,7 @@ class _Area(NodeWithCoreParent):
 
     @Cd.setter
     def Cd(self, value):
-        assert1f_positive_or_zero(value, 'Cd')
+        assert1f_positive_or_zero(value, "Cd")
         self._vfNode.Cd = value
 
     @property
@@ -1932,20 +1931,20 @@ class _Area(NodeWithCoreParent):
     @direction.setter
     def direction(self, value):
         assert3f(value, "direction")
-        assert np.linalg.norm(value) >0, ValueError('direction can not be 0,0,0')
+        assert np.linalg.norm(value) > 0, ValueError("direction can not be 0,0,0")
 
         self._vfNode.direction = value
 
     @property
     def areakind(self):
         """Defines how to interpret the area.
-        See also: `direction` """
+        See also: `direction`"""
         return AreaKind(self._vfNode.type)
 
     @areakind.setter
     def areakind(self, value):
         if not isinstance(value, AreaKind):
-            raise ValueError('kind shall be an instance of Area')
+            raise ValueError("kind shall be an instance of Area")
         self._vfNode.type = value.value
 
     def _give_python_code(self, new_command):
@@ -1953,7 +1952,7 @@ class _Area(NodeWithCoreParent):
 
         # new_force(self, name, parent=None, force=None, moment=None):
 
-        code += "\ns.{}(name='{}',".format(new_command,self.name)
+        code += "\ns.{}(name='{}',".format(new_command, self.name)
         code += "\n            parent='{}',".format(self.parent_for_export.name)
         code += f"\n            A={self.A}, "
         code += f"\n            Cd={self.Cd}, "
@@ -1963,13 +1962,16 @@ class _Area(NodeWithCoreParent):
 
         return code
 
+
 class WindArea(_Area):
     def give_python_code(self):
-        return self._give_python_code('new_windarea')
+        return self._give_python_code("new_windarea")
+
 
 class CurrentArea(_Area):
     def give_python_code(self):
-        return self._give_python_code('new_currentarea')
+        return self._give_python_code("new_currentarea")
+
 
 class ContactMesh(NodeWithCoreParent):
     """A ContactMesh is a tri-mesh with an axis parent"""
@@ -3240,7 +3242,9 @@ class TriMeshSource(Node):
 
         # every boundary should be present twice
 
-        values , rows_occurance_count = np.unique(boundaries, axis=0, return_counts=True) # count of rows
+        values, rows_occurance_count = np.unique(
+            boundaries, axis=0, return_counts=True
+        )  # count of rows
 
         n_boundary = np.count_nonzero(rows_occurance_count == 1)
         n_nonmanifold = np.count_nonzero(rows_occurance_count > 2)
@@ -3253,7 +3257,7 @@ class TriMeshSource(Node):
         if n_boundary > 0:
             messages.append(f"Mesh contains {n_boundary} boundary edges")
 
-            i_boundary = np.argwhere(rows_occurance_count==1)
+            i_boundary = np.argwhere(rows_occurance_count == 1)
             for i in i_boundary:
                 edge = values[i][0]
                 v1 = tm.GetVertex(edge[0])
@@ -3270,8 +3274,8 @@ class TriMeshSource(Node):
                 non_manifold_edges.append((v1, v2))
 
         if len(messages) == 2:
-            messages.append('Boundary edges are shown in Red')
-            messages.append('Non-manifold edges are shown in Pink')
+            messages.append("Boundary edges are shown in Red")
+            messages.append("Non-manifold edges are shown in Pink")
 
         # Do not check for volume if we have nonmanifold geometry or boundary edges
         try:
@@ -3655,14 +3659,25 @@ class Tank(NodeWithCoreParent):
 
 
 class BallastSystem(Node):
-    """A BallastSystem is a group of Tank objects. The BallastSystem node can interface with the ballast-solver to
-    automatically determine a suitable ballast configuration.
+    """The BallastSystemNode is a non-physical node that marks a groups of Tank nodes as being the ballast system
+    of a vessel.
+
+    The BallastSystem node can interface with the ballast-solver to automatically determine a suitable ballast configuration.
 
     The tank objects are created separately and only their references are assigned to this ballast-system object.
     That is done using the .tanks property which is a list.
+    The parent if this node is the vessel that the tanks belong to. The parent of the ballast system is expected to be
+    a Frame or Rigidbody which can be ballasted (should not have a parent).
 
-    The parent of the ballast system is expected to be a Frame or Rigidbody which can be ballasted.
+    Tanks can be excluded from the ballast algorithms by adding their names to the 'frozen' list.
 
+    Typical use:
+    - create vessel
+    - create tanks
+    - create ballast system
+    - adds tanks to ballast system using ballast_system.tanks.append(tank node)
+    - set the draft: ballast_system.target_elevation = -5.0 # note, typically negative
+    - and solve the tank fills: ballast_system.solve_ballast
 
 
     """
@@ -3687,7 +3702,7 @@ class BallastSystem(Node):
 
     @property
     def target_elevation(self):
-        """The target elevation of the parent of the ballast system. """
+        """The target elevation of the parent of the ballast system."""
         return self._target_elevation
 
     @target_elevation.setter
@@ -3702,19 +3717,20 @@ class BallastSystem(Node):
 
         try:
 
-
             from DAVE.solvers.ballast import force_vessel_to_evenkeel_and_draft
 
-            (F,x,y) = force_vessel_to_evenkeel_and_draft(self._scene, self.parent, value)
+            (F, x, y) = force_vessel_to_evenkeel_and_draft(
+                self._scene, self.parent, value
+            )
             self._target_elevation = value
-            self._target_cog = (x,y)
+            self._target_cog = (x, y)
             self._target_weight = -F
 
-        finally:     # restore all connected tanks
+        finally:  # restore all connected tanks
             for tank, fill in zip(self.tanks, fills):
                 tank.fill_pct = fill
 
-    def solve_ballast(self, method=1, use_current_fill = False):
+    def solve_ballast(self, method=1, use_current_fill=False):
         """Attempts to find a suitable filling of the ballast tanks to position parent at even-keel and target-elevation
 
         Args:
@@ -3724,26 +3740,23 @@ class BallastSystem(Node):
         See Also: target_elevation"""
 
         if self._target_weight is None:
-            raise ValueError('Please set target_elevation first (eg: target_elevation = -5)')
+            raise ValueError(
+                "Please set target_elevation first (eg: target_elevation = -5)"
+            )
 
         from DAVE.solvers.ballast import BallastSystemSolver
+
         ballast_solver = BallastSystemSolver(self)
 
-        assert(method==1 or method==2), 'Method shall be 1 or 2'
+        assert method == 1 or method == 2, "Method shall be 1 or 2"
 
-        ballast_solver.ballast_to(self._target_cog[0],
-                                  self._target_cog[1],
-                                  self._target_weight,
-                                  start_empty = not use_current_fill,
-                                  method=method,
-                                  )
-
-
-
-
-
-
-
+        ballast_solver.ballast_to(
+            self._target_cog[0],
+            self._target_cog[1],
+            self._target_weight,
+            start_empty=not use_current_fill,
+            method=method,
+        )
 
     def new_tank(
         self, name, position, capacity_kN, rho=1.025, frozen=False, actual_fill=0
@@ -4779,7 +4792,9 @@ class Sling(Manager):
     @property
     def _Lmain(self):
         """Length of the main section"""
-        return self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
+        return (
+            self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
+        )
 
     @property
     def _LwireEyeA(self):
@@ -4796,20 +4811,32 @@ class Sling(Manager):
         k_eye_A = 4 * self._EA / self._LwireEyeA
         k_eye_B = 4 * self._EA / self._LwireEyeB
 
-        k_splice_A = 2 * self._EA / (self._LspliceA )
-        k_splice_B = 2 * self._EA / (self._LspliceB )
+        k_splice_A = 2 * self._EA / (self._LspliceA)
+        k_splice_B = 2 * self._EA / (self._LspliceB)
 
         k_main = self._EA / self._Lmain
 
-        k_total = 1 / (1/k_eye_A + 1/k_eye_B + 1/k_splice_A + 1/k_splice_B + 1/k_main)
+        k_total = 1 / (
+            1 / k_eye_A + 1 / k_eye_B + 1 / k_splice_A + 1 / k_splice_B + 1 / k_main
+        )
 
         return k_total
-    
+
     @k_total.setter
     def k_total(self, value):
         assert1f_positive_or_zero(value)
 
-        EA =  0.25*value*(self._LwireEyeA + self._LwireEyeB + 4.0*self._Lmain + 2.0*self.LspliceA + 2.0*self._LspliceB)
+        EA = (
+            0.25
+            * value
+            * (
+                self._LwireEyeA
+                + self._LwireEyeB
+                + 4.0 * self._Lmain
+                + 2.0 * self.LspliceA
+                + 2.0 * self._LspliceB
+            )
+        )
 
         self.EA = EA
 
@@ -4822,7 +4849,6 @@ class Sling(Manager):
 
         backup = self._scene.current_manager  # store
         self._scene.current_manager = self
-
 
         Lmain = (
             self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
@@ -4860,7 +4886,6 @@ class Sling(Manager):
             self._LspliceB,
             self._diameter,
         )
-
 
         self.b1.position = (self._LspliceB / 2, self._diameter / 2, 0)
         self.b2.position = (self._LspliceB / 2, -self._diameter / 2, 0)
@@ -5515,14 +5540,14 @@ class Scene:
     def nFootprintSlices(self, value):
         assert isinstance(value, int), "needs to be integer"
         self._vfc.nFootprintSlices = value
-        
+
     @property
     def wind_direction(self):
-        return np.mod(np.rad2deg(self._vfc.wind_direction),360)
-    
+        return np.mod(np.rad2deg(self._vfc.wind_direction), 360)
+
     @wind_direction.setter
     def wind_direction(self, value):
-        assert1f(value,'wind direction')
+        assert1f(value, "wind direction")
         self._vfc.wind_direction = np.deg2rad(value)
 
     @property
@@ -5531,7 +5556,7 @@ class Scene:
 
     @current_direction.setter
     def current_direction(self, value):
-        assert1f(value, 'current direction')
+        assert1f(value, "current direction")
         self._vfc.current_direction = np.deg2rad(value)
 
     @property
@@ -5540,7 +5565,7 @@ class Scene:
 
     @wind_velocity.setter
     def wind_velocity(self, value):
-        assert1f_positive_or_zero(value, 'wind velocity')
+        assert1f_positive_or_zero(value, "wind velocity")
         self._vfc.wind_velocity = value
 
     @property
@@ -5549,7 +5574,7 @@ class Scene:
 
     @current_velocity.setter
     def current_velocity(self, value):
-        assert1f_positive_or_zero(value, 'current velocity')
+        assert1f_positive_or_zero(value, "current velocity")
         self._vfc.current_velocity = value
 
     # =========== private functions =============
@@ -6474,8 +6499,6 @@ class Scene:
 
     # ======== create functions =========
 
-
-
     def new_axis(
         self,
         name,
@@ -6487,15 +6510,11 @@ class Scene:
         fixed=True,
     ) -> Frame:
 
-        warnings.warn('new_frame is deprecated, use new_frame instead')
+        warnings.warn("new_frame is deprecated, use new_frame instead")
 
-        return self.new_frame(name,
-        parent,
-        position,
-        rotation,
-        inertia,
-        inertia_radii,
-        fixed)
+        return self.new_frame(
+            name, parent, position, rotation, inertia, inertia_radii, fixed
+        )
 
     def new_frame(
         self,
@@ -7109,7 +7128,7 @@ class Scene:
         b = self._poi_from_node(parent)
 
         assert3f(direction, "Direction ")
-        assert np.linalg.norm(direction) > 0, ValueError('Direction shall not be 0,0,0')
+        assert np.linalg.norm(direction) > 0, ValueError("Direction shall not be 0,0,0")
         assert1f_positive_or_zero(Cd, "Cd coefficient")
         assert1f_positive_or_zero(A, "Area ")
         assert isinstance(areakind, AreaKind)
@@ -7134,7 +7153,15 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_windarea(self, name, parent=None, direction = (0,1,0), Cd = 2, A = 10, areakind=AreaKind.PLANE) -> WindArea:
+    def new_windarea(
+        self,
+        name,
+        parent=None,
+        direction=(0, 1, 0),
+        Cd=2,
+        A=10,
+        areakind=AreaKind.PLANE,
+    ) -> WindArea:
         """Creates a new *WindArea* node and adds it to the scene.
 
         Args:
@@ -7150,9 +7177,25 @@ class Scene:
 
         """
 
-        return self._new_area(True, name=name, parent=parent, direction=direction, Cd=Cd, A=A, areakind=areakind)
+        return self._new_area(
+            True,
+            name=name,
+            parent=parent,
+            direction=direction,
+            Cd=Cd,
+            A=A,
+            areakind=areakind,
+        )
 
-    def new_currentarea(self, name, parent=None, direction = (0,1,0), Cd = 2, A = 10, areakind=AreaKind.PLANE) -> CurrentArea:
+    def new_currentarea(
+        self,
+        name,
+        parent=None,
+        direction=(0, 1, 0),
+        Cd=2,
+        A=10,
+        areakind=AreaKind.PLANE,
+    ) -> CurrentArea:
         """Creates a new *CurrentArea* node and adds it to the scene.
 
         Args:
@@ -7168,8 +7211,15 @@ class Scene:
 
         """
 
-        return self._new_area(False, name=name, parent=parent, direction=direction, Cd=Cd, A=A, areakind=areakind)
-
+        return self._new_area(
+            False,
+            name=name,
+            parent=parent,
+            direction=direction,
+            Cd=Cd,
+            A=A,
+            areakind=areakind,
+        )
 
     def new_circle(self, name, parent, axis, radius=0.0) -> Circle:
         """Creates a new *sheave* node and adds it to the scene.
@@ -7720,7 +7770,7 @@ class Scene:
         LspliceB=None,
         diameter=0.1,
         sheaves=None,
-        k_total = None,
+        k_total=None,
     ) -> Sling:
         """
         Creates a new sling, adds it to the scene and returns a reference to the newly created object.
@@ -7801,10 +7851,12 @@ class Scene:
             sheaves = []
 
         if EA is not None and k_total is not None:
-            warnings.warn('Value for EA is given by will not be used as k_total is defined as well. Value for EA will be derived from k_total')
+            warnings.warn(
+                "Value for EA is given by will not be used as k_total is defined as well. Value for EA will be derived from k_total"
+            )
 
         if EA is None:
-            EA = 1   # possibly overwritten by k_total
+            EA = 1  # possibly overwritten by k_total
 
         assert1f_positive_or_zero(diameter, "Diameter")
         assert1f_positive_or_zero(mass, "mass")
@@ -7935,9 +7987,9 @@ class Scene:
         code += "\n# Environment settings"
 
         for prop in ds.ENVIRONMENT_PROPERTIES:
-            code += f'\ns.{prop} = {getattr(self, prop)}'
+            code += f"\ns.{prop} = {getattr(self, prop)}"
 
-        code += '\n'
+        code += "\n"
 
         for n in self._nodes:
 
@@ -8471,4 +8523,3 @@ class LoadShearMomentDiagram:
             plt.show()
         else:
             fig.savefig(filename)
-

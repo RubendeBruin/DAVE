@@ -1,5 +1,5 @@
 """
-Ballasting
+Supporing ballasting routines for the BallastSystem node.
 """
 import numpy as np
 from scipy.optimize import minimize, minimize_scalar
@@ -223,29 +223,29 @@ class OptBallastSystem():
 # ================== and tanks ==========================
 
 
-def visualize_optimiaztion(fun, xlim, ylim):
-    step = 1
-    x,y = np.meshgrid(np.arange(xlim[0], xlim[1] + step, step),
-                      np.arange(ylim[0], ylim[1] + step, step))
-    def fun2(x,y):
-        return fun([x,y])
-
-    funn = np.vectorize(fun2)
-    z = funn(x,y)
-
-    fig = plt.figure(figsize=(8, 5))
-
-    from mpl_toolkits.mplot3d import Axes3D
-    from matplotlib.colors import LogNorm
-
-    ax = plt.axes(projection='3d', elev=50, azim=-50)
-
-    ax.plot_surface(x, y, z, norm=LogNorm(), rstride=1, cstride=1,
-                    edgecolor='none', alpha=.8, cmap=plt.cm.jet)
-
-    plt.show()
-
-
+# def visualize_optimiaztion(fun, xlim, ylim):
+#     step = 1
+#     x,y = np.meshgrid(np.arange(xlim[0], xlim[1] + step, step),
+#                       np.arange(ylim[0], ylim[1] + step, step))
+#     def fun2(x,y):
+#         return fun([x,y])
+#
+#     funn = np.vectorize(fun2)
+#     z = funn(x,y)
+#
+#     fig = plt.figure(figsize=(8, 5))
+#
+#     from mpl_toolkits.mplot3d import Axes3D
+#     from matplotlib.colors import LogNorm
+#
+#     ax = plt.axes(projection='3d', elev=50, azim=-50)
+#
+#     ax.plot_surface(x, y, z, norm=LogNorm(), rstride=1, cstride=1,
+#                     edgecolor='none', alpha=.8, cmap=plt.cm.jet)
+#
+#     plt.show()
+#
+#
 
 
 
