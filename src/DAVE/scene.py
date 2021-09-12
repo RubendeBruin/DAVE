@@ -3585,7 +3585,7 @@ class Tank(NodeWithCoreParent):
 
     @property
     def volume(self):
-        """The volume of fluid in the tank in m3. Setting this adjusts the fluid level"""
+        """The actual volume of fluid in the tank in m3. Setting this adjusts the fluid level"""
         return self._vfNode.volume
 
     @volume.setter
@@ -3608,7 +3608,7 @@ class Tank(NodeWithCoreParent):
 
     @property
     def capacity(self):
-        """Returns the capacity of the tank in m3. This is calculated from the defined geometry."""
+        """Returns the capacity of the tank in m3. This is calculated from the defined geometry and permeability."""
         return self._vfNode.capacity
 
     @property
@@ -3655,9 +3655,15 @@ class Tank(NodeWithCoreParent):
 
 
 class BallastSystem(Node):
-    """A BallastSystem is a group of Tank objects.
+    """A BallastSystem is a group of Tank objects. The BallastSystem node can interface with the ballast-solver to
+    automatically determine a suitable ballast configuration.
 
     The tank objects are created separately and only their references are assigned to this ballast-system object.
+    That is done using the .tanks property which is a list.
+
+    The parent of the ballast system is expected to be a Frame or Rigidbody which can be ballasted.
+
+
 
     """
 
@@ -3671,6 +3677,73 @@ class BallastSystem(Node):
         """List of names of frozen tanks - The contents of a frozen tank should not be changed"""
 
         self.parent = parent
+
+        self._target_elevation = None
+        """Target elevation of the parent Frame (global, m)"""
+        self._target_cog = None
+        """Required cog of all the ballast tanks to reach the target z, calculated when setting target_elevation"""
+        self._target_weight = None
+        """Required total amount of water ballast to reach the target z, calculated when setting target_elevation"""
+
+    @property
+    def target_elevation(self):
+        """The target elevation of the parent of the ballast system. """
+        return self._target_elevation
+
+    @target_elevation.setter
+    def target_elevation(self, value):
+
+        assert1f(value, "target elevation")
+
+        # empty all connected tanks
+        fills = [tank.fill_pct for tank in self.tanks]
+        for tank in self.tanks:
+            tank.fill_pct = 0
+
+        try:
+
+
+            from DAVE.solvers.ballast import force_vessel_to_evenkeel_and_draft
+
+            (F,x,y) = force_vessel_to_evenkeel_and_draft(self._scene, self.parent, value)
+            self._target_elevation = value
+            self._target_cog = (x,y)
+            self._target_weight = -F
+
+        finally:     # restore all connected tanks
+            for tank, fill in zip(self.tanks, fills):
+                tank.fill_pct = fill
+
+    def solve_ballast(self, method=1, use_current_fill = False):
+        """Attempts to find a suitable filling of the ballast tanks to position parent at even-keel and target-elevation
+
+        Args:
+            method: algorithm to use (named 1 and 2)
+            use_current_fill: use current tank fill as start for the algorithm
+
+        See Also: target_elevation"""
+
+        if self._target_weight is None:
+            raise ValueError('Please set target_elevation first (eg: target_elevation = -5)')
+
+        from DAVE.solvers.ballast import BallastSystemSolver
+        ballast_solver = BallastSystemSolver(self)
+
+        assert(method==1 or method==2), 'Method shall be 1 or 2'
+
+        ballast_solver.ballast_to(self._target_cog[0],
+                                  self._target_cog[1],
+                                  self._target_weight,
+                                  start_empty = not use_current_fill,
+                                  method=method,
+                                  )
+
+
+
+
+
+
+
 
     def new_tank(
         self, name, position, capacity_kN, rho=1.025, frozen=False, actual_fill=0

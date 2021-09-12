@@ -77,7 +77,6 @@ class OptBallastSystem():
 
     def __init__(self):
 
-
         self._tanks = []
         """List of tank objects"""
 
@@ -87,27 +86,27 @@ class OptBallastSystem():
         self._weight = 0
         """Weight [kN] of the ballast-tanks , calculated when calling update()"""
 
-        self.frozen = False
-        """The contents of a frozen tank should not be changed"""
+        # self.frozen = False
+        # """The contents of a frozen tank should not be changed"""
 
-    def update(self):
-        self._cog, self._weight, = self.xyzw()
-        self._weight = np.around(self._weight, decimals=5)
-
-        # we are rounding a bit here to avoid very small numbers
-        # which would mess-up the solver
-        pos = np.array(self._cog) + np.array(self.position)
-        pos = np.around(pos, 5)
-
-        self._vfNode.position = pos
-
-        self._vfForce.force = (0, 0, -self._weight)
-
-        for tank in self._tanks:
-            I = tank.inertia
-            pos = np.array(tank.position) + np.array(self.position)
-            tank._pointmass.inertia = tank.inertia
-            tank._pointmass.position = pos
+    # def update(self):
+    #     self._cog, self._weight, = self.xyzw()
+    #     self._weight = np.around(self._weight, decimals=5)
+    #
+    #     # we are rounding a bit here to avoid very small numbers
+    #     # which would mess-up the solver
+    #     pos = np.array(self._cog) + np.array(self.position)
+    #     pos = np.around(pos, 5)
+    #
+    #     self._vfNode.position = pos
+    #
+    #     self._vfForce.force = (0, 0, -self._weight)
+    #
+    #     for tank in self._tanks:
+    #         I = tank.inertia
+    #         pos = np.array(tank.position) + np.array(self.position)
+    #         tank._pointmass.inertia = tank.inertia
+    #         tank._pointmass.position = pos
 
 
     def new_tank(self, name, position, capacity_kN, actual_fill=0, frozen=False):
@@ -148,15 +147,15 @@ class OptBallastSystem():
     def tank_names(self):
         return [tank.name for tank in self._tanks]
 
-    def fill_tank(self, name, fill):
-
-        assert1f(fill, "tank fill")
-
-        for tank in self._tanks:
-            if tank.name == name:
-                tank.pct = fill
-                return
-        raise ValueError('No tank with name {}'.format(name))
+    # def fill_tank(self, name, fill):
+    #
+    #     assert1f(fill, "tank fill")
+    #
+    #     for tank in self._tanks:
+    #         if tank.name == name:
+    #             tank.pct = fill
+    #             return
+    #     raise ValueError('No tank with name {}'.format(name))
 
     def xyzw(self):
         """Gets the current ballast cog and weight from the tanks
@@ -190,35 +189,35 @@ class OptBallastSystem():
                 return t
         raise ValueError('No tank with name {}'.format(name))
 
-    def __getitem__(self, item):
-        return self.tank(item)
+    # def __getitem__(self, item):
+    #     return self.tank(item)
 
-    @property
-    def cogx(self):
-        """X position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]"""
-        return self.cog[0]
-
-    @property
-    def cogy(self):
-        """Y position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]"""
-        return self.cog[1]
-
-    @property
-    def cogz(self):
-        """Z position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]"""
-        return self.cog[2]
-
-    @property
-    def cog(self):
-        """Combined CoG of all tank contents in the ballast-system. (local coordinate) [m,m,m]"""
-        self.update()
-        return (self._cog[0], self._cog[1], self._cog[2])
-
-    @property
-    def weight(self):
-        """Total weight of all tank fillings in the ballast system [kN]"""
-        self.update()
-        return self._weight
+    # @property
+    # def cogx(self):
+    #     """X position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]"""
+    #     return self.cog[0]
+    #
+    # @property
+    # def cogy(self):
+    #     """Y position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]"""
+    #     return self.cog[1]
+    #
+    # @property
+    # def cogz(self):
+    #     """Z position of combined CoG of all tank contents in the ballast-system. (local coordinate) [m]"""
+    #     return self.cog[2]
+    #
+    # @property
+    # def cog(self):
+    #     """Combined CoG of all tank contents in the ballast-system. (local coordinate) [m,m,m]"""
+    #     self.update()
+    #     return (self._cog[0], self._cog[1], self._cog[2])
+    #
+    # @property
+    # def weight(self):
+    #     """Total weight of all tank fillings in the ballast system [kN]"""
+    #     self.update()
+    #     return self._weight
 
 
 # ================== and tanks ==========================
@@ -362,7 +361,7 @@ class BallastSystemSolver:
 
         return dx**2 + dy**2 + 0.1*dw **2
 
-    def optimize_tank(self, tank):
+    def _optimize_tank(self, tank):
 
         self.print('-- optimize tank -- {}'.format(tank.name))
 
@@ -486,7 +485,7 @@ class BallastSystemSolver:
         # tank.pct = p0
         # return False
 
-    def optimize_multiple_partial(self, tanks):
+    def _optimize_multiple_partial(self, tanks):
 
         # print([tank.name for tank in tanks])
 
@@ -517,7 +516,7 @@ class BallastSystemSolver:
             # empty second tank and optimize first one
             if not tanks[1].is_empty():
                 tanks[1].make_empty()
-                self.optimize_tank(tanks[0])
+                self._optimize_tank(tanks[0])
                 if self._error() <= E0:
                     return True
                 tanks[1].pct = store_tank1
@@ -525,7 +524,7 @@ class BallastSystemSolver:
             # fill first tank and optimize second one
             if not tanks[0].is_full:
                 tanks[0].make_full()
-                self.optimize_tank(tanks[1])
+                self._optimize_tank(tanks[1])
                 if self._error() <= E0:
                     return True
                 tanks[0].pct = store_tank0
@@ -533,7 +532,7 @@ class BallastSystemSolver:
             # fill second tank and optimize first one
             if not tanks[1].is_full:
                 tanks[1].make_full()
-                self.optimize_tank(tanks[0])
+                self._optimize_tank(tanks[0])
                 if self._error() <= E0:
                     return True
                 tanks[1].pct = store_tank1
@@ -541,7 +540,7 @@ class BallastSystemSolver:
             # empty first tank and optimize second one
             if not tanks[0].is_empty:
                 tanks[0].make_empty()
-                self.optimize_tank(tanks[1])
+                self._optimize_tank(tanks[1])
                 if self._error() <= E0:
                     return True
                 tanks[0].pct = store_tank0
@@ -565,7 +564,7 @@ class BallastSystemSolver:
                     else:
                         subset.append(tanks[i])
 
-                if self.optimize_multiple_partial(subset):
+                if self._optimize_multiple_partial(subset):
                     if self._error() <= E0:
                         self.print('Removed one of the slack tanks')
                         for tank in tanks:
@@ -591,7 +590,7 @@ class BallastSystemSolver:
                     else:
                         subset.append(tanks[i])
 
-                if self.optimize_multiple_partial(subset):
+                if self._optimize_multiple_partial(subset):
                     if self._error() <= E0:
                         self.print('Removed one of the slack tanks')
                         return True
@@ -671,7 +670,7 @@ class BallastSystemSolver:
         return False
 
 
-    def optimize_using(self, tanks):
+    def _optimize_using(self, tanks):
         """Optimize using the given tanks. No fancy combinations"""
 
         names = ''
@@ -746,39 +745,61 @@ class BallastSystemSolver:
             tank.pct = fill
         return False
 
-    def ballast_to(self, cogx, cogy, weight, initial = None, method = 1):
+    def ballast_to(self, cogx, cogy, weight, start_empty = True, method = 1):
         """cogx, cogy : local position relative to parent"""
 
         # create an own ballast-system based on the tanks of the node
+        # this system is for book-keeping only and contains only the non-frozen tanks
+        #
+        # The weight of the frozen tanks is removed from target weight and cogx/y
         self.BallastSystem = OptBallastSystem()
 
+        frozen_wt = 0
+        frozen_mx = 0
+        frozen_my = 0
+        frozen = []
+
+        g = self.ballast_system_node._scene.g
+
+
+
         for tank in self.ballast_system_node.tanks:
-            old_fill = tank.fill_pct
-            if tank.fill_pct < 1:
-                tank.fill_pct = 100
-            self.BallastSystem.new_tank(tank.name, position=tank.cog_local, capacity_kN=tank.volume * tank.density * self.ballast_system_node._scene.g, actual_fill=old_fill, frozen=self.ballast_system_node.is_frozen(tank.name))
-            tank.fill_pct = old_fill
+            if self.ballast_system_node.is_frozen(tank.name):
+                wt = tank.volume * tank.density * g
+                frozen_wt += wt
+                frozen_mx += wt * tank.cog_local[0]
+                frozen_my += wt * tank.cog_local[1]
+                frozen.append(tank.name)
+            else:
+                if start_empty:
+                    pct = 0
+                else:
+                    pct = tank.fill_pct
+                self.BallastSystem.new_tank(tank.name,
+                                            position=tank.cog_when_full,
+                                            capacity_kN=tank.capacity * tank.density * g,
+                                            actual_fill=pct,
+                                            frozen=False)
 
         _log = []
 
-        self._target_wt = weight
-        self._target_cog[0] = cogx
-        self._target_cog[1] = cogy
+        self._target_wt = weight - frozen_wt
+        self._target_cog[0] = (cogx * weight - frozen_mx) / self._target_wt
+        self._target_cog[1] = (cogy * weight - frozen_my) / self._target_wt
 
         # Get usable tanks
-        optTanks = []
-        for tank in self.BallastSystem._tanks:
-            if not tank.frozen:
-                optTanks.append(tank)
-
-        if initial is not None:
-            for i,tank in enumerate(optTanks):
-                tank.pct = initial[i]
+        optTanks = [tank for tank in self.BallastSystem._tanks]
 
 
         # print log:
         print('ballasting to volume of {} kN'.format(self._target_wt ))
         print('at {} , {}'.format(self._target_cog[0],self._target_cog[1] ))
+
+        if frozen:
+            print('not using:')
+            for tank in frozen:
+                print(tank)
+            print('-----------------------------')
 
         print('using:')
         for tank in optTanks:
@@ -788,12 +809,12 @@ class BallastSystemSolver:
         # =====================
 
         if method == 1:  # prefer 1, fall-back to 2
-            if not self.optimize_alg1(optTanks):
-                self.optimize_alg2(optTanks)
+            if not self._optimize_alg1(optTanks):
+                self._optimize_alg2(optTanks)
 
         if method == 2:  # prefer 2, fall-back to 1
-            if not self.optimize_alg2(optTanks):
-                self.optimize_alg1(optTanks)
+            if not self._optimize_alg2(optTanks):
+                self._optimize_alg1(optTanks)
 
         # =======================
 
@@ -811,10 +832,13 @@ class BallastSystemSolver:
         for t in self.BallastSystem._tanks:
             s[t.name].fill_pct = t.pct
 
+        for tank in self.ballast_system_node.tanks:
+            print(f'{tank.name} : {tank.fill_pct:.1f}%')
+
         return success
 
 #
-    def optimize_alg1(self, optTanks):
+    def _optimize_alg1(self, optTanks):
 
         maxit = 100
         _log = []
@@ -836,18 +860,18 @@ class BallastSystemSolver:
                     partials.append(tank)
 
             if len(partials) == 1:
-                if self.optimize_tank(partials[0]):
+                if self._optimize_tank(partials[0]):
                     continue
 
             if len(partials) > 1:
-                if self.optimize_multiple_partial(partials):
+                if self._optimize_multiple_partial(partials):
                     continue
 
             changed = False
 
             # See if it gets better by filling or emptying _any_ of the other tanks
             for tank in optTanks:
-                if self.optimize_tank(tank):
+                if self._optimize_tank(tank):
                     changed = True
                     break
 
@@ -862,7 +886,7 @@ class BallastSystemSolver:
                 if tank not in partials:
                     temp = partials.copy()
                     temp.append(tank)
-                    if self.optimize_multiple_partial(temp):
+                    if self._optimize_multiple_partial(temp):
 
                         self.print('Optimized the following:')
                         for tank in temp:
@@ -911,7 +935,7 @@ class BallastSystemSolver:
                         temp.append(tank)
                         if tank2 not in temp:
                             temp.append(tank2)
-                            if self.optimize_using(temp):
+                            if self._optimize_using(temp):
 
                                 self.print('Optimized the following:')
                                 for tank in temp:
@@ -939,7 +963,7 @@ class BallastSystemSolver:
 
         return False
 
-    def optimize_alg2(self, optTanks):
+    def _optimize_alg2(self, optTanks):
 
         _log = []
         for it in range(100):
@@ -957,9 +981,9 @@ class BallastSystemSolver:
             if Om < self._target_wt:  # Not enough water in yet
 
                 # Pass 0 - get optimum full tank distribution
-                self.fill_optimum_tanks(optTanks)
+                self._fill_optimum_tanks(optTanks)
 
-            while self.digital_switch_tanks(optTanks):
+            while self._digital_switch_tanks(optTanks):
                 pass
 
             [Ox, Oy, _], Om = self.xyzw()
@@ -971,14 +995,14 @@ class BallastSystemSolver:
                 Eopt = E0
                 optTank = None
                 for tank in self._full_tanks(optTanks):
-                    self.optimize_tank(tank)
+                    self._optimize_tank(tank)
                     if self._error() < E0:
                         Eopt = self._error()
                         optTank = tank
                     tank.pct = 100
 
                 if Eopt < E0:
-                    self.optimize_tank(optTank)
+                    self._optimize_tank(optTank)
                     # self.plot(optTanks)
                     # plt.title(f'Optimized a single tank, error = {self._error()}')
                     # plt.show()
@@ -1047,7 +1071,7 @@ class BallastSystemSolver:
                     for full in full_tanks:
 
                         self.optimize_three_tanks(partial, empty, full)
-                        # self.optimize_using()
+                        # self._optimize_using()
                         if self._error() < Eopt:
                             optEmpty = empty
                             optFull = full
@@ -1101,10 +1125,10 @@ class BallastSystemSolver:
 
 
     def optimize_two_tanks(self, tank1, tank2):
-        self.optimize_using([tank1, tank2])
+        self._optimize_using([tank1, tank2])
 
     def optimize_three_tanks(self, tank1, tank2, tank3):
-        self.optimize_using([tank1, tank2, tank3])
+        self._optimize_using([tank1, tank2, tank3])
 
     def plot(self, optTanks):
 
@@ -1150,7 +1174,7 @@ class BallastSystemSolver:
                 tanks.append(tank)
         return tanks
 
-    def fill_optimum_tanks(self, optTanks):
+    def _fill_optimum_tanks(self, optTanks):
         """Keep filling the best empty tank until we have at least the required amount of fluid
         """
 
@@ -1175,7 +1199,7 @@ class BallastSystemSolver:
 
         raise ValueError('Filled all tanks but target weight not yet reached')
 
-    def digital_switch_tanks(self, optTanks):
+    def _digital_switch_tanks(self, optTanks):
 
         empty_tanks = self._empty_tanks(optTanks)
         full_tanks = self._full_tanks(optTanks)

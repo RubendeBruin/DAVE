@@ -80,14 +80,17 @@ class WidgetBallastSolver(guiDockWidget):
         if not self.assert_selection_valid():
             return
 
-        code = 'from DAVE.solvers.ballast import force_vessel_to_evenkeel_and_draft'
-        code += '\ns["{}"].empty_all_usable_tanks()'.format(self._bs.name)
-        code += '\ns.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s,vessel="{}",z={})'.format(self._vesselNode.name, self.ui.doubleSpinBox.value())
+        # code = 'from DAVE.solvers.ballast import force_vessel_to_evenkeel_and_draft'
+        # code += '\ns["{}"].empty_all_usable_tanks()'.format(self._bs.name)
+        # code += '\ns.required_ballast = force_vessel_to_evenkeel_and_draft(scene=s,vessel="{}",z={})'.format(self._vesselNode.name, self.ui.doubleSpinBox.value())
+        #
+        code = f"s['{self._bs.name}'].target_elevation = {self.ui.doubleSpinBox.value()}"
+
         self.guiRunCodeCallback(code, guiEventType.MODEL_STATE_CHANGED)
         self.ui.tableWidget.item(0,0)
-        self.ui.tableWidget.setItem(0, 0, QtWidgets.QTableWidgetItem(f'{-self.guiScene.required_ballast[0]:.3f}'))
-        self.ui.tableWidget.setItem(0, 1, QtWidgets.QTableWidgetItem(f'{self.guiScene.required_ballast[1]:.3f}'))
-        self.ui.tableWidget.setItem(0, 2, QtWidgets.QTableWidgetItem(f'{self.guiScene.required_ballast[2]:.3f}'))
+        self.ui.tableWidget.setItem(0, 0, QtWidgets.QTableWidgetItem(f'{-self._bs._target_weight:.3f}'))
+        self.ui.tableWidget.setItem(0, 1, QtWidgets.QTableWidgetItem(f'{self._bs._target_cog[0]:.3f}'))
+        self.ui.tableWidget.setItem(0, 2, QtWidgets.QTableWidgetItem(f'{self._bs._target_cog[1]:.3f}'))
 
         self.ui.widget_2.setEnabled(True)
 
@@ -101,9 +104,8 @@ class WidgetBallastSolver(guiDockWidget):
         if not self.assert_selection_valid():
             return
 
-        code = 'from DAVE.solvers.ballast import BallastSystemSolver'
-        code += '\nballast_solver = BallastSystemSolver(s["{}"])\n'.format(self._bs.name)
-        code += f'ballast_solver.ballast_to(cogx = s.required_ballast[1], cogy = s.required_ballast[2], weight = -s.required_ballast[0], method={method})\n'
+
+        code = f"s['{self._bs.name}'].solve_ballast(method={method}, use_current_fill={self.ui.cbUseCurrentFills.isChecked()})"
 
         self.guiRunCodeCallback(code,guiEventType.SELECTED_NODE_MODIFIED)
 

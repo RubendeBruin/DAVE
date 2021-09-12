@@ -970,6 +970,9 @@ class Gui:
         s = self.scene
 
         self.ui.pbExecute.setStyleSheet("background-color: yellow;")
+        self.ui.teCode.setPlainText(code)
+
+        self.app.processEvents()
 
         self.ui.teFeedback.setStyleSheet("")
         self.ui.teFeedback.clear()
@@ -1112,7 +1115,7 @@ class Gui:
 
             if (status == 0) or (status == -2):  # solving done
 
-                # solving exited with succes
+                # solving exited with success
 
                 if original_dofs:  # reset original dofs and go to phase 2
                     self.scene._restore_original_fixes(original_dofs)
