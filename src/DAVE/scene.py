@@ -5460,6 +5460,10 @@ class Shackle(Manager, RigidBody):
 
         code += "\ns['{}'].position = ({},{},{})".format(self.name, *self.position)
         code += "\ns['{}'].rotation = ({},{},{})".format(self.name, *self.rotation)
+        if not np.all(self.fixed):
+            code += "\ns['{}'].fixed = ({},{},{},{},{},{})".format(self.name, *self.fixed)
+
+
 
         return code
 
