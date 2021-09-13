@@ -118,7 +118,7 @@ class Node(ABC):
 
     @abstractmethod
     def depends_on(self) -> list:
-        """Returns a list of nodes that need to be available present for this node to exist"""
+        """Returns a list of nodes that need to be present for this node to exist"""
         raise ValueError(
             f"Derived class should implement this method, but {type(self)} does not"
         )
@@ -4071,11 +4071,11 @@ class WaveInteraction1(Node):
 
 
 class Manager(Node, ABC):
+    """
+    Notes:
+        1. A manager shall manage the names of all nodes it creates
+    """
 
-    # @abstractmethod                   not used anywhere outside the manager classes, so no requirement
-    # def managed_nodes(self):
-    #     """Returns a list of managed nodes"""
-    #     raise Exception("derived class shall override this method")
 
     @abstractmethod
     def delete(self):
@@ -4090,6 +4090,38 @@ class Manager(Node, ABC):
     def creates(self, node: Node):
         """Returns True if node is created by this manager"""
         pass
+
+    @property
+    @abstractmethod
+    def name(self):
+        """Name of the node (str), must be unique"""
+        # Example:
+        #     @property
+        #     def name(self):
+        #         """Name of the node (str), must be unique"""
+        #         return RigidBody.name.fget(self)
+        #
+
+        pass
+
+    @name.setter
+    @abstractmethod
+    def name(self, value):
+        # example
+        # @name.setter
+        # def name(self, value):
+        #     old_name = self.name
+        #     RigidBody.name.fset(self,value)
+        #     self._rename_all_manged_nodes(old_name, value)
+        #
+        pass
+
+    def _rename_all_manged_nodes(self, old_name, new_name):
+        """Helper to quickly rename all managed nodes"""
+        with ClaimManagement(self._scene, self):
+            for node in self.managed_nodes():
+                node.name = node.name.replace(old_name, new_name)
+
 
 
 class GeometricContact(Manager):
@@ -4151,7 +4183,7 @@ class GeometricContact(Manager):
             )
 
         super().__init__(scene)
-        self.name = name
+
 
         name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
 
@@ -4197,10 +4229,23 @@ class GeometricContact(Manager):
 
         self._child_circle_parent_parent._parent_for_code_export = None
 
+        self.name = name
+
         self._update_connection()
 
     def on_observed_node_changed(self, changed_node):
         self._update_connection()
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        assert self._scene.name_available(value), f"Name {value} already in use"
+
+        self._rename_all_manged_nodes(self.name, value)
+        self._name = value
 
     @staticmethod
     def _assert_parent_child_possible(parent, child):
@@ -4680,7 +4725,7 @@ class Sling(Manager):
         """
 
         super().__init__(scene)
-        self.name = name
+
 
         name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
 
@@ -4786,8 +4831,21 @@ class Sling(Manager):
         self.sheaves = sheaves
         self._update_properties()
 
+        self.name = name
+
         for n in self.managed_nodes():
             n.manager = self
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        assert self._scene.name_available(value), f"Name {value} already in use"
+
+        self._rename_all_manged_nodes(self.name, value)
+        self._name = value
 
     @property
     def _Lmain(self):
@@ -5243,8 +5301,6 @@ class Shackle(Manager, RigidBody):
         Manager.__init__(self, scene)
         RigidBody.__init__(self, scene, axis=a, poi=p, force=g)
 
-        self.name = name
-
         _ = self._give_values(kind)  # to make sure it exists
 
         # origin is at center of pin
@@ -5286,6 +5342,7 @@ class Shackle(Manager, RigidBody):
         )
 
         self.kind = kind
+        self.name = name
 
         for n in self.managed_nodes():
             n.manager = self
@@ -5378,6 +5435,19 @@ class Shackle(Manager, RigidBody):
         for n in a:
             if n in self._scene._nodes:
                 self._scene.delete(n)  # delete if it is still available
+
+    @property
+    def name(self):
+        """Name of the node (str), must be unique"""
+        return RigidBody.name.fget(self)
+
+    @name.setter
+    def name(self, value):
+        old_name = self.name
+        RigidBody.name.fset(self,value)
+        self._rename_all_manged_nodes(old_name, value)
+
+
 
     def give_python_code(self):
         code = f"# Exporting {self.name}"
@@ -6510,7 +6580,7 @@ class Scene:
         fixed=True,
     ) -> Frame:
 
-        warnings.warn("new_frame is deprecated, use new_frame instead")
+        warnings.warn("new_axis is deprecated, use new_frame instead")
 
         return self.new_frame(
             name, parent, position, rotation, inertia, inertia_radii, fixed

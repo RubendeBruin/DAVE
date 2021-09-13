@@ -793,7 +793,7 @@ class VisualActor:
             return
 
         if isinstance(self.node, vf._Area):
-            self.actors["main"].scale(self.node.A, absolute=True)
+            self.actors["main"].scale(np.sqrt(self.node.A), absolute=True)
             return
 
         if isinstance(self.node, vf.Cable):
@@ -1869,8 +1869,11 @@ class Viewport:
                 actors["footprint"] = vp.Cube(side=0.00001) # dummy
 
             if isinstance(N, vf._Area): # wind or current area
-                actors["main"] = vp.Circle(res=36, r=0.5)
-                actors["main"].scale(N.A)
+                # circle with area 1m2
+                # and then scale with sqrt(A)
+                # A = pi * r**2 --> r = sqrt(1/pi)
+                actors["main"] = vp.Circle(res=36, r=np.sqrt(1/np.pi))
+                actors["main"].scale(np.sqrt(N.A))
 
 
             if isinstance(N, vf.RigidBody):

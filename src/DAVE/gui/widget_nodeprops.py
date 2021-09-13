@@ -1911,6 +1911,9 @@ class EditSling(NodeEditor):
         new_LspliceB = self.ui.sbLSpliceB.value()
         new_k = self.ui.sbK.value()
 
+        code += code_if_changed(node, new_length, 'length', 3) # Need to change the length before changing the length of
+        # the components beause the length of the components is checked against the total length
+
         code += code_if_changed(node, new_k, 'k_total', 1)
         code += code_if_changed(node, new_EA, 'EA', 1)
         code += code_if_changed(node, new_diameter, 'diameter', 1)
@@ -1920,7 +1923,6 @@ class EditSling(NodeEditor):
         code += code_if_changed(node, new_LeyeB, 'LeyeB', 3)
         code += code_if_changed(node, new_LspliceA, 'LspliceA', 3)
         code += code_if_changed(node, new_LspliceB, 'LspliceB', 3)
-        code += code_if_changed(node, new_length, 'length', 3)
 
 
         # get the poi names
