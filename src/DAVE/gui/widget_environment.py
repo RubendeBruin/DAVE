@@ -57,7 +57,7 @@ class WidgetEnvironment(guiDockWidget):
     def fill(self):
 
         # display the name of the selected node
-        for s in self._settings:
+        for s in ds.ENVIRONMENT_PROPERTIES:
             widget = getattr(self.ui, s)
             widget.blockSignals(True)
             widget.setValue(getattr(self.guiScene, s))
