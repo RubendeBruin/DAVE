@@ -133,10 +133,11 @@ class NodeEditor(ABC):
         """Creates the gui and connects signals"""
         pass
 
-    def connect(self, node, scene, run_code):
+    def connect(self, node, scene, run_code, guiEmitEvent):
         self.node = node
         self.scene = scene
         self._run_code = run_code
+        self.guiEmitEvent = guiEmitEvent
 
         self.post_update_event()
 
@@ -2152,7 +2153,7 @@ class WidgetNodeProps(guiDockWidget):
         self._open_edit_widgets.clear()
 
         self._node_name_editor = EditNode.Instance()
-        self._node_name_editor.connect(node, self.guiScene, self.run_code)
+        self._node_name_editor.connect(node, self.guiScene, self.run_code, self.guiEmitEvent)
 
         # add to layout if not already in
         name_widget = getattr(self, "_name_widget", None)
@@ -2232,7 +2233,7 @@ class WidgetNodeProps(guiDockWidget):
         to_be_added = []
         for editor in self._node_editors:
             to_be_added.append(
-                editor.connect(node, self.guiScene, self.run_code)
+                editor.connect(node, self.guiScene, self.run_code, self.guiEmitEvent)
             )  # this function returns the widget
 
         # for item in to_be_added:

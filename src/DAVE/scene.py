@@ -4624,21 +4624,32 @@ class GeometricContact(Manager):
             if not self.inside and self.swivel == 90:
                 pass  # default for outside
             else:
-                code.append(f"                       swivel={self.swivel},")
+                if self.swivel_fixed:
+                    code.append(f"                       swivel={self.swivel},")
+                else:
+                    code.append(f"                       swivel=solved({self.swivel}),")
 
         if not self.swivel_fixed:
             code.append(f"                       swivel_fixed={self.swivel_fixed},")
+
+        # There the three optional degrees of freedom:
+        #     gc.rotation_on_parent
+        #     gc.child_rotation
+        #     gc.swivel
+
+
         if self.fixed_to_parent:
             code.append(
-                f"                       parent_rotation={self.rotation_on_parent},"
+                f"                       rotation_on_parent={self.rotation_on_parent},"
             )
             code.append(
                 f"                       fixed_to_parent={self.fixed_to_parent},"
             )
         else:
             code.append(
-                f"                       fixed_to_parent=solved({self.fixed_to_parent}),"
+                f"                       rotation_on_parent=solved({self.rotation_on_parent}),"
             )
+
         if self.child_fixed:
             code.append(f"                       child_fixed={self.child_fixed},")
             code.append(f"                       child_rotation={self.child_rotation},")
@@ -4646,6 +4657,7 @@ class GeometricContact(Manager):
             code.append(
                 f"                       child_rotation=solved({self.child_rotation}),"
             )
+
 
         code = [
             *code[:-1],
@@ -6105,6 +6117,10 @@ class Scene:
         #         new_list.append(node)
         #
         # self._nodes = new_list
+
+    def assert_name_available(self, name):
+        """Raises an error is name is not available"""
+        assert self.name_available(name), f"Name {name} is already in use"
 
     def name_available(self, name):
         """Returns True if the name is still available"""
