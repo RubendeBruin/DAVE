@@ -1487,10 +1487,12 @@ class RigidBody(Frame):
             code += "\n                position=({},".format(self.position[0])
         else:
             code += "\n                position=(solved({}),".format(self.position[0])
+
         if self.fixed[1] or not self._scene._export_code_with_solved_function:
             code += "\n                          {},".format(self.position[1])
         else:
             code += "\n                          solved({}),".format(self.position[1])
+
         if self.fixed[2] or not self._scene._export_code_with_solved_function:
             code += "\n                          {}),".format(self.position[2])
         else:
@@ -1502,10 +1504,12 @@ class RigidBody(Frame):
             code += "\n                rotation=({},".format(self.rotation[0])
         else:
             code += "\n                rotation=(solved({}),".format(self.rotation[0])
+
         if self.fixed[4] or not self._scene._export_code_with_solved_function:
             code += "\n                          {},".format(self.rotation[1])
         else:
             code += "\n                          solved({}),".format(self.rotation[1])
+
         if self.fixed[5] or not self._scene._export_code_with_solved_function:
             code += "\n                          {}),".format(self.rotation[2])
         else:
@@ -4624,10 +4628,11 @@ class GeometricContact(Manager):
             if not self.inside and self.swivel == 90:
                 pass  # default for outside
             else:
-                if self.swivel_fixed:
+                if self.swivel_fixed or not self._scene._export_code_with_solved_function:
                     code.append(f"                       swivel={self.swivel},")
                 else:
                     code.append(f"                       swivel=solved({self.swivel}),")
+
 
         if not self.swivel_fixed:
             code.append(f"                       swivel_fixed={self.swivel_fixed},")
@@ -4646,17 +4651,27 @@ class GeometricContact(Manager):
                 f"                       fixed_to_parent={self.fixed_to_parent},"
             )
         else:
-            code.append(
-                f"                       rotation_on_parent=solved({self.rotation_on_parent}),"
-            )
+            if self._scene._export_code_with_solved_function:
+                code.append(
+                    f"                       rotation_on_parent=solved({self.rotation_on_parent}),"
+                )
+            else:
+                code.append(
+                    f"                       rotation_on_parent={self.rotation_on_parent},"
+                )
 
         if self.child_fixed:
             code.append(f"                       child_fixed={self.child_fixed},")
             code.append(f"                       child_rotation={self.child_rotation},")
         else:
-            code.append(
-                f"                       child_rotation=solved({self.child_rotation}),"
-            )
+            if self._scene._export_code_with_solved_function:
+                code.append(
+                    f"                       child_rotation=solved({self.child_rotation}),"
+                )
+            else:
+                code.append(
+                    f"                       child_rotation={self.child_rotation},"
+                )
 
 
         code = [
