@@ -173,7 +173,7 @@ Temporary actors
 -----------------
 Actors (anything derived from vtkActor) can be added to the viewport by calling
 add_temporary_actor. Temporary actors are automatically removed when the viewport
-is updated or can be removed manaully be calling remove_temporary_actors
+is updated or can be removed manually be calling remove_temporary_actors
 
 """
 
@@ -1602,8 +1602,10 @@ class Viewport:
     def deselect_all(self):
 
         for v in self.node_visuals:
-            v._is_selected = False
-            self.update_painting()
+            if v._is_selected:
+                v._is_selected = False
+                v.update_paint(self.settings.painter_settings)
+
 
     def node_from_vtk_actor(self, actor):
         """
@@ -1751,8 +1753,8 @@ class Viewport:
 
             if not recreate:
                 try:  # if we already have a visual, then no need to create another one
-                    N.visual
-                    if N.visual is not None:
+                    N._visualObject
+                    if N._visualObject is not None:
                         continue
                 except:
                     pass
@@ -2020,8 +2022,8 @@ class Viewport:
 
             va = VisualActor(actors, N)
             va.labelUpdate(N.name)
-            N.visual = va
-            N.visual.__just_created = True
+            N._visualObject = va
+            N._visualObject.__just_created = True
 
             self.node_visuals.append(va)
 

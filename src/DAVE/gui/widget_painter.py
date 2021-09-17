@@ -101,7 +101,7 @@ class WidgetPainters(guiDockWidget):
         pc = []
         pc.append('# exported python code for painters')
         pc.append('my_painers = dict()')
-        for key, value in self.gui.visual.settings.painter_settings.items():
+        for key, value in self.gui._visualObject.settings.painter_settings.items():
 
             pc.append('\n# --- paint for : {value} --- ')
 

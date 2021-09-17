@@ -6083,6 +6083,8 @@ class Scene:
             counter += 1
             if counter > len(self._nodes):
 
+                print('Error when exporting, could not resolve dependancies:')
+
                 for node in to_be_exported:
                     print(f"Node : {node.name}")
                     for d in node.depends_on():
@@ -8274,7 +8276,10 @@ class Scene:
 
         self._name_prefix = prefix
 
+        store_export_code_with_solved_function = other._export_code_with_solved_function
+        other._export_code_with_solved_function = False # quicker
         code = other.give_python_code()
+        other._export_code_with_solved_function = store_export_code_with_solved_function
 
         self.run_code(code)
 
@@ -8313,6 +8318,8 @@ class Scene:
         """
 
         c = Scene()
+        c.resources_paths.clear()
+        c.resources_paths.extend(self.resources_paths)
         c.import_scene(self, containerize=False)
         return c
 

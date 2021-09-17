@@ -18,10 +18,16 @@ import DAVE.scene as nodes
 import DAVE.settings as ds
 import numpy as np
 
-from DAVE.settings_visuals import COLOR_WATER_TANK_5MIN, COLOR_WATER_TANK_SLACK,COLOR_WATER_TANK_95PLUS,COLOR_WATER_TANK_FREEFLOODING,COLOR_SELECT
+from DAVE.settings_visuals import (
+    COLOR_WATER_TANK_5MIN,
+    COLOR_WATER_TANK_SLACK,
+    COLOR_WATER_TANK_95PLUS,
+    COLOR_WATER_TANK_FREEFLOODING,
+    COLOR_SELECT,
+)
+
 
 class WidgetBallastConfiguration(guiDockWidget):
-
     def guiCreate(self):
         """
         Add gui components to self.contents
@@ -44,15 +50,13 @@ class WidgetBallastConfiguration(guiDockWidget):
         self.ui.pbUnfreezeAll.clicked.connect(self.unfreeze_all)
         self.ui.pbToggleFreeze.clicked.connect(self.toggle_freeze)
 
-        self.ui.pbFillAll.clicked.connect(lambda : self.fill_all_to(100))
+        self.ui.pbFillAll.clicked.connect(lambda: self.fill_all_to(100))
         self.ui.pbEmptyAll.clicked.connect(lambda: self.fill_all_to(0))
 
         self.ui.pbGenerate.clicked.connect(self.report_python)
 
-        self._bs = None # active ballast system
+        self._bs = None  # active ballast system
         self._filling_table = True
-
-
 
     def guiProcessEvent(self, event):
         """
@@ -61,19 +65,18 @@ class WidgetBallastConfiguration(guiDockWidget):
         After creation of the widget this event is called with guiEventType.FULL_UPDATE
         """
 
-        if event in [guiEventType.FULL_UPDATE,
-                     guiEventType.MODEL_STATE_CHANGED,
-                     guiEventType.SELECTED_NODE_MODIFIED]:
+        if event in [
+            guiEventType.FULL_UPDATE,
+            guiEventType.MODEL_STATE_CHANGED,
+            guiEventType.SELECTED_NODE_MODIFIED,
+        ]:
             self.fill()
 
         if event in [guiEventType.SELECTION_CHANGED]:
             self.select_row_for_tank()
 
-
-
     def guiDefaultLocation(self):
         return QtCore.Qt.DockWidgetArea.RightDockWidgetArea
-
 
     def select_row_for_tank(self):
         if self.guiSelection:
@@ -83,28 +86,20 @@ class WidgetBallastConfiguration(guiDockWidget):
                     self.ui.tableWidget.selectRow(i)
                     return
 
-    def selection_changed(self,cur_row, cur_col, prev_row, prev_col):
+    def selection_changed(self, cur_row, cur_col, prev_row, prev_col):
         item = self.ui.tableWidget.verticalHeaderItem(cur_row)
         if item is not None:
             name = item.text()
             self.update_outlines(name=name)
 
-    def update_outlines(self, name = ""):
+    def update_outlines(self, name=""):
         if self._bs is None:
             return
 
-        for tank in self._bs.tanks:
-
-            if tank.name == name:
-                actor = tank.visual.actors['main']  # the mesh
-                actor.lw(3)
-                actor.c(COLOR_SELECT)
-            else:
-                tank.visual.update_paint(self.gui.visual.settings.painter_settings)
-                # self.gui.visual.update_painting(tank.visual)
+        # self.gui.visual.deselect_all()
+        self.guiSelectNode(name)  # select the node
 
         self.gui.visual.refresh_embeded_view()
-
 
     def freeze_all(self):
         if self._bs is None:
@@ -133,8 +128,8 @@ class WidgetBallastConfiguration(guiDockWidget):
         self._bs.frozen = new_frozen
         self.fill()
 
-    def fill_all_to(self,pct):
-        code = ''
+    def fill_all_to(self, pct):
+        code = ""
         for t in self._bs.tanks:
             code += '\ns["{}"].fill_pct = {}'.format(t.name, pct)
         self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
@@ -153,22 +148,22 @@ class WidgetBallastConfiguration(guiDockWidget):
         tw = self.ui.tableWidget
 
         partial = QColor.fromRgb(*COLOR_WATER_TANK_SLACK)
-        full    = QColor.fromRgb(*COLOR_WATER_TANK_95PLUS)
-        empty   = QColor.fromRgb(254,254,254)
+        full = QColor.fromRgb(*COLOR_WATER_TANK_95PLUS)
+        empty = QColor.fromRgb(254, 254, 254)
 
         self._filling_table = True
 
-        for i,t in enumerate(self._bs.tanks):
+        for i, t in enumerate(self._bs.tanks):
             rows = i
 
             tw.setRowCount(rows + 1)
             tw.setVerticalHeaderItem(rows, QtWidgets.QTableWidgetItem(t.name))
 
-            item = QtWidgets.QTableWidgetItem('{:.1f}'.format(t.capacity))
+            item = QtWidgets.QTableWidgetItem("{:.1f}".format(t.capacity))
             item.setFlags(QtCore.Qt.ItemIsEditable)
             tw.setItem(rows, 0, item)
 
-            item = QtWidgets.QTableWidgetItem('{:.1f}'.format(t.fill_pct))
+            item = QtWidgets.QTableWidgetItem("{:.1f}".format(t.fill_pct))
             if t.fill_pct >= 99.9:
                 item.setBackground(QBrush(full))
                 item.setTextColor(empty)
@@ -182,16 +177,15 @@ class WidgetBallastConfiguration(guiDockWidget):
             item = QtWidgets.QCheckBox()
             item.setChecked(self._bs.is_frozen(t.name))
             item.stateChanged.connect(self.tankFrozenChanged)
-            tw.setCellWidget (rows, 2, item)
+            tw.setCellWidget(rows, 2, item)
 
             for j in range(3):
 
-                item = QtWidgets.QTableWidgetItem('{:.3f}'.format(t.cog_local[j]))
+                item = QtWidgets.QTableWidgetItem("{:.3f}".format(t.cog_local[j]))
                 item.setFlags(QtCore.Qt.ItemIsEditable)
-                tw.setItem(rows, 3+j, item)
+                tw.setItem(rows, 3 + j, item)
 
         self._filling_table = False
-
 
     def reorder_rows(self, a, b, c):
         vh = self.ui.tableWidget.verticalHeader()
@@ -206,11 +200,11 @@ class WidgetBallastConfiguration(guiDockWidget):
             code += "'{}',".format(name)
 
         code = code[:-1]
-        code += '])'
+        code += "])"
 
         self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
 
-    def tankfillchanged(self,a,b):
+    def tankfillchanged(self, a, b):
 
         if self._filling_table:
             return
@@ -218,20 +212,22 @@ class WidgetBallastConfiguration(guiDockWidget):
         tank_name = self.ui.tableWidget.verticalHeaderItem(a).text()
 
         if b == 1:
-            fill = self.ui.tableWidget.item(a,b).text()
+            fill = self.ui.tableWidget.item(a, b).text()
 
-            if fill == 'f':
+            if fill == "f":
                 fill = 100
-            if fill == 'e':
+            if fill == "e":
                 fill = 0
 
             code = 's["{}"].fill_pct = {}'.format(tank_name, fill)
-            self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)  # but there is no selected node?
+            self.guiRunCodeCallback(
+                code, guiEventType.SELECTED_NODE_MODIFIED
+            )  # but there is no selected node?
 
         else:
-            raise Exception('This cell is not supposed to be editable')
+            raise Exception("This cell is not supposed to be editable")
 
-        self.ui.tableWidget.setCurrentCell(a,b)
+        self.ui.tableWidget.setCurrentCell(a, b)
         self.ui.tableWidget.setFocus()
 
     def tankFrozenChanged(self):
@@ -247,19 +243,20 @@ class WidgetBallastConfiguration(guiDockWidget):
 
             if self._bs.is_frozen(tank_name) != frozen:
                 if frozen:
-                    code = 's["{}"].frozen.append("{}")'.format(self._bs.name, tank_name)
+                    code = 's["{}"].frozen.append("{}")'.format(
+                        self._bs.name, tank_name
+                    )
                 else:
-                    code = 's["{}"].frozen.remove("{}")'.format(self._bs.name, tank_name)
+                    code = 's["{}"].frozen.remove("{}")'.format(
+                        self._bs.name, tank_name
+                    )
                 self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
                 return
 
     def report_python(self):
         """Runs the current tank fillings in python"""
 
-        code = ''
+        code = ""
         for t in self._bs.tanks:
             code += '\ns["{}"].fill_pct = {}'.format(t.name, t.fill_pct)
         self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
-
-
-

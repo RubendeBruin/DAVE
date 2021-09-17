@@ -1694,7 +1694,7 @@ class Gui:
             self.visual_update_selection()
 
     def guiSelectNode(self, node_name):
-        # print('selecting a node with name {}'.format(node_name))
+        # Select a node with name, pass None to deselect all
 
         old_selection = self.selected_nodes.copy()
 
@@ -1703,9 +1703,10 @@ class Gui:
         ):
             self.selected_nodes.clear()
 
-        node = self.scene._node_from_node_or_str(node_name)
-        if node not in self.selected_nodes:
-            self.selected_nodes.append(node)
+        if node_name is not None:
+            node = self.scene._node_from_node_or_str(node_name)
+            if node not in self.selected_nodes:
+                self.selected_nodes.append(node)
 
         if self.selected_nodes:
             if self._active_workspace == "CONSTRUCT":
