@@ -57,14 +57,14 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="label_12">
         <property name="text">
          <string>Minimum heel [deg]</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="3" column="1">
        <widget class="QSpinBox" name="stability_heel_start">
         <property name="minimum">
          <number>-180</number>
@@ -74,7 +74,7 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
+      <item row="5" column="0">
        <widget class="QLabel" name="label_14">
         <property name="text">
          <string>Maximum heel [deg]</string>
@@ -84,7 +84,7 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
+      <item row="5" column="1">
        <widget class="QSpinBox" name="stability_heel_max">
         <property name="maximum">
          <number>180</number>
@@ -94,14 +94,14 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
+      <item row="6" column="0">
        <widget class="QLabel" name="label_18">
         <property name="text">
          <string>Steps [-]</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
+      <item row="6" column="1">
        <widget class="QSpinBox" name="stability_n_steps">
         <property name="maximum">
          <number>1000</number>
@@ -111,42 +111,42 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
+      <item row="7" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
          <string>Freedom</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="7" column="1">
        <widget class="QCheckBox" name="stability_surge">
         <property name="text">
          <string>Allow Surge</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
+      <item row="8" column="1">
        <widget class="QCheckBox" name="stability_sway">
         <property name="text">
          <string>Allow Sway</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
+      <item row="9" column="1">
        <widget class="QLabel" name="label">
         <property name="text">
          <string>[X] Allow Heave</string>
         </property>
        </widget>
       </item>
-      <item row="9" column="1">
+      <item row="10" column="1">
        <widget class="QLabel" name="label_2">
         <property name="text">
          <string>[X] Impose Roll</string>
         </property>
        </widget>
       </item>
-      <item row="10" column="1">
+      <item row="11" column="1">
        <widget class="QCheckBox" name="stability_trim">
         <property name="text">
          <string>Allow Trim</string>
@@ -156,27 +156,44 @@
         </property>
        </widget>
       </item>
-      <item row="11" column="1">
+      <item row="12" column="1">
        <widget class="QCheckBox" name="stability_yaw">
         <property name="text">
          <string>Allow Yaw</string>
         </property>
        </widget>
       </item>
-      <item row="12" column="0">
+      <item row="13" column="0">
        <widget class="QLabel" name="label_13">
         <property name="text">
          <string>Tear-down</string>
         </property>
        </widget>
       </item>
-      <item row="12" column="1">
+      <item row="13" column="1">
        <widget class="QCheckBox" name="stability_do_teardown">
         <property name="text">
          <string>Delete temporary nodes</string>
         </property>
         <property name="checked">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Wind-velicity [m/s]</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QDoubleSpinBox" name="sbWindVelocity">
+        <property name="maximum">
+         <double>200.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>36.000000000000000</double>
         </property>
        </widget>
       </item>

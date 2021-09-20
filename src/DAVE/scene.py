@@ -6382,7 +6382,7 @@ class Scene:
     def savepoint_restore(self):
         if self._savepoint is not None:
             self.clear()
-            exec(self._savepoint, {}, {"s": self})
+            self.run_code(self._savepoint)
             self._savepoint = None
             return True
         else:
