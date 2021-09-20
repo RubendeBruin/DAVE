@@ -228,7 +228,7 @@ class Gui:
         self._animation_speed = 1.0
 
         # ================= Create globally available properties =======
-        self.selected_nodes = []
+        self.selected_nodes: [Node] = []
         """A list of selected nodes (if any)"""
 
         self.scene = scene
@@ -575,6 +575,7 @@ class Gui:
         flat = self.visual.toggle_2D()
         self.ui.pb3D.setChecked(flat)
         self.ui.action2D_mode.setChecked(flat)
+        self.visual.refresh_embeded_view()
 
     def change_paintset(self):
         """Updates the paintset of the viewport to the value of cbPainterSelect"""
