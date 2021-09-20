@@ -231,8 +231,8 @@ def carene_table(scene, buoyancy_node, draft_min, draft_max,
 
 
 
-def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum_heel= 0, maximum_heel=90, steps=180,
-                               teardown=True,
+def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_kN=None, minimum_heel= 0, maximum_heel=90, steps=180,
+                               teardown=True, wind_velocity = 0,
                                allow_surge=False, allow_sway=False, allow_yaw=False, allow_trim=True,
                                noplot = False, noshow = False,
                                fig = None):
@@ -258,6 +258,7 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
         maximum_heel    maximum heel, end of the curve (90)
         steps:          number of steps (use un-even number to capture 0)
         teardown:       remove the helper elements after the calculation
+        wind_velocity:  wind-velocity in [m/s]
         [disabled] enforce_even_keel (True) Run the analysis relative to even-keel position; otherwise run relative to equilibrium position
         allow_surge:    (False)
         allow_sway:     (False)
@@ -279,7 +280,7 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
 
     # --------- verify input -----------
 
-    s = scene # lazy
+    s = scene # alias
     doflog = []
 
     if minimum_heel > maximum_heel:
@@ -290,8 +291,24 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
     if vessel.parent is not None:
         raise ValueError("Vessel should not have a parent. Got {} as vessel which has parent {}.".format(vessel.name, vessel.parent.name))
 
+    # ---- record actual wind settings ----
+
+    do_wind = (wind_velocity > 0)
+
+    old_wind_velocity = s.wind_velocity
+    old_wind_direction = s.wind_direction
+
+    # set wind to what we need
+    s.wind_velocity = 0
+
     # make sure that we are in equilibrium before we start
     s.solve_statics()
+
+    # the vessel will heel towards SB, set the wind-direction accordingly
+    if do_wind:
+        y = vessel.uy
+        s.wind_direction = np.degrees(np.arctan2(y[1], y[0])) - 180
+
 
     initial_heel = vessel.heel
     initial_trim = vessel.trim
@@ -363,6 +380,7 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
 
     heel = np.linspace(minimum_heel,maximum_heel,num=steps)
     moment = list()
+    moment_wind = list()
     trim = list()
 
     for x in heel:
@@ -370,20 +388,48 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
         heel_node.rx = x
         s.solve_statics(silent=True)
 
-        # for movie replay
+        moment.append(-heel_node.applied_force[3])
+        trim.append(trim_motion.ry)
+
+        # activate wind
+        if do_wind:
+            s.wind_velocity = wind_velocity
+            s.solve_statics(silent=True)
+            moment_wind.append(-heel_node.applied_force[3])
+            s.wind_velocity = 0
+
+        # for movie replay (temporary add of dof to heel)
         heel_node.fixed = (True,True,True,False,True,True)
         s._vfc.state_update()
         dofs = s._vfc.get_dofs()
         doflog.append(dofs)
         heel_node.set_fixed()
 
-        moment.append(-heel_node.applied_force[3])
-        trim.append(trim_motion.ry)
+    # --------- collect return values --------
+    r = dict()
+    r['heel'] = heel
+    r['moment'] = moment
+
+    if allow_trim:
+        r['trim'] = trim
+
+
+
+    if do_wind:
+        wind_moment = np.array(moment_wind) - np.array(moment)
+        r['wind_moment'] = wind_moment.tolist()
 
     if no_displacement:
         GM = np.nan
+
     else:
         GZ = np.array(moment, dtype=float) / displacement_kN
+        r['GZ'] = GZ
+
+        if do_wind:
+            wind_heeling_arm = -wind_moment / displacement_kN
+            r['wind_heeling_arm'] = wind_heeling_arm.tolist()
+
         # calculate GM, but only if zero is part of the heel curve and at least two points
         if (np.max(heel)>=0 and np.min(heel)<=0 and len(heel)>1):
             GMs = np.diff(GZ) / np.diff(np.deg2rad(heel))
@@ -392,6 +438,8 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
 
         else:
             GM = np.nan
+
+        r['GM'] = GM
 
         # restore dofs
         s._vfc.set_dofs(D0)
@@ -429,12 +477,26 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
 
         what = 'moment'
         if no_displacement:
-            ax_gz.plot(heel + initial_heel, moment, color='black', marker='+')
-            ax_gz.set_ylabel('Restoring moment [kN*m]')
+            ax_gz.plot(heel + initial_heel, moment, color='black', marker='+', label = "Restoring")
+
+            if do_wind:
+                ax_gz.plot(heel + initial_heel, -wind_moment, color='gray', marker='.', label="Wind")
+                ax_gz.set_ylabel('Moment [kN.m]')
+                ax_gz.legend()
+
+            else:
+                ax_gz.set_ylabel('Restoring moment [kN*m]')
         else:
-            ax_gz.plot(heel + initial_heel, GZ, color='black', marker='+')
+            ax_gz.plot(heel + initial_heel, GZ, color='black', marker='+', label = "Restoring")
+
+            if do_wind:
+                ax_gz.plot(heel + initial_heel, wind_heeling_arm, color='gray', marker='.', label = "Wind")
+                ax_gz.legend()
+                ax_gz.set_ylabel('Lever arm [m]')
+            else:
+                ax_gz.set_ylabel('GZ [m]')
             what = 'arm'
-            ax_gz.set_ylabel('GZ [m]')
+
 
             # plot the GM line
             yy = ax_gz.get_ylim()
@@ -450,6 +512,7 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
             ax_gz.text(xmax,np.deg2rad(xmax)*GM,'GM = {:.2f}'.format(GM),horizontalalignment='left',bbox=box_props)
 
         ax_gz.set_title('Restoring {} curve for {};\n Displacement = {} [kN]'.format(what, vessel.name, round(100*displacement_kN)/100))
+
 
         ax_gz.grid('on')
         # if lbl:
@@ -472,20 +535,11 @@ def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum
         heel_node.fixed = (True, True, True, False, True, True)
         s._gui_stability_dofs = doflog
 
+    s.wind_direction = old_wind_direction
+    s.wind_velocity = old_wind_velocity
+
     s.verbose = _verbose
 
-    # --------- collect return values --------
-    r = dict()
-    r['heel'] = heel
-
-    if allow_trim:
-        r['trim'] = trim
-
-    if not no_displacement:
-        r['GM'] = GM
-        r['GZ'] = moment
-    else:
-        r['moment'] = moment
 
     return r
 
