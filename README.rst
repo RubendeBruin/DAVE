@@ -84,4 +84,4 @@ DAVE hates re-inventing the wheel. Therefore DAVE uses the following already ava
 Note
 ====
 
-This project relies on EquilibriumCore for geometry and force calculations. Contact the author for a copy of EquilibriumCore (pyo3d.pyd).
+This project relies on EquilibriumCore for geometry and force calculations. This compiled module is downloaded when starting the gui for the first time.
