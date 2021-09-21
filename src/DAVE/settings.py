@@ -30,6 +30,11 @@ from os.path import dirname
 from os import mkdir
 from pathlib import Path
 
+# ======== Environment =========
+
+BEAUFORT_SCALE = (0, 1.5, 3.4, 5.4, 7.9, 10.7, 13.8, 17.1, 20.7, 24.4, 28.4, 32.6, 999)
+# BEAUFORT_SCALE[x] is the upper bound wind-speed in beaufort x
+# REF: https://rules.dnv.com/docs/pdf/DNV/ST/2016-07/DNVGL-ST-0111.pdf
 
 # ======== Frequency domain ======
 

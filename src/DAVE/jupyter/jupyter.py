@@ -184,4 +184,18 @@ def show(
 
     # vp.add_wind_and_current_actors() <-- this crashes - the axis triad of vedo is also not supported
 
-    return vp.show(zoom_fit=zoom_fit)
+    plotter =  vp.show(zoom_fit=zoom_fit)
+
+    if plotter is None:
+        warnings.warn("VTK/Vedo issue: plotter is None")
+        return plotter
+
+    # manually add all 2d actors... [why is this needed?]
+
+    for visual in vp.node_visuals:
+
+        label_actor =  visual.label_actor
+        if label_actor.GetVisibility():
+            plotter +=label_actor
+
+    return plotter
