@@ -2414,6 +2414,14 @@ class Circle(NodeWithCoreParent):
         """
         return self.parent.global_position
 
+    @property
+    def position(self):
+        """Returns the local position of the center of the sheave.
+
+        Note: this is the same as the local position of the parent point.
+        """
+        return self.parent.position
+
 
 class HydSpring(NodeWithCoreParent):
     """A HydSpring models a linearized hydrostatic spring.
