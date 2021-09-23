@@ -175,7 +175,7 @@ class Gui:
         """
 
         self.plugins_workspace = plugins_workspace
-        self.plugins_conext = plugins_context
+        self.plugins_context = plugins_context
         self.plugins_editor = plugins_editor
 
         if app is None:
@@ -233,6 +233,13 @@ class Gui:
 
         self.scene = scene
         """Reference to a scene"""
+
+        # ======================== Modify dock layout options ============
+
+        self.MainWindow.setCorner(Qt.TopRightCorner, Qt.RightDockWidgetArea)
+        self.MainWindow.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
+        self.MainWindow.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
+        self.MainWindow.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
 
         # ======================== Create 3D viewport ====================
         self.visual = Viewport(scene)
@@ -1496,6 +1503,9 @@ class Gui:
         ui.pbVisual.clicked.connect(self.new_visual)
 
         menu.addAction(wa)
+
+        for plugin in self.plugins_context:
+            plugin(menu, node_name, self)
 
         menu.exec_(globLoc)
 

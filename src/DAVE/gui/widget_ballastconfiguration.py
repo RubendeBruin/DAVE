@@ -23,7 +23,7 @@ from DAVE.settings_visuals import (
     COLOR_WATER_TANK_SLACK,
     COLOR_WATER_TANK_95PLUS,
     COLOR_WATER_TANK_FREEFLOODING,
-    COLOR_SELECT,
+    COLOR_SELECT, COLOR_WATER_TANK_FULL
 )
 
 
@@ -83,7 +83,9 @@ class WidgetBallastConfiguration(guiDockWidget):
             name = self.guiSelection[0].name
             for i in range(self.ui.tableWidget.rowCount()):
                 if self.ui.tableWidget.verticalHeaderItem(i).text() == name:
-                    self.ui.tableWidget.selectRow(i)
+                    if not self.ui.tableWidget.hasFocus():
+                        self.ui.tableWidget.setCurrentCell(i, 1)
+                        self.ui.tableWidget.setFocus()
                     return
 
     def selection_changed(self, cur_row, cur_col, prev_row, prev_col):
@@ -147,9 +149,12 @@ class WidgetBallastConfiguration(guiDockWidget):
 
         tw = self.ui.tableWidget
 
+        min5 = QColor.fromRgb(*COLOR_WATER_TANK_5MIN)
+        above95 = QColor.fromRgb(*COLOR_WATER_TANK_95PLUS)
         partial = QColor.fromRgb(*COLOR_WATER_TANK_SLACK)
-        full = QColor.fromRgb(*COLOR_WATER_TANK_95PLUS)
+        full = QColor.fromRgb(*COLOR_WATER_TANK_FULL)
         empty = QColor.fromRgb(254, 254, 254)
+        black = QColor.fromRgb(0,0,0)
 
         self._filling_table = True
 
@@ -164,14 +169,23 @@ class WidgetBallastConfiguration(guiDockWidget):
             tw.setItem(rows, 0, item)
 
             item = QtWidgets.QTableWidgetItem("{:.1f}".format(t.fill_pct))
-            if t.fill_pct >= 99.9:
+
+            if t.fill_pct < 0.1:
+                item.setBackground(QBrush(empty))
+                item.setTextColor(black)
+            elif t.fill_pct < 5:
+                item.setBackground(QBrush(min5))
+                item.setTextColor(black)
+            elif t.fill_pct < 95:
+                item.setBackground(QBrush(partial))
+                item.setTextColor(black)
+            elif t.fill_pct < 99.9:
+                item.setBackground(QBrush(above95))
+                item.setTextColor(empty)
+            else:
                 item.setBackground(QBrush(full))
                 item.setTextColor(empty)
 
-            elif t.fill_pct > 0.1:
-                item.setBackground(QBrush(partial))
-            else:
-                item.setBackground(QBrush(empty))
             tw.setItem(rows, 1, item)
 
             item = QtWidgets.QCheckBox()
