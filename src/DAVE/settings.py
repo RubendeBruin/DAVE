@@ -25,6 +25,15 @@ from copy import deepcopy, copy
 
 """
 
+
+DAVE_ADDITIONAL_RUNTIME_MODULES = dict()
+"""Variables in this dict will be made available to the interpreter when executing code. Useful when introducing new  
+Node types via plugins.
+
+
+
+"""
+
 from os.path import expanduser
 from os.path import dirname
 from os import mkdir

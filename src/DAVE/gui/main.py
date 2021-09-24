@@ -989,7 +989,12 @@ class Gui:
         with capture_output() as c:
 
             try:
-                exec(code)
+
+                glob_vars = globals()
+                glob_vars.update(DAVE.settings.DAVE_ADDITIONAL_RUNTIME_MODULES)
+                glob_vars['s'] = self.scene
+
+                exec(code, glob_vars)
 
                 if c.stdout:
                     self.ui.teFeedback.append(c.stdout)

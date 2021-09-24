@@ -4088,7 +4088,6 @@ class Manager(Node, ABC):
         1. A manager shall manage the names of all nodes it creates
     """
 
-
     @abstractmethod
     def delete(self):
         """Carefully remove the manager, reinstate situation as before.
@@ -4133,7 +4132,6 @@ class Manager(Node, ABC):
         with ClaimManagement(self._scene, self):
             for node in self.managed_nodes():
                 node.name = node.name.replace(old_name, new_name)
-
 
 
 class GeometricContact(Manager):
@@ -4195,7 +4193,6 @@ class GeometricContact(Manager):
             )
 
         super().__init__(scene)
-
 
         name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
 
@@ -4636,11 +4633,13 @@ class GeometricContact(Manager):
             if not self.inside and self.swivel == 90:
                 pass  # default for outside
             else:
-                if self.swivel_fixed or not self._scene._export_code_with_solved_function:
+                if (
+                    self.swivel_fixed
+                    or not self._scene._export_code_with_solved_function
+                ):
                     code.append(f"                       swivel={self.swivel},")
                 else:
                     code.append(f"                       swivel=solved({self.swivel}),")
-
 
         if not self.swivel_fixed:
             code.append(f"                       swivel_fixed={self.swivel_fixed},")
@@ -4649,7 +4648,6 @@ class GeometricContact(Manager):
         #     gc.rotation_on_parent
         #     gc.child_rotation
         #     gc.swivel
-
 
         if self.fixed_to_parent:
             code.append(
@@ -4680,7 +4678,6 @@ class GeometricContact(Manager):
                 code.append(
                     f"                       child_rotation={self.child_rotation},"
                 )
-
 
         code = [
             *code[:-1],
@@ -4760,7 +4757,6 @@ class Sling(Manager):
         """
 
         super().__init__(scene)
-
 
         name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
 
@@ -5479,10 +5475,8 @@ class Shackle(Manager, RigidBody):
     @name.setter
     def name(self, value):
         old_name = self.name
-        RigidBody.name.fset(self,value)
+        RigidBody.name.fset(self, value)
         self._rename_all_manged_nodes(old_name, value)
-
-
 
     def give_python_code(self):
         code = f"# Exporting {self.name}"
@@ -5496,9 +5490,9 @@ class Shackle(Manager, RigidBody):
         code += "\ns['{}'].position = ({},{},{})".format(self.name, *self.position)
         code += "\ns['{}'].rotation = ({},{},{})".format(self.name, *self.rotation)
         if not np.all(self.fixed):
-            code += "\ns['{}'].fixed = ({},{},{},{},{},{})".format(self.name, *self.fixed)
-
-
+            code += "\ns['{}'].fixed = ({},{},{},{},{},{})".format(
+                self.name, *self.fixed
+            )
 
         return code
 
@@ -6091,7 +6085,7 @@ class Scene:
             counter += 1
             if counter > len(self._nodes):
 
-                print('Error when exporting, could not resolve dependancies:')
+                print("Error when exporting, could not resolve dependancies:")
 
                 for node in to_be_exported:
                     print(f"Node : {node.name}")
@@ -8213,6 +8207,8 @@ class Scene:
         locals = DAVE.__dict__
         locals["s"] = self
 
+        locals.update(ds.DAVE_ADDITIONAL_RUNTIME_MODULES)
+
         try:
             exec(code, {}, locals)
         except Exception as M:
@@ -8285,7 +8281,7 @@ class Scene:
         self._name_prefix = prefix
 
         store_export_code_with_solved_function = other._export_code_with_solved_function
-        other._export_code_with_solved_function = False # quicker
+        other._export_code_with_solved_function = False  # quicker
         code = other.give_python_code()
         other._export_code_with_solved_function = store_export_code_with_solved_function
 
