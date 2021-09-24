@@ -567,3 +567,18 @@ foot_painters['RigidBody']['footprint'] = copy(footprint_paint)
 
 PAINTERS["Footprints"] = foot_painters
 
+# No-mesh settings
+#
+# These are just the regular-paints but then with all line-widths set to 0
+
+construction_nomesh = deepcopy(PAINTERS["Construction"])
+for value1 in construction_nomesh.values():
+    for value2 in value1.values():
+        value2.lineWidth = 0
+PAINTERS['Construction, no mesh'] = construction_nomesh
+
+xray_nomesh = deepcopy(PAINTERS["X-ray"])
+for value1 in xray_nomesh.values():
+    for value2 in value1.values():
+        value2.lineWidth = 0
+PAINTERS['X-ray, no mesh'] = xray_nomesh
