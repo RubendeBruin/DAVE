@@ -552,21 +552,6 @@ PAINTERS["X-ray"] = deepcopy(PAINTERS["Construction"])
 PAINTERS["X-ray"]["Visual"]["main"].surfaceShow = False
 PAINTERS["X-ray"]["Visual"]["main"].xray = True
 
-
-# Bendingmoment / footprints
-foot_painters = deepcopy(PAINTERS["X-ray"])
-
-footprint_paint = copy(surf)
-footprint_paint.lineWidth = 3
-footprint_paint.lineColor = _PURPLE
-footprint_paint.surfaceColor = _PURPLE
-
-foot_painters['Point']['footprint'] = copy(footprint_paint)
-foot_painters['Frame']['footprint'] = copy(footprint_paint)
-foot_painters['RigidBody']['footprint'] = copy(footprint_paint)
-
-PAINTERS["Footprints"] = foot_painters
-
 # No-mesh settings
 #
 # These are just the regular-paints but then with all line-widths set to 0
@@ -582,3 +567,17 @@ for value1 in xray_nomesh.values():
     for value2 in value1.values():
         value2.lineWidth = 0
 PAINTERS['X-ray, no mesh'] = xray_nomesh
+
+# Bendingmoment / footprints
+foot_painters = deepcopy(PAINTERS["X-ray, no mesh"])
+
+footprint_paint = copy(surf)
+footprint_paint.lineWidth = 3
+footprint_paint.lineColor = _PURPLE
+footprint_paint.surfaceColor = _PURPLE
+
+foot_painters['Point']['footprint'] = copy(footprint_paint)
+foot_painters['Frame']['footprint'] = copy(footprint_paint)
+foot_painters['RigidBody']['footprint'] = copy(footprint_paint)
+
+PAINTERS["Footprints"] = foot_painters
