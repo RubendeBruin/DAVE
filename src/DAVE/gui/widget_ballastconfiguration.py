@@ -69,6 +69,7 @@ class WidgetBallastConfiguration(guiDockWidget):
             guiEventType.FULL_UPDATE,
             guiEventType.MODEL_STATE_CHANGED,
             guiEventType.SELECTED_NODE_MODIFIED,
+            guiEventType.SELECTION_CHANGED,
         ]:
             self.fill()
 
@@ -149,6 +150,10 @@ class WidgetBallastConfiguration(guiDockWidget):
 
         tw = self.ui.tableWidget
 
+        # remember current cell
+        current_row = self.ui.tableWidget.currentRow()
+        current_col = self.ui.tableWidget.currentColumn()
+
         min5 = QColor.fromRgb(*COLOR_WATER_TANK_5MIN)
         above95 = QColor.fromRgb(*COLOR_WATER_TANK_95PLUS)
         partial = QColor.fromRgb(*COLOR_WATER_TANK_SLACK)
@@ -157,6 +162,8 @@ class WidgetBallastConfiguration(guiDockWidget):
         black = QColor.fromRgb(0,0,0)
 
         self._filling_table = True
+
+        self.ui.tableWidget.blockSignals(True)
 
         for i, t in enumerate(self._bs.tanks):
             rows = i
@@ -199,7 +206,13 @@ class WidgetBallastConfiguration(guiDockWidget):
                 item.setFlags(QtCore.Qt.ItemIsEditable)
                 tw.setItem(rows, 3 + j, item)
 
+
+        self.ui.tableWidget.setCurrentCell(current_row, current_col)
+
         self._filling_table = False
+        self.ui.tableWidget.blockSignals(False)
+
+
 
     def reorder_rows(self, a, b, c):
         vh = self.ui.tableWidget.verticalHeader()

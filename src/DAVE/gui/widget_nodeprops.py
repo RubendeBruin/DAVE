@@ -33,7 +33,7 @@ from PySide2.QtWidgets import QListWidgetItem
 from PySide2 import QtWidgets
 
 
-def code_if_changed(node, value, ref, dec=3):
+def code_if_changed_d(node, value, ref, dec=3):
     """Returns code to change value of property "ref" to "value" if difference between current and target value
     exceeds tolerance (dec)
 
@@ -51,6 +51,25 @@ def code_if_changed(node, value, ref, dec=3):
 
     if abs(value - current) > 10 ** (-dec):
         return f"\ns['{node.name}'].{ref} = {value}"
+    else:
+        return ""
+
+def code_if_changed_path(node, value, ref):
+    """Returns code to change value of property "ref" to "value" - applicable for paths (r'')
+
+    Args:
+        node: node
+        value: value to check and set
+        ref: name of the property
+
+    Returns:
+        str
+
+    """
+    current = getattr(node, ref)
+
+    if value != current:
+        return f"\ns['{node.name}'].{ref} = r'{value}'"
     else:
         return ""
 
@@ -1092,8 +1111,8 @@ class EditArea(NodeEditor):
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
-        code += code_if_changed(self.node, self.ui.Cd.value(), 'Cd')
-        code += code_if_changed(self.node, self.ui.Area.value(), 'A')
+        code += code_if_changed_d(self.node, self.ui.Cd.value(), 'Cd')
+        code += code_if_changed_d(self.node, self.ui.Area.value(), 'A')
 
         if self.ui.rbNoOrientation.isChecked():
             if self.node.areakind != AreaKind.SPHERE:
@@ -1912,18 +1931,18 @@ class EditSling(NodeEditor):
         new_LspliceB = self.ui.sbLSpliceB.value()
         new_k = self.ui.sbK.value()
 
-        code += code_if_changed(node, new_length, 'length', 3) # Need to change the length before changing the length of
+        code += code_if_changed_d(node, new_length, 'length', 3) # Need to change the length before changing the length of
         # the components beause the length of the components is checked against the total length
 
-        code += code_if_changed(node, new_k, 'k_total', 1)
-        code += code_if_changed(node, new_EA, 'EA', 1)
-        code += code_if_changed(node, new_diameter, 'diameter', 1)
+        code += code_if_changed_d(node, new_k, 'k_total', 1)
+        code += code_if_changed_d(node, new_EA, 'EA', 1)
+        code += code_if_changed_d(node, new_diameter, 'diameter', 1)
 
-        code += code_if_changed(node, new_mass, 'mass', 1)
-        code += code_if_changed(node, new_LeyeA, 'LeyeA', 3)
-        code += code_if_changed(node, new_LeyeB, 'LeyeB', 3)
-        code += code_if_changed(node, new_LspliceA, 'LspliceA', 3)
-        code += code_if_changed(node, new_LspliceB, 'LspliceB', 3)
+        code += code_if_changed_d(node, new_mass, 'mass', 1)
+        code += code_if_changed_d(node, new_LeyeA, 'LeyeA', 3)
+        code += code_if_changed_d(node, new_LeyeB, 'LeyeB', 3)
+        code += code_if_changed_d(node, new_LspliceA, 'LspliceA', 3)
+        code += code_if_changed_d(node, new_LspliceB, 'LspliceB', 3)
 
 
         # get the poi names

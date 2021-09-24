@@ -5,6 +5,7 @@
 
   Ruben de Bruin - 2019
 """
+import glob
 import warnings
 from abc import ABC, abstractmethod
 from enum import Enum
@@ -5694,6 +5695,9 @@ class Scene:
 
     def _verify_name_available(self, name):
         """Throws an error if a node with name 'name' already exists"""
+        if name == '':
+            raise Exception('Name can not be empty')
+
         names = [n.name for n in self._nodes]
         names.extend(self._vfc.names)
         if name in names:
@@ -5953,18 +5957,33 @@ class Scene:
             )
         )
 
-    def get_resource_list(self, extension):
-        """Returns a list of all file-paths (strings) given extension in any of the resource-paths"""
+    def get_resource_list(self, extension, include_subdirs=False):
+        """Returns a list of all resources (strings) with given extension in any of the resource-paths"""
 
         r = []
 
         for dir in self.resources_paths:
             try:
-                files = listdir(dir)
-                for file in files:
-                    if file.lower().endswith(extension):
-                        if file not in r:
-                            r.append("res: " + file)
+                # files = listdir(dir)
+                # for file in files:
+                #     if file.lower().endswith(extension):
+                #         if file not in r:
+                #             r.append("res: " + file)
+                if include_subdirs:
+                    mask = str(dir) + '/**/*' + extension
+                else:
+                    mask = str(dir) + '/*' + extension
+
+                for file in glob.glob(mask):
+
+                    file = file.replace(str(dir),'')
+                    if file.startswith('\\'):
+                        file = file[1:]
+                    file = file.replace('\\','/')
+
+                    if file not in r:
+                        r.append("res: " + file)
+
             except FileNotFoundError:
                 pass
 
