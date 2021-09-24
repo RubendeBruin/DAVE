@@ -1468,6 +1468,8 @@ class RigidBody(Frame):
     def mass(self, newmass):
 
         assert1f(newmass)
+        if newmass == 0:
+            self.inertia_radii = (0,0,0)
         self.inertia = newmass
         self._vfForce.force = (0, 0, -self._scene.g * newmass)
 
