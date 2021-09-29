@@ -1719,6 +1719,17 @@ class Cable(CoreConnectedNode):
         for p in self._pois:
             r.append(p.name)
         return r
+    
+    def set_length_for_tension(self, target_tension):
+        """Given the actual geometry and EA of the cable, change the length such that
+        the tension in the cable becomes the supplied tension
+        """
+
+        # F = stretch * EA / L
+        # so : L = L0*EA / (F + EA)
+
+        self.length = (self.length + self.stretch) * self.EA / (target_tension + self.EA)
+
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
