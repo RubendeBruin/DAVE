@@ -1894,6 +1894,24 @@ class Force(NodeWithCoreParent):
 class _Area(NodeWithCoreParent):
     """Abstract Based class for wind and current areas."""
 
+    def Ae_for_global_direction(self, global_direction):
+        """Returns the effective area in the provided global direction, see """
+
+        if self.parent.parent is not None:
+            dir = self.parent.parent.to_glob_direction(self.direction)
+        else:
+            dir = self.direction
+
+        if self.areakind == AreaKind.SPHERE:
+            return self.A
+        elif self.areakind == AreaKind.PLANE:
+            return self.A * abs(np.dot(global_direction, dir))
+        elif self.areakind == AreaKind.CYLINDER:
+            dot = np.dot(global_direction, dir)
+            return self.A * np.sqrt(1-dot**2)
+        else:
+            raise ValueError('Unknown area-kind')
+
     @property
     def force(self):
         """The x,y and z components of the force [kN,kN,kN] (global axis)"""
