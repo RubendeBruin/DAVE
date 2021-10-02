@@ -993,6 +993,7 @@ class Gui:
                 glob_vars = globals()
                 glob_vars.update(DAVE.settings.DAVE_ADDITIONAL_RUNTIME_MODULES)
                 glob_vars['s'] = self.scene
+                glob_vars['self'] = self
 
                 exec(code, glob_vars)
 
@@ -1688,10 +1689,14 @@ class Gui:
 
             if event == guiEventType.SELECTED_NODE_MODIFIED:
                 self.visual.add_new_node_actors_to_screen()
+                if self.visual.settings.paint_uc:
+                    self.visual.update_visibility()
                 self.visual.position_visuals()
                 return
 
             if event == guiEventType.MODEL_STATE_CHANGED:
+                if self.visual.settings.paint_uc:
+                    self.visual.update_visibility()
                 self.visual.position_visuals()
                 return
 

@@ -7,10 +7,12 @@
 
 """
 from copy import copy
+from pathlib import Path
 from typing import List
 
 import numpy as np
 from enum import Enum
+
 from scipy.spatial import ConvexHull
 
 import vtkmodules.qt
@@ -32,7 +34,8 @@ from DAVE.settings_visuals import (
     COLOR_SELECT,
     LIGHT_TEXTURE_SKYBOX,
     ALPHA_SEA,
-    COLOR_SELECT_255
+    COLOR_SELECT_255,
+    UC_CMAP
 )
 
 
@@ -611,7 +614,7 @@ class VisualActor:
 
         return self.label_actor
 
-    def update_paint(self, ps):
+    def update_paint(self, settings : ViewportSettings):
         """Updates the painting for this visual
 
             Painting depends on the node type of this visual.
@@ -621,6 +624,7 @@ class VisualActor:
             ps is the painter_settings dictionary
 
             """
+        ps = settings.painter_settings
 
         if ps is None:
             print("No painter settings, ugly world :(")
@@ -670,6 +674,23 @@ class VisualActor:
         # label
         self.label_actor.SetVisibility(node_painter_settings['main'].labelShow)
 
+        # check for UCs
+        uc_paint = None
+        if settings.paint_uc:
+
+            uc_node = self.node
+            if isinstance(self.node, DAVE.Visual):  # Visuals adopt the color of their parent
+                if self.node.parent is not None:
+                    uc_node = self.node.parent
+
+            uc = uc_node.UC
+            if uc is not None:
+                if uc < 1:
+                    uc_paint = UC_CMAP(round(100*uc))
+                else:
+                    uc_paint = (1,0,1) # ugly pink
+
+
         for key, actor in self.actors.items():
 
             if key in node_painter_settings:
@@ -694,13 +715,19 @@ class VisualActor:
                 props = actor.GetProperty()
                 props.SetInterpolationToPBR()
                 props.SetRepresentationToSurface()
-                props.SetColor(
-                    (
-                        actor_settings.surfaceColor[0] / 255,
-                        actor_settings.surfaceColor[1] / 255,
-                        actor_settings.surfaceColor[2] / 255,
+
+                if uc_paint is None:
+
+                    props.SetColor(
+                        (
+                            actor_settings.surfaceColor[0] / 255,
+                            actor_settings.surfaceColor[1] / 255,
+                            actor_settings.surfaceColor[2] / 255,
+                        )
                     )
-                )
+                else:
+                    props.SetColor(uc_paint[:3])
+
                 props.SetOpacity(actor_settings.alpha)
                 props.SetMetallic(actor_settings.metallic)
                 props.SetRoughness(actor_settings.roughness)
@@ -710,13 +737,16 @@ class VisualActor:
             actor.lineWidth(actor_settings.lineWidth)
 
             if actor_settings.lineWidth > 0:
-                actor.lineColor(
-                    (
-                        actor_settings.lineColor[0] / 255,
-                        actor_settings.lineColor[1] / 255,
-                        actor_settings.lineColor[2] / 255,
+                if uc_paint is None:
+                    actor.lineColor(
+                        (
+                            actor_settings.lineColor[0] / 255,
+                            actor_settings.lineColor[1] / 255,
+                            actor_settings.lineColor[2] / 255,
+                        )
                     )
-                )
+                else:
+                    actor.lineColor(uc_paint[:3])
             else:
                 actor.GetProperty().SetLineWidth(0)
 
@@ -931,7 +961,7 @@ class VisualActor:
             else:
                 self.paint_state = "free"
 
-            self.update_paint(viewport.settings.painter_settings)
+            self.update_paint(viewport.settings)
 
             return
 
@@ -1140,7 +1170,7 @@ class VisualActor:
 
                 vis.actor_type = ActorType.MESH_OR_CONNECTOR
                 self.actors["submerged_mesh"] = vis
-                self.update_paint(viewport.settings.painter_settings)
+                self.update_paint(viewport.settings)
 
                 if viewport.screen is not None:
                     viewport.screen.add(vis)
@@ -1311,7 +1341,7 @@ class VisualActor:
             self._visual_volume = self.node.volume
 
             # viewport.update_painting(self)
-            self.update_paint(viewport.settings.painter_settings)
+            self.update_paint(viewport.settings)
 
             return
 
@@ -1386,6 +1416,24 @@ class Viewport:
 
         self._wavefield = None
         """WaveField object"""
+
+        # colorbar image
+        png = vtk.vtkPNGReader()
+        png.SetFileName(str(Path(__file__).parent / 'resources' / 'uc_colorbar_smaller.png'))
+        png.Update()
+
+        imagemapper = vtk.vtkImageMapper()
+        imagemapper.SetInputData(png.GetOutput())
+        imagemapper.SetColorWindow(255)
+        imagemapper.SetColorLevel(127.5)
+
+        image = vtk.vtkActor2D()
+        image.SetMapper(imagemapper)
+        image.SetPosition(0, 0.95)
+
+        self.colorbar_actor = image
+        """The colorbar for UCs is a static image"""
+
 
     @staticmethod
     def show_as_qt_app(s, painters = None, sea=False, boundary_edges = False):
@@ -1478,7 +1526,10 @@ class Viewport:
             ):  # annotations
                 continue
 
-            if vp_actor.GetProperty().GetRepresentation() == 1:  # wireframe
+            try:
+                if vp_actor.GetProperty().GetRepresentation() == 1:  # wireframe
+                    continue
+            except:
                 continue
 
             if getattr(vp_actor, "no_outline", False):
@@ -1594,6 +1645,12 @@ class Viewport:
         self.current_actor = current_actor
         self.wind_actor = wind_actor
 
+
+        self.screen.add(self.colorbar_actor)
+
+
+
+
     def add_wind_and_current_actors(self):
         self.screen.addIcon(self.wind_actor, pos=2, size=0.06)
         self.screen.addIcon(self.current_actor, pos=4, size=0.06)
@@ -1604,7 +1661,7 @@ class Viewport:
         for v in self.node_visuals:
             if v._is_selected:
                 v._is_selected = False
-                v.update_paint(self.settings.painter_settings)
+                v.update_paint(self.settings)
 
 
     def node_from_vtk_actor(self, actor):
@@ -2546,7 +2603,7 @@ class Viewport:
                 if not v.node.visible:
                     continue # no need to update paint on invisible actor
 
-            v.update_paint(self.settings.painter_settings)
+            v.update_paint(self.settings)
 
             if v._is_selected:
                 v.labelUpdate(v.node.name)
@@ -2563,6 +2620,8 @@ class Viewport:
         else:
             for actor in self.global_visuals.values():
                 actor.off()
+
+        self.colorbar_actor.SetVisibility(self.settings.paint_uc)
 
     def _rotate_actors_due_to_camera_movement(self):
         """Gets called when the camera has moved"""

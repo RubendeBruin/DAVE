@@ -107,6 +107,9 @@ class Node(ABC):
         self._visible: bool = True
         """Determines if the visual for of this node (if any) should be visible"""
 
+        self.limits = dict()
+        """Defines the limits of the nodes properties for calculating a UC"""
+
     def __repr__(self):
         return f"{self.name} <{self.__class__.__name__}>"
 
@@ -198,6 +201,40 @@ class Node(ABC):
     def on_observed_node_changed(self, changed_node):
         """ """
         pass
+
+    @property
+    def UC(self):
+        """Returns the governing UC of the node, returns None is no limits are defined """
+
+        if not self.limits:
+            return None
+
+        gov_uc = 0
+
+        for propname, limits in self.limits.items():
+
+            value = getattr(self, propname, None)
+            if value is None:
+                raise ValueError(f'Error evaluating limits: No property named {propname} on node {self.name}')
+
+            assert isinstance(value, (int, float)), f"property named {propname} on node {self.name} is not a single number, it is: {str(value)}"
+
+            if isinstance(limits, (int, float)): # single number
+                uc = abs(value) / limits
+            else:
+                midpoint = (limits[1] + limits[0] ) / 2
+                delta = abs(limits[1] - limits[0] ) / 2
+                uc = abs(value - midpoint) / delta
+
+            gov_uc = max(gov_uc, uc)
+
+        return gov_uc
+
+
+
+
+
+
 
 
 class CoreConnectedNode(Node):
@@ -5552,7 +5589,7 @@ class Scene:
 
     """
 
-    def __init__(self, filename=None, copy_from=None, code=None):
+    def __init__(self, filename=None, copy_from=None, code=None, resource_paths = None):
         """Creates a new Scene
 
         Args:
@@ -5587,6 +5624,11 @@ class Scene:
         self.resources_paths = []
         """A list of paths where to look for resources such as .obj files. Priority is given to paths earlier in the list."""
         self.resources_paths.extend(vfc.RESOURCE_PATH)
+
+        if resource_paths is not None:
+            for rp in resource_paths:
+                if rp not in self.resources_paths:
+                    self.resources_paths.append(rp)
 
         self._savepoint = None
         """Python code to re-create the scene, see savepoint_make()"""
@@ -6439,6 +6481,19 @@ class Scene:
             return True
         else:
             return False
+
+    # ========= Limits ===========
+
+    @property
+    def UC(self):
+        """Returns the highest UC in the scene"""
+        gov = 0
+        for node in self._nodes:
+            uc = node.UC
+            if uc is not None:
+                gov = max(gov, uc)
+        return gov
+
 
     # ========= The most important functions ========
 
@@ -8128,37 +8183,38 @@ class Scene:
 
         self.sort_nodes_by_dependency()
 
-        code = "# auto generated pyhton code"
+        code = []
+        code.append("# auto generated pyhton code")
         try:
-            code += "\n# By {}".format(getpass.getuser())
+            code.append("\n# By {}".format(getpass.getuser()))
         except:
-            code += "\n# By an unknown"
+            code.append("\n# By an unknown")
 
-        code += "\n# Time: {} UTC".format(str(datetime.datetime.now()).split(".")[0])
+        code.append("\n# Time: {} UTC".format(str(datetime.datetime.now()).split(".")[0]))
 
         if self._export_code_with_solved_function:
 
-            code += "\n\n# To be able to distinguish the important number (eg: fixed positions) from"
-            code += "\n# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'."
-            code += "\n# For anything written as solved(number) that actual number does not influence the static solution"
-            code += "\ndef solved(number):\n    return number\n"
+            code.append("\n\n# To be able to distinguish the important number (eg: fixed positions) from")
+            code.append("\n# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.")
+            code.append("\n# For anything written as solved(number) that actual number does not influence the static solution")
+            code.append("\ndef solved(number):\n    return number\n")
 
-        code += "\n# Environment settings"
+        code.append("\n# Environment settings")
 
         for prop in ds.ENVIRONMENT_PROPERTIES:
-            code += f"\ns.{prop} = {getattr(self, prop)}"
+            code.append(f"\ns.{prop} = {getattr(self, prop)}")
 
-        code += "\n"
+        code.append("\n")
 
         for n in self._nodes:
 
             if n._manager is None:
-                code += "\n" + n.give_python_code()
+                code.append("\n" + n.give_python_code())
             else:
                 if n._manager.creates(n):
                     pass
                 else:
-                    code += "\n" + n.give_python_code()
+                    code.append("\n" + n.give_python_code())
 
                 # print(f'skipping {n.name} ')
 
@@ -8166,9 +8222,16 @@ class Scene:
 
         for n in self._nodes:
             if not n.visible:
-                code += f"\ns['{n.name}'].visible = False"  # only report is not the default value
+                code.append(f"\ns['{n.name}'].visible = False")  # only report is not the default value
 
-        return code
+        code.append("\n# Limits ")
+
+        for n in self._nodes:
+            for key, value in n.limits.items():
+                code.append(f"s['{n.name}'].limits['{key}'] = {value}")
+
+
+        return '\n'.join(code)
 
     def save_scene(self, filename):
         """Saves the scene to a file
@@ -8307,7 +8370,7 @@ class Scene:
             other = str(other)
 
         if isinstance(other, str):
-            other = Scene(other)
+            other = Scene(other, resource_paths=self.resources_paths)
 
         if not isinstance(other, Scene):
             raise TypeError("Other should be a Scene but is a " + str(type(other)))

@@ -7,7 +7,9 @@ Contains the pre-defined paints
 
 from dataclasses import dataclass
 from copy import copy, deepcopy
+from matplotlib.cm import get_cmap
 import DAVE.settings as ds
+
 
 
 PAINTERS = dict()  # this is the dictionary with sets of paint, it will be filled later
@@ -63,6 +65,17 @@ COLOR_BG2 = rgb(_WHITE)
 COLOR_BG1 = rgb(_BLUE_LIGHT)
 
 COLOR_WATER = rgb(_BLUE_DARK)
+
+# ------------ colormap for unity-checks
+
+UC_CMAP = get_cmap('turbo', lut=100)
+
+# import matplotlib.pyplot as plt
+# import math
+# for i in range(1000):
+#     plt.plot(i/1000,0,marker='o', color = UC_CMAP(i))
+#     plt.plot(1.1, 0, marker='o', color=(1,0,1,1))
+# plt.show()
 
 # ------------
 
@@ -126,6 +139,9 @@ class ViewportSettings:
     )
 
     painter_settings: dict = None
+
+    # Unity-checks
+    paint_uc : bool = True # use UC property for actor colors. If UC is none, then use the color defined in the painter_settings instead
 
 
 # ============ Painters ================

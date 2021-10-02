@@ -155,7 +155,7 @@ PROPS_CON6D = ['force_global','fgx','fgy','fgz','moment_global','mgx','mgy','mgz
 PROPS_BODY = ['cog', 'cogx', 'cogy', 'cogz', 'mass']
 PROPS_BUOY_MESH = ['cob', 'displacement', 'cob_local']
 PROPS_BEAM = ['tension', 'torsion', 'L', 'EIy', 'EIz', 'EA', 'GIp', 'n_segments']
-PROPS_CONTACTBALL = ['can_contact','contactpoint','force']
+PROPS_CONTACTBALL = ['can_contact','contactpoint','contact_force_magnitude','contact_force']
 PROPS__AREA = ['A','Cd', 'Ae','fx','fy','fz','force']
 
 # ======= Animate after solving =========
