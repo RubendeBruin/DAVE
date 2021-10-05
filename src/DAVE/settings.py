@@ -15,6 +15,8 @@ ALL PROGRAM WIDE VARIABLES ARE DEFINED IN UPPERCASE
 """
 from copy import deepcopy, copy
 
+import pandas as pd
+
 """
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -147,7 +149,9 @@ PROPS_FRAME = ['global_position','global_rotation','applied_force','connection_f
               'x','y','z','gz','gy','gz','rx','ry','rz','grx','gry','grz','ux','uy','uz',
               'connection_force_x','connection_force_y','connection_force_z','connection_moment_x','connection_moment_y','connection_moment_z',
               'tilt_x','heel','tilt_y','trim','heading','heading_compass']
-PROPS_POI = ['global_position','applied_force_and_moment_global','x','y','z','gx','gy','gz']
+PROPS_POI = ['global_position','applied_force_and_moment_global','x','y','z','gx','gy','gz',
+             'applied_force','fx','fy','fz',
+             'applied_moment','mx','my','mz',]
 PROPS_CABLE = ['tension','stretch','length']
 PROPS_FORCE = ['force','fx','fy','fz','moment','mx','my','mz']
 PROPS_CON2D = ['angle','moment','force','ax','ay','az']
@@ -157,6 +161,10 @@ PROPS_BUOY_MESH = ['cob', 'displacement', 'cob_local']
 PROPS_BEAM = ['tension', 'torsion', 'L', 'EIy', 'EIz', 'EA', 'GIp', 'n_segments']
 PROPS_CONTACTBALL = ['can_contact','contactpoint','contact_force_magnitude','contact_force']
 PROPS__AREA = ['A','Cd', 'Ae','fx','fy','fz','force']
+
+
+cdir = Path(dirname(__file__))
+DAVE_REPORT_PROPS = pd.read_csv(cdir / './resources/proplist.csv')
 
 # ======= Animate after solving =========
 

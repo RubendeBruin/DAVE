@@ -22,8 +22,9 @@ import DAVE.scene as ds
 
 from IPython.core.display import display, HTML
 
-cdir = Path(dirname(__file__))
-DAVE_REPORT_PROPS = pd.read_csv(cdir / '../resources/proplist.csv')
+# cdir = Path(dirname(__file__))
+# DAVE_REPORT_PROPS = pd.read_csv(cdir / '../resources/proplist.csv')
+from DAVE.settings import DAVE_REPORT_PROPS
 
 def report(node, properties=None, long = False) -> None:
     """Produces a HTML table with properties of the provided node.

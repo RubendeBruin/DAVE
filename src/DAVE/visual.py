@@ -685,10 +685,10 @@ class VisualActor:
 
             uc = uc_node.UC
             if uc is not None:
-                if uc < 1:
-                    uc_paint = UC_CMAP(round(100*uc))
+                if uc > 1:
+                    uc_paint = (1, 0, 1)  # ugly pink
                 else:
-                    uc_paint = (1,0,1) # ugly pink
+                    uc_paint = UC_CMAP(round(100*uc))
 
 
         for key, actor in self.actors.items():

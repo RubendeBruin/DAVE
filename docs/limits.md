@@ -79,8 +79,78 @@ UCmax = 60/100 = 0.6
 ## Example
 
 ```python
+from DAVE import *
+
 s = Scene()
 
-# TODO
+
+# code for LiftPoint
+s.new_point(name='LiftPoint',
+          position=(0.0,
+                    0.0,
+                    0.0))
+# code for Piano
+s.new_rigidbody(name='Piano',
+                mass=100.0,
+                cog=(0.0,
+                     0.0,
+                     -8.0),
+                fixed =False )
+# code for LP1
+s.new_point(name='LP1',
+          parent='Piano',
+          position=(-10.0,
+                    10.0,
+                    0.0))
+# code for LP2
+s.new_point(name='LP2',
+          parent='Piano',
+          position=(10.0,
+                    10.0,
+                    0.0))
+# code for LP3
+s.new_point(name='LP3',
+          parent='Piano',
+          position=(-10.0,
+                    -10.0,
+                    0.0))
+# code for LP4
+s.new_point(name='LP4',
+          parent='Piano',
+          position=(10.0,
+                    -10.0,
+                    0.0))
+# code for Visual
+s.new_visual(name='Visual',
+            parent='Piano',
+            path=r'wirecube.obj',
+            offset=(0.0, 0.0, -8.0),
+            rotation=(0, 0, 0),
+            scale=(10.0, 10.0, 8.0) )
+# code for cable1
+s.new_cable(name='cable1',
+            endA='LiftPoint',
+            endB='LP2',
+            length=20.616,
+            EA=1000.0)
+# code for cable2
+s.new_cable(name='cable2',
+            endA='LP1',
+            endB='LiftPoint',
+            length=20.616,
+            EA=1000.0)
+# code for sheaved_cable
+s.new_cable(name='sheaved_cable',
+            endA='LP3',
+            endB='LP4',
+            length=41.231,
+            EA=1000.0,
+            sheaves = ['LiftPoint'])
+
+# Limits 
+s['Piano'].limits['x'] = (-2, 1.0)       # define a range
+s['cable1'].limits['tension'] = 100      # define a maximum-absolute tension
+s['sheaved_cable'].limits['tension'] = 500
+s['LP4'].limits['fz'] = 300  # limit the vertical tension at this liftpoint
 
 ```

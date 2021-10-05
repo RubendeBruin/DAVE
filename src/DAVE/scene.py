@@ -202,33 +202,53 @@ class Node(ABC):
         """ """
         pass
 
+
+
     @property
     def UC(self):
-        """Returns the governing UC of the node, returns None is no limits are defined """
+        """Returns the governing UC of the node, returns None is no limits are defined
 
+        See Also: give_UC
+        """
         if not self.limits:
             return None
 
         gov_uc = 0
 
         for propname, limits in self.limits.items():
-
-            value = getattr(self, propname, None)
-            if value is None:
-                raise ValueError(f'Error evaluating limits: No property named {propname} on node {self.name}')
-
-            assert isinstance(value, (int, float)), f"property named {propname} on node {self.name} is not a single number, it is: {str(value)}"
-
-            if isinstance(limits, (int, float)): # single number
-                uc = abs(value) / limits
-            else:
-                midpoint = (limits[1] + limits[0] ) / 2
-                delta = abs(limits[1] - limits[0] ) / 2
-                uc = abs(value - midpoint) / delta
-
+            uc = self.give_UC(propname)
             gov_uc = max(gov_uc, uc)
 
         return gov_uc
+
+    def give_UC(self, prop_name = None):
+        """Returns the UC for the provided property name.
+
+         See Also: UC (property)
+         """
+
+        if prop_name not in self.limits:
+            return None
+
+        limits = self.limits[prop_name]
+
+        value = getattr(self, prop_name, None)
+        if value is None:
+            raise ValueError(f'Error evaluating limits: No property named {prop_name} on node {self.name}')
+
+        assert isinstance(value, (
+        int, float)), f"property named {prop_name} on node {self.name} is not a single number, it is: {str(value)}"
+
+        if isinstance(limits, (int, float)):  # single number
+            uc = abs(value) / limits
+        else:
+            midpoint = (limits[1] + limits[0]) / 2
+            delta = abs(limits[1] - limits[0]) / 2
+            uc = abs(value - midpoint) / delta
+
+        return uc
+
+
 
 
 
@@ -1258,6 +1278,55 @@ class Point(NodeWithParentAndFootprint):
     def z(self):
         """z component of local position [m] (parent axis)"""
         return self.position[2]
+
+    @property
+    def applied_force(self):
+        """Applied force [kN,kN,kN] (parent axis)"""
+        force = self.applied_force_and_moment_global[:3]
+        if self.parent:
+            return self.parent.to_loc_direction(force)
+        else:
+            return force
+
+    @property
+    def fx(self):
+        """x component of applied force [kN] (parent axis)"""
+        return self.applied_force[0]
+
+    @property
+    def fy(self):
+        """y component of applied force [kN] (parent axis)"""
+        return self.applied_force[1]
+
+    @property
+    def fz(self):
+        """z component of applied force [kN] (parent axis)"""
+        return self.applied_force[2]
+
+    @property
+    def applied_moment(self):
+        """Applied moment [kNm,kNm,kNm] (parent axis)"""
+        force = self.applied_force_and_moment_global[3:]
+        if self.parent:
+            return self.parent.to_loc_direction(force)
+        else:
+            return force
+
+    @property
+    def mx(self):
+        """x component of applied moment [kNm] (parent axis)"""
+        return self.applied_moment[0]
+
+    @property
+    def my(self):
+        """y component of applied moment [kNm] (parent axis)"""
+        return self.applied_moment[1]
+
+    @property
+    def mz(self):
+        """z component of applied moment [kNm] (parent axis)"""
+        return self.applied_moment[2]
+
 
     @x.setter
     @node_setter_manageable
@@ -6063,6 +6132,42 @@ class Scene:
         return r
 
     # ======== element functions =========
+
+    @property
+    def unmanged_nodes(self):
+        """Returns a tuple containing references to all nodes that do not have a manager"""
+        nodes = [node for node in self._nodes if node.manager is None]
+        return tuple(nodes)
+
+    def give_properties_for_node(self, node):
+        """Returns a tuple containing all property-names for the given node.
+        Returns: tuple of strings"""
+        props = []
+        props.extend(ds.PROPS_NODE)
+        if isinstance(node, Frame):
+            props.extend(ds.PROPS_FRAME)
+        if isinstance(node, RigidBody):
+            props.extend(ds.PROPS_BODY)
+        if isinstance(node, Point):
+            props.extend(ds.PROPS_POI)
+        if isinstance(node, Cable):
+            props.extend(ds.PROPS_CABLE)
+        if isinstance(node, Connector2d):
+            props.extend(ds.PROPS_CON2D)
+        if isinstance(node, LC6d):
+            props.extend(ds.PROPS_CON6D)
+        if isinstance(node, Buoyancy):
+            props.extend(ds.PROPS_BUOY_MESH)
+        if isinstance(node, Beam):
+            props.extend(ds.PROPS_BEAM)
+        if isinstance(node, Force):
+            props.extend(ds.PROPS_FORCE)
+        if isinstance(node, ContactBall):
+            props.extend(ds.PROPS_CONTACTBALL)
+        if isinstance(node, _Area):
+            props.extend(ds.PROPS__AREA)
+
+        return tuple(props)
 
     def node_by_name(self, node_name, silent=False):
         for N in self._nodes:

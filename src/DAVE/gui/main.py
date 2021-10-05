@@ -65,6 +65,7 @@ from copy import deepcopy
 
 from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
 from DAVE.gui.widget_footprints import WidgetFootprints
+from DAVE.gui.widget_limits import WidgetLimits
 from DAVE.gui.widget_painter import WidgetPainters
 
 """
@@ -283,6 +284,7 @@ class Gui:
 
         # right
         self.ui.btnWater.clicked.connect(self.toggle_show_global)
+        self.ui.pbUC.clicked.connect(self.toggle_show_UC)
         self.ui.btnBlender.clicked.connect(self.to_blender)
         self.ui.pbCopyViewCode.clicked.connect(self.copy_screenshot_code)
         self.ui.btnSSAO.clicked.connect(self.toggle_SSAO)
@@ -520,7 +522,12 @@ class Gui:
         set_pb_style(btnConstruct)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText("&7. Mode Shapes [beta]")
+        btnConstruct.setText("&7. Limits")
+        btnConstruct.clicked.connect(lambda: self.activate_workspace("LIMITS"))
+        set_pb_style(btnConstruct)
+
+        btnConstruct = QtWidgets.QPushButton()
+        btnConstruct.setText("&8. Mode Shapes [beta]")
         btnConstruct.clicked.connect(lambda: self.activate_workspace("DYNAMICS"))
         set_pb_style(btnConstruct)
 
@@ -747,6 +754,12 @@ class Gui:
 
         if name == "STABILITY":
             self.show_guiWidget("Stability", WidgetDisplacedStability)
+
+        if name == "LIMITS":
+            self.show_guiWidget("Limits and UCs", WidgetLimits)
+            if not self.visual.settings.paint_uc:
+                self.toggle_show_UC()
+
 
         if name == "MOMENTS":
             self.show_guiWidget("Footprints", WidgetFootprints)
@@ -1233,6 +1246,14 @@ class Gui:
             not self.ui.actionShow_water_plane.isChecked()
         )
         self.toggle_show_global_from_menu()
+
+    def toggle_show_UC(self):
+        self.visual.settings.paint_uc = not self.visual.settings.paint_uc
+
+        self.ui.pbUC.setChecked(
+            self.visual.settings.paint_uc
+        )
+        self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def toggle_show_global_from_menu(self):
         self.visual.settings.show_global = self.ui.actionShow_water_plane.isChecked()

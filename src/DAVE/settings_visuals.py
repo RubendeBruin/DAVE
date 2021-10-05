@@ -141,7 +141,7 @@ class ViewportSettings:
     painter_settings: dict = None
 
     # Unity-checks
-    paint_uc : bool = True # use UC property for actor colors. If UC is none, then use the color defined in the painter_settings instead
+    paint_uc : bool = False # use UC property for actor colors. If UC is none, then use the color defined in the painter_settings instead
 
 
 # ============ Painters ================

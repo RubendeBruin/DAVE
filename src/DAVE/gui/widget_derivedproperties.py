@@ -46,6 +46,10 @@ class WidgetDerivedProperties(guiDockWidget):
         self.dispPropTree.setAlternatingRowColors(True)
         self.dispPropTree.setRootIsDecorated(False)
         self.dispPropTree.setObjectName("dispPropTree")
+
+        # self.dispPropTree.setColumnCount(3)
+        # self.dispPropTree.setHeaderLabels(('Value','Limits','UC'))
+
         item_0 = QtWidgets.QTreeWidgetItem(self.dispPropTree)
         item_1 = QtWidgets.QTreeWidgetItem(item_0)
         self.dispPropTree.header().setVisible(False)
@@ -101,37 +105,13 @@ class WidgetDerivedProperties(guiDockWidget):
             return
 
 
-        props = []
-        props.extend(ds.PROPS_NODE)
-        if isinstance(node, nodes.Frame):
-            props.extend(ds.PROPS_FRAME)
-        if isinstance(node, nodes.RigidBody):
-            props.extend(ds.PROPS_BODY)
-        if isinstance(node, nodes.Point):
-            props.extend(ds.PROPS_POI)
-        if isinstance(node, nodes.Cable):
-            props.extend(ds.PROPS_CABLE)
-        if isinstance(node, nodes.Connector2d):
-            props.extend(ds.PROPS_CON2D)
-        if isinstance(node, nodes.LC6d):
-            props.extend(ds.PROPS_CON6D)
-        if isinstance(node, nodes.Buoyancy):
-            props.extend(ds.PROPS_BUOY_MESH)
-        if isinstance(node, nodes.Beam):
-            props.extend(ds.PROPS_BEAM)
-        if isinstance(node, nodes.Force):
-            props.extend(ds.PROPS_FORCE)
-        if isinstance(node, nodes.ContactBall):
-            props.extend(ds.PROPS_CONTACTBALL)
-        if isinstance(node, nodes._Area):
-            props.extend(ds.PROPS__AREA)
+        props = self.guiScene.give_properties_for_node(node)
 
         # evaluate properties
         for p in props:
             code = "node.{}".format(p)
             try:
                 result = eval(code)
-
                 result = fancy_format(result)
 
             except:
@@ -140,7 +120,23 @@ class WidgetDerivedProperties(guiDockWidget):
             pa = QtWidgets.QTreeWidgetItem(self.dispPropTree)
             v = QtWidgets.QTreeWidgetItem(pa)
             pa.setText(0, '.' + p)
-            v.setText(0, str(result))
+
+            text = str(result)
+            v.setText(0, text)
+
+            # add limit node
+            if p in node.limits:
+                v = QtWidgets.QTreeWidgetItem(pa)
+                limit = node.limits[p]
+                uc = node.give_UC(p)
+                text = f'UC = {uc:.2f} = ({text} / {limit})'
+                v.setText(0, text)
+
+
+
+
+
+
 
         self.dispPropTree.expandAll()
 

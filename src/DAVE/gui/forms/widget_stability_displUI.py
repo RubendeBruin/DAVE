@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_stability_displ.ui',
 # licensing of 'widget_stability_displ.ui' applies.
 #
-# Created: Mon Sep 20 11:25:05 2021
+# Created: Mon Oct  4 18:12:27 2021
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
