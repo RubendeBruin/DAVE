@@ -1,30 +1,37 @@
 from DAVE.gui.dockwidget import *
 from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag, QColor
 from PySide2.QtCore import QMimeData, Qt, QItemSelectionModel
-from PySide2.QtWidgets import QTreeWidgetItem, QCheckBox
+from PySide2.QtWidgets import (
+    QTreeWidgetItem,
+    QCheckBox,
+    QListWidget,
+    QAbstractScrollArea,
+)
 import DAVE.scene as ds
 
 class NodeTreeWidget(QtWidgets.QTreeWidget):
 
+    others = []
+
     def dragEnterEvent(self, event):
-        if event.source() is not self:
-            print("Not accepting external data")
+        if event.source() not in [self, *self.others]:
+            # print("Not accepting external data")
             event.setDropAction(Qt.IgnoreAction)
             return
         else:
             event.accept()
 
     def dragMoveEvent(self, event):
-        if event.source() is not self:
-            print("Not accepting external data")
+        if event.source() not in [self, *self.others]:
+            # print("Not accepting external data")
             event.setDropAction(Qt.IgnoreAction)
             return
         else:
             event.accept()
 
     def dropEvent(self, event):
-        if event.source() is not self:
-            print("Not accepting external data")
+        if event.source() not in [self, *self.others]:
+            # print("Not accepting external data")
             event.setDropAction(Qt.IgnoreAction)
             return
 
@@ -39,7 +46,7 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
         else:
             drop_onto_name = drop_onto.text(0)
 
-        print('dragged {} onto {}'.format(dragged_name,drop_onto_name))
+        # print("dragged {} onto {}".format(dragged_name, drop_onto_name))
         event.setDropAction(Qt.IgnoreAction)
 
         self.parentcallback(dragged_name, drop_onto_name, event)
@@ -51,7 +58,9 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
         node_name = dragged.text(0)
         node = self.guiScene[node_name]
 
-        if node._manager:  # managed nodes can not be dragged, except points and circles and contact-meshes
+        if (
+            node._manager
+        ):  # managed nodes can not be dragged, except points and circles and contact-meshes
             if not isinstance(node, (Circle, Point, ContactMesh)):
                 return
 
@@ -64,11 +73,7 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
         drag.exec_(supportedActions=supportedActions, defaultAction=Qt.MoveAction)
 
 
-
-
-
 class WidgetNodeTree(guiDockWidget):
-
     def guiCreate(self):
 
         self.treeView = NodeTreeWidget(self.contents)
@@ -81,7 +86,9 @@ class WidgetNodeTree(guiDockWidget):
         self.treeView.header().setVisible(False)
         self.treeView.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
 
-        self.treeView.activated.connect(self.tree_select_node)  # fires when a user presses [enter]
+        self.treeView.activated.connect(
+            self.tree_select_node
+        )  # fires when a user presses [enter]
         self.treeView.doubleClicked.connect(self.tree_select_node)
         self.treeView.itemClicked.connect(self.item_clicked)
         self.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -89,22 +96,39 @@ class WidgetNodeTree(guiDockWidget):
 
         self.treeView.parentcallback = self.dragDropCallback
 
-
         self.checkbox = QCheckBox(self.contents)
-        self.checkbox.setText('show all managed nodes')
+        self.checkbox.setText("show all managed nodes")
         self.checkbox.setChecked(False)
         self.checkbox.toggled.connect(self.update_node_data_and_tree)
 
+        self.listbox = QListWidget(self.contents)
+        self.listbox.addItem("test")
+        itemheight = self.listbox.sizeHintForRow(0)
+        self.listbox.clear()
+        self.listbox.setFixedHeight(4 * itemheight)
+        self.listbox.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.listbox.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.listbox.setEditTriggers(QListWidget.NoEditTriggers)
+        self.listbox.setDragEnabled(True)
+        self.listbox.startDrag = self.listview_startDrag
+
+        self.treeView.others.append(self.listbox)
+        self.treeView.others.append(self)
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.treeView)
         layout.addWidget(self.checkbox)
+        layout.addWidget(self.listbox)
         self.contents.setLayout(layout)
 
+        self.recent_items = list()
+
     def guiProcessEvent(self, event):
-        if event in [guiEventType.MODEL_STRUCTURE_CHANGED,
-                     guiEventType.FULL_UPDATE,
-                     guiEventType.SELECTED_NODE_MODIFIED]:
+        if event in [
+            guiEventType.MODEL_STRUCTURE_CHANGED,
+            guiEventType.FULL_UPDATE,
+            guiEventType.SELECTED_NODE_MODIFIED,
+        ]:
             self.update_node_data_and_tree()
             self.update_node_visibility()
 
@@ -132,11 +156,15 @@ class WidgetNodeTree(guiDockWidget):
                 code = f"s.new_geometriccontact('Geometric_connection of :{drop} on {onto}','{drop}','{onto}')"
 
             # Sheave --> GeometricContact : set child of geometric contact
-            elif isinstance(node_drop, ds.Circle) and isinstance(node_onto, ds.GeometricContact):
+            elif isinstance(node_drop, ds.Circle) and isinstance(
+                node_onto, ds.GeometricContact
+            ):
                 code = f"s['{node_onto.name}'].child = '{node_drop.name}'"
 
             # GeometricContact --> Sheave : set parent of geometric contact
-            elif isinstance(node_drop, ds.GeometricContact) and isinstance(node_onto, ds.Circle):
+            elif isinstance(node_drop, ds.GeometricContact) and isinstance(
+                node_onto, ds.Circle
+            ):
                 code = f"s['{node_drop.name}'].parent = '{node_onto.name}'"
 
             # Default
@@ -144,7 +172,6 @@ class WidgetNodeTree(guiDockWidget):
                 code = "s['{}'].change_parent_to(s['{}'])".format(drop, onto)
 
             self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
-
 
     def tree_select_node(self, index):
         if index.column() == 0:
@@ -174,6 +201,19 @@ class WidgetNodeTree(guiDockWidget):
             else:
                 self.items[name].setSelected(False)
 
+        # update recent items
+        if len(self.guiSelection) > 4:
+            self.recent_items = self.guiSelection[-4:]
+        else:
+            self.recent_items.extend(self.guiSelection)
+            self.recent_items = remove_duplicates_from_list_keep_order(
+                self.recent_items
+            )
+            self.recent_items = self.recent_items[-4:]
+
+        self.listbox.clear()
+        self.listbox.addItems([node.name for node in self.recent_items])
+
     def update_node_visibility(self):
 
         for name, item in self.items.items():
@@ -183,8 +223,7 @@ class WidgetNodeTree(guiDockWidget):
             if not node.visible:
                 item.setTextColor(0, QColor(124, 124, 124))
             else:
-                item.setTextColor(0, QColor(0,0,0))
-
+                item.setTextColor(0, QColor(0, 0, 0))
 
     def update_node_data_and_tree(self):
         """
@@ -197,6 +236,21 @@ class WidgetNodeTree(guiDockWidget):
 
         self.items = dict()
 
+        # # store the open/closed state of the current tree - based on Name
+        closed_items = []
+
+        def walk_node(item, store_here):
+            for i in range(item.childCount()):
+                child = item.child(i)
+                if child.childCount() > 0:
+                    if not child.isExpanded():
+                        store_here.append(child.text(0))
+                    walk_node(child, store_here)
+
+        walk_node(self.treeView.invisibleRootItem(), closed_items)
+
+
+
         self.guiScene.sort_nodes_by_parent()
         self.treeView.clear()
         self.treeView.guiScene = self.guiScene
@@ -208,7 +262,7 @@ class WidgetNodeTree(guiDockWidget):
             # create a tree item
             text = node.name
             item = QTreeWidgetItem()
-            item.setText(0,text)
+            item.setText(0, text)
 
             # if we have a parent, then put the items under the parent,
             # else put it under the root
@@ -219,42 +273,41 @@ class WidgetNodeTree(guiDockWidget):
             elif isinstance(node, ds.RigidBody):
                 item.setIcon(0, QIcon(":/icons/cube.png"))
             elif isinstance(node, ds.Point):
-                item.setIcon(0,QIcon(":/icons/point_blue.png"))
+                item.setIcon(0, QIcon(":/icons/point_blue.png"))
             elif isinstance(node, ds.Cable):
-                item.setIcon(0,QIcon(":/icons/cable.png"))
+                item.setIcon(0, QIcon(":/icons/cable.png"))
             elif isinstance(node, ds.Visual):
-                item.setIcon(0,QIcon(":/icons/visual.png"))
+                item.setIcon(0, QIcon(":/icons/visual.png"))
             elif isinstance(node, ds.LC6d):
-                item.setIcon(0,QIcon(":/icons/lincon6.png"))
+                item.setIcon(0, QIcon(":/icons/lincon6.png"))
             elif isinstance(node, ds.Connector2d):
-                item.setIcon(0,QIcon(":/icons/con2d.png"))
+                item.setIcon(0, QIcon(":/icons/con2d.png"))
             elif isinstance(node, ds.Beam):
-                item.setIcon(0,QIcon(":/icons/beam.png"))
+                item.setIcon(0, QIcon(":/icons/beam.png"))
             elif isinstance(node, ds.HydSpring):
-                item.setIcon(0,QIcon(":/icons/linhyd.png"))
+                item.setIcon(0, QIcon(":/icons/linhyd.png"))
             elif isinstance(node, ds.Force):
-                item.setIcon(0,QIcon(":/icons/force.png"))
+                item.setIcon(0, QIcon(":/icons/force.png"))
             elif isinstance(node, ds.Circle):
-                item.setIcon(0,QIcon(":/icons/circle_blue.png"))
+                item.setIcon(0, QIcon(":/icons/circle_blue.png"))
             elif isinstance(node, ds.Buoyancy):
-                item.setIcon(0,QIcon(":/icons/trimesh.png"))
+                item.setIcon(0, QIcon(":/icons/trimesh.png"))
             elif isinstance(node, ds.WaveInteraction1):
-                item.setIcon(0,QIcon(":/icons/waveinteraction.png"))
+                item.setIcon(0, QIcon(":/icons/waveinteraction.png"))
             elif isinstance(node, ds.ContactBall):
-                item.setIcon(0,QIcon(":/icons/contactball.png"))
+                item.setIcon(0, QIcon(":/icons/contactball.png"))
             elif isinstance(node, ds.ContactMesh):
-                item.setIcon(0,QIcon(":/icons/contactmesh.png"))
+                item.setIcon(0, QIcon(":/icons/contactmesh.png"))
             elif isinstance(node, ds.GeometricContact):
-                item.setIcon(0,QIcon(":/icons/pin_hole.png"))
+                item.setIcon(0, QIcon(":/icons/pin_hole.png"))
             elif isinstance(node, ds.Sling):
-                item.setIcon(0,QIcon(":/icons/sling.png"))
+                item.setIcon(0, QIcon(":/icons/sling.png"))
             elif isinstance(node, ds.Tank):
                 item.setIcon(0, QIcon(":/icons/tank.png"))
             elif isinstance(node, ds.WindArea):
                 item.setIcon(0, QIcon(":/icons/wind.png"))
             elif isinstance(node, ds.CurrentArea):
                 item.setIcon(0, QIcon(":/icons/current.png"))
-
 
             try:
                 parent = node.parent
@@ -271,7 +324,11 @@ class WidgetNodeTree(guiDockWidget):
 
             # custom work-around for showing the "circles" for managed shackles
             if isinstance(node._manager, Shackle):
-                if node == node._manager.pin or node == node._manager.bow or node== node._manager.inside:
+                if (
+                    node == node._manager.pin
+                    or node == node._manager.bow
+                    or node == node._manager.inside
+                ):
                     show_managed_node = True
 
             if node._manager:
@@ -279,7 +336,7 @@ class WidgetNodeTree(guiDockWidget):
                 # are we showing managed nodes?
                 if show_managed_node:
 
-                    item.setTextColor(0,Qt.gray)
+                    item.setTextColor(0, Qt.gray)
 
                     # if the item does not have a parent, then show it under the manager
                     if parent is None:
@@ -302,7 +359,37 @@ class WidgetNodeTree(guiDockWidget):
                     else:  # if the parent is not there, then it must be a managed node
                         self.items[parent._manager.name].addChild(item)
 
-
         # self.treeView.resizeColumnToContents(0)
         self.treeView.expandAll()
 
+        # restore closed nodes state
+        def close_nodes(item, closed):
+            for i in range(item.childCount()):
+                child = item.child(i)
+                if child.text(0) in closed_items:
+                    child.setExpanded(False)
+                if child.childCount() > 0:
+                    close_nodes(child, closed)
+
+        close_nodes(self.treeView.invisibleRootItem(), closed_items)
+
+    def listview_startDrag(self, supportedActions):
+
+        dragged = self.listbox.selectedItems()[0]
+
+        node_name = dragged.text()
+        node = self.guiScene[node_name]
+
+        if (
+            node._manager
+        ):  # managed nodes can not be dragged, except points and circles and contact-meshes
+            if not isinstance(node, (Circle, Point, ContactMesh)):
+                return
+
+        mimeData = QMimeData()
+        mimeData.setText(node_name)
+
+        drag = QDrag(self)
+        drag.setMimeData(mimeData)
+
+        drag.exec_(supportedActions=supportedActions)

@@ -221,3 +221,10 @@ def round3d(value):
 
     return np.floor(1000*np.array(value + offset, dtype=float))/1000
 
+def remove_duplicates_from_list_keep_order(seq):
+    """Returns a copy of the list (or tuple) with duplicated removed
+    See: https://stackoverflow.com/questions/480214/how-do-you-remove-duplicates-from-a-list-whilst-preserving-order"""
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
+
