@@ -1404,6 +1404,7 @@ class Viewport:
         self.mouseLeftEvent = None
         self.mouseRightEvent = None
         self.onEscapeKey = None
+        self.onDeleteKey = None
         "Function handles"
 
         self.Jupyter = jupyter
@@ -2584,6 +2585,11 @@ class Viewport:
         if key == "Escape":
             if self.onEscapeKey is not None:
                 self.onEscapeKey()
+
+        elif key == "Delete":
+            if self.onDeleteKey is not None:
+                self.onDeleteKey()
+
 
     def refresh_embeded_view(self):
         self.vtkWidget.update()

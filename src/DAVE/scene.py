@@ -6362,10 +6362,17 @@ class Scene:
         assert self.name_available(name), f"Name {name} is already in use"
 
     def name_available(self, name):
-        """Returns True if the name is still available"""
+        """Returns True if the name is still available. See Also: node_exists"""
         names = [n.name for n in self._nodes]
         names.extend(self._vfc.names)
         return not (name in names)
+
+    def node_exists(self, name_or_node):
+        """Returns True if a node with this name exists. See Also: name_available"""
+        if isinstance(name_or_node, Node):
+            return name_or_node in self._nodes
+        else:
+            return not self.name_available(name_or_node)
 
     def available_name_like(self, like):
         """Returns an available name like the one given, for example Axis23"""

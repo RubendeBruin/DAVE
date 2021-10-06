@@ -63,6 +63,7 @@
 import subprocess
 from copy import deepcopy
 
+from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter
 from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
 from DAVE.gui.widget_footprints import WidgetFootprints
 from DAVE.gui.widget_limits import WidgetLimits
@@ -279,6 +280,7 @@ class Gui:
         # ------ key-presses -----
 
         self.visual.onEscapeKey = self.escPressed
+        self.visual.onDeleteKey = self.delete_key
 
         # ------ viewport buttons ------
 
@@ -468,9 +470,13 @@ class Gui:
 
         self.highlight = PythonHighlighter(self.ui.teCode.document())
 
-        self.eventFilter = ShiftEnterKeyPressFilter()
-        self.eventFilter.callback = self.run_code_in_teCode
-        self.ui.teCode.installEventFilter(self.eventFilter)
+        self.teCode_eventFilter = ShiftEnterKeyPressFilter()
+        self.teCode_eventFilter.callback = self.run_code_in_teCode
+        self.ui.teCode.installEventFilter(self.teCode_eventFilter)
+
+        self.delete_eventFilter = DeleteEventFilter()
+        self.delete_eventFilter.callback = self.delete_key
+        self.MainWindow.installEventFilter(self.delete_eventFilter)
 
         # ======================== Docks ====================
         self.guiWidgets = dict()
@@ -590,6 +596,22 @@ class Gui:
         self.ui.pb3D.setChecked(flat)
         self.ui.action2D_mode.setChecked(flat)
         self.visual.refresh_embeded_view()
+
+    def delete_key(self):
+        """Delete key pressed in either main-form or viewport"""
+
+        names = [node.name for node in self.selected_nodes]
+
+        need_refresh = False
+        for name in names:
+            need_refresh = True
+            # does the node still exist?
+            if self.scene.node_exists(name):
+                self.run_code(f"s.delete('{name}')", event=None)
+
+        if need_refresh:
+            self.select_none()
+
 
     def change_paintset(self):
         """Updates the paintset of the viewport to the value of cbPainterSelect"""
