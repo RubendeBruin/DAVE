@@ -232,6 +232,11 @@ class Node(ABC):
 
         limits = self.limits[prop_name]
 
+        if isinstance(limits, (float, int)):
+            if limits <= 0:
+                return 0
+
+
         value = getattr(self, prop_name, None)
         if value is None:
             raise ValueError(f'Error evaluating limits: No property named {prop_name} on node {self.name}')
@@ -435,6 +440,8 @@ class NodeWithParentAndFootprint(NodeWithCoreParent):
     This is a base-class for all nodes that have a "footprint" property as well as a parent
     """
 
+
+
     def __init__(self, scene, vfNode):
         super().__init__(scene, vfNode)
 
@@ -447,6 +454,8 @@ class NodeWithParentAndFootprint(NodeWithCoreParent):
         return tuple(r)
 
     @footprint.setter
+    @node_setter_manageable
+    @node_setter_observable
     def footprint(self, value):
         """Sets the footprint vertices. Supply as an iterable with each element containing three floats"""
         for t in value:
@@ -1289,6 +1298,11 @@ class Point(NodeWithParentAndFootprint):
             return force
 
     @property
+    def force(self):
+        """total force magnitude as applied on the point [kN]"""
+        return np.linalg.norm(self.applied_force)
+
+    @property
     def fx(self):
         """x component of applied force [kN] (parent axis)"""
         return self.applied_force[0]
@@ -1311,6 +1325,11 @@ class Point(NodeWithParentAndFootprint):
             return self.parent.to_loc_direction(force)
         else:
             return force
+
+    @property
+    def moment(self):
+        """total moment magnitude as applied on the point [kNm]"""
+        return np.linalg.norm(self.applied_moment)
 
     @property
     def mx(self):
@@ -6102,7 +6121,11 @@ class Scene:
     def get_resource_list(self, extension, include_subdirs=False):
         """Returns a list of all resources (strings) with given extension in any of the resource-paths"""
 
-        r = []
+        # include subdirs excludes the root dir. Scan the root-dir first by doing a recursive call
+        if include_subdirs:
+            r = self.get_resource_list(extension=extension, include_subdirs=False)
+        else:
+            r = []
 
         for dir in self.resources_paths:
             try:

@@ -152,5 +152,6 @@ s['Piano'].limits['x'] = (-2, 1.0)       # define a range
 s['cable1'].limits['tension'] = 100      # define a maximum-absolute tension
 s['sheaved_cable'].limits['tension'] = 500
 s['LP4'].limits['fz'] = 300  # limit the vertical tension at this liftpoint
+s['LP4'].limits['fx'] = -1   # counts as no limit 
 
 ```
