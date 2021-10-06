@@ -6379,15 +6379,22 @@ class Scene:
         else:
             return not self.name_available(name_or_node)
 
-    def available_name_like(self, like):
-        """Returns an available name like the one given, for example Axis23"""
+    def available_name_like(self, like, _additional_names = ()):
+        """Returns an available name like the one given, for example Axis23
+
+        Args
+            _additional_names [()] : if provided then the name shall not be one of these either
+        """
+
         if self.name_available(like):
-            return like
+            if like not in _additional_names:
+                return like
         counter = 1
         while True:
             name = like + "_" + str(counter)
             if self.name_available(name):
-                return name
+                if name not in _additional_names:
+                    return name
             counter += 1
 
     def node_A_core_depends_on_B_core(self, A, B):
@@ -6458,15 +6465,16 @@ class Scene:
 
         return r
 
-    def nodes_with_parent(self, node):
+    def nodes_with_parent(self, node, recursive=False):
         """Returns a list of nodes that have given node as a parent. Good for making trees.
         For checking physical connections use nodes_depending_on instead.
 
         Args:
             node : Node or node-name
+            recursive : look for grand-parents as well. This means a whole branch of the node-tree is returned.
 
         Returns:
-            list of names
+            list of nodes
 
         See Also: nodes_depending_on
         """
@@ -6484,7 +6492,38 @@ class Scene:
                 continue
 
             if parent == node:
-                r.append(n.name)
+                r.append(n)
+
+        if recursive:
+            more = []
+            for n in r:
+                more.extend(self.nodes_with_parent(n, recursive=True))
+            r.extend(more)
+
+        return r
+
+    def nodes_with_dependancies_in_and_satifsfied_by(self, nodes):
+        """Returns a list of all nodes that have dependancies and whose dependancies that are all within 'nodes'
+
+        Often used in combination with nodes_with_parent, for example to find cables that fall within a branch of the
+        node-tree.
+        """
+
+        r = []
+
+        for node in self._nodes:
+            deps = node.depends_on()
+            if not deps:
+                continue # skip nodes without dependancies
+
+            satisfied = True
+            for dep in node.depends_on():
+                if dep not in nodes:
+                    satisfied = False
+                    break
+
+            if satisfied:
+                r.append(node)
 
         return r
 
@@ -8315,13 +8354,22 @@ class Scene:
         for line in self.give_python_code().split("\n"):
             print(line)
 
-    def give_python_code(self):
-        """Generates the python code that rebuilds the scene and elements in its current state."""
+    def give_python_code(self, nodes = None):
+        """Generates the python code that rebuilds the scene and elements in its current state.
+
+        Args:
+            nodes [None] : generate only for these node(s)
+        """
 
         import datetime
         import getpass
 
         self.sort_nodes_by_dependency()
+
+        if nodes is None:
+            nodes_to_be_exported = self._nodes
+        else:
+            nodes_to_be_exported = [node for node in self._nodes if node in nodes]
 
         code = []
         code.append("# auto generated pyhton code")
@@ -8346,7 +8394,7 @@ class Scene:
 
         code.append("\n")
 
-        for n in self._nodes:
+        for n in nodes_to_be_exported:
 
             if n._manager is None:
                 code.append("\n" + n.give_python_code())
@@ -8360,13 +8408,13 @@ class Scene:
 
         # store the visibility code separately
 
-        for n in self._nodes:
+        for n in nodes_to_be_exported:
             if not n.visible:
                 code.append(f"\ns['{n.name}'].visible = False")  # only report is not the default value
 
         code.append("\n# Limits ")
 
-        for n in self._nodes:
+        for n in nodes_to_be_exported:
             for key, value in n.limits.items():
                 code.append(f"s['{n.name}'].limits['{key}'] = {value}")
 
@@ -8435,7 +8483,9 @@ class Scene:
         def print_deps(name, spaces):
 
             node = self[name]
-            deps = self.nodes_with_parent(node)
+            deps_nodes = self.nodes_with_parent(node)
+            deps = [n.name for n in deps_nodes]
+
             print(spaces + name + " [" + str(type(node)).split(".")[-1][:-2] + "]")
 
             if deps is not None:
@@ -8497,10 +8547,14 @@ class Scene:
 
         self.run_code(code)
 
-    def import_scene(self, other, prefix="", containerize=True):
+    def import_scene(self, other, prefix="", containerize=True, nodes = None):
         """Copy-paste all nodes of scene "other" into current scene.
 
         To avoid double names it is recommended to use a prefix. This prefix will be added to all element names.
+
+        Args:
+            containerize : place all the nodes without a parent in a dedicated Frame
+            nodes [None] : if provided then import only these nodes
 
         Returns:
             Contained (Axis-type Node) : if the imported scene is containerized then a reference to the created container is returned.
@@ -8535,7 +8589,7 @@ class Scene:
 
         store_export_code_with_solved_function = other._export_code_with_solved_function
         other._export_code_with_solved_function = False  # quicker
-        code = other.give_python_code()
+        code = other.give_python_code(nodes=nodes)
         other._export_code_with_solved_function = store_export_code_with_solved_function
 
         self.run_code(code)
@@ -8564,8 +8618,11 @@ class Scene:
 
         return None
 
-    def copy(self):
+    def copy(self, nodes=None):
         """Creates a full and independent copy of the scene and returns it.
+
+        Args:
+            nodes [None] : copy only these nodes
 
         Example:
             s = Scene()
@@ -8577,8 +8634,71 @@ class Scene:
         c = Scene()
         c.resources_paths.clear()
         c.resources_paths.extend(self.resources_paths)
-        c.import_scene(self, containerize=False)
+        c.import_scene(self, containerize=False, nodes = nodes)
         return c
+
+    def duplicate_node(self, node):
+        """Duplicates node, the copy will get the first available name.
+
+        Returns: reference to the copy
+        """
+        if isinstance(node, str):
+            node = self[node]
+
+        name = node.name
+        name_of_duplicate = self.available_name_like(name)
+
+        # get the python code to generate the node with the new name
+        node.name = name_of_duplicate  # temporary rename just for code-generation
+        self._export_code_with_solved_function = False
+        code = node.give_python_code()
+        self._export_code_with_solved_function = True
+        node.name = name # and restore
+
+        self.run_code(code)
+
+        return self[name_of_duplicate]
+
+    def duplicate_branch(self, root_node):
+        """Duplicates a whole branch of the node-tree. Branch is defined by all the nodes that have the root_node as
+        (grand) parent as well as all the nodes whose dependancies are within the branch (ie: cables between child-nodes)"""
+
+        if isinstance(root_node, str):
+            root_node = self[root_node]
+
+        # set the parent of the root_node to None (if any)
+        old_parent = getattr(root_node, 'parent',None)
+        if old_parent is not None:
+            root_node.parent = None
+
+        nodes = self.nodes_with_parent(root_node, recursive=True)
+        more_nodes = self.nodes_with_dependancies_in_and_satifsfied_by(nodes)
+        branch = list({*nodes, *more_nodes})  # unique nodes (use set)
+        branch.append(root_node)
+
+        # make a copy of these nodes in a new scene
+        s2 = self.copy(branch)
+
+        copy_of_root_node_in_s2 = s2[root_node.name]
+
+        # now find new names for all of the nodes.
+        # names need to be unique in both self and s2
+        for n in s2._nodes:
+            node_names_in_s2 = [node.name for node in s2._nodes]
+            new_name = self.available_name_like(n.name, _additional_names=node_names_in_s2)
+            n.name = new_name
+
+        self.import_scene(s2, containerize=False)
+
+        # restore the parent (if any)
+        if old_parent is not None:
+            copy_of_root_node = self[copy_of_root_node_in_s2.name]
+            copy_of_root_node.parent = old_parent
+            root_node.parent = old_parent
+
+
+
+
 
     # =================== DYNAMICS ==================
 

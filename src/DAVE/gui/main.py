@@ -1498,21 +1498,23 @@ class Gui:
                 menu.addSeparator()
 
                 def duplicate():
-                    name = node_name
-                    name_of_duplicate = self.scene.available_name_like(name)
-
-                    node = self.scene[node_name]
-                    node.name = name_of_duplicate
-
-                    self.scene._export_code_with_solved_function = False
-                    code = node.give_python_code()
-                    self.scene._export_code_with_solved_function = True
-                    node.name = name
+                    code = f"s.duplicate_node('{node_name}')"
                     self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
-                    self.guiSelectNode(name_of_duplicate)
+                def duplicate_branch():
+                    code = f"s.duplicate_branch('{node_name}')"
+                    self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
-                menu.addAction("Duplicate", duplicate)
+                    # self.guiSelectNode(name_of_duplicate)
+
+                if isinstance(node, (Frame, Point)):
+                    if self.scene.nodes_with_parent(node):
+                        menu.addAction("Duplicate", duplicate_branch)
+
+
+                menu.addAction("Duplicate node", duplicate)
+
+
                 menu.addSeparator()
                 menu.addSeparator()
 

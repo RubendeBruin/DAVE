@@ -325,13 +325,10 @@ def export_ofx_yml(s, filename):
             # 2. create a vessel without any mass
             # 3. place the buoy that we just created on the vessel
 
-            children = s.nodes_with_parent(n)
-
             hyd_spring = None
             hyd_db = None
 
-            for child in children:
-                cn = s[child]
+            for cn in s.nodes_with_parent(n):
                 if isinstance(cn, HydSpring):
                     hyd_spring = cn
                 if isinstance(cn, WaveInteraction1):
