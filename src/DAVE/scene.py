@@ -848,6 +848,9 @@ class Frame(NodeWithParentAndFootprint):
     @node_setter_observable
     def parent(self, val):
 
+        if val==self:
+            raise ValueError(f"{self.name} can not be its own parent.")
+
         if val is not None:
             # Circular reference check: are we trying to make self depend on val while val depends on self?
             if self._scene.node_A_core_depends_on_B_core(val, self):
@@ -1189,6 +1192,8 @@ class Frame(NodeWithParentAndFootprint):
             new_parent: new parent node
 
         """
+        if new_parent == self:
+            raise ValueError(f"{self.name} can not be its own parent.")
 
         # check new_parent
         if new_parent is not None:

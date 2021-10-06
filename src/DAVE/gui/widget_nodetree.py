@@ -51,8 +51,8 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
         node_name = dragged.text(0)
         node = self.guiScene[node_name]
 
-        if node._manager:  # managed nodes can not be dragged, except points and circles
-            if not isinstance(node, (Circle, Point)):
+        if node._manager:  # managed nodes can not be dragged, except points and circles and contact-meshes
+            if not isinstance(node, (Circle, Point, ContactMesh)):
                 return
 
         mimeData = QMimeData()
