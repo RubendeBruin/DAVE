@@ -430,6 +430,32 @@ def add_visual(scene, selection=None):
     else:
         return None
 
+def add_component(scene, selection=None):
+    ui, AddNode = add_node(scene,selection)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/component.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('Component'))
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+
+        if parent:
+            return "new_component('{}', parent = '{}')".format(
+                name, parent)
+        else:
+            return "new_component('{}')".format(
+                name)
+
+    else:
+        return None
+
 def add_buoyancy(scene, selection=None):
     ui, AddNode = add_node(scene,selection)
 

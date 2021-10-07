@@ -5659,6 +5659,133 @@ class Shackle(Manager, RigidBody):
         return code
 
 
+class Component(Manager, Frame):
+    """Components are frame-nodes containing a scene. The imported scene is referenced by a file-name. All impored nodes
+    are placed in the components frame.
+    """
+
+    def __init__(self, scene, vfAxis):
+        Manager.__init__(self, scene)
+        Frame.__init__(self, scene, vfAxis)
+
+        self._path = ''
+        self._nodes = list()
+        """Nodes in the component"""
+
+
+
+    @property
+    def name(self):
+        return self._vfNode.name
+
+    @name.setter
+    def name(self, value):
+        if value == self.name:
+            return
+
+        self._scene._verify_name_available(name=value)
+
+        old_prefix = self.name + "/"
+        new_prefix = value + "/"
+        self._vfNode.name = value
+
+        # update the node names of all of the properties , the direct way
+        with ClaimManagement(self._scene, self):
+            for node in self._nodes:
+                if node.name.startswith(old_prefix):
+                    node.name = node.name.replace(old_prefix, new_prefix)
+                else:
+                    raise Exception('Unexpected name')
+
+    def delete(self):
+        # remove all imported nodes
+        for node in self._nodes:
+            node._manager = None
+
+        for node in self._nodes:
+            if node in self._scene._nodes:
+                self._scene.delete(node)
+
+    def creates(self, node: Node):
+        return node in self._nodes
+
+
+    @property
+    def path(self):
+        """Path of the model-file. For example res: padeye.dave"""
+        return self._path
+
+    @path.setter
+    def path(self, value):
+
+        # first see if we can load
+        filename = self._scene.get_resource_path(value)
+        t = Scene(filename)
+
+        # then remove all existing nodes
+        self.delete()
+
+        # and re-import them
+        old_nodes = self._scene._nodes.copy()
+        self._scene.import_scene(other=t, prefix=self.name + '/', container = self)
+
+        # find imported nodes
+        self._nodes.clear()
+        for node in self._scene._nodes:
+            if node not in old_nodes:
+                self._nodes.append(node)
+
+        # claim ownership of them
+        for node in self._nodes:
+            node._manager = self
+
+        self._path = value
+
+    def give_python_code(self):
+
+        code = "# code for {}".format(self.name)
+        code += "\ns.new_component(name='{}',".format(self.name)
+        code += "\n               path='{}',".format(self.path)
+        if self.parent_for_export:
+            code += "\n           parent='{}',".format(self.parent_for_export.name)
+
+        # position
+
+        if self.fixed[0] or not self._scene._export_code_with_solved_function:
+            code += "\n           position=({},".format(self.position[0])
+        else:
+            code += "\n           position=(solved({}),".format(self.position[0])
+        if self.fixed[1] or not self._scene._export_code_with_solved_function:
+            code += "\n                     {},".format(self.position[1])
+        else:
+            code += "\n                     solved({}),".format(self.position[1])
+        if self.fixed[2] or not self._scene._export_code_with_solved_function:
+            code += "\n                     {}),".format(self.position[2])
+        else:
+            code += "\n                     solved({})),".format(self.position[2])
+
+        # rotation
+
+        if self.fixed[3] or not self._scene._export_code_with_solved_function:
+            code += "\n           rotation=({},".format(self.rotation[0])
+        else:
+            code += "\n           rotation=(solved({}),".format(self.rotation[0])
+        if self.fixed[4] or not self._scene._export_code_with_solved_function:
+            code += "\n                     {},".format(self.rotation[1])
+        else:
+            code += "\n                     solved({}),".format(self.rotation[1])
+        if self.fixed[5] or not self._scene._export_code_with_solved_function:
+            code += "\n                     {}),".format(self.rotation[2])
+        else:
+            code += "\n                     solved({})),".format(self.rotation[2])
+
+        # fixeties
+        code += "\n           fixed =({}, {}, {}, {}, {}, {}) )".format(*self.fixed)
+
+        code += self.add_footprint_python_code()
+
+        return code
+
 # =============== Scene
 
 
@@ -5901,7 +6028,7 @@ class Scene:
 
         # node is a string then get the node with this name
         if type(node) == str:
-            node = self[self._name_prefix + node]
+            node = self[node]
 
         reqtype = make_iterable(reqtype)
 
@@ -5964,6 +6091,8 @@ class Scene:
         Returns:
             Dictionary with original fixed properties as dict({'node name',fixed[6]}) which can be passed to _restore_original_fixes
         """
+        remember_godmode = self._godmode
+        self._godmode = True
 
         vessel_indicators = [
             *self.nodes_of_type(Buoyancy),
@@ -5990,6 +6119,8 @@ class Scene:
 
             parent.fixed = fixed
 
+        self._godmode = remember_godmode
+
         return r
 
     def _restore_original_fixes(self, original_fixes):
@@ -6007,8 +6138,13 @@ class Scene:
         if original_fixes is None:
             return
 
+        remember_godmode = self._godmode
+        self._godmode = True
+
         for name in original_fixes.keys():
             self.node_by_name(name).fixed = original_fixes[name]
+
+        self._godmode = remember_godmode
 
     def _check_and_fix_geometric_contact_orientations(self) -> (bool, str):
         """A Geometric pin on pin contact may end up with tension in the contact. Fix that by moving the child pin to the other side of the parent pin
@@ -6198,6 +6334,10 @@ class Scene:
         return tuple(props)
 
     def node_by_name(self, node_name, silent=False):
+
+        if self._name_prefix:
+            node_name = self._name_prefix + node_name
+
         for N in self._nodes:
             if N.name == node_name:
                 return N
@@ -6629,7 +6769,7 @@ class Scene:
                         d.observers.remove(node)
                     d.manager = None
 
-                    if hasattr(node, "parent"):
+                    if hasattr(d, "parent"):
                         if d.parent == node:
                             d.parent = p
 
@@ -6919,17 +7059,19 @@ class Scene:
         inertia_radii=None,
         fixed=True,
     ) -> Frame:
-        """Creates a new *axis* node and adds it to the scene.
+        """Creates a new *frame* node and adds it to the scene.
 
         Args:
             name: Name for the node, should be unique
             parent: optional, name of the parent of the node
             position: optional, position for the node (x,y,z)
             rotation: optional, rotation for the node (rx,ry,rz)
+            intertia: optional, inertia [mT] for node
+            inertia_radii: optional, radii (m,m,m) for frame
             fixed [True]: optional, determines whether the axis is fixed [True] or free [False]. May also be a sequence of 6 booleans.
 
         Returns:
-            Reference to newly created axis
+            Reference to newly created frame
 
         """
 
@@ -6985,6 +7127,85 @@ class Scene:
                 new_node.set_free()
         else:
             new_node.fixed = fixed
+
+        self._nodes.append(new_node)
+        return new_node
+
+    def new_component(
+        self,
+        name,
+        path='res: default_component.dave',
+        parent=None,
+        position=None,
+        rotation=None,
+        fixed=True,
+
+    ) -> Component:
+        """Creates a new *component* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: optional, name of the parent of the node
+            position: optional, position for the node (x,y,z)
+            rotation: optional, rotation for the node (rx,ry,rz)
+            fixed [True]: optional, determines whether the axis is fixed [True] or free [False]. May also be a sequence of 6 booleans.
+            path: component resource (.dave file)
+
+        Returns:
+            Reference to newly created component
+
+        """
+
+        # apply prefixes
+        name = self._prefix_name(name)
+
+        # check if we can import the provided path
+        try:
+            filename = self.get_resource_path(path)
+        except Exception as E:
+            raise ValueError(f'Error creating component {name}.\nCan not find  path "{path}"; \n {str(E)}')
+        try:
+            t = Scene(filename)
+        except Exception as E:
+            raise ValueError(f'Error creating component {name}.\nCan not import "{filename}" because {str(E)}')
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._parent_from_node(parent)
+
+        if position is not None:
+            assert3f(position, "Position ")
+        if rotation is not None:
+            assert3f(rotation, "Rotation ")
+
+        if not isinstance(fixed, bool):
+            if len(fixed) != 6:
+                raise Exception(
+                    '"fixed" parameter should either be True/False or a 6x bool sequence such as (True,True,False,False,True,False)'
+                )
+
+        # then create
+        a = self._vfc.new_axis(name)
+
+        new_node = Component(self, a)
+
+        # and set properties
+        if b is not None:
+            new_node.parent = b
+        if position is not None:
+            new_node.position = position
+        if rotation is not None:
+            new_node.rotation = rotation
+        if isinstance(fixed, bool):
+            if fixed:
+                new_node.set_fixed()
+            else:
+                new_node.set_free()
+        else:
+            new_node.fixed = fixed
+
+        new_node.path = path
 
         self._nodes.append(new_node)
         return new_node
@@ -8547,7 +8768,7 @@ class Scene:
 
         self.run_code(code)
 
-    def import_scene(self, other, prefix="", containerize=True, nodes = None):
+    def import_scene(self, other, prefix="", containerize=True, nodes = None, container = None):
         """Copy-paste all nodes of scene "other" into current scene.
 
         To avoid double names it is recommended to use a prefix. This prefix will be added to all element names.
@@ -8559,6 +8780,11 @@ class Scene:
         Returns:
             Contained (Axis-type Node) : if the imported scene is containerized then a reference to the created container is returned.
         """
+
+        if container is not None:
+            if not containerize:
+                warnings.warn("containerize = False does not work in combination with supplying a container. Containerize set to true")
+            containerize = True
 
         if isinstance(other, Path):
             other = str(other)
@@ -8585,7 +8811,7 @@ class Scene:
                     )
                 )
 
-        self._name_prefix = prefix
+        self._name_prefix = prefix + self._name_prefix
 
         store_export_code_with_solved_function = other._export_code_with_solved_function
         other._export_code_with_solved_function = False  # quicker
@@ -8596,12 +8822,12 @@ class Scene:
 
         self._name_prefix = old_prefix  # restore
 
-        # Move all imported elements without a parent into a newly created axis system
+        # Move all imported elements without a parent into a newly created or supplied frame
         if containerize:
 
-            container_name = self.available_name_like("import_container")
-
-            c = self.new_frame(prefix + container_name)
+            if container is None:
+                container_name = self.available_name_like("import_container")
+                container = self.new_frame(prefix + container_name)
 
             for name in imported_element_names:
 
@@ -8612,9 +8838,9 @@ class Scene:
                         continue
 
                     if node.parent is None:
-                        node.change_parent_to(c)
+                        node.change_parent_to(container)
 
-            return c
+            return container
 
         return None
 
@@ -8739,6 +8965,7 @@ class Scene:
         """Returns a list of modes (0=x ... 5=rotation z) associated with the rows/columns of M and K"""
         self.update()
         return self._vfc.get_dof_modes()
+
 
 
 # =================== None-Node Classes

@@ -11,7 +11,6 @@ from matplotlib.cm import get_cmap
 import DAVE.settings as ds
 
 
-
 PAINTERS = dict()  # this is the dictionary with sets of paint, it will be filled later
 
 # ============ visuals :: sea ===========
@@ -68,7 +67,7 @@ COLOR_WATER = rgb(_BLUE_DARK)
 
 # ------------ colormap for unity-checks
 
-UC_CMAP = get_cmap('turbo', lut=100)
+UC_CMAP = get_cmap("turbo", lut=100)
 
 # import matplotlib.pyplot as plt
 # import math
@@ -141,7 +140,7 @@ class ViewportSettings:
     painter_settings: dict = None
 
     # Unity-checks
-    paint_uc : bool = False # use UC property for actor colors. If UC is none, then use the color defined in the painter_settings instead
+    paint_uc: bool = False  # use UC property for actor colors. If UC is none, then use the color defined in the painter_settings instead
 
 
 # ============ Painters ================
@@ -318,18 +317,15 @@ surf.surfaceColor = _BLUE
 surf.labelShow = False
 painters["CurrentArea"] = {"main": copy(surf)}
 
+painters["Component"] = deepcopy(painters["Frame"])
+
 
 PAINTERS["Construction"] = deepcopy(painters)
-
-
-
 
 
 # Define the paint for ballasting
 # start with the active paints
 # override only what is needed
-
-
 
 
 ballast_painters = deepcopy(PAINTERS["Construction"])
@@ -572,17 +568,31 @@ PAINTERS["X-ray"]["Visual"]["main"].xray = True
 #
 # These are just the regular-paints but then with all line-widths set to 0
 
+
+def remove_mesh(paintset):
+    nodes = (
+        "ContactMesh",
+        "Buoyancy",
+        "Tank:freeflooding",
+        "Tank:empty",
+        "Tank:partial",
+        "Tank:full",
+    )
+    for node in nodes:
+        for paint in paintset[node].values():
+            paint.lineWidth = 0
+
+
 construction_nomesh = deepcopy(PAINTERS["Construction"])
-for value1 in construction_nomesh.values():
-    for value2 in value1.values():
-        value2.lineWidth = 0
-PAINTERS['Construction, no mesh'] = construction_nomesh
+remove_mesh(construction_nomesh)
+# for value1 in construction_nomesh.values():
+#     for value2 in value1.values():
+#         value2.lineWidth = 0
+PAINTERS["Construction, no mesh"] = construction_nomesh
 
 xray_nomesh = deepcopy(PAINTERS["X-ray"])
-for value1 in xray_nomesh.values():
-    for value2 in value1.values():
-        value2.lineWidth = 0
-PAINTERS['X-ray, no mesh'] = xray_nomesh
+remove_mesh(xray_nomesh)
+PAINTERS["X-ray, no mesh"] = xray_nomesh
 
 # Bendingmoment / footprints
 foot_painters = deepcopy(PAINTERS["X-ray, no mesh"])
@@ -592,8 +602,8 @@ footprint_paint.lineWidth = 3
 footprint_paint.lineColor = _PURPLE
 footprint_paint.surfaceColor = _PURPLE
 
-foot_painters['Point']['footprint'] = copy(footprint_paint)
-foot_painters['Frame']['footprint'] = copy(footprint_paint)
-foot_painters['RigidBody']['footprint'] = copy(footprint_paint)
+foot_painters["Point"]["footprint"] = copy(footprint_paint)
+foot_painters["Frame"]["footprint"] = copy(footprint_paint)
+foot_painters["RigidBody"]["footprint"] = copy(footprint_paint)
 
 PAINTERS["Footprints"] = foot_painters

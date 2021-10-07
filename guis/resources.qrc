@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>component.png</file>
     <file>UC_icon.png</file>
     <file>current.png</file>
     <file>wind.png</file>

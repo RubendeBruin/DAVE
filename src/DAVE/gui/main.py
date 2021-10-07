@@ -1056,14 +1056,17 @@ class Gui:
                 for node in to_be_removed:
                     self.selected_nodes.remove(node)
 
-                # if we created something new, then select it
+                # if we created something new, then select it (or its manager)
                 emitted = False
                 for node in self.scene._nodes:
                     if node not in before:
                         self.selected_nodes.clear()
                         # self.selected_nodes.append(node)
                         # self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
-                        self.guiSelectNode(node)
+                        if node.manager is not None:
+                            self.guiSelectNode(node.manager)
+                        else:
+                            self.guiSelectNode(node)
                         emitted = True
                         break
 
@@ -1552,6 +1555,7 @@ class Gui:
         ui.pbBeam.clicked.connect(self.new_beam)
 
         ui.pbVisual.clicked.connect(self.new_visual)
+        ui.pbComponent.clicked.connect(self.new_component)
 
         menu.addAction(wa)
 
@@ -1598,6 +1602,9 @@ class Gui:
 
     def new_visual(self):
         self.new_something(new_node_dialog.add_visual)
+
+    def new_component(self):
+        self.new_something(new_node_dialog.add_component)
 
     def new_buoyancy_mesh(self):
         self.new_something(new_node_dialog.add_buoyancy)

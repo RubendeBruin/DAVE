@@ -24,12 +24,13 @@ import DAVE.gui.forms.widget_sling
 import DAVE.gui.forms.widget_tank
 import DAVE.gui.forms.widget_shackle
 import DAVE.gui.forms.widget_area
+import DAVE.gui.forms.widget_component
 
 from DAVE.visual import transform_from_node
 
 import numpy as np
 
-from PySide2.QtWidgets import QListWidgetItem
+from PySide2.QtWidgets import QListWidgetItem, QMessageBox
 from PySide2 import QtWidgets
 
 
@@ -212,9 +213,11 @@ class EditNode(NodeEditor):
         element = "\ns['{}']".format(node.name)
 
         new_name = self.ui.tbName.text()
-        if not new_name == node.name:
-            code = element + ".name = '{}'".format(new_name)
-            self.run_code(code)
+
+        if new_name:
+            if not new_name == node.name:
+                code = element + ".name = '{}'".format(new_name)
+                self.run_code(code)
 
     def visible_changed(self):
         node = self.node
@@ -497,6 +500,64 @@ class EditWaveInteraction(NodeEditor):
 
         self.run_code(code)
 
+
+@Singleton
+class EditComponent(NodeEditor):
+
+    def __init__(self):
+        """Create the gui, store the main widget as self._widget"""
+
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_component.Ui_component()
+        ui.setupUi(widget)
+        self.ui = ui
+        self._widget = widget
+
+        self.ui.cbPath.currentTextChanged.connect(self.generate_code)
+        self.ui.pbReScan.clicked.connect(self.rescan)
+
+        self.fileextension = 'dave'
+
+    def rescan(self):
+        self.post_update_event()
+
+        text = f'Rescan completed for files ending with {self.fileextension} in folders:'
+        for p in self.scene.resources_paths:
+            text += f'\n - {str(p)}'
+        text += '\n\nlist updated'
+
+        QMessageBox.information(self.widget,
+                                'Done',
+                                text,
+                                QMessageBox.Ok
+                                )
+
+    def reload(self):
+        code = f"\ns['{self.node.name}'].path = r'{self.node.path}'"
+        self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+
+    def post_update_event(self):
+        """Sync the properties of the node to the gui"""
+        self.ui.cbPath.blockSignals(True)
+        self.ui.cbPath.clear()
+        self.ui.cbPath.addItems(
+            self.scene.get_resource_list(self.fileextension, include_subdirs=True)
+        )
+        self.ui.cbPath.setCurrentText(str(self.node.path))
+        self.ui.cbPath.blockSignals(False)
+
+    def barge_changed(self):
+        self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
+
+    def generate_code(self):
+        """Generate code to update the node, then run it"""
+
+        code = ""
+        code += code_if_changed_path(self.node, self.ui.cbPath.currentText(), "path")
+
+        if code:
+            self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
 # ======================================
 
@@ -2082,6 +2143,7 @@ class WidgetNodeProps(guiDockWidget):
         self.layout.addSpacerItem(self._Vspacer)
 
         self.positioned = False
+        self.node = None
 
     def select_manager(self):
         node = self.guiSelection[0]
@@ -2094,6 +2156,7 @@ class WidgetNodeProps(guiDockWidget):
             # check if we have a selection
             if self.guiSelection:
                 self.select_node(self.guiSelection[0])
+
 
         if self._open_edit_widgets:
 
@@ -2112,6 +2175,11 @@ class WidgetNodeProps(guiDockWidget):
         if event in [guiEventType.MODEL_STATE_CHANGED]:
             if self.guiSelection:
                 self.select_node(self.guiSelection[0])
+
+        # does the current node still exist?
+        if self.node not in self.guiScene._nodes:
+            self.select_node(None)
+            return
 
         if event in [guiEventType.SELECTED_NODE_MODIFIED]:
             for w in self._node_editors:
@@ -2158,6 +2226,11 @@ class WidgetNodeProps(guiDockWidget):
 
         to_be_removed = self._open_edit_widgets.copy()
 
+        if node is None:
+            self.setVisible(False)
+            return
+
+
         if node._manager and not isinstance(node, vfs.Shackle):
             self.managed_label.setText(
                 f"The properties of this node are managed by node '{node._manager.name}' and should not be changed manually"
@@ -2193,6 +2266,10 @@ class WidgetNodeProps(guiDockWidget):
 
         if isinstance(node, vfs.WaveInteraction1):
             self._node_editors.append(EditWaveInteraction.Instance())
+
+        if isinstance(node, vfs.Component):
+            self._node_editors.append(EditComponent.Instance())
+
 
         if isinstance(node, vfs.Frame):
             self._node_editors.append(EditAxis.Instance())

@@ -131,6 +131,8 @@ class WidgetNodeTree(guiDockWidget):
         ]:
             self.update_node_data_and_tree()
             self.update_node_visibility()
+            self._remove_removed_nodes_from_recent()
+            self.update_listview()
 
         if event in [guiEventType.VIEWER_SETTINGS_UPDATE]:
             self.update_node_visibility()
@@ -202,6 +204,8 @@ class WidgetNodeTree(guiDockWidget):
                 self.items[name].setSelected(False)
 
         # update recent items
+        self._remove_removed_nodes_from_recent()
+
         if len(self.guiSelection) > 4:
             self.recent_items = self.guiSelection[-4:]
         else:
@@ -211,8 +215,20 @@ class WidgetNodeTree(guiDockWidget):
             )
             self.recent_items = self.recent_items[-4:]
 
+        self.update_listview()
+
+    def _remove_removed_nodes_from_recent(self):
+        """Removes items from recent-view if they do no longer exist in the scene"""
+        new_recent = []
+        for node in self.recent_items:
+            if node in self.guiScene._nodes:
+                new_recent.append(node)
+        self.recent_items = new_recent
+
+    def update_listview(self):
         self.listbox.clear()
         self.listbox.addItems([node.name for node in self.recent_items])
+
 
     def update_node_visibility(self):
 
