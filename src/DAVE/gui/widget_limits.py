@@ -128,7 +128,8 @@ class WidgetLimits(guiDockWidget):
             if node.manager is None:
                 self.ui.widgetLimitEdit.setEnabled(True)
             else:
-                self.ui.widgetLimitEdit.setEnabled(False)
+                self.ui.widgetLimitEdit.setEnabled(False)   # NOTE: This actually never happens as the names of the
+                                                            # managed nodes are not in the drop-down box
                 self.ui.lbNodeClass.setText(f'This node is managed by {node.manager.name}')
 
 
