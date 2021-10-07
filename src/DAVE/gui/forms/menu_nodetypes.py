@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'menu_nodetypes.ui',
 # licensing of 'menu_nodetypes.ui' applies.
 #
-# Created: Thu Oct  7 11:39:55 2021
+# Created: Thu Oct  7 12:16:53 2021
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!

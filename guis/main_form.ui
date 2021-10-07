@@ -483,6 +483,7 @@
      <addaction name="actionOrcaflex_package"/>
     </widget>
     <addaction name="actionNew"/>
+    <addaction name="actionReload_components"/>
     <addaction name="separator"/>
     <addaction name="actionOpen"/>
     <addaction name="actionImport_sub_scene"/>
@@ -1091,6 +1092,11 @@ p, li { white-space: pre-wrap; }
   <action name="actionOnline_help">
    <property name="text">
     <string>Online help</string>
+   </property>
+  </action>
+  <action name="actionReload_components">
+   <property name="text">
+    <string>Reload components</string>
    </property>
   </action>
  </widget>

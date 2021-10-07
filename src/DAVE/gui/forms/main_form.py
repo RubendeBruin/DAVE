@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Mon Oct  4 18:12:27 2021
+# Created: Thu Oct  7 12:16:53 2021
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -424,10 +424,13 @@ class Ui_MainWindow(object):
         self.actionVersion.setObjectName("actionVersion")
         self.actionOnline_help = QtWidgets.QAction(MainWindow)
         self.actionOnline_help.setObjectName("actionOnline_help")
+        self.actionReload_components = QtWidgets.QAction(MainWindow)
+        self.actionReload_components.setObjectName("actionReload_components")
         self.menuExport.addAction(self.actionBlender)
         self.menuExport.addAction(self.actionOrcaflex)
         self.menuExport.addAction(self.actionOrcaflex_package)
         self.menuSolve_Statics.addAction(self.actionNew)
+        self.menuSolve_Statics.addAction(self.actionReload_components)
         self.menuSolve_Statics.addSeparator()
         self.menuSolve_Statics.addAction(self.actionOpen)
         self.menuSolve_Statics.addAction(self.actionImport_sub_scene)
@@ -557,5 +560,6 @@ class Ui_MainWindow(object):
         self.actionPython_console_2.setText(QtWidgets.QApplication.translate("MainWindow", "Python console", None, -1))
         self.actionVersion.setText(QtWidgets.QApplication.translate("MainWindow", "Version", None, -1))
         self.actionOnline_help.setText(QtWidgets.QApplication.translate("MainWindow", "Online help", None, -1))
+        self.actionReload_components.setText(QtWidgets.QApplication.translate("MainWindow", "Reload components", None, -1))
 
 import DAVE.gui.forms.resources_rc

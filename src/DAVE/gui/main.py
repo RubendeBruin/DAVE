@@ -321,6 +321,7 @@ class Gui:
         # ======================== Main Menu entries  ======
 
         self.ui.actionNew.triggered.connect(self.clear)
+        self.ui.actionReload_components.triggered.connect(self.refresh_model)
         self.ui.actionOpen.triggered.connect(self.open)
         self.ui.actionSave_scene.triggered.connect(self.menu_save)
         self.ui.actionSave_actions_as.triggered.connect(self.menu_save_actions)
@@ -596,6 +597,13 @@ class Gui:
         self.ui.pb3D.setChecked(flat)
         self.ui.action2D_mode.setChecked(flat)
         self.visual.refresh_embeded_view()
+
+    def refresh_model(self):
+        """Full model refresh to reload components"""
+        code = self.scene.give_python_code()
+        self.scene.clear()
+        self.scene.run_code(code)
+        self.guiEmitEvent(guiEventType.FULL_UPDATE)
 
     def delete_key(self):
         """Delete key pressed in either main-form or viewport"""

@@ -5891,12 +5891,23 @@ class Scene:
     @g.setter
     def g(self, value):
         assert1f(value)
+
+        old_godmode = self._godmode   # we also need to change the "mass" of managed nodes.
+        self._godmode = True
+
+        # first store the old masses
         rbs = self.nodes_of_type(RigidBody)
         for n in rbs:
-            n._mass = n.mass
+            n._temp_mass = n.mass # temporary property
+
+        # then update gravity, this changes the mass as the mass is stored as a force on the cog
         self._vfc.g = value
+
+        # now re-apply the old masses
         for n in rbs:
-            n.mass = n._mass
+            n.mass = n._temp_mass
+
+        self._godmode = old_godmode
 
     @property
     def rho_water(self):
@@ -8695,11 +8706,8 @@ class Scene:
 
         self.sort_nodes_by_dependency()
 
-        to_be_printed = []
-        for n in self._nodes:
-            to_be_printed.append(n.name)
+        to_be_printed = [n.name for n in self._nodes]
 
-        # to_be_printed.reverse()
 
         def print_deps(name, spaces):
 
@@ -8784,7 +8792,7 @@ class Scene:
         if container is not None:
             if not containerize:
                 warnings.warn("containerize = False does not work in combination with supplying a container. Containerize set to true")
-            containerize = True
+                containerize = True
 
         if isinstance(other, Path):
             other = str(other)
