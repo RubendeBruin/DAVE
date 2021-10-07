@@ -111,13 +111,9 @@ class WidgetLimits(guiDockWidget):
 
         if self.guiSelection:
             node = self.guiSelection[0]
-            if node in self.guiScene.unmanged_nodes:
+            if node.manager is None:
                 cbN.setCurrentText(node.name)
                 self.ui.lbNodeClass.setText(f'Node type: {node.class_name}')
-
-        cbN.blockSignals(False)
-
-
 
         # the properties drop-down
         cbP = self.ui.cbProperty
@@ -128,6 +124,14 @@ class WidgetLimits(guiDockWidget):
             props = self.guiScene.give_properties_for_node(node)
             props_without_name = [p for p in props if p != 'name']
             combobox_update_items(cbP, props_without_name)
+
+            if node.manager is None:
+                self.ui.widgetLimitEdit.setEnabled(True)
+            else:
+                self.ui.widgetLimitEdit.setEnabled(False)
+                self.ui.lbNodeClass.setText(f'This node is managed by {node.manager.name}')
+
+
         else:
             cbP.clear()
 
@@ -155,14 +159,16 @@ class WidgetLimits(guiDockWidget):
 
 
         # get the property documentation
-        step1 = DAVE_REPORT_PROPS[DAVE_REPORT_PROPS['class'] == node.class_name]
-        step2 = step1[step1['property'] == prop_name]
-        doc = step2['doc']
+        # step1 = DAVE_REPORT_PROPS[DAVE_REPORT_PROPS['class'] == node.class_name]
+        # step2 = step1[step1['property'] == prop_name]
+        # doc = step2['doc']
+        #
+        # if doc.empty:
+        #     doc = 'No help available, sorry :-/'
+        # else:
+        #     doc = doc.item()
 
-        if doc.empty:
-            doc = 'No help available, sorry :-/'
-        else:
-            doc = doc.item()
+        doc = self.guiScene.give_documentation(node, prop_name)
 
         # get the actual value of the property
         actual_value = getattr(node, prop_name)
@@ -227,13 +233,18 @@ class WidgetLimits(guiDockWidget):
         table.blockSignals(True)
 
         unmanged_nodes_with_limit = [node for node in self.guiScene.unmanged_nodes if node.limits is not None]
+        managed_nodes_with_limit = [node for node in self.guiScene.manged_nodes if node.limits is not None]
 
         irow = 0
         table.setRowCount(0)
 
-        for node in unmanged_nodes_with_limit:
+        for node in (*unmanged_nodes_with_limit, *managed_nodes_with_limit):
 
             for key, value in node.limits.items():
+
+                if isinstance(value, float):  # do not list unset limits (limit < 0)
+                    if value < 0:
+                        continue
 
                 table.setRowCount(irow+1)
 

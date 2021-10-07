@@ -142,29 +142,53 @@ Gui specific settings
 
 """
 
-
-# displayed properties of nodes
-PROPS_NODE = ['name']
-PROPS_FRAME = ['global_position','global_rotation','applied_force','connection_force','equilibrium_error',
-              'x','y','z','gz','gy','gz','rx','ry','rz','grx','gry','grz','ux','uy','uz',
-              'connection_force_x','connection_force_y','connection_force_z','connection_moment_x','connection_moment_y','connection_moment_z',
-              'tilt_x','heel','tilt_y','trim','heading','heading_compass']
-PROPS_POI = ['global_position','applied_force_and_moment_global','x','y','z','gx','gy','gz',
-             'applied_force','fx','fy','fz',
-             'applied_moment','mx','my','mz',]
-PROPS_CABLE = ['tension','stretch','length']
-PROPS_FORCE = ['force','fx','fy','fz','moment','mx','my','mz']
-PROPS_CON2D = ['angle','moment','force','ax','ay','az']
-PROPS_CON6D = ['force_global','fgx','fgy','fgz','moment_global','mgx','mgy','mgz']
-PROPS_BODY = ['cog', 'cogx', 'cogy', 'cogz', 'mass']
-PROPS_BUOY_MESH = ['cob', 'displacement', 'cob_local']
-PROPS_BEAM = ['tension', 'torsion', 'L', 'EIy', 'EIz', 'EA', 'GIp', 'n_segments']
-PROPS_CONTACTBALL = ['can_contact','contactpoint','contact_force_magnitude','contact_force']
-PROPS__AREA = ['A','Cd', 'Ae','fx','fy','fz','force']
+#
+# # displayed properties of nodes
+#
+# Obsolete, now read from the .csv that is also used for the documentation
+#
+# PROPS_NODE = ['name']
+# PROPS_FRAME = ['global_position','global_rotation','applied_force','connection_force','equilibrium_error',
+#               'x','y','z','gz','gy','gz','rx','ry','rz','grx','gry','grz','ux','uy','uz',
+#               'connection_force_x','connection_force_y','connection_force_z','connection_moment_x','connection_moment_y','connection_moment_z',
+#               'tilt_x','heel','tilt_y','trim','heading','heading_compass']
+# PROPS_POI = ['global_position','applied_force_and_moment_global','x','y','z','gx','gy','gz',
+#              'applied_force','fx','fy','fz',
+#              'applied_moment','mx','my','mz',]
+# PROPS_CABLE = ['tension','stretch','length']
+# PROPS_FORCE = ['force','fx','fy','fz','moment','mx','my','mz']
+# PROPS_CON2D = ['angle','moment','force','ax','ay','az']
+# PROPS_CON6D = ['force_global','fgx','fgy','fgz','moment_global','mgx','mgy','mgz']
+# PROPS_BODY = ['cog', 'cogx', 'cogy', 'cogz', 'mass']
+# PROPS_BUOY_MESH = ['cob', 'displacement', 'cob_local']
+# PROPS_BEAM = ['tension', 'torsion', 'L', 'EIy', 'EIz', 'EA', 'GIp', 'n_segments']
+# PROPS_CONTACTBALL = ['can_contact','contactpoint','contact_force_magnitude','contact_force']
+# PROPS__AREA = ['A','Cd', 'Ae','fx','fy','fz','force']
 
 
 cdir = Path(dirname(__file__))
 DAVE_REPORT_PROPS = pd.read_csv(cdir / './resources/proplist.csv')
+
+classes = set(DAVE_REPORT_PROPS['class'].tolist())
+
+PROPS = dict()
+PROPS_GUI = dict()
+for c in classes:
+    props_for_class = DAVE_REPORT_PROPS[DAVE_REPORT_PROPS['class'] == c]
+    all_properties = props_for_class['property'].tolist()
+    PROPS[c] =  all_properties
+    docs = props_for_class['doc'].tolist()
+
+    guiprops = []
+    for (prop, doc) in zip(all_properties, docs):
+        if '#NOGUI' not in doc:
+            guiprops.append(prop)
+        else:
+            print(f'Skipping {doc}')
+
+    PROPS_GUI[c] = guiprops
+
+
 
 # ======= Animate after solving =========
 

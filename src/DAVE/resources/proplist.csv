@@ -1,10 +1,11 @@
 class,property,readonly,doc
+BallastSystem,target_elevation,False,The target elevation of the parent of the ballast system.
 BallastSystem,cogx,True,X position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]
 BallastSystem,cogy,True,Y position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]
 BallastSystem,cogz,True,Z position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]
 BallastSystem,cog,True,"Combined CoG of all tank contents in the ballast-system. (global coordinate) [m,m,m]"
 BallastSystem,weight,True,Total weight of all tank fillings in the ballast system [kN]
-Beam,n_segments,False,
+Beam,n_segments,False,Number of segments used in beam [-]
 Beam,EIy,False,"E * Iyy : bending stiffness in the XZ plane [kN m2]
 
         E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
@@ -28,8 +29,10 @@ Beam,EA,False,"E * A : stiffness in the length direction [kN]
 Beam,tension_only,False,axial stiffness (EA) only applicable to tension [True/False]
 Beam,mass,False,Mass of the beam in [mT]
 Beam,L,False,Length of the beam in unloaded condition [m]
-Beam,nodeA,False,The axis system that the A-end of the beam is connected to. The beam leaves this axis system along the X-axis
-Beam,nodeB,False,The axis system that the B-end of the beam is connected to. The beam arrives at this axis system along the X-axis
+Beam,nodeA,False,"The axis system that the A-end of the beam is connected to. The beam leaves this axis system along the X-axis
+        #NOGUI"
+Beam,nodeB,False,"The axis system that the B-end of the beam is connected to. The beam arrives at this axis system along the X-axis
+        #NOGUI"
 Beam,moment_A,True,"Moment on beam at node A (kNm, kNm, kNm) , axis system of node A"
 Beam,moment_B,True,"Moment on beam at node B (kNm, kNm, kNm) , axis system of node B"
 Beam,tension,True,"Tension in the beam [kN], negative for compression
@@ -45,7 +48,8 @@ Beam,X_midpoints,True,X-positions of the beam centers measured along the length 
 Beam,global_positions,True,"Global-positions of the end nodes and internal nodes [m,m,m]"
 Beam,global_orientations,True,"Global-orientations of the end nodes and internal nodes [deg,deg,deg]"
 Beam,bending,True,"Bending forces of the end nodes and internal nodes [0, kNm, kNm]"
-Buoyancy,trimesh,True,
+Buoyancy,trimesh,True,"Reference to TriMeshSource object
+        #NOGUI"
 Buoyancy,cob,True,"GLOBAL position of the center of buoyancy [m,m,m] (global axis)"
 Buoyancy,cob_local,True,"Position of the center of buoyancy [m,m,m] (local axis)"
 Buoyancy,displacement,True,Displaced volume of fluid [m^3]
@@ -92,7 +96,7 @@ Cable,connections,False,"List or Tuple of nodes that this cable is connected to.
         ('point 1','point 3','point 3')
 
         this is invalid because point 3 is repeated.
-
+        #NOGUI
         "
 Circle,axis,False,"Direction of the sheave axis (x,y,z) in parent axis system.
 
@@ -108,6 +112,14 @@ Circle,global_position,True,"Returns the global position of the center of the sh
 
         Note: this is the same as the global position of the parent point.
         "
+Circle,position,True,"Returns the local position of the center of the sheave.
+
+        Note: this is the same as the local position of the parent point.
+        "
+Component,name,False,"Name of the node (str), must be unique
+        #NOGUI"
+Component,path,False,"Path of the model-file. For example res: padeye.dave
+        "
 Connector2d,angle,True,Actual angle between nodeA and nodeB [deg] (read-only)
 Connector2d,force,True,Actual force between nodeA and nodeB [kN] (read-only)
 Connector2d,moment,True,Actual moment between nodeA and nodeB [kNm] (read-only)
@@ -117,9 +129,11 @@ Connector2d,ay,True,Y component of actual rotation axis between nodeA and nodeB 
 Connector2d,az,True,Z component of actual rotation axis between nodeA and nodeB (read-only)
 Connector2d,k_linear,False,Linear stiffness [kN/m]
 Connector2d,k_angular,False,Angular stiffness [kNm/rad]
-Connector2d,nodeA,False,Connected axis system A
-Connector2d,nodeB,False,Connected axis system B
-ContactBall,can_contact,True,"True if the ball ball is perpendicular to at least one of the faces of one of the meshes. So when contact is possible. To check if there is contact use ""force""
+Connector2d,nodeA,False,"Connected axis system A
+        #NOGUI"
+Connector2d,nodeB,False,"Connected axis system B
+        #NOGUI"
+ContactBall,can_contact,True,"True if the ball is currently perpendicular to at least one of the faces of one of the meshes. So when contact is possible. To check if there is contact use ""force"".
         See Also: Force
         "
 ContactBall,contact_force,True,"Returns the force on the ball [kN, kN, kN] (global axis)
@@ -149,10 +163,10 @@ ContactMesh,trimesh,True,"The TriMeshSource object which can be used to change t
 
         Example:
             s['Contactmesh'].trimesh.load_file('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
-        "
-CoreConnectedNode,name,False,"Name of the node (str), must be unique"
-CurrentArea,force,True,"The x,y and z components of the force [kN,kN,kN] (global axis)
-        "
+        #NOGUI"
+CoreConnectedNode,name,False,"Name of the node (str), must be unique
+        #NOGUI"
+CurrentArea,force,True,"The x,y and z components of the force [kN,kN,kN] (global axis)"
 CurrentArea,fx,True,The global x-component of the force [kN] (global axis)
 CurrentArea,fy,True,The global y-component of the force [kN]  (global axis)
 CurrentArea,fz,True,The global z-component of the force [kN]  (global axis)
@@ -162,7 +176,7 @@ CurrentArea,Cd,False,Cd coefficient [-]
 CurrentArea,direction,False,"Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is
         the direction of the axis and for 'sphere' this is not used [m,m,m]"
 CurrentArea,areakind,False,"Defines how to interpret the area.
-        See also: `direction` "
+        See also: `direction`"
 Force,force,False,"The x,y and z components of the force [kN,kN,kN] (global axis)
 
         Example s['wind'].force = (12,34,56)
@@ -269,7 +283,8 @@ Frame,heading,True,"Direction (0..360) [deg] of the local x-axis relative to the
         "
 Frame,heading_compass,True,The heading (0..360)[deg] assuming that the global y-axis is North and global x-axis is East and rotation accoring compass definition
 Frame,global_rotation,False,"Rotation [deg,deg,deg] (global axis)"
-Frame,global_transform,True,Read-only: The global transform of the axis system [matrix]
+Frame,global_transform,True,"Read-only: The global transform of the axis system [matrix]
+        #NOGUI"
 Frame,connection_force,True,"The forces and moments that this axis applies on its parent at the origin of this axis system. [kN, kN, kN, kNm, kNm, kNm] (Parent axis)
 
         If this axis would be connected to a point on its parent, and that point would be located at the location of the origin of this axis system
@@ -298,14 +313,18 @@ Frame,applied_force,True,"The force and moment that is applied on origin of this
 Frame,ux,True,"The unit x axis [m,m,m] (Global axis)"
 Frame,uy,True,"The unit y axis [m,m,m] (Global axis)"
 Frame,uz,True,"The unit z axis [m,m,m] (Global axis)"
-Frame,equilibrium_error,True,"The unresolved force and moment that on this axis. Should be zero when in equilibrium  (applied-force minus connection force, Parent axis)"
+Frame,equilibrium_error,True,"The remaining force and moment on this axis. Should be zero when in equilibrium  (applied-force minus connection force, Parent axis)"
+GeometricContact,name,False,"Name of the node (str), must be unique
+        #NOGUI"
 GeometricContact,child,False,"The Circle that is connected to the GeometricContact [Node]
 
         See Also: parent
+        #NOGUI
         "
 GeometricContact,parent,False,"The Circle that the GeometricConnection is connected to [Node]
 
         See Also: child
+        #NOGUI
         "
 GeometricContact,swivel,False,Swivel angle between parent and child objects [degrees]
 GeometricContact,swivel_fixed,False,Allow parent and child to swivel relative to eachother [boolean]
@@ -325,8 +344,10 @@ HydSpring,kHeave,False,Heave stiffness [kN/m]
 HydSpring,waterline,False,Waterline-elevation relative to cob for un-stretched heave-spring. Positive if cob is below the waterline (which is where is normally is) [m]
 HydSpring,displacement_kN,False,Displacement when waterline is at waterline-elevation [kN]
 LC6d,stiffness,False,"Stiffness of the connector: kx, ky, kz, krx, kry, krz in [kN/m and kNm/rad] (axis system of the main axis)"
-LC6d,main,False,Main axis system. This axis system dictates the axis system that the stiffness is expressed in
-LC6d,secondary,False,Secondary (connected) axis system
+LC6d,main,False,"Main axis system. This axis system dictates the axis system that the stiffness is expressed in
+        #NOGUI"
+LC6d,secondary,False,"Secondary (connected) axis system
+        #NOGUI"
 LC6d,fgx,True,Force on main in global coordinate frame [kN]
 LC6d,fgy,True,Force on main in global coordinate frame [kN]
 LC6d,fgz,True,Force on main in global coordinate frame [kN]
@@ -335,24 +356,47 @@ LC6d,mgx,True,Moment on main in global coordinate frame [kNm]
 LC6d,mgy,True,Moment on main in global coordinate frame [kNm]
 LC6d,mgz,True,Moment on main in global coordinate frame [kNm]
 LC6d,moment_global,True,Moment on main in global coordinate frame [kNm]
-Node,class_name,True,
-Node,visible,False,
-Node,manager,False,
-Node,name,False,"Name of the node (str), must be unique"
-NodeWithCoreParent,parent_for_export,True,
-NodeWithCoreParent,parent,False,Determines the parent of the node if any.
-NodeWithParentAndFootprint,footprint,False,"tuple of tuples ((x1,y1,z1), (x2,y2,z2), .... (xn,yn,zn)"
+Manager,name,False,"Name of the node (str), must be unique
+        #NOGUI"
+Node,class_name,True,"Name of the python class, used for looking up documentation [str]
+        #NOGUI"
+Node,visible,False,"Determines if this node is visible in the viewport [bool]
+        #NOGUI"
+Node,manager,False,"If this node is managed then this is a reference to the node that manages this node. Otherwise None
+        #NOGUI"
+Node,name,False,"Name of the node (str), must be unique
+        #NOGUI"
+Node,UC,True,"Returns the governing UC of the node, returns None is no limits are defined
+
+        See Also: give_UC
+        "
+NodeWithCoreParent,parent_for_export,True,"Reference to node that to use as parent used during export (work-around for circular references in export of geometric-contact
+        #NOGUI"
+NodeWithCoreParent,parent,False,"Determines the parent of the node if any.
+        #NOGUI"
+NodeWithParentAndFootprint,footprint,False,"Determines where on its parent the force of this node is applied. Tuple of tuples ((x1,y1,z1), (x2,y2,z2), .... (xn,yn,zn)"
 Point,x,False,x component of local position [m] (parent axis)
 Point,y,False,y component of local position [m] (parent axis)
 Point,z,False,z component of local position [m] (parent axis)
+Point,applied_force,True,"Applied force [kN,kN,kN] (parent axis)"
+Point,force,True,total force magnitude as applied on the point [kN]
+Point,fx,True,x component of applied force [kN] (parent axis)
+Point,fy,True,y component of applied force [kN] (parent axis)
+Point,fz,True,z component of applied force [kN] (parent axis)
+Point,applied_moment,True,"Applied moment [kNm,kNm,kNm] (parent axis)"
+Point,moment,True,total moment magnitude as applied on the point [kNm]
+Point,mx,True,x component of applied moment [kNm] (parent axis)
+Point,my,True,y component of applied moment [kNm] (parent axis)
+Point,mz,True,z component of applied moment [kNm] (parent axis)
 Point,position,False,"Local position [m,m,m] (parent axis)"
 Point,applied_force_and_moment_global,True,"Applied force and moment on this point [kN, kN, kN, kNm, kNm, kNm] (Global axis)"
 Point,gx,False,x component of position [m] (global axis)
 Point,gy,False,y component of position [m] (global axis)
 Point,gz,False,z component of position [m] (global axis)
 Point,global_position,False,"Global position [m,m,m] (global axis)"
-RigidBody,name,False,
-RigidBody,footprint,False,
+RigidBody,name,False,"Name of the node (str), must be unique
+        #NOGUI"
+RigidBody,footprint,False,Sets the footprint vertices. Supply as an iterable with each element containing three floats
 RigidBody,cogx,False,x-component of cog position [m] (local axis)
 RigidBody,cogy,False,y-component of cog position [m] (local axis)
 RigidBody,cogz,False,z-component of cog position [m] (local axis)
@@ -380,6 +424,10 @@ SPMT,axles,False,"Axles is a list axle positions. Each entry is a (x,y,z) entry 
             [(-10,0,0),(-5,0,0),(0,0,0)] for three axles
         "
 Shackle,kind,False,"Type of shackle, for example GP800 [text]"
+Shackle,name,False,"Name of the node (str), must be unique
+        #NOGUI"
+Sling,name,False,"Name of the node (str), must be unique
+        #NOGUI"
 Sling,k_total,False,Total stiffness of the sling in kN/m
 Sling,length,False,Total length measured between the INSIDE of the eyes of the sling is pulled straight. [m]
 Sling,LeyeA,False,Total length inside eye A if stretched flat [m]
@@ -389,23 +437,30 @@ Sling,LspliceB,False,Length of the splice at end B [m]
 Sling,diameter,False,Diameter of the sling (except the splices) [m]
 Sling,EA,False,EA of the wire of the sling. See also: k_total
 Sling,mass,False,Mass and weight of the sling. This mass is discretized  distributed over the two splices [mT]
-Sling,endA,False,End A [circle or point node]
-Sling,endB,False,End B [circle or point node]
+Sling,endA,False,"End A [circle or point node]
+        #NOGUI"
+Sling,endB,False,"End B [circle or point node]
+        #NOGUI"
 Sling,sheaves,False,"List of sheaves (circles, points) that the sling runs over between the two ends.
 
         May be provided as list of nodes or node-names.
+        #NOGUI
         "
-Tank,trimesh,True,
-Tank,free_flooding,False,
+Tank,trimesh,True,"The TriMeshSource object which can be used to change the mesh
+
+                Example:
+                    s['Contactmesh'].trimesh.load_file('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
+            #NOGUI"
+Tank,free_flooding,False,Tank is filled till global waterline (aka: damaged) [bool]
 Tank,permeability,False,Permeability is the fraction of the enclosed volume that can be filled with fluid [-]
 Tank,cog,True,Returns the GLOBAL position of the center of volume / gravity
 Tank,cog_local,True,Returns the local position of the center of gravity
 Tank,cog_when_full,True,Returns the LOCAL position of the center of volume / gravity of the tank when it is filled
 Tank,fill_pct,False,Amount of volume in tank as percentage of capacity [%]
 Tank,level_global,False,The fluid plane elevation in the global axis system. Setting this adjusts the volume
-Tank,volume,False,The volume of fluid in the tank in m3. Setting this adjusts the fluid level
+Tank,volume,False,The actual volume of fluid in the tank in m3. Setting this adjusts the fluid level
 Tank,density,False,Density of the fluid in the tank in mT/m3
-Tank,capacity,True,Returns the capacity of the tank in m3. This is calculated from the defined geometry.
+Tank,capacity,True,Returns the capacity of the tank in m3. This is calculated from the defined geometry and permeability.
 Tank,ullage,True,"Ullage of the tank [m].
         The ullage is the distance between a measurement point and the fluid surface. The point is [xf,yf,zv] where
         xf and yf are the x and y coordinates (local) of the center of fluid when the tank is full. zv is the largest z value
@@ -414,10 +469,11 @@ Tank,ullage,True,"Ullage of the tank [m].
         It is possible that this definition returns an ullage larger than the physical tank depth. In that case the physical depth of
         the tank is returned instead.
         "
-Visual,file_path,True,
-WaveInteraction1,file_path,True,
-WindArea,force,True,"The x,y and z components of the force [kN,kN,kN] (global axis)
-        "
+Visual,file_path,True,"Resolved path of the visual (str)
+        #NOGUI"
+WaveInteraction1,file_path,True,"Resolved path of the visual (str)
+        #NOGUI"
+WindArea,force,True,"The x,y and z components of the force [kN,kN,kN] (global axis)"
 WindArea,fx,True,The global x-component of the force [kN] (global axis)
 WindArea,fy,True,The global y-component of the force [kN]  (global axis)
 WindArea,fz,True,The global z-component of the force [kN]  (global axis)
@@ -427,4 +483,4 @@ WindArea,Cd,False,Cd coefficient [-]
 WindArea,direction,False,"Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is
         the direction of the axis and for 'sphere' this is not used [m,m,m]"
 WindArea,areakind,False,"Defines how to interpret the area.
-        See also: `direction` "
+        See also: `direction`"

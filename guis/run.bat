@@ -41,6 +41,6 @@ echo call pyside2-uic widget_buoyancy.ui -o "..\src\DAVE\gui\forms\widget_buoyan
 echo call pyside2-uic widget_selection_actions.ui -o "..\src\DAVE\gui\forms\widget_selection_actions.py"
 echo call pyside2-uic widget_tank.ui -o "..\src\DAVE\gui\forms\widget_tank.py"
 echo call pyside2-uic widget_footprints.ui -o "..\src\DAVE\gui\forms\widget_footprints.py"
-echo call pyside2-uic widget_limits.ui -o "..\src\DAVE\gui\forms\widget_limits.py"
+call pyside2-uic widget_limits.ui -o "..\src\DAVE\gui\forms\widget_limits.py"
 
 echo call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"

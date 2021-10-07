@@ -118,6 +118,8 @@ class Node(ABC):
 
     @property
     def class_name(self):
+        """Name of the python class, used for looking up documentation [str]
+        #NOGUI"""
         return self.__class__.__name__
 
     @abstractmethod
@@ -133,6 +135,8 @@ class Node(ABC):
 
     @property
     def visible(self):
+        """Determines if this node is visible in the viewport [bool]
+        #NOGUI"""
         if self.manager:
             return self.manager.visible
         return self._visible
@@ -145,6 +149,8 @@ class Node(ABC):
 
     @property
     def manager(self):
+        """If this node is managed then this is a reference to the node that manages this node. Otherwise None
+        #NOGUI"""
         return self._manager
 
     @manager.setter
@@ -175,7 +181,8 @@ class Node(ABC):
 
     @property
     def name(self):
-        """Name of the node (str), must be unique"""
+        """Name of the node (str), must be unique
+        #NOGUI"""
         return self._name
 
     @name.setter
@@ -272,7 +279,8 @@ class CoreConnectedNode(Node):
 
     @property
     def name(self):
-        """Name of the node (str), must be unique"""
+        """Name of the node (str), must be unique
+        #NOGUI"""
         return self._vfNode.name
 
     @name.setter
@@ -314,6 +322,8 @@ class NodeWithCoreParent(CoreConnectedNode):
 
     @property
     def parent_for_export(self):
+        """Reference to node that to use as parent used during export (work-around for circular references in export of geometric-contact
+        #NOGUI"""
         if self._parent_for_code_export == True:
             return self._parent
         else:
@@ -321,7 +331,8 @@ class NodeWithCoreParent(CoreConnectedNode):
 
     @property
     def parent(self):
-        """Determines the parent of the node if any."""
+        """Determines the parent of the node if any.
+        #NOGUI"""
         if self._vfNode.parent is None:
             return None
         else:
@@ -447,7 +458,7 @@ class NodeWithParentAndFootprint(NodeWithCoreParent):
 
     @property
     def footprint(self):
-        """tuple of tuples ((x1,y1,z1), (x2,y2,z2), .... (xn,yn,zn)"""
+        """Determines where on its parent the force of this node is applied. Tuple of tuples ((x1,y1,z1), (x2,y2,z2), .... (xn,yn,zn)"""
         r = []
         for i in range(self._vfNode.nFootprintVertices):
             r.append(self._vfNode.footprintVertexGet(i))
@@ -516,6 +527,8 @@ class Visual(Node):
 
     @property
     def file_path(self):
+        """Resolved path of the visual (str)
+        #NOGUI"""
         return self._scene.get_resource_path(self.path)
 
     def depends_on(self):
@@ -1037,7 +1050,8 @@ class Frame(NodeWithParentAndFootprint):
 
     @property
     def global_transform(self):
-        """Read-only: The global transform of the axis system [matrix]"""
+        """Read-only: The global transform of the axis system [matrix]
+        #NOGUI"""
         return self._vfNode.global_transform
 
     @property
@@ -1114,7 +1128,7 @@ class Frame(NodeWithParentAndFootprint):
 
     @property
     def equilibrium_error(self):
-        """The unresolved force and moment that on this axis. Should be zero when in equilibrium  (applied-force minus connection force, Parent axis)"""
+        """The remaining force and moment on this axis. Should be zero when in equilibrium  (applied-force minus connection force, Parent axis)"""
         return self._vfNode.equilibrium_error
 
     def to_loc_position(self, value):
@@ -1490,6 +1504,8 @@ class RigidBody(Frame):
 
     @property  # can not define a setter without a getter..?
     def name(self):
+        """Name of the node (str), must be unique
+        #NOGUI"""
         return super().name
 
     @name.setter
@@ -1505,11 +1521,11 @@ class RigidBody(Frame):
 
     @property
     def footprint(self):
+        """Sets the footprint vertices. Supply as an iterable with each element containing three floats"""
         return super().footprint
 
     @footprint.setter
     def footprint(self, value):
-        """Sets the footprint vertices. Supply as an iterable with each element containing three floats"""
         super(RigidBody, type(self)).footprint.fset(
             self, value
         )  # https://bugs.python.org/issue14965
@@ -1781,7 +1797,7 @@ class Cable(CoreConnectedNode):
         ('point 1','point 3','point 3')
 
         this is invalid because point 3 is repeated.
-
+        #NOGUI
         """
         return tuple(self._pois)
 
@@ -2155,7 +2171,7 @@ class ContactMesh(NodeWithCoreParent):
 
         Example:
             s['Contactmesh'].trimesh.load_file('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
-        """
+        #NOGUI"""
         return self._trimesh
 
     def give_python_code(self):
@@ -2189,7 +2205,7 @@ class ContactBall(NodeWithCoreParent):
 
     @property
     def can_contact(self) -> bool:
-        """True if the ball ball is perpendicular to at least one of the faces of one of the meshes. So when contact is possible. To check if there is contact use "force"
+        """True if the ball is currently perpendicular to at least one of the faces of one of the meshes. So when contact is possible. To check if there is contact use "force".
         See Also: Force
         """
         return self._vfNode.has_contact
@@ -2752,7 +2768,8 @@ class LC6d(CoreConnectedNode):
 
     @property
     def main(self):
-        """Main axis system. This axis system dictates the axis system that the stiffness is expressed in"""
+        """Main axis system. This axis system dictates the axis system that the stiffness is expressed in
+        #NOGUI"""
         return self._main
 
     @main.setter
@@ -2769,7 +2786,8 @@ class LC6d(CoreConnectedNode):
 
     @property
     def secondary(self):
-        """Secondary (connected) axis system"""
+        """Secondary (connected) axis system
+        #NOGUI"""
         return self._secondary
 
     @secondary.setter
@@ -2912,7 +2930,8 @@ class Connector2d(CoreConnectedNode):
 
     @property
     def nodeA(self) -> Frame:
-        """Connected axis system A"""
+        """Connected axis system A
+        #NOGUI"""
         return self._nodeA
 
     @nodeA.setter
@@ -2929,7 +2948,8 @@ class Connector2d(CoreConnectedNode):
 
     @property
     def nodeB(self) -> Frame:
-        """Connected axis system B"""
+        """Connected axis system B
+        #NOGUI"""
         return self._nodeB
 
     @nodeB.setter
@@ -2998,6 +3018,7 @@ class Beam(CoreConnectedNode):
 
     @property
     def n_segments(self):
+        """Number of segments used in beam [-]"""
         return self._vfNode.nSegments
 
     @n_segments.setter
@@ -3114,7 +3135,8 @@ class Beam(CoreConnectedNode):
 
     @property
     def nodeA(self):
-        """The axis system that the A-end of the beam is connected to. The beam leaves this axis system along the X-axis"""
+        """The axis system that the A-end of the beam is connected to. The beam leaves this axis system along the X-axis
+        #NOGUI"""
         return self._nodeA
 
     @nodeA.setter
@@ -3132,7 +3154,8 @@ class Beam(CoreConnectedNode):
 
     @property
     def nodeB(self):
-        """The axis system that the B-end of the beam is connected to. The beam arrives at this axis system along the X-axis"""
+        """The axis system that the B-end of the beam is connected to. The beam arrives at this axis system along the X-axis
+        #NOGUI"""
         return self._nodeB
 
     @nodeB.setter
@@ -3609,6 +3632,8 @@ class Buoyancy(NodeWithCoreParent):
 
     @property
     def trimesh(self) -> TriMeshSource:
+        """Reference to TriMeshSource object
+        #NOGUI"""
         return self._trimesh
 
     @property
@@ -3687,10 +3712,16 @@ class Tank(NodeWithCoreParent):
 
     @property
     def trimesh(self) -> TriMeshSource:
+        """The TriMeshSource object which can be used to change the mesh
+
+                Example:
+                    s['Contactmesh'].trimesh.load_file('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
+            #NOGUI"""
         return self._trimesh
 
     @property
     def free_flooding(self):
+        """Tank is filled till global waterline (aka: damaged) [bool]"""
         return self._vfNode.free_flooding
 
     @free_flooding.setter
@@ -4209,6 +4240,8 @@ class WaveInteraction1(Node):
 
     @property
     def file_path(self):
+        """Resolved path of the visual (str)
+        #NOGUI"""
         return self._scene.get_resource_path(self.path)
 
     def depends_on(self):
@@ -4267,7 +4300,8 @@ class Manager(Node, ABC):
     @property
     @abstractmethod
     def name(self):
-        """Name of the node (str), must be unique"""
+        """Name of the node (str), must be unique
+        #NOGUI"""
         # Example:
         #     @property
         #     def name(self):
@@ -4409,6 +4443,8 @@ class GeometricContact(Manager):
 
     @property
     def name(self):
+        """Name of the node (str), must be unique
+        #NOGUI"""
         return self._name
 
     @name.setter
@@ -4430,6 +4466,7 @@ class GeometricContact(Manager):
         """The Circle that is connected to the GeometricContact [Node]
 
         See Also: parent
+        #NOGUI
         """
         return self._child_circle
 
@@ -4481,6 +4518,7 @@ class GeometricContact(Manager):
         """The Circle that the GeometricConnection is connected to [Node]
 
         See Also: child
+        #NOGUI
         """
         return self._parent_circle
 
@@ -5031,6 +5069,8 @@ class Sling(Manager):
 
     @property
     def name(self):
+        """Name of the node (str), must be unique
+        #NOGUI"""
         return self._name
 
     @name.setter
@@ -5382,7 +5422,8 @@ class Sling(Manager):
 
     @property
     def endA(self):
-        """End A [circle or point node]"""
+        """End A [circle or point node]
+        #NOGUI"""
         return self._endA
 
     @endA.setter
@@ -5395,7 +5436,8 @@ class Sling(Manager):
 
     @property
     def endB(self):
-        """End B [circle or point node]"""
+        """End B [circle or point node]
+        #NOGUI"""
         return self._endB
 
     @endB.setter
@@ -5411,6 +5453,7 @@ class Sling(Manager):
         """List of sheaves (circles, points) that the sling runs over between the two ends.
 
         May be provided as list of nodes or node-names.
+        #NOGUI
         """
         return self._sheaves
 
@@ -5631,7 +5674,8 @@ class Shackle(Manager, RigidBody):
 
     @property
     def name(self):
-        """Name of the node (str), must be unique"""
+        """Name of the node (str), must be unique
+        #NOGUI"""
         return RigidBody.name.fget(self)
 
     @name.setter
@@ -5676,6 +5720,8 @@ class Component(Manager, Frame):
 
     @property
     def name(self):
+        """Name of the node (str), must be unique
+        #NOGUI"""
         return self._vfNode.name
 
     @name.setter
@@ -5712,7 +5758,8 @@ class Component(Manager, Frame):
 
     @property
     def path(self):
-        """Path of the model-file. For example res: padeye.dave"""
+        """Path of the model-file. For example res: padeye.dave
+        """
         return self._path
 
     @path.setter
@@ -6314,35 +6361,81 @@ class Scene:
         nodes = [node for node in self._nodes if node.manager is None]
         return tuple(nodes)
 
-    def give_properties_for_node(self, node):
-        """Returns a tuple containing all property-names for the given node.
-        Returns: tuple of strings"""
-        props = []
-        props.extend(ds.PROPS_NODE)
-        if isinstance(node, Frame):
-            props.extend(ds.PROPS_FRAME)
-        if isinstance(node, RigidBody):
-            props.extend(ds.PROPS_BODY)
-        if isinstance(node, Point):
-            props.extend(ds.PROPS_POI)
-        if isinstance(node, Cable):
-            props.extend(ds.PROPS_CABLE)
-        if isinstance(node, Connector2d):
-            props.extend(ds.PROPS_CON2D)
-        if isinstance(node, LC6d):
-            props.extend(ds.PROPS_CON6D)
-        if isinstance(node, Buoyancy):
-            props.extend(ds.PROPS_BUOY_MESH)
-        if isinstance(node, Beam):
-            props.extend(ds.PROPS_BEAM)
-        if isinstance(node, Force):
-            props.extend(ds.PROPS_FORCE)
-        if isinstance(node, ContactBall):
-            props.extend(ds.PROPS_CONTACTBALL)
-        if isinstance(node, _Area):
-            props.extend(ds.PROPS__AREA)
+    @property
+    def manged_nodes(self):
+        """Returns a tuple containing references to all nodes that do have a manager"""
+        nodes = [node for node in self._nodes if node.manager is not None]
+        return tuple(nodes)
 
-        return tuple(props)
+    def give_properties_for_node(self, node, gui_only = False):
+        """Returns a tuple containing all property-names for the given node.
+
+        Args:
+            gui_only: Return only properties where #NOGUI is not in the raw docstring
+
+        Returns: tuple of strings"""
+
+
+        if gui_only:
+            source = ds.PROPS_GUI
+        else:
+            source = ds.PROPS
+
+        props = []
+
+        # inherited properties
+        props.extend(source['Node'])
+
+        if isinstance(node, NodeWithCoreParent):
+            props.extend(source['NodeWithCoreParent'])
+
+        if isinstance(node, NodeWithParentAndFootprint):
+            props.extend(source['NodeWithParentAndFootprint'])
+
+        if isinstance(node, Frame):
+            props.extend(source['Frame'])
+
+        if node.class_name in ds.PROPS:
+            props.extend(source[node.class_name])
+
+        # remove duplicates
+        props = list(set(props))
+        props.sort()
+
+        return tuple(props) # filter out doubles
+
+    def _give_documentation(self, node_class_name, property_name):
+        step1 = ds.DAVE_REPORT_PROPS[ds.DAVE_REPORT_PROPS['class'] == node_class_name]
+        step2 = step1[step1['property'] == property_name]
+        doc = step2['doc']
+
+        if doc.empty:
+            return False
+        else:
+            it = doc.item()
+            if isinstance(it, float):
+                it = f"Missing documentation for node {node_class_name}.{property_name}"
+                warnings.warn(it)
+
+            return it.replace("#NOGUI","")
+
+
+    def give_documentation(self, node, property_name) -> str:
+        """Returns the documentation for property (property_name) of node."""
+        result = self._give_documentation(node.class_name, property_name)
+        if result:
+            return result
+
+        if isinstance(node, Frame):
+            result = self._give_documentation('Frame', property_name)
+            if result:
+                return result
+
+        result = self._give_documentation('Node', property_name)
+        if result:
+            return result
+
+        return 'Could not find documentation, sorry :-/'
 
     def node_by_name(self, node_name, silent=False):
 

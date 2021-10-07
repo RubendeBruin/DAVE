@@ -105,7 +105,8 @@ class WidgetDerivedProperties(guiDockWidget):
             return
 
 
-        props = self.guiScene.give_properties_for_node(node)
+        props = self.guiScene.give_properties_for_node(node, gui_only=True)
+
 
         # evaluate properties
         for p in props:
@@ -123,6 +124,14 @@ class WidgetDerivedProperties(guiDockWidget):
 
             text = str(result)
             v.setText(0, text)
+
+            doc = self.guiScene.give_documentation(node, p)
+
+
+
+            v.setToolTip(0, doc)
+
+
 
             # add limit node
             if p in node.limits:

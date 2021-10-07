@@ -2,6 +2,7 @@ from abc import ABC
 
 import DAVE.scene as ds
 import inspect
+from typing import get_type_hints
 
 import pandas as pd
 
@@ -11,7 +12,6 @@ node_type = list()
 prop_name = list()
 prop_doc = list()
 prop_unit = list()
-prop_type = list()
 prop_readonly = list()
 
 md = []
@@ -76,8 +76,11 @@ for c in clsmembers:
 
             print(what.__doc__)
 
+            if what.__doc__ is None:
+                raise ValueError(f'Undocumented property for {cls_name} / {name}')
+
             if what.__doc__:
-                md_line += what.__doc__.replace('\n','<br>') + '|'
+                md_line += what.__doc__.replace('\n','<br>').replace("#NOGUI","") + '|'
             else:
                 md_line += '|'
 
