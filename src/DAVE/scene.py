@@ -8586,11 +8586,12 @@ class Scene:
         for line in self.give_python_code().split("\n"):
             print(line)
 
-    def give_python_code(self, nodes = None):
+    def give_python_code(self, nodes = None, export_environment_settings = True):
         """Generates the python code that rebuilds the scene and elements in its current state.
 
         Args:
             nodes [None] : generate only for these node(s)
+            export_environment_settings [True] : export the environment (wind, gravity, etc)
         """
 
         import datetime
@@ -8619,10 +8620,11 @@ class Scene:
             code.append("\n# For anything written as solved(number) that actual number does not influence the static solution")
             code.append("\ndef solved(number):\n    return number\n")
 
-        code.append("\n# Environment settings")
+        if export_environment_settings:
+            code.append("\n# Environment settings")
 
-        for prop in ds.ENVIRONMENT_PROPERTIES:
-            code.append(f"\ns.{prop} = {getattr(self, prop)}")
+            for prop in ds.ENVIRONMENT_PROPERTIES:
+                code.append(f"\ns.{prop} = {getattr(self, prop)}")
 
         code.append("\n")
 
@@ -8705,17 +8707,13 @@ class Scene:
     def print_node_tree(self):
 
         self.sort_nodes_by_dependency()
+        to_be_printed = self._nodes.copy()
 
-        to_be_printed = [n.name for n in self._nodes]
+        def print_deps(node, spaces):
 
+            deps = self.nodes_with_parent(node)
 
-        def print_deps(name, spaces):
-
-            node = self[name]
-            deps_nodes = self.nodes_with_parent(node)
-            deps = [n.name for n in deps_nodes]
-
-            print(spaces + name + " [" + str(type(node)).split(".")[-1][:-2] + "]")
+            print(spaces + node.name + " [" + str(type(node)).split(".")[-1][:-2] + "]")
 
             if deps is not None:
                 for dep in deps:
@@ -8725,11 +8723,11 @@ class Scene:
                         spaces_plus = " |   " + spaces
                     print_deps(dep, spaces_plus)
 
-            to_be_printed.remove(name)
+            to_be_printed.remove(node)
 
         while to_be_printed:
-            name = to_be_printed[0]
-            print_deps(name, "")
+            node = to_be_printed[0]
+            print_deps(node, "")
 
     def run_code(self, code):
         """Runs the provided code with 's' as self"""
@@ -8823,7 +8821,7 @@ class Scene:
 
         store_export_code_with_solved_function = other._export_code_with_solved_function
         other._export_code_with_solved_function = False  # quicker
-        code = other.give_python_code(nodes=nodes)
+        code = other.give_python_code(nodes=nodes, export_environment_settings=False)
         other._export_code_with_solved_function = store_export_code_with_solved_function
 
         self.run_code(code)

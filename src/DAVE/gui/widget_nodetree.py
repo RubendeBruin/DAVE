@@ -231,13 +231,15 @@ class WidgetNodeTree(guiDockWidget):
 
 
     def update_node_visibility(self):
-
+        """Updates the visibility of the nodes in the tree"""
         for name, item in self.items.items():
 
             # item not visible? then mark gray
             node = self.guiScene[name]
             if not node.visible:
                 item.setTextColor(0, QColor(124, 124, 124))
+            elif node.manager is not None:
+                item.setTextColor(0, QColor(0, 150, 0))
             else:
                 item.setTextColor(0, QColor(0, 0, 0))
 
@@ -284,10 +286,12 @@ class WidgetNodeTree(guiDockWidget):
             # else put it under the root
 
             item.setIcon(0, QIcon(":/icons/redball.png"))
-            if isinstance(node, ds.Frame):
-                item.setIcon(0, QIcon(":/icons/axis_blue.png"))
+            if isinstance(node, ds.Component):
+                item.setIcon(0, QIcon(":/icons/component.png"))
             elif isinstance(node, ds.RigidBody):
                 item.setIcon(0, QIcon(":/icons/cube.png"))
+            elif isinstance(node, ds.Frame):
+                item.setIcon(0, QIcon(":/icons/axis_blue.png"))
             elif isinstance(node, ds.Point):
                 item.setIcon(0, QIcon(":/icons/point_blue.png"))
             elif isinstance(node, ds.Cable):
@@ -325,6 +329,7 @@ class WidgetNodeTree(guiDockWidget):
             elif isinstance(node, ds.CurrentArea):
                 item.setIcon(0, QIcon(":/icons/current.png"))
 
+
             try:
                 parent = node.parent
             except:
@@ -352,7 +357,8 @@ class WidgetNodeTree(guiDockWidget):
                 # are we showing managed nodes?
                 if show_managed_node:
 
-                    item.setTextColor(0, Qt.gray)
+                    # item.setTextColor(0, Qt.gray)
+                    item.setTextColor(0, QColor(0, 150, 0))
 
                     # if the item does not have a parent, then show it under the manager
                     if parent is None:

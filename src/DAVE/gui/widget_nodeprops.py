@@ -30,9 +30,14 @@ from DAVE.visual import transform_from_node
 
 import numpy as np
 
-from PySide2.QtWidgets import QListWidgetItem, QMessageBox
+from PySide2.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox
 from PySide2 import QtWidgets
 
+def svinf(spinbox : QDoubleSpinBox, value : float):
+    """Updates the value in the spinbox IF it does not have focus"""
+    if spinbox.hasFocus():
+        return
+    spinbox.setValue(value)
 
 def code_if_changed_d(node, value, ref, dec=3):
     """Returns code to change value of property "ref" to "value" if difference between current and target value
@@ -273,13 +278,12 @@ class EditAxis(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        self.ui.doubleSpinBox_1.setValue(self.node.position[0])
-        self.ui.doubleSpinBox_2.setValue(self.node.position[1])
-        self.ui.doubleSpinBox_3.setValue(self.node.position[2])
-
-        self.ui.doubleSpinBox_4.setValue(self.node.rotation[0])
-        self.ui.doubleSpinBox_5.setValue(self.node.rotation[1])
-        self.ui.doubleSpinBox_6.setValue(self.node.rotation[2])
+        svinf(self.ui.doubleSpinBox_1,self.node.position[0])
+        svinf(self.ui.doubleSpinBox_2,self.node.position[1])
+        svinf(self.ui.doubleSpinBox_3,self.node.position[2])
+        svinf(self.ui.doubleSpinBox_4,self.node.rotation[0])
+        svinf(self.ui.doubleSpinBox_5,self.node.rotation[1])
+        svinf(self.ui.doubleSpinBox_6,self.node.rotation[2])
 
         self.ui.checkBox_1.setChecked(self.node.fixed[0])
         self.ui.checkBox_2.setChecked(self.node.fixed[1])
@@ -372,17 +376,15 @@ class EditVisual(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        self.ui.doubleSpinBox_1.setValue(self.node.offset[0])
-        self.ui.doubleSpinBox_2.setValue(self.node.offset[1])
-        self.ui.doubleSpinBox_3.setValue(self.node.offset[2])
-
-        self.ui.doubleSpinBox_4.setValue(self.node.rotation[0])
-        self.ui.doubleSpinBox_5.setValue(self.node.rotation[1])
-        self.ui.doubleSpinBox_6.setValue(self.node.rotation[2])
-
-        self.ui.doubleSpinBox_7.setValue(self.node.scale[0])
-        self.ui.doubleSpinBox_8.setValue(self.node.scale[1])
-        self.ui.doubleSpinBox_9.setValue(self.node.scale[2])
+        svinf(self.ui.doubleSpinBox_1,self.node.offset[0])
+        svinf(self.ui.doubleSpinBox_2,self.node.offset[1])
+        svinf(self.ui.doubleSpinBox_3,self.node.offset[2])
+        svinf(self.ui.doubleSpinBox_4,self.node.rotation[0])
+        svinf(self.ui.doubleSpinBox_5,self.node.rotation[1])
+        svinf(self.ui.doubleSpinBox_6,self.node.rotation[2])
+        svinf(self.ui.doubleSpinBox_7,self.node.scale[0])
+        svinf(self.ui.doubleSpinBox_8,self.node.scale[1])
+        svinf(self.ui.doubleSpinBox_9,self.node.scale[2])
 
         self.ui.comboBox.clear()
         self.ui.comboBox.addItems(self.scene.get_resource_list("stl"))
@@ -465,9 +467,9 @@ class EditWaveInteraction(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        self.ui.doubleSpinBox_1.setValue(self.node.offset[0])
-        self.ui.doubleSpinBox_2.setValue(self.node.offset[1])
-        self.ui.doubleSpinBox_3.setValue(self.node.offset[2])
+        svinf(self.ui.doubleSpinBox_1,self.node.offset[0])
+        svinf(self.ui.doubleSpinBox_2,self.node.offset[1])
+        svinf(self.ui.doubleSpinBox_3,self.node.offset[2])
 
         self.ui.comboBox.clear()
         self.ui.comboBox.addItems(self.scene.get_resource_list("dhyd"))
@@ -594,17 +596,18 @@ class EditTank(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        self.ui.sbPermeability.setValue(self.node.permeability)
-        self.ui.sbDenstiy.setValue(self.node.density)
-        self.ui.sbVolume.setValue(self.node.volume)
-        self.ui.sbPercentage.setValue(self.node.fill_pct)
-        self.ui.sbElevation.setValue(self.node.level_global)
+        svinf(self.ui.sbPermeability,self.node.permeability)
+        svinf(self.ui.sbDenstiy,self.node.density)
+        svinf(self.ui.sbVolume,self.node.volume)
+        svinf(self.ui.sbPercentage,self.node.fill_pct)
+        svinf(self.ui.sbElevation,self.node.level_global)
+
         self.ui.cbFreeFlooding.setChecked(self.node.free_flooding)
 
         self.ui.cbUseOutsideDensity.setChecked(self.node.density < 0)
 
         if self.node.density < 0:
-            self.ui.sbDenstiy.setValue(self.scene.rho_water)
+            svinf(self.ui.sbDenstiy,self.scene.rho_water)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -690,17 +693,15 @@ class EditBuoyancyOrContactMesh(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        self.ui.doubleSpinBox_1.setValue(self.node.trimesh._offset[0])
-        self.ui.doubleSpinBox_2.setValue(self.node.trimesh._offset[1])
-        self.ui.doubleSpinBox_3.setValue(self.node.trimesh._offset[2])
-
-        self.ui.doubleSpinBox_4.setValue(self.node.trimesh._rotation[0])
-        self.ui.doubleSpinBox_5.setValue(self.node.trimesh._rotation[1])
-        self.ui.doubleSpinBox_6.setValue(self.node.trimesh._rotation[2])
-
-        self.ui.doubleSpinBox_7.setValue(self.node.trimesh._scale[0])
-        self.ui.doubleSpinBox_8.setValue(self.node.trimesh._scale[1])
-        self.ui.doubleSpinBox_9.setValue(self.node.trimesh._scale[2])
+        svinf(self.ui.doubleSpinBox_1,self.node.trimesh._offset[0])
+        svinf(self.ui.doubleSpinBox_2,self.node.trimesh._offset[1])
+        svinf(self.ui.doubleSpinBox_3,self.node.trimesh._offset[2])
+        svinf(self.ui.doubleSpinBox_4,self.node.trimesh._rotation[0])
+        svinf(self.ui.doubleSpinBox_5,self.node.trimesh._rotation[1])
+        svinf(self.ui.doubleSpinBox_6,self.node.trimesh._rotation[2])
+        svinf(self.ui.doubleSpinBox_7,self.node.trimesh._scale[0])
+        svinf(self.ui.doubleSpinBox_8,self.node.trimesh._scale[1])
+        svinf(self.ui.doubleSpinBox_9,self.node.trimesh._scale[2])
 
         self.ui.cbInvertNormals.setChecked(self.node.trimesh._invert_normals)
 
@@ -796,10 +797,10 @@ class EditBody(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        self.ui.doubleSpinBox_1.setValue(self.node.cog[0])
-        self.ui.doubleSpinBox_2.setValue(self.node.cog[1])
-        self.ui.doubleSpinBox_3.setValue(self.node.cog[2])
-        self.ui.doubleSpinBox_mass.setValue(self.node.mass)
+        svinf(self.ui.doubleSpinBox_1,self.node.cog[0])
+        svinf(self.ui.doubleSpinBox_2,self.node.cog[1])
+        svinf(self.ui.doubleSpinBox_3,self.node.cog[2])
+        svinf(self.ui.doubleSpinBox_mass,self.node.mass)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -851,9 +852,9 @@ class EditPoi(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        self.ui.doubleSpinBox_1.setValue(self.node.position[0])
-        self.ui.doubleSpinBox_2.setValue(self.node.position[1])
-        self.ui.doubleSpinBox_3.setValue(self.node.position[2])
+        svinf(self.ui.doubleSpinBox_1,self.node.position[0])
+        svinf(self.ui.doubleSpinBox_2,self.node.position[1])
+        svinf(self.ui.doubleSpinBox_3,self.node.position[2])
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -921,9 +922,9 @@ class EditCable(NodeEditor):
             self.ui.poiLayout.removeWidget(ddb)
             ddb.deleteLater()
 
-        self.ui.doubleSpinBox_1.setValue(self.node.length)
-        self.ui.doubleSpinBox_2.setValue(self.node.EA)
-        self.ui.doubleSpinBox.setValue(self.node.diameter)
+        svinf(self.ui.doubleSpinBox_1,self.node.length)
+        svinf(self.ui.doubleSpinBox_2,self.node.EA)
+        svinf(self.ui.doubleSpinBox,self.node.diameter)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1056,13 +1057,12 @@ class EditForce(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        self.ui.doubleSpinBox_1.setValue(self.node.force[0])
-        self.ui.doubleSpinBox_2.setValue(self.node.force[1])
-        self.ui.doubleSpinBox_3.setValue(self.node.force[2])
-
-        self.ui.doubleSpinBox_4.setValue(self.node.moment[0])
-        self.ui.doubleSpinBox_5.setValue(self.node.moment[1])
-        self.ui.doubleSpinBox_6.setValue(self.node.moment[2])
+        svinf(self.ui.doubleSpinBox_1,self.node.force[0])
+        svinf(self.ui.doubleSpinBox_2,self.node.force[1])
+        svinf(self.ui.doubleSpinBox_3,self.node.force[2])
+        svinf(self.ui.doubleSpinBox_4,self.node.moment[0])
+        svinf(self.ui.doubleSpinBox_5,self.node.moment[1])
+        svinf(self.ui.doubleSpinBox_6,self.node.moment[2])
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1138,14 +1138,14 @@ class EditArea(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        self.ui.Area.setValue(self.node.A)
-        self.ui.Cd.setValue(self.node.Cd)
-        self.ui.X.setValue(self.node.direction[0])
-        self.ui.Y.setValue(self.node.direction[1])
-        self.ui.Z.setValue(self.node.direction[2])
-        self.ui.X_2.setValue(self.node.direction[0])
-        self.ui.Y_2.setValue(self.node.direction[1])
-        self.ui.Z_2.setValue(self.node.direction[2])
+        svinf(self.ui.Area,self.node.A)
+        svinf(self.ui.Cd,self.node.Cd)
+        svinf(self.ui.X,self.node.direction[0])
+        svinf(self.ui.Y,self.node.direction[1])
+        svinf(self.ui.Z,self.node.direction[2])
+        svinf(self.ui.X_2,self.node.direction[0])
+        svinf(self.ui.Y_2,self.node.direction[1])
+        svinf(self.ui.Z_2,self.node.direction[2])
 
         if isinstance(self.node, WindArea):
             self.ui.windcurrent.setText("Wind area")
@@ -1222,10 +1222,10 @@ class EditSheave(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        self.ui.sbAX.setValue(self.node.axis[0])
-        self.ui.sbAY.setValue(self.node.axis[1])
-        self.ui.sbAZ.setValue(self.node.axis[2])
-        self.ui.sbRadius.setValue(self.node.radius)
+        svinf(self.ui.sbAX,self.node.axis[0])
+        svinf(self.ui.sbAY,self.node.axis[1])
+        svinf(self.ui.sbAZ,self.node.axis[2])
+        svinf(self.ui.sbRadius,self.node.radius)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1286,16 +1286,16 @@ class EditHydSpring(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        self.ui.doubleSpinBox_1.setValue(self.node.cob[0])
-        self.ui.doubleSpinBox_2.setValue(self.node.cob[1])
-        self.ui.doubleSpinBox_3.setValue(self.node.cob[2])
-        self.ui.BMT.setValue(self.node.BMT)
-        self.ui.BML.setValue(self.node.BML)
-        self.ui.COFX.setValue(self.node.COFX)
-        self.ui.COFY.setValue(self.node.COFY)
-        self.ui.kHeave.setValue(self.node.kHeave)
-        self.ui.waterline.setValue(self.node.waterline)
-        self.ui.disp.setValue(self.node.displacement_kN)
+        svinf(self.ui.doubleSpinBox_1,self.node.cob[0])
+        svinf(self.ui.doubleSpinBox_2,self.node.cob[1])
+        svinf(self.ui.doubleSpinBox_3,self.node.cob[2])
+        svinf(self.ui.BMT,self.node.BMT)
+        svinf(self.ui.BML,self.node.BML)
+        svinf(self.ui.COFX,self.node.COFX)
+        svinf(self.ui.COFY,self.node.COFY)
+        svinf(self.ui.kHeave,self.node.kHeave)
+        svinf(self.ui.waterline,self.node.waterline)
+        svinf(self.ui.disp,self.node.displacement_kN)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1396,13 +1396,13 @@ class EditLC6d(NodeEditor):
         self.ui.cbMasterAxis.setCurrentText(self.node.main.name)
         self.ui.cbSlaveAxis.setCurrentText(self.node.secondary.name)
 
-        self.ui.doubleSpinBox_1.setValue(self.node.stiffness[0])
-        self.ui.doubleSpinBox_2.setValue(self.node.stiffness[1])
-        self.ui.doubleSpinBox_3.setValue(self.node.stiffness[2])
+        svinf(self.ui.doubleSpinBox_1,self.node.stiffness[0])
+        svinf(self.ui.doubleSpinBox_2,self.node.stiffness[1])
+        svinf(self.ui.doubleSpinBox_3,self.node.stiffness[2])
 
-        self.ui.doubleSpinBox_4.setValue(self.node.stiffness[3])
-        self.ui.doubleSpinBox_5.setValue(self.node.stiffness[4])
-        self.ui.doubleSpinBox_6.setValue(self.node.stiffness[5])
+        svinf(self.ui.doubleSpinBox_4,self.node.stiffness[3])
+        svinf(self.ui.doubleSpinBox_5,self.node.stiffness[4])
+        svinf(self.ui.doubleSpinBox_6,self.node.stiffness[5])
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1479,8 +1479,8 @@ class EditConnector2d(NodeEditor):
         self.ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
         self.ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
 
-        self.ui.doubleSpinBox_1.setValue(self.node.k_linear)
-        self.ui.doubleSpinBox_4.setValue(self.node.k_angular)
+        svinf(self.ui.doubleSpinBox_1,self.node.k_linear)
+        svinf(self.ui.doubleSpinBox_4,self.node.k_angular)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1564,16 +1564,16 @@ class EditBeam(NodeEditor):
 
         self.ui.sbnSegments.setValue(self.node.n_segments)
 
-        self.ui.doubleSpinBox_1.setValue(self.node.L)
-        self.ui.doubleSpinBox_2.setValue(self.node.EIy)
-        self.ui.doubleSpinBox_3.setValue(self.node.EIz)
+        svinf(self.ui.doubleSpinBox_1,self.node.L)
+        svinf(self.ui.doubleSpinBox_2,self.node.EIy)
+        svinf(self.ui.doubleSpinBox_3,self.node.EIz)
 
-        self.ui.doubleSpinBox_4.setValue(self.node.GIp)
-        self.ui.doubleSpinBox_5.setValue(self.node.EA)
+        svinf(self.ui.doubleSpinBox_4,self.node.GIp)
+        svinf(self.ui.doubleSpinBox_5,self.node.EA)
 
         self.ui.cbTensionOnly.setChecked(self.node.tension_only)
 
-        self.ui.sbMass.setValue(self.node.mass)
+        svinf(self.ui.sbMass,self.node.mass)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1679,9 +1679,9 @@ class EditGeometricContact(NodeEditor):
         self.ui.cbSFix.setChecked(self.node.child_fixed)
         self.ui.cbSwivelFix.setChecked(self.node.swivel_fixed)
 
-        self.ui.sbMasterRotation.setValue(self.node.rotation_on_parent)
-        self.ui.sbSlaveRotation.setValue(self.node.child_rotation)
-        self.ui.sbSwivel.setValue(self.node.swivel)
+        svinf(self.ui.sbMasterRotation,self.node.rotation_on_parent)
+        svinf(self.ui.sbSlaveRotation,self.node.child_rotation)
+        svinf(self.ui.sbSwivel,self.node.swivel)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1768,8 +1768,8 @@ class EditContactBall(NodeEditor):
         self.ui.sbR.blockSignals(True)
         self.ui.sbK.blockSignals(True)
 
-        self.ui.sbR.setValue(self.node.radius)
-        self.ui.sbK.setValue(self.node.k)
+        svinf(self.ui.sbR,self.node.radius)
+        svinf(self.ui.sbK,self.node.k)
 
         self.update_meshes_list()
 
@@ -1903,15 +1903,15 @@ class EditSling(NodeEditor):
             self.poiLayout.removeWidget(ddb)
             ddb.deleteLater()
 
-        self.ui.sbLength.setValue(self.node.length)
-        self.ui.sbEA.setValue(self.node.EA)
-        self.ui.sbDiameter.setValue(self.node.diameter)
-        self.ui.sbMass.setValue(self.node.mass)
-        self.ui.sbLEyeA.setValue(self.node.LeyeA)
-        self.ui.sbLEyeB.setValue(self.node.LeyeB)
-        self.ui.sbLSpliceA.setValue(self.node.LspliceA)
-        self.ui.sbLSpliceB.setValue(self.node.LspliceB)
-        self.ui.sbK.setValue(self.node.k_total)
+        svinf(self.ui.sbLength,self.node.length)
+        svinf(self.ui.sbEA,self.node.EA)
+        svinf(self.ui.sbDiameter,self.node.diameter)
+        svinf(self.ui.sbMass,self.node.mass)
+        svinf(self.ui.sbLEyeA,self.node.LeyeA)
+        svinf(self.ui.sbLEyeB,self.node.LeyeB)
+        svinf(self.ui.sbLSpliceA,self.node.LspliceA)
+        svinf(self.ui.sbLSpliceB,self.node.LspliceB)
+        svinf(self.ui.sbK,self.node.k_total)
 
         self.ui.list.clear()
 
