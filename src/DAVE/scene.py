@@ -5755,7 +5755,6 @@ class Component(Manager, Frame):
     def creates(self, node: Node):
         return node in self._nodes
 
-
     @property
     def path(self):
         """Path of the model-file. For example res: padeye.dave
@@ -8700,24 +8699,24 @@ class Scene:
         code = []
         code.append("# auto generated pyhton code")
         try:
-            code.append("\n# By {}".format(getpass.getuser()))
+            code.append("# By {}".format(getpass.getuser()))
         except:
-            code.append("\n# By an unknown")
+            code.append("# By an unknown")
 
-        code.append("\n# Time: {} UTC".format(str(datetime.datetime.now()).split(".")[0]))
+        code.append("# Time: {} UTC".format(str(datetime.datetime.now()).split(".")[0]))
 
         if self._export_code_with_solved_function:
 
-            code.append("\n\n# To be able to distinguish the important number (eg: fixed positions) from")
-            code.append("\n# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.")
-            code.append("\n# For anything written as solved(number) that actual number does not influence the static solution")
+            code.append("\n# To be able to distinguish the important number (eg: fixed positions) from")
+            code.append("# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.")
+            code.append("# For anything written as solved(number) that actual number does not influence the static solution")
             code.append("\ndef solved(number):\n    return number\n")
 
         if export_environment_settings:
             code.append("\n# Environment settings")
 
             for prop in ds.ENVIRONMENT_PROPERTIES:
-                code.append(f"\ns.{prop} = {getattr(self, prop)}")
+                code.append(f"s.{prop} = {getattr(self, prop)}")
 
         code.append("\n")
 
@@ -8739,11 +8738,12 @@ class Scene:
             if not n.visible:
                 code.append(f"\ns['{n.name}'].visible = False")  # only report is not the default value
 
-        code.append("\n# Limits ")
+        code.append("\n# Limits of un-managed nodes ")
 
         for n in nodes_to_be_exported:
-            for key, value in n.limits.items():
-                code.append(f"s['{n.name}'].limits['{key}'] = {value}")
+            if n.manager is None:
+                for key, value in n.limits.items():
+                    code.append(f"s['{n.name}'].limits['{key}'] = {value}")
 
 
         return '\n'.join(code)
@@ -8921,7 +8921,7 @@ class Scene:
 
         self._name_prefix = old_prefix  # restore
 
-        # Move all imported elements without a parent into a newly created or supplied frame
+        # Move all imported elements without a parent into a newly created or supplied frame (container)
         if containerize:
 
             if container is None:
@@ -8937,7 +8937,7 @@ class Scene:
                         continue
 
                     if node.parent is None:
-                        node.change_parent_to(container)
+                        node.parent = container
 
             return container
 

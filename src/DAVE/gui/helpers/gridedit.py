@@ -5,6 +5,7 @@
 
   Ruben de Bruin - 2020
 """
+import numpy as np
 from PySide2 import QtCore
 from PySide2.QtWidgets import *
 from PySide2.QtCore import *
@@ -92,8 +93,12 @@ class Table(QTableWidget):
 
         # Paste
         elif event.key() == Qt.Key_V and (event.modifiers() & Qt.ControlModifier):
-            row = self.currentRow()
-            col = self.currentColumn()
+
+            # look for the upper-left cell of the selection
+            rows = [cell.row() for cell in self.selectedIndexes()]
+            cols = [cell.column() for cell in self.selectedIndexes()]
+            row = min(rows)
+            col = min(cols)
 
             text = QApplication.clipboard().text()
             rows = text.split("\n")
@@ -112,12 +117,16 @@ class Table(QTableWidget):
                         continue
 
                     item = self.item(row + i_row, col + i_col)
+                    self.setCurrentCell(row + i_row, col + i_col)  # to let all the handling methods know which cell
+                                                                   # is being changed
 
                     if item is not None:
+
                         item.setText(cell)
                     else:
                         item = QTableWidgetItem(cell)
                         self.setItem(row + i_row, col + i_col, item)
+
 
             event.accept()
             return True
@@ -494,18 +503,29 @@ class GridEdit(QWidget):
 """
 
 
-class DemoElement:
-    def __init__(self):
-        self.name = "Name"
-        self.value = 41
-        self.cando = True
+
 
 
 if __name__ == "__main__":
 
+    class DemoElement:
+        def __init__(self):
+            self.name = "Name"
+            self.value = 41
+            self.cando = True
+
+    from dataclasses import dataclass
+
+    @dataclass
+    class DemoElement2:
+        name = 'name'
+        value1 = 1
+        value2 = 2
+
+
     qApp = QApplication(sys.argv)
 
-    if True:  # Example with raw data
+    if False:  # Example with raw data
 
         ge = GridEdit(None)
 
@@ -532,11 +552,11 @@ if __name__ == "__main__":
 
         print(ge.getData())
 
-    else:  # example with model data
+    elif False:  # example with model data
 
         ge = GridEdit(None)
 
-        # Example with elements - These names correpond to properties of the objects
+        # Example with elements - These names correspond to properties of the objects
         ge.addColumn("name", str)
         ge.addColumn("value", int)
         ge.addColumn("cando", bool)
@@ -559,6 +579,44 @@ if __name__ == "__main__":
 
         def do_something(*varargin):
             print(varargin)
+
+        ge.onEditCallback = do_something
+
+        ge.show()
+        code = qApp.exec_()
+
+        print(collection)
+
+    else:
+
+        ge = GridEdit(None)
+
+        # Example with elements - These names correspond to properties of the objects
+        ge.addColumn("name", str)
+        ge.addColumn("value1", float)
+        ge.addColumn("value2", float)
+
+        e1 = DemoElement2()
+        e2 = DemoElement2()
+        e2.name = "Element2"
+        e3 = DemoElement2()
+        e3.name = "Element3"
+
+        collection = [e1, e2, e3]
+
+        ge.activateColumns()
+
+        def add(_):
+            collection.append(DemoElement2())
+            ge.setDataSource(collection)
+
+
+        ge.onAddRow = add
+        ge.setDataSource(collection)
+
+        def do_something(*varargin):
+
+            print('Value changed' + str(varargin))
 
         ge.onEditCallback = do_something
 

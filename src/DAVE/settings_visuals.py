@@ -582,6 +582,8 @@ def remove_mesh(paintset):
         for paint in paintset[node].values():
             paint.lineWidth = 0
 
+    paintset["Buoyancy"]["waterplane"] = copy(invisible)
+
 
 construction_nomesh = deepcopy(PAINTERS["Construction"])
 remove_mesh(construction_nomesh)

@@ -1618,15 +1618,22 @@ class Viewport:
         self.global_visuals["sea"] = plane
         self.global_visuals["sea"].actor_type = ActorType.GLOBAL
         self.global_visuals["sea"].no_outline = True
+        self.global_visuals["sea"].negative = False
+
 
         self.global_visuals["main"] = vp.Line((0, 0, 0), (10, 0, 0)).c("red")
         self.global_visuals["main"].actor_type = ActorType.GEOMETRY
+        self.global_visuals["main"].negative = True
 
         self.global_visuals["y"] = vp.Line((0, 0, 0), (0, 10, 0)).c("green")
         self.global_visuals["y"].actor_type = ActorType.GEOMETRY
+        self.global_visuals["y"].negative = True
+
 
         self.global_visuals["z"] = vp.Line((0, 0, 0), (0, 0, 10)).c("blue")
         self.global_visuals["z"].actor_type = ActorType.GEOMETRY
+        self.global_visuals["z"].negative = True
+
 
         for actor in self.global_visuals.values():
             self.screen.add(actor)
@@ -2622,10 +2629,16 @@ class Viewport:
 
         if self.settings.show_global:
             for actor in self.global_visuals.values():
-                actor.on()
+                if actor.negative:
+                    actor.off()
+                else:
+                    actor.on()
         else:
             for actor in self.global_visuals.values():
-                actor.off()
+                if actor.negative:
+                    actor.on()
+                else:
+                    actor.off()
 
         self.colorbar_actor.SetVisibility(self.settings.paint_uc)
 
