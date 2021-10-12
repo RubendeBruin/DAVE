@@ -33,11 +33,13 @@ import numpy as np
 from PySide2.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox
 from PySide2 import QtWidgets
 
-def svinf(spinbox : QDoubleSpinBox, value : float):
+
+def svinf(spinbox: QDoubleSpinBox, value: float):
     """Updates the value in the spinbox IF it does not have focus"""
     if spinbox.hasFocus():
         return
     spinbox.setValue(value)
+
 
 def code_if_changed_d(node, value, ref, dec=3):
     """Returns code to change value of property "ref" to "value" if difference between current and target value
@@ -60,6 +62,7 @@ def code_if_changed_d(node, value, ref, dec=3):
     else:
         return ""
 
+
 def code_if_changed_path(node, value, ref):
     """Returns code to change value of property "ref" to "value" - applicable for paths (r'')
 
@@ -79,6 +82,7 @@ def code_if_changed_path(node, value, ref):
     else:
         return ""
 
+
 def code_if_changed_v3(node, value, ref, dec=3):
     """Returns code to change value of property "ref" to "value" if difference between current and target value
     exceeds tolerance (dec)
@@ -96,13 +100,16 @@ def code_if_changed_v3(node, value, ref, dec=3):
     current = getattr(node, ref)
 
     # compare components of current to components of value
-    if abs(value[0] - current[0]) > 10 ** (-dec) or \
-            abs(value[1] - current[1]) > 10 ** (-dec) or \
-            abs(value[2] - current[2]) > 10 ** (-dec) :
+    if (
+        abs(value[0] - current[0]) > 10 ** (-dec)
+        or abs(value[1] - current[1]) > 10 ** (-dec)
+        or abs(value[2] - current[2]) > 10 ** (-dec)
+    ):
 
         return f"\ns['{node.name}'].{ref} = ({value[0]}, {value[1]},{value[2]})"
     else:
         return ""
+
 
 """
 In singleton:
@@ -278,12 +285,12 @@ class EditAxis(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        svinf(self.ui.doubleSpinBox_1,self.node.position[0])
-        svinf(self.ui.doubleSpinBox_2,self.node.position[1])
-        svinf(self.ui.doubleSpinBox_3,self.node.position[2])
-        svinf(self.ui.doubleSpinBox_4,self.node.rotation[0])
-        svinf(self.ui.doubleSpinBox_5,self.node.rotation[1])
-        svinf(self.ui.doubleSpinBox_6,self.node.rotation[2])
+        svinf(self.ui.doubleSpinBox_1, self.node.position[0])
+        svinf(self.ui.doubleSpinBox_2, self.node.position[1])
+        svinf(self.ui.doubleSpinBox_3, self.node.position[2])
+        svinf(self.ui.doubleSpinBox_4, self.node.rotation[0])
+        svinf(self.ui.doubleSpinBox_5, self.node.rotation[1])
+        svinf(self.ui.doubleSpinBox_6, self.node.rotation[2])
 
         self.ui.checkBox_1.setChecked(self.node.fixed[0])
         self.ui.checkBox_2.setChecked(self.node.fixed[1])
@@ -376,15 +383,15 @@ class EditVisual(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        svinf(self.ui.doubleSpinBox_1,self.node.offset[0])
-        svinf(self.ui.doubleSpinBox_2,self.node.offset[1])
-        svinf(self.ui.doubleSpinBox_3,self.node.offset[2])
-        svinf(self.ui.doubleSpinBox_4,self.node.rotation[0])
-        svinf(self.ui.doubleSpinBox_5,self.node.rotation[1])
-        svinf(self.ui.doubleSpinBox_6,self.node.rotation[2])
-        svinf(self.ui.doubleSpinBox_7,self.node.scale[0])
-        svinf(self.ui.doubleSpinBox_8,self.node.scale[1])
-        svinf(self.ui.doubleSpinBox_9,self.node.scale[2])
+        svinf(self.ui.doubleSpinBox_1, self.node.offset[0])
+        svinf(self.ui.doubleSpinBox_2, self.node.offset[1])
+        svinf(self.ui.doubleSpinBox_3, self.node.offset[2])
+        svinf(self.ui.doubleSpinBox_4, self.node.rotation[0])
+        svinf(self.ui.doubleSpinBox_5, self.node.rotation[1])
+        svinf(self.ui.doubleSpinBox_6, self.node.rotation[2])
+        svinf(self.ui.doubleSpinBox_7, self.node.scale[0])
+        svinf(self.ui.doubleSpinBox_8, self.node.scale[1])
+        svinf(self.ui.doubleSpinBox_9, self.node.scale[2])
 
         self.ui.comboBox.clear()
         self.ui.comboBox.addItems(self.scene.get_resource_list("stl"))
@@ -467,9 +474,9 @@ class EditWaveInteraction(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        svinf(self.ui.doubleSpinBox_1,self.node.offset[0])
-        svinf(self.ui.doubleSpinBox_2,self.node.offset[1])
-        svinf(self.ui.doubleSpinBox_3,self.node.offset[2])
+        svinf(self.ui.doubleSpinBox_1, self.node.offset[0])
+        svinf(self.ui.doubleSpinBox_2, self.node.offset[1])
+        svinf(self.ui.doubleSpinBox_3, self.node.offset[2])
 
         self.ui.comboBox.clear()
         self.ui.comboBox.addItems(self.scene.get_resource_list("dhyd"))
@@ -505,7 +512,6 @@ class EditWaveInteraction(NodeEditor):
 
 @Singleton
 class EditComponent(NodeEditor):
-
     def __init__(self):
         """Create the gui, store the main widget as self._widget"""
 
@@ -518,26 +524,23 @@ class EditComponent(NodeEditor):
         self.ui.cbPath.currentTextChanged.connect(self.generate_code)
         self.ui.pbReScan.clicked.connect(self.rescan)
 
-        self.fileextension = 'dave'
+        self.fileextension = "dave"
 
     def rescan(self):
         self.post_update_event()
 
-        text = f'Rescan completed for files ending with {self.fileextension} in folders:'
+        text = (
+            f"Rescan completed for files ending with {self.fileextension} in folders:"
+        )
         for p in self.scene.resources_paths:
-            text += f'\n - {str(p)}'
-        text += '\n\nlist updated'
+            text += f"\n - {str(p)}"
+        text += "\n\nlist updated"
 
-        QMessageBox.information(self.widget,
-                                'Done',
-                                text,
-                                QMessageBox.Ok
-                                )
+        QMessageBox.information(self.widget, "Done", text, QMessageBox.Ok)
 
     def reload(self):
         code = f"\ns['{self.node.name}'].path = r'{self.node.path}'"
         self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
-
 
     def post_update_event(self):
         """Sync the properties of the node to the gui"""
@@ -560,6 +563,7 @@ class EditComponent(NodeEditor):
 
         if code:
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
 
 # ======================================
 
@@ -596,18 +600,18 @@ class EditTank(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        svinf(self.ui.sbPermeability,self.node.permeability)
-        svinf(self.ui.sbDenstiy,self.node.density)
-        svinf(self.ui.sbVolume,self.node.volume)
-        svinf(self.ui.sbPercentage,self.node.fill_pct)
-        svinf(self.ui.sbElevation,self.node.level_global)
+        svinf(self.ui.sbPermeability, self.node.permeability)
+        svinf(self.ui.sbDenstiy, self.node.density)
+        svinf(self.ui.sbVolume, self.node.volume)
+        svinf(self.ui.sbPercentage, self.node.fill_pct)
+        svinf(self.ui.sbElevation, self.node.level_global)
 
         self.ui.cbFreeFlooding.setChecked(self.node.free_flooding)
 
         self.ui.cbUseOutsideDensity.setChecked(self.node.density < 0)
 
         if self.node.density < 0:
-            svinf(self.ui.sbDenstiy,self.scene.rho_water)
+            svinf(self.ui.sbDenstiy, self.scene.rho_water)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -693,15 +697,15 @@ class EditBuoyancyOrContactMesh(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        svinf(self.ui.doubleSpinBox_1,self.node.trimesh._offset[0])
-        svinf(self.ui.doubleSpinBox_2,self.node.trimesh._offset[1])
-        svinf(self.ui.doubleSpinBox_3,self.node.trimesh._offset[2])
-        svinf(self.ui.doubleSpinBox_4,self.node.trimesh._rotation[0])
-        svinf(self.ui.doubleSpinBox_5,self.node.trimesh._rotation[1])
-        svinf(self.ui.doubleSpinBox_6,self.node.trimesh._rotation[2])
-        svinf(self.ui.doubleSpinBox_7,self.node.trimesh._scale[0])
-        svinf(self.ui.doubleSpinBox_8,self.node.trimesh._scale[1])
-        svinf(self.ui.doubleSpinBox_9,self.node.trimesh._scale[2])
+        svinf(self.ui.doubleSpinBox_1, self.node.trimesh._offset[0])
+        svinf(self.ui.doubleSpinBox_2, self.node.trimesh._offset[1])
+        svinf(self.ui.doubleSpinBox_3, self.node.trimesh._offset[2])
+        svinf(self.ui.doubleSpinBox_4, self.node.trimesh._rotation[0])
+        svinf(self.ui.doubleSpinBox_5, self.node.trimesh._rotation[1])
+        svinf(self.ui.doubleSpinBox_6, self.node.trimesh._rotation[2])
+        svinf(self.ui.doubleSpinBox_7, self.node.trimesh._scale[0])
+        svinf(self.ui.doubleSpinBox_8, self.node.trimesh._scale[1])
+        svinf(self.ui.doubleSpinBox_9, self.node.trimesh._scale[2])
 
         self.ui.cbInvertNormals.setChecked(self.node.trimesh._invert_normals)
 
@@ -797,10 +801,10 @@ class EditBody(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        svinf(self.ui.doubleSpinBox_1,self.node.cog[0])
-        svinf(self.ui.doubleSpinBox_2,self.node.cog[1])
-        svinf(self.ui.doubleSpinBox_3,self.node.cog[2])
-        svinf(self.ui.doubleSpinBox_mass,self.node.mass)
+        svinf(self.ui.doubleSpinBox_1, self.node.cog[0])
+        svinf(self.ui.doubleSpinBox_2, self.node.cog[1])
+        svinf(self.ui.doubleSpinBox_3, self.node.cog[2])
+        svinf(self.ui.doubleSpinBox_mass, self.node.mass)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -852,9 +856,9 @@ class EditPoi(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        svinf(self.ui.doubleSpinBox_1,self.node.position[0])
-        svinf(self.ui.doubleSpinBox_2,self.node.position[1])
-        svinf(self.ui.doubleSpinBox_3,self.node.position[2])
+        svinf(self.ui.doubleSpinBox_1, self.node.position[0])
+        svinf(self.ui.doubleSpinBox_2, self.node.position[1])
+        svinf(self.ui.doubleSpinBox_3, self.node.position[2])
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -922,9 +926,9 @@ class EditCable(NodeEditor):
             self.ui.poiLayout.removeWidget(ddb)
             ddb.deleteLater()
 
-        svinf(self.ui.doubleSpinBox_1,self.node.length)
-        svinf(self.ui.doubleSpinBox_2,self.node.EA)
-        svinf(self.ui.doubleSpinBox,self.node.diameter)
+        svinf(self.ui.doubleSpinBox_1, self.node.length)
+        svinf(self.ui.doubleSpinBox_2, self.node.EA)
+        svinf(self.ui.doubleSpinBox, self.node.diameter)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1057,12 +1061,12 @@ class EditForce(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        svinf(self.ui.doubleSpinBox_1,self.node.force[0])
-        svinf(self.ui.doubleSpinBox_2,self.node.force[1])
-        svinf(self.ui.doubleSpinBox_3,self.node.force[2])
-        svinf(self.ui.doubleSpinBox_4,self.node.moment[0])
-        svinf(self.ui.doubleSpinBox_5,self.node.moment[1])
-        svinf(self.ui.doubleSpinBox_6,self.node.moment[2])
+        svinf(self.ui.doubleSpinBox_1, self.node.force[0])
+        svinf(self.ui.doubleSpinBox_2, self.node.force[1])
+        svinf(self.ui.doubleSpinBox_3, self.node.force[2])
+        svinf(self.ui.doubleSpinBox_4, self.node.moment[0])
+        svinf(self.ui.doubleSpinBox_5, self.node.moment[1])
+        svinf(self.ui.doubleSpinBox_6, self.node.moment[2])
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1138,14 +1142,14 @@ class EditArea(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        svinf(self.ui.Area,self.node.A)
-        svinf(self.ui.Cd,self.node.Cd)
-        svinf(self.ui.X,self.node.direction[0])
-        svinf(self.ui.Y,self.node.direction[1])
-        svinf(self.ui.Z,self.node.direction[2])
-        svinf(self.ui.X_2,self.node.direction[0])
-        svinf(self.ui.Y_2,self.node.direction[1])
-        svinf(self.ui.Z_2,self.node.direction[2])
+        svinf(self.ui.Area, self.node.A)
+        svinf(self.ui.Cd, self.node.Cd)
+        svinf(self.ui.X, self.node.direction[0])
+        svinf(self.ui.Y, self.node.direction[1])
+        svinf(self.ui.Z, self.node.direction[2])
+        svinf(self.ui.X_2, self.node.direction[0])
+        svinf(self.ui.Y_2, self.node.direction[1])
+        svinf(self.ui.Z_2, self.node.direction[2])
 
         if isinstance(self.node, WindArea):
             self.ui.windcurrent.setText("Wind area")
@@ -1172,25 +1176,29 @@ class EditArea(NodeEditor):
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
-        code += code_if_changed_d(self.node, self.ui.Cd.value(), 'Cd')
-        code += code_if_changed_d(self.node, self.ui.Area.value(), 'A')
+        code += code_if_changed_d(self.node, self.ui.Cd.value(), "Cd")
+        code += code_if_changed_d(self.node, self.ui.Area.value(), "A")
 
         if self.ui.rbNoOrientation.isChecked():
             if self.node.areakind != AreaKind.SPHERE:
-                code += element + '.areakind = AreaKind.SPHERE'
+                code += element + ".areakind = AreaKind.SPHERE"
         elif self.ui.rbPlane.isChecked():
             if self.node.areakind != AreaKind.PLANE:
-                code += element + '.areakind = AreaKind.PLANE'
+                code += element + ".areakind = AreaKind.PLANE"
 
             new_direction = (self.ui.X.value(), self.ui.Y.value(), self.ui.Z.value())
-            code += code_if_changed_v3(self.node, new_direction, 'direction')
+            code += code_if_changed_v3(self.node, new_direction, "direction")
 
         elif self.ui.rbCylinder.isChecked():
             if self.node.areakind != AreaKind.CYLINDER:
-                code += element + '.areakind = AreaKind.CYLINDER'
+                code += element + ".areakind = AreaKind.CYLINDER"
 
-            new_direction = (self.ui.X_2.value(), self.ui.Y_2.value(), self.ui.Z_2.value())
-            code += code_if_changed_v3(self.node, new_direction, 'direction')
+            new_direction = (
+                self.ui.X_2.value(),
+                self.ui.Y_2.value(),
+                self.ui.Z_2.value(),
+            )
+            code += code_if_changed_v3(self.node, new_direction, "direction")
 
         if code:
             self.run_code(code)
@@ -1222,10 +1230,10 @@ class EditSheave(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        svinf(self.ui.sbAX,self.node.axis[0])
-        svinf(self.ui.sbAY,self.node.axis[1])
-        svinf(self.ui.sbAZ,self.node.axis[2])
-        svinf(self.ui.sbRadius,self.node.radius)
+        svinf(self.ui.sbAX, self.node.axis[0])
+        svinf(self.ui.sbAY, self.node.axis[1])
+        svinf(self.ui.sbAZ, self.node.axis[2])
+        svinf(self.ui.sbRadius, self.node.radius)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1286,16 +1294,16 @@ class EditHydSpring(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        svinf(self.ui.doubleSpinBox_1,self.node.cob[0])
-        svinf(self.ui.doubleSpinBox_2,self.node.cob[1])
-        svinf(self.ui.doubleSpinBox_3,self.node.cob[2])
-        svinf(self.ui.BMT,self.node.BMT)
-        svinf(self.ui.BML,self.node.BML)
-        svinf(self.ui.COFX,self.node.COFX)
-        svinf(self.ui.COFY,self.node.COFY)
-        svinf(self.ui.kHeave,self.node.kHeave)
-        svinf(self.ui.waterline,self.node.waterline)
-        svinf(self.ui.disp,self.node.displacement_kN)
+        svinf(self.ui.doubleSpinBox_1, self.node.cob[0])
+        svinf(self.ui.doubleSpinBox_2, self.node.cob[1])
+        svinf(self.ui.doubleSpinBox_3, self.node.cob[2])
+        svinf(self.ui.BMT, self.node.BMT)
+        svinf(self.ui.BML, self.node.BML)
+        svinf(self.ui.COFX, self.node.COFX)
+        svinf(self.ui.COFY, self.node.COFY)
+        svinf(self.ui.kHeave, self.node.kHeave)
+        svinf(self.ui.waterline, self.node.waterline)
+        svinf(self.ui.disp, self.node.displacement_kN)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1396,13 +1404,13 @@ class EditLC6d(NodeEditor):
         self.ui.cbMasterAxis.setCurrentText(self.node.main.name)
         self.ui.cbSlaveAxis.setCurrentText(self.node.secondary.name)
 
-        svinf(self.ui.doubleSpinBox_1,self.node.stiffness[0])
-        svinf(self.ui.doubleSpinBox_2,self.node.stiffness[1])
-        svinf(self.ui.doubleSpinBox_3,self.node.stiffness[2])
+        svinf(self.ui.doubleSpinBox_1, self.node.stiffness[0])
+        svinf(self.ui.doubleSpinBox_2, self.node.stiffness[1])
+        svinf(self.ui.doubleSpinBox_3, self.node.stiffness[2])
 
-        svinf(self.ui.doubleSpinBox_4,self.node.stiffness[3])
-        svinf(self.ui.doubleSpinBox_5,self.node.stiffness[4])
-        svinf(self.ui.doubleSpinBox_6,self.node.stiffness[5])
+        svinf(self.ui.doubleSpinBox_4, self.node.stiffness[3])
+        svinf(self.ui.doubleSpinBox_5, self.node.stiffness[4])
+        svinf(self.ui.doubleSpinBox_6, self.node.stiffness[5])
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1479,8 +1487,8 @@ class EditConnector2d(NodeEditor):
         self.ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
         self.ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
 
-        svinf(self.ui.doubleSpinBox_1,self.node.k_linear)
-        svinf(self.ui.doubleSpinBox_4,self.node.k_angular)
+        svinf(self.ui.doubleSpinBox_1, self.node.k_linear)
+        svinf(self.ui.doubleSpinBox_4, self.node.k_angular)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1564,16 +1572,16 @@ class EditBeam(NodeEditor):
 
         self.ui.sbnSegments.setValue(self.node.n_segments)
 
-        svinf(self.ui.doubleSpinBox_1,self.node.L)
-        svinf(self.ui.doubleSpinBox_2,self.node.EIy)
-        svinf(self.ui.doubleSpinBox_3,self.node.EIz)
+        svinf(self.ui.doubleSpinBox_1, self.node.L)
+        svinf(self.ui.doubleSpinBox_2, self.node.EIy)
+        svinf(self.ui.doubleSpinBox_3, self.node.EIz)
 
-        svinf(self.ui.doubleSpinBox_4,self.node.GIp)
-        svinf(self.ui.doubleSpinBox_5,self.node.EA)
+        svinf(self.ui.doubleSpinBox_4, self.node.GIp)
+        svinf(self.ui.doubleSpinBox_5, self.node.EA)
 
         self.ui.cbTensionOnly.setChecked(self.node.tension_only)
 
-        svinf(self.ui.sbMass,self.node.mass)
+        svinf(self.ui.sbMass, self.node.mass)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1679,9 +1687,9 @@ class EditGeometricContact(NodeEditor):
         self.ui.cbSFix.setChecked(self.node.child_fixed)
         self.ui.cbSwivelFix.setChecked(self.node.swivel_fixed)
 
-        svinf(self.ui.sbMasterRotation,self.node.rotation_on_parent)
-        svinf(self.ui.sbSlaveRotation,self.node.child_rotation)
-        svinf(self.ui.sbSwivel,self.node.swivel)
+        svinf(self.ui.sbMasterRotation, self.node.rotation_on_parent)
+        svinf(self.ui.sbSlaveRotation, self.node.child_rotation)
+        svinf(self.ui.sbSwivel, self.node.swivel)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1768,8 +1776,8 @@ class EditContactBall(NodeEditor):
         self.ui.sbR.blockSignals(True)
         self.ui.sbK.blockSignals(True)
 
-        svinf(self.ui.sbR,self.node.radius)
-        svinf(self.ui.sbK,self.node.k)
+        svinf(self.ui.sbR, self.node.radius)
+        svinf(self.ui.sbK, self.node.k)
 
         self.update_meshes_list()
 
@@ -1903,15 +1911,15 @@ class EditSling(NodeEditor):
             self.poiLayout.removeWidget(ddb)
             ddb.deleteLater()
 
-        svinf(self.ui.sbLength,self.node.length)
-        svinf(self.ui.sbEA,self.node.EA)
-        svinf(self.ui.sbDiameter,self.node.diameter)
-        svinf(self.ui.sbMass,self.node.mass)
-        svinf(self.ui.sbLEyeA,self.node.LeyeA)
-        svinf(self.ui.sbLEyeB,self.node.LeyeB)
-        svinf(self.ui.sbLSpliceA,self.node.LspliceA)
-        svinf(self.ui.sbLSpliceB,self.node.LspliceB)
-        svinf(self.ui.sbK,self.node.k_total)
+        svinf(self.ui.sbLength, self.node.length)
+        svinf(self.ui.sbEA, self.node.EA)
+        svinf(self.ui.sbDiameter, self.node.diameter)
+        svinf(self.ui.sbMass, self.node.mass)
+        svinf(self.ui.sbLEyeA, self.node.LeyeA)
+        svinf(self.ui.sbLEyeB, self.node.LeyeB)
+        svinf(self.ui.sbLSpliceA, self.node.LspliceA)
+        svinf(self.ui.sbLSpliceB, self.node.LspliceB)
+        svinf(self.ui.sbK, self.node.k_total)
 
         self.ui.list.clear()
 
@@ -1992,19 +2000,20 @@ class EditSling(NodeEditor):
         new_LspliceB = self.ui.sbLSpliceB.value()
         new_k = self.ui.sbK.value()
 
-        code += code_if_changed_d(node, new_length, 'length', 3) # Need to change the length before changing the length of
+        code += code_if_changed_d(
+            node, new_length, "length", 3
+        )  # Need to change the length before changing the length of
         # the components beause the length of the components is checked against the total length
 
-        code += code_if_changed_d(node, new_k, 'k_total', 1)
-        code += code_if_changed_d(node, new_EA, 'EA', 1)
-        code += code_if_changed_d(node, new_diameter, 'diameter', 1)
+        code += code_if_changed_d(node, new_k, "k_total", 1)
+        code += code_if_changed_d(node, new_EA, "EA", 1)
+        code += code_if_changed_d(node, new_diameter, "diameter", 1)
 
-        code += code_if_changed_d(node, new_mass, 'mass', 1)
-        code += code_if_changed_d(node, new_LeyeA, 'LeyeA', 3)
-        code += code_if_changed_d(node, new_LeyeB, 'LeyeB', 3)
-        code += code_if_changed_d(node, new_LspliceA, 'LspliceA', 3)
-        code += code_if_changed_d(node, new_LspliceB, 'LspliceB', 3)
-
+        code += code_if_changed_d(node, new_mass, "mass", 1)
+        code += code_if_changed_d(node, new_LeyeA, "LeyeA", 3)
+        code += code_if_changed_d(node, new_LeyeB, "LeyeB", 3)
+        code += code_if_changed_d(node, new_LspliceA, "LspliceA", 3)
+        code += code_if_changed_d(node, new_LspliceB, "LspliceB", 3)
 
         # get the poi names
         new_names = []
@@ -2229,7 +2238,6 @@ class WidgetNodeProps(guiDockWidget):
             self.setVisible(False)
             return
 
-
         if node._manager and not isinstance(node, vfs.Shackle):
             self.managed_label.setText(
                 f"The properties of this node are managed by node '{node._manager.name}' and should not be changed manually"
@@ -2244,7 +2252,9 @@ class WidgetNodeProps(guiDockWidget):
         self._open_edit_widgets.clear()
 
         self._node_name_editor = EditNode.Instance()
-        self._node_name_editor.connect(node, self.guiScene, self.run_code, self.guiEmitEvent)
+        self._node_name_editor.connect(
+            node, self.guiScene, self.run_code, self.guiEmitEvent
+        )
 
         # add to layout if not already in
         name_widget = getattr(self, "_name_widget", None)
@@ -2268,7 +2278,6 @@ class WidgetNodeProps(guiDockWidget):
 
         if isinstance(node, vfs.Component):
             self._node_editors.append(EditComponent.Instance())
-
 
         if isinstance(node, vfs.Frame):
             self._node_editors.append(EditAxis.Instance())

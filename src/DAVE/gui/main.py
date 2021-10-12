@@ -454,10 +454,14 @@ class Gui:
         self.ui.pbSide.clicked.connect(lambda: self.camera_set_direction((0, 1, 0)))
         self.ui.pb3D.clicked.connect(self.toggle_2D)
 
-        self.ui.actionPython_console_2.triggered.connect(lambda: self.ui.dockWidget_2.show())
+        self.ui.actionPython_console_2.triggered.connect(
+            lambda: self.ui.dockWidget_2.show()
+        )
 
-        self.ui.actionVersion.setText(f'Version {DAVE.__version__}')
-        self.ui.actionOnline_help.triggered.connect(lambda: subprocess.Popen('explorer https://davedocs.online'))
+        self.ui.actionVersion.setText(f"Version {DAVE.__version__}")
+        self.ui.actionOnline_help.triggered.connect(
+            lambda: subprocess.Popen("explorer https://davedocs.online")
+        )
 
         # ======================= Code-highlighter ==============
 
@@ -586,7 +590,6 @@ class Gui:
 
         self._undo_log = []
         self._undo_index = 0
-        self._do_not_store_undo = False
 
         self.ui.actionUndo.triggered.connect(self.undo)
         self.ui.actionRedo.triggered.connect(self.redo)
@@ -628,7 +631,6 @@ class Gui:
 
         if need_refresh:
             self.select_none()
-
 
     def change_paintset(self):
         """Updates the paintset of the viewport to the value of cbPainterSelect"""
@@ -798,7 +800,6 @@ class Gui:
             self.show_guiWidget("Limits and UCs", WidgetLimits)
             if not self.visual.settings.paint_uc:
                 self.toggle_show_UC()
-
 
         if name == "MOMENTS":
             self.show_guiWidget("Footprints", WidgetFootprints)
@@ -1007,22 +1008,19 @@ class Gui:
 
     # =================================================== end of animation functions ==================
 
-
     # ==== undo functions ====
 
     def undo(self):
         self._undo_index -= 1
         if self._undo_index < 0:
-            QMessageBox.information(self.ui.widget,
-                                    'Undo',
-                                    "Can not undo any further",
-                                    QMessageBox.Ok
-                                    )
+            QMessageBox.information(
+                self.ui.widget, "Undo", "Can not undo any further", QMessageBox.Ok
+            )
 
             self._undo_index = 0
             return
 
-        if self._undo_index == len(self._undo_log)-1:
+        if self._undo_index == len(self._undo_log) - 1:
             # Make an undo point for the current state
             self._undo_log.append(self.scene.give_python_code())
 
@@ -1030,28 +1028,28 @@ class Gui:
 
     def redo(self):
         self._undo_index += 1
-        if self._undo_index > len(self._undo_log)-1:
-            QMessageBox.information(self.ui.widget,
-                                    'Redo',
-                                    "Can not redo any further",
-                                    QMessageBox.Ok
-                                    )
-            self._undo_index = len(self._undo_log)-1
+        if self._undo_index > len(self._undo_log) - 1:
+            QMessageBox.information(
+                self.ui.widget, "Redo", "Can not redo any further", QMessageBox.Ok
+            )
+            self._undo_index = len(self._undo_log) - 1
             return
 
         self.activate_undo_index(self._undo_index)
 
     def activate_undo_index(self, index):
 
-        print(f'Activating undo index {index} of {len(self._undo_log)}')
+        print(f"Activating undo index {index} of {len(self._undo_log)}")
 
         selected_names = [node.name for node in self.selected_nodes]
 
         self.scene.clear()
-        self.run_code(self._undo_log[index], store_undo=False, event=guiEventType.FULL_UPDATE)
+        self.run_code(
+            self._undo_log[index], store_undo=False, event=guiEventType.FULL_UPDATE
+        )
 
         nodes = [self.scene[node] for node in selected_names]
-        self.selected_nodes.clear()       # do not re-assign, docks keep a reference to this list
+        self.selected_nodes.clear()  # do not re-assign, docks keep a reference to this list
         self.selected_nodes.extend(nodes)
 
         self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
@@ -1059,8 +1057,10 @@ class Gui:
     def add_undo_point(self):
         """Adds the current model to the undo-list"""
         if len(self._undo_log) > self._undo_index:
-            self._undo_log = self._undo_log[:self._undo_index]
-        self._undo_log.append(self.scene.give_python_code(export_environment_settings=False))
+            self._undo_log = self._undo_log[: self._undo_index]
+        self._undo_log.append(
+            self.scene.give_python_code(export_environment_settings=False)
+        )
         self._undo_index = len(self._undo_log)
 
     # / undo functions
@@ -1076,7 +1076,7 @@ class Gui:
         self.ui.teFeedback.setText(str(e))
         self.ui.teFeedback.setStyleSheet("background-color: pink;")
 
-    def run_code(self, code, event, store_undo = True):
+    def run_code(self, code, event, store_undo=True):
         """Runs the provided code
 
         If successful, add code to history and create an undo point
@@ -1094,7 +1094,9 @@ class Gui:
 
         self.ui.pbExecute.setStyleSheet("background-color: yellow;")
         if not self.ui.teCode.hasFocus():
-            self.ui.teCode.setPlainText(code)  # do not replace if we are currently editing
+            self.ui.teCode.setPlainText(
+                code
+            )  # do not replace if we are currently editing
 
         self.app.processEvents()
 
@@ -1110,8 +1112,8 @@ class Gui:
 
                 glob_vars = globals()
                 glob_vars.update(DAVE.settings.DAVE_ADDITIONAL_RUNTIME_MODULES)
-                glob_vars['s'] = self.scene
-                glob_vars['self'] = self
+                glob_vars["s"] = self.scene
+                glob_vars["self"] = self
 
                 exec(code, glob_vars)
 
@@ -1361,9 +1363,7 @@ class Gui:
     def toggle_show_UC(self):
         self.visual.settings.paint_uc = not self.visual.settings.paint_uc
 
-        self.ui.pbUC.setChecked(
-            self.visual.settings.paint_uc
-        )
+        self.ui.pbUC.setChecked(self.visual.settings.paint_uc)
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def toggle_show_global_from_menu(self):
@@ -1600,9 +1600,7 @@ class Gui:
                     if self.scene.nodes_with_parent(node):
                         menu.addAction("Duplicate", duplicate_branch)
 
-
                 menu.addAction("Duplicate node", duplicate)
-
 
                 menu.addSeparator()
                 menu.addSeparator()
