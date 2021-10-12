@@ -99,18 +99,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="btnUndoStatics">
-         <property name="text">
-          <string>Undo</string>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normalon>:/icons/icon_undo.png</normalon>
-          </iconset>
-         </property>
-        </widget>
-       </item>
-       <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -528,7 +516,15 @@
     <addaction name="actionVersion"/>
     <addaction name="actionOnline_help"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionUndo"/>
+    <addaction name="actionRedo"/>
+   </widget>
    <addaction name="menuSolve_Statics"/>
+   <addaction name="menuEdit"/>
    <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -1097,6 +1093,22 @@ p, li { white-space: pre-wrap; }
   <action name="actionReload_components">
    <property name="text">
     <string>Reload components</string>
+   </property>
+  </action>
+  <action name="actionUndo">
+   <property name="text">
+    <string>Undo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="actionRedo">
+   <property name="text">
+    <string>Redo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
    </property>
   </action>
  </widget>

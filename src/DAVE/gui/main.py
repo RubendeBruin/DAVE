@@ -297,7 +297,7 @@ class Gui:
             lambda: self.guiEmitEvent(guiEventType.FULL_UPDATE)
         )
         self.ui.btnSolveStatics.clicked.connect(self.solve_statics)
-        self.ui.btnUndoStatics.clicked.connect(self.undo_solve_statics)
+        # self.ui.btnUndoStatics.clicked.connect(self.undo_solve_statics)
 
         # bottom
         self.ui.pbExecute.clicked.connect(self.run_code_in_teCode)
@@ -581,6 +581,15 @@ class Gui:
             self.activate_workspace("CONSTRUCT")
         else:
             self.activate_workspace(workspace)
+
+        # ========== undo log =======
+
+        self._undo_log = []
+        self._undo_index = 0
+        self._do_not_store_undo = False
+
+        self.ui.actionUndo.triggered.connect(self.undo)
+        self.ui.actionRedo.triggered.connect(self.redo)
 
         # ======================== Finalize ========================
         splash.finish(self.MainWindow)
@@ -998,6 +1007,64 @@ class Gui:
 
     # =================================================== end of animation functions ==================
 
+
+    # ==== undo functions ====
+
+    def undo(self):
+        self._undo_index -= 1
+        if self._undo_index < 0:
+            QMessageBox.information(self.ui.widget,
+                                    'Undo',
+                                    "Can not undo any further",
+                                    QMessageBox.Ok
+                                    )
+
+            self._undo_index = 0
+            return
+
+        if self._undo_index == len(self._undo_log)-1:
+            # Make an undo point for the current state
+            self._undo_log.append(self.scene.give_python_code())
+
+        self.activate_undo_index(self._undo_index)
+
+    def redo(self):
+        self._undo_index += 1
+        if self._undo_index > len(self._undo_log)-1:
+            QMessageBox.information(self.ui.widget,
+                                    'Redo',
+                                    "Can not redo any further",
+                                    QMessageBox.Ok
+                                    )
+            self._undo_index = len(self._undo_log)-1
+            return
+
+        self.activate_undo_index(self._undo_index)
+
+    def activate_undo_index(self, index):
+
+        print(f'Activating undo index {index} of {len(self._undo_log)}')
+
+        selected_names = [node.name for node in self.selected_nodes]
+
+        self.scene.clear()
+        self.run_code(self._undo_log[index], store_undo=False, event=guiEventType.FULL_UPDATE)
+
+        nodes = [self.scene[node] for node in selected_names]
+        self.selected_nodes.clear()       # do not re-assign, docks keep a reference to this list
+        self.selected_nodes.extend(nodes)
+
+        self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+
+    def add_undo_point(self):
+        """Adds the current model to the undo-list"""
+        if len(self._undo_log) > self._undo_index:
+            self._undo_log = self._undo_log[:self._undo_index]
+        self._undo_log.append(self.scene.give_python_code(export_environment_settings=False))
+        self._undo_index = len(self._undo_log)
+
+    # / undo functions
+
     def onClose(self):
         self.visual.shutdown_qt()
         print(
@@ -1009,11 +1076,16 @@ class Gui:
         self.ui.teFeedback.setText(str(e))
         self.ui.teFeedback.setStyleSheet("background-color: pink;")
 
-    def run_code(self, code, event):
+    def run_code(self, code, event, store_undo = True):
         """Runs the provided code
 
-        If succesful, add code to history
+        If successful, add code to history and create an undo point
         If not, set code as current code
+
+        Args:
+            - event : the event to send after running the code
+            - store_undo : store undo information AFTER running code
+
         """
 
         before = self.scene._nodes.copy()
@@ -1025,6 +1097,9 @@ class Gui:
             self.ui.teCode.setPlainText(code)  # do not replace if we are currently editing
 
         self.app.processEvents()
+
+        if store_undo:
+            self.add_undo_point()
 
         self.ui.teFeedback.setStyleSheet("")
         self.ui.teFeedback.clear()
@@ -1110,6 +1185,9 @@ class Gui:
 
     def solve_statics(self):
         self.scene.update()
+
+        self.add_undo_point()
+
         old_dofs = self.scene._vfc.get_dofs()
 
         if len(old_dofs) == 0:  # no degrees of freedom
@@ -1126,7 +1204,7 @@ class Gui:
             print("No dofs")
             return
 
-        self._dofs = old_dofs.copy()
+        # self._dofs = old_dofs.copy()
 
         long_wait = False
         dialog = None
@@ -1311,12 +1389,12 @@ class Gui:
             self.visual.DisableSSAO()
         self.visual.refresh_embeded_view()
 
-    def undo_solve_statics(self):
-        if self._dofs is not None:
-            self.run_code(
-                "s._vfc.set_dofs(self._dofs) # UNDO SOLVE STATICS",
-                guiEventType.MODEL_STATE_CHANGED,
-            )
+    # def undo_solve_statics(self):
+    #     if self._dofs is not None:
+    #         self.run_code(
+    #             "s._vfc.set_dofs(self._dofs) # UNDO SOLVE STATICS",
+    #             guiEventType.MODEL_STATE_CHANGED,
+    #         )
 
     def clear(self):
         self.run_code("s.clear()", guiEventType.FULL_UPDATE)

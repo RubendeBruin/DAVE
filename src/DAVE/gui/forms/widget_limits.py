@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_limits.ui',
 # licensing of 'widget_limits.ui' applies.
 #
-# Created: Mon Oct 11 09:34:32 2021
+# Created: Tue Oct 12 12:56:59 2021
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!

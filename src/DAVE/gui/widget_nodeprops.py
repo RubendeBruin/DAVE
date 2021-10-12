@@ -2157,7 +2157,6 @@ class WidgetNodeProps(guiDockWidget):
             if self.guiSelection:
                 self.select_node(self.guiSelection[0])
 
-
         if self._open_edit_widgets:
 
             self.setVisible(True)

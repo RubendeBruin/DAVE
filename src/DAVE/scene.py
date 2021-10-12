@@ -6625,26 +6625,7 @@ class Scene:
 
         self._nodes = exported
 
-        # scene_names = [n.name for n in self._nodes]
-        #
-        # self._vfc.state_update()  # use the function from the core.
-        # new_list = []
-        # for name in self._vfc.names:  # and then build a new list using the names
-        #     if vfc.VF_NAME_SPLIT in name:
-        #         continue
-        #
-        #     if name not in scene_names:
-        #         raise Exception('Something went wrong with sorting the the nodes by dependency. '
-        #                         'Node naming between core and scene is inconsistent for node {}'.format(name))
-        #
-        #     new_list.append(self[name])
-        #
-        # # and add the nodes without a vfc-core connection
-        # for node in self._nodes:
-        #     if not node in new_list:
-        #         new_list.append(node)
-        #
-        # self._nodes = new_list
+
 
     def assert_name_available(self, name):
         """Raises an error is name is not available"""
@@ -8750,18 +8731,20 @@ class Scene:
         for line in self.give_python_code().split("\n"):
             print(line)
 
-    def give_python_code(self, nodes = None, export_environment_settings = True):
+    def give_python_code(self, nodes = None, export_environment_settings = True, _no_sort_nodes = False):
         """Generates the python code that rebuilds the scene and elements in its current state.
 
         Args:
             nodes [None] : generate only for these node(s)
             export_environment_settings [True] : export the environment (wind, gravity, etc)
+            _no_sort_nodes [False] : skip sorting of nodes (use if sure that nodes are already sorted)
         """
 
         import datetime
         import getpass
 
-        self.sort_nodes_by_dependency()
+        if not _no_sort_nodes:
+            self.sort_nodes_by_dependency()
 
         if nodes is None:
             nodes_to_be_exported = self._nodes
@@ -8939,7 +8922,7 @@ class Scene:
 
         self.run_code(code)
 
-    def import_scene(self, other, prefix="", containerize=True, nodes = None, container = None):
+    def import_scene(self, other, prefix="", containerize=True, nodes = None, container = None, settings=True):
         """Copy-paste all nodes of scene "other" into current scene.
 
         To avoid double names it is recommended to use a prefix. This prefix will be added to all element names.
@@ -8947,6 +8930,7 @@ class Scene:
         Args:
             containerize : place all the nodes without a parent in a dedicated Frame
             nodes [None] : if provided then import only these nodes
+
 
         Returns:
             Contained (Axis-type Node) : if the imported scene is containerized then a reference to the created container is returned.
