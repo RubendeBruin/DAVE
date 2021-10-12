@@ -1779,8 +1779,8 @@ class Viewport:
         vector = np.array(vector)
         vector = vector / np.linalg.norm(vector)
 
-        if np.linalg.norm(np.cross(vector, (0, 0, 1))) < 1e-8:
-            up = (0, -1, 0)
+        if np.linalg.norm(np.cross(vector, (0, 0, 1))) < 1e-8:  # looking down
+            up = (0, 1, 0)
         else:
             up = (0, 0, 1)
 
