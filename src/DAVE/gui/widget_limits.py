@@ -131,7 +131,7 @@ class WidgetLimits(guiDockWidget):
             node = self.guiScene[cbN.currentText()]
             props = self.guiScene.give_properties_for_node(node)
 
-            exclude = ('name','UC','manager','parent_for_export','visible','class_name','parent','footprint','fixed','intertia','inertia_position','inertia_radii')
+            exclude = ('name','UC','UC_governing_details','manager','parent_for_export','visible','class_name','parent','footprint','fixed','intertia','inertia_position','inertia_radii')
 
             props_without_name_and_UC = [p for p in props if p not in exclude]
             combobox_update_items(cbP, props_without_name_and_UC)

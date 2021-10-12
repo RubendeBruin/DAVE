@@ -368,7 +368,15 @@ Node,name,False,"Name of the node (str), must be unique
         #NOGUI"
 Node,UC,True,"Returns the governing UC of the node, returns None is no limits are defined
 
-        See Also: give_UC
+        See Also: give_UC, UC_governing_details
+        "
+Node,UC_governing_details,True,"Returns the details of the governing UC for this node:
+        0: UC,
+        1: property-name,
+        2: property-limits
+        3: property value
+
+        Returns None if no limits are supplied
         "
 NodeWithCoreParent,parent_for_export,True,"Reference to node that to use as parent used during export (work-around for circular references in export of geometric-contact
         #NOGUI"

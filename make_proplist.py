@@ -48,6 +48,7 @@ for c in clsmembers:
         dc = cls.__doc__
         if dc:
             md.append(dc)
+        md.append('')
         md.append('|  Property | Read-Only  | Documentation ')
         md.append('|:---------------- |:------------------------------- |:---------------- |')
 

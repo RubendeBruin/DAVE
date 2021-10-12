@@ -8752,7 +8752,7 @@ class Scene:
             nodes_to_be_exported = [node for node in self._nodes if node in nodes]
 
         code = []
-        code.append("# auto generated pyhton code")
+        code.append("# auto generated python code")
         try:
             code.append("# By {}".format(getpass.getuser()))
         except:
