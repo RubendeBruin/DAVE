@@ -608,4 +608,7 @@ foot_painters["Point"]["footprint"] = copy(footprint_paint)
 foot_painters["Frame"]["footprint"] = copy(footprint_paint)
 foot_painters["RigidBody"]["footprint"] = copy(footprint_paint)
 
+foot_painters["WindArea"] = {"main": copy(invisible)}
+foot_painters["CurrentArea"] = {"main": copy(invisible)}
+
 PAINTERS["Footprints"] = foot_painters

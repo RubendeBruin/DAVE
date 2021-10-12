@@ -639,7 +639,7 @@ class Gui:
                 self.guiSelectNode(selected_node_names[0])
 
     def activate_paintset(self, name):
-        """Sets the current text of the checkbox to the given paint-set name. This triggers activation
+        """Sets the current text of the combobox to the given paint-set name. This triggers activation
         of the new paint set.
 
         This action is not executed if the currently active paint-set name contains "custom"

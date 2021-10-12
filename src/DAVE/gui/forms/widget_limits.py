@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_limits.ui',
 # licensing of 'widget_limits.ui' applies.
 #
-# Created: Thu Oct  7 16:59:57 2021
+# Created: Mon Oct 11 09:34:32 2021
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -22,6 +22,9 @@ class Ui_DockLimits(object):
         self.gridLayout = QtWidgets.QGridLayout(self.widget)
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.gridLayout.setObjectName("gridLayout")
+        self.lbNodeClass = QtWidgets.QLabel(self.widget)
+        self.lbNodeClass.setObjectName("lbNodeClass")
+        self.gridLayout.addWidget(self.lbNodeClass, 2, 1, 1, 1)
         self.cbNode = QtWidgets.QComboBox(self.widget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -29,13 +32,15 @@ class Ui_DockLimits(object):
         sizePolicy.setHeightForWidth(self.cbNode.sizePolicy().hasHeightForWidth())
         self.cbNode.setSizePolicy(sizePolicy)
         self.cbNode.setObjectName("cbNode")
-        self.gridLayout.addWidget(self.cbNode, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.cbNode, 1, 1, 1, 1)
         self.label = QtWidgets.QLabel(self.widget)
         self.label.setObjectName("label")
-        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
-        self.lbNodeClass = QtWidgets.QLabel(self.widget)
-        self.lbNodeClass.setObjectName("lbNodeClass")
-        self.gridLayout.addWidget(self.lbNodeClass, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.label, 1, 0, 1, 1)
+        self.lblError = QtWidgets.QLabel(self.widget)
+        self.lblError.setStyleSheet("background: yellow; \n"
+"color: rgb(255, 0, 0);")
+        self.lblError.setObjectName("lblError")
+        self.gridLayout.addWidget(self.lblError, 0, 1, 1, 1)
         self.verticalLayout.addWidget(self.widget)
         self.widgetLimitEdit = QtWidgets.QWidget(DockLimits)
         self.widgetLimitEdit.setObjectName("widgetLimitEdit")
@@ -99,8 +104,9 @@ class Ui_DockLimits(object):
 
     def retranslateUi(self, DockLimits):
         DockLimits.setWindowTitle(QtWidgets.QApplication.translate("DockLimits", "Form", None, -1))
-        self.label.setText(QtWidgets.QApplication.translate("DockLimits", "Node", None, -1))
         self.lbNodeClass.setText(QtWidgets.QApplication.translate("DockLimits", "node_class", None, -1))
+        self.label.setText(QtWidgets.QApplication.translate("DockLimits", "Node", None, -1))
+        self.lblError.setText(QtWidgets.QApplication.translate("DockLimits", "TextLabel", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("DockLimits", "Property", None, -1))
         self.lbPropHelp.setText(QtWidgets.QApplication.translate("DockLimits", "hoover here for property help", None, -1))
         self.label_4.setText(QtWidgets.QApplication.translate("DockLimits", "Limit", None, -1))

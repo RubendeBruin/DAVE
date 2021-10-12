@@ -64,6 +64,8 @@ class WidgetLimits(guiDockWidget):
         self.ui.pbApply.clicked.connect(self.apply_limit)
         self.ui.pbRemove.clicked.connect(self.delete_limit)
 
+        self.ui.lblError.setVisible(False)
+
     def guiProcessEvent(self, event):
         """
         Add processing that needs to be done.
@@ -114,6 +116,12 @@ class WidgetLimits(guiDockWidget):
             if node.manager is None:
                 cbN.setCurrentText(node.name)
                 self.ui.lbNodeClass.setText(f'Node type: {node.class_name}')
+                self.ui.lblError.setVisible(False)
+            else:
+                self.ui.lblError.setText(f'{node.name} is managed by {node.manager.name}' )
+                self.ui.lblError.setVisible(True)
+
+        cbN.blockSignals(False)
 
         # the properties drop-down
         cbP = self.ui.cbProperty
@@ -122,8 +130,11 @@ class WidgetLimits(guiDockWidget):
         if cbN.currentText():
             node = self.guiScene[cbN.currentText()]
             props = self.guiScene.give_properties_for_node(node)
-            props_without_name = [p for p in props if p != 'name']
-            combobox_update_items(cbP, props_without_name)
+
+            exclude = ('name','UC','manager','parent_for_export','visible','class_name','parent','footprint','fixed','intertia','inertia_position','inertia_radii')
+
+            props_without_name_and_UC = [p for p in props if p not in exclude]
+            combobox_update_items(cbP, props_without_name_and_UC)
 
             if node.manager is None:
                 self.ui.widgetLimitEdit.setEnabled(True)

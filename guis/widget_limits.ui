@@ -23,7 +23,14 @@
       </size>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="1">
+      <item row="2" column="1">
+       <widget class="QLabel" name="lbNodeClass">
+        <property name="text">
+         <string>node_class</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
        <widget class="QComboBox" name="cbNode">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -33,17 +40,21 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
+      <item row="1" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Node</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QLabel" name="lbNodeClass">
+      <item row="0" column="1">
+       <widget class="QLabel" name="lblError">
+        <property name="styleSheet">
+         <string notr="true">background: yellow; 
+color: rgb(255, 0, 0);</string>
+        </property>
         <property name="text">
-         <string>node_class</string>
+         <string>TextLabel</string>
         </property>
        </widget>
       </item>

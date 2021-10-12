@@ -215,18 +215,53 @@ class Node(ABC):
     def UC(self):
         """Returns the governing UC of the node, returns None is no limits are defined
 
-        See Also: give_UC
+        See Also: give_UC, UC_governing_details
         """
         if not self.limits:
             return None
 
+        gov_uc = -1
+
+        props = [*self.limits.keys()]  # Note: if a limit on UC itself was defined then this will be deleted during this loop
+        for propname in props:
+            uc = self.give_UC(propname)
+            if uc is not None:
+                gov_uc = max(gov_uc, uc)
+
+        if gov_uc > -1:
+            return gov_uc
+        else:
+            return None
+
+    @property
+    def UC_governing_details(self):
+        """Returns the details of the governing UC for this node:
+        0: UC,
+        1: property-name,
+        2: property-limits
+        3: property value
+
+        Returns None if no limits are supplied
+        """
+
+        if not self.limits:
+            return None, None, None, None
+
         gov_uc = 0
+        gov_prop = ''
+        gov_limits = ()
+        gov_value = None
 
         for propname, limits in self.limits.items():
             uc = self.give_UC(propname)
-            gov_uc = max(gov_uc, uc)
+            if uc > gov_uc:
+                gov_uc = max(gov_uc, uc)
+                gov_prop = propname
+                gov_limits = limits
+                gov_value = getattr(self,propname)
 
-        return gov_uc
+        return gov_uc, gov_prop, gov_limits, gov_value
+
 
     def give_UC(self, prop_name = None):
         """Returns the UC for the provided property name.
@@ -236,6 +271,12 @@ class Node(ABC):
 
         if prop_name not in self.limits:
             return None
+
+        if prop_name == 'UC':
+            warnings.warn(f'Limit defined on "UC" on node {self.name}. Can not calculate the UC for UC as that would result in infinite recursion. Deleting this limit')
+            del self.limits['UC']
+            return None
+
 
         limits = self.limits[prop_name]
 
@@ -6915,6 +6956,37 @@ class Scene:
             if uc is not None:
                 gov = max(gov, uc)
         return gov
+
+    @property
+    def UC_governing_details(self):
+        """Returns tuple with:
+        0: governing UC,
+        1: node-name in which this UC occurs
+        2: property name
+        3: limits
+        4: value
+        """
+
+        gov_node = None
+        gov_prop = ''
+        gov_limits = ()
+        gov_value = None
+        gov = 0
+        for node in self._nodes:
+            uc, prop_name, limits, value = node.UC_governing_details
+            if uc is not None:
+                if uc > gov:
+                    gov = uc
+                    gov_node = node.name
+                    gov_value = value
+                    gov_prop = prop_name
+                    gov_limits = limits
+
+
+        if gov_node is None:
+            return None, None, None, None
+        else:
+            return gov, gov_node, gov_prop, gov_limits, gov_value
 
 
     # ========= The most important functions ========
