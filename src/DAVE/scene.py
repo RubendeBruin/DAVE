@@ -8752,6 +8752,7 @@ class Scene:
             nodes_to_be_exported = [node for node in self._nodes if node in nodes]
 
         code = []
+        code_later = []
         code.append("# auto generated python code")
         try:
             code.append("# By {}".format(getpass.getuser()))
@@ -8778,7 +8779,12 @@ class Scene:
         for n in nodes_to_be_exported:
 
             if n._manager is None:
-                code.append("\n" + n.give_python_code())
+                pc = n.give_python_code()
+                if isinstance(pc, tuple):
+                    code.append(pc[0])
+                    code_later.append(pc[1])
+                else:
+                    code.append(pc)
             else:
                 if n._manager.creates(n):
                     pass
@@ -8800,6 +8806,8 @@ class Scene:
                 for key, value in n.limits.items():
                     code.append(f"s['{n.name}'].limits['{key}'] = {value}")
 
+        # Attach code_later to the end  of code
+        code.extend(code_later)
 
         return '\n'.join(code)
 
