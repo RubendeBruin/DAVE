@@ -26,7 +26,7 @@ from IPython.core.display import display, HTML
 # DAVE_REPORT_PROPS = pd.read_csv(cdir / '../resources/proplist.csv')
 from DAVE.settings import DAVE_REPORT_PROPS
 
-def report(node, properties=None, long = False) -> None:
+def report(node, properties=None, long = False, _return_pdf_table = False) -> None:
     """Produces a HTML table with properties of the provided node.
 
     The amount of properties that is reported may be limited by specifying the names of the the properties that should be reported.
@@ -52,6 +52,8 @@ def report(node, properties=None, long = False) -> None:
 
 
     """
+    if isinstance(properties, str):
+        properties = [properties]
 
     style = ' style="text-align:left"'
 
@@ -59,6 +61,9 @@ def report(node, properties=None, long = False) -> None:
     html.append('<table align="left" border="1">')
     html.append(f'<caption>Properties of {node.name} ({str(node.class_name)})</caption>')
     html.append(f'<tr><th{style}>Property</th><th{style}>Value</th><th{style}>Unit</th><th{style}>Remarks</th><th{style}>Explained</th></tr>')
+
+    table = []
+    table.append(['Property','Value','Unit','Remarks','Explained'])
 
     for index, row in DAVE_REPORT_PROPS.iterrows():
 
@@ -106,14 +111,20 @@ def report(node, properties=None, long = False) -> None:
 
             value = fancy_format(value)
 
-            units = str(units).replace(',',',<br>')
-            value = str(value).replace(',',',<br>')
+            units_br = str(units).replace(',',',<br>')
+            value_br = str(value).replace(',',',<br>')
 
+            units_pdf = str(units).replace(',',',\n')
+            value_pdf = str(value).replace(',',',\n')
 
-            html.append(f'<tr><td{style}>{prop}</td><td{style}>{value}</td><td{style}>{units}</td><td{style}>{remarks}</td><td{style}>{help}</td></tr>')
+            html.append(f'<tr><td{style}>{prop}</td><td{style}>{value_br}</td><td{style}>{units_br}</td><td{style}>{remarks}</td><td{style}>{help}</td></tr>')
+            table.append([prop,value_pdf,units_pdf,remarks, help])
 
     html.append('</table><BR CLEAR=LEFT>')
 
-    display(HTML(''.join(html)))
+    if _return_pdf_table:
+        return table
+    else:
+        display(HTML(''.join(html)))
 
 
