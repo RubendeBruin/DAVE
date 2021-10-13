@@ -1,0 +1,17 @@
+# code for Frame
+s.new_frame(name='Frame',
+           position=(0.0,
+                     0.0,
+                     0.0),
+           rotation=(0.0,
+                     0.0,
+                     0.0),
+           fixed =(True, True, True, True, True, True) )
+
+# code for Visual
+s.new_visual(name='Visual',
+            parent='Frame',
+            path=r'res: cube_with_bevel.obj',
+            offset=(0, 0, 0), 
+            rotation=(0, 0, 0), 
+            scale=(2.0, 2.0, 2.0) )
