@@ -183,8 +183,8 @@ for c in classes:
     for (prop, doc) in zip(all_properties, docs):
         if '#NOGUI' not in doc:
             guiprops.append(prop)
-        else:
-            print(f'Skipping {doc}')
+        # else:
+        #     print(f'Skipping {doc}')
 
     PROPS_GUI[c] = guiprops
 
