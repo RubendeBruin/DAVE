@@ -11,6 +11,7 @@
   - GZcurve_MomentDriven [TODO]
 
 """
+import math
 
 """
   This Source Code Form is subject to the terms of the Mozilla Public
@@ -172,13 +173,13 @@ def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_dr
 
     return results
 
-def carene_table(scene, buoyancy_node, draft_min, draft_max,
+def carene_table(scene, buoyancy_node,
                  stepsize=0.25,
                  delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
 
     """Creates a carene table for buoyancy node.
 
-    DRAFT refers the origin of the parent of the buoyancy node.
+    DRAFT refers the origin the buoyancy node.
 
     Args:
         scene: reference to Scene object
@@ -193,19 +194,61 @@ def carene_table(scene, buoyancy_node, draft_min, draft_max,
 
     """
 
-    zs = np.arange(draft_min, draft_max, stepsize )
-    if max(zs) < draft_max:
-        zs = np.append(zs,draft_max)
+    # Create a new scene with only this buoyancy node and a frame that it is on
+
+    if not isinstance(buoyancy_node, Buoyancy):
+        raise ValueError(f"Node {buoyancy_node.name} should be a 'buoyancy' type of node but is a {type(buoyancy_node)}.")
+
+    s = Scene()
+    s.resources_paths = scene.resources_paths
+    parent_node = s.new_frame(buoyancy_node.parent.name, fixed=True)
+
+    s.run_code(buoyancy_node.give_python_code())  # place a copy of the buoyancy node in scene "s"
+
+    node = s[buoyancy_node.name]
+
+
+    # now we have a frame (a) at 0,0,0 / 0,0,0
+    # with a buoyancy shape attached to it
+
+    # determine range
+    xn, xp, yn, yp, zn, zp = node.trimesh.get_extends()
+
+    deepest_draft = -zp # negative of the highest vertex
+    shallowest_draft = -zn # negative of the lowest vertex
+
+    # make logical steps of stepsize
+    maxf = deepest_draft / stepsize
+    if maxf > 0:
+        maxi = math.ceil(maxf)
+    else:
+        maxi = math.floor(maxf)
+
+    minf = shallowest_draft / stepsize
+    if minf > 0:
+        mini = math.floor(minf)
+    else:
+        mini = math.ceil(minf)
+
+    steps = np.arange(maxi, mini)
+    drafts = stepsize * steps
+    drafts[0] = deepest_draft
+    drafts = [*drafts]
+    drafts.append(shallowest_draft)
+
+
+
     import pandas as pd
 
     a = []
+    for z in reversed(drafts):
+        print(z)
 
-    for z in zs:
-        buoyancy_node.parent.z = -z
-        r = calculate_linearized_buoyancy_props(scene, buoyancy_node, delta_roll=delta_roll, delta_pitch=delta_pitch, delta_draft=delta_draft)
+        parent_node.z = z
+        r = calculate_linearized_buoyancy_props(s, node, delta_roll=delta_roll, delta_pitch=delta_pitch, delta_draft=delta_draft)
 
         if r is None:
-            break
+            continue
 
         r['CoB x [m]'] = r['cob'][0]
         r['CoB y [m]'] = r['cob'][1]
