@@ -1770,12 +1770,8 @@ class Viewport:
 
     def set_camera_direction(self, vector):
         # Points the camera in the given direction
-        camera = (
-            self.vtkWidget.GetRenderWindow()
-            .GetRenderers()
-            .GetFirstRenderer()
-            .GetActiveCamera()
-        )
+        camera = self.vtkWidget.GetRenderWindow().GetRenderers().GetFirstRenderer().GetActiveCamera()
+
         vector = np.array(vector)
         vector = vector / np.linalg.norm(vector)
 

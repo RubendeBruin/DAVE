@@ -376,6 +376,7 @@ class Gui:
         forcenormalize.setCheckable(True)
         forcenormalize.setChecked(True)
         forcenormalize.triggered.connect(normalize_force)
+        self.ui.forcenormalize = forcenormalize
 
         self.ui.sliderForceSize = MenuSlider("Force size")
         self.ui.sliderForceSize.setMin(0)
@@ -412,6 +413,7 @@ class Gui:
         cognormalize.setCheckable(True)
         cognormalize.setChecked(False)
         cognormalize.triggered.connect(normalize_cog)
+        self.ui.cognormalize = cognormalize
 
         self.ui.sliderCoGSize = MenuSlider("CoG size")
         self.ui.sliderCoGSize.setMin(0)
