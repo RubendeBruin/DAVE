@@ -481,9 +481,9 @@ class Gui:
         self.teCode_eventFilter.callback = self.run_code_in_teCode
         self.ui.teCode.installEventFilter(self.teCode_eventFilter)
 
-        self.delete_eventFilter = DeleteEventFilter()
-        self.delete_eventFilter.callback = self.delete_key
-        self.MainWindow.installEventFilter(self.delete_eventFilter)
+        # self.delete_eventFilter = DeleteEventFilter()
+        # self.delete_eventFilter.callback = self.delete_key
+        # self.MainWindow.installEventFilter(self.delete_eventFilter)
 
         # ======================== Docks ====================
         self.guiWidgets = dict()

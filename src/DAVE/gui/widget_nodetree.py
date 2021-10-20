@@ -8,6 +8,8 @@ from PySide2.QtWidgets import (
     QAbstractScrollArea,
 )
 import DAVE.scene as ds
+from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter
+
 
 class NodeTreeWidget(QtWidgets.QTreeWidget):
 
@@ -123,6 +125,10 @@ class WidgetNodeTree(guiDockWidget):
 
         self.recent_items = list()
 
+        self.delete_eventFilter = DeleteEventFilter()
+        self.delete_eventFilter.callback = self.delete_key
+        self.installEventFilter(self.delete_eventFilter)
+
     def guiProcessEvent(self, event):
         if event in [
             guiEventType.MODEL_STRUCTURE_CHANGED,
@@ -141,6 +147,9 @@ class WidgetNodeTree(guiDockWidget):
             self.update_selection()
 
     # ======= custom
+
+    def delete_key(self):
+        self.gui.delete_key()
 
     def dragDropCallback(self, drop, onto, event):
 
