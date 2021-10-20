@@ -8808,7 +8808,7 @@ class Scene:
             for r in self.reports:
                 yml = r.to_yml()
                 code.append(f'\n# Exporting report {r.name}')
-                code.append(f'report_contents = """\n{yml}"""')
+                code.append(f'report_contents = r"""\n{yml}"""')
                 code.append('s.reports.append(Report(s,yml=report_contents))')
 
 
