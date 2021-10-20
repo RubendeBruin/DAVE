@@ -40,6 +40,7 @@ def show(
     geometry_scale: float = 1.0,  # poi radius of the pois
     painters="Construction",
     additional_actors=(),
+    paint_uc = False,
     projection="3d",
     zoom_fit=False,
     scale=None,
@@ -66,6 +67,7 @@ def show(
         additional_actors : list or tuple of actors that need to be added to the view,
         projection: '2d' or '3d'
         zoom_fit: True/False - adjust camera to view full scene
+        paint_uc: Paint unity-checks using colors
         scale : parallel scale for 2d views
 
     Returns:
@@ -108,6 +110,8 @@ def show(
     vp.settings.show_cog = show_cog
     vp.settings.cog_do_normalize = cog_do_normalize
     vp.settings.cog_scale = cog_scale
+
+    vp.settings.paint_uc = paint_uc
 
     vp.settings.force_do_normalize = force_do_normalize
     vp.settings.force_scale = force_scale
