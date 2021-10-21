@@ -276,9 +276,12 @@ class WidgetNodeTree(guiDockWidget):
 
         walk_node(self.treeView.invisibleRootItem(), closed_items)
 
-
-
         self.guiScene.sort_nodes_by_parent()
+
+        # store the current scroll position
+        vertical_position = self.treeView.verticalScrollBar().sliderPosition()
+
+
         self.treeView.clear()
         self.treeView.guiScene = self.guiScene
 
@@ -403,6 +406,9 @@ class WidgetNodeTree(guiDockWidget):
                     close_nodes(child, closed)
 
         close_nodes(self.treeView.invisibleRootItem(), closed_items)
+
+        # restore vertical position
+        self.treeView.verticalScrollBar().setSliderPosition(vertical_position)
 
     def listview_startDrag(self, supportedActions):
 
