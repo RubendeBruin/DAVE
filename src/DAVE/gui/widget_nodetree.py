@@ -5,7 +5,7 @@ from PySide2.QtWidgets import (
     QTreeWidgetItem,
     QCheckBox,
     QListWidget,
-    QAbstractScrollArea,
+    QAbstractScrollArea, QApplication,
 )
 import DAVE.scene as ds
 from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter
@@ -153,8 +153,13 @@ class WidgetNodeTree(guiDockWidget):
 
     def dragDropCallback(self, drop, onto, event):
 
+        keep_local_position = (event.keyboardModifiers() == Qt.ControlModifier)
+
         if onto is None:
-            code = "s['{}'].change_parent_to(None)".format(drop)
+            if keep_local_position:
+                code = "s['{}'].parent = None".format(drop)
+            else:
+                code = "s['{}'].change_parent_to(None)".format(drop)
             self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
         else:
@@ -180,7 +185,10 @@ class WidgetNodeTree(guiDockWidget):
 
             # Default
             else:
-                code = "s['{}'].change_parent_to(s['{}'])".format(drop, onto)
+                if keep_local_position:
+                    code = "s['{}'].parent = s['{}']".format(drop, onto)
+                else:
+                    code = "s['{}'].change_parent_to(s['{}'])".format(drop, onto)
 
             self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 

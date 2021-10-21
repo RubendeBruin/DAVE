@@ -1904,7 +1904,6 @@ class Viewport:
 
             if isinstance(N, vf.Visual):
                 file = self.scene.get_resource_path(N.path)
-                # visual = vp.vtkio.load(file)
                 visual = vp_actor_from_obj(file)
                 visual.loaded_obj = file
                 visual.actor_type = ActorType.VISUAL
