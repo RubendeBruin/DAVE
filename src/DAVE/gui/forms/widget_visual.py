@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_visual.ui',
 # licensing of 'widget_visual.ui' applies.
 #
-# Created: Mon May  3 13:28:45 2021
+# Created: Thu Oct 21 21:18:54 2021
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_widget_axis(object):
     def setupUi(self, widget_axis):
         widget_axis.setObjectName("widget_axis")
-        widget_axis.resize(444, 700)
+        widget_axis.resize(182, 700)
         widget_axis.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.verticalLayout = QtWidgets.QVBoxLayout(widget_axis)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -26,6 +26,23 @@ class Ui_widget_axis(object):
         self.comboBox.setObjectName("comboBox")
         self.comboBox.addItem("")
         self.verticalLayout.addWidget(self.comboBox)
+        self.widget = QtWidgets.QWidget(widget_axis)
+        self.widget.setObjectName("widget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.widget)
+        self.horizontalLayout.setSpacing(0)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        spacerItem = QtWidgets.QSpacerItem(28, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
+        self.pbReloadFile = QtWidgets.QPushButton(self.widget)
+        self.pbReloadFile.setFlat(False)
+        self.pbReloadFile.setObjectName("pbReloadFile")
+        self.horizontalLayout.addWidget(self.pbReloadFile)
+        self.pbRescan = QtWidgets.QPushButton(self.widget)
+        self.pbRescan.setFlat(False)
+        self.pbRescan.setObjectName("pbRescan")
+        self.horizontalLayout.addWidget(self.pbRescan)
+        self.verticalLayout.addWidget(self.widget)
         self.cbInvertNormals = QtWidgets.QCheckBox(widget_axis)
         self.cbInvertNormals.setObjectName("cbInvertNormals")
         self.verticalLayout.addWidget(self.cbInvertNormals)
@@ -206,6 +223,8 @@ class Ui_widget_axis(object):
         widget_axis.setWindowTitle(QtWidgets.QApplication.translate("widget_axis", "Form", None, -1))
         self.label_12.setText(QtWidgets.QApplication.translate("widget_axis", "<html><head/><body><p><span style=\" font-weight:600;\">Shape</span></p><p>Select one of the default shapes from the drop-down or manually enter a (relative) path to a file.</p></body></html>", None, -1))
         self.comboBox.setItemText(0, QtWidgets.QApplication.translate("widget_axis", "wirecube.obj", None, -1))
+        self.pbReloadFile.setText(QtWidgets.QApplication.translate("widget_axis", "Reload current file", None, -1))
+        self.pbRescan.setText(QtWidgets.QApplication.translate("widget_axis", "Rescan resources", None, -1))
         self.cbInvertNormals.setText(QtWidgets.QApplication.translate("widget_axis", "Invert normals", None, -1))
         self.label_7.setText(QtWidgets.QApplication.translate("widget_axis", "<html><head/><body><p><span style=\" font-weight:600;\">Placement and scale</span></p></body></html>", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("widget_axis", "X - offset", None, -1))

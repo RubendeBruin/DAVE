@@ -27,7 +27,7 @@ import DAVE.gui.forms.widget_area
 import DAVE.gui.forms.widget_component
 
 from DAVE.visual import transform_from_node
-
+from DAVE.gui.helpers.my_qt_helpers import BlockSigs
 import numpy as np
 
 from PySide2.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox
@@ -363,9 +363,43 @@ class EditVisual(NodeEditor):
         self.ui.doubleSpinBox_7.valueChanged.connect(self.generate_code)
         self.ui.doubleSpinBox_8.valueChanged.connect(self.generate_code)
         self.ui.doubleSpinBox_9.valueChanged.connect(self.generate_code)
+
+        self.ui.pbRescan.pressed.connect(self.update_resource_list)
+        self.ui.pbReloadFile.pressed.connect(self.reload_visual)
+
         self.ui.comboBox.editTextChanged.connect(self.generate_code)
+        self.resources_loaded = False
+
+    def reload_visual(self):
+        # Reload the visual
+        # find the actor in the viewport and re-set its  va.actors["main"].loaded_obj property
+
+        store = self.node.path
+        self.node.path = 'res: cube_with_bevel.obj'
+        self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
+        self.node.path = store
+        self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
+        self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
+
+        print('Visual refreshed')
+
+
+
+    def update_resource_list(self):
+
+        with BlockSigs(self.ui.comboBox):
+            ct = self.ui.comboBox.currentText()
+            self.ui.comboBox.clear()
+            self.ui.comboBox.addItems(self.scene.get_resource_list("stl", include_subdirs=True))
+            self.ui.comboBox.addItems(self.scene.get_resource_list("obj", include_subdirs=True))
+            self.ui.comboBox.setCurrentText(ct)
+
 
     def post_update_event(self):
+
+        if not self.resources_loaded:
+            self.update_resource_list()
+            self.resources_loaded = True
 
         widgets = [
             self.ui.doubleSpinBox_1,
@@ -392,10 +426,6 @@ class EditVisual(NodeEditor):
         svinf(self.ui.doubleSpinBox_7, self.node.scale[0])
         svinf(self.ui.doubleSpinBox_8, self.node.scale[1])
         svinf(self.ui.doubleSpinBox_9, self.node.scale[2])
-
-        self.ui.comboBox.clear()
-        self.ui.comboBox.addItems(self.scene.get_resource_list("stl"))
-        self.ui.comboBox.addItems(self.scene.get_resource_list("obj"))
 
         self.ui.comboBox.setCurrentText(str(self.node.path))
 
@@ -678,7 +708,28 @@ class EditBuoyancyOrContactMesh(NodeEditor):
         ui.comboBox.editTextChanged.connect(self.generate_code)
         ui.cbInvertNormals.toggled.connect(self.generate_code)
 
+        self.ui.pbRescan.pressed.connect(self.update_resource_list)
+        self.ui.pbReloadFile.pressed.connect(self.reload_file)
+        self.resources_loaded = False
+
+    def update_resource_list(self):
+
+        with BlockSigs(self.ui.comboBox):
+            ct = self.ui.comboBox.currentText()
+            self.ui.comboBox.clear()
+            self.ui.comboBox.addItems(self.scene.get_resource_list("stl", include_subdirs=True))
+            self.ui.comboBox.addItems(self.scene.get_resource_list("obj", include_subdirs=True))
+            self.ui.comboBox.setCurrentText(ct)
+
+    def reload_file(self):
+        self.node.trimesh._load_from_privates()
+        print('Mesh reloaded')
+
     def post_update_event(self):
+
+        if not self.resources_loaded:
+            self.update_resource_list()
+            self.resources_loaded = True
 
         widgets = [
             self.ui.doubleSpinBox_1,
@@ -708,11 +759,6 @@ class EditBuoyancyOrContactMesh(NodeEditor):
         svinf(self.ui.doubleSpinBox_9, self.node.trimesh._scale[2])
 
         self.ui.cbInvertNormals.setChecked(self.node.trimesh._invert_normals)
-
-        self.ui.comboBox.clear()
-        self.ui.comboBox.addItems(self.scene.get_resource_list("stl"))
-        self.ui.comboBox.addItems(self.scene.get_resource_list("obj"))
-
         self.ui.comboBox.setCurrentText(self.node.trimesh._path)
 
         for widget in widgets:

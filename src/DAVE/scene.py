@@ -564,7 +564,7 @@ class Visual(Node):
         """Filename of the visual"""
 
         self.parent = None
-        """Parent : Axis-type"""
+        """Parent : Frame-type"""
 
     @property
     def file_path(self):
@@ -573,13 +573,17 @@ class Visual(Node):
         return self._scene.get_resource_path(self.path)
 
     def depends_on(self):
-        return [self.parent]
+        if self.parent is None:
+            return []
+        else:
+            return [self.parent]
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
 
         code += "\ns.new_visual(name='{}',".format(self.name)
-        code += "\n            parent='{}',".format(self.parent.name)
+        if self.parent is not None:
+            code += "\n            parent='{}',".format(self.parent.name)
         code += "\n            path=r'{}',".format(self.path)
         code += "\n            offset=({}, {}, {}), ".format(*self.offset)
         code += "\n            rotation=({}, {}, {}), ".format(*self.rotation)
@@ -597,7 +601,7 @@ class Visual(Node):
         # get current position and orientation
         if self.parent is not None:
             cur_position = self.parent.to_glob_position(self.offset)
-            cur_rotation = self.parent.to_glob_direction(self.rotation)
+            cur_rotation = self.parent.to_glob_rotation(self.rotation)
         else:
             cur_position = self.offset
             cur_rotation = self.rotation
@@ -609,7 +613,7 @@ class Visual(Node):
             self.rotation = cur_rotation
         else:
             self.offset = new_parent.to_loc_position(cur_position)
-            self.rotation = new_parent.to_loc_direction(cur_rotation)
+            self.rotation = new_parent.to_loc_rotation(cur_rotation)
 
 
 class Frame(NodeWithParentAndFootprint):
@@ -6375,10 +6379,12 @@ class Scene:
                 #             r.append("res: " + file)
                 if include_subdirs:
                     mask = str(dir) + '/**/*' + extension
+                    recursive = True
                 else:
                     mask = str(dir) + '/*' + extension
+                    recursive = False
 
-                for file in glob.glob(mask):
+                for file in glob.glob(mask, recursive=recursive):
 
                     file = file.replace(str(dir),'')
                     if file.startswith('\\'):
