@@ -2410,7 +2410,6 @@ class Viewport:
 
             self.screen.resetcam = False
 
-
             for outline in self.node_outlines:
                 self.screen.add(outline.outline_actor)
 

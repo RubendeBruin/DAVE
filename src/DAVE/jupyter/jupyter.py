@@ -194,12 +194,15 @@ def show(
         warnings.warn("VTK/Vedo issue: plotter is None")
         return plotter
 
-    # manually add all 2d actors... [why is this needed?]
+    # manually add all 2d actors... [why is this needed?] : TODO: because viewport does not add them
 
     for visual in vp.node_visuals:
 
         label_actor =  visual.label_actor
         if label_actor.GetVisibility():
             plotter +=label_actor
+
+    # rotate actors to camera orientation (WindArea)
+    vp._rotate_actors_due_to_camera_movement()
 
     return plotter
