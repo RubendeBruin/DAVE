@@ -1405,6 +1405,7 @@ class Viewport:
         self.mouseRightEvent = None
         self.onEscapeKey = None
         self.onDeleteKey = None
+        self.focus_on_selected_object = None # f key
         "Function handles"
 
         self.Jupyter = jupyter
@@ -2508,6 +2509,9 @@ class Viewport:
         iren.AddObserver("KeyPressEvent", self.keyPressFunction)
         iren.AddObserver(vtk.vtkCommand.InteractionEvent, self.keep_up_up)
 
+        iren.SetNumberOfFlyFrames(2)
+
+
         for r in screen.renderers:
             r.ResetCamera()
 
@@ -2590,6 +2594,10 @@ class Viewport:
         elif key == "Delete":
             if self.onDeleteKey is not None:
                 self.onDeleteKey()
+
+        elif key == 'c':
+            if self.focus_on_selected_object is not None:
+                self.focus_on_selected_object()
 
 
     def refresh_embeded_view(self):

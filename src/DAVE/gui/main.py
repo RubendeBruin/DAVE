@@ -268,6 +268,7 @@ class Gui:
         self.visual.add_new_node_actors_to_screen()
 
         self.visual.mouseLeftEvent = self.view3d_select_element
+        self.visual.focus_on_selected_object = self.focus_on_selected_object
 
         # right-click event for
         self.ui.frame3d.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -737,6 +738,19 @@ class Gui:
             if "Properties" in self.guiWidgets:
                 self.guiWidgets["Properties"].setVisible(False)
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+
+    def focus_on_selected_object(self):
+        """Moves the viewport view to the selected object"""
+
+        if self.selected_nodes:
+            node = self.selected_nodes[0]
+            visual = self.visual.actor_from_node(node)
+            position = visual.actors["main"].GetPosition()
+
+            self.visual.screen.camera.SetFocalPoint(position)
+            self.refresh_3dview()
+
+
 
     def savepoint_restore(self):
 
