@@ -744,8 +744,11 @@ class Gui:
 
         if self.selected_nodes:
             node = self.selected_nodes[0]
+
             visual = self.visual.actor_from_node(node)
-            position = visual.actors["main"].GetPosition()
+            position = visual.center_position
+
+            print(f'focusing camera to {node.name} at {position}')
 
             self.visual.screen.camera.SetFocalPoint(position)
             self.refresh_3dview()

@@ -553,6 +553,10 @@ class VisualActor:
             False  # parent of this object is selected - render transparent
         )
 
+    @property
+    def center_position(self):
+        return self.actors["main"].GetCenter()
+
     def select(self):
         self._is_selected = True
 
@@ -581,7 +585,7 @@ class VisualActor:
         la = vtk.vtkCaptionActor2D()
         la.SetCaption(txt)
 
-        position = self.actors["main"].GetPosition()
+        position = self.center_position
 
         la.SetAttachmentPoint(*position)
 
