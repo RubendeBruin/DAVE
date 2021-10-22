@@ -268,6 +268,7 @@ class Gui:
         self.visual.add_new_node_actors_to_screen()
 
         self.visual.mouseLeftEvent = self.view3d_select_element
+        self.visual.focus_on_selected_object = self.focus_on_selected_object
 
         # right-click event for
         self.ui.frame3d.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -376,6 +377,7 @@ class Gui:
         forcenormalize.setCheckable(True)
         forcenormalize.setChecked(True)
         forcenormalize.triggered.connect(normalize_force)
+        self.ui.forcenormalize = forcenormalize
 
         self.ui.sliderForceSize = MenuSlider("Force size")
         self.ui.sliderForceSize.setMin(0)
@@ -412,6 +414,7 @@ class Gui:
         cognormalize.setCheckable(True)
         cognormalize.setChecked(False)
         cognormalize.triggered.connect(normalize_cog)
+        self.ui.cognormalize = cognormalize
 
         self.ui.sliderCoGSize = MenuSlider("CoG size")
         self.ui.sliderCoGSize.setMin(0)
@@ -735,6 +738,22 @@ class Gui:
             if "Properties" in self.guiWidgets:
                 self.guiWidgets["Properties"].setVisible(False)
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+
+    def focus_on_selected_object(self):
+        """Moves the viewport view to the selected object"""
+
+        if self.selected_nodes:
+            node = self.selected_nodes[0]
+
+            visual = self.visual.actor_from_node(node)
+            position = visual.center_position
+
+            print(f'focusing camera to {node.name} at {position}')
+
+            self.visual.screen.camera.SetFocalPoint(position)
+            self.refresh_3dview()
+
+
 
     def savepoint_restore(self):
 

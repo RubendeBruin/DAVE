@@ -553,6 +553,10 @@ class VisualActor:
             False  # parent of this object is selected - render transparent
         )
 
+    @property
+    def center_position(self):
+        return self.actors["main"].GetCenter()
+
     def select(self):
         self._is_selected = True
 
@@ -581,7 +585,7 @@ class VisualActor:
         la = vtk.vtkCaptionActor2D()
         la.SetCaption(txt)
 
-        position = self.actors["main"].GetPosition()
+        position = self.center_position
 
         la.SetAttachmentPoint(*position)
 
@@ -1405,6 +1409,7 @@ class Viewport:
         self.mouseRightEvent = None
         self.onEscapeKey = None
         self.onDeleteKey = None
+        self.focus_on_selected_object = None # f key
         "Function handles"
 
         self.Jupyter = jupyter
@@ -1770,12 +1775,8 @@ class Viewport:
 
     def set_camera_direction(self, vector):
         # Points the camera in the given direction
-        camera = (
-            self.vtkWidget.GetRenderWindow()
-            .GetRenderers()
-            .GetFirstRenderer()
-            .GetActiveCamera()
-        )
+        camera = self.vtkWidget.GetRenderWindow().GetRenderers().GetFirstRenderer().GetActiveCamera()
+
         vector = np.array(vector)
         vector = vector / np.linalg.norm(vector)
 
@@ -2413,7 +2414,6 @@ class Viewport:
 
             self.screen.resetcam = False
 
-
             for outline in self.node_outlines:
                 self.screen.add(outline.outline_actor)
 
@@ -2513,6 +2513,9 @@ class Viewport:
         iren.AddObserver("KeyPressEvent", self.keyPressFunction)
         iren.AddObserver(vtk.vtkCommand.InteractionEvent, self.keep_up_up)
 
+        iren.SetNumberOfFlyFrames(2)
+
+
         for r in screen.renderers:
             r.ResetCamera()
 
@@ -2595,6 +2598,10 @@ class Viewport:
         elif key == "Delete":
             if self.onDeleteKey is not None:
                 self.onDeleteKey()
+
+        elif key == 'c':
+            if self.focus_on_selected_object is not None:
+                self.focus_on_selected_object()
 
 
     def refresh_embeded_view(self):
