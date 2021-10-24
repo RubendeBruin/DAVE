@@ -2505,7 +2505,17 @@ class Viewport:
         self.renwin.AddRenderer(self.renderer)
 
         iren = self.renwin.GetInteractor()
-        iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
+
+        style = vtk.vtkInteractorStyleTrackballCamera()
+
+        def void_callback(x,y):
+            pass
+
+        style.AddObserver("CharEvent", void_callback)
+        style.AddObserver("RightButtonPressEvent", void_callback)
+        style.AddObserver("RightButtonReleaseEvent", void_callback)
+
+        iren.SetInteractorStyle(style)
 
         iren.AddObserver("LeftButtonPressEvent", self._leftmousepress)
         iren.AddObserver("RightButtonPressEvent", screen._mouseright)
