@@ -40,6 +40,12 @@ def svinf(spinbox: QDoubleSpinBox, value: float):
         return
     spinbox.setValue(value)
 
+def cvinf(combobox: QtWidgets.QComboBox,value : str):
+    """Updates the value in the combobox IF it does not have focus"""
+    if combobox.hasFocus():
+        return
+    combobox.setCurrentText(value)
+
 
 def code_if_changed_d(node, value, ref, dec=3):
     """Returns code to change value of property "ref" to "value" if difference between current and target value
@@ -427,7 +433,8 @@ class EditVisual(NodeEditor):
         svinf(self.ui.doubleSpinBox_8, self.node.scale[1])
         svinf(self.ui.doubleSpinBox_9, self.node.scale[2])
 
-        self.ui.comboBox.setCurrentText(str(self.node.path))
+        cvinf(self.ui.comboBox, str(self.node.path))
+        # self.ui.comboBox.setCurrentText(str(self.node.path))
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -510,9 +517,11 @@ class EditWaveInteraction(NodeEditor):
 
         self.ui.comboBox.clear()
         self.ui.comboBox.addItems(self.scene.get_resource_list("dhyd"))
-        self.ui.comboBox.setCurrentText(
-            str(self.node.path)
-        )  # str because path may be a Path
+
+        cvinf(self.ui.comboBox, str(self.node.path))
+        # self.ui.comboBox.setCurrentText(
+        #     str(self.node.path)
+        # )  # str because path may be a Path
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -579,7 +588,8 @@ class EditComponent(NodeEditor):
         self.ui.cbPath.addItems(
             self.scene.get_resource_list(self.fileextension, include_subdirs=True)
         )
-        self.ui.cbPath.setCurrentText(str(self.node.path))
+        # self.ui.cbPath.setCurrentText(str(self.node.path))
+        cvinf(self.ui.cbPath, str(self.node.path))
         self.ui.cbPath.blockSignals(False)
 
     def barge_changed(self):
@@ -759,7 +769,9 @@ class EditBuoyancyOrContactMesh(NodeEditor):
         svinf(self.ui.doubleSpinBox_9, self.node.trimesh._scale[2])
 
         self.ui.cbInvertNormals.setChecked(self.node.trimesh._invert_normals)
-        self.ui.comboBox.setCurrentText(self.node.trimesh._path)
+
+        cvinf(self.ui.comboBox, str(self.node.trimesh._path))
+        # self.ui.comboBox.setCurrentText(self.node.trimesh._path)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1447,8 +1459,10 @@ class EditLC6d(NodeEditor):
         self.ui.cbMasterAxis.addItems(self.alist)
         self.ui.cbSlaveAxis.addItems(self.alist)
 
-        self.ui.cbMasterAxis.setCurrentText(self.node.main.name)
-        self.ui.cbSlaveAxis.setCurrentText(self.node.secondary.name)
+        # self.ui.cbMasterAxis.setCurrentText(self.node.main.name)
+        cvinf(self.ui.cbMasterAxis, self.node.main.name)
+        # self.ui.cbSlaveAxis.setCurrentText(self.node.secondary.name)
+        cvinf(self.ui.cbSlaveAxis, self.node.secondary.name)
 
         svinf(self.ui.doubleSpinBox_1, self.node.stiffness[0])
         svinf(self.ui.doubleSpinBox_2, self.node.stiffness[1])
@@ -1530,8 +1544,11 @@ class EditConnector2d(NodeEditor):
         self.ui.cbMasterAxis.addItems(self.alist)
         self.ui.cbSlaveAxis.addItems(self.alist)
 
-        self.ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
-        self.ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
+        # self.ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
+        cvinf(self.ui.cbMasterAxis, self.node.nodeA.name)
+
+        # self.ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
+        cvinf(self.ui.cbSlaveAxis, self.node.nodeB.name)
 
         svinf(self.ui.doubleSpinBox_1, self.node.k_linear)
         svinf(self.ui.doubleSpinBox_4, self.node.k_angular)
