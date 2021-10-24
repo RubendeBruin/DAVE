@@ -2609,7 +2609,7 @@ class Viewport:
             if self.onDeleteKey is not None:
                 self.onDeleteKey()
 
-        elif key == 'c':
+        elif key == 'c' or key == 'f':
             if self.focus_on_selected_object is not None:
                 self.focus_on_selected_object()
 
