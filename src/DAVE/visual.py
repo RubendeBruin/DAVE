@@ -587,6 +587,8 @@ class VisualActor:
 
         position = self.center_position
 
+        # print(f'{txt} : at {position}')
+
         la.SetAttachmentPoint(*position)
 
         la.SetPickable(True)
@@ -615,6 +617,8 @@ class VisualActor:
         else:
             if self.label_actor.GetCaption() != txt:
                 self.label_actor.SetCaption(txt)
+
+            self.label_actor.SetAttachmentPoint(*self.center_position)
 
         return self.label_actor
 
@@ -790,6 +794,7 @@ class VisualActor:
                 apply_parent_translation_on_transform(self.node.parent, t)
 
             A.SetUserTransform(t)
+
             return
 
         if isinstance(self.node, vf.Circle):
@@ -1606,6 +1611,22 @@ class Viewport:
 
         for record in to_be_deleted:
             self.node_outlines.remove(record)
+
+    def focus_on(self, position):
+        """Places the camera focus on position"""
+
+        c = self.screen.camera
+
+        cur_focus = np.array(c.GetFocalPoint())
+
+        if np.linalg.norm(cur_focus - np.array(position)) < 1e-3:
+            # already has focus, zoom in
+            distance = np.array(c.GetPosition()) - cur_focus
+            c.SetPosition(cur_focus + 0.9 * distance)
+            self.screen.renderer.ResetCameraClippingRange()
+
+        else:
+            self.screen.camera.SetFocalPoint(position)
 
     def create_world_actors(self):
         """Creates the sea and global axes"""

@@ -750,7 +750,9 @@ class Gui:
 
             print(f'focusing camera to {node.name} at {position}')
 
-            self.visual.screen.camera.SetFocalPoint(position)
+            self.visual.focus_on(position)
+
+
             self.refresh_3dview()
 
 
