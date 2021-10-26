@@ -338,6 +338,23 @@ class GridEdit(QWidget):
             tg = QTableWidgetItem(str(value))
             self.grid.setItem(irow, icol, tg)
 
+    def setCellValue(self, irow, icol, value):
+        """Overwrites the current cell value with the given one"""
+
+        widget = self.grid.cellWidget(irow, icol)
+        item = self.grid.item(irow, icol)
+
+
+        if isinstance(widget, QCheckBox): # we have a bool
+            widget.setChecked(value)
+        elif isinstance(widget, QPushButton):
+            widget.setStyleSheet("background-color: rgb({}, {}, {});".format(*value))
+        elif isinstance(item, QTableWidgetItem):
+            item.setText(str(value))
+        else:
+            raise ValueError('Unexpected cell type')
+
+
     def _setData(self, datasource, row_names):
 
         try:

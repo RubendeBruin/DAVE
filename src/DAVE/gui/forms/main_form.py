@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Thu Oct 21 17:18:39 2021
+# Created: Tue Oct 26 12:36:45 2021
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -426,6 +426,8 @@ class Ui_MainWindow(object):
         self.actionUndo.setObjectName("actionUndo")
         self.actionRedo = QtWidgets.QAction(MainWindow)
         self.actionRedo.setObjectName("actionRedo")
+        self.actionSave = QtWidgets.QAction(MainWindow)
+        self.actionSave.setObjectName("actionSave")
         self.menuExport.addAction(self.actionBlender)
         self.menuExport.addAction(self.actionOrcaflex)
         self.menuExport.addAction(self.actionOrcaflex_package)
@@ -436,6 +438,7 @@ class Ui_MainWindow(object):
         self.menuSolve_Statics.addAction(self.actionImport_sub_scene)
         self.menuSolve_Statics.addAction(self.actionImport_browser)
         self.menuSolve_Statics.addSeparator()
+        self.menuSolve_Statics.addAction(self.actionSave)
         self.menuSolve_Statics.addAction(self.actionSave_scene)
         self.menuSolve_Statics.addAction(self.actionSave_actions_as)
         self.menuSolve_Statics.addSeparator()
@@ -568,5 +571,6 @@ class Ui_MainWindow(object):
         self.actionUndo.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Ctrl+Z", None, -1))
         self.actionRedo.setText(QtWidgets.QApplication.translate("MainWindow", "Redo", None, -1))
         self.actionRedo.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Ctrl+Y", None, -1))
+        self.actionSave.setText(QtWidgets.QApplication.translate("MainWindow", "Save", None, -1))
 
 import DAVE.gui.forms.resources_rc

@@ -3,8 +3,8 @@
 # Form implementation generated from reading ui file 'widget_waveinteraction.ui',
 # licensing of 'widget_waveinteraction.ui' applies.
 #
-# Created: Tue Dec 17 15:11:49 2019
-#      by: pyside2-uic  running on PySide2 5.13.1
+# Created: Tue Oct 26 12:36:45 2021
+#      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,6 +26,18 @@ class Ui_widget_waveinteraction(object):
         self.comboBox.setObjectName("comboBox")
         self.comboBox.addItem("")
         self.verticalLayout.addWidget(self.comboBox)
+        self.widget = QtWidgets.QWidget(widget_waveinteraction)
+        self.widget.setObjectName("widget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.widget)
+        self.horizontalLayout.setSpacing(0)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        spacerItem = QtWidgets.QSpacerItem(361, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
+        self.pbRescan = QtWidgets.QPushButton(self.widget)
+        self.pbRescan.setObjectName("pbRescan")
+        self.horizontalLayout.addWidget(self.pbRescan)
+        self.verticalLayout.addWidget(self.widget)
         self.label_7 = QtWidgets.QLabel(widget_waveinteraction)
         self.label_7.setWordWrap(True)
         self.label_7.setObjectName("label_7")
@@ -94,16 +106,17 @@ class Ui_widget_waveinteraction(object):
         self.frame_6.setObjectName("frame_6")
         self.formLayout.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.frame_6)
         self.verticalLayout.addWidget(self.frame)
-        spacerItem = QtWidgets.QSpacerItem(20, 163, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem)
+        spacerItem1 = QtWidgets.QSpacerItem(20, 163, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem1)
 
         self.retranslateUi(widget_waveinteraction)
         QtCore.QMetaObject.connectSlotsByName(widget_waveinteraction)
 
     def retranslateUi(self, widget_waveinteraction):
         widget_waveinteraction.setWindowTitle(QtWidgets.QApplication.translate("widget_waveinteraction", "Form", None, -1))
-        self.label_12.setText(QtWidgets.QApplication.translate("widget_waveinteraction", "<html><head/><body><p>Wave-Interaction</p><p><br/>Hydrodynamic data can be read from a .dhyd file.</p></body></html>", None, -1))
+        self.label_12.setText(QtWidgets.QApplication.translate("widget_waveinteraction", "<html><head/><body><p>Wave-Interaction</p><p><br/>Hydrodynamic data can be read from a .dhyd or .hyd file.</p></body></html>", None, -1))
         self.comboBox.setItemText(0, QtWidgets.QApplication.translate("widget_waveinteraction", "wirecube.obj", None, -1))
+        self.pbRescan.setText(QtWidgets.QApplication.translate("widget_waveinteraction", "Rescan resources", None, -1))
         self.label_7.setText(QtWidgets.QApplication.translate("widget_waveinteraction", "<html><head/><body><p><span style=\" font-weight:600;\">Location of the hydrodynamic origin</span></p></body></html>", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("widget_waveinteraction", "X - offset", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("widget_waveinteraction", "Y - offset", None, -1))

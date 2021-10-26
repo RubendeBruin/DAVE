@@ -477,6 +477,7 @@
     <addaction name="actionImport_sub_scene"/>
     <addaction name="actionImport_browser"/>
     <addaction name="separator"/>
+    <addaction name="actionSave"/>
     <addaction name="actionSave_scene"/>
     <addaction name="actionSave_actions_as"/>
     <addaction name="separator"/>
@@ -1109,6 +1110,11 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="shortcut">
     <string>Ctrl+Y</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save</string>
    </property>
   </action>
  </widget>

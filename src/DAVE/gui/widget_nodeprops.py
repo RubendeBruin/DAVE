@@ -496,10 +496,26 @@ class EditWaveInteraction(NodeEditor):
         ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
         ui.doubleSpinBox_3.valueChanged.connect(self.generate_code)
         ui.comboBox.editTextChanged.connect(self.generate_code)
+        ui.pbRescan.clicked.connect(self.update_resource_list)
+
+        self.resources_loaded = False
 
         self.ui = ui
 
+    def update_resource_list(self):
+
+        with BlockSigs(self.ui.comboBox):
+            ct = self.ui.comboBox.currentText()
+            self.ui.comboBox.clear()
+            self.ui.comboBox.addItems(self.scene.get_resource_list("dhyd", include_subdirs=True))
+            self.ui.comboBox.addItems(self.scene.get_resource_list("hyd", include_subdirs=True))
+            self.ui.comboBox.setCurrentText(ct)
+
     def post_update_event(self):
+
+        if not self.resources_loaded:
+            self.update_resource_list()
+            self.resources_loaded = True
 
         widgets = [
             self.ui.doubleSpinBox_1,
@@ -515,13 +531,7 @@ class EditWaveInteraction(NodeEditor):
         svinf(self.ui.doubleSpinBox_2, self.node.offset[1])
         svinf(self.ui.doubleSpinBox_3, self.node.offset[2])
 
-        self.ui.comboBox.clear()
-        self.ui.comboBox.addItems(self.scene.get_resource_list("dhyd"))
-
         cvinf(self.ui.comboBox, str(self.node.path))
-        # self.ui.comboBox.setCurrentText(
-        #     str(self.node.path)
-        # )  # str because path may be a Path
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -2224,7 +2234,11 @@ class WidgetNodeProps(guiDockWidget):
 
     def guiProcessEvent(self, event):
 
-        if event in [guiEventType.SELECTION_CHANGED, guiEventType.FULL_UPDATE]:
+        # structure changed is emitted when a node is moved in the tree.
+        # if the moved node is the active node then it needs to be updated as its local-position may have changed
+
+        if event in [guiEventType.SELECTION_CHANGED, guiEventType.FULL_UPDATE, guiEventType.MODEL_STRUCTURE_CHANGED]:
+
             # check if we have a selection
             if self.guiSelection:
                 self.select_node(self.guiSelection[0])
