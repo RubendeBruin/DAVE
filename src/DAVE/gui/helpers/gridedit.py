@@ -338,6 +338,23 @@ class GridEdit(QWidget):
             tg = QTableWidgetItem(str(value))
             self.grid.setItem(irow, icol, tg)
 
+    def setCellValue(self, irow, icol, value):
+        """Overwrites the current cell value with the given one"""
+
+        widget = self.grid.cellWidget(irow, icol)
+        item = self.grid.item(irow, icol)
+
+
+        if isinstance(widget, QCheckBox): # we have a bool
+            widget.setChecked(value)
+        elif isinstance(widget, QPushButton):
+            widget.setStyleSheet("background-color: rgb({}, {}, {});".format(*value))
+        elif isinstance(item, QTableWidgetItem):
+            item.setText(str(value))
+        else:
+            raise ValueError('Unexpected cell type')
+
+
     def _setData(self, datasource, row_names):
 
         try:
@@ -440,7 +457,18 @@ class GridEdit(QWidget):
         # Apply the change to the element
         if self._datasource is not None:
             old_value = getattr(self._datasource[row], self._columns[col]["id"])
-            setattr(self._datasource[row], self._columns[col]["id"], value)
+            try:
+                setattr(self._datasource[row], self._columns[col]["id"], value)
+            except:
+                # rewind the change
+                self.setCellValue(row, col, old_value)
+
+                self.grid.setCurrentCell(row, col) # and set focus to that cell
+                self.grid.setFocus()
+
+                self.grid.blockSignals(False)
+                return
+
 
         if self.onEditCallback is not None:
             property_id = self._columns[col]["id"]
