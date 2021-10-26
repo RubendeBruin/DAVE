@@ -324,7 +324,9 @@ class Gui:
         self.ui.actionNew.triggered.connect(self.clear)
         self.ui.actionReload_components.triggered.connect(self.refresh_model)
         self.ui.actionOpen.triggered.connect(self.open)
-        self.ui.actionSave_scene.triggered.connect(self.menu_save)
+        self.ui.actionSave.triggered.connect(self.menu_save_model)
+        self.ui.actionSave.setEnabled(False)
+        self.ui.actionSave_scene.triggered.connect(self.menu_save_model_as)
         self.ui.actionSave_actions_as.triggered.connect(self.menu_save_actions)
         self.ui.actionImport_sub_scene.triggered.connect(self.menu_import)
         self.ui.actionImport_browser.triggered.connect(self.import_browser)
@@ -1419,12 +1421,15 @@ class Gui:
 
     def clear(self):
         self.run_code("s.clear()", guiEventType.FULL_UPDATE)
+        self.ui.actionSave.setEnabled(False)
 
     def open(self):
         filename, _ = QFileDialog.getOpenFileName(filter="*.dave", caption="Assets")
         if filename:
             code = 's.clear()\ns.load_scene(r"{}")'.format(filename)
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+            self.modelfilename = filename
+            self.ui.actionSave.setEnabled(True)
 
     def menu_import(self):
         filename, _ = QFileDialog.getOpenFileName(filter="*.dave", caption="Assets")
@@ -1433,7 +1438,12 @@ class Gui:
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
             self.visual.update_visibility()
 
-    def menu_save(self):
+    def menu_save_model(self):
+        code = 's.save_scene(r"{}")'.format(self.modelfilename)
+        self.run_code(code, guiEventType.NOTHING)
+
+
+    def menu_save_model_as(self):
         filename, _ = QFileDialog.getSaveFileName(
             filter="*.dave",
             caption="Scene files",
@@ -1442,6 +1452,8 @@ class Gui:
         if filename:
             code = 's.save_scene(r"{}")'.format(filename)
             self.run_code(code, guiEventType.NOTHING)
+            self.modelfilename = filename
+            self.ui.actionSave.setEnabled(True)
 
     def menu_export_orcaflex_yml(self):
         filename, _ = QFileDialog.getSaveFileName(
