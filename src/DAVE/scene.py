@@ -313,6 +313,11 @@ class Node(ABC):
 
     @property
     def is_valid(self):
+        """Returns True if the node is still present in the scene and/or connected to the core.
+        Use this to verify that references to nodes that may have been deleted from the scene in the mean-time are
+        still valid.
+        #NOGUI
+        """
         return self._valid
 
 
