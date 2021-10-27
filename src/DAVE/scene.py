@@ -110,14 +110,8 @@ class Node(ABC):
         self.limits = dict()
         """Defines the limits of the nodes properties for calculating a UC"""
 
-        self._valid = True
-        """Turns False if the node in removed from a scene. This is a work-around for weakrefs"""
-
     def __repr__(self):
-        if self.is_valid:
-            return f"{self.name} <{self.__class__.__name__}>"
-        else:
-            return "THIS NODE HAS BEEN DELETED"
+        return f"{self.name} <{self.__class__.__name__}>"
 
     def __str__(self):
         return self.name
@@ -313,6 +307,11 @@ class Node(ABC):
 
     @property
     def is_valid(self):
+        """Returns True if the node is still present in the scene and/or connected to the core.
+        Use this to verify that references to nodes that may have been deleted from the scene in the mean-time are
+        still valid.
+        #NOGUI
+        """
         return self._valid
 
 
@@ -340,9 +339,8 @@ class CoreConnectedNode(Node):
             self._vfNode.name = name
 
     def _delete_vfc(self):
-        name = self._vfNode.name
-        self._vfNode = None  # this node will become invalid.
-        self._scene._vfc.delete(name)
+        self._scene._vfc.delete(self._vfNode.name)
+
 
 class NodeWithCoreParent(CoreConnectedNode):
     """
@@ -5963,9 +5961,6 @@ class Scene:
         self._export_code_with_solved_function = True
         """Wrap solved values in 'solved' function when exporting python code"""
 
-        self.reports = []
-        """List of reports"""
-
         if filename is not None:
             self.load_scene(filename)
 
@@ -5977,12 +5972,6 @@ class Scene:
 
     def clear(self):
         """Deletes all nodes"""
-
-        # manually remove all references to the core
-        # this avoids dangling pointers in copies of nodes
-        for node in self._nodes:
-            node.invalidate()
-            node._delete_vfc()
 
         self._nodes = []
         del self._vfc
@@ -8821,14 +8810,6 @@ class Scene:
             if n.manager is None:
                 for key, value in n.limits.items():
                     code.append(f"s['{n.name}'].limits['{key}'] = {value}")
-
-        if self.reports:
-            code.append('\n# Reports')
-            for r in self.reports:
-                yml = r.to_yml()
-                code.append(f'\n# Exporting report {r.name}')
-                code.append(f'report_contents = r"""\n{yml}"""')
-                code.append('s.reports.append(Report(s,yml=report_contents))')
 
 
         return '\n'.join(code)
