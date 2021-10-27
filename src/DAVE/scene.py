@@ -5961,6 +5961,9 @@ class Scene:
         self._export_code_with_solved_function = True
         """Wrap solved values in 'solved' function when exporting python code"""
 
+        self.reports = []
+        """List of reports"""
+
         if filename is not None:
             self.load_scene(filename)
 
@@ -8811,6 +8814,13 @@ class Scene:
                 for key, value in n.limits.items():
                     code.append(f"s['{n.name}'].limits['{key}'] = {value}")
 
+        if self.reports:
+            code.append('\n# Reports')
+            for r in self.reports:
+                yml = r.to_yml()
+                code.append(f'\n# Exporting report {r.name}')
+                code.append(f'report_contents = r"""\n{yml}"""')
+                code.append('s.reports.append(Report(s,yml=report_contents))')
 
         return '\n'.join(code)
 
