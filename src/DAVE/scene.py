@@ -110,8 +110,14 @@ class Node(ABC):
         self.limits = dict()
         """Defines the limits of the nodes properties for calculating a UC"""
 
+        self._valid = True
+        """Turns False if the node in removed from a scene. This is a work-around for weakrefs"""
+
     def __repr__(self):
-        return f"{self.name} <{self.__class__.__name__}>"
+        if self.is_valid:
+            return f"{self.name} <{self.__class__.__name__}>"
+        else:
+            return "THIS NODE HAS BEEN DELETED"
 
     def __str__(self):
         return self.name
@@ -302,12 +308,12 @@ class Node(ABC):
         return uc
 
 
+    def invalidate(self):
+        self._valid = False
 
-
-
-
-
-
+    @property
+    def is_valid(self):
+        return self._valid
 
 
 class CoreConnectedNode(Node):
@@ -5971,6 +5977,12 @@ class Scene:
 
     def clear(self):
         """Deletes all nodes"""
+
+        # manually remove all references to the core
+        # this avoids dangling pointers in copies of nodes
+        for node in self._nodes:
+            node.invalidate()
+            node._delete_vfc()
 
         self._nodes = []
         del self._vfc
