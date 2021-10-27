@@ -334,8 +334,9 @@ class CoreConnectedNode(Node):
             self._vfNode.name = name
 
     def _delete_vfc(self):
-        self._scene._vfc.delete(self._vfNode.name)
-
+        name = self._vfNode.name
+        self._vfNode = None  # this node will become invalid.
+        self._scene._vfc.delete(name)
 
 class NodeWithCoreParent(CoreConnectedNode):
     """
