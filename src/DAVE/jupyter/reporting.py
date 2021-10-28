@@ -52,6 +52,9 @@ def report(node, properties=None, long = False, _return_pdf_table = False) -> No
 
 
     """
+
+    # TODO: Use Scene.give_documentation instead
+
     if isinstance(properties, str):
         properties = [properties]
 

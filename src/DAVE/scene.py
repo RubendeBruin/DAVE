@@ -1028,9 +1028,10 @@ class Frame(NodeWithParentAndFootprint):
 
     @property
     def tilt_x(self):
-        """Tilt percentage. This is the z-component of the unit y vector [%].
+        """Tilt percentage about local x-axis [%]
+        This is the z-component of the unit y vector.
 
-        See Also: heel
+        See Also: heel, tilt_y
         """
         y = (0, 1, 0)
         uy = self.to_glob_direction(y)
@@ -1038,7 +1039,7 @@ class Frame(NodeWithParentAndFootprint):
 
     @property
     def heel(self):
-        """Heel in degrees. SB down is positive [deg].
+        """Heel in degrees. SB down is positive [deg]
         This is the inverse sin of the unit y vector(This is the arcsin of the tiltx)
 
         See also: tilt_x
@@ -1047,7 +1048,9 @@ class Frame(NodeWithParentAndFootprint):
 
     @property
     def tilt_y(self):
-        """Tilt percentage. This is the z-component of the unit -x vector [%].
+        """Tilt percentage about local y-axis [%]
+
+        This is the z-component of the unit -x vector.
         So a positive rotation about the y axis results in a positive tilt_y.
 
         See Also: trim
@@ -1058,7 +1061,7 @@ class Frame(NodeWithParentAndFootprint):
 
     @property
     def trim(self):
-        """Trim in degrees. Bow-down is positive [deg].
+        """Trim in degrees. Bow-down is positive [deg]
 
         This is the inverse sin of the unit -x vector(This is the arcsin of the tilt_y)
 
@@ -1778,6 +1781,11 @@ class Cable(CoreConnectedNode):
         return self._vfNode.stretch
 
     @property
+    def actual_length(self):
+        """Current length of the cable: length + stretch [m]"""
+        return self.length + self.stretch
+
+    @property
     def length(self):
         """Length of the cable when in rest [m]
 
@@ -1922,7 +1930,7 @@ class Cable(CoreConnectedNode):
         for p in self._pois:
             r.append(p.name)
         return r
-    
+
     def set_length_for_tension(self, target_tension):
         """Given the actual geometry and EA of the cable, change the length such that
         the tension in the cable becomes the supplied tension
@@ -1931,7 +1939,7 @@ class Cable(CoreConnectedNode):
         # F = stretch * EA / L
         # so : L = L0*EA / (F + EA)
 
-        self.length = (self.length + self.stretch) * self.EA / (target_tension + self.EA)
+        self.length = (self.actual_length) * self.EA / (target_tension + self.EA)
 
 
     def give_python_code(self):
@@ -6487,8 +6495,11 @@ class Scene:
             return it.replace("#NOGUI","")
 
 
-    def give_documentation(self, node, property_name) -> str:
-        """Returns the documentation for property (property_name) of node."""
+    def give_documentation_docstring(self, node, property_name) -> str:
+        """Returns the documentation for property (property_name) of node.
+
+        See Also: give_documentation
+        """
         result = self._give_documentation(node.class_name, property_name)
         if result:
             return result
@@ -6503,6 +6514,36 @@ class Scene:
             return result
 
         return 'Could not find documentation, sorry :-/'
+
+    def give_documentation(self, node : Node, property_name : str) -> tuple:
+        """Returns (long, short, units, remarks) about property_name of node Node
+
+        """
+
+        long = self.give_documentation_docstring(node, property_name)
+        help = long.split('\n')[0]
+
+        start = help.find('[')
+        end = help.find(']')
+        if end > start:
+            units = help[start + 1:end]
+            help = help[:start] + help[end + 1:]
+        else:
+            units = ''
+
+        start = help.find('(')
+        end = help.find(')')
+        if end > start:
+            remarks = help[start + 1:end]
+            help = help[:start] + help[end + 1:]
+        else:
+            remarks = ''
+
+        return (long, help, units, remarks)
+
+
+
+
 
     def node_by_name(self, node_name, silent=False):
 

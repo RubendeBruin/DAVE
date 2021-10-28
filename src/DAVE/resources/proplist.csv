@@ -58,6 +58,7 @@ Cable,stretch,True,"Stretch of the cable [m]
 
         Tension [kN] = EA [kN] * stretch [m] / length [m]
         "
+Cable,actual_length,True,Current length of the cable: length + stretch [m]
 Cable,length,False,"Length of the cable when in rest [m]
 
         Tension [kN] = EA [kN] * stretch [m] / length [m]
@@ -250,21 +251,24 @@ Frame,global_position,False,"The global position of the origin of the axis syste
 Frame,grx,False,The x-component of the global rotation vector [degrees] (global axis)
 Frame,gry,False,The y-component of the global rotation vector [degrees] (global axis)
 Frame,grz,False,The z-component of the global rotation vector [degrees] (global axis)
-Frame,tilt_x,True,"Tilt percentage. This is the z-component of the unit y vector [%].
+Frame,tilt_x,True,"Tilt percentage about local x-axis [%]
+        This is the z-component of the unit y vector.
 
-        See Also: heel
+        See Also: heel, tilt_y
         "
-Frame,heel,True,"Heel in degrees. SB down is positive [deg].
+Frame,heel,True,"Heel in degrees. SB down is positive [deg]
         This is the inverse sin of the unit y vector(This is the arcsin of the tiltx)
 
         See also: tilt_x
         "
-Frame,tilt_y,True,"Tilt percentage. This is the z-component of the unit -x vector [%].
+Frame,tilt_y,True,"Tilt percentage about local y-axis [%]
+
+        This is the z-component of the unit -x vector.
         So a positive rotation about the y axis results in a positive tilt_y.
 
         See Also: trim
         "
-Frame,trim,True,"Trim in degrees. Bow-down is positive [deg].
+Frame,trim,True,"Trim in degrees. Bow-down is positive [deg]
 
         This is the inverse sin of the unit -x vector(This is the arcsin of the tilt_y)
 
@@ -377,6 +381,11 @@ Node,UC_governing_details,True,"Returns the details of the governing UC for this
         3: property value
 
         Returns None if no limits are supplied
+        "
+Node,is_valid,True,"Returns True if the node is still present in the scene and/or connected to the core.
+        Use this to verify that references to nodes that may have been deleted from the scene in the mean-time are
+        still valid.
+        #NOGUI
         "
 NodeWithCoreParent,parent_for_export,True,"Reference to node that to use as parent used during export (work-around for circular references in export of geometric-contact
         #NOGUI"

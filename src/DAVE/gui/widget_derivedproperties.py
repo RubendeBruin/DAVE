@@ -125,7 +125,7 @@ class WidgetDerivedProperties(guiDockWidget):
             text = str(result)
             v.setText(0, text)
 
-            doc = self.guiScene.give_documentation(node, p)
+            doc = self.guiScene.give_documentation_docstring(node, p)
 
 
 

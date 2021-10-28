@@ -533,7 +533,7 @@ def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
 
 
             xx = plt.xlim()     # force min x to 0
-            plt.ylim((0, xx[1]))
+            plt.xlim((0, xx[1]))
 
             ax2 = ax1.twinx()
             ax2.plot(omegas, np.angle(a), label="phase", color='black', linestyle=':', linewidth=1)
@@ -660,7 +660,7 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0) -> np.ndarray:
 
         for i in range(M.shape[0]):
             if B[i,i] < min_damping[i]:
-                print('Increasing diagonal damping for mode {} to {}'.format(i, min_damping[i]))
+                print('Increasing diagonal damping for mode {} to {} ,global minimum damping set to {}% of critical damping for this mode (settings.FD_GLOBAL_MIN_DAMPING_FRACTION)'.format(i, min_damping[i],100*ds.FD_GLOBAL_MIN_DAMPING_FRACTION))
                 B[i,i] = min_damping[i]
 
         # A = np.zeros_like(M)
