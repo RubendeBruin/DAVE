@@ -51,8 +51,14 @@ Example:
 
 """
 
+class CustomEventFilters(PySide2.QtCore.QObject):
 
-class DeleteEventFilter(PySide2.QtCore.QObject):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.callback = None
+
+
+class DeleteEventFilter(CustomEventFilters):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -72,5 +78,17 @@ class DeleteEventFilter(PySide2.QtCore.QObject):
 
                     event.setAccepted(True)
                     return True
+
+        return False
+
+
+class EnterKeyPressFilter(CustomEventFilters):
+
+    def eventFilter(self, obj, event):
+        if isinstance(event, PySide2.QtGui.QKeyEvent):
+            if (event.key() == Qt.Key_Return):
+                self.callback()
+                event.setAccepted(True)
+                return True
 
         return False

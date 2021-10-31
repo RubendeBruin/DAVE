@@ -68,6 +68,7 @@ from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
 from DAVE.gui.widget_footprints import WidgetFootprints
 from DAVE.gui.widget_limits import WidgetLimits
 from DAVE.gui.widget_painter import WidgetPainters
+from DAVE.gui.widget_tags import WidgetTags
 
 """
   This Source Code Form is subject to the terms of the Mozilla Public
@@ -543,7 +544,12 @@ class Gui:
         set_pb_style(btnConstruct)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText("&8. Mode Shapes [beta]")
+        btnConstruct.setText("&8. Tags")
+        btnConstruct.clicked.connect(lambda: self.activate_workspace("TAGS"))
+        set_pb_style(btnConstruct)
+
+        btnConstruct = QtWidgets.QPushButton()
+        btnConstruct.setText("Mode Shapes [beta]")
         btnConstruct.clicked.connect(lambda: self.activate_workspace("DYNAMICS"))
         set_pb_style(btnConstruct)
 
@@ -562,7 +568,7 @@ class Gui:
         self.ui.toolBar.addWidget(lblInfo)
 
         btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText("&7. Airy [beta]")
+        btnConstruct.setText("Airy [beta]")
         btnConstruct.clicked.connect(lambda: self.activate_workspace("AIRY"))
         set_pb_style(btnConstruct)
 
@@ -823,6 +829,10 @@ class Gui:
             self.show_guiWidget("Limits and UCs", WidgetLimits)
             if not self.visual.settings.paint_uc:
                 self.toggle_show_UC()
+
+        if name == "TAGS":
+            self.show_guiWidget("Tags", WidgetTags)
+
 
         if name == "MOMENTS":
             self.show_guiWidget("Footprints", WidgetFootprints)

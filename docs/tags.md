@@ -33,5 +33,10 @@ Each node can have tags. These are controlled by:
 
 On scene level there are:
 
+- `tags` (read only property) : all exiting tags
 - `nodes_tagged` : returns all nodes that have some tag
 - `delete_tag` : removes given tag from all nodes
+
+### NOT IMPLEMENTED: Automatic tags
+
+Some tags are added automatically. These start with `@`. For example `@Cable`. These can not be modified or deleted. 

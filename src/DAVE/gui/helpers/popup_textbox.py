@@ -3,15 +3,8 @@ from PySide2.QtCore import Qt, QPoint
 import PySide2
 import PySide2.QtGui
 
+from DAVE.gui.helpers.my_qt_helpers import EnterKeyPressFilter
 
-class EnterKeyPressFilter(PySide2.QtCore.QObject):
-
-    def eventFilter(self, obj, event):
-        if isinstance(event, PySide2.QtGui.QKeyEvent):
-            if (event.key() == Qt.Key_Return):
-                self.callback()
-
-        return False
 
 
 

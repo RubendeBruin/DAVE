@@ -6896,6 +6896,16 @@ class Scene:
         for node in self._nodes:
             node.delete_tag(tag)
 
+    @property
+    def tags(self) -> tuple:
+        """All tags in the scene"""
+        tgs = set()
+        for node in self._nodes:
+            for tag in node.tags:
+                tgs.add(tag)
+        return tuple(tgs)
+
+
     def delete(self, node):
         """Deletes the given node from the scene as well as all nodes depending on it.
 
