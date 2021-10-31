@@ -6894,7 +6894,8 @@ class Scene:
     def delete_tag(self, tag):
         """Removes the given tag from all nodes"""
         for node in self._nodes:
-            node.delete_tag(tag)
+            if tag in node._tags:
+                node.delete_tag(tag)
 
     @property
     def tags(self) -> tuple:

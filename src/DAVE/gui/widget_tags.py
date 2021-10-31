@@ -1,12 +1,12 @@
 from DAVE.gui.dockwidget import *
 import PySide2
 from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag, QColor
-from PySide2.QtCore import QMimeData, Qt, QItemSelectionModel
+from PySide2.QtCore import QMimeData, Qt, QItemSelectionModel, QPoint
 from PySide2.QtWidgets import (
     QTreeWidgetItem,
     QCheckBox,
     QListWidget,
-    QAbstractScrollArea, QApplication,
+    QAbstractScrollArea, QApplication, QMenu,
 )
 import DAVE.scene as ds
 from DAVE.gui.helpers.my_qt_helpers import EnterKeyPressFilter
@@ -33,6 +33,11 @@ class WidgetTags(guiDockWidget):
         self.treeView.setExpandsOnDoubleClick(False)
         self.treeView.setObjectName("treeView")
 
+        header = self.treeView.header()
+        header.setSectionsClickable(True)
+        header.sectionClicked.connect(self.header_clicked)
+
+
         self.treeView.setAlternatingRowColors(True)
 
         self.checkbox = QCheckBox(self.contents)
@@ -44,6 +49,8 @@ class WidgetTags(guiDockWidget):
         layout.addWidget(self.treeView)
         layout.addWidget(self.checkbox)
         self.contents.setLayout(layout)
+
+        self.resize(800,800)
 
     def guiDefaultLocation(self):
         return None
@@ -117,7 +124,7 @@ class WidgetTags(guiDockWidget):
 
         tags = self.guiScene.tags
         self.treeView.setColumnCount(len(tags)+1)
-        self.treeView.setHeaderLabels(['Node',' ', *tags])
+        self.treeView.setHeaderLabels(['Node','Add tag ', *tags])
         self.treeView.header().setVisible(True)
 
         show_managed_nodes = self.checkbox.isChecked()
@@ -249,6 +256,8 @@ class WidgetTags(guiDockWidget):
         for i in range(len(tags)):
             header.setSectionResizeMode(i+1, QtWidgets.QHeaderView.ResizeToContents) # https://doc.qt.io/qt-5/qheaderview.html#details
 
+
+
         self.treeView.expandAll()
 
         # restore closed nodes state
@@ -269,6 +278,23 @@ class WidgetTags(guiDockWidget):
         tag = sender.text()
         self.guiRunCodeCallback(f"s['{node_name}'].add_tag('{tag}')", guiEventType.NOTHING)
         self.update_node_data_and_tree()
+
+    def header_clicked(self, col):
+        header = self.treeView.header()
+        x = header.sectionPosition(col)
+
+        tag = self.guiScene.tags[col-2]
+
+        pos = self.treeView.mapToGlobal(QPoint(x, 5))
+
+        def delete():
+            self.guiRunCodeCallback(f"s.delete_tag('{tag}')", guiEventType.NOTHING)
+            self.update_node_data_and_tree()
+
+        menu = QMenu()
+        menu.addAction(f'Delete {tag} tag', delete)
+        menu.addAction('Cancel')
+        menu.exec_(pos)
 
 if __name__ == '__main__':
     app = QApplication()
