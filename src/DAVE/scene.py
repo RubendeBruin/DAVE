@@ -113,6 +113,8 @@ class Node(ABC):
         self._valid = True
         """Turns False if the node in removed from a scene. This is a work-around for weakrefs"""
 
+        self._tags = set()
+
     def __repr__(self):
         if self.is_valid:
             return f"{self.name} <{self.__class__.__name__}>"
@@ -319,6 +321,30 @@ class Node(ABC):
         #NOGUI
         """
         return self._valid
+
+    def add_tag(self, value: str):
+        """Adds the provided tag to the tags"""
+        assert isinstance(value, str), f'Tags needs to be strings (text)but {value} is not a string'
+        self._tags.add(value)
+
+    def add_tags(self, tags):
+
+        for tag in tags:
+            assert isinstance(tag, str), f'Tags needs to be strings (text), but {tag} is not a string'
+
+        for tag in tags:
+            self.add_tag(tag)
+
+    def has_tag(self, tag: str):
+        """Returns true if node has the given tag"""
+        return tag in self._tags
+
+    @property
+    def tags(self):
+        return tuple(self._tags)
+
+    def delete_tag(self, value: str):
+        self._tags.remove(value)
 
 
 class CoreConnectedNode(Node):
@@ -6860,6 +6886,16 @@ class Scene:
 
         return r
 
+    def nodes_tagged(self, tag):
+        """Returns all nodes that have the given tag"""
+
+        return tuple([node for node in self._nodes if tag in node._tags])
+
+    def delete_tag(self, tag):
+        """Removes the given tag from all nodes"""
+        for node in self._nodes:
+            node.delete_tag(tag)
+
     def delete(self, node):
         """Deletes the given node from the scene as well as all nodes depending on it.
 
@@ -8867,6 +8903,14 @@ class Scene:
             if n.manager is None:
                 for key, value in n.limits.items():
                     code.append(f"s['{n.name}'].limits['{key}'] = {value}")
+
+
+        code.append("\n# Tags of un-managed nodes ")
+
+        for n in nodes_to_be_exported:
+            if n.manager is None:
+                if n.tags:
+                    code.append(f"s['{n.name}'].add_tags({n.tags})")
 
         if self.reports:
             code.append('\n# Reports')

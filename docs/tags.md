@@ -17,6 +17,21 @@ The reporting section of DAVE needs to know what is what, and the only way for D
 tell the reporing section which nodes should be included in the mooring report and which nodes should be included in the
 rigging section.
 
-Enter TAGS
+Enter **TAGS**
 
 Tags offer a way to "tag" nodes with one or more tags (labels). 
+
+**TAG are not managed**, they are fully controlled by the Scene.
+
+Each node can have tags. These are controlled by:
+
+- `add_tag`
+- `add_tags`
+- `delete_tag`
+- `has_tag`
+- `tags` (read only property)
+
+On scene level there are:
+
+- `nodes_tagged` : returns all nodes that have some tag
+- `delete_tag` : removes given tag from all nodes
