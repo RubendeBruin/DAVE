@@ -6891,6 +6891,16 @@ class Scene:
 
         return tuple([node for node in self._nodes if tag in node._tags])
 
+    def nodes_tag_and_type(self, tag, type):
+        """Returns all nodes of type 'type' with tag 'tag' """
+
+        set1 = self.nodes_tagged(tag)
+        set2 = self.nodes_of_type(type)
+
+        intersect = set(set1).intersection(set(set2))
+
+        return tuple(intersect)
+
     def delete_tag(self, tag):
         """Removes the given tag from all nodes"""
         for node in self._nodes:
@@ -9281,40 +9291,11 @@ class LoadShearMomentDiagram:
         n = m.nLoads
 
         loads = []
-
-        cur_name = ''
-
-
         for i in range(n):
-
             load = m.load_origin(i)
-            #  0     1       2      3
-            # name, point, force, moment
 
-            name = load[0]
-
-            if name != cur_name:
-
-                # store actual
-                if cur_name != '':
-                    if np.linalg.norm(force) > 0:
-                        loads.append((cur_name, position_times_force/force, force, moment))
-
-                # reset cumulatives
-                force = np.array((0,0,0), dtype=float)
-                position_times_force = np.array((0,0,0), dtype=float)
-                moment = np.array((0,0,0), dtype=float)
-
-            cur_name = name
-            force += load[2]
-            position_times_force += np.array(load[1]) * np.array(load[2])
-            moment += load[3]
-
-
-
-        # add the last
-        if np.linalg.norm(force) > 0:
-            loads.append((cur_name, position_times_force / force, force, moment))
+            if np.linalg.norm(load[2]) >1e-6 or np.linalg.norm(load[3]) >1e-6:  # only forces that actually do something
+                loads.append(load)
 
         return loads
 
@@ -9360,7 +9341,8 @@ class LoadShearMomentDiagram:
 
         return fig
 
-    def plot(self, grid_n=100, merge_adjacent_loads=True, filename=None):
+    def plot(self, grid_n=100, merge_adjacent_loads=True, filename=None, do_show = False):
+        """Plots the load, shear and bending moments. Returns figure"""
         m = self.datasource  # alias
 
         x = m.grid(grid_n)
@@ -9547,26 +9529,39 @@ class LoadShearMomentDiagram:
         ax0_second.spines["top"].set_visible(False)
         ax0_second.spines["bottom"].set_visible(False)
 
+        dx = (np.max(x) - np.min(x)) / 20 # plot scale
         ax1.plot(x, m.Vz, "k-", linewidth=linewidth)
 
-        i = np.argmax(np.abs(m.Vz))
-        ax1.plot(x[i], m.Vz[i], "b*")
-        ax1.text(x[i], m.Vz[i], f"{m.Vz[i]:.2f}")
+        i = np.argmax(m.Vz)
+        ax1.plot((x[i] - dx, x[i] + dx), (m.Vz[i], m.Vz[i]), 'k-', linewidth=0.5)
+        ax1.text(x[i], m.Vz[i], f"{m.Vz[i]:.2f}", va='bottom', ha='center')
+
+        i = np.argmin(m.Vz)
+        ax1.plot((x[i] - dx, x[i] + dx), (m.Vz[i], m.Vz[i]), 'k-', linewidth=0.5)
+        ax1.text(x[i], m.Vz[i], f"{m.Vz[i]:.2f}", va='top', ha='center')
+
 
         ax1.grid()
         ax1.set_title("Shear")
         ax1.set_ylabel("[kN]")
 
         ax2.plot(x, m.My, "k-", linewidth=linewidth)
-        i = np.argmax(np.abs(m.My))
-        ax2.plot(x[i], m.My[i], "b*")
-        ax2.text(x[i], m.My[i], f"{m.My[i]:.2f}")
+
+        i = np.argmax(m.My)
+        ax2.plot((x[i]-dx, x[i]+dx), (m.My[i],m.My[i]), 'k-',linewidth=0.5)
+        ax2.text(x[i], m.My[i], f"{m.My[i]:.2f}", va = 'bottom',ha='center')
+
+        i = np.argmin(m.My)
+        ax2.plot((x[i] - dx, x[i] + dx), (m.My[i], m.My[i]), 'k-', linewidth=0.5)
+        ax2.text(x[i], m.My[i], f"{m.My[i]:.2f}", va='top', ha='center')
 
         ax2.grid()
         ax2.set_title("Moment")
         ax2.set_ylabel("[kN*m]")
 
-        if filename is None:
+        if do_show:
             plt.show()
-        else:
+        if filename is not None:
             fig.savefig(filename)
+
+        return fig
