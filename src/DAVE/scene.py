@@ -9273,6 +9273,52 @@ class LoadShearMomentDiagram:
         x = self.datasource.grid(grid_n)
         return x, self.datasource.Vz, self.datasource.My
 
+    def give_loads_table(self):
+        """Returns a 'table' with all the loads. (Name, location, force, moment) ; all local
+        """
+
+        m = self.datasource  # alias
+        n = m.nLoads
+
+        loads = []
+
+        cur_name = ''
+
+
+        for i in range(n):
+
+            load = m.load_origin(i)
+            #  0     1       2      3
+            # name, point, force, moment
+
+            name = load[0]
+
+            if name != cur_name:
+
+                # store actual
+                if cur_name != '':
+                    if np.linalg.norm(force) > 0:
+                        loads.append((cur_name, position_times_force/force, force, moment))
+
+                # reset cumulatives
+                force = np.array((0,0,0), dtype=float)
+                position_times_force = np.array((0,0,0), dtype=float)
+                moment = np.array((0,0,0), dtype=float)
+
+            cur_name = name
+            force += load[2]
+            position_times_force += np.array(load[1]) * np.array(load[2])
+            moment += load[3]
+
+
+
+        # add the last
+        if np.linalg.norm(force) > 0:
+            loads.append((cur_name, position_times_force / force, force, moment))
+
+        return loads
+
+
     def plot_simple(self, **kwargs):
         """Plots the bending moment and shear in a single yy-plot.
         Creates a new figure
