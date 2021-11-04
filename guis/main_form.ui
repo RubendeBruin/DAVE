@@ -471,7 +471,6 @@
      <addaction name="actionOrcaflex_package"/>
     </widget>
     <addaction name="actionNew"/>
-    <addaction name="actionReload_components"/>
     <addaction name="separator"/>
     <addaction name="actionOpen"/>
     <addaction name="actionImport_sub_scene"/>
@@ -524,7 +523,15 @@
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
    </widget>
+   <widget class="QMenu" name="menuScene">
+    <property name="title">
+     <string>Scene</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionReload_components"/>
+   </widget>
    <addaction name="menuSolve_Statics"/>
+   <addaction name="menuScene"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
    <addaction name="menuHelp"/>
@@ -1093,7 +1100,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionReload_components">
    <property name="text">
-    <string>Reload components</string>
+    <string>Reload components from files</string>
    </property>
   </action>
   <action name="actionUndo">
@@ -1115,6 +1122,11 @@ p, li { white-space: pre-wrap; }
   <action name="actionSave">
    <property name="text">
     <string>Save</string>
+   </property>
+  </action>
+  <action name="actionClear">
+   <property name="text">
+    <string>Remove al nodes</string>
    </property>
   </action>
  </widget>

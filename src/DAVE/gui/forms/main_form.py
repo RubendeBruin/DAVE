@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Tue Oct 26 12:36:45 2021
+# Created: Thu Nov  4 08:30:56 2021
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -210,6 +210,8 @@ class Ui_MainWindow(object):
         self.menuHelp.setObjectName("menuHelp")
         self.menuEdit = QtWidgets.QMenu(self.menubar)
         self.menuEdit.setObjectName("menuEdit")
+        self.menuScene = QtWidgets.QMenu(self.menubar)
+        self.menuScene.setObjectName("menuScene")
         MainWindow.setMenuBar(self.menubar)
         self.dockWidget_2 = QtWidgets.QDockWidget(MainWindow)
         self.dockWidget_2.setObjectName("dockWidget_2")
@@ -428,11 +430,12 @@ class Ui_MainWindow(object):
         self.actionRedo.setObjectName("actionRedo")
         self.actionSave = QtWidgets.QAction(MainWindow)
         self.actionSave.setObjectName("actionSave")
+        self.actionClear = QtWidgets.QAction(MainWindow)
+        self.actionClear.setObjectName("actionClear")
         self.menuExport.addAction(self.actionBlender)
         self.menuExport.addAction(self.actionOrcaflex)
         self.menuExport.addAction(self.actionOrcaflex_package)
         self.menuSolve_Statics.addAction(self.actionNew)
-        self.menuSolve_Statics.addAction(self.actionReload_components)
         self.menuSolve_Statics.addSeparator()
         self.menuSolve_Statics.addAction(self.actionOpen)
         self.menuSolve_Statics.addAction(self.actionImport_sub_scene)
@@ -464,7 +467,10 @@ class Ui_MainWindow(object):
         self.menuHelp.addAction(self.actionOnline_help)
         self.menuEdit.addAction(self.actionUndo)
         self.menuEdit.addAction(self.actionRedo)
+        self.menuScene.addSeparator()
+        self.menuScene.addAction(self.actionReload_components)
         self.menubar.addAction(self.menuSolve_Statics.menuAction())
+        self.menubar.addAction(self.menuScene.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
@@ -491,6 +497,7 @@ class Ui_MainWindow(object):
         self.menuLook_towards.setTitle(QtWidgets.QApplication.translate("MainWindow", "Look in direction", None, -1))
         self.menuHelp.setTitle(QtWidgets.QApplication.translate("MainWindow", "Help", None, -1))
         self.menuEdit.setTitle(QtWidgets.QApplication.translate("MainWindow", "Edit", None, -1))
+        self.menuScene.setTitle(QtWidgets.QApplication.translate("MainWindow", "Scene", None, -1))
         self.dockWidget_2.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Python engine", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("MainWindow", "Code", None, -1))
         self.pbClearCode.setText(QtWidgets.QApplication.translate("MainWindow", "&Clear", None, -1))
@@ -566,11 +573,12 @@ class Ui_MainWindow(object):
         self.actionPython_console_2.setText(QtWidgets.QApplication.translate("MainWindow", "Python console", None, -1))
         self.actionVersion.setText(QtWidgets.QApplication.translate("MainWindow", "Version", None, -1))
         self.actionOnline_help.setText(QtWidgets.QApplication.translate("MainWindow", "Online help", None, -1))
-        self.actionReload_components.setText(QtWidgets.QApplication.translate("MainWindow", "Reload components", None, -1))
+        self.actionReload_components.setText(QtWidgets.QApplication.translate("MainWindow", "Reload components from files", None, -1))
         self.actionUndo.setText(QtWidgets.QApplication.translate("MainWindow", "Undo", None, -1))
         self.actionUndo.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Ctrl+Z", None, -1))
         self.actionRedo.setText(QtWidgets.QApplication.translate("MainWindow", "Redo", None, -1))
         self.actionRedo.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Ctrl+Y", None, -1))
         self.actionSave.setText(QtWidgets.QApplication.translate("MainWindow", "Save", None, -1))
+        self.actionClear.setText(QtWidgets.QApplication.translate("MainWindow", "Remove al nodes", None, -1))
 
 import DAVE.gui.forms.resources_rc

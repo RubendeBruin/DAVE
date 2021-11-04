@@ -374,6 +374,7 @@ class CoreConnectedNode(Node):
         name = self._vfNode.name
         self._vfNode = None  # this node will become invalid.
         self._scene._vfc.delete(name)
+        self.invalidate()
 
 class NodeWithCoreParent(CoreConnectedNode):
     """
@@ -455,6 +456,7 @@ class NodeWithCoreParent(CoreConnectedNode):
                     )
                 )
 
+    @node_setter_manageable
     def change_parent_to(self, new_parent):
         """Assigns a new parent to the node but keeps the global position and rotation the same.
 
@@ -629,6 +631,7 @@ class Visual(Node):
 
         return code
 
+    @node_setter_manageable
     def change_parent_to(self, new_parent):
 
         if not (isinstance(new_parent, Frame) or new_parent is None):
@@ -799,14 +802,23 @@ class Frame(NodeWithParentAndFootprint):
 
         self._vfNode.fixed = var
 
+    @node_setter_manageable
     def set_free(self):
         """Sets .fixed to (False,False,False,False,False,False)"""
         self._vfNode.set_free()
 
+    @node_setter_manageable
     def set_fixed(self):
         """Sets .fixed to (True,True,True,True,True,True)"""
 
         self._vfNode.set_fixed()
+
+    @node_setter_manageable
+    def set_even_keel(self):
+        """Changes the rotation of the node such that it is 'even-keel'"""
+        if self.parent is not None:
+            warnings.warn(f'Using set_even_keel may not work as expected because frame {self.name} is located on {self.parent.name}')
+        self.rotation = (0,0,self.heading)
 
     @property
     def x(self):
@@ -1283,6 +1295,7 @@ class Frame(NodeWithParentAndFootprint):
 
         return LoadShearMomentDiagram(lsm)
 
+    @node_setter_manageable
     def change_parent_to(self, new_parent):
         """Assigns a new parent to the node but keeps the global position and rotation the same.
 
@@ -1292,6 +1305,8 @@ class Frame(NodeWithParentAndFootprint):
             new_parent: new parent node
 
         """
+
+
         if new_parent == self:
             raise ValueError(f"{self.name} can not be its own parent.")
 
@@ -1375,8 +1390,8 @@ class Point(NodeWithParentAndFootprint):
         super().__init__(scene, vfPoi)
         self._None_parent_acceptable = True
 
-    def on_observed_node_changed(self, changed_node):
-        print(changed_node.name + " has changed")
+    # def on_observed_node_changed(self, changed_node):
+    #     print(changed_node.name + " has changed")
 
     @property
     def x(self):
@@ -1957,6 +1972,7 @@ class Cable(CoreConnectedNode):
             r.append(p.name)
         return r
 
+    @node_setter_manageable
     def set_length_for_tension(self, target_tension):
         """Given the actual geometry and EA of the cable, change the length such that
         the tension in the cable becomes the supplied tension
@@ -2570,6 +2586,7 @@ class SPMT(NodeWithCoreParent):
 
     # === control axles ====
 
+    @node_setter_manageable
     def make_grid(self, nx=3, ny=1, dx=1.4, dy=1.45):
         offx = nx * dx / 2
         offy = ny * dy / 2
@@ -3565,7 +3582,6 @@ class TriMeshSource(Node):
             messages.append("Boundary edges are shown in Red")
             messages.append("Non-manifold edges are shown in Pink")
 
-        # Do not check for volume if we have nonmanifold geometry or boundary edges
         try:
             volume = tm.Volume()
         except:
@@ -4348,6 +4364,7 @@ class WaveInteraction1(Node):
 
         return code
 
+    @node_setter_manageable
     def change_parent_to(self, new_parent):
 
         if not (isinstance(new_parent, Frame)):
@@ -4644,6 +4661,7 @@ class GeometricContact(Manager):
 
         self._update_connection()
 
+    @node_setter_manageable
     def change_parent_to(self, new_parent):
         self.parent = new_parent
 
@@ -4794,10 +4812,12 @@ class GeometricContact(Manager):
             self._connection_axial_rotation,
         ]
 
+    @node_setter_manageable
     def flip(self):
         """Changes the swivel angle by 180 degrees"""
         self.swivel = np.mod(self.swivel + 180, 360)
 
+    @node_setter_manageable
     def change_side(self):
         self.rotation_on_parent = np.mod(self.rotation_on_parent + 180, 360)
         self.child_rotation = np.mod(self.child_rotation + 180, 360)
@@ -5815,7 +5835,9 @@ class Component(Manager, Frame):
         #NOGUI"""
         return self._vfNode.name
 
+
     @name.setter
+    @node_setter_manageable
     def name(self, value):
         if value == self.name:
             return
@@ -5852,7 +5874,9 @@ class Component(Manager, Frame):
         """
         return self._path
 
+
     @path.setter
+    @node_setter_manageable
     def path(self, value):
 
         # first see if we can load
@@ -5864,7 +5888,11 @@ class Component(Manager, Frame):
 
         # and re-import them
         old_nodes = self._scene._nodes.copy()
-        self._scene.import_scene(other=t, prefix=self.name + '/', container = self)
+        self._scene.import_scene(other=t,
+                                 prefix=self.name + '/',
+                                 container = self,
+                                 settings=False # do not import environment and other settings
+                                 )
 
         # find imported nodes
         self._nodes.clear()
@@ -6009,13 +6037,13 @@ class Scene:
             self.load_scene(filename)
 
         if copy_from is not None:
-            self.import_scene(copy_from, containerize=False)
+            self.import_scene(copy_from, containerize=False, settings=True)
 
         if code is not None:
             self.run_code(code)
 
     def clear(self):
-        """Deletes all nodes"""
+        """Deletes all nodes - leaves settings and reports in place"""
 
         # manually remove all references to the core
         # this avoids dangling pointers in copies of nodes
@@ -6025,7 +6053,13 @@ class Scene:
 
         self._nodes = []
         del self._vfc
+
+        # validate reports
+        self._validate_reports()
+        self.reports.clear() # and then delete them
+
         self._vfc = pyo3d.Scene()
+
 
     # =========== settings =============
 
@@ -6967,6 +7001,9 @@ class Scene:
         node._delete_vfc()
         self._nodes.remove(node)
 
+        # validate reports
+        self._validate_reports()
+
     def dissolve(self, node):
         """Attempts to delete the given node without affecting the rest of the model.
 
@@ -7105,8 +7142,137 @@ class Scene:
             n.update()
         self._vfc.state_update()
 
+    def _solve_statics_with_optional_control(self, feedback_func = None, do_terminate_func = None, timeout_s = 1):
+        """Solves statics with a time-out and feedback/terminate functions.
+
+        1. Reduce degrees of freedom: Freezes all vessels at their current heel and trim
+        2. Solve statics
+
+        3. Restore original degrees of freedom
+        4. Solve statics
+
+        5. Check geometric contacts
+            if ok: Done
+            if not ok: Correct and go back to 4
+
+        Options for feedback to user and termination control during solving:
+
+        feedback_func     : func(str)
+        do_terminate_func : func() -> bool
+        """
+
+        # # fallback to normal solve if feedback and control arguments are not provided
+        # if feedback_func is None or do_terminate_func is None:
+        #     return self.solve_statics()
+
+        # Two quick helper functions for running in controlled mode
+        def give_feedback(txt):
+            if feedback_func is not None:
+                feedback_func(txt)
+
+        def should_terminate():
+            if do_terminate_func is not None:
+                return do_terminate_func()
+            else:
+                return False
+
+        self.update()
+
+        if timeout_s is None:
+            timeout_s = -1
+
+        solve_func = lambda: self._vfc.state_solve_statics_with_timeout(
+            True, timeout_s, True, True, 0
+        )  # default stability value
+
+        phase = 1
+        original_dofs_dict = None
+
+        while True:
+
+            if should_terminate():
+                if original_dofs_dict is not None:
+                    self._restore_original_fixes(original_dofs_dict)
+                    self.update()
+                return False
+
+            if phase == 1:  # prepare to go to phase 1 (or directly to phase 2)
+
+                old_dofs = self._vfc.get_dofs()
+                if len(old_dofs) == 0:
+                    return True
+
+                original_dofs_dict = self._fix_vessel_heel_trim()
+                phase = 2
+
+            elif phase == 2:
+                status = solve_func()
+
+                if status == 0 or status == -2:
+
+                    # phase 3
+                    self._restore_original_fixes(original_dofs_dict)
+                    phase = 4
+
+                else:
+                    if timeout_s < 0: # we were not using a timeout, so the solver failed
+                        raise ValueError(f'Could not solve - solver return code {status} during phase 2. Maximum error = {self._vfc.Emaxabs}')
+
+                give_feedback(f"Maximum error = {self._vfc.Emaxabs} (phase 2)")
+
+            elif phase == 4:
+
+                status = solve_func()
+
+                if status == 0 or status == -2:
+                    # phase 5
+                    (
+                        changed,
+                        msg,
+                    ) = self._check_and_fix_geometric_contact_orientations()
+
+                    if not changed:
+                        # we are done!
+                        return True  # <------------- You've found the proper exit!
+
+                    give_feedback(msg)
+
+                else:
+                    give_feedback(f"Maximum error = {self._vfc.Emaxabs} (phase 4)")
+
+
+
+
+
+
+
+
+
+
+
+
+
     def solve_statics(self, silent=False, timeout=None):
         """Solves statics
+
+        If a timeout is provided then each pass will take at most 'timeout' seconds. This means you may need to call
+        this function repeatedly to reach an equilibrium.
+
+        This function takes the following steps:
+
+        Phase 1:
+        1. Reduce degrees of freedom: Freezes all vessels at their current heel and trim
+        2. Solve statics
+
+        Phase 2:
+        3. Restore original degrees of freedom
+        4. Solve statics
+
+        Phase 3:
+        5. Check geometric contacts
+            if ok: Done
+            if not ok: Correct and go back to step 4
+
 
         Args:
             silent: Do not print if successfully solved
@@ -7115,53 +7281,66 @@ class Scene:
             bool: True if successful, False otherwise.
 
         """
-        self.update()
 
-        if timeout is None:
-            solve_func = self._vfc.state_solve_statics
-        else:
-            #       bool doStabilityCheck,
-            #       double timeout,
-            # 		bool do_prepare_state,
-            # 		bool solve_linear_dofs_first,
-            # 		double stability_check_delta
-            solve_func = lambda: self._vfc.state_solve_statics_with_timeout(
-                True, timeout, True, True, 0
-            )  # default stability value
 
-        # pass 1
-        orignal_fixes = self._fix_vessel_heel_trim()
-        succes = solve_func()
-        if not succes:
-            self._restore_original_fixes(orignal_fixes)
-            return False
-
-        if orignal_fixes:
-            # pass 2
-            self._restore_original_fixes(orignal_fixes)
-            succes = solve_func()
-
-        if self.verify_equilibrium():
-
-            changed, message = self._check_and_fix_geometric_contact_orientations()
-            if changed:
-                print(message)
-                solve_func()
-                if not self.verify_equilibrium():
-                    return False
-
-            if not silent:
-                self._print(f"Solved to {self._vfc.Emaxabs:.3e} kN")
-            return True
-
-        d = np.array(self._vfc.get_dofs())
-        if np.any(np.abs(d) > 2000):
-            print(
-                "Error: One of the degrees of freedom exceeded the boundary of 2000 [m]/[rad]."
-            )
-            return False
-
-        return False
+        return self._solve_statics_with_optional_control(timeout_s=-1)
+        #
+        # self.update()
+        #
+        # if timeout is None:
+        #     timeout = -1
+        #
+        # solve_func = lambda: self._vfc.state_solve_statics_with_timeout(
+        #         True, timeout, True, True, 0
+        #     )  # default stability value
+        #
+        # # Note: these are the possible return values of the solve-function
+        # #
+        # # state_solve_statics_with_timeout:
+        # # -2  done, unstable solution, but keeps converging to this one.
+        # # -1  done, unstable solution, still possible to get the a new equilibrium
+        # # 0   done, stable equilibrium (if checked) or unknonwn equilibrium (if not checked)
+        # #
+        # # 1   time-out or fail during linear-dof solve   - state not in equilibrium
+        # # 2   time-out or fail during full-dof solve     - state not in equilibrium
+        # #
+        # # Positive (1,2) return argument can be passed as input (phases_completed) to continue where we timed-out.
+        #
+        # # pass 1
+        # orignal_fixes = self._fix_vessel_heel_trim()
+        # succes = solve_func()
+        #
+        # if not succes:
+        #     self._restore_original_fixes(orignal_fixes)
+        #     self.update()
+        #     return False
+        #
+        # if orignal_fixes:
+        #     # pass 2
+        #     self._restore_original_fixes(orignal_fixes)
+        #     succes = solve_func()
+        #
+        # if self.verify_equilibrium():
+        #
+        #     changed, message = self._check_and_fix_geometric_contact_orientations()
+        #     if changed:
+        #         print(message)
+        #         solve_func()
+        #         if not self.verify_equilibrium():
+        #             return False
+        #
+        #     if not silent:
+        #         self._print(f"Solved to {self._vfc.Emaxabs:.3e} kN")
+        #     return True
+        #
+        # d = np.array(self._vfc.get_dofs())
+        # if np.any(np.abs(d) > 2000):
+        #     print(
+        #         "Error: One of the degrees of freedom exceeded the boundary of 2000 [m]/[rad]."
+        #     )
+        #     return False
+        #
+        # return False
 
     def verify_equilibrium(self, tol=1e-2):
         """Checks if the current state is an equilibrium
@@ -7310,6 +7489,15 @@ class Scene:
         plt.ylabel(evaluate)
 
         return (xs, y)
+
+    # ======== reports =========
+
+    def _validate_reports(self):
+        """This method is called whenever a node is deleted. It ultimately triggers the validation of all report sections
+         (as those may depend on the node that was deleted)"""
+
+        for report in self.reports:
+            report._validate_sections()
 
     # ======== create functions =========
 
@@ -9070,6 +9258,7 @@ class Scene:
         Args:
             containerize : place all the nodes without a parent in a dedicated Frame
             nodes [None] : if provided then import only these nodes
+            settings     : import settings (gravity, wind etc. ) from other scene as well
 
 
         Returns:
@@ -9110,7 +9299,7 @@ class Scene:
 
         store_export_code_with_solved_function = other._export_code_with_solved_function
         other._export_code_with_solved_function = False  # quicker
-        code = other.give_python_code(nodes=nodes, export_environment_settings=False)
+        code = other.give_python_code(nodes=nodes, export_environment_settings=settings)
         other._export_code_with_solved_function = store_export_code_with_solved_function
 
         self.run_code(code)

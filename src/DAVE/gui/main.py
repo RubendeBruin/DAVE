@@ -615,6 +615,11 @@ class Gui:
             self.ui.pbUpdate.setVisible(False)
             self.app.exec_()
 
+    def new_scene(self):
+        self.scene.clear()
+        self.guiEmitEvent(guiEventType.FULL_UPDATE)
+
+
     def toggle_2D(self):
         flat = self.visual.toggle_2D()
         self.ui.pb3D.setChecked(flat)
@@ -635,12 +640,14 @@ class Gui:
 
         need_refresh = False
         for name in names:
-            need_refresh = True
+
             # does the node still exist?
             if self.scene.node_exists(name):
-                self.run_code(f"s.delete('{name}')", event=None)
+                need_refresh = True
+                self.run_code(f"s.delete('{name}')", event=None)  # send event once after all nodes have been deleted
 
         if need_refresh:
+            self.guiEmitEvent(guiEventType.MODEL_STRUCTURE_CHANGED)
             self.select_none()
 
     def change_paintset(self):
@@ -1092,7 +1099,7 @@ class Gui:
         if len(self._undo_log) > self._undo_index:
             self._undo_log = self._undo_log[: self._undo_index]
         self._undo_log.append(
-            self.scene.give_python_code(export_environment_settings=False)
+            self.scene.give_python_code()
         )
         self._undo_index = len(self._undo_log)
 
@@ -1953,8 +1960,6 @@ class Gui:
 
 
 # ======================================
-
-# ====== nodeA code ======
 
 if __name__ == "__main__":
     pass

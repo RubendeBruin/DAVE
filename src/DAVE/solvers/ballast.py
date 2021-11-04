@@ -281,8 +281,8 @@ def force_vessel_to_evenkeel_and_draft(scene, vessel, z):
     dummy.change_parent_to(None)
 
     # set dummy to even-keel
-    dummy.rx = 0
-    dummy.ry = 0
+    dummy.set_even_keel()
+
     dummy.z = z
     fixed = [1,1,1,1,1,1]
     fixed[0] = old_fixed[0]  # allowed to surge

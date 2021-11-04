@@ -278,7 +278,10 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
                                teardown=True, wind_velocity = 0,
                                allow_surge=False, allow_sway=False, allow_yaw=False, allow_trim=True,
                                noplot = False, noshow = False,
-                               fig = None):
+                               fig = None,
+                               feedback = None,
+                               check_terminate = None
+                               ):
     """This works for vessels without a parent.
 
     The vessels slaved to an axis system and its heel angle is fixed and enforced. After solving statics the GZ
@@ -309,7 +312,10 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
         allow_trim:     (True)
         noplot:         Do not plot results [False]
         noshow:         Do plot but do not do plt.show() [False]
-        axes:           Axes instance to plot in
+        fig:            Figure instance to plot in
+
+        feedback : func(str) for providing feedback during reporting
+        check_terminate : func() -> bool : for providing a terminate signal
 
     Returns:
         dictionary with heel, moment, and GM
@@ -319,7 +325,16 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
 
     """
 
+    # Two quick helper functions for running in controlled mode
+    def give_feedback(txt):
+        if feedback is not None:
+            feedback(txt)
 
+    def should_terminate():
+        if check_terminate is not None:
+            return check_terminate()
+        else:
+            return False
 
     # --------- verify input -----------
 
@@ -332,7 +347,9 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
     # vessel_node should not have a parent
     vessel = s._node_from_node_or_str(vessel_node)
     if vessel.parent is not None:
+        give_feedback('Error: "Vessel should not have a parent. Got {} as vessel which has parent {}.".format(vessel.name, vessel.parent.name)')
         raise ValueError("Vessel should not have a parent. Got {} as vessel which has parent {}.".format(vessel.name, vessel.parent.name))
+
 
     # ---- record actual wind settings ----
 
@@ -347,7 +364,7 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
     # make sure that we are in equilibrium before we start
     s.solve_statics()
 
-    # the vessel will heel towards SB, set the wind-direction accordingly
+    # the vessel will heel towards PS, set the wind-direction accordingly
     if do_wind:
         y = vessel.uy
         s.wind_direction = np.degrees(np.arctan2(y[1], y[0])) - 180
@@ -379,13 +396,17 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
 
     # construct axis system at vessel origin
     name = s.available_name_like(vessel.name + "_global_motion")
-    global_motion = s.new_frame(name, parent=vessel) # construct at vessel origin
+    global_motion = s.new_frame(name, parent=vessel) # construct at vessel origin and orientation, then even-keel
     global_motion.change_parent_to(None)
     global_motion.fixed = (not allow_surge,
                            not allow_sway,
                            False,               # heave allowed
-                           True, True,
+                           True,
+                           True,
                            not allow_yaw)
+    # set even keel
+    global_motion.set_even_keel()  # <-- we need this so that the YAW axis is vertical. If the yaw axis is not vertical then
+    # free yawing of the vessel may introduce high heeling loads
 
     trim_motion = s.new_frame(s.available_name_like(vessel.name + "_trim_motion"), parent=global_motion)
 
@@ -402,18 +423,6 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
     vessel.change_parent_to(heel_node)
     vessel.set_fixed()
 
-    # # check initial heel
-    #
-    # if enforce_even_keel:
-    #
-    #     # equilibrium_rotation = global_motion.rotation
-    #
-    #     # force global motion trim and heel to be zero but maintain heading
-    #     dx = global_motion.to_glob_direction((1,0,0))
-    #     yaw = np.arctan2(dx[1],dx[0])
-    #     global_motion.rotation = (0,0, np.rad2deg(yaw))
-
-    initial_rotation = global_motion.rotation
 
     # record dofs
     s._vfc.state_update()
@@ -427,19 +436,44 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
     trim = list()
 
     for x in heel:
+
+        give_feedback(f'Setting heel angle {x} deg')
+
         s._vfc.set_dofs(D0)
         heel_node.rx = x
-        s.solve_statics(silent=True)
 
-        moment.append(-heel_node.applied_force[3])
+        give_feedback(f'Solving without wind')
+        s._solve_statics_with_optional_control(feedback_func=feedback, do_terminate_func=check_terminate)
+
+        if should_terminate():
+            return None
+
+        # moment.append(-heel_node.applied_force[3])  # No, applied force is in global axis system
+        moment.append(-vessel.connection_moment_x) # this is the connection moment in the axis system of the heel node
+
         trim.append(trim_motion.ry)
 
         # activate wind
         if do_wind:
             s.wind_velocity = wind_velocity
-            s.solve_statics(silent=True)
-            moment_wind.append(-heel_node.applied_force[3])
+            give_feedback(f'Solving with wind')
+
+            # We need to solve, suspended cargo may change position. But fix the vessel such that is does not change position due to wind
+            old_fixes = global_motion.fixed
+            global_motion.fixed = True
+
+            s._solve_statics_with_optional_control(feedback_func=feedback, do_terminate_func=check_terminate)
+
+            print(global_motion.rotation)
+
+            moment_wind.append(-vessel.connection_moment_x)
+
+            # restore
             s.wind_velocity = 0
+            global_motion.fixed = old_fixes
+
+            if should_terminate():
+                return None
 
         # for movie replay (temporary add of dof to heel)
         heel_node.fixed = (True,True,True,False,True,True)
@@ -455,8 +489,6 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
 
     if allow_trim:
         r['trim'] = trim
-
-
 
     if do_wind:
         wind_moment = np.array(moment_wind) - np.array(moment)
@@ -491,10 +523,7 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
 
     if not noplot:
 
-        # if np.max(np.abs(initial_rotation)) > 0.01:
-        #     lbl = "Equilibrium heel = {:.2f} deg, trim = {:.2f} deg".format(initial_heel, initial_trim)
-        # else:
-        #     lbl = None
+        give_feedback("creating figures")
 
         if fig is None:
             fig = plt.figure()
@@ -554,12 +583,11 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
             box_props = dict(boxstyle='round', facecolor='gold', alpha=1)
             ax_gz.text(xmax,np.deg2rad(xmax)*GM,'GM = {:.2f}'.format(GM),horizontalalignment='left',bbox=box_props)
 
-        ax_gz.set_title('Restoring {} curve for {};\n Displacement = {} [kN]'.format(what, vessel.name, round(100*displacement_kN)/100))
+        ax_gz.set_title(f'Restoring {what} curve for {vessel.name};\n Displacement = {displacement_kN:.2f} [kN]')
 
 
         ax_gz.grid('on')
-        # if lbl:
-        #     plt.legend(facecolor='gold')
+
         if not noshow:
             plt.show()
 

@@ -283,6 +283,9 @@ class WidgetTags(guiDockWidget):
         header = self.treeView.header()
         x = header.sectionPosition(col)
 
+        if col<2:
+            return
+
         tag = self.guiScene.tags[col-2]
 
         pos = self.treeView.mapToGlobal(QPoint(x, 5))
