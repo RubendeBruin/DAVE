@@ -217,8 +217,6 @@ class Node(ABC):
         """ """
         pass
 
-
-
     @property
     def UC(self):
         """Returns the governing UC of the node, returns None is no limits are defined
@@ -230,7 +228,9 @@ class Node(ABC):
 
         gov_uc = -1
 
-        props = [*self.limits.keys()]  # Note: if a limit on UC itself was defined then this will be deleted during this loop
+        props = [
+            *self.limits.keys()
+        ]  # Note: if a limit on UC itself was defined then this will be deleted during this loop
         for propname in props:
             uc = self.give_UC(propname)
             if uc is not None:
@@ -256,7 +256,7 @@ class Node(ABC):
             return None, None, None, None
 
         gov_uc = 0
-        gov_prop = ''
+        gov_prop = ""
         gov_limits = ()
         gov_value = None
 
@@ -266,25 +266,25 @@ class Node(ABC):
                 gov_uc = max(gov_uc, uc)
                 gov_prop = propname
                 gov_limits = limits
-                gov_value = getattr(self,propname)
+                gov_value = getattr(self, propname)
 
         return gov_uc, gov_prop, gov_limits, gov_value
 
-
-    def give_UC(self, prop_name = None):
+    def give_UC(self, prop_name=None):
         """Returns the UC for the provided property name.
 
-         See Also: UC (property)
-         """
+        See Also: UC (property)
+        """
 
         if prop_name not in self.limits:
             return None
 
-        if prop_name == 'UC':
-            warnings.warn(f'Limit defined on "UC" on node {self.name}. Can not calculate the UC for UC as that would result in infinite recursion. Deleting this limit')
-            del self.limits['UC']
+        if prop_name == "UC":
+            warnings.warn(
+                f'Limit defined on "UC" on node {self.name}. Can not calculate the UC for UC as that would result in infinite recursion. Deleting this limit'
+            )
+            del self.limits["UC"]
             return None
-
 
         limits = self.limits[prop_name]
 
@@ -292,13 +292,15 @@ class Node(ABC):
             if limits <= 0:
                 return 0
 
-
         value = getattr(self, prop_name, None)
         if value is None:
-            raise ValueError(f'Error evaluating limits: No property named {prop_name} on node {self.name}')
+            raise ValueError(
+                f"Error evaluating limits: No property named {prop_name} on node {self.name}"
+            )
 
-        assert isinstance(value, (
-        int, float)), f"property named {prop_name} on node {self.name} is not a single number, it is: {str(value)}"
+        assert isinstance(
+            value, (int, float)
+        ), f"property named {prop_name} on node {self.name} is not a single number, it is: {str(value)}"
 
         if isinstance(limits, (int, float)):  # single number
             uc = abs(value) / limits
@@ -308,7 +310,6 @@ class Node(ABC):
             uc = abs(value - midpoint) / delta
 
         return uc
-
 
     def invalidate(self):
         self._valid = False
@@ -324,13 +325,17 @@ class Node(ABC):
 
     def add_tag(self, value: str):
         """Adds the provided tag to the tags"""
-        assert isinstance(value, str), f'Tags needs to be strings (text)but {value} is not a string'
+        assert isinstance(
+            value, str
+        ), f"Tags needs to be strings (text)but {value} is not a string"
         self._tags.add(value)
 
     def add_tags(self, tags):
 
         for tag in tags:
-            assert isinstance(tag, str), f'Tags needs to be strings (text), but {tag} is not a string'
+            assert isinstance(
+                tag, str
+            ), f"Tags needs to be strings (text), but {tag} is not a string"
 
         for tag in tags:
             self.add_tag(tag)
@@ -375,6 +380,7 @@ class CoreConnectedNode(Node):
         self._vfNode = None  # this node will become invalid.
         self._scene._vfc.delete(name)
         self.invalidate()
+
 
 class NodeWithCoreParent(CoreConnectedNode):
     """
@@ -531,8 +537,6 @@ class NodeWithParentAndFootprint(NodeWithCoreParent):
     Do not use this class directly.
     This is a base-class for all nodes that have a "footprint" property as well as a parent
     """
-
-
 
     def __init__(self, scene, vfNode):
         super().__init__(scene, vfNode)
@@ -817,8 +821,10 @@ class Frame(NodeWithParentAndFootprint):
     def set_even_keel(self):
         """Changes the rotation of the node such that it is 'even-keel'"""
         if self.parent is not None:
-            warnings.warn(f'Using set_even_keel may not work as expected because frame {self.name} is located on {self.parent.name}')
-        self.rotation = (0,0,self.heading)
+            warnings.warn(
+                f"Using set_even_keel may not work as expected because frame {self.name} is located on {self.parent.name}"
+            )
+        self.rotation = (0, 0, self.heading)
 
     @property
     def x(self):
@@ -956,7 +962,7 @@ class Frame(NodeWithParentAndFootprint):
     @node_setter_observable
     def parent(self, val):
 
-        if val==self:
+        if val == self:
             raise ValueError(f"{self.name} can not be its own parent.")
 
         if val is not None:
@@ -1306,7 +1312,6 @@ class Frame(NodeWithParentAndFootprint):
 
         """
 
-
         if new_parent == self:
             raise ValueError(f"{self.name} can not be its own parent.")
 
@@ -1465,7 +1470,6 @@ class Point(NodeWithParentAndFootprint):
     def mz(self):
         """z component of applied moment [kNm] (parent axis)"""
         return self.applied_moment[2]
-
 
     @x.setter
     @node_setter_manageable
@@ -1716,7 +1720,7 @@ class RigidBody(Frame):
 
         assert1f(newmass)
         if newmass == 0:
-            self.inertia_radii = (0,0,0)
+            self.inertia_radii = (0, 0, 0)
         self.inertia = newmass
         self._vfForce.force = (0, 0, -self._scene.g * newmass)
 
@@ -1983,6 +1987,18 @@ class Cable(CoreConnectedNode):
 
         self.length = (self.actual_length) * self.EA / (target_tension + self.EA)
 
+    @node_setter_manageable
+    def set_length_for_stretched_length_under_tension(self, stretched_length, target_tension=None):
+        """Changes the length of cable such that its stretched length under target-tension becomes stretched-length.
+        """
+
+        # F = stretch * EA / L
+        # so : L = L0*EA / (F + EA)
+
+        if target_tension is None:
+            target_tension = self.tension
+
+        self.length = stretched_length * self.EA / (target_tension + self.EA)
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -2148,7 +2164,7 @@ class _Area(NodeWithCoreParent):
     """Abstract Based class for wind and current areas."""
 
     def Ae_for_global_direction(self, global_direction):
-        """Returns the effective area in the provided global direction, see """
+        """Returns the effective area in the provided global direction, see"""
 
         if self.parent.parent is not None:
             dir = self.parent.parent.to_glob_direction(self.direction)
@@ -2161,9 +2177,9 @@ class _Area(NodeWithCoreParent):
             return self.A * abs(np.dot(global_direction, dir))
         elif self.areakind == AreaKind.CYLINDER:
             dot = np.dot(global_direction, dir)
-            return self.A * np.sqrt(1-dot**2)
+            return self.A * np.sqrt(1 - dot ** 2)
         else:
-            raise ValueError('Unknown area-kind')
+            raise ValueError("Unknown area-kind")
 
     @property
     def force(self):
@@ -3821,9 +3837,9 @@ class Tank(NodeWithCoreParent):
     def trimesh(self) -> TriMeshSource:
         """The TriMeshSource object which can be used to change the mesh
 
-                Example:
-                    s['Contactmesh'].trimesh.load_file('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
-            #NOGUI"""
+            Example:
+                s['Contactmesh'].trimesh.load_file('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
+        #NOGUI"""
         return self._trimesh
 
     @property
@@ -5823,18 +5839,15 @@ class Component(Manager, Frame):
         Manager.__init__(self, scene)
         Frame.__init__(self, scene, vfAxis)
 
-        self._path = ''
+        self._path = ""
         self._nodes = list()
         """Nodes in the component"""
-
-
 
     @property
     def name(self):
         """Name of the node (str), must be unique
         #NOGUI"""
         return self._vfNode.name
-
 
     @name.setter
     @node_setter_manageable
@@ -5854,7 +5867,7 @@ class Component(Manager, Frame):
                 if node.name.startswith(old_prefix):
                     node.name = node.name.replace(old_prefix, new_prefix)
                 else:
-                    raise Exception('Unexpected name')
+                    raise Exception("Unexpected name")
 
     def delete(self):
         # remove all imported nodes
@@ -5870,10 +5883,8 @@ class Component(Manager, Frame):
 
     @property
     def path(self):
-        """Path of the model-file. For example res: padeye.dave
-        """
+        """Path of the model-file. For example res: padeye.dave"""
         return self._path
-
 
     @path.setter
     @node_setter_manageable
@@ -5881,18 +5892,19 @@ class Component(Manager, Frame):
 
         # first see if we can load
         filename = self._scene.get_resource_path(value)
-        t = Scene(filename)
+        t = Scene(filename, resource_paths=self._scene.resources_paths.copy())
 
         # then remove all existing nodes
         self.delete()
 
         # and re-import them
         old_nodes = self._scene._nodes.copy()
-        self._scene.import_scene(other=t,
-                                 prefix=self.name + '/',
-                                 container = self,
-                                 settings=False # do not import environment and other settings
-                                 )
+        self._scene.import_scene(
+            other=t,
+            prefix=self.name + "/",
+            container=self,
+            settings=False,  # do not import environment and other settings
+        )
 
         # find imported nodes
         self._nodes.clear()
@@ -5951,6 +5963,7 @@ class Component(Manager, Frame):
 
         return code
 
+
 # =============== Scene
 
 
@@ -5974,7 +5987,7 @@ class Scene:
 
     """
 
-    def __init__(self, filename=None, copy_from=None, code=None, resource_paths = None):
+    def __init__(self, filename=None, copy_from=None, code=None, resource_paths=None):
         """Creates a new Scene
 
         Args:
@@ -6056,10 +6069,9 @@ class Scene:
 
         # validate reports
         self._validate_reports()
-        self.reports.clear() # and then delete them
+        self.reports.clear()  # and then delete them
 
         self._vfc = pyo3d.Scene()
-
 
     # =========== settings =============
 
@@ -6072,13 +6084,15 @@ class Scene:
     def g(self, value):
         assert1f(value)
 
-        old_godmode = self._godmode   # we also need to change the "mass" of managed nodes.
+        old_godmode = (
+            self._godmode
+        )  # we also need to change the "mass" of managed nodes.
         self._godmode = True
 
         # first store the old masses
         rbs = self.nodes_of_type(RigidBody)
         for n in rbs:
-            n._temp_mass = n.mass # temporary property
+            n._temp_mass = n.mass  # temporary property
 
         # then update gravity, this changes the mass as the mass is stored as a force on the cog
         self._vfc.g = value
@@ -6179,8 +6193,8 @@ class Scene:
 
     def _verify_name_available(self, name):
         """Throws an error if a node with name 'name' already exists"""
-        if name == '':
-            raise Exception('Name can not be empty')
+        if name == "":
+            raise Exception("Name can not be empty")
 
         names = [n.name for n in self._nodes]
         names.extend(self._vfc.names)
@@ -6467,18 +6481,18 @@ class Scene:
                 #         if file not in r:
                 #             r.append("res: " + file)
                 if include_subdirs:
-                    mask = str(dir) + '/**/*' + extension
+                    mask = str(dir) + "/**/*" + extension
                     recursive = True
                 else:
-                    mask = str(dir) + '/*' + extension
+                    mask = str(dir) + "/*" + extension
                     recursive = False
 
                 for file in glob.glob(mask, recursive=recursive):
 
-                    file = file.replace(str(dir),'')
-                    if file.startswith('\\'):
+                    file = file.replace(str(dir), "")
+                    if file.startswith("\\"):
                         file = file[1:]
-                    file = file.replace('\\','/')
+                    file = file.replace("\\", "/")
 
                     if file not in r:
                         r.append("res: " + file)
@@ -6502,14 +6516,13 @@ class Scene:
         nodes = [node for node in self._nodes if node.manager is not None]
         return tuple(nodes)
 
-    def give_properties_for_node(self, node, gui_only = False):
+    def give_properties_for_node(self, node, gui_only=False):
         """Returns a tuple containing all property-names for the given node.
 
         Args:
             gui_only: Return only properties where #NOGUI is not in the raw docstring
 
         Returns: tuple of strings"""
-
 
         if gui_only:
             source = ds.PROPS_GUI
@@ -6519,16 +6532,16 @@ class Scene:
         props = []
 
         # inherited properties
-        props.extend(source['Node'])
+        props.extend(source["Node"])
 
         if isinstance(node, NodeWithCoreParent):
-            props.extend(source['NodeWithCoreParent'])
+            props.extend(source["NodeWithCoreParent"])
 
         if isinstance(node, NodeWithParentAndFootprint):
-            props.extend(source['NodeWithParentAndFootprint'])
+            props.extend(source["NodeWithParentAndFootprint"])
 
         if isinstance(node, Frame):
-            props.extend(source['Frame'])
+            props.extend(source["Frame"])
 
         if node.class_name in ds.PROPS:
             props.extend(source[node.class_name])
@@ -6537,12 +6550,12 @@ class Scene:
         props = list(set(props))
         props.sort()
 
-        return tuple(props) # filter out doubles
+        return tuple(props)  # filter out doubles
 
     def _give_documentation(self, node_class_name, property_name):
-        step1 = ds.DAVE_REPORT_PROPS[ds.DAVE_REPORT_PROPS['class'] == node_class_name]
-        step2 = step1[step1['property'] == property_name]
-        doc = step2['doc']
+        step1 = ds.DAVE_REPORT_PROPS[ds.DAVE_REPORT_PROPS["class"] == node_class_name]
+        step2 = step1[step1["property"] == property_name]
+        doc = step2["doc"]
 
         if doc.empty:
             return False
@@ -6552,8 +6565,7 @@ class Scene:
                 it = f"Missing documentation for node {node_class_name}.{property_name}"
                 warnings.warn(it)
 
-            return it.replace("#NOGUI","")
-
+            return it.replace("#NOGUI", "")
 
     def give_documentation_docstring(self, node, property_name) -> str:
         """Returns the documentation for property (property_name) of node.
@@ -6565,45 +6577,39 @@ class Scene:
             return result
 
         if isinstance(node, Frame):
-            result = self._give_documentation('Frame', property_name)
+            result = self._give_documentation("Frame", property_name)
             if result:
                 return result
 
-        result = self._give_documentation('Node', property_name)
+        result = self._give_documentation("Node", property_name)
         if result:
             return result
 
-        return 'Could not find documentation, sorry :-/'
+        return "Could not find documentation, sorry :-/"
 
-    def give_documentation(self, node : Node, property_name : str) -> tuple:
-        """Returns (long, short, units, remarks) about property_name of node Node
-
-        """
+    def give_documentation(self, node: Node, property_name: str) -> tuple:
+        """Returns (long, short, units, remarks) about property_name of node Node"""
 
         long = self.give_documentation_docstring(node, property_name)
-        help = long.split('\n')[0]
+        help = long.split("\n")[0]
 
-        start = help.find('[')
-        end = help.find(']')
+        start = help.find("[")
+        end = help.find("]")
         if end > start:
-            units = help[start + 1:end]
-            help = help[:start] + help[end + 1:]
+            units = help[start + 1 : end]
+            help = help[:start] + help[end + 1 :]
         else:
-            units = ''
+            units = ""
 
-        start = help.find('(')
-        end = help.find(')')
+        start = help.find("(")
+        end = help.find(")")
         if end > start:
-            remarks = help[start + 1:end]
-            help = help[:start] + help[end + 1:]
+            remarks = help[start + 1 : end]
+            help = help[:start] + help[end + 1 :]
         else:
-            remarks = ''
+            remarks = ""
 
         return (long, help, units, remarks)
-
-
-
-
 
     def node_by_name(self, node_name, silent=False):
 
@@ -6753,8 +6759,6 @@ class Scene:
 
         self._nodes = exported
 
-
-
     def assert_name_available(self, name):
         """Raises an error is name is not available"""
         assert self.name_available(name), f"Name {name} is already in use"
@@ -6772,7 +6776,7 @@ class Scene:
         else:
             return not self.name_available(name_or_node)
 
-    def available_name_like(self, like, _additional_names = ()):
+    def available_name_like(self, like, _additional_names=()):
         """Returns an available name like the one given, for example Axis23
 
         Args
@@ -6907,7 +6911,7 @@ class Scene:
         for node in self._nodes:
             deps = node.depends_on()
             if not deps:
-                continue # skip nodes without dependancies
+                continue  # skip nodes without dependancies
 
             satisfied = True
             for dep in node.depends_on():
@@ -6926,7 +6930,7 @@ class Scene:
         return tuple([node for node in self._nodes if tag in node._tags])
 
     def nodes_tag_and_type(self, tag, type):
-        """Returns all nodes of type 'type' with tag 'tag' """
+        """Returns all nodes of type 'type' with tag 'tag'"""
 
         set1 = self.nodes_tagged(tag)
         set2 = self.nodes_of_type(type)
@@ -6949,7 +6953,6 @@ class Scene:
             for tag in node.tags:
                 tgs.add(tag)
         return tuple(tgs)
-
 
     def delete(self, node):
         """Deletes the given node from the scene as well as all nodes depending on it.
@@ -7111,7 +7114,7 @@ class Scene:
         """
 
         gov_node = None
-        gov_prop = ''
+        gov_prop = ""
         gov_limits = ()
         gov_value = None
         gov = 0
@@ -7125,12 +7128,10 @@ class Scene:
                     gov_prop = prop_name
                     gov_limits = limits
 
-
         if gov_node is None:
             return None, None, None, None
         else:
             return gov, gov_node, gov_prop, gov_limits, gov_value
-
 
     # ========= The most important functions ========
 
@@ -7142,8 +7143,14 @@ class Scene:
             n.update()
         self._vfc.state_update()
 
-    def _solve_statics_with_optional_control(self, feedback_func = None, do_terminate_func = None, timeout_s = 1):
+    def _solve_statics_with_optional_control(
+        self, feedback_func=None, do_terminate_func=None, timeout_s=1
+    ):
         """Solves statics with a time-out and feedback/terminate functions.
+
+        Specifying a time-out means that feedback / termination is evaluated every timeout_s seconds. This does not mean
+        that the function terminates after timeout_s. In fact the function will keep trying indefinitely (no maximum
+        number of iterations)
 
         1. Reduce degrees of freedom: Freezes all vessels at their current heel and trim
         2. Solve statics
@@ -7215,8 +7222,12 @@ class Scene:
                     phase = 4
 
                 else:
-                    if timeout_s < 0: # we were not using a timeout, so the solver failed
-                        raise ValueError(f'Could not solve - solver return code {status} during phase 2. Maximum error = {self._vfc.Emaxabs}')
+                    if (
+                        timeout_s < 0
+                    ):  # we were not using a timeout, so the solver failed
+                        raise ValueError(
+                            f"Could not solve - solver return code {status} during phase 2. Maximum error = {self._vfc.Emaxabs}"
+                        )
 
                 give_feedback(f"Maximum error = {self._vfc.Emaxabs} (phase 2)")
 
@@ -7239,18 +7250,6 @@ class Scene:
 
                 else:
                     give_feedback(f"Maximum error = {self._vfc.Emaxabs} (phase 4)")
-
-
-
-
-
-
-
-
-
-
-
-
 
     def solve_statics(self, silent=False, timeout=None):
         """Solves statics
@@ -7281,9 +7280,10 @@ class Scene:
             bool: True if successful, False otherwise.
 
         """
+        if timeout is None:
+            timeout = -1
 
-
-        return self._solve_statics_with_optional_control(timeout_s=-1)
+        return self._solve_statics_with_optional_control(timeout_s=timeout)
         #
         # self.update()
         #
@@ -7494,7 +7494,7 @@ class Scene:
 
     def _validate_reports(self):
         """This method is called whenever a node is deleted. It ultimately triggers the validation of all report sections
-         (as those may depend on the node that was deleted)"""
+        (as those may depend on the node that was deleted)"""
 
         for report in self.reports:
             report._validate_sections()
@@ -7603,12 +7603,11 @@ class Scene:
     def new_component(
         self,
         name,
-        path='res: default_component.dave',
+        path="res: default_component.dave",
         parent=None,
         position=None,
         rotation=None,
         fixed=True,
-
     ) -> Component:
         """Creates a new *component* node and adds it to the scene.
 
@@ -7632,11 +7631,15 @@ class Scene:
         try:
             filename = self.get_resource_path(path)
         except Exception as E:
-            raise ValueError(f'Error creating component {name}.\nCan not find  path "{path}"; \n {str(E)}')
+            raise ValueError(
+                f'Error creating component {name}.\nCan not find  path "{path}"; \n {str(E)}'
+            )
         try:
             t = Scene(filename)
         except Exception as E:
-            raise ValueError(f'Error creating component {name}.\nCan not import "{filename}" because {str(E)}')
+            raise ValueError(
+                f'Error creating component {name}.\nCan not import "{filename}" because {str(E)}'
+            )
 
         # first check
         assertValidName(name)
@@ -9044,7 +9047,9 @@ class Scene:
         for line in self.give_python_code().split("\n"):
             print(line)
 
-    def give_python_code(self, nodes = None, export_environment_settings = True, _no_sort_nodes = False):
+    def give_python_code(
+        self, nodes=None, export_environment_settings=True, _no_sort_nodes=False
+    ):
         """Generates the python code that rebuilds the scene and elements in its current state.
 
         Args:
@@ -9075,9 +9080,15 @@ class Scene:
 
         if self._export_code_with_solved_function:
 
-            code.append("\n# To be able to distinguish the important number (eg: fixed positions) from")
-            code.append("# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.")
-            code.append("# For anything written as solved(number) that actual number does not influence the static solution")
+            code.append(
+                "\n# To be able to distinguish the important number (eg: fixed positions) from"
+            )
+            code.append(
+                "# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'."
+            )
+            code.append(
+                "# For anything written as solved(number) that actual number does not influence the static solution"
+            )
             code.append("\ndef solved(number):\n    return number\n")
 
         if export_environment_settings:
@@ -9104,7 +9115,9 @@ class Scene:
 
         for n in nodes_to_be_exported:
             if not n.visible:
-                code.append(f"\ns['{n.name}'].visible = False")  # only report is not the default value
+                code.append(
+                    f"\ns['{n.name}'].visible = False"
+                )  # only report is not the default value
 
         code.append("\n# Limits of un-managed nodes ")
 
@@ -9112,7 +9125,6 @@ class Scene:
             if n.manager is None:
                 for key, value in n.limits.items():
                     code.append(f"s['{n.name}'].limits['{key}'] = {value}")
-
 
         code.append("\n# Tags of un-managed nodes ")
 
@@ -9122,14 +9134,14 @@ class Scene:
                     code.append(f"s['{n.name}'].add_tags({n.tags})")
 
         if self.reports:
-            code.append('\n# Reports')
+            code.append("\n# Reports")
             for r in self.reports:
                 yml = r.to_yml()
-                code.append(f'\n# Exporting report {r.name}')
+                code.append(f"\n# Exporting report {r.name}")
                 code.append(f'report_contents = r"""\n{yml}"""')
-                code.append('s.reports.append(Report(s,yml=report_contents))')
+                code.append("s.reports.append(Report(s,yml=report_contents))")
 
-        return '\n'.join(code)
+        return "\n".join(code)
 
     def save_scene(self, filename):
         """Saves the scene to a file
@@ -9250,7 +9262,15 @@ class Scene:
 
         self.run_code(code)
 
-    def import_scene(self, other, prefix="", containerize=True, nodes = None, container = None, settings=True):
+    def import_scene(
+        self,
+        other,
+        prefix="",
+        containerize=True,
+        nodes=None,
+        container=None,
+        settings=True,
+    ):
         """Copy-paste all nodes of scene "other" into current scene.
 
         To avoid double names it is recommended to use a prefix. This prefix will be added to all element names.
@@ -9267,7 +9287,9 @@ class Scene:
 
         if container is not None:
             if not containerize:
-                warnings.warn("containerize = False does not work in combination with supplying a container. Containerize set to true")
+                warnings.warn(
+                    "containerize = False does not work in combination with supplying a container. Containerize set to true"
+                )
                 containerize = True
 
         if isinstance(other, Path):
@@ -9344,7 +9366,7 @@ class Scene:
         c = Scene()
         c.resources_paths.clear()
         c.resources_paths.extend(self.resources_paths)
-        c.import_scene(self, containerize=False, nodes = nodes)
+        c.import_scene(self, containerize=False, nodes=nodes)
         return c
 
     def duplicate_node(self, node):
@@ -9363,7 +9385,7 @@ class Scene:
         self._export_code_with_solved_function = False
         code = node.give_python_code()
         self._export_code_with_solved_function = True
-        node.name = name # and restore
+        node.name = name  # and restore
 
         self.run_code(code)
 
@@ -9377,7 +9399,7 @@ class Scene:
             root_node = self[root_node]
 
         # set the parent of the root_node to None (if any)
-        old_parent = getattr(root_node, 'parent',None)
+        old_parent = getattr(root_node, "parent", None)
         if old_parent is not None:
             root_node.parent = None
 
@@ -9395,7 +9417,9 @@ class Scene:
         # names need to be unique in both self and s2
         for n in s2._nodes:
             node_names_in_s2 = [node.name for node in s2._nodes]
-            new_name = self.available_name_like(n.name, _additional_names=node_names_in_s2)
+            new_name = self.available_name_like(
+                n.name, _additional_names=node_names_in_s2
+            )
             n.name = new_name
 
         self.import_scene(s2, containerize=False)
@@ -9405,10 +9429,6 @@ class Scene:
             copy_of_root_node = self[copy_of_root_node_in_s2.name]
             copy_of_root_node.parent = old_parent
             root_node.parent = old_parent
-
-
-
-
 
     # =================== DYNAMICS ==================
 
@@ -9451,7 +9471,6 @@ class Scene:
         return self._vfc.get_dof_modes()
 
 
-
 # =================== None-Node Classes
 
 """This is a container for a pyo3d.MomentDiagram object providing plot methods"""
@@ -9473,8 +9492,7 @@ class LoadShearMomentDiagram:
         return x, self.datasource.Vz, self.datasource.My
 
     def give_loads_table(self):
-        """Returns a 'table' with all the loads. (Name, location, force, moment) ; all local
-        """
+        """Returns a 'table' with all the loads. (Name, location, force, moment) ; all local"""
 
         m = self.datasource  # alias
         n = m.nLoads
@@ -9483,11 +9501,12 @@ class LoadShearMomentDiagram:
         for i in range(n):
             load = m.load_origin(i)
 
-            if np.linalg.norm(load[2]) >1e-6 or np.linalg.norm(load[3]) >1e-6:  # only forces that actually do something
+            if (
+                np.linalg.norm(load[2]) > 1e-6 or np.linalg.norm(load[3]) > 1e-6
+            ):  # only forces that actually do something
                 loads.append(load)
 
         return loads
-
 
     def plot_simple(self, **kwargs):
         """Plots the bending moment and shear in a single yy-plot.
@@ -9530,7 +9549,7 @@ class LoadShearMomentDiagram:
 
         return fig
 
-    def plot(self, grid_n=100, merge_adjacent_loads=True, filename=None, do_show = False):
+    def plot(self, grid_n=100, merge_adjacent_loads=True, filename=None, do_show=False):
         """Plots the load, shear and bending moments. Returns figure"""
         m = self.datasource  # alias
 
@@ -9718,17 +9737,16 @@ class LoadShearMomentDiagram:
         ax0_second.spines["top"].set_visible(False)
         ax0_second.spines["bottom"].set_visible(False)
 
-        dx = (np.max(x) - np.min(x)) / 20 # plot scale
+        dx = (np.max(x) - np.min(x)) / 20  # plot scale
         ax1.plot(x, m.Vz, "k-", linewidth=linewidth)
 
         i = np.argmax(m.Vz)
-        ax1.plot((x[i] - dx, x[i] + dx), (m.Vz[i], m.Vz[i]), 'k-', linewidth=0.5)
-        ax1.text(x[i], m.Vz[i], f"{m.Vz[i]:.2f}", va='bottom', ha='center')
+        ax1.plot((x[i] - dx, x[i] + dx), (m.Vz[i], m.Vz[i]), "k-", linewidth=0.5)
+        ax1.text(x[i], m.Vz[i], f"{m.Vz[i]:.2f}", va="bottom", ha="center")
 
         i = np.argmin(m.Vz)
-        ax1.plot((x[i] - dx, x[i] + dx), (m.Vz[i], m.Vz[i]), 'k-', linewidth=0.5)
-        ax1.text(x[i], m.Vz[i], f"{m.Vz[i]:.2f}", va='top', ha='center')
-
+        ax1.plot((x[i] - dx, x[i] + dx), (m.Vz[i], m.Vz[i]), "k-", linewidth=0.5)
+        ax1.text(x[i], m.Vz[i], f"{m.Vz[i]:.2f}", va="top", ha="center")
 
         ax1.grid()
         ax1.set_title("Shear")
@@ -9737,12 +9755,12 @@ class LoadShearMomentDiagram:
         ax2.plot(x, m.My, "k-", linewidth=linewidth)
 
         i = np.argmax(m.My)
-        ax2.plot((x[i]-dx, x[i]+dx), (m.My[i],m.My[i]), 'k-',linewidth=0.5)
-        ax2.text(x[i], m.My[i], f"{m.My[i]:.2f}", va = 'bottom',ha='center')
+        ax2.plot((x[i] - dx, x[i] + dx), (m.My[i], m.My[i]), "k-", linewidth=0.5)
+        ax2.text(x[i], m.My[i], f"{m.My[i]:.2f}", va="bottom", ha="center")
 
         i = np.argmin(m.My)
-        ax2.plot((x[i] - dx, x[i] + dx), (m.My[i], m.My[i]), 'k-', linewidth=0.5)
-        ax2.text(x[i], m.My[i], f"{m.My[i]:.2f}", va='top', ha='center')
+        ax2.plot((x[i] - dx, x[i] + dx), (m.My[i], m.My[i]), "k-", linewidth=0.5)
+        ax2.text(x[i], m.My[i], f"{m.My[i]:.2f}", va="top", ha="center")
 
         ax2.grid()
         ax2.set_title("Moment")
