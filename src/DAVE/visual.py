@@ -680,7 +680,10 @@ class VisualActor:
             node_painter_settings = new_painter_settings
 
         # label
-        self.label_actor.SetVisibility(node_painter_settings['main'].labelShow)
+        if settings.label_scale > 0:
+            self.label_actor.SetVisibility(node_painter_settings['main'].labelShow)
+        else:
+            self.label_actor.SetVisibility(False)
 
         # check for UCs
         uc_paint = None

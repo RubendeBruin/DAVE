@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Thu Nov  4 08:30:56 2021
+# Created: Mon Nov  8 10:26:55 2021
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -432,6 +432,9 @@ class Ui_MainWindow(object):
         self.actionSave.setObjectName("actionSave")
         self.actionClear = QtWidgets.QAction(MainWindow)
         self.actionClear.setObjectName("actionClear")
+        self.actionShow_labels = QtWidgets.QAction(MainWindow)
+        self.actionShow_labels.setCheckable(True)
+        self.actionShow_labels.setObjectName("actionShow_labels")
         self.menuExport.addAction(self.actionBlender)
         self.menuExport.addAction(self.actionOrcaflex)
         self.menuExport.addAction(self.actionOrcaflex_package)
@@ -455,8 +458,8 @@ class Ui_MainWindow(object):
         self.menuView.addAction(self.action2D_mode)
         self.menuView.addAction(self.menuLook_towards.menuAction())
         self.menuView.addSeparator()
-        self.menuView.addAction(self.actionShow_force_applying_element)
         self.menuView.addAction(self.actionShow_water_plane)
+        self.menuView.addAction(self.actionShow_labels)
         self.menuView.addSeparator()
         self.menuView.addAction(self.actionFull_refresh)
         self.menuView.addAction(self.actionCamera_reset)
@@ -580,5 +583,6 @@ class Ui_MainWindow(object):
         self.actionRedo.setShortcut(QtWidgets.QApplication.translate("MainWindow", "Ctrl+Y", None, -1))
         self.actionSave.setText(QtWidgets.QApplication.translate("MainWindow", "Save", None, -1))
         self.actionClear.setText(QtWidgets.QApplication.translate("MainWindow", "Remove al nodes", None, -1))
+        self.actionShow_labels.setText(QtWidgets.QApplication.translate("MainWindow", "Show/hide labels", None, -1))
 
 import DAVE.gui.forms.resources_rc

@@ -367,6 +367,8 @@ class Gui:
         self.ui.sliderGeometrySize.connectvalueChanged(set_geo_size)
         self.ui.menuView.addAction(self.ui.sliderGeometrySize)
 
+
+
         # force size
         self.ui.menuView.addSeparator()
 
@@ -403,6 +405,9 @@ class Gui:
 
         self.ui.sliderForceSize.connectvalueChanged(set_force_size)
         self.ui.menuView.addAction(self.ui.sliderForceSize)
+
+        # labels
+        self.ui.actionShow_labels.triggered.connect(self.labels_show_hide)
 
         # cog size
         self.ui.menuView.addSeparator()
@@ -619,6 +624,14 @@ class Gui:
         self.scene.clear()
         self.guiEmitEvent(guiEventType.FULL_UPDATE)
 
+    def labels_show_hide(self):
+        if self.visual.settings.label_scale>0:
+            self.visual.settings.label_scale = 0
+        else:
+            self.visual.settings.label_scale = 1.0
+        self.ui.actionShow_labels.setChecked(self.visual.settings.label_scale>0)
+        self.visual.update_visibility()
+        self.visual.refresh_embeded_view()
 
     def toggle_2D(self):
         flat = self.visual.toggle_2D()
@@ -1836,11 +1849,14 @@ class Gui:
 
         # loop over visuals, and set _is_selected or _is_sub_selected based on the referenced node
 
+
         for v in self.visual.node_visuals:
             if v.node in visually_selected_nodes:
                 v._is_selected = True
             else:
                 v._is_selected = False
+
+        # check sub-selection - but only for nodes that are not yet selected
 
         for v in self.visual.node_visuals:
             try:
@@ -1849,7 +1865,8 @@ class Gui:
                 continue
 
             if parent in visually_selected_nodes:
-                v._is_sub_selected = True
+                if not v._is_selected:
+                    v._is_sub_selected = True   # can not be sub-selected if already selected
             else:
                 v._is_sub_selected = False
 

@@ -500,8 +500,8 @@
     <addaction name="action2D_mode"/>
     <addaction name="menuLook_towards"/>
     <addaction name="separator"/>
-    <addaction name="actionShow_force_applying_element"/>
     <addaction name="actionShow_water_plane"/>
+    <addaction name="actionShow_labels"/>
     <addaction name="separator"/>
     <addaction name="actionFull_refresh"/>
     <addaction name="actionCamera_reset"/>
@@ -1127,6 +1127,14 @@ p, li { white-space: pre-wrap; }
   <action name="actionClear">
    <property name="text">
     <string>Remove al nodes</string>
+   </property>
+  </action>
+  <action name="actionShow_labels">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show/hide labels</string>
    </property>
   </action>
  </widget>

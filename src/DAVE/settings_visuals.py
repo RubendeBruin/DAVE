@@ -137,6 +137,9 @@ class ViewportSettings:
         OUTLINE_WIDTH  # line-width of the outlines (cell-like shading)
     )
 
+    # labels
+    label_scale: float = 0.0 # scale for the labels, set 0 to turn labels off
+
     painter_settings: dict = None
 
     # Unity-checks
