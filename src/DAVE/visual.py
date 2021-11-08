@@ -1641,7 +1641,7 @@ class Viewport:
             COLOR_WATER
         )
         plane.texture(TEXTURE_SEA)
-        plane.lighting(ambient=1.0, diffuse=0.0, specular=0.0, specularPower=1 )
+        plane.lighting(ambient=1.0, diffuse=0.0, specular=0.0, specularPower=1e-7 )
         plane.alpha(0.4)
 
         self.global_visuals["sea"] = plane

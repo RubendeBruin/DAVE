@@ -1,6 +1,8 @@
 """
 Supporing ballasting routines for the BallastSystem node.
 """
+import logging
+
 import numpy as np
 from scipy.optimize import minimize, minimize_scalar
 import matplotlib.pyplot as plt
@@ -838,7 +840,9 @@ class BallastSystemSolver:
         return success
 
 #
-    def _optimize_alg1(self, optTanks):
+    def _optimize_alg1(self, optTanks, plot_debug_log=False):
+        """optTanks : tanks to optimize []
+                plot_debug_log: plot log if solving fails"""
 
         maxit = 100
         _log = []
@@ -847,7 +851,15 @@ class BallastSystemSolver:
 
             print('Iteration = {}, Error = {} with tanks:'.format(it, self._error()))
 
-            _log.append([tank.pct for tank in optTanks])
+            tank_fills = [tank.pct for tank in optTanks]
+
+            if tank_fills in _log:
+                print('We seens this solution before - stuck in a loop')
+                logging.warning('Loop detected, breaking')
+                break
+
+
+            _log.append(tank_fills)
             print(_log[-1])
 
             if self._error() < self.tolerance:
@@ -957,24 +969,45 @@ class BallastSystemSolver:
             return
 
         # optimization has failed
-        plt.plot(_log)
-        print('Error = {}'.format(self._error()))
-        plt.show()
+        if plot_debug_log:
+            plt.plot(_log)
+            print('Error = {}'.format(self._error()))
+            plt.show()
 
         return False
 
-    def _optimize_alg2(self, optTanks):
+    def _optimize_alg2(self, optTanks, plot_debug_log=False):
+        """optTanks : tanks to optimize []
+        plot_debug_log: plot log if solving fails"""
 
         _log = []
+        _errors = []
+
         for it in range(100):
 
             print('Iteration = {}, Error = {} with tanks:'.format(it, self._error()))
 
-            _log.append([tank.pct for tank in optTanks])
+            tanks_fills = [tank.pct for tank in optTanks]
+
+            if tanks_fills in _log:
+                logging.warning('Repeated tank fill at start of iteration - stuck in a loop. Quiting')
+                return False
+
+            _log.append(tanks_fills)
             print(_log[-1])
 
-            if self._error() < self.tolerance:
+            E0 = self._error()
+
+            if E0 < self.tolerance:
                 return True
+
+            if _errors:
+                if E0 > np.min(_errors):
+                    logging.warning('Error is increasing')
+
+            _errors.append(E0)
+
+
 
             [Ox, Oy, _], Om = self.xyzw()
 
@@ -982,6 +1015,8 @@ class BallastSystemSolver:
 
                 # Pass 0 - get optimum full tank distribution
                 self._fill_optimum_tanks(optTanks)
+                if self._error() > E0:
+                    logging.warning('Filling additional tanks increased the total error')
 
             while self._digital_switch_tanks(optTanks):
                 pass
@@ -1009,7 +1044,44 @@ class BallastSystemSolver:
 
             [Ox, Oy, _], Om = self.xyzw()
 
+            # If we are here and
+            #  - optTank is None
+            #  - partials is []
+            # then we have too much water (ok) but we could not find a tank to drain as draining any SINGLE tank made
+            #             # the situation worse.
+
             partials = self._partial_tanks(optTanks)
+
+            if not partials and not optTank:
+                logging.info('We have too much water (ok) but we could not find a tank to drain as draining any SINGLE tank made the situation worse')
+                # but there is still some digital switching that may result in a better position
+
+                current_tanks = [tank.pct for tank in optTanks]
+                if _log:
+                    if current_tanks == _log[-1]:
+                        logging.info('And the ballast condition can not be further optimized by switching full tanks')
+
+                        logging.info('See if we can make thing better by partial draining of TWO full tanks at the same time')
+                        full_tanks = self._full_tanks(optTanks)
+
+                        E0 = self._error()
+
+                        for tank1 in full_tanks:
+                            for tank2 in full_tanks:
+                                if tank1==tank2:
+                                    continue
+
+                                self.optimize_two_tanks(tank1, tank2)
+                                if self._error() < E0:
+                                    logging.info(f'Yes we can with {tank1.name} and {tank2.name}')
+                                    break
+
+                            if self._error() < E0:
+                                break
+
+                        if self._error() >= E0:
+                            logging.warning('Ballast optimization failed')
+                            return False
 
 
             if len(partials)==1:
@@ -1040,10 +1112,10 @@ class BallastSystemSolver:
 
                 if Eopt < E0:
                     self.optimize_two_tanks(tank1, tank2)
+                    logging.info(f'Optimized two tanks: {tank1.name} and {tank2.name}')
+                    logging.info(f'Error = {self._error()}')
 
-                    # self.plot(optTanks)
-                    # plt.title(f"Optimized two slack tanks from 1 slack: error = {self._error()}")
-                    # plt.show()
+
 
                 else:
                     pass
@@ -1082,6 +1154,10 @@ class BallastSystemSolver:
 
                 if Eopt < E0:
                     self.optimize_three_tanks(partial, optEmpty, optFull)
+
+                    logging.info(f'Optimized three tanks: {partial.name}, {optEmpty.name} (was empty) and {optFull.name} (was full)')
+                    logging.info(f'Error = {self._error()}')
+
                     # self.plot(optTanks)
                     # plt.title(f'Three tank optimum from 1 slack; E = {self._error()}')
                     # plt.show()
@@ -1118,10 +1194,23 @@ class BallastSystemSolver:
 
                 if Eopt < E0:
                     self.optimize_three_tanks(tank1, tank2, tank3)
+
+                    logging.info(
+                        f'Optimized three tanks: {tank1.name}, {tank2.name}, {tank3.name}')
+                    logging.info(f'Error = {self._error()}')
+
                     # self.plot(optTanks)
                     # plt.title(f'Three tank optimum from 2 slacks ; E = {self._error()}')
                     # plt.show()
 
+        # optimization has failed
+
+        if plot_debug_log:
+            plt.plot(_log)
+            print('Error = {}'.format(self._error()))
+            plt.show()
+
+        return False
 
 
     def optimize_two_tanks(self, tank1, tank2):
@@ -1192,6 +1281,9 @@ class BallastSystemSolver:
             i = np.argmin(E)
             empty_tanks[i].pct=100
 
+            logging.info(f'Filled tank {empty_tanks[i].name} to get an surplus of ballast-water')
+            logging.info(f'Error = {self._error()}')
+
             [Ox, Oy, _], Om = self.xyzw()
 
             if Om >= self._target_wt:
@@ -1225,6 +1317,8 @@ class BallastSystemSolver:
         if Eopt < E0:
             optEmpty.pct = 100
             optFull.pct = 0
+            logging.info(f'Switched tanks {optFull.name} and {optEmpty.name} to reach Error {Eopt}')
+            logging.info(f'E = {self._error()}')
             return True
 
         return False

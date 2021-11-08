@@ -4078,13 +4078,14 @@ class BallastSystem(Node):
 
         assert method == 1 or method == 2, "Method shall be 1 or 2"
 
-        ballast_solver.ballast_to(
+        if not ballast_solver.ballast_to(
             self._target_cog[0],
             self._target_cog[1],
             self._target_weight,
             start_empty=not use_current_fill,
             method=method,
-        )
+        ):
+            raise ValueError('Could not obtain tank fillings to satisfy required condition - requesting a different draft may help')
 
     def new_tank(
         self, name, position, capacity_kN, rho=1.025, frozen=False, actual_fill=0
