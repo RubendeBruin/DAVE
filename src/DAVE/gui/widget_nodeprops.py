@@ -34,11 +34,18 @@ from PySide2.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox
 from PySide2 import QtWidgets
 
 
-def svinf(spinbox: QDoubleSpinBox, value: float):
-    """Updates the value in the spinbox IF it does not have focus"""
+def svinf(spinbox: QDoubleSpinBox, value: float, do_block = True):
+    """Updates the value in the spinbox IF it does not have focus. Blocks signals during change if do_block is true (default)"""
     if spinbox.hasFocus():
         return
-    spinbox.setValue(value)
+
+    if do_block:
+        remember = spinbox.signalsBlocked()
+        spinbox.blockSignals(True)
+        spinbox.setValue(value)
+        spinbox.blockSignals(remember)
+    else:
+        spinbox.setValue(value)
 
 def cvinf(combobox: QtWidgets.QComboBox,value : str):
     """Updates the value in the combobox IF it does not have focus"""
@@ -163,6 +170,7 @@ class NodeEditor(ABC):
     properties:
     - node : the node being edited
     - run_code : function to run code - running this function triggers the post_update event on all open editors
+    - gui_solve_func : function to the 'solve' button in the gui. Gives the user the possibility to terminate
 
     """
 
@@ -171,11 +179,12 @@ class NodeEditor(ABC):
         """Creates the gui and connects signals"""
         pass
 
-    def connect(self, node, scene, run_code, guiEmitEvent):
+    def connect(self, node, scene, run_code, guiEmitEvent,gui_solve_func):
         self.node = node
         self.scene = scene
         self._run_code = run_code
         self.guiEmitEvent = guiEmitEvent
+        self.gui_solve_func = gui_solve_func
 
         self.post_update_event()
 
@@ -2330,7 +2339,7 @@ class WidgetNodeProps(guiDockWidget):
 
         self._node_name_editor = EditNode.Instance()
         self._node_name_editor.connect(
-            node, self.guiScene, self.run_code, self.guiEmitEvent
+            node, self.guiScene, self.run_code, self.guiEmitEvent, self.guiPressSolveButton
         )
 
         # add to layout if not already in
@@ -2414,7 +2423,7 @@ class WidgetNodeProps(guiDockWidget):
         to_be_added = []
         for editor in self._node_editors:
             to_be_added.append(
-                editor.connect(node, self.guiScene, self.run_code, self.guiEmitEvent)
+                editor.connect(node, self.guiScene, self.run_code, self.guiEmitEvent, self.guiPressSolveButton)
             )  # this function returns the widget
 
         # for item in to_be_added:

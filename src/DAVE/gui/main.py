@@ -150,6 +150,7 @@ class Gui:
         plugins_workspace=(),
         plugins_context=(),
         plugins_editor=(),
+        painters = None,
     ):
         """
         Starts the Gui on scene "scene".
@@ -174,6 +175,7 @@ class Gui:
             cog_scale: cog scale (visual)
             workspace (string) : open the workspace with this name
             plugins_init [ () ] : iterable of functions that are to be called at the end of the __init__ function
+            painters: [None] (str) painters to activate
 
         """
 
@@ -248,9 +250,12 @@ class Gui:
         self.visual = Viewport(scene)
         """Reference to a viewport"""
 
+        if painters is None:
+            painters = "Construction"  # use as default
+
         self.visual.settings.painter_settings = PAINTERS[
-            "Construction"
-        ]  # use as default
+            painters
+        ]
 
         self.ui.cbPainerSelect.addItems([str(k) for k in PAINTERS.keys()])
         self.ui.cbPainerSelect.currentIndexChanged.connect(self.change_paintset)
@@ -1964,6 +1969,7 @@ class Gui:
             d.guiRunCodeCallback = self.run_code
             d.guiSelectNode = self.guiSelectNode
             d.guiSelection = self.selected_nodes
+            d.guiPressSolveButton = self.solve_statics
             d.gui = self
 
         d.show()

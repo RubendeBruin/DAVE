@@ -124,7 +124,7 @@ class ViewportSettings:
     # cogs
     show_cog: bool = True
     cog_do_normalize: bool = False
-    cog_scale: float = 1.0
+    cog_scale: float = 0.1
 
     # force
     force_do_normalize: bool = True  # Normalize force size to 1.0 for plotting

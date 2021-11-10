@@ -21,6 +21,8 @@ class guiDockWidget(QtWidgets.QDockWidget):
         self._active = False
         self.guiCreate()
 
+        # These widgets are created by the main gui -> show_guiWidget. This function sets the following references
+
         self.gui = None
         """Will be set to a gui object"""
 
@@ -39,6 +41,9 @@ class guiDockWidget(QtWidgets.QDockWidget):
 
         self.guiSelectNode = None
         """will point to a function with signature func(node-name). Call this to select the node with this name"""
+
+        self.guiPressSolveButton = None
+        """function reference to the 'solve' button in the gui - call this to solve the current scene while giving the user the option to cancel and some eye-candy"""
 
 
     def closeEvent(self, event):  # overrides default

@@ -925,7 +925,7 @@ class Frame(NodeWithParentAndFootprint):
         """Rotation of the axis about its origin (rx,ry,rz).
         Defined as a rotation about an axis where the direction of the axis is (rx,ry,rz) and the angle of rotation is |(rx,ry,rz| degrees.
         These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)"""
-        return np.rad2deg(self._vfNode.rotation)
+        return tuple(np.rad2deg(self._vfNode.rotation))
 
     @rotation.setter
     @node_setter_manageable

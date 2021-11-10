@@ -2431,7 +2431,7 @@ class Viewport:
             for va in self.node_visuals:
                 for a in va.actors.values():
                     # if a.GetVisibility():  # also invisible nodes need to be added because they may be x-rayed
-                    self.screen.add(a)
+                    self.screen.add(a, render=False)
 
             self.update_visibility()  # needs to be called after actors have been added to screen
             self.update_global_visibility()
@@ -2439,7 +2439,7 @@ class Viewport:
             self.screen.resetcam = False
 
             for outline in self.node_outlines:
-                self.screen.add(outline.outline_actor)
+                self.screen.add(outline.outline_actor, render=False)
 
             return self.screen.show(resetcam=zoom_fit)
 
@@ -2449,11 +2449,11 @@ class Viewport:
 
             for va in self.node_visuals:
                 for a in va.actors.values():
-                    screen.add(a)
+                    screen.add(a, render = False)
 
             if include_outlines:
                 for outline in self.node_outlines:
-                    screen.add(outline.outline_actor)
+                    screen.add(outline.outline_actor, render = False)
 
             screen.resetcam = False
 
