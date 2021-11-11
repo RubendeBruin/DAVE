@@ -1646,7 +1646,7 @@ class Viewport:
 
         self.global_visuals["sea"] = plane
         self.global_visuals["sea"].actor_type = ActorType.GLOBAL
-        self.global_visuals["sea"].no_outline = True
+        self.global_visuals["sea"].no_outline = False
         self.global_visuals["sea"].negative = False
 
 
@@ -1796,6 +1796,21 @@ class Viewport:
         else:
             camera.ParallelProjectionOn()
             return True
+
+    def _set_plane_view(self, vec):
+        if np.dot(self.screen.camera.GetDirectionOfProjection(), vec) > 0.9999:
+            vec = -np.array(vec)
+        self.set_camera_direction(vec)
+        self.refresh_embeded_view()
+
+    def set2dx(self):
+        self._set_plane_view((1, 0, 0))
+
+    def set2dy(self):
+        self._set_plane_view((0, 1, 0))
+
+    def set2dz(self):
+        self._set_plane_view((0, 0, -1))
 
     def set_camera_direction(self, vector):
         # Points the camera in the given direction
@@ -2637,9 +2652,24 @@ class Viewport:
             if self.focus_on_selected_object is not None:
                 self.focus_on_selected_object()
 
+        elif key == 'x':
+            self.set2dx()
+        elif key == 'y':
+            self.set2dy()
+        elif key == 'z':
+            self.set2dz()
+            self.refresh_embeded_view()
+        elif key == '2' or key=='3':
+            self.toggle_2D()
+            self.refresh_embeded_view()
+        elif key == 'a':
+            self.zoom_all()
+            self.refresh_embeded_view()
+
 
     def refresh_embeded_view(self):
-        self.vtkWidget.update()
+        if self.vtkWidget is not None:
+            self.vtkWidget.update()
 
     def update_visibility(self):
         """Updates the settings of the viewport to reflect the settings in self.settings.painter_settings"""

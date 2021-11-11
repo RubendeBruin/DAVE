@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Mon Nov  8 10:26:55 2021
+# Created: Thu Nov 11 21:31:57 2021
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -145,7 +145,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.btnBlender)
         self.verticalLayout_3.addWidget(self.widget_3)
         self.frame3d = QtWidgets.QFrame(self.centralwidget)
-        self.frame3d.setAcceptDrops(False)
+        self.frame3d.setAcceptDrops(True)
         self.frame3d.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.frame3d.setFrameShadow(QtWidgets.QFrame.Plain)
         self.frame3d.setLineWidth(0)

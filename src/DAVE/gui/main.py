@@ -81,8 +81,9 @@ from DAVE.gui.widget_tags import WidgetTags
 import DAVE.auto_download
 
 from PySide2.QtCore import Qt
+from PySide2.QtCore import QSettings
 from PySide2.QtGui import QIcon, QPixmap, QFont, QFontMetricsF, QCursor
-from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox, QMenu, QWidgetAction
+from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox, QMenu, QWidgetAction, QAction
 from DAVE.scene import Scene
 
 from DAVE.gui.forms.main_form import Ui_MainWindow
@@ -239,6 +240,10 @@ class Gui:
         self.scene = scene
         """Reference to a scene"""
 
+
+        self.modelfilename = None
+        """Open file"""
+
         # ======================== Modify dock layout options ============
 
         self.MainWindow.setCorner(Qt.TopRightCorner, Qt.RightDockWidgetArea)
@@ -341,6 +346,22 @@ class Gui:
             self.menu_export_orcaflex_package
         )
         self.ui.actionBlender.triggered.connect(self.to_blender)
+
+        # --- recent files ---
+
+        self.recent_files = []
+        self.ui.menuSolve_Statics.addSeparator()
+        for i in range(8):
+            action = QAction("none")
+            action.triggered.connect(lambda a=i : self.open_recent(a))
+            self.recent_files.append(action)
+            self.ui.menuSolve_Statics.addAction(action)
+        self.update_recent_file_menu()
+
+        # -- drag drop files into grillex --
+
+        self.ui.frame3d.dropEvent = self.drop
+        self.ui.frame3d.dragEnterEvent = self.drag_enter
 
         # -- visuals --
         self.ui.actionShow_water_plane.triggered.connect(
@@ -887,6 +908,65 @@ class Gui:
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
             self.activate_workspace("CONSTRUCT")
+
+    # ============== File open / recent / drag-drop functions ===========
+
+    def drag_enter(self, event):
+        if event.mimeData().hasText():
+            event.accept()
+
+    def drop(self, event):
+        filename = event.mimeData().text()
+
+        from pathlib import Path
+        from urllib.parse import urlparse
+
+        filename = urlparse(filename)[2]
+        filename = filename[1:]
+        p = Path(filename)
+
+        try:
+            self.open_file(p)
+        except:
+            print(f'Could not open file {filename}')
+
+    def get_recent(self):
+        settings = QSettings("rdbr", "DAVE")
+        files = []
+        for i in range(8):
+            files.append(settings.value(f"recent{i}", ""))
+        return files
+
+    def add_to_recent_file_menu(self, filename):
+        settings = QSettings("rdbr", "DAVE")
+
+        files = self.get_recent()
+
+        if filename in files:
+            files.remove(filename)
+
+        files = [filename, *files]
+        for i in range(8):
+            files.append(settings.setValue(f"recent{i}", files[i]))
+
+        self.update_recent_file_menu()
+
+    def update_recent_file_menu(self):
+        files = self.get_recent()
+        for i in range(8):
+            if files[i]:
+                self.recent_files[i].setText(f'&{i+1} ' + str(files[i]))
+            else:
+                self.recent_files[i].setText('recent files will appear here')
+
+    def open_recent(self, i):
+        filename = self.recent_files[i].text()
+        if filename == 'recent files will appear here':
+            return
+        filename = filename[3:]
+
+        self.open_file(filename)
+
 
     # ============== Animation functions =============
 
@@ -1458,16 +1538,30 @@ class Gui:
         self.run_code("s.clear()", guiEventType.FULL_UPDATE)
         self.ui.actionSave.setEnabled(False)
 
+    def open_file(self, filename):
+        code = 's.clear()\ns.load_scene(r"{}")'.format(filename)
+        self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+        self.modelfilename = filename
+        self.ui.actionSave.setEnabled(True)
+        self.add_to_recent_file_menu(filename)
+
+    def _get_filename_using_dialog(self):
+        if self.modelfilename is None:
+            folder = self.scene.resources_paths[-2] # get the lowest one
+            filename, _ = QFileDialog.getOpenFileName(filter="*.dave", caption="Assets", dir=str(folder))
+        else:
+            filename, _ = QFileDialog.getOpenFileName(filter="*.dave", caption="Assets")
+        return filename
+
     def open(self):
-        filename, _ = QFileDialog.getOpenFileName(filter="*.dave", caption="Assets")
+        filename = self._get_filename_using_dialog()
         if filename:
-            code = 's.clear()\ns.load_scene(r"{}")'.format(filename)
-            self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
-            self.modelfilename = filename
-            self.ui.actionSave.setEnabled(True)
+            self.open_file(filename)
+
 
     def menu_import(self):
-        filename, _ = QFileDialog.getOpenFileName(filter="*.dave", caption="Assets")
+        filename = self._get_filename_using_dialog()
+
         if filename:
             code = 's.import_scene(r"{}")'.format(filename)
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
@@ -1479,16 +1573,23 @@ class Gui:
 
 
     def menu_save_model_as(self):
+
+        if self.modelfilename is not None:
+            dir = str(Path(self.modelfilename).parent)
+        else:
+            dir = str(self.scene.resources_paths[-2])  # most typical work-path
+
         filename, _ = QFileDialog.getSaveFileName(
             filter="*.dave",
             caption="Scene files",
-            directory=self.scene.resources_paths[0],
+            dir= dir,
         )
         if filename:
             code = 's.save_scene(r"{}")'.format(filename)
             self.run_code(code, guiEventType.NOTHING)
             self.modelfilename = filename
             self.ui.actionSave.setEnabled(True)
+            self.add_to_recent_file_menu(filename)
 
     def menu_export_orcaflex_yml(self):
         filename, _ = QFileDialog.getSaveFileName(

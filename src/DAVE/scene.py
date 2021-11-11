@@ -9493,21 +9493,48 @@ class LoadShearMomentDiagram:
         return x, self.datasource.Vz, self.datasource.My
 
     def give_loads_table(self):
-        """Returns a 'table' with all the loads. (Name, location, force, moment) ; all local"""
+        """Returns a 'table' with all the loads.
+        point_loads : (Name, location, force, moment) ; all local
+        distributed load : (Name, Fz, mean X, start x , end x
+        """
 
         m = self.datasource  # alias
         n = m.nLoads
 
-        loads = []
+        point_loads = []
+        distributed_loads = []
         for i in range(n):
-            load = m.load_origin(i)
+
+            load = list(m.load_origin(i))
+            effect = m.load(i)
+
+            plotx = effect[0]
+
+            is_distributed = len(plotx) > 2
+
+            if is_distributed:
+                load[0] += ' *' #(add a * to the name))
 
             if (
-                np.linalg.norm(load[2]) > 1e-6 or np.linalg.norm(load[3]) > 1e-6
+                    np.linalg.norm(load[2]) > 1e-6 or np.linalg.norm(load[3]) > 1e-6
             ):  # only forces that actually do something
-                loads.append(load)
+                point_loads.append(load)
 
-        return loads
+            if is_distributed:
+
+                name = effect[-1]  # name without the *
+                P = load[1]
+                F = load[2]
+                M = load[3]
+
+                Fz = F[2]
+                My = M[1]
+                dx = -My / Fz
+                x = P[0] + dx
+
+                distributed_loads.append([name, Fz, x, plotx[0], plotx[-1]])
+
+        return point_loads, distributed_loads
 
     def plot_simple(self, **kwargs):
         """Plots the bending moment and shear in a single yy-plot.
