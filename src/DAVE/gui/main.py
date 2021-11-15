@@ -353,7 +353,7 @@ class Gui:
         self.ui.menuSolve_Statics.addSeparator()
         for i in range(8):
             action = QAction("none")
-            action.triggered.connect(lambda a=i : self.open_recent(a))
+            action.triggered.connect(lambda *args, a=i : self.open_recent(a))
             self.recent_files.append(action)
             self.ui.menuSolve_Statics.addAction(action)
         self.update_recent_file_menu()

@@ -2483,6 +2483,12 @@ class SPMT(NodeWithCoreParent):
         super().__init__(scene, node)
         self._meshes = list()
 
+    def depends_on(self):
+        inherited = super().depends_on()
+        inherited.extend(self.meshes)
+
+        return inherited
+
     # read-only
 
     @property
@@ -2603,9 +2609,9 @@ class SPMT(NodeWithCoreParent):
     # === control axles ====
 
     @node_setter_manageable
-    def make_grid(self, nx=3, ny=1, dx=1.4, dy=1.45):
-        offx = nx * dx / 2
-        offy = ny * dy / 2
+    def make_grid(self, nx=4, ny=2, dx=1.4, dy=1.45):
+        offx = (nx-1) * dx / 2
+        offy = (ny-1) * dy / 2
         self._vfNode.clear_axles()
 
         for ix in range(nx):
@@ -6955,6 +6961,14 @@ class Scene:
                 tgs.add(tag)
         return tuple(tgs)
 
+    def _unmanage_and_delete(self, nodes):
+        """Un-manages as collection of nodes and then deletes them"""
+        for node in nodes:
+            node._manager = None
+        for node in nodes:
+            if node in self._nodes:
+                self.delete(node)
+
     def delete(self, node):
         """Deletes the given node from the scene as well as all nodes depending on it.
 
@@ -7144,6 +7158,10 @@ class Scene:
             n.update()
         self._vfc.state_update()
 
+    def _solve_debug_tiny_step(self, s=0.001):
+
+        self._solve_statics_with_optional_control(do_terminate_func=lambda: True, timeout_s=s)
+
     def _solve_statics_with_optional_control(
         self, feedback_func=None, do_terminate_func=None, timeout_s=1
     ):
@@ -7196,9 +7214,11 @@ class Scene:
         phase = 1
         original_dofs_dict = None
 
+        first = True
+
         while True:
 
-            if should_terminate():
+            if not first and should_terminate():
                 if original_dofs_dict is not None:
                     self._restore_original_fixes(original_dofs_dict)
                     self.update()
@@ -7215,6 +7235,7 @@ class Scene:
 
             elif phase == 2:
                 status = solve_func()
+                first = False
 
                 if status == 0 or status == -2:
 
@@ -7285,63 +7306,7 @@ class Scene:
             timeout = -1
 
         return self._solve_statics_with_optional_control(timeout_s=timeout)
-        #
-        # self.update()
-        #
-        # if timeout is None:
-        #     timeout = -1
-        #
-        # solve_func = lambda: self._vfc.state_solve_statics_with_timeout(
-        #         True, timeout, True, True, 0
-        #     )  # default stability value
-        #
-        # # Note: these are the possible return values of the solve-function
-        # #
-        # # state_solve_statics_with_timeout:
-        # # -2  done, unstable solution, but keeps converging to this one.
-        # # -1  done, unstable solution, still possible to get the a new equilibrium
-        # # 0   done, stable equilibrium (if checked) or unknonwn equilibrium (if not checked)
-        # #
-        # # 1   time-out or fail during linear-dof solve   - state not in equilibrium
-        # # 2   time-out or fail during full-dof solve     - state not in equilibrium
-        # #
-        # # Positive (1,2) return argument can be passed as input (phases_completed) to continue where we timed-out.
-        #
-        # # pass 1
-        # orignal_fixes = self._fix_vessel_heel_trim()
-        # succes = solve_func()
-        #
-        # if not succes:
-        #     self._restore_original_fixes(orignal_fixes)
-        #     self.update()
-        #     return False
-        #
-        # if orignal_fixes:
-        #     # pass 2
-        #     self._restore_original_fixes(orignal_fixes)
-        #     succes = solve_func()
-        #
-        # if self.verify_equilibrium():
-        #
-        #     changed, message = self._check_and_fix_geometric_contact_orientations()
-        #     if changed:
-        #         print(message)
-        #         solve_func()
-        #         if not self.verify_equilibrium():
-        #             return False
-        #
-        #     if not silent:
-        #         self._print(f"Solved to {self._vfc.Emaxabs:.3e} kN")
-        #     return True
-        #
-        # d = np.array(self._vfc.get_dofs())
-        # if np.any(np.abs(d) > 2000):
-        #     print(
-        #         "Error: One of the degrees of freedom exceeded the boundary of 2000 [m]/[rad]."
-        #     )
-        #     return False
-        #
-        # return False
+
 
     def verify_equilibrium(self, tol=1e-2):
         """Checks if the current state is an equilibrium
