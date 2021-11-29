@@ -5,21 +5,24 @@
 
 # syntax.py
 
+# syntax.py
+
 import sys
 
-from PySide2.QtCore import QRegExp
-from PySide2.QtGui import QColor, QTextCharFormat, QFont, QSyntaxHighlighter, QFontMetricsF
+from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtGui import QFont, QFontMetricsF
+
 
 def format(color, style=''):
     """Return a QTextCharFormat with the given attributes.
     """
-    _color = QColor()
+    _color = QtGui.QColor()
     _color.setNamedColor(color)
 
-    _format = QTextCharFormat()
+    _format = QtGui.QTextCharFormat()
     _format.setForeground(_color)
     if 'bold' in style:
-        _format.setFontWeight(QFont.Bold)
+        _format.setFontWeight(QtGui.QFont.Bold)
     if 'italic' in style:
         _format.setFontItalic(True)
 
@@ -28,11 +31,11 @@ def format(color, style=''):
 
 # Syntax styles that can be shared by all languages
 STYLES = {
-    'keyword': format('darkBlue', 'bold'),
-    'operator': format('black'),
+    'keyword': format('blue'),
+    'operator': format('red'),
     'brace': format('darkGray'),
     'defclass': format('black', 'bold'),
-    'string': format('darkCyan','bold'),
+    'string': format('magenta'),
     'string2': format('darkMagenta'),
     'comment': format('darkGreen', 'italic'),
     'self': format('black', 'italic'),
@@ -40,7 +43,7 @@ STYLES = {
 }
 
 
-class PythonHighlighter (QSyntaxHighlighter):
+class PythonHighlighter (QtGui.QSyntaxHighlighter):
     """Syntax highlighter for the Python language.
     """
     # Python keywords
@@ -70,14 +73,13 @@ class PythonHighlighter (QSyntaxHighlighter):
     braces = [
         '\{', '\}', '\(', '\)', '\[', '\]',
     ]
-    def __init__(self, document):
-        QSyntaxHighlighter.__init__(self, document)
+
+    def __init__(self, parent: QtGui.QTextDocument) -> None:
+        super().__init__(parent)
 
         # Multi-line strings (expression, flag, style)
-        # FIXME: The triple-quotes in these two lines will mess up the
-        # syntax highlighting from this point onward
-        self.tri_single = (QRegExp("'''"), 1, STYLES['string2'])
-        self.tri_double = (QRegExp('"""'), 2, STYLES['string2'])
+        self.tri_single = (QtCore.QRegExp("'''"), 1, STYLES['string2'])
+        self.tri_double = (QtCore.QRegExp('"""'), 2, STYLES['string2'])
 
         rules = []
 
@@ -94,38 +96,56 @@ class PythonHighlighter (QSyntaxHighlighter):
             # 'self'
             (r'\bself\b', 0, STYLES['self']),
 
-            # Double-quoted string, possibly containing escape sequences
-            (r'"[^"\\]*(\\.[^"\\]*)*"', 0, STYLES['string']),
-            # Single-quoted string, possibly containing escape sequences
-            (r"'[^'\\]*(\\.[^'\\]*)*'", 0, STYLES['string']),
-
             # 'def' followed by an identifier
             (r'\bdef\b\s*(\w+)', 1, STYLES['defclass']),
             # 'class' followed by an identifier
             (r'\bclass\b\s*(\w+)', 1, STYLES['defclass']),
 
-            # From '#' until a newline
-            (r'#[^\n]*', 0, STYLES['comment']),
-
             # Numeric literals
             (r'\b[+-]?[0-9]+[lL]?\b', 0, STYLES['numbers']),
             (r'\b[+-]?0[xX][0-9A-Fa-f]+[lL]?\b', 0, STYLES['numbers']),
             (r'\b[+-]?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?\b', 0, STYLES['numbers']),
+
+            # Double-quoted string, possibly containing escape sequences
+            (r'"[^"\\]*(\\.[^"\\]*)*"', 0, STYLES['string']),
+            # Single-quoted string, possibly containing escape sequences
+            (r"'[^'\\]*(\\.[^'\\]*)*'", 0, STYLES['string']),
+
+            # From '#' until a newline
+            (r'#[^\n]*', 0, STYLES['comment']),
         ]
 
         # Build a QRegExp for each pattern
-        self.rules = [(QRegExp(pat), index, fmt)
+        self.rules = [(QtCore.QRegExp(pat), index, fmt)
             for (pat, index, fmt) in rules]
-
 
     def highlightBlock(self, text):
         """Apply syntax highlighting to the given block of text.
         """
+        self.tripleQuoutesWithinStrings = []
         # Do other syntax formatting
         for expression, nth, format in self.rules:
             index = expression.indexIn(text, 0)
+            if index >= 0:
+                # if there is a string we check
+                # if there are some triple quotes within the string
+                # they will be ignored if they are matched again
+                if expression.pattern() in [r'"[^"\\]*(\\.[^"\\]*)*"', r"'[^'\\]*(\\.[^'\\]*)*'"]:
+                    innerIndex = self.tri_single[0].indexIn(text, index + 1)
+                    if innerIndex == -1:
+                        innerIndex = self.tri_double[0].indexIn(text, index + 1)
+
+                    if innerIndex != -1:
+                        tripleQuoteIndexes = range(innerIndex, innerIndex + 3)
+                        self.tripleQuoutesWithinStrings.extend(tripleQuoteIndexes)
 
             while index >= 0:
+                # skipping triple quotes within strings
+                if index in self.tripleQuoutesWithinStrings:
+                    index += 1
+                    expression.indexIn(text, index)
+                    continue
+
                 # We actually want the index of the nth match
                 index = expression.pos(nth)
                 length = len(expression.cap(nth))
@@ -138,7 +158,6 @@ class PythonHighlighter (QSyntaxHighlighter):
         in_multiline = self.match_multiline(text, *self.tri_single)
         if not in_multiline:
             in_multiline = self.match_multiline(text, *self.tri_double)
-
 
     def match_multiline(self, text, delimiter, in_state, style):
         """Do highlighting of multi-line strings. ``delimiter`` should be a
@@ -154,6 +173,9 @@ class PythonHighlighter (QSyntaxHighlighter):
         # Otherwise, look for the delimiter on this line
         else:
             start = delimiter.indexIn(text)
+            # skipping triple quotes within strings
+            if start in self.tripleQuoutesWithinStrings:
+                return False
             # Move past this match
             add = delimiter.matchedLength()
 
@@ -168,7 +190,7 @@ class PythonHighlighter (QSyntaxHighlighter):
             # No; multi-line string
             else:
                 self.setCurrentBlockState(in_state)
-                length = text.length() - start + add
+                length = len(text) - start + add
             # Apply formatting
             self.setFormat(start, length, style)
             # Look for the next match
@@ -179,7 +201,6 @@ class PythonHighlighter (QSyntaxHighlighter):
             return True
         else:
             return False
-
 
 # =========== Example use ========
 

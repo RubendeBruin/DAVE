@@ -86,15 +86,19 @@ class WidgetTags(guiDockWidget):
         if code is None:
             raise ValueError('Event called but nothing to update')
 
-        self.guiRunCodeCallback(code, guiEventType.NOTHING)
+        self.guiRunCodeCallback(code, guiEventType.TAGS_CHANGED)
+
+        # change the columns if last tag is removed
+        if len(tags) != len(self.guiScene.tags):
+            self.update_node_data_and_tree()
+
 
 
     def update_node_data_and_tree(self):
         """
         Updates the tree and assembles the node-data
 
-        This data is obtained from scene.nodes and assumes that
-        each of the nodes has a visual assigned to it.
+        This data is obtained from scene.nodes
 
         """
 
@@ -319,6 +323,8 @@ if __name__ == '__main__':
 
     widget.guiProcessEvent(guiEventType.FULL_UPDATE)
 
-    widget.show()
+    widget.contents.show()
+
+    print('showing')
 
     app.exec_()

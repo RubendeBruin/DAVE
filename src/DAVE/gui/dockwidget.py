@@ -11,6 +11,7 @@ class guiEventType(Enum):
     SELECTION_CHANGED = 4        # a different node is selected
     VIEWER_SETTINGS_UPDATE = 5   # the display settings for the viewer changed
     ENVIRONMENT_CHANGED = 6      # one of the scene environment values changed (eg: g, wind_direction, ... )
+    TAGS_CHANGED = 7             # whenever a tag is added or removed
 
 class guiDockWidget(QtWidgets.QDockWidget):
 

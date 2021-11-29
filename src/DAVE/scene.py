@@ -5,6 +5,7 @@
 
   Ruben de Bruin - 2019
 """
+import fnmatch
 import glob
 import warnings
 from abc import ABC, abstractmethod
@@ -341,8 +342,19 @@ class Node(ABC):
             self.add_tag(tag)
 
     def has_tag(self, tag: str):
-        """Returns true if node has the given tag"""
-        return tag in self._tags
+        """Returns true if node has the given tag - tag can be a tag selection expression """
+        if tag in self._tags:  # simple first quick check
+            return True
+
+        req_tags = [_.strip() for _ in tag.split(',')]
+
+        for tag in self._tags:
+            matching = [fnmatch.fnmatch(tag, filter) for filter in req_tags]
+
+            if any(matching):
+                return True
+
+        return False
 
     @property
     def tags(self):
@@ -6932,9 +6944,12 @@ class Scene:
         return r
 
     def nodes_tagged(self, tag):
-        """Returns all nodes that have the given tag"""
+        """Returns all nodes that have the given tag or where the tag satisfies the tag-filter. Tag = None or '' returns all nodes"""
 
-        return tuple([node for node in self._nodes if tag in node._tags])
+        if tag:
+            return tuple([node for node in self._nodes if node.has_tag(tag)])
+        else:
+            return tuple(self._nodes)
 
     def nodes_tag_and_type(self, tag, type):
         """Returns all nodes of type 'type' with tag 'tag'"""
@@ -7108,24 +7123,28 @@ class Scene:
 
     # ========= Limits ===========
 
-    @property
-    def UC(self):
-        """Returns the highest UC in the scene"""
+    def UC(self, tags=None):
+        """Returns the highest UC in the scene
+
+        Optional argument tags limits the evaluated nodes to nodes with the given tag(s)
+        """
         gov = 0
-        for node in self._nodes:
+
+        for node in self.nodes_tagged(tags):  # None --> all nodes
             uc = node.UC
             if uc is not None:
                 gov = max(gov, uc)
         return gov
 
-    @property
-    def UC_governing_details(self):
+    def UC_governing_details(self, tags=None):
         """Returns tuple with:
         0: governing UC,
         1: node-name in which this UC occurs
         2: property name
         3: limits
         4: value
+
+        Optional argument tags limits the evaluated nodes to nodes with the given tag(s)
         """
 
         gov_node = None
@@ -7133,7 +7152,7 @@ class Scene:
         gov_limits = ()
         gov_value = None
         gov = 0
-        for node in self._nodes:
+        for node in self.nodes_tagged(tags):
             uc, prop_name, limits, value = node.UC_governing_details
             if uc is not None:
                 if uc > gov:
@@ -9092,7 +9111,7 @@ class Scene:
                 for key, value in n.limits.items():
                     code.append(f"s['{n.name}'].limits['{key}'] = {value}")
 
-        code.append("\n# Tags of un-managed nodes ")
+        code.append("\n# Tags")
 
         for n in nodes_to_be_exported:
             if n.manager is None:
@@ -9494,8 +9513,12 @@ class LoadShearMomentDiagram:
 
                 Fz = F[2]
                 My = M[1]
-                dx = -My / Fz
-                x = P[0] + dx
+
+                if abs(Fz)> 1e-10:
+                    dx = -My / Fz
+                    x = P[0] + dx
+                else:
+                    x = P[0]
 
                 distributed_loads.append([name, Fz, x, plotx[0], plotx[-1]])
 
