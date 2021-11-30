@@ -861,6 +861,8 @@ class Gui:
             self.show_guiWidget("Tanks", WidgetBallastConfiguration)
             self.show_guiWidget("Solver", WidgetBallastSolver)
             self.show_guiWidget("Tank order", WidgetTankOrder)
+            if self.visual.settings.label_scale == 0:
+                self.labels_show_hide()
             self.activate_paintset("Ballast")
 
             # self.visual.show_actors_of_type([ActorType.BALLASTTANK])
