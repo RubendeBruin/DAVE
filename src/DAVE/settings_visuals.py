@@ -372,6 +372,13 @@ ballast_painters["ContactBall:contact"]["contact"] = copy(invisible)
 
 ballast_painters["WaveInteraction1"]["main"] = copy(invisible)
 
+# Hide all labels
+# disable all other labels
+ballast_painters = deepcopy(ballast_painters)
+for outer_key, visual in ballast_painters.items():
+    for inner_key in visual.keys():
+        ballast_painters[outer_key][inner_key].labelShow = False
+
 # --- Buoyancy mesh
 visual = dict()
 paint = ActorSettings()
@@ -446,7 +453,7 @@ paint.lineWidth = 0
 visual["fluid"] = paint
 ballast_painters["Tank:freeflooding"] = visual
 
-# --- paint for : {value} ---
+# ========= (Almost) Empty ========
 visual = dict()
 paint = ActorSettings()
 paint.alpha = 0.5
@@ -455,10 +462,12 @@ paint.surfaceShow = True
 paint.surfaceColor = (255, 255, 255)
 paint.metallic = 0.4
 paint.roughness = 0.9
-paint.lineWidth = 0.0
+paint.lineWidth = 0
 paint.lineColor = [0, 0, 0]
 paint.labelShow = True
+
 visual["main"] = paint
+
 paint = ActorSettings()
 paint.alpha = 1
 paint.xray = False
@@ -468,6 +477,7 @@ paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
 visual["cog"] = paint
+
 paint = ActorSettings()
 paint.alpha = 1
 paint.xray = False
@@ -477,7 +487,7 @@ paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
 visual["fluid"] = paint
-ballast_painters["Tank:empty"] = visual
+ballast_painters["Tank:empty"] = visual  # empty is also almost empty
 
 # --- paint for : {value} ---
 visual = dict()
@@ -542,8 +552,12 @@ paint.surfaceColor = [57, 76, 90]
 paint.metallic = 0.4
 paint.roughness = 0.9
 paint.lineWidth = 0
+
 visual["fluid"] = paint
 ballast_painters["Tank:full"] = visual
+
+
+
 
 PAINTERS["Ballast"] = deepcopy(ballast_painters)
 

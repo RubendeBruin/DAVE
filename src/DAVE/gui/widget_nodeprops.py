@@ -30,7 +30,7 @@ from DAVE.visual import transform_from_node
 from DAVE.gui.helpers.my_qt_helpers import BlockSigs
 import numpy as np
 
-from PySide2.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox
+from PySide2.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox, QCompleter
 from PySide2 import QtWidgets
 
 
@@ -52,6 +52,23 @@ def cvinf(combobox: QtWidgets.QComboBox,value : str):
     if combobox.hasFocus():
         return
     combobox.setCurrentText(value)
+
+def update_combobox_items_with_completer(comboBox: QtWidgets.QComboBox, items):
+    """Updates the possible items of the combobox and adds a completer
+    Suppresses signals and preserves the current text
+    """
+    with BlockSigs(comboBox):
+        ct = comboBox.currentText()
+        comboBox.clear()
+        comboBox.addItems(items)
+
+        # set QCompleter
+        completer = QCompleter(items)
+        completer.setCaseSensitivity(Qt.CaseInsensitive)
+        completer.setModelSorting(QCompleter.UnsortedModel)
+        completer.setFilterMode(Qt.MatchContains)
+        comboBox.setCompleter(completer)
+        comboBox.setCurrentText(ct)
 
 
 def code_if_changed_d(node, value, ref, dec=3):
@@ -402,12 +419,12 @@ class EditVisual(NodeEditor):
 
     def update_resource_list(self):
 
-        with BlockSigs(self.ui.comboBox):
-            ct = self.ui.comboBox.currentText()
-            self.ui.comboBox.clear()
-            self.ui.comboBox.addItems(self.scene.get_resource_list("stl", include_subdirs=True))
-            self.ui.comboBox.addItems(self.scene.get_resource_list("obj", include_subdirs=True))
-            self.ui.comboBox.setCurrentText(ct)
+        stl = self.scene.get_resource_list("stl", include_subdirs=True)
+        obj = self.scene.get_resource_list("obj", include_subdirs=True)
+
+        names = (*stl, *obj)
+
+        update_combobox_items_with_completer(self.ui.comboBox, names)
 
 
     def post_update_event(self):
@@ -513,12 +530,13 @@ class EditWaveInteraction(NodeEditor):
 
     def update_resource_list(self):
 
-        with BlockSigs(self.ui.comboBox):
-            ct = self.ui.comboBox.currentText()
-            self.ui.comboBox.clear()
-            self.ui.comboBox.addItems(self.scene.get_resource_list("dhyd", include_subdirs=True))
-            self.ui.comboBox.addItems(self.scene.get_resource_list("hyd", include_subdirs=True))
-            self.ui.comboBox.setCurrentText(ct)
+        dhyd = self.scene.get_resource_list("dhyd", include_subdirs=True)
+        hyd = self.scene.get_resource_list("hyd", include_subdirs=True)
+
+        names = (*dhyd, *hyd)
+
+        update_combobox_items_with_completer(self.ui.comboBox, names)
+
 
     def post_update_event(self):
 
@@ -743,12 +761,13 @@ class EditBuoyancyOrContactMesh(NodeEditor):
 
     def update_resource_list(self):
 
-        with BlockSigs(self.ui.comboBox):
-            ct = self.ui.comboBox.currentText()
-            self.ui.comboBox.clear()
-            self.ui.comboBox.addItems(self.scene.get_resource_list("stl", include_subdirs=True))
-            self.ui.comboBox.addItems(self.scene.get_resource_list("obj", include_subdirs=True))
-            self.ui.comboBox.setCurrentText(ct)
+        stl = self.scene.get_resource_list("stl", include_subdirs=True)
+        obj = self.scene.get_resource_list("obj", include_subdirs=True)
+
+        names = (*stl, *obj)
+
+        update_combobox_items_with_completer(self.ui.comboBox, names)
+
 
     def reload_file(self):
         self.node.trimesh._load_from_privates()

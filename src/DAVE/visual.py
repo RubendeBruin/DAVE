@@ -6,6 +6,7 @@
   Ruben de Bruin - 2019
 
 """
+import logging
 from copy import copy
 from pathlib import Path
 from typing import List
@@ -16,6 +17,7 @@ from enum import Enum
 from scipy.spatial import ConvexHull
 
 import vtkmodules.qt
+
 vtkmodules.qt.PyQtImpl = "PySide2"
 
 import vedo as vp  # ref: https://github.com/marcomusy/vedo
@@ -35,7 +37,7 @@ from DAVE.settings_visuals import (
     LIGHT_TEXTURE_SKYBOX,
     ALPHA_SEA,
     COLOR_SELECT_255,
-    UC_CMAP
+    UC_CMAP,
 )
 
 
@@ -44,7 +46,6 @@ from DAVE.settings_visuals import (
 import DAVE.scene as vf
 import DAVE.scene as dn
 import DAVE.settings_visuals
-
 
 
 """
@@ -58,7 +59,7 @@ Viewport
     - actors [dict]
         - [ActorType]
         
-        <the appearance of these visuals is determined by painers which are activated by update_visibility>
+        <the appearance of these visuals is determined by painters which are activated by update_visibility>
         
  - temporary_visuals (VisualActors)
     These are visuals that are temporary added to the viewport. For example a moment-line or boundary edges of a mesh
@@ -178,11 +179,21 @@ Actors (anything derived from vtkActor) can be added to the viewport by calling
 add_temporary_actor. Temporary actors are automatically removed when the viewport
 is updated or can be removed manually be calling remove_temporary_actors
 
+
+Outlines
+=========
+Outlines are individual actors. They attach to a actor and do not have a reference to the node or the other actors
+of the node.
+They copy the data of the actor that they outline when they are created. They update based on the global-transform of
+the referenced actor.
+
+If the geometry of the referenced actor (ie the vertices) have changed then the outline needs to be re-created.
+In that case the ._vertices_changed = True flag of the outlined actor should be set. 
+
 """
 
 
-
-class DelayRenderingTillDone():
+class DelayRenderingTillDone:
     """Little helper class to pause rendering and refresh using with(...)
 
     with(DelayRenderingTillDone(Viewport):
@@ -193,6 +204,7 @@ class DelayRenderingTillDone():
     keep this action exclusive to the first caller.
 
     """
+
     def __init__(self, viewport):
         self.viewport = viewport
         self.inactive = False
@@ -205,11 +217,12 @@ class DelayRenderingTillDone():
         except:
             pass
 
-        self.viewport._DelayRenderingTillDone_lock = True # keep others from gaining control
+        self.viewport._DelayRenderingTillDone_lock = (
+            True  # keep others from gaining control
+        )
         self.viewport.screen.interactor.EnableRenderOff()
         for r in self.viewport.screen.renderers:
             r.DrawOff()
-
 
     def __exit__(self, *args, **kwargs):
         if self.inactive:
@@ -218,8 +231,7 @@ class DelayRenderingTillDone():
         self.viewport.refresh_embeded_view()
         for r in self.viewport.screen.renderers:
             r.DrawOn()
-        self.viewport._DelayRenderingTillDone_lock = False # release lock
-
+        self.viewport._DelayRenderingTillDone_lock = False  # release lock
 
 
 def transform_to_mat4x4(transform):
@@ -236,6 +248,7 @@ def transform_from_point(x, y, z):
     mat4x4.SetElement(1, 3, y)
     mat4x4.SetElement(2, 3, z)
     return mat4x4
+
 
 def transform_from_node(node):
     """Returns the vtkTransform that can be used to align the actor
@@ -258,9 +271,7 @@ def transform_from_node(node):
     return t
 
 
-
-
-def transform_from_direction(axis, position = (0,0,0), right = None):
+def transform_from_direction(axis, position=(0, 0, 0), right=None):
     """
     Creates a transform that rotates the X-axis to the given direction
     Args:
@@ -277,10 +288,10 @@ def transform_from_direction(axis, position = (0,0,0), right = None):
     viewDir = np.array(axis, dtype=float)
 
     if right is None:
-        temp = np.array((1,0,0), dtype=float)
+        temp = np.array((1, 0, 0), dtype=float)
         if np.dot(temp, viewDir) > 0.98:
-            temp[0]=0
-            temp[1]=1
+            temp[0] = 0
+            temp[1] = 1
 
         right = np.cross(viewDir, temp)
         right = right / np.linalg.norm(right)
@@ -416,9 +427,9 @@ def vp_actor_from_obj(filename):
 
     return vpa
 
-def _create_moment_or_shear_line(what, frame : dn.Frame, scale_to = 2, at=None):
-    """see create_momentline_actors, create_shearline_actors
-    """
+
+def _create_moment_or_shear_line(what, frame: dn.Frame, scale_to=2, at=None):
+    """see create_momentline_actors, create_shearline_actors"""
 
     if at is None:
         at = frame
@@ -435,45 +446,48 @@ def _create_moment_or_shear_line(what, frame : dn.Frame, scale_to = 2, at=None):
     n = len(x)
     scale = scale_to
 
-    if what=='Moment':
+    if what == "Moment":
         value = My
-        color = 'green'
-    elif what=='Shear':
+        color = "green"
+    elif what == "Shear":
         value = Fz
-        color = 'blue'
+        color = "blue"
     else:
-        raise ValueError(f'What should be Moment or Shear, not {what}')
+        raise ValueError(f"What should be Moment or Shear, not {what}")
 
-    if np.max(np.abs(value))<1e-6:
+    if np.max(np.abs(value)) < 1e-6:
         scale = 0
     else:
         scale = scale / np.max(np.abs(value))
     line = [report_axis.to_glob_position((x[i], 0, scale * value[i])) for i in range(n)]
 
-    actor_axis = vp.Line((start, end)).c('black').lw(3)
+    actor_axis = vp.Line((start, end)).c("black").lw(3)
     actor_graph = vp.Line(line).c(color).lw(3)
 
     return (actor_axis, actor_graph)
 
-def create_momentline_actors(frame : dn.Frame, scale_to = 2, at=None):
+
+def create_momentline_actors(frame: dn.Frame, scale_to=2, at=None):
     """Returns an actor that visualizes the moment-line for the given frame.
 
     Args:
         frame : Frame node to report the momentline for
         scale_to : absolute maximum of the line [m]
         at : Optional: [Frame] to report the momentline in
-        """
-    return _create_moment_or_shear_line('Moment', frame, scale_to, at)
+    """
+    return _create_moment_or_shear_line("Moment", frame, scale_to, at)
 
-def create_shearline_actors(frame : dn.Frame, scale_to = 2, at=None):
+
+def create_shearline_actors(frame: dn.Frame, scale_to=2, at=None):
     """Returns an actor that visualizes the shear-line for the given frame.
 
     Args:
         frame : Frame node to report the shearline for
         scale_to : absolute maximum of the line [m]
         at : Optional: [Frame] to report the shearline in
-        """
-    return _create_moment_or_shear_line('Shear', frame, scale_to, at)
+    """
+    return _create_moment_or_shear_line("Shear", frame, scale_to, at)
+
 
 class ActorType(Enum):
     FORCE = 1
@@ -516,7 +530,9 @@ class VisualOutline:
 
         # get color
         color = getattr(self.parent_vp_actor, "_outline_color", (0, 0, 0))
-        self.outline_actor.GetProperty().SetColor(color[0] / 255, color[1] / 255, color[2] / 255)
+        self.outline_actor.GetProperty().SetColor(
+            color[0] / 255, color[1] / 255, color[2] / 255
+        )
 
 
 class VisualActor:
@@ -553,6 +569,7 @@ class VisualActor:
             False  # parent of this object is selected - render transparent
         )
 
+
     @property
     def center_position(self):
         return self.actors["main"].GetCenter()
@@ -575,11 +592,10 @@ class VisualActor:
     def setLabelPosition(self, position):
 
         if len(position) != 3:
-            raise ValueError('Position should have length 3')
+            raise ValueError("Position should have length 3")
 
         if self.label_actor is not None:
             self.label_actor.SetAttachmentPoint(*position)
-
 
     def labelCreate(self, txt):
         la = vtk.vtkCaptionActor2D()
@@ -610,7 +626,6 @@ class VisualActor:
 
         self.label_actor = la
 
-
     def labelUpdate(self, txt):
         if self.label_actor is None:
             self.labelCreate(txt)
@@ -622,21 +637,24 @@ class VisualActor:
 
         return self.label_actor
 
-    def update_paint(self, settings : ViewportSettings):
+    def update_paint(self, settings: ViewportSettings):
         """Updates the painting for this visual
 
-            Painting depends on the node type of this visual.
-            The properties for the individual actors of this visual are
-            stored in
+        Painting depends on the node type of this visual.
+        The properties for the individual actors of this visual are
+        stored in
 
-            ps is the painter_settings dictionary
+        ps is the painter_settings dictionary
 
-            """
+        """
         ps = settings.painter_settings
 
         if ps is None:
             print("No painter settings, ugly world :(")
             return
+
+        # Get the class of the node,
+        # this includes custom states for multi-state nodes
 
         if self.node is None:
             node_class = "global"
@@ -650,6 +668,8 @@ class VisualActor:
             else:
                 node_class = self.node.class_name
 
+        # Get the corresponding paint
+
         if node_class in ps:
             node_painter_settings = ps[node_class]
         else:
@@ -660,13 +680,13 @@ class VisualActor:
 
         if self._is_selected:
             new_painter_settings = dict()
-            for k,value in node_painter_settings.items():
+            for k, value in node_painter_settings.items():
                 v = copy(value)
                 v.surfaceColor = COLOR_SELECT_255
                 v.lineColor = COLOR_SELECT_255
                 new_painter_settings[k] = v
 
-            new_painter_settings['main'].labelShow = True
+            new_painter_settings["main"].labelShow = True
 
             node_painter_settings = new_painter_settings
 
@@ -681,16 +701,18 @@ class VisualActor:
 
         # label
         if settings.label_scale > 0:
-            self.label_actor.SetVisibility(node_painter_settings['main'].labelShow)
+            self.label_actor.SetVisibility(node_painter_settings["main"].labelShow)
         else:
             self.label_actor.SetVisibility(False)
 
-        # check for UCs
+        # check for UCs, create uc_paint accordingly
         uc_paint = None
         if settings.paint_uc:
 
             uc_node = self.node
-            if isinstance(self.node, DAVE.Visual):  # Visuals adopt the color of their parent
+            if isinstance(
+                self.node, DAVE.Visual
+            ):  # Visuals adopt the color of their parent
                 if self.node.parent is not None:
                     uc_node = self.node.parent
 
@@ -699,8 +721,10 @@ class VisualActor:
                 if uc > 1:
                     uc_paint = (1, 0, 1)  # ugly pink
                 else:
-                    uc_paint = UC_CMAP(round(100*uc))
+                    uc_paint = UC_CMAP(round(100 * uc))
 
+        # Loop over the individual actors in the node
+        # and apply their paint or the uc_paint
 
         for key, actor in self.actors.items():
 
@@ -709,6 +733,13 @@ class VisualActor:
             else:
                 print(f"No paint for actor {node_class} {key}")
                 continue
+
+            # ****** Some very-custom code ********
+            if settings.show_global:
+                if node_class == "Buoyancy":
+                    if key == "waterplane":
+                        actor.off()
+                        continue
 
             # set the "xray" property of the actor
             actor.xray = actor_settings.xray
@@ -761,14 +792,14 @@ class VisualActor:
             else:
                 actor.GetProperty().SetLineWidth(0)
 
-
-
     def update_geometry(self, viewport):
         """Updates the geometry of the actors to the current state of the node.
         This includes moving as well as changing meshes and volumes"""
 
         # update label name if needed
-        self.labelUpdate(self.node.name) # does not do anything if the label-name is unchanged
+        self.labelUpdate(
+            self.node.name
+        )  # does not do anything if the label-name is unchanged
 
         # the following ifs all end with Return, so only a single one is executed
 
@@ -906,24 +937,32 @@ class VisualActor:
             fp = self.node.footprint
             if fp:
                 n_points = len(fp)
-                current_n_points = self.actors["footprint"]._mapper.GetInput().GetNumberOfPoints()
+                current_n_points = (
+                    self.actors["footprint"]._mapper.GetInput().GetNumberOfPoints()
+                )
 
                 if isinstance(self.node, vf.Point):
                     p = self.node.position
-                    local_position = [(v[0]+p[0], v[1]+p[1], v[2]+p[2]) for v in fp]
+                    local_position = [
+                        (v[0] + p[0], v[1] + p[1], v[2] + p[2]) for v in fp
+                    ]
                     if self.node.parent:
-                        fp = [self.node.parent.to_glob_position(loc) for loc in local_position]
+                        fp = [
+                            self.node.parent.to_glob_position(loc)
+                            for loc in local_position
+                        ]
                     else:
                         fp = local_position
-
 
                 if n_points == current_n_points:
                     self.actors["footprint"].points(fp)
                 else:
                     # create a new actor
-                    new_actor = actor_from_vertices_and_faces(vertices=fp, faces=[range(n_points)])
+                    new_actor = actor_from_vertices_and_faces(
+                        vertices=fp, faces=[range(n_points)]
+                    )
 
-                    print('number of points changed, creating new')
+                    print("number of points changed, creating new")
 
                     if viewport.screen is not None:
                         viewport.screen.remove(self.actors["footprint"])
@@ -989,7 +1028,8 @@ class VisualActor:
 
             # check is the arrows are still what they should be
             if not np.all(
-                    self.actors["main"]._force == viewport._scaled_force_vector(self.node.force)
+                self.actors["main"]._force
+                == viewport._scaled_force_vector(self.node.force)
             ):
                 viewport.screen.remove(self.actors["main"])
 
@@ -1007,8 +1047,8 @@ class VisualActor:
 
             # check is the arrows are still what they should be
             if not np.all(
-                    np.array(self.actors["moment1"]._moment)
-                    == viewport._scaled_force_vector(self.node.moment)
+                np.array(self.actors["moment1"]._moment)
+                == viewport._scaled_force_vector(self.node.moment)
             ):
                 viewport.screen.remove(self.actors["moment1"])
                 viewport.screen.remove(self.actors["moment2"])
@@ -1076,9 +1116,9 @@ class VisualActor:
             return
 
         if (
-                isinstance(self.node, vf.Buoyancy)
-                or isinstance(self.node, vf.ContactMesh)
-                or isinstance(self.node, vf.Tank)
+            isinstance(self.node, vf.Buoyancy)
+            or isinstance(self.node, vf.ContactMesh)
+            or isinstance(self.node, vf.Tank)
         ):
             # Source mesh update is common for all mesh-like nodes
             #
@@ -1103,7 +1143,7 @@ class VisualActor:
                 for i in range(4):
                     for j in range(4):
                         if current_transform.GetElement(i, j) != mat4x4.GetElement(
-                                i, j
+                            i, j
                         ):
                             changed = True  # yes, transform has changed
                             break
@@ -1118,7 +1158,7 @@ class VisualActor:
                 if isinstance(self.node, vf.Tank):
                     # the tank fill may have changed,
                     # only skip if fill percentage has changed with less than 1e-3%
-                    vfp = getattr(self, '_visualized_fill_percentage', -1)
+                    vfp = getattr(self, "_visualized_fill_percentage", -1)
                     if abs(self.node.fill_pct - vfp) < 1e-3:
                         return
 
@@ -1165,6 +1205,7 @@ class VisualActor:
                 (p4[0], p4[1], 0),
             ]
             self.actors["waterplane"].points(corners)
+            self.actors["waterplane"]._vertices_changed = True
 
             # Instead of updating, remove the old actor and create a new one
 
@@ -1201,7 +1242,7 @@ class VisualActor:
             # fluid : filled part of mesh
 
             # If the source mesh has been updated, then V.node.trimesh._new_mesh is True
-            just_created = getattr(self, '__just_created', True)
+            just_created = getattr(self, "__just_created", True)
             if just_created:
                 self._visual_volume = -1
 
@@ -1217,6 +1258,7 @@ class VisualActor:
             # Update the actors
             self.node.update()
 
+            # Points are the vertices in global axis system (transforms applied)
             points = self.actors["main"].points(True)
             self.setLabelPosition(np.mean(points, axis=1).flatten())
 
@@ -1241,7 +1283,7 @@ class VisualActor:
 
                 # tank is full
                 vertices = points[0]
-                faces = self.actors['main'].faces()
+                faces = self.actors["main"].faces()
 
             else:
 
@@ -1273,8 +1315,8 @@ class VisualActor:
                         hull = ConvexHull(d2)
 
                         points = top_plane_verts[
-                                 hull.vertices, :
-                                 ]  # for 2-D the vertices are guaranteed to be in counterclockwise order
+                            hull.vertices, :
+                        ]  # for 2-D the vertices are guaranteed to be in counterclockwise order
 
                         nVerts = len(vertices)
 
@@ -1309,7 +1351,9 @@ class VisualActor:
             if "fluid" in self.actors:
                 # print(f'Already have an actor for {V.node.name}')
 
-                self._visualized_fill_percentage = self.node.fill_pct  # store for "need_update" check
+                self._visualized_fill_percentage = (
+                    self.node.fill_pct
+                )  # store for "need_update" check
 
                 vis = self.actors["fluid"]
                 pts = vis.GetMapper().GetInput().GetPoints()
@@ -1322,6 +1366,11 @@ class VisualActor:
                 if pts.GetNumberOfPoints() == npt:
                     # print(f'setting points for {V.node.name}')
                     vis.points(vertices)
+
+                    logging.info(
+                        f"Updated global vertex postions for fluid visuals {self.node.name}"
+                    )
+                    vis._vertices_changed = True
 
                 else:
 
@@ -1344,8 +1393,10 @@ class VisualActor:
 
                     self.actors["fluid"] = vis
 
+                    logging.info(f"Creating new fluid actor for {self.node.name}")
+
                     if viewport.screen is not None:
-                        viewport.screen.add(vis, render=True)
+                        viewport.screen.add(vis, render=False)
 
                 if not self.node.visible:
                     vis.off()
@@ -1356,8 +1407,6 @@ class VisualActor:
             self.update_paint(viewport.settings)
 
             return
-
-
 
         if isinstance(self.node, vf.Frame):
             m44 = transform_to_mat4x4(self.node.global_transform)
@@ -1417,7 +1466,7 @@ class Viewport:
         self.mouseRightEvent = None
         self.onEscapeKey = None
         self.onDeleteKey = None
-        self.focus_on_selected_object = None # f key
+        self.focus_on_selected_object = None  # f key
         "Function handles"
 
         self.Jupyter = jupyter
@@ -1433,7 +1482,9 @@ class Viewport:
 
         # colorbar image
         png = vtk.vtkPNGReader()
-        png.SetFileName(str(Path(__file__).parent / 'resources' / 'uc_colorbar_smaller.png'))
+        png.SetFileName(
+            str(Path(__file__).parent / "resources" / "uc_colorbar_smaller.png")
+        )
         png.Update()
 
         imagemapper = vtk.vtkImageMapper()
@@ -1448,9 +1499,8 @@ class Viewport:
         self.colorbar_actor = image
         """The colorbar for UCs is a static image"""
 
-
     @staticmethod
-    def show_as_qt_app(s, painters = None, sea=False, boundary_edges = False):
+    def show_as_qt_app(s, painters=None, sea=False, boundary_edges=False):
         from PySide2.QtWidgets import QWidget, QApplication
 
         app = QApplication()
@@ -1459,7 +1509,8 @@ class Viewport:
 
         if painters is None:
             from DAVE.settings_visuals import PAINTERS
-            painters = PAINTERS['Construction']
+
+            painters = PAINTERS["Construction"]
 
         v = Viewport(scene=s)
 
@@ -1474,15 +1525,14 @@ class Viewport:
         # v.add_new_node_actors_to_screen()
 
         v.position_visuals()
-        v.add_new_node_actors_to_screen() # position visuals may create new actors
+        v.add_new_node_actors_to_screen()  # position visuals may create new actors
         v.update_visibility()
 
         v.zoom_all()
 
         app.exec_()
 
-
-    def add_temporary_actor(self, actor : vtk.vtkActor):
+    def add_temporary_actor(self, actor: vtk.vtkActor):
         self.temporary_actors.append(actor)
         if self.screen:
             self.screen.add(actor)
@@ -1492,7 +1542,6 @@ class Viewport:
             if self.screen:
                 self.screen.remove(self.temporary_actors)
         self.temporary_actors.clear()
-
 
     def update_outlines(self):
         """Updates the outlines of all actors in the viewport
@@ -1527,10 +1576,21 @@ class Viewport:
                 else:
                     outline.outline_actor.SetVisibility(False)
 
-
-
         # list of already existing outlines
         _outlines = [a.parent_vp_actor for a in self.node_outlines]
+
+        # Remove outlines of nodes for which the input data has changed
+        # such that they can be re-created
+
+        to_be_deleted = []
+
+        for ol in self.node_outlines:
+            if getattr(ol.parent_vp_actor,'_vertices_changed', False):
+                logging.info('Force-recreating outline due to vertices_changed flag on outlined actor')
+                to_be_deleted.append(ol)
+                _outlines.remove(ol.parent_vp_actor)
+                ol.parent_vp_actor._vertices_changed = False
+
 
         # loop over actors, add outlines if needed
         for vp_actor in self.screen.actors:
@@ -1553,6 +1613,8 @@ class Viewport:
             if isinstance(data, vtk.vtkPolyData):
                 # this actor can have an outline
                 if vp_actor not in _outlines:
+
+
                     # create outline and add to self.outlines
 
                     # clean the input data to ensure continuous faces
@@ -1596,13 +1658,12 @@ class Viewport:
                     self.node_outlines.append(record)
 
         # Update transforms for outlines
-        to_be_deleted = []
+
         for record in self.node_outlines:
             # is the parent actor still present?
             if record.parent_vp_actor in self.screen.actors:
 
                 record.update()
-
 
             else:
                 # mark for deletion
@@ -1634,21 +1695,20 @@ class Viewport:
     def create_world_actors(self):
         """Creates the sea and global axes"""
 
-        if 'sea' in self.global_visuals:
-            raise ValueError('Global visuals already created - can not create again')
+        if "sea" in self.global_visuals:
+            raise ValueError("Global visuals already created - can not create again")
 
         plane = vp.Plane(pos=(0, 0, 0), normal=(0, 0, 1), sx=1000, sy=1000).c(
             COLOR_WATER
         )
         plane.texture(TEXTURE_SEA)
-        plane.lighting(ambient=1.0, diffuse=0.0, specular=0.0, specularPower=1e-7 )
+        plane.lighting(ambient=1.0, diffuse=0.0, specular=0.0, specularPower=1e-7)
         plane.alpha(0.4)
 
         self.global_visuals["sea"] = plane
         self.global_visuals["sea"].actor_type = ActorType.GLOBAL
         self.global_visuals["sea"].no_outline = False
         self.global_visuals["sea"].negative = False
-
 
         self.global_visuals["main"] = vp.Line((0, 0, 0), (10, 0, 0)).c("red")
         self.global_visuals["main"].actor_type = ActorType.GEOMETRY
@@ -1658,40 +1718,36 @@ class Viewport:
         self.global_visuals["y"].actor_type = ActorType.GEOMETRY
         self.global_visuals["y"].negative = True
 
-
         self.global_visuals["z"] = vp.Line((0, 0, 0), (0, 0, 10)).c("blue")
         self.global_visuals["z"].actor_type = ActorType.GEOMETRY
         self.global_visuals["z"].negative = True
 
-
         for actor in self.global_visuals.values():
             self.screen.add(actor)
 
-        wind_actor = vp.Lines(startPoints=[(0, 0, 0), (0, 0, 0)],
-                              endPoints=[(10, 0, 0), (-0.5, 1, 0)])
+        wind_actor = vp.Lines(
+            startPoints=[(0, 0, 0), (0, 0, 0)], endPoints=[(10, 0, 0), (-0.5, 1, 0)]
+        )
         wind_actor.c(DAVE.settings_visuals._DARK_GRAY)
         wind_actor.lw(1)
 
         points = [(3 + 4 * i / 36, 0.4 * np.cos(i / 4), 0) for i in range(36)]
 
-        current_actor = vp.Lines(startPoints=[(0, 0, 0), (10, 0, 0), (10, 0, 0), *points[:-1]],
-                                 endPoints=[(10, 0, 0), (9, 0.3, 0), (9, -0.3, 0), *points[1:]])
+        current_actor = vp.Lines(
+            startPoints=[(0, 0, 0), (10, 0, 0), (10, 0, 0), *points[:-1]],
+            endPoints=[(10, 0, 0), (9, 0.3, 0), (9, -0.3, 0), *points[1:]],
+        )
         current_actor.c(DAVE.settings_visuals._BLUE_DARK)
         current_actor.lw(1)
 
         self.current_actor = current_actor
         self.wind_actor = wind_actor
 
-
         self.screen.add(self.colorbar_actor)
-
-
-
 
     def add_wind_and_current_actors(self):
         self.screen.addIcon(self.wind_actor, pos=2, size=0.06)
         self.screen.addIcon(self.current_actor, pos=4, size=0.06)
-
 
     def deselect_all(self):
 
@@ -1699,7 +1755,6 @@ class Viewport:
             if v._is_selected:
                 v._is_selected = False
                 v.update_paint(self.settings)
-
 
     def node_from_vtk_actor(self, actor):
         """
@@ -1814,7 +1869,12 @@ class Viewport:
 
     def set_camera_direction(self, vector):
         # Points the camera in the given direction
-        camera = self.vtkWidget.GetRenderWindow().GetRenderers().GetFirstRenderer().GetActiveCamera()
+        camera = (
+            self.vtkWidget.GetRenderWindow()
+            .GetRenderers()
+            .GetFirstRenderer()
+            .GetActiveCamera()
+        )
 
         vector = np.array(vector)
         vector = vector / np.linalg.norm(vector)
@@ -1929,7 +1989,6 @@ class Viewport:
                 c.actor_type = ActorType.MESH_OR_CONNECTOR
                 actors["cog"] = c
 
-
             if isinstance(N, vf.ContactMesh):
 
                 # 0 : source-mesh
@@ -1972,15 +2031,14 @@ class Viewport:
                 actors["z"] = ab
 
                 # footprint
-                actors["footprint"] = vp.Cube(side=0.00001) # dummy
+                actors["footprint"] = vp.Cube(side=0.00001)  # dummy
 
-            if isinstance(N, vf._Area): # wind or current area
+            if isinstance(N, vf._Area):  # wind or current area
                 # circle with area 1m2
                 # and then scale with sqrt(A)
                 # A = pi * r**2 --> r = sqrt(1/pi)
-                actors["main"] = vp.Circle(res=36, r=np.sqrt(1/np.pi))
+                actors["main"] = vp.Circle(res=36, r=np.sqrt(1 / np.pi))
                 actors["main"].scale(np.sqrt(N.A))
-
 
             if isinstance(N, vf.RigidBody):
                 size = 1
@@ -2000,7 +2058,7 @@ class Viewport:
                 actors["main"] = p
 
                 # footprint
-                actors["footprint"] = vp.Cube(side=0.00001) # dummy
+                actors["footprint"] = vp.Cube(side=0.00001)  # dummy
 
             if isinstance(N, vf.ContactBall):
                 p = vp.Sphere(pos=(0, 0, 0), r=N.radius, res=RESOLUTION_SPHERE)
@@ -2117,8 +2175,6 @@ class Viewport:
 
                 actors["main"] = a
 
-
-
             if not actors:  # no actors created
                 if not isinstance(N, dn.Manager):
                     print(f"No actors created for node {N.name}")
@@ -2130,7 +2186,6 @@ class Viewport:
             N._visualObject.__just_created = True
 
             self.node_visuals.append(va)
-
 
     def position_visuals(self):
         """When the nodes in the scene have moved:
@@ -2151,7 +2206,8 @@ class Viewport:
             if node not in self.scene._nodes:
                 if V.actors:  # not all nodes have an actor
                     if (
-                            getattr(V.actors["main"],'actor_type', None)  != ActorType.GLOBAL
+                        getattr(V.actors["main"], "actor_type", None)
+                        != ActorType.GLOBAL
                     ):  # global visuals do not have a corresponding node
                         to_be_removed.append(V)
                         continue
@@ -2293,7 +2349,7 @@ class Viewport:
             ren.Finalize()
             iren.TerminateApp()
 
-    def setup_screen(self, offscreen = False, size = (800,500)):
+    def setup_screen(self, offscreen=False, size=(800, 500)):
         """Creates the plotter instance and stores it in self.screen
 
         If offscreen = True then an offscreen plotter is made
@@ -2421,7 +2477,7 @@ class Viewport:
 
             r.Modified()
 
-    def show(self, include_outlines=True, zoom_fit = False):
+    def show(self, include_outlines=True, zoom_fit=False):
         """Add actors to screen and show
 
         If purpose is to show embedded, then call show_embedded instead
@@ -2438,7 +2494,6 @@ class Viewport:
         #     camera["viewup"] = [0, 0, 1]
         #     camera["pos"] = [10, -10, 5]
         #     camera["focalPoint"] = [0, 0, 0]
-
 
         if self.Jupyter and self.vtkWidget is None:
 
@@ -2464,11 +2519,11 @@ class Viewport:
 
             for va in self.node_visuals:
                 for a in va.actors.values():
-                    screen.add(a, render = False)
+                    screen.add(a, render=False)
 
             if include_outlines:
                 for outline in self.node_outlines:
-                    screen.add(outline.outline_actor, render = False)
+                    screen.add(outline.outline_actor, render=False)
 
             screen.resetcam = False
 
@@ -2521,7 +2576,7 @@ class Viewport:
             self.mouseRightEvent(info)
 
     def show_embedded(self, target_frame):
-        """target frame : QFrame """
+        """target frame : QFrame"""
 
         from PySide2.QtWidgets import QVBoxLayout
         from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
@@ -2547,7 +2602,7 @@ class Viewport:
 
         style = vtk.vtkInteractorStyleTrackballCamera()
 
-        def void_callback(x,y):
+        def void_callback(x, y):
             pass
 
         style.AddObserver("CharEvent", void_callback)
@@ -2564,7 +2619,6 @@ class Viewport:
 
         iren.SetNumberOfFlyFrames(2)
 
-
         for r in screen.renderers:
             r.ResetCamera()
 
@@ -2574,7 +2628,6 @@ class Viewport:
 
         self.create_world_actors()
         self.add_wind_and_current_actors()
-
 
     def _leftmousepress(self, iren, event):
         """Implements a "fuzzy" mouse pick function"""
@@ -2648,24 +2701,23 @@ class Viewport:
             if self.onDeleteKey is not None:
                 self.onDeleteKey()
 
-        elif key == 'c' or key == 'f':
+        elif key == "c" or key == "f":
             if self.focus_on_selected_object is not None:
                 self.focus_on_selected_object()
 
-        elif key == 'x':
+        elif key == "x":
             self.set2dx()
-        elif key == 'y':
+        elif key == "y":
             self.set2dy()
-        elif key == 'z':
+        elif key == "z":
             self.set2dz()
             self.refresh_embeded_view()
-        elif key == '2' or key=='3':
+        elif key == "2" or key == "3":
             self.toggle_2D()
             self.refresh_embeded_view()
-        elif key == 'a':
+        elif key == "a":
             self.zoom_all()
             self.refresh_embeded_view()
-
 
     def refresh_embeded_view(self):
         if self.vtkWidget is not None:
@@ -2680,11 +2732,13 @@ class Viewport:
             if v.node is not None:
                 for a in v.actors.values():
                     a.SetVisibility(v.node.visible)
-                    a.xray = v.node.visible
+                    if not v.node.visible:  # only disable xray, never enable
+                        a.xray = False
+
                 v.label_actor.SetVisibility(v.node.visible)
 
                 if not v.node.visible:
-                    continue # no need to update paint on invisible actor
+                    continue  # no need to update paint on invisible actor
 
             v.update_paint(self.settings)
 
@@ -2719,7 +2773,7 @@ class Viewport:
             node = V.node
 
             if isinstance(node, dn._Area):
-                actor = V.actors['main']
+                actor = V.actors["main"]
 
                 if node.areakind == dn.AreaKind.SPHERE:
                     direction = self.screen.camera.GetDirectionOfProjection()
@@ -2730,7 +2784,9 @@ class Viewport:
                 else:
                     axis_direction = node.direction
                     if node.parent.parent is not None:
-                        axis_direction = node.parent.parent.to_glob_direction(axis_direction)
+                        axis_direction = node.parent.parent.to_glob_direction(
+                            axis_direction
+                        )
                     camera_direction = self.screen.camera.GetDirectionOfProjection()
 
                     # the normal of the plane need to be
@@ -2738,22 +2794,19 @@ class Viewport:
                     # 2. in the same plane as "camera direction" and "direction"
 
                     temp = np.cross(axis_direction, camera_direction)
-                    if np.linalg.norm(temp) < 1e-6: # axis and camera are perpendicular
+                    if np.linalg.norm(temp) < 1e-6:  # axis and camera are perpendicular
                         direction = self.screen.camera.GetViewUp()
                     else:
                         direction = np.cross(temp, axis_direction)
                         direction = direction / np.linalg.norm(direction)
 
-                transform = transform_from_direction(direction, position=node.parent.global_position)
+                transform = transform_from_direction(
+                    direction, position=node.parent.global_position
+                )
 
                 actor.SetUserMatrix(transform)
-                if hasattr(actor, '_outline'):
+                if hasattr(actor, "_outline"):
                     actor._outline.update()
-
-
-
-
-
 
 
 class WaveField:
@@ -2858,4 +2911,3 @@ class WaveField:
         self.period = wave_period
         self.x = x
         self.y = y
-

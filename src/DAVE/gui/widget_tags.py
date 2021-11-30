@@ -6,7 +6,7 @@ from PySide2.QtWidgets import (
     QTreeWidgetItem,
     QCheckBox,
     QListWidget,
-    QAbstractScrollArea, QApplication, QMenu,
+    QAbstractScrollArea, QApplication, QMenu, QMainWindow,
 )
 import DAVE.scene as ds
 from DAVE.gui.helpers.my_qt_helpers import EnterKeyPressFilter
@@ -306,6 +306,9 @@ class WidgetTags(guiDockWidget):
 if __name__ == '__main__':
     app = QApplication()
 
+    m = QMainWindow()
+
+
     s = Scene()
     p = s.new_point("point")
     a = s.new_frame('Frame')
@@ -323,7 +326,9 @@ if __name__ == '__main__':
 
     widget.guiProcessEvent(guiEventType.FULL_UPDATE)
 
-    widget.contents.show()
+    m.addDockWidget(PySide2.QtCore.Qt.LeftDockWidgetArea, widget)
+
+    m.show()
 
     print('showing')
 
