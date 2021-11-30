@@ -347,6 +347,10 @@ ballast_painters["RigidBody"]["x"] = copy(invisible)
 ballast_painters["RigidBody"]["y"] = copy(invisible)
 ballast_painters["RigidBody"]["z"] = copy(invisible)
 
+# Hide wind and current areas
+ballast_painters["WindArea"]["main"] = copy(invisible)
+ballast_painters["CurrentArea"]["main"] = copy(invisible)
+
 # Hide circle
 ballast_painters["Circle"]["main"] = copy(invisible)
 

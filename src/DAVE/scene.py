@@ -7024,6 +7024,15 @@ class Scene:
         depending_nodes = self.nodes_depending_on(node)
         depending_nodes.extend([n.name for n in node.observers])
 
+        # If the depending node is a ballast-system, then do not remove that node but remove the tank from the systems list
+        for dep in [*depending_nodes]:
+            dep_node = self[dep]
+            if isinstance(dep_node, BallastSystem):
+                if node in dep_node.tanks:
+                    dep_node.tanks.remove(node)
+                    depending_nodes.remove(dep)
+
+
         # First delete the dependencies
         for d in depending_nodes:
             if not self.name_available(d):  # element is still here
