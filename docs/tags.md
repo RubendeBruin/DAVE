@@ -66,6 +66,21 @@ Examples:
 
 
 
-### NOT IMPLEMENTED: Automatic tags
+### Standard tags
 
-Some tags are added automatically. These start with `@`. For example `@Cable`. These can not be modified or deleted. 
+Some nodes, macros or gui actions will automatically create one or more tags for some of the created nodes.
+Also imported assets or components may have pre-defined tags on their nodes.
+
+All tags can be edited/modified or deleted by the user. Beware however that tags that are automatically
+created will re-appear when the action that creates them is executed again. For example if one of the nodes
+in a component has a pre-defined tag, then this tag will be assigned whenever the component is loaded.
+If the tag is manually removed then the tag will re-appear when the component is loaded again.
+
+- Q: should we prefix?
+- A: No. Especially for loaded components that would not work
+- Q: But it could: just apply the prefix on any existing tag upon load, @ would be good.
+- A: Nah, does not add anything. Only makes things look ugly. Only benifit is a cleaner export to python code.
+
+
+
+
