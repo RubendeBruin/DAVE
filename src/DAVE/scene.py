@@ -218,6 +218,8 @@ class Node(ABC):
         """ """
         pass
 
+    # Note: this is a property such that it shows up in the derived properties
+    # this is inconsistent with scene.UC() which is a method
     @property
     def UC(self):
         """Returns the governing UC of the node, returns None is no limits are defined
@@ -7024,12 +7026,25 @@ class Scene:
         depending_nodes = self.nodes_depending_on(node)
         depending_nodes.extend([n.name for n in node.observers])
 
-        # If the depending node is a ballast-system, then do not remove that node but remove the tank from the systems list
+        # Referenced nodes
+        # Some node-types can reference to a node (so depend on it) but do not have a hard-dependancy.
+        # - tanks in a ballast-system
+        # - contact-meshes in a contact-ball
+        # Treat these references differently
+
         for dep in [*depending_nodes]:
             dep_node = self[dep]
+
             if isinstance(dep_node, BallastSystem):
                 if node in dep_node.tanks:
                     dep_node.tanks.remove(node)
+                    depending_nodes.remove(dep)
+
+            elif isinstance(dep_node, ContactBall):
+                if node in dep_node.meshes:
+                    meshes = list(dep_node.meshes) # returns tuple
+                    meshes.remove(node)            # re-init with new list
+                    dep_node.meshes = meshes
                     depending_nodes.remove(dep)
 
 
@@ -8804,7 +8819,7 @@ class Scene:
         self._nodes.append(new_node)
         return new_node
 
-    def new_ballastsystem(self, name, parent: Frame) -> BallastSystem:
+    def new_ballastsystem(self, name, parent: Frame or str) -> BallastSystem:
         """Creates a new *rigidbody* node and adds it to the scene.
 
         Args:

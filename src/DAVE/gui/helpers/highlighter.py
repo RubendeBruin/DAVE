@@ -32,14 +32,14 @@ def format(color, style=''):
 # Syntax styles that can be shared by all languages
 STYLES = {
     'keyword': format('blue'),
-    'operator': format('red'),
-    'brace': format('darkGray'),
+    'operator': format('black'),
+    'brace': format('black'),
     'defclass': format('black', 'bold'),
-    'string': format('magenta'),
-    'string2': format('darkMagenta'),
-    'comment': format('darkGreen', 'italic'),
+    'string': format('green', 'bold'),
+    'string2': format('green'),
+    'comment': format('darkGray', 'italic'),
     'self': format('black', 'italic'),
-    'numbers': format('brown'),
+    'numbers': format('blue'),
 }
 
 

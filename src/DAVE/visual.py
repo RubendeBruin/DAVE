@@ -2000,8 +2000,12 @@ class Viewport:
                     vis = vp.Cube(side=0.00001)
 
                 vis.actor_type = ActorType.MESH_OR_CONNECTOR
-
                 vis.loaded_obj = True
+
+                # disable backface
+                backProp = vtk.vtkProperty()
+                backProp.SetOpacity(0)
+                vis.SetBackfaceProperty(backProp)
 
                 actors["main"] = vis
 
@@ -2316,6 +2320,11 @@ class Viewport:
 
                         new_mesh = actor_from_trimesh(va.node.trimesh._TriMesh)
                         new_mesh.no_outline = True
+
+                        if isinstance(va.node, vf.ContactMesh):
+                            backProp = vtk.vtkProperty()
+                            backProp.SetOpacity(0)
+                            new_mesh.SetBackfaceProperty(backProp)
 
                         if new_mesh is not None:
                             self.screen.clear(va.actors["main"])
