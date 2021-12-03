@@ -1188,7 +1188,10 @@ class Gui:
             self._undo_log[index], store_undo=False, event=guiEventType.FULL_UPDATE
         )
 
-        nodes = [self.scene[node] for node in selected_names]
+        try:
+            nodes = [self.scene[node] for node in selected_names] # selected nodes may not exist anymore
+        except:
+            nodes = []
         self.selected_nodes.clear()  # do not re-assign, docks keep a reference to this list
         self.selected_nodes.extend(nodes)
 

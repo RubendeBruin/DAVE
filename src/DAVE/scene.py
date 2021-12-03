@@ -4470,9 +4470,10 @@ class Manager(Node, ABC):
 
     def _rename_all_manged_nodes(self, old_name, new_name):
         """Helper to quickly rename all managed nodes"""
+
         with ClaimManagement(self._scene, self):
             for node in self.managed_nodes():
-                node.name = node.name.replace(old_name, new_name)
+                node.name = new_name + node.name.lstrip(old_name)
 
 
 class GeometricContact(Manager):
