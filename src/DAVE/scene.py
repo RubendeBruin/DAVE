@@ -4539,6 +4539,7 @@ class GeometricContact(Manager):
             )
 
         super().__init__(scene)
+        self.name = name
 
         name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
 
@@ -4584,8 +4585,6 @@ class GeometricContact(Manager):
 
         self._child_circle_parent_parent._parent_for_code_export = None
 
-        self.name = name
-
         self._update_connection()
 
     def on_observed_node_changed(self, changed_node):
@@ -4601,7 +4600,6 @@ class GeometricContact(Manager):
     def name(self, value):
         assert self._scene.name_available(value), f"Name {value} already in use"
 
-        self._rename_all_manged_nodes(self.name, value)
         self._name = value
 
     @staticmethod
@@ -5110,7 +5108,7 @@ class Sling(Manager):
         """
 
         super().__init__(scene)
-
+        self._name = name
         name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
 
         # store the properties
@@ -5214,8 +5212,6 @@ class Sling(Manager):
         # Update properties
         self.sheaves = sheaves
         self._update_properties()
-
-        self.name = name
 
         for n in self.managed_nodes():
             n.manager = self
