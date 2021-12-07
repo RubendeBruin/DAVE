@@ -4462,6 +4462,8 @@ class Manager(Node, ABC):
         # example
         # @name.setter
         # def name(self, value):
+        #     if value == self.name: # no change
+        #         return
         #     old_name = self.name
         #     RigidBody.name.fset(self,value)
         #     self._rename_all_manged_nodes(old_name, value)
@@ -4473,7 +4475,9 @@ class Manager(Node, ABC):
 
         with ClaimManagement(self._scene, self):
             for node in self.managed_nodes():
-                node.name = new_name + node.name.lstrip(old_name)
+                n = len(old_name)
+                assert node.name[:n] == old_name
+                node.name = new_name + node.name[n:]
 
 
 class GeometricContact(Manager):
@@ -6644,8 +6648,19 @@ class Scene:
 
         if not silent:
             self.print_node_tree()
+
+        # See if we can give a good hint using fuzzy
+
+        try:
+            from rapidfuzz import process, fuzz
+            choices = [node.name for node in self._nodes]
+            best = process.extractOne(node_name, choices, scorer=fuzz.WRatio)
+            suggestion = f'\nDid you mean {best[0]} ?'
+        except:
+            suggestion = '[install rapidfuzz to get a suggestion]'
+
         raise ValueError(
-            'No node with name "{}". Available names printed above.'.format(node_name)
+            'No node with name "{}". {} \nAvailable names printed above.'.format(node_name, suggestion)
         )
 
     def __getitem__(self, node_name):

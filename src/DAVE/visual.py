@@ -40,9 +40,6 @@ from DAVE.settings_visuals import (
     UC_CMAP,
 )
 
-
-# vp.settings.renderLinesAsTubes = True
-
 import DAVE.scene as vf
 import DAVE.scene as dn
 import DAVE.settings_visuals
@@ -2483,6 +2480,8 @@ class Viewport:
             r.SetEnvironmentTexture(texture)
 
             r.SetUseDepthPeeling(True)
+
+            # r.SetLightFollowCamera(False)
 
             r.Modified()
 
