@@ -463,6 +463,9 @@ class NodeWithCoreParent(CoreConnectedNode):
 
             var = self._scene._node_from_node_or_str(var)
 
+            if isinstance(self, Point) and isinstance(var, Point):
+                raise ValueError(f'Point {self.name} can not be placed on Point {var.name} - Points can not be placed on other points')
+
             if isinstance(var, Frame) or isinstance(var, GeometricContact):
                 self._parent = var
                 self._vfNode.parent = var._vfNode
@@ -819,6 +822,83 @@ class Frame(NodeWithParentAndFootprint):
             var = (False, False, False, False, False, False)
 
         self._vfNode.fixed = var
+
+    def _getfixed(self,imode):
+        return self.fixed[imode]
+
+    def _setfixed(self, imode, value):
+        assert isinstance(value, bool), f'Fixed needs to be a boolean, not {value}'
+        fixed = list(self.fixed)
+        fixed[imode] = value
+        self.fixed = fixed
+
+    @property
+    def fixed_x(self):
+        """Restricts/allows movement in x direction of parent"""
+        return self.fixed[0]
+
+    @fixed_x.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def fixed_x(self, value):
+        self._setfixed(0,value)
+
+    @property
+    def fixed_y(self):
+        """Restricts/allows movement in y direction of parent"""
+        return self.fixed[1]
+
+    @fixed_y.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def fixed_y(self, value):
+        self._setfixed(1, value)
+
+    @property
+    def fixed_z(self):
+        """Restricts/allows movement in z direction of parent"""
+        return self.fixed[2]
+
+    @fixed_z.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def fixed_z(self, value):
+        self._setfixed(2, value)
+
+    @property
+    def fixed_rx(self):
+        """Restricts/allows movement about x direction of parent"""
+        return self.fixed[3]
+
+    @fixed_rx.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def fixed_rx(self, value):
+        self._setfixed(3, value)
+
+    @property
+    def fixed_ry(self):
+        """Restricts/allows movement about y direction of parent"""
+        return self.fixed[4]
+
+    @fixed_ry.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def fixed_ry(self, value):
+        self._setfixed(4, value)
+
+    @property
+    def fixed_rz(self):
+        """Restricts/allows movement about z direction of parent"""
+        return self.fixed[5]
+
+    @fixed_rz.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def fixed_rz(self, value):
+        self._setfixed(5, value)
+
+
 
     @node_setter_manageable
     def set_free(self):
@@ -6634,6 +6714,8 @@ class Scene:
         return (long, help, units, remarks)
 
     def node_by_name(self, node_name, silent=False):
+
+        assert isinstance(node_name, str), f"Node name should be a string, but is a {type(node_name)}"
 
         if self._name_prefix:
             node_name = self._name_prefix + node_name
