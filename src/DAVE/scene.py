@@ -360,6 +360,7 @@ class Node(ABC):
 
     @property
     def tags(self):
+        """All tags of this node (tuple of str)"""
         return tuple(self._tags)
 
     def delete_tag(self, value: str):
@@ -1019,7 +1020,7 @@ class Frame(NodeWithParentAndFootprint):
         """Rotation of the axis about its origin (rx,ry,rz).
         Defined as a rotation about an axis where the direction of the axis is (rx,ry,rz) and the angle of rotation is |(rx,ry,rz| degrees.
         These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)"""
-        return tuple(np.rad2deg(self._vfNode.rotation))
+        return tuple([n.item() for n in np.rad2deg(self._vfNode.rotation)]) # convert to float
 
     @rotation.setter
     @node_setter_manageable
@@ -6618,19 +6619,8 @@ class Scene:
         nodes = [node for node in self._nodes if node.manager is not None]
         return tuple(nodes)
 
-    def give_properties_for_node(self, node, gui_only=False):
-        """Returns a tuple containing all property-names for the given node.
-
-        Args:
-            gui_only: Return only properties where #NOGUI is not in the raw docstring
-
-        Returns: tuple of strings"""
-
-        if gui_only:
-            source = ds.PROPS_GUI
-        else:
-            source = ds.PROPS
-
+    def _props_for_node(self, node, source):
+        """Get applicable properties from source - accounts for anchestors"""
         props = []
 
         # inherited properties
@@ -6649,10 +6639,35 @@ class Scene:
             props.extend(source[node.class_name])
 
         # remove duplicates
-        props = list(set(props))
+        props = list(set(props))  # filter out doubles
         props.sort()
 
-        return tuple(props)  # filter out doubles
+        return tuple(props)
+
+
+    def give_settable_properties_for_node(self, node):
+        """Returns a tuple containing the names of all settable properties of the given node
+
+        Returns: tuple of strings
+        """
+
+        return self._props_for_node(node, ds.PROPS_SETTABLE)
+
+
+    def give_properties_for_node(self, node, gui_only=False):
+        """Returns a tuple containing all property-names for the given node.
+
+        Args:
+            gui_only: Return only properties where #NOGUI is not in the raw docstring
+
+        Returns: tuple of strings"""
+
+        if gui_only:
+            return self._props_for_node(node, ds.PROPS_GUI)
+        else:
+            return self._props_for_node(node, ds.PROPS)
+
+
 
     def _give_documentation(self, node_class_name, property_name):
         step1 = ds.DAVE_REPORT_PROPS[ds.DAVE_REPORT_PROPS["class"] == node_class_name]
