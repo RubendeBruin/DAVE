@@ -6149,6 +6149,9 @@ class Scene:
         self.reports = []
         """List of reports"""
 
+        self.t : 'TimeLine' or None = None
+
+
         if filename is not None:
             self.load_scene(filename)
 
@@ -9258,6 +9261,9 @@ class Scene:
                 code.append(f"\n# Exporting report {r.name}")
                 code.append(f'report_contents = r"""\n{yml}"""')
                 code.append("s.reports.append(Report(s,yml=report_contents))")
+
+        if self.t:
+            code.extend(self.t.give_python_code())
 
         return "\n".join(code)
 
