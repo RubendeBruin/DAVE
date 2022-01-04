@@ -7383,7 +7383,7 @@ class Scene:
 
                 old_dofs = self._vfc.get_dofs()
                 if len(old_dofs) == 0:
-                    return True
+                    return True # <---- trivial case
 
                 original_dofs_dict = self._fix_vessel_heel_trim()
                 phase = 2
@@ -7421,6 +7421,10 @@ class Scene:
 
                     if not changed:
                         # we are done!
+
+                        if self.t is not None:
+                            self.t.store_solved_results()
+
                         return True  # <------------- You've found the proper exit!
 
                     give_feedback(msg)
@@ -9254,6 +9258,8 @@ class Scene:
                 if n.tags:
                     code.append(f"s['{n.name}'].add_tags({n.tags})")
 
+
+        # Optional Reports
         if self.reports:
             code.append("\n# Reports")
             for r in self.reports:
@@ -9262,6 +9268,7 @@ class Scene:
                 code.append(f'report_contents = r"""\n{yml}"""')
                 code.append("s.reports.append(Report(s,yml=report_contents))")
 
+        # Optional Timelines
         if self.t:
             code.extend(self.t.give_python_code())
 
