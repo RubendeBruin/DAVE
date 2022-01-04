@@ -75,12 +75,14 @@ class WidgetLimits(guiDockWidget):
 
         if event in [guiEventType.FULL_UPDATE,
                      guiEventType.MODEL_STATE_CHANGED,
-                     guiEventType.SELECTED_NODE_MODIFIED]:
+                     guiEventType.SELECTED_NODE_MODIFIED,
+                     guiEventType.MODEL_TIMEFRAME_CHANGED,]:
             self.fill_table()
 
         if event in [guiEventType.FULL_UPDATE,
                      guiEventType.SELECTION_CHANGED,
                      guiEventType.MODEL_STRUCTURE_CHANGED,
+                     guiEventType.MODEL_TIMEFRAME_CHANGED,
                      ]:
             self.fill_edit_section()
 

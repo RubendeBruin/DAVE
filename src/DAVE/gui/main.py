@@ -239,6 +239,8 @@ class Gui:
 
         self.scene = scene
         """Reference to a scene"""
+        self.scene.gui_solve_func = self.solve_statics
+
 
 
         self.modelfilename = None
@@ -1328,21 +1330,25 @@ class Gui:
     def stop_solving(self):
         self._terminate = True
 
-    def solve_statics(self):
+    def solve_statics(self,timeout_s=1, called_by_user=True):
+
         self.scene.update()
 
-        self.add_undo_point()
+        if called_by_user:
+            self.add_undo_point()
 
         old_dofs = self.scene._vfc.get_dofs()
 
         if len(old_dofs) == 0:  # no degrees of freedom
-            msgBox = QMessageBox()
-            msgBox.setText("No degrees of freedom - nothing to solve")
-            msgBox.setWindowTitle("DAVE")
-            msgBox.exec_()
+            if called_by_user:
+                msgBox = QMessageBox()
+                msgBox.setText("No degrees of freedom - nothing to solve")
+                msgBox.setWindowTitle("DAVE")
+                msgBox.exec_()
 
-            print("No dofs")
-            return
+                print("No dofs")
+
+            return True
 
 
         self._dialog = None
@@ -1375,7 +1381,7 @@ class Gui:
 
 
         # execute the solver
-        self.scene._solve_statics_with_optional_control(feedback_func=feedback, do_terminate_func=should_we_stop, timeout_s=1)
+        result = self.scene._solve_statics_with_optional_control(feedback_func=feedback, do_terminate_func=should_we_stop, timeout_s=timeout_s)
 
         # close the dialog.
         # if this was a short solve,
@@ -1383,13 +1389,16 @@ class Gui:
             self._dialog.close()
 
         else: # animate the change
-            if DAVE.settings.GUI_DO_ANIMATE :
+            if DAVE.settings.GUI_DO_ANIMATE and called_by_user :
                 new_dofs = self.scene._vfc.get_dofs()
                 self.animate_change(old_dofs, new_dofs, 10)
 
 
-        self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
-        self._codelog.append("s.solve_statics()")
+        if called_by_user:
+            self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
+            self._codelog.append("s.solve_statics()")
+
+        return result
 
     def animate_change(self, old_dof, new_dof, n_steps):
         """Animates from old_dof to new_dofs in n_steps"""
@@ -1482,10 +1491,11 @@ class Gui:
 
     def open_file(self, filename):
         code = 's.clear()\ns.load_scene(r"{}")'.format(filename)
-        self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+        self.run_code(code, guiEventType.FULL_UPDATE)
         self.modelfilename = filename
         self.ui.actionSave.setEnabled(True)
         self.add_to_recent_file_menu(filename)
+        self.visual.zoom_all()
 
     def _get_filename_using_dialog(self):
         if self.modelfilename is None:
@@ -1959,6 +1969,14 @@ class Gui:
                 self.visual.update_visibility()
                 self.visual.position_visuals()
                 return
+
+            if event == guiEventType.MODEL_TIMEFRAME_CHANGED:
+                if self.visual.settings.paint_uc:
+                    self.visual.update_visibility()
+                self.visual.position_visuals()
+                return
+
+
 
             self.visual.create_node_visuals()
             self.visual.add_new_node_actors_to_screen()

@@ -19,7 +19,8 @@ class WidgetDynamicProperties(guiDockWidget):
         if event in [guiEventType.SELECTION_CHANGED,
                      guiEventType.SELECTED_NODE_MODIFIED,
                      guiEventType.MODEL_STRUCTURE_CHANGED,
-                     guiEventType.FULL_UPDATE]:
+                     guiEventType.FULL_UPDATE,
+                     guiEventType.MODEL_TIMEFRAME_CHANGED,]:
             self.fill_nodes_table()
 
     def guiDefaultLocation(self):

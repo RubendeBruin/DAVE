@@ -6150,6 +6150,10 @@ class Scene:
         """List of reports"""
 
         self.t : 'TimeLine' or None = None
+        """Optional timeline"""
+
+        self.gui_solve_func = None
+        """Optional reference to function to use instead of solve_statics - used by the Gui to give user control of solving"""
 
 
         if filename is not None:
@@ -6176,6 +6180,8 @@ class Scene:
         # validate reports
         self._validate_reports()
         self.reports.clear()  # and then delete them
+
+        self.t = None # reset timelines (if any)
 
         self._vfc = pyo3d.Scene()
 
@@ -6638,7 +6644,7 @@ class Scene:
         if isinstance(node, Frame):
             props.extend(source["Frame"])
 
-        if node.class_name in ds.PROPS:
+        if node.class_name in source:
             props.extend(source[node.class_name])
 
         # remove duplicates
@@ -7173,6 +7179,9 @@ class Scene:
         # validate reports
         self._validate_reports()
 
+        # validate timelines
+        self._validate_timelines()
+
     def dissolve(self, node):
         """Attempts to delete the given node without affecting the rest of the model.
 
@@ -7464,7 +7473,10 @@ class Scene:
         if timeout is None:
             timeout = -1
 
-        return self._solve_statics_with_optional_control(timeout_s=timeout)
+        if self.gui_solve_func is not None:
+            return self.gui_solve_func(called_by_user=False)
+        else:
+            return self._solve_statics_with_optional_control(timeout_s=timeout)
 
 
     def verify_equilibrium(self, tol=1e-2):
@@ -7623,6 +7635,14 @@ class Scene:
 
         for report in self.reports:
             report._validate_sections()
+
+    # ======= timelines =====
+
+    def _validate_timelines(self):
+        """This method is called whenever a node is deleted"""
+
+        if self.t is not None:
+            self.t.validate_node_references()
 
     # ======== create functions =========
 
