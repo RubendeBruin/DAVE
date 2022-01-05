@@ -61,7 +61,7 @@ class WidgetModeShapes(guiDockWidget):
 
         if event in [guiEventType.FULL_UPDATE,
                      guiEventType.MODEL_STRUCTURE_CHANGED,
-                     guiEventType.MODEL_TIMEFRAME_CHANGED,
+                     guiEventType.MODEL_STEP_ACTIVATED,
                      guiEventType.SELECTED_NODE_MODIFIED]:
 
             self.gui.animation_terminate()

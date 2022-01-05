@@ -1970,7 +1970,7 @@ class Gui:
                 self.visual.position_visuals()
                 return
 
-            if event == guiEventType.MODEL_TIMEFRAME_CHANGED:
+            if event == guiEventType.MODEL_STEP_ACTIVATED:
                 if self.visual.settings.paint_uc:
                     self.visual.update_visibility()
                 self.visual.position_visuals()

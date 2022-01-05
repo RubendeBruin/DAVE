@@ -133,7 +133,7 @@ class WidgetNodeTree(guiDockWidget):
         if event in [
             guiEventType.MODEL_STRUCTURE_CHANGED,
             guiEventType.FULL_UPDATE,
-            guiEventType.MODEL_TIMEFRAME_CHANGED,
+            guiEventType.MODEL_STEP_ACTIVATED,
             guiEventType.SELECTED_NODE_MODIFIED,
         ]:
             self.update_node_data_and_tree()

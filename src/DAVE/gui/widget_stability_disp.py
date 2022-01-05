@@ -48,7 +48,7 @@ class WidgetDisplacedStability(guiDockWidget):
         if event in [guiEventType.SELECTION_CHANGED,
                      guiEventType.FULL_UPDATE,
                      guiEventType.MODEL_STATE_CHANGED,
-                     guiEventType.MODEL_TIMEFRAME_CHANGED,
+                     guiEventType.MODEL_STEP_ACTIVATED,
                      guiEventType.SELECTED_NODE_MODIFIED]:
             self.fill()
 

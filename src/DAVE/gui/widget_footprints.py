@@ -71,7 +71,7 @@ class WidgetFootprints(guiDockWidget):
         if event in [guiEventType.MODEL_STATE_CHANGED,
                      guiEventType.FULL_UPDATE,
                      guiEventType.MODEL_STRUCTURE_CHANGED,
-                     guiEventType.MODEL_TIMEFRAME_CHANGED,]:
+                     guiEventType.MODEL_STEP_ACTIVATED, ]:
             self.fill()
 
         if event in [guiEventType.SELECTION_CHANGED]:

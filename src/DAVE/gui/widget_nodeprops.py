@@ -2265,7 +2265,7 @@ class WidgetNodeProps(guiDockWidget):
         # structure changed is emitted when a node is moved in the tree.
         # if the moved node is the active node then it needs to be updated as its local-position may have changed
 
-        if event in [guiEventType.SELECTION_CHANGED, guiEventType.FULL_UPDATE, guiEventType.MODEL_STRUCTURE_CHANGED,guiEventType.MODEL_TIMEFRAME_CHANGED,]:
+        if event in [guiEventType.SELECTION_CHANGED, guiEventType.FULL_UPDATE, guiEventType.MODEL_STRUCTURE_CHANGED, guiEventType.MODEL_STEP_ACTIVATED, ]:
 
             # check if we have a selection
             if self.guiSelection:
