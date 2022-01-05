@@ -237,6 +237,8 @@ if platform.system().lower().startswith('win'):
     else:
         BLENDER_EXEC = BLENDER_EXEC_DEFAULT_WIN
 
+    BLENDER_EXEC = BLENDER_EXEC.replace('blender-launcher','blender')
+
     from os import path
     if path.exists(BLENDER_EXEC):
         print("Blender found at: {}".format(BLENDER_EXEC))

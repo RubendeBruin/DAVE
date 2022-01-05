@@ -164,7 +164,7 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), or
         active_object.rotation_mode = 'QUATERNION'
         active_object.rotation_quaternion = (orientation[3], orientation[0], orientation[1],orientation[2])
 
-        n_frame = 1
+        n_frame = 0
         for pos, orient in zip(positions, orientations):
             bpy.context.scene.frame_set(n_frame * frames_per_dof)
             n_frame += 1
@@ -510,7 +510,7 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
         blender_result_file = consts.BLENDER_DEFAULT_OUTFILE
 
     blender_py_file(scene, tempfile, blender_base_file = blender_base_file , blender_result_file = blender_result_file
-                    ,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield, timeline = timeline)
+                    ,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield)
 
     if blender_exe_path is None:
         blender_exe_path = consts.BLENDER_EXEC
@@ -527,7 +527,16 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
 
 
 def blender_py_file(scene, python_file, blender_base_file, blender_result_file, camera=None, animation_dofs=None,
-                    wavefield=None, timeline = None):
+                    wavefield=None):
+
+    # If animation dofs are not provided, and the scene has a timeline with a non-zero range, then use that
+    timeline = None
+    if animation_dofs is None:
+        if scene.t:
+            if scene.t.range() is not None:
+                timeline = scene.t
+
+
     code = '# Auto-generated python file for blender\n# Execute using blender.exe -b --python "{}"\n\n'.format(
         python_file)
     code += 'import bpy\n'
