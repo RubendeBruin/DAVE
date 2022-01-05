@@ -67,7 +67,8 @@ class WidgetDerivedProperties(guiDockWidget):
         if event in [guiEventType.SELECTION_CHANGED,
                      guiEventType.FULL_UPDATE,
                      guiEventType.MODEL_STATE_CHANGED,
-                     guiEventType.SELECTED_NODE_MODIFIED]:
+                     guiEventType.SELECTED_NODE_MODIFIED,
+                     guiEventType.MODEL_TIMEFRAME_CHANGED]:
             self.display_node_properties()
 
     def guiDefaultLocation(self):

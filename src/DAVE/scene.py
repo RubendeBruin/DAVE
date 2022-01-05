@@ -360,6 +360,7 @@ class Node(ABC):
 
     @property
     def tags(self):
+        """All tags of this node (tuple of str)"""
         return tuple(self._tags)
 
     def delete_tag(self, value: str):
@@ -462,6 +463,9 @@ class NodeWithCoreParent(CoreConnectedNode):
         else:
 
             var = self._scene._node_from_node_or_str(var)
+
+            if isinstance(self, Point) and isinstance(var, Point):
+                raise ValueError(f'Point {self.name} can not be placed on Point {var.name} - Points can not be placed on other points')
 
             if isinstance(var, Frame) or isinstance(var, GeometricContact):
                 self._parent = var
@@ -820,6 +824,83 @@ class Frame(NodeWithParentAndFootprint):
 
         self._vfNode.fixed = var
 
+    def _getfixed(self,imode):
+        return self.fixed[imode]
+
+    def _setfixed(self, imode, value):
+        assert isinstance(value, bool), f'Fixed needs to be a boolean, not {value}'
+        fixed = list(self.fixed)
+        fixed[imode] = value
+        self.fixed = fixed
+
+    @property
+    def fixed_x(self):
+        """Restricts/allows movement in x direction of parent"""
+        return self.fixed[0]
+
+    @fixed_x.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def fixed_x(self, value):
+        self._setfixed(0,value)
+
+    @property
+    def fixed_y(self):
+        """Restricts/allows movement in y direction of parent"""
+        return self.fixed[1]
+
+    @fixed_y.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def fixed_y(self, value):
+        self._setfixed(1, value)
+
+    @property
+    def fixed_z(self):
+        """Restricts/allows movement in z direction of parent"""
+        return self.fixed[2]
+
+    @fixed_z.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def fixed_z(self, value):
+        self._setfixed(2, value)
+
+    @property
+    def fixed_rx(self):
+        """Restricts/allows movement about x direction of parent"""
+        return self.fixed[3]
+
+    @fixed_rx.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def fixed_rx(self, value):
+        self._setfixed(3, value)
+
+    @property
+    def fixed_ry(self):
+        """Restricts/allows movement about y direction of parent"""
+        return self.fixed[4]
+
+    @fixed_ry.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def fixed_ry(self, value):
+        self._setfixed(4, value)
+
+    @property
+    def fixed_rz(self):
+        """Restricts/allows movement about z direction of parent"""
+        return self.fixed[5]
+
+    @fixed_rz.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def fixed_rz(self, value):
+        self._setfixed(5, value)
+
+
+
     @node_setter_manageable
     def set_free(self):
         """Sets .fixed to (False,False,False,False,False,False)"""
@@ -939,7 +1020,7 @@ class Frame(NodeWithParentAndFootprint):
         """Rotation of the axis about its origin (rx,ry,rz).
         Defined as a rotation about an axis where the direction of the axis is (rx,ry,rz) and the angle of rotation is |(rx,ry,rz| degrees.
         These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)"""
-        return tuple(np.rad2deg(self._vfNode.rotation))
+        return tuple([n.item() for n in np.rad2deg(self._vfNode.rotation)]) # convert to float
 
     @rotation.setter
     @node_setter_manageable
@@ -6068,6 +6149,13 @@ class Scene:
         self.reports = []
         """List of reports"""
 
+        self.t : 'TimeLine' or None = None
+        """Optional timeline"""
+
+        self.gui_solve_func = None
+        """Optional reference to function to use instead of solve_statics - used by the Gui to give user control of solving"""
+
+
         if filename is not None:
             self.load_scene(filename)
 
@@ -6092,6 +6180,8 @@ class Scene:
         # validate reports
         self._validate_reports()
         self.reports.clear()  # and then delete them
+
+        self.t = None # reset timelines (if any)
 
         self._vfc = pyo3d.Scene()
 
@@ -6538,19 +6628,8 @@ class Scene:
         nodes = [node for node in self._nodes if node.manager is not None]
         return tuple(nodes)
 
-    def give_properties_for_node(self, node, gui_only=False):
-        """Returns a tuple containing all property-names for the given node.
-
-        Args:
-            gui_only: Return only properties where #NOGUI is not in the raw docstring
-
-        Returns: tuple of strings"""
-
-        if gui_only:
-            source = ds.PROPS_GUI
-        else:
-            source = ds.PROPS
-
+    def _props_for_node(self, node, source):
+        """Get applicable properties from source - accounts for anchestors"""
         props = []
 
         # inherited properties
@@ -6565,14 +6644,39 @@ class Scene:
         if isinstance(node, Frame):
             props.extend(source["Frame"])
 
-        if node.class_name in ds.PROPS:
+        if node.class_name in source:
             props.extend(source[node.class_name])
 
         # remove duplicates
-        props = list(set(props))
+        props = list(set(props))  # filter out doubles
         props.sort()
 
-        return tuple(props)  # filter out doubles
+        return tuple(props)
+
+
+    def give_settable_properties_for_node(self, node):
+        """Returns a tuple containing the names of all settable properties of the given node
+
+        Returns: tuple of strings
+        """
+
+        return self._props_for_node(node, ds.PROPS_SETTABLE)
+
+
+    def give_properties_for_node(self, node, gui_only=False):
+        """Returns a tuple containing all property-names for the given node.
+
+        Args:
+            gui_only: Return only properties where #NOGUI is not in the raw docstring
+
+        Returns: tuple of strings"""
+
+        if gui_only:
+            return self._props_for_node(node, ds.PROPS_GUI)
+        else:
+            return self._props_for_node(node, ds.PROPS)
+
+
 
     def _give_documentation(self, node_class_name, property_name):
         step1 = ds.DAVE_REPORT_PROPS[ds.DAVE_REPORT_PROPS["class"] == node_class_name]
@@ -6634,6 +6738,8 @@ class Scene:
         return (long, help, units, remarks)
 
     def node_by_name(self, node_name, silent=False):
+
+        assert isinstance(node_name, str), f"Node name should be a string, but is a {type(node_name)}"
 
         if self._name_prefix:
             node_name = self._name_prefix + node_name
@@ -7073,6 +7179,9 @@ class Scene:
         # validate reports
         self._validate_reports()
 
+        # validate timelines
+        self._validate_timelines()
+
     def dissolve(self, node):
         """Attempts to delete the given node without affecting the rest of the model.
 
@@ -7283,7 +7392,7 @@ class Scene:
 
                 old_dofs = self._vfc.get_dofs()
                 if len(old_dofs) == 0:
-                    return True
+                    return True # <---- trivial case
 
                 original_dofs_dict = self._fix_vessel_heel_trim()
                 phase = 2
@@ -7321,6 +7430,10 @@ class Scene:
 
                     if not changed:
                         # we are done!
+
+                        if self.t is not None:
+                            self.t.store_solved_results()
+
                         return True  # <------------- You've found the proper exit!
 
                     give_feedback(msg)
@@ -7360,7 +7473,10 @@ class Scene:
         if timeout is None:
             timeout = -1
 
-        return self._solve_statics_with_optional_control(timeout_s=timeout)
+        if self.gui_solve_func is not None:
+            return self.gui_solve_func(called_by_user=False)
+        else:
+            return self._solve_statics_with_optional_control(timeout_s=timeout)
 
 
     def verify_equilibrium(self, tol=1e-2):
@@ -7519,6 +7635,14 @@ class Scene:
 
         for report in self.reports:
             report._validate_sections()
+
+    # ======= timelines =====
+
+    def _validate_timelines(self):
+        """This method is called whenever a node is deleted"""
+
+        if self.t is not None:
+            self.t.validate_node_references()
 
     # ======== create functions =========
 
@@ -9154,6 +9278,8 @@ class Scene:
                 if n.tags:
                     code.append(f"s['{n.name}'].add_tags({n.tags})")
 
+
+        # Optional Reports
         if self.reports:
             code.append("\n# Reports")
             for r in self.reports:
@@ -9161,6 +9287,10 @@ class Scene:
                 code.append(f"\n# Exporting report {r.name}")
                 code.append(f'report_contents = r"""\n{yml}"""')
                 code.append("s.reports.append(Report(s,yml=report_contents))")
+
+        # Optional Timelines
+        if self.t:
+            code.extend(self.t.give_python_code())
 
         return "\n".join(code)
 

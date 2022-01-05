@@ -239,6 +239,8 @@ class Gui:
 
         self.scene = scene
         """Reference to a scene"""
+        self.scene.gui_solve_func = self.solve_statics
+
 
 
         self.modelfilename = None
@@ -1328,131 +1330,75 @@ class Gui:
     def stop_solving(self):
         self._terminate = True
 
-    def solve_statics(self):
+    def solve_statics(self,timeout_s=1, called_by_user=True):
+
         self.scene.update()
 
-        self.add_undo_point()
+        if called_by_user:
+            self.add_undo_point()
 
         old_dofs = self.scene._vfc.get_dofs()
 
         if len(old_dofs) == 0:  # no degrees of freedom
+            if called_by_user:
+                msgBox = QMessageBox()
+                msgBox.setText("No degrees of freedom - nothing to solve")
+                msgBox.setWindowTitle("DAVE")
+                msgBox.exec_()
 
-            self.guiEmitEvent(
-                guiEventType.MODEL_STATE_CHANGED
-            )  # update the gui to reflect the scene.update
+                print("No dofs")
 
-            msgBox = QMessageBox()
-            msgBox.setText("No degrees of freedom - nothing to solve")
-            msgBox.setWindowTitle("DAVE")
-            msgBox.exec_()
+            return True
 
-            print("No dofs")
-            return
 
-        # self._dofs = old_dofs.copy()
+        self._dialog = None
 
-        long_wait = False
-        dialog = None
-
+        # define the terminate control
         self._terminate = False
+        def should_we_stop():
+            return self._terminate
 
-        original_dofs = self.scene._fix_vessel_heel_trim()
+        # define the feedback control
+        self._feedbackcounter = 0
+        def feedback(message):
 
-        while True:
+            self._feedbackcounter += 1   # skip the first
+            if self._feedbackcounter < 2:
+                return
 
-            # Returns
-            # -2  done, unstable solution for unable to converge to another one
-            # -1  done, unstable solution
-            # 0   done, stable equilibrium (if checked) or unknonwn equilibrium (if not checked)
-            #
-            # 1   time-out or fail during linear-dof solve   - state not in equilibrium
-            # 2   time-out or fail during full-dof solve     - state not in equilibrium
-            #
-            # Positive (1,2) return argument can be passed as input (phases_completed) to continue where we timed-out.
-            #
-            # */
-            # int Scene::stateSolve(bool doStabilityCheck, double timeout,
-            # 	bool do_prepare_state,
-            # 	bool solve_linear_dofs_first,
-            # 	double stability_check_delta)
+            if self._dialog is None:
+                self._dialog = SolverDialog()
+                self._dialog.btnTerminate.clicked.connect(self.stop_solving)
+                self._dialog.show()
 
-            timeout = 0.5
-            do_stability_check = True
-            do_prepare_state = True
-            solve_linear_dofs_first = True
-            delta = 0  # default
+            self._dialog.label_2.setText(message)
 
-            status = self.scene._vfc.state_solve_statics_with_timeout(
-                do_stability_check,
-                timeout,
-                do_prepare_state,
-                solve_linear_dofs_first,
-                delta,
-            )
-
-            message = "Maximum error = {}".format(self.scene._vfc.Emaxabs)
-
-            if self._terminate:
-                print("Terminating")
-                self.scene._restore_original_fixes(original_dofs)
-                break
-
-            if (status == 0) or (status == -2):  # solving done
-
-                # solving exited with success
-
-                if original_dofs:  # reset original dofs and go to phase 2
-                    self.scene._restore_original_fixes(original_dofs)
-                    original_dofs = None
-                    # continue
-                else:  # done
-
-                    # see if all geometric contacts are ok
-                    # if not then continue
-                    (
-                        changed,
-                        msg,
-                    ) = self.scene._check_and_fix_geometric_contact_orientations()
-                    message += "\n" + msg
-                    if not changed:
-                        # we are done!
-                        break
-
-            if dialog is None:
-                dialog = SolverDialog()
-                dialog.btnTerminate.clicked.connect(self.stop_solving)
-                dialog.show()
-                long_wait = True
-
-            dialog.label_2.setText(message)
-
-            dialog.update()
+            self._dialog.update()
 
             self.visual.position_visuals()
             self.visual.refresh_embeded_view()
             self.app.processEvents()
 
-        if dialog is not None:
-            dialog.close()
 
-        try:
-            # See if we can get the debug-log
-            dofs = self.scene._vfc.get_solve_dofs_log()
-            n_steps = len(dofs)
-            if n_steps <= 2:
-                new_dofs = self.scene._vfc.get_dofs()
-                self.animate_change(old_dofs, new_dofs, 10)
-                return  # nothing to animate
+        # execute the solver
+        result = self.scene._solve_statics_with_optional_control(feedback_func=feedback, do_terminate_func=should_we_stop, timeout_s=timeout_s)
 
-            ts = np.linspace(0, 10, num=n_steps)
-            self.animation_start(t=ts, dofs=dofs, is_loop=True)
-        except AttributeError:
-            if DAVE.settings.GUI_DO_ANIMATE and not long_wait:
+        # close the dialog.
+        # if this was a short solve,
+        if self._dialog is not None:
+            self._dialog.close()
+
+        else: # animate the change
+            if DAVE.settings.GUI_DO_ANIMATE and called_by_user :
                 new_dofs = self.scene._vfc.get_dofs()
                 self.animate_change(old_dofs, new_dofs, 10)
 
-        self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
-        self._codelog.append("s.solve_statics()")
+
+        if called_by_user:
+            self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
+            self._codelog.append("s.solve_statics()")
+
+        return result
 
     def animate_change(self, old_dof, new_dof, n_steps):
         """Animates from old_dof to new_dofs in n_steps"""
@@ -1545,10 +1491,11 @@ class Gui:
 
     def open_file(self, filename):
         code = 's.clear()\ns.load_scene(r"{}")'.format(filename)
-        self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+        self.run_code(code, guiEventType.FULL_UPDATE)
         self.modelfilename = filename
         self.ui.actionSave.setEnabled(True)
         self.add_to_recent_file_menu(filename)
+        self.visual.zoom_all()
 
     def _get_filename_using_dialog(self):
         if self.modelfilename is None:
@@ -2022,6 +1969,14 @@ class Gui:
                 self.visual.update_visibility()
                 self.visual.position_visuals()
                 return
+
+            if event == guiEventType.MODEL_TIMEFRAME_CHANGED:
+                if self.visual.settings.paint_uc:
+                    self.visual.update_visibility()
+                self.visual.position_visuals()
+                return
+
+
 
             self.visual.create_node_visuals()
             self.visual.add_new_node_actors_to_screen()

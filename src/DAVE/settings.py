@@ -173,9 +173,11 @@ classes = set(DAVE_REPORT_PROPS['class'].tolist())
 
 PROPS = dict()
 PROPS_GUI = dict()
+
 for c in classes:
     props_for_class = DAVE_REPORT_PROPS[DAVE_REPORT_PROPS['class'] == c]
     all_properties = props_for_class['property'].tolist()
+
     PROPS[c] =  all_properties
     docs = props_for_class['doc'].tolist()
 
@@ -188,7 +190,20 @@ for c in classes:
 
     PROPS_GUI[c] = guiprops
 
+PROPS_SETTABLE = dict()
+_SETTABLE_EXCLUDED = ('gx','gy','gz','name','inertia','kind','grx','gry','grz','position','rotation','level_global','manager','volume','target_elevation')
+for c in classes:
+    settable_props_for_class = DAVE_REPORT_PROPS[(DAVE_REPORT_PROPS['class'] == c) & (DAVE_REPORT_PROPS['readonly'] == False)]
+    props = settable_props_for_class['property'].tolist()
+    # manual exclusion of some of the properties
+    for ex in _SETTABLE_EXCLUDED:
+        if ex in props:
+            props.remove(ex)
 
+    if 'visible' not in props:
+        props.append('visible')
+
+    PROPS_SETTABLE[c] = props
 
 # ======= Animate after solving =========
 
@@ -221,6 +236,8 @@ if platform.system().lower().startswith('win'):
         BLENDER_EXEC = pt[1:-6]
     else:
         BLENDER_EXEC = BLENDER_EXEC_DEFAULT_WIN
+
+    BLENDER_EXEC = BLENDER_EXEC.replace('blender-launcher','blender')
 
     from os import path
     if path.exists(BLENDER_EXEC):

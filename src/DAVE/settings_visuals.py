@@ -252,6 +252,13 @@ painters["Connector2d"] = {"main": copy(mesh)}
 mesh.lineColor = _RED
 painters["LC6d"] = {"main": copy(mesh)}
 
+
+# SPMT
+
+mesh.lineColor = _RED
+painters["SPMT"] = {"main": copy(mesh)}
+
+
 # ----- contact mesh
 
 cm = ActorSettings()
@@ -577,6 +584,7 @@ surf.surfaceColor = _LIGHT_GRAY
 animation_painters["Visual"]["main"] = copy(surf)
 animation_painters["Cable"] = copy(PAINTERS["Construction"]["Cable"])
 animation_painters["Beam"] = copy(PAINTERS["Construction"]["Beam"])
+animation_painters["SPMT"] = copy(PAINTERS["Construction"]["SPMT"])
 
 PAINTERS["Visual"] = animation_painters
 

@@ -47,7 +47,8 @@ class WidgetBendingMoment(guiDockWidget):
         """
 
         if event in [guiEventType.FULL_UPDATE,
-                     guiEventType.MODEL_STRUCTURE_CHANGED]:
+                     guiEventType.MODEL_STRUCTURE_CHANGED,
+                     guiEventType.MODEL_TIMEFRAME_CHANGED]:
             self.fill()
 
 

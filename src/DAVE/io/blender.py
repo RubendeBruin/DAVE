@@ -164,7 +164,7 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), or
         active_object.rotation_mode = 'QUATERNION'
         active_object.rotation_quaternion = (orientation[3], orientation[0], orientation[1],orientation[2])
 
-        n_frame = 1
+        n_frame = 0
         for pos, orient in zip(positions, orientations):
             bpy.context.scene.frame_set(n_frame * frames_per_dof)
             n_frame += 1
@@ -500,7 +500,7 @@ def create_blend_and_open(scene, blender_result_file = None, blender_base_file=N
     # command = 'explorer "{}"'.format(str(blender_result_file))
     # subprocess.call(command, creationflags=subprocess.DETACHED_PROCESS)
 
-def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None ,animation_dofs=None, wavefield=None, open_gui = False):
+def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None ,animation_dofs=None, wavefield=None, open_gui = False, timeline = None):
     tempfile = Path(consts.PATH_TEMP) / 'blender.py'
 
     if blender_base_file is None:
@@ -528,6 +528,15 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
 
 def blender_py_file(scene, python_file, blender_base_file, blender_result_file, camera=None, animation_dofs=None,
                     wavefield=None):
+
+    # If animation dofs are not provided, and the scene has a timeline with a non-zero range, then use that
+    timeline = None
+    if animation_dofs is None:
+        if scene.t:
+            if scene.t.range() is not None:
+                timeline = scene.t
+
+
     code = '# Auto-generated python file for blender\n# Execute using blender.exe -b --python "{}"\n\n'.format(
         python_file)
     code += 'import bpy\n'
@@ -568,10 +577,16 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
         # the offset needs to be rotated.
 
-        rot = Rotation.from_rotvec(deg2rad(visual.parent.global_rotation))
+        has_parent = visual.parent is not None
+
+        if has_parent is None:
+            rot = Rotation.from_rotvec(deg2rad(visual.parent.global_rotation))
+        else:
+            rot = (0, 0, 0)
+
         # rotated_offset = rot.apply(visual.offset)
 
-        if animation_dofs:
+        if animation_dofs and has_parent:
             code += '\npositions = []'
             code += '\norientations = []'
             for dof in animation_dofs:
@@ -595,15 +610,52 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 *_to_quaternion(visual.parent.global_rotation),
                 *visual.parent.global_position)
 
+        elif timeline and has_parent:
+            code += '\npositions = []'
+            code += '\norientations = []'
 
-        else:
-            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}))'.format(
+            time_start, time_end = timeline.range()
+
+            for i_time in range(time_end-time_start):
+
+
+                timeline.activate_time(i_time + time_start)
+                scene.update()
+
+                code += '\norientations.append([{},{},{},{}])'.format(*_to_quaternion(visual.parent.global_rotation))
+
+                position = visual.parent.global_position
+                # global_offset = visual.parent.to_glob_direction(visual.offset)
+
+                glob_position = np.array(position)  # + np.array(global_offset)
+
+                code += '\npositions.append([{},{},{}])'.format(*glob_position)
+
+            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations)'.format(
                 filename,
                 *visual.scale,
                 *_to_quaternion(visual.rotation),
                 *visual.offset,
                 *_to_quaternion(visual.parent.global_rotation),
                 *visual.parent.global_position)
+
+
+        else:
+
+            if has_parent:
+                parent_global_position = visual.parent.global_position
+                parent_global_rotation = visual.parent.global_rotation
+            else:
+                parent_global_position = (0,0,0)
+                parent_global_rotation = (0,0,0)
+
+            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}))'.format(
+                filename,
+                *visual.scale,
+                *_to_quaternion(visual.rotation),
+                *visual.offset,
+                *_to_quaternion(parent_global_rotation),
+                *parent_global_position)
 
     for cable in scene.nodes_of_type(dc.Cable):
 
@@ -634,6 +686,26 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
             code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points)'.format(dia, cable.name)
 
+        elif timeline:
+
+            code += '\nani_points = []'
+            time_start, time_end = timeline.range()
+
+            for i_time in range(time_end - time_start):
+
+                timeline.activate_time(i_time + time_start)
+                scene.update()
+                points = cable.get_points_for_visual()
+                code += '\nframe_points=['
+                for p in points:
+                    code += '({},{},{},1.0),'.format(*p)
+                code = code[:-1]
+                code += ']'
+                code += '\nani_points.append(frame_points)'
+
+            code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points)'.format(dia, cable.name)
+
+
         else:
 
             code += '\nadd_line(points, diameter={}, name = "{}")'.format(dia, cable.name)
@@ -654,6 +726,23 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
             code += '\nani_points = []'
             for dof in animation_dofs:
                 scene._vfc.set_dofs(dof)
+                scene.update()
+                points = beam.global_positions
+                code += '\nframe_points=['
+                for p in points:
+                    code += '({},{},{},1.0),'.format(*p)
+                code = code[:-1]
+                code += ']'
+                code += '\nani_points.append(frame_points)'
+
+            code += '\nadd_beam(points, diameter={}, name = "{}", ani_points = ani_points)'.format(dia, beam.name)
+
+        elif timeline:
+
+            code += '\nani_points = []'
+            time_start, time_end = timeline.range()
+            for i_time in range(time_end - time_start):
+                timeline.activate_time(i_time + time_start)
                 scene.update()
                 points = beam.global_positions
                 code += '\nframe_points=['

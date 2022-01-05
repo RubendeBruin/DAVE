@@ -119,8 +119,7 @@ Circle,position,True,"Returns the local position of the center of the sheave.
         "
 Component,name,False,"Name of the node (str), must be unique
         #NOGUI"
-Component,path,False,"Path of the model-file. For example res: padeye.dave
-        "
+Component,path,False,Path of the model-file. For example res: padeye.dave
 Connector2d,angle,True,Actual angle between nodeA and nodeB [deg] (read-only)
 Connector2d,force,True,Actual force between nodeA and nodeB [kN] (read-only)
 Connector2d,moment,True,Actual moment between nodeA and nodeB [kNm] (read-only)
@@ -217,6 +216,12 @@ Frame,fixed,False,"Determines which of the six degrees of freedom are fixed, if 
 
         See Also: set_free, set_fixed
         "
+Frame,fixed_x,False,Restricts/allows movement in x direction of parent
+Frame,fixed_y,False,Restricts/allows movement in y direction of parent
+Frame,fixed_z,False,Restricts/allows movement in z direction of parent
+Frame,fixed_rx,False,Restricts/allows movement about x direction of parent
+Frame,fixed_ry,False,Restricts/allows movement about y direction of parent
+Frame,fixed_rz,False,Restricts/allows movement about z direction of parent
 Frame,x,False,The x-component of the position vector (parent axis) [m]
 Frame,y,False,The y-component of the position vector (parent axis) [m]
 Frame,z,False,The z-component of the position vector (parent axis) [m]
@@ -387,6 +392,7 @@ Node,is_valid,True,"Returns True if the node is still present in the scene and/o
         still valid.
         #NOGUI
         "
+Node,tags,True,All tags of this node (tuple of str)
 NodeWithCoreParent,parent_for_export,True,"Reference to node that to use as parent used during export (work-around for circular references in export of geometric-contact
         #NOGUI"
 NodeWithCoreParent,parent,False,"Determines the parent of the node if any.
@@ -465,9 +471,9 @@ Sling,sheaves,False,"List of sheaves (circles, points) that the sling runs over 
         "
 Tank,trimesh,True,"The TriMeshSource object which can be used to change the mesh
 
-                Example:
-                    s['Contactmesh'].trimesh.load_file('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
-            #NOGUI"
+            Example:
+                s['Contactmesh'].trimesh.load_file('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
+        #NOGUI"
 Tank,free_flooding,False,Tank is filled till global waterline (aka: damaged) [bool]
 Tank,permeability,False,Permeability is the fraction of the enclosed volume that can be filled with fluid [-]
 Tank,cog,True,Returns the GLOBAL position of the center of volume / gravity

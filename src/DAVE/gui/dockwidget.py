@@ -12,6 +12,11 @@ class guiEventType(Enum):
     VIEWER_SETTINGS_UPDATE = 5   # the display settings for the viewer changed
     ENVIRONMENT_CHANGED = 6      # one of the scene environment values changed (eg: g, wind_direction, ... )
     TAGS_CHANGED = 7             # whenever a tag is added or removed
+    MODEL_TIMEFRAME_CHANGED = 8  # a change in time-frame MAY mean
+                                 #    - that the select node is modified,
+                                 #    - model structure is changed
+                                 #    - model state changed
+                                 #    - environment changed
 
 class guiDockWidget(QtWidgets.QDockWidget):
 

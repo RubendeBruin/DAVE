@@ -78,7 +78,7 @@ class WidgetBallastSystemSelect(guiDockWidget):
                     if self.comboBox.currentText() != self.guiSelection[0].name:
                         self.comboBox.setCurrentText(self.guiSelection[0].name)
 
-        if event in [guiEventType.FULL_UPDATE, guiEventType.MODEL_STRUCTURE_CHANGED, guiEventType.MODEL_STATE_CHANGED]:
+        if event in [guiEventType.FULL_UPDATE, guiEventType.MODEL_STRUCTURE_CHANGED, guiEventType.MODEL_STATE_CHANGED,guiEventType.MODEL_TIMEFRAME_CHANGED]:
             self.updateRPD()
 
 
