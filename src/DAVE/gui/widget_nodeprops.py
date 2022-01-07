@@ -25,6 +25,7 @@ import DAVE.gui.forms.widget_tank
 import DAVE.gui.forms.widget_shackle
 import DAVE.gui.forms.widget_area
 import DAVE.gui.forms.widget_component
+import DAVE.gui.forms.widget_spmt
 
 from DAVE.visual import transform_from_node
 from DAVE.gui.helpers.my_qt_helpers import BlockSigs
@@ -2195,6 +2196,68 @@ class EditShackle(NodeEditor):
         self.run_code(code)
 
 
+@Singleton
+class EditSPMT(NodeEditor):
+    def __init__(self):
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_spmt.Ui_SPMTwidget()
+        ui.setupUi(widget)
+        self.ui = ui
+        self._widget = widget
+
+        self.ui.rbPerpendicular.toggled.connect(self.generate_code)
+        self.ui.rbVertical.toggled.connect(self.generate_code)
+
+        self.ui.sbDX.valueChanged.connect(self.generate_code)
+        self.ui.sbDY.valueChanged.connect(self.generate_code)
+        self.ui.sbNX.valueChanged.connect(self.generate_code)
+        self.ui.sbNY.valueChanged.connect(self.generate_code)
+
+        self.ui.sbRefExtension.valueChanged.connect(self.generate_code)
+        self.ui.sbRefForce.valueChanged.connect(self.generate_code)
+        self.ui.sbStiffness.valueChanged.connect(self.generate_code)
+
+
+    def post_update_event(self):
+        # self.ui.comboBox.blockSignals(True)
+
+
+        self.ui.rbPerpendicular.blockSignals(True)
+        self.ui.rbVertical.blockSignals(True)
+        self.ui.rbPerpendicular.setChecked(not self.node.use_friction)
+        self.ui.rbVertical.setChecked(self.node.use_friction)
+        self.ui.rbPerpendicular.blockSignals(False)
+        self.ui.rbVertical.blockSignals(False)
+
+        svinf(self.ui.sbDX, self.node.spacing_length)
+        svinf(self.ui.sbDY, self.node.spacing_width)
+        svinf(self.ui.sbNX, self.node.n_length)
+        svinf(self.ui.sbNY, self.node.n_width)
+
+        svinf(self.ui.sbRefExtension, self.node.reference_extension)
+        svinf(self.ui.sbRefForce, self.node.reference_force)
+        svinf(self.ui.sbStiffness, self.node.k)
+
+
+    def generate_code(self):
+        code = ""
+        if self.ui.rbVertical.isChecked() and not self.node.use_friction:
+            code = f"s['{self.node.name}'].use_friction = True"
+        if self.ui.rbPerpendicular.isChecked() and self.node.use_friction:
+            code = f"s['{self.node.name}'].use_friction = False"
+
+        code += code_if_changed_d(self.node, self.ui.sbDX.value(), 'spacing_length')
+        code += code_if_changed_d(self.node, self.ui.sbDY.value(), 'spacing_width')
+        code += code_if_changed_d(self.node, self.ui.sbNX.value(), 'n_length')
+        code += code_if_changed_d(self.node, self.ui.sbNY.value(), 'n_width')
+        code += code_if_changed_d(self.node, self.ui.sbRefExtension.value(), 'reference_extension')
+        code += code_if_changed_d(self.node, self.ui.sbRefForce.value(), 'reference_force')
+        code += code_if_changed_d(self.node, self.ui.sbStiffness.value(), 'k')
+
+        self.run_code(code, self)
+
+
+
 # ===========================================
 
 
@@ -2422,6 +2485,9 @@ class WidgetNodeProps(guiDockWidget):
 
         if isinstance(node, vfs.Sling):
             self._node_editors.append(EditSling.Instance())
+
+        if isinstance(node, vfs.SPMT):
+            self._node_editors.append(EditSPMT.Instance())
 
         if isinstance(node, vfs._Area):
             self._node_editors.append(EditArea.Instance())

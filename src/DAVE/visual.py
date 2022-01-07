@@ -901,6 +901,7 @@ class VisualActor:
             # the width extents half the wheel_width
 
             N= self.node
+            N.update()
 
             # The deck
             WHEEL_WIDTH = 1.0  # [m, a wheel is actually a pair of wheels]
@@ -911,7 +912,7 @@ class VisualActor:
             top_width = (N.n_width - 1) * N.spacing_width + WHEEL_WIDTH
 
             top_deck = self.actors['main']
-            top_deck.scale((top_length, top_width, TOP_THICKNESS))
+            top_deck.scale((top_length, top_width, TOP_THICKNESS), absolute=True)
             top_deck.SetUserMatrix(mat4x4_from_point_on_frame(N.parent, (0,0,-0.5*TOP_THICKNESS)))
 
             # The wheels
