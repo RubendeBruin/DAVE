@@ -2558,25 +2558,27 @@ class SPMT(NodeWithCoreParent):
     0 0 0 0 0 0   0 0 0 0
 
     A number of axles share a common suspension system.
-
     The SPMT node models such a system of axles.
-
     The SPMT is attached to an axis system.
     The upper locations of the axles are given as an array of 3d vectors.
-
     Rays are extended from these points in local -Z direction (down) until they hit a contact-shape.
-
-    If no contact shape is found (or not within the maximum distance per axles) then the maximum defined extension for that axle is used.
-
     A shared pressure is obtained from the combination of all individual extensions.
-
-    Finally an equal force is applied on all the axle connection points. This force acts in local Z direction.
+    Finally an equal force is applied on all the axle connection points.
 
     """
 
     def __init__(self, scene, node):
         super().__init__(scene, node)
         self._meshes = list()
+
+        # These are set in new_spmt
+        self._k = None
+        self._reference_extension = None
+        self._reference_force = None
+        self._spacing_length = None
+        self._spacing_width = None
+        self._n_length = None
+        self._n_width = None
 
     def depends_on(self):
         inherited = super().depends_on()
@@ -2588,13 +2590,19 @@ class SPMT(NodeWithCoreParent):
 
     @property
     def axle_force(self) -> tuple:
-        """Returns the force on each of the axles [kN, kN, kN] (global axis)"""
+        """Returns the force in each of the axles [kN]"""
         return self._vfNode.force
 
     @property
-    def compression(self) -> float:
-        """Returns the total compression of all the axles together [m]"""
-        return self._vfNode.compression
+    def axle_extensions(self) -> tuple:
+        """Returns the extension of each of the axles [m]"""
+        return tuple(self._vfNode.extensions)
+
+    @property
+    def max_axle_extension(self) -> float:
+        """Maximum extension of the axles [m]
+        See Also: axle_extension"""
+        return max(self.axle_extensions)
 
     def get_actual_global_points(self):
         """Returns a list of points: axle1, bottom wheels 1, axle2, bottom wheels 2, etc"""
@@ -2616,47 +2624,122 @@ class SPMT(NodeWithCoreParent):
     # name is derived
     # parent is derived
 
+    # axles and stiffness are combined
+    def _update_vfNode(self):
+        """Updates vfNode with stiffness and axles"""
+        offx = (self._n_length - 1) * self._spacing_length / 2
+        offy = (self._n_width - 1) * self._spacing_width / 2
+        self._vfNode.clear_axles()
+
+        for ix in range(self._n_length):
+            for iy in range(self._n_width):
+                self._vfNode.add_axle(ix * self._spacing_length - offx, iy * self._spacing_width - offy, 0)
+
+        n_axles = self._n_length * self._n_width
+        self._vfNode.k = self._k / (n_axles*n_axles)
+        self._vfNode.nominal_length = self._reference_extension + self._reference_force / self._k
+
+    @property
+    def n_width(self):
+        """number of axles in transverse direction"""
+        return self._n_width
+
+    @n_width.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def n_width(self, value):
+        assert1f_positive_or_zero(value, "n_width")
+        self._n_width = value
+        self._update_vfNode()
+
+    @property
+    def n_length(self):
+        """number of axles in length direction"""
+        return self._n_length
+
+    @n_length.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def n_length(self, value):
+        assert1f_positive_or_zero(value, "n_length")
+        self._n_length = value
+        self._update_vfNode()
+
+    @property
+    def spacing_width(self):
+        """distance between axles in transverse direction [m]"""
+        return self._spacing_width
+
+    @spacing_width.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def spacing_width(self, value):
+        assert1f_positive_or_zero(value, "spacing_width")
+        self._spacing_width = value
+        self._update_vfNode()
+
+    @property
+    def spacing_length(self):
+        """distance between axles in length direction [m]"""
+        return self._spacing_length
+
+    @spacing_length.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def spacing_length(self, value):
+        assert1f_positive_or_zero(value, "spacing_length")
+        self._spacing_length = value
+        self._update_vfNode()
+
+    @property
+    def reference_force(self):
+        """total force (sum of all axles) when at reference extension [kN]"""
+        return self._reference_force
+
+    @reference_force.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def reference_force(self, value):
+        assert1f_positive_or_zero(value, "reference_force")
+        self._reference_force = value
+        self._update_vfNode()
+
+    @property
+    def reference_extension(self):
+        return self._reference_extension
+
+    @reference_extension.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def reference_extension(self, value):
+        """nominal extension of axles for reference force [m]"""
+        assert1f_positive_or_zero(value, "reference_extension")
+        self._reference_extension = value
+        self._update_vfNode()
+
     @property
     def k(self):
-        """Compression stiffness of the ball in force per meter of compression [kN/m]"""
-        return self._vfNode.k
+        """Vertical stiffness of all axles together [kN/m]"""
+        return self._k
 
     @k.setter
     @node_setter_manageable
     @node_setter_observable
     def k(self, value):
-
         assert1f_positive_or_zero(value, "k")
-        self._vfNode.k = value
-        pass
+        self._k = value
+        self._update_vfNode()
+
+    # ==== friction ====
 
     @property
-    def nominal_length(self):
-        """Average Axle extension (defined point to bottom of wheel) for zero force [m]"""
-        return self._vfNode.nominal_length
+    def use_friction(self):
+        return self._vfNode.use_friction
 
-    @nominal_length.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def nominal_length(self, value):
-
-        assert1f_positive_or_zero(value, "nominal_length")
-        self._vfNode.nominal_length = value
-        pass
-
-    @property
-    def max_length(self):
-        """Maximum axle extension per axle (defined point to bottom of wheel) [m]"""
-        return self._vfNode.max_length
-
-    @max_length.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def max_length(self, value):
-
-        assert1f_positive_or_zero(value, "max_length")
-        self._vfNode.max_length = value
-        pass
+    @use_friction.setter
+    def use_friction(self, value):
+        assertBool(value, "use friction")
+        self._vfNode.use_friction = value
 
     # === control meshes ====
 
@@ -2703,15 +2786,6 @@ class SPMT(NodeWithCoreParent):
 
     # === control axles ====
 
-    @node_setter_manageable
-    def make_grid(self, nx=4, ny=2, dx=1.4, dy=1.45):
-        offx = (nx-1) * dx / 2
-        offy = (ny-1) * dy / 2
-        self._vfNode.clear_axles()
-
-        for ix in range(nx):
-            for iy in range(ny):
-                self._vfNode.add_axle(ix * dx - offx, iy * dy - offy, 0)
 
     @property
     def axles(self):
@@ -2739,27 +2813,26 @@ class SPMT(NodeWithCoreParent):
         self._vfNode.update()
 
     def give_python_code(self):
-        code = "# code for {}".format(self.name)
+        code = ["# code for {}".format(self.name)]
 
-        code += "\ns.new_spmt(name='{}',".format(self.name)
-        code += "\n                  parent='{}',".format(self.parent_for_export.name)
-        code += "\n                  maximal_length={},".format(self.max_length)
-        code += "\n                  nominal_length={},".format(self.nominal_length)
-        code += "\n                  k={},".format(self.k)
-        code += "\n                  meshes = [ "
+        code.append(f"s.new_spmt(name='{self.name}',")
+        code.append(f"           parent='{self.parent_for_export.name}',")
+        code.append(f"           reference_force = {self.reference_force},")
+        code.append(f"           reference_extension = {self.reference_extension},")
+        code.append(f"           k = {self.k},")
+        code.append(f"           spacing_length = {self.spacing_length},")
+        code.append(f"           spacing_width = {self.spacing_width},")
+        code.append(f"           n_length = {self.n_length},")
+        code.append(f"           n_width = {self.n_width},")
 
-        for m in self._meshes:
-            code += '"' + m.name + '",'
-        code = code[:-1] + "],"
+        if self._meshes:
+            code.append("                  meshes = [ ")
+            for m in self._meshes:
+                code.append('"' + m.name + '",')
+            code.append("                           ],")
+        code.append("            )")
 
-        code += "\n                  axles = [ "
-
-        for p in self.axles:
-            code += f"({p[0]}, {p[1]}, {p[2]}),"
-
-        code = code[:-1] + "])"
-
-        return code
+        return '\n'.join(code)
 
 
 class Circle(NodeWithCoreParent):
@@ -8581,8 +8654,8 @@ class Scene:
         # first check
         assertValidName(name)
         self._verify_name_available(name)
-        m = self._parent_from_node(secondary)
-        s = self._parent_from_node(main)
+        m = self._parent_from_node(main)
+        s = self._parent_from_node(secondary)
 
         if stiffness is not None:
             assert6f(stiffness, "Stiffness ")
@@ -8833,25 +8906,33 @@ class Scene:
         return new_node
 
     def new_spmt(
-        self,
-        name,
-        parent,
-        maximal_length=1.8,
-        nominal_length=1.5,
-        k=1e6,
-        meshes=None,
-        axles=None,
-    ) -> SPMT:
+            self,
+            name,
+            parent,
+            reference_force=1e6,
+            reference_extension=1.5,
+            k=1e5,
+            spacing_length = 1.4,
+            spacing_width = 1.45,
+            n_length = 6,
+            n_width = 2,
+            meshes = None
+
+        ) -> SPMT:
         """Creates a new *SPMT* node and adds it to the scene.
 
         Args:
             name: Name for the node, should be unique
             parent: name of the parent of the node [Axis]
-            maximal_length: optional, maximum distance between top and bottom of wheel (1.5m + 300mm)
-            nominal_length: optional, nominal distance between top and bottom of wheel [1.5m]
-            k : stiffness per axle [kN/m]
-            meshes : list of contact meshes
-            axles  : list of axle locations [(x,y,z),(x,y,z), ... ]
+            reference_force : total force (sum of all axles) when at reference extension [kN]
+            reference_extension : nominal extension of axles for reference force [m]
+            k : force variation as result of average axle extension relative to reference_extension
+            spacing_length : distance between axles in length direction
+            spacing_width : distance between axles in tranverse direction
+            n_length : number of axles in length direction
+            n_width : number of axles in transverse direction
+            meshes : [] List of contact meshes that the SPMT sees. If empty then the SPMT sees all contact meshes.
+
 
         Returns:
             Reference to newly created SPMT
@@ -8869,8 +8950,13 @@ class Scene:
             f"Parent should be an axis system or derived, not a {type(parent)}"
         )
 
-        assert1f_positive_or_zero(maximal_length, "maximal_length ")
-        assert1f_positive_or_zero(nominal_length, "nominal_length ")
+        assert1f_positive_or_zero(reference_force,'reference force')
+        assert1f_positive_or_zero(reference_extension,'reference extension')
+        assert1f_positive(k, 'stiffness (k)')
+        assert1f_positive(spacing_length ,'spacing length')
+        assert1f_positive(spacing_width ,'spacing width')
+        assert1f_positive(n_length,'n-length')
+        assert1f_positive(n_width,'n-width')
 
         if meshes is not None:
             meshes = make_iterable(meshes)
@@ -8879,10 +8965,6 @@ class Scene:
                     mesh, ContactMesh
                 )  # throws error if not found
 
-        if axles is not None:
-            for p in axles:
-                assert3f(p, "axle locations should be (x,y,z)")
-
         # then create
         a = self._vfc.new_spmt(name)
 
@@ -8890,15 +8972,18 @@ class Scene:
 
         # and set properties
         new_node.parent = parent
-        new_node.k = k
-        new_node.max_length = maximal_length
-        new_node.nominal_length = nominal_length
+
+        new_node._reference_force = reference_force
+        new_node._reference_extension = reference_extension
+        new_node._k = k
+        new_node._spacing_length = spacing_length
+        new_node._spacing_width = spacing_width
+        new_node._n_length = n_length
+        new_node._n_width = n_width
+        new_node._update_vfNode()
 
         if meshes is not None:
             new_node.meshes = meshes
-
-        if axles is not None:
-            new_node.axles = axles
 
         self._nodes.append(new_node)
         return new_node

@@ -238,6 +238,18 @@ def transform_to_mat4x4(transform):
             mat4x4.SetElement(i, j, transform[j * 4 + i])
     return mat4x4
 
+def mat4x4_from_point_on_frame(frame : dn.Frame, local_position : tuple):
+    """Creates a mat4x4 from a point on a frame. Use result with actor.SetUserMatrix(m44)"""
+
+    mat4x4 = transform_to_mat4x4(frame.global_transform)
+    pos = frame.to_glob_position(local_position)
+
+    mat4x4.SetElement(0, 3, pos[0])
+    mat4x4.SetElement(1, 3, pos[1])
+    mat4x4.SetElement(2, 3, pos[2])
+
+    return mat4x4
+
 
 def transform_from_point(x, y, z):
     mat4x4 = vtk.vtkMatrix4x4()
@@ -883,8 +895,59 @@ class VisualActor:
             return
 
         if isinstance(self.node, vf.SPMT):
+            # 'main' is a cube spanning the upper surface of the SPMT
+            # the center is at the center
+            # the length extents half the distance between the axles
+            # the width extents half the wheel_width
 
-            A = self.actors["main"]
+            N= self.node
+
+            # The deck
+            WHEEL_WIDTH = 1.0  # [m, a wheel is actually a pair of wheels]
+            TOP_THICKNESS = 0.5  # m
+            WHEEL_RADIUS = 0.3 # [m]#
+
+            top_length = N.n_length * N.spacing_length
+            top_width = (N.n_width - 1) * N.spacing_width + WHEEL_WIDTH
+
+            top_deck = self.actors['main']
+            top_deck.scale((top_length, top_width, TOP_THICKNESS))
+            top_deck.SetUserMatrix(mat4x4_from_point_on_frame(N.parent, (0,0,-0.5*TOP_THICKNESS)))
+
+            # The wheels
+            #
+            # sync the number of wheels
+            n_wheels = N.n_length * N.n_width
+            n_wheel_actors = len(self.actors) - 2 # 2 other actors
+
+            #    wheel actors are named wheel#xx
+
+            if n_wheel_actors > n_wheels:  # remove actors
+                for i in range(n_wheel_actors-n_wheels):
+                    name = f'wheel#{n_wheels + i}'
+                    viewport.screen.remove(self.actors[name], render = False)
+                    del self.actors[name]
+            if n_wheel_actors < n_wheels: # add actors
+                for i in range(n_wheels-n_wheel_actors):
+                    actor = vp.Cylinder(pos = (0,0,0), r = WHEEL_RADIUS, height = WHEEL_WIDTH, axis = (0,1,0), res=24)
+                    self.actors[f'wheel#{n_wheel_actors+i}'] = actor
+                    viewport.screen.add(actor, render = False)
+
+            # position the wheels
+            axle_positions = N.axles
+            extensions = N.axle_extensions
+
+            for i in range(n_wheels):
+                actor = self.actors[f'wheel#{i}']
+                pos = axle_positions[i]
+
+                m44 = mat4x4_from_point_on_frame(self.node.parent, (pos[0],pos[1],-extensions[i] + WHEEL_RADIUS))
+                actor.SetUserMatrix(m44)
+
+
+
+            # The lines
+            A = self.actors["line"]
 
             pts = self.node.get_actual_global_points()
             if len(pts) == 0:
@@ -1028,7 +1091,7 @@ class VisualActor:
                 self.actors["main"]._force
                 == viewport._scaled_force_vector(self.node.force)
             ):
-                viewport.screen.remove(self.actors["main"])
+                viewport.screen.remove(self.actors["main"], render=False)
 
                 endpoint = viewport._scaled_force_vector(self.node.force)
 
@@ -1040,15 +1103,15 @@ class VisualActor:
                 p._force = endpoint
 
                 self.actors["main"] = p
-                viewport.screen.add(self.actors["main"])
+                viewport.screen.add(self.actors["main"], render=False)
 
             # check is the arrows are still what they should be
             if not np.all(
                 np.array(self.actors["moment1"]._moment)
                 == viewport._scaled_force_vector(self.node.moment)
             ):
-                viewport.screen.remove(self.actors["moment1"])
-                viewport.screen.remove(self.actors["moment2"])
+                viewport.screen.remove(self.actors["moment1"], render=False)
+                viewport.screen.remove(self.actors["moment2"], render=False)
 
                 endpoint = viewport._scaled_force_vector(self.node.moment)
                 p = vp.Arrow(
@@ -1067,8 +1130,8 @@ class VisualActor:
                 p.PickableOn()
                 p.actor_type = ActorType.FORCE
                 self.actors["moment2"] = p
-                viewport.screen.add(self.actors["moment1"])
-                viewport.screen.add(self.actors["moment2"])
+                viewport.screen.add(self.actors["moment1"], render=False)
+                viewport.screen.add(self.actors["moment2"], render=False)
 
             t = self.actors["main"].getTransform()
             t.Identity()
@@ -2131,6 +2194,21 @@ class Viewport:
 
             if isinstance(N, vf.SPMT):
 
+                # SPMT
+                #
+                # 'main' is a cube spanning the upper surface of the SPMT
+                # the center is at the center
+                # the length extents half the distance between the axles
+                # the width extents half the wheel_width
+
+                WHEEL_WIDTH = 1.0 # [m, a wheel is actually a pair of wheels]
+                TOP_THICKNESS = 0.5 # m
+
+                top_length = N.n_length * N.spacing_length
+                top_width = (N.n_width-1) * N.spacing_width + WHEEL_WIDTH
+
+                actors["main"] = vp.Cube(side=1)
+
                 gp = N.get_actual_global_points()
                 if gp:
                     a = vp.Line(gp, lw=3)
@@ -2138,7 +2216,7 @@ class Viewport:
                     a = vp.Line([(0, 0, 0), (0, 0, 0.1), (0, 0, 0)], lw=3)
 
                 a.actor_type = ActorType.CABLE
-                actors["main"] = a
+                actors["line"] = a
 
             if isinstance(N, vf.Beam):
 
