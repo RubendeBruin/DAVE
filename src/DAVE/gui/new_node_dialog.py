@@ -174,6 +174,28 @@ def add_poi(scene, selection=None):
     else:
         return None
 
+def add_spmt(scene, selection=None):
+
+    ui, AddNode = add_node(scene, selection)
+
+    ui.frmParent.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/icons/spmt.png"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like('SPMTwheels'))
+
+    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+        parent = ui.cbParentAxis.currentText()
+        name = ui.tbName.text()
+
+        return "new_spmt('{}', parent = '{}')".format(name, parent)
+
+    else:
+        return None
+
 
 def add_cable(scene, selection=None):
 
@@ -187,8 +209,6 @@ def add_cable(scene, selection=None):
 
     ui.btnOk.clicked.connect(ok)
     ui.tbName.setText(scene.available_name_like('Cable'))
-
-
 
     if (AddNode.exec() == QtWidgets.QDialog.Accepted):
         endA = ui.cbPoiA.currentText()

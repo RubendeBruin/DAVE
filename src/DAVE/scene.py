@@ -2589,20 +2589,30 @@ class SPMT(NodeWithCoreParent):
     # read-only
 
     @property
-    def axle_force(self) -> tuple:
-        """Returns the force in each of the axles [kN]"""
+    def force(self) -> tuple:
+        """Returns the force component perpendicular to the SPMT in each of the axles (negative mean uplift) [kN]"""
         return self._vfNode.force
 
     @property
-    def axle_extensions(self) -> tuple:
-        """Returns the extension of each of the axles [m]"""
+    def contact_force(self) -> tuple:
+        """Returns the contact force in each of the axles (global) [kN,kN,kN]"""
+        return self._vfNode.forces
+
+    @property
+    def compression(self) -> tuple:
+        """Returns the total compression (negative means uplift) [m]"""
+        return self._vfNode.compression
+
+    @property
+    def extensions(self) -> tuple:
+        """Returns the extension of each of the axles (bottom of wheel to top of spmt) [m]"""
         return tuple(self._vfNode.extensions)
 
     @property
-    def max_axle_extension(self) -> float:
+    def max_extension(self) -> float:
         """Maximum extension of the axles [m]
-        See Also: axle_extension"""
-        return max(self.axle_extensions)
+        See Also: extensions"""
+        return max(self.extensions)
 
     def get_actual_global_points(self):
         """Returns a list of points: axle1, bottom wheels 1, axle2, bottom wheels 2, etc"""
@@ -2706,6 +2716,7 @@ class SPMT(NodeWithCoreParent):
 
     @property
     def reference_extension(self):
+        """Distance between top of SPMT and bottom of wheel at which compression is zero [m]"""
         return self._reference_extension
 
     @reference_extension.setter
@@ -2734,6 +2745,10 @@ class SPMT(NodeWithCoreParent):
 
     @property
     def use_friction(self):
+        """Apply friction between wheel and surface such that resulting force is vertical [True/False]
+        False: Force is perpendicular to the surface
+        True: Force is vertical
+        """
         return self._vfNode.use_friction
 
     @use_friction.setter

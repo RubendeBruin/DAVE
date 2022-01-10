@@ -90,14 +90,14 @@ def make_iterable(v):
 
 def fancy_format(text, number='{:.3f}'):
     # do some formatting
-    try:
+
+    # if isinstance(text, bool):
+    #     return str(text)
+
+    if isinstance(text, float):
         a = float(text)
         result = number.format(a)
         return result
-
-    except:
-        pass
-
 
     try:
         len(text)

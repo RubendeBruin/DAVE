@@ -255,8 +255,9 @@ painters["LC6d"] = {"main": copy(mesh)}
 
 # SPMT
 
-mesh.lineColor = _RED
-painters["SPMT"] = {"main": copy(mesh)}
+surf.surfaceColor = _LIGHT_GRAY
+mesh.lineColor = _BLACK
+painters["SPMT"] = {"main": copy(surf),"wheel": copy(surf),"line": copy(mesh)}
 
 
 # ----- contact mesh
@@ -357,6 +358,12 @@ ballast_painters["RigidBody"]["z"] = copy(invisible)
 # Hide wind and current areas
 ballast_painters["WindArea"]["main"] = copy(invisible)
 ballast_painters["CurrentArea"]["main"] = copy(invisible)
+
+# SPMTS: Xray
+ballast_painters["SPMT"]["main"] = copy(xray)
+ballast_painters["SPMT"]["wheels"] = copy(xray)
+ballast_painters["SPMT"]["line"] = copy(invisible)
+
 
 # Hide circle
 ballast_painters["Circle"]["main"] = copy(invisible)
@@ -592,6 +599,11 @@ PAINTERS["Visual"] = animation_painters
 PAINTERS["X-ray"] = deepcopy(PAINTERS["Construction"])
 PAINTERS["X-ray"]["Visual"]["main"].surfaceShow = False
 PAINTERS["X-ray"]["Visual"]["main"].xray = True
+PAINTERS["X-ray"]["SPMT"]["main"].xray = True
+PAINTERS["X-ray"]["SPMT"]["main"].surfaceShow = False
+PAINTERS["X-ray"]["SPMT"]["wheel"].xray = True
+PAINTERS["X-ray"]["SPMT"]["wheel"].surfaceShow = False
+PAINTERS["X-ray"]["SPMT"]["line"] = copy(invisible)
 
 # No-mesh settings
 #

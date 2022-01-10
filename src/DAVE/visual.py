@@ -737,6 +737,9 @@ class VisualActor:
 
         for key, actor in self.actors.items():
 
+            if '#' in key:
+                key = key.split('#')[0]
+
             if key in node_painter_settings:
                 actor_settings = node_painter_settings[key]
             else:
@@ -936,7 +939,7 @@ class VisualActor:
 
             # position the wheels
             axle_positions = N.axles
-            extensions = N.axle_extensions
+            extensions = N.extensions
 
             for i in range(n_wheels):
                 actor = self.actors[f'wheel#{i}']

@@ -31,7 +31,7 @@ from DAVE.visual import transform_from_node
 from DAVE.gui.helpers.my_qt_helpers import BlockSigs
 import numpy as np
 
-from PySide2.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox, QCompleter
+from PySide2.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox, QCompleter, QDesktopWidget
 from PySide2 import QtWidgets
 
 
@@ -2275,6 +2275,24 @@ class WidgetNodeProps(guiDockWidget):
         self._open_edit_widgets = list()
         self._node_editors = list()
 
+        self.scroll_area = QtWidgets.QScrollArea()
+        scroll_area_layout = QtWidgets.QVBoxLayout()
+        scroll_area_layout.setSpacing(0)
+        self.scroll_area.setLayout(scroll_area_layout)
+        self.scroll_area.setWidget(self.contents)
+        scroll_area_layout.addWidget(self.contents)
+        self.setWidget(self.scroll_area)
+        self.scroll_area.setWidgetResizable(False)
+
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+
+
+        # contents (main layout)
+        #   manager_widget ( manager_layout )
+        #   props_widget ( layout )
+
+
         self.main_layout = QtWidgets.QVBoxLayout()
 
         self.manager_widget = QtWidgets.QWidget()
@@ -2317,6 +2335,8 @@ class WidgetNodeProps(guiDockWidget):
 
         self.positioned = False
         self.node = None
+
+
 
     def select_manager(self):
         node = self.guiSelection[0]
@@ -2532,9 +2552,38 @@ class WidgetNodeProps(guiDockWidget):
         self.node = node
         self.check_for_warnings()
 
+        # self.layout.sizeHint()
+
+        widgets = [*self._open_edit_widgets, self.manager_widget, self._name_widget]
+
+        ht = sum([w.sizeHint().height() for w in widgets])
+        wt = max([w.sizeHint().width() for w in widgets])
+
+        print(ht)
+
+        self.contents.setMinimumSize(QtCore.QSize(wt,ht-5))  # minus 5 to avoid scrollbar to show
+
         self.layout.addSpacerItem(self._Vspacer)  # add a spacer at the bottom
 
+        # Geometry, resizing and fitting on screen
+        target_height = ht
+
+        qdw = QDesktopWidget()
+        geo = qdw.screenGeometry(self)
+
+        if target_height > geo.height():
+            target_height = geo.height()
+            wt = wt + 20 # for scrollbar
+
         self.resize(
-            0, 0
+            QtCore.QSize(wt, target_height)
         )  # set the size of the floating dock widget to its minimum size
-        self.adjustSize()
+
+        top = self.pos().y()
+
+        if top + target_height > geo.height():
+            top = geo.height() - target_height
+            if top<=0:
+                top=5
+            self.setGeometry(self.pos().x(), top, wt, target_height)
+

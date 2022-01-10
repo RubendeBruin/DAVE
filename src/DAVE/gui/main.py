@@ -1748,6 +1748,7 @@ class Gui:
 
         ui.pbContactShape.clicked.connect(self.new_contactmesh)
         ui.pbContactBall.clicked.connect(self.new_contactball)
+        ui.pbSPMT.clicked.connect(self.new_spmt)
 
         ui.pbTank.clicked.connect(self.new_tank)
         ui.pbBuoyancyShape.clicked.connect(self.new_buoyancy_mesh)
@@ -1831,6 +1832,9 @@ class Gui:
 
     def new_sling(self):
         self.new_something(new_node_dialog.add_sling)
+
+    def new_spmt(self):
+        self.new_something(new_node_dialog.add_spmt)
 
     def new_geometric_contact(self):
         msgBox = QMessageBox()
@@ -2046,4 +2050,6 @@ class Gui:
 # ======================================
 
 if __name__ == "__main__":
-    pass
+    from DAVE import *
+    s = Scene()
+    Gui(s)

@@ -28,7 +28,7 @@ echo call pyside2-uic widget_linhyd.ui -o "..\src\DAVE\gui\forms\widget_linhyd.p
 echo call pyside2-uic widget_lincon6.ui -o "..\src\DAVE\gui\forms\widget_lincon6.py"
 echo call pyside2-uic widget_beam.ui -o "..\src\DAVE\gui\forms\widget_beam.py"
 echo call pyside2-uic widget_shackle.ui -o "..\src\DAVE\gui\forms\widget_shackle.py"
-echo call pyside2-uic menu_nodetypes.ui -o "..\src\DAVE\gui\forms\menu_nodetypes.py"
+call pyside2-uic menu_nodetypes.ui -o "..\src\DAVE\gui\forms\menu_nodetypes.py"
 echo call pyside2-uic widget_con2d.ui -o "..\src\DAVE\gui\forms\widget_con2d.py"
 call pyside2-uic widget_spmt.ui -o "..\src\DAVE\gui\forms\widget_spmt.py"
 echo call pyside2-uic frm_standard_assets.ui -o "..\src\DAVE\gui\forms\frm_standard_assets.py"

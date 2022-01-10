@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_spmt.ui',
 # licensing of 'widget_spmt.ui' applies.
 #
-# Created: Fri Jan  7 15:53:10 2022
+# Created: Mon Jan 10 09:42:28 2022
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!

@@ -428,11 +428,23 @@ RigidBody,mass,False,"Static mass of the body [mT]
 
         See Also: inertia
         "
-SPMT,axle_force,True,"Returns the force on each of the axles [kN, kN, kN] (global axis)"
-SPMT,compression,True,Returns the total compression of all the axles together [m]
-SPMT,k,False,Compression stiffness of the ball in force per meter of compression [kN/m]
-SPMT,nominal_length,False,Average Axle extension (defined point to bottom of wheel) for zero force [m]
-SPMT,max_length,False,Maximum axle extension per axle (defined point to bottom of wheel) [m]
+SPMT,force,True,Returns the force component perpendicular to the SPMT in each of the axles (negative mean uplift) [kN]
+SPMT,contact_force,True,"Returns the contact force in each of the axles (global) [kN,kN,kN]"
+SPMT,compression,True,Returns the total compression (negative means uplift) [m]
+SPMT,extensions,True,Returns the extension of each of the axles (bottom of wheel to top of spmt) [m]
+SPMT,max_extension,True,"Maximum extension of the axles [m]
+        See Also: extensions"
+SPMT,n_width,False,number of axles in transverse direction
+SPMT,n_length,False,number of axles in length direction
+SPMT,spacing_width,False,distance between axles in transverse direction [m]
+SPMT,spacing_length,False,distance between axles in length direction [m]
+SPMT,reference_force,False,total force (sum of all axles) when at reference extension [kN]
+SPMT,reference_extension,False,Distance between top of SPMT and bottom of wheel at which compression is zero [m]
+SPMT,k,False,Vertical stiffness of all axles together [kN/m]
+SPMT,use_friction,False,"Apply friction between wheel and surface such that resulting force is vertical [True/False]
+        False: Force is perpendicular to the surface
+        True: Force is vertical
+        "
 SPMT,meshes,False,"List of contact-mesh nodes.
         When getting this will yield a list of node references.
         When setting node references and node-names may be used.

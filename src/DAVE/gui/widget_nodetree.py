@@ -349,6 +349,8 @@ class WidgetNodeTree(guiDockWidget):
                 item.setIcon(0, QIcon(":/icons/wind.png"))
             elif isinstance(node, ds.CurrentArea):
                 item.setIcon(0, QIcon(":/icons/current.png"))
+            elif isinstance(node, ds.SPMT):
+                item.setIcon(0, QIcon(":/icons/spmt.png"))
 
 
             try:
