@@ -434,6 +434,8 @@ SPMT,compression,True,Returns the total compression (negative means uplift) [m]
 SPMT,extensions,True,Returns the extension of each of the axles (bottom of wheel to top of spmt) [m]
 SPMT,max_extension,True,"Maximum extension of the axles [m]
         See Also: extensions"
+SPMT,min_extension,True,"Minimum extension of the axles [m]
+        See Also: extensions"
 SPMT,n_width,False,number of axles in transverse direction
 SPMT,n_length,False,number of axles in length direction
 SPMT,spacing_width,False,distance between axles in transverse direction [m]

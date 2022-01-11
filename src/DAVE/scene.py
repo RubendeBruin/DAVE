@@ -2557,13 +2557,16 @@ class SPMT(NodeWithCoreParent):
     ============  =======
     0 0 0 0 0 0   0 0 0 0
 
-    A number of axles share a common suspension system.
-    The SPMT node models such a system of axles.
-    The SPMT is attached to an axis system.
-    The upper locations of the axles are given as an array of 3d vectors.
-    Rays are extended from these points in local -Z direction (down) until they hit a contact-shape.
-    A shared pressure is obtained from the combination of all individual extensions.
-    Finally an equal force is applied on all the axle connection points.
+    This SPMT node models the wheels and hydraulics of a single suspension system.
+
+    A set of wheels is called an "axle". The hydraulics are modelled as a linear spring.
+    The axles can make contact with a contact shape.
+
+    The positions of the axles are controlled by n_length, n_width, spacing_length and spacing_width.
+    The hydraulics are controlled by reference_extension, reference_force and k.
+
+    Setting use_friction to True (default) adds friction such that all contact-forces are purely vertical.
+    Setting use_friction to False will make contact-forces perpendicular to the contacted surface.
 
     """
 
@@ -2571,7 +2574,7 @@ class SPMT(NodeWithCoreParent):
         super().__init__(scene, node)
         self._meshes = list()
 
-        # These are set in new_spmt
+        # These are set by Scene.new_spmt
         self._k = None
         self._reference_extension = None
         self._reference_force = None
@@ -2586,7 +2589,7 @@ class SPMT(NodeWithCoreParent):
 
         return inherited
 
-    # read-only
+    # read-only properties
 
     @property
     def force(self) -> tuple:
@@ -2613,6 +2616,12 @@ class SPMT(NodeWithCoreParent):
         """Maximum extension of the axles [m]
         See Also: extensions"""
         return max(self.extensions)
+
+    @property
+    def min_extension(self) -> float:
+        """Minimum extension of the axles [m]
+        See Also: extensions"""
+        return min(self.extensions)
 
     def get_actual_global_points(self):
         """Returns a list of points: axle1, bottom wheels 1, axle2, bottom wheels 2, etc"""
@@ -2760,7 +2769,7 @@ class SPMT(NodeWithCoreParent):
 
     @property
     def meshes(self) -> tuple:
-        """List of contact-mesh nodes.
+        """List of contact-mesh nodes. If empty list then the SPMT can contact all contact meshes.
         When getting this will yield a list of node references.
         When setting node references and node-names may be used.
 
@@ -2851,7 +2860,9 @@ class SPMT(NodeWithCoreParent):
 
 
 class Circle(NodeWithCoreParent):
-    """A Circle models a circle shape based on a diameter and an axis direction"""
+    """A Circle models a circle shape based on a diameter and an axis direction. Circles can be used by
+    geometric contact nodes and cables/slings. For cables the direction of the axis determines the
+    direction about which the cable runs over the sheave."""
 
     @property
     def axis(self) -> tuple:
@@ -3044,9 +3055,9 @@ class LC6d(CoreConnectedNode):
     It connects two Axis elements with six linear springs.
 
     The first axis system is called "main", the second is called "secondary". The difference is that
-    the "main" axis system is used for the definition of the stiffness values.
+    the "main" axis system defines the directions of the stiffness values.
 
-    The translational-springs are easy. The rotational springs may not be as intuitive. They are defined as:
+    The translational-springs are straight forward. The rotational springs may not be as intuitive. They are defined as:
 
       - rotation_x = arc-tan ( uy[0] / uy[1] )
       - rotation_y = arc-tan ( -ux[0] / ux[2] )
@@ -3055,7 +3066,7 @@ class LC6d(CoreConnectedNode):
     which works fine for small rotations and rotations about only a single axis.
 
     Tip:
-    It is better to use use the "fixed" property of axis systems to create joints.
+    It is better to use the "fixed" property of axis systems to create joints.
 
     """
 
@@ -7461,7 +7472,7 @@ class Scene:
 
         solve_func = lambda: self._vfc.state_solve_statics_with_timeout(
             True, timeout_s, True, True, 0
-        )  # default stability value
+        )  # 0 = default stability value
 
         phase = 1
         original_dofs_dict = None
@@ -8924,7 +8935,7 @@ class Scene:
             self,
             name,
             parent,
-            reference_force=1e6,
+            reference_force=0,
             reference_extension=1.5,
             k=1e5,
             spacing_length = 1.4,
