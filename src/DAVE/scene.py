@@ -4713,9 +4713,9 @@ class GeometricContact(Manager):
             child_circle:
         """
 
-        if parent_circle.parent.parent is None:
+        if child_circle.parent.parent is None:
             raise ValueError(
-                "The slaved pin is not located on an axis. Can not create the connection because there is no axis to nodeB"
+                "The child circle needs to be located on an axis but is not."
             )
 
         super().__init__(scene)
@@ -7099,6 +7099,48 @@ class Scene:
         #         r.append(v.name)
 
         return r
+
+    def common_parent_of_nodes(self, nodes : list[Node]) -> Node or None:
+        """Finds a nearest parent that is common to all of the nodes.
+
+        frame [Frame]
+         |-> frame2 [Frame]
+         |    |-> point [Point]
+         |    |    |-> circle [Circle]
+         |    |    |-> circle2 [Circle]
+         |    |-> point2 [Point]
+        frame3 [Frame]
+
+        for example the common parent of point2 and circle is frame2.
+        the common parent of circle and circle2 is point
+        the common parent of circle2 and frame3 is None
+
+        Args:
+            nodes: list of nodes
+
+        Returns:
+            Node or None
+        """
+        parents_of_node = []
+
+        for node in nodes:
+            parents = []
+            parent = getattr(node,'parent',None)
+            while parent is not None:
+                parents.append(parent)
+                parent = getattr(parent,'parent',None)
+
+            parents_of_node.append(parents)
+
+        # Now find the first entry that is common in all of the lists of parent_of_node - maintain the order
+        common = parents_of_node[0]
+        for parents in parents_of_node[1:]:
+            common = [c for c in common if c in parents]
+
+        if common:
+            return common[0]
+        else:
+            return None
 
     def nodes_with_parent(self, node, recursive=False):
         """Returns a list of nodes that have given node as a parent. Good for making trees.
