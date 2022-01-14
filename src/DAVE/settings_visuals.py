@@ -595,6 +595,11 @@ animation_painters["SPMT"] = copy(PAINTERS["Construction"]["SPMT"])
 
 PAINTERS["Visual"] = animation_painters
 
+# Rigging
+PAINTERS["Rigging"] = deepcopy(animation_painters)
+PAINTERS["Rigging"]["Circle"] = deepcopy(PAINTERS["Construction"]["Circle"])
+
+
 # Xray
 PAINTERS["X-ray"] = deepcopy(PAINTERS["Construction"])
 PAINTERS["X-ray"]["Visual"]["main"].surfaceShow = False

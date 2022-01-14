@@ -2917,6 +2917,16 @@ class Circle(NodeWithCoreParent):
         return self.parent.global_position
 
     @property
+    def global_axis(self):
+        """Returns the global axis direction.
+        """
+        if self.parent.parent is not None:
+            return self.parent.parent.to_glob_direction(self.axis)
+        else:
+            return self.axis
+
+
+    @property
     def position(self):
         """Returns the local position of the center of the sheave.
 
@@ -5376,18 +5386,37 @@ class Sling(Manager):
         )
 
         # set initial positions of splices if we can
-        if self._endA is not None and self._endB is not None:
-            a = np.array(self._endA.global_position)
-            b = np.array(self._endB.global_position)
 
-            dir = b - a
+        if self._endA is not None and self._endB is not None:
+
+
+            # endA
+
+            a = np.array(self._endA.global_position)
+            if sheaves:
+                p = np.array(scene._node_from_node_or_str(sheaves[0]).global_position)
+            else:
+                p = np.array(self._endB.global_position)
+
+            dir = p - a
             if np.linalg.norm(dir) > 1e-6:
                 dir /= np.linalg.norm(dir)
-
                 self.sa.rotation = rotation_from_x_axis_direction(-dir)
-                self.sb.rotation = rotation_from_x_axis_direction(dir)
                 self.sa.position = a + (LeyeA + 0.5 * LspliceA) * dir
-                self.sb.position = b - (LeyeB + 0.5 * LspliceB) * dir
+
+            # endB
+
+            b = np.array(self._endB.global_position)
+            if sheaves:
+                p = np.array(scene._node_from_node_or_str(sheaves[-1]).global_position)
+            else:
+                p = np.array(self._endA.global_position)
+
+            dir = p - b
+            if np.linalg.norm(dir) > 1e-6:
+                dir /= np.linalg.norm(dir)
+                self.sb.rotation = rotation_from_x_axis_direction(-dir)
+                self.sb.position = b + (LeyeB + 0.5 * LspliceB) * dir
 
         # Update properties
         self.sheaves = sheaves
