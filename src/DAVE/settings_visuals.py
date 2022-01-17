@@ -45,6 +45,21 @@ _DARK_GRAY = [45, 45, 48]
 _LIGHT_GRAY = [200, 200, 200]
 _MEDIUM_GRAY = [145, 145, 145]
 
+PALETTE = (
+    _BLUE,
+    _ORANGE,
+    _GREEN,
+    _PURPLE,
+    _YELLOW_DARK,
+    _MEDIUM_GRAY,
+    _BLUE_LIGHT,
+    _RED,
+    _BROWN,
+    _DARK_GRAY,
+    _LIGHT_GRAY,
+    _BLUE_DARK,
+)
+
 
 def rgb(col):
     return (col[0] / 255, col[1] / 255, col[2] / 255)
@@ -138,7 +153,7 @@ class ViewportSettings:
     )
 
     # labels
-    label_scale: float = 0.0 # scale for the labels, set 0 to turn labels off
+    label_scale: float = 0.0  # scale for the labels, set 0 to turn labels off
 
     painter_settings: dict = None
 
@@ -257,7 +272,7 @@ painters["LC6d"] = {"main": copy(mesh)}
 
 surf.surfaceColor = _LIGHT_GRAY
 mesh.lineColor = _BLACK
-painters["SPMT"] = {"main": copy(surf),"wheel": copy(surf),"line": copy(mesh)}
+painters["SPMT"] = {"main": copy(surf), "wheel": copy(surf), "line": copy(mesh)}
 
 
 # ----- contact mesh
@@ -575,8 +590,6 @@ visual["fluid"] = paint
 ballast_painters["Tank:full"] = visual
 
 
-
-
 PAINTERS["Ballast"] = deepcopy(ballast_painters)
 
 # Make Visual and physical only palette
@@ -658,3 +671,15 @@ foot_painters["WindArea"] = {"main": copy(invisible)}
 foot_painters["CurrentArea"] = {"main": copy(invisible)}
 
 PAINTERS["Footprints"] = foot_painters
+
+
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+
+    plt.plot()
+
+    for i,COL in enumerate(PALETTE):
+        c = [r/255 for r in COL]
+        plt.plot((0,10),(i,0), color = c, lw=10)
+
+    plt.show()

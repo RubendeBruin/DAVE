@@ -5616,6 +5616,26 @@ class Sling(Manager):
             if n in self._scene._nodes:
                 self._scene.delete(n)  # delete if it is still available
 
+    @property
+    def spliceAposrot(self):
+        """The 6-dof of splice A. Solved [m,m,m,deg,deg,deg]"""
+        return (*self.sa.position, *self.sa.rotation)
+
+    @spliceAposrot.setter
+    def spliceAposrot(self, value):
+        self.sa._vfNode.position = value[:3]
+        self.sa._vfNode.rotation = np.deg2rad(value[3:])
+
+    @property
+    def spliceBposrot(self):
+        """The 6-dof of splice A. Solved [m,m,m,deg,deg,deg]"""
+        return (*self.sb.position, *self.sb.rotation)
+
+    @spliceBposrot.setter
+    def spliceBposrot(self, value):
+        self.sb._vfNode.position = value[:3]
+        self.sb._vfNode.rotation = np.deg2rad(value[3:])
+
     def give_python_code(self):
         code = f"# Exporting {self.name}"
 
@@ -5623,7 +5643,7 @@ class Sling(Manager):
 
         # (self, scene, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
 
-        code += f'\ns.new_sling("{self.name}", length = {self.length},'
+        code += f'\nsl = s.new_sling("{self.name}", length = {self.length},'
         code += f"\n            LeyeA = {self.LeyeA},"
         code += f"\n            LeyeB = {self.LeyeB},"
         code += f"\n            LspliceA = {self.LspliceA},"
@@ -5643,6 +5663,8 @@ class Sling(Manager):
             sheaves = "None"
 
         code += f"\n            sheaves = {sheaves})"
+        code += "\nsl.spliceAposrot = ({},{},{},{},{},{}) # solved".format(*self.spliceAposrot)
+        code += "\nsl.spliceBposrot = ({},{},{},{},{},{}) # solved".format(*self.spliceBposrot)
 
         return code
 
