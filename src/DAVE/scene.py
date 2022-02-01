@@ -7626,9 +7626,9 @@ class Scene:
         if timeout_s is None:
             timeout_s = -1
 
-        solve_func = lambda: self._vfc.state_solve_statics_with_timeout(
-            True, timeout_s, True, True, 0
-        )  # 0 = default stability value
+        # solve_func = lambda: self._vfc.state_solve_statics_with_timeout(
+        #     True, timeout_s, True, True, 0
+        # )  # 0 = default stability value
 
         phase = 1
         original_dofs_dict = None
@@ -7653,7 +7653,11 @@ class Scene:
                 phase = 2
 
             elif phase == 2:
-                status = solve_func()
+
+                this_is_a_re_init = not first
+                status = self._vfc.state_solve_statics_with_timeout(
+                    True, timeout_s, True, True, 0, this_is_a_re_init)
+
                 first = False
 
                 if status == 0 or status == -2:
@@ -7674,7 +7678,8 @@ class Scene:
 
             elif phase == 4:
 
-                status = solve_func()
+                status = self._vfc.state_solve_statics_with_timeout(
+                    True, timeout_s, True, True, 0, this_is_a_re_init)
 
                 if status == 0 or status == -2:
                     # phase 5
@@ -8835,8 +8840,8 @@ class Scene:
 
         return new_node
 
-    def new_linear_connector_6d(self, name, main, secondary, stiffness=None) -> LC6d:
-        """Creates a new *linear connector 6d* node and adds it to the scene.
+    def new_linear_connector_6d(self, name, secondary, main, stiffness=None) -> LC6d:
+        """Creates a new *linear connector 6d* node and adds it to the scene. The node connects secondary to main.
 
         Args:
             name: Name for the node, should be unique

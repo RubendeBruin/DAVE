@@ -735,7 +735,7 @@ class Gui:
         camera_pos = self.visual.screen.camera.GetPosition()
         lookat = self.visual.screen.camera.GetFocalPoint()
 
-        code = f"show(s, camera_pos = {camera_pos}, "
+        code = f"show(s, camera_pos = ({camera_pos[0]:.3},{camera_pos[1]:.3},{camera_pos[2]:.3}), "
 
         if self.visual.screen.camera.GetParallelProjection():
             code += f"\n     projection = '2d',"
@@ -761,12 +761,10 @@ class Gui:
             elif direction[2] < -t:
                 lookat = "-z"
 
-            if isinstance(lookat, str):
-                code += f"\n     lookat = '{lookat}',"
-            else:
-                code += f"\n     lookat = {lookat},"
+        if isinstance(lookat, str):
+            code += f"\n     lookat = '{lookat}',"
         else:
-            code += f"\n     lookat = {lookat},"
+            code += f"\n     lookat = ({lookat[0]:.3},{lookat[1]:.3},{lookat[2]:.3}),"
 
         settings = self.visual.settings  # alias
         defaults = DAVE.settings_visuals.ViewportSettings()
