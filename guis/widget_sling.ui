@@ -170,7 +170,7 @@
    <item>
     <widget class="QLabel" name="label_14">
      <property name="text">
-      <string>** EA is the stiffness over the wire</string>
+      <string>** EA is the stiffness of the wire</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

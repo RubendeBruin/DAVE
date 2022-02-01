@@ -364,7 +364,8 @@ class WidgetNodeTree(guiDockWidget):
             # custom work-around for showing the "out-frame" for managed geometric connectors
             if isinstance(node._manager, GeometricContact):
                 if node == node._manager._child_circle_parent_parent:
-                    show_managed_node = True
+                    if node._manager.manager is None: # but only if the manager itself is not also managed (and thus hidden)
+                        show_managed_node = True
 
             # custom work-around for showing the "circles" for managed shackles
             if isinstance(node._manager, Shackle):
@@ -373,7 +374,8 @@ class WidgetNodeTree(guiDockWidget):
                     or node == node._manager.bow
                     or node == node._manager.inside
                 ):
-                    show_managed_node = True
+                    if node._manager.manager is None: # but only if the manager itself is not also managed (and thus hidden)
+                        show_managed_node = True
 
             if node._manager:
 

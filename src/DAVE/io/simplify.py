@@ -6,7 +6,7 @@ Not every program supports every feature of DAVE.
 This module contains methods to simplify or re-write a scene such that these features are re-written into something
 that can be exported.
 
-All methods work in-place. That means that the scene that is passed to the function it modified. As must functions are
+All methods work in-place. That means that the scene that is passed to the function is modified. As most functions are
 "destructive" it is recommended to run these on a copy of the original model.
 
 Methods

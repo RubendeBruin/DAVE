@@ -792,15 +792,20 @@ class VisualActor:
 
             if actor_settings.lineWidth > 0:
                 if uc_paint is None:
-                    actor.lineColor(
-                        (
+                    # actor.lineColor(   # See vedo Issue https://github.com/marcomusy/vedo/issues/583
+                    #     (
+                    #         actor_settings.lineColor[0] / 255,
+                    #         actor_settings.lineColor[1] / 255,
+                    #         actor_settings.lineColor[2] / 255,
+                    #     )
+                    # )
+                    actor.GetProperty().SetColor( (
                             actor_settings.lineColor[0] / 255,
                             actor_settings.lineColor[1] / 255,
                             actor_settings.lineColor[2] / 255,
-                        )
-                    )
+                        ))
                 else:
-                    actor.lineColor(uc_paint[:3])
+                    actor.GetProperty().SetColor(uc_paint[:3])
             else:
                 actor.GetProperty().SetLineWidth(0)
 

@@ -239,7 +239,7 @@ class Gui:
 
         self.scene = scene
         """Reference to a scene"""
-        self.scene.gui_solve_func = self.solve_statics
+        self.scene.gui_solve_func = self.solve_statics_using_gui_on_scene
 
 
 
@@ -1330,14 +1330,17 @@ class Gui:
     def stop_solving(self):
         self._terminate = True
 
-    def solve_statics(self,timeout_s=1, called_by_user=True):
 
-        self.scene.update()
+    def solve_statics(self,timeout_s=1, called_by_user=True):
+        self.solve_statics_using_gui_on_scene(scene_to_solve=self.scene, timeout_s=timeout_s, called_by_user=called_by_user)
+
+    def solve_statics_using_gui_on_scene(self, scene_to_solve, timeout_s=1, called_by_user=True):
+        scene_to_solve.update()
 
         if called_by_user:
             self.add_undo_point()
 
-        old_dofs = self.scene._vfc.get_dofs()
+        old_dofs = scene_to_solve._vfc.get_dofs()
 
         if len(old_dofs) == 0:  # no degrees of freedom
             if called_by_user:
@@ -1381,7 +1384,7 @@ class Gui:
 
 
         # execute the solver
-        result = self.scene._solve_statics_with_optional_control(feedback_func=feedback, do_terminate_func=should_we_stop, timeout_s=timeout_s)
+        result = scene_to_solve._solve_statics_with_optional_control(feedback_func=feedback, do_terminate_func=should_we_stop, timeout_s=timeout_s)
 
         # close the dialog.
         # if this was a short solve,
@@ -1390,7 +1393,7 @@ class Gui:
 
         else: # animate the change
             if DAVE.settings.GUI_DO_ANIMATE and called_by_user :
-                new_dofs = self.scene._vfc.get_dofs()
+                new_dofs = scene_to_solve._vfc.get_dofs()
                 self.animate_change(old_dofs, new_dofs, 10)
 
 

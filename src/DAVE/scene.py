@@ -10,6 +10,7 @@ import glob
 import warnings
 from abc import ABC, abstractmethod
 from enum import Enum
+from typing import List  # for python<3.9
 
 import pyo3d
 import numpy as np
@@ -681,14 +682,14 @@ class Visual(Node):
 
 class Frame(NodeWithParentAndFootprint):
     """
-    Axis
+    Frame
 
-    Axes are the main building blocks of the geometry. They have a position and an rotation in space. Other nodes can be placed on them.
-    Axes can be nested by parent/child relationships meaning that an axis can be placed on an other axis.
-    The possible movements of an axis can be controlled in each degree of freedom using the "fixed" property.
+    Frames are the main building blocks of the geometry. They have a position and a rotation in space. Other nodes can be placed on them.
+    Frames can be nested by parent/child relationships meaning that an frame can be placed on another frame.
+    The possible movements of a frame can be controlled in each degree of freedom using the "fixed" property.
 
-    Axes are also the main building block of inertia.
-    Dynamics are controlled using the inertia properties of an axis: inertia [mT], inertia_position[m,m,m] and inertia_radii [m,m,m]
+    Frames are also the main building block of inertia.
+    Dynamics are controlled using the inertia properties of an frame: inertia [mT], inertia_position[m,m,m] and inertia_radii [m,m,m]
 
 
     Notes:
@@ -1903,6 +1904,7 @@ class Cable(CoreConnectedNode):
     def __init__(self, scene, node):
         super().__init__(scene, node)
         self._pois = list()
+        self._reversed : List[bool] = list()
 
     def depends_on(self):
         return [*self._pois]
@@ -1970,6 +1972,41 @@ class Cable(CoreConnectedNode):
     def diameter(self, diameter):
 
         self._vfNode.diameter = diameter
+
+    @property
+    def mass_per_length(self):
+        """Mass per length of the cable [mT/m]"""
+        return self._vfNode.mass_per_length
+
+    @mass_per_length.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def mass_per_length(self, mass_per_length):
+        self._vfNode.mass_per_length = mass_per_length
+
+    @property
+    def mass(self):
+        """Mass of the cable (derived from length and mass-per-length) [mT]"""
+        return self._vfNode.mass_per_length * self.length
+
+    @mass.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def mass(self, mass):
+        self._vfNode.mass_per_length = mass / self.length
+
+    @property
+    def reversed(self):
+        """Diameter of the cable. Used when a cable runs over a circle. [m]"""
+        return tuple(self._reversed)
+
+    @reversed.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def reversed(self, reversed):
+
+        self._reversed = list(reversed)
+        self._update_pois()
 
     @property
     def connections(self):
@@ -2053,16 +2090,23 @@ class Cable(CoreConnectedNode):
         """A list of 3D locations which can be used for visualization"""
         return self._vfNode.global_points
 
-    def _add_connection_to_core(self, connection):
+    def _add_connection_to_core(self, connection, reversed = False):
         if isinstance(connection, Point):
             self._vfNode.add_connection_poi(connection._vfNode)
         if isinstance(connection, Circle):
-            self._vfNode.add_connection_sheave(connection._vfNode)
+            self._vfNode.add_connection_sheave(connection._vfNode, reversed)
 
     def _update_pois(self):
         self._vfNode.clear_connections()
-        for point in self._pois:
-            self._add_connection_to_core(point)
+
+        # sync length of reversed
+        while len(self._reversed) < len(self._pois):
+            self._reversed.append(False)
+        self._reversed = self._reversed[0:len(self._pois)]
+
+        for point, reversed in zip(self._pois, self._reversed):
+            self._add_connection_to_core(point, reversed)
+
 
     def _give_poi_names(self):
         """Returns a list with the names of all the pois"""
@@ -5618,7 +5662,8 @@ class Sling(Manager):
 
     @property
     def spliceAposrot(self):
-        """The 6-dof of splice A. Solved [m,m,m,deg,deg,deg]"""
+        """The 6-dof of splice on end A. Solved [m,m,m,deg,deg,deg]
+        #NOGUI"""
         return (*self.sa.position, *self.sa.rotation)
 
     @spliceAposrot.setter
@@ -5628,7 +5673,8 @@ class Sling(Manager):
 
     @property
     def spliceBposrot(self):
-        """The 6-dof of splice A. Solved [m,m,m,deg,deg,deg]"""
+        """The 6-dof of splice on end B. Solved [m,m,m,deg,deg,deg]
+        #NOGUI"""
         return (*self.sb.position, *self.sb.rotation)
 
     @spliceBposrot.setter
@@ -5958,7 +6004,8 @@ class Shackle(Manager, RigidBody):
         )
 
         self.kind = kind
-        self.name = name
+        self._name = name # do not set name in managed nodes, names there are already set
+                          # so that would raise an error
 
         for n in self.managed_nodes():
             n.manager = self
@@ -6303,7 +6350,8 @@ class Scene:
         """Optional timeline"""
 
         self.gui_solve_func = None
-        """Optional reference to function to use instead of solve_statics - used by the Gui to give user control of solving"""
+        """Optional reference to function to use instead of solve_statics - used by the Gui to give user control of solving
+        Function is called with self as argument"""
 
 
         if filename is not None:
@@ -6495,6 +6543,7 @@ class Scene:
 
         # node is a string then get the node with this name
         if type(node) == str:
+            # use prefix if any
             node = self[node]
 
         reqtype = make_iterable(reqtype)
@@ -6620,6 +6669,9 @@ class Scene:
             True if anything was changed; False otherwise
         """
 
+        remember = self._godmode
+        self._godmode = True
+
         changed = False
         message = ""
         for n in self.nodes_of_type(GeometricContact):
@@ -6632,6 +6684,8 @@ class Scene:
                     message += f"Changing side of pin-pin connection {n.name} due to tension in connection\n"
                     n.change_side()
                     changed = True
+
+        self._godmode = remember
 
         return (changed, message)
 
@@ -6953,6 +7007,14 @@ class Scene:
                 previous_name = name
             raise ValueError(f"Duplicate names exist: " + duplicates)
 
+    def assert_no_external_managers(self):
+        """Asserts that the managers of all nodes are also present in the Scene"""
+        check = [node for node in self._nodes if node.manager not in (*self._nodes, None)]
+        if check:
+            for c in check:
+                print(f'Node: "{c.name}" has missing manager: "{c.manager}"')
+            raise ValueError('Some of the nodes in this scene are managed by a manager who itself is not part of the scene')
+
     def sort_nodes_by_parent(self):
         """Sorts the nodes such that the parent of this node (if any) occurs earlier in the list.
 
@@ -6961,6 +7023,7 @@ class Scene:
         """
 
         self.assert_unique_names()
+        self.assert_no_external_managers()
 
         exported = []
         to_be_exported = self._nodes.copy()
@@ -7151,8 +7214,8 @@ class Scene:
 
         return r
 
-    def common_parent_of_nodes(self, nodes : list[Node]) -> Node or None:
-        """Finds a nearest parent that is common to all of the nodes.
+    def common_ancestor_of_nodes(self, nodes : List[Node]) -> Node or None:
+        """Finds a nearest ancestor (parent) that is common to all of the nodes.
 
         frame [Frame]
          |-> frame2 [Frame]
@@ -7384,7 +7447,7 @@ class Scene:
         There are many situations in which this will fail because an it is impossible to dissolve
         the element. For example a poi can only be dissolved when nothing is attached to it.
 
-        For now this function only works on AXIS and Managers
+        For now this function only works on Frames and Managers
         """
 
         if isinstance(node, str):
@@ -7441,7 +7504,7 @@ class Scene:
 
         else:
             raise TypeError(
-                "Only nodes of type Axis and Manager can be dissolved at this moment"
+                "Only nodes of type Frame and Manager can be dissolved at this moment"
             )
 
         self.delete(node)  # do not call delete as that will fail on managers
@@ -7666,7 +7729,7 @@ class Scene:
             timeout = -1
 
         if self.gui_solve_func is not None:
-            return self.gui_solve_func(called_by_user=False)
+            return self.gui_solve_func(self, called_by_user=False)
         else:
             return self._solve_statics_with_optional_control(timeout_s=timeout)
 
@@ -7874,7 +7937,7 @@ class Scene:
             rotation: optional, rotation for the node (rx,ry,rz)
             intertia: optional, inertia [mT] for node
             inertia_radii: optional, radii (m,m,m) for frame
-            fixed [True]: optional, determines whether the axis is fixed [True] or free [False]. May also be a sequence of 6 booleans.
+            fixed [True]: optional, determines whether the frame is fixed [True] or free [False]. May also be a sequence of 6 booleans.
 
         Returns:
             Reference to newly created frame
@@ -7953,7 +8016,7 @@ class Scene:
             parent: optional, name of the parent of the node
             position: optional, position for the node (x,y,z)
             rotation: optional, rotation for the node (rx,ry,rz)
-            fixed [True]: optional, determines whether the axis is fixed [True] or free [False]. May also be a sequence of 6 booleans.
+            fixed [True]: optional, determines whether the frame is fixed [True] or free [False]. May also be a sequence of 6 booleans.
             path: component resource (.dave file)
 
         Returns:
@@ -8304,7 +8367,7 @@ class Scene:
             position: optional, position for the node (x,y,z)
             rotation: optional, rotation for the node (rx,ry,rz)
             inertia_radii : optional, radii of gyration (rxx,ryy,rzz); only used for dynamics
-            fixed [True]: optional, determines whether the axis is fixed [True] or free [False]. May also be a sequence of 6 booleans.
+            fixed [True]: optional, determines whether the frame is fixed [True] or free [False]. May also be a sequence of 6 booleans.
 
         Examples:
             scene.new_rigidbody("heavy_thing", mass = 10000, cog = (1.45, 0, -0.7))
@@ -8379,7 +8442,7 @@ class Scene:
         return r
 
     def new_cable(
-        self, name, endA, endB, length=-1, EA=0, diameter=0, sheaves=None
+        self, name, endA, endB, length=None, EA=0, diameter=0, sheaves=None, mass=None, mass_per_length=None,
     ) -> Cable:
         """Creates a new *cable* node and adds it to the scene.
 
@@ -8389,6 +8452,7 @@ class Scene:
             endB : A Poi element to connect the other end of the cable to
             length [-1] : un-stretched length of the cable in m; default [-1] create a cable with the current distance between the endpoints A and B
             EA [0] : stiffness of the cable in kN/m; default
+            mass [0] or mass_per_length [0] : mass of the cable - warning: only valid if tension in cable > 10x cable weight.
 
             sheaves : [optional] A list of pois, these are sheaves that the cable runs over. Defined from endA to endB
 
@@ -8401,7 +8465,8 @@ class Scene:
             scene.new_cable('cable_name', length=50, EA=1000, endA='poi_start', endB = 'poi_end', sheaves=['single_sheave']) # also a single sheave needs to be provided as a list
 
         Notes:
-            The default options for length and EA can be used to measure distances between points
+            - The default options for length and EA can be used to measure distances between points
+            - Cable mass is only valid for cables under high tension, for example lifting slings, when cable tension > 10x cable weight.
 
         Returns:
             Reference to newly created Cable
@@ -8414,7 +8479,8 @@ class Scene:
         # first check
         assertValidName(name)
         self._verify_name_available(name)
-        assert1f(length, "length")
+        if length is not None:
+            assert1f(length, "length")
         assert1f(EA, "EA")
 
         endA = self._poi_or_sheave_from_node(endA)
@@ -8439,7 +8505,7 @@ class Scene:
         pois.append(endB)
 
         # default options
-        if length > -1:
+        if length is not None:
             if length < 1e-9:
                 raise Exception("Length should be more than 0")
 
@@ -8451,12 +8517,25 @@ class Scene:
         if diameter < 0:
             raise Exception("Diameter should be >= 0")
 
+        if mass is None and mass_per_length is None:
+            mass_per_length = 0
+        elif mass is not None and mass_per_length is not None:
+            raise ValueError('Can not provide both mass and mass_per_length')
+
+        if mass_per_length is not None:
+            assert1f(mass_per_length, 'mass per length')
+
+        if mass is not None:
+            assert1f(mass, 'mass')
+
+
         # then create
         a = self._vfc.new_cable(name)
         new_node = Cable(self, a)
-        if length > 0:
+        if length is not None:
             new_node.length = length
         new_node.EA = EA
+
         new_node.diameter = diameter
 
         new_node.connections = pois
@@ -8464,7 +8543,7 @@ class Scene:
         # and add to the scene
         self._nodes.append(new_node)
 
-        if length < 0:
+        if length is None:
             new_node.length = 1e-8
             self._vfc.state_update()
 
@@ -8478,6 +8557,11 @@ class Scene:
                 raise ValueError(
                     "No lengh has been supplied and all connection points are at the same location - unable to determine a non-zero default length. Please supply a length"
                 )
+
+        if mass is not None:
+            mass_per_length = mass / new_node.length
+
+        new_node.mass_per_length = mass_per_length
 
         return new_node
 
@@ -9035,8 +9119,8 @@ class Scene:
             spacing_width = 1.45,
             n_length = 6,
             n_width = 2,
-            meshes = None
-
+            meshes = None,
+            use_friction = False,
         ) -> SPMT:
         """Creates a new *SPMT* node and adds it to the scene.
 
@@ -9051,6 +9135,7 @@ class Scene:
             n_length : number of axles in length direction
             n_width : number of axles in transverse direction
             meshes : [] List of contact meshes that the SPMT sees. If empty then the SPMT sees all contact meshes.
+            use_friction : (True) Use friction
 
 
         Returns:
@@ -9076,6 +9161,7 @@ class Scene:
         assert1f_positive(spacing_width ,'spacing width')
         assert1f_positive(n_length,'n-length')
         assert1f_positive(n_width,'n-width')
+        assertBool(use_friction, "use_friction")
 
         if meshes is not None:
             meshes = make_iterable(meshes)
@@ -9099,6 +9185,7 @@ class Scene:
         new_node._spacing_width = spacing_width
         new_node._n_length = n_length
         new_node._n_width = n_width
+        new_node.use_friction = use_friction
         new_node._update_vfNode()
 
         if meshes is not None:
