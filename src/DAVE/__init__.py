@@ -17,3 +17,4 @@ finally:
 
 from . import auto_download
 from .scene import *
+from .nodes import *

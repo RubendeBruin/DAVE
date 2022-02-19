@@ -31,6 +31,16 @@ def assert1f(var, name = "Variable"):
         raise ValueError(name + " should be a number but {} is not a number.".format(var))
 
 
+def assert1i_positive_or_zero(var, name ="Variable"):
+
+    assert round(var) == var, f'{name} should be an integer (round number), not {var}'
+
+    if not is_number(var):
+        raise ValueError(name + " should be a number but {} is not a number.".format(var))
+    if var < 0:
+        raise ValueError(name + " can not be negative.".format(var))
+
+
 def assert1f_positive_or_zero(var, name ="Variable"):
     if not is_number(var):
         raise ValueError(name + " should be a number but {} is not a number.".format(var))

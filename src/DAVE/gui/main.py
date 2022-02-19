@@ -83,7 +83,14 @@ import DAVE.auto_download
 from PySide2.QtCore import Qt
 from PySide2.QtCore import QSettings
 from PySide2.QtGui import QIcon, QPixmap, QFont, QFontMetricsF, QCursor
-from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox, QMenu, QWidgetAction, QAction
+from PySide2.QtWidgets import (
+    QDialog,
+    QFileDialog,
+    QMessageBox,
+    QMenu,
+    QWidgetAction,
+    QAction,
+)
 from DAVE.scene import Scene
 
 from DAVE.gui.forms.main_form import Ui_MainWindow
@@ -126,6 +133,36 @@ import numpy as np
 # resources
 import DAVE.gui.forms.resources_rc
 
+# ========================================================
+#   Settings for customization of the GUI
+# ========================================================
+#
+# List with of tupple with (Button text, WORKSPACE_ID)
+#
+# These buttons are created in the tool-bar.
+# Clicking a button will call activate_workspace with WORKSPACE_ID
+DAVE_GUI_WORKSPACE_BUTTONS = [
+    ("Construct", "CONSTRUCT"),
+    ("Explore", "EXPLORE"),
+    ("Ballast", "BALLAST"),
+    ("Shear and Bending", "MOMENTS"),
+    ("Environment", "ENVIRONMENT"),
+    ("Stability", "STABILITY"),
+    ("Limits", "LIMITS"),
+    ("Tags", "TAGS"),
+    ("Mode shapes [beta]", "DYNAMICS"),
+    ("Airy [beta]", "AIRY"),
+]
+
+DAVE_GUI_PLUGINS_INIT=[]
+DAVE_GUI_PLUGINS_WORKSPACE=[]
+DAVE_GUI_PLUGINS_CONTEXT=[]
+DAVE_GUI_PLUGINS_EDITOR=[]
+
+# ====================================================
+
+
+
 
 class SolverDialog(QDialog, Ui_Dialog):
     def __init__(self, parent=None):
@@ -147,11 +184,7 @@ class Gui:
         cog_scale=0.25,
         block=True,
         workspace=None,
-        plugins_init=(),
-        plugins_workspace=(),
-        plugins_context=(),
-        plugins_editor=(),
-        painters = None,
+        painters=None,
     ):
         """
         Starts the Gui on scene "scene".
@@ -180,9 +213,9 @@ class Gui:
 
         """
 
-        self.plugins_workspace = plugins_workspace
-        self.plugins_context = plugins_context
-        self.plugins_editor = plugins_editor
+        self.plugins_workspace = DAVE_GUI_PLUGINS_WORKSPACE
+        self.plugins_context = DAVE_GUI_PLUGINS_CONTEXT
+        self.plugins_editor = DAVE_GUI_PLUGINS_EDITOR
 
         if app is None:
 
@@ -241,8 +274,6 @@ class Gui:
         """Reference to a scene"""
         self.scene.gui_solve_func = self.solve_statics_using_gui_on_scene
 
-
-
         self.modelfilename = None
         """Open file"""
 
@@ -260,9 +291,7 @@ class Gui:
         if painters is None:
             painters = "Construction"  # use as default
 
-        self.visual.settings.painter_settings = PAINTERS[
-            painters
-        ]
+        self.visual.settings.painter_settings = PAINTERS[painters]
 
         self.ui.cbPainerSelect.addItems([str(k) for k in PAINTERS.keys()])
         self.ui.cbPainerSelect.currentIndexChanged.connect(self.change_paintset)
@@ -355,7 +384,7 @@ class Gui:
         self.ui.menuSolve_Statics.addSeparator()
         for i in range(8):
             action = QAction("none")
-            action.triggered.connect(lambda *args, a=i : self.open_recent(a))
+            action.triggered.connect(lambda *args, a=i: self.open_recent(a))
             self.recent_files.append(action)
             self.ui.menuSolve_Statics.addAction(action)
         self.update_recent_file_menu()
@@ -394,8 +423,6 @@ class Gui:
 
         self.ui.sliderGeometrySize.connectvalueChanged(set_geo_size)
         self.ui.menuView.addAction(self.ui.sliderGeometrySize)
-
-
 
         # force size
         self.ui.menuView.addSeparator()
@@ -526,12 +553,12 @@ class Gui:
         self.guiWidgets = dict()
         """Dictionary of all created guiWidgets (dock-widgets)"""
 
-        def set_pb_style(pb):
-            pb.setFlat(True)
-            pb.setCheckable(True)
-            pb.setAutoExclusive(True)
-            pb.setStyleSheet("text-decoration: underline;")
-            self.ui.toolBar.addWidget(pb)
+        # def set_pb_style(pb):
+        #     pb.setFlat(True)
+        #     pb.setCheckable(True)
+        #     pb.setAutoExclusive(True)
+        #     pb.setStyleSheet("text-decoration: underline;")
+        #     self.ui.toolBar.addWidget(pb)
 
         # Workspace buttons
         btnConstruct = QtWidgets.QPushButton()
@@ -540,87 +567,36 @@ class Gui:
         btnConstruct.setFlat(True)
         self.ui.toolBar.addWidget(btnConstruct)
 
-        btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText("&1. Construct")
-        btnConstruct.clicked.connect(lambda: self.activate_workspace("CONSTRUCT"))
-        set_pb_style(btnConstruct)
-        btnConstruct.setChecked(True)
+        for i, button in enumerate(DAVE_GUI_WORKSPACE_BUTTONS):
+            name = button[0]
+            workspace_id = button[1]
 
-        btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText("&2. Explore")
-        btnConstruct.clicked.connect(lambda: self.activate_workspace("EXPLORE"))
-        set_pb_style(btnConstruct)
+            btn = QtWidgets.QPushButton()
+            if i<9:
+                btn.setText(f'&{i+1} {name}')
+            else:
+                btn.setText(f'{i + 1} {name}')
+            btn.pressed.connect(lambda *args, wsid=workspace_id : self.activate_workspace(wsid))
 
-        btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText("&3. Ballast")
-        btnConstruct.clicked.connect(lambda: self.activate_workspace("BALLAST"))
-        set_pb_style(btnConstruct)
+            # btn.setFlat(True)
+            btn.setCheckable(True)
+            btn.setAutoExclusive(True)
+            # btn.setStyleSheet("text-decoration: underline;")
+            self.ui.toolBar.addWidget(btn)
 
-        btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText("&4. Shear and Bending")
-        btnConstruct.clicked.connect(lambda: self.activate_workspace("MOMENTS"))
-        set_pb_style(btnConstruct)
-
-        btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText("&5. Environment")
-        btnConstruct.clicked.connect(lambda: self.activate_workspace("ENVIRONMENT"))
-        set_pb_style(btnConstruct)
-
-        btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText("&6. Stability")
-        btnConstruct.clicked.connect(lambda: self.activate_workspace("STABILITY"))
-        set_pb_style(btnConstruct)
-
-        btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText("&7. Limits")
-        btnConstruct.clicked.connect(lambda: self.activate_workspace("LIMITS"))
-        set_pb_style(btnConstruct)
-
-        btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText("&8. Tags")
-        btnConstruct.clicked.connect(lambda: self.activate_workspace("TAGS"))
-        set_pb_style(btnConstruct)
-
-        btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText("Mode Shapes [beta]")
-        btnConstruct.clicked.connect(lambda: self.activate_workspace("DYNAMICS"))
-        set_pb_style(btnConstruct)
-
-        lblInfo = QtWidgets.QLabel()
-        lblInfo.setText(" >> ")
-        self.ui.toolBar.addWidget(lblInfo)
+        self.ui.toolBar.layout().setContentsMargins(-2, 0, 0, 0)
 
         space = QtWidgets.QWidget()
         space.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
         )
         self.ui.toolBar.addWidget(space)
-
-        lblInfo = QtWidgets.QLabel()
-        lblInfo.setText("(working in temporary copy)")
-        self.ui.toolBar.addWidget(lblInfo)
-
-        btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText("Airy [beta]")
-        btnConstruct.clicked.connect(lambda: self.activate_workspace("AIRY"))
-        set_pb_style(btnConstruct)
-
-        space = QtWidgets.QWidget()
-        space.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
-        )
-        self.ui.toolBar.addWidget(space)
-
-        # btnConstruct = QtWidgets.QPushButton()
-        # btnConstruct.setText('(Artists)')
-        # btnConstruct.clicked.connect(lambda: self.activate_workspace("PAINTERS"))
-        # set_pb_style(btnConstruct)
 
         self._active_workspace = None
 
         # call plugin(s)
 
-        for plugin_init in plugins_init:
+        for plugin_init in DAVE_GUI_PLUGINS_INIT:
             plugin_init(self)
 
         # ---------- activate workspace (if any)
@@ -653,11 +629,11 @@ class Gui:
         self.guiEmitEvent(guiEventType.FULL_UPDATE)
 
     def labels_show_hide(self):
-        if self.visual.settings.label_scale>0:
+        if self.visual.settings.label_scale > 0:
             self.visual.settings.label_scale = 0
         else:
             self.visual.settings.label_scale = 1.0
-        self.ui.actionShow_labels.setChecked(self.visual.settings.label_scale>0)
+        self.ui.actionShow_labels.setChecked(self.visual.settings.label_scale > 0)
         self.visual.update_visibility()
         self.visual.refresh_embeded_view()
 
@@ -685,7 +661,9 @@ class Gui:
             # does the node still exist?
             if self.scene.node_exists(name):
                 need_refresh = True
-                self.run_code(f"s.delete('{name}')", event=None)  # send event once after all nodes have been deleted
+                self.run_code(
+                    f"s.delete('{name}')", event=None
+                )  # send event once after all nodes have been deleted
 
         if need_refresh:
             self.guiEmitEvent(guiEventType.MODEL_STRUCTURE_CHANGED)
@@ -802,14 +780,11 @@ class Gui:
             visual = self.visual.actor_from_node(node)
             position = visual.center_position
 
-            print(f'focusing camera to {node.name} at {position}')
+            print(f"focusing camera to {node.name} at {position}")
 
             self.visual.focus_on(position)
 
-
             self.refresh_3dview()
-
-
 
     def savepoint_restore(self):
 
@@ -881,7 +856,6 @@ class Gui:
         if name == "TAGS":
             self.show_guiWidget("Tags", WidgetTags)
 
-
         if name == "MOMENTS":
             self.show_guiWidget("Footprints", WidgetFootprints)
             self.show_guiWidget("Graph", WidgetBendingMoment)
@@ -930,7 +904,7 @@ class Gui:
         try:
             self.open_file(p)
         except:
-            print(f'Could not open file {filename}')
+            print(f"Could not open file {filename}")
 
     def get_recent(self):
         settings = QSettings("rdbr", "DAVE")
@@ -957,18 +931,17 @@ class Gui:
         files = self.get_recent()
         for i in range(8):
             if files[i]:
-                self.recent_files[i].setText(f'&{i+1} ' + str(files[i]))
+                self.recent_files[i].setText(f"&{i+1} " + str(files[i]))
             else:
-                self.recent_files[i].setText('recent files will appear here')
+                self.recent_files[i].setText("recent files will appear here")
 
     def open_recent(self, i):
         filename = self.recent_files[i].text()
-        if filename == 'recent files will appear here':
+        if filename == "recent files will appear here":
             return
         filename = filename[3:]
 
         self.open_file(filename)
-
 
     # ============== Animation functions =============
 
@@ -1189,7 +1162,9 @@ class Gui:
         )
 
         try:
-            nodes = [self.scene[node] for node in selected_names] # selected nodes may not exist anymore
+            nodes = [
+                self.scene[node] for node in selected_names
+            ]  # selected nodes may not exist anymore
         except:
             nodes = []
         self.selected_nodes.clear()  # do not re-assign, docks keep a reference to this list
@@ -1201,9 +1176,7 @@ class Gui:
         """Adds the current model to the undo-list"""
         if len(self._undo_log) > self._undo_index:
             self._undo_log = self._undo_log[: self._undo_index]
-        self._undo_log.append(
-            self.scene.give_python_code()
-        )
+        self._undo_log.append(self.scene.give_python_code())
         self._undo_index = len(self._undo_log)
 
     # / undo functions
@@ -1328,11 +1301,16 @@ class Gui:
     def stop_solving(self):
         self._terminate = True
 
+    def solve_statics(self, timeout_s=1, called_by_user=True):
+        self.solve_statics_using_gui_on_scene(
+            scene_to_solve=self.scene,
+            timeout_s=timeout_s,
+            called_by_user=called_by_user,
+        )
 
-    def solve_statics(self,timeout_s=1, called_by_user=True):
-        self.solve_statics_using_gui_on_scene(scene_to_solve=self.scene, timeout_s=timeout_s, called_by_user=called_by_user)
-
-    def solve_statics_using_gui_on_scene(self, scene_to_solve, timeout_s=1, called_by_user=True):
+    def solve_statics_using_gui_on_scene(
+        self, scene_to_solve, timeout_s=1, called_by_user=True
+    ):
         scene_to_solve.update()
 
         if called_by_user:
@@ -1351,19 +1329,20 @@ class Gui:
 
             return True
 
-
         self._dialog = None
 
         # define the terminate control
         self._terminate = False
+
         def should_we_stop():
             return self._terminate
 
         # define the feedback control
         self._feedbackcounter = 0
+
         def feedback(message):
 
-            self._feedbackcounter += 1   # skip the first
+            self._feedbackcounter += 1  # skip the first
             if self._feedbackcounter < 2:
                 return
 
@@ -1380,20 +1359,22 @@ class Gui:
             self.visual.refresh_embeded_view()
             self.app.processEvents()
 
-
         # execute the solver
-        result = scene_to_solve._solve_statics_with_optional_control(feedback_func=feedback, do_terminate_func=should_we_stop, timeout_s=timeout_s)
+        result = scene_to_solve._solve_statics_with_optional_control(
+            feedback_func=feedback,
+            do_terminate_func=should_we_stop,
+            timeout_s=timeout_s,
+        )
 
         # close the dialog.
         # if this was a short solve,
         if self._dialog is not None:
             self._dialog.close()
 
-        else: # animate the change
-            if DAVE.settings.GUI_DO_ANIMATE and called_by_user :
+        else:  # animate the change
+            if DAVE.settings.GUI_DO_ANIMATE and called_by_user:
                 new_dofs = scene_to_solve._vfc.get_dofs()
                 self.animate_change(old_dofs, new_dofs, 10)
-
 
         if called_by_user:
             self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
@@ -1500,8 +1481,10 @@ class Gui:
 
     def _get_filename_using_dialog(self):
         if self.modelfilename is None:
-            folder = self.scene.resources_paths[-2] # get the lowest one
-            filename, _ = QFileDialog.getOpenFileName(filter="*.dave", caption="Assets", dir=str(folder))
+            folder = self.scene.resources_paths[-2]  # get the lowest one
+            filename, _ = QFileDialog.getOpenFileName(
+                filter="*.dave", caption="Assets", dir=str(folder)
+            )
         else:
             filename, _ = QFileDialog.getOpenFileName(filter="*.dave", caption="Assets")
         return filename
@@ -1510,7 +1493,6 @@ class Gui:
         filename = self._get_filename_using_dialog()
         if filename:
             self.open_file(filename)
-
 
     def menu_import(self):
         filename = self._get_filename_using_dialog()
@@ -1524,7 +1506,6 @@ class Gui:
         code = 's.save_scene(r"{}")'.format(self.modelfilename)
         self.run_code(code, guiEventType.NOTHING)
 
-
     def menu_save_model_as(self):
 
         if self.modelfilename is not None:
@@ -1535,7 +1516,7 @@ class Gui:
         filename, _ = QFileDialog.getSaveFileName(
             filter="*.dave",
             caption="Scene files",
-            dir= dir,
+            dir=dir,
         )
         if filename:
             code = 's.save_scene(r"{}")'.format(filename)
@@ -1912,7 +1893,6 @@ class Gui:
 
         # loop over visuals, and set _is_selected or _is_sub_selected based on the referenced node
 
-
         for v in self.visual.node_visuals:
             if v.node in visually_selected_nodes:
                 v._is_selected = True
@@ -1929,7 +1909,9 @@ class Gui:
 
             if parent in visually_selected_nodes:
                 if not v._is_selected:
-                    v._is_sub_selected = True   # can not be sub-selected if already selected
+                    v._is_sub_selected = (
+                        True  # can not be sub-selected if already selected
+                    )
             else:
                 v._is_sub_selected = False
 
@@ -1981,8 +1963,6 @@ class Gui:
                 self.visual.position_visuals()
                 return
 
-
-
             self.visual.create_node_visuals()
             self.visual.add_new_node_actors_to_screen()
             self.visual.position_visuals()
@@ -2015,7 +1995,13 @@ class Gui:
         if old_selection != self.selected_nodes:
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
 
-    def show_guiWidget(self, name, widgetClass):
+    def show_guiWidget(self, name, widgetClass=None):
+
+        if widgetClass is None:
+            widgetClass = DAVE_GUI_DOCKS[
+                name
+            ]  # TODO, make this the default and remove the widgetClass argument
+
         if name in self.guiWidgets:
             d = self.guiWidgets[name]
         else:
@@ -2052,5 +2038,6 @@ class Gui:
 
 if __name__ == "__main__":
     from DAVE import *
+
     s = Scene()
     Gui(s)

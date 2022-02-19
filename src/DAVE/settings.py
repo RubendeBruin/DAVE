@@ -13,9 +13,7 @@ Among which:
 ALL PROGRAM WIDE VARIABLES ARE DEFINED IN UPPERCASE
 
 """
-from copy import deepcopy, copy
-
-import pandas as pd
+from dataclasses import dataclass
 
 """
   This Source Code Form is subject to the terms of the Mozilla Public
@@ -132,78 +130,69 @@ MANAGED_NODE_IDENTIFIER = ">>>"  # used for managed nodes, eg: SlingSL1242>>>eye
  This section defines color and geometry options for visualization in VTK
  
 """
-
+ # Moved settings_visuals
 
 
 """
-========= GUI =================
 
-Gui specific settings
+Registration of properties
 
 """
 
-#
-# # displayed properties of nodes
-#
-# Obsolete, now read from the .csv that is also used for the documentation
-#
-# PROPS_NODE = ['name']
-# PROPS_FRAME = ['global_position','global_rotation','applied_force','connection_force','equilibrium_error',
-#               'x','y','z','gz','gy','gz','rx','ry','rz','grx','gry','grz','ux','uy','uz',
-#               'connection_force_x','connection_force_y','connection_force_z','connection_moment_x','connection_moment_y','connection_moment_z',
-#               'tilt_x','heel','tilt_y','trim','heading','heading_compass']
-# PROPS_POI = ['global_position','applied_force_and_moment_global','x','y','z','gx','gy','gz',
-#              'applied_force','fx','fy','fz',
-#              'applied_moment','mx','my','mz',]
-# PROPS_CABLE = ['tension','stretch','length']
-# PROPS_FORCE = ['force','fx','fy','fz','moment','mx','my','mz']
-# PROPS_CON2D = ['angle','moment','force','ax','ay','az']
-# PROPS_CON6D = ['force_global','fgx','fgy','fgz','moment_global','mgx','mgy','mgz']
-# PROPS_BODY = ['cog', 'cogx', 'cogy', 'cogz', 'mass']
-# PROPS_BUOY_MESH = ['cob', 'displacement', 'cob_local']
-# PROPS_BEAM = ['tension', 'torsion', 'L', 'EIy', 'EIz', 'EA', 'GIp', 'n_segments']
-# PROPS_CONTACTBALL = ['can_contact','contactpoint','contact_force_magnitude','contact_force']
-# PROPS__AREA = ['A','Cd', 'Ae','fx','fy','fz','force']
+@dataclass
+class NodePropertyInfo:
+    node_class : type
+    property_name : str
+    property_type : type
+    doc_short : str
+    doc_long : str
+    units : str
+    remarks : str
+    is_settable : bool
+    is_single_settable : bool
+    is_single_numeric : bool
+
+    def as_tuple(self):
+
+        # derive class name
+        class_name = None
+        assert self.node_class in DAVE_ADDITIONAL_RUNTIME_MODULES.values(), f'{self.node_class} not found in DAVE_ADDITIONAL_RUNTIME_MODULES'
+        for key, value in DAVE_ADDITIONAL_RUNTIME_MODULES.items():
+            if value==self.node_class:
+                class_name = key
+                break
+
+        # derive type name
+        type_name = self.property_type.__name__
 
 
-cdir = Path(dirname(__file__))
-DAVE_REPORT_PROPS = pd.read_csv(cdir / './resources/proplist.csv')
+        return (class_name,
+                self.property_name,
+                type_name,
+                self.doc_short,
+                self.units,
+                self.remarks,
+                self.is_settable,
+                self.is_single_settable,
+                self.is_single_numeric,
+                self.doc_long)
 
-classes = set(DAVE_REPORT_PROPS['class'].tolist())
 
-PROPS = dict()
-PROPS_GUI = dict()
+    def header_as_tuple(self):
+        return ('Class',
+                'Property',
+                'Property value type',
+                'Doc (short)',
+                'units',
+                'remarks',
+                'is_settable',
+                'is_single_settable',
+                'is_single_numeric',
+                'Doc (long)')
 
-for c in classes:
-    props_for_class = DAVE_REPORT_PROPS[DAVE_REPORT_PROPS['class'] == c]
-    all_properties = props_for_class['property'].tolist()
 
-    PROPS[c] =  all_properties
-    docs = props_for_class['doc'].tolist()
+DAVE_NODEPROP_INFO = dict()
 
-    guiprops = []
-    for (prop, doc) in zip(all_properties, docs):
-        if '#NOGUI' not in doc:
-            guiprops.append(prop)
-        # else:
-        #     print(f'Skipping {doc}')
-
-    PROPS_GUI[c] = guiprops
-
-PROPS_SETTABLE = dict()
-_SETTABLE_EXCLUDED = ('gx','gy','gz','name','inertia','kind','grx','gry','grz','position','rotation','level_global','manager','volume','target_elevation')
-for c in classes:
-    settable_props_for_class = DAVE_REPORT_PROPS[(DAVE_REPORT_PROPS['class'] == c) & (DAVE_REPORT_PROPS['readonly'] == False)]
-    props = settable_props_for_class['property'].tolist()
-    # manual exclusion of some of the properties
-    for ex in _SETTABLE_EXCLUDED:
-        if ex in props:
-            props.remove(ex)
-
-    if 'visible' not in props:
-        props.append('visible')
-
-    PROPS_SETTABLE[c] = props
 
 # ======= Animate after solving =========
 

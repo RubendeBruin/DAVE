@@ -1,0 +1,408 @@
+Class,Property,Property value type,Doc (short),units,remarks,is_settable,is_single_settable,is_single_numeric,Doc (long)
+BallastSystem,target_elevation,float,The target elevation of the parent of the ballast system ,[m],,True,True,True,The target elevation of the parent of the ballast system [m]
+BallastSystem,cogx,float,X position of combined CoG of all tank contents in the ballast-system.  ,[m],global coordinate,False,False,True,X position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]
+BallastSystem,cogy,float,Y position of combined CoG of all tank contents in the ballast-system.  ,[m],global coordinate,False,False,True,Y position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]
+BallastSystem,cogz,float,Z position of combined CoG of all tank contents in the ballast-system.  ,[m],global coordinate,False,False,True,Z position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]
+BallastSystem,cog,tuple,Combined CoG of all tank contents in the ballast-system.  ,"[m,m,m]",global coordinate,False,False,False,"Combined CoG of all tank contents in the ballast-system. (global coordinate) [m,m,m]"
+BallastSystem,weight,float,Total weight of all tank fillings in the ballast system ,[kN],,False,False,True,Total weight of all tank fillings in the ballast system [kN]
+Beam,n_segments,int,Number of segments used in beam ,[-],,True,True,True,Number of segments used in beam [-]
+Beam,EIy,float,E * Iyy : bending stiffness in the XZ plane ,[kN m2],,True,True,True,"E * Iyy : bending stiffness in the XZ plane [kN m2]
+
+        E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
+        Iyy is the cross section moment of inertia [m4]
+        "
+Beam,EIz,float,E * Izz : bending stiffness in the XY plane ,[kN m2],,True,True,True,"E * Izz : bending stiffness in the XY plane [kN m2]
+
+        E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
+        Iyy is the cross section moment of inertia [m4]
+        "
+Beam,GIp,float,G * Ipp : torsional stiffness about the X (length) axis ,[kN m2],,True,True,True,"G * Ipp : torsional stiffness about the X (length) axis [kN m2]
+
+        G is the shear-modulus of elasticity; for steel 75-80 GPa (10^6 kN/m2)
+        Ip is the cross section polar moment of inertia [m4]
+        "
+Beam,EA,float,E * A : stiffness in the length direction ,[kN],,True,True,True,"E * A : stiffness in the length direction [kN]
+
+        E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
+        A is the cross-section area in [m2]
+        "
+Beam,tension_only,bool,axial stiffness (EA) only applicable to tension ,[True/False],,True,True,False,axial stiffness (EA) only applicable to tension [True/False]
+Beam,mass,float,Mass of the beam in ,[mT],,True,True,True,Mass of the beam in [mT]
+Beam,L,float,Length of the beam in unloaded condition ,[m],,True,True,True,Length of the beam in unloaded condition [m]
+Beam,moment_A,tuple,Moment on beam at node A  ,"[kNm, kNm, kNm]",axis system of node A,False,False,False,"Moment on beam at node A [kNm, kNm, kNm] (axis system of node A)"
+Beam,moment_B,tuple,Moment on beam at node B  ,"[kNm, kNm, kNm]",axis system of node B,False,False,False,"Moment on beam at node B [kNm, kNm, kNm] (axis system of node B)"
+Beam,tension,float,"Tension in the beam , negative for compression",[kN],,False,False,True,"Tension in the beam [kN], negative for compression
+
+        tension is calculated at the midpoints of the beam segments.
+        "
+Beam,torsion,float,Torsion moment . Positive if end B has a positive rotation about the x-axis of end A,[kNm],,False,False,True,"Torsion moment [kNm]. Positive if end B has a positive rotation about the x-axis of end A
+
+        torsion is calculated at the midpoints of the beam segments.
+        "
+Beam,X_nodes,tuple,Returns the x-positions of the end nodes and internal nodes along the length of the beam ,[m],,False,False,False,Returns the x-positions of the end nodes and internal nodes along the length of the beam [m]
+Beam,X_midpoints,tuple,X-positions of the beam centers measured along the length of the beam ,[m],,False,False,False,X-positions of the beam centers measured along the length of the beam [m]
+Beam,global_positions,tuple,Global-positions of the end nodes and internal nodes ,"[m,m,m]",,False,False,False,"Global-positions of the end nodes and internal nodes [m,m,m]"
+Beam,global_orientations,tuple,Global-orientations of the end nodes and internal nodes ,"[deg,deg,deg]",,False,False,False,"Global-orientations of the end nodes and internal nodes [deg,deg,deg]"
+Beam,bending,tuple,Bending forces of the end nodes and internal nodes ,"[0, kNm, kNm]",,False,False,False,"Bending forces of the end nodes and internal nodes [0, kNm, kNm]"
+Buoyancy,cob,tuple,GLOBAL position of the center of buoyancy  ,"[m,m,m]",global axis,False,False,False,"GLOBAL position of the center of buoyancy [m,m,m] (global axis)"
+Buoyancy,cob_local,tuple,Position of the center of buoyancy  ,"[m,m,m]",local axis,False,False,False,"Position of the center of buoyancy [m,m,m] (local axis)"
+Buoyancy,displacement,float,Displaced volume of fluid ,[m^3],,False,False,True,Displaced volume of fluid [m^3]
+Cable,tension,float,Tension in the cable ,[kN],,False,False,True,Tension in the cable [kN]
+Cable,stretch,float,Stretch of the cable ,[m],,False,False,True,Stretch of the cable [m]
+Cable,actual_length,float,Current length of the cable: length + stretch ,[m],,False,False,True,Current length of the cable: length + stretch [m]
+Cable,length,float,Length of the cable when in rest ,[m],,True,True,True,Length of the cable when in rest [m]
+Cable,EA,float,Stiffness of the cable ,[kN],,True,True,True,Stiffness of the cable [kN]
+Cable,diameter,float,Diameter of the cable. Used when a cable runs over a circle. ,[m],,True,True,True,Diameter of the cable. Used when a cable runs over a circle. [m]
+Cable,mass_per_length,float,Mass per length of the cable ,[mT/m],,True,True,True,Mass per length of the cable [mT/m]
+Cable,mass,float,Mass of the cable  ,[mT],derived from length and mass-per-length,True,True,True,Mass of the cable (derived from length and mass-per-length) [mT]
+Cable,reversed,tuple,Diameter of the cable. Used when a cable runs over a circle. ,[m],,True,False,False,Diameter of the cable. Used when a cable runs over a circle. [m]
+Circle,axis,tuple,Direction of the sheave axis  ,"[m,m,m]",parent axis system,True,False,False,"Direction of the sheave axis (parent axis system) [m,m,m]
+
+        Note:
+            The direction of the axis is also used to determine the positive direction over the circumference of the
+            circle. This is then used when cables run over the circle or the circle is used for geometric contacts. So
+            if a cable runs over the circle in the wrong direction then a solution is to change the axis direction to
+            its opposite:  circle.axis =- circle.axis. (another solution in that case is to define the connections of
+            the cable in the reverse order)
+        "
+Circle,radius,float,Radius of the circle ,[m],,True,True,True,Radius of the circle [m]
+Circle,global_position,tuple,Global position of the center of the sheave ,"[m,m,m]",,False,False,False,"Global position of the center of the sheave [m,m,m]
+
+        Note: this is the same as the global position of the parent point.
+        "
+Circle,global_axis,tuple,Global axis direction ,"[m,m,m]",,False,False,False,"Global axis direction [m,m,m]
+        "
+Circle,position,tuple,Local position of the center of the sheave  (parent axis).,"[m,m,m]",,False,False,False,"Local position of the center of the sheave [m,m,m] (parent axis).
+
+        Note: this is the same as the local position of the parent point.
+        "
+Circle,parent,Point,Point that defines the center of the circle.,,,False,False,False,"Point that defines the center of the circle.
+        The parent of that point determines the axis system used for the axis"
+Component,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
+Component,path,str,Path of the model-file. For example res: padeye.dave,,,True,False,False,Path of the model-file. For example res: padeye.dave
+Connector2d,angle,float,Actual angle between nodeA and nodeB  ,[deg],read-only,False,False,True,Actual angle between nodeA and nodeB [deg] (read-only)
+Connector2d,force,float,Actual force between nodeA and nodeB  ,[kN],read-only,False,False,True,Actual force between nodeA and nodeB [kN] (read-only)
+Connector2d,moment,float,Actual moment between nodeA and nodeB  ,[kNm],read-only,False,False,True,Actual moment between nodeA and nodeB [kNm] (read-only)
+Connector2d,axis,tuple,Actual rotation axis between nodeA and nodeB ,"[m,m,m]",read-only,False,False,False,"Actual rotation axis between nodeA and nodeB [m,m,m](read-only)"
+Connector2d,ax,float,X component of actual rotation axis between nodeA and nodeB ,[deg],read-only,False,False,True,X component of actual rotation axis between nodeA and nodeB [deg](read-only)
+Connector2d,ay,float,Y component of actual rotation axis between nodeA and nodeB  ,[deg],read-only,False,False,True,Y component of actual rotation axis between nodeA and nodeB [deg] (read-only)
+Connector2d,az,float,Z component of actual rotation axis between nodeA and nodeB  ,[deg],read-only,False,False,True,Z component of actual rotation axis between nodeA and nodeB [deg] (read-only)
+Connector2d,k_linear,float,Linear stiffness ,[kN/m],,True,True,True,Linear stiffness [kN/m]
+Connector2d,k_angular,float,Angular stiffness ,[kNm/rad],,True,True,True,Angular stiffness [kNm/rad]
+ContactBall,can_contact,bool,"True if the ball is currently perpendicular to at least one of the faces of one of the meshes. So when contact is possible. To check if there is contact use ""force"".",,,False,False,False,"True if the ball is currently perpendicular to at least one of the faces of one of the meshes. So when contact is possible. To check if there is contact use ""force"".
+        See Also: Force
+        "
+ContactBall,contact_force,tuple,Returns the force on the ball  ,"[kN, kN, kN]",global axis,False,False,False,"Returns the force on the ball [kN, kN, kN] (global axis)
+
+        The force is applied at the center of the ball
+
+        See Also: contact_force_magnitude
+        "
+ContactBall,contact_force_magnitude,float,"Returns the absolute force on the ball, if any ",[kN],,False,False,True,"Returns the absolute force on the ball, if any [kN]
+
+        The force is applied on the center of the ball
+
+        See Also: contact_force
+        "
+ContactBall,compression,float,"Returns the absolute compression of the ball, if any ",[m],,False,False,True,"Returns the absolute compression of the ball, if any [m]"
+ContactBall,contactpoint,tuple,"Nearest point on the nearest mesh, if contact  ","[m,m,m]",global,False,False,False,"Nearest point on the nearest mesh, if contact [m,m,m] (global)"
+ContactBall,meshes,tuple,List of contact-mesh nodes.,,,True,False,False,"List of contact-mesh nodes.
+        When getting this will yield a list of node references.
+        When setting node references and node-names may be used.
+
+        eg: ball.meshes = [mesh1, 'mesh2']
+        "
+ContactBall,meshes_names,tuple,List with the names of the meshes,,,False,False,False,List with the names of the meshes
+ContactBall,radius,float,Radius of the contact-ball ,[m],,True,True,True,Radius of the contact-ball [m]
+ContactBall,k,float,Compression stiffness of the ball in force per meter of compression ,[kN/m],,True,True,True,Compression stiffness of the ball in force per meter of compression [kN/m]
+CoreConnectedNode,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
+Force,force,tuple,"The x,y and z components of the force  ","[kN,kN,kN]",global axis,True,False,False,"The x,y and z components of the force [kN,kN,kN] (global axis)
+
+        Example s['wind'].force = (12,34,56)
+        "
+Force,fx,float,The global x-component of the force  ,[kN],global axis,True,True,True,The global x-component of the force [kN] (global axis)
+Force,fy,float,The global y-component of the force   ,[kN],global axis,True,True,True,The global y-component of the force [kN]  (global axis)
+Force,fz,float,The global z-component of the force   ,[kN],global axis,True,True,True,The global z-component of the force [kN]  (global axis)
+Force,moment,tuple,Moment  (global).,"[kNm,kNm,kNm]",,True,False,False,"Moment [kNm,kNm,kNm] (global).
+
+        Example s['wind'].moment = (12,34,56)
+        "
+Force,mx,float,The global x-component of the moment   ,[kNm],global axis,True,True,True,The global x-component of the moment [kNm]  (global axis)
+Force,my,float,The global y-component of the moment   ,[kNm],global axis,True,True,True,The global y-component of the moment [kNm]  (global axis)
+Force,mz,float,The global z-component of the moment   ,[kNm],global axis,True,True,True,The global z-component of the moment [kNm]  (global axis)
+Frame,inertia,float,The linear inertia or 'mass' of the axis ,[mT],,True,True,True,"The linear inertia or 'mass' of the axis [mT]
+        - used only for dynamics"
+Frame,inertia_position,tuple,"The position of the center of inertia. Aka: ""cog""  ","[m,m,m]",local axis,True,False,False,"The position of the center of inertia. Aka: ""cog"" [m,m,m] (local axis)
+        - used only for dynamics
+        - defined in local axis system"
+Frame,inertia_radii,tuple,The radii of gyration of the inertia  ,"[m,m,m]",local axis,True,False,False,"The radii of gyration of the inertia [m,m,m] (local axis)
+
+        Used to calculate the mass moments of inertia via
+
+        Ixx = rxx^2 * inertia
+        Iyy = rxx^2 * inertia
+        Izz = rxx^2 * inertia
+
+        Note that DAVE does not directly support cross terms in the interia matrix of an axis system. If you want to
+        use cross terms then combine multiple axis system to reach the same result. This is because inertia matrices with
+        diagonal terms can not be translated.
+        "
+Frame,fixed,tuple,"Determines which of the six degrees of freedom are fixed, if any. (x,y,z,rx,ry,rz).",,,True,False,False,"Determines which of the six degrees of freedom are fixed, if any. (x,y,z,rx,ry,rz).
+        True means that that degree of freedom will not change when solving statics.
+        False means a that is may be changed in order to find equilibrium.
+
+        These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)
+
+        See Also: set_free, set_fixed
+        "
+Frame,fixed_x,bool,Restricts/allows movement in x direction of parent,,,True,True,False,Restricts/allows movement in x direction of parent
+Frame,fixed_y,bool,Restricts/allows movement in y direction of parent,,,True,True,False,Restricts/allows movement in y direction of parent
+Frame,fixed_z,bool,Restricts/allows movement in z direction of parent,,,True,True,False,Restricts/allows movement in z direction of parent
+Frame,fixed_rx,bool,Restricts/allows movement about x direction of parent,,,True,True,False,Restricts/allows movement about x direction of parent
+Frame,fixed_ry,bool,Restricts/allows movement about y direction of parent,,,True,True,False,Restricts/allows movement about y direction of parent
+Frame,fixed_rz,bool,Restricts/allows movement about z direction of parent,,,True,True,False,Restricts/allows movement about z direction of parent
+Frame,x,float,The x-component of the position vector  ,[m],parent axis,True,True,True,The x-component of the position vector (parent axis) [m]
+Frame,y,float,The y-component of the position vector  ,[m],parent axis,True,True,True,The y-component of the position vector (parent axis) [m]
+Frame,z,float,The z-component of the position vector  ,[m],parent axis,True,True,True,The z-component of the position vector (parent axis) [m]
+Frame,position,tuple,Position of the axis  ,"[m,m,m]",parent axis,True,False,False,"Position of the axis (parent axis) [m,m,m]
+
+        These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)"
+Frame,rx,float,The x-component of the rotation vector  ,[degrees],parent axis,True,True,True,The x-component of the rotation vector [degrees] (parent axis)
+Frame,ry,float,The y-component of the rotation vector  ,[degrees],parent axis,True,True,True,The y-component of the rotation vector [degrees] (parent axis)
+Frame,rz,float,"The z-component of the rotation vector , ",[degrees],parent axis,True,True,True,"The z-component of the rotation vector [degrees], (parent axis)"
+Frame,rotation,tuple,"Rotation of the frame about its origin as rotation-vector (rx,ry,rz) .",[degrees],,True,False,False,"Rotation of the frame about its origin as rotation-vector (rx,ry,rz) [degrees].
+        Defined as a rotation about an axis where the direction of the axis is (rx,ry,rz) and the angle of rotation is |(rx,ry,rz| degrees.
+        These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)"
+Frame,parent,Frame,Determines the parent of the axis. Should either be another axis or 'None',,,True,True,False,"Determines the parent of the axis. Should either be another axis or 'None'
+
+        Other axis may be refered to by reference or by name (str). So the following are identical
+
+            p = s.new_frame('parent_axis')
+            c = s.new_frame('child axis')
+
+            c.parent = p
+            c.parent = 'parent_axis'
+
+        To define that an axis does not have a parent use
+
+            c.parent = None
+
+        "
+Frame,gx,float,The x-component of the global position vector  ,[m],global axis ,True,True,True,The x-component of the global position vector [m] (global axis )
+Frame,gy,float,The y-component of the global position vector  ,[m],global axis ,True,True,True,The y-component of the global position vector [m] (global axis )
+Frame,gz,float,The z-component of the global position vector  ,[m],global axis ,True,True,True,The z-component of the global position vector [m] (global axis )
+Frame,global_position,tuple,The global position of the origin of the axis system   ,"[m,m,m]",global axis,True,False,False,"The global position of the origin of the axis system  [m,m,m] (global axis)"
+Frame,grx,float,The x-component of the global rotation vector  ,[degrees],global axis,True,True,True,The x-component of the global rotation vector [degrees] (global axis)
+Frame,gry,float,The y-component of the global rotation vector  ,[degrees],global axis,True,True,True,The y-component of the global rotation vector [degrees] (global axis)
+Frame,grz,float,The z-component of the global rotation vector  ,[degrees],global axis,True,True,True,The z-component of the global rotation vector [degrees] (global axis)
+Frame,tilt_x,float,Tilt percentage about local x-axis ,[%],,False,False,True,"Tilt percentage about local x-axis [%]
+        This is the z-component of the unit y vector.
+
+        See Also: heel, tilt_y
+        "
+Frame,heel,float,Heel in degrees. SB down is positive ,[deg],,False,False,True,"Heel in degrees. SB down is positive [deg]
+        This is the inverse sin of the unit y vector(This is the arcsin of the tiltx)
+
+        See also: tilt_x
+        "
+Frame,tilt_y,float,Tilt percentage about local y-axis ,[%],,False,False,True,"Tilt percentage about local y-axis [%]
+
+        This is the z-component of the unit -x vector.
+        So a positive rotation about the y axis results in a positive tilt_y.
+
+        See Also: trim
+        "
+Frame,trim,float,Trim in degrees. Bow-down is positive ,[deg],,False,False,True,"Trim in degrees. Bow-down is positive [deg]
+
+        This is the inverse sin of the unit -x vector(This is the arcsin of the tilt_y)
+
+        See also: tilt_y
+        "
+Frame,heading,float,Direction (0..360)  of the local x-axis relative to the global x axis. Measured about the global z axis,[deg],,False,False,True,"Direction (0..360) [deg] of the local x-axis relative to the global x axis. Measured about the global z axis
+
+        heading = atan(u_y,u_x)
+
+        typically:
+            heading 0  --> local axis align with global axis
+            heading 90 --> local x-axis in direction of global y axis
+
+
+        See also: heading_compass
+        "
+Frame,heading_compass,float,The heading (0..360) assuming that the global y-axis is North and global x-axis is East and rotation according compass definition,[deg],,False,False,True,The heading (0..360)[deg] assuming that the global y-axis is North and global x-axis is East and rotation according compass definition
+Frame,global_rotation,tuple,Rotation vector  ,"[deg,deg,deg]",global axis,True,False,False,"Rotation vector [deg,deg,deg] (global axis)"
+Frame,connection_force,tuple,The forces and moments that this axis applies on its parent at the origin of this axis system.  ,"[kN, kN, kN, kNm, kNm, kNm]",Parent axis,False,False,False,"The forces and moments that this axis applies on its parent at the origin of this axis system. [kN, kN, kN, kNm, kNm, kNm] (Parent axis)
+
+        If this axis would be connected to a point on its parent, and that point would be located at the location of the origin of this axis system
+        then the connection force equals the force and moment applied on that point.
+
+        Example:
+            parent axis with name A
+            this axis with name B
+            this axis is located on A at position (10,0,0)
+            there is a Point at the center of this axis system.
+            A force with Fz = -10 acts on the Point.
+
+            The connection_force is (-10,0,0,0,0,0)
+
+            This is the force and moment as applied on A at point (10,0,0)
+
+
+        "
+Frame,connection_force_x,float,The x-component of the connection-force vector  ,[kN],Parent axis,False,False,True,The x-component of the connection-force vector [kN] (Parent axis)
+Frame,connection_force_y,float,The y-component of the connection-force vector  ,[kN],Parent axis,False,False,True,The y-component of the connection-force vector [kN] (Parent axis)
+Frame,connection_force_z,float,The z-component of the connection-force vector  ,[kN],Parent axis,False,False,True,The z-component of the connection-force vector [kN] (Parent axis)
+Frame,connection_moment_x,float,The mx-component of the connection-force vector  ,[kNm],Parent axis,False,False,True,The mx-component of the connection-force vector [kNm] (Parent axis)
+Frame,connection_moment_y,float,The my-component of the connection-force vector  ,[kNm],Parent axis,False,False,True,The my-component of the connection-force vector [kNm] (Parent axis)
+Frame,connection_moment_z,float,The mx-component of the connection-force vector  ,[kNm],Parent axis,False,False,True,The mx-component of the connection-force vector [kNm] (Parent axis)
+Frame,applied_force,tuple,The force and moment that is applied on origin of this axis  ,"[kN, kN, kN, kNm, kNm, kNm]",Global axis,False,False,False,"The force and moment that is applied on origin of this axis [kN, kN, kN, kNm, kNm, kNm] (Global axis)"
+Frame,ux,tuple,The unit x axis  ,"[m,m,m]",Global axis,False,False,False,"The unit x axis [m,m,m] (Global axis)"
+Frame,uy,tuple,The unit y axis  ,"[m,m,m]",Global axis,False,False,False,"The unit y axis [m,m,m] (Global axis)"
+Frame,uz,tuple,The unit z axis  ,"[m,m,m]",Global axis,False,False,False,"The unit z axis [m,m,m] (Global axis)"
+Frame,equilibrium_error,tuple,The remaining force and moment on this axis. Should be zero when in equilibrium  ,"[kN,kN,kN,kNm,kNm,kNm]","applied-force minus connection force, Parent axis",False,False,False,"The remaining force and moment on this axis. Should be zero when in equilibrium [kN,kN,kN,kNm,kNm,kNm] (applied-force minus connection force, Parent axis)"
+GeometricContact,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
+GeometricContact,swivel,float,Swivel angle between parent and child objects ,[degrees],,True,True,True,Swivel angle between parent and child objects [degrees]
+GeometricContact,swivel_fixed,bool,Allow parent and child to swivel relative to eachother ,[boolean],,True,True,False,Allow parent and child to swivel relative to eachother [boolean]
+GeometricContact,rotation_on_parent,float,Angle between the line connecting the centers of the circles and the axis system of the parent node ,[degrees],,True,True,True,Angle between the line connecting the centers of the circles and the axis system of the parent node [degrees]
+GeometricContact,fixed_to_parent,bool,Allow rotation around parent ,[boolean],,True,True,False,"Allow rotation around parent [boolean]
+
+        see also: rotation_on_parent"
+GeometricContact,child_rotation,float,Angle between the line connecting the centers of the circles and the axis system of the child node ,[degrees],,True,True,True,Angle between the line connecting the centers of the circles and the axis system of the child node [degrees]
+GeometricContact,child_fixed,bool,"Allow rotation of child relative to connection, see also: child_rotation ",[boolean],,True,True,False,"Allow rotation of child relative to connection, see also: child_rotation [boolean]"
+GeometricContact,inside,bool,"Type of connection: True means child circle is inside parent circle, False means the child circle is outside but the circumferences contact ",[boolean],,True,True,False,"Type of connection: True means child circle is inside parent circle, False means the child circle is outside but the circumferences contact [boolean]"
+HydSpring,cob,tuple,Center of buoyancy in  ,"[m,m,m]",parent axis,True,False,False,"Center of buoyancy in (parent axis) [m,m,m]"
+HydSpring,BMT,float,Vertical distance between cob and metacenter for roll ,[m],,True,True,True,Vertical distance between cob and metacenter for roll [m]
+HydSpring,BML,float,Vertical distance between cob and metacenter for pitch ,[m],,True,True,True,Vertical distance between cob and metacenter for pitch [m]
+HydSpring,COFX,float,"Horizontal x-position Center of Floatation (center of waterplane area), relative to cob ",[m],,True,True,True,"Horizontal x-position Center of Floatation (center of waterplane area), relative to cob [m]"
+HydSpring,COFY,float,"Horizontal y-position Center of Floatation (center of waterplane area), relative to cob ",[m],,True,True,True,"Horizontal y-position Center of Floatation (center of waterplane area), relative to cob [m]"
+HydSpring,kHeave,float,Heave stiffness ,[kN/m],,True,True,True,Heave stiffness [kN/m]
+HydSpring,waterline,float,Waterline-elevation relative to cob for un-stretched heave-spring. Positive if cob is below the waterline  ,[m],which is where is normally is,True,True,True,Waterline-elevation relative to cob for un-stretched heave-spring. Positive if cob is below the waterline (which is where is normally is) [m]
+HydSpring,displacement_kN,float,Displacement when waterline is at waterline-elevation ,[kN],,True,True,True,Displacement when waterline is at waterline-elevation [kN]
+LC6d,stiffness,tuple,"Stiffness of the connector: kx, ky, kz, krx, kry, krz in  ",[kN/m and kNm/rad],axis system of the main axis,True,False,False,"Stiffness of the connector: kx, ky, kz, krx, kry, krz in [kN/m and kNm/rad] (axis system of the main axis)"
+LC6d,fgx,float,Force on main in global coordinate frame ,[kN],,False,False,True,Force on main in global coordinate frame [kN]
+LC6d,fgy,float,Force on main in global coordinate frame ,[kN],,False,False,True,Force on main in global coordinate frame [kN]
+LC6d,fgz,float,Force on main in global coordinate frame ,[kN],,False,False,True,Force on main in global coordinate frame [kN]
+LC6d,force_global,tuple,Force on main in global coordinate frame ,"[kN,kN,kN,kNm,kNm,kNm]",,False,False,False,"Force on main in global coordinate frame [kN,kN,kN,kNm,kNm,kNm]"
+LC6d,mgx,float,Moment on main in global coordinate frame ,[kNm],,False,False,True,Moment on main in global coordinate frame [kNm]
+LC6d,mgy,float,Moment on main in global coordinate frame ,[kNm],,False,False,True,Moment on main in global coordinate frame [kNm]
+LC6d,mgz,float,Moment on main in global coordinate frame ,[kNm],,False,False,True,Moment on main in global coordinate frame [kNm]
+LC6d,moment_global,tuple,Moment on main in global coordinate frame ,"[kNm, kNm, kNm]",,False,False,False,"Moment on main in global coordinate frame [kNm, kNm, kNm]"
+Manager,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
+Node,name,str,"Name of the node (str), must be unique ",[str],,True,False,False,"Name of the node (str), must be unique [str]"
+Node,UC,float,"Returns the governing UC of the node, returns None is no limits are defined ",[-],,False,False,True,"Returns the governing UC of the node, returns None is no limits are defined [-]
+
+        See Also: give_UC, UC_governing_details
+        "
+Node,UC_governing_details,tuple,Returns the details of the governing UC for this node :,"[-, str, ..,.., ..]",,False,False,False,"Returns the details of the governing UC for this node [-, str, ..,.., ..]:
+        0: UC,
+        1: property-name,
+        2: property-limits
+        3: property value
+
+        Returns None if no limits are supplied
+        "
+Node,tags,tuple,All tags of this node ,,tuple of str,False,False,False,All tags of this node (tuple of str)
+NodeWithParentAndFootprint,footprint,tuple,Determines where on its parent the force of this node is applied.,,,True,False,False,"Determines where on its parent the force of this node is applied.
+        Tuple of tuples ((x1,y1,z1), (x2,y2,z2), .... (xn,yn,zn))"
+Point,parent,Frame,"Frame that the point is located on, determines the local axis system",,,False,False,False,"Frame that the point is located on, determines the local axis system"
+Point,x,float,x component of local position  ,[m],parent axis,True,True,True,x component of local position [m] (parent axis)
+Point,y,float,y component of local position  ,[m],parent axis,True,True,True,y component of local position [m] (parent axis)
+Point,z,float,z component of local position  ,[m],parent axis,True,True,True,z component of local position [m] (parent axis)
+Point,applied_force,tuple,Applied force  ,"[kN,kN,kN]",parent axis,False,False,False,"Applied force [kN,kN,kN] (parent axis)"
+Point,force,float,total force magnitude as applied on the point ,[kN],,False,False,True,total force magnitude as applied on the point [kN]
+Point,fx,float,x component of applied force  ,[kN],parent axis,False,False,True,x component of applied force [kN] (parent axis)
+Point,fy,float,y component of applied force  ,[kN],parent axis,False,False,True,y component of applied force [kN] (parent axis)
+Point,fz,float,z component of applied force  ,[kN],parent axis,False,False,True,z component of applied force [kN] (parent axis)
+Point,applied_moment,tuple,Applied moment  ,"[kNm,kNm,kNm]",parent axis,False,False,False,"Applied moment [kNm,kNm,kNm] (parent axis)"
+Point,moment,float,total moment magnitude as applied on the point ,[kNm],,False,False,True,total moment magnitude as applied on the point [kNm]
+Point,mx,float,x component of applied moment  ,[kNm],parent axis,False,False,True,x component of applied moment [kNm] (parent axis)
+Point,my,float,y component of applied moment  ,[kNm],parent axis,False,False,True,y component of applied moment [kNm] (parent axis)
+Point,mz,float,z component of applied moment  ,[kNm],parent axis,False,False,True,z component of applied moment [kNm] (parent axis)
+Point,position,tuple,Local position  ,"[m,m,m]",parent axis,True,False,False,"Local position [m,m,m] (parent axis)"
+Point,applied_force_and_moment_global,tuple,Applied force and moment on this point  ,"[kN, kN, kN, kNm, kNm, kNm]",Global axis,False,False,False,"Applied force and moment on this point [kN, kN, kN, kNm, kNm, kNm] (Global axis)"
+Point,gx,float,x component of position  ,[m],global axis,True,True,True,x component of position [m] (global axis)
+Point,gy,float,y component of position  ,[m],global axis,True,True,True,y component of position [m] (global axis)
+Point,gz,float,z component of position  ,[m],global axis,True,True,True,z component of position [m] (global axis)
+Point,global_position,tuple,Global position  ,"[m,m,m]",global axis,True,False,False,"Global position [m,m,m] (global axis)"
+RigidBody,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
+RigidBody,footprint,tuple,Sets the footprint vertices. Supply as an iterable with each element containing three floats,,,True,False,False,Sets the footprint vertices. Supply as an iterable with each element containing three floats
+RigidBody,cogx,float,x-component of cog position  ,[m],local axis,True,True,True,x-component of cog position [m] (local axis)
+RigidBody,cogy,float,y-component of cog position  ,[m],local axis,True,True,True,y-component of cog position [m] (local axis)
+RigidBody,cogz,float,z-component of cog position  ,[m],local axis,True,True,True,z-component of cog position [m] (local axis)
+RigidBody,cog,tuple,Center of Gravity position  ,"[m,m,m]",local axis,True,False,False,"Center of Gravity position [m,m,m] (local axis)"
+RigidBody,mass,float,Static mass of the body ,[mT],,True,True,True,"Static mass of the body [mT]
+
+        See Also: inertia
+        "
+SPMT,force,tuple,Returns the force component perpendicular to the SPMT in each of the axles  ,[kN],negative mean uplift,False,False,False,Returns the force component perpendicular to the SPMT in each of the axles (negative mean uplift) [kN]
+SPMT,contact_force,tuple,Returns the contact force in each of the axles  ,"[kN,kN,kN]",global,False,False,False,"Returns the contact force in each of the axles (global) [kN,kN,kN]"
+SPMT,compression,float,Returns the total compression  ,[m],negative means uplift,False,False,True,Returns the total compression (negative means uplift) [m]
+SPMT,extensions,tuple,Returns the extension of each of the axles  ,[m],bottom of wheel to top of spmt,False,False,False,Returns the extension of each of the axles (bottom of wheel to top of spmt) [m]
+SPMT,max_extension,float,Maximum extension of the axles ,[m],,False,False,True,"Maximum extension of the axles [m]
+        See Also: extensions"
+SPMT,min_extension,float,Minimum extension of the axles ,[m],,False,False,True,"Minimum extension of the axles [m]
+        See Also: extensions"
+SPMT,n_width,int,number of axles in transverse direction ,[-],,True,True,True,number of axles in transverse direction [-]
+SPMT,n_length,int,number of axles in length direction ,[-],,True,True,True,number of axles in length direction [-]
+SPMT,spacing_width,float,distance between axles in transverse direction ,[m],,True,True,True,distance between axles in transverse direction [m]
+SPMT,spacing_length,float,distance between axles in length direction ,[m],,True,True,True,distance between axles in length direction [m]
+SPMT,reference_force,float,total force (sum of all axles) when at reference extension ,[kN],,True,True,True,total force (sum of all axles) when at reference extension [kN]
+SPMT,reference_extension,float,Distance between top of SPMT and bottom of wheel at which compression is zero ,[m],,True,True,True,Distance between top of SPMT and bottom of wheel at which compression is zero [m]
+SPMT,k,float,Vertical stiffness of all axles together ,[kN/m],,True,True,True,Vertical stiffness of all axles together [kN/m]
+SPMT,use_friction,bool,Apply friction between wheel and surface such that resulting force is vertical ,[True/False],,True,True,False,"Apply friction between wheel and surface such that resulting force is vertical [True/False]
+        False: Force is perpendicular to the surface
+        True: Force is vertical
+        "
+SPMT,meshes,tuple,List of contact-mesh nodes. If empty list then the SPMT can contact all contact meshes.,,,True,False,False,"List of contact-mesh nodes. If empty list then the SPMT can contact all contact meshes.
+        When getting this will yield a list of node references.
+        When setting node references and node-names may be used.
+
+        eg: ball.meshes = [mesh1, 'mesh2']
+        "
+SPMT,meshes_names,tuple,List with the names of the meshes,,,False,False,False,List with the names of the meshes
+SPMT,axles,tuple,Axles is a list axle positions  ,"[m,m,m]",parent axis,True,False,False,"Axles is a list axle positions [m,m,m] (parent axis)
+        Each entry is a (x,y,z) entry which determines the location of the axle on SPMT. This is relative to the parent of the SPMT.
+
+        Example:
+            [(-10,0,0),(-5,0,0),(0,0,0)] for three axles
+        "
+Shackle,kind,str,"Type of shackle, for example GP800 ",[text],,True,False,False,"Type of shackle, for example GP800 [text]"
+Shackle,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
+Sling,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
+Sling,k_total,float,Total stiffness of the sling ,[kN/m],,True,True,True,Total stiffness of the sling [kN/m]
+Sling,length,float,Total length measured between the INSIDE of the eyes of the sling is pulled straight. ,[m],,True,True,True,Total length measured between the INSIDE of the eyes of the sling is pulled straight. [m]
+Sling,LeyeA,float,Total length inside eye A if stretched flat ,[m],,True,True,True,Total length inside eye A if stretched flat [m]
+Sling,LeyeB,float,Total length inside eye B if stretched flat ,[m],,True,True,True,Total length inside eye B if stretched flat [m]
+Sling,LspliceA,float,Length of the splice at end A ,[m],,True,True,True,Length of the splice at end A [m]
+Sling,LspliceB,float,Length of the splice at end B ,[m],,True,True,True,Length of the splice at end B [m]
+Sling,diameter,float,Diameter of the sling  ,[m],except the splices,True,True,True,Diameter of the sling (except the splices) [m]
+Sling,EA,float,EA of the wire of the sling ,[kN],,True,True,True,"EA of the wire of the sling [kN]
+        See also: k_total"
+Sling,mass,float,Mass and weight of the sling. This mass is distributed over the two splices ,[mT],,True,True,True,Mass and weight of the sling. This mass is distributed over the two splices [mT]
+Tank,free_flooding,bool,Tank is filled till global waterline  ,[bool],aka: damaged,True,True,False,Tank is filled till global waterline (aka: damaged) [bool]
+Tank,permeability,float,Permeability is the fraction of the enclosed volume that can be filled with fluid ,[-],,True,True,True,Permeability is the fraction of the enclosed volume that can be filled with fluid [-]
+Tank,cog,tuple,Global position of the center of volume / gravity  ,"[m,m,m]",global,False,False,False,"Global position of the center of volume / gravity [m,m,m] (global)"
+Tank,cog_local,tuple,Center of gravity  ,"[m,m,m]",parent axis,False,False,False,"Center of gravity [m,m,m] (parent axis)"
+Tank,cog_when_full,tuple,LOCAL position of the center of volume / gravity of the tank when it is filled  ,"[m,m,m]",parent axis,False,False,False,"LOCAL position of the center of volume / gravity of the tank when it is filled [m,m,m] (parent axis)"
+Tank,fill_pct,float,Amount of volume in tank as percentage of capacity ,[%],,True,True,True,Amount of volume in tank as percentage of capacity [%]
+Tank,level_global,float,The fluid plane elevation in the global axis system ,[m],,True,True,True,"The fluid plane elevation in the global axis system [m]
+        Setting this adjusts the volume"
+Tank,volume,float,The actual volume of fluid in the tank ,[m3],,True,True,True,"The actual volume of fluid in the tank [m3]
+        Setting this adjusts the fluid level"
+Tank,density,float,Density of the fluid in the tank ,[mT/m3],,True,True,True,Density of the fluid in the tank [mT/m3]
+Tank,capacity,float,Capacity of the tank ,[m3],,False,False,True,"Capacity of the tank [m3]
+        This is calculated from the defined geometry and permeability."
+Tank,ullage,float,Ullage of the tank ,[m],,False,False,True,"Ullage of the tank [m]
+        The ullage is the distance between a measurement point and the fluid surface. The point is [xf,yf,zv] where
+        xf and yf are the x and y coordinates (local) of the center of fluid when the tank is full. zv is the largest z value
+        of all the vertices of the tank.
+        The measurement direction is in local z-direction. If the tank is under an angle then this is not perpendicular to the fluid.
+        It is possible that this definition returns an ullage larger than the physical tank depth. In that case the physical depth of
+        the tank is returned instead.
+        "
+BallastSystem,target_elevation,float,The target elevation of the parent of the ballast system ,[m],,True,True,True,The target elevation of the parent of the ballast system [m]
+BallastSystem,cogx,float,X position of combined CoG of all tank contents in the ballast-system.  ,[m],global coordinate,False,False,True,X position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]
+BallastSystem,cogy,float,Y position of combined CoG of all tank contents in the ballast-system.  ,[m],global coordinate,False,False,True,Y position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]
+BallastSystem,cogz,float,Z position of combined CoG of all tank contents in the ballast-system.  ,[m],global coordinate,False,False,True,Z position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]
+BallastSystem,cog,tuple,Combined CoG of all tank contents in the ballast-system.  ,"[m,m,m]",global coordinate,False,False,False,"Combined CoG of all tank contents in the ballast-system. (global coordinate) [m,m,m]"
+BallastSystem,weight,float,Total weight of all tank fillings in the ballast system ,[kN],,False,False,True,Total weight of all tank fillings in the ballast system [kN]

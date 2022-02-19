@@ -34,6 +34,7 @@ import numpy as np
 from PySide2.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox, QCompleter, QDesktopWidget
 from PySide2 import QtWidgets
 
+DAVE_GUI_NODE_EDITORS = dict() # Key: node-class, value: editor-class
 
 def svinf(spinbox: QDoubleSpinBox, value: float, do_block = True):
     """Updates the value in the spinbox IF it does not have focus. Blocks signals during change if do_block is true (default)"""
@@ -2452,11 +2453,11 @@ class WidgetNodeProps(guiDockWidget):
 
         self.layout.removeItem(self._Vspacer)
 
-        # check the plugins
-        for plugin in self.gui.plugins_editor:
-            cls = plugin(node)
-            if cls is not None:
-                self._node_editors.append(cls.Instance())
+        # # check the plugins
+        # for plugin in self.gui.plugins_editor:
+        #     cls = plugin(node)
+        #     if cls is not None:
+        #         self._node_editors.append(cls.Instance())
 
         if isinstance(node, vfs.Visual):
             self._node_editors.append(EditVisual.Instance())
@@ -2524,6 +2525,10 @@ class WidgetNodeProps(guiDockWidget):
 
         if isinstance(node, vfs.Shackle):
             self._node_editors.append(EditShackle.Instance())
+
+        for key, value in DAVE_GUI_NODE_EDITORS.items():
+            if isinstance(node, key):
+                self._node_editors.append(value.Instance())
 
         to_be_added = []
         for editor in self._node_editors:

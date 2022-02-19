@@ -22,7 +22,7 @@ import DAVE.scene as nodes
 import DAVE.settings as ds
 from DAVE.gui.forms.widget_limits import Ui_DockLimits
 
-from DAVE.settings import DAVE_REPORT_PROPS
+# from DAVE.settings import DAVE_REPORT_PROPS
 
 
 
