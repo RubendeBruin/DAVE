@@ -5,23 +5,24 @@
 
   Ruben de Bruin - 2019
 """
-import fnmatch
-import glob
-import warnings
-from abc import ABC, abstractmethod
-from enum import Enum
-from typing import List  # for python<3.9
+# import fnmatch
+# import glob
+# import warnings
+# from abc import ABC, abstractmethod
+# from enum import Enum
+# from typing import List  # for python<3.9
 
 import pyo3d
-import numpy as np
+# import numpy as np
 import DAVE.settings as vfc
 from DAVE.tools import *
-from os.path import isfile, split, dirname, exists
-from os import listdir
-from pathlib import Path
-import datetime
+# from os.path import isfile, split, dirname, exists
+# from os import listdir
+# from pathlib import Path
+# import datetime
 
 from .nodes import *
+from .nodes import _Area
 
 # we are wrapping all methods of pyo3d such that:
 # - it is more user-friendly
@@ -601,28 +602,6 @@ class Scene:
         nodes = [node for node in self._nodes if node.manager is not None]
         return tuple(nodes)
 
-    def _props_for_node(self, node, source):
-        """Get applicable properties from source - accounts for anchestors"""
-        props = []
-
-        for key, value in source.items():
-            if isinstance(node, key):
-                props.extend(value)
-
-        # remove duplicates
-        props = list(set(props))  # filter out doubles
-        props.sort()
-
-        return tuple(props)
-
-    def give_settable_properties_for_node(self, node):
-        """Returns a tuple containing the names of all settable properties of the given node
-
-        Returns: tuple of strings
-        """
-
-        return self._props_for_node(node, ds.PROPS_SETTABLE)
-
     def give_properties_for_node(
         self, node, settable=None, single_settable=None, single_numeric=None
     ) -> tuple[str]:
@@ -670,41 +649,6 @@ class Scene:
         props.sort()
 
         return tuple(props)
-
-    def _give_documentation(self, node_class_name, property_name):
-        step1 = ds.DAVE_REPORT_PROPS[ds.DAVE_REPORT_PROPS["class"] == node_class_name]
-        step2 = step1[step1["property"] == property_name]
-        doc = step2["doc"]
-
-        if doc.empty:
-            return False
-        else:
-            it = doc.item()
-            if isinstance(it, float):
-                it = f"Missing documentation for node {node_class_name}.{property_name}"
-                warnings.warn(it)
-
-            return it.replace("#NOGUI", "")
-
-    def give_documentation_docstring(self, node, property_name) -> str:
-        """Returns the documentation for property (property_name) of node.
-
-        See Also: give_documentation
-        """
-        result = self._give_documentation(node, property_name)
-        if result:
-            return result
-
-        if isinstance(node, Frame):
-            result = self._give_documentation(Frame, property_name)
-            if result:
-                return result
-
-        result = self._give_documentation(Node, property_name)
-        if result:
-            return result
-
-        return "Could not find documentation, sorry :-/"
 
     def give_documentation(self, node: "Node", property_name: str) -> NodePropertyInfo:
         """Returns info about property_name of node node. Returns None if no documentation is found"""

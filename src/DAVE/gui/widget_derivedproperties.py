@@ -106,7 +106,7 @@ class WidgetDerivedProperties(guiDockWidget):
             return
 
 
-        props = self.guiScene.give_properties_for_node(node, gui_only=True)
+        props = self.guiScene.give_properties_for_node(node)
 
 
         # evaluate properties
@@ -126,7 +126,7 @@ class WidgetDerivedProperties(guiDockWidget):
             text = str(result)
             v.setText(0, text)
 
-            doc = self.guiScene.give_documentation_docstring(node, p)
+            doc = self.guiScene.give_documentation(node, p).doc_long
 
 
 

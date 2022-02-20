@@ -182,7 +182,7 @@ class WidgetLimits(guiDockWidget):
         # else:
         #     doc = doc.item()
 
-        doc = self.guiScene.give_documentation_docstring(node, prop_name)
+        doc = self.guiScene.give_documentation(node, prop_name).doc_long
 
         # get the actual value of the property
         actual_value = getattr(node, prop_name)
