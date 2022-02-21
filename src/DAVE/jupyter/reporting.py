@@ -9,17 +9,9 @@
   Helper functions reporting nodes in Jupyter
 
 """
-import numpy as np
-import pandas as pd
-from os.path import dirname
-from pathlib import Path
-
 import fnmatch
 
 from DAVE.tools import fancy_format, make_iterable
-
-import DAVE.scene as ds
-
 from IPython.core.display import display, HTML
 
 
