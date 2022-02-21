@@ -998,44 +998,83 @@ class EditCable(NodeEditor):
         ui.doubleSpinBox_1.valueChanged.connect(self.generate_code)
         ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
         ui.doubleSpinBox.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox.valueChanged.connect(self.generate_code)
+
+        self.ui.pushButton.clicked.connect(self.add_item)
 
         # ------- setup the drag-and-drop code ---------
 
         ui.list.dropEvent = self.dropEvent
         ui.list.dragEnterEvent = self.dragEnterEvent
         ui.list.dragMoveEvent = self.dragEnterEvent
+        ui.list.itemChanged.connect(self.itemChanged)
 
         ui.list.setDragEnabled(True)
         ui.list.setAcceptDrops(True)
         ui.list.setDragEnabled(True)
 
+    def itemChanged(self, *args):
+        self.generate_code()
+
+    def add_item(self):
+        name = self.ui.cbPointsAndCircles.currentText()
+        if self.scene.node_exists(name):
+
+            # get a selected node
+            index = self.ui.list.count()
+            for i in range(index):
+                if self.ui.list.item(i).isSelected():
+                    index=i
+                    break
+
+            node_names = [node.name for node in self.node.connections]
+            node_names.insert(index, name)
+
+            code = f"s['{self.node.name}'].connections = ("
+            for name in node_names:
+                code += "'{}',".format(name)
+            code = code[:-1] + ")"
+            self.run_code(code)
+        else:
+            self.run_code(f"raise ValueError(f'No node with name {name}')")
+
+
+
+
     def post_update_event(self):
-
-        widgets = [
-            self.ui.doubleSpinBox_1,
-            self.ui.doubleSpinBox_2,
-            self.ui.doubleSpinBox,
-        ]
-
-        for widget in widgets:
-            widget.blockSignals(True)
-
-        for ddb in self.additional_pois:
-            self.ui.poiLayout.removeWidget(ddb)
-            ddb.deleteLater()
 
         svinf(self.ui.doubleSpinBox_1, self.node.length)
         svinf(self.ui.doubleSpinBox_2, self.node.EA)
         svinf(self.ui.doubleSpinBox, self.node.diameter)
+        svinf(self.ui.doubleSpinBox_3, self.node.mass_per_length)
 
-        for widget in widgets:
-            widget.blockSignals(False)
+        # update the combombox with points and circles
+
+        points_and_circles = [node.name for node in self.scene.nodes_of_type((Point, Circle))]
+        current_contents = [self.ui.cbPointsAndCircles.itemText(i) for i in range(self.ui.cbPointsAndCircles.count())]
+        if points_and_circles != current_contents:
+            update_combobox_items_with_completer(self.ui.cbPointsAndCircles, points_and_circles)
+
+        # update_combobox_items_with_completer
+
+        self.ui.list.blockSignals(True)  # update the list
 
         self.ui.list.clear()
-        for item in self.node._give_poi_names():
+        labelVisible = False
+
+        for connection, reversed in zip(self.node.connections, self.node.reversed):
+            item = QtWidgets.QListWidgetItem(connection.name)
+
+            if isinstance(connection, Circle):
+                item.setCheckState(Qt.CheckState.Checked if reversed else Qt.CheckState.Unchecked)
+                labelVisible = True
+
             self.ui.list.addItem(item)
 
+        self.ui.lbDirection.setVisible(labelVisible)
+
         self.set_colors()
+        self.ui.list.blockSignals(False)
 
     def set_colors(self):
         if self.ui.doubleSpinBox_2.value() == 0:
@@ -1083,8 +1122,6 @@ class EditCable(NodeEditor):
             except:
                 return
 
-    # def dragMoveEvent(self, event):
-    #     event.accept()
 
     def delete_selected(self):
         row = self.ui.list.currentRow()
@@ -1102,27 +1139,32 @@ class EditCable(NodeEditor):
         new_length = self.ui.doubleSpinBox_1.value()
         new_EA = self.ui.doubleSpinBox_2.value()
         new_diameter = self.ui.doubleSpinBox.value()
+        new_mass_per_length = self.ui.doubleSpinBox_3.value()
 
-        if not new_length == self.node.length:
-            code += element + ".length = {}".format(new_length)
+        code += code_if_changed_d(self.node, new_length, 'length')
+        code += code_if_changed_d(self.node, new_EA, 'EA')
+        code += code_if_changed_d(self.node, new_diameter, 'diameter')
+        code += code_if_changed_d(self.node, new_mass_per_length, 'mass_per_length')
 
-        if not new_EA == self.node.EA:
-            code += element + ".EA = {}".format(new_EA)
-
-        if not new_diameter == self.node.diameter:
-            code += element + ".diameter = {}".format(new_diameter)
-
-        # get the poi names
-        # new_names = [self.ui.comboBox.currentText(),self.ui.comboBox_2.currentText()]
+        # connection names
         new_names = []
         for i in range(self.ui.list.count()):
             new_names.append(self.ui.list.item(i).text())
 
-        if not (new_names == self.node._give_poi_names):
+        old_names = [node.name for node in self.node.connections]
+
+        if not (new_names == old_names):
             code += element + ".connections = ("
             for name in new_names:
                 code += "'{}',".format(name)
             code = code[:-1] + ")"
+
+        # reversed
+        reversed = tuple([self.ui.list.item(irow).checkState() == Qt.CheckState.Checked for irow in range(self.ui.list.count())])
+
+        if reversed != self.node.reversed:
+            code += f'{element}.reversed = {reversed}'
+
 
         self.run_code(code)
 

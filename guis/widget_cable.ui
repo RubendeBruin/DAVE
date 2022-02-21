@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>436</width>
-    <height>706</height>
+    <width>289</width>
+    <height>690</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -50,8 +50,38 @@
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="6" column="1">
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Length at rest [m]</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_1">
+        <property name="locale">
+         <locale language="English" country="UnitedStates"/>
+        </property>
+        <property name="decimals">
+         <number>3</number>
+        </property>
+        <property name="minimum">
+         <double>-1000000000000000000.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>999999999999.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Stiffness EA [kN]</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
        <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
         <property name="locale">
          <locale language="English" country="UnitedStates"/>
@@ -70,45 +100,32 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Length at rest [m]</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_1">
-        <property name="locale">
-         <locale language="English" country="UnitedStates"/>
-        </property>
-        <property name="decimals">
-         <number>3</number>
-        </property>
-        <property name="minimum">
-         <double>-1000000000000000000.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>999999999999.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Stiffness EA [kN]</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
          <string>Diameter [m]</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
+      <item row="2" column="1">
        <widget class="QDoubleSpinBox" name="doubleSpinBox">
+        <property name="decimals">
+         <number>3</number>
+        </property>
+        <property name="singleStep">
+         <double>0.001000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Mass per length [mT] *</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
         <property name="decimals">
          <number>3</number>
         </property>
@@ -128,11 +145,18 @@
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="1">
+       <widget class="QPushButton" name="pushButton">
+        <property name="text">
+         <string>Add</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="2">
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Points of the cable&lt;/p&gt;&lt;p&gt;drag/drop to modify&lt;/p&gt;&lt;p&gt;Add points or circles by dragging and dropping them from the node-tree&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>A cable can run between and over points and circles. </string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
@@ -142,17 +166,54 @@
         </property>
        </widget>
       </item>
-      <item>
+      <item row="1" column="0">
+       <widget class="QComboBox" name="cbPointsAndCircles">
+        <property name="editable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="2">
        <widget class="QListWidget" name="list"/>
       </item>
-      <item>
+      <item row="2" column="1">
        <widget class="QPushButton" name="pbRemoveSelected">
         <property name="text">
-         <string>remove selected point</string>
+         <string>Remove selected point</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Drag items to change order. You can also drag items from the node-tree to add them</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QLabel" name="lbDirection">
+        <property name="text">
+         <string>For circles the direction in which the cable runs over it is defined by the axis of the circle. Check the box to run over the circle in opposite direction.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>* Intended for lift-rigging calculations. Mass is only accurately accounted for when cable is tension exceeds its own weight.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
     </widget>
    </item>
   </layout>
