@@ -260,13 +260,13 @@ class Node(ABC):
 
     @property
     def UC_governing_details(self) -> tuple:
-        """Returns the details of the governing UC for this node [-, str, ..,.., ..]:
+        """Returns the details of the governing UC for this node [-, name, limit value, actual value]:
         0: UC,
         1: property-name,
         2: property-limits
         3: property value
 
-        Returns None if no limits are supplied
+        Returns (None, None, None, None) if no limits are supplied
         """
 
         if not self.limits:

@@ -293,13 +293,13 @@ Node,UC,float,"Returns the governing UC of the node, returns None is no limits a
 
         See Also: give_UC, UC_governing_details
         "
-Node,UC_governing_details,tuple,Returns the details of the governing UC for this node :,"[-, str, ..,.., ..]",,False,False,False,"Returns the details of the governing UC for this node [-, str, ..,.., ..]:
+Node,UC_governing_details,tuple,Returns the details of the governing UC for this node :,"[-, name, limit value, actual value]",,False,False,False,"Returns the details of the governing UC for this node [-, name, limit value, actual value]:
         0: UC,
         1: property-name,
         2: property-limits
         3: property value
 
-        Returns None if no limits are supplied
+        Returns (None, None, None, None) if no limits are supplied
         "
 Node,tags,tuple,All tags of this node ,,tuple of str,False,False,False,All tags of this node (tuple of str)
 NodeWithParentAndFootprint,footprint,tuple,Determines where on its parent the force of this node is applied.,,,True,False,False,"Determines where on its parent the force of this node is applied.

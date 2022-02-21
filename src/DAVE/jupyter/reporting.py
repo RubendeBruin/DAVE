@@ -9,7 +9,7 @@
   Helper functions reporting nodes in Jupyter
 
 """
-
+import numpy as np
 import pandas as pd
 from os.path import dirname
 from pathlib import Path
@@ -78,6 +78,13 @@ def report(node, properties=None, long = False, _return_pdf_table = False) -> No
                 continue
 
         value = getattr(node, prop)
+
+        if value is None:
+            continue
+        if isinstance(value, (tuple,list)):
+            if all([v is None for v in value]):
+                continue
+
 
         doc = scene.give_documentation(node, prop)
 
