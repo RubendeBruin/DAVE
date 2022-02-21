@@ -22,9 +22,6 @@ import DAVE.scene as ds
 
 from IPython.core.display import display, HTML
 
-# cdir = Path(dirname(__file__))
-# DAVE_REPORT_PROPS = pd.read_csv(cdir / '../resources/proplist.csv')
-from DAVE.settings import DAVE_REPORT_PROPS
 
 def report(node, properties=None, long = False, _return_pdf_table = False) -> None:
     """Produces a HTML table with properties of the provided node.
@@ -68,60 +65,37 @@ def report(node, properties=None, long = False, _return_pdf_table = False) -> No
     table = []
     table.append(['Property','Value','Unit','Remarks','Explained'])
 
-    for index, row in DAVE_REPORT_PROPS.iterrows():
+    # get all properties for this node
+    scene = node._scene
+    all_properties = scene.give_properties_for_node(node)
 
-        class_name = row['class']
-        code = 'ds.' + class_name
-        class_type = eval(code, {'ds':ds})
+    for prop in all_properties:
 
-        if isinstance(node, class_type):
-            prop = row['property']
-
-            help = row['doc']
-            if pd.isna(help):
+        # skip unmatching properties
+        if properties is not None:
+            matching = [fnmatch.fnmatch(prop, filter) for filter in properties]
+            if not any(matching):
                 continue
 
-            if properties is not None:
+        value = getattr(node, prop)
 
-                matching = [fnmatch.fnmatch(prop, filter) for filter in properties]
+        doc = scene.give_documentation(node, prop)
 
-                if not any(matching):
-                    continue
+        if long:
+            help = doc.doc_long
+        else:
+            help = doc.doc_short
 
-            code = "node.{}".format(prop)
-            value = eval(code)
+        value = fancy_format(value)
 
-            if not long:
-                help = help.split('\n')[0]
+        units_br = str(doc.units).replace(',',',<br>')
+        value_br = str(value).replace(',',',<br>')
 
-            # split anything between [ ] or ( ) from the help
+        units_pdf = str(doc.units).replace(',',',\n')
+        value_pdf = str(value).replace(',',',\n')
 
-            start = help.find('[')
-            end = help.find(']')
-            if end>start:
-                units = help[start+1:end]
-                help = help[:start] + help[end+1:]
-            else:
-                units = ''
-
-            start = help.find('(')
-            end = help.find(')')
-            if end > start:
-                remarks = help[start + 1:end]
-                help = help[:start] + help[end + 1:]
-            else:
-                remarks = ''
-
-            value = fancy_format(value)
-
-            units_br = str(units).replace(',',',<br>')
-            value_br = str(value).replace(',',',<br>')
-
-            units_pdf = str(units).replace(',',',\n')
-            value_pdf = str(value).replace(',',',\n')
-
-            html.append(f'<tr><td{style}>{prop}</td><td{style}>{value_br}</td><td{style}>{units_br}</td><td{style}>{remarks}</td><td{style}>{help}</td></tr>')
-            table.append([prop,value_pdf,units_pdf,remarks, help])
+        html.append(f'<tr><td{style}>{prop}</td><td{style}>{value_br}</td><td{style}>{units_br}</td><td{style}>{doc.remarks}</td><td{style}>{help}</td></tr>')
+        table.append([prop,value_pdf,units_pdf,doc.remarks, help])
 
     html.append('</table><BR CLEAR=LEFT>')
 

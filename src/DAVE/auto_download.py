@@ -16,7 +16,7 @@ Only supported on windows
   Ruben de Bruin - 2020
 """
 
-MINIMUM_REQUIRED_VERSION_PYO3D = 2.1
+MINIMUM_REQUIRED_VERSION_PYO3D = 2.4 # cable weight
 
 import os
 import sys

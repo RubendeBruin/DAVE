@@ -76,7 +76,7 @@ Circle,position,tuple,Local position of the center of the sheave  (parent axis).
 
         Note: this is the same as the local position of the parent point.
         "
-Circle,parent,Point,Point that defines the center of the circle.,,,False,False,False,"Point that defines the center of the circle.
+Circle,parent,Point,Point that defines the center of the circle.,,,True,True,False,"Point that defines the center of the circle.
         The parent of that point determines the axis system used for the axis"
 Component,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
 Component,path,str,Path of the model-file. For example res: padeye.dave,,,True,False,False,Path of the model-file. For example res: padeye.dave
@@ -304,7 +304,7 @@ Node,UC_governing_details,tuple,Returns the details of the governing UC for this
 Node,tags,tuple,All tags of this node ,,tuple of str,False,False,False,All tags of this node (tuple of str)
 NodeWithParentAndFootprint,footprint,tuple,Determines where on its parent the force of this node is applied.,,,True,False,False,"Determines where on its parent the force of this node is applied.
         Tuple of tuples ((x1,y1,z1), (x2,y2,z2), .... (xn,yn,zn))"
-Point,parent,Frame,"Frame that the point is located on, determines the local axis system",,,False,False,False,"Frame that the point is located on, determines the local axis system"
+Point,parent,Frame,"Frame that the point is located on, determines the local axis system",,,True,True,False,"Frame that the point is located on, determines the local axis system"
 Point,x,float,x component of local position  ,[m],parent axis,True,True,True,x component of local position [m] (parent axis)
 Point,y,float,y component of local position  ,[m],parent axis,True,True,True,y component of local position [m] (parent axis)
 Point,z,float,z component of local position  ,[m],parent axis,True,True,True,z component of local position [m] (parent axis)
@@ -400,6 +400,17 @@ Tank,ullage,float,Ullage of the tank ,[m],,False,False,True,"Ullage of the tank 
         It is possible that this definition returns an ullage larger than the physical tank depth. In that case the physical depth of
         the tank is returned instead.
         "
+_Area,force,tuple,"The x,y and z components of the force  ","[kN,kN,kN]",global axis,False,False,False,"The x,y and z components of the force [kN,kN,kN] (global axis)"
+_Area,fx,float,The global x-component of the force  ,[kN],global axis,False,False,True,The global x-component of the force [kN] (global axis)
+_Area,fy,float,The global y-component of the force   ,[kN],global axis,False,False,True,The global y-component of the force [kN]  (global axis)
+_Area,fz,float,The global z-component of the force   ,[kN],global axis,False,False,True,The global z-component of the force [kN]  (global axis)
+_Area,A,float,Total area . See also Ae,[m2],,True,True,True,Total area [m2]. See also Ae
+_Area,Ae,float,Effective area . This is the projection of the total to the actual wind/current direction. Read only.,[m2],,False,False,True,Effective area [m2]. This is the projection of the total to the actual wind/current direction. Read only.
+_Area,Cd,float,Cd coefficient ,[-],,True,True,True,Cd coefficient [-]
+_Area,direction,tuple,"Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is",,,True,False,False,"Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is
+        the direction of the axis and for 'sphere' this is not used [m,m,m]"
+_Area,areakind,AreaKind,Defines how to interpret the area.,,,True,True,False,"Defines how to interpret the area.
+        See also: `direction`"
 BallastSystem,target_elevation,float,The target elevation of the parent of the ballast system ,[m],,True,True,True,The target elevation of the parent of the ballast system [m]
 BallastSystem,cogx,float,X position of combined CoG of all tank contents in the ballast-system.  ,[m],global coordinate,False,False,True,X position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]
 BallastSystem,cogy,float,Y position of combined CoG of all tank contents in the ballast-system.  ,[m],global coordinate,False,False,True,Y position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]

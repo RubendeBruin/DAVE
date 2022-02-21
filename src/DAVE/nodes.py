@@ -22,6 +22,8 @@ from pathlib import Path
 import datetime
 
 
+
+
 # we are wrapping all methods of pyo3d such that:
 # - it is more user-friendly
 # - code-completion is more robust
@@ -69,6 +71,9 @@ class ClaimManagement:
     """
 
     def __init__(self, scene, manager):
+
+        from .scene import Scene
+
         assert isinstance(scene, Scene)
         if manager is not None:
             assert isinstance(manager, Manager)
@@ -2996,6 +3001,12 @@ class Circle(NodeWithCoreParent):
         """Point that defines the center of the circle.
         The parent of that point determines the axis system used for the axis"""
         return super().parent
+
+    @parent.setter
+    def parent(self, value):
+        super(Circle, type(self)).parent.fset(
+            self, value
+        )  # https://bugs.python.org/issue14965
 
 
 class HydSpring(NodeWithCoreParent):
@@ -6207,6 +6218,7 @@ class Component(Manager, Frame):
     @path.setter
     @node_setter_manageable
     def path(self, value):
+        from .scene import Scene
 
         # first see if we can load
         filename = self._scene.get_resource_path(value)
