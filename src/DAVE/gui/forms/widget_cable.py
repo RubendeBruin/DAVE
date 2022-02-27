@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_cable.ui',
 # licensing of 'widget_cable.ui' applies.
 #
-# Created: Mon Feb 21 09:11:44 2022
+# Created: Sun Feb 27 20:20:04 2022
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -65,13 +65,25 @@ class Ui_Cable_form(object):
         self.formLayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.doubleSpinBox)
         self.label_5 = QtWidgets.QLabel(self.frame_2)
         self.label_5.setObjectName("label_5")
-        self.formLayout.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_5)
+        self.formLayout.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.label_5)
         self.doubleSpinBox_3 = QtWidgets.QDoubleSpinBox(self.frame_2)
         self.doubleSpinBox_3.setDecimals(3)
         self.doubleSpinBox_3.setSingleStep(0.001)
         self.doubleSpinBox_3.setObjectName("doubleSpinBox_3")
-        self.formLayout.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.doubleSpinBox_3)
+        self.formLayout.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.doubleSpinBox_3)
+        self.label_9 = QtWidgets.QLabel(self.frame_2)
+        self.label_9.setObjectName("label_9")
+        self.formLayout.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_9)
+        self.doubleSpinBox_4 = QtWidgets.QDoubleSpinBox(self.frame_2)
+        self.doubleSpinBox_4.setDecimals(3)
+        self.doubleSpinBox_4.setMaximum(999999.0)
+        self.doubleSpinBox_4.setObjectName("doubleSpinBox_4")
+        self.formLayout.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.doubleSpinBox_4)
         self.verticalLayout.addWidget(self.frame_2)
+        self.label_6 = QtWidgets.QLabel(Cable_form)
+        self.label_6.setWordWrap(True)
+        self.label_6.setObjectName("label_6")
+        self.verticalLayout.addWidget(self.label_6)
         self.frame = QtWidgets.QFrame(Cable_form)
         self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
@@ -105,10 +117,6 @@ class Ui_Cable_form(object):
         self.lbDirection.setObjectName("lbDirection")
         self.gridLayout.addWidget(self.lbDirection, 3, 0, 1, 2)
         self.verticalLayout.addWidget(self.frame)
-        self.label_6 = QtWidgets.QLabel(Cable_form)
-        self.label_6.setWordWrap(True)
-        self.label_6.setObjectName("label_6")
-        self.verticalLayout.addWidget(self.label_6)
 
         self.retranslateUi(Cable_form)
         QtCore.QMetaObject.connectSlotsByName(Cable_form)
@@ -120,11 +128,12 @@ class Ui_Cable_form(object):
         self.label.setText(QtWidgets.QApplication.translate("Cable_form", "Length at rest [m]", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("Cable_form", "Stiffness EA [kN]", None, -1))
         self.label_4.setText(QtWidgets.QApplication.translate("Cable_form", "Diameter [m]", None, -1))
-        self.label_5.setText(QtWidgets.QApplication.translate("Cable_form", "Mass per length [mT] *", None, -1))
+        self.label_5.setText(QtWidgets.QApplication.translate("Cable_form", "Mass per length [mT/m] *", None, -1))
+        self.label_9.setText(QtWidgets.QApplication.translate("Cable_form", "Mass [mT]", None, -1))
+        self.label_6.setText(QtWidgets.QApplication.translate("Cable_form", "* Intended for lift-rigging calculations. Mass is only accurately accounted for when cable is tension exceeds its own weight. Mass is calculated from mass_per_length.", None, -1))
         self.pushButton.setText(QtWidgets.QApplication.translate("Cable_form", "Add", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("Cable_form", "A cable can run between and over points and circles. ", None, -1))
         self.pbRemoveSelected.setText(QtWidgets.QApplication.translate("Cable_form", "Remove selected point", None, -1))
         self.label_8.setText(QtWidgets.QApplication.translate("Cable_form", "Drag items to change order. You can also drag items from the node-tree to add them", None, -1))
         self.lbDirection.setText(QtWidgets.QApplication.translate("Cable_form", "For circles the direction in which the cable runs over it is defined by the axis of the circle. Check the box to run over the circle in opposite direction.", None, -1))
-        self.label_6.setText(QtWidgets.QApplication.translate("Cable_form", "* Intended for lift-rigging calculations. Mass is only accurately accounted for when cable is tension exceeds its own weight.", None, -1))
 

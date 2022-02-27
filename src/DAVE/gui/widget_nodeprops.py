@@ -995,10 +995,11 @@ class EditCable(NodeEditor):
         # Set events
         ui.pbRemoveSelected.clicked.connect(self.delete_selected)
 
+        ui.doubleSpinBox.valueChanged.connect(self.generate_code)
         ui.doubleSpinBox_1.valueChanged.connect(self.generate_code)
         ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
-        ui.doubleSpinBox.valueChanged.connect(self.generate_code)
-        ui.doubleSpinBox.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_3.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_4.valueChanged.connect(self.generate_code)
 
         self.ui.pushButton.clicked.connect(self.add_item)
 
@@ -1047,6 +1048,7 @@ class EditCable(NodeEditor):
         svinf(self.ui.doubleSpinBox_2, self.node.EA)
         svinf(self.ui.doubleSpinBox, self.node.diameter)
         svinf(self.ui.doubleSpinBox_3, self.node.mass_per_length)
+        svinf(self.ui.doubleSpinBox_4, self.node.mass)
 
         # update the combombox with points and circles
 
@@ -1145,6 +1147,7 @@ class EditCable(NodeEditor):
         code += code_if_changed_d(self.node, new_EA, 'EA')
         code += code_if_changed_d(self.node, new_diameter, 'diameter')
         code += code_if_changed_d(self.node, new_mass_per_length, 'mass_per_length')
+        code += code_if_changed_d(self.node, self.ui.doubleSpinBox_4.value(), 'mass')
 
         # connection names
         new_names = []

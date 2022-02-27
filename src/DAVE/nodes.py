@@ -2168,6 +2168,9 @@ class Cable(CoreConnectedNode):
         code += "\n            endB='{}',".format(poi_names[-1])
         code += "\n            length={},".format(self.length)
 
+        if self.mass_per_length != 0:
+            code += "\n            mass_per_length={},".format(self.mass_per_length)
+
         if self.diameter != 0:
             code += "\n            diameter={},".format(self.diameter)
 

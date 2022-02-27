@@ -795,6 +795,11 @@ class Gui:
             self.select_none()
             self.guiEmitEvent(guiEventType.MODEL_STRUCTURE_CHANGED)
 
+    def close_all_open_docks(self):
+        for g in self.guiWidgets.values():
+            g.close()
+
+
     def activate_workspace(self, name):
 
         self._active_workspace = name
@@ -808,9 +813,6 @@ class Gui:
         # self.visual.update_outlines()
         self.activate_paintset("Construction")
 
-        for g in self.guiWidgets.values():
-            g.close()
-
         for plugin in self.plugins_workspace:
             plugin(self, name)
 
@@ -818,20 +820,24 @@ class Gui:
             self.show_guiWidget("vanGogh", WidgetPainters)
 
         if name == "CONSTRUCT":
+            self.close_all_open_docks()
             self.show_guiWidget("Node Tree", WidgetNodeTree)
             self.show_guiWidget("Derived Properties", WidgetDerivedProperties)
             self.show_guiWidget("Properties", WidgetNodeProps)
             self.show_guiWidget("Rigg-it-Right", WidgetRiggItRight)
 
         if name == "EXPLORE":
+            self.close_all_open_docks()
             self.show_guiWidget("Derived Properties", WidgetDerivedProperties)
             self.show_guiWidget("Explore 1-to-1", WidgetExplore)
 
         if name == "DYNAMICS":
+            self.close_all_open_docks()
             self.show_guiWidget("Properties - dynamic", WidgetDynamicProperties)
             self.show_guiWidget("Mode-shapes", WidgetModeShapes)
 
         if name == "BALLAST":
+            self.close_all_open_docks()
             self.show_guiWidget("Ballast system", WidgetBallastSystemSelect)
             self.show_guiWidget("Tanks", WidgetBallastConfiguration)
             self.show_guiWidget("Solver", WidgetBallastSolver)
@@ -846,9 +852,11 @@ class Gui:
             self.show_guiWidget("Environment", WidgetEnvironment)
 
         if name == "STABILITY":
+            self.close_all_open_docks()
             self.show_guiWidget("Stability", WidgetDisplacedStability)
 
         if name == "LIMITS":
+            self.close_all_open_docks()
             self.show_guiWidget("Limits and UCs", WidgetLimits)
             if not self.visual.settings.paint_uc:
                 self.toggle_show_UC()
@@ -857,12 +865,14 @@ class Gui:
             self.show_guiWidget("Tags", WidgetTags)
 
         if name == "MOMENTS":
+            self.close_all_open_docks()
             self.show_guiWidget("Footprints", WidgetFootprints)
             self.show_guiWidget("Graph", WidgetBendingMoment)
             self.activate_paintset("Footprints")
 
         if name == "AIRY":
             self.scene.savepoint_make()
+            self.close_all_open_docks()
             code = "from DAVE.frequency_domain import prepare_for_fd\nprepare_for_fd(s)"
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
             self.show_guiWidget("Airy waves", WidgetAiry)

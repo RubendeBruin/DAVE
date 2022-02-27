@@ -48,7 +48,7 @@ try:
 
     try:
         version = pyo3d.version()
-        print(f"Equilibrium-core version = {version}")
+        print(f"Equilibrium-core version = {version} from {pyo3d.__file__}")
         if version < MINIMUM_REQUIRED_VERSION_PYO3D:
             raise ValueError(
                 f"The version of pyo3d found here: {pyo3d.__file__} does not meet the minimum version requirement {MINIMUM_REQUIRED_VERSION_PYO3D}.\n"
@@ -132,3 +132,5 @@ except ImportError as err:
 
     with open(version_file, "w") as f:
         f.write(str(version))
+
+
