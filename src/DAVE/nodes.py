@@ -108,7 +108,7 @@ class Node(ABC):
     Master class for all nodes"""
 
     def __init__(self, scene):
-        self._scene: Scene = scene
+        self._scene: 'Scene' = scene
         """reference to the scene that the node lives is"""
 
         self._name: str = "A manager without a name"
@@ -122,6 +122,9 @@ class Node(ABC):
 
         self._visible: bool = True
         """Determines if the visual for of this node (if any) should be visible"""
+
+        self._color : tuple or None = None
+        """Holds the RGB (int) colors for the node or None for default color"""
 
         self.limits = dict()
         """Defines the limits of the nodes properties for calculating a UC"""
@@ -139,6 +142,18 @@ class Node(ABC):
 
     def __str__(self):
         return self.name
+
+    @property
+    def color(self):
+        """The color (r,g,b) of the node - use None for default"""
+        return self._color
+
+    @color.setter
+    def color(self, value) -> tuple or None:
+        if value is not None:
+            assert len(value)==3, "Color should be something like (r,g,b)"
+        self._color = value
+
 
     @property
     def class_name(self) -> str:

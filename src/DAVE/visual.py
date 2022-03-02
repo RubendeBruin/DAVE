@@ -685,6 +685,17 @@ class VisualActor:
             print(f"No paint for {node_class}")
             return  # no settings available
 
+        # Override paint if a color is defined for the node
+        if self.node.color is not None:
+            new_painter_settings = dict()
+            for k, value in node_painter_settings.items():
+                v = copy(value)
+                v.surfaceColor = self.node.color
+                v.lineColor = self.node.color
+                new_painter_settings[k] = v
+
+            node_painter_settings = new_painter_settings
+
         # Override paint settings if node is selected or sub-selected
 
         if self._is_selected:

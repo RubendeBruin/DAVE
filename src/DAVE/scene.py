@@ -37,6 +37,8 @@ from .nodes import _Area
 
 import functools
 
+from .tools import assert1f
+
 
 class Scene:
     """
@@ -3317,6 +3319,13 @@ class Scene:
             if n.manager is None:
                 if n.tags:
                     code.append(f"s['{n.name}'].add_tags({n.tags})")
+
+        code.append("\n# Colors")
+
+        for n in nodes_to_be_exported:
+            if n.manager is None:
+                if n.color is not None:
+                    code.append(f"s['{n.name}'].color = {n.color}")
 
         # Optional Reports
         if self.reports:

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import vedo as vp
+from PySide2.QtGui import QColor
 
 from DAVE.gui.dockwidget import *
 from PySide2.QtCore import Qt
@@ -31,7 +32,7 @@ from DAVE.visual import transform_from_node
 from DAVE.gui.helpers.my_qt_helpers import BlockSigs
 import numpy as np
 
-from PySide2.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox, QCompleter, QDesktopWidget
+from PySide2.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox, QCompleter, QDesktopWidget, QColorDialog
 from PySide2 import QtWidgets
 
 DAVE_GUI_NODE_EDITORS = dict() # Key: node-class, value: editor-class
@@ -242,6 +243,7 @@ class EditNode(NodeEditor):
 
         ui.tbName.textChanged.connect(self.name_changed)
         ui.cbVisible.toggled.connect(self.visible_changed)
+        ui.lbColor.mousePressEvent = self.color_clicked
 
     def post_update_event(self):
 
@@ -253,6 +255,13 @@ class EditNode(NodeEditor):
 
         self.ui.tbName.blockSignals(False)
         self.ui.cbVisible.blockSignals(False)
+
+        if self.node.color is None:
+            self.ui.lbColor.setStyleSheet('')
+            self.ui.lbColor.setText('default')
+        else:
+            self.ui.lbColor.setStyleSheet("background-color: rgb({}, {}, {});".format(*self.node.color))
+            self.ui.lbColor.setText(str(self.node.color))
 
     def name_changed(self):
         node = self.node
@@ -272,6 +281,28 @@ class EditNode(NodeEditor):
         if not new_visible == node.visible:
             code = element + ".visible = {}".format(new_visible)
             self.run_code(code, guiEventType.VIEWER_SETTINGS_UPDATE)
+
+    def color_clicked(self, mouseEvent, **kwargs):
+
+        if mouseEvent.button() == QtCore.Qt.MouseButton.RightButton:
+            code = f"s['{self.node.name}'].color = None"
+            self.run_code(code, guiEventType.VIEWER_SETTINGS_UPDATE)
+            self.ui.lbColor.setStyleSheet('')
+            self.ui.lbColor.setText(str('default'))
+            return
+
+
+        if self.node.color is not None:
+            qcolor = QColor(*self.node.color)
+            result = QColorDialog().getColor(initial=qcolor)
+        else:
+            result = QColorDialog().getColor()
+
+        if result.isValid():
+            code = f"s['{self.node.name}'].color = ({result.red()},{result.green()},{result.blue()})"
+            self.run_code(code, guiEventType.VIEWER_SETTINGS_UPDATE)
+            self.ui.lbColor.setStyleSheet("background-color: rgb({}, {}, {});".format(*self.node.color))
+            self.ui.lbColor.setText(str(self.node.color))
 
 
 @Singleton

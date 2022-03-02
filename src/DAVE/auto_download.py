@@ -102,7 +102,7 @@ except ImportError as err:
         dlg.close()
 
     def reject():
-        return
+        sys.exit()
 
     buttonBox = QDialogButtonBox(QBtn)
     buttonBox.accepted.connect(accept)
