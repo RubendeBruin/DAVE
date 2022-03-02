@@ -159,8 +159,7 @@ class Node(ABC):
 
     @property
     def visible(self) -> bool:
-        """Determines if this node is visible in the viewport [bool]
-        #NOGUI"""
+        """Determines if this node is visible in the viewport [bool]"""
         if self.manager:
             return self.manager.visible
         return self._visible

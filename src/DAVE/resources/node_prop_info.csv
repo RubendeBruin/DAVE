@@ -288,6 +288,7 @@ LC6d,mgy,float,Moment on main in global coordinate frame ,[kNm],,False,False,Tru
 LC6d,mgz,float,Moment on main in global coordinate frame ,[kNm],,False,False,True,Moment on main in global coordinate frame [kNm]
 LC6d,moment_global,tuple,Moment on main in global coordinate frame ,"[kNm, kNm, kNm]",,False,False,False,"Moment on main in global coordinate frame [kNm, kNm, kNm]"
 Manager,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
+Node,visible,bool,Determines if this node is visible in the viewport ,[bool],,True,True,False,Determines if this node is visible in the viewport [bool]
 Node,name,str,"Name of the node (str), must be unique ",[str],,True,False,False,"Name of the node (str), must be unique [str]"
 Node,UC,float,"Returns the governing UC of the node, returns None is no limits are defined ",[-],,False,False,True,"Returns the governing UC of the node, returns None is no limits are defined [-]
 
