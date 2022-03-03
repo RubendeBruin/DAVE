@@ -69,13 +69,26 @@ import numpy as np
 
 # These functions are inserted by DAVE.io.blender.py
 
+def change_color_of_object(object, new_rgb):
+    if new_rgb is None:
+        return
+    
+    # copy material
+    material = object.active_material.copy()
+    BSDF_node = material.node_tree.nodes['Principled BSDF']
+    BSDF_node.inputs['Base Color'].default_value = (new_rgb[0]/255,new_rgb[1]/255,new_rgb[2]/255,1)
+    
+    print(f'Changing material to color {new_rgb}')
+    object.active_material = material
+    
+
 def get_context_area():
     areas = [area for area in bpy.context.window.screen.areas if area.type == 'VIEW_3D']
     if not areas:
         raise ('No suitable context found to execute rotation transform in')
     return areas[0]
 
-def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), orientation=(0,0,0,0), position=(0,0,0), orientations=[], positions=[], frames_per_dof = 1 ):
+def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), orientation=(0,0,0,0), position=(0,0,0), orientations=[], positions=[], frames_per_dof = 1, color=None ):
     \"\"\"
     All meshes shall be joined
 
@@ -163,6 +176,10 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), or
         active_object.location = position
         active_object.rotation_mode = 'QUATERNION'
         active_object.rotation_quaternion = (orientation[3], orientation[0], orientation[1],orientation[2])
+        
+        # Set color
+        change_color_of_object(active_object, color)
+        
 
         n_frame = 0
         for pos, orient in zip(positions, orientations):
@@ -183,7 +200,7 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), or
 
 
 
-def add_line(points, diameter, name=None, ani_points = None, frames_per_entry=1):
+def add_line(points, diameter, name=None, ani_points = None, frames_per_entry=1, color=None):
     # Points should contain FOUR coordinates per point, the 4th one can be 1.0
 
     curve = bpy.data.curves.new("Curve", type='CURVE')
@@ -225,8 +242,11 @@ def add_line(points, diameter, name=None, ani_points = None, frames_per_entry=1)
     # add material
     curveObj.data.materials.append(bpy.data.materials['Cable'])
     curveObj.data.bevel_depth = diameter/2
+    
+    # set color (if needed)
+    change_color_of_object(curveObj, color)
 
-def add_beam(points, diameter, name=None, ani_points = None, frames_per_entry=1):
+def add_beam(points, diameter, name=None, ani_points = None, frames_per_entry=1, color=None):
     # Points should contain FOUR coordinates per point, the 4th one can be 1.0
 
     curve = bpy.data.curves.new("Curve", type='CURVE')
@@ -268,6 +288,9 @@ def add_beam(points, diameter, name=None, ani_points = None, frames_per_entry=1)
     # add material
     curveObj.data.materials.append(bpy.data.materials['Cable'])
     curveObj.data.bevel_depth = diameter/2
+    
+    # set color (if needed)
+    change_color_of_object(curveObj, color)
 
 # def add_beam(points, direction, diameter, name=None, ani_points=None, ani_directions=None, frames_per_entry=1):
 #     # Beam is a bezier while lines are poly
@@ -602,13 +625,15 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
                 code += '\npositions.append([{},{},{}])'.format(*glob_position)
 
-            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations)'.format(
+            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations, color={})'.format(
                 filename,
                 *visual.scale,
                 *_to_quaternion(visual.rotation),
                 *visual.offset,
                 *_to_quaternion(visual.parent.global_rotation),
-                *visual.parent.global_position)
+                *visual.parent.global_position,
+                visual.color,
+            )
 
         elif timeline and has_parent:
             code += '\npositions = []'
@@ -631,13 +656,14 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
                 code += '\npositions.append([{},{},{}])'.format(*glob_position)
 
-            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations)'.format(
+            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations, color={})'.format(
                 filename,
                 *visual.scale,
                 *_to_quaternion(visual.rotation),
                 *visual.offset,
                 *_to_quaternion(visual.parent.global_rotation),
-                *visual.parent.global_position)
+                *visual.parent.global_position,
+                visual.color)
 
 
         else:
@@ -649,13 +675,14 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 parent_global_position = (0,0,0)
                 parent_global_rotation = (0,0,0)
 
-            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}))'.format(
+            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), color={})'.format(
                 filename,
                 *visual.scale,
                 *_to_quaternion(visual.rotation),
                 *visual.offset,
                 *_to_quaternion(parent_global_rotation),
-                *parent_global_position)
+                *parent_global_position,
+                visual.color)
 
     for cable in scene.nodes_of_type(dc.Cable):
 
@@ -684,7 +711,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 code += ']'
                 code += '\nani_points.append(frame_points)'
 
-            code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points)'.format(dia, cable.name)
+            code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points, color = {})'.format(dia, cable.name, cable.color)
 
         elif timeline:
 
@@ -703,12 +730,12 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 code += ']'
                 code += '\nani_points.append(frame_points)'
 
-            code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points)'.format(dia, cable.name)
+            code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points, color = {})'.format(dia, cable.name, cable.color)
 
 
         else:
 
-            code += '\nadd_line(points, diameter={}, name = "{}")'.format(dia, cable.name)
+            code += '\nadd_line(points, diameter={}, name = "{}", color = {})'.format(dia, cable.name, cable.color)
 
     for beam in scene.nodes_of_type(dc.Beam):
 
@@ -735,7 +762,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 code += ']'
                 code += '\nani_points.append(frame_points)'
 
-            code += '\nadd_beam(points, diameter={}, name = "{}", ani_points = ani_points)'.format(dia, beam.name)
+            code += '\nadd_beam(points, diameter={}, name = "{}", ani_points = ani_points, color = {})'.format(dia, beam.name,beam.color)
 
         elif timeline:
 
@@ -752,11 +779,11 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 code += ']'
                 code += '\nani_points.append(frame_points)'
 
-            code += '\nadd_beam(points, diameter={}, name = "{}", ani_points = ani_points)'.format(dia, beam.name)
+            code += '\nadd_beam(points, diameter={}, name = "{}", ani_points = ani_points, color = {})'.format(dia, beam.name, beam.color)
 
         else:
 
-            code += '\nadd_beam(points, diameter={}, name = "{}")'.format(dia, beam.name)
+            code += '\nadd_beam(points, diameter={}, name = "{}", color = {})'.format(dia, beam.name, beam.color)
 
     # for beam in scene.nodes_of_type(dc.LinearBeam):
     #     pa = beam.nodeA.global_position
@@ -826,3 +853,89 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
     file = open(python_file, 'w+')
     file.write(code)
     file.close()
+
+if __name__ == '__main__':
+    from DAVE import *
+    s = Scene()
+
+
+    # auto generated python code
+    # By beneden
+    # Time: 2022-03-02 18:53:10 UTC
+
+    # To be able to distinguish the important number (eg: fixed positions) from
+    # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
+    # For anything written as solved(number) that actual number does not influence the static solution
+
+    def solved(number):
+        return number
+
+
+    # Environment settings
+    s.g = 9.80665
+    s.waterlevel = 0.0
+    s.rho_air = 0.00126
+    s.rho_water = 1.025
+    s.wind_direction = 0.0
+    s.wind_velocity = 0.0
+    s.current_direction = 0.0
+    s.current_velocity = 0.0
+
+    # code for Frame
+    s.new_frame(name='Frame',
+                position=(0.0,
+                          0.0,
+                          4.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed=(True, True, True, True, True, True))
+
+    # code for Frame_1
+    s.new_frame(name='Frame_1',
+                parent='Frame',
+                position=(15.0,
+                          0.0,
+                          -6.0),
+                rotation=(0.0,
+                          0.0,
+                          0.0),
+                fixed=(True, True, True, True, True, True))
+
+    # code for Visual
+    s.new_visual(name='Visual',
+                 parent='Frame',
+                 path=r'wirecube.obj',
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))
+    s.new_visual(name='Visual2',
+                 parent='Frame',
+                 path=r'wirecube.obj',
+                 offset=(10, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))
+
+    # code for beam Beam
+    s.new_beam(name='Beam',
+               nodeA='Frame_1',
+               nodeB='Frame',
+               n_segments=6.0,
+               tension_only=False,
+               EIy=0.0,
+               EIz=0.0,
+               GIp=0.0,
+               EA=1000.0,
+               mass=0.7,
+               L=19.0)  # L can possibly be omitted
+
+    # Limits of un-managed nodes
+
+    # Tags
+
+    # Colors
+    s['Visual'].color = (23, 255, 23)
+    s['Visual2'].color = (254, 0, 0)
+    s['Beam'].color = (0,100,254)
+
+    create_blend_and_open(s)
