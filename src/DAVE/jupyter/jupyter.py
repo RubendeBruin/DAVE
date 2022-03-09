@@ -83,7 +83,7 @@ def show(
     if camera_pos is None:
         camera_pos = (50, -25, 10)
 
-    vedo.embedWindow(backend='2d', verbose=False)  # screenshot
+    # vedo.embedWindow(backend='2d', verbose=False)  # screenshot
     vedo.settings.usingQt = False
 
     vp = Viewport(scene, jupyter=True)

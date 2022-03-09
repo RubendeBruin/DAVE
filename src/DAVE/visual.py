@@ -2460,7 +2460,7 @@ class Viewport:
         """
 
         if offscreen:
-            self.screen = vp.Plotter(axes=0, offscreen=True, size=size)
+            self.screen = vp.Plotter(axes=0, offscreen=True, size=size, backend='2d')
 
         else:
 
@@ -2471,8 +2471,8 @@ class Viewport:
                 # create embedded notebook (k3d) view
                 import vedo as vtkp
 
-                vtkp.settings.embedWindow(backend="k3d")
-                self.screen = vp.Plotter(axes=4, bg=COLOR_BG1, bg2=COLOR_BG2)
+                # vtkp.settings.embedWindow(backend="k3d")
+                self.screen = vp.Plotter(axes=4, bg=COLOR_BG1, bg2=COLOR_BG2,backend="k3d")
 
             else:
 
@@ -2481,7 +2481,7 @@ class Viewport:
                     # create stand-alone interactive view
                     import vedo as vtkp
 
-                    vtkp.settings.embedWindow(backend=None)
+                    # vtkp.settings.embedWindow(
 
                     self.screen = vp.plotter.Plotter(
                         interactive=True,
@@ -2489,6 +2489,7 @@ class Viewport:
                         axes=4,
                         bg=COLOR_BG1,
                         bg2=COLOR_BG2,
+                        backend=None
                     )
 
                 else:
@@ -2496,10 +2497,10 @@ class Viewport:
                     # create embedded Qt view
                     import vedo as vtkp
 
-                    vtkp.settings.embedWindow(backend=None)
+                    # vtkp.settings.embedWindow(backend=None)
 
                     self.screen = vp.plotter.Plotter(
-                        qtWidget=self.vtkWidget, axes=4, bg=COLOR_BG1, bg2=COLOR_BG2
+                        qtWidget=self.vtkWidget, axes=4, bg=COLOR_BG1, bg2=COLOR_BG2, backend=None
                     )
 
         """ For reference: this is how to load an cubemap texture
