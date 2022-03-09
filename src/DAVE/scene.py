@@ -555,7 +555,7 @@ class Scene:
     def get_resource_list(self, extension, include_subdirs=False):
         """Returns a list of all resources (strings) with given extension in any of the resource-paths"""
 
-        # include subdirs excludes the root dir. Scan the root-dir first by doing a recursive call
+        # include subdirs excludes the root dir. Scan the root-dir first by doing a non-recursive call
         if include_subdirs:
             r = self.get_resource_list(extension=extension, include_subdirs=False)
         else:
@@ -587,6 +587,8 @@ class Scene:
 
             except FileNotFoundError:
                 pass
+
+        r = list(set(r)) # remove doubles
 
         return r
 

@@ -40,8 +40,14 @@
    </item>
    <item row="2" column="3">
     <widget class="QLabel" name="lbColor">
+     <property name="toolTip">
+      <string>click to change, right-click to reset</string>
+     </property>
      <property name="styleSheet">
       <string notr="true">background-color: rgb(255, 170, 0);</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
      </property>
      <property name="text">
       <string>default</string>
