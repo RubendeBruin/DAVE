@@ -3595,6 +3595,15 @@ class Beam(CoreConnectedNode):
         self._nodeB = val
         self._vfNode.slave = val._vfNode
 
+    # private, for beam-shapes in timeline
+    @property
+    def _shapeDofs(self):
+        return self._vfNode.shapeDofs
+
+    @_shapeDofs.setter
+    def _shapeDofs(self, value):
+        self._vfNode.shapeDofs = value
+
     # read-only
     @property
     def moment_A(self) -> tuple[float,float,float]:
