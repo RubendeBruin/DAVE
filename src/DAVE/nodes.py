@@ -107,11 +107,11 @@ class Node(ABC):
     """ABSTRACT CLASS - Properties defined here are applicable to all derived classes
     Master class for all nodes"""
 
-    def __init__(self, scene):
+    def __init__(self, scene, name : str or None = None):
         self._scene: 'Scene' = scene
         """reference to the scene that the node lives is"""
 
-        self._name: str = "A manager without a name"
+        self._name: str = name # "A manager without a name"
         """Unique name of the node"""
 
         self._manager: Node or None = None
@@ -395,13 +395,17 @@ class Node(ABC):
         self._tags.remove(value)
 
 
+
 class CoreConnectedNode(Node):
     """ABSTRACT CLASS - Properties defined here are applicable to all derived classes
     Master class for all nodes with a connected eqCore element"""
 
     def __init__(self, scene, vfNode):
-        super().__init__(scene)
+
+        assert not isinstance(vfNode, str), "This constructor needs to be called with a daveCore node, not a string - for example 'super().__init__(scene, scene._vfc.new_axis(name))'"
+
         self._vfNode = vfNode
+        super().__init__(scene, self._vfNode.name)
 
     @property
     def name(self) -> str:
@@ -412,6 +416,8 @@ class CoreConnectedNode(Node):
     @node_setter_manageable
     @node_setter_observable
     def name(self, name):
+        if self._vfNode is None:
+            raise ValueError(f'No connection to core - can not set name {name}')
 
         if not name == self._vfNode.name:
             self._scene._verify_name_available(name)
@@ -638,9 +644,9 @@ class Visual(Node):
 
     """
 
-    def __init__(self, scene):
+    def __init__(self, scene, name : str):
 
-        super().__init__(scene)
+        super().__init__(scene, name)
 
         self.offset = [0, 0, 0]
         """Offset (x,y,z) of the visual. Offset is applied after scaling"""
@@ -724,8 +730,11 @@ class Frame(NodeWithParentAndFootprint):
 
     """
 
-    def __init__(self, scene, vfAxis):
-        super().__init__(scene, vfAxis)
+    def __init__(self, scene, name : str):
+
+        super().__init__(scene, scene._vfc.new_axis(name))
+
+
         self._None_parent_acceptable = True
 
         self._inertia = 0
@@ -737,7 +746,7 @@ class Frame(NodeWithParentAndFootprint):
             p = scene._vfc.new_pointmass(
                 self.name + vfc.VF_NAME_SPLIT + "pointmass_{}".format(i)
             )
-            p.parent = vfAxis
+            p.parent = self._vfNode
             self._pointmasses.append(p)
         self._update_inertia()
 
@@ -1517,8 +1526,9 @@ class Point(NodeWithParentAndFootprint):
 
     # init parent and name are fully derived from NodeWithParent
     # _vfNode is a poi
-    def __init__(self, scene, vfPoi):
-        super().__init__(scene, vfPoi)
+    def __init__(self, scene, name : str):
+        super().__init__(scene, scene._vfc.new_poi(name))
+
         self._None_parent_acceptable = True
 
     # def on_observed_node_changed(self, changed_node):
@@ -1728,14 +1738,20 @@ class Point(NodeWithParentAndFootprint):
 class RigidBody(Frame):
     """A Rigid body, internally composed of an axis, a point (cog) and a force (gravity)"""
 
-    def __init__(self, scene, axis, poi, force):
-        super().__init__(scene, axis)
+    def __init__(self, scene, name : str):
+        super().__init__(scene, name)
 
         # The axis is the Node
         # poi and force are added separately
 
-        self._vfPoi = poi
-        self._vfForce = force
+        p = scene._vfc.new_poi(name + vfc.VF_NAME_SPLIT + "cog")
+        p.parent = self._vfNode
+
+        g = scene._vfc.new_force(name + vfc.VF_NAME_SPLIT + "gravity")
+        g.parent = p
+
+        self._vfPoi = p
+        self._vfForce = g
 
     # override the following properties
     # - name : sets the names of poi and force as well
@@ -1942,8 +1958,9 @@ class Cable(CoreConnectedNode):
 
     """
 
-    def __init__(self, scene, node):
-        super().__init__(scene, node)
+    def __init__(self, scene, name : str):
+        super().__init__(scene, scene._vfc.new_cable(name))
+
         self._pois = list()
         self._reversed : List[bool] = list()
 
@@ -2211,6 +2228,9 @@ class Force(NodeWithCoreParent):
 
     """
 
+    def __init__(self, scene, name):
+        super().__init__(scene, scene._vfc.new_force(name))
+
     @property
     def force(self)->tuple[float,float,float]:
         """The x,y and z components of the force [kN,kN,kN] (global axis)
@@ -2455,8 +2475,9 @@ class CurrentArea(_Area):
 class ContactMesh(NodeWithCoreParent):
     """A ContactMesh is a tri-mesh with an axis parent"""
 
-    def __init__(self, scene, vfContactMesh):
-        super().__init__(scene, vfContactMesh)
+    def __init__(self, scene, name):
+        super().__init__(scene, scene._vfc.new_contactmesh(name))
+
         self._None_parent_acceptable = True
         self._trimesh = TriMeshSource(
             self._scene, self._vfNode.trimesh
@@ -2496,8 +2517,9 @@ class ContactBall(NodeWithCoreParent):
     The force is applied on the Poi and it not registered separately.
     """
 
-    def __init__(self, scene, node):
-        super().__init__(scene, node)
+    def __init__(self, scene, name : str):
+        super().__init__(scene, scene._vfc.new_contactball(name))
+
         self._meshes = list()
 
     @property
@@ -2649,8 +2671,9 @@ class SPMT(NodeWithCoreParent):
 
     """
 
-    def __init__(self, scene, node):
-        super().__init__(scene, node)
+    def __init__(self, scene, name : str):
+        super().__init__(scene, scene._vfc.new_spmt(name))
+
         self._meshes = list()
 
         # These are set by Scene.new_spmt
@@ -2943,6 +2966,10 @@ class Circle(NodeWithCoreParent):
     geometric contact nodes and cables/slings. For cables the direction of the axis determines the
     direction about which the cable runs over the sheave."""
 
+    def __init__(self, scene, name):
+        super().__init__(scene, scene._vfc.new_sheave(name))
+
+
     @property
     def axis(self) -> tuple[float,float,float]:
         """Direction of the sheave axis (parent axis system) [m,m,m]
@@ -3171,8 +3198,9 @@ class LC6d(CoreConnectedNode):
 
     """
 
-    def __init__(self, scene, node):
-        super().__init__(scene, node)
+    def __init__(self, scene, name : str):
+        super().__init__(scene, scene._vfc.new_linearconnector6d(name))
+
         self._main = None
         self._secondary = None
 
@@ -3286,8 +3314,9 @@ class Connector2d(CoreConnectedNode):
     * the angular stiffness is defined by k_angular and is defined over the actual smallest angle between the two systems.
     """
 
-    def __init__(self, scene, node):
-        super().__init__(scene, node)
+    def __init__(self, scene, name : str):
+        super().__init__(scene, scene._vfc.new_connector2d(name))
+
         self._nodeA = None
         self._nodeB = None
 
@@ -3433,8 +3462,9 @@ class Beam(CoreConnectedNode):
 
     """
 
-    def __init__(self, scene, node):
-        super().__init__(scene, node)
+    def __init__(self, scene, name : str):
+        super().__init__(scene, scene._vfc.new_linearbeam(name))
+
         self._nodeA = None
         self._nodeB = None
 
@@ -3685,9 +3715,10 @@ class TriMeshSource(Node):
 
     def __init__(self, scene, source):
 
-        super().__init__(scene)
+        name = scene.available_name_like("Names of trimesh-sources are not used")
+        super().__init__(scene, name=name)
 
-        # Note: Visual does not have a corresponding vfCore Node in the scene but does have a vfCore
+        # Note: TriMeshSource does not have a corresponding vfCore Node in the scene but does have a vfCore
         self._TriMesh = source
         self._new_mesh = True  # cheat for visuals
 
@@ -4053,11 +4084,12 @@ class Buoyancy(NodeWithCoreParent):
 
     # init parent and name are fully derived from NodeWithParent
     # _vfNode is a buoyancy
-    def __init__(self, scene, vfBuoyancy):
-        super().__init__(scene, vfBuoyancy)
+    def __init__(self, scene, name : str):
+        super().__init__(scene, scene._vfc.new_buoyancy(name))
+
         self._None_parent_acceptable = False
         self._trimesh = TriMeshSource(
-            self._scene, self._vfNode.trimesh
+            self._scene, source = self._vfNode.trimesh
         )  # the tri-mesh is wrapped in a custom object
 
     def update(self):
@@ -4120,11 +4152,13 @@ class Tank(NodeWithCoreParent):
 
     # init parent and name are fully derived from NodeWithParent
     # _vfNode is a tank
-    def __init__(self, scene, vfTank):
-        super().__init__(scene, vfTank)
+    def __init__(self, scene, name):
+
+        super().__init__(scene, scene._vfc.new_tank(name))
+
         self._None_parent_acceptable = False
         self._trimesh = TriMeshSource(
-            self._scene, self._vfNode.trimesh
+            self._scene, source = self._vfNode.trimesh
         )  # the tri-mesh is wrapped in a custom object
 
         self._inertia = scene._vfc.new_pointmass(
@@ -4323,8 +4357,8 @@ class BallastSystem(Node):
 
     """
 
-    def __init__(self, scene, parent):
-        super().__init__(scene)
+    def __init__(self, scene, name, parent):
+        super().__init__(scene, name)
 
         self.tanks = []
         """List of Tank objects"""
@@ -4662,9 +4696,9 @@ class WaveInteraction1(Node):
 
     """
 
-    def __init__(self, scene):
+    def __init__(self, scene, name : str):
 
-        super().__init__(scene)
+        super().__init__(scene, name)
 
         self.offset = [0, 0, 0]
         """Position (x,y,z) of the hydrodynamic origin in its parents axis system"""
@@ -4812,7 +4846,7 @@ class GeometricContact(Manager):
 
     """
 
-    def __init__(self, scene, child_circle, parent_circle, name, inside=True):
+    def __init__(self, scene, name, child_circle, parent_circle, inside=True):
         """
         circle1 becomes the nodeB
         circle2 becomes the nodeA
@@ -4820,9 +4854,9 @@ class GeometricContact(Manager):
         (attach circle 1 to circle 2)
         Args:
             scene:
-            vfAxis:
             parent_circle:
             child_circle:
+            inside:
         """
 
         if child_circle.parent.parent is None:
@@ -4830,8 +4864,7 @@ class GeometricContact(Manager):
                 "The child circle needs to be located on an axis but is not."
             )
 
-        super().__init__(scene)
-        self.name = name
+        super().__init__(scene, name)
 
         name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
 
@@ -5398,8 +5431,7 @@ class Sling(Manager):
 
         """
 
-        super().__init__(scene)
-        self._name = name
+        super().__init__(scene, name)
         name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
 
         # store the properties
@@ -6015,12 +6047,12 @@ class Shackle(Manager, RigidBody):
 
         return Shackle.data[kind]
 
-    def __init__(self, scene, name, kind, a, p, g):
-
-        Manager.__init__(self, scene)
-        RigidBody.__init__(self, scene, axis=a, poi=p, force=g)
+    def __init__(self, scene, name, kind='GP800'):
 
         _ = self._give_values(kind)  # to make sure it exists
+
+        Manager.__init__(self, scene, name)
+        RigidBody.__init__(self, scene, name)
 
         # origin is at center of pin
         # z-axis up
@@ -6191,9 +6223,9 @@ class Component(Manager, Frame):
     are placed in the components frame.
     """
 
-    def __init__(self, scene, vfAxis):
-        Manager.__init__(self, scene)
-        Frame.__init__(self, scene, vfAxis)
+    def __init__(self, scene, name):
+        Manager.__init__(self, scene, name=name)
+        Frame.__init__(self, scene, name=name)
 
         self._path = ""
         self._nodes = list()

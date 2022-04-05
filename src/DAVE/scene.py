@@ -1718,9 +1718,7 @@ class Scene:
                 )
 
         # then create
-        a = self._vfc.new_axis(name)
-
-        new_node = Frame(self, a)
+        new_node = Frame(self, name)
 
         # and set properties
         if b is not None:
@@ -1803,9 +1801,7 @@ class Scene:
                 )
 
         # then create
-        a = self._vfc.new_axis(name)
-
-        new_node = Component(self, a)
+        new_node = Component(self, name)
 
         # and set properties
         if b is not None:
@@ -1924,7 +1920,7 @@ class Scene:
                 f"The axis or body that {child.name} is on is already managed by {child.parent.parent.manager.name} and can therefore not be changed - unable to create geometric contact"
             )
 
-        new_node = GeometricContact(self, child, parent, name)
+        new_node = GeometricContact(self, name, child, parent)
         if inside:
             new_node.set_pin_in_hole_connection()
         else:
@@ -1984,9 +1980,8 @@ class Scene:
 
         # then create
 
-        new_node = WaveInteraction1(self)
+        new_node = WaveInteraction1(self, name)
 
-        new_node.name = name
         new_node.path = path
         new_node.parent = parent
 
@@ -2033,7 +2028,7 @@ class Scene:
 
         # then create
 
-        new_node = Visual(self)
+        new_node = Visual(self, name)
 
         new_node.name = name
         new_node.path = path
@@ -2078,9 +2073,7 @@ class Scene:
             assert3f(position, "Position ")
 
         # then create
-        a = self._vfc.new_poi(name)
-
-        new_node = Point(self, a)
+        new_node = Point(self, name)
 
         # and set properties
         if b is not None:
@@ -2149,17 +2142,17 @@ class Scene:
 
         # make elements
 
-        a = self._vfc.new_axis(name)
+        # a = self._vfc.new_axis(name)
 
-        p = self._vfc.new_poi(name + vfc.VF_NAME_SPLIT + "cog")
-        p.parent = a
-        p.position = cog
+        # p = self._vfc.new_poi(name + vfc.VF_NAME_SPLIT + "cog")
+        # p.parent = a
+        # p.position = cog
+        #
+        # g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + "gravity")
+        # g.parent = p
+        # g.force = (0, 0, -self.g * mass)
 
-        g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + "gravity")
-        g.parent = p
-        g.force = (0, 0, -self.g * mass)
-
-        r = RigidBody(self, a, p, g)
+        r = RigidBody(self, name)
 
         r.cog = cog  # set inertia
         r.mass = mass
@@ -2283,8 +2276,8 @@ class Scene:
             assert1f(mass, "mass")
 
         # then create
-        a = self._vfc.new_cable(name)
-        new_node = Cable(self, a)
+
+        new_node = Cable(self, name)
         if length is not None:
             new_node.length = length
         new_node.EA = EA
@@ -2348,9 +2341,7 @@ class Scene:
             assert3f(moment, "Moment ")
 
         # then create
-        a = self._vfc.new_force(name)
-
-        new_node = Force(self, a)
+        new_node = Force(self, name)
 
         # and set properties
         if b is not None:
@@ -2508,10 +2499,7 @@ class Scene:
 
         assert1f(radius, "Radius of sheave")
 
-        # then create
-        a = self._vfc.new_sheave(name)
-
-        new_node = Circle(self, a)
+        new_node = Circle(self, name)
 
         # and set properties
         new_node.parent = b
@@ -2619,9 +2607,9 @@ class Scene:
             stiffness = (0, 0, 0, 0, 0, 0)
 
         # then create
-        a = self._vfc.new_linearconnector6d(name)
 
-        new_node = LC6d(self, a)
+
+        new_node = LC6d(self, name)
 
         # and set properties
         new_node.main = m
@@ -2662,9 +2650,9 @@ class Scene:
         assert1f(k_angular, "Angular stiffness")
 
         # then create
-        a = self._vfc.new_connector2d(name)
 
-        new_node = Connector2d(self, a)
+
+        new_node = Connector2d(self, name)
 
         # and set properties
         new_node.nodeA = m
@@ -2733,9 +2721,8 @@ class Scene:
         n_segments = int(round(n_segments))
 
         # then create
-        a = self._vfc.new_linearbeam(name)
 
-        new_node = Beam(self, a)
+        new_node = Beam(self, name)
 
         # and set properties
         new_node.nodeA = m
@@ -2777,8 +2764,7 @@ class Scene:
             raise ValueError("A valid parent must be defined for a Buoyancy node")
 
         # then create
-        a = self._vfc.new_buoyancy(name)
-        new_node = Buoyancy(self, a)
+        new_node = Buoyancy(self, name)
 
         # and set properties
         if b is not None:
@@ -2817,8 +2803,7 @@ class Scene:
         assert1f(density, "density")
 
         # then create
-        a = self._vfc.new_tank(name)
-        new_node = Tank(self, a)
+        new_node = Tank(self, name)
         new_node.density = density
 
         # and set properties
@@ -2851,8 +2836,7 @@ class Scene:
         b = self._parent_from_node(parent)
 
         # then create
-        a = self._vfc.new_contactmesh(name)
-        new_node = ContactMesh(self, a)
+        new_node = ContactMesh(self, name)
 
         # and set properties
         if b is not None:
@@ -2924,9 +2908,9 @@ class Scene:
                 )  # throws error if not found
 
         # then create
-        a = self._vfc.new_spmt(name)
 
-        new_node = SPMT(self, a)
+
+        new_node = SPMT(self, name)
 
         # and set properties
         new_node.parent = parent
@@ -2981,9 +2965,9 @@ class Scene:
                 test = self._node_from_node(mesh, ContactMesh)
 
         # then create
-        a = self._vfc.new_contactball(name)
 
-        new_node = ContactBall(self, a)
+
+        new_node = ContactBall(self, name)
 
         # and set properties
         if b is not None:
@@ -3025,8 +3009,7 @@ class Scene:
         parent = self._parent_from_node(parent)  # handles verification of type as well
 
         # make elements
-        r = BallastSystem(self, parent)
-        r.name = name
+        r = BallastSystem(self, name, parent)
 
         self._nodes.append(r)
         return r
@@ -3222,7 +3205,7 @@ class Scene:
         g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + "gravity")
         g.parent = p
 
-        node = Shackle(scene=self, name=name, kind=kind, a=a, p=p, g=g)
+        node = Shackle(scene=self, name=name, kind=kind)
 
         self._nodes.append(node)
 
