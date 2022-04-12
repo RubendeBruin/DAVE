@@ -1689,6 +1689,8 @@ class Viewport:
             if getattr(vp_actor, "no_outline", False):
                 continue
 
+            do_silhouette = getattr(vp_actor, "do_silhouette", False)
+
             data = vp_actor.GetMapper().GetInputAsDataSet()
             if isinstance(data, vtk.vtkPolyData):
                 # this actor can have an outline
@@ -1713,14 +1715,26 @@ class Viewport:
                     tr.SetTransform(temp)
                     tr.Update()
 
-                    ol = vtk.vtkPolyDataSilhouette()
-                    ol.SetInputConnection(tr.GetOutputPort())
-                    ol.SetEnableFeatureAngle(True)
-                    ol.SetCamera(camera)
-                    ol.SetBorderEdges(True)
+                    if do_silhouette:
+
+                        ol = vtk.vtkPolyDataSilhouette()
+                        ol.SetInputConnection(tr.GetOutputPort())
+                        ol.SetEnableFeatureAngle(True)
+                        ol.SetCamera(camera)
+                        ol.SetBorderEdges(True)
+                    else:
+                        ol = vtk.vtkFeatureEdges()
+                        ol.SetColoring(False)  # does not seem to do anything
+                        ol.SetInputConnection(tr.GetOutputPort())
+
+                        ol.ExtractAllEdgeTypesOff()
+                        ol.BoundaryEdgesOn()
+                        ol.SetFeatureAngle(25)
+                        ol.FeatureEdgesOn()
 
                     mapper = vtk.vtkPolyDataMapper()
                     mapper.SetInputConnection(ol.GetOutputPort())
+                    mapper.ScalarVisibilityOff()  # No colors!
 
                     actor = vtk.vtkActor()
                     actor.SetMapper(mapper)
@@ -2092,6 +2106,17 @@ class Viewport:
             if isinstance(N, vf.Visual):
                 file = self.scene.get_resource_path(N.path)
                 visual = vp_actor_from_obj(file)
+
+                if N.visual_outline == dn.VisualOutlineType.NONE:
+                    visual.no_outline = True
+                    visual.do_silhouette = False
+                elif N.visual_outline == dn.VisualOutlineType.FEATURE:
+                    visual.do_silhouette = False
+                    visual.no_outline = False
+                else:
+                    visual.do_silhouette = True
+                    visual.no_outline = False
+
                 visual.loaded_obj = file
                 visual.actor_type = ActorType.VISUAL
                 actors["main"] = visual
@@ -2398,6 +2423,18 @@ class Viewport:
                     va.actors["main"] = vp_actor_from_obj(file)
                     va.actors["main"].loaded_obj = file
                     va.actors["main"].actor_type = ActorType.VISUAL
+
+                    # set the outline visibility (copy from "create")
+
+                    if va.node.visual_outline == dn.VisualOutlineType.NONE:
+                        va.actors["main"].no_outline = True
+                        va.actors["main"].do_silhouette = False
+                    elif va.node.visual_outline == dn.VisualOutlineType.FEATURE:
+                        va.actors["main"].do_silhouette = False
+                        va.actors["main"].no_outline = False
+                    else:
+                        va.actors["main"].do_silhouette = True
+                        va.actors["main"].no_outline = False
 
                     if not va.node.visible:
                         va.actors["main"].off()

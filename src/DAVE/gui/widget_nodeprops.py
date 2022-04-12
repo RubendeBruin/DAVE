@@ -2334,6 +2334,54 @@ class EditSPMT(NodeEditor):
         self.run_code(code, self)
 
 
+@Singleton
+class EditVisualOutline(NodeEditor):
+    def __init__(self):
+        widget = QtWidgets.QWidget()
+        self._widget = widget
+
+        layout = QtWidgets.QVBoxLayout()
+        widget.setLayout(layout)
+        self.cbOutline = QtWidgets.QComboBox()
+        self.cbOutline.addItems(('None','Feature','Feature and Silhouette'))
+        layout.addWidget(self.cbOutline)
+
+        self.cbOutline.currentTextChanged.connect(self.generate_code)
+
+
+    def post_update_event(self):
+        self.cbOutline.blockSignals(True)
+        if self.node.visual_outline == VisualOutlineType.NONE:
+            text = 'None'
+        elif self.node.visual_outline == VisualOutlineType.FEATURE_AND_SILHOUETTE:
+            text = 'Feature and Silhouette'
+        else:
+            text = 'Feature'
+        self.cbOutline.setCurrentText(text)
+
+        self.cbOutline.blockSignals(False)
+
+    def generate_code(self):
+
+        q = dict()
+        q['None']=VisualOutlineType.NONE
+        q['Feature']=VisualOutlineType.FEATURE
+        q['Feature and Silhouette']=VisualOutlineType.FEATURE_AND_SILHOUETTE
+
+        value = q[self.cbOutline.currentText()]
+
+        if self.node.visual_outline != value:
+            code = f"s['{self.node.name}'].visual_outline = {value}"
+            self.run_code(code, self)
+
+            # Enforce reload
+            store = self.node.path
+            self.node.path = 'res: cube_with_bevel.obj'
+            self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
+            self.node.path = store
+            self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
+            self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
+
 
 # ===========================================
 
@@ -2536,6 +2584,7 @@ class WidgetNodeProps(guiDockWidget):
         #         self._node_editors.append(cls.Instance())
 
         if isinstance(node, vfs.Visual):
+            self._node_editors.append(EditVisualOutline.Instance())
             self._node_editors.append(EditVisual.Instance())
 
         if isinstance(node, vfs.WaveInteraction1):

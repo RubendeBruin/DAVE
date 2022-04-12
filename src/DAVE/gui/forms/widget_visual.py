@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_visual.ui',
 # licensing of 'widget_visual.ui' applies.
 #
-# Created: Thu Oct 21 21:18:54 2021
+# Created: Mon Apr 11 19:10:53 2022
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_widget_axis(object):
     def setupUi(self, widget_axis):
         widget_axis.setObjectName("widget_axis")
-        widget_axis.resize(182, 700)
+        widget_axis.resize(238, 474)
         widget_axis.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.verticalLayout = QtWidgets.QVBoxLayout(widget_axis)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -23,6 +23,7 @@ class Ui_widget_axis(object):
         self.verticalLayout.addWidget(self.label_12)
         self.comboBox = QtWidgets.QComboBox(widget_axis)
         self.comboBox.setEditable(True)
+        self.comboBox.setMaxVisibleItems(30)
         self.comboBox.setObjectName("comboBox")
         self.comboBox.addItem("")
         self.verticalLayout.addWidget(self.comboBox)

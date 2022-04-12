@@ -1394,9 +1394,17 @@ class Scene:
             elif phase == 2:
 
                 this_is_a_re_init = not first
-                status = self._vfc.state_solve_statics_with_timeout(
-                    True, timeout_s, True, True, 0, this_is_a_re_init
-                )
+
+                try:
+                    debug = self._vfc.to_string()
+
+                    #
+                    status = self._vfc.state_solve_statics_with_timeout(
+                        True, timeout_s, True, True, 0, this_is_a_re_init
+                    )
+                except:
+                    print(debug)
+                    raise ValueError('oops')
 
                 first = False
 

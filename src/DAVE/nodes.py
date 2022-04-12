@@ -616,6 +616,10 @@ class NodeWithParentAndFootprint(NodeWithCoreParent):
 
 # ==============================================================
 
+class VisualOutlineType(Enum):
+    NONE = 0
+    FEATURE = 1
+    FEATURE_AND_SILHOUETTE = 2
 
 class Visual(Node):
     """
@@ -656,6 +660,9 @@ class Visual(Node):
         self.parent = None
         """Parent : Frame-type"""
 
+        self.visual_outline = VisualOutlineType.FEATURE_AND_SILHOUETTE
+        """For visualization"""
+
     @property
     def file_path(self) -> Path:
         """Resolved path of the visual [str]
@@ -678,6 +685,8 @@ class Visual(Node):
         code += "\n            offset=({}, {}, {}), ".format(*self.offset)
         code += "\n            rotation=({}, {}, {}), ".format(*self.rotation)
         code += "\n            scale=({}, {}, {}) )".format(*self.scale)
+        if self.visual_outline != VisualOutlineType.FEATURE_AND_SILHOUETTE:
+            code += f"\ns['{self.name}'].visual_outline = {self.visual_outline}"
 
         return code
 
@@ -6696,6 +6705,7 @@ DAVE_ADDITIONAL_RUNTIME_MODULES['CoreConnectedNode'] = CoreConnectedNode
 # Helpers
 DAVE_ADDITIONAL_RUNTIME_MODULES['AreaKind'] = AreaKind
 DAVE_ADDITIONAL_RUNTIME_MODULES['ClaimManagement'] = ClaimManagement
+DAVE_ADDITIONAL_RUNTIME_MODULES['VisualOutlineType'] = VisualOutlineType
 
 
 # Register the documentation
