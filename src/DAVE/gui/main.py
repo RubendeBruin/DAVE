@@ -1202,7 +1202,7 @@ class Gui:
         self.ui.teFeedback.setText(str(e))
         self.ui.teFeedback.setStyleSheet("background-color: pink;")
 
-    def run_code(self, code, event, store_undo=True):
+    def run_code(self, code, event, store_undo=False):
         """Runs the provided code
 
         If successful, add code to history and create an undo point
