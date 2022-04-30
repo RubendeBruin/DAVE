@@ -1726,9 +1726,7 @@ class Scene:
                 )
 
         # then create
-        a = self._vfc.new_axis(name)
-
-        new_node = Frame(self, a)
+        new_node = Frame(self, name)
 
         # and set properties
         if b is not None:
@@ -1750,7 +1748,7 @@ class Scene:
         else:
             new_node.fixed = fixed
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_component(
@@ -1811,9 +1809,7 @@ class Scene:
                 )
 
         # then create
-        a = self._vfc.new_axis(name)
-
-        new_node = Component(self, a)
+        new_node = Component(self, name)
 
         # and set properties
         if b is not None:
@@ -1832,7 +1828,7 @@ class Scene:
 
         new_node.path = path
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_geometriccontact(
@@ -1932,7 +1928,7 @@ class Scene:
                 f"The axis or body that {child.name} is on is already managed by {child.parent.parent.manager.name} and can therefore not be changed - unable to create geometric contact"
             )
 
-        new_node = GeometricContact(self, child, parent, name)
+        new_node = GeometricContact(self, name, child, parent)
         if inside:
             new_node.set_pin_in_hole_connection()
         else:
@@ -1948,7 +1944,7 @@ class Scene:
         new_node.child_fixed = child_fixed
         new_node.swivel_fixed = swivel_fixed
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_waveinteraction(
@@ -1992,9 +1988,8 @@ class Scene:
 
         # then create
 
-        new_node = WaveInteraction1(self)
+        new_node = WaveInteraction1(self, name)
 
-        new_node.name = name
         new_node.path = path
         new_node.parent = parent
 
@@ -2003,7 +1998,7 @@ class Scene:
         if offset is not None:
             new_node.offset = offset
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_visual(
@@ -2041,7 +2036,7 @@ class Scene:
 
         # then create
 
-        new_node = Visual(self)
+        new_node = Visual(self, name)
 
         new_node.name = name
         new_node.path = path
@@ -2057,7 +2052,7 @@ class Scene:
         if scale is not None:
             new_node.scale = scale
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_point(self, name, parent=None, position=None) -> Point:
@@ -2086,9 +2081,7 @@ class Scene:
             assert3f(position, "Position ")
 
         # then create
-        a = self._vfc.new_poi(name)
-
-        new_node = Point(self, a)
+        new_node = Point(self, name)
 
         # and set properties
         if b is not None:
@@ -2096,7 +2089,7 @@ class Scene:
         if position is not None:
             new_node.position = position
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_rigidbody(
@@ -2157,17 +2150,17 @@ class Scene:
 
         # make elements
 
-        a = self._vfc.new_axis(name)
+        # a = self._vfc.new_axis(name)
 
-        p = self._vfc.new_poi(name + vfc.VF_NAME_SPLIT + "cog")
-        p.parent = a
-        p.position = cog
+        # p = self._vfc.new_poi(name + vfc.VF_NAME_SPLIT + "cog")
+        # p.parent = a
+        # p.position = cog
+        #
+        # g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + "gravity")
+        # g.parent = p
+        # g.force = (0, 0, -self.g * mass)
 
-        g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + "gravity")
-        g.parent = p
-        g.force = (0, 0, -self.g * mass)
-
-        r = RigidBody(self, a, p, g)
+        r = RigidBody(self, name)
 
         r.cog = cog  # set inertia
         r.mass = mass
@@ -2191,7 +2184,7 @@ class Scene:
         else:
             r.fixed = fixed
 
-        self._nodes.append(r)
+        # self._nodes.append(r)
         return r
 
     def new_cable(
@@ -2291,8 +2284,8 @@ class Scene:
             assert1f(mass, "mass")
 
         # then create
-        a = self._vfc.new_cable(name)
-        new_node = Cable(self, a)
+
+        new_node = Cable(self, name)
         if length is not None:
             new_node.length = length
         new_node.EA = EA
@@ -2302,7 +2295,7 @@ class Scene:
         new_node.connections = pois
 
         # and add to the scene
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
 
         if length is None:
             new_node.length = 1e-8
@@ -2356,9 +2349,7 @@ class Scene:
             assert3f(moment, "Moment ")
 
         # then create
-        a = self._vfc.new_force(name)
-
-        new_node = Force(self, a)
+        new_node = Force(self, name)
 
         # and set properties
         if b is not None:
@@ -2368,7 +2359,7 @@ class Scene:
         if moment is not None:
             new_node.moment = moment
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def _new_area(self, is_wind, name, parent, direction, Cd, A, areakind):
@@ -2418,7 +2409,7 @@ class Scene:
         new_node.Cd = Cd
         new_node.A = A
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_windarea(
@@ -2516,17 +2507,14 @@ class Scene:
 
         assert1f(radius, "Radius of sheave")
 
-        # then create
-        a = self._vfc.new_sheave(name)
-
-        new_node = Circle(self, a)
+        new_node = Circle(self, name)
 
         # and set properties
         new_node.parent = b
         new_node.axis = axis
         new_node.radius = radius
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_hydspring(
@@ -2592,7 +2580,7 @@ class Scene:
         new_node.waterline = waterline
         new_node.displacement_kN = displacement_kN
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
 
         return new_node
 
@@ -2627,16 +2615,16 @@ class Scene:
             stiffness = (0, 0, 0, 0, 0, 0)
 
         # then create
-        a = self._vfc.new_linearconnector6d(name)
 
-        new_node = LC6d(self, a)
+
+        new_node = LC6d(self, name)
 
         # and set properties
         new_node.main = m
         new_node.secondary = s
         new_node.stiffness = stiffness
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_connector2d(
@@ -2670,9 +2658,9 @@ class Scene:
         assert1f(k_angular, "Angular stiffness")
 
         # then create
-        a = self._vfc.new_connector2d(name)
 
-        new_node = Connector2d(self, a)
+
+        new_node = Connector2d(self, name)
 
         # and set properties
         new_node.nodeA = m
@@ -2680,7 +2668,7 @@ class Scene:
         new_node.k_linear = k_linear
         new_node.k_angular = k_angular
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_beam(
@@ -2741,9 +2729,8 @@ class Scene:
         n_segments = int(round(n_segments))
 
         # then create
-        a = self._vfc.new_linearbeam(name)
 
-        new_node = Beam(self, a)
+        new_node = Beam(self, name)
 
         # and set properties
         new_node.nodeA = m
@@ -2757,7 +2744,7 @@ class Scene:
         new_node.n_segments = n_segments
         new_node.tension_only = tension_only
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_buoyancy(self, name, parent=None) -> Buoyancy:
@@ -2785,14 +2772,13 @@ class Scene:
             raise ValueError("A valid parent must be defined for a Buoyancy node")
 
         # then create
-        a = self._vfc.new_buoyancy(name)
-        new_node = Buoyancy(self, a)
+        new_node = Buoyancy(self, name)
 
         # and set properties
         if b is not None:
             new_node.parent = b
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_tank(self, name, parent=None, density=1.025, free_flooding=False) -> Tank:
@@ -2825,8 +2811,7 @@ class Scene:
         assert1f(density, "density")
 
         # then create
-        a = self._vfc.new_tank(name)
-        new_node = Tank(self, a)
+        new_node = Tank(self, name)
         new_node.density = density
 
         # and set properties
@@ -2835,7 +2820,7 @@ class Scene:
 
         new_node.free_flooding = free_flooding
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_contactmesh(self, name, parent=None) -> ContactMesh:
@@ -2859,14 +2844,13 @@ class Scene:
         b = self._parent_from_node(parent)
 
         # then create
-        a = self._vfc.new_contactmesh(name)
-        new_node = ContactMesh(self, a)
+        new_node = ContactMesh(self, name)
 
         # and set properties
         if b is not None:
             new_node.parent = b
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_spmt(
@@ -2932,9 +2916,9 @@ class Scene:
                 )  # throws error if not found
 
         # then create
-        a = self._vfc.new_spmt(name)
 
-        new_node = SPMT(self, a)
+
+        new_node = SPMT(self, name)
 
         # and set properties
         new_node.parent = parent
@@ -2952,7 +2936,7 @@ class Scene:
         if meshes is not None:
             new_node.meshes = meshes
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_contactball(
@@ -2989,9 +2973,9 @@ class Scene:
                 test = self._node_from_node(mesh, ContactMesh)
 
         # then create
-        a = self._vfc.new_contactball(name)
 
-        new_node = ContactBall(self, a)
+
+        new_node = ContactBall(self, name)
 
         # and set properties
         if b is not None:
@@ -3004,7 +2988,7 @@ class Scene:
         if meshes is not None:
             new_node.meshes = meshes
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_ballastsystem(self, name, parent: Frame or str) -> BallastSystem:
@@ -3033,10 +3017,9 @@ class Scene:
         parent = self._parent_from_node(parent)  # handles verification of type as well
 
         # make elements
-        r = BallastSystem(self, parent)
-        r.name = name
+        r = BallastSystem(self, name, parent)
 
-        self._nodes.append(r)
+        # self._nodes.append(r)
         return r
 
     def new_sling(
@@ -3178,7 +3161,7 @@ class Scene:
         if k_total is not None:
             node.k_total = k_total
 
-        self._nodes.append(node)
+        # self._nodes.append(node)
 
         return node
 
@@ -3230,9 +3213,9 @@ class Scene:
         g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + "gravity")
         g.parent = p
 
-        node = Shackle(scene=self, name=name, kind=kind, a=a, p=p, g=g)
+        node = Shackle(scene=self, name=name, kind=kind)
 
-        self._nodes.append(node)
+        # self._nodes.append(node)
 
         return node
 
