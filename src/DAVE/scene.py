@@ -1740,7 +1740,7 @@ class Scene:
         else:
             new_node.fixed = fixed
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_component(
@@ -1820,7 +1820,7 @@ class Scene:
 
         new_node.path = path
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_geometriccontact(
@@ -1936,7 +1936,7 @@ class Scene:
         new_node.child_fixed = child_fixed
         new_node.swivel_fixed = swivel_fixed
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_waveinteraction(
@@ -1990,7 +1990,7 @@ class Scene:
         if offset is not None:
             new_node.offset = offset
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_visual(
@@ -2044,7 +2044,7 @@ class Scene:
         if scale is not None:
             new_node.scale = scale
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_point(self, name, parent=None, position=None) -> Point:
@@ -2081,7 +2081,7 @@ class Scene:
         if position is not None:
             new_node.position = position
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_rigidbody(
@@ -2176,7 +2176,7 @@ class Scene:
         else:
             r.fixed = fixed
 
-        self._nodes.append(r)
+        # self._nodes.append(r)
         return r
 
     def new_cable(
@@ -2287,7 +2287,7 @@ class Scene:
         new_node.connections = pois
 
         # and add to the scene
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
 
         if length is None:
             new_node.length = 1e-8
@@ -2351,7 +2351,7 @@ class Scene:
         if moment is not None:
             new_node.moment = moment
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def _new_area(self, is_wind, name, parent, direction, Cd, A, areakind):
@@ -2401,7 +2401,7 @@ class Scene:
         new_node.Cd = Cd
         new_node.A = A
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_windarea(
@@ -2506,7 +2506,7 @@ class Scene:
         new_node.axis = axis
         new_node.radius = radius
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_hydspring(
@@ -2572,7 +2572,7 @@ class Scene:
         new_node.waterline = waterline
         new_node.displacement_kN = displacement_kN
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
 
         return new_node
 
@@ -2616,7 +2616,7 @@ class Scene:
         new_node.secondary = s
         new_node.stiffness = stiffness
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_connector2d(
@@ -2660,7 +2660,7 @@ class Scene:
         new_node.k_linear = k_linear
         new_node.k_angular = k_angular
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_beam(
@@ -2736,7 +2736,7 @@ class Scene:
         new_node.n_segments = n_segments
         new_node.tension_only = tension_only
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_buoyancy(self, name, parent=None) -> Buoyancy:
@@ -2770,7 +2770,7 @@ class Scene:
         if b is not None:
             new_node.parent = b
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_tank(self, name, parent=None, density=1.025, free_flooding=False) -> Tank:
@@ -2812,7 +2812,7 @@ class Scene:
 
         new_node.free_flooding = free_flooding
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_contactmesh(self, name, parent=None) -> ContactMesh:
@@ -2842,7 +2842,7 @@ class Scene:
         if b is not None:
             new_node.parent = b
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_spmt(
@@ -2928,7 +2928,7 @@ class Scene:
         if meshes is not None:
             new_node.meshes = meshes
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_contactball(
@@ -2980,7 +2980,7 @@ class Scene:
         if meshes is not None:
             new_node.meshes = meshes
 
-        self._nodes.append(new_node)
+        # self._nodes.append(new_node)
         return new_node
 
     def new_ballastsystem(self, name, parent: Frame or str) -> BallastSystem:
@@ -3011,7 +3011,7 @@ class Scene:
         # make elements
         r = BallastSystem(self, name, parent)
 
-        self._nodes.append(r)
+        # self._nodes.append(r)
         return r
 
     def new_sling(
@@ -3153,7 +3153,7 @@ class Scene:
         if k_total is not None:
             node.k_total = k_total
 
-        self._nodes.append(node)
+        # self._nodes.append(node)
 
         return node
 
@@ -3207,7 +3207,7 @@ class Scene:
 
         node = Shackle(scene=self, name=name, kind=kind)
 
-        self._nodes.append(node)
+        # self._nodes.append(node)
 
         return node
 

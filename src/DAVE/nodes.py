@@ -108,6 +108,11 @@ class Node(ABC):
     Master class for all nodes"""
 
     def __init__(self, scene, name : str or None = None):
+
+        # Guard to make sure this constructor is only run once
+        if hasattr(self,'_scene'):
+            return
+
         self._scene: 'Scene' = scene
         """reference to the scene that the node lives is"""
 
@@ -133,6 +138,9 @@ class Node(ABC):
         """Turns False if the node in removed from a scene. This is a work-around for weakrefs"""
 
         self._tags = set()
+
+        scene._nodes.append(self) # adds the node to the list of nodes in the scene
+
 
     def __repr__(self):
         if self.is_valid:
@@ -3705,7 +3713,7 @@ class Beam(CoreConnectedNode):
         return code
 
 
-class TriMeshSource(Node):
+class TriMeshSource():  # not an instance of Node
     """
     TriMesh
 
@@ -3715,8 +3723,10 @@ class TriMeshSource(Node):
 
     def __init__(self, scene, source):
 
-        name = scene.available_name_like("Names of trimesh-sources are not used")
-        super().__init__(scene, name=name)
+        # name = scene.available_name_like("Names of trimesh-sources are not used")
+        # super().__init__(scene, name=name, _do_not_add_to_scene=True)
+
+        self._scene = scene
 
         # Note: TriMeshSource does not have a corresponding vfCore Node in the scene but does have a vfCore
         self._TriMesh = source
