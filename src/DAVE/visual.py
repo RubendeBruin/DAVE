@@ -1689,7 +1689,7 @@ class Viewport:
             if getattr(vp_actor, "no_outline", False):
                 continue
 
-            do_silhouette = getattr(vp_actor, "do_silhouette", False)
+            do_silhouette = getattr(vp_actor, "do_silhouette", True)
 
             data = vp_actor.GetMapper().GetInputAsDataSet()
             if isinstance(data, vtk.vtkPolyData):

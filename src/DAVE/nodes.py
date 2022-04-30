@@ -144,12 +144,12 @@ class Node(ABC):
         return self.name
 
     @property
-    def color(self):
+    def color(self) -> tuple or None:
         """The color (r,g,b) of the node - use None for default"""
         return self._color
 
     @color.setter
-    def color(self, value) -> tuple or None:
+    def color(self, value):
         if value is not None:
             assert len(value)==3, "Color should be something like (r,g,b)"
         self._color = value
@@ -1065,7 +1065,7 @@ class Frame(NodeWithParentAndFootprint):
     def rotation(self, var):
 
         # convert to degrees
-        assert3f(var, "Rotation ")
+        assert3f(var, "Rotation")
         self._vfNode.rotation = np.deg2rad(var)
         self._scene._geometry_changed()
 
@@ -3569,8 +3569,7 @@ class Beam(CoreConnectedNode):
 
     @property
     def nodeA(self) -> Frame:
-        """The axis system that the A-end of the beam is connected to. The beam leaves this axis system along the X-axis [Frame]
-        #NOGUI"""
+        """The axis system that the A-end of the beam is connected to. The beam leaves this axis system along the X-axis [Frame]"""
         return self._nodeA
 
     @nodeA.setter
@@ -3588,8 +3587,7 @@ class Beam(CoreConnectedNode):
 
     @property
     def nodeB(self)->Frame:
-        """The axis system that the B-end of the beam is connected to. The beam arrives at this axis system along the X-axis [Frame]
-        #NOGUI"""
+        """The axis system that the B-end of the beam is connected to. The beam arrives at this axis system along the X-axis [Frame]"""
         return self._nodeB
 
     @nodeB.setter
