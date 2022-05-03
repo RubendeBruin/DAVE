@@ -46,7 +46,7 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
         if drop_onto is None:
             drop_onto_name = None
         else:
-            drop_onto_name = drop_onto.text(0)
+            drop_onto_name = drop_onto.toolTip(0)
 
         # print("dragged {} onto {}".format(dragged_name, drop_onto_name))
         event.setDropAction(Qt.IgnoreAction)
@@ -57,7 +57,7 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
 
         dragged = self.selectedItems()[0]
 
-        node_name = dragged.text(0)
+        node_name = dragged.toolTip(0)
         node = self.guiScene[node_name]
 
         if (
@@ -199,12 +199,12 @@ class WidgetNodeTree(guiDockWidget):
             self.guiSelectNode(node_name)
 
     def item_clicked(self, data):
-        name = data.text(0)
+        name = data.toolTip(0)
         self.guiSelectNode(name)
 
     def rightClickTreeview(self, point):
         if self.treeView.selectedItems():
-            node_name = self.treeView.selectedItems()[0].text(0)
+            node_name = self.treeView.selectedItems()[0].toolTip(0)
         else:
             node_name = None
         globLoc = self.treeView.mapToGlobal(point)
@@ -280,7 +280,7 @@ class WidgetNodeTree(guiDockWidget):
                 child = item.child(i)
                 if child.childCount() > 0:
                     if not child.isExpanded():
-                        store_here.append(child.text(0))
+                        store_here.append(child.toolTip(0))
                     walk_node(child, store_here)
 
         walk_node(self.treeView.invisibleRootItem(), closed_items)
@@ -301,7 +301,12 @@ class WidgetNodeTree(guiDockWidget):
             # create a tree item
             text = node.name
             item = QTreeWidgetItem()
-            item.setText(0, text)
+
+            item.setToolTip(0, text) # store the name in the tool-tip
+
+            # shorten the name if it contains /-es
+
+            item.setText(0, text.split('/')[-1])
 
             # if we have a parent, then put the items under the parent,
             # else put it under the root
@@ -367,6 +372,10 @@ class WidgetNodeTree(guiDockWidget):
                     if node._manager.manager is None: # but only if the manager itself is not also managed (and thus hidden)
                         show_managed_node = True
 
+            if not show_managed_node: # another override
+                if hasattr(node, '_always_show_in_tree'):
+                    show_managed_node = node._always_show_in_tree
+
             # custom work-around for showing the "circles" for managed shackles
             if isinstance(node._manager, Shackle):
                 if (
@@ -413,7 +422,7 @@ class WidgetNodeTree(guiDockWidget):
         def close_nodes(item, closed):
             for i in range(item.childCount()):
                 child = item.child(i)
-                if child.text(0) in closed_items:
+                if child.toolTip(0) in closed_items:
                     child.setExpanded(False)
                 if child.childCount() > 0:
                     close_nodes(child, closed)

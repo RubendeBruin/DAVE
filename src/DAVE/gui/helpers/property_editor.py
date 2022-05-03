@@ -22,8 +22,11 @@ from PySide2.QtWidgets import *
 
 class PropertyEditorWidget(QDialog):
 
-    def __init__(self, dataobject, prop_names, callback_func, info = None, parent=None):
+    def __init__(self, dataobject, prop_names : tuple or list, callback_func, info = None, parent=None):
         super().__init__(parent=parent)
+
+        if isinstance(prop_names, str):
+            prop_names = (prop_names,)
 
         self.setWindowTitle("Edit")
 
@@ -38,6 +41,8 @@ class PropertyEditorWidget(QDialog):
                 self.prop_types.append(str)
             elif isinstance(test, (int,float)):
                 self.prop_types.append(float)
+            elif isinstance(test, (tuple, list)):
+                self.prop_types.append(tuple)
             else:
                 raise ValueError(f'Unsupported type for property name {prop} with value {test}')
 
@@ -99,6 +104,8 @@ class PropertyEditorWidget(QDialog):
                 editor.setText(value)
             elif kind == float:
                 editor.setText(str(float(value)))
+            elif kind == tuple:
+                editor.setText('(' + ', '.join([str(v) for v in value]) + ')')
             else:
                 raise ValueError(f'Can not set value for  {name} - unknown type')
 
@@ -122,6 +129,17 @@ class PropertyEditorWidget(QDialog):
             except ValueError:
                 editor.setStyleSheet('background:  rgb(255, 170, 127);')
                 return
+        elif kind == tuple:
+            try:
+                if not value.strip().startswith('('):
+                    value = '(' + value
+                if not value.strip().endswith(')'):
+                    value = value + ')'
+                value = eval(value)
+            except:
+                editor.setStyleSheet('background:  rgb(255, 170, 127);')
+                return
+
 
         editor.setStyleSheet('background: white')
 
