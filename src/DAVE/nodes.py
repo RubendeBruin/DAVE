@@ -2206,36 +2206,42 @@ class Cable(CoreConnectedNode):
         self.length = stretched_length * self.EA / (target_tension + self.EA)
 
     def give_python_code(self):
-        code = "# code for {}".format(self.name)
+        code = list()
+        code.append("# code for {}".format(self.name))
 
         poi_names = self._give_poi_names()
         n_sheaves = len(poi_names) - 2
 
-        code += "\ns.new_cable(name='{}',".format(self.name)
-        code += "\n            endA='{}',".format(poi_names[0])
-        code += "\n            endB='{}',".format(poi_names[-1])
-        code += "\n            length={},".format(self.length)
+
+
+        code.append("s.new_cable(name='{}',".format(self.name))
+        code.append("            endA='{}',".format(poi_names[0]))
+        code.append("            endB='{}',".format(poi_names[-1]))
+        code.append("            length={},".format(self.length))
 
         if self.mass_per_length != 0:
-            code += "\n            mass_per_length={},".format(self.mass_per_length)
+            code.append("            mass_per_length={},".format(self.mass_per_length))
 
         if self.diameter != 0:
-            code += "\n            diameter={},".format(self.diameter)
+            code.append("            diameter={},".format(self.diameter))
 
         if len(poi_names) <= 2:
-            code += "\n            EA={})".format(self.EA)
+            code.append("            EA={})".format(self.EA))
         else:
-            code += "\n            EA={},".format(self.EA)
+            code.append("            EA={},".format(self.EA))
 
             if n_sheaves == 1:
-                code += "\n            sheaves = ['{}'])".format(poi_names[1])
+                code.append("            sheaves = ['{}'])".format(poi_names[1]))
             else:
-                code += "\n            sheaves = ['{}',".format(poi_names[1])
+                code.append("            sheaves = ['{}',".format(poi_names[1]))
                 for i in range(n_sheaves - 2):
-                    code += "\n                       '{}',".format(poi_names[2 + i])
-                code += "\n                       '{}']),".format(poi_names[-2])
+                    code.append("                       '{}',".format(poi_names[2 + i]))
+                code.append("                       '{}']),".format(poi_names[-2]))
 
-        return code
+        if np.any(self.reversed):
+            code.append(f"s['{self.name}'].reversed = {self.reversed}")
+
+        return '\n'.join(code)
 
 
 class Force(NodeWithCoreParent):
