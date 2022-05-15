@@ -2212,8 +2212,6 @@ class Cable(CoreConnectedNode):
         poi_names = self._give_poi_names()
         n_sheaves = len(poi_names) - 2
 
-
-
         code.append("s.new_cable(name='{}',".format(self.name))
         code.append("            endA='{}',".format(poi_names[0]))
         code.append("            endB='{}',".format(poi_names[-1]))

@@ -98,6 +98,7 @@ from DAVE.visual import Viewport, ActorType, DelayRenderingTillDone
 from DAVE.gui import new_node_dialog
 import DAVE.gui.standard_assets
 from DAVE.gui.forms.dlg_solver import Ui_Dialog
+from DAVE.gui.forms.dlg_settingsr import Ui_frmSettings
 import DAVE.settings
 from DAVE.settings_visuals import PAINTERS
 
@@ -172,6 +173,23 @@ class SolverDialog(QDialog, Ui_Dialog):
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.setWindowIcon(QIcon(":/icons/cube.png"))
+
+
+
+
+class SettingsDialog(QDialog, Ui_frmSettings):
+    def __init__(self, scene, gui, parent=None):
+        super(SettingsDialog, self).__init__(parent)
+        Ui_frmSettings.__init__(self)
+        self.setupUi(self)
+        self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
+        self.setWindowIcon(QIcon(":/icons/cube.png"))
+
+        paths_str = ['- ' + str(p) for p in scene.resources_paths if p not in gui.additional_user_resource_paths]
+        self.label_4.setText('\n'.join(paths_str))
+
+        paths_str = [str(p) for p in gui.additional_user_resource_paths]
+        self.plainTextEdit.setPlainText('\n'.join(paths_str))
 
 
 class Gui:
@@ -277,6 +295,19 @@ class Gui:
         self.modelfilename = None
         """Open file"""
 
+        self.additional_user_resource_paths = []
+        """User-defined additional resource paths, stored on user machine - settings dialog"""
+
+        settings = QSettings("rdbr", "DAVE")
+        paths_str = settings.value(f"additional_paths")
+        if paths_str:
+            for p in paths_str.split(';'):
+                if p:
+                    self.additional_user_resource_paths.append(Path(p))
+                    self.scene.resources_paths.append(Path(p))
+
+        self.update_resources_paths()
+
         # ======================== Modify dock layout options ============
 
         self.MainWindow.setCorner(Qt.TopRightCorner, Qt.RightDockWidgetArea)
@@ -369,6 +400,7 @@ class Gui:
         self.ui.actionSave.triggered.connect(self.menu_save_model)
         self.ui.actionSave.setEnabled(False)
         self.ui.actionSave_scene.triggered.connect(self.menu_save_model_as)
+        self.ui.actionSettings.triggered.connect(self.show_settings)
         self.ui.actionSave_actions_as.triggered.connect(self.menu_save_actions)
         self.ui.actionImport_sub_scene.triggered.connect(self.menu_import)
         self.ui.actionImport_browser.triggered.connect(self.import_browser)
@@ -627,6 +659,32 @@ class Gui:
     def new_scene(self):
         self.scene.clear()
         self.guiEmitEvent(guiEventType.FULL_UPDATE)
+
+    def show_settings(self):
+        dlg = SettingsDialog(scene=self.scene, gui=self)
+        result = dlg.exec_()
+        if result > 0:
+
+            text = dlg.plainTextEdit.toPlainText()
+            paths = text.split('\n')
+
+            self.additional_user_resource_paths.clear()
+            for p in paths:
+                if p:
+                    self.additional_user_resource_paths.append(Path(p))
+                settings = QSettings("rdbr", "DAVE")
+                paths_str = ';'.join([str(p) for p in self.additional_user_resource_paths])
+                settings.setValue(f"additional_paths", paths_str)
+
+    def update_resources_paths(self):
+        """Updates the global settings.DAVE_RESOURCES_PATHS to include the user-defined dirs
+
+        Note: removing paths required a program restart
+        """
+
+        for p in self.additional_user_resource_paths:
+            if p not in DAVE.settings.RESOURCE_PATH:
+                DAVE.settings.RESOURCE_PATH.append(p)
 
     def labels_show_hide(self):
         if self.visual.settings.label_scale > 0:

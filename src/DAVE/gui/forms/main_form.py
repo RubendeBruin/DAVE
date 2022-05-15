@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Fri Jan  7 15:53:10 2022
+# Created: Sun May 15 10:28:58 2022
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -435,6 +435,8 @@ class Ui_MainWindow(object):
         self.actionShow_labels = QtWidgets.QAction(MainWindow)
         self.actionShow_labels.setCheckable(True)
         self.actionShow_labels.setObjectName("actionShow_labels")
+        self.actionSettings = QtWidgets.QAction(MainWindow)
+        self.actionSettings.setObjectName("actionSettings")
         self.menuExport.addAction(self.actionBlender)
         self.menuExport.addAction(self.actionOrcaflex)
         self.menuExport.addAction(self.actionOrcaflex_package)
@@ -447,6 +449,8 @@ class Ui_MainWindow(object):
         self.menuSolve_Statics.addAction(self.actionSave)
         self.menuSolve_Statics.addAction(self.actionSave_scene)
         self.menuSolve_Statics.addAction(self.actionSave_actions_as)
+        self.menuSolve_Statics.addSeparator()
+        self.menuSolve_Statics.addAction(self.actionSettings)
         self.menuSolve_Statics.addSeparator()
         self.menuSolve_Statics.addAction(self.menuExport.menuAction())
         self.menuLook_towards.addAction(self.actionX)
@@ -584,5 +588,6 @@ class Ui_MainWindow(object):
         self.actionSave.setText(QtWidgets.QApplication.translate("MainWindow", "Save", None, -1))
         self.actionClear.setText(QtWidgets.QApplication.translate("MainWindow", "Remove al nodes", None, -1))
         self.actionShow_labels.setText(QtWidgets.QApplication.translate("MainWindow", "Show/hide labels", None, -1))
+        self.actionSettings.setText(QtWidgets.QApplication.translate("MainWindow", "Settings", None, -1))
 
 import DAVE.gui.forms.resources_rc

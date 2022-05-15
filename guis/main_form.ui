@@ -480,6 +480,8 @@
     <addaction name="actionSave_scene"/>
     <addaction name="actionSave_actions_as"/>
     <addaction name="separator"/>
+    <addaction name="actionSettings"/>
+    <addaction name="separator"/>
     <addaction name="menuExport"/>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -1135,6 +1137,11 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="text">
     <string>Show/hide labels</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="text">
+    <string>Settings</string>
    </property>
   </action>
  </widget>
