@@ -2261,6 +2261,7 @@ class Viewport:
                     a = vp.Line([(0, 0, 0), (0, 0, 0.1), (0, 0, 0)], lw=3)
 
                 a.actor_type = ActorType.CABLE
+                a.SetPickable(True)
                 actors["line"] = a
 
             if isinstance(N, vf.Beam):
@@ -2271,6 +2272,8 @@ class Viewport:
                     a = vp.Line(gp)
                 else:
                     a = vp.Line([(0, 0, 0), (0, 0, 0.1), (0, 0, 0)])
+
+                a.SetPickable(True)
 
                 a.actor_type = ActorType.CABLE
                 actors["main"] = a
@@ -2285,6 +2288,8 @@ class Viewport:
                 a = vp.Line(points)
                 a.actor_type = ActorType.CABLE
 
+                a.SetPickable(True)
+
                 actors["main"] = a
 
             if isinstance(N, vf.LC6d):
@@ -2296,6 +2301,8 @@ class Viewport:
 
                 a = vp.Line(points)
                 a.actor_type = ActorType.CABLE
+
+                a.SetPickable(True)
 
                 actors["main"] = a
 

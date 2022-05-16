@@ -2052,7 +2052,7 @@ class Gui:
                 self.selected_nodes.append(node)
 
         if self.selected_nodes:
-            if self._active_workspace == "CONSTRUCT":
+            if self._active_workspace in ["CONSTRUCT", "TimeLine"]:
                 if "Properties" in self.guiWidgets:
                     if not self.guiWidgets["Properties"].isVisible():
                         self.guiWidgets["Properties"].setVisible(True)
