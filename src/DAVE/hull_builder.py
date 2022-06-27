@@ -64,12 +64,15 @@ plt.show()
 
 def build_triangles(f1,f2):
     """
+    Builds triangles between two frames
 
     Args:
-        f1:
-        f2:
+        f1: list of [x,y,z]
+        f2: lift of [x,y,z]
 
     Returns:
+        points : list of [x,y,z] containing vertices
+        triangles : list of [i,j,k] with the indices
 
     """
 
@@ -146,23 +149,66 @@ def build_triangles(f1,f2):
 
     return [*f1,*f2], triangles
 
+def combine_meshes(mesha, meshb):
+    """Merges the faces and indices of both meshes"""
 
+    va = mesha.points()
+    fa = mesha.faces()
 
+    vb = meshb.points()
+    fb = meshb.faces()
+
+    nva = len(va)
+    points = [*va, *vb]
+
+    fbp = [(a[0]+nva, a[1]+nva, a[2]+nva) for a in fb]
+
+    faces = [*fa, *fbp]
+
+    return Mesh([points, faces])
 
 points, triangles = build_triangles(f1, f2)
+midship = Mesh([points, triangles])
 
+bow = [(10,0,2)]
+points, triangles = build_triangles(f2, bow)  # stern to bow
+front = Mesh([points, triangles])
 
+# m = midship + front
 
+m = combine_meshes(midship, front)
 
+stern = [(0,0.5,0.5)]
+points, triangles = build_triangles(stern, f1)
+back = Mesh([points, triangles])
 
+# m = m + back
+m = combine_meshes(m, back)
 
-m = Mesh([points, triangles])
+print(len(m.points()))
+m.clean()
+print(len(m.points()))
 
-c = Cube()
+# Invert normals
+p = m.points()
+v = m.faces()
+vi = [(p[2], p[1], p[0]) for p in v]
+
+m = Mesh([p, vi])
+
+m.write(r'c:\data\hull.stl')
+
+# Do a boolean
+c = Sphere(pos=(2,1,0),r=0.3, res=8)
+# c = Cube(pos=(2,0.5,0), side=1)
+c.write(r'c:\data\sphere.stl')
+
+m2 = m.boolean('plus',c)
+
+# And plot
 p = Plotter(axes=5)
+p.add(m2)
 
-p.add(m)
-# p.add(c)
 p.show(axes=1)
 
-print(points)
+# But the mesh does not look nice.

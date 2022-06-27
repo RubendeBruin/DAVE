@@ -11,6 +11,7 @@
 # from abc import ABC, abstractmethod
 # from enum import Enum
 # from typing import List  # for python<3.9
+from typing import Tuple
 
 import pyo3d
 # import numpy as np
@@ -434,7 +435,7 @@ class Scene:
 
         self._godmode = remember_godmode
 
-    def _check_and_fix_geometric_contact_orientations(self) -> (bool, str):
+    def _check_and_fix_geometric_contact_orientations(self) -> Tuple[bool, str]:
         """A Geometric pin on pin contact may end up with tension in the contact. Fix that by moving the child pin to the other side of the parent pin
 
         Returns:
@@ -3204,14 +3205,14 @@ class Scene:
         # then make element
 
         # make elements
-
-        a = self._vfc.new_axis(name)
-
-        p = self._vfc.new_poi(name + vfc.VF_NAME_SPLIT + "cog")
-        p.parent = a
-
-        g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + "gravity")
-        g.parent = p
+        #
+        # a = self._vfc.new_axis(name)
+        #
+        # p = self._vfc.new_poi(name + vfc.VF_NAME_SPLIT + "cog")
+        # p.parent = a
+        #
+        # g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + "gravity")
+        # g.parent = p
 
         node = Shackle(scene=self, name=name, kind=kind)
 

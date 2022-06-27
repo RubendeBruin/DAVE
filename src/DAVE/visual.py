@@ -656,6 +656,7 @@ class VisualActor:
         ps is the painter_settings dictionary
 
         """
+
         ps = settings.painter_settings
 
         if ps is None:
@@ -748,6 +749,8 @@ class VisualActor:
 
         for key, actor in self.actors.items():
 
+            # start_time = actor.GetMTime()
+
             if '#' in key:
                 key = key.split('#')[0]
 
@@ -819,6 +822,9 @@ class VisualActor:
                     actor.GetProperty().SetColor(uc_paint[:3])
             else:
                 actor.GetProperty().SetLineWidth(0)
+
+            # if actor.GetMTime() == start_time:
+            #     print('Nothing changed')
 
     def update_geometry(self, viewport):
         """Updates the geometry of the actors to the current state of the node.
@@ -1047,7 +1053,7 @@ class VisualActor:
                     if viewport.screen is not None:
                         viewport.screen.remove(self.actors["footprint"])
                         self.actors["footprint"] = new_actor
-                        viewport.screen.add(self.actors["footprint"], render=True)
+                        viewport.screen.add(self.actors["footprint"], render=False)
 
         if isinstance(self.node, vf.Point):
             t = vtk.vtkTransform()
@@ -1306,7 +1312,7 @@ class VisualActor:
                 self.update_paint(viewport.settings)
 
                 if viewport.screen is not None:
-                    viewport.screen.add(vis)
+                    viewport.screen.add(vis, render=False)
 
             return
 
@@ -1615,7 +1621,7 @@ class Viewport:
     def add_temporary_actor(self, actor: vtk.vtkActor):
         self.temporary_actors.append(actor)
         if self.screen:
-            self.screen.add(actor)
+            self.screen.add(actor, render=False)
 
     def remove_temporary_actors(self):
         if self.temporary_actors:
@@ -1817,7 +1823,7 @@ class Viewport:
         self.global_visuals["z"].negative = True
 
         for actor in self.global_visuals.values():
-            self.screen.add(actor)
+            self.screen.add(actor, render=False)
 
         wind_actor = vp.Lines(
             startPoints=[(0, 0, 0), (0, 0, 0)], endPoints=[(10, 0, 0), (-0.5, 1, 0)]
@@ -1837,7 +1843,7 @@ class Viewport:
         self.current_actor = current_actor
         self.wind_actor = wind_actor
 
-        self.screen.add(self.colorbar_actor)
+        self.screen.add(self.colorbar_actor, render=False)
 
     def add_wind_and_current_actors(self):
         self.screen.addIcon(self.wind_actor, pos=2, size=0.06)
@@ -2410,7 +2416,7 @@ class Viewport:
                         to_be_added.append(va.label_actor)
 
             if to_be_added:
-                self.screen.add(to_be_added)
+                self.screen.add(to_be_added, render=False)
 
             # check if objs or meshes need to be re-loaded
             for va in self.node_visuals:
@@ -2446,7 +2452,7 @@ class Viewport:
                     if not va.node.visible:
                         va.actors["main"].off()
 
-                    self.screen.add(va.actors["main"])
+                    self.screen.add(va.actors["main"], render=False)
 
                 if (
                     isinstance(va.node, vf.Buoyancy)
@@ -2482,7 +2488,7 @@ class Viewport:
                             if not va.node.visible:
                                 va.actors["main"].off()
 
-                            self.screen.add(va.actors["main"])  # add after positioning
+                            self.screen.add(va.actors["main"], render=False)  # add after positioning
 
                             # va.node.trimesh._new_mesh = False  # is set to False by position_visuals
 
