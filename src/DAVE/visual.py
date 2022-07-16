@@ -23,6 +23,10 @@ vtkmodules.qt.PyQtImpl = "PySide2"
 import vedo as vp  # ref: https://github.com/marcomusy/vedo
 import vtk
 
+import vedo.settings
+
+# vedo.settings.renderLinesAsTubes = True
+
 from DAVE.settings_visuals import (
     ViewportSettings,
     ActorSettings,
@@ -900,7 +904,7 @@ class VisualActor:
             return
 
         if isinstance(self.node, vf._Area):
-            self.actors["main"].scale(np.sqrt(self.node.A), absolute=True)
+            self.actors["main"].scale(np.sqrt(self.node.A), reset=True)
             return
 
         if isinstance(self.node, vf.Cable):
@@ -937,7 +941,7 @@ class VisualActor:
             top_width = (N.n_width - 1) * N.spacing_width + WHEEL_WIDTH
 
             top_deck = self.actors['main']
-            top_deck.scale((top_length, top_width, TOP_THICKNESS), absolute=True)
+            top_deck.scale((top_length, top_width, TOP_THICKNESS), reset=True)
             top_deck.SetUserMatrix(mat4x4_from_point_on_frame(N.parent, (0,0,-0.5*TOP_THICKNESS)))
 
             # The wheels
@@ -2617,20 +2621,25 @@ class Viewport:
 
         # Radius 10, Kernel 500 gives nice result - but slow
         # Kernel size 50 less accurate bus faster
-        self.ssao.SetRadius(10)
+        self.ssao.SetRadius(5)
         self.ssao.SetDelegatePass(basicPasses)
         self.ssao.SetKernelSize(50)
         self.ssao.SetBlur(True)
 
+        # light = vtk.vtkLight()
+        # light.SetLightTypeToCameraLight()
+        # light.SetIntensity(10)
+
         for r in self.screen.renderers:
             r.ResetCamera()
+            # r.AddLight(light)
 
             r.UseImageBasedLightingOn()
             r.SetEnvironmentTexture(texture)
 
             r.SetUseDepthPeeling(True)
 
-            # r.SetLightFollowCamera(False)
+            # r.SetLightFollowCamera(True)
 
             r.Modified()
 

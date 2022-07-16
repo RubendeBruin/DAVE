@@ -46,7 +46,6 @@ def run():
     import numpy as np
 
     s = Scene()
-
     g = Gui(s,splash=splash, app = app)
 
 
