@@ -1761,6 +1761,8 @@ class Viewport:
                     vp_actor._outline = record
                     self.node_outlines.append(record)
 
+                    record.outline_actor.outlined_actor = vp_actor  # insert a ref to the original actor, used when clicking
+
         # Update transforms for outlines
 
         for record in self.node_outlines:
@@ -1869,6 +1871,14 @@ class Viewport:
         Returns:
 
         """
+        # print(actor)
+
+        outlined_actor = getattr(actor,'outlined_actor',None)
+        if outlined_actor is not None:
+            print('getting from outline')
+            return self.node_from_vtk_actor(outlined_actor)
+
+
         for v in self.node_visuals:
             for a in v.actors.values():
                 if a == actor:
