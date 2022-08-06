@@ -800,9 +800,15 @@ class VisualActor:
                 else:
                     props.SetColor(uc_paint[:3])
 
-                props.SetOpacity(actor_settings.alpha)
-                props.SetMetallic(actor_settings.metallic)
-                props.SetRoughness(actor_settings.roughness)
+                if self._is_selected:
+                    props.SetOpacity(actor_settings.alpha)
+                    props.SetMetallic(1.0)
+                    props.SetRoughness(0.3)
+                else:
+                    props.SetOpacity(actor_settings.alpha)
+                    props.SetMetallic(actor_settings.metallic)
+                    props.SetRoughness(actor_settings.roughness)
+
             else:
                 actor.GetProperty().SetRepresentationToWireframe()
 
@@ -1888,7 +1894,7 @@ class Viewport:
 
         return None
 
-    def actor_from_node(self, node):
+    def actor_from_node(self, node) -> VisualActor or None:
         """Finds the VisualActor belonging to node"""
         for v in self.node_visuals:
             if v.node is node:

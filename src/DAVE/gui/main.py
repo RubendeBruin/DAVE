@@ -2046,6 +2046,7 @@ class Gui:
         ):
             self.selected_nodes.clear()
 
+        node = None
         if node_name is not None:
             node = self.scene._node_from_node_or_str(node_name)
             if node not in self.selected_nodes:
@@ -2060,8 +2061,17 @@ class Gui:
                             guiEventType.SELECTION_CHANGED
                         )  # force update
 
+        # Get the screen position of the just selected visual
+        #
+        if node is not None:
+            self.move_floating_widgets_away_from_cursor()
+
         if old_selection != self.selected_nodes:
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+
+    def move_floating_widgets_away_from_cursor(self):
+        for w in self.guiWidgets.values():
+            w.move_away_from_cursor()
 
     def show_guiWidget(self, name, widgetClass=None):
 

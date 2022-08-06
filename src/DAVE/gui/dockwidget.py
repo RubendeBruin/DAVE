@@ -1,5 +1,10 @@
 from PySide2 import QtWidgets, QtCore
 from enum import Enum
+
+from PySide2.QtCore import QPoint
+from PySide2.QtGui import QCursor
+from PySide2.QtWidgets import QApplication
+
 from DAVE.scene import *
 
 
@@ -94,3 +99,43 @@ class guiDockWidget(QtWidgets.QDockWidget):
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(label)
         self.contents.setLayout(layout)
+
+    def move_away_from_cursor(self, max_spacing=100):
+        """If the widget is not docked, Moves the widget away from the current cursor position
+
+        move to at most max_spacing from the cursor (we do want to keep it near)
+        """
+
+        if self.isFloating():
+            print(self)
+
+            # get the extends of the window
+            pos = self.pos()
+            width = self.width()
+
+            left = pos.x()
+            right = left +width
+            top = pos.y()
+
+            cursor_pos = QCursor.pos()
+
+            x = cursor_pos.x()
+
+            if x>left and x < right:
+                # we're blocking the cursor position
+                size = QApplication.instance().screens()[0].size()
+
+                room_left = left - width  # free space with widget right edge is at cursor
+                room_right = size.width() - right # free space if left edge is at cursor
+
+                if room_left > room_right:
+                    space = min(max_spacing, room_left)
+                    left = x - width - space
+                    self.move(QPoint(left,top))
+                    return
+
+                else:
+                    space = min(max_spacing, room_right)
+                    left = x + space
+                    self.move(QPoint(left, top))
+                    return
