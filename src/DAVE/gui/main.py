@@ -62,6 +62,7 @@
 """
 import subprocess
 from copy import deepcopy
+import logging
 
 from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter
 from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
@@ -94,7 +95,7 @@ from PySide2.QtWidgets import (
 from DAVE.scene import Scene
 
 from DAVE.gui.forms.main_form import Ui_MainWindow
-from DAVE.visual import Viewport, ActorType, DelayRenderingTillDone
+from DAVE.visual import Viewport, ActorType, DelayRenderingTillDone, DragInfo
 from DAVE.gui import new_node_dialog
 import DAVE.gui.standard_assets
 from DAVE.gui.forms.dlg_solver import Ui_Dialog
@@ -245,6 +246,8 @@ class Gui:
             self.app = app
         self.app.aboutToQuit.connect(self.onClose)
 
+        self
+
         if splash is None:
             splash = QtWidgets.QSplashScreen()
             splash.setPixmap(QPixmap(":/icons/splashscreen.png"))
@@ -355,6 +358,8 @@ class Gui:
 
         self.visual.onEscapeKey = self.escPressed
         self.visual.onDeleteKey = self.delete_key
+        self.visual.start_node_drag = self.start_node_drag
+        self.visual.accept_drag_callback = self.node_dragged
 
         # ------ viewport buttons ------
 
@@ -2110,6 +2115,48 @@ class Gui:
 
     def refresh_3dview(self):
         self.visual.refresh_embeded_view()
+
+    # --- dragging actors ---
+
+    def start_node_drag(self):
+        """Start node drag in viewport
+
+        Actual selection shall be a single node
+        That single node shall be movable (extends Frame, Point, Visual)
+
+        """
+
+        # only works on one node
+        if len(self.selected_nodes) != 1:
+            print(f"Can not start drag - number of selected nodes should be exactly 1 but is {len(self.selected_nodes)}")
+            return
+
+        node = self.selected_nodes[0]
+
+        if isinstance(node, (Frame, Point)):
+
+            logging.info(f"Starting drag on {node.name}")
+            self.visual.initialize_node_drag(node)
+
+            # mouse move to be captured by VTK
+
+            # self._old_mouse_move_event = self.ui.frame3d.mouseMoveEvent
+            # self.ui.frame3d.mouseMoveEvent = self.moveActorMouseMoveEvent
+            # self.ui.frame3d.setMouseTracking(True)
+
+            # logging.info("Mouse grabbed from main window")
+
+    def node_dragged(self, info : DragInfo):  # callback from ViewPort
+        """Apply the translation of the dragged node"""
+
+        node = info.dragged_node
+        old_position = np.array(node.global_position)
+        new_position = old_position + info.delta
+
+        code = f"s['{node.name}'].global_position = ({new_position[0]},{new_position[1]},{new_position[2]})"
+        self.run_code(code,guiEventType.MODEL_STATE_CHANGED, store_undo=True)
+
+
 
 
 # ======================================

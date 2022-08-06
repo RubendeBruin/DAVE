@@ -10,6 +10,7 @@ import logging
 from copy import copy
 from pathlib import Path
 from typing import List
+from dataclasses import dataclass
 
 import numpy as np
 from enum import Enum
@@ -501,7 +502,6 @@ def create_shearline_actors(frame: dn.Frame, scale_to=2, at=None):
     """
     return _create_moment_or_shear_line("Shear", frame, scale_to, at)
 
-
 class ActorType(Enum):
     FORCE = 1
     VISUAL = 2
@@ -512,6 +512,25 @@ class ActorType(Enum):
     BALLASTTANK = 7
     MESH_OR_CONNECTOR = 8
     COG = 9
+
+@dataclass
+class DragInfo:
+    """Data structure containing the data required to execute dragging a node"""
+
+    # Scene related
+    dragged_node = None            # Node
+
+    # VTK related
+    actors_dragging: list
+    dragged_actors_original_positions: list # original VTK positions
+    start_position_3d = np.array((0,0,0))  # start position of the cursor
+
+    delta = np.array((0,0,0))
+
+    def __init__(self):
+        self.actors_dragging = []
+        self.dragged_actors_original_positions = []
+
 
 
 class VisualOutline:
@@ -1542,6 +1561,9 @@ class Viewport:
     def __init__(self, scene, jupyter=False):
         self.scene = scene
 
+        """Re-usable objects"""
+        self.worldPointPicker = vtk.vtkWorldPointPicker()
+
         """These are the visuals for the nodes"""
         self.node_visuals: List[VisualActor] = list()
         self.node_outlines: List[VisualOutline] = list()
@@ -1563,7 +1585,13 @@ class Viewport:
         self.onEscapeKey = None
         self.onDeleteKey = None
         self.focus_on_selected_object = None  # f key
+
+        #  --- drag functionality ---
+        self.start_node_drag = None
+        self.accept_drag_callback = None
         "Function handles"
+
+        self.draginfo : DragInfo or None  = None  # assigned to a DragInfo object when dragging is active
 
         self.Jupyter = jupyter
 
@@ -1627,6 +1655,34 @@ class Viewport:
         v.zoom_all()
 
         app.exec_()
+
+    def initialize_node_drag(self, node):
+
+        if self.draginfo is not None:
+            raise ValueError('Can not start a new drag, old one still active')
+
+        # create and fill drag-info
+
+        draginfo = DragInfo()
+
+        draginfo.dragged_node = node
+
+        # find all actors and outlines corresponding to this node
+        actors = [*self.actor_from_node(node).actors.values()]
+        outlines = [ol.outline_actor for ol in self.node_outlines if ol.parent_vp_actor in actors]
+
+        draginfo.actors_dragging = [*actors, *outlines]
+
+        for a in draginfo.actors_dragging:
+            draginfo.dragged_actors_original_positions.append(a.GetPosition())  # numpy ndarray
+
+        position2d = self.renwin.GetInteractor().GetEventPosition()  # <-- get mouse position
+
+        self.worldPointPicker.Pick(position2d[0], position2d[1], 0, self.renderer)
+        draginfo.start_position_3d = self.worldPointPicker.GetPickPosition()
+
+
+        self.draginfo = draginfo
 
     def add_temporary_actor(self, actor: vtk.vtkActor):
         self.temporary_actors.append(actor)
@@ -2796,6 +2852,7 @@ class Viewport:
         iren.AddObserver("LeftButtonPressEvent", self._leftmousepress)
         iren.AddObserver("RightButtonPressEvent", screen._mouseright)
         iren.AddObserver("MiddleButtonPressEvent", screen._mousemiddle)
+        iren.AddObserver("MouseMoveEvent", self.mouseMoveFunction)
         iren.AddObserver("KeyPressEvent", self.keyPressFunction)
         iren.AddObserver(vtk.vtkCommand.InteractionEvent, self.keep_up_up)
 
@@ -2873,11 +2930,74 @@ class Viewport:
 
         self._rotate_actors_due_to_camera_movement()
 
+    # =========== DRAG OF ACTORS ==========
+
+    def mouseMoveFunction(self, obj, event):
+        """Called whenever the mouse is moved in the interactive viewport"""
+
+        if self.draginfo is not None:
+            position2d = obj.GetEventPosition()
+            print(position2d)
+
+            self.worldPointPicker.Pick(position2d[0], position2d[1], 0, self.renderer)
+            mouse_pos_3d = self.worldPointPicker.GetPickPosition()
+
+            delta = np.array(mouse_pos_3d) -self.draginfo.start_position_3d
+            print(f'Delta = {delta}')
+            view_normal = np.array(self.renderer.GetActiveCamera().GetViewPlaneNormal())
+
+            delta_inplane = delta - view_normal * np.dot(delta, view_normal)
+            print(f'delta_inplane = {delta_inplane}')
+
+            for pos0, actor in zip(self.draginfo.dragged_actors_original_positions, self.draginfo.actors_dragging):
+                actor.SetPosition(pos0 + delta_inplane)
+                print(f'Set position to {pos0 + delta_inplane}')
+
+            self.draginfo.delta = delta_inplane  # store the current delta
+
+            self.refresh_embeded_view()
+
+    def stop_drag(self, accept: bool):
+        """Stops the active drag"""
+
+        # resets all dragged actors
+        for pos0, actor in zip(self.draginfo.dragged_actors_original_positions, self.draginfo.actors_dragging):
+            actor.SetPosition(pos0)
+
+        if accept: # accept the drag
+            if self.accept_drag_callback is None:
+                raise Exception('Accept drag callback not assinged')
+            self.accept_drag_callback(self.draginfo)
+
+        else:
+            # reject the drag
+            logging.info("Rejecting drag - resetting actors to original positions")
+            self.refresh_embeded_view() # need to manually refresh in this case
+
+        self.draginfo = None
+
+
+
+
+
+
     def keyPressFunction(self, obj, event):
         key = obj.GetKeySym()
+        logging.info(f"Keypress: {key}")
         if key == "Escape":
+
+            if self.draginfo is not None:
+                self.stop_drag(accept=False)
+                return
+
             if self.onEscapeKey is not None:
                 self.onEscapeKey()
+
+        elif key == "Return":
+            if self.draginfo is not None:
+                self.stop_drag(accept=True)
+                return
+
 
         elif key == "Delete":
             if self.onDeleteKey is not None:
@@ -2900,6 +3020,12 @@ class Viewport:
         elif key == "a":
             self.zoom_all()
             self.refresh_embeded_view()
+        elif key == "g":
+            if self.start_node_drag is not None:
+                if self.draginfo is None:
+                    self.start_node_drag()
+                else:
+                    self.stop_drag(accept=True)
 
     def refresh_embeded_view(self):
         if self.vtkWidget is not None:
