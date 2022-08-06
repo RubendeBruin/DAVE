@@ -407,10 +407,19 @@ def actor_from_vertices_and_faces(vertices, faces):
     return actor
 
 
-def vp_actor_from_obj(filename):
+def vp_actor_from_file(filename):
     # load the data
     filename = str(filename)
-    source = vtk.vtkOBJReader()
+
+    source = None
+    if filename.endswith("obj"):
+        source = vtk.vtkOBJReader()
+    elif filename.endswith("stl"):
+        source = vtk.vtkSTLReader()
+
+    if source is None:
+        raise NotImplementedError(f"No reader implemented for reading file {filename}")
+
     source.SetFileName(filename)
 
     # # clean the data
@@ -2187,7 +2196,7 @@ class Viewport:
 
             if isinstance(N, vf.Visual):
                 file = self.scene.get_resource_path(N.path)
-                visual = vp_actor_from_obj(file)
+                visual = vp_actor_from_file(file)
 
                 if N.visual_outline == dn.VisualOutlineType.NONE:
                     visual.no_outline = True
@@ -2236,7 +2245,7 @@ class Viewport:
 
                 # a rigidbody is also an axis
 
-                box = vp_actor_from_obj(self.scene.get_resource_path("res: cog.obj"))
+                box = vp_actor_from_file(self.scene.get_resource_path("res: cog.obj"))
 
                 box.actor_type = ActorType.COG
                 actors["x"] = actors["main"]
@@ -2509,7 +2518,7 @@ class Viewport:
                     self.screen.clear(va.actors["main"])
 
                     # update the obj
-                    va.actors["main"] = vp_actor_from_obj(file)
+                    va.actors["main"] = vp_actor_from_file(file)
                     va.actors["main"].loaded_obj = file
                     va.actors["main"].actor_type = ActorType.VISUAL
 
@@ -2907,13 +2916,30 @@ class Viewport:
         camera = self.screen.camera
 
         up = camera.GetViewUp()
-        if abs(up[2]) < 0.2:
-            factor = 1 - (5 * abs(up[2]))
-            camera.SetViewUp(
-                factor * up[0], factor * up[1], (1 - factor) + factor * up[2]
-            )
+
+        tr = 0.8
+        if up[0] > tr:
+            camera.SetViewUp(1,0,0)
+        elif up[0] < -tr:
+            camera.SetViewUp(-1,0,0)
+        elif up[1] > tr:
+            camera.SetViewUp(0, 1, 0)
+        elif up[1] < -tr:
+            camera.SetViewUp(0, -1, 0)
+        elif up[2] < 0:
+            camera.SetViewUp(0, 0, -1)
         else:
             camera.SetViewUp(0, 0, 1)
+
+
+        #
+        # if abs(up[2]) < 0.2:
+        #     factor = 1 - (5 * abs(up[2]))
+        #     camera.SetViewUp(
+        #         factor * up[0], factor * up[1], (1 - factor) + factor * up[2]
+        #     )
+        # else:
+        #     camera.SetViewUp(0, 0, 1)
 
         z = camera.GetPosition()[2]
         alpha = 1

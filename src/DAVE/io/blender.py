@@ -127,7 +127,7 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), or
             objects.append(obj)
 
 
-    elif filepath.endwith('.stl'):
+    elif filepath.endswith('.stl'):
         print('STL not yet implemented')
 
     view3d_area = get_context_area()
