@@ -1,4 +1,4 @@
-
+import logging
 import vtk as vtk
 
 
@@ -131,11 +131,12 @@ class BlenderStyle(vtk.vtkInteractorStyleUser):
             rwi = self.GetInteractor()
 
             #   // Calculate the focal depth since we'll be using it a lot
-
             camera = CurrentRenderer.GetActiveCamera()
             viewFocus = camera.GetFocalPoint()
 
-            focalDepth = viewFocus[2]
+            temp_out = [0,0,0]
+            self.ComputeWorldToDisplay(CurrentRenderer,viewFocus[0], viewFocus[1], viewFocus[2], temp_out)
+            focalDepth = temp_out[2]
 
             newPickPoint = [0, 0, 0, 0]
             x, y = rwi.GetEventPosition()
@@ -157,6 +158,12 @@ class BlenderStyle(vtk.vtkInteractorStyleUser):
                 oldPickPoint[1] - newPickPoint[1],
                 oldPickPoint[2] - newPickPoint[2],
             )
+
+            import numpy as np
+            if np.linalg.norm(motionVector) > 10:
+                logging('Unrealistic movement detected')
+
+            logging.info(f'Moving by {motionVector}')
 
             viewFocus = camera.GetFocalPoint()  # do we need to do this again? Already did this
             viewPoint = camera.GetPosition()
@@ -285,92 +292,6 @@ class BlenderStyle(vtk.vtkInteractorStyleUser):
         rwin.Frame()
 
 
-
-        #   this->Interactor->GetRenderWindow()->SetRGBACharPixelData(
-        #     0, 0, size[0] - 1, size[1] - 1, pixels, 0);
-        #   this->Interactor->GetRenderWindow()->Frame();
-
-
-        #
-        #   vtkUnsignedCharArray* tmpPixelArray = vtkUnsignedCharArray::New();
-        #   tmpPixelArray->DeepCopy(this->PixelArray);
-        #   unsigned char* pixels = tmpPixelArray->GetPointer(0);
-        #
-        #   int min[2], max[2];
-        #
-        #   min[0] =
-        #     this->StartPosition[0] <= this->EndPosition[0] ? this->StartPosition[0] : this->EndPosition[0];
-        #   if (min[0] < 0)
-        #   {
-        #     min[0] = 0;
-        #   }
-        #   if (min[0] >= size[0])
-        #   {
-        #     min[0] = size[0] - 1;
-        #   }
-        #
-        #   min[1] =
-        #     this->StartPosition[1] <= this->EndPosition[1] ? this->StartPosition[1] : this->EndPosition[1];
-        #   if (min[1] < 0)
-        #   {
-        #     min[1] = 0;
-        #   }
-        #   if (min[1] >= size[1])
-        #   {
-        #     min[1] = size[1] - 1;
-        #   }
-        #
-        #   max[0] =
-        #     this->EndPosition[0] > this->StartPosition[0] ? this->EndPosition[0] : this->StartPosition[0];
-        #   if (max[0] < 0)
-        #   {
-        #     max[0] = 0;
-        #   }
-        #   if (max[0] >= size[0])
-        #   {
-        #     max[0] = size[0] - 1;
-        #   }
-        #
-        #   max[1] =
-        #     this->EndPosition[1] > this->StartPosition[1] ? this->EndPosition[1] : this->StartPosition[1];
-        #   if (max[1] < 0)
-        #   {
-        #     max[1] = 0;
-        #   }
-        #   if (max[1] >= size[1])
-        #   {
-        #     max[1] = size[1] - 1;
-        #   }
-        #
-        #   int i;
-        #   for (i = min[0]; i <= max[0]; i++)
-        #   {
-        #     pixels[4 * (min[1] * size[0] + i)] = 255 ^ pixels[4 * (min[1] * size[0] + i)];
-        #     pixels[4 * (min[1] * size[0] + i) + 1] = 255 ^ pixels[4 * (min[1] * size[0] + i) + 1];
-        #     pixels[4 * (min[1] * size[0] + i) + 2] = 255 ^ pixels[4 * (min[1] * size[0] + i) + 2];
-        #     pixels[4 * (max[1] * size[0] + i)] = 255 ^ pixels[4 * (max[1] * size[0] + i)];
-        #     pixels[4 * (max[1] * size[0] + i) + 1] = 255 ^ pixels[4 * (max[1] * size[0] + i) + 1];
-        #     pixels[4 * (max[1] * size[0] + i) + 2] = 255 ^ pixels[4 * (max[1] * size[0] + i) + 2];
-        #   }
-        #   for (i = min[1] + 1; i < max[1]; i++)
-        #   {
-        #     pixels[4 * (i * size[0] + min[0])] = 255 ^ pixels[4 * (i * size[0] + min[0])];
-        #     pixels[4 * (i * size[0] + min[0]) + 1] = 255 ^ pixels[4 * (i * size[0] + min[0]) + 1];
-        #     pixels[4 * (i * size[0] + min[0]) + 2] = 255 ^ pixels[4 * (i * size[0] + min[0]) + 2];
-        #     pixels[4 * (i * size[0] + max[0])] = 255 ^ pixels[4 * (i * size[0] + max[0])];
-        #     pixels[4 * (i * size[0] + max[0]) + 1] = 255 ^ pixels[4 * (i * size[0] + max[0]) + 1];
-        #     pixels[4 * (i * size[0] + max[0]) + 2] = 255 ^ pixels[4 * (i * size[0] + max[0]) + 2];
-        #   }
-        #
-        #   this->Interactor->GetRenderWindow()->SetRGBACharPixelData(
-        #     0, 0, size[0] - 1, size[1] - 1, pixels, 0);
-        #   this->Interactor->GetRenderWindow()->Frame();
-        #
-        #   tmpPixelArray->Delete();
-
-
-
-
     def __init__(self):
 
         self.mode = None
@@ -401,13 +322,13 @@ if __name__ == '__main__':
     from vedo import Cube, Plotter
     from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
+
     app = QApplication()
     widget = QWidget()
-    widget.setFixedWidth(400)
+    widget.setFixedWidth(800)
     widget.setFixedHeight(400)
 
     vtkWidget = QVTKRenderWindowInteractor(widget)
-
 
     P = Plotter(qtWidget=vtkWidget)
 
@@ -415,15 +336,18 @@ if __name__ == '__main__':
         for j in range(10):
             C = Cube(pos=(2*i-4.5, 2*j-4.5, 1), side=1, c="b4")
             P += C
+    C = Cube()
+    P += C
 
     style = BlenderStyle()
+    # style = vtk.vtkInteractorStyleTrackballCamera()
 
-    invoked_style = vtk.vtkInteractorStyleTrackballCamera()
-
-    P.show(mode=-1)
+    P.show(mode=-1, viewup="z")
 
 
     P.interactor.SetInteractorStyle(style)
+
+    logging.basicConfig(level=logging.DEBUG)
 
     widget.show()
     app.exec_()
