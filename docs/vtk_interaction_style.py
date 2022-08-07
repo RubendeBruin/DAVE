@@ -12,7 +12,6 @@ widget.setFixedHeight(400)
 vtkWidget = QVTKRenderWindowInteractor(widget)
 
 
-
 C = Cube()
 P = Plotter(qtWidget=vtkWidget)
 P += C
@@ -27,11 +26,14 @@ the code below is largely a translation of https://github.com/Kitware/VTK/blob/m
 
 Interaction:
 
-Left key: select
-Left key drag: rubber band select
+Left buttton: select
+Left buttton drag: rubber band select
 
-Middle key: rotate
-Middle key + shift : pan
+Middle buttton: rotate
+Middle buttton + shift : pan
+Middle buttton + ctrl  : zoom
+
+Mouse wheel : zoom
 
 Right key: reserved for context-menu
 
@@ -44,46 +46,135 @@ LAPTOP MODE:
 
 """
 
-class BlenderStyle (vtk.vtkInteractorStyleUser):
 
+class BlenderStyle(vtk.vtkInteractorStyleUser):
     def RightButtonPress(self, obj, event):
-        self.mode = 'R'
+        self.mode = "R"
 
     def RightButtonRelease(self, obj, event):
         self.mode = None
 
     def MiddleButtonPress(self, obj, event):
-        self.mode = 'R'
+        self.MiddleButtonDown = True
 
     def MiddleButtonRelease(self, obj, event):
-        self.mode = None
+        self.MiddleButtonDown = False
 
+    def MouseWheelBackward(self, obj, event):
+        self.MoveMouseWheel(-1)
 
-
+    def MouseWheelForward(self, obj, event):
+        self.MoveMouseWheel(1)
 
     def MouseMove(self, obj, event):
 
         interactor = self.GetInteractor()
 
-        x,y  = interactor.GetEventPosition()
+        # Find the renderer that is active below the current mouse position
+        x, y = interactor.GetEventPosition()
+        self.FindPokedRenderer(
+            x, y
+        )  # sets the current renderer [this->SetCurrentRenderer(this->Interactor->FindPokedRenderer(x, y));]
 
         Shift = interactor.GetShiftKey()
         Ctrl = interactor.GetControlKey()
         Alt = interactor.GetAltKey()
 
-        self.FindPokedRenderer(x, y)
-
-        if self.mode == 'R':
+        if self.MiddleButtonDown and not Shift and not Ctrl:
             self.Rotate()
+        elif self.MiddleButtonDown and Shift and not Ctrl:
+            self.Pan()
+        elif self.MiddleButtonDown and Ctrl and not Shift:
+            self.Zoom()  # Dolly
 
         self.InvokeEvent(vtk.vtkCommand.InteractionEvent, None)
+
+    def MoveMouseWheel(self, direction):
+        interactor = self.GetInteractor()
+
+        # Find the renderer that is active below the current mouse position
+        x, y = interactor.GetEventPosition()
+        self.FindPokedRenderer(
+            x, y
+        )  # sets the current renderer [this->SetCurrentRenderer(this->Interactor->FindPokedRenderer(x, y));]
+
+        CurrentRenderer = self.GetCurrentRenderer()
+
+        if CurrentRenderer:
+            # self.GrabFocus(self.EventCallbackCommand)  # TODO: grab and release focus; possible?
+            self.StartDolly()
+            factor = self.MotionFactor * 0.2 * self.MouseWheelMotionFactor
+            self.Dolly(pow(1.1, direction*factor))
+            self.EndDolly()
+            # self.ReleaseFocus()
+
+    def LeftButtonPress(self, obj, event):
+        self.LeftButtonDown = True
+
+    def LeftButtonRelease(self, obj, event):
+        self.LeftButtonDown = False
+
+    def Zoom(self):
+        rwi = self.GetInteractor()
+        x, y = rwi.GetEventPosition()
+        xp, yp = rwi.GetLastEventPosition()
+
+        direction = y - yp
+        self.MoveMouseWheel(direction/10)
+
+
+    def Pan(self):
+
+        CurrentRenderer = self.GetCurrentRenderer()
+
+        if CurrentRenderer:
+
+            rwi = self.GetInteractor()
+
+            #   // Calculate the focal depth since we'll be using it a lot
+
+            camera = CurrentRenderer.GetActiveCamera()
+            viewFocus = camera.GetFocalPoint()
+
+            focalDepth = viewFocus[2]
+
+            newPickPoint = [0, 0, 0, 0]
+            x, y = rwi.GetEventPosition()
+            self.ComputeDisplayToWorld(CurrentRenderer, x, y, focalDepth, newPickPoint)
+
+            #   // Has to recalc old mouse point since the viewport has moved,
+            #   // so can't move it outside the loop
+
+            oldPickPoint = [0, 0, 0, 0]
+            xp, yp = rwi.GetLastEventPosition()
+            self.ComputeDisplayToWorld(
+                CurrentRenderer, xp, yp, focalDepth, oldPickPoint
+            )
+            #
+            #   // Camera motion is reversed
+            #
+            motionVector = (
+                oldPickPoint[0] - newPickPoint[0],
+                oldPickPoint[1] - newPickPoint[1],
+                oldPickPoint[2] - newPickPoint[2],
+            )
+
+            viewFocus = camera.GetFocalPoint()  # do we need to do this again? Already did this
+            viewPoint = camera.GetPosition()
+
+            camera.SetFocalPoint(motionVector[0] + viewFocus[0], motionVector[1] + viewFocus[1], motionVector[2] + viewFocus[2])
+            camera.SetPosition(motionVector[0] + viewPoint[0], motionVector[1] + viewPoint[1], motionVector[2] + viewPoint[2])
+
+            if rwi.GetLightFollowCamera():
+                CurrentRenderer.UpdateLightsGeometryToFollowCamera()
+
+            rwi.Render()
 
     def Rotate(self):
 
         CurrentRenderer = self.GetCurrentRenderer()
 
         if CurrentRenderer:
-            print('rotating!')
 
             rwi = self.GetInteractor()
             dx = rwi.GetEventPosition()[0] - rwi.GetLastEventPosition()[0]
@@ -110,19 +201,42 @@ class BlenderStyle (vtk.vtkInteractorStyleUser):
 
             rwi.Render()
 
+    def Dolly(self, factor):
+        CurrentRenderer = self.GetCurrentRenderer()
+
+        if CurrentRenderer:
+            camera = CurrentRenderer.GetActiveCamera()
+
+            if camera.GetParallelProjection():
+                camera.SetParallelScale(camera.GetParallelScale / factor)
+            else:
+                camera.Dolly(factor)
+                if self.GetAutoAdjustCameraClippingRange():
+                    CurrentRenderer.ResetCameraClippingRange()
+
+            rwi = self.GetInteractor()
+            if rwi.GetLightFollowCamera():
+                CurrentRenderer.UpdateLightsGeometryToFollowCamera()
+
+            rwi.Render()
 
     def __init__(self):
 
         self.mode = None
         self.MotionFactor = 10
+        self.MouseWheelMotionFactor = 0.5
+
+        self.MiddleButtonDown = False
 
         self.AddObserver(vtk.vtkCommand.RightButtonPressEvent, self.RightButtonPress)
         self.AddObserver(vtk.vtkCommand.RightButtonReleaseEvent, self.RightButtonRelease)
         self.AddObserver(vtk.vtkCommand.MiddleButtonPressEvent, self.MiddleButtonPress)
-        self.AddObserver(vtk.vtkCommand.MiddleButtonReleaseEvent, self.MiddleButtonRelease)
-        # self.AddObserver(vtk.vtkCommand.LeftButtonPressEvent, LeftButtonPress)
+        self.AddObserver(vtk.vtkCommand.MiddleButtonReleaseEvent, self.MiddleButtonRelease )
+        self.AddObserver(vtk.vtkCommand.MouseWheelForwardEvent, self.MouseWheelForward )
+        self.AddObserver(vtk.vtkCommand.MouseWheelBackwardEvent, self.MouseWheelBackward )
+        self.AddObserver(vtk.vtkCommand.LeftButtonPressEvent, LeftButtonPress)
+        self.AddObserver(vtk.vtkCommand.LeftButtonReleaseEvent, LeftButtonRelease)
         self.AddObserver(vtk.vtkCommand.MouseMoveEvent, self.MouseMove)
-
 
 
 style = BlenderStyle()
@@ -138,34 +252,6 @@ widget.show()
 app.exec_()
 
 """
-Skip to content
-Search or jump to…
-Pulls
-Issues
-Marketplace
-Explore
- 
-@RubendeBruin 
-Kitware
-/
-VTK
-Public
-Code
-Pull requests
-1
-Actions
-Projects
-Security
-Insights
-VTK/Interaction/Style/vtkInteractorStyleTrackballCamera.cxx
-@seanm
-seanm Corrected some slightly-wrong (70-90 char long) function separator co…
-…
-Latest commit bd6903e on May 6, 2020
- History
- 2 contributors
-@kwrobot@seanm
-470 lines (383 sloc)  12.5 KB
 
 /*=========================================================================
   Program:   Visualization Toolkit
@@ -410,43 +496,7 @@ void vtkInteractorStyleTrackballCamera::OnMouseWheelBackward()
 }
 
 //------------------------------------------------------------------------------
-void vtkInteractorStyleTrackballCamera::Rotate()
-{
-  if (this->CurrentRenderer == nullptr)
-  {
-    return;
-  }
 
-  vtkRenderWindowInteractor* rwi = this->Interactor;
-
-  int dx = rwi->GetEventPosition()[0] - rwi->GetLastEventPosition()[0];
-  int dy = rwi->GetEventPosition()[1] - rwi->GetLastEventPosition()[1];
-
-  const int* size = this->CurrentRenderer->GetRenderWindow()->GetSize();
-
-  double delta_elevation = -20.0 / size[1];
-  double delta_azimuth = -20.0 / size[0];
-
-  double rxf = dx * delta_azimuth * this->MotionFactor;
-  double ryf = dy * delta_elevation * this->MotionFactor;
-
-  vtkCamera* camera = this->CurrentRenderer->GetActiveCamera();
-  camera->Azimuth(rxf);
-  camera->Elevation(ryf);
-  camera->OrthogonalizeViewUp();
-
-  if (this->AutoAdjustCameraClippingRange)
-  {
-    this->CurrentRenderer->ResetCameraClippingRange();
-  }
-
-  if (rwi->GetLightFollowCamera())
-  {
-    this->CurrentRenderer->UpdateLightsGeometryToFollowCamera();
-  }
-
-  rwi->Render();
-}
 
 //------------------------------------------------------------------------------
 void vtkInteractorStyleTrackballCamera::Spin()
@@ -474,55 +524,7 @@ void vtkInteractorStyleTrackballCamera::Spin()
 }
 
 //------------------------------------------------------------------------------
-void vtkInteractorStyleTrackballCamera::Pan()
-{
-  if (this->CurrentRenderer == nullptr)
-  {
-    return;
-  }
 
-  vtkRenderWindowInteractor* rwi = this->Interactor;
-
-  double viewFocus[4], focalDepth, viewPoint[3];
-  double newPickPoint[4], oldPickPoint[4], motionVector[3];
-
-  // Calculate the focal depth since we'll be using it a lot
-
-  vtkCamera* camera = this->CurrentRenderer->GetActiveCamera();
-  camera->GetFocalPoint(viewFocus);
-  this->ComputeWorldToDisplay(viewFocus[0], viewFocus[1], viewFocus[2], viewFocus);
-  focalDepth = viewFocus[2];
-
-  this->ComputeDisplayToWorld(
-    rwi->GetEventPosition()[0], rwi->GetEventPosition()[1], focalDepth, newPickPoint);
-
-  // Has to recalc old mouse point since the viewport has moved,
-  // so can't move it outside the loop
-
-  this->ComputeDisplayToWorld(
-    rwi->GetLastEventPosition()[0], rwi->GetLastEventPosition()[1], focalDepth, oldPickPoint);
-
-  // Camera motion is reversed
-
-  motionVector[0] = oldPickPoint[0] - newPickPoint[0];
-  motionVector[1] = oldPickPoint[1] - newPickPoint[1];
-  motionVector[2] = oldPickPoint[2] - newPickPoint[2];
-
-  camera->GetFocalPoint(viewFocus);
-  camera->GetPosition(viewPoint);
-  camera->SetFocalPoint(
-    motionVector[0] + viewFocus[0], motionVector[1] + viewFocus[1], motionVector[2] + viewFocus[2]);
-
-  camera->SetPosition(
-    motionVector[0] + viewPoint[0], motionVector[1] + viewPoint[1], motionVector[2] + viewPoint[2]);
-
-  if (rwi->GetLightFollowCamera())
-  {
-    this->CurrentRenderer->UpdateLightsGeometryToFollowCamera();
-  }
-
-  rwi->Render();
-}
 
 //------------------------------------------------------------------------------
 void vtkInteractorStyleTrackballCamera::Dolly()
