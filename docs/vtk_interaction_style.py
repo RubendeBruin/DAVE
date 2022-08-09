@@ -117,12 +117,15 @@ class BlenderStyle(vtk.vtkInteractorStyleUser):
     def LeftButtonRelease(self, obj, event):
         self.LeftButtonDown = False
 
-        props = self.PerformPickingOnSelection()
+        if self.callbackSelect:
+            props = self.PerformPickingOnSelection()
 
-        for prop in props:
-            prop.GetProperty().SetColor(0,254,254)
-        if props:
-            props[0].GetProperty().SetColor(254,254,0)
+            for prop in props:
+                prop.GetProperty().SetColor(0,254,254)
+            if props:
+                props[0].GetProperty().SetColor(254,254,0)
+
+            self.callbackSelect(props)
 
         # remove the selection rubber band / line
         rwi = self.GetInteractor()
@@ -138,65 +141,84 @@ class BlenderStyle(vtk.vtkInteractorStyleUser):
         self.start_x, self.start_y, self.end_x, self.end_y
         """
 
-        if self.selection_length() < self.selection_length_threshold:
+        # if self.selection_length() < self.selection_length_threshold:
+        #
+        #     logging.info('Picking along line')
+        #
+        #     picker = vtk.vtkPropPicker()
+        #
+        #     xs, ys = self.LineToPixels(self.start_x, self.end_x, self.start_y, self.end_y)
+        #     current_renderer = self.GetCurrentRenderer()
+        #
+        #     # start picking in the middle of the line,
+        #     # and work towards the endpoints
+        #
+        #     n = len(xs)
+        #     hd = n // 2  # integer division
+        #
+        #     ii = []
+        #     if 2*hd == n: # even
+        #         ii.append(hd)
+        #         for i in range(1,hd):
+        #             ii.append(hd-i)
+        #             ii.append(hd + i)
+        #         ii.append(0)
+        #
+        #     else: # odd
+        #         ii.append(hd)
+        #         for i in range(1,hd+1):
+        #             ii.append(hd-i)
+        #             ii.append(hd + i)
+        #
+        #     for i in ii:
+        #         logging.info(f'Picking index {i}')
+        #         if picker.Pick(xs[i], ys[i], 0, current_renderer):
+        #             return [picker.GetProp3D()]
+        #
+        #     logging.info('Picking along line done, did not find anything')
+        #
+        #     return []
+        #
+        # else:
+        renderer = self.GetCurrentRenderer()
 
-            logging.info('Picking along line')
+        # define a minimum area for picking (a bit of fuzzy picking)
+        if self.start_x == self.end_x:
+            self.start_x -=2
+            self.end_x += 2
+        if self.start_y == self.end_y:
+            self.start_y -=2
+            self.end_y += 2
 
-            picker = vtk.vtkPropPicker()
 
-            xs, ys = self.LineToPixels(self.start_x, self.end_x, self.start_y, self.end_y)
-            current_renderer = self.GetCurrentRenderer()
+        assemblyPath = renderer.PickProp(self.start_x, self.start_y, self.end_x, self.end_y)
 
-            # start picking in the middle of the line,
-            # and work towards the endpoints
-
-            n = len(xs)
-            hd = n // 2  # integer division
-
-            ii = []
-            if 2*hd == n: # even
-                ii.append(hd)
-                for i in range(1,hd):
-                    ii.append(hd-i)
-                    ii.append(hd + i)
-                ii.append(0)
-
-            else: # odd
-                ii.append(hd)
-                for i in range(1,hd+1):
-                    ii.append(hd-i)
-                    ii.append(hd + i)
-
-            for i in ii:
-                logging.info(f'Picking index {i}')
-                if picker.Pick(xs[i], ys[i], 0, current_renderer):
-                    return [picker.GetProp3D()]
-
-            logging.info('Picking along line done, did not find anything')
-
-            return []
-
-        else:
-            renderer = self.GetCurrentRenderer()
+        # re-pick in larger area if nothing is returned
+        if not assemblyPath:
+            logging.info('Did not find anything in this area, extending by 2px to all sides and picking again')
+            self.start_x -= 2
+            self.end_x += 2
+            self.start_y -= 2
+            self.end_y += 2
             assemblyPath = renderer.PickProp(self.start_x, self.start_y, self.end_x, self.end_y)
 
-            # The nearest prop (by Z-value)
-            if assemblyPath:
-                logging.info(f'Renderer Pick returned {assemblyPath.GetNumberOfItems()} items in assembly-path')
-                assert assemblyPath.GetNumberOfItems() == 1, "Wrong assumption on number of returned nodes when picking"
-                nearest_prop = assemblyPath.GetItemAsObject(0).GetViewProp()
+        # The nearest prop (by Z-value)
+        if assemblyPath:
+            logging.info(f'Renderer Pick returned {assemblyPath.GetNumberOfItems()} items in assembly-path')
+            assert assemblyPath.GetNumberOfItems() == 1, "Wrong assumption on number of returned nodes when picking"
+            nearest_prop = assemblyPath.GetItemAsObject(0).GetViewProp()
 
-                # all props
-                collection = renderer.GetPickResultProps()
-                props = [collection.GetItemAsObject(i) for i in range(collection.GetNumberOfItems())]
+            # all props
+            collection = renderer.GetPickResultProps()
+            props = [collection.GetItemAsObject(i) for i in range(collection.GetNumberOfItems())]
 
-                props.remove(nearest_prop)
-                props.insert(0,nearest_prop)
+            props.remove(nearest_prop)
+            props.insert(0,nearest_prop)
 
-                return props
+            return props
 
-            else:
-                return []
+        else:
+            return []
 
 
 
@@ -322,17 +344,13 @@ class BlenderStyle(vtk.vtkInteractorStyleUser):
     def DrawDraggedSelection(self):
         rwi = self.GetInteractor()
         self.end_x, self.end_y = rwi.GetEventPosition()
-
-        if self.selection_length() > self.selection_length_threshold:
-            self.DrawRubberBand(self.start_x, self.end_x, self.start_y,self.end_y)
-        else:
-            self.DrawLine(self.start_x, self.end_x, self.start_y,self.end_y)
+        self.DrawRubberBand(self.start_x, self.end_x, self.start_y,self.end_y)
 
 
-    def selection_length(self):
-        """Returns the distance between the two corners of the selection as dragged by the mouse while holding the left button"""
-
-        return ((self.start_x - self.end_x)**2 + (self.start_y-self.end_y)**2)**0.5
+    # def selection_length(self):
+    #     """Returns the distance between the two corners of the selection as dragged by the mouse while holding the left button"""
+    #
+    #     return ((self.start_x - self.end_x)**2 + (self.start_y-self.end_y)**2)**0.5
 
     def InitializeScreenDrawing(self):
         # make an image of the currently rendered image
@@ -442,15 +460,26 @@ class BlenderStyle(vtk.vtkInteractorStyleUser):
 
     def __init__(self):
 
-        self.mode = None
+        # Callbacks
+        #
+        # Callback can be assigned to functions
+        #
+        # callbackSelect is called whenever one or mode props are selected.
+        # callback will be called with a list of props of which the first entry
+        # is prop closest to the camera.
+        self.callbackSelect = None
+
+        # settings
+
         self.MotionFactor = 10
         self.MouseWheelMotionFactor = 0.5
+
+        # internals
 
         self.start_x = 0  # start of a drag
         self.start_y = 0
         self.end_x = 0
         self.end_y = 0
-        self.selection_length_threshold = 25 # change from line to area (pixels)
 
         self.PixelArray = vtk.vtkUnsignedCharArray() # holds an image of the renderer output at the start of a drawing event
 
@@ -542,6 +571,14 @@ if __name__ == '__main__':
     iren.Initialize()
 
     style = BlenderStyle()
+
+    def onSelect(props): # callback when props are selected
+        for prop in props:
+            prop.GetProperty().SetColor(0.3,0.3,1)
+        props[0].GetProperty().SetColor(1,0.5 , 0)  # color the nearest prop orange
+
+    style.callbackSelect = onSelect
+
     iren.SetInteractorStyle(style)
 
     renWin.Render()
