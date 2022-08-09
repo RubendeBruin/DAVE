@@ -16,15 +16,17 @@ Rubber band code
 Interaction:
 
 Left buttton: select
-Left buttton drag: rubber band select
+Left buttton drag: rubber band select or line select, depends on the dragged distance 
 
-Middle buttton: rotate
-Middle buttton + shift : pan
-Middle buttton + ctrl  : zoom
+Middle button: rotate
+Middle button + shift : pan
+Middle button + ctrl  : zoom
+Middle button + alt   : zoom rubber band --> TODO : see https://gitlab.kitware.com/updega2/vtk/-/blob/d324b2e898b0da080edee76159c2f92e6f71abe2/Rendering/vtkInteractorStyleRubberBandZoom.cxx
 
 Mouse wheel : zoom
 
-Right key: reserved for context-menu
+Right key click: reserved for context-menu
+
 
 LAPTOP MODE:
 
@@ -76,7 +78,8 @@ class BlenderStyle(vtk.vtkInteractorStyleUser):
         elif self.MiddleButtonDown and Ctrl and not Shift:
             self.Zoom()  # Dolly
         elif self.LeftButtonDown:
-            self.DrawRubberBand()
+            self.DrawDraggedSelection()
+
 
         self.InvokeEvent(vtk.vtkCommand.InteractionEvent, None)
 
@@ -104,14 +107,98 @@ class BlenderStyle(vtk.vtkInteractorStyleUser):
 
         rwi = self.GetInteractor()
         self.start_x, self.start_y = rwi.GetEventPosition()
+        self.end_x = self.start_x
+        self.end_y = self.start_y
 
         self.InitializeScreenDrawing()
 
 
+
     def LeftButtonRelease(self, obj, event):
         self.LeftButtonDown = False
+
+        props = self.PerformPickingOnSelection()
+
+        for prop in props:
+            prop.GetProperty().SetColor(0,254,254)
+        if props:
+            props[0].GetProperty().SetColor(254,254,0)
+
+        # remove the selection rubber band / line
         rwi = self.GetInteractor()
         rwi.Render()
+
+    def PerformPickingOnSelection(self):
+        """Preforms prop3d picking on the current dragged selection
+
+        If the distance between the start and endpoints is less than the threshold
+        then a SINGLE prop3d is picked along the line
+
+        the selection area is drawn by the rubber band and is defined by
+        self.start_x, self.start_y, self.end_x, self.end_y
+        """
+
+        if self.selection_length() < self.selection_length_threshold:
+
+            logging.info('Picking along line')
+
+            picker = vtk.vtkPropPicker()
+
+            xs, ys = self.LineToPixels(self.start_x, self.end_x, self.start_y, self.end_y)
+            current_renderer = self.GetCurrentRenderer()
+
+            # start picking in the middle of the line,
+            # and work towards the endpoints
+
+            n = len(xs)
+            hd = n // 2  # integer division
+
+            ii = []
+            if 2*hd == n: # even
+                ii.append(hd)
+                for i in range(1,hd):
+                    ii.append(hd-i)
+                    ii.append(hd + i)
+                ii.append(0)
+
+            else: # odd
+                ii.append(hd)
+                for i in range(1,hd+1):
+                    ii.append(hd-i)
+                    ii.append(hd + i)
+
+            for i in ii:
+                logging.info(f'Picking index {i}')
+                if picker.Pick(xs[i], ys[i], 0, current_renderer):
+                    return [picker.GetProp3D()]
+
+            logging.info('Picking along line done, did not find anything')
+
+            return []
+
+        else:
+            renderer = self.GetCurrentRenderer()
+            assemblyPath = renderer.PickProp(self.start_x, self.start_y, self.end_x, self.end_y)
+
+            # The nearest prop (by Z-value)
+            if assemblyPath:
+                logging.info(f'Renderer Pick returned {assemblyPath.GetNumberOfItems()} items in assembly-path')
+                assert assemblyPath.GetNumberOfItems() == 1, "Wrong assumption on number of returned nodes when picking"
+                nearest_prop = assemblyPath.GetItemAsObject(0).GetViewProp()
+
+                # all props
+                collection = renderer.GetPickResultProps()
+                props = [collection.GetItemAsObject(i) for i in range(collection.GetNumberOfItems())]
+
+                props.remove(nearest_prop)
+                props.insert(0,nearest_prop)
+
+                return props
+
+            else:
+                return []
+
+
 
     def Zoom(self):
         rwi = self.GetInteractor()
@@ -199,6 +286,12 @@ class BlenderStyle(vtk.vtkInteractorStyleUser):
             camera.Elevation(ryf)
             camera.OrthogonalizeViewUp()
 
+            #
+            #  Automatic camera leveling
+            #
+
+            # Update
+
             if self.GetAutoAdjustCameraClippingRange():
                 CurrentRenderer.ResetCameraClippingRange()
 
@@ -226,6 +319,21 @@ class BlenderStyle(vtk.vtkInteractorStyleUser):
 
             rwi.Render()
 
+    def DrawDraggedSelection(self):
+        rwi = self.GetInteractor()
+        self.end_x, self.end_y = rwi.GetEventPosition()
+
+        if self.selection_length() > self.selection_length_threshold:
+            self.DrawRubberBand(self.start_x, self.end_x, self.start_y,self.end_y)
+        else:
+            self.DrawLine(self.start_x, self.end_x, self.start_y,self.end_y)
+
+
+    def selection_length(self):
+        """Returns the distance between the two corners of the selection as dragged by the mouse while holding the left button"""
+
+        return ((self.start_x - self.end_x)**2 + (self.start_y-self.end_y)**2)**0.5
+
     def InitializeScreenDrawing(self):
         # make an image of the currently rendered image
 
@@ -242,33 +350,32 @@ class BlenderStyle(vtk.vtkInteractorStyleUser):
         rwin.GetRGBACharPixelData(0, 0, size[0] - 1, size[1] - 1, front, self.PixelArray)
 
 
-    def DrawRubberBand(self):
+    def DrawRubberBand(self, x1,x2,y1,y2):
         rwi = self.GetInteractor()
         rwin = rwi.GetRenderWindow()
-
-        x, y = rwi.GetEventPosition()
 
         size = rwin.GetSize()
 
         tempPA = vtk.vtkUnsignedCharArray()
         tempPA.DeepCopy(self.PixelArray)
 
-        x = min(x, size[0]-1)
-        y = min(y, size[1]-1)
+        x2 = min(x2, size[0]-1)
+        y2 = min(y2, size[1]-1)
 
-        x = max(x, 0)
-        y = max(y, 0)
+        x2 = max(x2, 0)
+        y2 = max(y2, 0)
 
         # Modify the pixel array
-        width = abs(x-self.start_x)
-        height = abs(y-self.start_y)
-        minx = min(x, self.start_x)
-        miny = min(y, self.start_y)
+        width = abs(x2-x1)
+        height = abs(y2-y1)
+        minx = min(x2, x1)
+        miny = min(y2, y1)
 
         # draw top and bottom
         for i in range(width):
 
-            c = round((10*i % 254)/254) * 254  # find some alternating color
+            #c = round((10*i % 254)/254) * 254  # find some alternating color
+            c = 0
 
             id = (miny * size[0]) + minx + i
             tempPA.SetTuple(id, (c,c,c,1))
@@ -278,7 +385,8 @@ class BlenderStyle(vtk.vtkInteractorStyleUser):
 
         # draw left and right
         for i in range(height):
-            c = round((10 * i % 254) / 254) * 254  # find some alternating color
+            # c = round((10 * i % 254) / 254) * 254  # find some alternating color
+            c = 0
 
             id = ((miny + i) * size[0]) + minx
             tempPA.SetTuple(id, (c, c, c, 1))
@@ -291,6 +399,46 @@ class BlenderStyle(vtk.vtkInteractorStyleUser):
         rwin.SetRGBACharPixelData(0, 0, size[0] - 1, size[1] - 1, tempPA, 0)
         rwin.Frame()
 
+    def LineToPixels(self, x1,x2,y1,y2):
+        """Returns the x and y values of the pixels on a line between x1,y1 and x2,y2.
+        If start and end are identical then a single point is returned"""
+
+        dx = x2 - x1
+        dy = y2 - y1
+
+        if dx==0 and dy==0:
+            return [x1],[y1]
+
+        if abs(dx) > abs(dy):
+            dhdw = dy / dx
+            r = range(0,dx,int(dx/abs(dx)))
+            x = [x1 + i for i in r]
+            y = [round(y1 + dhdw*i) for i in r]
+        else:
+            dwdh = dx / dy
+            r = range(0,dy,int(dy/abs(dy)))
+            y = [y1 + i for i in r]
+            x = [round(x1 + i * dwdh) for i in r]
+
+        return x,y
+
+    def DrawLine(self, x1,x2,y1,y2):
+        rwi = self.GetInteractor()
+        rwin = rwi.GetRenderWindow()
+
+        size = rwin.GetSize()
+
+        tempPA = vtk.vtkUnsignedCharArray()
+        tempPA.DeepCopy(self.PixelArray)
+
+        xs,ys = self.LineToPixels(x1,x2,y1,y2)
+        for x,y in zip(xs,ys):
+            id = (y * size[0]) + x
+            tempPA.SetTuple(id, (0,0,0, 1))
+
+        # and Copy back to the window
+        rwin.SetRGBACharPixelData(0, 0, size[0] - 1, size[1] - 1, tempPA, 0)
+        rwin.Frame()
 
     def __init__(self):
 
@@ -300,6 +448,9 @@ class BlenderStyle(vtk.vtkInteractorStyleUser):
 
         self.start_x = 0  # start of a drag
         self.start_y = 0
+        self.end_x = 0
+        self.end_y = 0
+        self.selection_length_threshold = 25 # change from line to area (pixels)
 
         self.PixelArray = vtk.vtkUnsignedCharArray() # holds an image of the renderer output at the start of a drawing event
 
@@ -318,37 +469,86 @@ class BlenderStyle(vtk.vtkInteractorStyleUser):
 
 
 if __name__ == '__main__':
-    from PySide2.QtWidgets import QWidget, QApplication
-    from vedo import Cube, Plotter
-    from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
+    import vtkmodules.vtkInteractionStyle
+    from vtkmodules.vtkCommonColor import vtkNamedColors
+    from vtkmodules.vtkFiltersSources import vtkCubeSource, vtkLineSource
+    from vtkmodules.vtkRenderingCore import (
+        vtkActor,
+        vtkPolyDataMapper,
+        vtkRenderWindow,
+        vtkRenderWindowInteractor,
+        vtkRenderer
+    )
 
-    app = QApplication()
-    widget = QWidget()
-    widget.setFixedWidth(800)
-    widget.setFixedHeight(400)
+    colors = vtkNamedColors()
 
-    vtkWidget = QVTKRenderWindowInteractor(widget)
+    # Create a rendering window and renderer.
+    ren = vtkRenderer()
+    renWin = vtkRenderWindow()
+    renWin.SetWindowName('Custom interactor style - Python')
+    renWin.AddRenderer(ren)
 
-    P = Plotter(qtWidget=vtkWidget)
+    iren = vtkRenderWindowInteractor()
+    iren.SetRenderWindow(renWin)
 
+    # Create some cubes.
     for i in range(10):
         for j in range(10):
-            C = Cube(pos=(2*i-4.5, 2*j-4.5, 1), side=1, c="b4")
-            P += C
-    C = Cube()
-    P += C
+
+            cube = vtkCubeSource()
+            cube.Update()
+
+            # mapper
+            cubeMapper = vtkPolyDataMapper()
+            cubeMapper.SetInputData(cube.GetOutput())
+
+            # Actor.
+            cubeActor = vtkActor()
+            cubeActor.SetMapper(cubeMapper)
+            cubeActor.GetProperty().SetColor(colors.GetColor3d('Silver'))
+
+            cubeActor.SetPosition(3*i, 3*j, 0)
+
+            # Assign actor to the renderer.
+            ren.AddActor(cubeActor)
+
+    # And create some lines
+    for i in range(10):
+        for j in range(10):
+            p0 = [0,0,30]
+            p1 = [3*i,3*j,0]
+            lineSource = vtkLineSource()
+            lineSource.SetPoint1(p0)
+            lineSource.SetPoint2(p1)
+            mapper = vtkPolyDataMapper()
+            mapper.SetInputConnection(lineSource.GetOutputPort())
+            actor = vtkActor()
+            actor.SetMapper(mapper)
+            actor.GetProperty().SetLineWidth(2)
+            actor.GetProperty().SetColor(colors.GetColor3d("Silver"))
+            ren.AddActor(actor)
+
+
+
+
+    ren.ResetCamera()
+    ren.GetActiveCamera().Azimuth(30)
+    ren.GetActiveCamera().Elevation(30)
+    ren.ResetCameraClippingRange()
+    ren.SetBackground(colors.GetColor3d('White'))
+
+    # Enable user interface interactor.
+    iren.Initialize()
 
     style = BlenderStyle()
-    # style = vtk.vtkInteractorStyleTrackballCamera()
+    iren.SetInteractorStyle(style)
 
-    P.show(mode=-1, viewup="z")
-
-
-    P.interactor.SetInteractorStyle(style)
+    renWin.Render()
 
     logging.basicConfig(level=logging.DEBUG)
+    iren.Start()
 
-    widget.show()
-    app.exec_()
+
+
 
