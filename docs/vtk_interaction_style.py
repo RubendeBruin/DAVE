@@ -295,13 +295,6 @@ class BlenderStyle(vtkInteractorStyleUser):
                 oldPickPoint[2] - newPickPoint[2],
             )
 
-            import numpy as np
-
-            if np.linalg.norm(motionVector) > 10:
-                logging("Unrealistic movement detected")
-
-            logging.info(f"Moving by {motionVector}")
-
             viewFocus = (
                 camera.GetFocalPoint()
             )  # do we need to do this again? Already did this
@@ -340,16 +333,56 @@ class BlenderStyle(vtkInteractorStyleUser):
             rxf = dx * delta_azimuth * self.MotionFactor
             ryf = dy * delta_elevation * self.MotionFactor
 
-            camera = CurrentRenderer.GetActiveCamera()
+            # rfx is rotation about the view-up vector
+            import numpy as np
 
-            camera.Azimuth(rxf)
-            camera.Elevation(ryf)
+            camera = CurrentRenderer.GetActiveCamera()
+            campos = np.array(camera.GetPosition())
+            focal = np.array(camera.GetFocalPoint())
+            up =np.array(camera.GetViewUp())
+            dir = np.array(camera.GetViewPlaneNormal())  # target towards camera
+            right = np.cross(up, dir)
+
+            distance = np.linalg.norm(campos - focal)  # focal to cam
+
+            x_cos = np.cos(np.deg2rad(rxf))
+            x_sin = np.sin(np.deg2rad(rxf))
+
+            y_cos = np.cos(np.deg2rad(ryf))
+            y_sin = np.sin(np.deg2rad(ryf))
+
+            new_pos = focal + \
+                      y_cos * x_cos * distance * dir + x_sin * right * distance + \
+                      y_sin * distance * up
+
+            camera.SetPosition(new_pos)
             camera.OrthogonalizeViewUp()
 
             #
             #  Automatic camera leveling
             #
 
+            up = camera.GetViewUp()
+            dir = camera.GetViewPlaneNormal()
+
+            perp = ( -dir[1],
+                     dir[0],
+                     0)
+
+            # component of up-vector perpendicular to Direction/Z plane
+            comp = perp[0]*up[0] + perp[1]*up[1] # perp[2] is zero
+
+            correction = [comp * perp[0], comp*perp[1], 0] # perp[2] is zero
+
+            f = 1
+
+            camera.SetViewUp(up[0] - f*correction[0],
+                             up[1] - f*correction[1],
+                             up[2] - f*correction[2])
+
+            camera.OrthogonalizeViewUp()
+
+            #
             # Update
 
             if self.GetAutoAdjustCameraClippingRange():
