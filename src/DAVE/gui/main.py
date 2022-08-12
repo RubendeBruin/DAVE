@@ -65,6 +65,7 @@ from copy import deepcopy
 import logging
 
 from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter
+from DAVE.gui.helpers.vtkBlenderLikeInteractionStyle import DragInfo
 from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
 from DAVE.gui.widget_footprints import WidgetFootprints
 from DAVE.gui.widget_limits import WidgetLimits
@@ -95,7 +96,7 @@ from PySide2.QtWidgets import (
 from DAVE.scene import Scene
 
 from DAVE.gui.forms.main_form import Ui_MainWindow
-from DAVE.visual import Viewport, ActorType, DelayRenderingTillDone, DragInfo
+from DAVE.visual import Viewport, ActorType, DelayRenderingTillDone
 from DAVE.gui import new_node_dialog
 import DAVE.gui.standard_assets
 from DAVE.gui.forms.dlg_solver import Ui_Dialog
@@ -343,7 +344,7 @@ class Gui:
         self.visual.update_visibility()  # apply paint
         self.visual.add_new_node_actors_to_screen()
 
-        self.visual.mouseLeftEvent = self.view3d_select_element
+        self.visual.Style.callbackSelect = self.view3d_select_element
         self.visual.focus_on_selected_object = self.focus_on_selected_object
 
         # right-click event for
@@ -356,10 +357,11 @@ class Gui:
 
         # ------ key-presses -----
 
-        self.visual.onEscapeKey = self.escPressed
-        self.visual.onDeleteKey = self.delete_key
-        self.visual.start_node_drag = self.start_node_drag
-        self.visual.accept_drag_callback = self.node_dragged
+        self.visual.Style.callbackEscapeKey = self.escPressed
+        self.visual.Style.callbackDeleteKey = self.delete_key
+        self.visual.Style.callbackFocusKey = self.focus_on_selected_object
+        self.visual.Style.callbackStartDrag = self.start_node_drag
+        self.visual.Style.callbackEndDrag = self.node_dragged
 
         # ------ viewport buttons ------
 
@@ -1909,12 +1911,14 @@ class Gui:
 
     # ================= viewer code ===================
 
-    def view3d_select_element(self, vtkactor):
+    def view3d_select_element(self, props):
 
-        # info is an Actor
+        # info is a list of props
+        # at least a single prop is present
         #
         # we need to find the corresponding node
-        node = self.visual.node_from_vtk_actor(vtkactor)
+
+        node = self.visual.node_from_vtk_actor(props[0])
 
         if node is None:
             print("Could not find node for this actor")
@@ -2120,10 +2124,8 @@ class Gui:
 
     def start_node_drag(self):
         """Start node drag in viewport
-
         Actual selection shall be a single node
         That single node shall be movable (extends Frame, Point, Visual)
-
         """
 
         # only works on one node
@@ -2132,6 +2134,7 @@ class Gui:
             return
 
         node = self.selected_nodes[0]
+        self._dragged_node = node
 
         if isinstance(node, (Frame, Point)):
 
@@ -2146,17 +2149,15 @@ class Gui:
 
             # logging.info("Mouse grabbed from main window")
 
-    def node_dragged(self, info : DragInfo):  # callback from ViewPort
+    def node_dragged(self, info : DragInfo):  # callback from self.visual.Style
         """Apply the translation of the dragged node"""
 
-        node = info.dragged_node
+        node = self._dragged_node
         old_position = np.array(node.global_position)
         new_position = old_position + info.delta
 
-        code = f"s['{node.name}'].global_position = ({new_position[0]},{new_position[1]},{new_position[2]})"
+        code = f"s['{node.name}'].global_position = ({new_position[0]:.3f},{new_position[1]:.3f},{new_position[2]:.3f})"
         self.run_code(code,guiEventType.MODEL_STATE_CHANGED, store_undo=True)
-
-
 
 
 # ======================================
