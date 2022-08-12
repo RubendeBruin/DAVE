@@ -554,9 +554,9 @@ class Gui:
         self.ui.actionCamera_reset.triggered.connect(self.camera_reset)
         #
 
-        self.ui.pbTop.clicked.connect(lambda: self.camera_set_direction((0, 0, -1)))
-        self.ui.pbFront.clicked.connect(lambda: self.camera_set_direction((-1, 0, 0)))
-        self.ui.pbSide.clicked.connect(lambda: self.camera_set_direction((0, 1, 0)))
+        self.ui.pbTop.clicked.connect(self.visual.Style.SetViewZ)
+        self.ui.pbFront.clicked.connect(self.visual.Style.SetViewY)
+        self.ui.pbSide.clicked.connect(self.visual.Style.SetViewX)
         self.ui.pb3D.clicked.connect(self.toggle_2D)
 
         self.ui.actionPython_console_2.triggered.connect(
@@ -841,12 +841,9 @@ class Gui:
 
         if self.selected_nodes:
             node = self.selected_nodes[0]
-
             visual = self.visual.actor_from_node(node)
             position = visual.center_position
-
             print(f"focusing camera to {node.name} at {position}")
-
             self.visual.focus_on(position)
 
             self.refresh_3dview()
@@ -1521,12 +1518,12 @@ class Gui:
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def camera_set_direction(self, vector):
-        self.visual.set_camera_direction(vector)
+        self.visual.Style.SetCameraPlaneDirection(vector)
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def camera_reset(self):
-        self.visual.zoom_all()
-        self.visual.refresh_embeded_view()
+        self.visual.Style.ZoomFit()
+        # self.visual.refresh_embeded_view()
 
     def toggle_SSAO(self):
         if self.ui.btnSSAO.isChecked():

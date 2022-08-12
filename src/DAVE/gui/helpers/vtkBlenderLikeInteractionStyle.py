@@ -194,15 +194,19 @@ class BlenderStyle(vtkInteractorStyleUser):
             x, y
         )  # sets the current renderer [this->SetCurrentRenderer(this->Interactor->FindPokedRenderer(x, y));]
 
+        factor = self.mouse_motion_factor * 0.2 * self.mouse_wheel_motion_factor
+        self.ZoomByStep(direction*factor)
+
+
+
+    def ZoomByStep(self, step):
         CurrentRenderer = self.GetCurrentRenderer()
 
         if CurrentRenderer:
-            # self.GrabFocus(self.EventCallbackCommand)  # TODO: grab and release focus; possible from python?
             self.StartDolly()
-            factor = self.mouse_motion_factor * 0.2 * self.mouse_wheel_motion_factor
-            self.Dolly(pow(1.1, direction * factor))
+            self.Dolly(pow(1.1, step))
             self.EndDolly()
-            # self.ReleaseFocus()
+
 
     def LeftButtonPress(self, obj, event):
 
@@ -242,8 +246,9 @@ class BlenderStyle(vtkInteractorStyleUser):
                 self.callbackSelect(props)
 
         # remove the selection rubber band / line
-        rwi = self.GetInteractor()
-        rwi.Render()
+        self.DoRender()
+        # rwi = self.GetInteractor()
+        # rwi.Render()
 
     def KeyPress(self, obj, event):
 
@@ -290,10 +295,8 @@ class BlenderStyle(vtkInteractorStyleUser):
             self.end_y = self.start_y
             self.InitializeScreenDrawing()
         elif KEY == "2" or KEY == "3":
-            renderer = self.GetCurrentRenderer()
-            camera = renderer.GetActiveCamera()
-            camera.SetParallelProjection(not bool(camera.GetParallelProjection()))
-            self.GetInteractor().Render()
+            self.ToggleParallelProjection()
+
         elif KEY == "A":
             self.ZoomFit()
         elif KEY == "X":
@@ -306,6 +309,14 @@ class BlenderStyle(vtkInteractorStyleUser):
             self.RotateDiscreteStep(1)
         elif KEY == "RIGHT":
             self.RotateDiscreteStep(-1)
+        elif KEY == "UP":
+            self.RotateTurtableBy(0,10)
+        elif KEY == "DOWN":
+            self.RotateTurtableBy(0,-10)
+        elif KEY == "PLUS":
+            self.ZoomByStep(2)
+        elif KEY == "MINUS":
+            self.ZoomByStep(-2)
         elif KEY == "F":
             if self.callbackFocusKey:
                 self.callbackFocusKey()
@@ -328,7 +339,7 @@ class BlenderStyle(vtkInteractorStyleUser):
         logging.info("window resized")
         self.InitializeScreenDrawing()
 
-    def RotateDiscreteStep(self, movement_direction, step=45):
+    def RotateDiscreteStep(self, movement_direction, step=22.5):
         """Rotates CW or CCW to the nearest 45 deg angle - includes some fuzzyness to determine about which axis"""
 
         CurrentRenderer = self.GetCurrentRenderer()
@@ -385,7 +396,17 @@ class BlenderStyle(vtkInteractorStyleUser):
 
             camera.SetViewUp(up)
             camera.OrthogonalizeViewUp()
-            self.GetInteractor().Render()
+
+            self.DoRender()
+
+            # self.GetInteractor().Render()
+
+    def ToggleParallelProjection(self):
+        renderer = self.GetCurrentRenderer()
+        camera = renderer.GetActiveCamera()
+        camera.SetParallelProjection(not bool(camera.GetParallelProjection()))
+        # self.GetInteractor().Render()
+        self.DoRender()
 
     def SetViewX(self):
         self.SetCameraPlaneDirection((1, 0, 0))
@@ -398,7 +419,8 @@ class BlenderStyle(vtkInteractorStyleUser):
 
     def ZoomFit(self):
         self.GetCurrentRenderer().ResetCamera()
-        self.GetInteractor().Render()
+        # self.GetInteractor().Render()
+        self.DoRender()
 
     def SetCameraPlaneDirection(self, direction):
         """Sets the camera to display a plane of which direction is the normal - includes logic to reverse the direction if benificial"""
@@ -429,6 +451,7 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         CurrentRenderer = self.GetCurrentRenderer()
         camera = CurrentRenderer.GetActiveCamera()
+        rwi = self.GetInteractor()
 
         pos = np.array(camera.GetPosition())
         focal = np.array(camera.GetFocalPoint())
@@ -437,12 +460,28 @@ class BlenderStyle(vtkInteractorStyleUser):
         pos = focal - dist * direction
         camera.SetPosition(pos)
 
-        if abs(direction[2]) < 0.1:
+        if abs(direction[2]) < 0.9:
             camera.SetViewUp(0, 0, 1)
+        elif direction[2] > 0.9:
+            camera.SetViewUp(0,-1,0)
+        else:
+            camera.SetViewUp(0, 1, 0)
+        self._upside_down = False
+
 
         camera.OrthogonalizeViewUp()
 
-        self.GetInteractor().Render()
+        if self.GetAutoAdjustCameraClippingRange():
+            CurrentRenderer.ResetCameraClippingRange()
+
+        if rwi.GetLightFollowCamera():
+            CurrentRenderer.UpdateLightsGeometryToFollowCamera()
+
+        if self.callbackCameraDirectionChanged:
+            self.callbackCameraDirectionChanged()
+
+        # rwi.Render()
+        self.DoRender()
 
     def PerformPickingOnSelection(self):
         """Preforms prop3d picking on the current dragged selection
@@ -606,14 +645,15 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         self.draginfo.delta = delta_inplane  # store the current delta
 
-        self.GetInteractor().Render()
+        # self.GetInteractor().Render()
+        self.DoRender()
 
     def CancelDrag(self):
         """Cancels the drag and restored the original positions of all dragged actors"""
         for pos0, actor in zip(self.draginfo.dragged_actors_original_positions, self.draginfo.actors_dragging):
             actor.SetPosition(pos0)
         self.draginfo = None
-        self.GetInteractor().Render()
+        self.DoRender()
 
     # ----------- end dragging --------------
 
@@ -683,7 +723,8 @@ class BlenderStyle(vtkInteractorStyleUser):
             if rwi.GetLightFollowCamera():
                 CurrentRenderer.UpdateLightsGeometryToFollowCamera()
 
-            rwi.Render()
+            # rwi.Render()
+            self.DoRender()
 
     def Rotate(self):
 
@@ -702,66 +743,91 @@ class BlenderStyle(vtkInteractorStyleUser):
             rxf = dx * delta_azimuth * self.mouse_motion_factor
             ryf = dy * delta_elevation * self.mouse_motion_factor
 
-            # rfx is rotation about the view-up vector
-            camera = CurrentRenderer.GetActiveCamera()
-            campos = np.array(camera.GetPosition())
-            focal = np.array(camera.GetFocalPoint())
-            up = np.array(camera.GetViewUp())
-            dir = np.array(camera.GetViewPlaneNormal())  # target towards camera
-            right = np.cross(up, dir)
+            self.RotateTurtableBy(rxf, ryf)
 
-            distance = np.linalg.norm(campos - focal)  # focal to cam
+    def RotateTurtableBy(self, rxf, ryf):
 
-            x_cos = np.cos(np.deg2rad(rxf))
-            x_sin = np.sin(np.deg2rad(rxf))
+        CurrentRenderer = self.GetCurrentRenderer()
+        rwi = self.GetInteractor()
 
-            y_cos = np.cos(np.deg2rad(ryf))
-            y_sin = np.sin(np.deg2rad(ryf))
+        # rfx is rotation about the global Z vector (turn-table mode)
+        # rfy is rotation about the side vector
 
-            new_pos = (
-                focal
-                + y_cos * x_cos * distance * dir
-                + x_sin * right * distance
-                + y_sin * distance * up
-            )
+        camera = CurrentRenderer.GetActiveCamera()
+        campos = np.array(camera.GetPosition())
+        focal = np.array(camera.GetFocalPoint())
 
-            camera.SetPosition(new_pos)
-            camera.OrthogonalizeViewUp()
+        # rotate about focal point
 
-            #
-            #  Automatic camera leveling
-            #
+        P = campos - focal  # camera position
 
-            up = camera.GetViewUp()
-            dir = camera.GetViewPlaneNormal()
+        # Rotate left/right about the global Z axis
 
-            perp = (-dir[1], dir[0], 0)
+        azi = np.arctan2(P[1], P[0])  # azimuth
+        H = np.linalg.norm(P[:2])     # horizontal distance of camera to focal point
+        elev = np.arctan2(P[2], H)    # elevation
+        D = np.linalg.norm(P)         # distance from focal point to camera
 
-            # component of up-vector perpendicular to Direction/Z plane
-            comp = perp[0] * up[0] + perp[1] * up[1]  # perp[2] is zero
+        # apply the change in azimuth and elevation
+        azi_new = azi + rxf / 60
 
-            correction = [comp * perp[0], comp * perp[1], 0]  # perp[2] is zero
+        if self._upside_down:
+            # elev = 2*np.pi - elev
+            elev_new = elev - ryf / 60
 
-            f = up[2] ** 2
+        else:
+            elev_new = elev + ryf / 60
 
-            camera.SetViewUp(
-                up[0] - f * correction[0],
-                up[1] - f * correction[1],
-                up[2] - f * correction[2],
-            )
 
-            camera.OrthogonalizeViewUp()
+        # the changed elevation changes H (D stays the same)
+        Hnew = D*np.cos(elev_new)
 
-            #
-            # Update
 
-            if self.GetAutoAdjustCameraClippingRange():
-                CurrentRenderer.ResetCameraClippingRange()
+        # calculate new camera position relative to focal point
+        Pnew = np.array((Hnew*np.cos(azi_new),
+                         Hnew*np.sin(azi_new),
+                         D*np.sin(elev_new)))
 
-            if rwi.GetLightFollowCamera():
-                CurrentRenderer.UpdateLightsGeometryToFollowCamera()
 
-            rwi.Render()
+
+        # calculate the up-direction of the camera
+        up_z = np.cos(elev_new)  # z follows directly from elevation
+        up_h = np.sin(elev_new)  # horizontal component
+
+        if self._upside_down:
+            up_z = -up_z
+            up_h = -up_h
+
+
+        up = (-up_h * np.cos(azi_new),
+              -up_h * np.sin(azi_new),
+              up_z)
+
+        new_pos = focal + Pnew
+
+        camera.SetViewUp(up)
+        camera.SetPosition(new_pos)
+
+        camera.OrthogonalizeViewUp()
+
+        # Update
+
+        if self.GetAutoAdjustCameraClippingRange():
+            CurrentRenderer.ResetCameraClippingRange()
+
+        if rwi.GetLightFollowCamera():
+            CurrentRenderer.UpdateLightsGeometryToFollowCamera()
+
+        if self.callbackCameraDirectionChanged:
+            self.callbackCameraDirectionChanged()
+
+        # # are we upside down?
+        # print(np.cos(elev), np.cos(elev_new))
+        if np.cos(elev) * np.cos(elev_new) < 0:
+            self._upside_down = not self._upside_down
+
+        self.DoRender()
+
 
     def ZoomBox(self, x1, y1, x2, y2):
         """Zooms to a box"""
@@ -830,7 +896,8 @@ class BlenderStyle(vtkInteractorStyleUser):
         else:
             camera.Zoom(size[1] / height)
 
-        self.GetInteractor().Render()
+        # self.GetInteractor().Render()
+        self.DoRender()
 
     def FocusOn(self, prop3D):
         """Move the camera to focus on this particular prop3D"""
@@ -859,7 +926,8 @@ class BlenderStyle(vtkInteractorStyleUser):
         if rwi.GetLightFollowCamera():
             CurrentRenderer.UpdateLightsGeometryToFollowCamera()
 
-        rwi.Render()
+        # rwi.Render()
+        self.DoRender()
 
     def Dolly(self, factor):
         CurrentRenderer = self.GetCurrentRenderer()
@@ -878,7 +946,8 @@ class BlenderStyle(vtkInteractorStyleUser):
             if rwi.GetLightFollowCamera():
                 CurrentRenderer.UpdateLightsGeometryToFollowCamera()
 
-            rwi.Render()
+            # rwi.Render()
+            self.DoRender()
 
     def DrawDraggedSelection(self):
         rwi = self.GetInteractor()
@@ -1025,7 +1094,11 @@ class BlenderStyle(vtkInteractorStyleUser):
             self.GetCurrentRenderer().AddActor(self.middle_mouse_lock_actor)
 
         self.middle_mouse_lock_actor.SetVisibility(self.middle_mouse_lock)
+        self.DoRender()
+
+    def DoRender(self):
         self.GetInteractor().Render()
+
 
     def __init__(self):
 
@@ -1073,6 +1146,8 @@ class BlenderStyle(vtkInteractorStyleUser):
         self._pixel_array = (
             vtkUnsignedCharArray()
         )  # holds an image of the renderer output at the start of a drawing event
+
+        self._upside_down = False
 
         self._left_button_down = False
         self._middle_button_down = False
@@ -1205,9 +1280,17 @@ if __name__ == "__main__":
 
     style.callbackAnyKey = lambda x : print(f'Key {x} pressed - return True to prevent further processing')
 
+
+
     iren.SetInteractorStyle(style)
+
+
 
     renWin.Render()
 
     logging.basicConfig(level=logging.DEBUG)
+
+
+
     iren.Start()
+

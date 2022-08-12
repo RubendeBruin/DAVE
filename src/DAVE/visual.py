@@ -1253,14 +1253,6 @@ class Viewport:
         self.vtkWidget = None
         """Qt viewport, if any"""
 
-        self.focus_on_selected_object = None  # f key
-
-        #  --- drag functionality ---
-        # self.start_node_drag = None
-        # self.accept_drag_callback = None
-        "Function handles"
-
-
         self.Jupyter = jupyter
 
         self.settings = ViewportSettings()
@@ -1292,6 +1284,7 @@ class Viewport:
         """The colorbar for UCs is a static image"""
 
         self.Style = BlenderStyle()
+        self.Style.callbackCameraDirectionChanged = self._rotate_actors_due_to_camera_movement
 
     @staticmethod
     def show_as_qt_app(s, painters=None, sea=False, boundary_edges=False):
@@ -1674,50 +1667,9 @@ class Viewport:
 
     def toggle_2D(self):
         """Toggles between 2d and 3d mode. Returns True if mode is 2d after toggling"""
-
-
+        self.Style.ToggleParallelProjection()
         return bool(self.renderer.GetActiveCamera().GetParallelProjection())
 
-    def _set_plane_view(self, vec):
-        if np.dot(self.screen.camera.GetDirectionOfProjection(), vec) > 0.9999:
-            vec = -np.array(vec)
-        self.set_camera_direction(vec)
-        self.refresh_embeded_view()
-
-    def set2dx(self):
-        self._set_plane_view((1, 0, 0))
-
-    def set2dy(self):
-        self._set_plane_view((0, 1, 0))
-
-    def set2dz(self):
-        self._set_plane_view((0, 0, -1))
-
-    def set_camera_direction(self, vector):
-        # Points the camera in the given direction
-        camera = (
-            self.vtkWidget.GetRenderWindow()
-            .GetRenderers()
-            .GetFirstRenderer()
-            .GetActiveCamera()
-        )
-
-        vector = np.array(vector)
-        vector = vector / np.linalg.norm(vector)
-
-        if np.linalg.norm(np.cross(vector, (0, 0, 1))) < 1e-8:  # looking down
-            up = (0, 1, 0)
-        else:
-            up = (0, 0, 1)
-
-        camera.SetViewUp(up)
-        tar = np.array(camera.GetFocalPoint())
-        pos = np.array(camera.GetPosition())
-        dist = np.linalg.norm(tar - pos)
-
-        camera_position = tar - dist * vector
-
-        camera.SetPosition(camera_position)
 
     def _scaled_force_vector(self, vector):
 
