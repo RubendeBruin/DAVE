@@ -657,8 +657,6 @@ class Gui:
         splash.finish(self.MainWindow)
         self.MainWindow.show()
 
-        self.visual.camera_reset()
-
         if block:
             self.ui.pbUpdate.setVisible(False)
             self.app.exec_()
@@ -1522,7 +1520,8 @@ class Gui:
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def camera_reset(self):
-        self.visual.Style.ZoomFit()
+        self.visual.zoom_all() # this function takes care of ignoring the sea-plane
+        # self.visual.Style.ZoomFit()
         # self.visual.refresh_embeded_view()
 
     def toggle_SSAO(self):

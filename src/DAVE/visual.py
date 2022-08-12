@@ -1285,6 +1285,7 @@ class Viewport:
 
         self.Style = BlenderStyle()
         self.Style.callbackCameraDirectionChanged = self._rotate_actors_due_to_camera_movement
+        self.Style.callbackAnyKey = self.keyPressFunction
 
     @staticmethod
     def show_as_qt_app(s, painters=None, sea=False, boundary_edges=False):
@@ -1518,7 +1519,8 @@ class Viewport:
 
         self.global_visuals["sea"] = plane
         self.global_visuals["sea"].actor_type = ActorType.GLOBAL
-        self.global_visuals["sea"].no_outline = False
+        self.global_visuals["sea"].no_outline = True  # If outlines are used, then they need to be disabled
+                                                      # when performing a zoom-fit (see zoom-all)
         self.global_visuals["sea"].negative = False
 
         self.global_visuals["main"] = vp.Line((0, 0, 0), (10, 0, 0)).c("red")
@@ -1652,18 +1654,7 @@ class Viewport:
                     continue
                 A.alpha(alpha)
 
-    # style related
 
-    # TTT
-
-    def level_camera(self):
-        self.vtkWidget.GetRenderWindow().GetRenderers().GetFirstRenderer().GetActiveCamera().SetViewUp(
-            [0, 0, 1]
-        )
-        self.refresh_embeded_view()
-
-    def camera_reset(self):
-        self.vtkWidget.GetRenderWindow().GetRenderers().GetFirstRenderer().ResetCamera()
 
     def toggle_2D(self):
         """Toggles between 2d and 3d mode. Returns True if mode is 2d after toggling"""
@@ -2393,23 +2384,12 @@ class Viewport:
             r.SetPass(None)
             r.Modified()
 
-    # def onMouseLeft(self, info):
-    #
-    #     if self.mouseLeftEvent is not None:
-    #         self.mouseLeftEvent(info)
-
     def zoom_all(self):
         """Set camera to view the whole scene (ignoring the sea)"""
-
-        store = self.settings.show_global
-        self.settings.show_global = False
-        self.update_global_visibility()
-
-        for r in self.screen.renderers:
-            r.ResetCamera()
-
-        self.settings.show_global = store
-        self.update_global_visibility()
+        sea_actor = self.global_visuals["sea"]
+        sea_actor.SetUseBounds(False)
+        self.Style.ZoomFit()
+        sea_actor.SetUseBounds(True)
 
     def onMouseRight(self, info):
         if self.mouseRightEvent is not None:
@@ -2430,6 +2410,8 @@ class Viewport:
         vl.addWidget(self.vtkWidget)
         target_frame.setLayout(vl)
 
+        # self.vtkWidget.setMouseTracking(True)
+
         self.setup_screen()
         screen = self.show()
 
@@ -2442,12 +2424,6 @@ class Viewport:
 
         style = self.Style
 
-        def void_callback(x, y):
-            pass
-
-        # style.AddObserver("CharEvent", void_callback)
-        # style.AddObserver("RightButtonPressEvent", void_callback)
-        # style.AddObserver("RightButtonReleaseEvent", void_callback)
 
         iren.SetInteractorStyle(style)
 
@@ -2472,184 +2448,22 @@ class Viewport:
 
 
 
-    # def _leftmousepress(self, iren, event):
-    #     """Implements a "fuzzy" mouse pick function"""
-    #
-    #     if self.mouseLeftEvent is not None:
-    #
-    #         pos = self.screen.interactor.GetEventPosition()
-    #
-    #         picker = vtk.vtkPropPicker()
-    #
-    #         for j in range(5):
-    #
-    #             if j == 0:
-    #                 x, y = 0, 0
-    #             elif j == 1:
-    #                 x, y = -1, 1
-    #             elif j == 2:
-    #                 x, y = -1, -1
-    #             elif j == 3:
-    #                 x, y = 1, 1
-    #             else:
-    #                 x, y = 1, -1
-    #
-    #             if picker.Pick(pos[0] + 2 * x, pos[1] + 2 * y, 0, self.screen.renderer):
-    #                 actor = picker.GetActor()  # gives an Actor
-    #                 if actor is not None:
-    #                     self.mouseLeftEvent(actor)
-    #                     return
-    #
-    #                 actor = picker.GetActor2D()
-    #                 if actor is not None:
-    #                     self.mouseLeftEvent(actor)
-    #                     return
 
-    # def keep_up_up(self, obj, event_type):
-    #     """Force z-axis up"""
-    #
-    #     camera = self.screen.camera
-    #
-    #     up = camera.GetViewUp()
-    #
-    #     tr = 0.8
-    #     if up[0] > tr:
-    #         camera.SetViewUp(1,0,0)
-    #     elif up[0] < -tr:
-    #         camera.SetViewUp(-1,0,0)
-    #     elif up[1] > tr:
-    #         camera.SetViewUp(0, 1, 0)
-    #     elif up[1] < -tr:
-    #         camera.SetViewUp(0, -1, 0)
-    #     elif up[2] < 0:
-    #         camera.SetViewUp(0, 0, -1)
-    #     else:
-    #         camera.SetViewUp(0, 0, 1)
-    #
-    #
-    #     #
-    #     # if abs(up[2]) < 0.2:
-    #     #     factor = 1 - (5 * abs(up[2]))
-    #     #     camera.SetViewUp(
-    #     #         factor * up[0], factor * up[1], (1 - factor) + factor * up[2]
-    #     #     )
-    #     # else:
-    #     #     camera.SetViewUp(0, 0, 1)
-    #
-    #     z = camera.GetPosition()[2]
-    #     alpha = 1
-    #     if z < 0:
-    #
-    #         dz = camera.GetDirectionOfProjection()[2]
-    #
-    #         # alpha = (z + 10)/10
-    #         alpha = 1 - (10 * dz)
-    #         if alpha < 0:
-    #             alpha = 0
-    #
-    #     self.global_visuals["sea"].alpha(ALPHA_SEA * alpha)
-    #
-    #     self._rotate_actors_due_to_camera_movement()
+    def keyPressFunction(self, key):
+        """Most key-pressed are handled by the Style,
 
-    # =========== DRAG OF ACTORS ==========
+        here we override some specific ones.
 
-    # TTT : TODO: continue here
+        Returning True make the style ignore the key-press
 
-    def mouseMoveFunction(self, obj, event):
-        """Called whenever the mouse is moved in the interactive viewport"""
+        """
+        KEY = key.upper()
 
-        pass
-        # if self.draginfo is not None:
-        #     position2d = obj.GetEventPosition()
-        #     print(position2d)
-        #
-        #     self.worldPointPicker.Pick(position2d[0], position2d[1], 0, self.renderer)
-        #     mouse_pos_3d = self.worldPointPicker.GetPickPosition()
-        #
-        #     delta = np.array(mouse_pos_3d) -self.draginfo.start_position_3d
-        #     print(f'Delta = {delta}')
-        #     view_normal = np.array(self.renderer.GetActiveCamera().GetViewPlaneNormal())
-        #
-        #     delta_inplane = delta - view_normal * np.dot(delta, view_normal)
-        #     print(f'delta_inplane = {delta_inplane}')
-        #
-        #     for pos0, actor in zip(self.draginfo.dragged_actors_original_positions, self.draginfo.actors_dragging):
-        #         actor.SetPosition(pos0 + delta_inplane)
-        #         print(f'Set position to {pos0 + delta_inplane}')
-        #
-        #     self.draginfo.delta = delta_inplane  # store the current delta
-        #
-        #     self.refresh_embeded_view()
-
-    def stop_drag(self, accept: bool):
-        """Stops the active drag"""
-
-        # resets all dragged actors
-        for pos0, actor in zip(self.draginfo.dragged_actors_original_positions, self.draginfo.actors_dragging):
-            actor.SetPosition(pos0)
-
-        if accept: # accept the drag
-            if self.accept_drag_callback is None:
-                raise Exception('Accept drag callback not assinged')
-            self.accept_drag_callback(self.draginfo)
-
-        else:
-            # reject the drag
-            logging.info("Rejecting drag - resetting actors to original positions")
-            self.refresh_embeded_view() # need to manually refresh in this case
-
-        self.draginfo = None
-
-
-
-
-
-
-    def keyPressFunction(self, obj, event):
-        key = obj.GetKeySym()
-        logging.info(f"Keypress: {key}")
-        if key == "Escape":
-
-            if self.draginfo is not None:
-                self.stop_drag(accept=False)
-                return
-
-            if self.onEscapeKey is not None:
-                self.onEscapeKey()
-
-        elif key == "Return":
-            if self.draginfo is not None:
-                self.stop_drag(accept=True)
-                return
-
-
-        elif key == "Delete":
-            if self.onDeleteKey is not None:
-                self.onDeleteKey()
-
-        elif key == "c" or key == "f":
-            if self.focus_on_selected_object is not None:
-                self.focus_on_selected_object()
-
-        elif key == "x":
-            self.set2dx()
-        elif key == "y":
-            self.set2dy()
-        elif key == "z":
-            self.set2dz()
-            self.refresh_embeded_view()
-        elif key == "2" or key == "3":
-            self.toggle_2D()
-            self.refresh_embeded_view()
-        elif key == "a":
+        if KEY == "A":
             self.zoom_all()
             self.refresh_embeded_view()
-        elif key == "g":
-            if self.start_node_drag is not None:
-                if self.draginfo is None:
-                    self.start_node_drag()
-                else:
-                    self.stop_drag(accept=True)
+            return True
+
 
     def refresh_embeded_view(self):
         if self.vtkWidget is not None:

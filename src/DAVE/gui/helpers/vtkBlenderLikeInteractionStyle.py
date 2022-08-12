@@ -419,7 +419,6 @@ class BlenderStyle(vtkInteractorStyleUser):
 
     def ZoomFit(self):
         self.GetCurrentRenderer().ResetCamera()
-        # self.GetInteractor().Render()
         self.DoRender()
 
     def SetCameraPlaneDirection(self, direction):
@@ -436,7 +435,7 @@ class BlenderStyle(vtkInteractorStyleUser):
         current_alignment = np.dot(normal, -direction)
         logging.info(f"Current alignment = {current_alignment}")
 
-        if abs(current_alignment) > 0.999999:
+        if abs(current_alignment) > 0.9999:
             logging.info("toggling")
             direction = -np.array(normal)
         elif current_alignment > 0:  # find the nearest plane
@@ -466,8 +465,6 @@ class BlenderStyle(vtkInteractorStyleUser):
             camera.SetViewUp(0,-1,0)
         else:
             camera.SetViewUp(0, 1, 0)
-        self._upside_down = False
-
 
         camera.OrthogonalizeViewUp()
 
@@ -480,7 +477,6 @@ class BlenderStyle(vtkInteractorStyleUser):
         if self.callbackCameraDirectionChanged:
             self.callbackCameraDirectionChanged()
 
-        # rwi.Render()
         self.DoRender()
 
     def PerformPickingOnSelection(self):
@@ -542,6 +538,7 @@ class BlenderStyle(vtkInteractorStyleUser):
 
     def StartDrag(self):
         if self.callbackStartDrag:
+            logging.info("Calling callbackStartDrag")
             self.callbackStartDrag()
             return
         else:  # grab the current selection
@@ -756,28 +753,34 @@ class BlenderStyle(vtkInteractorStyleUser):
         camera = CurrentRenderer.GetActiveCamera()
         campos = np.array(camera.GetPosition())
         focal = np.array(camera.GetFocalPoint())
+        up = camera.GetViewUp()
+        upside_down = up[2]<0
+        upside_down_factor = -1 if up[2]<0 else 1
 
         # rotate about focal point
 
         P = campos - focal  # camera position
 
         # Rotate left/right about the global Z axis
-
-        azi = np.arctan2(P[1], P[0])  # azimuth
         H = np.linalg.norm(P[:2])     # horizontal distance of camera to focal point
         elev = np.arctan2(P[2], H)    # elevation
+
+        # if the camera is near the poles, then derive the azimuth from the up-vector
+        sin_elev = np.sin(elev)
+        if abs(sin_elev) < 0.8:
+            azi = np.arctan2(P[1], P[0])  # azimuth from camera position
+        else:
+            if sin_elev < -0.8:
+                azi = np.arctan2(upside_down_factor*up[1], upside_down_factor*up[0])
+            else:
+                azi = np.arctan2(-upside_down_factor*up[1], -upside_down_factor*up[0])
+
         D = np.linalg.norm(P)         # distance from focal point to camera
 
         # apply the change in azimuth and elevation
         azi_new = azi + rxf / 60
 
-        if self._upside_down:
-            # elev = 2*np.pi - elev
-            elev_new = elev - ryf / 60
-
-        else:
-            elev_new = elev + ryf / 60
-
+        elev_new = elev + upside_down_factor * ryf / 60
 
         # the changed elevation changes H (D stays the same)
         Hnew = D*np.cos(elev_new)
@@ -791,12 +794,12 @@ class BlenderStyle(vtkInteractorStyleUser):
 
 
         # calculate the up-direction of the camera
-        up_z = np.cos(elev_new)  # z follows directly from elevation
-        up_h = np.sin(elev_new)  # horizontal component
-
-        if self._upside_down:
-            up_z = -up_z
-            up_h = -up_h
+        up_z = upside_down_factor * np.cos(elev_new)  # z follows directly from elevation
+        up_h = upside_down_factor * np.sin(elev_new)  # horizontal component
+        #
+        # if upside_down:
+        #     up_z = -up_z
+        #     up_h = -up_h
 
 
         up = (-up_h * np.cos(azi_new),
@@ -820,11 +823,6 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         if self.callbackCameraDirectionChanged:
             self.callbackCameraDirectionChanged()
-
-        # # are we upside down?
-        # print(np.cos(elev), np.cos(elev_new))
-        if np.cos(elev) * np.cos(elev_new) < 0:
-            self._upside_down = not self._upside_down
 
         self.DoRender()
 
