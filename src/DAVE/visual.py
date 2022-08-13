@@ -1519,8 +1519,8 @@ class Viewport:
 
         self.global_visuals["sea"] = plane
         self.global_visuals["sea"].actor_type = ActorType.GLOBAL
-        self.global_visuals["sea"].no_outline = True  # If outlines are used, then they need to be disabled
-                                                      # when performing a zoom-fit (see zoom-all)
+        self.global_visuals["sea"].no_outline = False  # If outlines are used, then they need to be disabled
+                                                       # when performing a zoom-fit (see zoom-all)
         self.global_visuals["sea"].negative = False
 
         self.global_visuals["main"] = vp.Line((0, 0, 0), (10, 0, 0)).c("red")
@@ -1582,9 +1582,7 @@ class Viewport:
 
         outlined_actor = getattr(actor,'outlined_actor',None)
         if outlined_actor is not None:
-            print('getting from outline')
             return self.node_from_vtk_actor(outlined_actor)
-
 
         for v in self.node_visuals:
             for a in v.actors.values():
@@ -1600,6 +1598,13 @@ class Viewport:
         for v in self.node_visuals:
             if v.node is node:
                 return v
+        return None
+
+    def outline_from_actor(self, actor):
+        """Return the actor that outlines actor if any, else returns None"""
+        for a in self.node_outlines:
+            if a.parent_vp_actor == actor:
+                return a.outline_actor
         return None
 
     def add_dynamic_wave_plane(self, waveplane):
@@ -2388,6 +2393,12 @@ class Viewport:
         """Set camera to view the whole scene (ignoring the sea)"""
         sea_actor = self.global_visuals["sea"]
         sea_actor.SetUseBounds(False)
+
+        # find outline actor for sea
+        outline_node = self.outline_from_actor(sea_actor)
+        if outline_node is not None:
+            outline_node.SetUseBounds(False)  # and keep at False
+
         self.Style.ZoomFit()
         sea_actor.SetUseBounds(True)
 

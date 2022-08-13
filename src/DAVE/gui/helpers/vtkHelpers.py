@@ -1,6 +1,8 @@
 import vtk
 import numpy as np
+
 import vedo as vp
+from vtk.util.numpy_support import vtk_to_numpy
 
 import DAVE.nodes as dn
 
@@ -319,3 +321,105 @@ def create_shearline_actors(frame: dn.Frame, scale_to=2, at=None):
         at : Optional: [Frame] to report the shearline in
     """
     return _create_moment_or_shear_line("Shear", frame, scale_to, at)
+
+
+def VisualToSlice(
+    visual_node: "Visual",
+    slice_position=(0, 0, 0),
+    slice_normal=(0, 0, 1),
+    projection_x=(1, 0, 0),
+    projection_y=(0, 1, 0),
+    relative_to_slice_position = False,
+    ax=None,
+    **kwargs,
+):
+    """Slices the visual-node at global position 'slice_position' and normal 'slice_normal'. This results in a slice
+    in the global 3D space. This is then projected onto a plane defined by the two global vectors 'projection_x' and
+    'projection_y'.
+
+    If 'relative_to_slice_position' is True, then the slice is defined relative to the slice-position, otherwise the
+    global coordinates are used.
+
+    Optionally plots the result in ax
+    if provided, kwargs are passed to the plt.plot function. Otherwise the line is drawn as 'k-' and lw = 0.5
+
+    Returns x,y
+    where x and y are (2, nsegements) so segment i is defined by:
+    x[0,i], y[0,i] to x[1,i], y[1,i]
+    """
+
+    # load the node visual
+    # apply the transform
+    # -- copy-paste from DAVE.visuals
+
+    scene = visual_node._scene
+
+    file = scene.get_resource_path(visual_node.path)
+    A = vp_actor_from_file(file)
+
+    # get the local (user set) transform
+    t = vtk.vtkTransform()
+    t.Identity()
+    t.Translate(visual_node.offset)
+    t.Scale(visual_node.scale)
+
+    # calculate wxys from node.rotation
+    r = visual_node.rotation
+    angle = (r[0] ** 2 + r[1] ** 2 + r[2] ** 2) ** (0.5)
+    if angle > 0:
+        t.RotateWXYZ(angle, r[0] / angle, r[1] / angle, r[2] / angle)
+
+    # Get the parent matrix if any
+    if visual_node.parent is not None:
+        apply_parent_translation_on_transform(visual_node.parent, t)
+
+    A.SetUserTransform(t)
+
+    # do the slice
+    plane = vtk.vtkPlane()
+    plane.SetOrigin(*slice_position)
+    plane.SetNormal(*slice_normal)
+
+    cutter = vtk.vtkCutter()
+    cutter.SetCutFunction(plane)
+    cutter.SetInputData(A.polydata())
+    cutter.Update()
+
+    data = cutter.GetOutput()
+    arr1d = vtk_to_numpy(data.GetLines().GetData())
+    points3d = np.array(vtk_to_numpy(data.GetPoints().GetData()))
+
+    if relative_to_slice_position:
+        points3d -= slice_position
+
+    # project the points onto a 2d plane
+    px = points3d.dot(projection_x)
+    py = points3d.dot(projection_y)
+
+    points = np.array((px, py))
+
+    # code from vedo.Mesh.lines()
+    i = 0
+    conn = []
+    n = len(arr1d)
+    for idummy in range(n):
+        cell = [arr1d[i + k + 1] for k in range(arr1d[i])]
+        conn.append(cell)
+        i += arr1d[i] + 1
+        if i >= n:
+            break
+
+    x = [([points[0][i] for i in segment]) for segment in conn]
+    y = [([points[1][i] for i in segment]) for segment in conn]
+    x = np.array(x).transpose()
+    y = np.array(y).transpose()
+
+
+
+    if ax is not None:
+        if kwargs:
+            ax.plot(x, y, **kwargs)
+        else:
+            ax.plot(x, y, 'k-', linewidth = 0.5)
+
+    return x,y
