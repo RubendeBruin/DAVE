@@ -362,6 +362,7 @@ class Gui:
         self.visual.Style.callbackFocusKey = self.focus_on_selected_object
         self.visual.Style.callbackStartDrag = self.start_node_drag
         self.visual.Style.callbackEndDrag = self.node_dragged
+        self.visual.Style.callbackMeasure = self.measured_in_viewport
 
         # ------ viewport buttons ------
 
@@ -452,7 +453,7 @@ class Gui:
                     "self.visual.settings.geometry_scale = 0",
                     guiEventType.VIEWER_SETTINGS_UPDATE,
                 )
-                self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
+                # self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
             else:
                 self.visual.show_geometry = True
                 self.run_code(
@@ -1258,9 +1259,19 @@ class Gui:
         )
         print(self.give_clean_history())
 
+    def measured_in_viewport(self, distance):
+        self.give_feedback(f'View-plane distance = {distance:.3f}m\n (does not measure depth)')
+
     def show_exception(self, e):
         self.ui.teFeedback.setText(str(e))
         self.ui.teFeedback.setStyleSheet("background-color: pink;")
+
+    def give_feedback(self, what, style = 0):
+        self.ui.teFeedback.setText(str(what))
+        if style == 0:
+            self.ui.teFeedback.setStyleSheet("background-color: white;")
+        elif style == 1:
+            self.ui.teFeedback.setStyleSheet("background-color: pink;")
 
     def run_code(self, code, event, store_undo=False):
         """Runs the provided code
@@ -1273,6 +1284,8 @@ class Gui:
             - store_undo : store undo information AFTER running code
 
         """
+
+        start_time = datetime.datetime.now()
 
         before = self.scene._nodes.copy()
 
@@ -1307,8 +1320,12 @@ class Gui:
                     self.ui.teFeedback.append(c.stdout)
                     self.ui.teFeedback.append(str(datetime.datetime.now()))
                 else:
+
+                    end_time = datetime.datetime.now()
+                    time_diff = (end_time - start_time)
+
                     self.ui.teFeedback.append(
-                        "Succes at " + str(datetime.datetime.now())
+                        f"Completed successfully in {time_diff.total_seconds() * 1000} ms"
                     )
 
                 self._codelog.append(code)
@@ -1364,6 +1381,7 @@ class Gui:
 
             self.ui.pbExecute.setStyleSheet("")
             self.ui.pbExecute.update()
+
             self.ui.teFeedback.verticalScrollBar().setValue(
                 self.ui.teFeedback.verticalScrollBar().maximum()
             )  # scroll down all the way
@@ -2126,24 +2144,27 @@ class Gui:
 
         # only works on one node
         if len(self.selected_nodes) != 1:
-            print(f"Can not start drag - number of selected nodes should be exactly 1 but is {len(self.selected_nodes)}")
+            self.give_feedback(f"Can not start drag - number of selected nodes should be exactly 1 but is {len(self.selected_nodes)}", style=1)
             return
 
         node = self.selected_nodes[0]
-        self._dragged_node = node
 
-        if isinstance(node, (Frame, Point)):
+        nodes = [node]
 
-            logging.info(f"Starting drag on {node.name}")
-            self.visual.initialize_node_drag(node)
+        while True:
+            if isinstance(node, (Frame, Point)):
+                self._dragged_node = node
+                logging.info(f"Starting drag on {node.name}")
+                self.visual.initialize_node_drag(nodes)
+                break
 
-            # mouse move to be captured by VTK
+            parent = getattr(node, 'parent', None)
 
-            # self._old_mouse_move_event = self.ui.frame3d.mouseMoveEvent
-            # self.ui.frame3d.mouseMoveEvent = self.moveActorMouseMoveEvent
-            # self.ui.frame3d.setMouseTracking(True)
+            if parent is None:
+                break
 
-            # logging.info("Mouse grabbed from main window")
+            node = node.parent
+            nodes.append(node)
 
     def node_dragged(self, info : DragInfo):  # callback from self.visual.Style
         """Apply the translation of the dragged node"""

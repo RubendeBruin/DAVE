@@ -6,6 +6,7 @@
   Ruben de Bruin - 2019
 
 """
+import datetime
 import logging
 from copy import copy
 from pathlib import Path
@@ -229,7 +230,11 @@ class VisualOutline:
         trans.Concatenate(matrix)
         trans.Scale(self.parent_vp_actor.GetScale())
 
-        self.outline_transform.SetTransform(trans)
+        # check if they are different before setting
+        current_transform = self.outline_transform.GetTransform()
+
+        if not tranform_almost_equal(current_transform, trans):
+            self.outline_transform.SetTransform(trans)
 
         self.outline_actor.SetVisibility(
             getattr(self.parent_vp_actor, "xray", False)
@@ -566,7 +571,8 @@ class VisualActor:
             if self.node.parent is not None:
                 apply_parent_translation_on_transform(self.node.parent, t)
 
-            A.SetUserTransform(t)
+            SetUserTransformIfDifferent(A,t)
+
 
             return
 
@@ -601,7 +607,8 @@ class VisualActor:
             if self.node.parent.parent is not None:
                 apply_parent_translation_on_transform(self.node.parent.parent, t)
 
-            A.SetUserTransform(t)
+            SetUserTransformIfDifferent(A,t)
+
             return
 
         if isinstance(self.node, vf._Area):
@@ -764,7 +771,7 @@ class VisualActor:
             t = vtk.vtkTransform()
             t.Identity()
             t.Translate(self.node.global_position)
-            self.actors["main"].SetUserTransform(t)
+            SetUserTransformIfDifferent(self.actors["main"],t)
             self.actors["main"].SetScale(viewport.settings.geometry_scale)
 
             self.setLabelPosition(self.node.global_position)
@@ -786,7 +793,7 @@ class VisualActor:
                 self.actors["main"].points(temp.points())
                 self.actors["main"]._r = self.node.radius
 
-            self.actors["main"].SetUserTransform(t)
+            SetUserTransformIfDifferent(self.actors["main"],t)
             # V.actors["main"].wireframe(V.node.contact_force_magnitude > 0)
 
             if self.node.can_contact:
@@ -811,7 +818,7 @@ class VisualActor:
             t = vtk.vtkTransform()
             t.Identity()
             t.Translate(self.node.parent.to_glob_position(self.node.offset))
-            self.actors["main"].SetUserTransform(t)
+            SetUserTransformIfDifferent(self.actors["main"],t)
             self.actors["main"].SetScale(viewport.settings.geometry_scale)
             return
 
@@ -868,7 +875,7 @@ class VisualActor:
             t.Identity()
             t.Translate(self.node.parent.global_position)
             for a in self.actors.values():
-                a.SetUserTransform(t)
+                SetUserTransformIfDifferent(a, t)
 
             return
 
@@ -897,7 +904,7 @@ class VisualActor:
             scale = scale * viewport.settings.cog_scale
 
             self.actors["main"].SetScale(scale)
-            self.actors["main"].SetUserTransform(t)
+            SetUserTransformIfDifferent(self.actors["main"],t)
 
             # scale the arrows
             self.actors["x"].SetScale(viewport.settings.geometry_scale)
@@ -1320,11 +1327,17 @@ class Viewport:
 
         app.exec_()
 
-    def initialize_node_drag(self, node):
+    def initialize_node_drag(self, nodes):
         # Initialize dragging on selected node
 
-        actors = [*self.actor_from_node(node).actors.values()]
-        outlines = [ol.outline_actor for ol in self.node_outlines if ol.parent_vp_actor in actors]
+        actors = []
+        outlines = []
+
+        for node in nodes:
+            actors.extend([*self.actor_from_node(node).actors.values()])
+            outlines.extend([ol.outline_actor for ol in self.node_outlines if ol.parent_vp_actor in actors])
+
+
         self.Style.StartDragOnProps([*actors, *outlines])
 
 
@@ -2055,12 +2068,14 @@ class Viewport:
         transform = vtk.vtkTransform()
         transform.Identity()
         transform.RotateZ(self.scene.wind_direction)
-        self.wind_actor.SetUserTransform(transform)
+
+        SetUserTransformIfDifferent(self.wind_actor,transform)
 
         transform = vtk.vtkTransform()
         transform.Identity()
         transform.RotateZ(self.scene.current_direction)
-        self.current_actor.SetUserTransform(transform)
+
+        SetUserTransformIfDifferent(self.current_actor,transform)
 
         if self.scene.wind_velocity > 0:
             self.wind_actor.SetScale(1.0)

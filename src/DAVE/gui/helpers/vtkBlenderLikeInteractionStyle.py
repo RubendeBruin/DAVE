@@ -180,6 +180,8 @@ class BlenderStyle(vtkInteractorStyleUser):
             self.Zoom()  # Dolly
         elif self.draginfo is not None:
             self.ExecuteDrag()
+        elif self._left_button_down and Ctrl and Shift:
+            self.DrawMeasurement()
         elif self._left_button_down:
             self.DrawDraggedSelection()
 
@@ -217,6 +219,14 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         self._left_button_down = True
 
+        interactor = self.GetInteractor()
+        Shift = interactor.GetShiftKey()
+        Ctrl = interactor.GetControlKey()
+
+        if Shift and Ctrl:
+            if not self.GetCurrentRenderer().GetActiveCamera().GetParallelProjection():
+                self.ToggleParallelProjection()
+
         rwi = self.GetInteractor()
         self.start_x, self.start_y = rwi.GetEventPosition()
         self.end_x = self.start_x
@@ -235,15 +245,24 @@ class BlenderStyle(vtkInteractorStyleUser):
             self.FinishDrag()
             return
 
-
         self._left_button_down = False
 
-        if self.callbackSelect:
-            props = self.PerformPickingOnSelection()
+        interactor = self.GetInteractor()
 
-            if props:  # only call back if anything was selected
-                self.picked_props = tuple(props)
-                self.callbackSelect(props)
+        Shift = interactor.GetShiftKey()
+        Ctrl = interactor.GetControlKey()
+        Alt = interactor.GetAltKey()
+
+        if Ctrl and Shift:
+            pass # we were drawing the measurement
+
+        else:
+            if self.callbackSelect:
+                props = self.PerformPickingOnSelection()
+
+                if props:  # only call back if anything was selected
+                    self.picked_props = tuple(props)
+                    self.callbackSelect(props)
 
         # remove the selection rubber band / line
         self.DoRender()
@@ -354,21 +373,16 @@ class BlenderStyle(vtkInteractorStyleUser):
         ):  # horizontal view, rotate camera position about Z-axis
             angle = np.arctan2(direction[1], direction[0])
 
-            # find the nearest angle that
+            # find the nearest angle that is an integer number of steps
             if movement_direction > 0:
                 angle = step * np.floor((angle + 0.1 * step) / step) + step
             else:
                 angle = -step * np.floor(-(angle - 0.1 * step) / step) - step
 
             dist = np.linalg.norm(direction[:2])
-            #
-            # # round angle nearest
-            # angle = step * round(angle/step)
 
             direction[0] = np.cos(angle) * dist
             direction[1] = np.sin(angle) * dist
-
-            angle = np.arctan2(direction[1], direction[0])
 
             self.SetCameraDirection(direction)
 
@@ -378,28 +392,23 @@ class BlenderStyle(vtkInteractorStyleUser):
 
             angle = np.arctan2(up[1], up[0])
 
-            # find the nearest angle that
+            # find the nearest angle that is an integer number of steps
             if movement_direction > 0:
                 angle = step * np.floor((angle + 0.1 * step) / step) + step
             else:
                 angle = -step * np.floor(-(angle - 0.1 * step) / step) - step
 
             dist = np.linalg.norm(up[:2])
-            #
-            # # round angle nearest
-            # angle = step * round(angle/step)
 
             up[0] = np.cos(angle) * dist
             up[1] = np.sin(angle) * dist
 
-            angle = np.arctan2(up[1], up[0])
 
             camera.SetViewUp(up)
             camera.OrthogonalizeViewUp()
 
             self.DoRender()
 
-            # self.GetInteractor().Render()
 
     def ToggleParallelProjection(self):
         renderer = self.GetCurrentRenderer()
@@ -947,6 +956,11 @@ class BlenderStyle(vtkInteractorStyleUser):
             # rwi.Render()
             self.DoRender()
 
+    def DrawMeasurement(self):
+        rwi = self.GetInteractor()
+        self.end_x, self.end_y = rwi.GetEventPosition()
+        self.DrawLine(self.start_x, self.end_x, self.start_y, self.end_y)
+
     def DrawDraggedSelection(self):
         rwi = self.GetInteractor()
         self.end_x, self.end_y = rwi.GetEventPosition()
@@ -1049,11 +1063,18 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         return x, y
 
+
     def DrawLine(self, x1, x2, y1, y2):
         rwi = self.GetInteractor()
         rwin = rwi.GetRenderWindow()
 
         size = rwin.GetSize()
+
+        x1 = min(max(x1,0), size[0])
+        x2 = min(max(x2,0), size[0])
+        y1 = min(max(y1,0), size[1])
+        y2 = min(max(y2,0), size[1])
+
 
         tempPA = vtkUnsignedCharArray()
         tempPA.DeepCopy(self._pixel_array)
@@ -1065,6 +1086,47 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         # and Copy back to the window
         rwin.SetRGBACharPixelData(0, 0, size[0] - 1, size[1] - 1, tempPA, 0)
+
+        camera = self.GetCurrentRenderer().GetActiveCamera()
+        scale = camera.GetParallelScale()
+
+        # Set/Get the scaling used for a parallel projection, i.e.
+        #
+        # the half of the height of the viewport in world-coordinate distances.
+        # The default is 1. Note that the "scale" parameter works as an "inverse scale" — larger numbers produce smaller images. This method has no effect in perspective projection mode
+
+        half_height = size[1] / 2
+        # half_height [px] = scale [world-coordinates]
+
+        length = ((x2-x1)**2 + (y2-y1)**2)**0.5
+        meters_per_pixel = scale / half_height
+        meters = length * meters_per_pixel
+
+        if camera.GetParallelProjection():
+            print(f'Line length = {length} px = {meters} m')
+        else:
+            print('Need to be in non-perspective mode to measure. Press 2 or 3 to get there')
+
+        if self.callbackMeasure:
+            self.callbackMeasure(meters)
+
+        #
+        # # can we add something to the window here?
+        # freeType = vtk.vtkFreeTypeTools.GetInstance()
+        # textProperty = vtk.vtkTextProperty()
+        # textProperty.SetJustificationToLeft()
+        # textProperty.SetFontSize(24)
+        # textProperty.SetOrientation(25)
+        #
+        # textImage = vtk.vtkImageData()
+        # freeType.RenderString(textProperty, "a somewhat longer text", 72, textImage) # this does not give an error, assume it works
+        # #
+        # textImage.GetDimensions()
+        # textImage.GetExtent()
+        #
+        # # # Now put the textImage in the RenderWindow
+        # rwin.SetRGBACharPixelData(0, 0, size[0] - 1, size[1] - 1, textImage, 0)
+
         rwin.Frame()
 
     def UpdateMiddleMouseButtonLockActor(self):
@@ -1076,7 +1138,7 @@ class BlenderStyle(vtkInteractorStyleUser):
             textMapper.SetInput("Middle mouse lock [m or space] active")
             textProp = textMapper.GetTextProperty()
             textProp.SetFontSize(12)
-            textProp.SetFontFamilyToArial()
+            textProp.SetFontFamilyToTimes()
             textProp.BoldOff()
             textProp.ItalicOff()
             textProp.ShadowOff()
@@ -1114,6 +1176,7 @@ class BlenderStyle(vtkInteractorStyleUser):
         self.callbackDeleteKey = None
         self.callbackFocusKey = None
         self.callbackAnyKey = None
+        self.callbackMeasure = None  # callback with argument float (meters)
 
         self.callbackCameraDirectionChanged = None
 
@@ -1276,8 +1339,10 @@ if __name__ == "__main__":
     style.callbackEscapeKey = lambda : print('ESCAPE KEY PRESSED')
     style.callbackFocusKey = lambda : print('FOCUS KEY PRESSED')
 
-    style.callbackAnyKey = lambda x : print(f'Key {x} pressed - return True to prevent further processing')
+    # any key callback (fires on modifier keys as well)
+    # style.callbackAnyKey = lambda x : print(f'Key {x} pressed - return True to prevent further processing')
 
+    style.callbackMeasure = lambda x : print(f"Measure distance = {x} m")
 
 
     iren.SetInteractorStyle(style)

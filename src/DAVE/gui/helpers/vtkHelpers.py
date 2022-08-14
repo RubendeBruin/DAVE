@@ -1,3 +1,5 @@
+import logging
+
 import vtk
 import numpy as np
 
@@ -45,6 +47,31 @@ class DelayRenderingTillDone:
         for r in self.viewport.screen.renderers:
             r.DrawOn()
         self.viewport._DelayRenderingTillDone_lock = False  # release lock
+
+def SetUserTransformIfDifferent(actor: vtk.vtkProp3D, transform: vtk.vtkTransform):
+
+    user_transform = actor.GetUserTransform()
+    if user_transform:
+        if tranform_almost_equal(actor.GetUserTransform(), transform):
+            return
+
+    actor.SetUserTransform(transform)
+
+
+def tranform_almost_equal(transform1 : vtk.vtkTransform, transform2 : vtk.vtkTransform, tol = 1e-6):
+    """Returns True if the two transforms are almost equal. Testing is done on the absolute difference of the components of the matrix
+
+    Note: the values of the matrix contains both the rotation and the offset. The order of magnitude of these can be different
+    if large offsets are used.
+    """
+    m1 = transform1.GetMatrix()
+    m2 = transform2.GetMatrix()
+
+    for i in range(4):
+        for j in range(4):
+            if abs(m1.GetElement(i,j)-m2.GetElement(i,j)) > tol:
+                return False
+    return True
 
 
 def transform_to_mat4x4(transform):
