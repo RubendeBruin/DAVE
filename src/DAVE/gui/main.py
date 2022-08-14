@@ -1325,11 +1325,12 @@ class Gui:
                     time_diff = (end_time - start_time)
 
                     self.ui.teFeedback.append(
-                        f"Completed successfully in {time_diff.total_seconds() * 1000} ms"
+                        f"Completed successfully in {time_diff.total_seconds() * 1000:.0f} ms"
                     )
 
                 self._codelog.append(code)
                 self.ui.teHistory.append(code)
+                self.tidy_history()
 
                 self.ui.teHistory.verticalScrollBar().setValue(
                     self.ui.teHistory.verticalScrollBar().maximum()

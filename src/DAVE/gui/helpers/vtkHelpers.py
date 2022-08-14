@@ -57,6 +57,24 @@ def SetUserTransformIfDifferent(actor: vtk.vtkProp3D, transform: vtk.vtkTransfor
 
     actor.SetUserTransform(transform)
 
+def SetUserMatrixIfDifferent(actor: vtk.vtkProp3D, mat4x4, tol = 1e-6):
+
+    m1 = actor.GetUserMatrix()
+    if m1:
+        for i in range(4):
+            for j in range(4):
+                if abs(m1.GetElement(i, j) - mat4x4.GetElement(i, j)) > tol:
+                    actor.SetUserMatrix(mat4x4)
+                    return
+    else:
+        actor.SetUserMatrix(mat4x4)
+
+
+def SetScaleIfDifferent(actor: vtk.vtkProp3D, scale : float, tol = 1e-6):
+    current_scale = actor.GetScale()[0]  # assume all components are identical
+    if abs(current_scale-scale) > tol:
+        actor.SetScale(scale)
+
 
 def tranform_almost_equal(transform1 : vtk.vtkTransform, transform2 : vtk.vtkTransform, tol = 1e-6):
     """Returns True if the two transforms are almost equal. Testing is done on the absolute difference of the components of the matrix

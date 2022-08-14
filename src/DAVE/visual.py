@@ -772,7 +772,8 @@ class VisualActor:
             t.Identity()
             t.Translate(self.node.global_position)
             SetUserTransformIfDifferent(self.actors["main"],t)
-            self.actors["main"].SetScale(viewport.settings.geometry_scale)
+
+            SetScaleIfDifferent(self.actors["main"],viewport.settings.geometry_scale)
 
             self.setLabelPosition(self.node.global_position)
             return
@@ -819,7 +820,7 @@ class VisualActor:
             t.Identity()
             t.Translate(self.node.parent.to_glob_position(self.node.offset))
             SetUserTransformIfDifferent(self.actors["main"],t)
-            self.actors["main"].SetScale(viewport.settings.geometry_scale)
+            SetScaleIfDifferent(self.actors["main"], viewport.settings.geometry_scale)
             return
 
         if isinstance(self.node, vf.Force):
@@ -903,13 +904,14 @@ class VisualActor:
 
             scale = scale * viewport.settings.cog_scale
 
-            self.actors["main"].SetScale(scale)
+            SetScaleIfDifferent(self.actors["main"], scale)
             SetUserTransformIfDifferent(self.actors["main"],t)
 
             # scale the arrows
-            self.actors["x"].SetScale(viewport.settings.geometry_scale)
-            self.actors["y"].SetScale(viewport.settings.geometry_scale)
-            self.actors["z"].SetScale(viewport.settings.geometry_scale)
+
+            SetScaleIfDifferent(self.actors["x"],viewport.settings.geometry_scale)
+            SetScaleIfDifferent(self.actors["y"],viewport.settings.geometry_scale)
+            SetScaleIfDifferent(self.actors["z"],viewport.settings.geometry_scale)
 
             return
 
@@ -1209,8 +1211,9 @@ class VisualActor:
         if isinstance(self.node, vf.Frame):
             m44 = transform_to_mat4x4(self.node.global_transform)
             for a in self.actors.values():
-                a.SetScale(viewport.settings.geometry_scale)
-                a.SetUserMatrix(m44)
+                SetScaleIfDifferent(a, viewport.settings.geometry_scale)
+                SetUserMatrixIfDifferent(a, m44)
+
 
             return
 
@@ -1227,7 +1230,8 @@ class VisualActor:
         mat4x4 = transform_to_mat4x4(tr)
 
         for A in self.actors.values():
-            A.SetUserMatrix(mat4x4)
+            SetUserMatrixIfDifferent(A, mat4x4)
+
 
 
 class Viewport:
