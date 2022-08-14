@@ -65,7 +65,7 @@ from copy import deepcopy
 import logging
 
 from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter
-from DAVE.gui.helpers.vtkBlenderLikeInteractionStyle import DragInfo
+from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import DragInfo
 from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
 from DAVE.gui.widget_footprints import WidgetFootprints
 from DAVE.gui.widget_limits import WidgetLimits

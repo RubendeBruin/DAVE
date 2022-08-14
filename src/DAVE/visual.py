@@ -23,9 +23,10 @@ vtkmodules.qt.PyQtImpl = "PySide2"
 import vedo as vp  # ref: https://github.com/marcomusy/vedo
 import vtk
 
-from DAVE.gui.helpers.vtkBlenderLikeInteractionStyle import BlenderStyle
-
 import vedo.settings
+from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import BlenderStyle
+from DAVE.visual_helpers.vtkHelpers import create_shearline_actors, create_momentline_actors
+
 
 # vedo.settings.renderLinesAsTubes = True
 
@@ -195,7 +196,7 @@ In that case the ._vertices_changed = True flag of the outlined actor should be 
 
 """
 
-from DAVE.gui.helpers.vtkHelpers import *
+from DAVE.visual_helpers.vtkHelpers import *
 
 class ActorType(Enum):
     FORCE = 1
