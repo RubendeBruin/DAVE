@@ -48,27 +48,44 @@ class DelayRenderingTillDone:
             r.DrawOn()
         self.viewport._DelayRenderingTillDone_lock = False  # release lock
 
-def SetUserTransformIfDifferent(actor: vtk.vtkProp3D, transform: vtk.vtkTransform):
+def print_vtkMatrix44(mat):
+    for i in range(4):
+        row = [mat.GetElement(i, j) for j in range(4)]
+        print(row)
 
-    user_transform = actor.GetUserTransform()
-    if user_transform:
-        if tranform_almost_equal(actor.GetUserTransform(), transform):
-            return
 
-    actor.SetUserTransform(transform)
+def SetTransformIfDifferent(actor: vtk.vtkProp3D, transform: vtk.vtkTransform, tol = 1e-6):
+    """Does not really set the user-transform, instead just sets the real transform"""
 
-def SetUserMatrixIfDifferent(actor: vtk.vtkProp3D, mat4x4, tol = 1e-6):
+    mat1 = transform.GetMatrix()
+    SetMatrixIfDifferent(actor, mat1, tol)
 
-    m1 = actor.GetUserMatrix()
-    if m1:
-        for i in range(4):
-            for j in range(4):
-                if abs(m1.GetElement(i, j) - mat4x4.GetElement(i, j)) > tol:
-                    actor.SetUserMatrix(mat4x4)
-                    return
-    else:
-        actor.SetUserMatrix(mat4x4)
+def CompareVtkMatrices(mat0, mat1, tol=1e-6):
+    """Returns true if they are equal within tolerance"""
+    for i in range(4):
+        for j in range(4):
+            target = mat1.GetElement(i, j)
+            if abs(mat0.GetElement(i, j) - target) > tol:
+                return True
+    return False
 
+
+def SetMatrixIfDifferent(actor: vtk.vtkProp3D, mat1, tol = 1e-6):
+
+    mat0 = actor.GetMatrix()
+
+    if CompareVtkMatrices(mat0, mat1, tol):
+        x = mat1.GetElement(0,3)
+        y = mat1.GetElement(1,3)
+        z = mat1.GetElement(2,3)
+
+        actor.SetOrigin(0,0,0)
+        actor.SetPosition(x,y,z)
+
+        out = [0,0,0]
+        vtk.vtkTransform.GetOrientation(out, mat1)
+
+        actor.SetOrientation(*out)
 
 def SetScaleIfDifferent(actor: vtk.vtkProp3D, scale : float, tol = 1e-6):
     current_scale = actor.GetScale()[0]  # assume all components are identical
@@ -100,7 +117,7 @@ def transform_to_mat4x4(transform):
     return mat4x4
 
 def mat4x4_from_point_on_frame(frame : dn.Frame, local_position : tuple):
-    """Creates a mat4x4 from a point on a frame. Use result with actor.SetUserMatrix(m44)"""
+    """Creates a mat4x4 from a point on a frame. Use result with actor matrix (m44)"""
 
     mat4x4 = transform_to_mat4x4(frame.global_transform)
     pos = frame.to_glob_position(local_position)
@@ -217,7 +234,8 @@ def update_line_to_points(line_actor, points):
         source.Modified()
 
 
-def apply_parent_translation_on_transform(parent, t):
+def apply_parent_translation_on_transform(parent, t : vtk.vtkTransform):
+    """Applies the DAVE global-transform of "parent" on vtkTransform t"""
 
     if parent is None:
         return
