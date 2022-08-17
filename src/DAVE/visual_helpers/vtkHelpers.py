@@ -66,8 +66,8 @@ def CompareVtkMatrices(mat0, mat1, tol=1e-6):
         for j in range(4):
             target = mat1.GetElement(i, j)
             if abs(mat0.GetElement(i, j) - target) > tol:
-                return True
-    return False
+                return False
+    return True
 
 
 def SetMatrixIfDifferent(actor: vtk.vtkProp3D, mat1, tol = 1e-6):

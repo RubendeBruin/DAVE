@@ -429,7 +429,7 @@ class Gui:
             self.ui.menuSolve_Statics.addAction(action)
         self.update_recent_file_menu()
 
-        # -- drag drop files into grillex --
+        # -- drag drop files into DAVE --
 
         self.ui.frame3d.dropEvent = self.drop
         self.ui.frame3d.dragEnterEvent = self.drag_enter

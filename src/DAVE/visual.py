@@ -219,12 +219,12 @@ class VisualOutline:
     def update(self):
 
         # update transform
-        userTransform = self.parent_vp_actor.GetUserTransform()
+        matrix = self.parent_vp_actor.GetMatrix()
 
-        if userTransform is not None:
-            matrix = userTransform.GetMatrix()
-        else:
-            matrix = vtk.vtkMatrix4x4()
+        # if parentTransform is not None:
+        #     matrix = parentTransform.GetMatrix()
+        # else:
+        #     matrix = vtk.vtkMatrix4x4()
 
         trans = vtk.vtkTransform()
         trans.Identity()
@@ -551,7 +551,6 @@ class VisualActor:
         if isinstance(self.node, vf.Visual):
             A = self.actors["main"]
 
-            # get the local (user set) transform
             t = vtk.vtkTransform()
             t.Identity()
             t.Translate(self.node.offset)
@@ -572,7 +571,7 @@ class VisualActor:
             if self.node.parent is not None:
                 apply_parent_translation_on_transform(self.node.parent, t)
 
-            SetUserTransformIfDifferent(A,t)
+            SetTransformIfDifferent(A, t)
 
 
             return
@@ -580,7 +579,7 @@ class VisualActor:
         if isinstance(self.node, vf.Circle):
             A = self.actors["main"]
 
-            # get the local (user set) transform
+
             t = vtk.vtkTransform()
             t.Identity()
 
@@ -608,7 +607,7 @@ class VisualActor:
             if self.node.parent.parent is not None:
                 apply_parent_translation_on_transform(self.node.parent.parent, t)
 
-            SetUserTransformIfDifferent(A,t)
+            SetTransformIfDifferent(A, t)
 
             return
 
@@ -651,7 +650,7 @@ class VisualActor:
 
             top_deck = self.actors['main']
             top_deck.scale((top_length, top_width, TOP_THICKNESS), reset=True)
-            top_deck.SetUserMatrix(mat4x4_from_point_on_frame(N.parent, (0,0,-0.5*TOP_THICKNESS)))
+            SetMatrixIfDifferent(top_deck, mat4x4_from_point_on_frame(N.parent, (0,0,-0.5*TOP_THICKNESS)))
 
             # The wheels
             #
@@ -681,7 +680,7 @@ class VisualActor:
                 pos = axle_positions[i]
 
                 m44 = mat4x4_from_point_on_frame(self.node.parent, (pos[0],pos[1],-extensions[i] + WHEEL_RADIUS))
-                actor.SetUserMatrix(m44)
+                SetMatrixIfDifferent(actor, m44)
 
 
 
@@ -771,9 +770,11 @@ class VisualActor:
         if isinstance(self.node, vf.Point):
             t = vtk.vtkTransform()
             t.Identity()
-            t.Translate(self.node.global_position)
-            SetUserTransformIfDifferent(self.actors["main"],t)
 
+            t.Translate(self.node.global_position)
+
+
+            SetTransformIfDifferent(self.actors["main"], t)
             SetScaleIfDifferent(self.actors["main"],viewport.settings.geometry_scale)
 
             self.setLabelPosition(self.node.global_position)
@@ -795,7 +796,7 @@ class VisualActor:
                 self.actors["main"].points(temp.points())
                 self.actors["main"]._r = self.node.radius
 
-            SetUserTransformIfDifferent(self.actors["main"],t)
+            SetTransformIfDifferent(self.actors["main"], t)
             # V.actors["main"].wireframe(V.node.contact_force_magnitude > 0)
 
             if self.node.can_contact:
@@ -820,7 +821,7 @@ class VisualActor:
             t = vtk.vtkTransform()
             t.Identity()
             t.Translate(self.node.parent.to_glob_position(self.node.offset))
-            SetUserTransformIfDifferent(self.actors["main"],t)
+            SetTransformIfDifferent(self.actors["main"], t)
             SetScaleIfDifferent(self.actors["main"], viewport.settings.geometry_scale)
             return
 
@@ -877,7 +878,7 @@ class VisualActor:
             t.Identity()
             t.Translate(self.node.parent.global_position)
             for a in self.actors.values():
-                SetUserTransformIfDifferent(a, t)
+                SetTransformIfDifferent(a, t)
 
             return
 
@@ -898,7 +899,7 @@ class VisualActor:
             mat4x4 = transform_to_mat4x4(self.node.global_transform)
 
             for A in self.actors.values():
-                A.SetUserMatrix(mat4x4)
+                SetMatrixIfDifferent(A, mat4x4)
 
             t.PostMultiply()
             t.Concatenate(mat4x4)
@@ -906,7 +907,7 @@ class VisualActor:
             scale = scale * viewport.settings.cog_scale
 
             SetScaleIfDifferent(self.actors["main"], scale)
-            SetUserTransformIfDifferent(self.actors["main"],t)
+            SetTransformIfDifferent(self.actors["main"], t)
 
             # scale the arrows
 
@@ -953,7 +954,7 @@ class VisualActor:
                 #
                 # the source-mesh itself is updated in "add_new_actors_to_screen"
                 if changed:
-                    self.actors["main"].SetUserMatrix(mat4x4)
+                    SetMatrixIfDifferent(self.actors["main"],mat4x4)
 
             if not changed:
                 if isinstance(self.node, vf.Tank):
@@ -986,7 +987,7 @@ class VisualActor:
             # Update the CoB
             # move the CoB to the new (global!) position
             cob = self.node.cob
-            self.actors["cob"].SetUserMatrix(transform_from_point(*cob))
+            SetMatrixIfDifferent(self.actors["cob"],transform_from_point(*cob))
 
             # update water-plane
             x1, x2, y1, y2, _, _ = self.node.trimesh.get_extends()
@@ -1065,7 +1066,7 @@ class VisualActor:
 
             # Update the CoG
             # move the CoG to the new (global!) position
-            self.actors["cog"].SetUserMatrix(transform_from_point(*self.node.cog))
+            SetMatrixIfDifferent(self.actors["cog"],transform_from_point(*self.node.cog))
 
             if self.node.volume <= 1:  # the "cog node" has a volume of
                 self.actors["cog"].off()
@@ -1213,7 +1214,7 @@ class VisualActor:
             m44 = transform_to_mat4x4(self.node.global_transform)
             for a in self.actors.values():
                 SetScaleIfDifferent(a, viewport.settings.geometry_scale)
-                SetUserMatrixIfDifferent(a, m44)
+                SetMatrixIfDifferent(a, m44)
 
 
             return
@@ -1231,7 +1232,7 @@ class VisualActor:
         mat4x4 = transform_to_mat4x4(tr)
 
         for A in self.actors.values():
-            SetUserMatrixIfDifferent(A, mat4x4)
+            SetMatrixIfDifferent(A, mat4x4)
 
 
 
@@ -2074,13 +2075,13 @@ class Viewport:
         transform.Identity()
         transform.RotateZ(self.scene.wind_direction)
 
-        SetUserTransformIfDifferent(self.wind_actor,transform)
+        SetTransformIfDifferent(self.wind_actor, transform)
 
         transform = vtk.vtkTransform()
         transform.Identity()
         transform.RotateZ(self.scene.current_direction)
 
-        SetUserTransformIfDifferent(self.current_actor,transform)
+        SetTransformIfDifferent(self.current_actor, transform)
 
         if self.scene.wind_velocity > 0:
             self.wind_actor.SetScale(1.0)
@@ -2174,7 +2175,7 @@ class Viewport:
                             if va.node.parent is not None:
                                 tr = va.node.parent.global_transform
                                 mat4x4 = transform_to_mat4x4(tr)
-                                va.actors["main"].SetUserMatrix(mat4x4)
+                                SetMatrixIfDifferent(va.actors["main"],mat4x4)
 
                             else:
                                 print("Trimesh without a parent")
@@ -2525,6 +2526,7 @@ class Viewport:
         self.update_global_visibility()
         self.update_outlines()
 
+
     def update_global_visibility(self):
         """Syncs the visibility of the global actors to Viewport-settings"""
 
@@ -2581,7 +2583,7 @@ class Viewport:
                     direction, position=node.parent.global_position
                 )
 
-                actor.SetUserMatrix(transform)
+                SetMatrixIfDifferent(actor,transform)
                 if hasattr(actor, "_outline"):
                     actor._outline.update()
 
