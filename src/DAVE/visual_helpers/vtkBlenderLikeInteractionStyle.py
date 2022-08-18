@@ -1196,7 +1196,7 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         # settings
 
-        self.mouse_motion_factor = 10
+        self.mouse_motion_factor = 20
         self.mouse_wheel_motion_factor = 0.5
 
         # internals

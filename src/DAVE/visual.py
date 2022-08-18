@@ -212,6 +212,13 @@ class ActorType(Enum):
 
 
 class VisualOutline:
+    """
+
+    Actor.Data -> TransformFilter -> EdgeDetection -> Actor
+                   ^^^^^^^^^^^^^
+                   this shall match the transform of the outlined actor
+
+    """
     parent_vp_actor = None
     outline_actor = None
     outline_transform = None
@@ -219,23 +226,13 @@ class VisualOutline:
     def update(self):
 
         # update transform
-        matrix = self.parent_vp_actor.GetMatrix()
 
-        # if parentTransform is not None:
-        #     matrix = parentTransform.GetMatrix()
-        # else:
-        #     matrix = vtk.vtkMatrix4x4()
+        new_matrix = self.parent_vp_actor.GetMatrix()
+        current_matrix = self.outline_transform.GetTransform().GetMatrix()
 
-        trans = vtk.vtkTransform()
-        trans.Identity()
-        trans.Concatenate(matrix)
-        trans.Scale(self.parent_vp_actor.GetScale())
+        if not vtkMatricesAlmostEqual(new_matrix, current_matrix):
+            self.outline_transform.GetTransform().SetMatrix(new_matrix)
 
-        # check if they are different before setting
-        current_transform = self.outline_transform.GetTransform()
-
-        if not tranform_almost_equal(current_transform, trans):
-            self.outline_transform.SetTransform(trans)
 
         self.outline_actor.SetVisibility(
             getattr(self.parent_vp_actor, "xray", False)
@@ -565,7 +562,6 @@ class VisualActor:
             if angle > 0:
                 t.RotateWXYZ(angle, r[0] / angle, r[1] / angle, r[2] / angle)
 
-            # elm_matrix = t.GetMatrix()
 
             # Get the parent matrix (if any)
             if self.node.parent is not None:
@@ -836,7 +832,7 @@ class VisualActor:
 
                 endpoint = viewport._scaled_force_vector(self.node.force)
 
-                p = vp.Arrow(
+                p = vtkArrowActor(
                     startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
                 )
                 p.PickableOn()
@@ -855,7 +851,7 @@ class VisualActor:
                 viewport.screen.remove(self.actors["moment2"], render=False)
 
                 endpoint = viewport._scaled_force_vector(self.node.moment)
-                p = vp.Arrow(
+                p = vtkArrowActor(
                     startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
                 )
                 p.PickableOn()
@@ -863,14 +859,13 @@ class VisualActor:
                 p._moment = endpoint
                 self.actors["moment1"] = p
 
-                p = vp.Arrow(
-                    startPoint=0.2 * endpoint,
-                    endPoint=1.2 * endpoint,
-                    res=RESOLUTION_ARROW,
-                )
+                p = vtkArrowHeadActor(startPoint=0.96*endpoint, endPoint=1.36*endpoint,res=RESOLUTION_ARROW)
                 p.PickableOn()
                 p.actor_type = ActorType.FORCE
+
+                p.actor_type = ActorType.FORCE
                 self.actors["moment2"] = p
+
                 viewport.screen.add(self.actors["moment1"], render=False)
                 viewport.screen.add(self.actors["moment2"], render=False)
 
@@ -1822,9 +1817,9 @@ class Viewport:
 
             if isinstance(N, vf.Frame):
                 size = 1
-                ar = vp.Arrow((0, 0, 0), (size, 0, 0), res=RESOLUTION_ARROW)
-                ag = vp.Arrow((0, 0, 0), (0, size, 0), res=RESOLUTION_ARROW)
-                ab = vp.Arrow((0, 0, 0), (0, 0, size), res=RESOLUTION_ARROW)
+                ar = vtkArrowActor((0, 0, 0), (size, 0, 0), res=RESOLUTION_ARROW)
+                ag = vtkArrowActor((0, 0, 0), (0, size, 0), res=RESOLUTION_ARROW)
+                ab = vtkArrowActor((0, 0, 0), (0, 0, size), res=RESOLUTION_ARROW)
 
                 ar.actor_type = ActorType.GEOMETRY
                 ag.actor_type = ActorType.GEOMETRY
@@ -1889,7 +1884,7 @@ class Viewport:
             if isinstance(N, vf.Force):
 
                 endpoint = self._scaled_force_vector(N.force)
-                p = vp.Arrow(
+                p = vtkArrowActor(
                     startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
                 )
                 p.PickableOn()
@@ -1899,7 +1894,7 @@ class Viewport:
                 actors["main"] = p
 
                 endpoint = self._scaled_force_vector(N.moment)
-                p = vp.Arrow(
+                p = vtkArrowActor(
                     startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
                 )
                 p.PickableOn()
@@ -1907,9 +1902,7 @@ class Viewport:
                 p._moment = endpoint
                 actors["moment1"] = p
 
-                p = vp.Arrow(
-                    startPoint=0.2 * endpoint,
-                    endPoint=1.2 * endpoint,
+                p = vtkArrowHeadActor(startPoint=0.96*endpoint, endPoint=1.36*endpoint,
                     res=RESOLUTION_ARROW,
                 )
                 p.PickableOn()
