@@ -2088,7 +2088,8 @@ class Gui:
         # Get the screen position of the just selected visual
         #
         if node is not None:
-            self.move_floating_widgets_away_from_cursor()
+            if self.visual.vtkWidget.hasFocus():
+                self.move_floating_widgets_away_from_cursor()
 
         if old_selection != self.selected_nodes:
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)

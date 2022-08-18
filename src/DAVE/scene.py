@@ -689,17 +689,11 @@ class Scene:
 
         # See if we can give a good hint using fuzzy
 
-        try:
-            from rapidfuzz import process, fuzz
-
-            choices = [node.name for node in self._nodes]
-            best = process.extractOne(node_name, choices, scorer=fuzz.WRatio)
-            suggestion = f"\nDid you mean {best[0]} ?"
-        except:
-            suggestion = "[install rapidfuzz to get a suggestion]"
+        choices = [node.name for node in self._nodes]
+        suggestion = MostLikelyMatch(node_name, choices)
 
         raise ValueError(
-            'No node with name "{}". {} \nAvailable names printed above.'.format(
+            'No node with name "{}". Did you mean: "{}"? \nAvailable names printed above.'.format(
                 node_name, suggestion
             )
         )

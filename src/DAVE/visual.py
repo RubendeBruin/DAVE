@@ -11,6 +11,7 @@ import logging
 from copy import copy
 from pathlib import Path
 from typing import List
+from warnings import warn
 
 import numpy as np
 from enum import Enum
@@ -2413,7 +2414,15 @@ class Viewport:
         if outline_node is not None:
             outline_node.SetUseBounds(False)  # and keep at False
 
-        self.Style.ZoomFit()
+        # check if style can be used
+        if self.Style.GetCurrentRenderer():
+            self.Style.ZoomFit()
+        else:
+            try:
+                self.renderer.ResetCamera()  # try to use the current renderer
+            except:
+                warn('Can not perform zoom-all, no active renderer/camera')
+
         sea_actor.SetUseBounds(True)
 
     def onMouseRight(self, info):
