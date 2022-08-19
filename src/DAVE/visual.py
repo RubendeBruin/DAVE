@@ -234,14 +234,26 @@ class VisualOutline:
 
         # update transform
 
-        new_matrix = self.parent_vp_actor.GetMatrix()
+        do_silhouette = getattr(self.parent_vp_actor, "do_silhouette", True)
+        I = vtk.vtkTransform()
+        I.Identity()
 
+        if do_silhouette:
+            SetTransformIfDifferent(self.outline_actor, I) # outline actor shall have identity
 
+            new_matrix = self.parent_vp_actor.GetMatrix()
 
-        current_matrix = self.outline_transform.GetTransform().GetMatrix()
+            current_matrix = self.outline_transform.GetTransform().GetMatrix()
 
-        if not vtkMatricesAlmostEqual(new_matrix, current_matrix):
-            self.outline_transform.GetTransform().SetMatrix(new_matrix)
+            if not vtkMatricesAlmostEqual(new_matrix, current_matrix):
+                self.outline_transform.GetTransform().SetMatrix(new_matrix)
+
+        else:
+
+            if not vtkMatricesAlmostEqual(I.GetMatrix(), self.outline_transform.GetTransform().GetMatrix()):
+                self.outline_transform.SetTransform(I)
+
+            SetMatrixIfDifferent(self.outline_actor, self.parent_vp_actor.GetMatrix())  # outline transform shall have identity
 
 
         self.outline_actor.SetVisibility(
@@ -254,6 +266,9 @@ class VisualOutline:
         self.outline_actor.GetProperty().SetColor(
             color[0] / 255, color[1] / 255, color[2] / 255
         )
+
+
+
 
 
 class VisualActor:
