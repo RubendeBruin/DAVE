@@ -589,7 +589,6 @@ def vtkArrowHeadActor(
     axis = endPoint-startPoint
     length = np.linalg.norm(axis)
 
-
     axis = axis / length
 
     phi = np.arctan2(axis[1], axis[0])
@@ -597,7 +596,7 @@ def vtkArrowHeadActor(
 
     arr = vtk.vtkConeSource()
     arr.SetResolution(res)
-    arr.SetRadius(length/3)
+    arr.SetRadius(0.25)
 
     arr.Update()
 

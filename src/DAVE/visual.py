@@ -219,6 +219,12 @@ class VisualOutline:
                    ^^^^^^^^^^^^^
                    this shall match the transform of the outlined actor
 
+    This is set-up in this way to have the correct camera angle for the silhouette.
+
+    If not used silhoutte but outlines only, then the transform filter can be set to identity
+    and the transform can be applied on the actor instead. This saves re-computation in the
+    edge detection
+
     """
     parent_vp_actor = None
     outline_actor = None
@@ -229,6 +235,9 @@ class VisualOutline:
         # update transform
 
         new_matrix = self.parent_vp_actor.GetMatrix()
+
+
+
         current_matrix = self.outline_transform.GetTransform().GetMatrix()
 
         if not vtkMatricesAlmostEqual(new_matrix, current_matrix):
@@ -883,33 +892,39 @@ class VisualActor:
             # Some custom code to place and scale the Actor[3] of the body.
             # This actor should be placed at the CoG position and scaled to a solid steel block
 
-            t = vtk.vtkTransform()
-            t.Identity()
-
+            # The CoG
             if viewport.settings.cog_do_normalize:
                 scale = 1
             else:
                 scale = (self.node.mass / 8.050) ** (1 / 3)  # density of steel
+            scale = scale * viewport.settings.cog_scale
 
-            t.Translate(self.node.cog)
+            t = vtk.vtkTransform()
+            t.Identity()
+
+            t.Translate(self.node.cog)    # the set to local cog position
+            t.Scale(scale, scale, scale)  # then scale
+
+            # apply parent transform
             mat4x4 = transform_to_mat4x4(self.node.global_transform)
-
-            for A in self.actors.values():
-                SetMatrixIfDifferent(A, mat4x4)
-
             t.PostMultiply()
             t.Concatenate(mat4x4)
 
-            scale = scale * viewport.settings.cog_scale
-
-            SetScaleIfDifferent(self.actors["main"], scale)
             SetTransformIfDifferent(self.actors["main"], t)
 
-            # scale the arrows
+            # The arrows
+            t = vtk.vtkTransform()
+            t.Identity()
+            t.Scale(viewport.settings.geometry_scale,
+                    viewport.settings.geometry_scale,
+                    viewport.settings.geometry_scale)  # scale first
 
-            SetScaleIfDifferent(self.actors["x"],viewport.settings.geometry_scale)
-            SetScaleIfDifferent(self.actors["y"],viewport.settings.geometry_scale)
-            SetScaleIfDifferent(self.actors["z"],viewport.settings.geometry_scale)
+            t.PostMultiply()
+            t.Concatenate(mat4x4)  # apply position and orientatation
+
+            for key in ('x','y','z'):
+                SetTransformIfDifferent(self.actors[key], t)
+
 
             return
 
@@ -1207,10 +1222,21 @@ class VisualActor:
             return
 
         if isinstance(self.node, vf.Frame):
-            m44 = transform_to_mat4x4(self.node.global_transform)
+
+            # The arrows
+            t = vtk.vtkTransform()
+            t.Identity()
+            t.Scale(viewport.settings.geometry_scale,
+                    viewport.settings.geometry_scale,
+                    viewport.settings.geometry_scale)  # scale first
+
+
+            mat4x4 = transform_to_mat4x4(self.node.global_transform)
+            t.PostMultiply()
+            t.Concatenate(mat4x4)  # apply position and orientatation
+
             for a in self.actors.values():
-                SetScaleIfDifferent(a, viewport.settings.geometry_scale)
-                SetMatrixIfDifferent(a, m44)
+                SetTransformIfDifferent(a, t)
 
 
             return
@@ -1845,15 +1871,14 @@ class Viewport:
                 actors["main"].scale(np.sqrt(N.A))
 
             if isinstance(N, vf.RigidBody):
-                size = 1
-
                 # a rigidbody is also an axis
 
-                box = vp_actor_from_file(self.scene.get_resource_path("res: cog.obj"))
+                cog = vp_actor_from_file(self.scene.get_resource_path("res: cog.obj"))
+                cog.actor_type = ActorType.COG
 
-                box.actor_type = ActorType.COG
+                # switch the CoG to be the main actor
                 actors["x"] = actors["main"]
-                actors["main"] = box
+                actors["main"] = cog
 
             if isinstance(N, vf.Point):
                 size = 0.5

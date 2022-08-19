@@ -21,8 +21,7 @@ def MostLikelyMatch(search_for, choices) -> str:
     try:
         from rapidfuzz import process, fuzz
 
-        choices = [node.name for node in self._nodes]
-        best = process.extractOne(node_name, choices, scorer=fuzz.WRatio)
+        best = process.extractOne(search_for, choices, scorer=fuzz.WRatio)
         return best[0]
     except:
         return "[install rapidfuzz to get a suggestion]"
