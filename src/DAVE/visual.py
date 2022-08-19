@@ -11,6 +11,7 @@ import logging
 from copy import copy
 from pathlib import Path
 from typing import List
+from warnings import warn
 
 import numpy as np
 from enum import Enum
@@ -212,6 +213,19 @@ class ActorType(Enum):
 
 
 class VisualOutline:
+    """
+
+    Actor.Data -> TransformFilter -> EdgeDetection -> Actor
+                   ^^^^^^^^^^^^^
+                   this shall match the transform of the outlined actor
+
+    This is set-up in this way to have the correct camera angle for the silhouette.
+
+    If not used silhoutte but outlines only, then the transform filter can be set to identity
+    and the transform can be applied on the actor instead. This saves re-computation in the
+    edge detection
+
+    """
     parent_vp_actor = None
     outline_actor = None
     outline_transform = None
@@ -219,23 +233,28 @@ class VisualOutline:
     def update(self):
 
         # update transform
-        userTransform = self.parent_vp_actor.GetUserTransform()
 
-        if userTransform is not None:
-            matrix = userTransform.GetMatrix()
+        do_silhouette = getattr(self.parent_vp_actor, "do_silhouette", True)
+        I = vtk.vtkTransform()
+        I.Identity()
+
+        if do_silhouette:
+            SetTransformIfDifferent(self.outline_actor, I) # outline actor shall have identity
+
+            new_matrix = self.parent_vp_actor.GetMatrix()
+
+            current_matrix = self.outline_transform.GetTransform().GetMatrix()
+
+            if not vtkMatricesAlmostEqual(new_matrix, current_matrix):
+                self.outline_transform.GetTransform().SetMatrix(new_matrix)
+
         else:
-            matrix = vtk.vtkMatrix4x4()
 
-        trans = vtk.vtkTransform()
-        trans.Identity()
-        trans.Concatenate(matrix)
-        trans.Scale(self.parent_vp_actor.GetScale())
+            if not vtkMatricesAlmostEqual(I.GetMatrix(), self.outline_transform.GetTransform().GetMatrix()):
+                self.outline_transform.SetTransform(I)
 
-        # check if they are different before setting
-        current_transform = self.outline_transform.GetTransform()
+            SetMatrixIfDifferent(self.outline_actor, self.parent_vp_actor.GetMatrix())  # outline transform shall have identity
 
-        if not tranform_almost_equal(current_transform, trans):
-            self.outline_transform.SetTransform(trans)
 
         self.outline_actor.SetVisibility(
             getattr(self.parent_vp_actor, "xray", False)
@@ -247,6 +266,9 @@ class VisualOutline:
         self.outline_actor.GetProperty().SetColor(
             color[0] / 255, color[1] / 255, color[2] / 255
         )
+
+
+
 
 
 class VisualActor:
@@ -551,7 +573,6 @@ class VisualActor:
         if isinstance(self.node, vf.Visual):
             A = self.actors["main"]
 
-            # get the local (user set) transform
             t = vtk.vtkTransform()
             t.Identity()
             t.Translate(self.node.offset)
@@ -566,13 +587,12 @@ class VisualActor:
             if angle > 0:
                 t.RotateWXYZ(angle, r[0] / angle, r[1] / angle, r[2] / angle)
 
-            # elm_matrix = t.GetMatrix()
 
             # Get the parent matrix (if any)
             if self.node.parent is not None:
                 apply_parent_translation_on_transform(self.node.parent, t)
 
-            SetUserTransformIfDifferent(A,t)
+            SetTransformIfDifferent(A, t)
 
 
             return
@@ -580,7 +600,7 @@ class VisualActor:
         if isinstance(self.node, vf.Circle):
             A = self.actors["main"]
 
-            # get the local (user set) transform
+
             t = vtk.vtkTransform()
             t.Identity()
 
@@ -608,7 +628,7 @@ class VisualActor:
             if self.node.parent.parent is not None:
                 apply_parent_translation_on_transform(self.node.parent.parent, t)
 
-            SetUserTransformIfDifferent(A,t)
+            SetTransformIfDifferent(A, t)
 
             return
 
@@ -651,7 +671,7 @@ class VisualActor:
 
             top_deck = self.actors['main']
             top_deck.scale((top_length, top_width, TOP_THICKNESS), reset=True)
-            top_deck.SetUserMatrix(mat4x4_from_point_on_frame(N.parent, (0,0,-0.5*TOP_THICKNESS)))
+            SetMatrixIfDifferent(top_deck, mat4x4_from_point_on_frame(N.parent, (0,0,-0.5*TOP_THICKNESS)))
 
             # The wheels
             #
@@ -681,7 +701,7 @@ class VisualActor:
                 pos = axle_positions[i]
 
                 m44 = mat4x4_from_point_on_frame(self.node.parent, (pos[0],pos[1],-extensions[i] + WHEEL_RADIUS))
-                actor.SetUserMatrix(m44)
+                SetMatrixIfDifferent(actor, m44)
 
 
 
@@ -771,9 +791,11 @@ class VisualActor:
         if isinstance(self.node, vf.Point):
             t = vtk.vtkTransform()
             t.Identity()
-            t.Translate(self.node.global_position)
-            SetUserTransformIfDifferent(self.actors["main"],t)
 
+            t.Translate(self.node.global_position)
+
+
+            SetTransformIfDifferent(self.actors["main"], t)
             SetScaleIfDifferent(self.actors["main"],viewport.settings.geometry_scale)
 
             self.setLabelPosition(self.node.global_position)
@@ -795,7 +817,7 @@ class VisualActor:
                 self.actors["main"].points(temp.points())
                 self.actors["main"]._r = self.node.radius
 
-            SetUserTransformIfDifferent(self.actors["main"],t)
+            SetTransformIfDifferent(self.actors["main"], t)
             # V.actors["main"].wireframe(V.node.contact_force_magnitude > 0)
 
             if self.node.can_contact:
@@ -820,7 +842,7 @@ class VisualActor:
             t = vtk.vtkTransform()
             t.Identity()
             t.Translate(self.node.parent.to_glob_position(self.node.offset))
-            SetUserTransformIfDifferent(self.actors["main"],t)
+            SetTransformIfDifferent(self.actors["main"], t)
             SetScaleIfDifferent(self.actors["main"], viewport.settings.geometry_scale)
             return
 
@@ -835,7 +857,7 @@ class VisualActor:
 
                 endpoint = viewport._scaled_force_vector(self.node.force)
 
-                p = vp.Arrow(
+                p = vtkArrowActor(
                     startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
                 )
                 p.PickableOn()
@@ -854,7 +876,7 @@ class VisualActor:
                 viewport.screen.remove(self.actors["moment2"], render=False)
 
                 endpoint = viewport._scaled_force_vector(self.node.moment)
-                p = vp.Arrow(
+                p = vtkArrowActor(
                     startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
                 )
                 p.PickableOn()
@@ -862,14 +884,13 @@ class VisualActor:
                 p._moment = endpoint
                 self.actors["moment1"] = p
 
-                p = vp.Arrow(
-                    startPoint=0.2 * endpoint,
-                    endPoint=1.2 * endpoint,
-                    res=RESOLUTION_ARROW,
-                )
+                p = vtkArrowHeadActor(startPoint=0.96*endpoint, endPoint=1.36*endpoint,res=RESOLUTION_ARROW)
                 p.PickableOn()
                 p.actor_type = ActorType.FORCE
+
+                p.actor_type = ActorType.FORCE
                 self.actors["moment2"] = p
+
                 viewport.screen.add(self.actors["moment1"], render=False)
                 viewport.screen.add(self.actors["moment2"], render=False)
 
@@ -877,7 +898,7 @@ class VisualActor:
             t.Identity()
             t.Translate(self.node.parent.global_position)
             for a in self.actors.values():
-                SetUserTransformIfDifferent(a, t)
+                SetTransformIfDifferent(a, t)
 
             return
 
@@ -886,33 +907,39 @@ class VisualActor:
             # Some custom code to place and scale the Actor[3] of the body.
             # This actor should be placed at the CoG position and scaled to a solid steel block
 
-            t = vtk.vtkTransform()
-            t.Identity()
-
+            # The CoG
             if viewport.settings.cog_do_normalize:
                 scale = 1
             else:
                 scale = (self.node.mass / 8.050) ** (1 / 3)  # density of steel
+            scale = scale * viewport.settings.cog_scale
 
-            t.Translate(self.node.cog)
+            t = vtk.vtkTransform()
+            t.Identity()
+
+            t.Translate(self.node.cog)    # the set to local cog position
+            t.Scale(scale, scale, scale)  # then scale
+
+            # apply parent transform
             mat4x4 = transform_to_mat4x4(self.node.global_transform)
-
-            for A in self.actors.values():
-                A.SetUserMatrix(mat4x4)
-
             t.PostMultiply()
             t.Concatenate(mat4x4)
 
-            scale = scale * viewport.settings.cog_scale
+            SetTransformIfDifferent(self.actors["main"], t)
 
-            SetScaleIfDifferent(self.actors["main"], scale)
-            SetUserTransformIfDifferent(self.actors["main"],t)
+            # The arrows
+            t = vtk.vtkTransform()
+            t.Identity()
+            t.Scale(viewport.settings.geometry_scale,
+                    viewport.settings.geometry_scale,
+                    viewport.settings.geometry_scale)  # scale first
 
-            # scale the arrows
+            t.PostMultiply()
+            t.Concatenate(mat4x4)  # apply position and orientatation
 
-            SetScaleIfDifferent(self.actors["x"],viewport.settings.geometry_scale)
-            SetScaleIfDifferent(self.actors["y"],viewport.settings.geometry_scale)
-            SetScaleIfDifferent(self.actors["z"],viewport.settings.geometry_scale)
+            for key in ('x','y','z'):
+                SetTransformIfDifferent(self.actors[key], t)
+
 
             return
 
@@ -953,7 +980,7 @@ class VisualActor:
                 #
                 # the source-mesh itself is updated in "add_new_actors_to_screen"
                 if changed:
-                    self.actors["main"].SetUserMatrix(mat4x4)
+                    SetMatrixIfDifferent(self.actors["main"],mat4x4)
 
             if not changed:
                 if isinstance(self.node, vf.Tank):
@@ -986,7 +1013,7 @@ class VisualActor:
             # Update the CoB
             # move the CoB to the new (global!) position
             cob = self.node.cob
-            self.actors["cob"].SetUserMatrix(transform_from_point(*cob))
+            SetMatrixIfDifferent(self.actors["cob"],transform_from_point(*cob))
 
             # update water-plane
             x1, x2, y1, y2, _, _ = self.node.trimesh.get_extends()
@@ -1065,7 +1092,7 @@ class VisualActor:
 
             # Update the CoG
             # move the CoG to the new (global!) position
-            self.actors["cog"].SetUserMatrix(transform_from_point(*self.node.cog))
+            SetMatrixIfDifferent(self.actors["cog"],transform_from_point(*self.node.cog))
 
             if self.node.volume <= 1:  # the "cog node" has a volume of
                 self.actors["cog"].off()
@@ -1210,10 +1237,21 @@ class VisualActor:
             return
 
         if isinstance(self.node, vf.Frame):
-            m44 = transform_to_mat4x4(self.node.global_transform)
+
+            # The arrows
+            t = vtk.vtkTransform()
+            t.Identity()
+            t.Scale(viewport.settings.geometry_scale,
+                    viewport.settings.geometry_scale,
+                    viewport.settings.geometry_scale)  # scale first
+
+
+            mat4x4 = transform_to_mat4x4(self.node.global_transform)
+            t.PostMultiply()
+            t.Concatenate(mat4x4)  # apply position and orientatation
+
             for a in self.actors.values():
-                SetScaleIfDifferent(a, viewport.settings.geometry_scale)
-                SetUserMatrixIfDifferent(a, m44)
+                SetTransformIfDifferent(a, t)
 
 
             return
@@ -1231,7 +1269,7 @@ class VisualActor:
         mat4x4 = transform_to_mat4x4(tr)
 
         for A in self.actors.values():
-            SetUserMatrixIfDifferent(A, mat4x4)
+            SetMatrixIfDifferent(A, mat4x4)
 
 
 
@@ -1821,9 +1859,9 @@ class Viewport:
 
             if isinstance(N, vf.Frame):
                 size = 1
-                ar = vp.Arrow((0, 0, 0), (size, 0, 0), res=RESOLUTION_ARROW)
-                ag = vp.Arrow((0, 0, 0), (0, size, 0), res=RESOLUTION_ARROW)
-                ab = vp.Arrow((0, 0, 0), (0, 0, size), res=RESOLUTION_ARROW)
+                ar = vtkArrowActor((0, 0, 0), (size, 0, 0), res=RESOLUTION_ARROW)
+                ag = vtkArrowActor((0, 0, 0), (0, size, 0), res=RESOLUTION_ARROW)
+                ab = vtkArrowActor((0, 0, 0), (0, 0, size), res=RESOLUTION_ARROW)
 
                 ar.actor_type = ActorType.GEOMETRY
                 ag.actor_type = ActorType.GEOMETRY
@@ -1848,15 +1886,14 @@ class Viewport:
                 actors["main"].scale(np.sqrt(N.A))
 
             if isinstance(N, vf.RigidBody):
-                size = 1
-
                 # a rigidbody is also an axis
 
-                box = vp_actor_from_file(self.scene.get_resource_path("res: cog.obj"))
+                cog = vp_actor_from_file(self.scene.get_resource_path("res: cog.obj"))
+                cog.actor_type = ActorType.COG
 
-                box.actor_type = ActorType.COG
+                # switch the CoG to be the main actor
                 actors["x"] = actors["main"]
-                actors["main"] = box
+                actors["main"] = cog
 
             if isinstance(N, vf.Point):
                 size = 0.5
@@ -1888,7 +1925,7 @@ class Viewport:
             if isinstance(N, vf.Force):
 
                 endpoint = self._scaled_force_vector(N.force)
-                p = vp.Arrow(
+                p = vtkArrowActor(
                     startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
                 )
                 p.PickableOn()
@@ -1898,7 +1935,7 @@ class Viewport:
                 actors["main"] = p
 
                 endpoint = self._scaled_force_vector(N.moment)
-                p = vp.Arrow(
+                p = vtkArrowActor(
                     startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
                 )
                 p.PickableOn()
@@ -1906,9 +1943,7 @@ class Viewport:
                 p._moment = endpoint
                 actors["moment1"] = p
 
-                p = vp.Arrow(
-                    startPoint=0.2 * endpoint,
-                    endPoint=1.2 * endpoint,
+                p = vtkArrowHeadActor(startPoint=0.96*endpoint, endPoint=1.36*endpoint,
                     res=RESOLUTION_ARROW,
                 )
                 p.PickableOn()
@@ -2074,13 +2109,13 @@ class Viewport:
         transform.Identity()
         transform.RotateZ(self.scene.wind_direction)
 
-        SetUserTransformIfDifferent(self.wind_actor,transform)
+        SetTransformIfDifferent(self.wind_actor, transform)
 
         transform = vtk.vtkTransform()
         transform.Identity()
         transform.RotateZ(self.scene.current_direction)
 
-        SetUserTransformIfDifferent(self.current_actor,transform)
+        SetTransformIfDifferent(self.current_actor, transform)
 
         if self.scene.wind_velocity > 0:
             self.wind_actor.SetScale(1.0)
@@ -2174,7 +2209,7 @@ class Viewport:
                             if va.node.parent is not None:
                                 tr = va.node.parent.global_transform
                                 mat4x4 = transform_to_mat4x4(tr)
-                                va.actors["main"].SetUserMatrix(mat4x4)
+                                SetMatrixIfDifferent(va.actors["main"],mat4x4)
 
                             else:
                                 print("Trimesh without a parent")
@@ -2419,7 +2454,15 @@ class Viewport:
         if outline_node is not None:
             outline_node.SetUseBounds(False)  # and keep at False
 
-        self.Style.ZoomFit()
+        # check if style can be used
+        if self.Style.GetCurrentRenderer():
+            self.Style.ZoomFit()
+        else:
+            try:
+                self.renderer.ResetCamera()  # try to use the current renderer
+            except:
+                warn('Can not perform zoom-all, no active renderer/camera')
+
         sea_actor.SetUseBounds(True)
 
     def onMouseRight(self, info):
@@ -2525,6 +2568,7 @@ class Viewport:
         self.update_global_visibility()
         self.update_outlines()
 
+
     def update_global_visibility(self):
         """Syncs the visibility of the global actors to Viewport-settings"""
 
@@ -2581,7 +2625,7 @@ class Viewport:
                     direction, position=node.parent.global_position
                 )
 
-                actor.SetUserMatrix(transform)
+                SetMatrixIfDifferent(actor,transform)
                 if hasattr(actor, "_outline"):
                     actor._outline.update()
 

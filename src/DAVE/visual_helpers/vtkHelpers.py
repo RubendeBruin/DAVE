@@ -8,6 +8,7 @@ from vtk.util.numpy_support import vtk_to_numpy
 
 import DAVE.nodes as dn
 
+
 class DelayRenderingTillDone:
     """Little helper class to pause rendering and refresh using with(...)
 
@@ -48,35 +49,76 @@ class DelayRenderingTillDone:
             r.DrawOn()
         self.viewport._DelayRenderingTillDone_lock = False  # release lock
 
-def SetUserTransformIfDifferent(actor: vtk.vtkProp3D, transform: vtk.vtkTransform):
 
-    user_transform = actor.GetUserTransform()
-    if user_transform:
-        if tranform_almost_equal(actor.GetUserTransform(), transform):
-            return
-
-    actor.SetUserTransform(transform)
-
-def SetUserMatrixIfDifferent(actor: vtk.vtkProp3D, mat4x4, tol = 1e-6):
-
-    m1 = actor.GetUserMatrix()
-    if m1:
-        for i in range(4):
-            for j in range(4):
-                if abs(m1.GetElement(i, j) - mat4x4.GetElement(i, j)) > tol:
-                    actor.SetUserMatrix(mat4x4)
-                    return
-    else:
-        actor.SetUserMatrix(mat4x4)
+def print_vtkMatrix44(mat):
+    for i in range(4):
+        row = [mat.GetElement(i, j) for j in range(4)]
+        print(row)
 
 
-def SetScaleIfDifferent(actor: vtk.vtkProp3D, scale : float, tol = 1e-6):
+def SetTransformIfDifferent(
+    actor: vtk.vtkProp3D, transform: vtk.vtkTransform, tol=1e-6
+):
+    """Does not really set the user-transform, instead just sets the real transform"""
+
+    mat1 = transform.GetMatrix()
+    SetMatrixIfDifferent(actor, mat1, tol)
+
+
+def vtkMatricesAlmostEqual(mat0, mat1, tol=1e-6):
+    """Returns true if they are equal within tolerance"""
+    for i in range(4):
+        for j in range(4):
+            target = mat1.GetElement(i, j)
+            if abs(mat0.GetElement(i, j) - target) > tol:
+                return False
+    return True
+
+
+def SetMatrixIfDifferent(actor: vtk.vtkProp3D, mat1, tol=1e-6):
+
+    mat0 = actor.GetMatrix()
+
+    if not vtkMatricesAlmostEqual(mat0, mat1, tol):  # only change if not almost equal
+
+        m0 = mat1.GetElement(0, 0)
+        m1 = mat1.GetElement(0, 1)
+        m2 = mat1.GetElement(0, 2)
+        m4 = mat1.GetElement(1, 0)
+        m5 = mat1.GetElement(1, 1)
+        m6 = mat1.GetElement(1, 2)
+        m8 = mat1.GetElement(2, 0)
+        m9 = mat1.GetElement(2, 1)
+        m10 = mat1.GetElement(2, 2)
+
+        scale1 = (m0 * m0 + m4 * m4 + m8 * m8) ** 0.5
+        scale2 = (m1 * m1 + m5 * m5 + m9 * m9) ** 0.5
+        scale3 = (m2 * m2 + m6 * m6 + m10 * m10) ** 0.5
+
+        actor.SetScale(scale1, scale2, scale3)
+
+        x = mat1.GetElement(0, 3)
+        y = mat1.GetElement(1, 3)
+        z = mat1.GetElement(2, 3)
+
+        actor.SetOrigin(0, 0, 0)
+        actor.SetPosition(x, y, z)
+
+        out = [0, 0, 0]
+        vtk.vtkTransform.GetOrientation(out, mat1)
+
+        actor.SetOrientation(*out)
+
+
+def SetScaleIfDifferent(actor: vtk.vtkProp3D, scale: float, tol=1e-6):
     current_scale = actor.GetScale()[0]  # assume all components are identical
-    if abs(current_scale-scale) > tol:
+    if abs(current_scale - scale) > tol:
         actor.SetScale(scale)
 
 
-def tranform_almost_equal(transform1 : vtk.vtkTransform, transform2 : vtk.vtkTransform, tol = 1e-6):
+def tranform_almost_equal(
+    transform1: vtk.vtkTransform, transform2: vtk.vtkTransform, tol=1e-6
+):
     """Returns True if the two transforms are almost equal. Testing is done on the absolute difference of the components of the matrix
 
     Note: the values of the matrix contains both the rotation and the offset. The order of magnitude of these can be different
@@ -87,7 +129,7 @@ def tranform_almost_equal(transform1 : vtk.vtkTransform, transform2 : vtk.vtkTra
 
     for i in range(4):
         for j in range(4):
-            if abs(m1.GetElement(i,j)-m2.GetElement(i,j)) > tol:
+            if abs(m1.GetElement(i, j) - m2.GetElement(i, j)) > tol:
                 return False
     return True
 
@@ -99,8 +141,9 @@ def transform_to_mat4x4(transform):
             mat4x4.SetElement(i, j, transform[j * 4 + i])
     return mat4x4
 
-def mat4x4_from_point_on_frame(frame : dn.Frame, local_position : tuple):
-    """Creates a mat4x4 from a point on a frame. Use result with actor.SetUserMatrix(m44)"""
+
+def mat4x4_from_point_on_frame(frame: dn.Frame, local_position: tuple):
+    """Creates a mat4x4 from a point on a frame. Use result with actor matrix (m44)"""
 
     mat4x4 = transform_to_mat4x4(frame.global_transform)
     pos = frame.to_glob_position(local_position)
@@ -217,7 +260,8 @@ def update_line_to_points(line_actor, points):
         source.Modified()
 
 
-def apply_parent_translation_on_transform(parent, t):
+def apply_parent_translation_on_transform(parent, t: vtk.vtkTransform):
+    """Applies the DAVE global-transform of "parent" on vtkTransform t"""
 
     if parent is None:
         return
@@ -374,7 +418,7 @@ def VisualToSlice(
     slice_normal=(0, 0, 1),
     projection_x=(1, 0, 0),
     projection_y=(0, 1, 0),
-    relative_to_slice_position = False,
+    relative_to_slice_position=False,
     ax=None,
     **kwargs,
 ):
@@ -459,12 +503,125 @@ def VisualToSlice(
     x = np.array(x).transpose()
     y = np.array(y).transpose()
 
-
-
     if ax is not None:
         if kwargs:
             ax.plot(x, y, **kwargs)
         else:
-            ax.plot(x, y, 'k-', linewidth = 0.5)
+            ax.plot(x, y, "k-", linewidth=0.5)
 
-    return x,y
+    return x, y
+
+def vtkArrowActor(
+        startPoint=(0,0,0),
+        endPoint=(1,0,0),
+        res = 12
+    ):
+
+    """Creates a vtkActor representing an arrow from startpoint to endpoint.
+    All transforms are on the mesh itself.
+
+    So placing the actor at 0,0,0 will show the arrow starting at startPoint
+
+    """
+
+
+    axis = np.asarray(endPoint) - np.asarray(startPoint)
+    length = np.linalg.norm(axis)
+
+    axis = axis / length
+
+    phi = np.arctan2(axis[1], axis[0])
+    theta = np.arccos(axis[2])
+
+    arr = vtk.vtkArrowSource()
+    arr.SetShaftResolution(res)
+    arr.SetTipResolution(res)
+    arr.Update()
+
+    # sz = 0.02
+    #
+    # self.arr.SetTipRadius(sz)
+    # self.arr.SetShaftRadius(sz / 1.75)
+    # self.arr.SetTipLength(sz * 15)
+    # self.arr.Update()
+
+    t = vtk.vtkTransform()
+    t.Translate(startPoint)
+    t.RotateZ(np.rad2deg(phi))
+    t.RotateY(np.rad2deg(theta))
+    t.RotateY(-90)  # put it along Z
+    t.Scale(length, length, length)
+
+    t.Update()
+
+    tf = vtk.vtkTransformPolyDataFilter()
+    tf.SetInputData(arr.GetOutput())
+    tf.SetTransform(t)
+    tf.Update()
+
+    # # mapper
+    # mapper = vtk.vtkPolyDataMapper()
+    # mapper.SetInputData(tf.GetOutput())
+    #
+    # # Actor.
+    # actor = vtk.vtkActor()
+    # actor.SetMapper(mapper)
+
+    actor = vp.Mesh(tf.GetOutput())
+
+    return actor
+
+def vtkArrowHeadActor(
+        startPoint=(0,0,0),
+        endPoint=(1,0,0),
+        res = 12,
+    ):
+
+    """Creates a vtkActor representing an arrow HEAD (aka Cone) from startpoint to endpoint.
+    All transforms are on the mesh itself.
+
+    So placing the actor at 0,0,0 will show the arrow starting at startPoint
+
+    """
+    startPoint = np.asarray(startPoint)
+    endPoint = np.asarray(endPoint)
+
+    axis = endPoint-startPoint
+    length = np.linalg.norm(axis)
+
+    axis = axis / length
+
+    phi = np.arctan2(axis[1], axis[0])
+    theta = np.arccos(axis[2])
+
+    arr = vtk.vtkConeSource()
+    arr.SetResolution(res)
+    arr.SetRadius(0.25)
+
+    arr.Update()
+
+    t = vtk.vtkTransform()
+    t.Translate(startPoint + 0.5*(endPoint-startPoint))
+    t.RotateZ(np.rad2deg(phi))
+    t.RotateY(np.rad2deg(theta))
+    t.RotateY(-90)  # put it along Z
+    t.Scale(length, length, length)
+
+    t.Update()
+
+    tf = vtk.vtkTransformPolyDataFilter()
+    tf.SetInputData(arr.GetOutput())
+    tf.SetTransform(t)
+    tf.Update()
+
+    # # mapper
+    # mapper = vtk.vtkPolyDataMapper()
+    # mapper.SetInputData(tf.GetOutput())
+    #
+    # # Actor.
+    # actor = vtk.vtkActor()
+    # actor.SetMapper(mapper)
+
+    actor = vp.Mesh(tf.GetOutput())
+
+    return actor

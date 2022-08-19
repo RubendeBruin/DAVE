@@ -15,6 +15,17 @@ from DAVE.scene import *
 import DAVE.settings as ds
 import numpy as np
 
+def MostLikelyMatch(search_for, choices) -> str:
+    """Uses rapidfuzz to get a best match"""
+
+    try:
+        from rapidfuzz import process, fuzz
+
+        best = process.extractOne(search_for, choices, scorer=fuzz.WRatio)
+        return best[0]
+    except:
+        return "[install rapidfuzz to get a suggestion]"
+
 def assertBool(var, name = "Variable"):
     if not isinstance(var, bool):
         raise ValueError(name + " should be a boolean (True/False) but is {}".format(var))

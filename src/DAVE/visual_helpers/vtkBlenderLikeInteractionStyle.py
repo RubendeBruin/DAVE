@@ -646,8 +646,16 @@ class BlenderStyle(vtkInteractorStyleUser):
         logging.info(f'delta_inplane = {delta_inplane}')
 
         for pos0, actor in zip(self.draginfo.dragged_actors_original_positions, self.draginfo.actors_dragging):
-            actor.SetPosition(pos0 + delta_inplane)
-            logging.info(f'Set position to {pos0 + delta_inplane}')
+            m = actor.GetUserMatrix()
+            if m:
+                raise ValueError('UserMatrices/transforms not supported')
+                m.Invert() #inplace
+                rotated = m.MultiplyFloatPoint([*delta_inplane, 1])
+                actor.SetPosition(pos0 + np.array(rotated[:3]))
+            else:
+                actor.SetPosition(pos0 + delta_inplane)
+
+        logging.info(f'Set position to {pos0 + delta_inplane}')
 
         self.draginfo.delta = delta_inplane  # store the current delta
 
@@ -1188,7 +1196,7 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         # settings
 
-        self.mouse_motion_factor = 10
+        self.mouse_motion_factor = 20
         self.mouse_wheel_motion_factor = 0.5
 
         # internals
@@ -1274,6 +1282,7 @@ if __name__ == "__main__":
             # Assign actor to the renderer.
             ren.AddActor(cubeActor)
 
+
     # And create some lines
     for i in range(10):
         for j in range(10):
@@ -1289,6 +1298,8 @@ if __name__ == "__main__":
             actor.GetProperty().SetLineWidth(2)
             actor.GetProperty().SetColor(colors.GetColor3d("Silver"))
             ren.AddActor(actor)
+
+
 
     coneSource = vtkConeSource()
     coneSource.SetHeight(5)

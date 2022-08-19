@@ -429,7 +429,7 @@ class Gui:
             self.ui.menuSolve_Statics.addAction(action)
         self.update_recent_file_menu()
 
-        # -- drag drop files into grillex --
+        # -- drag drop files into DAVE --
 
         self.ui.frame3d.dropEvent = self.drop
         self.ui.frame3d.dragEnterEvent = self.drag_enter
@@ -2088,7 +2088,8 @@ class Gui:
         # Get the screen position of the just selected visual
         #
         if node is not None:
-            self.move_floating_widgets_away_from_cursor()
+            if self.visual.vtkWidget.hasFocus():
+                self.move_floating_widgets_away_from_cursor()
 
         if old_selection != self.selected_nodes:
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
