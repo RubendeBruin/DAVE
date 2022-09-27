@@ -633,7 +633,7 @@ class VisualActor:
             return
 
         if isinstance(self.node, vf._Area):
-            self.actors["main"].scale(np.sqrt(self.node.A), reset=True)
+            self.actors["main"].scale(np.sqrt(self.node.A), absolute=True)
             return
 
         if isinstance(self.node, vf.Cable):
@@ -670,7 +670,7 @@ class VisualActor:
             top_width = (N.n_width - 1) * N.spacing_width + WHEEL_WIDTH
 
             top_deck = self.actors['main']
-            top_deck.scale((top_length, top_width, TOP_THICKNESS), reset=True)
+            top_deck.scale((top_length, top_width, TOP_THICKNESS), absolute=True)
             SetMatrixIfDifferent(top_deck, mat4x4_from_point_on_frame(N.parent, (0,0,-0.5*TOP_THICKNESS)))
 
             # The wheels

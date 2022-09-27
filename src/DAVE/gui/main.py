@@ -874,8 +874,7 @@ class Gui:
         # self.visual.update_outlines()
         self.activate_paintset("Construction")
 
-        for plugin in self.plugins_workspace:
-            plugin(self, name)
+
 
         if name == "PAINTERS":
             self.show_guiWidget("vanGogh", WidgetPainters)
@@ -937,6 +936,9 @@ class Gui:
             code = "from DAVE.frequency_domain import prepare_for_fd\nprepare_for_fd(s)"
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
             self.show_guiWidget("Airy waves", WidgetAiry)
+
+        for plugin in self.plugins_workspace:
+            plugin(self, name)
 
         self.visual.update_visibility()
 
