@@ -2388,7 +2388,7 @@ class EditVisualOutline(NodeEditor):
 
 class WidgetNodeProps(guiDockWidget):
     def guiDefaultLocation(self):
-        return None  # QtCore.Qt.DockWidgetArea.RightDockWidgetArea
+        return QtCore.Qt.DockWidgetArea.RightDockWidgetArea
 
     def guiCreate(self):
 

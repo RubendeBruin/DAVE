@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Sun May 15 10:28:58 2022
+# Created: Tue Oct  4 10:24:58 2022
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -119,6 +119,7 @@ class Ui_MainWindow(object):
         self.btnWater.setMinimumSize(QtCore.QSize(30, 0))
         self.btnWater.setMaximumSize(QtCore.QSize(60, 16777215))
         self.btnWater.setBaseSize(QtCore.QSize(30, 0))
+        self.btnWater.setText("")
         icon8 = QtGui.QIcon()
         icon8.addPixmap(QtGui.QPixmap(":/icons/fish.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
         self.btnWater.setIcon(icon8)
@@ -127,6 +128,7 @@ class Ui_MainWindow(object):
         self.btnWater.setObjectName("btnWater")
         self.horizontalLayout_2.addWidget(self.btnWater)
         self.btnSSAO = QtWidgets.QPushButton(self.widget_3)
+        self.btnSSAO.setText("")
         icon9 = QtGui.QIcon()
         icon9.addPixmap(QtGui.QPixmap(":/icons/cube.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.btnSSAO.setIcon(icon9)
@@ -137,6 +139,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.btnSSAO)
         self.btnBlender = QtWidgets.QPushButton(self.widget_3)
         self.btnBlender.setMaximumSize(QtCore.QSize(100, 16777215))
+        self.btnBlender.setText("")
         icon10 = QtGui.QIcon()
         icon10.addPixmap(QtGui.QPixmap(":/icons/blender_icon_64x64.png"), QtGui.QIcon.Normal, QtGui.QIcon.On)
         self.btnBlender.setIcon(icon10)
@@ -492,10 +495,7 @@ class Ui_MainWindow(object):
         self.btnSolveStatics.setText(QtWidgets.QApplication.translate("MainWindow", "Solve &statics", None, -1))
         self.pbCopyViewCode.setToolTip(QtWidgets.QApplication.translate("MainWindow", "Copy screenshot code", None, -1))
         self.pb3D.setText(QtWidgets.QApplication.translate("MainWindow", "2D", None, -1))
-        self.btnZoomFit.setText(QtWidgets.QApplication.translate("MainWindow", "Zoom fit", None, -1))
-        self.btnWater.setText(QtWidgets.QApplication.translate("MainWindow", "sea", None, -1))
-        self.btnSSAO.setText(QtWidgets.QApplication.translate("MainWindow", "shadows", None, -1))
-        self.btnBlender.setText(QtWidgets.QApplication.translate("MainWindow", "blender", None, -1))
+        self.btnZoomFit.setText(QtWidgets.QApplication.translate("MainWindow", "Fit", None, -1))
         self.btnPauseAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "||", None, -1))
         self.btnStopAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "X", None, -1))
         self.menuSolve_Statics.setTitle(QtWidgets.QApplication.translate("MainWindow", "File", None, -1))

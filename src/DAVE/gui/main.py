@@ -91,7 +91,7 @@ from PySide2.QtWidgets import (
     QMessageBox,
     QMenu,
     QWidgetAction,
-    QAction,
+    QAction, QStatusBar,
 )
 from DAVE.scene import Scene
 
@@ -128,7 +128,7 @@ from DAVE.gui.widget_airy import WidgetAiry
 from DAVE.gui.widget_stability_disp import WidgetDisplacedStability
 from DAVE.gui.widget_explore import WidgetExplore
 from DAVE.gui.widget_tank_order import WidgetTankOrder
-from DAVE.gui.widget_rigg_it_right import WidgetRiggItRight
+from DAVE.gui.widget_rigg_it_right import WidgetQuickActions
 from DAVE.gui.widget_environment import WidgetEnvironment
 
 import numpy as np
@@ -261,6 +261,9 @@ class Gui:
         self.MainWindow = QtWidgets.QMainWindow()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self.MainWindow)
+
+        self.statusbar = QStatusBar()
+        self.MainWindow.setStatusBar(self.statusbar)
 
         # ============== private properties ================
         self._codelog = []
@@ -560,6 +563,8 @@ class Gui:
         self.ui.pbSide.clicked.connect(self.visual.Style.SetViewX)
         self.ui.pb3D.clicked.connect(self.toggle_2D)
 
+        # the python console
+        self.ui.dockWidget_2.setVisible(False)
         self.ui.actionPython_console_2.triggered.connect(
             lambda: self.ui.dockWidget_2.show()
         )
@@ -882,9 +887,9 @@ class Gui:
         if name == "CONSTRUCT":
             self.close_all_open_docks()
             self.show_guiWidget("Node Tree", WidgetNodeTree)
-            self.show_guiWidget("Derived Properties", WidgetDerivedProperties)
+            # self.show_guiWidget("Derived Properties", WidgetDerivedProperties)
             self.show_guiWidget("Properties", WidgetNodeProps)
-            self.show_guiWidget("Rigg-it-Right", WidgetRiggItRight)
+            self.show_guiWidget("Quick actions", WidgetQuickActions)
 
         if name == "EXPLORE":
             self.close_all_open_docks()
@@ -1265,15 +1270,28 @@ class Gui:
         self.give_feedback(f'View-plane distance = {distance:.3f}m\n (does not measure depth)')
 
     def show_exception(self, e):
-        self.ui.teFeedback.setText(str(e))
-        self.ui.teFeedback.setStyleSheet("background-color: pink;")
+        self.give_feedback(e, style=1)
+        #
+        # if self.ui.dockWidget_2.isVisible():
+        #     self.ui.teFeedback.setText(str(e))
+        #     self.ui.teFeedback.setStyleSheet("background-color: pink;")
+        # else:
+        #     QMessageBox.warning(self.ui.widget, "error",e, QMessageBox.Ok)
 
     def give_feedback(self, what, style = 0):
+
+
         self.ui.teFeedback.setText(str(what))
         if style == 0:
             self.ui.teFeedback.setStyleSheet("background-color: white;")
         elif style == 1:
             self.ui.teFeedback.setStyleSheet("background-color: pink;")
+
+        self.statusbar.showMessage(str(what))
+
+        if not self.ui.dockWidget_2.isVisible() and style==1:
+            QMessageBox.warning(self.ui.widget, "error", what, QMessageBox.Ok)
+
 
     def run_code(self, code, event, store_undo=False):
         """Runs the provided code
@@ -1319,16 +1337,20 @@ class Gui:
                 exec(code, glob_vars)
 
                 if c.stdout:
-                    self.ui.teFeedback.append(c.stdout)
-                    self.ui.teFeedback.append(str(datetime.datetime.now()))
+                    # self.ui.teFeedback.append(c.stdout)
+                    # self.ui.teFeedback.append(str(datetime.datetime.now()))
+
+                    self.give_feedback(c.stdout, style=0)
                 else:
+                    #
+                    # end_time = datetime.datetime.now()
+                    # time_diff = (end_time - start_time)
+                    #
+                    # self.ui.teFeedback.append(
+                    #     f"Completed successfully in {time_diff.total_seconds() * 1000:.0f} ms"
+                    # )
+                    self.give_feedback(code, style=0)
 
-                    end_time = datetime.datetime.now()
-                    time_diff = (end_time - start_time)
-
-                    self.ui.teFeedback.append(
-                        f"Completed successfully in {time_diff.total_seconds() * 1000:.0f} ms"
-                    )
 
                 self._codelog.append(code)
                 self.ui.teHistory.append(code)
@@ -1375,10 +1397,8 @@ class Gui:
                 self.ui.teCode.update()
                 self.ui.teCode.repaint()
 
-                self.ui.teFeedback.setText(
-                    c.stdout + "\n" + str(E) + "\n\nWhen running: \n\n" + code
-                )
-                self.ui.teFeedback.setStyleSheet("background-color: pink;")
+                message = c.stdout + "\n" + str(E) + "\n\nWhen running: \n\n" + code
+                self.show_exception(message)
 
                 raise (E)
 

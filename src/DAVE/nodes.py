@@ -696,9 +696,9 @@ class Visual(Node):
         if self.parent is not None:
             code += "\n            parent='{}',".format(self.parent.name)
         code += "\n            path=r'{}',".format(self.path)
-        code += "\n            offset=({}, {}, {}), ".format(*self.offset)
-        code += "\n            rotation=({}, {}, {}), ".format(*self.rotation)
-        code += "\n            scale=({}, {}, {}) )".format(*self.scale)
+        code += "\n            offset=({:.6g}, {:.6g}, {:.6g}), ".format(*self.offset)
+        code += "\n            rotation=({:.6g}, {:.6g}, {:.6g}), ".format(*self.rotation)
+        code += "\n            scale=({:.6g}, {:.6g}, {:.6g}) )".format(*self.scale)
         if self.visual_outline != VisualOutlineType.FEATURE_AND_SILHOUETTE:
             code += f"\ns['{self.name}'].visual_outline = {self.visual_outline}"
 
@@ -1494,39 +1494,39 @@ class Frame(NodeWithParentAndFootprint):
         # position
 
         if self.fixed[0] or not self._scene._export_code_with_solved_function:
-            code += "\n           position=({},".format(self.position[0])
+            code += "\n           position=({:.6g},".format(self.position[0])
         else:
-            code += "\n           position=(solved({}),".format(self.position[0])
+            code += "\n           position=(solved({:.6g}),".format(self.position[0])
         if self.fixed[1] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {},".format(self.position[1])
+            code += "\n                     {:.6g},".format(self.position[1])
         else:
-            code += "\n                     solved({}),".format(self.position[1])
+            code += "\n                     solved({:.6g}),".format(self.position[1])
         if self.fixed[2] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {}),".format(self.position[2])
+            code += "\n                     {:.6g}),".format(self.position[2])
         else:
-            code += "\n                     solved({})),".format(self.position[2])
+            code += "\n                     solved({:.6g})),".format(self.position[2])
 
         # rotation
 
         if self.fixed[3] or not self._scene._export_code_with_solved_function:
-            code += "\n           rotation=({},".format(self.rotation[0])
+            code += "\n           rotation=({:.6g},".format(self.rotation[0])
         else:
-            code += "\n           rotation=(solved({}),".format(self.rotation[0])
+            code += "\n           rotation=(solved({:.6g}),".format(self.rotation[0])
         if self.fixed[4] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {},".format(self.rotation[1])
+            code += "\n                     {:.6g},".format(self.rotation[1])
         else:
-            code += "\n                     solved({}),".format(self.rotation[1])
+            code += "\n                     solved({:.6g}),".format(self.rotation[1])
         if self.fixed[5] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {}),".format(self.rotation[2])
+            code += "\n                     {:.6g}),".format(self.rotation[2])
         else:
-            code += "\n                     solved({})),".format(self.rotation[2])
+            code += "\n                     solved({:.6g})),".format(self.rotation[2])
 
         # inertia and radii of gyration
         if self.inertia > 0:
-            code += "\n                     inertia = {},".format(self.inertia)
+            code += "\n                     inertia = {:.6g},".format(self.inertia)
 
         if np.any(self.inertia_radii > 0):
-            code += "\n                     inertia_radii = ({}, {}, {}),".format(
+            code += "\n                     inertia_radii = ({:.6g}, {:.6g}, {:.6g}),".format(
                 *self.inertia_radii
             )
 
@@ -1743,9 +1743,9 @@ class Point(NodeWithParentAndFootprint):
 
         # position
 
-        code += "\n          position=({},".format(self.position[0])
-        code += "\n                    {},".format(self.position[1])
-        code += "\n                    {}))".format(self.position[2])
+        code += "\n          position=({:.6g},".format(self.position[0])
+        code += "\n                    {:.6g},".format(self.position[1])
+        code += "\n                    {:.6g}))".format(self.position[2])
 
         code += self.add_footprint_python_code()
 
@@ -1897,10 +1897,10 @@ class RigidBody(Frame):
     def give_python_code(self):
         code = "# code for {}".format(self.name)
         code += "\ns.new_rigidbody(name='{}',".format(self.name)
-        code += "\n                mass={},".format(self.mass)
-        code += "\n                cog=({},".format(self.cog[0])
-        code += "\n                     {},".format(self.cog[1])
-        code += "\n                     {}),".format(self.cog[2])
+        code += "\n                mass={:.6g},".format(self.mass)
+        code += "\n                cog=({:.6g},".format(self.cog[0])
+        code += "\n                     {:.6g},".format(self.cog[1])
+        code += "\n                     {:.6g}),".format(self.cog[2])
 
         if self.parent_for_export:
             code += "\n                parent='{}',".format(self.parent_for_export.name)
@@ -1908,36 +1908,36 @@ class RigidBody(Frame):
         # position
 
         if self.fixed[0] or not self._scene._export_code_with_solved_function:
-            code += "\n                position=({},".format(self.position[0])
+            code += "\n                position=({:.6g},".format(self.position[0])
         else:
-            code += "\n                position=(solved({}),".format(self.position[0])
+            code += "\n                position=(solved({:.6g}),".format(self.position[0])
 
         if self.fixed[1] or not self._scene._export_code_with_solved_function:
-            code += "\n                          {},".format(self.position[1])
+            code += "\n                          {:.6g},".format(self.position[1])
         else:
-            code += "\n                          solved({}),".format(self.position[1])
+            code += "\n                          solved({:.6g}),".format(self.position[1])
 
         if self.fixed[2] or not self._scene._export_code_with_solved_function:
-            code += "\n                          {}),".format(self.position[2])
+            code += "\n                          {:.6g}),".format(self.position[2])
         else:
-            code += "\n                          solved({})),".format(self.position[2])
+            code += "\n                          solved({:.6g})),".format(self.position[2])
 
         # rotation
 
         if self.fixed[3] or not self._scene._export_code_with_solved_function:
-            code += "\n                rotation=({},".format(self.rotation[0])
+            code += "\n                rotation=({:.6g},".format(self.rotation[0])
         else:
-            code += "\n                rotation=(solved({}),".format(self.rotation[0])
+            code += "\n                rotation=(solved({:.6g}),".format(self.rotation[0])
 
         if self.fixed[4] or not self._scene._export_code_with_solved_function:
-            code += "\n                          {},".format(self.rotation[1])
+            code += "\n                          {:.6g},".format(self.rotation[1])
         else:
-            code += "\n                          solved({}),".format(self.rotation[1])
+            code += "\n                          solved({:.6g}),".format(self.rotation[1])
 
         if self.fixed[5] or not self._scene._export_code_with_solved_function:
-            code += "\n                          {}),".format(self.rotation[2])
+            code += "\n                          {:.6g}),".format(self.rotation[2])
         else:
-            code += "\n                          solved({})),".format(self.rotation[2])
+            code += "\n                          solved({:.6g})),".format(self.rotation[2])
 
         if np.any(self.inertia_radii > 0):
             code += "\n                     inertia_radii = ({}, {}, {}),".format(
@@ -2215,16 +2215,16 @@ class Cable(CoreConnectedNode):
         code.append("s.new_cable(name='{}',".format(self.name))
         code.append("            endA='{}',".format(poi_names[0]))
         code.append("            endB='{}',".format(poi_names[-1]))
-        code.append("            length={},".format(self.length))
+        code.append("            length={:.6g},".format(self.length))
 
         if self.mass_per_length != 0:
-            code.append("            mass_per_length={},".format(self.mass_per_length))
+            code.append("            mass_per_length={:.6g},".format(self.mass_per_length))
 
         if self.diameter != 0:
-            code.append("            diameter={},".format(self.diameter))
+            code.append("            diameter={:.6g},".format(self.diameter))
 
         if len(poi_names) <= 2:
-            code.append("            EA={})".format(self.EA))
+            code.append("            EA={:.6g})".format(self.EA))
         else:
             code.append("            EA={},".format(self.EA))
 
@@ -2370,8 +2370,8 @@ class Force(NodeWithCoreParent):
 
         code += "\ns.new_force(name='{}',".format(self.name)
         code += "\n            parent='{}',".format(self.parent_for_export.name)
-        code += "\n            force=({}, {}, {}),".format(*self.force)
-        code += "\n            moment=({}, {}, {}) )".format(*self.moment)
+        code += "\n            force=({:.6g}, {:.6g}, {:.6g}),".format(*self.force)
+        code += "\n            moment=({:.6g}, {:.6g}, {:.6g}) )".format(*self.moment)
         return code
 
 
@@ -2474,10 +2474,10 @@ class _Area(NodeWithCoreParent):
 
         code += "\ns.{}(name='{}',".format(new_command, self.name)
         code += "\n            parent='{}',".format(self.parent_for_export.name)
-        code += f"\n            A={self.A}, "
-        code += f"\n            Cd={self.Cd}, "
+        code += f"\n            A={self.A:.6g}, "
+        code += f"\n            Cd={self.Cd:.6g}, "
         if self.areakind != AreaKind.SPHERE:
-            code += "\n            direction=({},{},{}),".format(*self.direction)
+            code += "\n            direction=({:.6g},{:.6g},{:.6g}),".format(*self.direction)
         code += f"\n            areakind={str(self.areakind)})"
 
         return code
@@ -2520,7 +2520,7 @@ class ContactMesh(NodeWithCoreParent):
             code += ", parent='{}')".format(self.parent_for_export.name)
         else:
             code += ")"
-        code += "\nmesh.trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
+        code += "\nmesh.trimesh.load_file(r'{}', scale = ({:.6g},{:.6g},{:.6g}), rotation = ({:.6g},{:.6g},{:.6g}), offset = ({:.6g},{:.6g},{:.6g}))".format(
             self.trimesh._path,
             *self.trimesh._scale,
             *self.trimesh._rotation,
@@ -2658,8 +2658,8 @@ class ContactBall(NodeWithCoreParent):
 
         code += "\ns.new_contactball(name='{}',".format(self.name)
         code += "\n                  parent='{}',".format(self.parent_for_export.name)
-        code += "\n                  radius={},".format(self.radius)
-        code += "\n                  k={},".format(self.k)
+        code += "\n                  radius={:.6g},".format(self.radius)
+        code += "\n                  k={:.6g},".format(self.k)
         code += "\n                  meshes = [ "
 
         for m in self._meshes:
@@ -2964,11 +2964,11 @@ class SPMT(NodeWithCoreParent):
 
         code.append(f"s.new_spmt(name='{self.name}',")
         code.append(f"           parent='{self.parent_for_export.name}',")
-        code.append(f"           reference_force = {self.reference_force},")
-        code.append(f"           reference_extension = {self.reference_extension},")
+        code.append(f"           reference_force = {self.reference_force:.6g},")
+        code.append(f"           reference_extension = {self.reference_extension:.6g},")
         code.append(f"           k = {self.k},")
-        code.append(f"           spacing_length = {self.spacing_length},")
-        code.append(f"           spacing_width = {self.spacing_width},")
+        code.append(f"           spacing_length = {self.spacing_length:.6g},")
+        code.append(f"           spacing_width = {self.spacing_width:.6g},")
         code.append(f"           n_length = {self.n_length},")
         code.append(f"           n_width = {self.n_width},")
 
@@ -3031,8 +3031,8 @@ class Circle(NodeWithCoreParent):
         code = "# code for {}".format(self.name)
         code += "\ns.new_circle(name='{}',".format(self.name)
         code += "\n            parent='{}',".format(self.parent_for_export.name)
-        code += "\n            axis=({}, {}, {}),".format(*self.axis)
-        code += "\n            radius={} )".format(self.radius)
+        code += "\n            axis=({:.6g}, {:.6g}, {:.6g}),".format(*self.axis)
+        code += "\n            radius={:.6g} )".format(self.radius)
         return code
 
     @property
@@ -3322,8 +3322,8 @@ class LC6d(CoreConnectedNode):
         code += "\ns.new_linear_connector_6d(name='{}',".format(self.name)
         code += "\n            main='{}',".format(self.main.name)
         code += "\n            secondary='{}',".format(self.secondary.name)
-        code += "\n            stiffness=({}, {}, {}, ".format(*self.stiffness[:3])
-        code += "\n                       {}, {}, {}) )".format(*self.stiffness[3:])
+        code += "\n            stiffness=({:.6g}, {:.6g}, {:.6g}, ".format(*self.stiffness[:3])
+        code += "\n                       {:.6g}, {:.6g}, {:.6g}) )".format(*self.stiffness[3:])
 
         return code
 
@@ -3445,8 +3445,8 @@ class Connector2d(CoreConnectedNode):
         code += "\ns.new_connector2d(name='{}',".format(self.name)
         code += "\n            nodeA='{}',".format(self.nodeA.name)
         code += "\n            nodeB='{}',".format(self.nodeB.name)
-        code += "\n            k_linear ={},".format(self.k_linear)
-        code += "\n            k_angular ={})".format(self.k_angular)
+        code += "\n            k_linear ={:.6g},".format(self.k_linear)
+        code += "\n            k_angular ={:.6g})".format(self.k_angular)
 
         return code
 
@@ -3714,12 +3714,12 @@ class Beam(CoreConnectedNode):
         code += "\n            nodeB='{}',".format(self.nodeB.name)
         code += "\n            n_segments={},".format(self.n_segments)
         code += "\n            tension_only={},".format(self.tension_only)
-        code += "\n            EIy ={},".format(self.EIy)
-        code += "\n            EIz ={},".format(self.EIz)
-        code += "\n            GIp ={},".format(self.GIp)
-        code += "\n            EA ={},".format(self.EA)
-        code += "\n            mass ={},".format(self.mass)
-        code += "\n            L ={}) # L can possibly be omitted".format(self.L)
+        code += "\n            EIy ={:.6g},".format(self.EIy)
+        code += "\n            EIz ={:.6g},".format(self.EIz)
+        code += "\n            GIp ={:.6g},".format(self.GIp)
+        code += "\n            EA ={:.6g},".format(self.EA)
+        code += "\n            mass ={:.6g},".format(self.mass)
+        code += "\n            L ={:.6g}) # L can possibly be omitted".format(self.L)
 
         return code
 
@@ -4328,7 +4328,7 @@ class Tank(NodeWithCoreParent):
         code += "\nmesh = s.new_tank(name='{}',".format(self.name)
 
         if self.density != 1.025:
-            code += f"\n          density={self.density},"
+            code += f"\n          density={self.density:.6g},"
 
         if self.free_flooding:
             code += f"\n          free_flooding=True,"
@@ -4336,7 +4336,7 @@ class Tank(NodeWithCoreParent):
         code += "\n          parent='{}')".format(self.parent_for_export.name)
 
         if self.trimesh._invert_normals:
-            code += "\nmesh.trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}), invert_normals=True)".format(
+            code += "\nmesh.trimesh.load_file(r'{}', scale = ({:.6g},{:.6g},{:.6g}), rotation = ({:.6g},{:.6g},{:.6g}), offset = ({:.6g},{:.6g},{:.6g}), invert_normals=True)".format(
                 self.trimesh._path,
                 *self.trimesh._scale,
                 *self.trimesh._rotation,
@@ -4349,7 +4349,7 @@ class Tank(NodeWithCoreParent):
                 *self.trimesh._rotation,
                 *self.trimesh._offset,
             )
-        code += f"\ns['{self.name}'].volume = {self.volume}   # first load mesh, then set volume"
+        code += f"\ns['{self.name}'].volume = {self.volume:.6g}   # first load mesh, then set volume"
 
         return code
 
@@ -5798,14 +5798,14 @@ class Sling(Manager):
 
         # (self, scene, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
 
-        code += f'\nsl = s.new_sling("{self.name}", length = {self.length},'
-        code += f"\n            LeyeA = {self.LeyeA},"
-        code += f"\n            LeyeB = {self.LeyeB},"
-        code += f"\n            LspliceA = {self.LspliceA},"
-        code += f"\n            LspliceB = {self.LspliceB},"
-        code += f"\n            diameter = {self.diameter},"
-        code += f"\n            EA = {self.EA},"
-        code += f"\n            mass = {self.mass},"
+        code += f'\nsl = s.new_sling("{self.name}", length = {self.length:.6g},'
+        code += f"\n            LeyeA = {self.LeyeA:.6g},"
+        code += f"\n            LeyeB = {self.LeyeB:.6g},"
+        code += f"\n            LspliceA = {self.LspliceA:.6g},"
+        code += f"\n            LspliceB = {self.LspliceB:.6g},"
+        code += f"\n            diameter = {self.diameter:.6g},"
+        code += f"\n            EA = {self.EA:.6g},"
+        code += f"\n            mass = {self.mass:.6g},"
         code += f'\n            endA = "{self.endA.name}",'
         code += f'\n            endB = "{self.endB.name}",'
 
@@ -6229,8 +6229,8 @@ class Shackle(Manager, RigidBody):
         if self.parent_for_export:
             code += f"\ns['{self.name}'].parent = s['{self.parent_for_export.name}']"
 
-        code += "\ns['{}'].position = ({},{},{})".format(self.name, *self.position)
-        code += "\ns['{}'].rotation = ({},{},{})".format(self.name, *self.rotation)
+        code += "\ns['{}'].position = ({:.6g},{:.6g},{:.6g})".format(self.name, *self.position)
+        code += "\ns['{}'].rotation = ({:.6g},{:.6g},{:.6g})".format(self.name, *self.rotation)
         if not np.all(self.fixed):
             code += "\ns['{}'].fixed = ({},{},{},{},{},{})".format(
                 self.name, *self.fixed
@@ -6338,32 +6338,32 @@ class Component(Manager, Frame):
         # position
 
         if self.fixed[0] or not self._scene._export_code_with_solved_function:
-            code += "\n           position=({},".format(self.position[0])
+            code += "\n           position=({:.6g},".format(self.position[0])
         else:
-            code += "\n           position=(solved({}),".format(self.position[0])
+            code += "\n           position=(solved({:.6g}),".format(self.position[0])
         if self.fixed[1] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {},".format(self.position[1])
+            code += "\n                     {:.6g},".format(self.position[1])
         else:
-            code += "\n                     solved({}),".format(self.position[1])
+            code += "\n                     solved({:.6g}),".format(self.position[1])
         if self.fixed[2] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {}),".format(self.position[2])
+            code += "\n                     {:.6g}),".format(self.position[2])
         else:
-            code += "\n                     solved({})),".format(self.position[2])
+            code += "\n                     solved({:.6g})),".format(self.position[2])
 
         # rotation
 
         if self.fixed[3] or not self._scene._export_code_with_solved_function:
-            code += "\n           rotation=({},".format(self.rotation[0])
+            code += "\n           rotation=({:.6g},".format(self.rotation[0])
         else:
-            code += "\n           rotation=(solved({}),".format(self.rotation[0])
+            code += "\n           rotation=(solved({:.6g}),".format(self.rotation[0])
         if self.fixed[4] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {},".format(self.rotation[1])
+            code += "\n                     {:.6g},".format(self.rotation[1])
         else:
-            code += "\n                     solved({}),".format(self.rotation[1])
+            code += "\n                     solved({:.6g}),".format(self.rotation[1])
         if self.fixed[5] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {}),".format(self.rotation[2])
+            code += "\n                     {:.6g}),".format(self.rotation[2])
         else:
-            code += "\n                     solved({})),".format(self.rotation[2])
+            code += "\n                     solved({:.6g})),".format(self.rotation[2])
 
         # fixeties
         code += "\n           fixed =({}, {}, {}, {}, {}, {}) )".format(*self.fixed)

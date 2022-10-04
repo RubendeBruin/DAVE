@@ -266,6 +266,7 @@ class VisualOutline:
         self.outline_actor.GetProperty().SetColor(
             color[0] / 255, color[1] / 255, color[2] / 255
         )
+        self.outline_actor.GetProperty().SetLineWidth(2)
 
 
 

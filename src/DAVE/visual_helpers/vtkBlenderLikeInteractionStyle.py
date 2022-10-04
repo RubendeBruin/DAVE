@@ -1,4 +1,6 @@
 import logging
+import warnings
+
 import vtk
 import numpy as np
 from dataclasses import dataclass
@@ -648,12 +650,11 @@ class BlenderStyle(vtkInteractorStyleUser):
         for pos0, actor in zip(self.draginfo.dragged_actors_original_positions, self.draginfo.actors_dragging):
             m = actor.GetUserMatrix()
             if m:
-                raise ValueError('UserMatrices/transforms not supported')
-                m.Invert() #inplace
-                rotated = m.MultiplyFloatPoint([*delta_inplane, 1])
-                actor.SetPosition(pos0 + np.array(rotated[:3]))
-            else:
-                actor.SetPosition(pos0 + delta_inplane)
+                warnings.warn('UserMatrices/transforms not supported')
+                # m.Invert() #inplace
+                # rotated = m.MultiplyFloatPoint([*delta_inplane, 1])
+                # actor.SetPosition(pos0 + np.array(rotated[:3]))
+            actor.SetPosition(pos0 + delta_inplane)
 
         logging.info(f'Set position to {pos0 + delta_inplane}')
 

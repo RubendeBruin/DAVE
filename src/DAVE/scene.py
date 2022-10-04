@@ -1414,10 +1414,10 @@ class Scene:
                         timeout_s < 0
                     ):  # we were not using a timeout, so the solver failed
                         raise ValueError(
-                            f"Could not solve - solver return code {status} during phase 2. Maximum error = {self._vfc.Emaxabs}"
+                            f"Could not solve - solver return code {status} during phase 2. Maximum error = {self._vfc.Emaxabs:.6e}"
                         )
 
-                give_feedback(f"Maximum error = {self._vfc.Emaxabs} (phase 2)")
+                give_feedback(f"Maximum error = {self._vfc.Emaxabs:.6e} (phase 2)")
 
             elif phase == 4:
 
@@ -1443,7 +1443,7 @@ class Scene:
                     give_feedback(msg)
 
                 else:
-                    give_feedback(f"Maximum error = {self._vfc.Emaxabs} (phase 4)")
+                    give_feedback(f"Maximum error = {self._vfc.Emaxabs:.6e} (phase 4)")
 
     def solve_statics(self, silent=False, timeout=None):
         """Solves statics

@@ -13,9 +13,10 @@ from PySide2.QtCore import QPoint
 import DAVE.scene as nodes
 import DAVE.settings as ds
 from DAVE.gui.forms.widget_selection_actions import Ui_SelectionActions
+from DAVE.gui.helpers.flow_layout import FlowLayout
 from DAVE.gui.helpers.popup_textbox import get_text
 
-class WidgetRiggItRight(guiDockWidget):
+class WidgetQuickActions(guiDockWidget):
 
     def guiCreate(self):
         """
@@ -30,7 +31,8 @@ class WidgetRiggItRight(guiDockWidget):
         self.ui = Ui_SelectionActions()
         self.ui.setupUi(self.contents)
 
-        layout = QtWidgets.QVBoxLayout()
+        # layout = QtWidgets.QVBoxLayout()
+        layout = FlowLayout()
         self.ui.frame.setLayout(layout)
 
 
@@ -49,7 +51,7 @@ class WidgetRiggItRight(guiDockWidget):
             self.fill()
 
     def guiDefaultLocation(self):
-        return QtCore.Qt.DockWidgetArea.RightDockWidgetArea
+        return QtCore.Qt.DockWidgetArea.BottomDockWidgetArea # QtCore.Qt.DockWidgetArea.RightDockWidgetArea
 
     # ======
 
@@ -236,7 +238,7 @@ class WidgetRiggItRight(guiDockWidget):
 
                 for size in sizes:
                     button = QPushButton(f'insert GP {size} in {sheave.name}', self.ui.frame)
-                    button.pressed.connect(lambda wll = size : insert_gp(wll=wll))
+                    button.pressed.connect(lambda *args, wll = size : insert_gp(wll=wll))
                     self.buttons.append(button)
 
         # nothing selected
@@ -266,7 +268,7 @@ class WidgetRiggItRight(guiDockWidget):
             for size in sizes:
                 button = QPushButton(f'Create GP {size}', self.ui.frame)
 
-                button.pressed.connect(lambda wll=size: insert_gp(wll=wll))
+                button.pressed.connect(lambda *args, wll=size: insert_gp(wll=wll))
                 self.buttons.append(button)
 
 
