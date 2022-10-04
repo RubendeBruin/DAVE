@@ -193,6 +193,26 @@ class NodePropertyInfo:
 
 DAVE_NODEPROP_INFO = dict()
 
+# Convenience function to add a prop to the register
+def register_nodeprop(node_class: type,
+                      property_name: str,
+                      property_type: type,
+                      doc_short: str,
+                      doc_long: str,
+                      units: str,
+                      remarks: str,
+                      is_settable: bool,
+                      is_single_settable: bool,
+                      is_single_numeric: bool):
+
+    new_type = NodePropertyInfo(node_class, property_name, property_type, doc_short, doc_long, units, remarks,
+                                is_settable, is_single_settable, is_single_numeric)
+
+    if node_class not in DAVE_NODEPROP_INFO:
+        DAVE_NODEPROP_INFO[node_class] = dict()
+
+    DAVE_NODEPROP_INFO[node_class][property_name] = new_type
+
 
 # ======= Animate after solving =========
 

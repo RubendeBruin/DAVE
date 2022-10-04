@@ -633,7 +633,7 @@ class VisualActor:
             return
 
         if isinstance(self.node, vf._Area):
-            self.actors["main"].scale(np.sqrt(self.node.A), absolute=True)
+            self.actors["main"].SetScale(np.sqrt(self.node.A))
             return
 
         if isinstance(self.node, vf.Cable):
@@ -773,8 +773,18 @@ class VisualActor:
                     else:
                         fp = local_position
 
+                elif isinstance(self.node, vf.Frame):
+                    fp = [
+                        self.node.to_glob_position(loc)
+                        for loc in fp
+                    ]
+
+                else:
+                    raise Exception('Footprint on node which is not a Point or Frame -- unexpected')
+
                 if n_points == current_n_points:
                     self.actors["footprint"].points(fp)
+                    self.actors["footprint"]._vertices_changed = True
                 else:
                     # create a new actor
                     new_actor = actor_from_vertices_and_faces(
@@ -785,6 +795,7 @@ class VisualActor:
 
                     if viewport.screen is not None:
                         viewport.screen.remove(self.actors["footprint"])
+                        # remove outline as well
                         self.actors["footprint"] = new_actor
                         viewport.screen.add(self.actors["footprint"], render=False)
 
@@ -1883,7 +1894,7 @@ class Viewport:
                 # and then scale with sqrt(A)
                 # A = pi * r**2 --> r = sqrt(1/pi)
                 actors["main"] = vp.Circle(res=36, r=np.sqrt(1 / np.pi))
-                actors["main"].scale(np.sqrt(N.A))
+                actors["main"].SetScale(np.sqrt(N.A))
 
             if isinstance(N, vf.RigidBody):
                 # a rigidbody is also an axis
@@ -2596,6 +2607,9 @@ class Viewport:
             if isinstance(node, dn._Area):
                 actor = V.actors["main"]
 
+                # calculate scale
+                scale = np.sqrt(node.A)
+
                 if node.areakind == dn.AreaKind.SPHERE:
                     direction = self.screen.camera.GetDirectionOfProjection()
                 elif node.areakind == dn.AreaKind.PLANE:
@@ -2622,7 +2636,7 @@ class Viewport:
                         direction = direction / np.linalg.norm(direction)
 
                 transform = transform_from_direction(
-                    direction, position=node.parent.global_position
+                    direction, position=node.parent.global_position, scale = scale
                 )
 
                 SetMatrixIfDifferent(actor,transform)
