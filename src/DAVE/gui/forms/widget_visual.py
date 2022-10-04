@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_visual.ui',
 # licensing of 'widget_visual.ui' applies.
 #
-# Created: Sun May 15 10:28:58 2022
+# Created: Tue Oct  4 17:28:33 2022
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,10 +13,32 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_widget_axis(object):
     def setupUi(self, widget_axis):
         widget_axis.setObjectName("widget_axis")
-        widget_axis.resize(238, 474)
+        widget_axis.resize(293, 527)
         widget_axis.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.verticalLayout = QtWidgets.QVBoxLayout(widget_axis)
         self.verticalLayout.setObjectName("verticalLayout")
+        self.widget_2 = QtWidgets.QWidget(widget_axis)
+        self.widget_2.setObjectName("widget_2")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.widget_2)
+        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.label_13 = QtWidgets.QLabel(self.widget_2)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_13.sizePolicy().hasHeightForWidth())
+        self.label_13.setSizePolicy(sizePolicy)
+        self.label_13.setObjectName("label_13")
+        self.horizontalLayout_2.addWidget(self.label_13)
+        self.widgetParent = QNodePicker(self.widget_2)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.widgetParent.sizePolicy().hasHeightForWidth())
+        self.widgetParent.setSizePolicy(sizePolicy)
+        self.widgetParent.setObjectName("widgetParent")
+        self.horizontalLayout_2.addWidget(self.widgetParent)
+        self.verticalLayout.addWidget(self.widget_2)
         self.label_12 = QtWidgets.QLabel(widget_axis)
         self.label_12.setWordWrap(True)
         self.label_12.setObjectName("label_12")
@@ -216,12 +238,15 @@ class Ui_widget_axis(object):
         self.label_8.setWordWrap(True)
         self.label_8.setObjectName("label_8")
         self.verticalLayout.addWidget(self.label_8)
+        spacerItem1 = QtWidgets.QSpacerItem(20, 10, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem1)
 
         self.retranslateUi(widget_axis)
         QtCore.QMetaObject.connectSlotsByName(widget_axis)
 
     def retranslateUi(self, widget_axis):
         widget_axis.setWindowTitle(QtWidgets.QApplication.translate("widget_axis", "Form", None, -1))
+        self.label_13.setText(QtWidgets.QApplication.translate("widget_axis", "Parent", None, -1))
         self.label_12.setText(QtWidgets.QApplication.translate("widget_axis", "<html><head/><body><p><span style=\" font-weight:600;\">Shape</span></p><p>Select one of the default shapes from the drop-down or manually enter a (relative) path to a file.</p></body></html>", None, -1))
         self.comboBox.setItemText(0, QtWidgets.QApplication.translate("widget_axis", "wirecube.obj", None, -1))
         self.pbReloadFile.setText(QtWidgets.QApplication.translate("widget_axis", "Reload current file", None, -1))
@@ -239,3 +264,4 @@ class Ui_widget_axis(object):
         self.label_10.setText(QtWidgets.QApplication.translate("widget_axis", "Scale : Z", None, -1))
         self.label_8.setText(QtWidgets.QApplication.translate("widget_axis", "<html><head/><body><p><span style=\" text-decoration: underline;\">Notes:</span></p><p>Offset is applied to the scaled visual.</p><p>Rotation is defined as a rotation about a single axis.</p><p>- The axis of rotation is defined by the X,Y and Z components of the rotation.</p><p>- The angle or rotation is defined by the length of the rotation vector.</p></body></html>", None, -1))
 
+from DAVE.gui.helpers.qnodepicker import QNodePicker

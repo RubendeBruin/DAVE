@@ -837,7 +837,8 @@ class Gui:
         if self.selected_nodes:
             self.selected_nodes.clear()
             if "Properties" in self.guiWidgets:
-                self.guiWidgets["Properties"].setVisible(False)
+                if self.guiWidgets["Properties"].node_picker is None:
+                    self.guiWidgets["Properties"].setVisible(False)
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
 
     def focus_on_selected_object(self):

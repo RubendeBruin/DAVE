@@ -1,8 +1,9 @@
 
 import PySide2.QtCore
 import PySide2.QtGui
+from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QComboBox, QWidget
+from PySide2.QtWidgets import QComboBox, QWidget, QCompleter
 
 
 class BlockSigs():
@@ -92,3 +93,20 @@ class EnterKeyPressFilter(CustomEventFilters):
                 return True
 
         return False
+
+def update_combobox_items_with_completer(comboBox: QtWidgets.QComboBox, items):
+    """Updates the possible items of the combobox and adds a completer
+    Suppresses signals and preserves the current text
+    """
+    with BlockSigs(comboBox):
+        ct = comboBox.currentText()
+        comboBox.clear()
+        comboBox.addItems(items)
+
+        # set QCompleter
+        completer = QCompleter(items)
+        completer.setCaseSensitivity(Qt.CaseInsensitive)
+        completer.setModelSorting(QCompleter.UnsortedModel)
+        completer.setFilterMode(Qt.MatchContains)
+        comboBox.setCompleter(completer)
+        comboBox.setCurrentText(ct)

@@ -3,8 +3,8 @@
 # Form implementation generated from reading ui file 'widget_sheave.ui',
 # licensing of 'widget_sheave.ui' applies.
 #
-# Created: Thu Jul  2 20:34:21 2020
-#      by: pyside2-uic  running on PySide2 5.13.1
+# Created: Tue Oct  4 17:28:34 2022
+#      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -13,10 +13,32 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_widget_sheave(object):
     def setupUi(self, widget_sheave):
         widget_sheave.setObjectName("widget_sheave")
-        widget_sheave.resize(315, 782)
+        widget_sheave.resize(315, 813)
         widget_sheave.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.verticalLayout = QtWidgets.QVBoxLayout(widget_sheave)
         self.verticalLayout.setObjectName("verticalLayout")
+        self.widget = QtWidgets.QWidget(widget_sheave)
+        self.widget.setObjectName("widget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.widget)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.label_10 = QtWidgets.QLabel(self.widget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_10.sizePolicy().hasHeightForWidth())
+        self.label_10.setSizePolicy(sizePolicy)
+        self.label_10.setObjectName("label_10")
+        self.horizontalLayout.addWidget(self.label_10)
+        self.widgetParent = QNodePicker(self.widget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.widgetParent.sizePolicy().hasHeightForWidth())
+        self.widgetParent.setSizePolicy(sizePolicy)
+        self.widgetParent.setObjectName("widgetParent")
+        self.horizontalLayout.addWidget(self.widgetParent)
+        self.verticalLayout.addWidget(self.widget)
         self.label_9 = QtWidgets.QLabel(widget_sheave)
         self.label_9.setWordWrap(True)
         self.label_9.setObjectName("label_9")
@@ -104,6 +126,7 @@ class Ui_widget_sheave(object):
 
     def retranslateUi(self, widget_sheave):
         widget_sheave.setWindowTitle(QtWidgets.QApplication.translate("widget_sheave", "Form", None, -1))
+        self.label_10.setText(QtWidgets.QApplication.translate("widget_sheave", "Parent", None, -1))
         self.label_9.setText(QtWidgets.QApplication.translate("widget_sheave", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Circle radius</span></p></body></html>", None, -1))
         self.label_7.setText(QtWidgets.QApplication.translate("widget_sheave", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Axis direction</span></p></body></html>", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("widget_sheave", "X", None, -1))
@@ -111,3 +134,4 @@ class Ui_widget_sheave(object):
         self.label_3.setText(QtWidgets.QApplication.translate("widget_sheave", "Z", None, -1))
         self.label_8.setText(QtWidgets.QApplication.translate("widget_sheave", "<html><head/><body><p>Axis direction is defined in parent axis system.</p><p>Wire runs over the circle in positive direction (apply right hand rule on axis direction).</p></body></html>", None, -1))
 
+from DAVE.gui.helpers.qnodepicker import QNodePicker

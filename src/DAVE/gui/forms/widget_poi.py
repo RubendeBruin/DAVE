@@ -3,8 +3,8 @@
 # Form implementation generated from reading ui file 'widget_poi.ui',
 # licensing of 'widget_poi.ui' applies.
 #
-# Created: Tue Jun  9 08:30:22 2020
-#      by: pyside2-uic  running on PySide2 5.13.1
+# Created: Tue Oct  4 17:28:33 2022
+#      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -13,9 +13,31 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_Poi(object):
     def setupUi(self, Poi):
         Poi.setObjectName("Poi")
-        Poi.resize(400, 361)
+        Poi.resize(350, 241)
         self.verticalLayout = QtWidgets.QVBoxLayout(Poi)
         self.verticalLayout.setObjectName("verticalLayout")
+        self.widget = QtWidgets.QWidget(Poi)
+        self.widget.setObjectName("widget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.widget)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.label_8 = QtWidgets.QLabel(self.widget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_8.sizePolicy().hasHeightForWidth())
+        self.label_8.setSizePolicy(sizePolicy)
+        self.label_8.setObjectName("label_8")
+        self.horizontalLayout.addWidget(self.label_8)
+        self.widgetParent = QNodePicker(self.widget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.widgetParent.sizePolicy().hasHeightForWidth())
+        self.widgetParent.setSizePolicy(sizePolicy)
+        self.widgetParent.setObjectName("widgetParent")
+        self.horizontalLayout.addWidget(self.widgetParent)
+        self.verticalLayout.addWidget(self.widget)
         self.label_7 = QtWidgets.QLabel(Poi)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -74,8 +96,10 @@ class Ui_Poi(object):
 
     def retranslateUi(self, Poi):
         Poi.setWindowTitle(QtWidgets.QApplication.translate("Poi", "Form", None, -1))
+        self.label_8.setText(QtWidgets.QApplication.translate("Poi", "Parent", None, -1))
         self.label_7.setText(QtWidgets.QApplication.translate("Poi", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Position on parent</span></p></body></html>", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("Poi", "Z - position", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("Poi", "X - position", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("Poi", "Y - position", None, -1))
 
+from DAVE.gui.helpers.qnodepicker import QNodePicker

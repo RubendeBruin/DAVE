@@ -3,8 +3,8 @@
 # Form implementation generated from reading ui file 'widget_linhyd.ui',
 # licensing of 'widget_linhyd.ui' applies.
 #
-# Created: Thu Oct 31 16:19:27 2019
-#      by: pyside2-uic  running on PySide2 5.13.1
+# Created: Tue Oct  4 17:28:34 2022
+#      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -16,6 +16,28 @@ class Ui_widget_linhyd(object):
         widget_linhyd.resize(447, 809)
         self.verticalLayout = QtWidgets.QVBoxLayout(widget_linhyd)
         self.verticalLayout.setObjectName("verticalLayout")
+        self.widget_2 = QtWidgets.QWidget(widget_linhyd)
+        self.widget_2.setObjectName("widget_2")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.widget_2)
+        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.label_17 = QtWidgets.QLabel(self.widget_2)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_17.sizePolicy().hasHeightForWidth())
+        self.label_17.setSizePolicy(sizePolicy)
+        self.label_17.setObjectName("label_17")
+        self.horizontalLayout_2.addWidget(self.label_17)
+        self.widgetParent = QNodePicker(self.widget_2)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.widgetParent.sizePolicy().hasHeightForWidth())
+        self.widgetParent.setSizePolicy(sizePolicy)
+        self.widgetParent.setObjectName("widgetParent")
+        self.horizontalLayout_2.addWidget(self.widgetParent)
+        self.verticalLayout.addWidget(self.widget_2)
         self.frame_2 = QtWidgets.QFrame(widget_linhyd)
         self.frame_2.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_2.setFrameShadow(QtWidgets.QFrame.Raised)
@@ -91,9 +113,6 @@ class Ui_widget_linhyd(object):
         self.COFY.setMaximum(999999999999.0)
         self.COFY.setObjectName("COFY")
         self.gridLayout.addWidget(self.COFY, 10, 1, 1, 1)
-        self.label_14 = QtWidgets.QLabel(self.frame_2)
-        self.label_14.setObjectName("label_14")
-        self.gridLayout.addWidget(self.label_14, 15, 0, 1, 2)
         self.label_6 = QtWidgets.QLabel(self.frame_2)
         self.label_6.setObjectName("label_6")
         self.gridLayout.addWidget(self.label_6, 6, 0, 1, 1)
@@ -166,6 +185,10 @@ class Ui_widget_linhyd(object):
         self.disp.setMaximum(999999999999.0)
         self.disp.setObjectName("disp")
         self.gridLayout.addWidget(self.disp, 18, 1, 1, 1)
+        self.label_14 = QtWidgets.QLabel(self.frame_2)
+        self.label_14.setWordWrap(True)
+        self.label_14.setObjectName("label_14")
+        self.gridLayout.addWidget(self.label_14, 16, 0, 1, 1)
         self.verticalLayout.addWidget(self.frame_2)
         spacerItem = QtWidgets.QSpacerItem(20, 3, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
@@ -177,13 +200,13 @@ class Ui_widget_linhyd(object):
 
     def retranslateUi(self, widget_linhyd):
         widget_linhyd.setWindowTitle(QtWidgets.QApplication.translate("widget_linhyd", "Form", None, -1))
+        self.label_17.setText(QtWidgets.QApplication.translate("widget_linhyd", "Parent", None, -1))
         self.label_2.setText(QtWidgets.QApplication.translate("widget_linhyd", "Y - position", None, -1))
         self.label_9.setText(QtWidgets.QApplication.translate("widget_linhyd", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">CoB position</span></p><p>[Defined in parent axis system]</p><p><br/></p></body></html>", None, -1))
         self.label.setText(QtWidgets.QApplication.translate("widget_linhyd", "X - position", None, -1))
         self.label_5.setText(QtWidgets.QApplication.translate("widget_linhyd", "BM-t (heel)", None, -1))
         self.label_10.setText(QtWidgets.QApplication.translate("widget_linhyd", "<html><head/><body><br/><span style=\" font-weight:600; text-decoration: underline;\">Stability</span><br/></body></html>", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("widget_linhyd", "Z - position", None, -1))
-        self.label_14.setText(QtWidgets.QApplication.translate("widget_linhyd", "Waterline elevation (relative to CoB, usually positive)", None, -1))
         self.label_6.setText(QtWidgets.QApplication.translate("widget_linhyd", "BM-l (trim)", None, -1))
         self.label_15.setText(QtWidgets.QApplication.translate("widget_linhyd", "Displacement [kN]", None, -1))
         self.label_12.setText(QtWidgets.QApplication.translate("widget_linhyd", "CoF - Y (relative to CoB)", None, -1))
@@ -191,4 +214,7 @@ class Ui_widget_linhyd(object):
         self.label_13.setText(QtWidgets.QApplication.translate("widget_linhyd", "Heave stiffness [kN/m]", None, -1))
         self.label_8.setText(QtWidgets.QApplication.translate("widget_linhyd", "CoF - X (relative to CoB)", None, -1))
         self.label_16.setText(QtWidgets.QApplication.translate("widget_linhyd", "<html><head/><body><br/><span style=\" font-weight:600; text-decoration: underline;\">Draft</span><br/></body></html>", None, -1))
+        self.label_14.setText(QtWidgets.QApplication.translate("widget_linhyd", "Waterline elevation \n"
+"(relative to CoB, usually positive)", None, -1))
 
+from DAVE.gui.helpers.qnodepicker import QNodePicker

@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'main_form.ui',
 # licensing of 'main_form.ui' applies.
 #
-# Created: Tue Oct  4 10:24:58 2022
+# Created: Tue Oct  4 13:09:45 2022
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1099, 819)
+        MainWindow.resize(1280, 900)
         MainWindow.setAcceptDrops(True)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/Dave_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -90,8 +90,9 @@ class Ui_MainWindow(object):
         self.pbTop.setObjectName("pbTop")
         self.horizontalLayout_2.addWidget(self.pbTop)
         self.btnZoomFit = QtWidgets.QPushButton(self.widget_3)
+        self.btnZoomFit.setText("")
         icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap(":/icons/circle_blue.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon6.addPixmap(QtGui.QPixmap(":/icons/cube_open.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.btnZoomFit.setIcon(icon6)
         self.btnZoomFit.setFlat(True)
         self.btnZoomFit.setObjectName("btnZoomFit")
@@ -130,7 +131,7 @@ class Ui_MainWindow(object):
         self.btnSSAO = QtWidgets.QPushButton(self.widget_3)
         self.btnSSAO.setText("")
         icon9 = QtGui.QIcon()
-        icon9.addPixmap(QtGui.QPixmap(":/icons/cube.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon9.addPixmap(QtGui.QPixmap(":/icons/cube_shaded.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.btnSSAO.setIcon(icon9)
         self.btnSSAO.setCheckable(True)
         self.btnSSAO.setChecked(False)
@@ -495,7 +496,6 @@ class Ui_MainWindow(object):
         self.btnSolveStatics.setText(QtWidgets.QApplication.translate("MainWindow", "Solve &statics", None, -1))
         self.pbCopyViewCode.setToolTip(QtWidgets.QApplication.translate("MainWindow", "Copy screenshot code", None, -1))
         self.pb3D.setText(QtWidgets.QApplication.translate("MainWindow", "2D", None, -1))
-        self.btnZoomFit.setText(QtWidgets.QApplication.translate("MainWindow", "Fit", None, -1))
         self.btnPauseAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "||", None, -1))
         self.btnStopAnimation.setText(QtWidgets.QApplication.translate("MainWindow", "X", None, -1))
         self.menuSolve_Statics.setTitle(QtWidgets.QApplication.translate("MainWindow", "File", None, -1))

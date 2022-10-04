@@ -195,11 +195,11 @@
        <item>
         <widget class="QPushButton" name="btnZoomFit">
          <property name="text">
-          <string>Fit</string>
+          <string/>
          </property>
          <property name="icon">
           <iconset resource="resources.qrc">
-           <normaloff>:/icons/circle_blue.png</normaloff>:/icons/circle_blue.png</iconset>
+           <normaloff>:/icons/cube_open.png</normaloff>:/icons/cube_open.png</iconset>
          </property>
          <property name="flat">
           <bool>true</bool>
@@ -282,7 +282,7 @@
          </property>
          <property name="icon">
           <iconset resource="resources.qrc">
-           <normaloff>:/icons/cube.png</normaloff>:/icons/cube.png</iconset>
+           <normaloff>:/icons/cube_shaded.png</normaloff>:/icons/cube_shaded.png</iconset>
          </property>
          <property name="checkable">
           <bool>true</bool>

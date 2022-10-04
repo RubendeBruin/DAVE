@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="icons">
+    <file>cross.png</file>
+    <file>cube_shaded.png</file>
+    <file>cube_open.png</file>
     <file>spmt.png</file>
     <file>component.png</file>
     <file>UC_icon.png</file>

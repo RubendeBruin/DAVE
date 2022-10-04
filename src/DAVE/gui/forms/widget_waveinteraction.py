@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'widget_waveinteraction.ui',
 # licensing of 'widget_waveinteraction.ui' applies.
 #
-# Created: Tue Oct 26 12:36:45 2021
+# Created: Tue Oct  4 17:28:33 2022
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,10 +13,32 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_widget_waveinteraction(object):
     def setupUi(self, widget_waveinteraction):
         widget_waveinteraction.setObjectName("widget_waveinteraction")
-        widget_waveinteraction.resize(444, 350)
+        widget_waveinteraction.resize(444, 314)
         widget_waveinteraction.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
         self.verticalLayout = QtWidgets.QVBoxLayout(widget_waveinteraction)
         self.verticalLayout.setObjectName("verticalLayout")
+        self.widget_2 = QtWidgets.QWidget(widget_waveinteraction)
+        self.widget_2.setObjectName("widget_2")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.widget_2)
+        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.label_13 = QtWidgets.QLabel(self.widget_2)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_13.sizePolicy().hasHeightForWidth())
+        self.label_13.setSizePolicy(sizePolicy)
+        self.label_13.setObjectName("label_13")
+        self.horizontalLayout_2.addWidget(self.label_13)
+        self.widgetParent = QNodePicker(self.widget_2)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.widgetParent.sizePolicy().hasHeightForWidth())
+        self.widgetParent.setSizePolicy(sizePolicy)
+        self.widgetParent.setObjectName("widgetParent")
+        self.horizontalLayout_2.addWidget(self.widgetParent)
+        self.verticalLayout.addWidget(self.widget_2)
         self.label_12 = QtWidgets.QLabel(widget_waveinteraction)
         self.label_12.setWordWrap(True)
         self.label_12.setObjectName("label_12")
@@ -114,6 +136,7 @@ class Ui_widget_waveinteraction(object):
 
     def retranslateUi(self, widget_waveinteraction):
         widget_waveinteraction.setWindowTitle(QtWidgets.QApplication.translate("widget_waveinteraction", "Form", None, -1))
+        self.label_13.setText(QtWidgets.QApplication.translate("widget_waveinteraction", "Parent", None, -1))
         self.label_12.setText(QtWidgets.QApplication.translate("widget_waveinteraction", "<html><head/><body><p>Wave-Interaction</p><p><br/>Hydrodynamic data can be read from a .dhyd or .hyd file.</p></body></html>", None, -1))
         self.comboBox.setItemText(0, QtWidgets.QApplication.translate("widget_waveinteraction", "wirecube.obj", None, -1))
         self.pbRescan.setText(QtWidgets.QApplication.translate("widget_waveinteraction", "Rescan resources", None, -1))
@@ -122,3 +145,4 @@ class Ui_widget_waveinteraction(object):
         self.label_2.setText(QtWidgets.QApplication.translate("widget_waveinteraction", "Y - offset", None, -1))
         self.label_3.setText(QtWidgets.QApplication.translate("widget_waveinteraction", "Z - offset", None, -1))
 
+from DAVE.gui.helpers.qnodepicker import QNodePicker
