@@ -7,12 +7,17 @@ from DAVE.gui.helpers.my_qt_helpers import update_combobox_items_with_completer
 Call Initialize after creation
 
 callback is called when a new node is selected
-register is called with self as argument to register this widget as handler for selection events
+register_func is called with self as argument to register this widget as handler for selection events
 call unregister to remove registration
 
 call NodesSelected() when a node is selected. Will return True if the selection in handled (false otherwise)
 setValue / value to get/set the value
 
+Suggested implementation:
+
+- make a "generate code" function and set callback to that
+- assign register_func to NodeEditor.node_picker_register_func
+- update .node, and .scene whenever needed
 
 """
 
@@ -41,6 +46,7 @@ class QNodePicker(QWidget):
         self.layout.setContentsMargins(0,0,0,0)
 
     def initialize(self, scene, nodetypes, callback, register_func, NoneAllowed, node):
+        """Convenience function for setting all required properties"""
         self.scene = scene
         self.nodetypes = nodetypes
         self.callback = callback
@@ -48,17 +54,19 @@ class QNodePicker(QWidget):
         self.NoneAllowed = NoneAllowed
         self.node = node
 
-    def fill(self):
+    def fill(self, property_name = 'parent'):
         nodes = self.scene.nodes_of_type(self.nodetypes)
         names = [node.name for node in nodes if node.name != self.node.name]
         if self.NoneAllowed:
             names.insert(0,'')
         update_combobox_items_with_completer(self.dropdown, names)
 
-        if self.node.parent is None:
+        prop_node = getattr(self.node, property_name)
+
+        if prop_node is None:
             self.setValue('')
         else:
-            self.setValue(self.node.parent.name)
+            self.setValue(prop_node.name)
 
     def setValue(self, value):
         self.dropdown.blockSignals(True)

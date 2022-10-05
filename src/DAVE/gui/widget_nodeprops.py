@@ -1657,10 +1657,35 @@ class EditLC6d(NodeEditor):
         ui.doubleSpinBox_5.valueChanged.connect(self.generate_code)
         ui.doubleSpinBox_6.valueChanged.connect(self.generate_code)
 
-        ui.cbMasterAxis.currentIndexChanged.connect(self.generate_code)
-        ui.cbSlaveAxis.currentIndexChanged.connect(self.generate_code)
+        # ui.cbMasterAxis.currentIndexChanged.connect(self.generate_code)
+        # ui.cbSlaveAxis.currentIndexChanged.connect(self.generate_code)
+
+        self.ui.widgetMain.initialize(None,
+                                      nodetypes=DAVE.Frame,
+                                      callback = self.main_changed,
+                                      register_func=None,
+                                      NoneAllowed=False,
+                                      node=None)
+
+        self.ui.widgetSecondary.initialize(None,
+                                      nodetypes=DAVE.Frame,
+                                      callback = self.secondary_changed,
+                                      register_func=None,
+                                      NoneAllowed=False,
+                                      node=None)
 
     def post_update_event(self):
+
+        self.ui.widgetMain.scene = self.scene
+        self.ui.widgetMain.register_func = self.node_picker_register_func
+        self.ui.widgetMain.node = self.node
+
+        self.ui.widgetSecondary.scene = self.scene
+        self.ui.widgetSecondary.register_func = self.node_picker_register_func
+        self.ui.widgetSecondary.node = self.node
+
+        self.ui.widgetMain.fill('main')
+        self.ui.widgetSecondary.fill('secondary')
 
         widgets = [
             self.ui.doubleSpinBox_1,
@@ -1669,27 +1694,12 @@ class EditLC6d(NodeEditor):
             self.ui.doubleSpinBox_4,
             self.ui.doubleSpinBox_5,
             self.ui.doubleSpinBox_6,
-            self.ui.cbMasterAxis,
-            self.ui.cbSlaveAxis,
+
         ]
 
         for widget in widgets:
             widget.blockSignals(True)
 
-        self.alist = list()
-        for axis in self.scene.nodes_of_type(vfs.Frame):
-            self.alist.append(axis.name)
-
-        self.ui.cbMasterAxis.clear()
-        self.ui.cbSlaveAxis.clear()
-
-        self.ui.cbMasterAxis.addItems(self.alist)
-        self.ui.cbSlaveAxis.addItems(self.alist)
-
-        # self.ui.cbMasterAxis.setCurrentText(self.node.main.name)
-        cvinf(self.ui.cbMasterAxis, self.node.main.name)
-        # self.ui.cbSlaveAxis.setCurrentText(self.node.secondary.name)
-        cvinf(self.ui.cbSlaveAxis, self.node.secondary.name)
 
         svinf(self.ui.doubleSpinBox_1, self.node.stiffness[0])
         svinf(self.ui.doubleSpinBox_2, self.node.stiffness[1])
@@ -1701,6 +1711,26 @@ class EditLC6d(NodeEditor):
 
         for widget in widgets:
             widget.blockSignals(False)
+
+    def main_changed(self):
+        code = ""
+        element = "\ns['{}']".format(self.node.name)
+
+        new_master = self.ui.widgetMain.value
+        if not new_master == self.node.main.name:
+            code += element + '.main = s["{}"]'.format(new_master)
+
+        self.run_code(code)
+
+    def secondary_changed(self):
+        code = ""
+        element = "\ns['{}']".format(self.node.name)
+
+        new_secondary = self.ui.widgetSecondary.value
+        if not new_secondary == self.node.secondary.name:
+            code += element + '.secondary = s["{}"]'.format(new_secondary)
+
+        self.run_code(code)
 
     def generate_code(self):
 
@@ -1718,18 +1748,9 @@ class EditLC6d(NodeEditor):
             )
         )
 
-        new_master = self.ui.cbMasterAxis.currentText()
-        new_slave = self.ui.cbSlaveAxis.currentText()
-
         if not np.all(new_stiffness == self.node.stiffness):
             code += element + ".stiffness = ({}, {}, {},".format(*new_stiffness[:3])
             code += "                  {}, {}, {})".format(*new_stiffness[3:])
-
-        if not new_master == self.node.main.name:
-            code += element + '.main = s["{}"]'.format(new_master)
-
-        if not new_slave == self.node.secondary.name:
-            code += element + '.secondary = s["{}"]'.format(new_slave)
 
         self.run_code(code)
 
@@ -1746,14 +1767,39 @@ class EditConnector2d(NodeEditor):
         ui.doubleSpinBox_1.valueChanged.connect(self.generate_code)
         ui.doubleSpinBox_4.valueChanged.connect(self.generate_code)
 
-        ui.cbMasterAxis.currentIndexChanged.connect(self.generate_code)
-        ui.cbSlaveAxis.currentIndexChanged.connect(self.generate_code)
+        # Partial initialization
+        # remaining properties are set during post-update-event
+
+        self.ui.widgetMain.initialize(None,
+                                      nodetypes=DAVE.Frame,
+                                      callback = self.main_changed,
+                                      register_func=None,
+                                      NoneAllowed=False,
+                                      node=None)
+
+        self.ui.widgetSecondary.initialize(None,
+                                      nodetypes=DAVE.Frame,
+                                      callback = self.secondary_changed,
+                                      register_func=None,
+                                      NoneAllowed=False,
+                                      node=None)
+
+
 
     def post_update_event(self):
 
+        self.ui.widgetMain.scene = self.scene
+        self.ui.widgetMain.register_func = self.node_picker_register_func
+        self.ui.widgetMain.node = self.node
+
+        self.ui.widgetSecondary.scene = self.scene
+        self.ui.widgetSecondary.register_func = self.node_picker_register_func
+        self.ui.widgetSecondary.node = self.node
+
+        self.ui.widgetMain.fill('nodeA')
+        self.ui.widgetSecondary.fill('nodeB')
+
         widgets = [
-            self.ui.cbMasterAxis,
-            self.ui.cbSlaveAxis,
             self.ui.doubleSpinBox_1,
             self.ui.doubleSpinBox_4,
         ]
@@ -1761,27 +1807,33 @@ class EditConnector2d(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        self.alist = list()
-        for axis in self.scene.nodes_of_type(vfs.Frame):
-            self.alist.append(axis.name)
-
-        self.ui.cbMasterAxis.clear()
-        self.ui.cbSlaveAxis.clear()
-
-        self.ui.cbMasterAxis.addItems(self.alist)
-        self.ui.cbSlaveAxis.addItems(self.alist)
-
-        # self.ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
-        cvinf(self.ui.cbMasterAxis, self.node.nodeA.name)
-
-        # self.ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
-        cvinf(self.ui.cbSlaveAxis, self.node.nodeB.name)
 
         svinf(self.ui.doubleSpinBox_1, self.node.k_linear)
         svinf(self.ui.doubleSpinBox_4, self.node.k_angular)
 
         for widget in widgets:
             widget.blockSignals(False)
+
+    def main_changed(self):
+        code = ""
+        element = "\ns['{}']".format(self.node.name)
+
+        new_master = self.ui.widgetMain.value
+        if not new_master == self.node.nodeA.name:
+            code += element + '.nodeA = s["{}"]'.format(new_master)
+
+        self.run_code(code)
+
+    def secondary_changed(self):
+        code = ""
+        element = "\ns['{}']".format(self.node.name)
+
+        new_secondary = self.ui.widgetSecondary.value
+        if not new_secondary == self.node.nodeB.name:
+            code += element + '.nodeB = s["{}"]'.format(new_secondary)
+
+        self.run_code(code)
+
 
     def generate_code(self):
 
@@ -1790,14 +1842,6 @@ class EditConnector2d(NodeEditor):
 
         new_k_lin = self.ui.doubleSpinBox_1.value()
         new_k_ang = self.ui.doubleSpinBox_4.value()
-        new_master = self.ui.cbMasterAxis.currentText()
-        new_slave = self.ui.cbSlaveAxis.currentText()
-
-        if not new_master == self.node.nodeA.name:
-            code += element + '.nodeA = s["{}"]'.format(new_master)
-
-        if not new_slave == self.node.nodeB.name:
-            code += element + '.nodeB = s["{}"]'.format(new_slave)
 
         if not new_k_lin == self.node.k_linear:
             code += element + ".k_linear = {}".format(new_k_lin)
@@ -1824,12 +1868,37 @@ class EditBeam(NodeEditor):
         ui.doubleSpinBox_5.valueChanged.connect(self.generate_code)
         ui.sbMass.valueChanged.connect(self.generate_code)
         ui.cbTensionOnly.stateChanged.connect(self.generate_code)
-
-        ui.cbMasterAxis.currentIndexChanged.connect(self.generate_code)
-        ui.cbSlaveAxis.currentIndexChanged.connect(self.generate_code)
         ui.sbnSegments.valueChanged.connect(self.generate_code)
 
+        # Partial initialization
+        # remaining properties are set during post-update-event
+
+        self.ui.widgetMain.initialize(None,
+                                      nodetypes=DAVE.Frame,
+                                      callback=self.main_changed,
+                                      register_func=None,
+                                      NoneAllowed=False,
+                                      node=None)
+
+        self.ui.widgetSecondary.initialize(None,
+                                           nodetypes=DAVE.Frame,
+                                           callback=self.secondary_changed,
+                                           register_func=None,
+                                           NoneAllowed=False,
+                                           node=None)
+
     def post_update_event(self):
+
+        self.ui.widgetMain.scene = self.scene
+        self.ui.widgetMain.register_func = self.node_picker_register_func
+        self.ui.widgetMain.node = self.node
+
+        self.ui.widgetSecondary.scene = self.scene
+        self.ui.widgetSecondary.register_func = self.node_picker_register_func
+        self.ui.widgetSecondary.node = self.node
+
+        self.ui.widgetMain.fill('nodeA')
+        self.ui.widgetSecondary.fill('nodeB')
 
         widgets = [
             self.ui.sbnSegments,
@@ -1840,25 +1909,11 @@ class EditBeam(NodeEditor):
             self.ui.doubleSpinBox_5,
             self.ui.sbMass,
             self.ui.cbTensionOnly,
-            self.ui.cbMasterAxis,
-            self.ui.cbSlaveAxis,
         ]
 
         for widget in widgets:
             widget.blockSignals(True)
 
-        self.alist = list()
-        for axis in self.scene.nodes_of_type(vfs.Frame):
-            self.alist.append(axis.name)
-
-        self.ui.cbMasterAxis.clear()
-        self.ui.cbSlaveAxis.clear()
-
-        self.ui.cbMasterAxis.addItems(self.alist)
-        self.ui.cbSlaveAxis.addItems(self.alist)
-
-        self.ui.cbMasterAxis.setCurrentText(self.node.nodeA.name)
-        self.ui.cbSlaveAxis.setCurrentText(self.node.nodeB.name)
 
         self.ui.sbnSegments.setValue(self.node.n_segments)
 
@@ -1890,8 +1945,6 @@ class EditBeam(NodeEditor):
         new_n = self.ui.sbnSegments.value()
         new_tensiononly = self.ui.cbTensionOnly.isChecked()
 
-        new_master = self.ui.cbMasterAxis.currentText()
-        new_slave = self.ui.cbSlaveAxis.currentText()
 
         if not new_L == self.node.L:
             code += element + ".L = {}".format(new_L)
@@ -1911,12 +1964,6 @@ class EditBeam(NodeEditor):
         if not new_mass == self.node.mass:
             code += element + ".mass = {}".format(new_mass)
 
-        if not new_master == self.node.nodeA.name:
-            code += element + '.nodeA = s["{}"]'.format(new_master)
-
-        if not new_slave == self.node.nodeB.name:
-            code += element + '.nodeB = s["{}"]'.format(new_slave)
-
         if not new_n == self.node.n_segments:
             code += element + ".n_segments = {}".format(new_n)
 
@@ -1925,6 +1972,25 @@ class EditBeam(NodeEditor):
 
         self.run_code(code)
 
+    def main_changed(self):
+        code = ""
+        element = "\ns['{}']".format(self.node.name)
+
+        new_master = self.ui.widgetMain.value
+        if not new_master == self.node.nodeA.name:
+            code += element + '.nodeA = s["{}"]'.format(new_master)
+
+        self.run_code(code)
+
+    def secondary_changed(self):
+        code = ""
+        element = "\ns['{}']".format(self.node.name)
+
+        new_secondary = self.ui.widgetSecondary.value
+        if not new_secondary == self.node.nodeB.name:
+            code += element + '.nodeB = s["{}"]'.format(new_secondary)
+
+        self.run_code(code)
 
 @Singleton
 class EditGeometricContact(NodeEditor):
