@@ -72,7 +72,7 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
         drag = QDrag(self)
         drag.setMimeData(mimeData)
 
-        drag.exec_(supportedActions=supportedActions, defaultAction=Qt.MoveAction)
+        drag.exec_(supportedActions=supportedActions) # , defaultAction=Qt.MoveAction)
 
 
 class WidgetNodeTree(guiDockWidget):

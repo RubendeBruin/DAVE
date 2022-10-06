@@ -671,7 +671,7 @@ class VisualActor:
             top_width = (N.n_width - 1) * N.spacing_width + WHEEL_WIDTH
 
             top_deck = self.actors['main']
-            top_deck.scale((top_length, top_width, TOP_THICKNESS), absolute=True)
+            top_deck.SetScale(top_length, top_width, TOP_THICKNESS)
             SetMatrixIfDifferent(top_deck, mat4x4_from_point_on_frame(N.parent, (0,0,-0.5*TOP_THICKNESS)))
 
             # The wheels

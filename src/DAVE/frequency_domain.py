@@ -56,7 +56,7 @@ of 30 degrees about the Y axis then becomes an rotation of sqrt(2)*30 degrees ab
 
 from DAVE.scene import *
 import numpy as np
-import prettytable as pt
+# import prettytable as pt
 from scipy.linalg import eig
 from mafredo.hyddb1 import Hyddb1
 from mafredo.helpers import wavelength
@@ -175,14 +175,19 @@ def _print_summary(data):
         return
 
     first_line = data[0]
-    t = pt.PrettyTable()
-    t.field_names = first_line.keys()
 
-    for entry in data:
-        t.add_row(entry.values())
+    try:
+        import prettytable as pt
+        t = pt.PrettyTable()
+        t.field_names = first_line.keys()
 
-    print(t)
+        for entry in data:
+            t.add_row(entry.values())
 
+        print(t)
+    except:
+        print('install prettytable for a nicer format')
+        print(data)
 
 
 def dynamics_summary_data(scene):
