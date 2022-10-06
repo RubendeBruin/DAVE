@@ -628,8 +628,11 @@ class Gui:
             btn.setAutoExclusive(True)
             # btn.setStyleSheet("text-decoration: underline;")
             self.ui.toolBar.addWidget(btn)
+            self.ui.toolBar.setFixedHeight(btn.minimumSizeHint().height())
 
-        self.ui.toolBar.layout().setContentsMargins(-2, 0, 0, 0)
+        # self.ui.toolBar.layout().setContentsMargins(-2, 0, 0, 0)
+        self.ui.toolBar.setStyleSheet("QToolBar{spacing:0px;}")
+        # self.ui.toolBar
 
         space = QtWidgets.QWidget()
         space.setSizePolicy(
