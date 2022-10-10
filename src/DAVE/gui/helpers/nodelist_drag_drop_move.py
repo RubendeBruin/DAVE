@@ -36,11 +36,9 @@ def call_from_dragEnter_or_Move_Event(list_widget, scene, allowed_nodetypes, eve
     else:
         try:
             name = event.mimeData().text()
-            print(f'receiving {name}')
             node = scene[name]
             if isinstance(node, allowed_nodetypes):
                 event.accept()
-                print('accepted')
         except:
             return
 
