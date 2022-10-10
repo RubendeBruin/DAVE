@@ -1,8 +1,9 @@
 from PySide2.QtCore import QMimeData
 from PySide2.QtGui import QDrag
 from PySide2 import QtCore
-from PySide2.QtWidgets import QApplication, QListWidget, QWidget, QVBoxLayout, QLabel
+from PySide2.QtWidgets import QApplication, QListWidget, QWidget, QVBoxLayout, QLabel, QMainWindow
 
+"""See EditSling for example use"""
 
 def call_from_drop_Event(list_widget, event):
     list = list_widget
@@ -29,7 +30,7 @@ def call_from_drop_Event(list_widget, event):
     else:
         list.addItem(name)
 
-def call_from_dragEnterEvent(list_widget, scene, allowed_nodetypes, event):
+def call_from_dragEnter_or_Move_Event(list_widget, scene, allowed_nodetypes, event):
     if event.source() == list_widget:
         event.accept()
     else:
@@ -47,6 +48,7 @@ def call_from_dragEnterEvent(list_widget, scene, allowed_nodetypes, event):
 if __name__ == '__main__':
     app = QApplication()
 
+    window = QMainWindow()
     widget = QWidget()
     layout = QVBoxLayout()
 
@@ -64,7 +66,7 @@ if __name__ == '__main__':
 
     widget.setLayout(layout)
 
-    widget.show()
+    window.setCentralWidget(widget)
 
     list.setDragEnabled(True)
     list.setAcceptDrops(True)
@@ -81,15 +83,18 @@ if __name__ == '__main__':
     label.mousePressEvent = mousePressed
 
     def drag(*args):
-        call_from_dragEnterEvent(list, scene, (Point, Circle), *args)
+        call_from_dragEnter_or_Move_Event(list, scene, (Point, Circle), *args)
         print('Regenerate code')
     def drop(*args):
         call_from_drop_Event(list, *args)
         print('Regenerate code')
 
+    # Note - set three
     list.dragEnterEvent = drag
     list.dropEvent = drop
+    list.dragMoveEvent = drag
 
     list.addItems(["One","Two","Three"])
 
+    window.show()
     app.exec_()

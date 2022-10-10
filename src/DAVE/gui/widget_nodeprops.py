@@ -28,6 +28,7 @@ import DAVE.gui.forms.widget_shackle
 import DAVE.gui.forms.widget_area
 import DAVE.gui.forms.widget_component
 import DAVE.gui.forms.widget_spmt
+from DAVE.gui.helpers.nodelist_drag_drop_move import call_from_drop_Event, call_from_dragEnter_or_Move_Event
 
 from DAVE.visual import transform_from_node
 from DAVE.gui.helpers.my_qt_helpers import BlockSigs, update_combobox_items_with_completer
@@ -1206,44 +1207,11 @@ class EditCable(NodeEditor):
             self.ui.doubleSpinBox_2.setStyleSheet("background: white")
 
     def dropEvent(self, event):
-
-        list = self.ui.list
-
-        # dropping onto something?
-        point = event.pos()
-        drop_onto = list.itemAt(point)
-
-        if drop_onto:
-            row = list.row(drop_onto)
-        else:
-            row = -1
-
-        if event.source() == list:
-            item = list.currentItem()
-            name = item.text()
-            delrow = list.row(item)
-            list.takeItem(delrow)
-        else:
-            name = event.mimeData().text()
-
-        if row >= 0:
-            list.insertItem(row, name)
-        else:
-            list.addItem(name)
-
+        call_from_drop_Event(self.ui.list, event)
         self.generate_code()
 
     def dragEnterEvent(self, event):
-        if event.source() == self.ui.list:
-            event.accept()
-        else:
-            try:
-                name = event.mimeData().text()
-                node = self.scene[name]
-                if isinstance(node, Circle) or isinstance(node, Point):
-                    event.accept()
-            except:
-                return
+        call_from_dragEnter_or_Move_Event(self.ui.list, self.scene, (Circle, Point), event)
 
 
     def delete_selected(self):
@@ -2304,47 +2272,12 @@ class EditSling(NodeEditor):
             widget.blockSignals(False)
 
     def dropEvent(self, event):
-
-        list = self.ui.list
-
-        # dropping onto something?
-        point = event.pos()
-        drop_onto = list.itemAt(point)
-
-        if drop_onto:
-            row = list.row(drop_onto)
-        else:
-            row = -1
-
-        if event.source() == list:
-            item = list.currentItem()
-            name = item.text()
-            delrow = list.row(item)
-            list.takeItem(delrow)
-        else:
-            name = event.mimeData().text()
-
-        if row >= 0:
-            list.insertItem(row, name)
-        else:
-            list.addItem(name)
-
+        call_from_drop_Event(self.ui.list, event)
         self.generate_code()
 
     def dragEnterEvent(self, event):
-        if event.source() == self.ui.list:
-            event.accept()
-        else:
-            try:
-                name = event.mimeData().text()
-                node = self.scene[name]
-                if isinstance(node, Circle) or isinstance(node, Point):
-                    event.accept()
-            except:
-                return
+        call_from_dragEnter_or_Move_Event(self.ui.list, self.scene, (Circle, Point), event)
 
-    # def dragMoveEvent(self, event):
-    #     event.accept()
 
     def delete_selected(self):
         row = self.ui.list.currentRow()
