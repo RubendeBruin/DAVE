@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>289</width>
+    <width>299</width>
     <height>690</height>
    </rect>
   </property>
@@ -173,42 +173,8 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="1">
-       <widget class="QPushButton" name="pushButton">
-        <property name="text">
-         <string>Add</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" colspan="2">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>A cable can run between and over points and circles. </string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-        <property name="indent">
-         <number>-1</number>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="0">
-       <widget class="QComboBox" name="cbPointsAndCircles">
-        <property name="editable">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" colspan="2">
-       <widget class="QListWidget" name="list"/>
-      </item>
-      <item row="2" column="1">
-       <widget class="QPushButton" name="pbRemoveSelected">
-        <property name="text">
-         <string>Remove selected point</string>
-        </property>
-       </widget>
+       <widget class="QNodePicker" name="widgetPicker" native="true"/>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_8">
@@ -220,7 +186,37 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
+      <item row="4" column="0" colspan="2">
+       <widget class="QListWidget" name="list"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="pushButton">
+        <property name="text">
+         <string>Add</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="pbRemoveSelected">
+        <property name="text">
+         <string>Remove selected point</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>A cable connects points/circles nodes.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+        <property name="indent">
+         <number>-1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="2">
        <widget class="QLabel" name="lbDirection">
         <property name="text">
          <string>For circles the direction in which the cable runs over it is defined by the axis of the circle. Check the box to run over the circle in opposite direction.</string>
@@ -235,6 +231,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QNodePicker</class>
+   <extends>QWidget</extends>
+   <header>DAVE.gui.helpers.qnodepicker</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>doubleSpinBox_1</tabstop>
   <tabstop>doubleSpinBox_2</tabstop>

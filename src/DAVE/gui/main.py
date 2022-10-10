@@ -264,6 +264,7 @@ class Gui:
 
         self.statusbar = QStatusBar()
         self.MainWindow.setStatusBar(self.statusbar)
+        self.statusbar.mousePressEvent = self.show_python_console
 
         # ============== private properties ================
         self._codelog = []
@@ -565,9 +566,11 @@ class Gui:
 
         # the python console
         self.ui.dockWidget_2.setVisible(False)
-        self.ui.actionPython_console_2.triggered.connect(
-            lambda: self.ui.dockWidget_2.show()
-        )
+
+        self.ui.actionPython_console_2.triggered.connect(self.show_python_console)
+
+
+
 
         self.ui.actionVersion.setText(f"Version {DAVE.__version__}")
         self.ui.actionOnline_help.triggered.connect(
@@ -628,7 +631,7 @@ class Gui:
             btn.setAutoExclusive(True)
             # btn.setStyleSheet("text-decoration: underline;")
             self.ui.toolBar.addWidget(btn)
-            self.ui.toolBar.setFixedHeight(btn.minimumSizeHint().height())
+            self.ui.toolBar.setMinimumHeight(btn.minimumSizeHint().height())
 
         # self.ui.toolBar.layout().setContentsMargins(-2, 0, 0, 0)
         self.ui.toolBar.setStyleSheet("QToolBar{spacing:0px;}")
@@ -669,6 +672,9 @@ class Gui:
         if block:
             self.ui.pbUpdate.setVisible(False)
             self.app.exec_()
+
+    def show_python_console(self, *args):
+        self.ui.dockWidget_2.show()
 
     def new_scene(self):
         self.scene.clear()

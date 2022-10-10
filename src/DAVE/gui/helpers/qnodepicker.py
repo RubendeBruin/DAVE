@@ -55,18 +55,24 @@ class QNodePicker(QWidget):
         self.node = node
 
     def fill(self, property_name = 'parent'):
+        """Use 'keep' as property-name to try to maintain the old value"""
+
+        old_value = self.value
         nodes = self.scene.nodes_of_type(self.nodetypes)
         names = [node.name for node in nodes if node.name != self.node.name]
         if self.NoneAllowed:
             names.insert(0,'')
         update_combobox_items_with_completer(self.dropdown, names)
 
-        prop_node = getattr(self.node, property_name)
-
-        if prop_node is None:
-            self.setValue('')
+        if property_name == 'keep':
+            self.setValue(old_value)
         else:
-            self.setValue(prop_node.name)
+            prop_node = getattr(self.node, property_name)
+
+            if prop_node is None:
+                self.setValue('')
+            else:
+                self.setValue(prop_node.name)
 
     def setValue(self, value):
         self.dropdown.blockSignals(True)
@@ -78,17 +84,17 @@ class QNodePicker(QWidget):
         return self.dropdown.currentText()
 
     def valueChanged(self):
-
-        if self.value == '':
-            self.callback()
-        else:
-            try:
-                node = self.scene[self.value]
-            except:
-                return
-
-            if isinstance(node, self.nodetypes):
+        if self.callback is not None:
+            if self.value == '':
                 self.callback()
+            else:
+                try:
+                    node = self.scene[self.value]
+                except:
+                    return
+
+                if isinstance(node, self.nodetypes):
+                    self.callback()
 
     def pick_clicked(self):
         self.register_func(self)

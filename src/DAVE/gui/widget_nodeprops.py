@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import vedo as vp
 from PySide2.QtGui import QColor
 
+from DAVE import Point
 from DAVE.gui.dockwidget import *
 from PySide2.QtCore import Qt
 import DAVE.scene as vfs
@@ -1129,11 +1130,21 @@ class EditCable(NodeEditor):
         ui.list.setAcceptDrops(True)
         ui.list.setDragEnabled(True)
 
+    def connect(self, node, scene, run_code, guiEmitEvent,gui_solve_func,node_picker_register_func):
+        self.ui.widgetPicker.initialize(scene=scene,
+                                        nodetypes=(Point, Circle),
+                                        callback=None,
+                                        register_func=node_picker_register_func,
+                                        NoneAllowed=True,
+                                        node=node)
+        return super().connect(node, scene, run_code, guiEmitEvent, gui_solve_func, node_picker_register_func)
+
+
     def itemChanged(self, *args):
-        self.generate_code()
+            self.generate_code()
 
     def add_item(self):
-        name = self.ui.cbPointsAndCircles.currentText()
+        name = self.ui.widgetPicker.value
         if self.scene.node_exists(name):
 
             # get a selected node
@@ -1167,12 +1178,7 @@ class EditCable(NodeEditor):
 
         # update the combombox with points and circles
 
-        points_and_circles = [node.name for node in self.scene.nodes_of_type((Point, Circle))]
-        current_contents = [self.ui.cbPointsAndCircles.itemText(i) for i in range(self.ui.cbPointsAndCircles.count())]
-        if points_and_circles != current_contents:
-            update_combobox_items_with_completer(self.ui.cbPointsAndCircles, points_and_circles)
-
-        # update_combobox_items_with_completer
+        self.ui.widgetPicker.fill('keep')
 
         self.ui.list.blockSignals(True)  # update the list
 

@@ -772,7 +772,6 @@ class BlenderStyle(vtkInteractorStyleUser):
         campos = np.array(camera.GetPosition())
         focal = np.array(camera.GetFocalPoint())
         up = camera.GetViewUp()
-        upside_down = up[2]<0
         upside_down_factor = -1 if up[2]<0 else 1
 
         # rotate about focal point
