@@ -35,7 +35,7 @@ from DAVE.gui.helpers.my_qt_helpers import BlockSigs, update_combobox_items_with
 import numpy as np
 
 from PySide2.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox, QDesktopWidget, QColorDialog, \
-    QPushButton
+    QPushButton, QSizePolicy
 from PySide2 import QtWidgets
 
 DAVE_GUI_NODE_EDITORS = dict() # Key: node-class, value: editor-class
@@ -1107,6 +1107,8 @@ class EditCable(NodeEditor):
 
         self.ui = ui
         self._widget = widget
+
+        self._widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.additional_pois = list()
 
         # Set events
@@ -2535,7 +2537,6 @@ class WidgetNodeProps(guiDockWidget):
         self.scroll_area.setWidget(self.contents)
         scroll_area_layout.addWidget(self.contents)
         self.setWidget(self.scroll_area)
-        self.scroll_area.setWidgetResizable(False)
 
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
@@ -2547,7 +2548,6 @@ class WidgetNodeProps(guiDockWidget):
 
 
         self.main_layout = QtWidgets.QVBoxLayout()
-
 
         self.manager_widget = QtWidgets.QWidget()
         self.manager_layout = QtWidgets.QVBoxLayout()
@@ -2723,7 +2723,10 @@ class WidgetNodeProps(guiDockWidget):
             self._name_widget = self._node_name_editor.widget
             self.layout.addWidget(self._name_widget)
 
-        self.layout.removeItem(self._Vspacer)
+        try:
+            self.layout.removeItem(self._Vspacer)
+        except:
+            pass # _Vspacer is not always in
 
         # # check the plugins
         # for plugin in self.gui.plugins_editor:
@@ -2837,11 +2840,18 @@ class WidgetNodeProps(guiDockWidget):
         ht = sum([w.sizeHint().height() for w in widgets])
         wt = max([w.sizeHint().width() for w in widgets])
 
-        print(ht)
-
         self.contents.setMinimumSize(QtCore.QSize(wt,ht-5))  # minus 5 to avoid scrollbar to show
 
-        self.layout.addSpacerItem(self._Vspacer)  # add a spacer at the bottom
+        # check if one of the widgets is "expanding"
+        # if not, then add a spacer
+        expanding = False
+        for widget in self._open_edit_widgets:
+            if widget.sizePolicy().verticalPolicy() == QSizePolicy.Expanding:
+                expanding = True
+                break
+
+        if not expanding:
+            self.layout.addSpacerItem(self._Vspacer)  # add a spacer at the bottom
 
         # Geometry, resizing and fitting on screen
         target_height = ht

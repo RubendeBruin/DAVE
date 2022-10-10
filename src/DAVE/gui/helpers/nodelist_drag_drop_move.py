@@ -3,7 +3,11 @@ from PySide2.QtGui import QDrag
 from PySide2 import QtCore
 from PySide2.QtWidgets import QApplication, QListWidget, QWidget, QVBoxLayout, QLabel, QMainWindow
 
-"""See EditSling for example use"""
+"""Two drop-in functions that can be used to enable dragging and dropping of nodes in an
+ordered list.
+
+See EditSling for example use
+"""
 
 def call_from_drop_Event(list_widget, event):
     list = list_widget
