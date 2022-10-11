@@ -11,6 +11,7 @@
 # from abc import ABC, abstractmethod
 # from enum import Enum
 # from typing import List  # for python<3.9
+import weakref
 from typing import Tuple
 
 import pyo3d
@@ -2189,7 +2190,7 @@ class Scene:
         endB,
         length=None,
         EA=0,
-        diameter=0,
+        diameter:float=0,
         sheaves=None,
         mass=None,
         mass_per_length=None,
@@ -3020,7 +3021,7 @@ class Scene:
     def new_sling(
         self,
         name,
-        length=-1,
+        length:float=-1,
         EA=None,
         mass=0.1,
         endA=None,
@@ -3616,6 +3617,103 @@ class Scene:
             copy_of_root_node = self[copy_of_root_node_in_s2.name]
             copy_of_root_node.parent = old_parent
             root_node.parent = old_parent
+
+    # =================== Conversions ===============
+
+    def to_cable(self, sling_node : Sling, zero_weight=False):
+        """Converts a sling to an equivalent cable"""
+        name = self.available_name_like(sling_node.name)
+
+        # calculate the new length
+        length_lossA = 0
+        if isinstance(sling_node.endA, Circle):
+            r = sling_node.endA.radius + sling_node.diameter/2
+            length_lossA = np.pi * r
+
+        length_lossB = 0
+        if isinstance(sling_node.endB, Circle):
+            r = sling_node.endB.radius + sling_node.diameter / 2
+            length_lossB = np.pi * r
+
+        # If both ends are the same circle then the cable would become a grommet.
+        # to avoid that, connect endA to the Point instead
+        original_endA_parent = None
+        if isinstance(sling_node.endB, Circle) and (sling_node.endA == sling_node.endB):
+            original_endA_parent = sling_node.endA
+            sling_node.endA = sling_node.endA.parent
+
+
+
+
+        length = sling_node.length - length_lossA - length_lossB
+
+        # calcualte EA from total stiffness of the sling and the new length
+        # such that the total stiffness is identical
+        EA = sling_node.k_total * length
+
+        if zero_weight:
+            mass_per_length = 0
+        else:
+            mass_per_length = sling_node.mass/length
+
+        cable = self.new_cable(name, endA = sling_node.endA, endB=sling_node.endB, sheaves=sling_node.sheaves,
+                       length=length, mass_per_length=mass_per_length, EA=EA,diameter=sling_node.diameter)
+
+        name = sling_node.name
+        self.delete(sling_node)
+
+        if original_endA_parent is not None:
+            cable.original_endA_parent = weakref.ref(original_endA_parent)
+
+        cable.name = name
+
+        return cable
+
+    def to_sling(self, cable_node : Cable, mass=-1):
+        """Converts a sling to an equivalent cable
+
+        if mass < 0 (default) then the mass of the cable is used. Else the given mass is used.
+        """
+        name = self.available_name_like(cable_node.name)
+
+        endA = cable_node.connections[0]
+
+        original_endA_parent = getattr(cable_node, 'original_endA_parent', None)
+        if original_endA_parent is not None:
+            if valid_node_weakref(original_endA_parent):
+                endA = original_endA_parent()
+
+        endB = cable_node.connections[-1]
+
+        # calculate the new length
+        length_lossA = 0
+        if isinstance(endA, Circle):
+            r = endA.radius + cable_node.diameter / 2
+            length_lossA = np.pi * r
+
+        length_lossB = 0
+        if isinstance(endB, Circle):
+            r = endB.radius + cable_node.diameter / 2
+            length_lossB = np.pi * r
+
+        length = cable_node.length + length_lossA + length_lossB
+
+        # calculate EA from total stiffness of the sling and the new length
+        # such that the total stiffness is identical
+        EAL = cable_node.EA / cable_node.length
+
+        if mass<0:
+            mass = cable_node.mass
+
+        sling = self.new_sling(name, endA = endA, endB=endB, sheaves=cable_node.connections[1:-1],
+                               length=length, mass=mass, k_total = EAL, diameter=cable_node.diameter)
+
+        name = cable_node.name
+        self.delete(cable_node)
+
+        sling.name = name
+
+        return sling
 
     # =================== DYNAMICS ==================
 

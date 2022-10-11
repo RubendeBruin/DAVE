@@ -1838,6 +1838,12 @@ class Gui:
                     if self.scene.nodes_with_parent(node):
                         menu.addAction("Duplicate", duplicate_branch)
 
+                if isinstance(node, Cable):
+                    menu.addAction("Convert Cable --> Sling", lambda *args: self.run_code(f"s.to_sling(s['{node.name}'])", guiEventType.MODEL_STRUCTURE_CHANGED))
+
+                if isinstance(node, Sling):
+                    menu.addAction("Convert Sling --> Cable", lambda *args: self.run_code(f"s.to_cable(s['{node.name}'])", guiEventType.MODEL_STRUCTURE_CHANGED))
+
                 menu.addAction("Duplicate node", duplicate)
 
                 menu.addSeparator()
