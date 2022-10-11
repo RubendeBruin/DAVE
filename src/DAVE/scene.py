@@ -3715,6 +3715,50 @@ class Scene:
 
         return sling
 
+    def to_frame(self, body: RigidBody):
+        """Converts the body to a frame"""
+        name = self.available_name_like('temp')
+        new_frame = self.new_frame(name=name,
+                                   parent=body.parent,
+                                   position = body.position,
+                                   rotation = body.rotation,
+                                   inertia = body.inertia,
+                                   inertia_radii = body.inertia_radii,
+                                   fixed= body.fixed)
+        for node in self._nodes:
+            parent = getattr(node,'parent',None)
+            if parent == body:
+                node.parent = new_frame
+
+        name = body.name
+        self.delete(body)
+        new_frame.name = name
+
+        return new_frame
+
+    def to_rigidbody(self, frame: Frame):
+        """Converts the body to a frame"""
+        name = self.available_name_like('temp')
+        new_body = self.new_rigidbody(name=name,
+                                       parent=frame.parent,
+                                       position=frame.position,
+                                       rotation=frame.rotation,
+                                       mass=frame.inertia,
+                                       fixed=frame.fixed)
+        if new_body.mass > 0:
+            new_body.inertia_radii = frame.inertia_radii
+
+        for node in self._nodes:
+            parent = getattr(node, 'parent', None)
+            if parent == frame:
+                node.parent = new_body
+
+        name = frame.name
+        self.delete(frame)
+        new_body.name = name
+
+        return new_body
+
     # =================== DYNAMICS ==================
 
     def dynamics_M(self, delta=1e-6):

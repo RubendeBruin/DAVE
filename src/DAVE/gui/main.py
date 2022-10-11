@@ -1844,6 +1844,13 @@ class Gui:
                 if isinstance(node, Sling):
                     menu.addAction("Convert Sling --> Cable", lambda *args: self.run_code(f"s.to_cable(s['{node.name}'])", guiEventType.MODEL_STRUCTURE_CHANGED))
 
+                if type(node) == RigidBody:
+                    menu.addAction("Downgrade Body --> Frame", lambda *args: self.run_code(f"s.to_frame(s['{node.name}'])", guiEventType.MODEL_STRUCTURE_CHANGED))
+
+                if type(node) == Frame:
+                    menu.addAction("Upgrade Frame --> Body", lambda *args: self.run_code(f"s.to_rigidbody(s['{node.name}'])", guiEventType.MODEL_STRUCTURE_CHANGED))
+
+
                 menu.addAction("Duplicate node", duplicate)
 
                 menu.addSeparator()
