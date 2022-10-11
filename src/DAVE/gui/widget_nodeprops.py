@@ -28,6 +28,7 @@ import DAVE.gui.forms.widget_shackle
 import DAVE.gui.forms.widget_area
 import DAVE.gui.forms.widget_component
 import DAVE.gui.forms.widget_spmt
+import DAVE.gui.forms.widget_connections
 from DAVE.gui.helpers.nodelist_drag_drop_move import call_from_drop_Event, call_from_dragEnter_or_Move_Event
 
 from DAVE.visual import transform_from_node
@@ -1096,13 +1097,12 @@ class EditPoi(AbstractNodeEditorWithParent):
 
         self.run_code(code)
 
-
 @Singleton
-class EditCable(NodeEditor):
+class EditConnections(NodeEditor):
     def __init__(self):
 
         widget = QtWidgets.QWidget()
-        ui = DAVE.gui.forms.widget_cable.Ui_Cable_form()
+        ui = DAVE.gui.forms.widget_connections.Ui_ConnectionForm()
         ui.setupUi(widget)
 
         self.ui = ui
@@ -1113,13 +1113,6 @@ class EditCable(NodeEditor):
 
         # Set events
         ui.pbRemoveSelected.clicked.connect(self.delete_selected)
-
-        ui.doubleSpinBox.valueChanged.connect(self.generate_code)
-        ui.doubleSpinBox_1.valueChanged.connect(self.generate_code)
-        ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
-        ui.doubleSpinBox_3.valueChanged.connect(self.generate_code)
-        ui.doubleSpinBox_4.valueChanged.connect(self.generate_code)
-
         self.ui.pushButton.clicked.connect(self.add_item)
 
         # ------- setup the drag-and-drop code ---------
@@ -1169,22 +1162,12 @@ class EditCable(NodeEditor):
             self.run_code(f"raise ValueError(f'No node with name {name}')")
 
 
-
-
     def post_update_event(self):
 
-        svinf(self.ui.doubleSpinBox_1, self.node.length)
-        svinf(self.ui.doubleSpinBox_2, self.node.EA)
-        svinf(self.ui.doubleSpinBox, self.node.diameter)
-        svinf(self.ui.doubleSpinBox_3, self.node.mass_per_length)
-        svinf(self.ui.doubleSpinBox_4, self.node.mass)
-
         # update the combombox with points and circles
-
         self.ui.widgetPicker.fill('keep')
 
         self.ui.list.blockSignals(True)  # update the list
-
         self.ui.list.clear()
         labelVisible = False
 
@@ -1199,14 +1182,7 @@ class EditCable(NodeEditor):
 
         self.ui.lbDirection.setVisible(labelVisible)
 
-        self.set_colors()
         self.ui.list.blockSignals(False)
-
-    def set_colors(self):
-        if self.ui.doubleSpinBox_2.value() == 0:
-            self.ui.doubleSpinBox_2.setStyleSheet("background: orange")
-        else:
-            self.ui.doubleSpinBox_2.setStyleSheet("background: white")
 
     def dropEvent(self, event):
         call_from_drop_Event(self.ui.list, event)
@@ -1224,21 +1200,8 @@ class EditCable(NodeEditor):
 
     def generate_code(self):
 
-        self.set_colors()
-
         code = ""
         element = "\ns['{}']".format(self.node.name)
-
-        new_length = self.ui.doubleSpinBox_1.value()
-        new_EA = self.ui.doubleSpinBox_2.value()
-        new_diameter = self.ui.doubleSpinBox.value()
-        new_mass_per_length = self.ui.doubleSpinBox_3.value()
-
-        code += code_if_changed_d(self.node, new_length, 'length')
-        code += code_if_changed_d(self.node, new_EA, 'EA')
-        code += code_if_changed_d(self.node, new_diameter, 'diameter')
-        code += code_if_changed_d(self.node, new_mass_per_length, 'mass_per_length')
-        code += code_if_changed_d(self.node, self.ui.doubleSpinBox_4.value(), 'mass')
 
         # connection names
         new_names = []
@@ -1259,6 +1222,62 @@ class EditCable(NodeEditor):
         if reversed != self.node.reversed:
             code += f'{element}.reversed = {reversed}'
 
+        self.run_code(code)
+
+
+@Singleton
+class EditCable(NodeEditor):
+    def __init__(self):
+
+        widget = QtWidgets.QWidget()
+        ui = DAVE.gui.forms.widget_cable.Ui_Cable_form()
+        ui.setupUi(widget)
+
+        self.ui = ui
+        self._widget = widget
+
+
+        # Set events
+
+        ui.doubleSpinBox.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_1.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_3.valueChanged.connect(self.generate_code)
+        ui.doubleSpinBox_4.valueChanged.connect(self.generate_code)
+
+
+    def post_update_event(self):
+
+        svinf(self.ui.doubleSpinBox_1, self.node.length)
+        svinf(self.ui.doubleSpinBox_2, self.node.EA)
+        svinf(self.ui.doubleSpinBox, self.node.diameter)
+        svinf(self.ui.doubleSpinBox_3, self.node.mass_per_length)
+        svinf(self.ui.doubleSpinBox_4, self.node.mass)
+
+
+    def set_colors(self):
+        if self.ui.doubleSpinBox_2.value() == 0:
+            self.ui.doubleSpinBox_2.setStyleSheet("background: orange")
+        else:
+            self.ui.doubleSpinBox_2.setStyleSheet("background: white")
+
+    def generate_code(self):
+
+        self.set_colors()
+
+        code = ""
+        element = "\ns['{}']".format(self.node.name)
+
+        new_length = self.ui.doubleSpinBox_1.value()
+        new_EA = self.ui.doubleSpinBox_2.value()
+        new_diameter = self.ui.doubleSpinBox.value()
+        new_mass_per_length = self.ui.doubleSpinBox_3.value()
+
+        code += code_if_changed_d(self.node, new_length, 'length')
+        code += code_if_changed_d(self.node, new_EA, 'EA')
+        code += code_if_changed_d(self.node, new_diameter, 'diameter')
+        code += code_if_changed_d(self.node, new_mass_per_length, 'mass_per_length')
+        code += code_if_changed_d(self.node, self.ui.doubleSpinBox_4.value(), 'mass')
 
         self.run_code(code)
 
@@ -2203,11 +2222,7 @@ class EditSling(NodeEditor):
 
         self.ui = ui
         self._widget = widget
-        self._widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-        self.additional_pois = list()
-
         # Set events
-        ui.pbRemoveSelected.clicked.connect(self.delete_selected)
 
         ui.sbLength.valueChanged.connect(self.generate_code)
         ui.sbEA.valueChanged.connect(self.generate_code)
@@ -2218,16 +2233,6 @@ class EditSling(NodeEditor):
         ui.sbLSpliceA.valueChanged.connect(self.generate_code)
         ui.sbLSpliceB.valueChanged.connect(self.generate_code)
         ui.sbK.valueChanged.connect(self.generate_code)
-
-        # ------- setup the drag-and-drop code ---------
-
-        ui.list.dropEvent = self.dropEvent
-        ui.list.dragEnterEvent = self.dragEnterEvent
-        ui.list.dragMoveEvent = self.dragEnterEvent
-
-        ui.list.setDragEnabled(True)
-        ui.list.setAcceptDrops(True)
-        ui.list.setDragEnabled(True)
 
     def post_update_event(self):
 
@@ -2246,10 +2251,6 @@ class EditSling(NodeEditor):
         for widget in widgets:
             widget.blockSignals(True)
 
-        for ddb in self.additional_pois:
-            self.poiLayout.removeWidget(ddb)
-            ddb.deleteLater()
-
         svinf(self.ui.sbLength, self.node.length)
         svinf(self.ui.sbEA, self.node.EA)
         svinf(self.ui.sbDiameter, self.node.diameter)
@@ -2260,33 +2261,9 @@ class EditSling(NodeEditor):
         svinf(self.ui.sbLSpliceB, self.node.LspliceB)
         svinf(self.ui.sbK, self.node.k_total)
 
-        self.ui.list.clear()
-
-        if self.node.endA is not None:
-            self.ui.list.addItem(self.node.endA.name)
-
-        for s in self.node.sheaves:
-            self.ui.list.addItem(s.name)
-
-        if self.node.endB is not None:
-            self.ui.list.addItem(self.node.endB.name)
 
         for widget in widgets:
             widget.blockSignals(False)
-
-    def dropEvent(self, event):
-        call_from_drop_Event(self.ui.list, event)
-        self.generate_code()
-
-    def dragEnterEvent(self, event):
-        call_from_dragEnter_or_Move_Event(self.ui.list, self.scene, (Circle, Point), event)
-
-
-    def delete_selected(self):
-        row = self.ui.list.currentRow()
-        if row > -1:
-            self.ui.list.takeItem(row)
-        self.generate_code()
 
     def generate_code(self):
         code = ""
@@ -2318,48 +2295,6 @@ class EditSling(NodeEditor):
         code += code_if_changed_d(node, new_LeyeB, "LeyeB", 3)
         code += code_if_changed_d(node, new_LspliceA, "LspliceA", 3)
         code += code_if_changed_d(node, new_LspliceB, "LspliceB", 3)
-
-        # get the poi names
-        new_names = []
-        for i in range(self.ui.list.count()):
-            new_names.append(self.ui.list.item(i).text())
-
-        new_endA = None
-        new_endB = None
-        new_circles = []
-
-        if len(new_names) > 0:
-            new_endA = new_names[0]
-
-        if len(new_names) > 1:
-            new_endB = new_names[-1]
-
-        if len(new_names) > 2:
-            new_circles = new_names[1:-1]
-
-        if node.endA is not None:
-            if not node.endA.name == new_endA:
-                code += element + '.endA = "{}"'.format(new_endA)
-        else:
-            code += element + '.endA = "{}"'.format(new_endA)
-
-        if node.endB is not None:
-            if not node.endB.name == new_endB:
-                code += element + '.endB = "{}"'.format(new_endB)
-        else:
-            code += element + '.endB = "{}"'.format(new_endB)
-
-        sheave_names = [n.name for n in node.sheaves]
-
-        if not sheave_names == new_circles:
-
-            if new_circles:
-                code += element + ".sheaves = ["
-                for s in new_circles:
-                    code += f'"{s}", '
-                code = code[:-2] + "]"
-            else:
-                code += element + ".sheaves = []"
 
         self.run_code(code)
 
@@ -2756,6 +2691,7 @@ class WidgetNodeProps(guiDockWidget):
 
         if isinstance(node, vfs.Cable):
             self._node_editors.append(EditCable.Instance())
+            self._node_editors.append(EditConnections.Instance())
 
         if isinstance(node, vfs.Force):
             self._node_editors.append(EditForce.Instance())
@@ -2783,6 +2719,7 @@ class WidgetNodeProps(guiDockWidget):
 
         if isinstance(node, vfs.Sling):
             self._node_editors.append(EditSling.Instance())
+            self._node_editors.append(EditConnections.Instance())
 
         if isinstance(node, vfs.SPMT):
             self._node_editors.append(EditSPMT.Instance())

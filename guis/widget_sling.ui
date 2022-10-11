@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>427</width>
-    <height>891</height>
+    <height>397</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -361,29 +361,6 @@
      </layout>
     </widget>
    </item>
-   <item>
-    <widget class="QLabel" name="label_13">
-     <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Connection points of the sling&lt;/p&gt;&lt;p&gt;drag/drop to modify&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-     <property name="indent">
-      <number>-1</number>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QListWidget" name="list"/>
-   </item>
-   <item>
-    <widget class="QPushButton" name="pbRemoveSelected">
-     <property name="text">
-      <string>remove selected point</string>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <tabstops>
@@ -396,8 +373,6 @@
   <tabstop>sbLSpliceA</tabstop>
   <tabstop>sbLEyeB</tabstop>
   <tabstop>sbLSpliceB</tabstop>
-  <tabstop>list</tabstop>
-  <tabstop>pbRemoveSelected</tabstop>
  </tabstops>
  <resources/>
  <connections/>

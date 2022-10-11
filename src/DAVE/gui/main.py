@@ -989,10 +989,13 @@ class Gui:
         filename = filename[1:]
         p = Path(filename)
 
-        try:
-            self.open_file(p)
-        except:
-            print(f"Could not open file {filename}")
+        if p.exists():
+            try:
+                self.open_file(p)
+            except:
+                raise ValueError(f"Could not open file {filename}")
+        else:
+            raise ValueError(f"Could not open file {filename}")
 
     def get_recent(self):
         settings = QSettings("rdbr", "DAVE")
@@ -1300,7 +1303,17 @@ class Gui:
         self.statusbar.showMessage(str(what))
 
         if not self.ui.dockWidget_2.isVisible() and style==1:
-            QMessageBox.warning(self.ui.widget, "error", what, QMessageBox.Ok)
+
+            tool_long = len(what) > 1000 or len(what.split('\n')) > 30
+
+            short = what[-1000:]
+            short = '\n'.join(short.split('\n')[-30:])
+
+            if tool_long:
+                print(what)
+                QMessageBox.warning(self.ui.widget, "error", short + '\n\n !!! first part omitted,\n see (python) console for full error message', QMessageBox.Ok)
+            else:
+                QMessageBox.warning(self.ui.widget, "error", what, QMessageBox.Ok)
 
 
     def run_code(self, code, event, store_undo=False):

@@ -5791,6 +5791,31 @@ class Sling(Manager):
         self.sb._vfNode.position = value[:3]
         self.sb._vfNode.rotation = np.deg2rad(value[3:])
 
+    @property
+    def connections(self):
+        return (self.endA, *self.main.connections[1:-1], self.endB)
+
+    @connections.setter
+    def connections(self, value):
+        with ClaimManagement(self._scene, self):
+            self.endA = value[0]
+            self.endB = value[-1]
+
+            # ma = self.main.connections[0]
+            # mb = self.main.connections[-1]
+            self.sheaves = value[1:-1]
+
+            # self.main.connections = (ma, *value[1:-1], mb)
+
+    @property
+    def reversed(self):
+        return (False, *self.main.reversed[1:-1], False)
+    
+    @reversed.setter
+    def reversed(self, value):
+        with ClaimManagement(self._scene, self):
+            self.main.reversed = (False, *value[1:-1], False)
+
     def give_python_code(self):
         code = f"# Exporting {self.name}"
 
@@ -5820,6 +5845,11 @@ class Sling(Manager):
         code += f"\n            sheaves = {sheaves})"
         code += "\nsl.spliceAposrot = ({},{},{},{},{},{}) # solved".format(*self.spliceAposrot)
         code += "\nsl.spliceBposrot = ({},{},{},{},{},{}) # solved".format(*self.spliceBposrot)
+
+        if self.sheaves:
+            if np.any(self.reversed):
+                code += f"\nsl.reversed = {self.reversed}"
+
 
         return code
 
