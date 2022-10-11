@@ -2203,6 +2203,7 @@ class EditSling(NodeEditor):
 
         self.ui = ui
         self._widget = widget
+        self._widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.additional_pois = list()
 
         # Set events
