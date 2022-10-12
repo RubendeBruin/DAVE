@@ -2786,6 +2786,11 @@ class WidgetNodeProps(guiDockWidget):
         for widget in self._open_edit_widgets:
             if widget.sizePolicy().verticalPolicy() == QSizePolicy.Expanding:
                 expanding = True
+
+                # move expanding widget to the end
+                self.layout.removeWidget(widget)
+                self.layout.addWidget(widget)
+
                 break
 
         if not expanding:
