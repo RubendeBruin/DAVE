@@ -856,11 +856,13 @@ class Gui:
         if self.selected_nodes:
             node = self.selected_nodes[0]
             visual = self.visual.actor_from_node(node)
-            position = visual.center_position
-            print(f"focusing camera to {node.name} at {position}")
-            self.visual.focus_on(position)
 
-            self.refresh_3dview()
+            if visual is not None:
+                position = visual.center_position
+                print(f"focusing camera to {node.name} at {position}")
+                self.visual.focus_on(position)
+
+                self.refresh_3dview()
 
     def savepoint_restore(self):
 
@@ -1316,7 +1318,7 @@ class Gui:
                 QMessageBox.warning(self.ui.widget, "error", what, QMessageBox.Ok)
 
 
-    def run_code(self, code, event, store_undo=False):
+    def run_code(self, code, event, store_undo=False, sender=None):
         """Runs the provided code
 
         If successful, add code to history and create an undo point
@@ -1407,10 +1409,10 @@ class Gui:
                         break
 
                 if event is not None:
-                    self.guiEmitEvent(event)
+                    self.guiEmitEvent(event, sender=sender)
 
                 if to_be_removed and not emitted:
-                    self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
+                    self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED, sender=sender)
 
             except Exception as E:
 
@@ -1443,7 +1445,7 @@ class Gui:
         )
 
     def solve_statics_using_gui_on_scene(
-        self, scene_to_solve, timeout_s=1, called_by_user=True
+        self, scene_to_solve, timeout_s=0.5, called_by_user=True
     ):
         scene_to_solve.update()
 
@@ -1483,6 +1485,7 @@ class Gui:
             if self._dialog is None:
                 self._dialog = SolverDialog()
                 self._dialog.btnTerminate.clicked.connect(self.stop_solving)
+                self._dialog.label.setText(f"Solving static equilibrium")
                 self._dialog.show()
 
             self._dialog.label_2.setText(message)
@@ -1760,6 +1763,10 @@ class Gui:
             pass
 
         self.openContextMenyAt(name, globLoc)
+
+    def selected_nodes_of_instance(self, req_class):
+        """Returns a list of nodes that are selected and are an instance of the requested class"""
+        return [node for node in self.selected_nodes if isinstance(node, req_class)]
 
     def openContextMenyAt(self, node_name, globLoc):
         menu = QtWidgets.QMenu()

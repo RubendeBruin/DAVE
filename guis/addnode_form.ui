@@ -135,7 +135,7 @@
          </size>
         </property>
         <property name="text">
-         <string>[axis]</string>
+         <string>[Frame]</string>
         </property>
        </widget>
       </item>
@@ -200,7 +200,7 @@
          </size>
         </property>
         <property name="text">
-         <string>[poi]</string>
+         <string>[point]</string>
         </property>
        </widget>
       </item>
@@ -265,7 +265,7 @@
          </size>
         </property>
         <property name="text">
-         <string>[axis]</string>
+         <string>[Frame]</string>
         </property>
        </widget>
       </item>
@@ -318,7 +318,7 @@
          </size>
         </property>
         <property name="text">
-         <string>[axis]</string>
+         <string>[Frame]</string>
         </property>
        </widget>
       </item>
@@ -383,7 +383,7 @@
          </size>
         </property>
         <property name="text">
-         <string>[poi]</string>
+         <string>[Point]</string>
         </property>
        </widget>
       </item>
@@ -436,7 +436,7 @@
          </size>
         </property>
         <property name="text">
-         <string>[poi]</string>
+         <string>[Point]</string>
         </property>
        </widget>
       </item>
@@ -446,7 +446,7 @@
    <item>
     <widget class="QLabel" name="errPois">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#aa0000;&quot;&gt;Select two distinct pois&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#aa0000;&quot;&gt;Select two distinct nodes&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </item>

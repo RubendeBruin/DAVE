@@ -59,7 +59,12 @@ class QNodePicker(QWidget):
 
         old_value = self.value
         nodes = self.scene.nodes_of_type(self.nodetypes)
-        names = [node.name for node in nodes if node.name != self.node.name]
+
+        if self.node is None:
+            names = [node.name for node in nodes]
+        else:
+            names = [node.name for node in nodes if node.name != self.node.name]
+
         if self.NoneAllowed:
             names.insert(0,'')
         update_combobox_items_with_completer(self.dropdown, names)

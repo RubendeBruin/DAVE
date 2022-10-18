@@ -204,15 +204,15 @@ class NodeEditor(ABC):
     def widget(self) -> QtWidgets.QWidget:
         return self._widget
 
-    def run_code(self, code, event=None):
+    def run_code(self, code, event=None, sender=None):
 
         if code == "":
             return
 
         if event is None:
-            self._run_code(code)
+            self._run_code(code, sender=sender)
         else:
-            self._run_code(code, event)
+            self._run_code(code, event, sender=sender)
 
     @abstractmethod
     def post_update_event(self):
@@ -1137,7 +1137,7 @@ class EditConnections(NodeEditor):
 
 
     def itemChanged(self, *args):
-            self.generate_code()
+        self.generate_code()
 
     def add_item(self):
         name = self.ui.widgetPicker.value
@@ -2590,11 +2590,11 @@ class WidgetNodeProps(guiDockWidget):
             for w in self._node_editors:
                 w.post_update_event()
 
-    def run_code(self, code, event=None):
+    def run_code(self, code, event=None, sender=None):
         if event is None:
-            self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
+            self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED, sender=sender)
         else:
-            self.guiRunCodeCallback(code, event)
+            self.guiRunCodeCallback(code, event, sender=sender)
         self.check_for_warnings()
 
     def check_for_warnings(self):
@@ -2797,24 +2797,26 @@ class WidgetNodeProps(guiDockWidget):
             self.layout.addSpacerItem(self._Vspacer)  # add a spacer at the bottom
 
         # Geometry, resizing and fitting on screen
-        target_height = ht
 
-        qdw = QDesktopWidget()
-        geo = qdw.screenGeometry(self)
+        if self.isFloating():
+            target_height = ht
 
-        if target_height > geo.height():
-            target_height = geo.height()
-            wt = wt + 20 # for scrollbar
+            qdw = QDesktopWidget()
+            geo = qdw.screenGeometry(self)
 
-        self.resize(
-            QtCore.QSize(wt, target_height)
-        )  # set the size of the floating dock widget to its minimum size
+            if target_height > geo.height():
+                target_height = geo.height()
+                wt = wt + 20 # for scrollbar
 
-        top = self.pos().y()
+            self.resize(
+                QtCore.QSize(wt, target_height)
+            )  # set the size of the floating dock widget to its minimum size
 
-        if top + target_height > geo.height():
-            top = geo.height() - target_height
-            if top<=0:
-                top=5
-            self.setGeometry(self.pos().x(), top, wt, target_height)
+            top = self.pos().y()
+
+            if top + target_height > geo.height():
+                top = geo.height() - target_height
+                if top<=0:
+                    top=5
+                self.setGeometry(self.pos().x(), top, wt, target_height)
 
