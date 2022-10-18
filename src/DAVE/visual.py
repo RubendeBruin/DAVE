@@ -536,7 +536,10 @@ class VisualActor:
             else:
                 actor.GetProperty().SetRepresentationToWireframe()
 
-            actor.lineWidth(actor_settings.lineWidth)
+            if getattr(self.node, '_draw_fat', False):
+                actor.lineWidth(2*actor_settings.lineWidth)
+            else:
+                actor.lineWidth(actor_settings.lineWidth)
 
             if actor_settings.lineWidth > 0:
                 if uc_paint is None:

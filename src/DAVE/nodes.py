@@ -5469,56 +5469,64 @@ class Sling(Manager):
 
         # create the two splices
 
-        self.sa = scene.new_rigidbody(
-            scene.available_name_like(name_prefix + "_spliceA"), fixed=False
+        self.sa1 = scene.new_rigidbody(
+            scene.available_name_like(name_prefix + "_spliceA1"), fixed=(False,False,False,True,True,True)
         )
+
+        self.sa2 = scene.new_rigidbody(
+            scene.available_name_like(name_prefix + "_spliceA2"), fixed=(False,False,False,True,True,True)
+        )
+
         self.a1 = scene.new_point(
-            scene.available_name_like(name_prefix + "_spliceA"), parent=self.sa
+            scene.available_name_like(name_prefix + "_spliceA1p"), parent=self.sa1
         )
         self.a2 = scene.new_point(
-            scene.available_name_like(name_prefix + "_spliceA2"), parent=self.sa
-        )
-        self.am = scene.new_point(
-            scene.available_name_like(name_prefix + "_spliceAM"), parent=self.sa
+            scene.available_name_like(name_prefix + "_spliceA2p"), parent=self.sa2
         )
 
-        self.avis = scene.new_visual(
-            name + "_spliceA_visual",
-            parent=self.sa,
-            path=r"cylinder 1x1x1 lowres.obj",
-            offset=(-LspliceA / 2, 0.0, 0.0),
-            rotation=(0.0, 90.0, 0.0),
-            scale=(LspliceA, 2 * diameter, diameter),
-        )
+        # self.avis = scene.new_visual(
+        #     name + "_spliceA_visual",
+        #     parent=self.sa,
+        #     path=r"cylinder 1x1x1 lowres.obj",
+        #     offset=(-LspliceA / 2, 0.0, 0.0),
+        #     rotation=(0.0, 90.0, 0.0),
+        #     scale=(LspliceA, 2 * diameter, diameter),
+        # )
 
-        self.sb = scene.new_rigidbody(
-            scene.available_name_like(name_prefix + "_spliceB"),
+        self.sb1 = scene.new_rigidbody(
+            scene.available_name_like(name_prefix + "_spliceB1"),
             rotation=(0, 0, 180),
-            fixed=False,
+            fixed=(False,False,False,True,True,True),
         )
+
+        self.sb2 = scene.new_rigidbody(
+            scene.available_name_like(name_prefix + "_spliceB2"),
+            rotation=(0, 0, 180),
+            fixed=(False,False,False,True,True,True),
+        )
+
+
+
         self.b1 = scene.new_point(
-            scene.available_name_like(name_prefix + "_spliceB1"), parent=self.sb
+            scene.available_name_like(name_prefix + "_spliceB1p"), parent=self.sb1
         )
         self.b2 = scene.new_point(
-            scene.available_name_like(name_prefix + "_spliceB2"), parent=self.sb
-        )
-        self.bm = scene.new_point(
-            scene.available_name_like(name_prefix + "_spliceBM"), parent=self.sb
+            scene.available_name_like(name_prefix + "_spliceB2p"), parent=self.sb2
         )
 
-        self.bvis = scene.new_visual(
-            scene.available_name_like(name_prefix + "_spliceB_visual"),
-            parent=self.sb,
-            path=r"cylinder 1x1x1 lowres.obj",
-            offset=(-LspliceB / 2, 0.0, 0.0),
-            rotation=(0.0, 90.0, 0.0),
-            scale=(LspliceB, 2 * diameter, diameter),
-        )
+        # self.bvis = scene.new_visual(
+        #     scene.available_name_like(name_prefix + "_spliceB_visual"),
+        #     parent=self.sb,
+        #     path=r"cylinder 1x1x1 lowres.obj",
+        #     offset=(-LspliceB / 2, 0.0, 0.0),
+        #     rotation=(0.0, 90.0, 0.0),
+        #     scale=(LspliceB, 2 * diameter, diameter),
+        # )
 
         self.main = scene.new_cable(
             scene.available_name_like(name_prefix + "_main_part"),
-            endA=self.am,
-            endB=self.bm,
+            endA=self.a1,
+            endB=self.b1,
             length=1,
             EA=1,
             diameter=diameter,
@@ -5526,51 +5534,76 @@ class Sling(Manager):
 
         self.eyeA = scene.new_cable(
             scene.available_name_like(name_prefix + "_eyeA"),
-            endA=self.a1,
+            endA=self.a2,
             endB=self.a2,
+            sheaves = self._endA,
             length=1,
             EA=1,
         )
         self.eyeB = scene.new_cable(
             scene.available_name_like(name_prefix + "_eyeB"),
+            endA=self.b2,
+            endB=self.b2,
+            sheaves=self._endB,
+            length=1,
+            EA=1,
+        )
+
+        # create splice cables
+
+        self.spliceA = scene.new_cable(
+            scene.available_name_like(name_prefix + "_spliceA"),
+            endA=self.a1,
+            endB=self.a2,
+            length=1,
+            EA=1,
+        )
+
+        self.spliceB = scene.new_cable(
+            scene.available_name_like(name_prefix + "_spliceB"),
             endA=self.b1,
             endB=self.b2,
             length=1,
             EA=1,
         )
 
+        self.spliceA._draw_fat = True
+        self.spliceB._draw_fat = True
+        self.spliceA.color = (117,94,78)
+        self.spliceB.color = (117,94,78)
+
         # set initial positions of splices if we can
-
-        if self._endA is not None and self._endB is not None:
-
-
-            # endA
-
-            a = np.array(self._endA.global_position)
-            if sheaves:
-                p = np.array(scene._node_from_node_or_str(sheaves[0]).global_position)
-            else:
-                p = np.array(self._endB.global_position)
-
-            dir = p - a
-            if np.linalg.norm(dir) > 1e-6:
-                dir /= np.linalg.norm(dir)
-                self.sa.rotation = rotation_from_x_axis_direction(-dir)
-                self.sa.position = a + (LeyeA + 0.5 * LspliceA) * dir
-
-            # endB
-
-            b = np.array(self._endB.global_position)
-            if sheaves:
-                p = np.array(scene._node_from_node_or_str(sheaves[-1]).global_position)
-            else:
-                p = np.array(self._endA.global_position)
-
-            dir = p - b
-            if np.linalg.norm(dir) > 1e-6:
-                dir /= np.linalg.norm(dir)
-                self.sb.rotation = rotation_from_x_axis_direction(-dir)
-                self.sb.position = b + (LeyeB + 0.5 * LspliceB) * dir
+        #
+        # if self._endA is not None and self._endB is not None:
+        #
+        #
+        #     # endA
+        #
+        #     a = np.array(self._endA.global_position)
+        #     if sheaves:
+        #         p = np.array(scene._node_from_node_or_str(sheaves[0]).global_position)
+        #     else:
+        #         p = np.array(self._endB.global_position)
+        #
+        #     dir = p - a
+        #     if np.linalg.norm(dir) > 1e-6:
+        #         dir /= np.linalg.norm(dir)
+        #         self.sa.rotation = rotation_from_x_axis_direction(-dir)
+        #         self.sa.position = a + (LeyeA + 0.5 * LspliceA) * dir
+        #
+        #     # endB
+        #
+        #     b = np.array(self._endB.global_position)
+        #     if sheaves:
+        #         p = np.array(scene._node_from_node_or_str(sheaves[-1]).global_position)
+        #     else:
+        #         p = np.array(self._endA.global_position)
+        #
+        #     dir = p - b
+        #     if np.linalg.norm(dir) > 1e-6:
+        #         dir /= np.linalg.norm(dir)
+        #         self.sb.rotation = rotation_from_x_axis_direction(-dir)
+        #         self.sb.position = b + (LeyeB + 0.5 * LspliceB) * dir
 
         # Update properties
         self.sheaves = sheaves
@@ -5666,58 +5699,90 @@ class Sling(Manager):
 
             EAmain = k_total * Lmain
 
-        self.sa.mass = self._mass / 2
+        self.sa1.mass = self._mass / 4
+        self.sa2.mass = self._mass / 4
+        self.sb1.mass = self._mass / 4
+        self.sb2.mass = self._mass / 4
 
-        self.sa.inertia_radii = radii_from_box_shape(
-            self._LspliceA,
-            self._LspliceA,
-            self._diameter,
-        )
+        # self.sa.inertia_radii = radii_from_box_shape(
+        #     self._LspliceA,
+        #     self._LspliceA,
+        #     self._diameter,
+        # )
 
-        self.a1.position = (self._LspliceA / 2, self._diameter / 2, 0)
-        self.a2.position = (self._LspliceA / 2, -self._diameter / 2, 0)
-        self.am.position = (-self._LspliceA / 2, 0, 0)
+        # self.a1.position = (self._LspliceA / 2, self._diameter / 2, 0)
+        # self.a2.position = (self._LspliceA / 2, -self._diameter / 2, 0)
+        # self.am.position = (-self._LspliceA / 2, 0, 0)
+        #
+        # self.avis.offset = (-self._LspliceA / 2, 0.0, 0.0)
+        # self.avis.scale = (self._LspliceA, 2 * self._diameter, self._diameter)
+        #
+        # self.sb.mass = self._mass / 2
+        #
+        # self.sb.inertia_radii = radii_from_box_shape(
+        #     self._LspliceB,
+        #     self._LspliceB,
+        #     self._diameter,
+        # )
+        #
+        # self.b1.position = (self._LspliceB / 2, self._diameter / 2, 0)
+        # self.b2.position = (self._LspliceB / 2, -self._diameter / 2, 0)
+        # self.bm.position = (-self._LspliceB / 2, 0, 0)
+        #
+        # self.bvis.offset = (-self._LspliceB / 2, 0.0, 0.0)
+        # self.bvis.scale = (self._LspliceB, 2 * self._diameter, self._diameter)
 
-        self.avis.offset = (-self._LspliceA / 2, 0.0, 0.0)
-        self.avis.scale = (self._LspliceA, 2 * self._diameter, self._diameter)
 
-        self.sb.mass = self._mass / 2
-
-        self.sb.inertia_radii = radii_from_box_shape(
-            self._LspliceB,
-            self._LspliceB,
-            self._diameter,
-        )
-
-        self.b1.position = (self._LspliceB / 2, self._diameter / 2, 0)
-        self.b2.position = (self._LspliceB / 2, -self._diameter / 2, 0)
-        self.bm.position = (-self._LspliceB / 2, 0, 0)
-
-        self.bvis.offset = (-self._LspliceB / 2, 0.0, 0.0)
-        self.bvis.scale = (self._LspliceB, 2 * self._diameter, self._diameter)
 
         self.main.length = Lmain
         self.main.EA = EAmain
         self.main.diameter = self._diameter
-        self.main.connections = tuple([self.am, *self._sheaves, self.bm])
+        self.main.connections = tuple([self.a2, *self._sheaves, self.b2])
+
+        self.spliceA.length = self._LspliceA
+        self.spliceA.EA = 2*EAmain
+        self.spliceA.diameter = 2*self._diameter
+
+        self.spliceB.length = self._LspliceB
+        self.spliceB.EA = 2*EAmain
+        self.spliceB.diameter = 2*self._diameter
 
         self.eyeA.length = self._LwireEyeA
         self.eyeA.EA = self._EA
         self.eyeA.diameter = self._diameter
 
         if self._endA is not None:
-            self.eyeA.connections = (self.a1, self._endA, self.a2)
+            self.eyeA.connections = (self.a1, self._endA, self.a1)
         else:
-            self.eyeA.connections = (self.a1, self.a2)
+            raise ValueError('End A needs to be connected to something')
+            # self.eyeA.connections = (self.a1, self.a1)
 
         self.eyeB.length = self._LwireEyeB
         self.eyeB.EA = self._EA
         self.eyeB.diameter = self._diameter
 
         if self._endB is not None:
-            self.eyeB.connections = (self.b1, self._endB, self.b2)
+            self.eyeB.connections = (self.b1, self._endB, self.b1)
         else:
-            self.eyeB.connections = (self.b1, self.b2)
+            raise ValueError('End B needs to be connected to something')
+            # self.eyeB.connections = (self.b1, self.b1)
+
+        # Set positions of splice bodies
+        A = np.array(self._endA.global_position)
+        B = np.array(self._endB.global_position)
+
+        D = B-A
+        Lmain = (
+                self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
+        )
+
+
+        self.sa1.position = A + (self._LeyeA / self._length) * D
+        self.sa2.position = A + ((self._LspliceA + self._LeyeA) /  self._length) * D
+        self.sb2.position = A + ((self._LspliceA + self._LeyeA + Lmain) /  self._length) * D
+        self.sb1.position = A + ((self._LspliceA + self._LeyeA + Lmain + self._LspliceB) /  self._length) * D
+
+
 
         self._scene.current_manager = backup  # restore
 
@@ -5737,19 +5802,24 @@ class Sling(Manager):
 
     def managed_nodes(self):
         a = [
-            self.sa,
+            self.spliceA,
             self.a1,
+            self.sa1,
             self.a2,
-            self.am,
-            self.avis,
-            self.sb,
+            self.sa2,
+            # self.am,
+            # self.avis,
+            # self.sb,
             self.b1,
+            self.sb1,
             self.b2,
-            self.bm,
-            self.bvis,
+            self.sb2,
+            self.spliceB,
+            # self.bvis,
             self.main,
             self.eyeA,
             self.eyeB,
+
         ]
 
         return a
@@ -5770,26 +5840,52 @@ class Sling(Manager):
                 self._scene.delete(n)  # delete if it is still available
 
     @property
-    def spliceAposrot(self)->tuple[float,float,float,float,float,float]:
-        """The 6-dof of splice on end A. Solved [m,m,m,deg,deg,deg]
+    def spliceApos(self)->tuple[float,float,float,float,float,float]:
+        """The 6-dof of splice on end A. Solved [m,m,m,m,m,m]
         #NOGUI"""
-        return (*self.sa.position, *self.sa.rotation)
+        return (*self.sa1.position, *self.sa2.position)
 
-    @spliceAposrot.setter
-    def spliceAposrot(self, value):
-        self.sa._vfNode.position = value[:3]
-        self.sa._vfNode.rotation = np.deg2rad(value[3:])
+    @spliceApos.setter
+    def spliceApos(self, value):
+        self.sa1._vfNode.position = value[:3]
+        self.sa2._vfNode.position = value[3:]
 
     @property
-    def spliceBposrot(self)->tuple[float,float,float,float,float,float]:
-        """The 6-dof of splice on end B. Solved [m,m,m,deg,deg,deg]
+    def spliceBpos(self) -> tuple[float, float, float, float, float, float]:
+        """The 6-dof of splice on end A. Solved [m,m,m,m,m,m]
         #NOGUI"""
-        return (*self.sb.position, *self.sb.rotation)
+        return (*self.sb1.position, *self.sb2.position)
 
-    @spliceBposrot.setter
-    def spliceBposrot(self, value):
-        self.sb._vfNode.position = value[:3]
-        self.sb._vfNode.rotation = np.deg2rad(value[3:])
+    @spliceBpos.setter
+    def spliceBpos(self, value):
+        self.sb1._vfNode.position = value[:3]
+        self.sb2._vfNode.position = value[3:]
+
+    # @property
+    # def spliceAposrot(self)->tuple[float,float,float,float,float,float]:
+    #     """The 6-dof of splice on end A. Solved [m,m,m,deg,deg,deg]
+    #     #NOGUI"""
+    #     pass
+    #     # return (*self.sa.position, *self.sa.rotation)
+    #
+    # @spliceAposrot.setter
+    # def spliceAposrot(self, value):
+    #     pass
+    #     # self.sa._vfNode.position = value[:3]
+    #     # self.sa._vfNode.rotation = np.deg2rad(value[3:])
+    #
+    # @property
+    # def spliceBposrot(self)->tuple[float,float,float,float,float,float]:
+    #     """The 6-dof of splice on end B. Solved [m,m,m,deg,deg,deg]
+    #     #NOGUI"""
+    #     pass
+    #     # return (*self.sb.position, *self.sb.rotation)
+    #
+    # @spliceBposrot.setter
+    # def spliceBposrot(self, value):
+    #     pass
+    #     # self.sb._vfNode.position = value[:3]
+    #     # self.sb._vfNode.rotation = np.deg2rad(value[3:])
 
     @property
     def connections(self):
@@ -5843,8 +5939,8 @@ class Sling(Manager):
             sheaves = "None"
 
         code += f"\n            sheaves = {sheaves})"
-        code += "\nsl.spliceAposrot = ({},{},{},{},{},{}) # solved".format(*self.spliceAposrot)
-        code += "\nsl.spliceBposrot = ({},{},{},{},{},{}) # solved".format(*self.spliceBposrot)
+        code += "\nsl.spliceApos = ({},{},{},{},{},{}) # solved".format(*self.spliceApos)
+        code += "\nsl.spliceBpos = ({},{},{},{},{},{}) # solved".format(*self.spliceBpos)
 
         if self.sheaves:
             if np.any(self.reversed):
