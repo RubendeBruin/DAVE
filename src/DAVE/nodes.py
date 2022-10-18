@@ -5689,62 +5689,23 @@ class Sling(Manager):
             self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
         )
 
-        if self._EA == 0:
-            EAmain = 0
-        else:
-            ka = 2 * self._EA / self._LspliceA
-            kb = 2 * self._EA / self._LspliceB
-            kmain = self._EA / Lmain
-            k_total = 1 / ((1 / ka) + (1 / kmain) + (1 / kb))
-
-            EAmain = k_total * Lmain
 
         self.sa1.mass = self._mass / 4
         self.sa2.mass = self._mass / 4
         self.sb1.mass = self._mass / 4
         self.sb2.mass = self._mass / 4
 
-        # self.sa.inertia_radii = radii_from_box_shape(
-        #     self._LspliceA,
-        #     self._LspliceA,
-        #     self._diameter,
-        # )
-
-        # self.a1.position = (self._LspliceA / 2, self._diameter / 2, 0)
-        # self.a2.position = (self._LspliceA / 2, -self._diameter / 2, 0)
-        # self.am.position = (-self._LspliceA / 2, 0, 0)
-        #
-        # self.avis.offset = (-self._LspliceA / 2, 0.0, 0.0)
-        # self.avis.scale = (self._LspliceA, 2 * self._diameter, self._diameter)
-        #
-        # self.sb.mass = self._mass / 2
-        #
-        # self.sb.inertia_radii = radii_from_box_shape(
-        #     self._LspliceB,
-        #     self._LspliceB,
-        #     self._diameter,
-        # )
-        #
-        # self.b1.position = (self._LspliceB / 2, self._diameter / 2, 0)
-        # self.b2.position = (self._LspliceB / 2, -self._diameter / 2, 0)
-        # self.bm.position = (-self._LspliceB / 2, 0, 0)
-        #
-        # self.bvis.offset = (-self._LspliceB / 2, 0.0, 0.0)
-        # self.bvis.scale = (self._LspliceB, 2 * self._diameter, self._diameter)
-
-
-
         self.main.length = Lmain
-        self.main.EA = EAmain
+        self.main.EA = self._EA
         self.main.diameter = self._diameter
         self.main.connections = tuple([self.a2, *self._sheaves, self.b2])
 
         self.spliceA.length = self._LspliceA
-        self.spliceA.EA = 2*EAmain
+        self.spliceA.EA = 2*self._EA
         self.spliceA.diameter = 2*self._diameter
 
         self.spliceB.length = self._LspliceB
-        self.spliceB.EA = 2*EAmain
+        self.spliceB.EA = 2*self._EA
         self.spliceB.diameter = 2*self._diameter
 
         self.eyeA.length = self._LwireEyeA
