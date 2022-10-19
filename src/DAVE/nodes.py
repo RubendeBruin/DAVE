@@ -5572,6 +5572,27 @@ class Sling(Manager):
         self.spliceA.color = (117,94,78)
         self.spliceB.color = (117,94,78)
 
+
+        # # Model splices as beams
+        # self.spliceA = scene.new_beam(
+        #     scene.available_name_like(name_prefix + "_spliceA"),
+        #     nodeA = self.sa1, nodeB = self.sa2,
+        #     mass = 0,
+        #     EA = 1,
+        #     L = 1,
+        #     n_segments = 1
+        # )
+        #
+        # self.spliceB = scene.new_beam(
+        #     scene.available_name_like(name_prefix + "_spliceB"),
+        #     nodeA=self.sb1, nodeB=self.sb2,
+        #     mass=0,
+        #     EA=1,
+        #     L=1,
+        #     n_segments=1
+        # )
+
+
         # set initial positions of splices if we can
         #
         # if self._endA is not None and self._endB is not None:
@@ -5631,13 +5652,29 @@ class Sling(Manager):
             self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
         )
 
+
+    def _calcEyeWireLength(self, Leye):
+        r = 0.5 * self._diameter
+        straight = np.sqrt(Leye ** 2 - r ** 2)
+        alpha = np.arccos(r / Leye)
+        circular_length_rad = 2 * (np.pi - alpha)
+        bend = circular_length_rad * r
+
+        return 2 * straight + bend
+
     @property
     def _LwireEyeA(self):
-        return 2 * self._LeyeA + 0.5 * np.pi * self._diameter
+        """The length of wire used to create the eye on side A.
+
+        This is calculated from the inside length and the diameter of the sling. The inside length of the eye is
+        measured around a pin with zero diameter.
+        """
+        return self._calcEyeWireLength(self._LeyeA)
+
 
     @property
     def _LwireEyeB(self):
-        return 2 * self._LeyeB + 0.5 * np.pi * self._diameter
+        return self._calcEyeWireLength(self._LeyeB)
 
     @property
     def k_total(self)->float:
