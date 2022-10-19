@@ -3283,10 +3283,17 @@ class Scene:
             if n._manager is None:
                 code.append("\n" + n.give_python_code())
             else:
-                if n._manager.creates(n):
-                    pass
-                else:
-                    code.append("\n" + n.give_python_code())
+                # check if one of the managers creates this node
+                manager = n._manager
+                while True:
+                    if manager.creates(n):
+                        break
+                    else:
+                        if manager._manager is None:
+                            code.append("\n" + n.give_python_code())
+                            break
+                        else:
+                            manager = manager._manager
 
                 # print(f'skipping {n.name} ')
 
