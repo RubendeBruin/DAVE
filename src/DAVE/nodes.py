@@ -5406,6 +5406,9 @@ class Sling(Manager):
 
     """
 
+    SPLICE_AS_BEAM = False
+    """Model the splices as beams - could have some numerical benefits to allow compression"""
+
     def __init__(
         self,
         scene,
@@ -5427,9 +5430,17 @@ class Sling(Manager):
 
             endA
             eyeA (cable)
-            splice (body , mass/2)
-            nodeA (cable)     [optional: runs over sheave]
-            splice (body, mass/2)
+
+            sa2 (body, mass/4)
+            splice (beam)
+            sa1 (body, mass/4)
+
+            main (cable)     [optional: runs over sheave]
+
+            sb1 (body, mass/4)
+            splice (beam)
+            sb2 (body, mass/4)
+
             eyeB (cable)
             endB
 
@@ -5484,14 +5495,6 @@ class Sling(Manager):
             scene.available_name_like(name_prefix + "_spliceA2p"), parent=self.sa2
         )
 
-        # self.avis = scene.new_visual(
-        #     name + "_spliceA_visual",
-        #     parent=self.sa,
-        #     path=r"cylinder 1x1x1 lowres.obj",
-        #     offset=(-LspliceA / 2, 0.0, 0.0),
-        #     rotation=(0.0, 90.0, 0.0),
-        #     scale=(LspliceA, 2 * diameter, diameter),
-        # )
 
         self.sb1 = scene.new_rigidbody(
             scene.available_name_like(name_prefix + "_spliceB1"),
@@ -5514,14 +5517,6 @@ class Sling(Manager):
             scene.available_name_like(name_prefix + "_spliceB2p"), parent=self.sb2
         )
 
-        # self.bvis = scene.new_visual(
-        #     scene.available_name_like(name_prefix + "_spliceB_visual"),
-        #     parent=self.sb,
-        #     path=r"cylinder 1x1x1 lowres.obj",
-        #     offset=(-LspliceB / 2, 0.0, 0.0),
-        #     rotation=(0.0, 90.0, 0.0),
-        #     scale=(LspliceB, 2 * diameter, diameter),
-        # )
 
         self.main = scene.new_cable(
             scene.available_name_like(name_prefix + "_main_part"),
@@ -5551,80 +5546,55 @@ class Sling(Manager):
 
         # create splice cables
 
-        self.spliceA = scene.new_cable(
-            scene.available_name_like(name_prefix + "_spliceA"),
-            endA=self.a1,
-            endB=self.a2,
-            length=1,
-            EA=1,
-        )
+        if self.SPLICE_AS_BEAM:
+            # Model splices as beams
+            self.spliceA = scene.new_beam(
+                scene.available_name_like(name_prefix + "_spliceA"),
+                nodeA=self.sa1, nodeB=self.sa2,
+                mass=0,
+                EA=1,
+                L=1,
+                n_segments=1
+            )
 
-        self.spliceB = scene.new_cable(
-            scene.available_name_like(name_prefix + "_spliceB"),
-            endA=self.b1,
-            endB=self.b2,
-            length=1,
-            EA=1,
-        )
+            self.spliceB = scene.new_beam(
+                scene.available_name_like(name_prefix + "_spliceB"),
+                nodeA=self.sb1, nodeB=self.sb2,
+                mass=0,
+                EA=1,
+                L=1,
+                n_segments=1
+            )
 
-        self.spliceA._draw_fat = True
-        self.spliceB._draw_fat = True
-        self.spliceA.color = (117,94,78)
-        self.spliceB.color = (117,94,78)
+        else:
+            self.spliceA = scene.new_cable(
+                scene.available_name_like(name_prefix + "_spliceA"),
+                endA=self.a1,
+                endB=self.a2,
+                length=1,
+                EA=1,
+            )
+
+            self.spliceB = scene.new_cable(
+                scene.available_name_like(name_prefix + "_spliceB"),
+                endA=self.b1,
+                endB=self.b2,
+                length=1,
+                EA=1,
+            )
+
+            self.spliceA._draw_fat = True
+            self.spliceB._draw_fat = True
+            self.spliceA.color = (117,94,78)
+            self.spliceB.color = (117,94,78)
 
 
-        # # Model splices as beams
-        # self.spliceA = scene.new_beam(
-        #     scene.available_name_like(name_prefix + "_spliceA"),
-        #     nodeA = self.sa1, nodeB = self.sa2,
-        #     mass = 0,
-        #     EA = 1,
-        #     L = 1,
-        #     n_segments = 1
-        # )
-        #
-        # self.spliceB = scene.new_beam(
-        #     scene.available_name_like(name_prefix + "_spliceB"),
-        #     nodeA=self.sb1, nodeB=self.sb2,
-        #     mass=0,
-        #     EA=1,
-        #     L=1,
-        #     n_segments=1
-        # )
+
 
 
         # set initial positions of splices if we can
-        #
-        # if self._endA is not None and self._endB is not None:
-        #
-        #
-        #     # endA
-        #
-        #     a = np.array(self._endA.global_position)
-        #     if sheaves:
-        #         p = np.array(scene._node_from_node_or_str(sheaves[0]).global_position)
-        #     else:
-        #         p = np.array(self._endB.global_position)
-        #
-        #     dir = p - a
-        #     if np.linalg.norm(dir) > 1e-6:
-        #         dir /= np.linalg.norm(dir)
-        #         self.sa.rotation = rotation_from_x_axis_direction(-dir)
-        #         self.sa.position = a + (LeyeA + 0.5 * LspliceA) * dir
-        #
-        #     # endB
-        #
-        #     b = np.array(self._endB.global_position)
-        #     if sheaves:
-        #         p = np.array(scene._node_from_node_or_str(sheaves[-1]).global_position)
-        #     else:
-        #         p = np.array(self._endA.global_position)
-        #
-        #     dir = p - b
-        #     if np.linalg.norm(dir) > 1e-6:
-        #         dir /= np.linalg.norm(dir)
-        #         self.sb.rotation = rotation_from_x_axis_direction(-dir)
-        #         self.sb.position = b + (LeyeB + 0.5 * LspliceB) * dir
+
+
 
         # Update properties
         self.sheaves = sheaves
@@ -5737,11 +5707,16 @@ class Sling(Manager):
         self.main.diameter = self._diameter
         self.main.connections = tuple([self.a2, *self._sheaves, self.b2])
 
-        self.spliceA.length = self._LspliceA
+        if self.SPLICE_AS_BEAM:
+            self.spliceA.L = self._LspliceA
+            self.spliceB.L = self._LspliceB
+        else:
+            self.spliceA.length = self._LspliceA
+            self.spliceB.length = self._LspliceB
+
         self.spliceA.EA = 2*self._EA
         self.spliceA.diameter = 2*self._diameter
 
-        self.spliceB.length = self._LspliceB
         self.spliceB.EA = 2*self._EA
         self.spliceB.diameter = 2*self._diameter
 
@@ -5774,12 +5749,36 @@ class Sling(Manager):
                 self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
         )
 
+        if self._endA is not None and self._endB is not None:
 
-        self.sa1.position = A + (self._LeyeA / self._length) * D
-        self.sa2.position = A + ((self._LspliceA + self._LeyeA) /  self._length) * D
-        self.sb2.position = A + ((self._LspliceA + self._LeyeA + Lmain) /  self._length) * D
-        self.sb1.position = A + ((self._LspliceA + self._LeyeA + Lmain + self._LspliceB) /  self._length) * D
 
+            # endA
+
+            a = np.array(self._endA.global_position)
+            if len(self.connections) > 2:
+                p = np.array(self._scene._node_from_node_or_str(self.connections[1]).global_position)
+            else:
+                p = np.array(self._endB.global_position)
+
+            dir = p - a
+            if np.linalg.norm(dir) > 1e-6:
+                dir /= np.linalg.norm(dir)
+                self.sa1.position = a + (self._LeyeA) * dir
+                self.sa2.position = a + (self._LeyeA + self._LspliceA) * dir
+
+            # endB
+
+            b = np.array(self._endB.global_position)
+            if len(self.connections) > 2:
+                p = np.array(self._scene._node_from_node_or_str(self.connections[-2]).global_position)
+            else:
+                p = np.array(self._endA.global_position)
+
+            dir = p - b
+            if np.linalg.norm(dir) > 1e-6:
+                dir /= np.linalg.norm(dir)
+                self.sb1.position = b + self._LeyeB * dir
+                self.sb2.position = b + (self._LeyeB + self._LspliceB) * dir
 
 
         self._scene.current_manager = backup  # restore

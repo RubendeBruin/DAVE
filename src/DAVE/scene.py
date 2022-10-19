@@ -128,6 +128,9 @@ class Scene:
         """Optional reference to function to use instead of solve_statics - used by the Gui to give user control of solving
         Function is called with self as argument"""
 
+        self.solve_activity_desc = "Solving static equilibrium"
+        """This string may be used for feedback to user - read by Gui"""
+
         if filename is not None:
             self.load_scene(filename)
 

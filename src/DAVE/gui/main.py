@@ -1437,7 +1437,10 @@ class Gui:
     def stop_solving(self):
         self._terminate = True
 
-    def solve_statics(self, timeout_s=1, called_by_user=True):
+    def solve_statics(self, timeout_s=0.5, called_by_user=True):
+
+        self.scene.solve_activity_desc = "Solving static equilibrium"
+
         self.solve_statics_using_gui_on_scene(
             scene_to_solve=self.scene,
             timeout_s=timeout_s,
@@ -1485,7 +1488,7 @@ class Gui:
             if self._dialog is None:
                 self._dialog = SolverDialog()
                 self._dialog.btnTerminate.clicked.connect(self.stop_solving)
-                self._dialog.label.setText(f"Solving static equilibrium")
+                self._dialog.label.setText(self.scene.solve_activity_desc)
                 self._dialog.show()
 
             self._dialog.label_2.setText(message)
