@@ -184,7 +184,7 @@ class Node(ABC):
     def visible(self) -> bool:
         """Determines if this node is visible in the viewport [bool]"""
         if self.manager:
-            return self.manager.visible
+            return self.manager.visible and self._visible
         return self._visible
 
     @visible.setter
@@ -5088,7 +5088,7 @@ class GeometricContact(Manager):
 
         if pin1.parent.parent is None:
             raise ValueError(
-                "The slaved pin is not located on an axis. Can not create the connection because there is no axis to nodeB"
+                "The pin that is to be connected is not located on a Frame. Can not create the connection because there is no Frame for nodeB"
             )
 
         # --------- prepare hole
@@ -5098,7 +5098,9 @@ class GeometricContact(Manager):
         self._axis_on_parent.position = pin2.parent.position
         self._axis_on_parent.fixed = (True, True, True, True, True, True)
 
-        self._axis_on_parent.rotation = rotation_from_y_axis_direction(pin2.axis)
+        # self._axis_on_parent.rotation = rotation_from_y_axis_direction(pin2.axis)  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
+        self._axis_on_parent.global_rotation = orientation_from_y_axis_direction(pin2.axis)  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
+
 
         # Position connection axis at the center of the nodeA axis (pin2)
         # and allow it to rotate about the pin

@@ -2207,7 +2207,7 @@ class Scene:
             length [-1] : un-stretched length of the cable in m; default [-1] create a cable with the current distance between the endpoints A and B
             EA [0] : stiffness of the cable in kN/m; default
             mass [0] or mass_per_length [0] : mass of the cable - warning: only valid if tension in cable > 10x cable weight.
-
+            mass_per_length [alternative for mass]
             sheaves : [optional] A list of pois, these are sheaves that the cable runs over. Defined from endA to endB
 
         Examples:
@@ -3302,7 +3302,7 @@ class Scene:
         for n in nodes_to_be_exported:
             if not n.visible:
                 code.append(
-                    f"\ns['{n.name}'].visible = False"
+                    f"\ns['{n.name}']._visible = False"  # use private, cause may be managed (in which case this statement is probably obsolete)
                 )  # only report is not the default value
 
         code.append("\n# Limits of un-managed nodes ")
