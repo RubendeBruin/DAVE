@@ -2310,6 +2310,7 @@ class EditShackle(NodeEditor):
 
         self.ui.comboBox.currentTextChanged.connect(self.generate_code)
 
+
     def post_update_event(self):
 
         self.ui.comboBox.blockSignals(True)
@@ -2318,8 +2319,11 @@ class EditShackle(NodeEditor):
         self.ui.comboBox.addItems(self.node.defined_kinds())
 
         self.ui.comboBox.setCurrentText(self.node.kind)
-
         self.ui.comboBox.blockSignals(False)
+
+        data = self.node._give_values(self.node.kind)
+        self.ui.lbInfo.setText(data['description'])
+
 
     def generate_code(self):
 

@@ -5095,12 +5095,17 @@ class GeometricContact(Manager):
 
         if pin2.parent.parent is not None:
             self._axis_on_parent.parent = pin2.parent.parent
+            z = pin2.parent.parent.uz
+        else:
+            z = (0,0,1)
         self._axis_on_parent.position = pin2.parent.position
         self._axis_on_parent.fixed = (True, True, True, True, True, True)
 
         # self._axis_on_parent.rotation = rotation_from_y_axis_direction(pin2.axis)  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
-        self._axis_on_parent.global_rotation = orientation_from_y_axis_direction(pin2.axis)  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
+        self._axis_on_parent.global_rotation = rotvec_from_y_and_z_axis_direction(pin2.global_axis, z)  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
 
+        a1 = self._axis_on_parent.uy
+        a2 = pin2.global_axis
 
         # Position connection axis at the center of the nodeA axis (pin2)
         # and allow it to rotate about the pin
@@ -5118,7 +5123,8 @@ class GeometricContact(Manager):
 
         slaved_axis.parent = self._axis_on_child
         slaved_axis.position = -np.array(pin1.parent.position)
-        slaved_axis.rotation = rotation_from_y_axis_direction(-1 * np.array(pin1.axis))
+        # slaved_axis.rotation = rotation_from_y_axis_direction(-1 * np.array(pin1.axis))
+        slaved_axis.global_rotation = rotvec_from_y_and_z_axis_direction(y = -1 * np.array(pin1.global_axis), z = slaved_axis.parent.uz)
 
         slaved_axis.fixed = True
 
@@ -6132,51 +6138,48 @@ class Sling(Manager):
 
 class Shackle(Manager, RigidBody):
     """
-    Green-Pin Heavy Duty Bow Shackle BN
+    Shackle catalog
+    - GP: Green-Pin Heavy Duty Bow Shackle BN (P-6036 Green Pin® Heavy Duty Bow Shackle BN (mm))
+    - WB: P-6033 Green Pin® Sling Shackle BN (mm)
+
 
     visual from: https://www.traceparts.com/en/product/green-pinr-p-6036-green-pinr-heavy-duty-bow-shackle-bn-hdgphm0800-mm?CatalogPath=TRACEPARTS%3ATP04001002006&Product=10-04072013-086517&PartNumber=HDGPHM0800
-    details from: https://www.greenpin.com/sites/default/files/2019-04/brochure-april-2019.pdf
+    details from:
+     - https://www.greenpin.com/sites/default/files/2019-04/brochure-april-2019.pdf
+     - https://www.thecrosbygroup.com/products/shackles/heavy-lift/crosby-2140-alloy-bolt-type-shackles/
+     -
 
-    wll a b c d e f g h i j k weight
-    [t] [mm]  [kg]
-    120 95 95 208 95 147 400 238 647 453 428 50 110
-    150 105 108 238 105 169 410 275 688 496 485 50 160
-    200 120 130 279 120 179 513 290 838 564 530 70 235
-    250 130 140 299 130 205 554 305 904 614 565 70 295
-    300 140 150 325 140 205 618 305 996 644 585 80 368
-    400 170 175 376 164 231 668 325 1114 690 665 70 560
-    500 180 185 398 164 256 718 350 1190 720 710 70 685
-    600 200 205 444 189 282 718 375 1243 810 775 70 880
-    700 210 215 454 204 308 718 400 1263 870 820 70 980
-    800 210 220 464 204 308 718 400 1270 870 820 70 1100
-    900 220 230 485 215 328 718 420 1296 920 860 70 1280
-    1000 240 240 515 215 349 718 420 1336 940 900 70 1460
-    1250 260 270 585 230 369 768 450 1456 1025 970 70 1990
-    1500 280 290 625 230 369 818 450 1556 1025 1010 70 2400
+
 
     Returns:
 
     """
 
     data = dict()
-    # key = wll in t
-    # dimensions a..k in [mm]
-    #             a     b    c   d     e    f    g    h     i     j    k   weight[kg]
-    # index       0     1    2    3    4    5    6    7     8     9    10   11
-    data["GP120"] = (95, 95, 208, 95, 147, 400, 238, 647, 453, 428, 50, 110)
-    data["GP150"] = (105, 108, 238, 105, 169, 410, 275, 688, 496, 485, 50, 160)
-    data["GP200"] = (120, 130, 279, 120, 179, 513, 290, 838, 564, 530, 70, 235)
-    data["GP250"] = (130, 140, 299, 130, 205, 554, 305, 904, 614, 565, 70, 295)
-    data["GP300"] = (140, 150, 325, 140, 205, 618, 305, 996, 644, 585, 80, 368)
-    data["GP400"] = (170, 175, 376, 164, 231, 668, 325, 1114, 690, 665, 70, 560)
-    data["GP500"] = (180, 185, 398, 164, 256, 718, 350, 1190, 720, 710, 70, 685)
-    data["GP600"] = (200, 205, 444, 189, 282, 718, 375, 1243, 810, 775, 70, 880)
-    data["GP700"] = (210, 215, 454, 204, 308, 718, 400, 1263, 870, 820, 70, 980)
-    data["GP800"] = (210, 220, 464, 204, 308, 718, 400, 1270, 870, 820, 70, 1100)
-    data["GP900"] = (220, 230, 485, 215, 328, 718, 420, 1296, 920, 860, 70, 1280)
-    data["GP1000"] = (240, 240, 515, 215, 349, 718, 420, 1336, 940, 900, 70, 1460)
-    data["GP1250"] = (260, 270, 585, 230, 369, 768, 450, 1456, 1025, 970, 70, 1990)
-    data["GP1500"] = (280, 290, 625, 230, 369, 818, 450, 1556, 1025, 1010, 70, 2400)
+
+    # Read the shackle data
+
+
+    cdir = Path(dirname(__file__))
+    filename = cdir / './resources/shackle data.csv'
+
+    if filename.exists():
+        with open(filename, newline='') as csvfile:
+            shackle_data = csv.reader(csvfile)
+            header = shackle_data.__next__()  # skip the header
+
+            for row in shackle_data:
+                name = row[0]
+                data[name] = row[1:]
+
+
+    else:
+        warnings.warn(f'Could not load shackle data because {filename} does not exist')
+
+    # ======================
+
+
+
 
     def defined_kinds(self):
         """Defined shackle kinds"""
@@ -6191,7 +6194,17 @@ class Shackle(Manager, RigidBody):
                 f"No data available for a Shackle of kind {kind}. Available values printed above"
             )
 
-        return Shackle.data[kind]
+        data = Shackle.data[kind]
+        return {'kind':kind,
+                'description':data[0],
+                'WLL':float(data[1]),
+                'weight':float(data[2]),
+                'pin_diameter':float(data[3]),
+                'bow_diameter':float(data[4]),
+                'inside_length':float(data[5]),
+                'inside_width':float(data[6]),
+                'visual':data[7],
+                'scale':float(data[8])}
 
     def __init__(self, scene, name, kind='GP800'):
 
@@ -6233,7 +6246,7 @@ class Shackle(Manager, RigidBody):
         self.visual_node = scene.new_visual(
             name=name + "_visual",
             parent=self,
-            path=r"shackle_gp800.obj",
+            path=r"res: shackle_gp800.obj",
             offset=(0, 0, 0),
             rotation=(0, 0, 0),
         )
@@ -6259,11 +6272,11 @@ class Shackle(Manager, RigidBody):
     def kind(self, kind):
 
         values = self._give_values(kind)
-        weight = values[11] / 1000  # convert to tonne
-        pin_dia = values[1] / 1000
-        bow_dia = values[0] / 1000
-        bow_length_inside = values[5] / 1000
-        bow_circle_inside = values[6] / 1000
+        weight = values['weight'] / 1000  # convert to tonne
+        pin_dia = values['pin_diameter'] / 1000
+        bow_dia = values['bow_diameter'] / 1000
+        bow_length_inside = values['inside_length'] / 1000
+        bow_circle_inside = values['inside_width'] / 1000
 
         cogz = 0.5 * pin_dia + bow_length_inside / 3  # estimated
 
@@ -6294,14 +6307,8 @@ class Shackle(Manager, RigidBody):
         )
         self.inside.radius = bow_circle_inside / 2
 
-        # determine the scale for the shackle
-        # based on a GP800
-        #
-        actual_size = 0.5 * pin_dia + 0.5 * bow_dia + bow_length_inside
-        gp800_size = 0.5 * 0.210 + 0.5 * 0.220 + 0.718
-
-        scale = actual_size / gp800_size
-
+        self.visual_node.path = values['visual']
+        scale = values['scale']
         self.visual_node.scale = [scale, scale, scale]
 
         self._scene.current_manager = remember
