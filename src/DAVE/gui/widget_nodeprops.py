@@ -2321,7 +2321,7 @@ class EditShackle(NodeEditor):
         self.ui.comboBox.setCurrentText(self.node.kind)
         self.ui.comboBox.blockSignals(False)
 
-        data = self.node._give_values(self.node.kind)
+        data = self.node.shackle_kind_properties(self.node.kind)
         self.ui.lbInfo.setText(data['description'])
 
 

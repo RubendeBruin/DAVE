@@ -6186,7 +6186,8 @@ class Shackle(Manager, RigidBody):
         list = [a for a in Shackle.data.keys()]
         return list
 
-    def _give_values(self, kind):
+    @staticmethod
+    def shackle_kind_properties(kind):
         if kind not in Shackle.data:
             for key in Shackle.data.keys():
                 print(key)
@@ -6208,7 +6209,7 @@ class Shackle(Manager, RigidBody):
 
     def __init__(self, scene, name, kind='GP800'):
 
-        _ = self._give_values(kind)  # to make sure it exists
+        _ = self.shackle_kind_properties(kind)  # to make sure it exists
 
         Manager.__init__(self, scene, name)
         RigidBody.__init__(self, scene, name)
@@ -6271,7 +6272,7 @@ class Shackle(Manager, RigidBody):
     @node_setter_observable
     def kind(self, kind):
 
-        values = self._give_values(kind)
+        values = self.shackle_kind_properties(kind)
         weight = values['weight'] / 1000  # convert to tonne
         pin_dia = values['pin_diameter'] / 1000
         bow_dia = values['bow_diameter'] / 1000
