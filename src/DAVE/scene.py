@@ -128,6 +128,9 @@ class Scene:
         """Optional reference to function to use instead of solve_statics - used by the Gui to give user control of solving
         Function is called with self as argument"""
 
+        self.solve_activity_desc = "Solving static equilibrium"
+        """This string may be used for feedback to user - read by Gui"""
+
         if filename is not None:
             self.load_scene(filename)
 
@@ -2204,7 +2207,7 @@ class Scene:
             length [-1] : un-stretched length of the cable in m; default [-1] create a cable with the current distance between the endpoints A and B
             EA [0] : stiffness of the cable in kN/m; default
             mass [0] or mass_per_length [0] : mass of the cable - warning: only valid if tension in cable > 10x cable weight.
-
+            mass_per_length [alternative for mass]
             sheaves : [optional] A list of pois, these are sheaves that the cable runs over. Defined from endA to endB
 
         Examples:
@@ -3280,10 +3283,17 @@ class Scene:
             if n._manager is None:
                 code.append("\n" + n.give_python_code())
             else:
-                if n._manager.creates(n):
-                    pass
-                else:
-                    code.append("\n" + n.give_python_code())
+                # check if one of the managers creates this node
+                manager = n._manager
+                while True:
+                    if manager.creates(n):
+                        break
+                    else:
+                        if manager._manager is None:
+                            code.append("\n" + n.give_python_code())
+                            break
+                        else:
+                            manager = manager._manager
 
                 # print(f'skipping {n.name} ')
 
@@ -3292,7 +3302,7 @@ class Scene:
         for n in nodes_to_be_exported:
             if not n.visible:
                 code.append(
-                    f"\ns['{n.name}'].visible = False"
+                    f"\ns['{n.name}']._visible = False"  # use private, cause may be managed (in which case this statement is probably obsolete)
                 )  # only report is not the default value
 
         code.append("\n# Limits of un-managed nodes ")

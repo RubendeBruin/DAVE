@@ -10,6 +10,8 @@ from PySide2.QtWidgets import (
 import DAVE.scene as ds
 from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter
 
+from DAVE.settings_visuals import ICONS
+
 
 class NodeTreeWidget(QtWidgets.QTreeWidget):
 
@@ -311,51 +313,56 @@ class WidgetNodeTree(guiDockWidget):
             # if we have a parent, then put the items under the parent,
             # else put it under the root
 
-            item.setIcon(0, QIcon(":/icons/redball.png"))
-            if isinstance(node, ds.Component):
-                item.setIcon(0, QIcon(":/icons/component.png"))
-            elif isinstance(node, ds.RigidBody):
-                item.setIcon(0, QIcon(":/icons/cube.png"))
-            elif isinstance(node, ds.Frame):
-                item.setIcon(0, QIcon(":/icons/axis_blue.png"))
-            elif isinstance(node, ds.Point):
-                item.setIcon(0, QIcon(":/icons/point_blue.png"))
-            elif isinstance(node, ds.Cable):
-                item.setIcon(0, QIcon(":/icons/cable.png"))
-            elif isinstance(node, ds.Visual):
-                item.setIcon(0, QIcon(":/icons/visual.png"))
-            elif isinstance(node, ds.LC6d):
-                item.setIcon(0, QIcon(":/icons/lincon6.png"))
-            elif isinstance(node, ds.Connector2d):
-                item.setIcon(0, QIcon(":/icons/con2d.png"))
-            elif isinstance(node, ds.Beam):
-                item.setIcon(0, QIcon(":/icons/beam.png"))
-            elif isinstance(node, ds.HydSpring):
-                item.setIcon(0, QIcon(":/icons/linhyd.png"))
-            elif isinstance(node, ds.Force):
-                item.setIcon(0, QIcon(":/icons/force.png"))
-            elif isinstance(node, ds.Circle):
-                item.setIcon(0, QIcon(":/icons/circle_blue.png"))
-            elif isinstance(node, ds.Buoyancy):
-                item.setIcon(0, QIcon(":/icons/trimesh.png"))
-            elif isinstance(node, ds.WaveInteraction1):
-                item.setIcon(0, QIcon(":/icons/waveinteraction.png"))
-            elif isinstance(node, ds.ContactBall):
-                item.setIcon(0, QIcon(":/icons/contactball.png"))
-            elif isinstance(node, ds.ContactMesh):
-                item.setIcon(0, QIcon(":/icons/contactmesh.png"))
-            elif isinstance(node, ds.GeometricContact):
-                item.setIcon(0, QIcon(":/icons/pin_hole.png"))
-            elif isinstance(node, ds.Sling):
-                item.setIcon(0, QIcon(":/icons/sling.png"))
-            elif isinstance(node, ds.Tank):
-                item.setIcon(0, QIcon(":/icons/tank.png"))
-            elif isinstance(node, ds.WindArea):
-                item.setIcon(0, QIcon(":/icons/wind.png"))
-            elif isinstance(node, ds.CurrentArea):
-                item.setIcon(0, QIcon(":/icons/current.png"))
-            elif isinstance(node, ds.SPMT):
-                item.setIcon(0, QIcon(":/icons/spmt.png"))
+            if type(node) in ICONS:
+                item.setIcon(0,ICONS[type(node)])
+            else:
+
+                item.setIcon(0, QIcon(":/icons/redball.png"))
+
+                if isinstance(node, ds.Component):
+                    item.setIcon(0, QIcon(":/icons/component.png"))
+                elif isinstance(node, ds.RigidBody):
+                    item.setIcon(0, QIcon(":/icons/cube.png"))
+                elif isinstance(node, ds.Frame):
+                    item.setIcon(0, QIcon(":/icons/axis_blue.png"))
+                elif isinstance(node, ds.Point):
+                    item.setIcon(0, QIcon(":/icons/point_blue.png"))
+                elif isinstance(node, ds.Cable):
+                    item.setIcon(0, QIcon(":/icons/cable.png"))
+                elif isinstance(node, ds.Visual):
+                    item.setIcon(0, QIcon(":/icons/visual.png"))
+                elif isinstance(node, ds.LC6d):
+                    item.setIcon(0, QIcon(":/icons/lincon6.png"))
+                elif isinstance(node, ds.Connector2d):
+                    item.setIcon(0, QIcon(":/icons/con2d.png"))
+                elif isinstance(node, ds.Beam):
+                    item.setIcon(0, QIcon(":/icons/beam.png"))
+                elif isinstance(node, ds.HydSpring):
+                    item.setIcon(0, QIcon(":/icons/linhyd.png"))
+                elif isinstance(node, ds.Force):
+                    item.setIcon(0, QIcon(":/icons/force.png"))
+                elif isinstance(node, ds.Circle):
+                    item.setIcon(0, QIcon(":/icons/circle_blue.png"))
+                elif isinstance(node, ds.Buoyancy):
+                    item.setIcon(0, QIcon(":/icons/trimesh.png"))
+                elif isinstance(node, ds.WaveInteraction1):
+                    item.setIcon(0, QIcon(":/icons/waveinteraction.png"))
+                elif isinstance(node, ds.ContactBall):
+                    item.setIcon(0, QIcon(":/icons/contactball.png"))
+                elif isinstance(node, ds.ContactMesh):
+                    item.setIcon(0, QIcon(":/icons/contactmesh.png"))
+                elif isinstance(node, ds.GeometricContact):
+                    item.setIcon(0, QIcon(":/icons/pin_hole.png"))
+                elif isinstance(node, ds.Sling):
+                    item.setIcon(0, QIcon(":/icons/sling.png"))
+                elif isinstance(node, ds.Tank):
+                    item.setIcon(0, QIcon(":/icons/tank.png"))
+                elif isinstance(node, ds.WindArea):
+                    item.setIcon(0, QIcon(":/icons/wind.png"))
+                elif isinstance(node, ds.CurrentArea):
+                    item.setIcon(0, QIcon(":/icons/current.png"))
+                elif isinstance(node, ds.SPMT):
+                    item.setIcon(0, QIcon(":/icons/spmt.png"))
 
 
             try:

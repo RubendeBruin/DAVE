@@ -1437,7 +1437,10 @@ class Gui:
     def stop_solving(self):
         self._terminate = True
 
-    def solve_statics(self, timeout_s=1, called_by_user=True):
+    def solve_statics(self, timeout_s=0.5, called_by_user=True):
+
+        self.scene.solve_activity_desc = "Solving static equilibrium"
+
         self.solve_statics_using_gui_on_scene(
             scene_to_solve=self.scene,
             timeout_s=timeout_s,
@@ -1485,7 +1488,7 @@ class Gui:
             if self._dialog is None:
                 self._dialog = SolverDialog()
                 self._dialog.btnTerminate.clicked.connect(self.stop_solving)
-                self._dialog.label.setText(f"Solving static equilibrium")
+                self._dialog.label.setText(self.scene.solve_activity_desc)
                 self._dialog.show()
 
             self._dialog.label_2.setText(message)
@@ -2005,34 +2008,52 @@ class Gui:
             self.selected_nodes.clear()
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
 
-        _node = node
-        if node in self.selected_nodes:
-            # if the is already selected, then select something different
+        # find the higest manager of this node
+        manager = node.manager
+        if manager is not None:
+            while manager.manager is not None:
+                manager = manager.manager
 
-            self.selected_nodes.remove(node)
+            if manager in self.selected_nodes:
+                self.selected_nodes.remove(manager)
+                self.guiSelectNode(node)
+            else:
+                if node in self.selected_nodes:
+                    self.selected_nodes.remove(node)
+                self.guiSelectNode(manager)
 
-            # if node has a manager, then select the manager
-            if node.manager is not None:
-                self.guiSelectNode(node.manager)
-                return
+            return
 
-            # cycle between node and its parent
-            try:
-                node = node.parent
-            except:
+        else:
+
+            _node = node
+            if node in self.selected_nodes:
+                # if the is already selected, then select something different
+
+                self.selected_nodes.remove(node)
+
+                # # if node has a manager, then select the manager
+                # if node.manager is not None:
+                #     self.guiSelectNode(node.manager)
+                #     return
+
+                # cycle between node and its parent
                 try:
-                    node = node.master
+                    node = node.parent
                 except:
                     try:
-                        node = node.slave
+                        node = node.master
                     except:
                         try:
-                            node = node._pois[0]
+                            node = node.slave
                         except:
-                            pass
+                            try:
+                                node = node._pois[0]
+                            except:
+                                pass
 
-        if node is None:  # in case the parent or something was none
-            node = _node
+            if node is None:  # in case the parent or something was none
+                node = _node
 
         if node is None:  # sea or something
             self.selected_nodes.clear()

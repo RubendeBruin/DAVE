@@ -184,7 +184,7 @@ class Node(ABC):
     def visible(self) -> bool:
         """Determines if this node is visible in the viewport [bool]"""
         if self.manager:
-            return self.manager.visible
+            return self.manager.visible and self._visible
         return self._visible
 
     @visible.setter
@@ -5088,17 +5088,24 @@ class GeometricContact(Manager):
 
         if pin1.parent.parent is None:
             raise ValueError(
-                "The slaved pin is not located on an axis. Can not create the connection because there is no axis to nodeB"
+                "The pin that is to be connected is not located on a Frame. Can not create the connection because there is no Frame for nodeB"
             )
 
         # --------- prepare hole
 
         if pin2.parent.parent is not None:
             self._axis_on_parent.parent = pin2.parent.parent
+            z = pin2.parent.parent.uz
+        else:
+            z = (0,0,1)
         self._axis_on_parent.position = pin2.parent.position
         self._axis_on_parent.fixed = (True, True, True, True, True, True)
 
-        self._axis_on_parent.rotation = rotation_from_y_axis_direction(pin2.axis)
+        # self._axis_on_parent.rotation = rotation_from_y_axis_direction(pin2.axis)  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
+        self._axis_on_parent.global_rotation = rotvec_from_y_and_z_axis_direction(pin2.global_axis, z)  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
+
+        a1 = self._axis_on_parent.uy
+        a2 = pin2.global_axis
 
         # Position connection axis at the center of the nodeA axis (pin2)
         # and allow it to rotate about the pin
@@ -5116,7 +5123,8 @@ class GeometricContact(Manager):
 
         slaved_axis.parent = self._axis_on_child
         slaved_axis.position = -np.array(pin1.parent.position)
-        slaved_axis.rotation = rotation_from_y_axis_direction(-1 * np.array(pin1.axis))
+        # slaved_axis.rotation = rotation_from_y_axis_direction(-1 * np.array(pin1.axis))
+        slaved_axis.global_rotation = rotvec_from_y_and_z_axis_direction(y = -1 * np.array(pin1.global_axis), z = slaved_axis.parent.uz)
 
         slaved_axis.fixed = True
 
@@ -5406,6 +5414,9 @@ class Sling(Manager):
 
     """
 
+    SPLICE_AS_BEAM = False
+    """Model the splices as beams - could have some numerical benefits to allow compression"""
+
     def __init__(
         self,
         scene,
@@ -5427,9 +5438,17 @@ class Sling(Manager):
 
             endA
             eyeA (cable)
-            splice (body , mass/2)
-            nodeA (cable)     [optional: runs over sheave]
-            splice (body, mass/2)
+
+            sa2 (body, mass/4)
+            splice (beam)
+            sa1 (body, mass/4)
+
+            main (cable)     [optional: runs over sheave]
+
+            sb1 (body, mass/4)
+            splice (beam)
+            sb2 (body, mass/4)
+
             eyeB (cable)
             endB
 
@@ -5469,56 +5488,48 @@ class Sling(Manager):
 
         # create the two splices
 
-        self.sa = scene.new_rigidbody(
-            scene.available_name_like(name_prefix + "_spliceA"), fixed=False
+        self.sa1 = scene.new_rigidbody(
+            scene.available_name_like(name_prefix + "_spliceA1"), fixed=(False,False,False,True,True,True)
         )
+
+        self.sa2 = scene.new_rigidbody(
+            scene.available_name_like(name_prefix + "_spliceA2"), fixed=(False,False,False,True,True,True)
+        )
+
         self.a1 = scene.new_point(
-            scene.available_name_like(name_prefix + "_spliceA"), parent=self.sa
+            scene.available_name_like(name_prefix + "_spliceA1p"), parent=self.sa1
         )
         self.a2 = scene.new_point(
-            scene.available_name_like(name_prefix + "_spliceA2"), parent=self.sa
-        )
-        self.am = scene.new_point(
-            scene.available_name_like(name_prefix + "_spliceAM"), parent=self.sa
+            scene.available_name_like(name_prefix + "_spliceA2p"), parent=self.sa2
         )
 
-        self.avis = scene.new_visual(
-            name + "_spliceA_visual",
-            parent=self.sa,
-            path=r"cylinder 1x1x1 lowres.obj",
-            offset=(-LspliceA / 2, 0.0, 0.0),
-            rotation=(0.0, 90.0, 0.0),
-            scale=(LspliceA, 2 * diameter, diameter),
-        )
 
-        self.sb = scene.new_rigidbody(
-            scene.available_name_like(name_prefix + "_spliceB"),
+        self.sb1 = scene.new_rigidbody(
+            scene.available_name_like(name_prefix + "_spliceB1"),
             rotation=(0, 0, 180),
-            fixed=False,
+            fixed=(False,False,False,True,True,True),
         )
+
+        self.sb2 = scene.new_rigidbody(
+            scene.available_name_like(name_prefix + "_spliceB2"),
+            rotation=(0, 0, 180),
+            fixed=(False,False,False,True,True,True),
+        )
+
+
+
         self.b1 = scene.new_point(
-            scene.available_name_like(name_prefix + "_spliceB1"), parent=self.sb
+            scene.available_name_like(name_prefix + "_spliceB1p"), parent=self.sb1
         )
         self.b2 = scene.new_point(
-            scene.available_name_like(name_prefix + "_spliceB2"), parent=self.sb
-        )
-        self.bm = scene.new_point(
-            scene.available_name_like(name_prefix + "_spliceBM"), parent=self.sb
+            scene.available_name_like(name_prefix + "_spliceB2p"), parent=self.sb2
         )
 
-        self.bvis = scene.new_visual(
-            scene.available_name_like(name_prefix + "_spliceB_visual"),
-            parent=self.sb,
-            path=r"cylinder 1x1x1 lowres.obj",
-            offset=(-LspliceB / 2, 0.0, 0.0),
-            rotation=(0.0, 90.0, 0.0),
-            scale=(LspliceB, 2 * diameter, diameter),
-        )
 
         self.main = scene.new_cable(
             scene.available_name_like(name_prefix + "_main_part"),
-            endA=self.am,
-            endB=self.bm,
+            endA=self.a1,
+            endB=self.b1,
             length=1,
             EA=1,
             diameter=diameter,
@@ -5526,51 +5537,72 @@ class Sling(Manager):
 
         self.eyeA = scene.new_cable(
             scene.available_name_like(name_prefix + "_eyeA"),
-            endA=self.a1,
+            endA=self.a2,
             endB=self.a2,
+            sheaves = self._endA,
             length=1,
             EA=1,
         )
         self.eyeB = scene.new_cable(
             scene.available_name_like(name_prefix + "_eyeB"),
-            endA=self.b1,
+            endA=self.b2,
             endB=self.b2,
+            sheaves=self._endB,
             length=1,
             EA=1,
         )
 
+        # create splice cables
+
+        if self.SPLICE_AS_BEAM:
+            # Model splices as beams
+            self.spliceA = scene.new_beam(
+                scene.available_name_like(name_prefix + "_spliceA"),
+                nodeA=self.sa1, nodeB=self.sa2,
+                mass=0,
+                EA=1,
+                L=1,
+                n_segments=1
+            )
+
+            self.spliceB = scene.new_beam(
+                scene.available_name_like(name_prefix + "_spliceB"),
+                nodeA=self.sb1, nodeB=self.sb2,
+                mass=0,
+                EA=1,
+                L=1,
+                n_segments=1
+            )
+
+        else:
+            self.spliceA = scene.new_cable(
+                scene.available_name_like(name_prefix + "_spliceA"),
+                endA=self.a1,
+                endB=self.a2,
+                length=1,
+                EA=1,
+            )
+
+            self.spliceB = scene.new_cable(
+                scene.available_name_like(name_prefix + "_spliceB"),
+                endA=self.b1,
+                endB=self.b2,
+                length=1,
+                EA=1,
+            )
+
+            self.spliceA._draw_fat = True
+            self.spliceB._draw_fat = True
+            self.spliceA.color = (117,94,78)
+            self.spliceB.color = (117,94,78)
+
+
+
+
+
         # set initial positions of splices if we can
 
-        if self._endA is not None and self._endB is not None:
 
-
-            # endA
-
-            a = np.array(self._endA.global_position)
-            if sheaves:
-                p = np.array(scene._node_from_node_or_str(sheaves[0]).global_position)
-            else:
-                p = np.array(self._endB.global_position)
-
-            dir = p - a
-            if np.linalg.norm(dir) > 1e-6:
-                dir /= np.linalg.norm(dir)
-                self.sa.rotation = rotation_from_x_axis_direction(-dir)
-                self.sa.position = a + (LeyeA + 0.5 * LspliceA) * dir
-
-            # endB
-
-            b = np.array(self._endB.global_position)
-            if sheaves:
-                p = np.array(scene._node_from_node_or_str(sheaves[-1]).global_position)
-            else:
-                p = np.array(self._endA.global_position)
-
-            dir = p - b
-            if np.linalg.norm(dir) > 1e-6:
-                dir /= np.linalg.norm(dir)
-                self.sb.rotation = rotation_from_x_axis_direction(-dir)
-                self.sb.position = b + (LeyeB + 0.5 * LspliceB) * dir
 
         # Update properties
         self.sheaves = sheaves
@@ -5598,13 +5630,29 @@ class Sling(Manager):
             self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
         )
 
+
+    def _calcEyeWireLength(self, Leye):
+        r = 0.5 * self._diameter
+        straight = np.sqrt(Leye ** 2 - r ** 2)
+        alpha = np.arccos(r / Leye)
+        circular_length_rad = 2 * (np.pi - alpha)
+        bend = circular_length_rad * r
+
+        return 2 * straight + bend
+
     @property
     def _LwireEyeA(self):
-        return 2 * self._LeyeA + 0.5 * np.pi * self._diameter
+        """The length of wire used to create the eye on side A.
+
+        This is calculated from the inside length and the diameter of the sling. The inside length of the eye is
+        measured around a pin with zero diameter.
+        """
+        return self._calcEyeWireLength(self._LeyeA)
+
 
     @property
     def _LwireEyeB(self):
-        return 2 * self._LeyeB + 0.5 * np.pi * self._diameter
+        return self._calcEyeWireLength(self._LeyeB)
 
     @property
     def k_total(self)->float:
@@ -5656,68 +5704,90 @@ class Sling(Manager):
             self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
         )
 
-        if self._EA == 0:
-            EAmain = 0
-        else:
-            ka = 2 * self._EA / self._LspliceA
-            kb = 2 * self._EA / self._LspliceB
-            kmain = self._EA / Lmain
-            k_total = 1 / ((1 / ka) + (1 / kmain) + (1 / kb))
 
-            EAmain = k_total * Lmain
-
-        self.sa.mass = self._mass / 2
-
-        self.sa.inertia_radii = radii_from_box_shape(
-            self._LspliceA,
-            self._LspliceA,
-            self._diameter,
-        )
-
-        self.a1.position = (self._LspliceA / 2, self._diameter / 2, 0)
-        self.a2.position = (self._LspliceA / 2, -self._diameter / 2, 0)
-        self.am.position = (-self._LspliceA / 2, 0, 0)
-
-        self.avis.offset = (-self._LspliceA / 2, 0.0, 0.0)
-        self.avis.scale = (self._LspliceA, 2 * self._diameter, self._diameter)
-
-        self.sb.mass = self._mass / 2
-
-        self.sb.inertia_radii = radii_from_box_shape(
-            self._LspliceB,
-            self._LspliceB,
-            self._diameter,
-        )
-
-        self.b1.position = (self._LspliceB / 2, self._diameter / 2, 0)
-        self.b2.position = (self._LspliceB / 2, -self._diameter / 2, 0)
-        self.bm.position = (-self._LspliceB / 2, 0, 0)
-
-        self.bvis.offset = (-self._LspliceB / 2, 0.0, 0.0)
-        self.bvis.scale = (self._LspliceB, 2 * self._diameter, self._diameter)
+        self.sa1.mass = self._mass / 4
+        self.sa2.mass = self._mass / 4
+        self.sb1.mass = self._mass / 4
+        self.sb2.mass = self._mass / 4
 
         self.main.length = Lmain
-        self.main.EA = EAmain
+        self.main.EA = self._EA
         self.main.diameter = self._diameter
-        self.main.connections = tuple([self.am, *self._sheaves, self.bm])
+        self.main.connections = tuple([self.a2, *self._sheaves, self.b2])
+
+        if self.SPLICE_AS_BEAM:
+            self.spliceA.L = self._LspliceA
+            self.spliceB.L = self._LspliceB
+        else:
+            self.spliceA.length = self._LspliceA
+            self.spliceB.length = self._LspliceB
+
+        self.spliceA.EA = 2*self._EA
+        self.spliceA.diameter = 2*self._diameter
+
+        self.spliceB.EA = 2*self._EA
+        self.spliceB.diameter = 2*self._diameter
 
         self.eyeA.length = self._LwireEyeA
         self.eyeA.EA = self._EA
         self.eyeA.diameter = self._diameter
 
         if self._endA is not None:
-            self.eyeA.connections = (self.a1, self._endA, self.a2)
+            self.eyeA.connections = (self.a1, self._endA, self.a1)
         else:
-            self.eyeA.connections = (self.a1, self.a2)
+            raise ValueError('End A needs to be connected to something')
+            # self.eyeA.connections = (self.a1, self.a1)
 
         self.eyeB.length = self._LwireEyeB
         self.eyeB.EA = self._EA
         self.eyeB.diameter = self._diameter
 
         if self._endB is not None:
-            self.eyeB.connections = (self.b1, self._endB, self.b2)
+            self.eyeB.connections = (self.b1, self._endB, self.b1)
         else:
-            self.eyeB.connections = (self.b1, self.b2)
+            raise ValueError('End B needs to be connected to something')
+            # self.eyeB.connections = (self.b1, self.b1)
+
+        # Set positions of splice bodies
+        A = np.array(self._endA.global_position)
+        B = np.array(self._endB.global_position)
+
+        D = B-A
+        Lmain = (
+                self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
+        )
+
+        if self._endA is not None and self._endB is not None:
+
+
+            # endA
+
+            a = np.array(self._endA.global_position)
+            if len(self.connections) > 2:
+                p = np.array(self._scene._node_from_node_or_str(self.connections[1]).global_position)
+            else:
+                p = np.array(self._endB.global_position)
+
+            dir = p - a
+            if np.linalg.norm(dir) > 1e-6:
+                dir /= np.linalg.norm(dir)
+                self.sa1.position = a + (self._LeyeA) * dir
+                self.sa2.position = a + (self._LeyeA + self._LspliceA) * dir
+
+            # endB
+
+            b = np.array(self._endB.global_position)
+            if len(self.connections) > 2:
+                p = np.array(self._scene._node_from_node_or_str(self.connections[-2]).global_position)
+            else:
+                p = np.array(self._endA.global_position)
+
+            dir = p - b
+            if np.linalg.norm(dir) > 1e-6:
+                dir /= np.linalg.norm(dir)
+                self.sb1.position = b + self._LeyeB * dir
+                self.sb2.position = b + (self._LeyeB + self._LspliceB) * dir
+
 
         self._scene.current_manager = backup  # restore
 
@@ -5737,19 +5807,24 @@ class Sling(Manager):
 
     def managed_nodes(self):
         a = [
-            self.sa,
+            self.spliceA,
             self.a1,
+            self.sa1,
             self.a2,
-            self.am,
-            self.avis,
-            self.sb,
+            self.sa2,
+            # self.am,
+            # self.avis,
+            # self.sb,
             self.b1,
+            self.sb1,
             self.b2,
-            self.bm,
-            self.bvis,
+            self.sb2,
+            self.spliceB,
+            # self.bvis,
             self.main,
             self.eyeA,
             self.eyeB,
+
         ]
 
         return a
@@ -5770,26 +5845,52 @@ class Sling(Manager):
                 self._scene.delete(n)  # delete if it is still available
 
     @property
-    def spliceAposrot(self)->tuple[float,float,float,float,float,float]:
-        """The 6-dof of splice on end A. Solved [m,m,m,deg,deg,deg]
+    def spliceApos(self)->tuple[float,float,float,float,float,float]:
+        """The 6-dof of splice on end A. Solved [m,m,m,m,m,m]
         #NOGUI"""
-        return (*self.sa.position, *self.sa.rotation)
+        return (*self.sa1.position, *self.sa2.position)
 
-    @spliceAposrot.setter
-    def spliceAposrot(self, value):
-        self.sa._vfNode.position = value[:3]
-        self.sa._vfNode.rotation = np.deg2rad(value[3:])
+    @spliceApos.setter
+    def spliceApos(self, value):
+        self.sa1._vfNode.position = value[:3]
+        self.sa2._vfNode.position = value[3:]
 
     @property
-    def spliceBposrot(self)->tuple[float,float,float,float,float,float]:
-        """The 6-dof of splice on end B. Solved [m,m,m,deg,deg,deg]
+    def spliceBpos(self) -> tuple[float, float, float, float, float, float]:
+        """The 6-dof of splice on end A. Solved [m,m,m,m,m,m]
         #NOGUI"""
-        return (*self.sb.position, *self.sb.rotation)
+        return (*self.sb1.position, *self.sb2.position)
 
-    @spliceBposrot.setter
-    def spliceBposrot(self, value):
-        self.sb._vfNode.position = value[:3]
-        self.sb._vfNode.rotation = np.deg2rad(value[3:])
+    @spliceBpos.setter
+    def spliceBpos(self, value):
+        self.sb1._vfNode.position = value[:3]
+        self.sb2._vfNode.position = value[3:]
+
+    # @property
+    # def spliceAposrot(self)->tuple[float,float,float,float,float,float]:
+    #     """The 6-dof of splice on end A. Solved [m,m,m,deg,deg,deg]
+    #     #NOGUI"""
+    #     pass
+    #     # return (*self.sa.position, *self.sa.rotation)
+    #
+    # @spliceAposrot.setter
+    # def spliceAposrot(self, value):
+    #     pass
+    #     # self.sa._vfNode.position = value[:3]
+    #     # self.sa._vfNode.rotation = np.deg2rad(value[3:])
+    #
+    # @property
+    # def spliceBposrot(self)->tuple[float,float,float,float,float,float]:
+    #     """The 6-dof of splice on end B. Solved [m,m,m,deg,deg,deg]
+    #     #NOGUI"""
+    #     pass
+    #     # return (*self.sb.position, *self.sb.rotation)
+    #
+    # @spliceBposrot.setter
+    # def spliceBposrot(self, value):
+    #     pass
+    #     # self.sb._vfNode.position = value[:3]
+    #     # self.sb._vfNode.rotation = np.deg2rad(value[3:])
 
     @property
     def connections(self):
@@ -5843,8 +5944,8 @@ class Sling(Manager):
             sheaves = "None"
 
         code += f"\n            sheaves = {sheaves})"
-        code += "\nsl.spliceAposrot = ({},{},{},{},{},{}) # solved".format(*self.spliceAposrot)
-        code += "\nsl.spliceBposrot = ({},{},{},{},{},{}) # solved".format(*self.spliceBposrot)
+        code += "\nsl.spliceApos = ({},{},{},{},{},{}) # solved".format(*self.spliceApos)
+        code += "\nsl.spliceBpos = ({},{},{},{},{},{}) # solved".format(*self.spliceBpos)
 
         if self.sheaves:
             if np.any(self.reversed):
@@ -6037,58 +6138,56 @@ class Sling(Manager):
 
 class Shackle(Manager, RigidBody):
     """
-    Green-Pin Heavy Duty Bow Shackle BN
+    Shackle catalog
+    - GP: Green-Pin Heavy Duty Bow Shackle BN (P-6036 Green Pin® Heavy Duty Bow Shackle BN (mm))
+    - WB: P-6033 Green Pin® Sling Shackle BN (mm)
+
 
     visual from: https://www.traceparts.com/en/product/green-pinr-p-6036-green-pinr-heavy-duty-bow-shackle-bn-hdgphm0800-mm?CatalogPath=TRACEPARTS%3ATP04001002006&Product=10-04072013-086517&PartNumber=HDGPHM0800
-    details from: https://www.greenpin.com/sites/default/files/2019-04/brochure-april-2019.pdf
+    details from:
+     - https://www.greenpin.com/sites/default/files/2019-04/brochure-april-2019.pdf
+     - https://www.thecrosbygroup.com/products/shackles/heavy-lift/crosby-2140-alloy-bolt-type-shackles/
+     -
 
-    wll a b c d e f g h i j k weight
-    [t] [mm]  [kg]
-    120 95 95 208 95 147 400 238 647 453 428 50 110
-    150 105 108 238 105 169 410 275 688 496 485 50 160
-    200 120 130 279 120 179 513 290 838 564 530 70 235
-    250 130 140 299 130 205 554 305 904 614 565 70 295
-    300 140 150 325 140 205 618 305 996 644 585 80 368
-    400 170 175 376 164 231 668 325 1114 690 665 70 560
-    500 180 185 398 164 256 718 350 1190 720 710 70 685
-    600 200 205 444 189 282 718 375 1243 810 775 70 880
-    700 210 215 454 204 308 718 400 1263 870 820 70 980
-    800 210 220 464 204 308 718 400 1270 870 820 70 1100
-    900 220 230 485 215 328 718 420 1296 920 860 70 1280
-    1000 240 240 515 215 349 718 420 1336 940 900 70 1460
-    1250 260 270 585 230 369 768 450 1456 1025 970 70 1990
-    1500 280 290 625 230 369 818 450 1556 1025 1010 70 2400
+
 
     Returns:
 
     """
 
     data = dict()
-    # key = wll in t
-    # dimensions a..k in [mm]
-    #             a     b    c   d     e    f    g    h     i     j    k   weight[kg]
-    # index       0     1    2    3    4    5    6    7     8     9    10   11
-    data["GP120"] = (95, 95, 208, 95, 147, 400, 238, 647, 453, 428, 50, 110)
-    data["GP150"] = (105, 108, 238, 105, 169, 410, 275, 688, 496, 485, 50, 160)
-    data["GP200"] = (120, 130, 279, 120, 179, 513, 290, 838, 564, 530, 70, 235)
-    data["GP250"] = (130, 140, 299, 130, 205, 554, 305, 904, 614, 565, 70, 295)
-    data["GP300"] = (140, 150, 325, 140, 205, 618, 305, 996, 644, 585, 80, 368)
-    data["GP400"] = (170, 175, 376, 164, 231, 668, 325, 1114, 690, 665, 70, 560)
-    data["GP500"] = (180, 185, 398, 164, 256, 718, 350, 1190, 720, 710, 70, 685)
-    data["GP600"] = (200, 205, 444, 189, 282, 718, 375, 1243, 810, 775, 70, 880)
-    data["GP700"] = (210, 215, 454, 204, 308, 718, 400, 1263, 870, 820, 70, 980)
-    data["GP800"] = (210, 220, 464, 204, 308, 718, 400, 1270, 870, 820, 70, 1100)
-    data["GP900"] = (220, 230, 485, 215, 328, 718, 420, 1296, 920, 860, 70, 1280)
-    data["GP1000"] = (240, 240, 515, 215, 349, 718, 420, 1336, 940, 900, 70, 1460)
-    data["GP1250"] = (260, 270, 585, 230, 369, 768, 450, 1456, 1025, 970, 70, 1990)
-    data["GP1500"] = (280, 290, 625, 230, 369, 818, 450, 1556, 1025, 1010, 70, 2400)
+
+    # Read the shackle data
+
+
+    cdir = Path(dirname(__file__))
+    filename = cdir / './resources/shackle data.csv'
+
+    if filename.exists():
+        with open(filename, newline='') as csvfile:
+            shackle_data = csv.reader(csvfile)
+            header = shackle_data.__next__()  # skip the header
+
+            for row in shackle_data:
+                name = row[0]
+                data[name] = row[1:]
+
+
+    else:
+        warnings.warn(f'Could not load shackle data because {filename} does not exist')
+
+    # ======================
+
+
+
 
     def defined_kinds(self):
         """Defined shackle kinds"""
         list = [a for a in Shackle.data.keys()]
         return list
 
-    def _give_values(self, kind):
+    @staticmethod
+    def shackle_kind_properties(kind):
         if kind not in Shackle.data:
             for key in Shackle.data.keys():
                 print(key)
@@ -6096,11 +6195,21 @@ class Shackle(Manager, RigidBody):
                 f"No data available for a Shackle of kind {kind}. Available values printed above"
             )
 
-        return Shackle.data[kind]
+        data = Shackle.data[kind]
+        return {'kind':kind,
+                'description':data[0],
+                'WLL':float(data[1]),
+                'weight':float(data[2]),
+                'pin_diameter':float(data[3]),
+                'bow_diameter':float(data[4]),
+                'inside_length':float(data[5]),
+                'inside_width':float(data[6]),
+                'visual':data[7],
+                'scale':float(data[8])}
 
     def __init__(self, scene, name, kind='GP800'):
 
-        _ = self._give_values(kind)  # to make sure it exists
+        _ = self.shackle_kind_properties(kind)  # to make sure it exists
 
         Manager.__init__(self, scene, name)
         RigidBody.__init__(self, scene, name)
@@ -6138,7 +6247,7 @@ class Shackle(Manager, RigidBody):
         self.visual_node = scene.new_visual(
             name=name + "_visual",
             parent=self,
-            path=r"shackle_gp800.obj",
+            path=r"res: shackle_gp800.obj",
             offset=(0, 0, 0),
             rotation=(0, 0, 0),
         )
@@ -6163,12 +6272,12 @@ class Shackle(Manager, RigidBody):
     @node_setter_observable
     def kind(self, kind):
 
-        values = self._give_values(kind)
-        weight = values[11] / 1000  # convert to tonne
-        pin_dia = values[1] / 1000
-        bow_dia = values[0] / 1000
-        bow_length_inside = values[5] / 1000
-        bow_circle_inside = values[6] / 1000
+        values = self.shackle_kind_properties(kind)
+        weight = values['weight'] / 1000  # convert to tonne
+        pin_dia = values['pin_diameter'] / 1000
+        bow_dia = values['bow_diameter'] / 1000
+        bow_length_inside = values['inside_length'] / 1000
+        bow_circle_inside = values['inside_width'] / 1000
 
         cogz = 0.5 * pin_dia + bow_length_inside / 3  # estimated
 
@@ -6199,14 +6308,8 @@ class Shackle(Manager, RigidBody):
         )
         self.inside.radius = bow_circle_inside / 2
 
-        # determine the scale for the shackle
-        # based on a GP800
-        #
-        actual_size = 0.5 * pin_dia + 0.5 * bow_dia + bow_length_inside
-        gp800_size = 0.5 * 0.210 + 0.5 * 0.220 + 0.718
-
-        scale = actual_size / gp800_size
-
+        self.visual_node.path = values['visual']
+        scale = values['scale']
         self.visual_node.scale = [scale, scale, scale]
 
         self._scene.current_manager = remember

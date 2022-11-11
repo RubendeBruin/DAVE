@@ -194,7 +194,34 @@ def radii_to_positions(rxx,ryy,rzz):
 
     return ps
 
+def rotvec_from_y_and_z_axis_direction(y,z):
+    """Returns an orientation with the z-axis upwards as much as possible and the y-axis in the requested direction"""
 
+    y = np.array(y) / np.linalg.norm(y)
+    x = np.cross(y,z)
+    x = x / np.linalg.norm(x)
+    z = np.cross(x,y)
+
+    # np.linalg.det([x, y, z]) check
+
+    # now construct a rotation vector from the three vector basis
+    from scipy.spatial.transform import Rotation
+    r = Rotation.from_matrix(np.transpose([x,y,z]))
+
+    return np.rad2deg(r.as_rotvec())
+
+def rotvec_from_y_axis_direction(direction):
+    """Returns an orientation with the z-axis upwards as much as possible and the y-axis in the requested direction"""
+
+    y = np.array(direction) / np.linalg.norm(direction)
+    z = (0,0,1)
+    x = np.cross(y,z)
+
+    if np.linalg.norm(x) < 1e-9: # y==z or y==-z
+        z = (0,-1,0)
+        x = np.cross(y, z)
+
+    return rotvec_from_y_and_z_axis_direction(y,z)
 
 def rotation_from_y_axis_direction(direction):
     """Returns a rotation vector that rotates the Y-axis (0,1,0) to the given direction"""
