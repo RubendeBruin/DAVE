@@ -6161,7 +6161,7 @@ class Shackle(Manager, RigidBody):
 
 
     cdir = Path(dirname(__file__))
-    filename = cdir / './resources/shackle data.csv'
+    filename = cdir / './resources/shackle_data.csv'
 
     if filename.exists():
         with open(filename, newline='') as csvfile:
