@@ -2137,9 +2137,10 @@ class Scene:
 
         if inertia_radii is not None:
             assert3f_positive(inertia_radii, "Radii of inertia")
-            assert mass > 0, ValueError(
-                "Can not set radii of gyration without specifying mass"
-            )
+
+            if not mass > 0:
+                warnings.warn(f"Can not set radii of gyration without specifying mass - ignoring radii of gyration for {name}")
+                inertia_radii = None
 
         if not isinstance(fixed, bool):
             if len(fixed) != 6:
@@ -3579,11 +3580,17 @@ class Scene:
         name_of_duplicate = self.available_name_like(name)
 
         # get the python code to generate the node with the new name
+        remember = self._godmode
+        self._godmode = True # the node may be managed
         node.name = name_of_duplicate  # temporary rename just for code-generation
-        self._export_code_with_solved_function = False
-        code = node.give_python_code()
-        self._export_code_with_solved_function = True
-        node.name = name  # and restore
+
+        try:
+            self._export_code_with_solved_function = False
+            code = node.give_python_code()
+            self._export_code_with_solved_function = True
+        finally:
+            node.name = name  # and restore
+            self._godmode = remember
 
         self.run_code(code)
 

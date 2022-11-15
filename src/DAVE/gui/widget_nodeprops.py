@@ -705,10 +705,12 @@ class EditComponent(NodeEditor):
         self.ui = ui
         self._widget = widget
 
-        self.ui.cbPath.currentTextChanged.connect(self.generate_code)
+        self.fileextension = "dave"
+        self.resources_loaded = False
+
+        self.ui.cbPath.editTextChanged.connect(self.generate_code)
         self.ui.pbReScan.clicked.connect(self.rescan)
 
-        self.fileextension = "dave"
 
     def rescan(self):
         self.post_update_event()
@@ -726,19 +728,17 @@ class EditComponent(NodeEditor):
         code = f"\ns['{self.node.name}'].path = r'{self.node.path}'"
         self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
+    def update_resource_list(self):
+        names = self.scene.get_resource_list(self.fileextension, include_subdirs=True)
+        update_combobox_items_with_completer(self.ui.cbPath, names)
+        self.resources_loaded = True
+
     def post_update_event(self):
         """Sync the properties of the node to the gui"""
-        self.ui.cbPath.blockSignals(True)
-        self.ui.cbPath.clear()
-        self.ui.cbPath.addItems(
-            self.scene.get_resource_list(self.fileextension, include_subdirs=True)
-        )
-        # self.ui.cbPath.setCurrentText(str(self.node.path))
-        cvinf(self.ui.cbPath, str(self.node.path))
-        self.ui.cbPath.blockSignals(False)
 
-    def barge_changed(self):
-        self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
+        if not self.resources_loaded:
+            self.update_resource_list()
+        cvinf(self.ui.cbPath, str(self.node.path))
 
     def generate_code(self):
         """Generate code to update the node, then run it"""
@@ -746,8 +746,11 @@ class EditComponent(NodeEditor):
         code = ""
         code += code_if_changed_path(self.node, self.ui.cbPath.currentText(), "path")
 
-        if code:
-            self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+        # only fire if resource is valid
+        resource = self.ui.cbPath.currentText()
+        if self.scene.get_resource_path(resource):
+            if code:
+                self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
 
 # ======================================
@@ -929,6 +932,14 @@ class EditBuoyancyOrContactMesh(AbstractNodeEditorWithParent):
             widget.blockSignals(False)
 
     def generate_code(self):
+
+        # check if resource is valid, if not then do not reload
+        # only fire if resource is valid
+        resource = self.ui.comboBox.currentText()
+        try:
+            self.scene.get_resource_path(resource)
+        except:
+            return
 
         code = ""
         element = "\ns['{}']".format(self.node.name)
@@ -2326,15 +2337,12 @@ class EditShackle(NodeEditor):
 
 
     def generate_code(self):
-
-        code = ""
-
         kind = self.ui.comboBox.currentText()
         if kind != self.node.kind:
-            element = "\ns['{}']".format(self.node.name)
-            code = element + f".kind = '{kind}'"
-
-        self.run_code(code)
+            if kind in Shackle.data:
+                element = "\ns['{}']".format(self.node.name)
+                code = element + f".kind = '{kind}'"
+                self.run_code(code)
 
 
 @Singleton

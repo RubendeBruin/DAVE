@@ -6165,10 +6165,10 @@ class Shackle(Manager, RigidBody):
 
     if filename.exists():
         with open(filename, newline='') as csvfile:
-            shackle_data = csv.reader(csvfile)
-            header = shackle_data.__next__()  # skip the header
+            __shackle_data = csv.reader(csvfile)
+            header = __shackle_data.__next__()  # skip the header
 
-            for row in shackle_data:
+            for row in __shackle_data:
                 name = row[0]
                 data[name] = row[1:]
 
@@ -6255,6 +6255,10 @@ class Shackle(Manager, RigidBody):
         self.kind = kind
         self._name = name # do not set name in managed nodes, names there are already set
                           # so that would raise an error
+
+        self.inside_point._visible = False
+        self.bow_point._visible = False
+        self.pin_point._visible = False
 
         for n in self.managed_nodes():
             n.manager = self
