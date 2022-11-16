@@ -669,6 +669,8 @@ class Gui:
         splash.finish(self.MainWindow)
         self.MainWindow.show()
 
+        self.MainWindow.setMinimumWidth(1400)
+
         if block:
             self.ui.pbUpdate.setVisible(False)
             self.app.exec_()
@@ -1350,6 +1352,8 @@ class Gui:
         self.ui.teFeedback.setStyleSheet("")
         self.ui.teFeedback.clear()
 
+        select_node_name_edit_field = False
+
         with capture_output() as c:
 
             try:
@@ -1403,8 +1407,11 @@ class Gui:
                         # self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
                         if node.manager is not None:
                             self.guiSelectNode(node.manager)
+                            select_node_name_edit_field = True
                         else:
                             self.guiSelectNode(node)
+                            select_node_name_edit_field = True
+
                         emitted = True
                         break
 
@@ -1433,6 +1440,17 @@ class Gui:
             self.ui.teFeedback.verticalScrollBar().setValue(
                 self.ui.teFeedback.verticalScrollBar().maximum()
             )  # scroll down all the way
+
+            if select_node_name_edit_field:
+                self.place_input_focus_on_name_of_node()
+
+    def place_input_focus_on_name_of_node(self):
+        """Places the input focus on the name of the node such that the user can directly change it if needed"""
+        if 'Properties' in self.guiWidgets:
+            props = self.guiWidgets['Properties']
+            props._node_name_editor.ui.tbName.setFocus()
+            props._node_name_editor.ui.tbName.selectAll()
+
 
     def stop_solving(self):
         self._terminate = True

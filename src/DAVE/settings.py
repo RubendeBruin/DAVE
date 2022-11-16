@@ -29,10 +29,24 @@ from dataclasses import dataclass
 DAVE_ADDITIONAL_RUNTIME_MODULES = dict()
 """Variables in this dict will be made available to the interpreter when executing code. Useful when introducing new  
 Node types via plugins.
-
-
-
 """
+
+QUICK_ACTION_REGISTER = []
+"""Functions in this list are called by the Quick Action widget in the gui and can be used to add buttons to the
+quick-action widget. 
+
+QUICK_ACTION_REGISTER demo:
+
+def qa_demo(scene, selection, *args):
+    if any([isinstance(node, Point) for node in selection]):
+        btn = QPushButton('Good point!')
+        return [(btn,"print('Told ya')")]
+    return []
+
+QUICK_ACTION_REGISTER.append(qa_demo)
+"""
+
+
 
 from os.path import expanduser
 from os.path import dirname

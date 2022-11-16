@@ -1,43 +1,56 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'dlg_solver.ui',
-# licensing of 'dlg_solver.ui' applies.
-#
-# Created: Fri Nov  1 11:11:55 2019
-#      by: pyside2-uic  running on PySide2 5.13.1
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'dlg_solver.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.6
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtCore import *  # type: ignore
+from PySide2.QtGui import *  # type: ignore
+from PySide2.QtWidgets import *  # type: ignore
+
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
-        Dialog.setObjectName("Dialog")
-        Dialog.setWindowModality(QtCore.Qt.ApplicationModal)
+        if not Dialog.objectName():
+            Dialog.setObjectName(u"Dialog")
+        Dialog.setWindowModality(Qt.ApplicationModal)
         Dialog.resize(336, 142)
-        Dialog.setWindowOpacity(1.0)
-        Dialog.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
+        Dialog.setWindowOpacity(1.000000000000000)
+        Dialog.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
         Dialog.setModal(True)
-        self.verticalLayout = QtWidgets.QVBoxLayout(Dialog)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.label = QtWidgets.QLabel(Dialog)
-        self.label.setAlignment(QtCore.Qt.AlignCenter)
-        self.label.setObjectName("label")
+        self.verticalLayout = QVBoxLayout(Dialog)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.label = QLabel(Dialog)
+        self.label.setObjectName(u"label")
+        self.label.setAlignment(Qt.AlignCenter)
+
         self.verticalLayout.addWidget(self.label)
-        self.label_2 = QtWidgets.QLabel(Dialog)
-        self.label_2.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_2.setObjectName("label_2")
+
+        self.label_2 = QLabel(Dialog)
+        self.label_2.setObjectName(u"label_2")
+        self.label_2.setAlignment(Qt.AlignCenter)
+
         self.verticalLayout.addWidget(self.label_2)
-        self.btnTerminate = QtWidgets.QPushButton(Dialog)
-        self.btnTerminate.setObjectName("btnTerminate")
+
+        self.btnTerminate = QPushButton(Dialog)
+        self.btnTerminate.setObjectName(u"btnTerminate")
+
         self.verticalLayout.addWidget(self.btnTerminate)
 
+
         self.retranslateUi(Dialog)
-        QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+        QMetaObject.connectSlotsByName(Dialog)
+    # setupUi
 
     def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(QtWidgets.QApplication.translate("Dialog", "Working", None, -1))
-        self.label.setText(QtWidgets.QApplication.translate("Dialog", "Doing what you told me to do.", None, -1))
-        self.label_2.setText(QtWidgets.QApplication.translate("Dialog", "< Info >", None, -1))
-        self.btnTerminate.setText(QtWidgets.QApplication.translate("Dialog", "Terminate solver", None, -1))
+        Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Working", None))
+        self.label.setText(QCoreApplication.translate("Dialog", u"Doing what you told me to do.", None))
+        self.label_2.setText(QCoreApplication.translate("Dialog", u"< Info >", None))
+        self.btnTerminate.setText(QCoreApplication.translate("Dialog", u"Terminate solver", None))
+    # retranslateUi
 

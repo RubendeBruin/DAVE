@@ -169,6 +169,9 @@
  <tabstops>
   <tabstop>doubleSpinBox_1</tabstop>
   <tabstop>doubleSpinBox_2</tabstop>
+  <tabstop>doubleSpinBox</tabstop>
+  <tabstop>doubleSpinBox_4</tabstop>
+  <tabstop>doubleSpinBox_3</tabstop>
  </tabstops>
  <resources/>
  <connections/>

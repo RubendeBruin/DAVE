@@ -115,6 +115,9 @@ class Ui_Cable_form(object):
         self.verticalLayout.addWidget(self.frame_2)
 
         QWidget.setTabOrder(self.doubleSpinBox_1, self.doubleSpinBox_2)
+        QWidget.setTabOrder(self.doubleSpinBox_2, self.doubleSpinBox)
+        QWidget.setTabOrder(self.doubleSpinBox, self.doubleSpinBox_4)
+        QWidget.setTabOrder(self.doubleSpinBox_4, self.doubleSpinBox_3)
 
         self.retranslateUi(Cable_form)
 
