@@ -341,7 +341,6 @@ class WidgetQuickActions(guiDockWidget):
         self.flow_layout = FlowLayout()
         self.contents.setLayout(self.flow_layout)
         self.buttons = []
-        self.setGeometry(0,0,100,30)
 
     def guiProcessEvent(self, event):
         """
