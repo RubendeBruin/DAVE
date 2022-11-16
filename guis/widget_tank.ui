@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>321</width>
-    <height>301</height>
+    <height>303</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -239,6 +239,15 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>sbPermeability</tabstop>
+  <tabstop>cbFreeFlooding</tabstop>
+  <tabstop>cbUseOutsideDensity</tabstop>
+  <tabstop>sbDenstiy</tabstop>
+  <tabstop>sbVolume</tabstop>
+  <tabstop>sbPercentage</tabstop>
+  <tabstop>sbElevation</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

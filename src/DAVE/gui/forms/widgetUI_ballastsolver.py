@@ -1,119 +1,154 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_ballastsolver.ui',
-# licensing of 'widget_ballastsolver.ui' applies.
-#
-# Created: Sun Sep 12 21:32:34 2021
-#      by: pyside2-uic  running on PySide2 5.13.2
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'widget_ballastsolver.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.6
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtCore import *  # type: ignore
+from PySide2.QtGui import *  # type: ignore
+from PySide2.QtWidgets import *  # type: ignore
+
 
 class Ui_BallastSolver(object):
     def setupUi(self, BallastSolver):
-        BallastSolver.setObjectName("BallastSolver")
+        if not BallastSolver.objectName():
+            BallastSolver.setObjectName(u"BallastSolver")
         BallastSolver.resize(219, 598)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(BallastSolver.sizePolicy().hasHeightForWidth())
         BallastSolver.setSizePolicy(sizePolicy)
-        BallastSolver.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
-        self.verticalLayout = QtWidgets.QVBoxLayout(BallastSolver)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.label_3 = QtWidgets.QLabel(BallastSolver)
-        self.label_3.setObjectName("label_3")
+        BallastSolver.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
+        self.verticalLayout = QVBoxLayout(BallastSolver)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.label_3 = QLabel(BallastSolver)
+        self.label_3.setObjectName(u"label_3")
+
         self.verticalLayout.addWidget(self.label_3)
-        self.label_4 = QtWidgets.QLabel(BallastSolver)
-        self.label_4.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_4.setObjectName("label_4")
+
+        self.label_4 = QLabel(BallastSolver)
+        self.label_4.setObjectName(u"label_4")
+        self.label_4.setAlignment(Qt.AlignCenter)
+
         self.verticalLayout.addWidget(self.label_4)
-        self.label_2 = QtWidgets.QLabel(BallastSolver)
+
+        self.label_2 = QLabel(BallastSolver)
+        self.label_2.setObjectName(u"label_2")
         self.label_2.setWordWrap(True)
-        self.label_2.setObjectName("label_2")
+
         self.verticalLayout.addWidget(self.label_2)
-        self.doubleSpinBox = QtWidgets.QDoubleSpinBox(BallastSolver)
-        self.doubleSpinBox.setMinimum(-99999999999999.0)
-        self.doubleSpinBox.setMaximum(99999999999999.0)
-        self.doubleSpinBox.setSingleStep(0.25)
-        self.doubleSpinBox.setProperty("value", -5.0)
-        self.doubleSpinBox.setObjectName("doubleSpinBox")
+
+        self.doubleSpinBox = QDoubleSpinBox(BallastSolver)
+        self.doubleSpinBox.setObjectName(u"doubleSpinBox")
+        self.doubleSpinBox.setMinimum(-99999999999999.000000000000000)
+        self.doubleSpinBox.setMaximum(99999999999999.000000000000000)
+        self.doubleSpinBox.setSingleStep(0.250000000000000)
+        self.doubleSpinBox.setValue(-5.000000000000000)
+
         self.verticalLayout.addWidget(self.doubleSpinBox)
-        self.pushButton = QtWidgets.QPushButton(BallastSolver)
-        self.pushButton.setObjectName("pushButton")
+
+        self.pushButton = QPushButton(BallastSolver)
+        self.pushButton.setObjectName(u"pushButton")
+
         self.verticalLayout.addWidget(self.pushButton)
-        self.tableWidget = QtWidgets.QTableWidget(BallastSolver)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.tableWidget.sizePolicy().hasHeightForWidth())
-        self.tableWidget.setSizePolicy(sizePolicy)
-        self.tableWidget.setMaximumSize(QtCore.QSize(16777215, 174))
-        self.tableWidget.setFrameShape(QtWidgets.QFrame.NoFrame)
+
+        self.tableWidget = QTableWidget(BallastSolver)
+        if (self.tableWidget.columnCount() < 1):
+            self.tableWidget.setColumnCount(1)
+        __qtablewidgetitem = QTableWidgetItem()
+        self.tableWidget.setHorizontalHeaderItem(0, __qtablewidgetitem)
+        if (self.tableWidget.rowCount() < 3):
+            self.tableWidget.setRowCount(3)
+        __qtablewidgetitem1 = QTableWidgetItem()
+        self.tableWidget.setVerticalHeaderItem(0, __qtablewidgetitem1)
+        __qtablewidgetitem2 = QTableWidgetItem()
+        self.tableWidget.setVerticalHeaderItem(1, __qtablewidgetitem2)
+        __qtablewidgetitem3 = QTableWidgetItem()
+        self.tableWidget.setVerticalHeaderItem(2, __qtablewidgetitem3)
+        self.tableWidget.setObjectName(u"tableWidget")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.tableWidget.sizePolicy().hasHeightForWidth())
+        self.tableWidget.setSizePolicy(sizePolicy1)
+        self.tableWidget.setMaximumSize(QSize(16777215, 174))
+        self.tableWidget.setFrameShape(QFrame.NoFrame)
         self.tableWidget.setLineWidth(1)
-        self.tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.tableWidget.setProperty("showDropIndicator", True)
         self.tableWidget.setAlternatingRowColors(False)
         self.tableWidget.setShowGrid(True)
-        self.tableWidget.setGridStyle(QtCore.Qt.SolidLine)
+        self.tableWidget.setGridStyle(Qt.SolidLine)
         self.tableWidget.setWordWrap(False)
-        self.tableWidget.setObjectName("tableWidget")
-        self.tableWidget.setColumnCount(1)
-        self.tableWidget.setRowCount(3)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableWidget.setVerticalHeaderItem(0, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableWidget.setVerticalHeaderItem(1, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableWidget.setVerticalHeaderItem(2, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(0, item)
         self.tableWidget.horizontalHeader().setDefaultSectionSize(150)
         self.tableWidget.horizontalHeader().setStretchLastSection(True)
         self.tableWidget.verticalHeader().setVisible(True)
-        self.tableWidget.verticalHeader().setHighlightSections(False)
         self.tableWidget.verticalHeader().setMinimumSectionSize(0)
+        self.tableWidget.verticalHeader().setHighlightSections(False)
         self.tableWidget.verticalHeader().setStretchLastSection(False)
+
         self.verticalLayout.addWidget(self.tableWidget)
-        self.widget = QtWidgets.QWidget(BallastSolver)
-        self.widget.setObjectName("widget")
-        self.gridLayout = QtWidgets.QGridLayout(self.widget)
-        self.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.gridLayout.setObjectName("gridLayout")
-        self.widget_2 = QtWidgets.QWidget(self.widget)
-        self.widget_2.setObjectName("widget_2")
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.widget_2)
-        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.cbUseCurrentFills = QtWidgets.QCheckBox(self.widget_2)
-        self.cbUseCurrentFills.setObjectName("cbUseCurrentFills")
+
+        self.widget = QWidget(BallastSolver)
+        self.widget.setObjectName(u"widget")
+        self.gridLayout = QGridLayout(self.widget)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.widget_2 = QWidget(self.widget)
+        self.widget_2.setObjectName(u"widget_2")
+        self.verticalLayout_2 = QVBoxLayout(self.widget_2)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.cbUseCurrentFills = QCheckBox(self.widget_2)
+        self.cbUseCurrentFills.setObjectName(u"cbUseCurrentFills")
+
         self.verticalLayout_2.addWidget(self.cbUseCurrentFills)
-        self.pushButton_2 = QtWidgets.QPushButton(self.widget_2)
-        self.pushButton_2.setObjectName("pushButton_2")
+
+        self.pushButton_2 = QPushButton(self.widget_2)
+        self.pushButton_2.setObjectName(u"pushButton_2")
+
         self.verticalLayout_2.addWidget(self.pushButton_2)
-        self.pushButton_3 = QtWidgets.QPushButton(self.widget_2)
-        self.pushButton_3.setObjectName("pushButton_3")
+
+        self.pushButton_3 = QPushButton(self.widget_2)
+        self.pushButton_3.setObjectName(u"pushButton_3")
+
         self.verticalLayout_2.addWidget(self.pushButton_3)
+
+
         self.gridLayout.addWidget(self.widget_2, 1, 0, 1, 2)
+
+
         self.verticalLayout.addWidget(self.widget)
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.verticalLayout.addItem(self.verticalSpacer)
+
 
         self.retranslateUi(BallastSolver)
-        QtCore.QMetaObject.connectSlotsByName(BallastSolver)
+
+        QMetaObject.connectSlotsByName(BallastSolver)
+    # setupUi
 
     def retranslateUi(self, BallastSolver):
-        BallastSolver.setWindowTitle(QtWidgets.QApplication.translate("BallastSolver", "Form", None, -1))
-        self.label_3.setText(QtWidgets.QApplication.translate("BallastSolver", "Ballast", None, -1))
-        self.label_4.setText(QtWidgets.QApplication.translate("BallastSolver", "VESSEL", None, -1))
-        self.label_2.setText(QtWidgets.QApplication.translate("BallastSolver", "to an even-keel conditions at vertical position of:", None, -1))
-        self.pushButton.setText(QtWidgets.QApplication.translate("BallastSolver", "Determine required ballast weight and position", None, -1))
-        self.tableWidget.verticalHeaderItem(0).setText(QtWidgets.QApplication.translate("BallastSolver", "Volume", None, -1))
-        self.tableWidget.verticalHeaderItem(1).setText(QtWidgets.QApplication.translate("BallastSolver", "X", None, -1))
-        self.tableWidget.verticalHeaderItem(2).setText(QtWidgets.QApplication.translate("BallastSolver", "Y", None, -1))
-        self.tableWidget.horizontalHeaderItem(0).setText(QtWidgets.QApplication.translate("BallastSolver", "Value", None, -1))
-        self.cbUseCurrentFills.setText(QtWidgets.QApplication.translate("BallastSolver", "Use current tank-fills as start point for solution", None, -1))
-        self.pushButton_2.setText(QtWidgets.QApplication.translate("BallastSolver", "Solve tank fillings", None, -1))
-        self.pushButton_3.setText(QtWidgets.QApplication.translate("BallastSolver", "Solve tank fillings (alt. method)", None, -1))
+        BallastSolver.setWindowTitle(QCoreApplication.translate("BallastSolver", u"Form", None))
+        self.label_3.setText(QCoreApplication.translate("BallastSolver", u"Ballast", None))
+        self.label_4.setText(QCoreApplication.translate("BallastSolver", u"VESSEL", None))
+        self.label_2.setText(QCoreApplication.translate("BallastSolver", u"to an even-keel conditions at vertical position of:", None))
+        self.pushButton.setText(QCoreApplication.translate("BallastSolver", u"Determine required ballast weight and position", None))
+        ___qtablewidgetitem = self.tableWidget.horizontalHeaderItem(0)
+        ___qtablewidgetitem.setText(QCoreApplication.translate("BallastSolver", u"Value", None));
+        ___qtablewidgetitem1 = self.tableWidget.verticalHeaderItem(0)
+        ___qtablewidgetitem1.setText(QCoreApplication.translate("BallastSolver", u"Volume", None));
+        ___qtablewidgetitem2 = self.tableWidget.verticalHeaderItem(1)
+        ___qtablewidgetitem2.setText(QCoreApplication.translate("BallastSolver", u"X", None));
+        ___qtablewidgetitem3 = self.tableWidget.verticalHeaderItem(2)
+        ___qtablewidgetitem3.setText(QCoreApplication.translate("BallastSolver", u"Y", None));
+        self.cbUseCurrentFills.setText(QCoreApplication.translate("BallastSolver", u"Use current tank-fills as start point for solution", None))
+        self.pushButton_2.setText(QCoreApplication.translate("BallastSolver", u"Solve tank fillings", None))
+        self.pushButton_3.setText(QCoreApplication.translate("BallastSolver", u"Solve tank fillings (alt. method)", None))
+    # retranslateUi
 

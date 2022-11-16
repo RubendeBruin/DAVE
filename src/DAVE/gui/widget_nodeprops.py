@@ -2481,14 +2481,16 @@ class WidgetNodeProps(guiDockWidget):
         self.scroll_area = QtWidgets.QScrollArea()
         scroll_area_layout = QtWidgets.QVBoxLayout()
         scroll_area_layout.setSpacing(0)
+        scroll_area_layout.setContentsMargins(0,0,0,0)
         self.scroll_area.setLayout(scroll_area_layout)
+
         self.scroll_area.setWidget(self.contents)
         scroll_area_layout.addWidget(self.contents)
         self.setWidget(self.scroll_area)
 
+        # self.scroll_area.setStyleSheet('background-color: rgb(255, 255, 0);')
+
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-
-
 
         # contents (main layout)
         #   manager_widget ( manager_layout )
@@ -2528,6 +2530,7 @@ class WidgetNodeProps(guiDockWidget):
         self.contents.setLayout(self.main_layout)
 
         self.layout = QtWidgets.QVBoxLayout()
+        self.layout.setContentsMargins(0,0,0,0)
         self.props_widget.setLayout(self.layout)
 
         self._Vspacer = QtWidgets.QSpacerItem(
@@ -2640,6 +2643,8 @@ class WidgetNodeProps(guiDockWidget):
                     self.gui.visual.add_temporary_actor(actor)
 
     def select_node(self, node):
+
+        self.setUpdatesEnabled(False)
 
         to_be_removed = self._open_edit_widgets.copy()
 
@@ -2831,4 +2836,6 @@ class WidgetNodeProps(guiDockWidget):
                 if top<=0:
                     top=5
                 self.setGeometry(self.pos().x(), top, wt, target_height)
+
+        self.setUpdatesEnabled(True)
 

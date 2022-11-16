@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>shackle.png</file>
     <file>cross.png</file>
     <file>cube_shaded.png</file>
     <file>cube_open.png</file>

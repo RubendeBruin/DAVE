@@ -76,21 +76,21 @@ def find_nodes(nodes, types):
 
 def point(scene, selection, *args):
     code = f"s.new_point(name = '{scene.available_name_like('Point')}' {get_parent_code(selection)})"
-    btn = QPushButton('+ Point')
+    btn = QPushButton('+ &Point')
     btn.setIcon(QIcon(":/icons/poi.png"))
     return [(btn, code)]
 QUICK_ACTION_REGISTER.append(point)
 
 def frame(scene, selection, *args):
     code = f"s.new_frame(name = '{scene.available_name_like('Frame')}' {get_parent_code(selection)})"
-    btn = QPushButton('+ Frame')
+    btn = QPushButton('+ &Frame')
     btn.setIcon(QIcon(":/icons/axis.png"))
     return [(btn, code)]
 QUICK_ACTION_REGISTER.append(frame)
 
 def rigidbody(scene, selection, *args):
     code = f"s.new_rigidbody(name = '{scene.available_name_like('Body')}' {get_parent_code(selection)})"
-    btn = QPushButton('+ RigidBody')
+    btn = QPushButton('+ Rigid&Body')
     btn.setIcon(QIcon(":/icons/cube.png"))
     return [(btn, code)]
 QUICK_ACTION_REGISTER.append(rigidbody)
@@ -99,13 +99,13 @@ def circle(scene, selection, *args):
     nodes = nodes_of_type(selection,Point)
     if nodes:
         code = f"s.new_circle(name = '{scene.available_name_like('Circle')}', parent = '{nodes[0].name}', axis = (0,1,0), radius = 1)"
-        btn = QPushButton('+ Circle')
+        btn = QPushButton('+ &Circle')
         btn.setIcon(QIcon(":/icons/circle.png"))
         return [(btn, code)]
 
     code = f"point = s.new_point(name = '{scene.available_name_like('Point')}' {get_parent_code(selection)})"
     code += f"\ns.new_circle(name = '{scene.available_name_like('Circle')}', parent = point, axis = (0,1,0), radius = 1)"
-    btn = QPushButton('+ Point && Circle')
+    btn = QPushButton('+ Point && &Circle')
     btn.setIcon(QIcon(":/icons/circle.png"))
     return [(btn, code)]
 
@@ -125,7 +125,7 @@ def actions_on_circles(scene, selection, *args):
         p1 = p2[1]
 
         # Grommet
-        button = QPushButton('+ Grommet')
+        button = QPushButton('+ &Grommet')
         button.setIcon(QIcon(":/icons/circle.png"))
         name = scene.available_name_like("Grommet")
         code = f's.new_cable("{name}", endA="{p0.name}", endB = "{p0.name}", sheaves = ["{p1.name}"])'
@@ -176,7 +176,7 @@ def cables_slings_and_grommets(scene, selection, *args):
 
         # Cable
         if len(poi_and_sheave) > 1:
-            button = QPushButton('+ Cable')
+            button = QPushButton('+ &Cable')
             button.setIcon(QIcon(':/icons/cable.png'))
 
             if len(poi_and_sheave) > 2:
@@ -192,7 +192,7 @@ def cables_slings_and_grommets(scene, selection, *args):
 
         # Sling
         if len(poi_and_sheave) > 1:
-            button = QPushButton('+ Sling')
+            button = QPushButton('+ &Sling')
             button.setIcon(QIcon(':/icons/sling.png'))
 
             if len(poi_and_sheave) > 2:
@@ -209,7 +209,32 @@ def cables_slings_and_grommets(scene, selection, *args):
 
 QUICK_ACTION_REGISTER.append(cables_slings_and_grommets)
 
+def shackles(scene, selection, *args):
 
+    circles = nodes_of_type(selection,Circle)
+    actions = []
+
+    # a single circle is selected
+    if circles:
+        sheave = circles[0]
+
+        name = scene.available_name_like('Shackle')
+        code = f"shackle = s.new_shackle(name = '{name}')"
+        code += f'\ns.new_geometriccontact("{name}" + "_connection", "{name}_pin", "{sheave.name}", inside=True)'
+        btn = QPushButton('Insert Shackle')
+        btn.setIcon(QIcon(":/icons/shackle.png"))
+        actions.append((btn, code))
+
+    else:
+        name = scene.available_name_like('Shackle')
+        code = f"s.new_shackle(name = '{name}')"
+        btn = QPushButton('+ Shackle')
+        btn.setIcon(QIcon(":/icons/shackle.png"))
+        actions.append((btn, code))
+
+    return actions
+
+QUICK_ACTION_REGISTER.append(shackles)
 
 
 def con6d(scene, selection, *args):
@@ -270,12 +295,34 @@ def visual(scene, selection, *args):
         name = scene.available_name_like(f'Visual')
         code = f"s.new_visual(name = '{name}' {parent}, path = 'res: cube_with_bevel.obj')"
 
-        button = QPushButton('+ Visual')
+        button = QPushButton('+ &Visual')
         button.setIcon(QIcon(':/icons/visual.png'))
         return [(button, code)]
     return []
 
 QUICK_ACTION_REGISTER.append(visual)
+
+def other_frame_additions(scene, selection, *args):
+    parent = get_parent_code(selection)
+    actions = []
+    if parent:
+        name = scene.available_name_like(f'Buoyancy')
+        code = f"s.new_buoyancy(name = '{name}' {parent}).trimesh.load_file('res: cube.obj')"
+
+        button = QPushButton('+ Buoyancy')
+        button.setIcon(QIcon(':/icons/buoy_mesh.png'))
+        actions.append((button, code))
+
+        name = scene.available_name_like(f'Tank')
+        code = f"s.new_tank(name = '{name}' {parent}).trimesh.load_file('res: cube.obj')"
+
+        button = QPushButton('+ &Tank')
+        button.setIcon(QIcon(':/icons/tank.png'))
+        actions.append((button, code))
+
+    return actions
+
+QUICK_ACTION_REGISTER.append(other_frame_additions)
 
 
 
@@ -291,19 +338,10 @@ class WidgetQuickActions(guiDockWidget):
         upon creation and guiScene etc are not yet available.
 
         """
-
-        # # or from a generated file
-        self.ui = Ui_SelectionActions()
-        self.ui.setupUi(self.contents)
-
-        # layout = QtWidgets.QVBoxLayout()
-        layout = FlowLayout()
-        self.ui.frame.setLayout(layout)
-
-
+        self.flow_layout = FlowLayout()
+        self.contents.setLayout(self.flow_layout)
         self.buttons = []
-
-
+        self.setGeometry(0,0,100,30)
 
     def guiProcessEvent(self, event):
         """
@@ -312,7 +350,11 @@ class WidgetQuickActions(guiDockWidget):
         After creation of the widget this event is called with guiEventType.FULL_UPDATE
         """
 
-        if event in [guiEventType.SELECTION_CHANGED, guiEventType.FULL_UPDATE]:
+        # selection changed: obviously
+        # model structure: parent of select nodes may have changed
+        # selected_node_modified: name of the selected node may have changed meaning that the parent has changed
+
+        if event in [guiEventType.SELECTION_CHANGED, guiEventType.FULL_UPDATE, guiEventType.MODEL_STRUCTURE_CHANGED, guiEventType.SELECTED_NODE_MODIFIED]:
             self.fill()
 
     def guiDefaultLocation(self):
@@ -344,17 +386,16 @@ class WidgetQuickActions(guiDockWidget):
 
     def fill(self):
 
-        # display the name of the selected node
-        text = ''
-        for node in self.guiSelection:
-            text += ' ' + node.name
-
-        self.ui.label.setText(text)
+        # Remove everything
+        self.contents.setUpdatesEnabled(False)
 
         for button in self.buttons:
+            self.flow_layout.removeWidget(button)
             button.deleteLater()
 
         self.buttons.clear()
+
+        # Scan for new buttons
 
         for qa in QUICK_ACTION_REGISTER:
             actions = qa(self.guiScene, self.guiSelection)
@@ -364,61 +405,9 @@ class WidgetQuickActions(guiDockWidget):
                 self.buttons.append(btn)
                 btn.pressed.connect(lambda c=code, *args: self.guiRunCodeCallback(c, guiEventType.MODEL_STRUCTURE_CHANGED))
 
-
-
-        style_warning = "color: darkred"
-
-        # Here we manually define all the possible quick-actions
-        #
-        # each quick-action defines its own button
-
-        def valid_name(text):
-            return self.guiScene.name_available(text)
-
-
-
-        # a single sheave selected
-        if len(self.guiSelection)==1:
-            if isinstance(self.guiSelection[0], Circle):
-                sheave = self.guiSelection[0]
-
-                # def create_shackle_gphd(s, name, wll):
-                sizes = (120, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1250, 1500)
-
-                def insert_gp(wll):
-                    pos = self.mapToGlobal(QPoint(0, 0))
-                    name = get_text(pos=pos, suggestion=self.guiScene.available_name_like(f"GP{wll}"),
-                                    input_valid_callback=valid_name)
-                    code = f's.new_shackle(name="{name}", kind = "GP{wll}")'
-                    pin_name = name + '_pin'
-                    code += f'\ns.new_geometriccontact("{name}" + "_connection", "{pin_name}", "{sheave.name}", inside=True)'
-                    self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
-
-                for size in sizes:
-                    button = QPushButton(f'insert GP {size} in {sheave.name}', self.ui.frame)
-                    button.pressed.connect(lambda *args, wll = size : insert_gp(wll=wll))
-                    self.buttons.append(button)
-
-        # nothing selected
-        if len(self.guiSelection) == 0:
-
-            # def create_shackle_gphd(s, name, wll):
-            sizes = (120, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1250, 1500)
-
-            def insert_gp(wll):
-                pos = self.mapToGlobal(QPoint(0, 0))
-                name = get_text(pos=pos, suggestion=self.guiScene.available_name_like(f"GP{wll}"),
-                                input_valid_callback=valid_name)
-                code = f's.new_shackle(name="{name}", kind = "GP{wll}")'
-                self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
-
-            for size in sizes:
-                button = QPushButton(f'Create GP {size}', self.ui.frame)
-
-                button.pressed.connect(lambda *args, wll=size: insert_gp(wll=wll))
-                self.buttons.append(button)
-
         # add all buttons to the layout
 
         for button in self.buttons:
-            self.ui.frame.layout().addWidget(button)
+            self.flow_layout.addWidget(button)
+
+        self.contents.setUpdatesEnabled(True)

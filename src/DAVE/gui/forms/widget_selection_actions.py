@@ -1,51 +1,64 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_selection_actions.ui',
-# licensing of 'widget_selection_actions.ui' applies.
-#
-# Created: Fri Jun 12 09:31:29 2020
-#      by: pyside2-uic  running on PySide2 5.13.1
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'widget_selection_actions.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.6
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtCore import *  # type: ignore
+from PySide2.QtGui import *  # type: ignore
+from PySide2.QtWidgets import *  # type: ignore
+
 
 class Ui_SelectionActions(object):
     def setupUi(self, SelectionActions):
-        SelectionActions.setObjectName("SelectionActions")
+        if not SelectionActions.objectName():
+            SelectionActions.setObjectName(u"SelectionActions")
         SelectionActions.resize(1185, 829)
-        self.verticalLayout = QtWidgets.QVBoxLayout(SelectionActions)
+        self.verticalLayout = QVBoxLayout(SelectionActions)
+        self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.label = QtWidgets.QLabel(SelectionActions)
-        self.label.setObjectName("label")
+        self.label = QLabel(SelectionActions)
+        self.label.setObjectName(u"label")
+
         self.verticalLayout.addWidget(self.label)
-        self.scrollArea = QtWidgets.QScrollArea(SelectionActions)
-        self.scrollArea.setFrameShape(QtWidgets.QFrame.NoFrame)
+
+        self.scrollArea = QScrollArea(SelectionActions)
+        self.scrollArea.setObjectName(u"scrollArea")
+        self.scrollArea.setFrameShape(QFrame.NoFrame)
         self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.setObjectName("scrollArea")
-        self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 1185, 801))
-        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.frame = QtWidgets.QFrame(self.scrollAreaWidgetContents)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.MinimumExpanding)
+        self.scrollAreaWidgetContents = QWidget()
+        self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 1185, 801))
+        self.verticalLayout_2 = QVBoxLayout(self.scrollAreaWidgetContents)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.frame = QFrame(self.scrollAreaWidgetContents)
+        self.frame.setObjectName(u"frame")
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
         self.frame.setSizePolicy(sizePolicy)
-        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame.setObjectName("frame")
+        self.frame.setFrameShape(QFrame.StyledPanel)
+        self.frame.setFrameShadow(QFrame.Raised)
+
         self.verticalLayout_2.addWidget(self.frame)
+
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+
         self.verticalLayout.addWidget(self.scrollArea)
 
+
         self.retranslateUi(SelectionActions)
-        QtCore.QMetaObject.connectSlotsByName(SelectionActions)
+
+        QMetaObject.connectSlotsByName(SelectionActions)
+    # setupUi
 
     def retranslateUi(self, SelectionActions):
-        SelectionActions.setWindowTitle(QtWidgets.QApplication.translate("SelectionActions", "Form", None, -1))
-        self.label.setText(QtWidgets.QApplication.translate("SelectionActions", "Selected elements", None, -1))
+        SelectionActions.setWindowTitle(QCoreApplication.translate("SelectionActions", u"Form", None))
+        self.label.setText(QCoreApplication.translate("SelectionActions", u"Selected elements", None))
+    # retranslateUi
 
