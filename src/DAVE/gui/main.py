@@ -164,7 +164,10 @@ DAVE_GUI_PLUGINS_EDITOR=[]
 
 # ====================================================
 
-
+class UndoType(Enum):
+    CLEAR_AND_RUN_CODE = 1
+    RUN_CODE = 2
+    SET_DOFS = 3
 
 
 class SolverDialog(QDialog, Ui_Dialog):
@@ -175,8 +178,6 @@ class SolverDialog(QDialog, Ui_Dialog):
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.setWindowIcon(QIcon(":/icons/cube.png"))
-
-
 
 
 class SettingsDialog(QDialog, Ui_frmSettings):
@@ -1228,7 +1229,7 @@ class Gui:
 
         if self._undo_index == len(self._undo_log) - 1:
             # Make an undo point for the current state
-            self._undo_log.append(self.scene.give_python_code())
+            self._undo_log.append((UndoType.CLEAR_AND_RUN_CODE, self.scene.give_python_code()))
 
         self.activate_undo_index(self._undo_index)
 
@@ -1247,29 +1248,57 @@ class Gui:
 
         print(f"Activating undo index {index} of {len(self._undo_log)}")
 
-        selected_names = [node.name for node in self.selected_nodes]
+        undo_type, undo_contents = self._undo_log[index]  # unpack
 
-        self.scene.clear()
-        self.run_code(
-            self._undo_log[index], store_undo=False, event=guiEventType.FULL_UPDATE
-        )
+        if undo_type == UndoType.CLEAR_AND_RUN_CODE or undo_type == UndoType.RUN_CODE:
+            selected_names = [node.name for node in self.selected_nodes]
 
-        try:
-            nodes = [
-                self.scene[node] for node in selected_names
-            ]  # selected nodes may not exist anymore
-        except:
-            nodes = []
-        self.selected_nodes.clear()  # do not re-assign, docks keep a reference to this list
-        self.selected_nodes.extend(nodes)
+            if undo_type == UndoType.CLEAR_AND_RUN_CODE:
+                self.scene.clear()
 
-        self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+            self.run_code(
+                undo_contents, store_undo=False, event=guiEventType.FULL_UPDATE
+            )
 
-    def add_undo_point(self):
-        """Adds the current model to the undo-list"""
-        if len(self._undo_log) > self._undo_index:
-            self._undo_log = self._undo_log[: self._undo_index]
-        self._undo_log.append(self.scene.give_python_code())
+            try:
+                nodes = [
+                    self.scene[node] for node in selected_names
+                ]  # selected nodes may not exist anymore
+            except:
+                nodes = []
+            self.selected_nodes.clear()  # do not re-assign, docks keep a reference to this list
+            self.selected_nodes.extend(nodes)
+
+            self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+            self.give_feedback(f"Activating undo index {index} of {len(self._undo_log)}")
+
+        elif undo_type == UndoType.SET_DOFS:
+            if undo_contents is not None:
+                self.scene._vfc.set_dofs(undo_contents) # UNDO SOLVE STATICS"
+                self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
+                self.give_feedback(f"Activating undo index {index} of {len(self._undo_log)} - Solve-statics reverted")
+
+
+    def add_undo_point(self, undo_type = UndoType.CLEAR_AND_RUN_CODE, code = ''):
+
+        if undo_type == UndoType.CLEAR_AND_RUN_CODE:
+
+            """Adds the current model to the undo-list"""
+            if len(self._undo_log) > self._undo_index:
+                self._undo_log = self._undo_log[: self._undo_index]
+            self._undo_log.append((UndoType.CLEAR_AND_RUN_CODE, self.scene.give_python_code()))
+
+        elif undo_type == UndoType.RUN_CODE:
+            self._undo_log.append((UndoType.RUN_CODE, code))
+
+
+        elif undo_type == UndoType.SET_DOFS:
+            self._undo_log.append((UndoType.SET_DOFS, self.scene._vfc.get_dofs()))
+
+
+        else:
+            raise Exception('Unsupported undo type')
+
         self._undo_index = len(self._undo_log)
 
     # / undo functions
@@ -1286,16 +1315,8 @@ class Gui:
 
     def show_exception(self, e):
         self.give_feedback(e, style=1)
-        #
-        # if self.ui.dockWidget_2.isVisible():
-        #     self.ui.teFeedback.setText(str(e))
-        #     self.ui.teFeedback.setStyleSheet("background-color: pink;")
-        # else:
-        #     QMessageBox.warning(self.ui.widget, "error",e, QMessageBox.Ok)
 
     def give_feedback(self, what, style = 0):
-
-
         self.ui.teFeedback.setText(str(what))
         if style == 0:
             self.ui.teFeedback.setStyleSheet("background-color: white;")
@@ -1447,13 +1468,15 @@ class Gui:
             called_by_user=called_by_user,
         )
 
+        self.give_feedback(f"Solved statics - remaining error = {self.scene._vfc.Emaxabs} kN or kNm")
+
     def solve_statics_using_gui_on_scene(
         self, scene_to_solve, timeout_s=0.5, called_by_user=True
     ):
         scene_to_solve.update()
 
         if called_by_user:
-            self.add_undo_point()
+            self.add_undo_point(undo_type=UndoType.SET_DOFS)
 
         old_dofs = scene_to_solve._vfc.get_dofs()
 
@@ -1601,12 +1624,6 @@ class Gui:
             self.visual.DisableSSAO()
         self.visual.refresh_embeded_view()
 
-    # def undo_solve_statics(self):
-    #     if self._dofs is not None:
-    #         self.run_code(
-    #             "s._vfc.set_dofs(self._dofs) # UNDO SOLVE STATICS",
-    #             guiEventType.MODEL_STATE_CHANGED,
-    #         )
 
     def clear(self):
         self.run_code("s.clear()", guiEventType.FULL_UPDATE)
