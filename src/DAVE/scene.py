@@ -1417,6 +1417,7 @@ class Scene:
                     if (
                         timeout_s < 0
                     ):  # we were not using a timeout, so the solver failed
+                        self._restore_original_fixes(original_dofs_dict)
                         raise ValueError(
                             f"Could not solve - solver return code {status} during phase 2. Maximum error = {self._vfc.Emaxabs:.6e}"
                         )
