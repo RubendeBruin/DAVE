@@ -1417,6 +1417,7 @@ class Scene:
                     if (
                         timeout_s < 0
                     ):  # we were not using a timeout, so the solver failed
+                        self._restore_original_fixes(original_dofs_dict)
                         raise ValueError(
                             f"Could not solve - solver return code {status} during phase 2. Maximum error = {self._vfc.Emaxabs:.6e}"
                         )
@@ -1481,10 +1482,16 @@ class Scene:
         if timeout is None:
             timeout = -1
 
+        n_dofs = len(self._vfc.get_dofs())
+
         if self.gui_solve_func is not None:
-            return self.gui_solve_func(self, called_by_user=False)
+            result = self.gui_solve_func(self, called_by_user=False)
         else:
-            return self._solve_statics_with_optional_control(timeout_s=timeout)
+            result = self._solve_statics_with_optional_control(timeout_s=timeout)
+
+        assert n_dofs == len(self._vfc.get_dofs()), "Issue #86"
+
+        return result
 
     def verify_equilibrium(self, tol=1e-2):
         """Checks if the current state is an equilibrium

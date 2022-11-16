@@ -1439,6 +1439,12 @@ class Gui:
 
     def solve_statics(self, timeout_s=0.5, called_by_user=True):
 
+        self.scene.update()
+        n_dofs = len(self.scene._vfc.get_dofs())
+
+        for n,d in zip(self.scene._vfc.get_dof_elements(),self.scene._vfc.get_dof_modes()):
+            print(d, n.name)
+
         self.scene.solve_activity_desc = "Solving static equilibrium"
 
         self.solve_statics_using_gui_on_scene(
@@ -1446,6 +1452,14 @@ class Gui:
             timeout_s=timeout_s,
             called_by_user=called_by_user,
         )
+
+        if n_dofs != len(self.scene._vfc.get_dofs()):
+            print(self.scene.give_python_code())
+
+            for n, d in zip(self.scene._vfc.get_dof_elements(), self.scene._vfc.get_dof_modes()):
+                print(d, n.name)
+
+            raise ValueError("Issue #86")
 
     def solve_statics_using_gui_on_scene(
         self, scene_to_solve, timeout_s=0.5, called_by_user=True
