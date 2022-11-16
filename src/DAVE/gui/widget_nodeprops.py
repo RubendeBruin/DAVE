@@ -1264,6 +1264,7 @@ class EditCable(NodeEditor):
         svinf(self.ui.doubleSpinBox, self.node.diameter)
         svinf(self.ui.doubleSpinBox_3, self.node.mass_per_length)
         svinf(self.ui.doubleSpinBox_4, self.node.mass)
+        self.set_colors()
 
 
     def set_colors(self):

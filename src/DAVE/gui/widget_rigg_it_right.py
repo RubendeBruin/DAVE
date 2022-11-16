@@ -174,6 +174,20 @@ def cables_slings_and_grommets(scene, selection, *args):
     poi_and_sheave = nodes_of_type(selection, (Point, Circle))
     if poi_and_sheave:
 
+        # check for length
+        #
+        # If all points are at the same location, then length can not be determined and an error is raised
+        # check that in advance
+
+        pos = [n.global_position for n in poi_and_sheave]
+        L = 0
+        for i in range(len(pos)-1):
+            L += np.linalg.norm(np.array(pos[i]) - pos[i+1])
+        if L == 0:
+            length_code = ', length = 1'
+        else:
+            length_code = ''
+
         # Cable
         if len(poi_and_sheave) > 1:
             button = QPushButton('+ &Cable')
@@ -186,7 +200,7 @@ def cables_slings_and_grommets(scene, selection, *args):
                 sheaves = ''
 
             name = scene.available_name_like("Cable")
-            cable_code = f's.new_cable("{name}", endA="{poi_and_sheave[0].name}", endB = "{poi_and_sheave[-1].name}"{sheaves})'
+            cable_code = f's.new_cable("{name}", endA="{poi_and_sheave[0].name}", endB = "{poi_and_sheave[-1].name}"{sheaves}{length_code})'
 
             actions.append((button, cable_code))
 
@@ -202,7 +216,7 @@ def cables_slings_and_grommets(scene, selection, *args):
                 sheaves = ''
 
             name = scene.available_name_like("Sling")
-            cable_code = f's.new_sling("{name}", endA="{poi_and_sheave[0].name}", endB = "{poi_and_sheave[-1].name}"{sheaves})'
+            cable_code = f's.new_sling("{name}", endA="{poi_and_sheave[0].name}", endB = "{poi_and_sheave[-1].name}"{sheaves}{length_code})'
 
             actions.append((button, cable_code))
     return actions
@@ -341,6 +355,9 @@ class WidgetQuickActions(guiDockWidget):
         self.flow_layout = FlowLayout()
         self.contents.setLayout(self.flow_layout)
         self.buttons = []
+
+
+
 
     def guiProcessEvent(self, event):
         """

@@ -894,8 +894,6 @@ class Gui:
         # self.visual.update_outlines()
         self.activate_paintset("Construction")
 
-
-
         if name == "PAINTERS":
             self.show_guiWidget("vanGogh", WidgetPainters)
 
@@ -1283,6 +1281,8 @@ class Gui:
 
     def add_undo_point(self, undo_type = UndoType.CLEAR_AND_RUN_CODE, code = ''):
 
+        logging.info(f"Creating undo point with type {undo_type}")
+
         if undo_type == UndoType.CLEAR_AND_RUN_CODE:
 
             """Adds the current model to the undo-list"""
@@ -1302,6 +1302,7 @@ class Gui:
             raise Exception('Unsupported undo type')
 
         self._undo_index = len(self._undo_log)
+        logging.info(f"current log index = number of points = {self._undo_index}")
 
     # / undo functions
 
@@ -1341,7 +1342,7 @@ class Gui:
                 QMessageBox.warning(self.ui.widget, "error", what, QMessageBox.Ok)
 
 
-    def run_code(self, code, event, store_undo=False, sender=None):
+    def run_code(self, code, event, store_undo=True, sender=None):
         """Runs the provided code
 
         If successful, add code to history and create an undo point
@@ -1387,18 +1388,11 @@ class Gui:
                 exec(code, glob_vars)
 
                 if c.stdout:
-                    # self.ui.teFeedback.append(c.stdout)
-                    # self.ui.teFeedback.append(str(datetime.datetime.now()))
+
 
                     self.give_feedback(c.stdout, style=0)
                 else:
-                    #
-                    # end_time = datetime.datetime.now()
-                    # time_diff = (end_time - start_time)
-                    #
-                    # self.ui.teFeedback.append(
-                    #     f"Completed successfully in {time_diff.total_seconds() * 1000:.0f} ms"
-                    # )
+
                     self.give_feedback(code, style=0)
 
 
@@ -1423,9 +1417,11 @@ class Gui:
                 emitted = False
                 for node in self.scene._nodes:
                     if node not in before:
+
+                        logging.info(f"New node detected: {node.name}")
+
                         self.selected_nodes.clear()
-                        # self.selected_nodes.append(node)
-                        # self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+
                         if node.manager is not None:
                             self.guiSelectNode(node.manager)
                             select_node_name_edit_field = True
@@ -2248,9 +2244,14 @@ class Gui:
             d.guiPressSolveButton = self.solve_statics
             d.gui = self
 
+            if widgetClass == WidgetQuickActions:
+                self.MainWindow.resizeDocks([d], [6], Qt.Horizontal)
+
         d.show()
         d._active = True
         d.guiEvent(guiEventType.FULL_UPDATE)
+
+
 
     # =============================
 
