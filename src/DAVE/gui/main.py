@@ -674,6 +674,7 @@ class Gui:
 
         if block:
             self.ui.pbUpdate.setVisible(False)
+            self.ui.pbCopyViewCode.setVisible(False)
             self.app.exec_()
 
     def show_python_console(self, *args):
@@ -1246,19 +1247,19 @@ class Gui:
 
     def activate_undo_index(self, index):
 
-        print(f"Activating undo index {index} of {len(self._undo_log)}")
+        print(f"Activating undo index {index} of {len(self._undo_log)-1}")
 
         undo_type, undo_contents = self._undo_log[index]  # unpack
 
         if undo_type == UndoType.CLEAR_AND_RUN_CODE or undo_type == UndoType.RUN_CODE:
+
+            # capture selected node names before deleting the scene
             selected_names = [node.name for node in self.selected_nodes]
 
             if undo_type == UndoType.CLEAR_AND_RUN_CODE:
                 self.scene.clear()
 
-            self.run_code(
-                undo_contents, store_undo=False, event=guiEventType.FULL_UPDATE
-            )
+            self.scene.run_code(undo_contents)
 
             try:
                 nodes = [
@@ -1266,11 +1267,12 @@ class Gui:
                 ]  # selected nodes may not exist anymore
             except:
                 nodes = []
+
             self.selected_nodes.clear()  # do not re-assign, docks keep a reference to this list
             self.selected_nodes.extend(nodes)
 
-            self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
-            self.give_feedback(f"Activating undo index {index} of {len(self._undo_log)}")
+            self.guiEmitEvent(guiEventType.FULL_UPDATE)
+            self.give_feedback(f"Activating undo index {index} of {len(self._undo_log)-1}")
 
         elif undo_type == UndoType.SET_DOFS:
             if undo_contents is not None:
@@ -1293,10 +1295,8 @@ class Gui:
         elif undo_type == UndoType.RUN_CODE:
             self._undo_log.append((UndoType.RUN_CODE, code))
 
-
         elif undo_type == UndoType.SET_DOFS:
             self._undo_log.append((UndoType.SET_DOFS, self.scene._vfc.get_dofs()))
-
 
         else:
             raise Exception('Unsupported undo type')
@@ -1388,13 +1388,9 @@ class Gui:
                 exec(code, glob_vars)
 
                 if c.stdout:
-
-
                     self.give_feedback(c.stdout, style=0)
                 else:
-
                     self.give_feedback(code, style=0)
-
 
                 self._codelog.append(code)
                 self.ui.teHistory.append(code)
