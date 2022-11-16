@@ -12,14 +12,12 @@ from PySide2.QtCore import *  # type: ignore
 from PySide2.QtGui import *  # type: ignore
 from PySide2.QtWidgets import *  # type: ignore
 
-# import resources_rc
-
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.setWindowModality(Qt.ApplicationModal)
-        MainWindow.resize(1000, 800)
+        MainWindow.resize(1400, 1000)
         MainWindow.setAcceptDrops(True)
         icon = QIcon()
         icon.addFile(u":/icons/Dave_icon.png", QSize(), QIcon.Normal, QIcon.Off)
@@ -87,64 +85,39 @@ class Ui_MainWindow(object):
         self.actionOptimize.setObjectName(u"actionOptimize")
         self.actionOpen = QAction(MainWindow)
         self.actionOpen.setObjectName(u"actionOpen")
-        self.horizontalLayout = QHBoxLayout(MainWindow)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.frame = QFrame(MainWindow)
-        self.frame.setObjectName(u"frame")
-        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        self.gridLayout_2 = QGridLayout(MainWindow)
+        self.gridLayout_2.setObjectName(u"gridLayout_2")
+        self.frame3d = QFrame(MainWindow)
+        self.frame3d.setObjectName(u"frame3d")
+        sizePolicy = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
-        self.frame.setSizePolicy(sizePolicy)
+        sizePolicy.setHeightForWidth(self.frame3d.sizePolicy().hasHeightForWidth())
+        self.frame3d.setSizePolicy(sizePolicy)
+        self.frame3d.setAcceptDrops(False)
+        self.frame3d.setFrameShape(QFrame.NoFrame)
+        self.frame3d.setFrameShadow(QFrame.Raised)
+
+        self.gridLayout_2.addWidget(self.frame3d, 0, 2, 1, 1)
+
+        self.frame = QFrame(MainWindow)
+        self.frame.setObjectName(u"frame")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
+        self.frame.setSizePolicy(sizePolicy1)
         self.frame.setFrameShape(QFrame.StyledPanel)
         self.frame.setFrameShadow(QFrame.Raised)
         self.verticalLayout = QVBoxLayout(self.frame)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.frame_4 = QFrame(self.frame)
-        self.frame_4.setObjectName(u"frame_4")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.frame_4.sizePolicy().hasHeightForWidth())
-        self.frame_4.setSizePolicy(sizePolicy1)
-        self.frame_4.setFrameShape(QFrame.StyledPanel)
-        self.frame_4.setFrameShadow(QFrame.Raised)
-        self.formLayout = QFormLayout(self.frame_4)
-        self.formLayout.setObjectName(u"formLayout")
-        self.checkBox = QCheckBox(self.frame_4)
-        self.checkBox.setObjectName(u"checkBox")
-
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.checkBox)
-
-        self.btnImport = QPushButton(self.frame_4)
-        self.btnImport.setObjectName(u"btnImport")
-
-        self.formLayout.setWidget(5, QFormLayout.SpanningRole, self.btnImport)
-
-        self.txtPrefix = QLineEdit(self.frame_4)
-        self.txtPrefix.setObjectName(u"txtPrefix")
-
-        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.txtPrefix)
-
-        self.label_19 = QLabel(self.frame_4)
-        self.label_19.setObjectName(u"label_19")
-
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.label_19)
-
-
-        self.verticalLayout.addWidget(self.frame_4)
-
-        self.lblInfo = QLabel(self.frame)
-        self.lblInfo.setObjectName(u"lblInfo")
-
-        self.verticalLayout.addWidget(self.lblInfo)
-
         self.frame_5 = QFrame(self.frame)
         self.frame_5.setObjectName(u"frame_5")
         self.frame_5.setFrameShape(QFrame.StyledPanel)
         self.frame_5.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_5 = QHBoxLayout(self.frame_5)
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.label_2 = QLabel(self.frame_5)
         self.label_2.setObjectName(u"label_2")
 
@@ -167,29 +140,73 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.listWidget)
 
+        self.lblInfo = QLabel(self.frame)
+        self.lblInfo.setObjectName(u"lblInfo")
 
-        self.horizontalLayout.addWidget(self.frame)
+        self.verticalLayout.addWidget(self.lblInfo)
 
-        self.horizontalLayout_2 = QHBoxLayout()
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.frame3d = QFrame(MainWindow)
-        self.frame3d.setObjectName(u"frame3d")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.frame_4 = QFrame(self.frame)
+        self.frame_4.setObjectName(u"frame_4")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.frame3d.sizePolicy().hasHeightForWidth())
-        self.frame3d.setSizePolicy(sizePolicy2)
-        self.frame3d.setAcceptDrops(False)
-        self.frame3d.setFrameShape(QFrame.NoFrame)
-        self.frame3d.setFrameShadow(QFrame.Raised)
+        sizePolicy2.setHeightForWidth(self.frame_4.sizePolicy().hasHeightForWidth())
+        self.frame_4.setSizePolicy(sizePolicy2)
+        self.frame_4.setFrameShape(QFrame.StyledPanel)
+        self.frame_4.setFrameShadow(QFrame.Raised)
+        self.gridLayout = QGridLayout(self.frame_4)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.checkBox = QCheckBox(self.frame_4)
+        self.checkBox.setObjectName(u"checkBox")
 
-        self.horizontalLayout_2.addWidget(self.frame3d)
+        self.gridLayout.addWidget(self.checkBox, 0, 0, 1, 3)
+
+        self.label_19 = QLabel(self.frame_4)
+        self.label_19.setObjectName(u"label_19")
+
+        self.gridLayout.addWidget(self.label_19, 1, 0, 1, 3)
+
+        self.txtPrefix = QLineEdit(self.frame_4)
+        self.txtPrefix.setObjectName(u"txtPrefix")
+
+        self.gridLayout.addWidget(self.txtPrefix, 2, 1, 1, 2)
+
+        self.btnImport = QPushButton(self.frame_4)
+        self.btnImport.setObjectName(u"btnImport")
+
+        self.gridLayout.addWidget(self.btnImport, 3, 1, 1, 1)
+
+        self.pbCancel = QPushButton(self.frame_4)
+        self.pbCancel.setObjectName(u"pbCancel")
+
+        self.gridLayout.addWidget(self.pbCancel, 3, 2, 1, 1)
+
+        self.label = QLabel(self.frame_4)
+        self.label.setObjectName(u"label")
+
+        self.gridLayout.addWidget(self.label, 2, 0, 1, 1)
 
 
-        self.horizontalLayout.addLayout(self.horizontalLayout_2)
+        self.verticalLayout.addWidget(self.frame_4)
 
-        QWidget.setTabOrder(self.checkBox, self.btnImport)
-        QWidget.setTabOrder(self.btnImport, self.lineEdit)
+
+        self.gridLayout_2.addWidget(self.frame, 0, 0, 2, 1)
+
+        self.lbInfo = QLabel(MainWindow)
+        self.lbInfo.setObjectName(u"lbInfo")
+        sizePolicy3 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.lbInfo.sizePolicy().hasHeightForWidth())
+        self.lbInfo.setSizePolicy(sizePolicy3)
+
+        self.gridLayout_2.addWidget(self.lbInfo, 1, 2, 1, 1)
+
+        QWidget.setTabOrder(self.lineEdit, self.listWidget)
+        QWidget.setTabOrder(self.listWidget, self.checkBox)
+        QWidget.setTabOrder(self.checkBox, self.txtPrefix)
+        QWidget.setTabOrder(self.txtPrefix, self.btnImport)
+        QWidget.setTabOrder(self.btnImport, self.pbCancel)
 
         self.retranslateUi(MainWindow)
 
@@ -247,10 +264,13 @@ class Ui_MainWindow(object):
         self.actionStability_curve.setText(QCoreApplication.translate("MainWindow", u"Stability-curve", None))
         self.actionOptimize.setText(QCoreApplication.translate("MainWindow", u"TODO: Optimize (multiple variables)", None))
         self.actionOpen.setText(QCoreApplication.translate("MainWindow", u"Open", None))
-        self.checkBox.setText(QCoreApplication.translate("MainWindow", u"Place imported asset in a container axis", None))
-        self.btnImport.setText(QCoreApplication.translate("MainWindow", u"Import this asset", None))
-        self.label_19.setText(QCoreApplication.translate("MainWindow", u"Apply pre-fix to element names:", None))
-        self.lblInfo.setText(QCoreApplication.translate("MainWindow", u"Info", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Filter", None))
+        self.lblInfo.setText(QCoreApplication.translate("MainWindow", u"Info", None))
+        self.checkBox.setText(QCoreApplication.translate("MainWindow", u"Place imported asset in a dedicated Frame", None))
+        self.label_19.setText(QCoreApplication.translate("MainWindow", u"Apply pre-fix to element names (to avoid name conflicts):", None))
+        self.btnImport.setText(QCoreApplication.translate("MainWindow", u"Import this asset", None))
+        self.pbCancel.setText(QCoreApplication.translate("MainWindow", u"Cancel", None))
+        self.label.setText(QCoreApplication.translate("MainWindow", u"Pre-fix = ", None))
+        self.lbInfo.setText("")
     # retranslateUi
 

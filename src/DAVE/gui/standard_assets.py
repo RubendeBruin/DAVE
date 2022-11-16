@@ -17,6 +17,8 @@ import DAVE.gui.forms.frm_standard_assets
 
 from PySide2 import QtWidgets
 
+from DAVE.settings_visuals import PAINTERS
+
 
 class DialogWithCloseEvent(QtWidgets.QDialog):
 
@@ -32,9 +34,11 @@ class Gui:
         self.scene = ds.Scene()
         """Reference to a scene"""
         self.visual = dv.Viewport(self.scene)
+
         """Reference to a viewport"""
 
         self.visual.settings.show_global = False
+        self.visual.settings.painter_settings = PAINTERS['Visual']
 
         self.ui = DAVE.gui.forms.frm_standard_assets.Ui_MainWindow()
         """Reference to the ui"""
@@ -43,7 +47,6 @@ class Gui:
         self._selected = None
         self._result = None
 
-        # self.app = QtWidgets.QApplication(sys.argv)
         self.MainWindow = DialogWithCloseEvent() # QtWidgets.QDialog()
         self.ui.setupUi(self.MainWindow)
 
@@ -64,6 +67,8 @@ class Gui:
 
         self.MainWindow.visual = self.visual # pass reference of onClose
 
+        self.ui.lineEdit.textChanged.connect(self.filter)
+        self.ui.pbCancel.pressed.connect(self.cancel)
 
     def changed(self):
         self.select(self.ui.listWidget.currentItem())
@@ -73,15 +78,14 @@ class Gui:
         self._selected = file
         self.ui.btnImport.setText("Import {}".format(file[:-5])) # remove the .dave part
 
-    def dblclick(self, data):
-        self.select(data)
         file = data.text()
         self.scene.clear()
         try:
             self.scene.load_scene(self.scene.get_resource_path(file))
+            self.ui.lbInfo.setText('Loaded: {}'.format(file))
         except Exception as M:
             print(M)
-            print('Error when loading file {}'.format(file))
+            self.ui.lbInfo.setText('Error when loading file {}'.format(file))
             return
 
         self.visual.create_node_visuals()
@@ -91,6 +95,9 @@ class Gui:
         self.visual.zoom_all()
         self.visual.refresh_embeded_view()
 
+    def dblclick(self, data):
+        self.select(data)
+        self.clickImport()
 
     def clickImport(self):
         if self._selected is None:
@@ -99,12 +106,25 @@ class Gui:
             self._result =  (self._selected, self.ui.checkBox.isChecked(), self.ui.txtPrefix.text())
         self.MainWindow.close()
 
+    def cancel(self):
+        self._result = None
+        self.MainWindow.close()
+
     def showModal(self):
         self.MainWindow.exec_()
         return self._result
+
+    def filter(self):
+        look_for = self.ui.lineEdit.text()
+        for i in range(self.ui.listWidget.count()):
+            item = self.ui.listWidget.item(i)
+            item.setHidden(not look_for in item.text())
+
 
 # ====== nodeA code ======
 
 if __name__ == '__main__':
 
-    G = Gui().show()
+    app = QtWidgets.QApplication()
+    G = Gui()
+    G.showModal()
