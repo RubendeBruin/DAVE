@@ -1726,7 +1726,7 @@ class Gui:
             return True
 
         ret = QMessageBox.question(self.MainWindow, "Message",
-                "<h4><p>The model has unsaved changes.</p>\n" 
+                "<h4><p>The scene has unsaved changes.</p>\n" 
                 "<p>Do you want to save changes?</p></h4>",
                 QMessageBox.Yes | QMessageBox.Discard | QMessageBox.Cancel)
 
