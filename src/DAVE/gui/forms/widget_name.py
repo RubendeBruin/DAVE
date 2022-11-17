@@ -49,6 +49,12 @@ class Ui_NameWidget(object):
 
         self.gridLayout.addWidget(self.tbName, 0, 1, 1, 3)
 
+        self.lblInfo = QLabel(NameWidget)
+        self.lblInfo.setObjectName(u"lblInfo")
+        self.lblInfo.setStyleSheet(u"color: rgb(200, 100, 0)")
+
+        self.gridLayout.addWidget(self.lblInfo, 1, 1, 1, 3)
+
 
         self.retranslateUi(NameWidget)
 
@@ -64,5 +70,6 @@ class Ui_NameWidget(object):
         self.lbColor.setToolTip(QCoreApplication.translate("NameWidget", u"click to change, right-click to reset", None))
 #endif // QT_CONFIG(tooltip)
         self.lbColor.setText(QCoreApplication.translate("NameWidget", u"default", None))
+        self.lblInfo.setText(QCoreApplication.translate("NameWidget", u"TextLabel", None))
     # retranslateUi
 
