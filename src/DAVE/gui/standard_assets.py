@@ -65,7 +65,7 @@ class Gui:
         self.visual.show_embedded(self.ui.frame3d)
         self.ui.btnImport.clicked.connect(self.clickImport)
 
-        self.MainWindow.visual = self.visual # pass reference of onClose
+        self.MainWindow.visual = self.visual # pass reference of onCloseApplication
 
         self.ui.lineEdit.textChanged.connect(self.filter)
         self.ui.pbCancel.pressed.connect(self.cancel)

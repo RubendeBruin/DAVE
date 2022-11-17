@@ -246,9 +246,9 @@ class Gui:
                 self.app = QtWidgets.QApplication()
         else:
             self.app = app
-        self.app.aboutToQuit.connect(self.onClose)
 
-        self
+
+        self.app.aboutToQuit.connect(self.onCloseApplication)
 
         if splash is None:
             splash = QtWidgets.QSplashScreen()
@@ -261,7 +261,9 @@ class Gui:
         # Main Window
         self.MainWindow = QtWidgets.QMainWindow()
         self.ui = Ui_MainWindow()
+
         self.ui.setupUi(self.MainWindow)
+        self.MainWindow.closeEvent = self.closeEvent
 
         self.statusbar = QStatusBar()
         self.MainWindow.setStatusBar(self.statusbar)
@@ -293,6 +295,7 @@ class Gui:
 
         self._animation_speed = 1.0
 
+
         # ================= Create globally available properties =======
         self.selected_nodes: [Node] = []
         """A list of selected nodes (if any)"""
@@ -303,6 +306,9 @@ class Gui:
 
         self.modelfilename = None
         """Open file"""
+
+        self._model_has_changed = False
+        """User"""
 
         self.additional_user_resource_paths = []
         """User-defined additional resource paths, stored on user machine - settings dialog"""
@@ -1306,12 +1312,22 @@ class Gui:
 
     # / undo functions
 
-    def onClose(self):
+    def closeEvent(self, event):
+        """This is the on-close for the main window"""
+        if self.maybeSave():
+            event.accept()
+        else:
+            event.ignore()
+
+    def onCloseApplication(self):
+        """This is the on-close for the Application"""
+
         self.visual.shutdown_qt()
         print(
             "-- closing the gui : these were the actions you performed while the gui was open --"
         )
         print(self.give_clean_history())
+
 
     def measured_in_viewport(self, distance):
         self.give_feedback(f'View-plane distance = {distance:.3f}m\n (does not measure depth)')
@@ -1355,6 +1371,7 @@ class Gui:
         """
 
         start_time = datetime.datetime.now()
+        self._model_has_changed = True
 
         before = self.scene._nodes.copy()
 
@@ -1637,12 +1654,18 @@ class Gui:
 
     def clear(self):
         self.run_code("s.clear()", guiEventType.FULL_UPDATE)
+        self._model_has_changed = False
+        self.modelfilename = None
+        self.MainWindow.setWindowTitle(f'DAVE [unnamed scene]')
         self.ui.actionSave.setEnabled(False)
 
     def open_file(self, filename):
         code = 's.clear()\ns.load_scene(r"{}")'.format(filename)
         self.run_code(code, guiEventType.FULL_UPDATE)
         self.modelfilename = filename
+
+        self._model_has_changed = False
+        self.MainWindow.setWindowTitle(f'DAVE [{self.modelfilename}]')
         self.ui.actionSave.setEnabled(True)
         self.add_to_recent_file_menu(filename)
         self.visual.zoom_all()
@@ -1673,6 +1696,7 @@ class Gui:
     def menu_save_model(self):
         code = 's.save_scene(r"{}")'.format(self.modelfilename)
         self.run_code(code, guiEventType.NOTHING)
+        self._model_has_changed = False
 
     def menu_save_model_as(self):
 
@@ -1689,9 +1713,35 @@ class Gui:
         if filename:
             code = 's.save_scene(r"{}")'.format(filename)
             self.run_code(code, guiEventType.NOTHING)
+
+            self._model_has_changed = False
             self.modelfilename = filename
+            self.MainWindow.setWindowTitle(f'DAVE [{self.modelfilename}]')
+
             self.ui.actionSave.setEnabled(True)
             self.add_to_recent_file_menu(filename)
+
+    def maybeSave(self):
+        if not self._model_has_changed:
+            return True
+
+        ret = QMessageBox.question(self.MainWindow, "Message",
+                "<h4><p>The model has unsaved changes.</p>\n" 
+                "<p>Do you want to save changes?</p></h4>",
+                QMessageBox.Yes | QMessageBox.Discard | QMessageBox.Cancel)
+
+        if ret == QMessageBox.Yes:
+            if self.modelfilename is None:
+                self.menu_save_model_as()
+                return False
+            else:
+                self.menu_save_model()
+                return True
+
+        if ret == QMessageBox.Cancel:
+            return False
+
+        return True
 
     def menu_export_orcaflex_yml(self):
         filename, _ = QFileDialog.getSaveFileName(
