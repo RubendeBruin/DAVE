@@ -32,7 +32,7 @@ import DAVE.gui.forms.widget_connections
 from DAVE.gui.helpers.nodelist_drag_drop_move import call_from_drop_Event, call_from_dragEnter_or_Move_Event
 
 from DAVE.visual import transform_from_node
-from DAVE.gui.helpers.my_qt_helpers import BlockSigs, update_combobox_items_with_completer
+from DAVE.gui.helpers.my_qt_helpers import BlockSigs, update_combobox_items_with_completer, EnterKeyPressFilter
 import numpy as np
 
 from PySide2.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox, QDesktopWidget, QColorDialog, \
@@ -277,6 +277,10 @@ class EditNode(NodeEditor):
         ui.cbVisible.toggled.connect(self.visible_changed)
         ui.lbColor.mousePressEvent = self.color_clicked
 
+        self.eventFilter = EnterKeyPressFilter()
+        self.eventFilter.callback = self.nameChangedEnter
+        self.ui.tbName.installEventFilter(self.eventFilter)
+
     def post_update_event(self):
 
         self.ui.tbName.blockSignals(True)
@@ -295,7 +299,18 @@ class EditNode(NodeEditor):
             self.ui.lbColor.setStyleSheet("background-color: rgb({}, {}, {});".format(*self.node.color))
             self.ui.lbColor.setText(str(self.node.color))
 
+        self.name_changed()
+
     def name_changed(self):
+        new_name = self.ui.tbName.text()
+        if not new_name == self.node.name:
+            self.ui.lblInfo.setText(f'Press [enter] to apply "{new_name}"')
+            self.ui.lblInfo.setVisible(True)
+        else:
+            self.ui.lblInfo.setVisible(False)
+
+
+    def nameChangedEnter(self):
         node = self.node
         element = "\ns['{}']".format(node.name)
 
@@ -304,7 +319,9 @@ class EditNode(NodeEditor):
         if new_name:
             if not new_name == node.name:
                 code = element + ".name = '{}'".format(new_name)
-                self.run_code(code)
+                self.run_code(code, guiEventType.SELECTED_NODE_MODIFIED)
+                self.ui.lblInfo.setVisible(False)
+
 
     def visible_changed(self):
         node = self.node
