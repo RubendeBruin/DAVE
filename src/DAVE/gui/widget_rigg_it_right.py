@@ -19,7 +19,7 @@ The functions get called with the current selection as argument and return a lis
 The list may be empty. 
 
 """
-
+from DAVE.nodes import *
 from DAVE.gui.dockwidget import *
 from PySide2 import QtGui, QtCore, QtWidgets
 from PySide2.QtWidgets import QPushButton

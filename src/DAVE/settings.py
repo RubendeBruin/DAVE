@@ -40,6 +40,7 @@ QUICK_ACTION_REGISTER demo:
 def qa_demo(scene, selection, *args):
     if any([isinstance(node, Point) for node in selection]):
         btn = QPushButton('Good point!')
+        btn.setIcon(QIcon(":/icons/circle.png"))
         return [(btn,"print('Told ya')")]
     return []
 

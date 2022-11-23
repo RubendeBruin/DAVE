@@ -1237,7 +1237,15 @@ class Frame(NodeWithParentAndFootprint):
 
         See also: tilt_x
         """
-        return np.rad2deg(np.arcsin(self.tilt_x / 100))
+        angle = np.rad2deg(np.arcsin(self.tilt_x / 100))
+
+        if self.uz[2] < 0: # rotation beyond 90 or -90 degrees
+            if angle<0:
+                angle = -180 - angle
+            else:
+                angle = 180 - angle
+
+        return angle
 
     @property
     def tilt_y(self) -> float:
@@ -6262,9 +6270,6 @@ class Shackle(Manager, RigidBody):
 
         for n in self.managed_nodes():
             n.manager = self
-
-    def depends_on(self):
-        return []
 
     @property
     def kind(self)->str:
