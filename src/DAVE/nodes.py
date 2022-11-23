@@ -6412,12 +6412,13 @@ class Component(Manager, Frame):
         self._vfNode.name = value
 
         # update the node names of all of the properties , the direct way
-        with ClaimManagement(self._scene, self):
-            for node in self._nodes:
+        # with ClaimManagement(self._scene, self):
+        for node in self._nodes:
+            if node.manager is None:  # only rename un-managed nodes - managed nodes will be renamed by their manager
                 if node.name.startswith(old_prefix):
                     node.name = node.name.replace(old_prefix, new_prefix)
                 else:
-                    raise Exception("Unexpected name")
+                    raise Exception(f"Unexpected name when re-naming managed node '{node.name}' of component '{self.name}'")
 
     def delete(self):
         # remove all imported nodes
@@ -6473,7 +6474,7 @@ class Component(Manager, Frame):
 
         code = "# code for {}".format(self.name)
         code += "\ns.new_component(name='{}',".format(self.name)
-        code += "\n               path='{}',".format(self.path)
+        code += "\n               path=r'{}',".format(self.path)
         if self.parent_for_export:
             code += "\n           parent='{}',".format(self.parent_for_export.name)
 
