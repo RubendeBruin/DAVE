@@ -3587,6 +3587,9 @@ class Scene:
         nodes = self.nodes_with_parent(root_node, recursive=True)
         more_nodes = self.nodes_with_dependancies_in_and_satifsfied_by(nodes)
         branch = list({*nodes, *more_nodes})  # unique nodes (use set)
+
+        branch = [node for node in branch if node.manager is None] # exclude managed nodes
+
         branch.append(root_node)
 
         # make a copy of these nodes in a new scene
@@ -3597,11 +3600,12 @@ class Scene:
         # now find new names for all of the nodes.
         # names need to be unique in both self and s2
         for n in s2._nodes:
-            node_names_in_s2 = [node.name for node in s2._nodes]
-            new_name = self.available_name_like(
-                n.name, _additional_names=node_names_in_s2
-            )
-            n.name = new_name
+            if n.manager is None:
+                node_names_in_s2 = [node.name for node in s2._nodes]
+                new_name = self.available_name_like(
+                    n.name, _additional_names=node_names_in_s2
+                )
+                n.name = new_name
 
         self.import_scene(s2, containerize=False)
 
