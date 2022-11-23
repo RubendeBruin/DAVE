@@ -3521,9 +3521,10 @@ class Scene:
     def prefix_element_names(self, prefix=''):
         """Applies the given prefix to all un-managed nodes"""
 
-        for node in self._nodes:
-            if node.manager is None:
-                node.name = prefix + node.name
+        if prefix:
+            for node in self._nodes:
+                if node.manager is None:
+                    node.name = prefix + node.name
 
     def copy(self, nodes=None):
         """Creates a full and independent copy of the scene and returns it.
