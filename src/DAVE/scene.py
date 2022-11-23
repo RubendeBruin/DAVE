@@ -106,9 +106,6 @@ class Scene:
         self._savepoint = None
         """Python code to re-create the scene, see savepoint_make()"""
 
-        self._name_prefix = ""
-        """An optional prefix to be applied to node names. Used when importing scenes."""
-
         self.current_manager = None
         """Setting this to an instance of a Manager allows nodes with that manager to be changed"""
 
@@ -274,9 +271,6 @@ class Scene:
     def _print(self, what):
         if self.verbose:
             print(what)
-
-    def _prefix_name(self, name):
-        return self._name_prefix + name
 
     def _verify_name_available(self, name):
         """Throws an error if a node with name 'name' already exists"""
@@ -681,8 +675,6 @@ class Scene:
             node_name, str
         ), f"Node name should be a string, but is a {type(node_name)}"
 
-        if self._name_prefix:
-            node_name = self._name_prefix + node_name
 
         for N in self._nodes:
             if N.name == node_name:
@@ -1697,8 +1689,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -1775,8 +1766,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # check if we can import the provided path
         try:
@@ -1871,8 +1861,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -1970,8 +1959,7 @@ class Scene:
         if not parent:
             raise ValueError("Wave-interaction has to be located on an Axis")
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2019,8 +2007,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2069,8 +2056,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2123,8 +2109,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # check input
         assertValidName(name)
@@ -2229,8 +2214,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2335,8 +2319,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2379,8 +2362,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2496,8 +2478,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2551,8 +2532,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2601,8 +2581,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2646,8 +2625,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2704,8 +2682,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2761,8 +2738,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2794,8 +2770,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2836,8 +2811,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2889,8 +2863,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2957,8 +2930,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -3007,8 +2979,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # check input
         assertValidName(name)
@@ -3065,8 +3036,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -3183,8 +3153,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -3479,6 +3448,7 @@ class Scene:
             containerize : place all the nodes without a parent in a dedicated Frame
             nodes [None] : if provided then import only these nodes
             settings     : import settings (gravity, wind etc. ) from other scene as well
+            prefix       : a prefix is applied to all names of the imported nodes
 
 
         Returns:
@@ -3501,23 +3471,20 @@ class Scene:
         if not isinstance(other, Scene):
             raise TypeError("Other should be a Scene but is a " + str(type(other)))
 
-        old_prefix = self._name_prefix
-        imported_element_names = []
+        # apply prefix
+        other.prefix_element_names(prefix)
 
-        for n in other._nodes:
-            imported_element_names.append(prefix + n.name)
 
-        # check for double names
-
-        for new_node_name in imported_element_names:
-            if not self.name_available(new_node_name):
+        # check for double names after applying prefix
+        for imported_node in other._nodes:
+            if not self.name_available(imported_node.name):
                 raise NameError(
                     'An element with name "{}" is already present. Please use a prefix to avoid double names'.format(
-                        new_node_name
+                        imported_node.name
                     )
                 )
 
-        self._name_prefix = prefix + self._name_prefix
+
 
         store_export_code_with_solved_function = other._export_code_with_solved_function
         other._export_code_with_solved_function = False  # quicker
@@ -3526,7 +3493,7 @@ class Scene:
 
         self.run_code(code)
 
-        self._name_prefix = old_prefix  # restore
+        
 
         # Move all imported elements without a parent into a newly created or supplied frame (container)
         if containerize:
@@ -3535,20 +3502,28 @@ class Scene:
                 container_name = self.available_name_like("import_container")
                 container = self.new_frame(prefix + container_name)
 
+            imported_element_names = [node.name for node in other._nodes]
             for name in imported_element_names:
 
-                node = self[name]
+                imported_node = self[name]
 
-                if not node.manager:
-                    if not hasattr(node, "parent"):
+                if not imported_node.manager:
+                    if not hasattr(imported_node, "parent"):
                         continue
 
-                    if node.parent is None:
-                        node.parent = container
+                    if imported_node.parent is None:
+                        imported_node.parent = container
 
             return container
 
         return None
+
+    def prefix_element_names(self, prefix=''):
+        """Applies the given prefix to all un-managed nodes"""
+
+        for node in self._nodes:
+            if node.manager is None:
+                node.name = prefix + node.name
 
     def copy(self, nodes=None):
         """Creates a full and independent copy of the scene and returns it.
