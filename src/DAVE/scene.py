@@ -3585,36 +3585,40 @@ class Scene:
         if old_parent is not None:
             root_node.parent = None
 
-        nodes = self.nodes_with_parent(root_node, recursive=True)
-        more_nodes = self.nodes_with_dependancies_in_and_satifsfied_by(nodes)
-        branch = list({*nodes, *more_nodes})  # unique nodes (use set)
+        try:
 
-        branch = [node for node in branch if node.manager is None] # exclude managed nodes
+            nodes = self.nodes_with_parent(root_node, recursive=True)
+            more_nodes = self.nodes_with_dependancies_in_and_satifsfied_by(nodes)
+            branch = list({*nodes, *more_nodes})  # unique nodes (use set)
 
-        branch.append(root_node)
+            branch = [node for node in branch if node.manager is None] # exclude managed nodes
 
-        # make a copy of these nodes in a new scene
-        s2 = self.copy(branch)
+            branch.append(root_node)
 
-        copy_of_root_node_in_s2 = s2[root_node.name]
+            # make a copy of these nodes in a new scene
+            s2 = self.copy(branch)
 
-        # now find new names for all of the nodes.
-        # names need to be unique in both self and s2
-        for n in s2._nodes:
-            if n.manager is None:
-                node_names_in_s2 = [node.name for node in s2._nodes]
-                new_name = self.available_name_like(
-                    n.name, _additional_names=node_names_in_s2
-                )
-                n.name = new_name
+            copy_of_root_node_in_s2 = s2[root_node.name]
 
-        self.import_scene(s2, containerize=False)
+            # now find new names for all of the nodes.
+            # names need to be unique in both self and s2
+            for n in s2._nodes:
+                if n.manager is None:
+                    node_names_in_s2 = [node.name for node in s2._nodes]
+                    new_name = self.available_name_like(
+                        n.name, _additional_names=node_names_in_s2
+                    )
+                    n.name = new_name
 
-        # restore the parent (if any)
-        if old_parent is not None:
-            copy_of_root_node = self[copy_of_root_node_in_s2.name]
-            copy_of_root_node.parent = old_parent
-            root_node.parent = old_parent
+            self.import_scene(s2, containerize=False)
+
+        finally:
+
+            # restore the parent (if any)
+            if old_parent is not None:
+                copy_of_root_node = self[copy_of_root_node_in_s2.name]
+                copy_of_root_node.parent = old_parent
+                root_node.parent = old_parent
 
     # =================== Conversions ===============
 

@@ -6412,22 +6412,25 @@ class Component(Manager, Frame):
         self._vfNode.name = value
 
         # update the node names of all of the properties , the direct way
-        # with ClaimManagement(self._scene, self):
-        for node in self._nodes:
-            if node.manager is None:  # only rename un-managed nodes - managed nodes will be renamed by their manager
-                if node.name.startswith(old_prefix):
-                    node.name = node.name.replace(old_prefix, new_prefix)
-                else:
-                    raise Exception(f"Unexpected name when re-naming managed node '{node.name}' of component '{self.name}'")
+        with ClaimManagement(self._scene, self):
+            for node in self._nodes:
+                if node.manager is None or node.manager == self:  # only rename un-managed nodes or nodes managed by me - managed nodes will be renamed by their manager
+                    if node.name.startswith(old_prefix):
+                        node.name = node.name.replace(old_prefix, new_prefix)
+                    else:
+                        raise Exception(f"Unexpected name when re-naming managed node '{node.name}' of component '{self.name}'")
 
     def delete(self):
         # remove all imported nodes
-        for node in self._nodes:
-            node._manager = None
 
-        for node in self._nodes:
-            if node in self._scene._nodes:
-                self._scene.delete(node)
+        self._scene._unmanage_and_delete(self._nodes)
+        #
+        # for node in self._nodes:
+        #     node._manager = None
+        #
+        # for node in self._nodes:
+        #     if node in self._scene._nodes:
+        #         self._scene.delete(node)
 
     def creates(self, node: Node):
         return node in self._nodes
@@ -6464,9 +6467,10 @@ class Component(Manager, Frame):
             if node not in old_nodes:
                 self._nodes.append(node)
 
-        # claim ownership of them
+        # claim ownership of unmanaged nodes
         for node in self._nodes:
-            node._manager = self
+            if node.manager is None:
+                node._manager = self
 
         self._path = value
 
