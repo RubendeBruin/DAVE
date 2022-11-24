@@ -420,7 +420,12 @@ class WidgetNodeTree(guiDockWidget):
                     if parent.name in self.items:
                         self.items[parent.name].addChild(item)
                     else:  # if the parent is not there, then it must be a managed node
-                        self.items[parent._manager.name].addChild(item)
+                        if parent._manager.name in self.items:
+                            self.items[parent._manager.name].addChild(item)
+                        else:
+                            print('not adding node to tree') # TODO: see issue #106
+                            pass
+
 
         # self.treeView.resizeColumnToContents(0)
         self.treeView.expandAll()

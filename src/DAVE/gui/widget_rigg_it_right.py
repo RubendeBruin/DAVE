@@ -95,6 +95,15 @@ def rigidbody(scene, selection, *args):
     return [(btn, code)]
 QUICK_ACTION_REGISTER.append(rigidbody)
 
+def component(scene, selection, *args):
+    code = f"s.new_component(name = '{scene.available_name_like('Component')}' {get_parent_code(selection)})"
+    btn = QPushButton('+ C&omponent')
+    btn.setIcon(QIcon(":/icons/component.png"))
+    return [(btn, code)]
+QUICK_ACTION_REGISTER.append(component)
+
+
+
 def circle(scene, selection, *args):
     nodes = nodes_of_type(selection,Point)
     if nodes:

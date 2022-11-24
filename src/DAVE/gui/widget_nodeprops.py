@@ -730,8 +730,8 @@ class EditComponent(NodeEditor):
 
 
     def rescan(self):
-        self.post_update_event()
-
+        self.update_resource_list()
+        
         text = (
             f"Rescan completed for files ending with {self.fileextension} in folders:"
         )
