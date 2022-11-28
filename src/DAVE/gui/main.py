@@ -130,6 +130,7 @@ from DAVE.gui.widget_explore import WidgetExplore
 from DAVE.gui.widget_tank_order import WidgetTankOrder
 from DAVE.gui.widget_rigg_it_right import WidgetQuickActions
 from DAVE.gui.widget_environment import WidgetEnvironment
+from DAVE.gui.widget_dof_edit import WidgetDOFEditor
 
 import numpy as np
 
@@ -417,7 +418,6 @@ class Gui:
         self.ui.actionReload_components.triggered.connect(self.refresh_model)
         self.ui.actionOpen.triggered.connect(self.open)
         self.ui.actionSave.triggered.connect(self.menu_save_model)
-        self.ui.actionSave.setEnabled(False)
         self.ui.actionSave_scene.triggered.connect(self.menu_save_model_as)
         self.ui.actionSettings.triggered.connect(self.show_settings)
         self.ui.actionSave_actions_as.triggered.connect(self.menu_save_actions)
@@ -573,10 +573,10 @@ class Gui:
 
         # the python console
         self.ui.dockWidget_2.setVisible(False)
-
         self.ui.actionPython_console_2.triggered.connect(self.show_python_console)
 
-
+        # dof editor
+        self.ui.actionDegrees_of_Freedom_editor.triggered.connect(lambda: self.show_guiWidget("WidgetDOFEditor"))
 
 
         self.ui.actionVersion.setText(f"Version {DAVE.__version__}")
@@ -1657,7 +1657,7 @@ class Gui:
         self._model_has_changed = False
         self.modelfilename = None
         self.MainWindow.setWindowTitle(f'DAVE [unnamed scene]')
-        self.ui.actionSave.setEnabled(False)
+
 
     def open_file(self, filename):
         code = 's.clear()\ns.load_scene(r"{}")'.format(filename)
@@ -1666,7 +1666,6 @@ class Gui:
 
         self._model_has_changed = False
         self.MainWindow.setWindowTitle(f'DAVE [{self.modelfilename}]')
-        self.ui.actionSave.setEnabled(True)
         self.add_to_recent_file_menu(filename)
         self.visual.zoom_all()
 
@@ -1694,9 +1693,15 @@ class Gui:
             self.visual.update_visibility()
 
     def menu_save_model(self):
+
+        if self.modelfilename is None:
+            self.menu_save_model_as()
+            return
+
         code = 's.save_scene(r"{}")'.format(self.modelfilename)
         self.run_code(code, guiEventType.NOTHING)
         self._model_has_changed = False
+        self.give_feedback(f"File saved: [{self.modelfilename}]")
 
     def menu_save_model_as(self):
 
@@ -1718,7 +1723,6 @@ class Gui:
             self.modelfilename = filename
             self.MainWindow.setWindowTitle(f'DAVE [{self.modelfilename}]')
 
-            self.ui.actionSave.setEnabled(True)
             self.add_to_recent_file_menu(filename)
 
     def maybeSave(self):
