@@ -576,7 +576,7 @@ class Gui:
         self.ui.actionPython_console_2.triggered.connect(self.show_python_console)
 
         # dof editor
-        self.ui.actionDegrees_of_Freedom_editor.triggered.connect(lambda: self.show_guiWidget("WidgetDOFEditor"))
+        self.ui.actionDegrees_of_Freedom_editor.triggered.connect(lambda: self.show_guiWidget("DOF Editor"))
 
 
         self.ui.actionVersion.setText(f"Version {DAVE.__version__}")

@@ -509,8 +509,8 @@
     <addaction name="actionCamera_reset"/>
     <addaction name="separator"/>
     <addaction name="actionPython_console_2"/>
-    <addaction name="separator"/>
     <addaction name="actionDegrees_of_Freedom_editor"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">

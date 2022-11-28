@@ -33,6 +33,8 @@ class WidgetDOFEditor(guiDockWidget):
 
         """
 
+        self.setWindowTitle("Edit Degrees of Freedom")
+
         # manual:
         self._layout = QtWidgets.QGridLayout()
         self.contents.setLayout(self._layout)
@@ -105,8 +107,17 @@ class WidgetDOFEditor(guiDockWidget):
             w.deleteLater()
         self._widgets.clear()
 
+        nodename = ""
+
         for irow, dof in enumerate(self.dofs):
-            label = QtWidgets.QLabel(f"{dof['node'].name}.{MODENAMES[dof['mode']]}")
+
+            if nodename != dof['node'].name:
+                nodename = dof['node'].name
+                label = QtWidgets.QLabel(f"{dof['node'].name}")
+                self._layout.addWidget(label, irow, 0)
+                self._widgets.append(label)
+
+            label = QtWidgets.QLabel(MODENAMES[dof['mode']])
             spinbox = QtWidgets.QDoubleSpinBox()
             spinbox.setDecimals(3)
             spinbox.setMinimum(-1e10)
@@ -116,8 +127,9 @@ class WidgetDOFEditor(guiDockWidget):
             self._widgets.append(spinbox)
             self._widgets.append(label)
 
-            self._layout.addWidget(label, irow, 0)
-            self._layout.addWidget(spinbox, irow, 1)
+            self._layout.addWidget(label, irow, 1)
+            self._layout.addWidget(spinbox, irow, 2)
+
 
             dof['spinbox'] = spinbox
 
@@ -135,4 +147,4 @@ class WidgetDOFEditor(guiDockWidget):
 
 
 
-DAVE_GUI_DOCKS['WidgetDOFEditor'] = WidgetDOFEditor
+DAVE_GUI_DOCKS['DOF Editor'] = WidgetDOFEditor
