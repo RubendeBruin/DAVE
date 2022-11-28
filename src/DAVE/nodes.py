@@ -991,25 +991,31 @@ class Frame(NodeWithParentAndFootprint):
         return self.position[2]
 
     @x.setter
-    @node_setter_manageable
     @node_setter_observable
     def x(self, var):
+
+        if self.fixed[0]:
+            self._verify_change_allowed()
 
         a = self.position
         self.position = (var, a[1], a[2])
 
     @y.setter
-    @node_setter_manageable
     @node_setter_observable
     def y(self, var):
+
+        if self.fixed[1]:
+            self._verify_change_allowed()
 
         a = self.position
         self.position = (a[0], var, a[2])
 
     @z.setter
-    @node_setter_manageable
     @node_setter_observable
     def z(self, var):
+
+        if self.fixed[2]:
+            self._verify_change_allowed()
 
         a = self.position
         self.position = (a[0], a[1], var)
@@ -1022,9 +1028,14 @@ class Frame(NodeWithParentAndFootprint):
         return self._vfNode.position
 
     @position.setter
-    @node_setter_manageable
     @node_setter_observable
     def position(self, var):
+
+        current = self.position
+
+        for i in range(3):
+            if self.fixed[i] and abs(current[i] - var[i]) > 1e-6:
+                self._verify_change_allowed()
 
         assert3f(var, "Position ")
         self._vfNode.position = var
@@ -1046,25 +1057,31 @@ class Frame(NodeWithParentAndFootprint):
         return self.rotation[2]
 
     @rx.setter
-    @node_setter_manageable
     @node_setter_observable
     def rx(self, var):
+
+        if self.fixed[3]:
+            self._verify_change_allowed()
 
         a = self.rotation
         self.rotation = (var, a[1], a[2])
 
     @ry.setter
-    @node_setter_manageable
     @node_setter_observable
     def ry(self, var):
+
+        if self.fixed[4]:
+            self._verify_change_allowed()
 
         a = self.rotation
         self.rotation = (a[0], var, a[2])
 
     @rz.setter
-    @node_setter_manageable
     @node_setter_observable
     def rz(self, var):
+
+        if self.fixed[5]:
+            self._verify_change_allowed()
 
         a = self.rotation
         self.rotation = (a[0], a[1], var)
@@ -1077,13 +1094,20 @@ class Frame(NodeWithParentAndFootprint):
         return tuple([n.item() for n in np.rad2deg(self._vfNode.rotation)]) # convert to float
 
     @rotation.setter
-    @node_setter_manageable
     @node_setter_observable
     def rotation(self, var):
 
         # convert to degrees
         assert3f(var, "Rotation")
-        self._vfNode.rotation = np.deg2rad(var)
+        var_deg = np.deg2rad(var)
+
+        current = self.rotation
+
+        for i in range(3):
+            if self.fixed[i+3] and abs(current[i] - var_deg[i]) > 1e-6:
+                self._verify_change_allowed()
+
+        self._vfNode.rotation = var_deg
         self._scene._geometry_changed()
 
     # we need to over-ride the parent property to be able to call _geometry_changed afterwards
@@ -1141,7 +1165,6 @@ class Frame(NodeWithParentAndFootprint):
         return self.global_position[2]
 
     @gx.setter
-    @node_setter_manageable
     @node_setter_observable
     def gx(self, var):
 
@@ -1149,7 +1172,6 @@ class Frame(NodeWithParentAndFootprint):
         self.global_position = (var, a[1], a[2])
 
     @gy.setter
-    @node_setter_manageable
     @node_setter_observable
     def gy(self, var):
 
@@ -1157,7 +1179,6 @@ class Frame(NodeWithParentAndFootprint):
         self.global_position = (a[0], var, a[2])
 
     @gz.setter
-    @node_setter_manageable
     @node_setter_observable
     def gz(self, var):
 
@@ -1170,7 +1191,6 @@ class Frame(NodeWithParentAndFootprint):
         return self._vfNode.global_position
 
     @global_position.setter
-    @node_setter_manageable
     @node_setter_observable
     def global_position(self, val):
 
@@ -1196,7 +1216,6 @@ class Frame(NodeWithParentAndFootprint):
         return self.global_rotation[2]
 
     @grx.setter
-    @node_setter_manageable
     @node_setter_observable
     def grx(self, var):
 
@@ -1204,7 +1223,6 @@ class Frame(NodeWithParentAndFootprint):
         self.global_rotation = (var, a[1], a[2])
 
     @gry.setter
-    @node_setter_manageable
     @node_setter_observable
     def gry(self, var):
 
@@ -1212,7 +1230,6 @@ class Frame(NodeWithParentAndFootprint):
         self.global_rotation = (a[0], var, a[2])
 
     @grz.setter
-    @node_setter_manageable
     @node_setter_observable
     def grz(self, var):
 
@@ -1299,7 +1316,6 @@ class Frame(NodeWithParentAndFootprint):
         return tuple(np.rad2deg(self._vfNode.global_rotation))
 
     @global_rotation.setter
-    @node_setter_manageable
     @node_setter_observable
     def global_rotation(self, val):
 
