@@ -298,6 +298,46 @@ class WidgetNodeTree(guiDockWidget):
 
         show_managed_nodes = self.checkbox.isChecked()
 
+
+        def give_parent_item(node):
+            """Determines where to place the given item in the tree.
+            Returns the parent node, which may be the invisible root node, to which the item of this node
+            shall be a child
+            """
+            parent = getattr(node,'parent',None)
+
+            # if node does not have a parent, then use the manager (if any)
+            if parent is None:
+                parent = node.manager
+
+            # no manager and no parent --> in root
+            if parent is None:
+                return self.treeView.invisibleRootItem()
+
+            # there is a parent or manager to add to,
+            # but the parent may not be in the tree.
+
+            hidden_nodes_between = False
+
+            while True:
+                if parent.name in self.items:
+                    return self.items[parent.name]
+
+                hidden_nodes_between = True
+
+                parents_parent = getattr(parent, 'parent', None)
+                if parents_parent is None:
+                    parents_parent = parent.manager
+
+                # no parent and no manager:
+                if parents_parent is None:
+                    return self.treeView.invisibleRootItem()
+
+                parent = parents_parent # next iteration with parent
+
+
+
+
         for node in self.guiScene._nodes:
 
             # create a tree item
@@ -393,41 +433,17 @@ class WidgetNodeTree(guiDockWidget):
                     if node._manager.manager is None: # but only if the manager itself is not also managed (and thus hidden)
                         show_managed_node = True
 
-            if node._manager:
+            if node.manager and show_managed_node:          # are we showing managed nodes?
 
-                # are we showing managed nodes?
-                if show_managed_node:
-
-                    # item.setTextColor(0, Qt.gray)
-                    item.setTextColor(0, QColor(0, 150, 0))
-
-                    # if the item does not have a parent, then show it under the manager
-                    if parent is None:
-                        parent = node._manager
-
-                    if parent.name not in self.items:
-                        parent = node._manager
-
-                    self.items[node.name] = item
-                    self.items[parent.name].addChild(item)
-
-            else:
+                item.setTextColor(0, QColor(0, 150, 0))
                 self.items[node.name] = item
+                give_parent_item(node).addChild(item)
 
-                if parent is None:
-                    self.treeView.invisibleRootItem().addChild(item)
-                else:
-                    if parent.name in self.items:
-                        self.items[parent.name].addChild(item)
-                    else:  # if the parent is not there, then it must be a managed node
-                        if parent._manager.name in self.items:
-                            self.items[parent._manager.name].addChild(item)
-                        else:
-                            print('not adding node to tree') # TODO: see issue #106
-                            pass
+            elif node.manager is None:
+                self.items[node.name] = item
+                give_parent_item(node).addChild(item)
 
 
-        # self.treeView.resizeColumnToContents(0)
         self.treeView.expandAll()
 
         # restore closed nodes state
