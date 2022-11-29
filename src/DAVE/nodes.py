@@ -3026,7 +3026,12 @@ class Circle(NodeWithCoreParent):
             its opposite:  circle.axis =- circle.axis. (another solution in that case is to define the connections of
             the cable in the reverse order)
         """
-        return self._vfNode.axis_direction
+        ad = self._vfNode.axis_direction
+        l = np.linalg.norm(ad)
+        if l == 0:
+            return ad
+        else:
+            return (ad[0]/l, ad[1]/l, ad[2]/l)
 
     @axis.setter
     @node_setter_manageable
@@ -4875,10 +4880,10 @@ class GeometricContact(Manager):
         Point1              : observed, referenced as parent_circle_parent
             Circle1         : observed, referenced as parent_circle
 
-        _axis_on_parent                 : managed
+        _axis_on_parent                 : managed    --> aligned with Circle1
             _pin_hole_connection        : managed
                 _connection_axial_rotation : managed
-                    _axis_on_child      : managed
+                    _axis_on_child      : managed    --> aligned with Circle2
                         Axis2           : managed    , referenced as child_circle_parent_parent
                             Point2      : observed   , referenced as child_circle_parent
                                 Circle2 : observed   , referenced as child_circle
@@ -5107,29 +5112,29 @@ class GeometricContact(Manager):
         c_child_rotation = self.child_rotation
         c_child_fixed = self.child_fixed
 
-        pin1 = self._child_circle  # nodeB
-        pin2 = self._parent_circle  # nodeA
+        child_circle = self._child_circle  # nodeB
+        parent_circle = self._parent_circle  # nodeA
 
-        if pin1.parent.parent is None:
+        if child_circle.parent.parent is None:
             raise ValueError(
                 "The pin that is to be connected is not located on a Frame. Can not create the connection because there is no Frame for nodeB"
             )
 
         # --------- prepare hole
 
-        if pin2.parent.parent is not None:
-            self._axis_on_parent.parent = pin2.parent.parent
-            z = pin2.parent.parent.uz
+        if parent_circle.parent.parent is not None:
+            self._axis_on_parent.parent = parent_circle.parent.parent
+            z = parent_circle.parent.parent.uz
         else:
             z = (0,0,1)
-        self._axis_on_parent.position = pin2.parent.position
+        self._axis_on_parent.position = parent_circle.parent.position
         self._axis_on_parent.fixed = (True, True, True, True, True, True)
 
-        # self._axis_on_parent.rotation = rotation_from_y_axis_direction(pin2.axis)  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
-        self._axis_on_parent.global_rotation = rotvec_from_y_and_z_axis_direction(pin2.global_axis, z)  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
+        # self._axis_on_parent.global_rotation = rotvec_from_y_and_z_axis_direction(parent_circle.global_axis, z)  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
+        self._axis_on_parent.rotation = rotvec_from_y_and_z_axis_direction(parent_circle.axis, (0,0,1))  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
 
-        a1 = self._axis_on_parent.uy
-        a2 = pin2.global_axis
+        # a1 = self._axis_on_parent.uy
+        # a2 = parent_circle.global_axis
 
         # Position connection axis at the center of the nodeA axis (pin2)
         # and allow it to rotate about the pin
@@ -5143,14 +5148,21 @@ class GeometricContact(Manager):
         # Position the connection pin (self) on the target pin and
         # place the parent of the parent of the pin (the axis) on the connection axis
         # and fix it
-        slaved_axis = pin1.parent.parent
+        child_frame = child_circle.parent.parent
 
-        slaved_axis.parent = self._axis_on_child
-        slaved_axis.position = -np.array(pin1.parent.position)
+        child_frame.parent = self._axis_on_child
         # slaved_axis.rotation = rotation_from_y_axis_direction(-1 * np.array(pin1.axis))
-        slaved_axis.global_rotation = rotvec_from_y_and_z_axis_direction(y = -1 * np.array(pin1.global_axis), z = slaved_axis.parent.uz)
 
-        slaved_axis.fixed = True
+        # the child frame needs to be rotated by the inverse of the circle rotation
+        #
+        rotation = rotvec_from_y_and_z_axis_direction(y = child_circle.axis, z = (0,0,1)) # local rotation
+        child_frame.rotation = rotvec_inverse(rotation)
+
+        parent_to_point = child_frame.to_glob_direction(child_circle.parent.position)
+
+        child_frame.position = -np.array(self._axis_on_child.to_loc_direction(parent_to_point))
+
+        child_frame.fixed = True
 
         self._axis_on_child.parent = self._connection_axial_rotation
         self._axis_on_child.rotation = (0, 0, 0)
@@ -5160,12 +5172,12 @@ class GeometricContact(Manager):
 
             # Place the pin in the hole
             self._connection_axial_rotation.rotation = (0, 0, 0)
-            self._axis_on_child.position = (pin2.radius - pin1.radius, 0, 0)
+            self._axis_on_child.position = (parent_circle.radius - child_circle.radius, 0, 0)
 
         else:
 
             # pin-pin connection
-            self._axis_on_child.position = (pin1.radius + pin2.radius, 0, 0)
+            self._axis_on_child.position = (child_circle.radius + parent_circle.radius, 0, 0)
             self._connection_axial_rotation.rotation = (90, 0, 0)
 
         # restore settings
