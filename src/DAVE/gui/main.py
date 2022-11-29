@@ -895,10 +895,6 @@ class Gui:
         self.animation_terminate()
         self.savepoint_restore()
 
-        #
-        # self.visual.set_alpha(1.0)
-        # self.visual.hide_actors_of_type([ActorType.BALLASTTANK])
-        # self.visual.update_outlines()
         self.activate_paintset("Construction")
 
         if name == "PAINTERS":
@@ -907,12 +903,12 @@ class Gui:
         if name == "CONSTRUCT":
             self.close_all_open_docks()
             self.show_guiWidget("Node Tree", WidgetNodeTree)
-            # self.show_guiWidget("Derived Properties", WidgetDerivedProperties)
             self.show_guiWidget("Properties", WidgetNodeProps)
             self.show_guiWidget("Quick actions", WidgetQuickActions)
 
         if name == "EXPLORE":
             self.close_all_open_docks()
+            self.show_guiWidget("Node Tree", WidgetNodeTree)
             self.show_guiWidget("Derived Properties", WidgetDerivedProperties)
             self.show_guiWidget("Explore 1-to-1", WidgetExplore)
 
@@ -1869,6 +1865,7 @@ class Gui:
                     )  # people often close this one
 
                 menu.addAction("Edit {}".format(node_name), edit)
+                menu.addAction("Properties", lambda *args: self.show_guiWidget("Derived Properties", WidgetDerivedProperties))
 
                 showhide = menu.addAction("Visible")
                 showhide.setCheckable(True)

@@ -2,7 +2,7 @@ from DAVE.gui.dockwidget import *
 from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag
 from PySide2.QtCore import QMimeData, Qt, QItemSelectionModel
 from PySide2.QtGui import QColor
-from PySide2.QtWidgets import QTreeWidgetItem
+from PySide2.QtWidgets import QTreeWidgetItem, QLabel, QLineEdit
 import DAVE.scene as nodes
 import DAVE.settings as ds
 
@@ -41,6 +41,10 @@ class WidgetDerivedProperties(guiDockWidget):
         self._watches = []
         self._nodename = None
 
+        self.label = QLabel()
+        self.filterbox = QLineEdit()
+        self.filterbox.textChanged.connect(self.display_node_properties)
+
         self.dispPropTree = TreeWithDragOut(self.contents)
         self.dispPropTree.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.dispPropTree.setAlternatingRowColors(True)
@@ -59,6 +63,8 @@ class WidgetDerivedProperties(guiDockWidget):
         self.dispPropTree.customContextMenuRequested.connect(self.rightClickTreeview)
 
         layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.label)
+        layout.addWidget(self.filterbox)
         layout.addWidget(self.dispPropTree)
         self.contents.setLayout(layout)
 
@@ -77,9 +83,8 @@ class WidgetDerivedProperties(guiDockWidget):
 
     # ======= custom
 
-    def display_node_properties(self):
+    def display_node_properties(self, *args):
         self.dispPropTree.clear()
-
 
         s = self.guiScene
 
@@ -102,15 +107,21 @@ class WidgetDerivedProperties(guiDockWidget):
             node = self.guiSelection[0]
             self._nodename = node.name
             self.dispPropTree.nodename = node.name
+            self.label.setText(f"{node.name} [{node.class_name}]")
         else:
             return
-
 
         props = self.guiScene.give_properties_for_node(node)
 
 
         # evaluate properties
+        filter = self.filterbox.text()
+
         for p in props:
+
+            if filter not in p:
+                continue
+
             code = "node.{}".format(p)
             try:
                 result = eval(code)
@@ -127,12 +138,7 @@ class WidgetDerivedProperties(guiDockWidget):
             v.setText(0, text)
 
             doc = self.guiScene.give_documentation(node, p).doc_long
-
-
-
             v.setToolTip(0, doc)
-
-
 
             # add limit node
             if p in node.limits:
@@ -141,12 +147,6 @@ class WidgetDerivedProperties(guiDockWidget):
                 uc = node.give_UC(p)
                 text = f'UC = {uc:.2f} = ({text} / {limit})'
                 v.setText(0, text)
-
-
-
-
-
-
 
         self.dispPropTree.expandAll()
 
