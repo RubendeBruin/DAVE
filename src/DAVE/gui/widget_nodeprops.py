@@ -1533,9 +1533,16 @@ class EditSheave(AbstractNodeEditorWithParent):
         for widget in widgets:
             widget.blockSignals(True)
 
-        svinf(self.ui.sbAX, self.node.axis[0])
-        svinf(self.ui.sbAY, self.node.axis[1])
-        svinf(self.ui.sbAZ, self.node.axis[2])
+        # only update axis if none of the boxes is selected
+        # this has to do with the normalization which should only
+        # be applied to the gui once editing is done
+
+        if not self.ui.sbAX.hasFocus() and not self.ui.sbAY.hasFocus() and not self.ui.sbAZ.hasFocus():
+            svinf(self.ui.sbAX, self.node.axis[0])
+            svinf(self.ui.sbAY, self.node.axis[1])
+            svinf(self.ui.sbAZ, self.node.axis[2])
+
+
         svinf(self.ui.sbRadius, self.node.radius)
 
         for widget in widgets:

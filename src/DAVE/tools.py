@@ -14,6 +14,7 @@ import numbers
 from DAVE.scene import *
 import DAVE.settings as ds
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 def MostLikelyMatch(search_for, choices) -> str:
     """Uses rapidfuzz to get a best match"""
@@ -194,6 +195,11 @@ def radii_to_positions(rxx,ryy,rzz):
 
     return ps
 
+def rotvec_inverse(rotvec):
+    """Returns the inverse of the rotation vector"""
+    r = Rotation.from_rotvec(np.deg2rad(rotvec))
+    return np.rad2deg(r.inv().as_rotvec())
+
 def rotvec_from_y_and_z_axis_direction(y,z):
     """Returns an orientation with the z-axis upwards as much as possible and the y-axis in the requested direction"""
 
@@ -205,7 +211,7 @@ def rotvec_from_y_and_z_axis_direction(y,z):
     # np.linalg.det([x, y, z]) check
 
     # now construct a rotation vector from the three vector basis
-    from scipy.spatial.transform import Rotation
+
     r = Rotation.from_matrix(np.transpose([x,y,z]))
 
     return np.rad2deg(r.as_rotvec())
