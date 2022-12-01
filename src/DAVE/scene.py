@@ -1492,7 +1492,7 @@ class Scene:
     # ====== goal seek ========
 
     def goal_seek(
-        self, evaluate, target, change_node, change_property, bracket=None, tol=1e-3
+        self, evaluate, target, change, bracket=None, tol=1e-3
     ):
         """goal_seek
 
@@ -1502,21 +1502,19 @@ class Scene:
         Args:
             evaluate : code to be evaluated to yield the value that is solved for. Eg: s['poi'].fx Scene is abbiviated as "s"
             target (number):       target value for that property
-            change_node(Node or str):  node to be adjusted
-            change_property (str): property of that node to be adjusted
+            change (string, tuple) value to be adjused. If string this is executed as change = number. If tuple then this is
+                                   is done for each string in the tuple
             range(optional)  : specify the possible search-interval
 
         Returns:
             bool: True if successful, False otherwise.
 
         Examples:
-            Change the y-position of the cog of a rigid body ('Barge')  in order to obtain zero roll (rx)
-            >>> s.goal_seek("s['Barge'].fx",0,'Barge','cogy')
+            Change the y-position of the cog of a rigid body ('Barge')  in order to obtain zero roll (heel)
+            >>> s.goal_seek("s['Barge'].heel",0,'s["Barge"].cogy')
 
         """
         s = self
-
-        change_node = self._node_from_node_or_str(change_node)
 
         # check that the attributes exist and are single numbers
         test = eval(evaluate)
@@ -1530,17 +1528,24 @@ class Scene:
             "Attempting to evaluate {} to {} (now {})".format(evaluate, target, test)
         )
 
-        initial = getattr(change_node, change_property)
-        self._print(
-            "By changing the value of {}.{} (now {})".format(
-                change_node.name, change_property, initial
-            )
-        )
+        if isinstance(change,str):
+            change = (change,) # make tuple
+
+        if not isinstance(change, (tuple, list)):
+            raise ValueError('Variable to be changed shall be a tuple (of strings) or string')
+
+        initial = eval(change[0])
+
+        self._print(f"By changing the value of {change} (now {initial})")
 
         def set_and_get(x):
-            setattr(change_node, change_property, x)
-            self.solve_statics(silent=True)
+
             s = self
+
+            for c in change:
+                exec(f'{c} = {x}')
+
+            self.solve_statics(silent=True)
             result = eval(evaluate)
             self._print("setting {} results in {}".format(x, result))
             return result - target
@@ -1551,15 +1556,15 @@ class Scene:
         x1 = initial + 0.0001
 
         if bracket is not None:
-            res = root_scalar(set_and_get, x0=x0, x1=x1, bracket=bracket, xtol=tol)
+            res = root_scalar(set_and_get, x0=x0, x1=x1, bracket=bracket, xtol=tol/10)
         else:
-            res = root_scalar(set_and_get, x0=x0, x1=x1, xtol=tol)
+            res = root_scalar(set_and_get, x0=x0, x1=x1, xtol=tol/10)
 
         self._print(res)
 
         # evaluate result
         final_value = eval(evaluate)
-        if abs(final_value - target) > 1e-3:
+        if abs(final_value - target) > tol:
             raise ValueError(
                 "Target not reached. Target was {}, reached value is {}".format(
                     target, final_value
