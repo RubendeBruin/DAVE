@@ -244,33 +244,50 @@ import platform
 if platform.system().lower().startswith('win'):
     # on windows we can possibly get blender from the registry
     import winreg
-    pt = ''
+    import os
 
+    def find_blender_from_reg(where, key):
+        try:
+            pt = winreg.QueryValue(where, key)
+            if pt:
+                BLENDER_EXEC = pt[1:-6]
+                BLENDER_EXEC = BLENDER_EXEC.replace('blender-launcher', 'blender')
+                if os.path.exists(BLENDER_EXEC):
+                    return BLENDER_EXEC
+        finally:
+            raise ValueError('Not found here')
+
+
+
+
+    BLENDER_EXEC = "Blender not found"
     try:
-        pt = winreg.QueryValue(winreg.HKEY_CLASSES_ROOT, r'Applications\blender.exe\shell\open\command')
+        BLENDER_EXEC = find_blender_from_reg(winreg.HKEY_CLASSES_ROOT, r'Applications\blender.exe\shell\open\command')
     except:
         try:
-            pt = winreg.QueryValue(winreg.HKEY_CURRENT_USER,r'SOFTWARE\Classes\blendfile\shell\open\command')
+            BLENDER_EXEC = find_blender_from_reg(winreg.HKEY_CURRENT_USER,r'SOFTWARE\Classes\blendfile\shell\open\command')
         except:
             try:
-                pt = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\Classes\blendfile\shell\open\command')
+                BLENDER_EXEC = find_blender_from_reg(winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\Classes\blendfile\shell\open\command')
             except:
-                pass
-    if pt:
-        BLENDER_EXEC = pt[1:-6]
-    else:
-        BLENDER_EXEC = BLENDER_EXEC_DEFAULT_WIN
+                # find it in a path
+                # by default the windows-store version seems to be installed in a location which is in the path
+                paths = os.environ['PATH'].split(';')
+                for pth in paths:
+                    test = pth + r'\\blender.exe'
+                    if os.path.exists(test):
+                        BLENDER_EXEC = test
+                        break
 
-    BLENDER_EXEC = BLENDER_EXEC.replace('blender-launcher','blender')
 
-    from os import path
-    if path.exists(BLENDER_EXEC):
+
+    if os.path.exists(BLENDER_EXEC):
+        print("! Blender not found - Blender can be installed from the microsoft windows store."
+              "   if you have blender already and want to be able to use blender then please either:\n"
+              "   - configure windows to open .blend files with blender automatically \n"
+              "   - add the folder containing blender.exe to the PATH variable.")
         print("Blender found at: {}".format(BLENDER_EXEC))
     else:
-        print("! Blender not found - if you want to be able to use blender then please either:\n"
-              "   edit BLENDER_EXEC_DEFAULT_WIN in settings.py or \n"
-              "   set settings.BLENDER_EXEC or\n"
-              "   configure windows to open .blend files with blender automatically")
 
         print('\nLoading DAVE...')
 else: # assume we're on linux
