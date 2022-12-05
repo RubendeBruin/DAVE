@@ -3293,7 +3293,7 @@ class Scene:
                 # This is traced using the _limits_by_manager dict
 
                 lbm = getattr(n, '_limits_by_manager',None)
-                if lbm:
+                if lbm is not None:
                     for key, value in n.limits.items():
                         if key not in lbm:
                             code.append(f"s['{n.name}'].limits['{key}'] = {value}  # additional limit on managed node")
@@ -3304,6 +3304,28 @@ class Scene:
                 else:
                     warnings.warn(f'Managed node {n.name} does not have _limits_by_manager set')
 
+        code.append("\n# Watches")
+
+        for n in nodes_to_be_exported:
+            if n.manager is None:
+                for key, value in n.watches.items():
+                    code.append(f"s['{n.name}'].watches['{key}'] = {value}")
+            else:
+                # Limits of managed nodes are only exported if they have been overridden
+                # or are additional.
+                # This is traced using the _limits_by_manager dict
+
+                lbm = getattr(n, '_watches_by_manager', None)
+                if lbm is not None:
+                    for key, value in n.watches.items():
+                        if key not in lbm:
+                            code.append(f"s['{n.name}'].watches['{key}'] = {value}  # watch limit on managed node")
+                        else:
+                            if value != lbm[key]:
+                                code.append(
+                                    f"s['{n.name}'].watches['{key}'] = {value}  # watch overridden")
+                else:
+                    warnings.warn(f'Managed node {n.name} does not have _watches_by_manager set')
 
         code.append("\n# Tags")
 

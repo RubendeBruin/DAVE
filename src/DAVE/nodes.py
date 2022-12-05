@@ -6,6 +6,9 @@
   Ruben de Bruin - 2019
 """
 import csv
+from dataclasses import dataclass
+import functools
+
 import fnmatch
 import glob
 import warnings
@@ -34,8 +37,6 @@ import datetime
 # - properties are returned as tuple to make sure they are not editable.
 #    --> node.position[2] = 5 is not allowed
 
-
-import functools
 
 
 # Wrapper (decorator) for managed nodes
@@ -102,6 +103,18 @@ def valid_node_weakref(wr):
         return False
     return node.is_valid
 
+@dataclass
+class Watch:
+    """Watches on nodes
+
+    a watch is part of a node
+    it is stored in a dictionary where the key is the description of the watch
+    """
+    evaluate : str = 'self.name'
+    decimals : int = 3
+    condition : str = '' # Empty evaluates to True
+
+
 
 class Node(ABC):
     """ABSTRACT CLASS - Properties defined here are applicable to all derived classes
@@ -133,6 +146,10 @@ class Node(ABC):
 
         self.limits = dict()
         """Defines the limits of the nodes properties for calculating a UC"""
+
+        self.watches : dict[str, Watch] = dict()
+        """Defines the watches of the node, there are of type Watch"""
+
 
         self._valid = True
         """Turns False if the node in removed from a scene. This is a work-around for weakrefs"""
@@ -401,6 +418,37 @@ class Node(ABC):
 
     def delete_tag(self, value: str):
         self._tags.remove(value)
+
+    # watches
+    def run_watches(self) -> list[tuple[str, str]]:
+        """Executes all watches on this node and returns the execution result as [(desciption, result)]
+
+        watches of which the condition evaluates to False are excluded
+        numerical results are rounded to "decimals" if >= 0
+        """
+        r = []
+
+        for desc, w in self.watches.items():
+
+            try:
+                value = eval(w.evaluate,{'np':np}, {'s':self._scene, 'self':self})
+            except Exception as M:
+                value = f'ERROR: {w.evaluate} -> {str(M)}'
+
+            if w.condition:
+                condition = eval(w.condition, {'np':np}, {'s':self._scene, 'self':self, 'value':value})
+            else:
+                condition = True
+
+            if condition:
+
+                if w.decimals>=0:
+                    if isinstance(value, float):
+                        value = round(value,w.decimals)
+
+                r.append((desc, value))
+
+        return r
 
 
 
@@ -6510,6 +6558,7 @@ class Component(Manager, Frame):
             if node.manager is None:
                 node._manager = self
                 node._limits_by_manager = node.limits.copy()
+                node._watches_by_manager = node.watches.copy()
 
         self._path = value
 
@@ -6898,6 +6947,7 @@ class LoadShearMomentDiagram:
 
 from DAVE.settings import DAVE_ADDITIONAL_RUNTIME_MODULES,RESOURCE_PATH
 
+DAVE_ADDITIONAL_RUNTIME_MODULES['Watch'] = Watch
 DAVE_ADDITIONAL_RUNTIME_MODULES['AreaKind'] = AreaKind
 DAVE_ADDITIONAL_RUNTIME_MODULES['BallastSystem'] = BallastSystem
 DAVE_ADDITIONAL_RUNTIME_MODULES['Beam'] = Beam

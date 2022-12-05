@@ -65,6 +65,7 @@ from copy import deepcopy
 import logging
 
 from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter
+from DAVE.gui.widget_watches import WidgetWatches
 from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import DragInfo
 from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
 from DAVE.gui.widget_footprints import WidgetFootprints
@@ -905,12 +906,14 @@ class Gui:
             self.show_guiWidget("Node Tree", WidgetNodeTree)
             self.show_guiWidget("Properties", WidgetNodeProps)
             self.show_guiWidget("Quick actions", WidgetQuickActions)
+            self.show_guiWidget("Watches", WidgetWatches)
 
         if name == "EXPLORE":
             self.close_all_open_docks()
             self.show_guiWidget("Node Tree", WidgetNodeTree)
             self.show_guiWidget("Derived Properties", WidgetDerivedProperties)
             self.show_guiWidget("Explore 1-to-1", WidgetExplore)
+            self.show_guiWidget("Watches", WidgetWatches)
 
         if name == "DYNAMICS":
             self.close_all_open_docks()
