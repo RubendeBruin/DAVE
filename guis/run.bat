@@ -1,6 +1,6 @@
 call conda activate pyside2
 
-call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
+echo call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
 echo call pyside2-uic widget_environment.ui -o "..\src\DAVE\gui\forms\widgetUI_environment.py"
 echo call pyside2-uic widget_modeshapes.ui -o "..\src\DAVE\gui\forms\widgetUI_modeshapes.py"
 echo call pyside2-uic widget_ballastconfiguration.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastconfiguration.py"
@@ -11,7 +11,7 @@ echo call pyside2-uic widget_explore.ui -o "..\src\DAVE\gui\forms\widgetUI_explo
 echo call pyside2-uic widget_tank_order.ui -o "..\src\DAVE\gui\forms\widgetUI_tank_order.py"
 echo call pyside2-uic widget_area.ui -o "..\src\DAVE\gui\forms\widget_area.py"
 echo call pyside2-uic widget_bendingmomentpreview.ui -o "..\src\DAVE\gui\forms\widget_bendingmomentpreview.py"
-echo call pyside2-uic widget_axis.ui -o "..\src\DAVE\gui\forms\widget_axis.py"
+call pyside2-uic widget_axis.ui -o "..\src\DAVE\gui\forms\widget_axis.py"
 echo call pyside2-uic widget_body.ui -o "..\src\DAVE\gui\forms\widget_body.py"
 echo call pyside2-uic widget_waveinteraction.ui -o "..\src\DAVE\gui\forms\widget_waveinteraction.py"
 echo call pyside2-uic widget_poi.ui -o "..\src\DAVE\gui\forms\widget_poi.py"
@@ -42,6 +42,6 @@ echo call pyside2-uic widget_buoyancy.ui -o "..\src\DAVE\gui\forms\widget_buoyan
 echo call pyside2-uic widget_selection_actions.ui -o "..\src\DAVE\gui\forms\widget_selection_actions.py"
 echo call pyside2-uic widget_tank.ui -o "..\src\DAVE\gui\forms\widget_tank.py"
 echo call pyside2-uic widget_footprints.ui -o "..\src\DAVE\gui\forms\widget_footprints.py"
-echo call pyside2-uic widget_limits.ui -o "..\src\DAVE\gui\forms\widget_limits.py"
+call pyside2-uic widget_limits.ui -o "..\src\DAVE\gui\forms\widget_limits.py"
 
 call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"

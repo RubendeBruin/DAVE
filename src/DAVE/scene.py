@@ -3281,12 +3281,29 @@ class Scene:
                     f"\ns['{n.name}']._visible = False"  # use private, cause may be managed (in which case this statement is probably obsolete)
                 )  # only report is not the default value
 
-        code.append("\n# Limits of un-managed nodes ")
+        code.append("\n# Limits")
 
         for n in nodes_to_be_exported:
             if n.manager is None:
                 for key, value in n.limits.items():
                     code.append(f"s['{n.name}'].limits['{key}'] = {value}")
+            else:
+                # Limits of managed nodes are only exported if they have been overridden
+                # or are additional.
+                # This is traced using the _limits_by_manager dict
+
+                lbm = getattr(n, '_limits_by_manager',None)
+                if lbm:
+                    for key, value in n.limits.items():
+                        if key not in lbm:
+                            code.append(f"s['{n.name}'].limits['{key}'] = {value}  # additional limit on managed node")
+                        else:
+                            if value != lbm[key]:
+                                code.append(
+                                    f"s['{n.name}'].limits['{key}'] = {value}  # limit overridden")
+                else:
+                    warnings.warn(f'Managed node {n.name} does not have _limits_by_manager set')
+
 
         code.append("\n# Tags")
 

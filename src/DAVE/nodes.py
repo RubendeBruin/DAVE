@@ -4846,6 +4846,16 @@ class Manager(Node, ABC):
         #
         pass
 
+    def store_copy_of_limits(self):
+        """Creates/updates a copy of the limits of all managed nodes and stores that in
+        each node in a dict ._limits_by_manager.
+
+        This is used to determine which limits need to be saved by the scene
+        """
+
+        for node in self.managed_nodes():
+            node._limits_by_manager = node.limits.copy()
+
     def _rename_all_manged_nodes(self, old_name, new_name):
         """Helper to quickly rename all managed nodes"""
 
@@ -6499,8 +6509,10 @@ class Component(Manager, Frame):
         for node in self._nodes:
             if node.manager is None:
                 node._manager = self
+                node._limits_by_manager = node.limits.copy()
 
         self._path = value
+
 
     def give_python_code(self):
 

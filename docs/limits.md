@@ -62,6 +62,9 @@ The dict is part of `Node`, so all nodes have one.
 Saving is done by the *Scene* AFTER exporting all nodes. So the limits are applied AFTER loading the model.
 This gives the opportunity to override default limits set in imported models or managed nodes.
 
+Nodes that are managed (for example via a component) have an additional dictionary `._limits_by_manager` which defined the 
+limits as defined by the manager. When the scene saves the limits, it saves only those that do not exist in this dictionary
+and those that are but have a different value.
 
 ## Calculating the UC:
 
