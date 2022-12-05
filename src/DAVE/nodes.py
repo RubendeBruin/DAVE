@@ -420,13 +420,16 @@ class Node(ABC):
         self._tags.remove(value)
 
     # watches
-    def run_watches(self) -> list[tuple[str, str]]:
-        """Executes all watches on this node and returns the execution result as [(desciption, result)]
+    def run_watches(self) -> tuple[list[tuple[str, str]],list[tuple[str, str]]]:
+        """Executes all watches on this node and returns the execution result as
+        active = list[tuple[str, str]]
+        hidden = list[tuple[str, str]]
 
         watches of which the condition evaluates to False are excluded
         numerical results are rounded to "decimals" if >= 0
         """
         r = []
+        hidden = []
 
         for desc, w in self.watches.items():
 
@@ -448,7 +451,10 @@ class Node(ABC):
 
                 r.append((desc, value))
 
-        return r
+            else:
+                hidden.append((desc,value))
+
+        return r, hidden
 
 
 

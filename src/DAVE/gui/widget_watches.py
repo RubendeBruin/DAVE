@@ -57,7 +57,8 @@ class WidgetWatches(guiDockWidget):
     def changeFontSize(self):
         size = self.slider.value()
         for l in self._labels:
-            l.setStyleSheet(f'font: {size}pt;')
+            if not l._hidden_watch:
+                l.setStyleSheet(f'font: {size}pt;')
 
     def guiProcessEvent(self, event):
         """
@@ -85,11 +86,15 @@ class WidgetWatches(guiDockWidget):
     def fill(self):
 
         w = []
+        hidden_watches = []
 
         for n in self.guiScene._nodes:
-            r = n.run_watches()
+            r, hidden = n.run_watches()
             if r:
                 w.extend([(*result, n) for result in r] ) # add the referring node to the list
+            if hidden:
+                hidden_watches.extend([(*result, n) for result in hidden] ) # add the referring node to the list
+
 
         if self.active_w == w:
             print('Nothing changed')
@@ -97,7 +102,7 @@ class WidgetWatches(guiDockWidget):
 
         self.setUpdatesEnabled(False)
 
-        self.active_w = w
+        self.active_w = [*w, *hidden_watches]
 
         for l in self._labels:
             l.deleteLater()
@@ -107,9 +112,22 @@ class WidgetWatches(guiDockWidget):
         for desc, value, node in w:
             l = QtWidgets.QLabel(f'{desc} : {value}')
             self.flow_layout.addWidget(l)
+            l._hidden_watch = False
 
-            l.mousePressEvent = lambda *args, i=len(self._labels) : self.clickWatch(i, *args)
+            l.mousePressEvent = lambda *args, i=i : self.clickWatch(i, *args)
+            i += 1
             self._labels.append(l)
+
+        for desc, value, node in hidden_watches:
+            l = QtWidgets.QLabel(f'{desc} : {value}')
+            l._hidden_watch = True
+            l.setStyleSheet('color: rgb(203, 203, 203);')
+            self.flow_layout.addWidget(l)
+
+            l.mousePressEvent = lambda *args, i=i : self.clickWatch(i, *args)
+            i += 1
+            self._labels.append(l)
+
 
 
         self.changeFontSize()
@@ -155,14 +173,14 @@ class WidgetWatches(guiDockWidget):
         completer.setFilterMode(Qt.MatchContains)
         ui.tbEvaluate.setCompleter(completer)
 
-        ui.tbEvaluate.setCurrentText(watch.evaluate)
+        ui.tbEvaluate.setText(watch.evaluate)
         ui.tbCondition.setText(watch.condition)
         ui.sbDecimals.setValue(watch.decimals)
 
 
 
         def run_watch():
-            evaluate = ui.tbEvaluate.currentText()
+            evaluate = ui.tbEvaluate.text()
             condition = ui.tbCondition.text()
 
             try:
@@ -185,9 +203,12 @@ class WidgetWatches(guiDockWidget):
             ui.lblConditionResult.setText(str(conResult))
             ui.lblEvaluationResult.setText(str(evResult))
 
-        ui.tbEvaluate.currentTextChanged.connect(run_watch)
+        ui.tbEvaluate.textChanged.connect(run_watch)
         ui.tbCondition.textChanged.connect(run_watch)
         run_watch()
+
+        ui.tbName.setFocus()
+        ui.tbName.selectAll()
 
         result = dialog.exec_()  # 1 or 0 (cancel)
         if result:
@@ -196,7 +217,7 @@ class WidgetWatches(guiDockWidget):
                 node.watches[new_key] = node.watches.pop(key)
 
             w = node.watches[new_key]
-            w.evaluate = ui.tbEvaluate.currentText()
+            w.evaluate = ui.tbEvaluate.text()
             w.condition = ui.tbCondition.text()
             w.decimals = ui.sbDecimals.value()
 
@@ -210,18 +231,27 @@ class WidgetWatches(guiDockWidget):
         event = args[0]
         print(event)
 
+        # get the node and the watch
+        data = self.active_w[nr]
+        node = data[2]
+        key = data[0]
+        watch = node.watches[key]
+
+        def delete():
+            node.watches.pop(key)
+            self.fill()
+
+        def edit():
+            self.edit_watch(watch, node, key)
+
+
         if event.button() == Qt.MouseButton.LeftButton:
-
-            # get the node and the watch
-            data = self.active_w[nr]
-            node = data[2]
-            key = data[0]
-            watch = node.watches[key]
-
-            self.edit_watch(watch,node,key)
-
+            edit()
 
         else:
-            print('Remove watch')
-            pass # TODO: remove watch
+            menu = QtWidgets.QMenu()
+            menu.addAction("Delete" , delete)
+            menu.addAction("Edit" , edit)
+
+            menu.exec_(event.globalPos())
 

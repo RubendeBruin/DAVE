@@ -107,12 +107,14 @@ class Ui_DialigEditWatch(object):
 
         self.gridLayout.addWidget(self.lblConditionResult, 7, 1, 1, 1)
 
-        self.tbEvaluate = QComboBox(DialigEditWatch)
+        self.tbEvaluate = QLineEdit(DialigEditWatch)
         self.tbEvaluate.setObjectName(u"tbEvaluate")
-        self.tbEvaluate.setEditable(True)
 
         self.gridLayout.addWidget(self.tbEvaluate, 1, 1, 1, 1)
 
+        QWidget.setTabOrder(self.tbName, self.tbEvaluate)
+        QWidget.setTabOrder(self.tbEvaluate, self.sbDecimals)
+        QWidget.setTabOrder(self.sbDecimals, self.tbCondition)
 
         self.retranslateUi(DialigEditWatch)
         self.buttonBox.accepted.connect(DialigEditWatch.accept)
