@@ -95,10 +95,12 @@ class WidgetWatches(guiDockWidget):
             if hidden:
                 hidden_watches.extend([(*result, n) for result in hidden] ) # add the referring node to the list
 
-
-        if self.active_w == w:
-            print('Nothing changed')
-            return
+        try:
+            if self.active_w == w:
+                print('Nothing changed')
+                return
+        except: # may fail if results are arrays
+            pass
 
         self.setUpdatesEnabled(False)
 

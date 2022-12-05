@@ -172,6 +172,13 @@ class WidgetDerivedProperties(guiDockWidget):
             self._watches.append("s['{}']{}".format(node_name, node_prop))
             self.display_node_properties()
 
+            watch_name = f'{node_name}{node_prop}'
+            watch_code = f'self{node_prop}'
+            self.guiScene[node_name].watches[watch_name] = Watch(evaluate=watch_code)
+
+            if 'Watches' in self.gui.guiWidgets:
+                self.gui.guiWidgets['Watches'].fill()
+
         menu.addAction("Add watch", add_watch)
 
         menu.addSeparator()
