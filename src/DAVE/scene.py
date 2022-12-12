@@ -1492,7 +1492,7 @@ class Scene:
     # ====== goal seek ========
 
     def goal_seek(
-        self, evaluate, target, change, bracket=None, tol=1e-3
+        self, evaluate, target, change, bracket=None, tol=1e-3, tol_out=0.1
     ):
         """goal_seek
 
@@ -1505,6 +1505,9 @@ class Scene:
             change (string, tuple) value to be adjused. If string this is executed as change = number. If tuple then this is
                                    is done for each string in the tuple
             range(optional)  : specify the possible search-interval
+
+            tol : tolerance on changed variable
+            tol_out : tolerance on evaluated variable
 
         Returns:
             bool: True if successful, False otherwise.
@@ -1543,7 +1546,11 @@ class Scene:
             s = self
 
             for c in change:
-                exec(f'{c} = {x}')
+                code = f'{c} = {x}'
+                try:
+                    exec(code)
+                except Exception as E:
+                    raise ValueError(f'Error when running [{code}]. The error was:\n {str(E)}')
 
             self.solve_statics(silent=True)
             result = eval(evaluate)
@@ -1556,15 +1563,20 @@ class Scene:
         x1 = initial + 0.0001
 
         if bracket is not None:
-            res = root_scalar(set_and_get, x0=x0, x1=x1, bracket=bracket, xtol=tol/10)
+            res = root_scalar(set_and_get, x0=x0, x1=x1, bracket=bracket, xtol=tol)
         else:
-            res = root_scalar(set_and_get, x0=x0, x1=x1, xtol=tol/10)
+            res = root_scalar(set_and_get, x0=x0, x1=x1, xtol=tol)
 
         self._print(res)
 
+        if res.converged:
+            return True
+
+        # not converged, but maybe still within tolerance
+
         # evaluate result
         final_value = eval(evaluate)
-        if abs(final_value - target) > tol:
+        if abs(final_value - target) > tol_out:
             raise ValueError(
                 "Target not reached. Target was {}, reached value is {}".format(
                     target, final_value

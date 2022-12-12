@@ -550,7 +550,7 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
     pid = subprocess.Popen(command)
     pid.wait()
 
-    command = 'explorer "{}"'.format(blender_result_file)
+    command = '"{}" "{}"'.format(blender_exe_path,blender_result_file)
     subprocess.Popen(command)
 
 
@@ -646,7 +646,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
             time_start, time_end = timeline.range()
 
-            for i_time in range(time_end-time_start):
+            for i_time in range(time_end-time_start+1):
 
 
                 timeline.activate_time(i_time + time_start)
@@ -723,7 +723,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
             code += '\nani_points = []'
             time_start, time_end = timeline.range()
 
-            for i_time in range(time_end - time_start):
+            for i_time in range(time_end - time_start + 1):
 
                 timeline.activate_time(i_time + time_start)
                 scene.update()
@@ -773,7 +773,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
             code += '\nani_points = []'
             time_start, time_end = timeline.range()
-            for i_time in range(time_end - time_start):
+            for i_time in range(time_end - time_start + 1):
                 timeline.activate_time(i_time + time_start)
                 scene.update()
                 points = beam.global_positions

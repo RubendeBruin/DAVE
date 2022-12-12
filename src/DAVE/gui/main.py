@@ -1368,6 +1368,8 @@ class Gui:
             - store_undo : store undo information AFTER running code
 
         """
+        if isinstance(code, (list, tuple)):
+            code = '\n'.join(code)
 
         start_time = datetime.datetime.now()
         self._model_has_changed = True

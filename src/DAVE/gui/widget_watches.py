@@ -69,6 +69,7 @@ class WidgetWatches(guiDockWidget):
 
         if event in [guiEventType.FULL_UPDATE,
                      guiEventType.MODEL_STATE_CHANGED,
+                     guiEventType.MODEL_STEP_ACTIVATED,
                      guiEventType.SELECTED_NODE_MODIFIED]:
             self.fill()
 
@@ -100,7 +101,7 @@ class WidgetWatches(guiDockWidget):
                 print('Nothing changed')
                 return
         except: # may fail if results are arrays
-            pass
+            warnings.warn('Comparison errored, can not check if watches changed')
 
         self.setUpdatesEnabled(False)
 
@@ -148,7 +149,9 @@ class WidgetWatches(guiDockWidget):
                     break
                 i+=1
 
-            node.watches[name] = Watch()
+            # node.watches[name] = Watch()
+            code = f"w = s['{node.name}'].watches['{name}'] = Watch()"
+            self.guiRunCodeCallback(code, guiEventType.NOTHING)
 
             if not self.edit_watch(node.watches[name], node, key=name):
                 node.watches.pop(name) # remove if cancelled
@@ -178,8 +181,6 @@ class WidgetWatches(guiDockWidget):
         ui.tbEvaluate.setText(watch.evaluate)
         ui.tbCondition.setText(watch.condition)
         ui.sbDecimals.setValue(watch.decimals)
-
-
 
         def run_watch():
             evaluate = ui.tbEvaluate.text()
@@ -214,16 +215,20 @@ class WidgetWatches(guiDockWidget):
 
         result = dialog.exec_()  # 1 or 0 (cancel)
         if result:
+
+            code = []
             new_key = ui.tbName.text()
             if new_key != key:
-                node.watches[new_key] = node.watches.pop(key)
+                code.append(f"s['{node.name}'].watches.pop('{key}') # remove old key")
 
-            w = node.watches[new_key]
-            w.evaluate = ui.tbEvaluate.text()
-            w.condition = ui.tbCondition.text()
-            w.decimals = ui.sbDecimals.value()
+            code.append(f"s['{node.name}'].watches['{new_key}'] = Watch(evaluate = '{ui.tbEvaluate.text()}',\n      condition = '{ui.tbCondition.text()}',\n      decimals = {ui.sbDecimals.value()})")
+            self.guiRunCodeCallback(code, guiEventType.NOTHING)
 
             self.fill()
+
+
+
+            #
 
         return result
 
