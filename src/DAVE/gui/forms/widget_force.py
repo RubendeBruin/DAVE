@@ -1,162 +1,214 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_force.ui',
-# licensing of 'widget_force.ui' applies.
-#
-# Created: Thu Oct 31 16:19:27 2019
-#      by: pyside2-uic  running on PySide2 5.13.1
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'widget_force.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.6
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtCore import *  # type: ignore
+from PySide2.QtGui import *  # type: ignore
+from PySide2.QtWidgets import *  # type: ignore
+
+from DAVE.gui.helpers.qnodepicker import QNodePicker
+
 
 class Ui_widget_force(object):
     def setupUi(self, widget_force):
-        widget_force.setObjectName("widget_force")
-        widget_force.resize(315, 782)
-        widget_force.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
-        self.verticalLayout = QtWidgets.QVBoxLayout(widget_force)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.label_7 = QtWidgets.QLabel(widget_force)
+        if not widget_force.objectName():
+            widget_force.setObjectName(u"widget_force")
+        widget_force.resize(315, 288)
+        widget_force.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
+        self.verticalLayout = QVBoxLayout(widget_force)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.widget = QWidget(widget_force)
+        self.widget.setObjectName(u"widget")
+        self.horizontalLayout = QHBoxLayout(self.widget)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.label_10 = QLabel(self.widget)
+        self.label_10.setObjectName(u"label_10")
+        sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_10.sizePolicy().hasHeightForWidth())
+        self.label_10.setSizePolicy(sizePolicy)
+
+        self.horizontalLayout.addWidget(self.label_10)
+
+        self.widgetParent = QNodePicker(self.widget)
+        self.widgetParent.setObjectName(u"widgetParent")
+        sizePolicy1 = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Preferred)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.widgetParent.sizePolicy().hasHeightForWidth())
+        self.widgetParent.setSizePolicy(sizePolicy1)
+
+        self.horizontalLayout.addWidget(self.widgetParent)
+
+
+        self.verticalLayout.addWidget(self.widget)
+
+        self.label_7 = QLabel(widget_force)
+        self.label_7.setObjectName(u"label_7")
         self.label_7.setWordWrap(True)
-        self.label_7.setObjectName("label_7")
+
         self.verticalLayout.addWidget(self.label_7)
-        self.frame = QtWidgets.QFrame(widget_force)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
-        self.frame.setSizePolicy(sizePolicy)
-        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame.setObjectName("frame")
-        self.formLayout = QtWidgets.QFormLayout(self.frame)
-        self.formLayout.setObjectName("formLayout")
-        self.label = QtWidgets.QLabel(self.frame)
-        self.label.setObjectName("label")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label)
-        self.doubleSpinBox_1 = QtWidgets.QDoubleSpinBox(self.frame)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.doubleSpinBox_1.sizePolicy().hasHeightForWidth())
-        self.doubleSpinBox_1.setSizePolicy(sizePolicy)
+
+        self.frame = QFrame(widget_force)
+        self.frame.setObjectName(u"frame")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
+        self.frame.setSizePolicy(sizePolicy2)
+        self.frame.setFrameShape(QFrame.StyledPanel)
+        self.frame.setFrameShadow(QFrame.Raised)
+        self.formLayout = QFormLayout(self.frame)
+        self.formLayout.setObjectName(u"formLayout")
+        self.label = QLabel(self.frame)
+        self.label.setObjectName(u"label")
+
+        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.label)
+
+        self.doubleSpinBox_1 = QDoubleSpinBox(self.frame)
+        self.doubleSpinBox_1.setObjectName(u"doubleSpinBox_1")
+        sizePolicy2.setHeightForWidth(self.doubleSpinBox_1.sizePolicy().hasHeightForWidth())
+        self.doubleSpinBox_1.setSizePolicy(sizePolicy2)
         self.doubleSpinBox_1.setDecimals(3)
-        self.doubleSpinBox_1.setMinimum(-999999999999.0)
-        self.doubleSpinBox_1.setMaximum(99999999999999.0)
-        self.doubleSpinBox_1.setObjectName("doubleSpinBox_1")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.doubleSpinBox_1)
-        self.label_2 = QtWidgets.QLabel(self.frame)
-        self.label_2.setObjectName("label_2")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_2)
-        self.doubleSpinBox_2 = QtWidgets.QDoubleSpinBox(self.frame)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.doubleSpinBox_2.sizePolicy().hasHeightForWidth())
-        self.doubleSpinBox_2.setSizePolicy(sizePolicy)
+        self.doubleSpinBox_1.setMinimum(-999999999999.000000000000000)
+        self.doubleSpinBox_1.setMaximum(99999999999999.000000000000000)
+
+        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.doubleSpinBox_1)
+
+        self.label_2 = QLabel(self.frame)
+        self.label_2.setObjectName(u"label_2")
+
+        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.label_2)
+
+        self.doubleSpinBox_2 = QDoubleSpinBox(self.frame)
+        self.doubleSpinBox_2.setObjectName(u"doubleSpinBox_2")
+        sizePolicy2.setHeightForWidth(self.doubleSpinBox_2.sizePolicy().hasHeightForWidth())
+        self.doubleSpinBox_2.setSizePolicy(sizePolicy2)
         self.doubleSpinBox_2.setDecimals(3)
-        self.doubleSpinBox_2.setMinimum(-999999999999.0)
-        self.doubleSpinBox_2.setMaximum(99999999999999.0)
-        self.doubleSpinBox_2.setObjectName("doubleSpinBox_2")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.doubleSpinBox_2)
-        self.label_3 = QtWidgets.QLabel(self.frame)
-        self.label_3.setObjectName("label_3")
-        self.formLayout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_3)
-        self.doubleSpinBox_3 = QtWidgets.QDoubleSpinBox(self.frame)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.doubleSpinBox_3.sizePolicy().hasHeightForWidth())
-        self.doubleSpinBox_3.setSizePolicy(sizePolicy)
+        self.doubleSpinBox_2.setMinimum(-999999999999.000000000000000)
+        self.doubleSpinBox_2.setMaximum(99999999999999.000000000000000)
+
+        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.doubleSpinBox_2)
+
+        self.label_3 = QLabel(self.frame)
+        self.label_3.setObjectName(u"label_3")
+
+        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.label_3)
+
+        self.doubleSpinBox_3 = QDoubleSpinBox(self.frame)
+        self.doubleSpinBox_3.setObjectName(u"doubleSpinBox_3")
+        sizePolicy2.setHeightForWidth(self.doubleSpinBox_3.sizePolicy().hasHeightForWidth())
+        self.doubleSpinBox_3.setSizePolicy(sizePolicy2)
         self.doubleSpinBox_3.setDecimals(3)
-        self.doubleSpinBox_3.setMinimum(-999999999999.0)
-        self.doubleSpinBox_3.setMaximum(99999999999999.0)
-        self.doubleSpinBox_3.setObjectName("doubleSpinBox_3")
-        self.formLayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.doubleSpinBox_3)
+        self.doubleSpinBox_3.setMinimum(-999999999999.000000000000000)
+        self.doubleSpinBox_3.setMaximum(99999999999999.000000000000000)
+
+        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.doubleSpinBox_3)
+
+
         self.verticalLayout.addWidget(self.frame)
-        self.label_9 = QtWidgets.QLabel(widget_force)
+
+        self.label_9 = QLabel(widget_force)
+        self.label_9.setObjectName(u"label_9")
         self.label_9.setWordWrap(True)
-        self.label_9.setObjectName("label_9")
+
         self.verticalLayout.addWidget(self.label_9)
-        self.frame_2 = QtWidgets.QFrame(widget_force)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.frame_2.sizePolicy().hasHeightForWidth())
-        self.frame_2.setSizePolicy(sizePolicy)
-        self.frame_2.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_2.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame_2.setObjectName("frame_2")
-        self.formLayout_2 = QtWidgets.QFormLayout(self.frame_2)
-        self.formLayout_2.setObjectName("formLayout_2")
-        self.doubleSpinBox_5 = QtWidgets.QDoubleSpinBox(self.frame_2)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.doubleSpinBox_5.sizePolicy().hasHeightForWidth())
-        self.doubleSpinBox_5.setSizePolicy(sizePolicy)
+
+        self.frame_2 = QFrame(widget_force)
+        self.frame_2.setObjectName(u"frame_2")
+        sizePolicy2.setHeightForWidth(self.frame_2.sizePolicy().hasHeightForWidth())
+        self.frame_2.setSizePolicy(sizePolicy2)
+        self.frame_2.setFrameShape(QFrame.StyledPanel)
+        self.frame_2.setFrameShadow(QFrame.Raised)
+        self.formLayout_2 = QFormLayout(self.frame_2)
+        self.formLayout_2.setObjectName(u"formLayout_2")
+        self.doubleSpinBox_5 = QDoubleSpinBox(self.frame_2)
+        self.doubleSpinBox_5.setObjectName(u"doubleSpinBox_5")
+        sizePolicy2.setHeightForWidth(self.doubleSpinBox_5.sizePolicy().hasHeightForWidth())
+        self.doubleSpinBox_5.setSizePolicy(sizePolicy2)
         self.doubleSpinBox_5.setDecimals(3)
-        self.doubleSpinBox_5.setMinimum(-999999999999.0)
-        self.doubleSpinBox_5.setMaximum(99999999999999.0)
-        self.doubleSpinBox_5.setObjectName("doubleSpinBox_5")
-        self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.doubleSpinBox_5)
-        self.label_5 = QtWidgets.QLabel(self.frame_2)
-        self.label_5.setObjectName("label_5")
-        self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_5)
-        self.label_6 = QtWidgets.QLabel(self.frame_2)
-        self.label_6.setObjectName("label_6")
-        self.formLayout_2.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_6)
-        self.doubleSpinBox_6 = QtWidgets.QDoubleSpinBox(self.frame_2)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.doubleSpinBox_6.sizePolicy().hasHeightForWidth())
-        self.doubleSpinBox_6.setSizePolicy(sizePolicy)
+        self.doubleSpinBox_5.setMinimum(-999999999999.000000000000000)
+        self.doubleSpinBox_5.setMaximum(99999999999999.000000000000000)
+
+        self.formLayout_2.setWidget(2, QFormLayout.FieldRole, self.doubleSpinBox_5)
+
+        self.label_5 = QLabel(self.frame_2)
+        self.label_5.setObjectName(u"label_5")
+
+        self.formLayout_2.setWidget(2, QFormLayout.LabelRole, self.label_5)
+
+        self.label_6 = QLabel(self.frame_2)
+        self.label_6.setObjectName(u"label_6")
+
+        self.formLayout_2.setWidget(3, QFormLayout.LabelRole, self.label_6)
+
+        self.doubleSpinBox_6 = QDoubleSpinBox(self.frame_2)
+        self.doubleSpinBox_6.setObjectName(u"doubleSpinBox_6")
+        sizePolicy2.setHeightForWidth(self.doubleSpinBox_6.sizePolicy().hasHeightForWidth())
+        self.doubleSpinBox_6.setSizePolicy(sizePolicy2)
         self.doubleSpinBox_6.setDecimals(3)
-        self.doubleSpinBox_6.setMinimum(-999999999999.0)
-        self.doubleSpinBox_6.setMaximum(99999999999999.0)
-        self.doubleSpinBox_6.setObjectName("doubleSpinBox_6")
-        self.formLayout_2.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.doubleSpinBox_6)
-        self.label_4 = QtWidgets.QLabel(self.frame_2)
-        self.label_4.setObjectName("label_4")
-        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_4)
-        self.doubleSpinBox_4 = QtWidgets.QDoubleSpinBox(self.frame_2)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.doubleSpinBox_4.sizePolicy().hasHeightForWidth())
-        self.doubleSpinBox_4.setSizePolicy(sizePolicy)
+        self.doubleSpinBox_6.setMinimum(-999999999999.000000000000000)
+        self.doubleSpinBox_6.setMaximum(99999999999999.000000000000000)
+
+        self.formLayout_2.setWidget(3, QFormLayout.FieldRole, self.doubleSpinBox_6)
+
+        self.label_4 = QLabel(self.frame_2)
+        self.label_4.setObjectName(u"label_4")
+
+        self.formLayout_2.setWidget(1, QFormLayout.LabelRole, self.label_4)
+
+        self.doubleSpinBox_4 = QDoubleSpinBox(self.frame_2)
+        self.doubleSpinBox_4.setObjectName(u"doubleSpinBox_4")
+        sizePolicy2.setHeightForWidth(self.doubleSpinBox_4.sizePolicy().hasHeightForWidth())
+        self.doubleSpinBox_4.setSizePolicy(sizePolicy2)
         self.doubleSpinBox_4.setDecimals(3)
-        self.doubleSpinBox_4.setMinimum(-999999999999.0)
-        self.doubleSpinBox_4.setMaximum(99999999999999.0)
-        self.doubleSpinBox_4.setObjectName("doubleSpinBox_4")
-        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.doubleSpinBox_4)
+        self.doubleSpinBox_4.setMinimum(-999999999999.000000000000000)
+        self.doubleSpinBox_4.setMaximum(99999999999999.000000000000000)
+
+        self.formLayout_2.setWidget(1, QFormLayout.FieldRole, self.doubleSpinBox_4)
+
+
         self.verticalLayout.addWidget(self.frame_2)
-        self.label_8 = QtWidgets.QLabel(widget_force)
+
+        self.label_8 = QLabel(widget_force)
+        self.label_8.setObjectName(u"label_8")
         self.label_8.setWordWrap(True)
-        self.label_8.setObjectName("label_8")
+
         self.verticalLayout.addWidget(self.label_8)
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.verticalLayout.addItem(self.verticalSpacer)
+
+        QWidget.setTabOrder(self.doubleSpinBox_1, self.doubleSpinBox_2)
+        QWidget.setTabOrder(self.doubleSpinBox_2, self.doubleSpinBox_3)
+        QWidget.setTabOrder(self.doubleSpinBox_3, self.doubleSpinBox_4)
+        QWidget.setTabOrder(self.doubleSpinBox_4, self.doubleSpinBox_5)
+        QWidget.setTabOrder(self.doubleSpinBox_5, self.doubleSpinBox_6)
 
         self.retranslateUi(widget_force)
-        QtCore.QMetaObject.connectSlotsByName(widget_force)
-        widget_force.setTabOrder(self.doubleSpinBox_1, self.doubleSpinBox_2)
-        widget_force.setTabOrder(self.doubleSpinBox_2, self.doubleSpinBox_3)
-        widget_force.setTabOrder(self.doubleSpinBox_3, self.doubleSpinBox_4)
-        widget_force.setTabOrder(self.doubleSpinBox_4, self.doubleSpinBox_5)
-        widget_force.setTabOrder(self.doubleSpinBox_5, self.doubleSpinBox_6)
+
+        QMetaObject.connectSlotsByName(widget_force)
+    # setupUi
 
     def retranslateUi(self, widget_force):
-        widget_force.setWindowTitle(QtWidgets.QApplication.translate("widget_force", "Form", None, -1))
-        self.label_7.setText(QtWidgets.QApplication.translate("widget_force", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Force</span></p></body></html>", None, -1))
-        self.label.setText(QtWidgets.QApplication.translate("widget_force", "X", None, -1))
-        self.label_2.setText(QtWidgets.QApplication.translate("widget_force", "Y", None, -1))
-        self.label_3.setText(QtWidgets.QApplication.translate("widget_force", "Z", None, -1))
-        self.label_9.setText(QtWidgets.QApplication.translate("widget_force", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Moment</span></p></body></html>", None, -1))
-        self.label_5.setText(QtWidgets.QApplication.translate("widget_force", "Y", None, -1))
-        self.label_6.setText(QtWidgets.QApplication.translate("widget_force", "Z", None, -1))
-        self.label_4.setText(QtWidgets.QApplication.translate("widget_force", "X", None, -1))
-        self.label_8.setText(QtWidgets.QApplication.translate("widget_force", "<html><head/><body><p>Force components are defined in global axis.</p></body></html>", None, -1))
+        widget_force.setWindowTitle(QCoreApplication.translate("widget_force", u"Form", None))
+        self.label_10.setText(QCoreApplication.translate("widget_force", u"Parent", None))
+        self.label_7.setText(QCoreApplication.translate("widget_force", u"<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Force</span></p></body></html>", None))
+        self.label.setText(QCoreApplication.translate("widget_force", u"X", None))
+        self.label_2.setText(QCoreApplication.translate("widget_force", u"Y", None))
+        self.label_3.setText(QCoreApplication.translate("widget_force", u"Z", None))
+        self.label_9.setText(QCoreApplication.translate("widget_force", u"<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Moment</span></p></body></html>", None))
+        self.label_5.setText(QCoreApplication.translate("widget_force", u"Y", None))
+        self.label_6.setText(QCoreApplication.translate("widget_force", u"Z", None))
+        self.label_4.setText(QCoreApplication.translate("widget_force", u"X", None))
+        self.label_8.setText(QCoreApplication.translate("widget_force", u"<html><head/><body><p>Force components are defined in global axis.</p></body></html>", None))
+    # retranslateUi
 

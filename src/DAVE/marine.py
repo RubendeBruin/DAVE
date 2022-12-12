@@ -75,9 +75,11 @@ def linearize_buoyancy(scene : Scene, node : Buoyancy = None, delta_draft=1e-3, 
 
 
 
-def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
+def calculate_linearized_buoyancy_props(scene : Scene, nodes : Buoyancy or list[Buoyancy], delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
     """Obtains the linearized buoyancy properties of a buoyant shape. The properties are derived for the current
     vertical position of the parent body (draft at origin) and even-keel.
+
+
 
     COFX, COFY and kHeave are evaluated by increasing the draft by delta_draft.
     BMT, BML are evaluated by increasing the roll/pitch by delta_roll/delta_pitch [deg]. So roll to sb, pitch to bow.
@@ -93,26 +95,39 @@ def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_dr
         displacement_kN,False,Displacement in [kN] when waterline is at waterline-elevation
     """
 
-    if not isinstance(node, Buoyancy):
-        raise ValueError(f"Node {node.name} should be a 'buoyancy' type of node but is a {type(node)}.")
+    if isinstance(nodes, Buoyancy):
+        nodes = [nodes]
 
+    for node in nodes:
+        if not isinstance(node, Buoyancy):
+            raise ValueError(f"Node {node.name} should be a 'buoyancy' type of node but is a {type(node)}.")
 
 
     s = Scene()
     s.resources_paths = scene.resources_paths
-    a = s.new_frame(node.parent.name, fixed=True)
-    a.z = node.parent.global_position[2]
 
-    exec(node.give_python_code())  # place a copy of the buoyancy node in scene "s"
+    # Note that parent is created at 0,0,0 and under zero rotations
+    # that means that the global axis system is the local axis system at target draft and even keel
 
-    node = s[node.name]
+
+    a = s.new_frame(nodes[0].parent.name, fixed=True)
+    a.z = nodes[0].parent.global_position[2]
+
+    for node in nodes:
+        exec(node.give_python_code())  # place a copy of the buoyancy node in scene "s"
+
+
 
     # get buoyancy
     s.update()
 
-    displacement_m3 = node.displacement
-    cob = node.cob_local
-    cob_global = node.cob
+    n2 = [s[node.name] for node in nodes] # nodes in new scene
+
+    del nodes # to make sure it is not used again
+
+    displacement_m3 = np.sum([node.displacement for node in n2])
+    cob_local = np.sum([np.array(node.cob_local) * node.displacement for node in n2], axis=0) / displacement_m3
+    cob_global = np.sum([np.array(node.cob) * node.displacement for node in n2], axis=0) / displacement_m3
 
     # increase draft
     old_z = a.z
@@ -120,7 +135,7 @@ def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_dr
     a.z = a.z - delta_draft
     s.update()
 
-    new_disp =  node.displacement
+    new_disp =  np.sum([node.displacement for node in n2])
     delta_disp = new_disp - displacement_m3
 
     if abs(delta_disp) < 1e-6:
@@ -134,8 +149,10 @@ def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_dr
     # calcualte cofx and cofy from change of cob position
     # x_old * x_disp + cofx * dis_change = x_new * dis_new
 
-    COFX = (node.cob_local[0] * new_disp - cob[0] * displacement_m3) / delta_disp
-    COFY = (node.cob_local[1] * new_disp - cob[1] * displacement_m3) / delta_disp
+    new_cob_local = np.sum([np.array(node.cob_local) * node.displacement for node in n2], axis=0) / new_disp
+
+    COFX = (new_cob_local[0] * new_disp - cob_local[0] * displacement_m3) / delta_disp
+    COFY = (new_cob_local[1] * new_disp - cob_local[1] * displacement_m3) / delta_disp
 
     a.z = old_z # restore draft
 
@@ -146,19 +163,23 @@ def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_dr
 
     rot.rotation = (delta_roll, 0,0) # impose heel
     s.update()
+    new_cob_global = np.sum([np.array(node.cob) * node.displacement for node in n2], axis=0) / np.sum(
+        [node.displacement for node in n2])
 
-    delta_MT = node.cob[1] - cob_global[1]
+    delta_MT = new_cob_global[1] - cob_global[1]  # Note that we're working in a copy where the parent axis is under zero heading
 
     rot.rotation = (0, delta_pitch, 0)  # impose trim
     s.update()
+    new_cob_global = np.sum([np.array(node.cob) * node.displacement for node in n2], axis=0) / np.sum(
+        [node.displacement for node in n2])
 
-    delta_ML = node.cob[0] - cob_global[0]
+    delta_ML = new_cob_global[0] - cob_global[0]
 
     BMT = -delta_MT / np.sin(np.deg2rad(delta_roll))
     BML = delta_ML / np.sin(np.deg2rad(delta_pitch))
 
     # assemble resuls in a dict
-    results = {'cob': cob,
+    results = {'cob': cob_local,
                'BMT': BMT,
                'BML': BML,
                'COFX' : COFX,
@@ -173,46 +194,82 @@ def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_dr
 
     return results
 
-def carene_table(scene, buoyancy_node,
+def carene_table(scene, buoyancy_nodes,
                  stepsize=0.25,
                  delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
 
     """Creates a carene table for buoyancy node.
 
-    DRAFT refers the origin the buoyancy node.
+    DRAFT refers the origin the buoyancy node. That is (0,0,0) the same as the origin of its parent.
 
     Args:
         scene: reference to Scene object
-        buoyancy_node: reference to Buoyancy node in scene
+        buoyancy_node: reference to Buoyancy node in scene OR a Frame OR a list of Buoyancy nodes**
         draft_min,draft_max: Draft range
         stepsize: Stepsize for drafts
 
         delta_draft, delta_roll, delta_pitch: deltas used for derivation of linearized properties (see calculate_linearized_buoyancy_props)
+
+    **
+    - If Buoyancy is a list, then all buoyancy nodes shall have the same parent.
+
+    - If Buoyancy is a Frame or RigidBody then all *direct* Buoyancy type children of that node are used. That means: all nodes of type
+    Buoyancy that have the provided Frame as parent
 
     Returns:
         Pandas dataframe
 
     """
 
-    # Create a new scene with only this buoyancy node and a frame that it is on
+    if isinstance(buoyancy_nodes, Buoyancy):
+        buoyancy_nodes = [buoyancy_nodes]
 
-    if not isinstance(buoyancy_node, Buoyancy):
-        raise ValueError(f"Node {buoyancy_node.name} should be a 'buoyancy' type of node but is a {type(buoyancy_node)}.")
+    if isinstance(buoyancy_nodes, Frame):
+        nodes = scene.nodes_with_parent(buoyancy_nodes, recursive=False)
+        bns = [node for node in nodes if isinstance(node, Buoyancy)]
+
+        if not bns:
+            raise ValueError(f"There are no Buoyancy Shapes with parent {buoyancy_nodes.name}")
+
+        buoyancy_nodes = bns
+
+    # Create a new scene with only this buoyancy node and a frame that it is on
+    for buoyancy_node in buoyancy_nodes:
+        if isinstance(buoyancy_node, Frame):
+            raise ValueError("carene_table: If a Frame is provided then it should not be in a list")
+        if not isinstance(buoyancy_node, Buoyancy):
+            raise ValueError(f"Node {buoyancy_node.name} should be a 'buoyancy' type of node but is a {type(buoyancy_node)}.")
+
+    # Check that all have the same parent
+    parent = buoyancy_nodes[0].parent
+    for bn in buoyancy_nodes:
+        assert bn.parent == parent, "All nodes need to have the same parent"
 
     s = Scene()
     s.resources_paths = scene.resources_paths
-    parent_node = s.new_frame(buoyancy_node.parent.name, fixed=True)
-
-    s.run_code(buoyancy_node.give_python_code())  # place a copy of the buoyancy node in scene "s"
-
-    node = s[buoyancy_node.name]
+    parent_node = s.new_frame(buoyancy_nodes[0].parent.name, fixed=True)
 
 
-    # now we have a frame (a) at 0,0,0 / 0,0,0
-    # with a buoyancy shape attached to it
+    for buoyancy_node in buoyancy_nodes:
+        s.run_code(buoyancy_node.give_python_code())  # place a copy of the buoyancy node in scene "s"
 
-    # determine range
-    xn, xp, yn, yp, zn, zp = node.trimesh.get_extends()
+    zn = 1e10
+    zp = -1e10
+
+
+    for bn in buoyancy_nodes:
+        node = s[bn.name]
+
+        # now we have a frame (a) at 0,0,0 / 0,0,0
+        # with a buoyancy shape attached to it
+
+        # determine range
+
+        xn, xp, yn, yp, zzn, zzp = node.trimesh.get_extends()
+
+        zn = min(zn, zzn)
+        zp = max(zp, zzp)
+
 
     deepest_draft = -zp # negative of the highest vertex
     shallowest_draft = -zn # negative of the lowest vertex
@@ -240,12 +297,14 @@ def carene_table(scene, buoyancy_node,
 
     import pandas as pd
 
+    nodes = [s[node.name] for node in buoyancy_nodes] # nodes in copy of s
+
     a = []
     for z in reversed(drafts):
         print(z)
 
         parent_node.z = z
-        r = calculate_linearized_buoyancy_props(s, node, delta_roll=delta_roll, delta_pitch=delta_pitch, delta_draft=delta_draft)
+        r = calculate_linearized_buoyancy_props(s, nodes, delta_roll=delta_roll, delta_pitch=delta_pitch, delta_draft=delta_draft)
 
         if r is None:
             continue
@@ -268,6 +327,7 @@ def carene_table(scene, buoyancy_node,
                             'Awl': 'Awl [m2]'})
 
     df = df.set_index('Draft [m]')
+    df.attrs['shape_node_names'] = [node.name for node in nodes]
 
     return df.drop(columns=['waterline', 'displacement_kN','kHeave'])
 

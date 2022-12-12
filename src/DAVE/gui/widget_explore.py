@@ -82,16 +82,16 @@ class WidgetExplore(guiDockWidget):
 
         # s['node'].property
 
-        set = self.ui.editSet.text()
-        set = set.split('.')
-        node = set[0][3:-2]
-        property = set[1]
+        change = self.ui.editSet.text()
 
-        code = 's.goal_seek(evaluate="{}",\n    target={},\n    change_property="{}",\n    change_node="{}")'.format(
+        if "," not in change: # to be treated as a string
+            change = f'"{change}"'
+
+
+        code = f's.goal_seek(evaluate="{self.ui.editEvaluate.toPlainText()}",\n    target={self.ui.editTarget.value()},\n    change={change})'.format(
             self.ui.editEvaluate.toPlainText(),
             self.ui.editTarget.value(),
-            property,
-            node)
+            change)
 
         self.guiRunCodeCallback(code, guiEventType.MODEL_STATE_CHANGED)
 

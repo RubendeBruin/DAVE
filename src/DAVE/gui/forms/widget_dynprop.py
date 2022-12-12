@@ -1,83 +1,107 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_dynprop.ui',
-# licensing of 'widget_dynprop.ui' applies.
-#
-# Created: Fri Nov 29 16:13:01 2019
-#      by: pyside2-uic  running on PySide2 5.13.1
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'widget_dynprop.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.6
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtCore import *  # type: ignore
+from PySide2.QtGui import *  # type: ignore
+from PySide2.QtWidgets import *  # type: ignore
+
 
 class Ui_widget_dynprop(object):
     def setupUi(self, widget_dynprop):
-        widget_dynprop.setObjectName("widget_dynprop")
+        if not widget_dynprop.objectName():
+            widget_dynprop.setObjectName(u"widget_dynprop")
         widget_dynprop.resize(1293, 1074)
-        self.horizontalLayout = QtWidgets.QHBoxLayout(widget_dynprop)
+        self.horizontalLayout = QHBoxLayout(widget_dynprop)
         self.horizontalLayout.setSpacing(0)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.widget = QtWidgets.QWidget(widget_dynprop)
-        self.widget.setObjectName("widget")
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.widget)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.widget = QWidget(widget_dynprop)
+        self.widget.setObjectName(u"widget")
+        self.verticalLayout_2 = QVBoxLayout(self.widget)
         self.verticalLayout_2.setSpacing(9)
-        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.lblChangeDynamicInfo = QtWidgets.QLabel(self.widget)
-        self.lblChangeDynamicInfo.setObjectName("lblChangeDynamicInfo")
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.lblChangeDynamicInfo = QLabel(self.widget)
+        self.lblChangeDynamicInfo.setObjectName(u"lblChangeDynamicInfo")
+
         self.verticalLayout_2.addWidget(self.lblChangeDynamicInfo)
-        self.tableDynProp = QtWidgets.QTableWidget(self.widget)
-        self.tableDynProp.setObjectName("tableDynProp")
-        self.tableDynProp.setColumnCount(13)
-        self.tableDynProp.setRowCount(0)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(0, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(1, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(2, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(3, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(4, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(5, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(6, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(7, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(8, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(9, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(10, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(11, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableDynProp.setHorizontalHeaderItem(12, item)
+
+        self.tableDynProp = QTableWidget(self.widget)
+        if (self.tableDynProp.columnCount() < 13):
+            self.tableDynProp.setColumnCount(13)
+        __qtablewidgetitem = QTableWidgetItem()
+        self.tableDynProp.setHorizontalHeaderItem(0, __qtablewidgetitem)
+        __qtablewidgetitem1 = QTableWidgetItem()
+        self.tableDynProp.setHorizontalHeaderItem(1, __qtablewidgetitem1)
+        __qtablewidgetitem2 = QTableWidgetItem()
+        self.tableDynProp.setHorizontalHeaderItem(2, __qtablewidgetitem2)
+        __qtablewidgetitem3 = QTableWidgetItem()
+        self.tableDynProp.setHorizontalHeaderItem(3, __qtablewidgetitem3)
+        __qtablewidgetitem4 = QTableWidgetItem()
+        self.tableDynProp.setHorizontalHeaderItem(4, __qtablewidgetitem4)
+        __qtablewidgetitem5 = QTableWidgetItem()
+        self.tableDynProp.setHorizontalHeaderItem(5, __qtablewidgetitem5)
+        __qtablewidgetitem6 = QTableWidgetItem()
+        self.tableDynProp.setHorizontalHeaderItem(6, __qtablewidgetitem6)
+        __qtablewidgetitem7 = QTableWidgetItem()
+        self.tableDynProp.setHorizontalHeaderItem(7, __qtablewidgetitem7)
+        __qtablewidgetitem8 = QTableWidgetItem()
+        self.tableDynProp.setHorizontalHeaderItem(8, __qtablewidgetitem8)
+        __qtablewidgetitem9 = QTableWidgetItem()
+        self.tableDynProp.setHorizontalHeaderItem(9, __qtablewidgetitem9)
+        __qtablewidgetitem10 = QTableWidgetItem()
+        self.tableDynProp.setHorizontalHeaderItem(10, __qtablewidgetitem10)
+        __qtablewidgetitem11 = QTableWidgetItem()
+        self.tableDynProp.setHorizontalHeaderItem(11, __qtablewidgetitem11)
+        __qtablewidgetitem12 = QTableWidgetItem()
+        self.tableDynProp.setHorizontalHeaderItem(12, __qtablewidgetitem12)
+        self.tableDynProp.setObjectName(u"tableDynProp")
         self.tableDynProp.horizontalHeader().setMinimumSectionSize(20)
         self.tableDynProp.verticalHeader().setVisible(True)
+
         self.verticalLayout_2.addWidget(self.tableDynProp)
+
+
         self.horizontalLayout.addWidget(self.widget)
 
+
         self.retranslateUi(widget_dynprop)
-        QtCore.QMetaObject.connectSlotsByName(widget_dynprop)
+
+        QMetaObject.connectSlotsByName(widget_dynprop)
+    # setupUi
 
     def retranslateUi(self, widget_dynprop):
-        widget_dynprop.setWindowTitle(QtWidgets.QApplication.translate("widget_dynprop", "Form", None, -1))
-        self.lblChangeDynamicInfo.setText(QtWidgets.QApplication.translate("widget_dynprop", "Note: For RigidBody type nodes the inertia properties are coupled to the weight properties.\n"
-"Changing the intertia properties changes the weight properties as well", None, -1))
-        self.tableDynProp.horizontalHeaderItem(0).setText(QtWidgets.QApplication.translate("widget_dynprop", "F", None, -1))
-        self.tableDynProp.horizontalHeaderItem(1).setText(QtWidgets.QApplication.translate("widget_dynprop", "I", None, -1))
-        self.tableDynProp.horizontalHeaderItem(2).setText(QtWidgets.QApplication.translate("widget_dynprop", "X", None, -1))
-        self.tableDynProp.horizontalHeaderItem(3).setText(QtWidgets.QApplication.translate("widget_dynprop", "E", None, -1))
-        self.tableDynProp.horizontalHeaderItem(4).setText(QtWidgets.QApplication.translate("widget_dynprop", "D", None, -1))
-        self.tableDynProp.horizontalHeaderItem(6).setText(QtWidgets.QApplication.translate("widget_dynprop", "Inertia (weight)", None, -1))
-        self.tableDynProp.horizontalHeaderItem(7).setText(QtWidgets.QApplication.translate("widget_dynprop", "x (cog)", None, -1))
-        self.tableDynProp.horizontalHeaderItem(8).setText(QtWidgets.QApplication.translate("widget_dynprop", "y (cog)", None, -1))
-        self.tableDynProp.horizontalHeaderItem(9).setText(QtWidgets.QApplication.translate("widget_dynprop", " (cog)", None, -1))
-        self.tableDynProp.horizontalHeaderItem(10).setText(QtWidgets.QApplication.translate("widget_dynprop", "rxx", None, -1))
-        self.tableDynProp.horizontalHeaderItem(11).setText(QtWidgets.QApplication.translate("widget_dynprop", "ryy", None, -1))
-        self.tableDynProp.horizontalHeaderItem(12).setText(QtWidgets.QApplication.translate("widget_dynprop", "rzz", None, -1))
+        widget_dynprop.setWindowTitle(QCoreApplication.translate("widget_dynprop", u"Form", None))
+        self.lblChangeDynamicInfo.setText(QCoreApplication.translate("widget_dynprop", u"Note: For RigidBody type nodes the inertia properties are coupled to the weight properties.\n"
+"Changing the intertia properties changes the weight properties as well", None))
+        ___qtablewidgetitem = self.tableDynProp.horizontalHeaderItem(0)
+        ___qtablewidgetitem.setText(QCoreApplication.translate("widget_dynprop", u"F", None));
+        ___qtablewidgetitem1 = self.tableDynProp.horizontalHeaderItem(1)
+        ___qtablewidgetitem1.setText(QCoreApplication.translate("widget_dynprop", u"I", None));
+        ___qtablewidgetitem2 = self.tableDynProp.horizontalHeaderItem(2)
+        ___qtablewidgetitem2.setText(QCoreApplication.translate("widget_dynprop", u"X", None));
+        ___qtablewidgetitem3 = self.tableDynProp.horizontalHeaderItem(3)
+        ___qtablewidgetitem3.setText(QCoreApplication.translate("widget_dynprop", u"E", None));
+        ___qtablewidgetitem4 = self.tableDynProp.horizontalHeaderItem(4)
+        ___qtablewidgetitem4.setText(QCoreApplication.translate("widget_dynprop", u"D", None));
+        ___qtablewidgetitem5 = self.tableDynProp.horizontalHeaderItem(6)
+        ___qtablewidgetitem5.setText(QCoreApplication.translate("widget_dynprop", u"Inertia (weight)", None));
+        ___qtablewidgetitem6 = self.tableDynProp.horizontalHeaderItem(7)
+        ___qtablewidgetitem6.setText(QCoreApplication.translate("widget_dynprop", u"x (cog)", None));
+        ___qtablewidgetitem7 = self.tableDynProp.horizontalHeaderItem(8)
+        ___qtablewidgetitem7.setText(QCoreApplication.translate("widget_dynprop", u"y (cog)", None));
+        ___qtablewidgetitem8 = self.tableDynProp.horizontalHeaderItem(9)
+        ___qtablewidgetitem8.setText(QCoreApplication.translate("widget_dynprop", u" (cog)", None));
+        ___qtablewidgetitem9 = self.tableDynProp.horizontalHeaderItem(10)
+        ___qtablewidgetitem9.setText(QCoreApplication.translate("widget_dynprop", u"rxx", None));
+        ___qtablewidgetitem10 = self.tableDynProp.horizontalHeaderItem(11)
+        ___qtablewidgetitem10.setText(QCoreApplication.translate("widget_dynprop", u"ryy", None));
+        ___qtablewidgetitem11 = self.tableDynProp.horizontalHeaderItem(12)
+        ___qtablewidgetitem11.setText(QCoreApplication.translate("widget_dynprop", u"rzz", None));
+    # retranslateUi
 

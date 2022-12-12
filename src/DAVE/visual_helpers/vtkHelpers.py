@@ -184,13 +184,15 @@ def transform_from_node(node):
     return t
 
 
-def transform_from_direction(axis, position=(0, 0, 0), right=None):
+def transform_from_direction(axis, position=(0, 0, 0), right=None, scale = 1):
     """
     Creates a transform that rotates the X-axis to the given direction
     Args:
         axis: requested direction, needs to be a unit vector
         position : optional, (0,0,0)
         right: optional: vector to right. Needs to be a unit vector
+
+        optional: scale [1]
 
     Returns:
         vtk.vtkMatrix4x4
@@ -202,7 +204,7 @@ def transform_from_direction(axis, position=(0, 0, 0), right=None):
 
     if right is None:
         temp = np.array((1, 0, 0), dtype=float)
-        if np.dot(temp, viewDir) > 0.98:
+        if abs(np.dot(temp, viewDir)) > 0.98:
             temp[0] = 0
             temp[1] = 1
 
@@ -213,15 +215,15 @@ def transform_from_direction(axis, position=(0, 0, 0), right=None):
 
     mat4x4 = vtk.vtkMatrix4x4()
 
-    mat4x4.SetElement(0, 0, right[0])
-    mat4x4.SetElement(1, 0, right[1])
-    mat4x4.SetElement(2, 0, right[2])
-    mat4x4.SetElement(0, 1, up[0])
-    mat4x4.SetElement(1, 1, up[1])
-    mat4x4.SetElement(2, 1, up[2])
-    mat4x4.SetElement(0, 2, viewDir[0])
-    mat4x4.SetElement(1, 2, viewDir[1])
-    mat4x4.SetElement(2, 2, viewDir[2])
+    mat4x4.SetElement(0, 0, right[0]*scale)
+    mat4x4.SetElement(1, 0, right[1]*scale)
+    mat4x4.SetElement(2, 0, right[2]*scale)
+    mat4x4.SetElement(0, 1, up[0]*scale)
+    mat4x4.SetElement(1, 1, up[1]*scale)
+    mat4x4.SetElement(2, 1, up[2]*scale)
+    mat4x4.SetElement(0, 2, viewDir[0]*scale)
+    mat4x4.SetElement(1, 2, viewDir[1]*scale)
+    mat4x4.SetElement(2, 2, viewDir[2]*scale)
 
     mat4x4.SetElement(0, 3, position[0])
     mat4x4.SetElement(1, 3, position[1])

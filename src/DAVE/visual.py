@@ -268,6 +268,7 @@ class VisualOutline:
         self.outline_actor.GetProperty().SetColor(
             color[0] / 255, color[1] / 255, color[2] / 255
         )
+        self.outline_actor.GetProperty().SetLineWidth(2)
 
 
 
@@ -537,7 +538,10 @@ class VisualActor:
             else:
                 actor.GetProperty().SetRepresentationToWireframe()
 
-            actor.lineWidth(actor_settings.lineWidth)
+            if getattr(self.node, '_draw_fat', False):
+                actor.linewidth(2*actor_settings.lineWidth)
+            else:
+                actor.linewidth(actor_settings.lineWidth)
 
             if actor_settings.lineWidth > 0:
                 if uc_paint is None:
@@ -635,7 +639,7 @@ class VisualActor:
             return
 
         if isinstance(self.node, vf._Area):
-            self.actors["main"].scale(np.sqrt(self.node.A), reset=True)
+            self.actors["main"].SetScale(np.sqrt(self.node.A))
             return
 
         if isinstance(self.node, vf.Cable):
@@ -672,7 +676,7 @@ class VisualActor:
             top_width = (N.n_width - 1) * N.spacing_width + WHEEL_WIDTH
 
             top_deck = self.actors['main']
-            top_deck.scale((top_length, top_width, TOP_THICKNESS), reset=True)
+            top_deck.SetScale(top_length, top_width, TOP_THICKNESS)
             SetMatrixIfDifferent(top_deck, mat4x4_from_point_on_frame(N.parent, (0,0,-0.5*TOP_THICKNESS)))
 
             # The wheels
@@ -775,8 +779,18 @@ class VisualActor:
                     else:
                         fp = local_position
 
+                elif isinstance(self.node, vf.Frame):
+                    fp = [
+                        self.node.to_glob_position(loc)
+                        for loc in fp
+                    ]
+
+                else:
+                    raise Exception('Footprint on node which is not a Point or Frame -- unexpected')
+
                 if n_points == current_n_points:
                     self.actors["footprint"].points(fp)
+                    self.actors["footprint"]._vertices_changed = True
                 else:
                     # create a new actor
                     new_actor = actor_from_vertices_and_faces(
@@ -787,6 +801,7 @@ class VisualActor:
 
                     if viewport.screen is not None:
                         viewport.screen.remove(self.actors["footprint"])
+                        # remove outline as well
                         self.actors["footprint"] = new_actor
                         viewport.screen.add(self.actors["footprint"], render=False)
 
@@ -896,7 +911,7 @@ class VisualActor:
                 viewport.screen.add(self.actors["moment1"], render=False)
                 viewport.screen.add(self.actors["moment2"], render=False)
 
-            t = self.actors["main"].getTransform()
+            t = self.actors["main"].get_transform()
             t.Identity()
             t.Translate(self.node.parent.global_position)
             for a in self.actors.values():
@@ -965,7 +980,7 @@ class VisualActor:
 
             if self.node.parent is not None:
                 mat4x4 = transform_to_mat4x4(self.node.parent.global_transform)
-                current_transform = self.actors["main"].getTransform().GetMatrix()
+                current_transform = self.actors["main"].get_transform().GetMatrix()
 
                 # if the current transform is identical to the new one,
                 # then we do not need to change anything (creating the mesh is slow)
@@ -1568,11 +1583,11 @@ class Viewport:
         if "sea" in self.global_visuals:
             raise ValueError("Global visuals already created - can not create again")
 
-        plane = vp.Plane(pos=(0, 0, 0), normal=(0, 0, 1), sx=1000, sy=1000).c(
+        plane = vp.Plane(pos=(0, 0, 0), normal=(0, 0, 1), s =(1000, 1000)).c(
             COLOR_WATER
         )
         plane.texture(TEXTURE_SEA)
-        plane.lighting(ambient=1.0, diffuse=0.0, specular=0.0, specularPower=1e-7)
+        plane.lighting(ambient=1.0, diffuse=0.0, specular=0.0, specular_power=1e-7)
         plane.alpha(0.4)
 
         self.global_visuals["sea"] = plane
@@ -1597,7 +1612,7 @@ class Viewport:
             self.screen.add(actor, render=False)
 
         wind_actor = vp.Lines(
-            startPoints=[(0, 0, 0), (0, 0, 0)], endPoints=[(10, 0, 0), (-0.5, 1, 0)]
+            start_pts=[(0, 0, 0), (0, 0, 0)], end_pts=[(10, 0, 0), (-0.5, 1, 0)]
         )
         wind_actor.c(DAVE.settings_visuals._DARK_GRAY)
         wind_actor.lw(1)
@@ -1605,8 +1620,8 @@ class Viewport:
         points = [(3 + 4 * i / 36, 0.4 * np.cos(i / 4), 0) for i in range(36)]
 
         current_actor = vp.Lines(
-            startPoints=[(0, 0, 0), (10, 0, 0), (10, 0, 0), *points[:-1]],
-            endPoints=[(10, 0, 0), (9, 0.3, 0), (9, -0.3, 0), *points[1:]],
+            start_pts=[(0, 0, 0), (10, 0, 0), (10, 0, 0), *points[:-1]],
+            end_pts=[(10, 0, 0), (9, 0.3, 0), (9, -0.3, 0), *points[1:]],
         )
         current_actor.c(DAVE.settings_visuals._BLUE_DARK)
         current_actor.lw(1)
@@ -1617,8 +1632,8 @@ class Viewport:
         self.screen.add(self.colorbar_actor, render=False)
 
     def add_wind_and_current_actors(self):
-        self.screen.addIcon(self.wind_actor, pos=2, size=0.06)
-        self.screen.addIcon(self.current_actor, pos=4, size=0.06)
+        self.screen.add_icon(self.wind_actor, pos=2, size=0.06)
+        self.screen.add_icon(self.current_actor, pos=4, size=0.06)
 
     def deselect_all(self):
 
@@ -1885,7 +1900,7 @@ class Viewport:
                 # and then scale with sqrt(A)
                 # A = pi * r**2 --> r = sqrt(1/pi)
                 actors["main"] = vp.Circle(res=36, r=np.sqrt(1 / np.pi))
-                actors["main"].scale(np.sqrt(N.A))
+                actors["main"].SetScale(np.sqrt(N.A))
 
             if isinstance(N, vf.RigidBody):
                 # a rigidbody is also an axis
@@ -2281,7 +2296,7 @@ class Viewport:
                     # vtkp.settings.embedWindow(backend=None)
 
                     self.screen = vp.plotter.Plotter(
-                        qtWidget=self.vtkWidget, axes=4, bg=COLOR_BG1, bg2=COLOR_BG2, backend=None
+                        qt_widget=self.vtkWidget, axes=4, bg=COLOR_BG1, bg2=COLOR_BG2, backend=None
                     )
 
         """ For reference: this is how to load an cubemap texture
@@ -2598,6 +2613,9 @@ class Viewport:
             if isinstance(node, dn._Area):
                 actor = V.actors["main"]
 
+                # calculate scale
+                scale = np.sqrt(node.A)
+
                 if node.areakind == dn.AreaKind.SPHERE:
                     direction = self.screen.camera.GetDirectionOfProjection()
                 elif node.areakind == dn.AreaKind.PLANE:
@@ -2624,7 +2642,7 @@ class Viewport:
                         direction = direction / np.linalg.norm(direction)
 
                 transform = transform_from_direction(
-                    direction, position=node.parent.global_position
+                    direction, position=node.parent.global_position, scale = scale
                 )
 
                 SetMatrixIfDifferent(actor,transform)

@@ -91,7 +91,7 @@ from PySide2.QtWidgets import (
     QMessageBox,
     QMenu,
     QWidgetAction,
-    QAction,
+    QAction, QStatusBar,
 )
 from DAVE.scene import Scene
 
@@ -128,8 +128,9 @@ from DAVE.gui.widget_airy import WidgetAiry
 from DAVE.gui.widget_stability_disp import WidgetDisplacedStability
 from DAVE.gui.widget_explore import WidgetExplore
 from DAVE.gui.widget_tank_order import WidgetTankOrder
-from DAVE.gui.widget_rigg_it_right import WidgetRiggItRight
+from DAVE.gui.widget_rigg_it_right import WidgetQuickActions
 from DAVE.gui.widget_environment import WidgetEnvironment
+from DAVE.gui.widget_dof_edit import WidgetDOFEditor
 
 import numpy as np
 
@@ -164,7 +165,10 @@ DAVE_GUI_PLUGINS_EDITOR=[]
 
 # ====================================================
 
-
+class UndoType(Enum):
+    CLEAR_AND_RUN_CODE = 1
+    RUN_CODE = 2
+    SET_DOFS = 3
 
 
 class SolverDialog(QDialog, Ui_Dialog):
@@ -175,8 +179,6 @@ class SolverDialog(QDialog, Ui_Dialog):
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.setWindowIcon(QIcon(":/icons/cube.png"))
-
-
 
 
 class SettingsDialog(QDialog, Ui_frmSettings):
@@ -245,9 +247,9 @@ class Gui:
                 self.app = QtWidgets.QApplication()
         else:
             self.app = app
-        self.app.aboutToQuit.connect(self.onClose)
 
-        self
+
+        self.app.aboutToQuit.connect(self.onCloseApplication)
 
         if splash is None:
             splash = QtWidgets.QSplashScreen()
@@ -260,7 +262,13 @@ class Gui:
         # Main Window
         self.MainWindow = QtWidgets.QMainWindow()
         self.ui = Ui_MainWindow()
+
         self.ui.setupUi(self.MainWindow)
+        self.MainWindow.closeEvent = self.closeEvent
+
+        self.statusbar = QStatusBar()
+        self.MainWindow.setStatusBar(self.statusbar)
+        self.statusbar.mousePressEvent = self.show_python_console
 
         # ============== private properties ================
         self._codelog = []
@@ -288,6 +296,7 @@ class Gui:
 
         self._animation_speed = 1.0
 
+
         # ================= Create globally available properties =======
         self.selected_nodes: [Node] = []
         """A list of selected nodes (if any)"""
@@ -298,6 +307,9 @@ class Gui:
 
         self.modelfilename = None
         """Open file"""
+
+        self._model_has_changed = False
+        """User"""
 
         self.additional_user_resource_paths = []
         """User-defined additional resource paths, stored on user machine - settings dialog"""
@@ -406,7 +418,6 @@ class Gui:
         self.ui.actionReload_components.triggered.connect(self.refresh_model)
         self.ui.actionOpen.triggered.connect(self.open)
         self.ui.actionSave.triggered.connect(self.menu_save_model)
-        self.ui.actionSave.setEnabled(False)
         self.ui.actionSave_scene.triggered.connect(self.menu_save_model_as)
         self.ui.actionSettings.triggered.connect(self.show_settings)
         self.ui.actionSave_actions_as.triggered.connect(self.menu_save_actions)
@@ -560,9 +571,13 @@ class Gui:
         self.ui.pbSide.clicked.connect(self.visual.Style.SetViewX)
         self.ui.pb3D.clicked.connect(self.toggle_2D)
 
-        self.ui.actionPython_console_2.triggered.connect(
-            lambda: self.ui.dockWidget_2.show()
-        )
+        # the python console
+        self.ui.dockWidget_2.setVisible(False)
+        self.ui.actionPython_console_2.triggered.connect(self.show_python_console)
+
+        # dof editor
+        self.ui.actionDegrees_of_Freedom_editor.triggered.connect(lambda: self.show_guiWidget("DOF Editor"))
+
 
         self.ui.actionVersion.setText(f"Version {DAVE.__version__}")
         self.ui.actionOnline_help.triggered.connect(
@@ -623,8 +638,11 @@ class Gui:
             btn.setAutoExclusive(True)
             # btn.setStyleSheet("text-decoration: underline;")
             self.ui.toolBar.addWidget(btn)
+            self.ui.toolBar.setMinimumHeight(btn.minimumSizeHint().height())
 
-        self.ui.toolBar.layout().setContentsMargins(-2, 0, 0, 0)
+        # self.ui.toolBar.layout().setContentsMargins(-2, 0, 0, 0)
+        self.ui.toolBar.setStyleSheet("QToolBar{spacing:0px;}")
+        # self.ui.toolBar
 
         space = QtWidgets.QWidget()
         space.setSizePolicy(
@@ -658,9 +676,15 @@ class Gui:
         splash.finish(self.MainWindow)
         self.MainWindow.show()
 
+        self.MainWindow.setMinimumWidth(1400)
+
         if block:
             self.ui.pbUpdate.setVisible(False)
+            self.ui.pbCopyViewCode.setVisible(False)
             self.app.exec_()
+
+    def show_python_console(self, *args):
+        self.ui.dockWidget_2.show()
 
     def new_scene(self):
         self.scene.clear()
@@ -832,7 +856,8 @@ class Gui:
         if self.selected_nodes:
             self.selected_nodes.clear()
             if "Properties" in self.guiWidgets:
-                self.guiWidgets["Properties"].setVisible(False)
+                if self.guiWidgets["Properties"].node_picker is None:
+                    self.guiWidgets["Properties"].setVisible(False)
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
 
     def focus_on_selected_object(self):
@@ -841,11 +866,13 @@ class Gui:
         if self.selected_nodes:
             node = self.selected_nodes[0]
             visual = self.visual.actor_from_node(node)
-            position = visual.center_position
-            print(f"focusing camera to {node.name} at {position}")
-            self.visual.focus_on(position)
 
-            self.refresh_3dview()
+            if visual is not None:
+                position = visual.center_position
+                print(f"focusing camera to {node.name} at {position}")
+                self.visual.focus_on(position)
+
+                self.refresh_3dview()
 
     def savepoint_restore(self):
 
@@ -868,14 +895,7 @@ class Gui:
         self.animation_terminate()
         self.savepoint_restore()
 
-        #
-        # self.visual.set_alpha(1.0)
-        # self.visual.hide_actors_of_type([ActorType.BALLASTTANK])
-        # self.visual.update_outlines()
         self.activate_paintset("Construction")
-
-        for plugin in self.plugins_workspace:
-            plugin(self, name)
 
         if name == "PAINTERS":
             self.show_guiWidget("vanGogh", WidgetPainters)
@@ -883,12 +903,12 @@ class Gui:
         if name == "CONSTRUCT":
             self.close_all_open_docks()
             self.show_guiWidget("Node Tree", WidgetNodeTree)
-            self.show_guiWidget("Derived Properties", WidgetDerivedProperties)
             self.show_guiWidget("Properties", WidgetNodeProps)
-            self.show_guiWidget("Rigg-it-Right", WidgetRiggItRight)
+            self.show_guiWidget("Quick actions", WidgetQuickActions)
 
         if name == "EXPLORE":
             self.close_all_open_docks()
+            self.show_guiWidget("Node Tree", WidgetNodeTree)
             self.show_guiWidget("Derived Properties", WidgetDerivedProperties)
             self.show_guiWidget("Explore 1-to-1", WidgetExplore)
 
@@ -938,6 +958,9 @@ class Gui:
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
             self.show_guiWidget("Airy waves", WidgetAiry)
 
+        for plugin in self.plugins_workspace:
+            plugin(self, name)
+
         self.visual.update_visibility()
 
     def import_browser(self):
@@ -972,10 +995,13 @@ class Gui:
         filename = filename[1:]
         p = Path(filename)
 
-        try:
-            self.open_file(p)
-        except:
-            print(f"Could not open file {filename}")
+        if p.exists():
+            try:
+                self.open_file(p)
+            except:
+                raise ValueError(f"Could not open file {filename}")
+        else:
+            raise ValueError(f"Could not open file {filename}")
 
     def get_recent(self):
         settings = QSettings("rdbr", "DAVE")
@@ -1206,7 +1232,7 @@ class Gui:
 
         if self._undo_index == len(self._undo_log) - 1:
             # Make an undo point for the current state
-            self._undo_log.append(self.scene.give_python_code())
+            self._undo_log.append((UndoType.CLEAR_AND_RUN_CODE, self.scene.give_python_code()))
 
         self.activate_undo_index(self._undo_index)
 
@@ -1223,48 +1249,87 @@ class Gui:
 
     def activate_undo_index(self, index):
 
-        print(f"Activating undo index {index} of {len(self._undo_log)}")
+        print(f"Activating undo index {index} of {len(self._undo_log)-1}")
 
-        selected_names = [node.name for node in self.selected_nodes]
+        undo_type, undo_contents = self._undo_log[index]  # unpack
 
-        self.scene.clear()
-        self.run_code(
-            self._undo_log[index], store_undo=False, event=guiEventType.FULL_UPDATE
-        )
+        if undo_type == UndoType.CLEAR_AND_RUN_CODE or undo_type == UndoType.RUN_CODE:
 
-        try:
-            nodes = [
-                self.scene[node] for node in selected_names
-            ]  # selected nodes may not exist anymore
-        except:
-            nodes = []
-        self.selected_nodes.clear()  # do not re-assign, docks keep a reference to this list
-        self.selected_nodes.extend(nodes)
+            # capture selected node names before deleting the scene
+            selected_names = [node.name for node in self.selected_nodes]
 
-        self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+            if undo_type == UndoType.CLEAR_AND_RUN_CODE:
+                self.scene.clear()
 
-    def add_undo_point(self):
-        """Adds the current model to the undo-list"""
-        if len(self._undo_log) > self._undo_index:
-            self._undo_log = self._undo_log[: self._undo_index]
-        self._undo_log.append(self.scene.give_python_code())
+            self.scene.run_code(undo_contents)
+
+            try:
+                nodes = [
+                    self.scene[node] for node in selected_names
+                ]  # selected nodes may not exist anymore
+            except:
+                nodes = []
+
+            self.selected_nodes.clear()  # do not re-assign, docks keep a reference to this list
+            self.selected_nodes.extend(nodes)
+
+            self.guiEmitEvent(guiEventType.FULL_UPDATE)
+            self.give_feedback(f"Activating undo index {index} of {len(self._undo_log)-1}")
+
+        elif undo_type == UndoType.SET_DOFS:
+            if undo_contents is not None:
+                self.scene._vfc.set_dofs(undo_contents) # UNDO SOLVE STATICS"
+                self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
+                self.give_feedback(f"Activating undo index {index} of {len(self._undo_log)} - Solve-statics reverted")
+
+
+    def add_undo_point(self, undo_type = UndoType.CLEAR_AND_RUN_CODE, code = ''):
+
+        logging.info(f"Creating undo point with type {undo_type}")
+
+        if undo_type == UndoType.CLEAR_AND_RUN_CODE:
+
+            """Adds the current model to the undo-list"""
+            if len(self._undo_log) > self._undo_index:
+                self._undo_log = self._undo_log[: self._undo_index]
+            self._undo_log.append((UndoType.CLEAR_AND_RUN_CODE, self.scene.give_python_code()))
+
+        elif undo_type == UndoType.RUN_CODE:
+            self._undo_log.append((UndoType.RUN_CODE, code))
+
+        elif undo_type == UndoType.SET_DOFS:
+            self._undo_log.append((UndoType.SET_DOFS, self.scene._vfc.get_dofs()))
+
+        else:
+            raise Exception('Unsupported undo type')
+
         self._undo_index = len(self._undo_log)
+        logging.info(f"current log index = number of points = {self._undo_index}")
 
     # / undo functions
 
-    def onClose(self):
+    def closeEvent(self, event):
+        """This is the on-close for the main window"""
+        if self.maybeSave():
+            event.accept()
+        else:
+            event.ignore()
+
+    def onCloseApplication(self):
+        """This is the on-close for the Application"""
+
         self.visual.shutdown_qt()
         print(
             "-- closing the gui : these were the actions you performed while the gui was open --"
         )
         print(self.give_clean_history())
 
+
     def measured_in_viewport(self, distance):
         self.give_feedback(f'View-plane distance = {distance:.3f}m\n (does not measure depth)')
 
     def show_exception(self, e):
-        self.ui.teFeedback.setText(str(e))
-        self.ui.teFeedback.setStyleSheet("background-color: pink;")
+        self.give_feedback(e, style=1)
 
     def give_feedback(self, what, style = 0):
         self.ui.teFeedback.setText(str(what))
@@ -1273,7 +1338,23 @@ class Gui:
         elif style == 1:
             self.ui.teFeedback.setStyleSheet("background-color: pink;")
 
-    def run_code(self, code, event, store_undo=False):
+        self.statusbar.showMessage(str(what))
+
+        if not self.ui.dockWidget_2.isVisible() and style==1:
+
+            tool_long = len(what) > 1000 or len(what.split('\n')) > 30
+
+            short = what[-1000:]
+            short = '\n'.join(short.split('\n')[-30:])
+
+            if tool_long:
+                print(what)
+                QMessageBox.warning(self.ui.widget, "error", short + '\n\n !!! first part omitted,\n see (python) console for full error message', QMessageBox.Ok)
+            else:
+                QMessageBox.warning(self.ui.widget, "error", what, QMessageBox.Ok)
+
+
+    def run_code(self, code, event, store_undo=True, sender=None):
         """Runs the provided code
 
         If successful, add code to history and create an undo point
@@ -1286,6 +1367,7 @@ class Gui:
         """
 
         start_time = datetime.datetime.now()
+        self._model_has_changed = True
 
         before = self.scene._nodes.copy()
 
@@ -1305,6 +1387,8 @@ class Gui:
         self.ui.teFeedback.setStyleSheet("")
         self.ui.teFeedback.clear()
 
+        select_node_name_edit_field = False
+
         with capture_output() as c:
 
             try:
@@ -1317,16 +1401,9 @@ class Gui:
                 exec(code, glob_vars)
 
                 if c.stdout:
-                    self.ui.teFeedback.append(c.stdout)
-                    self.ui.teFeedback.append(str(datetime.datetime.now()))
+                    self.give_feedback(c.stdout, style=0)
                 else:
-
-                    end_time = datetime.datetime.now()
-                    time_diff = (end_time - start_time)
-
-                    self.ui.teFeedback.append(
-                        f"Completed successfully in {time_diff.total_seconds() * 1000:.0f} ms"
-                    )
+                    self.give_feedback(code, style=0)
 
                 self._codelog.append(code)
                 self.ui.teHistory.append(code)
@@ -1349,21 +1426,26 @@ class Gui:
                 emitted = False
                 for node in self.scene._nodes:
                     if node not in before:
+
+                        logging.info(f"New node detected: {node.name}")
+
                         self.selected_nodes.clear()
-                        # self.selected_nodes.append(node)
-                        # self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+
                         if node.manager is not None:
                             self.guiSelectNode(node.manager)
+                            select_node_name_edit_field = True
                         else:
                             self.guiSelectNode(node)
+                            select_node_name_edit_field = True
+
                         emitted = True
                         break
 
                 if event is not None:
-                    self.guiEmitEvent(event)
+                    self.guiEmitEvent(event, sender=sender)
 
                 if to_be_removed and not emitted:
-                    self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
+                    self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED, sender=sender)
 
             except Exception as E:
 
@@ -1373,10 +1455,8 @@ class Gui:
                 self.ui.teCode.update()
                 self.ui.teCode.repaint()
 
-                self.ui.teFeedback.setText(
-                    c.stdout + "\n" + str(E) + "\n\nWhen running: \n\n" + code
-                )
-                self.ui.teFeedback.setStyleSheet("background-color: pink;")
+                message = c.stdout + "\n" + str(E) + "\n\nWhen running: \n\n" + code
+                self.show_exception(message)
 
                 raise (E)
 
@@ -1387,23 +1467,39 @@ class Gui:
                 self.ui.teFeedback.verticalScrollBar().maximum()
             )  # scroll down all the way
 
+            if select_node_name_edit_field:
+                self.place_input_focus_on_name_of_node()
+
+    def place_input_focus_on_name_of_node(self):
+        """Places the input focus on the name of the node such that the user can directly change it if needed"""
+        if 'Properties' in self.guiWidgets:
+            props = self.guiWidgets['Properties']
+            props._node_name_editor.ui.tbName.setFocus()
+            props._node_name_editor.ui.tbName.selectAll()
+
+
     def stop_solving(self):
         self._terminate = True
 
-    def solve_statics(self, timeout_s=1, called_by_user=True):
+    def solve_statics(self, timeout_s=0.5, called_by_user=True):
+
+        self.scene.solve_activity_desc = "Solving static equilibrium"
+
         self.solve_statics_using_gui_on_scene(
             scene_to_solve=self.scene,
             timeout_s=timeout_s,
             called_by_user=called_by_user,
         )
 
+        self.give_feedback(f"Solved statics - remaining error = {self.scene._vfc.Emaxabs} kN or kNm")
+
     def solve_statics_using_gui_on_scene(
-        self, scene_to_solve, timeout_s=1, called_by_user=True
+        self, scene_to_solve, timeout_s=0.5, called_by_user=True
     ):
         scene_to_solve.update()
 
         if called_by_user:
-            self.add_undo_point()
+            self.add_undo_point(undo_type=UndoType.SET_DOFS)
 
         old_dofs = scene_to_solve._vfc.get_dofs()
 
@@ -1438,6 +1534,7 @@ class Gui:
             if self._dialog is None:
                 self._dialog = SolverDialog()
                 self._dialog.btnTerminate.clicked.connect(self.stop_solving)
+                self._dialog.label.setText(self.scene.solve_activity_desc)
                 self._dialog.show()
 
             self._dialog.label_2.setText(message)
@@ -1550,22 +1647,21 @@ class Gui:
             self.visual.DisableSSAO()
         self.visual.refresh_embeded_view()
 
-    # def undo_solve_statics(self):
-    #     if self._dofs is not None:
-    #         self.run_code(
-    #             "s._vfc.set_dofs(self._dofs) # UNDO SOLVE STATICS",
-    #             guiEventType.MODEL_STATE_CHANGED,
-    #         )
 
     def clear(self):
         self.run_code("s.clear()", guiEventType.FULL_UPDATE)
-        self.ui.actionSave.setEnabled(False)
+        self._model_has_changed = False
+        self.modelfilename = None
+        self.MainWindow.setWindowTitle(f'DAVE [unnamed scene]')
+
 
     def open_file(self, filename):
         code = 's.clear()\ns.load_scene(r"{}")'.format(filename)
         self.run_code(code, guiEventType.FULL_UPDATE)
         self.modelfilename = filename
-        self.ui.actionSave.setEnabled(True)
+
+        self._model_has_changed = False
+        self.MainWindow.setWindowTitle(f'DAVE [{self.modelfilename}]')
         self.add_to_recent_file_menu(filename)
         self.visual.zoom_all()
 
@@ -1593,8 +1689,15 @@ class Gui:
             self.visual.update_visibility()
 
     def menu_save_model(self):
+
+        if self.modelfilename is None:
+            self.menu_save_model_as()
+            return
+
         code = 's.save_scene(r"{}")'.format(self.modelfilename)
         self.run_code(code, guiEventType.NOTHING)
+        self._model_has_changed = False
+        self.give_feedback(f"File saved: [{self.modelfilename}]")
 
     def menu_save_model_as(self):
 
@@ -1611,9 +1714,34 @@ class Gui:
         if filename:
             code = 's.save_scene(r"{}")'.format(filename)
             self.run_code(code, guiEventType.NOTHING)
+
+            self._model_has_changed = False
             self.modelfilename = filename
-            self.ui.actionSave.setEnabled(True)
+            self.MainWindow.setWindowTitle(f'DAVE [{self.modelfilename}]')
+
             self.add_to_recent_file_menu(filename)
+
+    def maybeSave(self):
+        if not self._model_has_changed:
+            return True
+
+        ret = QMessageBox.question(self.MainWindow, "Message",
+                "<h4><p>The scene has unsaved changes.</p>\n" 
+                "<p>Do you want to save changes?</p></h4>",
+                QMessageBox.Yes | QMessageBox.Discard | QMessageBox.Cancel)
+
+        if ret == QMessageBox.Yes:
+            if self.modelfilename is None:
+                self.menu_save_model_as()
+                return False
+            else:
+                self.menu_save_model()
+                return True
+
+        if ret == QMessageBox.Cancel:
+            return False
+
+        return True
 
     def menu_export_orcaflex_yml(self):
         filename, _ = QFileDialog.getSaveFileName(
@@ -1716,6 +1844,10 @@ class Gui:
 
         self.openContextMenyAt(name, globLoc)
 
+    def selected_nodes_of_instance(self, req_class):
+        """Returns a list of nodes that are selected and are an instance of the requested class"""
+        return [node for node in self.selected_nodes if isinstance(node, req_class)]
+
     def openContextMenyAt(self, node_name, globLoc):
         menu = QtWidgets.QMenu()
 
@@ -1733,6 +1865,7 @@ class Gui:
                     )  # people often close this one
 
                 menu.addAction("Edit {}".format(node_name), edit)
+                menu.addAction("Properties", lambda *args: self.show_guiWidget("Derived Properties", WidgetDerivedProperties))
 
                 showhide = menu.addAction("Visible")
                 showhide.setCheckable(True)
@@ -1792,6 +1925,19 @@ class Gui:
                 if isinstance(node, (Frame, Point)):
                     if self.scene.nodes_with_parent(node):
                         menu.addAction("Duplicate", duplicate_branch)
+
+                if isinstance(node, Cable):
+                    menu.addAction("Convert Cable --> Sling", lambda *args: self.run_code(f"s.to_sling(s['{node.name}'])", guiEventType.MODEL_STRUCTURE_CHANGED))
+
+                if isinstance(node, Sling):
+                    menu.addAction("Convert Sling --> Cable", lambda *args: self.run_code(f"s.to_cable(s['{node.name}'])", guiEventType.MODEL_STRUCTURE_CHANGED))
+
+                if type(node) == RigidBody:
+                    menu.addAction("Downgrade Body --> Frame", lambda *args: self.run_code(f"s.to_frame(s['{node.name}'])", guiEventType.MODEL_STRUCTURE_CHANGED))
+
+                if type(node) == Frame:
+                    menu.addAction("Upgrade Frame --> Body", lambda *args: self.run_code(f"s.to_rigidbody(s['{node.name}'])", guiEventType.MODEL_STRUCTURE_CHANGED))
+
 
                 menu.addAction("Duplicate node", duplicate)
 
@@ -1940,34 +2086,52 @@ class Gui:
             self.selected_nodes.clear()
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
 
-        _node = node
-        if node in self.selected_nodes:
-            # if the is already selected, then select something different
+        # find the higest manager of this node
+        manager = node.manager
+        if manager is not None:
+            while manager.manager is not None:
+                manager = manager.manager
 
-            self.selected_nodes.remove(node)
+            if manager in self.selected_nodes:
+                self.selected_nodes.remove(manager)
+                self.guiSelectNode(node)
+            else:
+                if node in self.selected_nodes:
+                    self.selected_nodes.remove(node)
+                self.guiSelectNode(manager)
 
-            # if node has a manager, then select the manager
-            if node.manager is not None:
-                self.guiSelectNode(node.manager)
-                return
+            return
 
-            # cycle between node and its parent
-            try:
-                node = node.parent
-            except:
+        else:
+
+            _node = node
+            if node in self.selected_nodes:
+                # if the is already selected, then select something different
+
+                self.selected_nodes.remove(node)
+
+                # # if node has a manager, then select the manager
+                # if node.manager is not None:
+                #     self.guiSelectNode(node.manager)
+                #     return
+
+                # cycle between node and its parent
                 try:
-                    node = node.master
+                    node = node.parent
                 except:
                     try:
-                        node = node.slave
+                        node = node.master
                     except:
                         try:
-                            node = node._pois[0]
+                            node = node.slave
                         except:
-                            pass
+                            try:
+                                node = node._pois[0]
+                            except:
+                                pass
 
-        if node is None:  # in case the parent or something was none
-            node = _node
+            if node is None:  # in case the parent or something was none
+                node = _node
 
         if node is None:  # sea or something
             self.selected_nodes.clear()
@@ -2127,9 +2291,14 @@ class Gui:
             d.guiPressSolveButton = self.solve_statics
             d.gui = self
 
+            if widgetClass == WidgetQuickActions:
+                self.MainWindow.resizeDocks([d], [6], Qt.Horizontal)
+
         d.show()
         d._active = True
         d.guiEvent(guiEventType.FULL_UPDATE)
+
+
 
     # =============================
 

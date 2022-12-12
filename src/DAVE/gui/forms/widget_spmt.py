@@ -1,181 +1,265 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_spmt.ui',
-# licensing of 'widget_spmt.ui' applies.
-#
-# Created: Mon Jan 10 09:42:28 2022
-#      by: pyside2-uic  running on PySide2 5.13.2
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'widget_spmt.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.6
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtCore import *  # type: ignore
+from PySide2.QtGui import *  # type: ignore
+from PySide2.QtWidgets import *  # type: ignore
+
+from DAVE.gui.helpers.qnodepicker import QNodePicker
+
 
 class Ui_SPMTwidget(object):
     def setupUi(self, SPMTwidget):
-        SPMTwidget.setObjectName("SPMTwidget")
-        SPMTwidget.resize(209, 350)
-        self.gridLayout = QtWidgets.QGridLayout(SPMTwidget)
-        self.gridLayout.setObjectName("gridLayout")
-        self.label_7 = QtWidgets.QLabel(SPMTwidget)
+        if not SPMTwidget.objectName():
+            SPMTwidget.setObjectName(u"SPMTwidget")
+        SPMTwidget.resize(278, 638)
+        self.gridLayout = QGridLayout(SPMTwidget)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.label_7 = QLabel(SPMTwidget)
+        self.label_7.setObjectName(u"label_7")
         self.label_7.setWordWrap(True)
-        self.label_7.setObjectName("label_7")
-        self.gridLayout.addWidget(self.label_7, 0, 0, 1, 1)
-        self.label_3 = QtWidgets.QLabel(SPMTwidget)
-        self.label_3.setWordWrap(True)
-        self.label_3.setObjectName("label_3")
-        self.gridLayout.addWidget(self.label_3, 1, 0, 1, 3)
-        self.label = QtWidgets.QLabel(SPMTwidget)
-        self.label.setObjectName("label")
-        self.gridLayout.addWidget(self.label, 2, 0, 1, 1)
-        self.sbRefExtension = QtWidgets.QDoubleSpinBox(SPMTwidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.sbRefExtension.sizePolicy().hasHeightForWidth())
-        self.sbRefExtension.setSizePolicy(sizePolicy)
-        self.sbRefExtension.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.World))
-        self.sbRefExtension.setFrame(True)
-        self.sbRefExtension.setButtonSymbols(QtWidgets.QAbstractSpinBox.UpDownArrows)
-        self.sbRefExtension.setDecimals(3)
-        self.sbRefExtension.setMinimum(0.0)
-        self.sbRefExtension.setMaximum(10.0)
-        self.sbRefExtension.setSingleStep(0.1)
-        self.sbRefExtension.setObjectName("sbRefExtension")
-        self.gridLayout.addWidget(self.sbRefExtension, 2, 1, 1, 1)
-        self.label_4 = QtWidgets.QLabel(SPMTwidget)
-        self.label_4.setObjectName("label_4")
-        self.gridLayout.addWidget(self.label_4, 2, 2, 1, 1)
-        self.label_2 = QtWidgets.QLabel(SPMTwidget)
-        self.label_2.setObjectName("label_2")
-        self.gridLayout.addWidget(self.label_2, 3, 0, 1, 1)
-        self.sbRefForce = QtWidgets.QDoubleSpinBox(SPMTwidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+
+        self.gridLayout.addWidget(self.label_7, 1, 0, 1, 1)
+
+        self.label = QLabel(SPMTwidget)
+        self.label.setObjectName(u"label")
+
+        self.gridLayout.addWidget(self.label, 3, 0, 1, 1)
+
+        self.label_4 = QLabel(SPMTwidget)
+        self.label_4.setObjectName(u"label_4")
+
+        self.gridLayout.addWidget(self.label_4, 3, 3, 1, 1)
+
+        self.label_2 = QLabel(SPMTwidget)
+        self.label_2.setObjectName(u"label_2")
+
+        self.gridLayout.addWidget(self.label_2, 4, 0, 1, 1)
+
+        self.sbRefForce = QDoubleSpinBox(SPMTwidget)
+        self.sbRefForce.setObjectName(u"sbRefForce")
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.sbRefForce.sizePolicy().hasHeightForWidth())
         self.sbRefForce.setSizePolicy(sizePolicy)
-        self.sbRefForce.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.World))
+        self.sbRefForce.setLocale(QLocale(QLocale.English, QLocale.World))
         self.sbRefForce.setDecimals(3)
-        self.sbRefForce.setMinimum(0.0)
-        self.sbRefForce.setMaximum(99999999999999.0)
-        self.sbRefForce.setObjectName("sbRefForce")
-        self.gridLayout.addWidget(self.sbRefForce, 3, 1, 1, 1)
-        self.label_5 = QtWidgets.QLabel(SPMTwidget)
-        self.label_5.setObjectName("label_5")
-        self.gridLayout.addWidget(self.label_5, 3, 2, 1, 1)
-        self.label_6 = QtWidgets.QLabel(SPMTwidget)
-        self.label_6.setObjectName("label_6")
-        self.gridLayout.addWidget(self.label_6, 4, 0, 1, 1)
-        self.sbStiffness = QtWidgets.QDoubleSpinBox(SPMTwidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
+        self.sbRefForce.setMinimum(0.000000000000000)
+        self.sbRefForce.setMaximum(99999999999999.000000000000000)
+
+        self.gridLayout.addWidget(self.sbRefForce, 4, 1, 1, 2)
+
+        self.label_5 = QLabel(SPMTwidget)
+        self.label_5.setObjectName(u"label_5")
+
+        self.gridLayout.addWidget(self.label_5, 4, 3, 1, 1)
+
+        self.label_6 = QLabel(SPMTwidget)
+        self.label_6.setObjectName(u"label_6")
+
+        self.gridLayout.addWidget(self.label_6, 5, 0, 1, 1)
+
+        self.sbStiffness = QDoubleSpinBox(SPMTwidget)
+        self.sbStiffness.setObjectName(u"sbStiffness")
         sizePolicy.setHeightForWidth(self.sbStiffness.sizePolicy().hasHeightForWidth())
         self.sbStiffness.setSizePolicy(sizePolicy)
-        self.sbStiffness.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.World))
+        self.sbStiffness.setLocale(QLocale(QLocale.English, QLocale.World))
         self.sbStiffness.setDecimals(3)
-        self.sbStiffness.setMinimum(0.0)
-        self.sbStiffness.setMaximum(99999999999999.0)
-        self.sbStiffness.setObjectName("sbStiffness")
-        self.gridLayout.addWidget(self.sbStiffness, 4, 1, 1, 1)
-        self.label_8 = QtWidgets.QLabel(SPMTwidget)
-        self.label_8.setObjectName("label_8")
-        self.gridLayout.addWidget(self.label_8, 4, 2, 1, 1)
-        self.label_9 = QtWidgets.QLabel(SPMTwidget)
+        self.sbStiffness.setMinimum(0.000000000000000)
+        self.sbStiffness.setMaximum(99999999999999.000000000000000)
+
+        self.gridLayout.addWidget(self.sbStiffness, 5, 1, 1, 2)
+
+        self.label_8 = QLabel(SPMTwidget)
+        self.label_8.setObjectName(u"label_8")
+
+        self.gridLayout.addWidget(self.label_8, 5, 3, 1, 1)
+
+        self.label_9 = QLabel(SPMTwidget)
+        self.label_9.setObjectName(u"label_9")
         self.label_9.setWordWrap(True)
-        self.label_9.setObjectName("label_9")
-        self.gridLayout.addWidget(self.label_9, 5, 0, 1, 1)
-        self.label_11 = QtWidgets.QLabel(SPMTwidget)
-        self.label_11.setObjectName("label_11")
-        self.gridLayout.addWidget(self.label_11, 6, 0, 1, 1)
-        self.sbDY = QtWidgets.QDoubleSpinBox(SPMTwidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
+
+        self.gridLayout.addWidget(self.label_9, 6, 0, 1, 1)
+
+        self.label_11 = QLabel(SPMTwidget)
+        self.label_11.setObjectName(u"label_11")
+
+        self.gridLayout.addWidget(self.label_11, 7, 0, 1, 1)
+
+        self.label_14 = QLabel(SPMTwidget)
+        self.label_14.setObjectName(u"label_14")
+
+        self.gridLayout.addWidget(self.label_14, 7, 3, 1, 1)
+
+        self.label_10 = QLabel(SPMTwidget)
+        self.label_10.setObjectName(u"label_10")
+
+        self.gridLayout.addWidget(self.label_10, 8, 0, 1, 1)
+
+        self.label_15 = QLabel(SPMTwidget)
+        self.label_15.setObjectName(u"label_15")
+
+        self.gridLayout.addWidget(self.label_15, 8, 3, 1, 1)
+
+        self.label_13 = QLabel(SPMTwidget)
+        self.label_13.setObjectName(u"label_13")
+
+        self.gridLayout.addWidget(self.label_13, 9, 0, 1, 1)
+
+        self.label_16 = QLabel(SPMTwidget)
+        self.label_16.setObjectName(u"label_16")
+
+        self.gridLayout.addWidget(self.label_16, 9, 3, 1, 1)
+
+        self.label_12 = QLabel(SPMTwidget)
+        self.label_12.setObjectName(u"label_12")
+
+        self.gridLayout.addWidget(self.label_12, 10, 0, 1, 1)
+
+        self.label_17 = QLabel(SPMTwidget)
+        self.label_17.setObjectName(u"label_17")
+
+        self.gridLayout.addWidget(self.label_17, 10, 3, 1, 1)
+
+        self.label_18 = QLabel(SPMTwidget)
+        self.label_18.setObjectName(u"label_18")
+        self.label_18.setWordWrap(True)
+
+        self.gridLayout.addWidget(self.label_18, 11, 0, 1, 1)
+
+        self.verticalSpacer = QSpacerItem(20, 294, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout.addItem(self.verticalSpacer, 14, 2, 1, 1)
+
+        self.sbRefExtension = QDoubleSpinBox(SPMTwidget)
+        self.sbRefExtension.setObjectName(u"sbRefExtension")
+        sizePolicy.setHeightForWidth(self.sbRefExtension.sizePolicy().hasHeightForWidth())
+        self.sbRefExtension.setSizePolicy(sizePolicy)
+        self.sbRefExtension.setLocale(QLocale(QLocale.English, QLocale.World))
+        self.sbRefExtension.setFrame(True)
+        self.sbRefExtension.setButtonSymbols(QAbstractSpinBox.UpDownArrows)
+        self.sbRefExtension.setDecimals(3)
+        self.sbRefExtension.setMinimum(0.000000000000000)
+        self.sbRefExtension.setMaximum(10.000000000000000)
+        self.sbRefExtension.setSingleStep(0.100000000000000)
+
+        self.gridLayout.addWidget(self.sbRefExtension, 3, 1, 1, 2)
+
+        self.sbDY = QDoubleSpinBox(SPMTwidget)
+        self.sbDY.setObjectName(u"sbDY")
         sizePolicy.setHeightForWidth(self.sbDY.sizePolicy().hasHeightForWidth())
         self.sbDY.setSizePolicy(sizePolicy)
-        self.sbDY.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.World))
+        self.sbDY.setLocale(QLocale(QLocale.English, QLocale.World))
         self.sbDY.setDecimals(3)
-        self.sbDY.setMinimum(0.0)
-        self.sbDY.setMaximum(100.0)
-        self.sbDY.setSingleStep(0.1)
-        self.sbDY.setObjectName("sbDY")
-        self.gridLayout.addWidget(self.sbDY, 6, 1, 1, 1)
-        self.label_14 = QtWidgets.QLabel(SPMTwidget)
-        self.label_14.setObjectName("label_14")
-        self.gridLayout.addWidget(self.label_14, 6, 2, 1, 1)
-        self.label_10 = QtWidgets.QLabel(SPMTwidget)
-        self.label_10.setObjectName("label_10")
-        self.gridLayout.addWidget(self.label_10, 7, 0, 1, 1)
-        self.sbDX = QtWidgets.QDoubleSpinBox(SPMTwidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
+        self.sbDY.setMinimum(0.000000000000000)
+        self.sbDY.setMaximum(100.000000000000000)
+        self.sbDY.setSingleStep(0.100000000000000)
+
+        self.gridLayout.addWidget(self.sbDY, 7, 1, 1, 2)
+
+        self.sbDX = QDoubleSpinBox(SPMTwidget)
+        self.sbDX.setObjectName(u"sbDX")
         sizePolicy.setHeightForWidth(self.sbDX.sizePolicy().hasHeightForWidth())
         self.sbDX.setSizePolicy(sizePolicy)
-        self.sbDX.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.World))
+        self.sbDX.setLocale(QLocale(QLocale.English, QLocale.World))
         self.sbDX.setDecimals(3)
-        self.sbDX.setMinimum(0.0)
-        self.sbDX.setMaximum(100.0)
-        self.sbDX.setSingleStep(0.1)
-        self.sbDX.setObjectName("sbDX")
-        self.gridLayout.addWidget(self.sbDX, 7, 1, 1, 1)
-        self.label_15 = QtWidgets.QLabel(SPMTwidget)
-        self.label_15.setObjectName("label_15")
-        self.gridLayout.addWidget(self.label_15, 7, 2, 1, 1)
-        self.label_13 = QtWidgets.QLabel(SPMTwidget)
-        self.label_13.setObjectName("label_13")
-        self.gridLayout.addWidget(self.label_13, 8, 0, 1, 1)
-        self.sbNY = QtWidgets.QSpinBox(SPMTwidget)
-        self.sbNY.setObjectName("sbNY")
-        self.gridLayout.addWidget(self.sbNY, 8, 1, 1, 1)
-        self.label_16 = QtWidgets.QLabel(SPMTwidget)
-        self.label_16.setObjectName("label_16")
-        self.gridLayout.addWidget(self.label_16, 8, 2, 1, 1)
-        self.label_12 = QtWidgets.QLabel(SPMTwidget)
-        self.label_12.setObjectName("label_12")
-        self.gridLayout.addWidget(self.label_12, 9, 0, 1, 1)
-        self.sbNX = QtWidgets.QSpinBox(SPMTwidget)
-        self.sbNX.setObjectName("sbNX")
-        self.gridLayout.addWidget(self.sbNX, 9, 1, 1, 1)
-        self.label_17 = QtWidgets.QLabel(SPMTwidget)
-        self.label_17.setObjectName("label_17")
-        self.gridLayout.addWidget(self.label_17, 9, 2, 1, 1)
-        self.label_18 = QtWidgets.QLabel(SPMTwidget)
-        self.label_18.setWordWrap(True)
-        self.label_18.setObjectName("label_18")
-        self.gridLayout.addWidget(self.label_18, 10, 0, 1, 3)
-        self.rbPerpendicular = QtWidgets.QRadioButton(SPMTwidget)
-        self.rbPerpendicular.setObjectName("rbPerpendicular")
-        self.gridLayout.addWidget(self.rbPerpendicular, 12, 0, 1, 3)
-        self.rbVertical = QtWidgets.QRadioButton(SPMTwidget)
+        self.sbDX.setMinimum(0.000000000000000)
+        self.sbDX.setMaximum(100.000000000000000)
+        self.sbDX.setSingleStep(0.100000000000000)
+
+        self.gridLayout.addWidget(self.sbDX, 8, 1, 1, 2)
+
+        self.sbNY = QSpinBox(SPMTwidget)
+        self.sbNY.setObjectName(u"sbNY")
+
+        self.gridLayout.addWidget(self.sbNY, 9, 1, 1, 2)
+
+        self.sbNX = QSpinBox(SPMTwidget)
+        self.sbNX.setObjectName(u"sbNX")
+
+        self.gridLayout.addWidget(self.sbNX, 10, 1, 1, 2)
+
+        self.rbPerpendicular = QRadioButton(SPMTwidget)
+        self.rbPerpendicular.setObjectName(u"rbPerpendicular")
+
+        self.gridLayout.addWidget(self.rbPerpendicular, 13, 0, 1, 3)
+
+        self.widget_2 = QWidget(SPMTwidget)
+        self.widget_2.setObjectName(u"widget_2")
+        self.horizontalLayout_2 = QHBoxLayout(self.widget_2)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.label_19 = QLabel(self.widget_2)
+        self.label_19.setObjectName(u"label_19")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.label_19.sizePolicy().hasHeightForWidth())
+        self.label_19.setSizePolicy(sizePolicy1)
+
+        self.horizontalLayout_2.addWidget(self.label_19)
+
+        self.widgetParent = QNodePicker(self.widget_2)
+        self.widgetParent.setObjectName(u"widgetParent")
+        sizePolicy2 = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Preferred)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.widgetParent.sizePolicy().hasHeightForWidth())
+        self.widgetParent.setSizePolicy(sizePolicy2)
+
+        self.horizontalLayout_2.addWidget(self.widgetParent)
+
+
+        self.gridLayout.addWidget(self.widget_2, 0, 0, 1, 3)
+
+        self.rbVertical = QRadioButton(SPMTwidget)
+        self.rbVertical.setObjectName(u"rbVertical")
         self.rbVertical.setChecked(True)
-        self.rbVertical.setObjectName("rbVertical")
-        self.gridLayout.addWidget(self.rbVertical, 11, 0, 1, 3)
+
+        self.gridLayout.addWidget(self.rbVertical, 12, 0, 1, 3)
+
+        self.label_3 = QLabel(SPMTwidget)
+        self.label_3.setObjectName(u"label_3")
+        self.label_3.setWordWrap(True)
+        self.label_3.setMargin(0)
+
+        self.gridLayout.addWidget(self.label_3, 2, 0, 1, 4)
+
 
         self.retranslateUi(SPMTwidget)
-        QtCore.QMetaObject.connectSlotsByName(SPMTwidget)
+
+        QMetaObject.connectSlotsByName(SPMTwidget)
+    # setupUi
 
     def retranslateUi(self, SPMTwidget):
-        SPMTwidget.setWindowTitle(QtWidgets.QApplication.translate("SPMTwidget", "Form", None, -1))
-        self.label_7.setText(QtWidgets.QApplication.translate("SPMTwidget", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Hydraulics</span></p></body></html>", None, -1))
-        self.label_3.setText(QtWidgets.QApplication.translate("SPMTwidget", "<html><head/><body>Hydraulic settings are defined by defining an reference force and extension as well as a stiffness.<br>If the SPMT is loaded with a force equal to the reference force then the average extension of the axles is the reference extension.<br/>The stiffness defines the stiffness of the whole SPMT, that is: all axles together.</body></html>", None, -1))
-        self.label.setText(QtWidgets.QApplication.translate("SPMTwidget", "Ref. extension", None, -1))
-        self.label_4.setText(QtWidgets.QApplication.translate("SPMTwidget", "[m]", None, -1))
-        self.label_2.setText(QtWidgets.QApplication.translate("SPMTwidget", "Ref. force", None, -1))
-        self.label_5.setText(QtWidgets.QApplication.translate("SPMTwidget", "[kN]", None, -1))
-        self.label_6.setText(QtWidgets.QApplication.translate("SPMTwidget", "Stiffness", None, -1))
-        self.label_8.setText(QtWidgets.QApplication.translate("SPMTwidget", "[kN/m]", None, -1))
-        self.label_9.setText(QtWidgets.QApplication.translate("SPMTwidget", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Axles</span></p></body></html>", None, -1))
-        self.label_11.setText(QtWidgets.QApplication.translate("SPMTwidget", "Spacing width", None, -1))
-        self.label_14.setText(QtWidgets.QApplication.translate("SPMTwidget", "[m]", None, -1))
-        self.label_10.setText(QtWidgets.QApplication.translate("SPMTwidget", "Spacing length", None, -1))
-        self.label_15.setText(QtWidgets.QApplication.translate("SPMTwidget", "[m]", None, -1))
-        self.label_13.setText(QtWidgets.QApplication.translate("SPMTwidget", "Number in width", None, -1))
-        self.label_16.setText(QtWidgets.QApplication.translate("SPMTwidget", "[-]", None, -1))
-        self.label_12.setText(QtWidgets.QApplication.translate("SPMTwidget", "Number in length", None, -1))
-        self.label_17.setText(QtWidgets.QApplication.translate("SPMTwidget", "[-]", None, -1))
-        self.label_18.setText(QtWidgets.QApplication.translate("SPMTwidget", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Friction/Break</span></p></body></html>", None, -1))
-        self.rbPerpendicular.setText(QtWidgets.QApplication.translate("SPMTwidget", "Force perp. to contact plane (no friction)", None, -1))
-        self.rbVertical.setText(QtWidgets.QApplication.translate("SPMTwidget", "Force vertical (friction)", None, -1))
+        SPMTwidget.setWindowTitle(QCoreApplication.translate("SPMTwidget", u"Form", None))
+        self.label_7.setText(QCoreApplication.translate("SPMTwidget", u"<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Hydraulics</span></p></body></html>", None))
+        self.label.setText(QCoreApplication.translate("SPMTwidget", u"Ref. extension", None))
+        self.label_4.setText(QCoreApplication.translate("SPMTwidget", u"[m]", None))
+        self.label_2.setText(QCoreApplication.translate("SPMTwidget", u"Ref. force", None))
+        self.label_5.setText(QCoreApplication.translate("SPMTwidget", u"[kN]", None))
+        self.label_6.setText(QCoreApplication.translate("SPMTwidget", u"Stiffness", None))
+        self.label_8.setText(QCoreApplication.translate("SPMTwidget", u"[kN/m]", None))
+        self.label_9.setText(QCoreApplication.translate("SPMTwidget", u"<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Axles</span></p></body></html>", None))
+        self.label_11.setText(QCoreApplication.translate("SPMTwidget", u"Spacing width", None))
+        self.label_14.setText(QCoreApplication.translate("SPMTwidget", u"[m]", None))
+        self.label_10.setText(QCoreApplication.translate("SPMTwidget", u"Spacing length", None))
+        self.label_15.setText(QCoreApplication.translate("SPMTwidget", u"[m]", None))
+        self.label_13.setText(QCoreApplication.translate("SPMTwidget", u"Number in width", None))
+        self.label_16.setText(QCoreApplication.translate("SPMTwidget", u"[-]", None))
+        self.label_12.setText(QCoreApplication.translate("SPMTwidget", u"Number in length", None))
+        self.label_17.setText(QCoreApplication.translate("SPMTwidget", u"[-]", None))
+        self.label_18.setText(QCoreApplication.translate("SPMTwidget", u"<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Friction/Break</span></p></body></html>", None))
+        self.rbPerpendicular.setText(QCoreApplication.translate("SPMTwidget", u"Force perp. to contact plane (no friction)", None))
+        self.label_19.setText(QCoreApplication.translate("SPMTwidget", u"Parent", None))
+        self.rbVertical.setText(QCoreApplication.translate("SPMTwidget", u"Force vertical (friction)", None))
+        self.label_3.setText(QCoreApplication.translate("SPMTwidget", u"<html><head/><body>Hydraulic settings are defined by defining an reference force and extension as well as a stiffness.<br>If the SPMT is loaded with a force equal to the reference force then the average extension of the axles is the reference extension.<br/>The stiffness defines the stiffness of the whole SPMT, that is: all axles together.</body></html>", None))
+    # retranslateUi
 

@@ -112,13 +112,16 @@ plt.show()
         omega = 2*np.pi / period
         wave_length = wavelength(omega,0) # infinite waterdepth
 
+        # match the size of the plane to the wave-length
+        # to make sure that there is sufficient resolution in the waves
+
         wf = DAVE.visual.WaveField()
         wf.create_waveplane(wave_direction=wave_direction,
                             wave_amplitude=amplitude,
                             wave_length=wave_length,
                             wave_period = period,
                             nt = n_frames,
-                            nx = 50, ny = 50, dx=400,dy=400)
+                            nx = 50, ny = 50, dx=4*wave_length,dy=4*wave_length)
 
         self.gui.animation_terminate()
         self.gui.visual.add_dynamic_wave_plane(wf)

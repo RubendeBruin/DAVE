@@ -1,46 +1,75 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_name.ui',
-# licensing of 'widget_name.ui' applies.
-#
-# Created: Wed Mar  2 18:17:17 2022
-#      by: pyside2-uic  running on PySide2 5.13.2
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'widget_name.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.6
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtCore import *  # type: ignore
+from PySide2.QtGui import *  # type: ignore
+from PySide2.QtWidgets import *  # type: ignore
+
 
 class Ui_NameWidget(object):
     def setupUi(self, NameWidget):
-        NameWidget.setObjectName("NameWidget")
-        NameWidget.resize(337, 49)
-        self.gridLayout = QtWidgets.QGridLayout(NameWidget)
-        self.gridLayout.setObjectName("gridLayout")
-        self.label2 = QtWidgets.QLabel(NameWidget)
-        self.label2.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
-        self.label2.setObjectName("label2")
+        if not NameWidget.objectName():
+            NameWidget.setObjectName(u"NameWidget")
+        NameWidget.resize(254, 61)
+        NameWidget.setMinimumSize(QSize(0, 0))
+        self.gridLayout = QGridLayout(NameWidget)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.label2 = QLabel(NameWidget)
+        self.label2.setObjectName(u"label2")
+        self.label2.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
         self.gridLayout.addWidget(self.label2, 2, 2, 1, 1)
-        self.cbVisible = QtWidgets.QCheckBox(NameWidget)
-        self.cbVisible.setObjectName("cbVisible")
+
+        self.cbVisible = QCheckBox(NameWidget)
+        self.cbVisible.setObjectName(u"cbVisible")
+
         self.gridLayout.addWidget(self.cbVisible, 2, 1, 1, 1)
-        self.label = QtWidgets.QLabel(NameWidget)
-        self.label.setObjectName("label")
+
+        self.label = QLabel(NameWidget)
+        self.label.setObjectName(u"label")
+
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
-        self.lbColor = QtWidgets.QLabel(NameWidget)
-        self.lbColor.setStyleSheet("background-color: rgb(255, 170, 0);")
-        self.lbColor.setObjectName("lbColor")
+
+        self.lbColor = QLabel(NameWidget)
+        self.lbColor.setObjectName(u"lbColor")
+        self.lbColor.setStyleSheet(u"background-color: rgb(255, 170, 0);")
+        self.lbColor.setFrameShape(QFrame.NoFrame)
+
         self.gridLayout.addWidget(self.lbColor, 2, 3, 1, 1)
-        self.tbName = QtWidgets.QLineEdit(NameWidget)
-        self.tbName.setObjectName("tbName")
+
+        self.tbName = QLineEdit(NameWidget)
+        self.tbName.setObjectName(u"tbName")
+
         self.gridLayout.addWidget(self.tbName, 0, 1, 1, 3)
 
+        self.lblInfo = QLabel(NameWidget)
+        self.lblInfo.setObjectName(u"lblInfo")
+        self.lblInfo.setStyleSheet(u"color: rgb(200, 100, 0)")
+
+        self.gridLayout.addWidget(self.lblInfo, 1, 1, 1, 3)
+
+
         self.retranslateUi(NameWidget)
-        QtCore.QMetaObject.connectSlotsByName(NameWidget)
+
+        QMetaObject.connectSlotsByName(NameWidget)
+    # setupUi
 
     def retranslateUi(self, NameWidget):
-        NameWidget.setWindowTitle(QtWidgets.QApplication.translate("NameWidget", "Form", None, -1))
-        self.label2.setText(QtWidgets.QApplication.translate("NameWidget", "Color:", None, -1))
-        self.cbVisible.setText(QtWidgets.QApplication.translate("NameWidget", "Visual visible", None, -1))
-        self.label.setText(QtWidgets.QApplication.translate("NameWidget", "Name [unique]", None, -1))
-        self.lbColor.setText(QtWidgets.QApplication.translate("NameWidget", "default", None, -1))
+        NameWidget.setWindowTitle(QCoreApplication.translate("NameWidget", u"Form", None))
+        self.label2.setText(QCoreApplication.translate("NameWidget", u"Color:", None))
+        self.cbVisible.setText(QCoreApplication.translate("NameWidget", u"Visual visible", None))
+        self.label.setText(QCoreApplication.translate("NameWidget", u"Name [unique]", None))
+#if QT_CONFIG(tooltip)
+        self.lbColor.setToolTip(QCoreApplication.translate("NameWidget", u"click to change, right-click to reset", None))
+#endif // QT_CONFIG(tooltip)
+        self.lbColor.setText(QCoreApplication.translate("NameWidget", u"default", None))
+        self.lblInfo.setText(QCoreApplication.translate("NameWidget", u"TextLabel", None))
+    # retranslateUi
 

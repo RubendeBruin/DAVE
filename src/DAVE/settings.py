@@ -29,10 +29,25 @@ from dataclasses import dataclass
 DAVE_ADDITIONAL_RUNTIME_MODULES = dict()
 """Variables in this dict will be made available to the interpreter when executing code. Useful when introducing new  
 Node types via plugins.
-
-
-
 """
+
+QUICK_ACTION_REGISTER = []
+"""Functions in this list are called by the Quick Action widget in the gui and can be used to add buttons to the
+quick-action widget. 
+
+QUICK_ACTION_REGISTER demo:
+
+def qa_demo(scene, selection, *args):
+    if any([isinstance(node, Point) for node in selection]):
+        btn = QPushButton('Good point!')
+        btn.setIcon(QIcon(":/icons/circle.png"))
+        return [(btn,"print('Told ya')")]
+    return []
+
+QUICK_ACTION_REGISTER.append(qa_demo)
+"""
+
+
 
 from os.path import expanduser
 from os.path import dirname
@@ -193,6 +208,26 @@ class NodePropertyInfo:
 
 DAVE_NODEPROP_INFO = dict()
 
+# Convenience function to add a prop to the register
+def register_nodeprop(node_class: type,
+                      property_name: str,
+                      property_type: type,
+                      doc_short: str,
+                      doc_long: str,
+                      units: str,
+                      remarks: str,
+                      is_settable: bool,
+                      is_single_settable: bool,
+                      is_single_numeric: bool):
+
+    new_type = NodePropertyInfo(node_class, property_name, property_type, doc_short, doc_long, units, remarks,
+                                is_settable, is_single_settable, is_single_numeric)
+
+    if node_class not in DAVE_NODEPROP_INFO:
+        DAVE_NODEPROP_INFO[node_class] = dict()
+
+    DAVE_NODEPROP_INFO[node_class][property_name] = new_type
+
 
 # ======= Animate after solving =========
 
@@ -209,33 +244,50 @@ import platform
 if platform.system().lower().startswith('win'):
     # on windows we can possibly get blender from the registry
     import winreg
-    pt = ''
+    import os
 
+    def find_blender_from_reg(where, key):
+        try:
+            pt = winreg.QueryValue(where, key)
+            if pt:
+                BLENDER_EXEC = pt[1:-6]
+                BLENDER_EXEC = BLENDER_EXEC.replace('blender-launcher', 'blender')
+                if os.path.exists(BLENDER_EXEC):
+                    return BLENDER_EXEC
+        finally:
+            raise ValueError('Not found here')
+
+
+
+
+    BLENDER_EXEC = "Blender not found"
     try:
-        pt = winreg.QueryValue(winreg.HKEY_CLASSES_ROOT, r'Applications\blender.exe\shell\open\command')
+        BLENDER_EXEC = find_blender_from_reg(winreg.HKEY_CLASSES_ROOT, r'Applications\blender.exe\shell\open\command')
     except:
         try:
-            pt = winreg.QueryValue(winreg.HKEY_CURRENT_USER,r'SOFTWARE\Classes\blendfile\shell\open\command')
+            BLENDER_EXEC = find_blender_from_reg(winreg.HKEY_CURRENT_USER,r'SOFTWARE\Classes\blendfile\shell\open\command')
         except:
             try:
-                pt = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\Classes\blendfile\shell\open\command')
+                BLENDER_EXEC = find_blender_from_reg(winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\Classes\blendfile\shell\open\command')
             except:
-                pass
-    if pt:
-        BLENDER_EXEC = pt[1:-6]
-    else:
-        BLENDER_EXEC = BLENDER_EXEC_DEFAULT_WIN
+                # find it in a path
+                # by default the windows-store version seems to be installed in a location which is in the path
+                paths = os.environ['PATH'].split(';')
+                for pth in paths:
+                    test = pth + r'\\blender.exe'
+                    if os.path.exists(test):
+                        BLENDER_EXEC = test
+                        break
 
-    BLENDER_EXEC = BLENDER_EXEC.replace('blender-launcher','blender')
 
-    from os import path
-    if path.exists(BLENDER_EXEC):
+
+    if os.path.exists(BLENDER_EXEC):
+        print("! Blender not found - Blender can be installed from the microsoft windows store."
+              "   if you have blender already and want to be able to use blender then please either:\n"
+              "   - configure windows to open .blend files with blender automatically \n"
+              "   - add the folder containing blender.exe to the PATH variable.")
         print("Blender found at: {}".format(BLENDER_EXEC))
     else:
-        print("! Blender not found - if you want to be able to use blender then please either:\n"
-              "   edit BLENDER_EXEC_DEFAULT_WIN in settings.py or \n"
-              "   set settings.BLENDER_EXEC or\n"
-              "   configure windows to open .blend files with blender automatically")
 
         print('\nLoading DAVE...')
 else: # assume we're on linux

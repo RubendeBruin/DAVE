@@ -1,217 +1,255 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_sling.ui',
-# licensing of 'widget_sling.ui' applies.
-#
-# Created: Mon Sep  6 14:29:55 2021
-#      by: pyside2-uic  running on PySide2 5.13.2
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'widget_sling.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.6
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtCore import *  # type: ignore
+from PySide2.QtGui import *  # type: ignore
+from PySide2.QtWidgets import *  # type: ignore
+
 
 class Ui_Form(object):
     def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(427, 891)
-        self.verticalLayout = QtWidgets.QVBoxLayout(Form)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.label_7 = QtWidgets.QLabel(Form)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+        if not Form.objectName():
+            Form.setObjectName(u"Form")
+        Form.resize(427, 397)
+        self.verticalLayout = QVBoxLayout(Form)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.label_7 = QLabel(Form)
+        self.label_7.setObjectName(u"label_7")
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_7.sizePolicy().hasHeightForWidth())
         self.label_7.setSizePolicy(sizePolicy)
-        self.label_7.setMaximumSize(QtCore.QSize(16777215, 30))
+        self.label_7.setMaximumSize(QSize(16777215, 30))
         self.label_7.setAutoFillBackground(False)
-        self.label_7.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.label_7.setObjectName("label_7")
+        self.label_7.setFrameShape(QFrame.NoFrame)
+
         self.verticalLayout.addWidget(self.label_7)
-        self.frame_2 = QtWidgets.QFrame(Form)
-        self.frame_2.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
-        self.frame_2.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_2.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame_2.setObjectName("frame_2")
-        self.gridLayout = QtWidgets.QGridLayout(self.frame_2)
-        self.gridLayout.setObjectName("gridLayout")
-        self.label_2 = QtWidgets.QLabel(self.frame_2)
-        self.label_2.setObjectName("label_2")
+
+        self.frame_2 = QFrame(Form)
+        self.frame_2.setObjectName(u"frame_2")
+        self.frame_2.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
+        self.frame_2.setFrameShape(QFrame.StyledPanel)
+        self.frame_2.setFrameShadow(QFrame.Raised)
+        self.gridLayout = QGridLayout(self.frame_2)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.label_2 = QLabel(self.frame_2)
+        self.label_2.setObjectName(u"label_2")
+
         self.gridLayout.addWidget(self.label_2, 6, 0, 1, 1)
-        self.sbDiameter = QtWidgets.QDoubleSpinBox(self.frame_2)
+
+        self.sbDiameter = QDoubleSpinBox(self.frame_2)
+        self.sbDiameter.setObjectName(u"sbDiameter")
         self.sbDiameter.setDecimals(3)
-        self.sbDiameter.setSingleStep(0.01)
-        self.sbDiameter.setObjectName("sbDiameter")
+        self.sbDiameter.setSingleStep(0.010000000000000)
+
         self.gridLayout.addWidget(self.sbDiameter, 8, 1, 1, 1)
-        self.label_6 = QtWidgets.QLabel(self.frame_2)
-        self.label_6.setObjectName("label_6")
+
+        self.label_6 = QLabel(self.frame_2)
+        self.label_6.setObjectName(u"label_6")
+
         self.gridLayout.addWidget(self.label_6, 9, 0, 1, 1)
-        self.sbLength = QtWidgets.QDoubleSpinBox(self.frame_2)
-        self.sbLength.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
+
+        self.sbLength = QDoubleSpinBox(self.frame_2)
+        self.sbLength.setObjectName(u"sbLength")
+        self.sbLength.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
         self.sbLength.setDecimals(3)
-        self.sbLength.setMinimum(0.0)
-        self.sbLength.setMaximum(999999999999.0)
-        self.sbLength.setObjectName("sbLength")
+        self.sbLength.setMinimum(0.000000000000000)
+        self.sbLength.setMaximum(999999999999.000000000000000)
+
         self.gridLayout.addWidget(self.sbLength, 3, 1, 1, 1)
-        self.label = QtWidgets.QLabel(self.frame_2)
-        self.label.setObjectName("label")
+
+        self.label = QLabel(self.frame_2)
+        self.label.setObjectName(u"label")
+
         self.gridLayout.addWidget(self.label, 3, 0, 1, 1)
-        self.sbMass = QtWidgets.QDoubleSpinBox(self.frame_2)
+
+        self.sbMass = QDoubleSpinBox(self.frame_2)
+        self.sbMass.setObjectName(u"sbMass")
         self.sbMass.setDecimals(3)
-        self.sbMass.setMaximum(10000.0)
-        self.sbMass.setSingleStep(0.1)
-        self.sbMass.setObjectName("sbMass")
+        self.sbMass.setMaximum(10000.000000000000000)
+        self.sbMass.setSingleStep(0.100000000000000)
+
         self.gridLayout.addWidget(self.sbMass, 9, 1, 1, 1)
-        self.sbEA = QtWidgets.QDoubleSpinBox(self.frame_2)
-        self.sbEA.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
+
+        self.sbEA = QDoubleSpinBox(self.frame_2)
+        self.sbEA.setObjectName(u"sbEA")
+        self.sbEA.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
         self.sbEA.setDecimals(1)
-        self.sbEA.setMinimum(0.0)
-        self.sbEA.setMaximum(999999999999.0)
-        self.sbEA.setSingleStep(1000.0)
-        self.sbEA.setObjectName("sbEA")
+        self.sbEA.setMinimum(0.000000000000000)
+        self.sbEA.setMaximum(999999999999.000000000000000)
+        self.sbEA.setSingleStep(1000.000000000000000)
+
         self.gridLayout.addWidget(self.sbEA, 6, 1, 1, 1)
-        self.label_4 = QtWidgets.QLabel(self.frame_2)
-        self.label_4.setObjectName("label_4")
+
+        self.label_4 = QLabel(self.frame_2)
+        self.label_4.setObjectName(u"label_4")
+
         self.gridLayout.addWidget(self.label_4, 8, 0, 1, 1)
-        self.sbK = QtWidgets.QDoubleSpinBox(self.frame_2)
+
+        self.sbK = QDoubleSpinBox(self.frame_2)
+        self.sbK.setObjectName(u"sbK")
         self.sbK.setDecimals(1)
-        self.sbK.setMaximum(999999999999.0)
-        self.sbK.setObjectName("sbK")
+        self.sbK.setMaximum(999999999999.000000000000000)
+
         self.gridLayout.addWidget(self.sbK, 7, 1, 1, 1)
-        self.label_15 = QtWidgets.QLabel(self.frame_2)
-        self.label_15.setObjectName("label_15")
+
+        self.label_15 = QLabel(self.frame_2)
+        self.label_15.setObjectName(u"label_15")
+
         self.gridLayout.addWidget(self.label_15, 7, 0, 1, 1)
+
+
         self.verticalLayout.addWidget(self.frame_2)
-        self.label_12 = QtWidgets.QLabel(Form)
+
+        self.label_12 = QLabel(Form)
+        self.label_12.setObjectName(u"label_12")
         self.label_12.setWordWrap(True)
-        self.label_12.setObjectName("label_12")
+
         self.verticalLayout.addWidget(self.label_12)
-        self.label_14 = QtWidgets.QLabel(Form)
+
+        self.label_14 = QLabel(Form)
+        self.label_14.setObjectName(u"label_14")
         self.label_14.setWordWrap(True)
-        self.label_14.setObjectName("label_14")
+
         self.verticalLayout.addWidget(self.label_14)
-        self.label_8 = QtWidgets.QLabel(Form)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
+
+        self.label_8 = QLabel(Form)
+        self.label_8.setObjectName(u"label_8")
         sizePolicy.setHeightForWidth(self.label_8.sizePolicy().hasHeightForWidth())
         self.label_8.setSizePolicy(sizePolicy)
-        self.label_8.setMaximumSize(QtCore.QSize(16777215, 30))
+        self.label_8.setMaximumSize(QSize(16777215, 30))
         self.label_8.setAutoFillBackground(False)
-        self.label_8.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.label_8.setObjectName("label_8")
+        self.label_8.setFrameShape(QFrame.NoFrame)
+
         self.verticalLayout.addWidget(self.label_8)
-        self.frame_3 = QtWidgets.QFrame(Form)
-        self.frame_3.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
-        self.frame_3.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_3.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame_3.setObjectName("frame_3")
-        self.gridLayout_2 = QtWidgets.QGridLayout(self.frame_3)
-        self.gridLayout_2.setObjectName("gridLayout_2")
-        self.sbLSpliceA = QtWidgets.QDoubleSpinBox(self.frame_3)
-        self.sbLSpliceA.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
+
+        self.frame_3 = QFrame(Form)
+        self.frame_3.setObjectName(u"frame_3")
+        self.frame_3.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
+        self.frame_3.setFrameShape(QFrame.StyledPanel)
+        self.frame_3.setFrameShadow(QFrame.Raised)
+        self.gridLayout_2 = QGridLayout(self.frame_3)
+        self.gridLayout_2.setObjectName(u"gridLayout_2")
+        self.sbLSpliceA = QDoubleSpinBox(self.frame_3)
+        self.sbLSpliceA.setObjectName(u"sbLSpliceA")
+        self.sbLSpliceA.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
         self.sbLSpliceA.setDecimals(3)
-        self.sbLSpliceA.setMinimum(0.0)
-        self.sbLSpliceA.setMaximum(999999999999.0)
-        self.sbLSpliceA.setSingleStep(0.1)
-        self.sbLSpliceA.setObjectName("sbLSpliceA")
+        self.sbLSpliceA.setMinimum(0.000000000000000)
+        self.sbLSpliceA.setMaximum(999999999999.000000000000000)
+        self.sbLSpliceA.setSingleStep(0.100000000000000)
+
         self.gridLayout_2.addWidget(self.sbLSpliceA, 6, 1, 1, 1)
-        self.label_3 = QtWidgets.QLabel(self.frame_3)
-        self.label_3.setObjectName("label_3")
+
+        self.label_3 = QLabel(self.frame_3)
+        self.label_3.setObjectName(u"label_3")
+
         self.gridLayout_2.addWidget(self.label_3, 3, 0, 1, 1)
-        self.sbLEyeA = QtWidgets.QDoubleSpinBox(self.frame_3)
-        self.sbLEyeA.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
+
+        self.sbLEyeA = QDoubleSpinBox(self.frame_3)
+        self.sbLEyeA.setObjectName(u"sbLEyeA")
+        self.sbLEyeA.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
         self.sbLEyeA.setDecimals(3)
-        self.sbLEyeA.setMinimum(0.0)
-        self.sbLEyeA.setMaximum(999999999999.0)
-        self.sbLEyeA.setSingleStep(0.1)
-        self.sbLEyeA.setObjectName("sbLEyeA")
+        self.sbLEyeA.setMinimum(0.000000000000000)
+        self.sbLEyeA.setMaximum(999999999999.000000000000000)
+        self.sbLEyeA.setSingleStep(0.100000000000000)
+
         self.gridLayout_2.addWidget(self.sbLEyeA, 3, 1, 1, 1)
-        self.label_5 = QtWidgets.QLabel(self.frame_3)
-        self.label_5.setObjectName("label_5")
+
+        self.label_5 = QLabel(self.frame_3)
+        self.label_5.setObjectName(u"label_5")
+
         self.gridLayout_2.addWidget(self.label_5, 6, 0, 1, 1)
+
+
         self.verticalLayout.addWidget(self.frame_3)
-        self.label_9 = QtWidgets.QLabel(Form)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
+
+        self.label_9 = QLabel(Form)
+        self.label_9.setObjectName(u"label_9")
         sizePolicy.setHeightForWidth(self.label_9.sizePolicy().hasHeightForWidth())
         self.label_9.setSizePolicy(sizePolicy)
-        self.label_9.setMaximumSize(QtCore.QSize(16777215, 30))
+        self.label_9.setMaximumSize(QSize(16777215, 30))
         self.label_9.setAutoFillBackground(False)
-        self.label_9.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.label_9.setObjectName("label_9")
+        self.label_9.setFrameShape(QFrame.NoFrame)
+
         self.verticalLayout.addWidget(self.label_9)
-        self.frame_4 = QtWidgets.QFrame(Form)
-        self.frame_4.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
-        self.frame_4.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_4.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame_4.setObjectName("frame_4")
-        self.gridLayout_3 = QtWidgets.QGridLayout(self.frame_4)
-        self.gridLayout_3.setObjectName("gridLayout_3")
-        self.sbLSpliceB = QtWidgets.QDoubleSpinBox(self.frame_4)
-        self.sbLSpliceB.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
+
+        self.frame_4 = QFrame(Form)
+        self.frame_4.setObjectName(u"frame_4")
+        self.frame_4.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
+        self.frame_4.setFrameShape(QFrame.StyledPanel)
+        self.frame_4.setFrameShadow(QFrame.Raised)
+        self.gridLayout_3 = QGridLayout(self.frame_4)
+        self.gridLayout_3.setObjectName(u"gridLayout_3")
+        self.sbLSpliceB = QDoubleSpinBox(self.frame_4)
+        self.sbLSpliceB.setObjectName(u"sbLSpliceB")
+        self.sbLSpliceB.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
         self.sbLSpliceB.setDecimals(3)
-        self.sbLSpliceB.setMinimum(0.0)
-        self.sbLSpliceB.setMaximum(999999999999.0)
-        self.sbLSpliceB.setSingleStep(0.1)
-        self.sbLSpliceB.setObjectName("sbLSpliceB")
+        self.sbLSpliceB.setMinimum(0.000000000000000)
+        self.sbLSpliceB.setMaximum(999999999999.000000000000000)
+        self.sbLSpliceB.setSingleStep(0.100000000000000)
+
         self.gridLayout_3.addWidget(self.sbLSpliceB, 6, 1, 1, 1)
-        self.label_10 = QtWidgets.QLabel(self.frame_4)
-        self.label_10.setObjectName("label_10")
+
+        self.label_10 = QLabel(self.frame_4)
+        self.label_10.setObjectName(u"label_10")
+
         self.gridLayout_3.addWidget(self.label_10, 3, 0, 1, 1)
-        self.sbLEyeB = QtWidgets.QDoubleSpinBox(self.frame_4)
-        self.sbLEyeB.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
+
+        self.sbLEyeB = QDoubleSpinBox(self.frame_4)
+        self.sbLEyeB.setObjectName(u"sbLEyeB")
+        self.sbLEyeB.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
         self.sbLEyeB.setDecimals(3)
-        self.sbLEyeB.setMinimum(0.0)
-        self.sbLEyeB.setMaximum(999999999999.0)
-        self.sbLEyeB.setSingleStep(0.1)
-        self.sbLEyeB.setObjectName("sbLEyeB")
+        self.sbLEyeB.setMinimum(0.000000000000000)
+        self.sbLEyeB.setMaximum(999999999999.000000000000000)
+        self.sbLEyeB.setSingleStep(0.100000000000000)
+
         self.gridLayout_3.addWidget(self.sbLEyeB, 3, 1, 1, 1)
-        self.label_11 = QtWidgets.QLabel(self.frame_4)
-        self.label_11.setObjectName("label_11")
+
+        self.label_11 = QLabel(self.frame_4)
+        self.label_11.setObjectName(u"label_11")
+
         self.gridLayout_3.addWidget(self.label_11, 6, 0, 1, 1)
+
+
         self.verticalLayout.addWidget(self.frame_4)
-        self.label_13 = QtWidgets.QLabel(Form)
-        self.label_13.setWordWrap(True)
-        self.label_13.setIndent(-1)
-        self.label_13.setObjectName("label_13")
-        self.verticalLayout.addWidget(self.label_13)
-        self.list = QtWidgets.QListWidget(Form)
-        self.list.setObjectName("list")
-        self.verticalLayout.addWidget(self.list)
-        self.pbRemoveSelected = QtWidgets.QPushButton(Form)
-        self.pbRemoveSelected.setObjectName("pbRemoveSelected")
-        self.verticalLayout.addWidget(self.pbRemoveSelected)
+
+        QWidget.setTabOrder(self.sbLength, self.sbEA)
+        QWidget.setTabOrder(self.sbEA, self.sbK)
+        QWidget.setTabOrder(self.sbK, self.sbDiameter)
+        QWidget.setTabOrder(self.sbDiameter, self.sbMass)
+        QWidget.setTabOrder(self.sbMass, self.sbLEyeA)
+        QWidget.setTabOrder(self.sbLEyeA, self.sbLSpliceA)
+        QWidget.setTabOrder(self.sbLSpliceA, self.sbLEyeB)
+        QWidget.setTabOrder(self.sbLEyeB, self.sbLSpliceB)
 
         self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
-        Form.setTabOrder(self.sbLength, self.sbEA)
-        Form.setTabOrder(self.sbEA, self.sbK)
-        Form.setTabOrder(self.sbK, self.sbDiameter)
-        Form.setTabOrder(self.sbDiameter, self.sbMass)
-        Form.setTabOrder(self.sbMass, self.sbLEyeA)
-        Form.setTabOrder(self.sbLEyeA, self.sbLSpliceA)
-        Form.setTabOrder(self.sbLSpliceA, self.sbLEyeB)
-        Form.setTabOrder(self.sbLEyeB, self.sbLSpliceB)
-        Form.setTabOrder(self.sbLSpliceB, self.list)
-        Form.setTabOrder(self.list, self.pbRemoveSelected)
+
+        QMetaObject.connectSlotsByName(Form)
+    # setupUi
 
     def retranslateUi(self, Form):
-        Form.setWindowTitle(QtWidgets.QApplication.translate("Form", "Form", None, -1))
-        self.label_7.setText(QtWidgets.QApplication.translate("Form", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Sling properties</span></p></body></html>", None, -1))
-        self.label_2.setText(QtWidgets.QApplication.translate("Form", "EA [kN] **", None, -1))
-        self.label_6.setText(QtWidgets.QApplication.translate("Form", "Mass [mT]", None, -1))
-        self.label.setText(QtWidgets.QApplication.translate("Form", "Total length [m] *", None, -1))
-        self.label_4.setText(QtWidgets.QApplication.translate("Form", "Diameter [m]", None, -1))
-        self.label_15.setText(QtWidgets.QApplication.translate("Form", "Total stiffness [kN/m]", None, -1))
-        self.label_12.setText(QtWidgets.QApplication.translate("Form", "* Total length is measured between the insides of the eyes", None, -1))
-        self.label_14.setText(QtWidgets.QApplication.translate("Form", "** EA is the stiffness over the wire", None, -1))
-        self.label_8.setText(QtWidgets.QApplication.translate("Form", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">End A</span></p></body></html>", None, -1))
-        self.label_3.setText(QtWidgets.QApplication.translate("Form", "Length eye (inside) [m]", None, -1))
-        self.label_5.setText(QtWidgets.QApplication.translate("Form", "Length splice [m]", None, -1))
-        self.label_9.setText(QtWidgets.QApplication.translate("Form", "<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">End B</span></p></body></html>", None, -1))
-        self.label_10.setText(QtWidgets.QApplication.translate("Form", "Length eye (inside) [m]", None, -1))
-        self.label_11.setText(QtWidgets.QApplication.translate("Form", "Length splice [m]", None, -1))
-        self.label_13.setText(QtWidgets.QApplication.translate("Form", "<html><head/><body><p>Connection points of the sling</p><p>drag/drop to modify</p></body></html>", None, -1))
-        self.pbRemoveSelected.setText(QtWidgets.QApplication.translate("Form", "remove selected point", None, -1))
+        Form.setWindowTitle(QCoreApplication.translate("Form", u"Form", None))
+        self.label_7.setText(QCoreApplication.translate("Form", u"<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Sling properties</span></p></body></html>", None))
+        self.label_2.setText(QCoreApplication.translate("Form", u"EA [kN] **", None))
+        self.label_6.setText(QCoreApplication.translate("Form", u"Mass [mT]", None))
+        self.label.setText(QCoreApplication.translate("Form", u"Total length [m] *", None))
+        self.label_4.setText(QCoreApplication.translate("Form", u"Diameter [m]", None))
+        self.label_15.setText(QCoreApplication.translate("Form", u"Total stiffness [kN/m]", None))
+        self.label_12.setText(QCoreApplication.translate("Form", u"* Total length is measured between the insides of the eyes", None))
+        self.label_14.setText(QCoreApplication.translate("Form", u"** EA is the stiffness of the wire", None))
+        self.label_8.setText(QCoreApplication.translate("Form", u"<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">End A</span></p></body></html>", None))
+        self.label_3.setText(QCoreApplication.translate("Form", u"Length eye (inside) [m]", None))
+        self.label_5.setText(QCoreApplication.translate("Form", u"Length splice [m]", None))
+        self.label_9.setText(QCoreApplication.translate("Form", u"<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">End B</span></p></body></html>", None))
+        self.label_10.setText(QCoreApplication.translate("Form", u"Length eye (inside) [m]", None))
+        self.label_11.setText(QCoreApplication.translate("Form", u"Length splice [m]", None))
+    # retranslateUi
 

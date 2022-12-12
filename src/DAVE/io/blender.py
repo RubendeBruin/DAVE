@@ -153,7 +153,7 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), or
         # Offset is applied on the rotated and scaled object
         # 
 
-        context_override = {'active_object': object, 'area':view3d_area}
+        # context_override = {'active_object': object, 'area':view3d_area}
 
         # bpy.ops.transform.rotate(context_override,value=rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)... (2.83 this seems to be fixed)?
         # bpy.ops.transform.rotate(context_override,value=rotation[1], orient_axis='Y')
@@ -163,13 +163,18 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), or
         active_object.rotation_quaternion = (rotation[3], rotation[0], rotation[1],rotation[2])
        
 
-        bpy.ops.object.transform_apply(context_override,location=False, rotation=True, scale=False)    
+        # bpy.ops.object.transform_apply(context_override,location=False, rotation=True, scale=False)    
+        bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)    
 
-        bpy.ops.transform.resize(context_override,value=scale)
-        bpy.ops.object.transform_apply(context_override,location=False, rotation=False, scale=True)
+        # bpy.ops.transform.resize(context_override,value=scale)
+        bpy.ops.transform.resize(value=scale)
+        # bpy.ops.object.transform_apply(context_override,location=False, rotation=False, scale=True)
+        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
 
-        bpy.ops.transform.translate(context_override,value=offset)  # translate
-        bpy.ops.object.transform_apply(context_override,location=True, rotation=False, scale=False)    
+        # bpy.ops.transform.translate(context_override,value=offset)  # translate
+        bpy.ops.transform.translate(value=offset)  # translate
+        # bpy.ops.object.transform_apply(context_override,location=True, rotation=False, scale=False)    
+        bpy.ops.object.transform_apply(location=True, rotation=False, scale=False)    
 
         # apply global transforms
 
@@ -590,10 +595,10 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
         code += '\n# Exporting {}'.format(visual.name)
 
         # look for the file
-
-        name, _ = splitext(basename(visual.path))
+        # try to find a .blend file
 
         try:
+            name = visual.path.split('.')[0]
             filename = scene.get_resource_path(name + '.blend')  # raises exception if file is not found
         except:
             filename = scene.get_resource_path(visual.path)  # fall-back to .obj

@@ -1,59 +1,75 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'widget_footprints.ui',
-# licensing of 'widget_footprints.ui' applies.
-#
-# Created: Sat Jun 19 08:06:59 2021
-#      by: pyside2-uic  running on PySide2 5.13.2
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'widget_footprints.ui'
+##
+## Created by: Qt User Interface Compiler version 5.15.6
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtCore import *  # type: ignore
+from PySide2.QtGui import *  # type: ignore
+from PySide2.QtWidgets import *  # type: ignore
+
 
 class Ui_FootprintForm(object):
     def setupUi(self, FootprintForm):
-        FootprintForm.setObjectName("FootprintForm")
+        if not FootprintForm.objectName():
+            FootprintForm.setObjectName(u"FootprintForm")
         FootprintForm.resize(506, 739)
-        self.verticalLayout = QtWidgets.QVBoxLayout(FootprintForm)
+        self.verticalLayout = QVBoxLayout(FootprintForm)
         self.verticalLayout.setSpacing(0)
+        self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.widget_2 = QtWidgets.QWidget(FootprintForm)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum)
+        self.widget_2 = QWidget(FootprintForm)
+        self.widget_2.setObjectName(u"widget_2")
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.widget_2.sizePolicy().hasHeightForWidth())
         self.widget_2.setSizePolicy(sizePolicy)
-        self.widget_2.setObjectName("widget_2")
-        self.gridLayout = QtWidgets.QGridLayout(self.widget_2)
-        self.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.gridLayout.setObjectName("gridLayout")
-        self.label = QtWidgets.QLabel(self.widget_2)
+        self.gridLayout = QGridLayout(self.widget_2)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.label = QLabel(self.widget_2)
+        self.label.setObjectName(u"label")
         self.label.setWordWrap(True)
-        self.label.setObjectName("label")
+
         self.gridLayout.addWidget(self.label, 0, 0, 1, 2)
+
+
         self.verticalLayout.addWidget(self.widget_2)
-        self.splitter = QtWidgets.QSplitter(FootprintForm)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.splitter.sizePolicy().hasHeightForWidth())
-        self.splitter.setSizePolicy(sizePolicy)
-        self.splitter.setOrientation(QtCore.Qt.Horizontal)
-        self.splitter.setObjectName("splitter")
-        self.treeView = QtWidgets.QTreeWidget(self.splitter)
+
+        self.splitter = QSplitter(FootprintForm)
+        self.splitter.setObjectName(u"splitter")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.splitter.sizePolicy().hasHeightForWidth())
+        self.splitter.setSizePolicy(sizePolicy1)
+        self.splitter.setOrientation(Qt.Horizontal)
+        self.treeView = QTreeWidget(self.splitter)
+        __qtreewidgetitem = QTreeWidgetItem()
+        __qtreewidgetitem.setText(0, u"1");
+        self.treeView.setHeaderItem(__qtreewidgetitem)
+        self.treeView.setObjectName(u"treeView")
         self.treeView.setColumnCount(1)
-        self.treeView.setObjectName("treeView")
-        self.treeView.headerItem().setText(0, "1")
+        self.splitter.addWidget(self.treeView)
         self.treeView.header().setVisible(False)
-        self.widget = QtWidgets.QWidget(self.splitter)
-        self.widget.setObjectName("widget")
+        self.widget = QWidget(self.splitter)
+        self.widget.setObjectName(u"widget")
+        self.splitter.addWidget(self.widget)
+
         self.verticalLayout.addWidget(self.splitter)
 
+
         self.retranslateUi(FootprintForm)
-        QtCore.QMetaObject.connectSlotsByName(FootprintForm)
+
+        QMetaObject.connectSlotsByName(FootprintForm)
+    # setupUi
 
     def retranslateUi(self, FootprintForm):
-        FootprintForm.setWindowTitle(QtWidgets.QApplication.translate("FootprintForm", "Form", None, -1))
-        self.label.setText(QtWidgets.QApplication.translate("FootprintForm", "Footprints define over which length a force or weight is introduced.", None, -1))
+        FootprintForm.setWindowTitle(QCoreApplication.translate("FootprintForm", u"Form", None))
+        self.label.setText(QCoreApplication.translate("FootprintForm", u"Footprints define over which length a force or weight is introduced.", None))
+    # retranslateUi
 

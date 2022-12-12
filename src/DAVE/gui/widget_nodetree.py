@@ -10,6 +10,8 @@ from PySide2.QtWidgets import (
 import DAVE.scene as ds
 from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter
 
+from DAVE.settings_visuals import ICONS
+
 
 class NodeTreeWidget(QtWidgets.QTreeWidget):
 
@@ -72,7 +74,7 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
         drag = QDrag(self)
         drag.setMimeData(mimeData)
 
-        drag.exec_(supportedActions=supportedActions, defaultAction=Qt.MoveAction)
+        drag.exec_(supportedActions=supportedActions) # , defaultAction=Qt.MoveAction)
 
 
 class WidgetNodeTree(guiDockWidget):
@@ -296,6 +298,46 @@ class WidgetNodeTree(guiDockWidget):
 
         show_managed_nodes = self.checkbox.isChecked()
 
+
+        def give_parent_item(node):
+            """Determines where to place the given item in the tree.
+            Returns the parent node, which may be the invisible root node, to which the item of this node
+            shall be a child
+            """
+            parent = getattr(node,'parent',None)
+
+            # if node does not have a parent, then use the manager (if any)
+            if parent is None:
+                parent = node.manager
+
+            # no manager and no parent --> in root
+            if parent is None:
+                return self.treeView.invisibleRootItem()
+
+            # there is a parent or manager to add to,
+            # but the parent may not be in the tree.
+
+            hidden_nodes_between = False
+
+            while True:
+                if parent.name in self.items:
+                    return self.items[parent.name]
+
+                hidden_nodes_between = True
+
+                parents_parent = getattr(parent, 'parent', None)
+                if parents_parent is None:
+                    parents_parent = parent.manager
+
+                # no parent and no manager:
+                if parents_parent is None:
+                    return self.treeView.invisibleRootItem()
+
+                parent = parents_parent # next iteration with parent
+
+
+
+
         for node in self.guiScene._nodes:
 
             # create a tree item
@@ -311,51 +353,56 @@ class WidgetNodeTree(guiDockWidget):
             # if we have a parent, then put the items under the parent,
             # else put it under the root
 
-            item.setIcon(0, QIcon(":/icons/redball.png"))
-            if isinstance(node, ds.Component):
-                item.setIcon(0, QIcon(":/icons/component.png"))
-            elif isinstance(node, ds.RigidBody):
-                item.setIcon(0, QIcon(":/icons/cube.png"))
-            elif isinstance(node, ds.Frame):
-                item.setIcon(0, QIcon(":/icons/axis_blue.png"))
-            elif isinstance(node, ds.Point):
-                item.setIcon(0, QIcon(":/icons/point_blue.png"))
-            elif isinstance(node, ds.Cable):
-                item.setIcon(0, QIcon(":/icons/cable.png"))
-            elif isinstance(node, ds.Visual):
-                item.setIcon(0, QIcon(":/icons/visual.png"))
-            elif isinstance(node, ds.LC6d):
-                item.setIcon(0, QIcon(":/icons/lincon6.png"))
-            elif isinstance(node, ds.Connector2d):
-                item.setIcon(0, QIcon(":/icons/con2d.png"))
-            elif isinstance(node, ds.Beam):
-                item.setIcon(0, QIcon(":/icons/beam.png"))
-            elif isinstance(node, ds.HydSpring):
-                item.setIcon(0, QIcon(":/icons/linhyd.png"))
-            elif isinstance(node, ds.Force):
-                item.setIcon(0, QIcon(":/icons/force.png"))
-            elif isinstance(node, ds.Circle):
-                item.setIcon(0, QIcon(":/icons/circle_blue.png"))
-            elif isinstance(node, ds.Buoyancy):
-                item.setIcon(0, QIcon(":/icons/trimesh.png"))
-            elif isinstance(node, ds.WaveInteraction1):
-                item.setIcon(0, QIcon(":/icons/waveinteraction.png"))
-            elif isinstance(node, ds.ContactBall):
-                item.setIcon(0, QIcon(":/icons/contactball.png"))
-            elif isinstance(node, ds.ContactMesh):
-                item.setIcon(0, QIcon(":/icons/contactmesh.png"))
-            elif isinstance(node, ds.GeometricContact):
-                item.setIcon(0, QIcon(":/icons/pin_hole.png"))
-            elif isinstance(node, ds.Sling):
-                item.setIcon(0, QIcon(":/icons/sling.png"))
-            elif isinstance(node, ds.Tank):
-                item.setIcon(0, QIcon(":/icons/tank.png"))
-            elif isinstance(node, ds.WindArea):
-                item.setIcon(0, QIcon(":/icons/wind.png"))
-            elif isinstance(node, ds.CurrentArea):
-                item.setIcon(0, QIcon(":/icons/current.png"))
-            elif isinstance(node, ds.SPMT):
-                item.setIcon(0, QIcon(":/icons/spmt.png"))
+            if type(node) in ICONS:
+                item.setIcon(0,ICONS[type(node)])
+            else:
+
+                item.setIcon(0, QIcon(":/icons/redball.png"))
+
+                if isinstance(node, ds.Component):
+                    item.setIcon(0, QIcon(":/icons/component.png"))
+                elif isinstance(node, ds.RigidBody):
+                    item.setIcon(0, QIcon(":/icons/cube.png"))
+                elif isinstance(node, ds.Frame):
+                    item.setIcon(0, QIcon(":/icons/axis_blue.png"))
+                elif isinstance(node, ds.Point):
+                    item.setIcon(0, QIcon(":/icons/point_blue.png"))
+                elif isinstance(node, ds.Cable):
+                    item.setIcon(0, QIcon(":/icons/cable.png"))
+                elif isinstance(node, ds.Visual):
+                    item.setIcon(0, QIcon(":/icons/visual.png"))
+                elif isinstance(node, ds.LC6d):
+                    item.setIcon(0, QIcon(":/icons/lincon6.png"))
+                elif isinstance(node, ds.Connector2d):
+                    item.setIcon(0, QIcon(":/icons/con2d.png"))
+                elif isinstance(node, ds.Beam):
+                    item.setIcon(0, QIcon(":/icons/beam.png"))
+                elif isinstance(node, ds.HydSpring):
+                    item.setIcon(0, QIcon(":/icons/linhyd.png"))
+                elif isinstance(node, ds.Force):
+                    item.setIcon(0, QIcon(":/icons/force.png"))
+                elif isinstance(node, ds.Circle):
+                    item.setIcon(0, QIcon(":/icons/circle_blue.png"))
+                elif isinstance(node, ds.Buoyancy):
+                    item.setIcon(0, QIcon(":/icons/trimesh.png"))
+                elif isinstance(node, ds.WaveInteraction1):
+                    item.setIcon(0, QIcon(":/icons/waveinteraction.png"))
+                elif isinstance(node, ds.ContactBall):
+                    item.setIcon(0, QIcon(":/icons/contactball.png"))
+                elif isinstance(node, ds.ContactMesh):
+                    item.setIcon(0, QIcon(":/icons/contactmesh.png"))
+                elif isinstance(node, ds.GeometricContact):
+                    item.setIcon(0, QIcon(":/icons/pin_hole.png"))
+                elif isinstance(node, ds.Sling):
+                    item.setIcon(0, QIcon(":/icons/sling.png"))
+                elif isinstance(node, ds.Tank):
+                    item.setIcon(0, QIcon(":/icons/tank.png"))
+                elif isinstance(node, ds.WindArea):
+                    item.setIcon(0, QIcon(":/icons/wind.png"))
+                elif isinstance(node, ds.CurrentArea):
+                    item.setIcon(0, QIcon(":/icons/current.png"))
+                elif isinstance(node, ds.SPMT):
+                    item.setIcon(0, QIcon(":/icons/spmt.png"))
 
 
             try:
@@ -386,36 +433,17 @@ class WidgetNodeTree(guiDockWidget):
                     if node._manager.manager is None: # but only if the manager itself is not also managed (and thus hidden)
                         show_managed_node = True
 
-            if node._manager:
+            if node.manager and show_managed_node:          # are we showing managed nodes?
 
-                # are we showing managed nodes?
-                if show_managed_node:
-
-                    # item.setTextColor(0, Qt.gray)
-                    item.setTextColor(0, QColor(0, 150, 0))
-
-                    # if the item does not have a parent, then show it under the manager
-                    if parent is None:
-                        parent = node._manager
-
-                    if parent.name not in self.items:
-                        parent = node._manager
-
-                    self.items[node.name] = item
-                    self.items[parent.name].addChild(item)
-
-            else:
+                item.setTextColor(0, QColor(0, 150, 0))
                 self.items[node.name] = item
+                give_parent_item(node).addChild(item)
 
-                if parent is None:
-                    self.treeView.invisibleRootItem().addChild(item)
-                else:
-                    if parent.name in self.items:
-                        self.items[parent.name].addChild(item)
-                    else:  # if the parent is not there, then it must be a managed node
-                        self.items[parent._manager.name].addChild(item)
+            elif node.manager is None:
+                self.items[node.name] = item
+                give_parent_item(node).addChild(item)
 
-        # self.treeView.resizeColumnToContents(0)
+
         self.treeView.expandAll()
 
         # restore closed nodes state

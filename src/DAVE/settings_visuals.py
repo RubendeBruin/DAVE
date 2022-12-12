@@ -1,6 +1,8 @@
 """Contains the settings and data-classes used by the visuals.
 
-Contains the pre-defined paints
+Contains the pre-defined paints:
+
+PAINTERS["paintset_name"]["NodeClass:status"] = ActorSettings
 
 
 """
@@ -10,6 +12,7 @@ from copy import copy, deepcopy
 from matplotlib.cm import get_cmap
 import DAVE.settings as ds
 
+ICONS = dict()  # [class] = QIcon
 
 PAINTERS = dict()  # this is the dictionary with sets of paint, it will be filled later
 
@@ -671,6 +674,11 @@ foot_painters["WindArea"] = {"main": copy(invisible)}
 foot_painters["CurrentArea"] = {"main": copy(invisible)}
 
 PAINTERS["Footprints"] = foot_painters
+
+def AddPaintForNodeClassAsCopyOfOtherClass(node_class: str, other_class: str):
+    for P in PAINTERS.values():
+        P[node_class] = deepcopy(P[other_class])
+
 
 
 if __name__ == "__main__":

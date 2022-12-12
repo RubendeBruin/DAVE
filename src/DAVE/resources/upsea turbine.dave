@@ -1,144 +1,204 @@
-# auto generated pyhton code
+# auto generated python code
 # By beneden
-# Time: 2019-10-15 21:33:59 UTC
+# Time: 2022-11-16 18:23:32 UTC
 
 # To be able to distinguish the important number (eg: fixed positions) from
 # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
 # For anything written as solved(number) that actual number does not influence the static solution
+
 def solved(number):
     return number
 
+
+# Environment settings
+s.g = 9.80665
+s.waterlevel = 0.0
+s.rho_air = 0.00126
+s.rho_water = 1.025
+s.wind_direction = 0.0
+s.wind_velocity = 0.0
+s.current_direction = 0.0
+s.current_velocity = 0.0
+
+
+
 # code for Tower
 s.new_rigidbody(name='Tower',
-                mass=100.0,
-                cog=(0.0,
-                     0.0,
-                     32.0),
-                position=(0.0,
-                          0.0,
-                          0.0),
-                rotation=(0.0,
-                          0.0,
-                          0.0),
+                mass=100,
+                cog=(0,
+                     0,
+                     32),
+                position=(0,
+                          0,
+                          0),
+                rotation=(0,
+                          0,
+                          0),
                 fixed =(True, True, True, True, True, True) )
+
 # code for Nacelle
 s.new_rigidbody(name='Nacelle',
-                mass=100.0,
-                cog=(0.0,
-                     0.0,
-                     0.0),
+                mass=100,
+                cog=(0,
+                     0,
+                     0),
                 parent='Tower',
-                position=(0.0,
-                          0.0,
-                          65.0),
-                rotation=(0.0,
-                          0.0,
-                          0.0),
+                position=(0,
+                          0,
+                          65),
+                rotation=(0,
+                          5,
+                          0),
                 fixed =(True, True, True, True, True, True) )
-# code for blade1body
-s.new_rigidbody(name='blade1body',
-                mass=15.0,
-                cog=(0.0,
-                     0.0,
-                     15.0),
-                parent='Nacelle',
-                position=(-9.0,
-                          0.0,
-                          0.0),
-                rotation=(0.0,
-                          0.0,
-                          0.0),
-                fixed =(True, True, True, True, True, True) )
-# code for blade1Buoyancy mesh
-mesh = s.new_buoyancy(name='blade1Buoyancy mesh',
-          parent='blade1body')
-mesh.trimesh.load_obj(s.get_resource_path(r'turbine blade.obj'), scale = (1.3,1.3,1.3), rotation = (0.0,90.0,0.0), offset = (0.0,0.0,0.0))
-# code for blade2body
-s.new_rigidbody(name='blade2body',
-                mass=15.0,
-                cog=(0.0,
-                     0.0,
-                     15.0),
-                parent='Nacelle',
-                position=(-9.0,
-                          0.0,
-                          0.0),
-                rotation=(119.99999999999999,
-                          0.0,
-                          0.0),
-                fixed =(True, True, True, True, True, True) )
-# code for blade2Buoyancy mesh
-mesh = s.new_buoyancy(name='blade2Buoyancy mesh',
-          parent='blade2body')
-mesh.trimesh.load_obj(s.get_resource_path(r'turbine blade.obj'), scale = (1.3,1.3,1.3), rotation = (0.0,90.0,0.0), offset = (0.0,0.0,0.0))
-# code for blade3body
-s.new_rigidbody(name='blade3body',
-                mass=15.0,
-                cog=(0.0,
-                     0.0,
-                     15.0),
-                parent='Nacelle',
-                position=(-9.0,
-                          0.0,
-                          0.0),
-                rotation=(239.99999999999994,
-                          0.0,
-                          0.0),
-                fixed =(True, True, True, True, True, True) )
-# code for blade3Buoyancy mesh
-mesh = s.new_buoyancy(name='blade3Buoyancy mesh',
-          parent='blade3body')
-mesh.trimesh.load_obj(s.get_resource_path(r'turbine blade.obj'), scale = (1.3,1.3,1.3), rotation = (0.0,90.0,0.0), offset = (0.0,0.0,0.0))
+
 # code for Buoyancy mesh
 mesh = s.new_buoyancy(name='Buoyancy mesh',
           parent='Tower')
-mesh.trimesh.load_obj(s.get_resource_path(r'cylinder 1x1x1.obj'), scale = (5.0,5.0,65.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
+mesh.trimesh.load_file(r'C:\data\Dave\Public\DAVE\src\DAVE\resources\cylinder 1x1x1.obj', scale = (5.0,5.0,65.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
+
+# code for TowerVisual
+s.new_visual(name='TowerVisual',
+            parent='Tower',
+            path=r'cylinder 1x1x1.obj',
+            offset=(0, 0, 0), 
+            rotation=(0, 0, 0), 
+            scale=(5, 5, 65) )
+
 # code for Visual
 s.new_visual(name='Visual',
             parent='Nacelle',
             path=r'cube_with_bevel.obj',
             offset=(0, 0, 0), 
             rotation=(0, 0, 0), 
-            scale=(7.0, 3.0, 4.0) )
+            scale=(7, 3, 4) )
+
 # code for Hub
 s.new_visual(name='Hub',
             parent='Nacelle',
             path=r'cone d1.obj',
-            offset=(-10.0, 0.0, 0.0), 
-            rotation=(0.0, -90.0, 0.0), 
-            scale=(2.0, 5.0, 5.0) )
+            offset=(-10, 0, 0), 
+            rotation=(0, -90, 0), 
+            scale=(2, 5, 5) )
+
 # code for Hub2
 s.new_visual(name='Hub2',
             parent='Nacelle',
             path=r'cylinder 1x1x1.obj',
-            offset=(-10.0, 0.0, 0.0), 
-            rotation=(0.0, 90.0, 0.0), 
-            scale=(3.0, 5.0, 5.0) )
+            offset=(-10, 0, 0), 
+            rotation=(0, 90, 0), 
+            scale=(3, 5, 5) )
+
+# code for Axis
+s.new_frame(name='Axis',
+           parent='Nacelle',
+           position=(0,
+                     0,
+                     0),
+           rotation=(635,
+                     0,
+                     0),
+           fixed =(True, True, True, True, True, True) )
+
+# code for blade1body
+s.new_rigidbody(name='blade1body',
+                mass=15,
+                cog=(0,
+                     0,
+                     15),
+                parent='Axis',
+                position=(-9,
+                          0,
+                          -3.77476e-15),
+                rotation=(0,
+                          0,
+                          0),
+                fixed =(True, True, True, True, True, True) )
+
+# code for blade2body
+s.new_rigidbody(name='blade2body',
+                mass=15,
+                cog=(0,
+                     0,
+                     15),
+                parent='Axis',
+                position=(-9,
+                          0,
+                          -3.77476e-15),
+                rotation=(120,
+                          -9.61481e-16,
+                          -9.61481e-16),
+                fixed =(True, True, True, True, True, True) )
+
+# code for blade3body
+s.new_rigidbody(name='blade3body',
+                mass=15,
+                cog=(0,
+                     0,
+                     15),
+                parent='Axis',
+                position=(-9,
+                          0,
+                          -3.77476e-15),
+                rotation=(-120,
+                          4.80741e-16,
+                          -9.61481e-16),
+                fixed =(True, True, True, True, True, True) )
+
+# code for Visual_1
+s.new_visual(name='Visual_1',
+            parent='Axis',
+            path=r'res: cylinder 1x1x1 lowres.obj',
+            offset=(-9, 0, 0), 
+            rotation=(0, 90, 0), 
+            scale=(16, 1, 1) )
+
+# code for blade1Buoyancy mesh
+mesh = s.new_buoyancy(name='blade1Buoyancy mesh',
+          parent='blade1body')
+mesh.trimesh.load_file(r'C:\data\Dave\Public\DAVE\src\DAVE\resources\turbine blade.obj', scale = (1.3,1.3,1.3), rotation = (0.0,90.0,0.0), offset = (0.0,0.0,0.0))
+
 # code for blade1Visual
 s.new_visual(name='blade1Visual',
             parent='blade1body',
             path=r'turbine blade.obj',
-            offset=(0.0, 0.0, 0.0), 
-            rotation=(0.0, 90.0, 0.0), 
+            offset=(0, 0, 0), 
+            rotation=(0, 90, 0), 
             scale=(1.3, 1.3, 1.3) )
+
+# code for blade2Buoyancy mesh
+mesh = s.new_buoyancy(name='blade2Buoyancy mesh',
+          parent='blade2body')
+mesh.trimesh.load_file(r'C:\data\Dave\Public\DAVE\src\DAVE\resources\turbine blade.obj', scale = (1.3,1.3,1.3), rotation = (0.0,90.0,0.0), offset = (0.0,0.0,0.0))
+
 # code for blade2Visual
 s.new_visual(name='blade2Visual',
             parent='blade2body',
             path=r'turbine blade.obj',
-            offset=(0.0, 0.0, 0.0), 
-            rotation=(0.0, 90.0, 0.0), 
+            offset=(0, 0, 0), 
+            rotation=(0, 90, 0), 
             scale=(1.3, 1.3, 1.3) )
+
+# code for blade3Buoyancy mesh
+mesh = s.new_buoyancy(name='blade3Buoyancy mesh',
+          parent='blade3body')
+mesh.trimesh.load_file(r'C:\data\Dave\Public\DAVE\src\DAVE\resources\turbine blade.obj', scale = (1.3,1.3,1.3), rotation = (0.0,90.0,0.0), offset = (0.0,0.0,0.0))
+
 # code for blade3Visual
 s.new_visual(name='blade3Visual',
             parent='blade3body',
             path=r'turbine blade.obj',
-            offset=(0.0, 0.0, 0.0), 
-            rotation=(0.0, 90.0, 0.0), 
-            scale=(1.3, 1.3, 1.3) )
-# code for Visual
-s.new_visual(name='TowerVisual',
-            parent='Tower',
-            path=r'cylinder 1x1x1.obj',
             offset=(0, 0, 0), 
-            rotation=(0, 0, 0), 
-            scale=(5.0, 5.0, 65.0) )
+            rotation=(0, 90, 0), 
+            scale=(1.3, 1.3, 1.3) )
+
+# Limits of un-managed nodes 
+
+# Tags
+
+# Colors
+s['TowerVisual'].color = (184, 255, 240)
+s['Visual'].color = (255, 255, 255)
+s['Hub'].color = (255, 85, 0)
+s['blade1Visual'].color = (234, 234, 234)
+s['blade2Visual'].color = (234, 234, 234)
+s['blade3Visual'].color = (234, 234, 234)

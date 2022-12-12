@@ -11,6 +11,7 @@
 # from abc import ABC, abstractmethod
 # from enum import Enum
 # from typing import List  # for python<3.9
+import weakref
 from typing import Tuple
 
 import pyo3d
@@ -105,9 +106,6 @@ class Scene:
         self._savepoint = None
         """Python code to re-create the scene, see savepoint_make()"""
 
-        self._name_prefix = ""
-        """An optional prefix to be applied to node names. Used when importing scenes."""
-
         self.current_manager = None
         """Setting this to an instance of a Manager allows nodes with that manager to be changed"""
 
@@ -126,6 +124,9 @@ class Scene:
         self.gui_solve_func = None
         """Optional reference to function to use instead of solve_statics - used by the Gui to give user control of solving
         Function is called with self as argument"""
+
+        self.solve_activity_desc = "Solving static equilibrium"
+        """This string may be used for feedback to user - read by Gui"""
 
         if filename is not None:
             self.load_scene(filename)
@@ -270,9 +271,6 @@ class Scene:
     def _print(self, what):
         if self.verbose:
             print(what)
-
-    def _prefix_name(self, name):
-        return self._name_prefix + name
 
     def _verify_name_available(self, name):
         """Throws an error if a node with name 'name' already exists"""
@@ -677,8 +675,6 @@ class Scene:
             node_name, str
         ), f"Node name should be a string, but is a {type(node_name)}"
 
-        if self._name_prefix:
-            node_name = self._name_prefix + node_name
 
         for N in self._nodes:
             if N.name == node_name:
@@ -1413,11 +1409,12 @@ class Scene:
                     if (
                         timeout_s < 0
                     ):  # we were not using a timeout, so the solver failed
+                        self._restore_original_fixes(original_dofs_dict)
                         raise ValueError(
-                            f"Could not solve - solver return code {status} during phase 2. Maximum error = {self._vfc.Emaxabs}"
+                            f"Could not solve - solver return code {status} during phase 2. Maximum error = {self._vfc.Emaxabs:.6e}"
                         )
 
-                give_feedback(f"Maximum error = {self._vfc.Emaxabs} (phase 2)")
+                give_feedback(f"Maximum error = {self._vfc.Emaxabs:.6e} (phase 2)")
 
             elif phase == 4:
 
@@ -1443,7 +1440,7 @@ class Scene:
                     give_feedback(msg)
 
                 else:
-                    give_feedback(f"Maximum error = {self._vfc.Emaxabs} (phase 4)")
+                    give_feedback(f"Maximum error = {self._vfc.Emaxabs:.6e} (phase 4)")
 
     def solve_statics(self, silent=False, timeout=None):
         """Solves statics
@@ -1495,7 +1492,7 @@ class Scene:
     # ====== goal seek ========
 
     def goal_seek(
-        self, evaluate, target, change_node, change_property, bracket=None, tol=1e-3
+        self, evaluate, target, change, bracket=None, tol=1e-3
     ):
         """goal_seek
 
@@ -1505,21 +1502,19 @@ class Scene:
         Args:
             evaluate : code to be evaluated to yield the value that is solved for. Eg: s['poi'].fx Scene is abbiviated as "s"
             target (number):       target value for that property
-            change_node(Node or str):  node to be adjusted
-            change_property (str): property of that node to be adjusted
+            change (string, tuple) value to be adjused. If string this is executed as change = number. If tuple then this is
+                                   is done for each string in the tuple
             range(optional)  : specify the possible search-interval
 
         Returns:
             bool: True if successful, False otherwise.
 
         Examples:
-            Change the y-position of the cog of a rigid body ('Barge')  in order to obtain zero roll (rx)
-            >>> s.goal_seek("s['Barge'].fx",0,'Barge','cogy')
+            Change the y-position of the cog of a rigid body ('Barge')  in order to obtain zero roll (heel)
+            >>> s.goal_seek("s['Barge'].heel",0,'s["Barge"].cogy')
 
         """
         s = self
-
-        change_node = self._node_from_node_or_str(change_node)
 
         # check that the attributes exist and are single numbers
         test = eval(evaluate)
@@ -1533,17 +1528,24 @@ class Scene:
             "Attempting to evaluate {} to {} (now {})".format(evaluate, target, test)
         )
 
-        initial = getattr(change_node, change_property)
-        self._print(
-            "By changing the value of {}.{} (now {})".format(
-                change_node.name, change_property, initial
-            )
-        )
+        if isinstance(change,str):
+            change = (change,) # make tuple
+
+        if not isinstance(change, (tuple, list)):
+            raise ValueError('Variable to be changed shall be a tuple (of strings) or string')
+
+        initial = eval(change[0])
+
+        self._print(f"By changing the value of {change} (now {initial})")
 
         def set_and_get(x):
-            setattr(change_node, change_property, x)
-            self.solve_statics(silent=True)
+
             s = self
+
+            for c in change:
+                exec(f'{c} = {x}')
+
+            self.solve_statics(silent=True)
             result = eval(evaluate)
             self._print("setting {} results in {}".format(x, result))
             return result - target
@@ -1554,15 +1556,15 @@ class Scene:
         x1 = initial + 0.0001
 
         if bracket is not None:
-            res = root_scalar(set_and_get, x0=x0, x1=x1, bracket=bracket, xtol=tol)
+            res = root_scalar(set_and_get, x0=x0, x1=x1, bracket=bracket, xtol=tol/10)
         else:
-            res = root_scalar(set_and_get, x0=x0, x1=x1, xtol=tol)
+            res = root_scalar(set_and_get, x0=x0, x1=x1, xtol=tol/10)
 
         self._print(res)
 
         # evaluate result
         final_value = eval(evaluate)
-        if abs(final_value - target) > 1e-3:
+        if abs(final_value - target) > tol:
             raise ValueError(
                 "Target not reached. Target was {}, reached value is {}".format(
                     target, final_value
@@ -1692,8 +1694,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -1770,8 +1771,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # check if we can import the provided path
         try:
@@ -1866,8 +1866,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -1965,8 +1964,7 @@ class Scene:
         if not parent:
             raise ValueError("Wave-interaction has to be located on an Axis")
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2014,8 +2012,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2064,8 +2061,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2118,8 +2114,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # check input
         assertValidName(name)
@@ -2133,9 +2128,10 @@ class Scene:
 
         if inertia_radii is not None:
             assert3f_positive(inertia_radii, "Radii of inertia")
-            assert mass > 0, ValueError(
-                "Can not set radii of gyration without specifying mass"
-            )
+
+            if not mass > 0:
+                warnings.warn(f"Can not set radii of gyration without specifying mass - ignoring radii of gyration for {name}")
+                inertia_radii = None
 
         if not isinstance(fixed, bool):
             if len(fixed) != 6:
@@ -2189,7 +2185,7 @@ class Scene:
         endB,
         length=None,
         EA=0,
-        diameter=0,
+        diameter:float=0,
         sheaves=None,
         mass=None,
         mass_per_length=None,
@@ -2203,7 +2199,7 @@ class Scene:
             length [-1] : un-stretched length of the cable in m; default [-1] create a cable with the current distance between the endpoints A and B
             EA [0] : stiffness of the cable in kN/m; default
             mass [0] or mass_per_length [0] : mass of the cable - warning: only valid if tension in cable > 10x cable weight.
-
+            mass_per_length [alternative for mass]
             sheaves : [optional] A list of pois, these are sheaves that the cable runs over. Defined from endA to endB
 
         Examples:
@@ -2223,8 +2219,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2329,8 +2324,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2373,8 +2367,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2490,8 +2483,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2545,8 +2537,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2595,8 +2586,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2640,8 +2630,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2698,8 +2687,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2755,8 +2743,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2788,8 +2775,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2830,8 +2816,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2883,8 +2868,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -2951,8 +2935,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -3001,8 +2984,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # check input
         assertValidName(name)
@@ -3020,7 +3002,7 @@ class Scene:
     def new_sling(
         self,
         name,
-        length=-1,
+        length:float=-1,
         EA=None,
         mass=0.1,
         endA=None,
@@ -3059,8 +3041,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -3177,8 +3158,7 @@ class Scene:
 
         """
 
-        # apply prefixes
-        name = self._prefix_name(name)
+
 
         # first check
         assertValidName(name)
@@ -3279,10 +3259,17 @@ class Scene:
             if n._manager is None:
                 code.append("\n" + n.give_python_code())
             else:
-                if n._manager.creates(n):
-                    pass
-                else:
-                    code.append("\n" + n.give_python_code())
+                # check if one of the managers creates this node
+                manager = n._manager
+                while True:
+                    if manager.creates(n):
+                        break
+                    else:
+                        if manager._manager is None:
+                            code.append("\n" + n.give_python_code())
+                            break
+                        else:
+                            manager = manager._manager
 
                 # print(f'skipping {n.name} ')
 
@@ -3291,7 +3278,7 @@ class Scene:
         for n in nodes_to_be_exported:
             if not n.visible:
                 code.append(
-                    f"\ns['{n.name}'].visible = False"
+                    f"\ns['{n.name}']._visible = False"  # use private, cause may be managed (in which case this statement is probably obsolete)
                 )  # only report is not the default value
 
         code.append("\n# Limits of un-managed nodes ")
@@ -3466,6 +3453,7 @@ class Scene:
             containerize : place all the nodes without a parent in a dedicated Frame
             nodes [None] : if provided then import only these nodes
             settings     : import settings (gravity, wind etc. ) from other scene as well
+            prefix       : a prefix is applied to all names of the imported nodes
 
 
         Returns:
@@ -3488,23 +3476,20 @@ class Scene:
         if not isinstance(other, Scene):
             raise TypeError("Other should be a Scene but is a " + str(type(other)))
 
-        old_prefix = self._name_prefix
-        imported_element_names = []
+        # apply prefix
+        other.prefix_element_names(prefix)
 
-        for n in other._nodes:
-            imported_element_names.append(prefix + n.name)
 
-        # check for double names
-
-        for new_node_name in imported_element_names:
-            if not self.name_available(new_node_name):
+        # check for double names after applying prefix
+        for imported_node in other._nodes:
+            if not self.name_available(imported_node.name):
                 raise NameError(
                     'An element with name "{}" is already present. Please use a prefix to avoid double names'.format(
-                        new_node_name
+                        imported_node.name
                     )
                 )
 
-        self._name_prefix = prefix + self._name_prefix
+
 
         store_export_code_with_solved_function = other._export_code_with_solved_function
         other._export_code_with_solved_function = False  # quicker
@@ -3513,7 +3498,7 @@ class Scene:
 
         self.run_code(code)
 
-        self._name_prefix = old_prefix  # restore
+        
 
         # Move all imported elements without a parent into a newly created or supplied frame (container)
         if containerize:
@@ -3522,20 +3507,29 @@ class Scene:
                 container_name = self.available_name_like("import_container")
                 container = self.new_frame(prefix + container_name)
 
+            imported_element_names = [node.name for node in other._nodes]
             for name in imported_element_names:
 
-                node = self[name]
+                imported_node = self[name]
 
-                if not node.manager:
-                    if not hasattr(node, "parent"):
+                if not imported_node.manager:
+                    if not hasattr(imported_node, "parent"):
                         continue
 
-                    if node.parent is None:
-                        node.parent = container
+                    if imported_node.parent is None:
+                        imported_node.parent = container
 
             return container
 
         return None
+
+    def prefix_element_names(self, prefix=''):
+        """Applies the given prefix to all un-managed nodes"""
+
+        if prefix:
+            for node in self._nodes:
+                if node.manager is None:
+                    node.name = prefix + node.name
 
     def copy(self, nodes=None):
         """Creates a full and independent copy of the scene and returns it.
@@ -3568,11 +3562,17 @@ class Scene:
         name_of_duplicate = self.available_name_like(name)
 
         # get the python code to generate the node with the new name
+        remember = self._godmode
+        self._godmode = True # the node may be managed
         node.name = name_of_duplicate  # temporary rename just for code-generation
-        self._export_code_with_solved_function = False
-        code = node.give_python_code()
-        self._export_code_with_solved_function = True
-        node.name = name  # and restore
+
+        try:
+            self._export_code_with_solved_function = False
+            code = node.give_python_code()
+            self._export_code_with_solved_function = True
+        finally:
+            node.name = name  # and restore
+            self._godmode = remember
 
         self.run_code(code)
 
@@ -3590,32 +3590,181 @@ class Scene:
         if old_parent is not None:
             root_node.parent = None
 
-        nodes = self.nodes_with_parent(root_node, recursive=True)
-        more_nodes = self.nodes_with_dependancies_in_and_satifsfied_by(nodes)
-        branch = list({*nodes, *more_nodes})  # unique nodes (use set)
-        branch.append(root_node)
+        try:
 
-        # make a copy of these nodes in a new scene
-        s2 = self.copy(branch)
+            nodes = self.nodes_with_parent(root_node, recursive=True)
+            more_nodes = self.nodes_with_dependancies_in_and_satifsfied_by(nodes)
+            branch = list({*nodes, *more_nodes})  # unique nodes (use set)
 
-        copy_of_root_node_in_s2 = s2[root_node.name]
+            branch = [node for node in branch if node.manager is None] # exclude managed nodes
 
-        # now find new names for all of the nodes.
-        # names need to be unique in both self and s2
-        for n in s2._nodes:
-            node_names_in_s2 = [node.name for node in s2._nodes]
-            new_name = self.available_name_like(
-                n.name, _additional_names=node_names_in_s2
-            )
-            n.name = new_name
+            branch.append(root_node)
 
-        self.import_scene(s2, containerize=False)
+            # make a copy of these nodes in a new scene
+            s2 = self.copy(branch)
 
-        # restore the parent (if any)
-        if old_parent is not None:
-            copy_of_root_node = self[copy_of_root_node_in_s2.name]
-            copy_of_root_node.parent = old_parent
-            root_node.parent = old_parent
+            copy_of_root_node_in_s2 = s2[root_node.name]
+
+            # now find new names for all of the nodes.
+            # names need to be unique in both self and s2
+            for n in s2._nodes:
+                if n.manager is None:
+                    node_names_in_s2 = [node.name for node in s2._nodes]
+                    new_name = self.available_name_like(
+                        n.name, _additional_names=node_names_in_s2
+                    )
+                    n.name = new_name
+
+            self.import_scene(s2, containerize=False)
+
+        finally:
+
+            # restore the parent (if any)
+            if old_parent is not None:
+                copy_of_root_node = self[copy_of_root_node_in_s2.name]
+                copy_of_root_node.parent = old_parent
+                root_node.parent = old_parent
+
+    # =================== Conversions ===============
+
+    def to_cable(self, sling_node : Sling, zero_weight=False):
+        """Converts a sling to an equivalent cable"""
+        name = self.available_name_like(sling_node.name)
+
+        # calculate the new length
+        length_lossA = 0
+        if isinstance(sling_node.endA, Circle):
+            r = sling_node.endA.radius + sling_node.diameter/2
+            length_lossA = np.pi * r
+
+        length_lossB = 0
+        if isinstance(sling_node.endB, Circle):
+            r = sling_node.endB.radius + sling_node.diameter / 2
+            length_lossB = np.pi * r
+
+        # If both ends are the same circle then the cable would become a grommet.
+        # to avoid that, connect endA to the Point instead
+        original_endA_parent = None
+        if isinstance(sling_node.endB, Circle) and (sling_node.endA == sling_node.endB):
+            original_endA_parent = sling_node.endA
+            sling_node.endA = sling_node.endA.parent
+
+
+
+
+        length = sling_node.length - length_lossA - length_lossB
+
+        # calcualte EA from total stiffness of the sling and the new length
+        # such that the total stiffness is identical
+        EA = sling_node.k_total * length
+
+        if zero_weight:
+            mass_per_length = 0
+        else:
+            mass_per_length = sling_node.mass/length
+
+        cable = self.new_cable(name, endA = sling_node.endA, endB=sling_node.endB, sheaves=sling_node.sheaves,
+                       length=length, mass_per_length=mass_per_length, EA=EA,diameter=sling_node.diameter)
+
+        name = sling_node.name
+        self.delete(sling_node)
+
+        if original_endA_parent is not None:
+            cable.original_endA_parent = weakref.ref(original_endA_parent)
+
+        cable.name = name
+
+        return cable
+
+    def to_sling(self, cable_node : Cable, mass=-1):
+        """Converts a sling to an equivalent cable
+
+        if mass < 0 (default) then the mass of the cable is used. Else the given mass is used.
+        """
+        name = self.available_name_like(cable_node.name)
+
+        endA = cable_node.connections[0]
+
+        original_endA_parent = getattr(cable_node, 'original_endA_parent', None)
+        if original_endA_parent is not None:
+            if valid_node_weakref(original_endA_parent):
+                endA = original_endA_parent()
+
+        endB = cable_node.connections[-1]
+
+        # calculate the new length
+        length_lossA = 0
+        if isinstance(endA, Circle):
+            r = endA.radius + cable_node.diameter / 2
+            length_lossA = np.pi * r
+
+        length_lossB = 0
+        if isinstance(endB, Circle):
+            r = endB.radius + cable_node.diameter / 2
+            length_lossB = np.pi * r
+
+        length = cable_node.length + length_lossA + length_lossB
+
+        # calculate EA from total stiffness of the sling and the new length
+        # such that the total stiffness is identical
+        EAL = cable_node.EA / cable_node.length
+
+        if mass<0:
+            mass = cable_node.mass
+
+        sling = self.new_sling(name, endA = endA, endB=endB, sheaves=cable_node.connections[1:-1],
+                               length=length, mass=mass, k_total = EAL, diameter=cable_node.diameter)
+
+        name = cable_node.name
+        self.delete(cable_node)
+
+        sling.name = name
+
+        return sling
+
+    def to_frame(self, body: RigidBody):
+        """Converts the body to a frame"""
+        name = self.available_name_like('temp')
+        new_frame = self.new_frame(name=name,
+                                   parent=body.parent,
+                                   position = body.position,
+                                   rotation = body.rotation,
+                                   inertia = body.inertia,
+                                   inertia_radii = body.inertia_radii,
+                                   fixed= body.fixed)
+        for node in self._nodes:
+            parent = getattr(node,'parent',None)
+            if parent == body:
+                node.parent = new_frame
+
+        name = body.name
+        self.delete(body)
+        new_frame.name = name
+
+        return new_frame
+
+    def to_rigidbody(self, frame: Frame):
+        """Converts the body to a frame"""
+        name = self.available_name_like('temp')
+        new_body = self.new_rigidbody(name=name,
+                                       parent=frame.parent,
+                                       position=frame.position,
+                                       rotation=frame.rotation,
+                                       mass=frame.inertia,
+                                       fixed=frame.fixed)
+        if new_body.mass > 0:
+            new_body.inertia_radii = frame.inertia_radii
+
+        for node in self._nodes:
+            parent = getattr(node, 'parent', None)
+            if parent == frame:
+                node.parent = new_body
+
+        name = frame.name
+        self.delete(frame)
+        new_body.name = name
+
+        return new_body
 
     # =================== DYNAMICS ==================
 
