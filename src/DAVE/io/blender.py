@@ -555,7 +555,7 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
 
 
 def blender_py_file(scene, python_file, blender_base_file, blender_result_file, camera=None, animation_dofs=None,
-                    wavefield=None):
+                    wavefield=None,frames_per_step=24):
 
     # If animation dofs are not provided, and the scene has a timeline with a non-zero range, then use that
     timeline = None
@@ -630,7 +630,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
                 code += '\npositions.append([{},{},{}])'.format(*glob_position)
 
-            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations, color={})'.format(
+            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations, color={},frames_per_dof={})'.format(
                 filename,
                 *visual.scale,
                 *_to_quaternion(visual.rotation),
@@ -638,6 +638,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 *_to_quaternion(visual.parent.global_rotation),
                 *visual.parent.global_position,
                 visual.color,
+                frames_per_step,
             )
 
         elif timeline and has_parent:
@@ -646,13 +647,25 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
             time_start, time_end = timeline.range()
 
+            past_rotvec = (0,0,0)
+
             for i_time in range(time_end-time_start+1):
 
 
                 timeline.activate_time(i_time + time_start)
                 scene.update()
 
-                code += '\norientations.append([{},{},{},{}])'.format(*_to_quaternion(visual.parent.global_rotation))
+                # get the rotation vector nearest to the pervious one (unwinding)
+                rotvec = visual.parent.global_rotation # (degrees)
+
+                # the rotvec can be changed in length by any multiple of 360
+                # it should be as close to the past_rotvec as possible
+                #
+                # to the difference between the current rotation vector and the
+                # previous one projected onto the current one should be <=180
+
+                code += '\norientations.append([{},{},{},{}])'.format(*_to_quaternion(rotvec))
+                past_rotvec = rotvec
 
                 position = visual.parent.global_position
                 # global_offset = visual.parent.to_glob_direction(visual.offset)
@@ -661,14 +674,16 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
                 code += '\npositions.append([{},{},{}])'.format(*glob_position)
 
-            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations, color={})'.format(
+            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations, color={}, frames_per_dof={})'.format(
                 filename,
                 *visual.scale,
                 *_to_quaternion(visual.rotation),
                 *visual.offset,
                 *_to_quaternion(visual.parent.global_rotation),
                 *visual.parent.global_position,
-                visual.color)
+                visual.color,
+                frames_per_step,
+            )
 
 
         else:
