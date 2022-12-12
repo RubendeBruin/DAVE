@@ -43,6 +43,72 @@ STYLES = {
 }
 
 
+#     # for dark:
+#
+# class DarkThemeColors:
+#
+#     Red = "#F44336"
+#     Pink = "#F48FB1"
+#     Purple = "#CE93D8"
+#     DeepPurple = "#B39DDB"
+#     Indigo = "#9FA8DA"
+#     Blue = "#90CAF9"
+#     LightBlue = "#81D4FA"
+#     Cyan = "#80DEEA"
+#     Teal = "#80CBC4"
+#     Green = "#A5D6A7"
+#     LightGreen = "#C5E1A5"
+#     Lime = "#E6EE9C"
+#     Yellow = "#FFF59D"
+#     Amber = "#FFE082"
+#     Orange = "#FFCC80"
+#     DeepOrange = "#FFAB91"
+#     Brown = "#BCAAA4"
+#     Grey = "#EEEEEE"
+#     BlueGrey = "#B0BEC5"
+#
+# QRegularExpression = QtCore.QRegularExpression
+#
+# QFont = QtGui.QFont
+# QColor = QtGui.QColor
+# QTextCharFormat = QtGui.QTextCharFormat
+# QSyntaxHighlighter = QtGui.QSyntaxHighlighter
+#
+# def charFormat(color, style='', background=None):
+#     """
+#     Return a QTextCharFormat with the given attributes.
+#     """
+#     _color = QColor()
+#     if type(color) is not str:
+#         _color.setRgb(color[0], color[1], color[2])
+#     else:
+#         _color.setNamedColor(color)
+#
+#     _format = QTextCharFormat()
+#     _format.setForeground(_color)
+#     if 'bold' in style:
+#         _format.setFontWeight(QFont.Weight.Bold)
+#     if 'italic' in style:
+#         _format.setFontItalic(True)
+#     if background is not None:
+#         _format.setBackground(pg.mkColor(background))
+#
+#     return _format
+#
+#
+# STYLES = {
+#     'keyword': charFormat(DarkThemeColors.Blue, 'bold'),
+#     'operator': charFormat(DarkThemeColors.Red, 'bold'),
+#     'brace': charFormat(DarkThemeColors.Purple),
+#     'defclass': charFormat(DarkThemeColors.Indigo, 'bold'),
+#     'string': charFormat(DarkThemeColors.Amber),
+#     'string2': charFormat(DarkThemeColors.DeepPurple),
+#     'comment': charFormat(DarkThemeColors.Green, 'italic'),
+#     'self': charFormat(DarkThemeColors.Blue, 'bold'),
+#     'numbers': charFormat(DarkThemeColors.Teal),
+# }
+
+
 class PythonHighlighter (QtGui.QSyntaxHighlighter):
     """Syntax highlighter for the Python language.
     """
@@ -211,6 +277,9 @@ if __name__ == '__main__':
 
     app = QtWidgets.QApplication([])
     editor = QtWidgets.QPlainTextEdit()
+
+    # for dark:
+    # editor.setStyleSheet("background: rgb(0, 0, 0);color: rgb(230, 230, 230)")
 
     font = QFont()
     font.setPointSize(12)

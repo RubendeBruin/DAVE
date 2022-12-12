@@ -230,16 +230,18 @@ class VisualOutline:
     outline_actor = None
     outline_transform = None
 
+    I = vtk.vtkTransform()
+    I.Identity()
+
     def update(self):
 
         # update transform
 
         do_silhouette = getattr(self.parent_vp_actor, "do_silhouette", True)
-        I = vtk.vtkTransform()
-        I.Identity()
+
 
         if do_silhouette:
-            SetTransformIfDifferent(self.outline_actor, I) # outline actor shall have identity
+            SetTransformIfDifferent(self.outline_actor, self.I) # outline actor shall have identity
 
             new_matrix = self.parent_vp_actor.GetMatrix()
 
@@ -250,8 +252,8 @@ class VisualOutline:
 
         else:
 
-            if not vtkMatricesAlmostEqual(I.GetMatrix(), self.outline_transform.GetTransform().GetMatrix()):
-                self.outline_transform.SetTransform(I)
+            if not vtkMatricesAlmostEqual(self.I.GetMatrix(), self.outline_transform.GetTransform().GetMatrix()):
+                self.outline_transform.SetTransform(self.I)
 
             SetMatrixIfDifferent(self.outline_actor, self.parent_vp_actor.GetMatrix())  # outline transform shall have identity
 

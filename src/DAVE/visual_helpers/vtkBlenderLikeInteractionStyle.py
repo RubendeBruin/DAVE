@@ -266,8 +266,6 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         # remove the selection rubber band / line
         self.DoRender()
-        # rwi = self.GetInteractor()
-        # rwi.Render()
 
     def KeyPress(self, obj, event):
 
@@ -868,6 +866,7 @@ class BlenderStyle(vtkInteractorStyleUser):
         origin = CurrentRenderer.GetOrigin()
         camera = CurrentRenderer.GetActiveCamera()
 
+        # Assuming we're drawing the band on the view-plane
         rbcenter = (x1 + width / 2, y1 + height / 2, 0)
 
         CurrentRenderer.SetDisplayPoint(rbcenter)
