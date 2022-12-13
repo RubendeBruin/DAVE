@@ -200,6 +200,12 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), or
 
 
         bpy.context.scene.frame_end = (n_frame-1) * frames_per_dof
+        # bpy.context.scene.frame_start = 0
+        
+        # bpy.context.area.ui_type = 'FCURVES'   # need to set context back to original afterwards
+        # bpy.ops.graph.select_all(action='SELECT')
+        # bpy.ops.graph.handle_type(type='VECTOR')
+
 
 
 
@@ -520,7 +526,30 @@ scene.collection.objects.link(obj)"""
 
     return code
 
+def nearest_rotation_vector(v0, v1):
+    """Rotation vectors are not unique. This function determines the rotation vector
+    describing rotation v1 (in degrees) nearest to rotation vector v0 and return that
+    vector
+    """
+    v1 = np.array(v1)
 
+    if np.linalg.norm(v1)<1e-6:
+        if np.linalg.norm(v0) < 1e-6:
+            # two zero rotations
+            return (0,0,0)
+        else:
+            n = v0 / np.linalg.norm(v0)  # change-vector in v0 direction
+
+    else:
+        n = v1 / np.linalg.norm(v1)  # normal in v1
+
+    v0_proj = np.dot(v0, n) * n
+
+    d = np.dot(v1 - v0_proj, n) # signed distance in direction of n
+
+    i = round(d / 360)  # integer number of 360*n lengths that v1 is past v0_proj
+
+    return v1 - 360*i*n
 
 def create_blend_and_open(scene, blender_result_file = None, blender_base_file=None, blender_exe_path=None, camera=None, animation_dofs=None, wavefield=None):
 
@@ -664,6 +693,8 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 # to the difference between the current rotation vector and the
                 # previous one projected onto the current one should be <=180
 
+                rotvec = nearest_rotation_vector(past_rotvec, rotvec)
+
                 code += '\norientations.append([{},{},{},{}])'.format(*_to_quaternion(rotvec))
                 past_rotvec = rotvec
 
@@ -750,7 +781,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 code += ']'
                 code += '\nani_points.append(frame_points)'
 
-            code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points, color = {})'.format(dia, cable.name, cable.color)
+            code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points, color = {}, frames_per_entry = {})'.format(dia, cable.name, cable.color, frames_per_step)
 
 
         else:
@@ -799,7 +830,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 code += ']'
                 code += '\nani_points.append(frame_points)'
 
-            code += '\nadd_beam(points, diameter={}, name = "{}", ani_points = ani_points, color = {})'.format(dia, beam.name, beam.color)
+            code += '\nadd_beam(points, diameter={}, name = "{}", ani_points = ani_points, color = {}, frames_per_entry = {})'.format(dia, beam.name, beam.color,frames_per_step)
 
         else:
 
