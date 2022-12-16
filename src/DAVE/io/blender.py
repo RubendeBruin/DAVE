@@ -92,9 +92,9 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), or
     \"\"\"
     All meshes shall be joined
 
-    First rotate (rotation)
-    Then scale (scale)
-    Then move (offset)
+    First scale
+    then rotate
+    then move
 
     Then global apply rotation rotate (orientation)
     Then apply global move (position)
@@ -158,18 +158,17 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), or
         # bpy.ops.transform.rotate(context_override,value=rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)... (2.83 this seems to be fixed)?
         # bpy.ops.transform.rotate(context_override,value=rotation[1], orient_axis='Y')
         # bpy.ops.transform.rotate(context_override,value=rotation[2], orient_axis='X')
-        
-        active_object.rotation_mode = 'QUATERNION'
-        active_object.rotation_quaternion = (rotation[3], rotation[0], rotation[1],rotation[2])
-       
-
-        # bpy.ops.object.transform_apply(context_override,location=False, rotation=True, scale=False)    
-        bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)    
-
+ 
         # bpy.ops.transform.resize(context_override,value=scale)
         bpy.ops.transform.resize(value=scale)
         # bpy.ops.object.transform_apply(context_override,location=False, rotation=False, scale=True)
         bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+        
+        active_object.rotation_mode = 'QUATERNION'
+        active_object.rotation_quaternion = (rotation[3], rotation[0], rotation[1],rotation[2])
+
+        # bpy.ops.object.transform_apply(context_override,location=False, rotation=True, scale=False)    
+        bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)    
 
         # bpy.ops.transform.translate(context_override,value=offset)  # translate
         bpy.ops.transform.translate(value=offset)  # translate

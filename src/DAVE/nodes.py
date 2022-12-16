@@ -759,11 +759,9 @@ class Visual(Node):
 
     The visual can be given an offset, rotation and scale. These are applied in the following order
 
-    1. rotate
-    2. scale
+    1. scale
+    2. rotate
     3. offset
-
-    Hint: To scale before rotation place the visual on a dedicated axis and rotate that axis.
 
     """
 
@@ -3854,7 +3852,9 @@ class TriMeshSource():  # not an instance of Node
     """
     TriMesh
 
-    A TriMesh node contains triangular mesh which can be used for buoyancy or contact
+    A TriMesh node contains triangular mesh which can be used for buoyancy or contact.
+
+    The mesh is first scaled, then rotated and then offset
 
     """
 
@@ -3949,8 +3949,8 @@ class TriMeshSource():  # not an instance of Node
         r = vtk.vtkTransform()
         r.Identity()
 
-        rotationFilter.SetInputConnection(tri.GetOutputPort())
-        scaleFilter.SetInputConnection(rotationFilter.GetOutputPort())
+        scaleFilter.SetInputConnection(tri.GetOutputPort())
+        rotationFilter.SetInputConnection(scaleFilter.GetOutputPort())
 
         if scale is not None:
             s.Scale(*scale)
@@ -3968,7 +3968,7 @@ class TriMeshSource():  # not an instance of Node
         rotationFilter.SetTransform(r)
 
         clean = vtk.vtkCleanPolyData()
-        clean.SetInputConnection(scaleFilter.GetOutputPort())
+        clean.SetInputConnection(rotationFilter.GetOutputPort())
 
         clean.ConvertLinesToPointsOff()
         clean.ConvertPolysToLinesOff()

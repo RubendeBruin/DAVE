@@ -579,11 +579,9 @@ class VisualActor:
 
             t = vtk.vtkTransform()
             t.Identity()
-            t.Translate(self.node.offset)
-            t.Scale(self.node.scale)
+            t.PostMultiply()
 
-            # # scale offset
-            # scaled_offset = [V.node.offset[i] / V.node.scale[i] for i in range(3)]
+            t.Scale(self.node.scale)
 
             # calculate wxys from node.rotation
             r = self.node.rotation
@@ -591,6 +589,7 @@ class VisualActor:
             if angle > 0:
                 t.RotateWXYZ(angle, r[0] / angle, r[1] / angle, r[2] / angle)
 
+            t.Translate(self.node.offset)
 
             # Get the parent matrix (if any)
             if self.node.parent is not None:

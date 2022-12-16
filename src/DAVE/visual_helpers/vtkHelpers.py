@@ -105,7 +105,28 @@ def SetMatrixIfDifferent(actor: vtk.vtkProp3D, mat1, tol=1e-6):
         actor.SetPosition(x, y, z)
 
         out = [0, 0, 0]
+
+        # scale back  (this is a work-around for a work-around for a work-around :-( )
+        # orientation can not be determined accurately if scale difference is too large
+
+        mat1.SetElement(0,0, m0 / scale1)
+        mat1.SetElement(0,1, m1 / scale2)
+        mat1.SetElement(0,2, m2 / scale3)
+
+        mat1.SetElement(1, 0, m4 / scale1)
+        mat1.SetElement(1, 1, m5 / scale2)
+        mat1.SetElement(1, 2, m6 / scale3)
+
+        mat1.SetElement(2, 0, m8 / scale1)
+        mat1.SetElement(2, 1, m9 / scale2)
+        mat1.SetElement(2, 2, m10 / scale3)
+
         vtk.vtkTransform.GetOrientation(out, mat1)
+
+        print("=======================================================")
+
+        print(mat1)
+        print(out)
 
         actor.SetOrientation(*out)
 
