@@ -219,19 +219,34 @@ def carene_table(scene, buoyancy_nodes,
     Returns:
         Pandas dataframe
 
+        Information about nodes used and not-used is provided in df.attrs dictionary
+
     """
 
     if isinstance(buoyancy_nodes, Buoyancy):
         buoyancy_nodes = [buoyancy_nodes]
 
+
+    not_included_bns = [] # childeren that are not included because they are not direct children
+
     if isinstance(buoyancy_nodes, Frame):
         nodes = scene.nodes_with_parent(buoyancy_nodes, recursive=False)
         bns = [node for node in nodes if isinstance(node, Buoyancy)]
+
+        nodes_recursive = scene.nodes_with_parent(buoyancy_nodes, recursive=True)
+        bns_recursive = [node for node in nodes_recursive if isinstance(node, Buoyancy)]
 
         if not bns:
             raise ValueError(f"There are no Buoyancy Shapes with parent {buoyancy_nodes.name}")
 
         buoyancy_nodes = bns
+
+        # Report buoyancy nodes that are NOT included:
+
+        not_included_bns = []
+        for node in bns_recursive:
+            if node not in bns:
+                not_included_bns.append(node.name)
 
     # Create a new scene with only this buoyancy node and a frame that it is on
     for buoyancy_node in buoyancy_nodes:
@@ -328,6 +343,8 @@ def carene_table(scene, buoyancy_nodes,
 
     df = df.set_index('Draft [m]')
     df.attrs['shape_node_names'] = [node.name for node in nodes]
+
+    df.attrs['shape_node_names_not_included'] = not_included_bns
 
     return df.drop(columns=['waterline', 'displacement_kN','kHeave'])
 
@@ -675,7 +692,7 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
     return r
 
 
-def ballast_to_even_keel(bs: BallastSystem, delta_fill = 1, tolerance=0.1, passive_only = False):
+def ballast_to_even_keel(bs: BallastSystem, delta_fill = 1, tolerance=0.1, passive_only = False, deballast = False):
     """Adds `delta_fill` fill to the tank at the highest projected elevation until parent
     of ballast-system is within heel and trim tolerance.
 
@@ -694,10 +711,11 @@ def ballast_to_even_keel(bs: BallastSystem, delta_fill = 1, tolerance=0.1, passi
         # find highest tank
         highest = -1e6
         highest_tank = None
-        # lowest = 1e6
-        # lowest_tank = None
+        lowest = 1e6
+        lowest_tank = None
 
         for tank in bs.tanks:
+
             if not passive_only or (tank.level_global < 0):  # only passive filling
                 if tank.fill_pct <= 100 - (delta_fill+1e-6):
                     gz = f.to_glob_position((*tank.cog_when_full[:2], 0))[
@@ -707,12 +725,26 @@ def ballast_to_even_keel(bs: BallastSystem, delta_fill = 1, tolerance=0.1, passi
                         highest_tank = tank
                         highest = gz
 
-        if highest_tank is None:
+            if not passive_only or (tank.level_global > 0):  # only passive emptying
+                if tank.fill_pct >= (delta_fill+1e-6):
+                    gz = f.to_glob_position((*tank.cog_when_full[:2], 0))[
+                        2]  # vertical position of tank if it was as zero local elevation
+
+                    if gz < lowest:
+                        lowest_tank = tank
+                        lowest = gz
+
+
+        if not deballast and highest_tank is None:
             raise ValueError('No fillable tanks found')
 
+        if deballast and lowest_tank is None:
+            raise ValueError('No drainable tanks found')
 
-
-        highest_tank.fill_pct += delta_fill
+        if deballast:
+            lowest_tank.fill_pct -= delta_fill
+        else:
+            highest_tank.fill_pct += delta_fill
 
         old_heel = f.heel
         old_from = f.trim
@@ -722,12 +754,22 @@ def ballast_to_even_keel(bs: BallastSystem, delta_fill = 1, tolerance=0.1, passi
         if (f.heel * old_heel) < 0 and (f.trim*old_from < 0): # overshoot!
             # undo and lower fill_pct
 
-            highest_tank.fill_pct -= delta_fill
-            delta_fill *= 0.8
-            log.append(f'Adding water to tank {highest_tank.name} overshoots, reducing fill delta to {delta_fill}%')
-            continue
+            if deballast:
+                lowest_tank.fill_pct += delta_fill
+                delta_fill *= 0.8
+                log.append(f'Draining water from tank {lowest_tank.name} overshoots, reducing fill delta to {delta_fill}%')
+                continue
+            else:
+                highest_tank.fill_pct -= delta_fill
+                delta_fill *= 0.8
+                log.append(f'Adding water to tank {highest_tank.name} overshoots, reducing fill delta to {delta_fill}%')
+                continue
 
-        log.append(f'Adding water to tank {highest_tank.name} with {highest_tank.fill_pct}%')
+        else:
+            if deballast:
+                log.append(f'Draining water from tank {lowest_tank.name} with {lowest_tank.fill_pct}%')
+            else:
+                log.append(f'Adding water to tank {highest_tank.name} with {highest_tank.fill_pct}%')
 
 
         if abs(f.heel) < tolerance:

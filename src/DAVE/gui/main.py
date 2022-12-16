@@ -315,6 +315,11 @@ class Gui:
         self.additional_user_resource_paths = []
         """User-defined additional resource paths, stored on user machine - settings dialog"""
 
+
+        self._undo_log = []
+        self._undo_index = 0
+        """Undo log and history"""
+
         settings = QSettings("rdbr", "DAVE")
         paths_str = settings.value(f"additional_paths")
         if paths_str:
@@ -667,8 +672,7 @@ class Gui:
 
         # ========== undo log =======
 
-        self._undo_log = []
-        self._undo_index = 0
+
 
         self.ui.actionUndo.triggered.connect(self.undo)
         self.ui.actionRedo.triggered.connect(self.redo)

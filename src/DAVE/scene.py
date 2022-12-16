@@ -1237,6 +1237,40 @@ class Scene:
 
         self.delete(node)  # do not call delete as that will fail on managers
 
+    def flatten(self, root_node=None):
+        """Performs a recursive dissolve on Frames (not rigid bodies). If root_node is None (default) then the whole model is flattened"""
+
+        while True:
+            work_done = False
+
+            if root_node is None:
+                nodes = self.nodes_of_type(Frame)
+            else:
+                all_nodes = self.nodes_depending_on(root_node)
+                nodes = [node for node in all_nodes if isinstance(node, Frame)]
+
+
+            for node in nodes:
+
+                if isinstance(node, RigidBody):
+                    continue # do not dissible rigid-bodies, that would destroy the weight
+
+                if node.manager is None and node.fixed == (True, True, True, True, True, True):
+                    self.dissolve(node)
+                    work_done = True
+                    break
+                if isinstance(node, Manager):
+                    self.dissolve(node)
+                    work_done = True
+                    break
+
+            if not work_done:
+                break
+
+        if root_node is not None:
+            self.dissolve(root_node)
+
+
     def savepoint_make(self):
         self._savepoint = self.give_python_code()
 
@@ -1404,6 +1438,7 @@ class Scene:
                     # phase 3
                     self._restore_original_fixes(original_dofs_dict)
                     phase = 4
+                    this_is_a_re_init = False
 
                 else:
                     if (
@@ -1421,6 +1456,7 @@ class Scene:
                 status = self._vfc.state_solve_statics_with_timeout(
                     True, timeout_s, True, True, 0, this_is_a_re_init
                 )
+                this_is_a_re_init = True
 
                 if status == 0 or status == -2:
                     # phase 5
@@ -1428,6 +1464,8 @@ class Scene:
                         changed,
                         msg,
                     ) = self._check_and_fix_geometric_contact_orientations()
+
+
 
                     if not changed:
                         # we are done!
@@ -1438,6 +1476,7 @@ class Scene:
                         return True  # <------------- You've found the proper exit!
 
                     give_feedback(msg)
+                    this_is_a_re_init = False
 
                 else:
                     give_feedback(f"Maximum error = {self._vfc.Emaxabs:.6e} (phase 4)")
@@ -3352,6 +3391,15 @@ class Scene:
             if n.manager is None:
                 if n.color is not None:
                     code.append(f"s['{n.name}'].color = {n.color}")
+
+        code.append("\n# Solved state of managed DOFs nodes")
+        _modes = ('x','y','z','rx','ry','rz')
+        for n in self.nodes_of_type(Frame):
+            d = [*n.position, *n.rotation]
+            for i,f in  enumerate(n.fixed):
+                if f is False: # free dof
+                    code.append(f"s['{n.name}'].{_modes[i]} = {d[i]}")
+
 
         # Optional Reports
         if self.reports:

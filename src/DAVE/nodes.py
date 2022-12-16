@@ -594,6 +594,7 @@ class NodeWithCoreParent(CoreConnectedNode):
         if isinstance(self, Point) and isinstance(new_parent, Point):
             raise TypeError("Points can not be placed on points")
 
+
         try:
             self.rotation
             has_rotation = True
@@ -685,6 +686,57 @@ class NodeWithParentAndFootprint(NodeWithCoreParent):
             return f"\ns['{self.name}'].footprint = {str(self.footprint)}"
         else:
             return ""
+
+
+class NodeWithCoreParentAndTrimesh(NodeWithCoreParent):
+    def __init__(self, scene, core_node):
+        super().__init__(scene, core_node)
+
+        self._None_parent_acceptable = False
+        self._trimesh = TriMeshSource(
+            self._scene, source = self._vfNode.trimesh
+        )  # the tri-mesh is wrapped in a custom object
+
+    def update(self):
+        self._vfNode.reloadTrimesh()
+
+    @property
+    def trimesh(self) -> "TriMeshSource":
+        """Reference to TriMeshSource object
+        #NOGUI"""
+        return self._trimesh
+
+    @node_setter_manageable
+    def change_parent_to(self, new_parent):
+        """See also Visual.change_parent_to"""
+
+        if not (isinstance(new_parent, Frame) or new_parent is None):
+            raise ValueError(
+                "Visuals can only be attached to an axis (or derived) or None"
+            )
+
+        # get current position and orientation
+        if self.parent is not None:
+            cur_position = self.parent.to_glob_position(self.trimesh._offset)
+            cur_rotation = self.parent.to_glob_rotation(self.trimesh._rotation)
+        else:
+            cur_position = self.trimesh._offset
+            cur_rotation = self.trimesh._rotation
+
+        self.parent = new_parent
+
+        if new_parent is None:
+            new_offset = cur_position
+            new_rotation = cur_rotation
+        else:
+            new_offset = new_parent.to_loc_position(cur_position)
+            new_rotation = new_parent.to_loc_rotation(cur_rotation)
+
+        self.trimesh.load_file(url = self.trimesh._path,
+                               offset = new_offset,
+                               rotation = new_rotation,
+                               scale = self.trimesh._scale,
+                               invert_normals= self.trimesh._invert_normals)
 
 
 # ==============================================================
@@ -2576,25 +2628,11 @@ class CurrentArea(_Area):
         return self._give_python_code("new_currentarea")
 
 
-class ContactMesh(NodeWithCoreParent):
+class ContactMesh(NodeWithCoreParentAndTrimesh):
     """A ContactMesh is a tri-mesh with an axis parent"""
 
     def __init__(self, scene, name):
         super().__init__(scene, scene._vfc.new_contactmesh(name))
-
-        self._None_parent_acceptable = True
-        self._trimesh = TriMeshSource(
-            self._scene, self._vfNode.trimesh
-        )  # the tri-mesh is wrapped in a custom object
-
-    @property
-    def trimesh(self)->'TriMeshSource':
-        """The TriMeshSource object which can be used to change the mesh
-
-        Example:
-            s['Contactmesh'].trimesh.load_file('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
-        #NOGUI"""
-        return self._trimesh
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -4182,7 +4220,7 @@ class TriMeshSource():  # not an instance of Node
     #         self.rotation = new_parent.to_loc_direction(cur_rotation)
 
 
-class Buoyancy(NodeWithCoreParent):
+class Buoyancy(NodeWithCoreParentAndTrimesh):
     """Buoyancy provides a buoyancy force based on a buoyancy mesh. The mesh is triangulated and chopped at the instantaneous flat water surface. Buoyancy is applied as an upwards force that the center of buoyancy.
     The calculation of buoyancy is as accurate as the provided geometry.
 
@@ -4196,19 +4234,7 @@ class Buoyancy(NodeWithCoreParent):
     def __init__(self, scene, name : str):
         super().__init__(scene, scene._vfc.new_buoyancy(name))
 
-        self._None_parent_acceptable = False
-        self._trimesh = TriMeshSource(
-            self._scene, source = self._vfNode.trimesh
-        )  # the tri-mesh is wrapped in a custom object
 
-    def update(self):
-        self._vfNode.reloadTrimesh()
-
-    @property
-    def trimesh(self) -> TriMeshSource:
-        """Reference to TriMeshSource object
-        #NOGUI"""
-        return self._trimesh
 
     @property
     def cob(self)->tuple[tuple[float,float,float]]:
@@ -4250,7 +4276,7 @@ class Buoyancy(NodeWithCoreParent):
         return code
 
 
-class Tank(NodeWithCoreParent):
+class Tank(NodeWithCoreParentAndTrimesh):
     """Tank provides a fillable tank based on a mesh. The mesh is triangulated and chopped at the instantaneous flat fluid surface. Gravity is applied as an downwards force that the center of fluid.
     The calculation of fluid volume and center is as accurate as the provided geometry.
 
@@ -4264,11 +4290,6 @@ class Tank(NodeWithCoreParent):
     def __init__(self, scene, name):
 
         super().__init__(scene, scene._vfc.new_tank(name))
-
-        self._None_parent_acceptable = False
-        self._trimesh = TriMeshSource(
-            self._scene, source = self._vfNode.trimesh
-        )  # the tri-mesh is wrapped in a custom object
 
         self._inertia = scene._vfc.new_pointmass(
             self.name + vfc.VF_NAME_SPLIT + "inertia"
@@ -4285,15 +4306,6 @@ class Tank(NodeWithCoreParent):
     def _delete_vfc(self):
         self._scene._vfc.delete(self._inertia.name)
         super()._delete_vfc()
-
-    @property
-    def trimesh(self) -> TriMeshSource:
-        """The TriMeshSource object which can be used to change the mesh
-
-            Example:
-                s['Contactmesh'].trimesh.load_file('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
-        #NOGUI"""
-        return self._trimesh
 
     @property
     def free_flooding(self)->bool:
@@ -4326,6 +4338,11 @@ class Tank(NodeWithCoreParent):
     def cog_local(self)->tuple[tuple[float,float,float]]:
         """Center of gravity [m,m,m] (parent axis)"""
         return self.parent.to_loc_position(self.cog)
+
+    @property
+    def cog_when_full_global(self) -> tuple[tuple[float, float, float]]:
+        """Global position of the center of volume / gravity of the tank when it is filled [m,m,m] (global)"""
+        return self.parent.to_glob_position(self._vfNode.cog_when_full)
 
     @property
     def cog_when_full(self)->tuple[tuple[float,float,float]]:
