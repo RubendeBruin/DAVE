@@ -6235,13 +6235,14 @@ class Shackle(Manager, RigidBody):
         return {'kind':kind,
                 'description':data[0],
                 'WLL':float(data[1]),
-                'weight':float(data[2]),
-                'pin_diameter':float(data[3]),
-                'bow_diameter':float(data[4]),
-                'inside_length':float(data[5]),
-                'inside_width':float(data[6]),
-                'visual':data[7],
-                'scale':float(data[8])}
+                'MBL':float(data[2]),
+                'weight':float(data[3]),
+                'pin_diameter':float(data[4]),
+                'bow_diameter':float(data[5]),
+                'inside_length':float(data[6]),
+                'inside_width':float(data[7]),
+                'visual':data[8],
+                'scale':float(data[9])}
 
     def __init__(self, scene, name, kind='GP800'):
 
@@ -6389,6 +6390,47 @@ class Shackle(Manager, RigidBody):
         old_name = self.name
         RigidBody.name.fset(self, value)
         self._rename_all_manged_nodes(old_name, value)
+
+    @property
+    def shackle_data_dict(self):
+        return self.shackle_kind_properties(self._kind)
+
+    @property
+    def MBL(self):
+        """MBL [t]"""
+        return self.shackle_data_dict['MBL']
+
+    @property
+    def load(self):
+        """The force traveling through this shackle [kN]
+
+        Calculated from all nodes attached to the shackle as well as the connection force
+        """
+        s = self._scene
+
+        F = 0
+
+        child_nodes = s.nodes_with_parent(self, recursive=False)
+
+        print('Connection force' + str(self.connection_force))
+
+        F = max(F, np.linalg.norm(self.connection_force[:3]))
+
+        print('Applied force ' + str(self.applied_force))
+        F = max(F, np.linalg.norm(self.applied_force[:3]))
+
+        for node in child_nodes:
+            print(node.name)
+            if isinstance(node, Frame):
+                print(node.connection_force)
+                F = max(F, np.linalg.norm(node.connection_force[:3]))
+
+            elif isinstance(node, Point):
+                print(node.applied_force)
+                F = max(F, np.linalg.norm(node.applied_force[:3]))
+
+        return F
+
 
     def give_python_code(self):
         code = f"# Exporting {self.name}"
