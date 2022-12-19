@@ -2138,6 +2138,7 @@ class Cable(CoreConnectedNode):
     @node_setter_observable
     def connections(self, value):
 
+
         if len(value) < 2:
             raise ValueError("At least two connections required")
 
@@ -5929,7 +5930,9 @@ class Sling(Manager):
     #     # self.sb._vfNode.rotation = np.deg2rad(value[3:])
 
     @property
-    def connections(self):
+    def connections(self)->tuple[Point or Circle]:
+        """List or Tuple of nodes (Points or Circles) that this sling is connected to. Nodes may be passed by name (string) or by reference.
+        """
         return (self.endA, *self.main.connections[1:-1], self.endB)
 
     @connections.setter
@@ -5945,7 +5948,8 @@ class Sling(Manager):
             # self.main.connections = (ma, *value[1:-1], mb)
 
     @property
-    def reversed(self):
+    def reversed(self) -> tuple[bool]:
+        """The directions over which the sling runs over any intermediate connection circles"""
         return (False, *self.main.reversed[1:-1], False)
     
     @reversed.setter
@@ -6392,23 +6396,24 @@ class Shackle(Manager, RigidBody):
         self._rename_all_manged_nodes(old_name, value)
 
     @property
-    def shackle_data_dict(self):
+    def shackle_data_dict(self) -> dict:
+        """Returns the shackle data for the actual shackle kind"""
         return self.shackle_kind_properties(self._kind)
 
     @property
-    def MBL(self):
+    def MBL(self) -> float:
         """MBL [t]"""
         return self.shackle_data_dict['MBL']
 
     @property
-    def load(self):
+    def load(self)-> float:
         """The force traveling through this shackle [kN]
 
-        Calculated from all nodes attached to the shackle as well as the connection force
+        Calculated as the maximum absolute value of all nodes attached to the shackle as well as the connection force. May be incorrect
+        for situations where more than two nodes connect to different locations on the shackle.
         """
-        s = self._scene
-
-        F = 0
+        s = self._scene  # alias
+        F = 0            # initial value
 
         child_nodes = s.nodes_with_parent(self, recursive=False)
 
@@ -6983,6 +6988,7 @@ if filename.exists():
     types['float'] = float
     types['bool'] = bool
     types['str'] = str
+    types['dict'] = type(dict)
 
     btypes = dict()
     btypes['True'] = True

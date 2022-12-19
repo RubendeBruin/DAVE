@@ -370,10 +370,20 @@ SPMT,axles,tuple,Axles is a list axle positions  ,"[m,m,m]",parent axis,True,Fal
         Example:
             [(-10,0,0),(-5,0,0),(0,0,0)] for three axles
         "
-Shackle,kind,str,"Type of shackle, for example GP800 ",[text],,True,False,False,"Type of shackle, for example GP800 [text]"
 Shackle,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
+Shackle,kind,str,"Type of shackle, for example GP800 ",[text],,True,False,False,"Type of shackle, for example GP800 [text]"
+Shackle,shackle_data_dict,dict,Returns the shackle data for the actual shackle kind,,,False,False,False,Returns the shackle data for the actual shackle kind
+Shackle,MBL,float,MBL ,[t],,False,False,True,MBL [t]
+Shackle,load,float,The force traveling through this shackle ,[kN],,False,False,True,"The force traveling through this shackle [kN]
+
+        Calculated as the maximum absolute value of all nodes attached to the shackle as well as the connection force. May be incorrect
+        for situations where more than two nodes connect to different locations on the shackle.
+        "
 Sling,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
 Sling,k_total,float,Total stiffness of the sling ,[kN/m],,True,True,True,Total stiffness of the sling [kN/m]
+Sling,connections,tuple,List or Tuple of nodes (Points or Circles) that this sling is connected to. Nodes may be passed by name (string) or by reference.,,,True,False,False,"List or Tuple of nodes (Points or Circles) that this sling is connected to. Nodes may be passed by name (string) or by reference.
+        "
+Sling,reversed,tuple,The directions over which the sling runs over any intermediate connection circles,,,True,False,False,The directions over which the sling runs over any intermediate connection circles
 Sling,length,float,Total length measured between the INSIDE of the eyes of the sling is pulled straight. ,[m],,True,True,True,Total length measured between the INSIDE of the eyes of the sling is pulled straight. [m]
 Sling,LeyeA,float,Total length inside eye A if stretched flat ,[m],,True,True,True,Total length inside eye A if stretched flat [m]
 Sling,LeyeB,float,Total length inside eye B if stretched flat ,[m],,True,True,True,Total length inside eye B if stretched flat [m]

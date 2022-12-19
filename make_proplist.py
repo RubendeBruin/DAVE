@@ -61,11 +61,12 @@ for cls_name, cls in clsmembers:
             else:
                 if dn.Node in property_type.mro():
                     is_single = True
+                elif isinstance(property_type,enum.EnumMeta):
+                    is_single = True
+                elif isinstance(property_type, type(dict)):
+                    is_single = False
                 else:
-                    if isinstance(property_type,enum.EnumMeta):
-                        is_single = True
-                    else:
-                        raise ValueError(f'Could not determine what to do with this type: {property_type}')
+                    raise ValueError(f'Could not determine what to do with this type: {property_type}')
 
             is_single_numeric = property_type in (int, float)
             is_single_settable= is_single and not read_only
