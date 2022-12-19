@@ -274,22 +274,24 @@ if platform.system().lower().startswith('win'):
                 # by default the windows-store version seems to be installed in a location which is in the path
                 paths = os.environ['PATH'].split(';')
                 for pth in paths:
-                    test = pth + r'\\blender.exe'
+                    test = pth + r'\\blender-launcher.exe'
                     if os.path.exists(test):
                         BLENDER_EXEC = test
                         break
-
-
+                    # test = pth + r'\\blender-launcher.exe'
+                    # if os.path.exists(test):
+                    #     BLENDER_EXEC = test
+                    #     break
 
     if os.path.exists(BLENDER_EXEC):
+        print("Blender found at: {}".format(BLENDER_EXEC))
+    else:
         print("! Blender not found - Blender can be installed from the microsoft windows store."
               "   if you have blender already and want to be able to use blender then please either:\n"
               "   - configure windows to open .blend files with blender automatically \n"
               "   - add the folder containing blender.exe to the PATH variable.")
-        print("Blender found at: {}".format(BLENDER_EXEC))
-    else:
 
-        print('\nLoading DAVE...')
+    print('\nLoading DAVE...')
 else: # assume we're on linux
     BLENDER_EXEC = 'blender'
 

@@ -1237,6 +1237,40 @@ class Scene:
 
         self.delete(node)  # do not call delete as that will fail on managers
 
+    def flatten(self, root_node=None):
+        """Performs a recursive dissolve on Frames (not rigid bodies). If root_node is None (default) then the whole model is flattened"""
+
+        while True:
+            work_done = False
+
+            if root_node is None:
+                nodes = self.nodes_of_type(Frame)
+            else:
+                all_nodes = self.nodes_depending_on(root_node)
+                nodes = [node for node in all_nodes if isinstance(node, Frame)]
+
+
+            for node in nodes:
+
+                if isinstance(node, RigidBody):
+                    continue # do not dissible rigid-bodies, that would destroy the weight
+
+                if node.manager is None and node.fixed == (True, True, True, True, True, True):
+                    self.dissolve(node)
+                    work_done = True
+                    break
+                if isinstance(node, Manager):
+                    self.dissolve(node)
+                    work_done = True
+                    break
+
+            if not work_done:
+                break
+
+        if root_node is not None:
+            self.dissolve(root_node)
+
+
     def savepoint_make(self):
         self._savepoint = self.give_python_code()
 
@@ -1404,6 +1438,7 @@ class Scene:
                     # phase 3
                     self._restore_original_fixes(original_dofs_dict)
                     phase = 4
+                    this_is_a_re_init = False
 
                 else:
                     if (
@@ -1421,6 +1456,7 @@ class Scene:
                 status = self._vfc.state_solve_statics_with_timeout(
                     True, timeout_s, True, True, 0, this_is_a_re_init
                 )
+                this_is_a_re_init = True
 
                 if status == 0 or status == -2:
                     # phase 5
@@ -1428,6 +1464,8 @@ class Scene:
                         changed,
                         msg,
                     ) = self._check_and_fix_geometric_contact_orientations()
+
+
 
                     if not changed:
                         # we are done!
@@ -1438,6 +1476,7 @@ class Scene:
                         return True  # <------------- You've found the proper exit!
 
                     give_feedback(msg)
+                    this_is_a_re_init = False
 
                 else:
                     give_feedback(f"Maximum error = {self._vfc.Emaxabs:.6e} (phase 4)")
@@ -1492,7 +1531,7 @@ class Scene:
     # ====== goal seek ========
 
     def goal_seek(
-        self, evaluate, target, change, bracket=None, tol=1e-3
+        self, evaluate, target, change, bracket=None, tol=1e-3, tol_out=0.1
     ):
         """goal_seek
 
@@ -1505,6 +1544,9 @@ class Scene:
             change (string, tuple) value to be adjused. If string this is executed as change = number. If tuple then this is
                                    is done for each string in the tuple
             range(optional)  : specify the possible search-interval
+
+            tol : tolerance on changed variable
+            tol_out : tolerance on evaluated variable
 
         Returns:
             bool: True if successful, False otherwise.
@@ -1543,7 +1585,11 @@ class Scene:
             s = self
 
             for c in change:
-                exec(f'{c} = {x}')
+                code = f'{c} = {x}'
+                try:
+                    exec(code)
+                except Exception as E:
+                    raise ValueError(f'Error when running [{code}]. The error was:\n {str(E)}')
 
             self.solve_statics(silent=True)
             result = eval(evaluate)
@@ -1556,15 +1602,20 @@ class Scene:
         x1 = initial + 0.0001
 
         if bracket is not None:
-            res = root_scalar(set_and_get, x0=x0, x1=x1, bracket=bracket, xtol=tol/10)
+            res = root_scalar(set_and_get, x0=x0, x1=x1, bracket=bracket, xtol=tol)
         else:
-            res = root_scalar(set_and_get, x0=x0, x1=x1, xtol=tol/10)
+            res = root_scalar(set_and_get, x0=x0, x1=x1, xtol=tol)
 
         self._print(res)
 
+        if res.converged:
+            return True
+
+        # not converged, but maybe still within tolerance
+
         # evaluate result
         final_value = eval(evaluate)
-        if abs(final_value - target) > tol:
+        if abs(final_value - target) > tol_out:
             raise ValueError(
                 "Target not reached. Target was {}, reached value is {}".format(
                     target, final_value
@@ -3281,12 +3332,51 @@ class Scene:
                     f"\ns['{n.name}']._visible = False"  # use private, cause may be managed (in which case this statement is probably obsolete)
                 )  # only report is not the default value
 
-        code.append("\n# Limits of un-managed nodes ")
+        code.append("\n# Limits")
 
         for n in nodes_to_be_exported:
             if n.manager is None:
                 for key, value in n.limits.items():
                     code.append(f"s['{n.name}'].limits['{key}'] = {value}")
+            else:
+                # Limits of managed nodes are only exported if they have been overridden
+                # or are additional.
+                # This is traced using the _limits_by_manager dict
+
+                lbm = getattr(n, '_limits_by_manager',None)
+                if lbm is not None:
+                    for key, value in n.limits.items():
+                        if key not in lbm:
+                            code.append(f"s['{n.name}'].limits['{key}'] = {value}  # additional limit on managed node")
+                        else:
+                            if value != lbm[key]:
+                                code.append(
+                                    f"s['{n.name}'].limits['{key}'] = {value}  # limit overridden")
+                else:
+                    warnings.warn(f'Managed node {n.name} does not have _limits_by_manager set')
+
+        code.append("\n# Watches")
+
+        for n in nodes_to_be_exported:
+            if n.manager is None:
+                for key, value in n.watches.items():
+                    code.append(f"s['{n.name}'].watches['{key}'] = {value}")
+            else:
+                # Limits of managed nodes are only exported if they have been overridden
+                # or are additional.
+                # This is traced using the _limits_by_manager dict
+
+                lbm = getattr(n, '_watches_by_manager', None)
+                if lbm is not None:
+                    for key, value in n.watches.items():
+                        if key not in lbm:
+                            code.append(f"s['{n.name}'].watches['{key}'] = {value}  # watch limit on managed node")
+                        else:
+                            if value != lbm[key]:
+                                code.append(
+                                    f"s['{n.name}'].watches['{key}'] = {value}  # watch overridden")
+                else:
+                    warnings.warn(f'Managed node {n.name} does not have _watches_by_manager set')
 
         code.append("\n# Tags")
 
@@ -3301,6 +3391,15 @@ class Scene:
             if n.manager is None:
                 if n.color is not None:
                     code.append(f"s['{n.name}'].color = {n.color}")
+
+        code.append("\n# Solved state of managed DOFs nodes")
+        _modes = ('x','y','z','rx','ry','rz')
+        for n in self.nodes_of_type(Frame):
+            d = [*n.position, *n.rotation]
+            for i,f in  enumerate(n.fixed):
+                if f is False: # free dof
+                    code.append(f"s['{n.name}'].{_modes[i]} = {d[i]}")
+
 
         # Optional Reports
         if self.reports:

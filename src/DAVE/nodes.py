@@ -6,6 +6,9 @@
   Ruben de Bruin - 2019
 """
 import csv
+from dataclasses import dataclass
+import functools
+
 import fnmatch
 import glob
 import warnings
@@ -34,8 +37,6 @@ import datetime
 # - properties are returned as tuple to make sure they are not editable.
 #    --> node.position[2] = 5 is not allowed
 
-
-import functools
 
 
 # Wrapper (decorator) for managed nodes
@@ -102,6 +103,18 @@ def valid_node_weakref(wr):
         return False
     return node.is_valid
 
+@dataclass
+class Watch:
+    """Watches on nodes
+
+    a watch is part of a node
+    it is stored in a dictionary where the key is the description of the watch
+    """
+    evaluate : str = 'self.name'
+    decimals : int = 3
+    condition : str = '' # Empty evaluates to True
+
+
 
 class Node(ABC):
     """ABSTRACT CLASS - Properties defined here are applicable to all derived classes
@@ -133,6 +146,10 @@ class Node(ABC):
 
         self.limits = dict()
         """Defines the limits of the nodes properties for calculating a UC"""
+
+        self.watches : dict[str, Watch] = dict()
+        """Defines the watches of the node, there are of type Watch"""
+
 
         self._valid = True
         """Turns False if the node in removed from a scene. This is a work-around for weakrefs"""
@@ -402,6 +419,48 @@ class Node(ABC):
     def delete_tag(self, value: str):
         self._tags.remove(value)
 
+    # watches
+    def run_watches(self) -> tuple[list[tuple[str, str]],list[tuple[str, str]]]:
+        """Executes all watches on this node and returns the execution result as
+        active = list[tuple[str, values]]
+        hidden = list[tuple[str, values]]
+
+        watches of which the condition evaluates to False are excluded
+        numerical results are rounded to "decimals" if >= 0
+        """
+        r = []
+        hidden = []
+
+        for desc, w in self.watches.items():
+
+            try:
+                value = eval(w.evaluate,{'np':np}, {'s':self._scene, 'self':self})
+            except Exception as M:
+                value = f'ERROR: {w.evaluate} -> {str(M)}'
+
+            if w.condition:
+                condition = eval(w.condition, {'np':np}, {'s':self._scene, 'self':self, 'value':value})
+            else:
+                condition = True
+
+            # convert nd arrays to tuples for easier comparison later
+            if isinstance(value, np.ndarray):
+                value = tuple(value)
+
+
+            if condition:
+
+                if w.decimals>=0:
+                    if isinstance(value, float):
+                        value = round(value,w.decimals)
+
+                r.append((desc, value))
+
+            else:
+                hidden.append((desc,value))
+
+        return r, hidden
+
 
 
 class CoreConnectedNode(Node):
@@ -535,6 +594,7 @@ class NodeWithCoreParent(CoreConnectedNode):
         if isinstance(self, Point) and isinstance(new_parent, Point):
             raise TypeError("Points can not be placed on points")
 
+
         try:
             self.rotation
             has_rotation = True
@@ -628,6 +688,57 @@ class NodeWithParentAndFootprint(NodeWithCoreParent):
             return ""
 
 
+class NodeWithCoreParentAndTrimesh(NodeWithCoreParent):
+    def __init__(self, scene, core_node):
+        super().__init__(scene, core_node)
+
+        self._None_parent_acceptable = False
+        self._trimesh = TriMeshSource(
+            self._scene, source = self._vfNode.trimesh
+        )  # the tri-mesh is wrapped in a custom object
+
+    def update(self):
+        self._vfNode.reloadTrimesh()
+
+    @property
+    def trimesh(self) -> "TriMeshSource":
+        """Reference to TriMeshSource object
+        #NOGUI"""
+        return self._trimesh
+
+    @node_setter_manageable
+    def change_parent_to(self, new_parent):
+        """See also Visual.change_parent_to"""
+
+        if not (isinstance(new_parent, Frame) or new_parent is None):
+            raise ValueError(
+                "Visuals can only be attached to an axis (or derived) or None"
+            )
+
+        # get current position and orientation
+        if self.parent is not None:
+            cur_position = self.parent.to_glob_position(self.trimesh._offset)
+            cur_rotation = self.parent.to_glob_rotation(self.trimesh._rotation)
+        else:
+            cur_position = self.trimesh._offset
+            cur_rotation = self.trimesh._rotation
+
+        self.parent = new_parent
+
+        if new_parent is None:
+            new_offset = cur_position
+            new_rotation = cur_rotation
+        else:
+            new_offset = new_parent.to_loc_position(cur_position)
+            new_rotation = new_parent.to_loc_rotation(cur_rotation)
+
+        self.trimesh.load_file(url = self.trimesh._path,
+                               offset = new_offset,
+                               rotation = new_rotation,
+                               scale = self.trimesh._scale,
+                               invert_normals= self.trimesh._invert_normals)
+
+
 # ==============================================================
 
 class VisualOutlineType(Enum):
@@ -648,11 +759,9 @@ class Visual(Node):
 
     The visual can be given an offset, rotation and scale. These are applied in the following order
 
-    1. rotate
-    2. scale
+    1. scale
+    2. rotate
     3. offset
-
-    Hint: To scale before rotation place the visual on a dedicated axis and rotate that axis.
 
     """
 
@@ -2518,25 +2627,11 @@ class CurrentArea(_Area):
         return self._give_python_code("new_currentarea")
 
 
-class ContactMesh(NodeWithCoreParent):
+class ContactMesh(NodeWithCoreParentAndTrimesh):
     """A ContactMesh is a tri-mesh with an axis parent"""
 
     def __init__(self, scene, name):
         super().__init__(scene, scene._vfc.new_contactmesh(name))
-
-        self._None_parent_acceptable = True
-        self._trimesh = TriMeshSource(
-            self._scene, self._vfNode.trimesh
-        )  # the tri-mesh is wrapped in a custom object
-
-    @property
-    def trimesh(self)->'TriMeshSource':
-        """The TriMeshSource object which can be used to change the mesh
-
-        Example:
-            s['Contactmesh'].trimesh.load_file('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
-        #NOGUI"""
-        return self._trimesh
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -3758,7 +3853,9 @@ class TriMeshSource():  # not an instance of Node
     """
     TriMesh
 
-    A TriMesh node contains triangular mesh which can be used for buoyancy or contact
+    A TriMesh node contains triangular mesh which can be used for buoyancy or contact.
+
+    The mesh is first scaled, then rotated and then offset
 
     """
 
@@ -3853,8 +3950,8 @@ class TriMeshSource():  # not an instance of Node
         r = vtk.vtkTransform()
         r.Identity()
 
-        rotationFilter.SetInputConnection(tri.GetOutputPort())
-        scaleFilter.SetInputConnection(rotationFilter.GetOutputPort())
+        scaleFilter.SetInputConnection(tri.GetOutputPort())
+        rotationFilter.SetInputConnection(scaleFilter.GetOutputPort())
 
         if scale is not None:
             s.Scale(*scale)
@@ -3872,7 +3969,7 @@ class TriMeshSource():  # not an instance of Node
         rotationFilter.SetTransform(r)
 
         clean = vtk.vtkCleanPolyData()
-        clean.SetInputConnection(scaleFilter.GetOutputPort())
+        clean.SetInputConnection(rotationFilter.GetOutputPort())
 
         clean.ConvertLinesToPointsOff()
         clean.ConvertPolysToLinesOff()
@@ -4124,7 +4221,7 @@ class TriMeshSource():  # not an instance of Node
     #         self.rotation = new_parent.to_loc_direction(cur_rotation)
 
 
-class Buoyancy(NodeWithCoreParent):
+class Buoyancy(NodeWithCoreParentAndTrimesh):
     """Buoyancy provides a buoyancy force based on a buoyancy mesh. The mesh is triangulated and chopped at the instantaneous flat water surface. Buoyancy is applied as an upwards force that the center of buoyancy.
     The calculation of buoyancy is as accurate as the provided geometry.
 
@@ -4138,19 +4235,7 @@ class Buoyancy(NodeWithCoreParent):
     def __init__(self, scene, name : str):
         super().__init__(scene, scene._vfc.new_buoyancy(name))
 
-        self._None_parent_acceptable = False
-        self._trimesh = TriMeshSource(
-            self._scene, source = self._vfNode.trimesh
-        )  # the tri-mesh is wrapped in a custom object
 
-    def update(self):
-        self._vfNode.reloadTrimesh()
-
-    @property
-    def trimesh(self) -> TriMeshSource:
-        """Reference to TriMeshSource object
-        #NOGUI"""
-        return self._trimesh
 
     @property
     def cob(self)->tuple[tuple[float,float,float]]:
@@ -4192,7 +4277,7 @@ class Buoyancy(NodeWithCoreParent):
         return code
 
 
-class Tank(NodeWithCoreParent):
+class Tank(NodeWithCoreParentAndTrimesh):
     """Tank provides a fillable tank based on a mesh. The mesh is triangulated and chopped at the instantaneous flat fluid surface. Gravity is applied as an downwards force that the center of fluid.
     The calculation of fluid volume and center is as accurate as the provided geometry.
 
@@ -4206,11 +4291,6 @@ class Tank(NodeWithCoreParent):
     def __init__(self, scene, name):
 
         super().__init__(scene, scene._vfc.new_tank(name))
-
-        self._None_parent_acceptable = False
-        self._trimesh = TriMeshSource(
-            self._scene, source = self._vfNode.trimesh
-        )  # the tri-mesh is wrapped in a custom object
 
         self._inertia = scene._vfc.new_pointmass(
             self.name + vfc.VF_NAME_SPLIT + "inertia"
@@ -4227,15 +4307,6 @@ class Tank(NodeWithCoreParent):
     def _delete_vfc(self):
         self._scene._vfc.delete(self._inertia.name)
         super()._delete_vfc()
-
-    @property
-    def trimesh(self) -> TriMeshSource:
-        """The TriMeshSource object which can be used to change the mesh
-
-            Example:
-                s['Contactmesh'].trimesh.load_file('cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
-        #NOGUI"""
-        return self._trimesh
 
     @property
     def free_flooding(self)->bool:
@@ -4268,6 +4339,11 @@ class Tank(NodeWithCoreParent):
     def cog_local(self)->tuple[tuple[float,float,float]]:
         """Center of gravity [m,m,m] (parent axis)"""
         return self.parent.to_loc_position(self.cog)
+
+    @property
+    def cog_when_full_global(self) -> tuple[tuple[float, float, float]]:
+        """Global position of the center of volume / gravity of the tank when it is filled [m,m,m] (global)"""
+        return self.parent.to_glob_position(self._vfNode.cog_when_full)
 
     @property
     def cog_when_full(self)->tuple[tuple[float,float,float]]:
@@ -4846,6 +4922,16 @@ class Manager(Node, ABC):
         #     self._rename_all_manged_nodes(old_name, value)
         #
         pass
+
+    def store_copy_of_limits(self):
+        """Creates/updates a copy of the limits of all managed nodes and stores that in
+        each node in a dict ._limits_by_manager.
+
+        This is used to determine which limits need to be saved by the scene
+        """
+
+        for node in self.managed_nodes():
+            node._limits_by_manager = node.limits.copy()
 
     def _rename_all_manged_nodes(self, old_name, new_name):
         """Helper to quickly rename all managed nodes"""
@@ -6543,8 +6629,11 @@ class Component(Manager, Frame):
         for node in self._nodes:
             if node.manager is None:
                 node._manager = self
+                node._limits_by_manager = node.limits.copy()
+                node._watches_by_manager = node.watches.copy()
 
         self._path = value
+
 
     def give_python_code(self):
 
@@ -6930,6 +7019,7 @@ class LoadShearMomentDiagram:
 
 from DAVE.settings import DAVE_ADDITIONAL_RUNTIME_MODULES,RESOURCE_PATH
 
+DAVE_ADDITIONAL_RUNTIME_MODULES['Watch'] = Watch
 DAVE_ADDITIONAL_RUNTIME_MODULES['AreaKind'] = AreaKind
 DAVE_ADDITIONAL_RUNTIME_MODULES['BallastSystem'] = BallastSystem
 DAVE_ADDITIONAL_RUNTIME_MODULES['Beam'] = Beam

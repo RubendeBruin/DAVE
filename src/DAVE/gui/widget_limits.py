@@ -111,16 +111,16 @@ class WidgetLimits(guiDockWidget):
 
         cbN = self.ui.cbNode
         cbN.blockSignals(True)
-        combobox_update_items(cbN, [node.name for node in self.guiScene.unmanged_nodes])
+        combobox_update_items(cbN, [node.name for node in self.guiScene._nodes])
 
         if self.guiSelection:
             node = self.guiSelection[0]
+            cbN.setCurrentText(node.name)
             if node.manager is None:
-                cbN.setCurrentText(node.name)
                 self.ui.lbNodeClass.setText(f'Node type: {node.class_name}')
                 self.ui.lblError.setVisible(False)
             else:
-                self.ui.lblError.setText(f'{node.name} is managed by {node.manager.name}' )
+                self.ui.lblError.setText(f'{node.name} is managed by {node.manager.name} - limits defined by manager can be changed but can not be deleted')
                 self.ui.lblError.setVisible(True)
 
         cbN.blockSignals(False)
@@ -138,12 +138,12 @@ class WidgetLimits(guiDockWidget):
             props_without_name_and_UC = [p for p in props if p not in exclude]
             combobox_update_items(cbP, props_without_name_and_UC)
 
-            if node.manager is None:
-                self.ui.widgetLimitEdit.setEnabled(True)
-            else:
-                self.ui.widgetLimitEdit.setEnabled(False)   # NOTE: This actually never happens as the names of the
-                                                            # managed nodes are not in the drop-down box
-                self.ui.lbNodeClass.setText(f'This node is managed by {node.manager.name}')
+            # if node.manager is None:
+            #     self.ui.widgetLimitEdit.setEnabled(True)
+            # else:
+            #     self.ui.widgetLimitEdit.setEnabled(False)   # NOTE: This actually never happens as the names of the
+            #                                                 # managed nodes are not in the drop-down box
+            #     self.ui.lbNodeClass.setText(f'This node is managed by {node.manager.name}')
 
 
         else:

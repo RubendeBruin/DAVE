@@ -1,6 +1,6 @@
 call conda activate pyside2
 
-call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
+echo call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
 echo call pyside2-uic widget_environment.ui -o "..\src\DAVE\gui\forms\widgetUI_environment.py"
 echo call pyside2-uic widget_modeshapes.ui -o "..\src\DAVE\gui\forms\widgetUI_modeshapes.py"
 echo call pyside2-uic widget_ballastconfiguration.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastconfiguration.py"
@@ -43,5 +43,6 @@ echo call pyside2-uic widget_selection_actions.ui -o "..\src\DAVE\gui\forms\widg
 echo call pyside2-uic widget_tank.ui -o "..\src\DAVE\gui\forms\widget_tank.py"
 echo call pyside2-uic widget_footprints.ui -o "..\src\DAVE\gui\forms\widget_footprints.py"
 echo call pyside2-uic widget_limits.ui -o "..\src\DAVE\gui\forms\widget_limits.py"
+call pyside2-uic dialog_edit_watch.ui -o "..\src\DAVE\gui\forms\dialog_edit_watch.py"
 
 call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"

@@ -17,7 +17,7 @@ class Ui_DockLimits(object):
     def setupUi(self, DockLimits):
         if not DockLimits.objectName():
             DockLimits.setObjectName(u"DockLimits")
-        DockLimits.resize(412, 655)
+        DockLimits.resize(418, 655)
         self.verticalLayout = QVBoxLayout(DockLimits)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.widget = QWidget(DockLimits)
@@ -45,15 +45,15 @@ class Ui_DockLimits(object):
 
         self.gridLayout.addWidget(self.label, 1, 0, 1, 1)
 
-        self.lblError = QLabel(self.widget)
-        self.lblError.setObjectName(u"lblError")
-        self.lblError.setStyleSheet(u"background: yellow; \n"
-"color: rgb(255, 0, 0);")
-
-        self.gridLayout.addWidget(self.lblError, 0, 1, 1, 1)
-
 
         self.verticalLayout.addWidget(self.widget)
+
+        self.lblError = QLabel(DockLimits)
+        self.lblError.setObjectName(u"lblError")
+        self.lblError.setStyleSheet(u"color: rgb(62, 124, 92);")
+        self.lblError.setWordWrap(True)
+
+        self.verticalLayout.addWidget(self.lblError)
 
         self.widgetLimitEdit = QWidget(DockLimits)
         self.widgetLimitEdit.setObjectName(u"widgetLimitEdit")

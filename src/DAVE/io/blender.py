@@ -92,9 +92,9 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), or
     \"\"\"
     All meshes shall be joined
 
-    First rotate (rotation)
-    Then scale (scale)
-    Then move (offset)
+    First scale
+    then rotate
+    then move
 
     Then global apply rotation rotate (orientation)
     Then apply global move (position)
@@ -158,18 +158,17 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), or
         # bpy.ops.transform.rotate(context_override,value=rotation[0], orient_axis='Z') # blender rotates in opposite direction (2.80)... (2.83 this seems to be fixed)?
         # bpy.ops.transform.rotate(context_override,value=rotation[1], orient_axis='Y')
         # bpy.ops.transform.rotate(context_override,value=rotation[2], orient_axis='X')
-        
-        active_object.rotation_mode = 'QUATERNION'
-        active_object.rotation_quaternion = (rotation[3], rotation[0], rotation[1],rotation[2])
-       
-
-        # bpy.ops.object.transform_apply(context_override,location=False, rotation=True, scale=False)    
-        bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)    
-
+ 
         # bpy.ops.transform.resize(context_override,value=scale)
         bpy.ops.transform.resize(value=scale)
         # bpy.ops.object.transform_apply(context_override,location=False, rotation=False, scale=True)
         bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+        
+        active_object.rotation_mode = 'QUATERNION'
+        active_object.rotation_quaternion = (rotation[3], rotation[0], rotation[1],rotation[2])
+
+        # bpy.ops.object.transform_apply(context_override,location=False, rotation=True, scale=False)    
+        bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)    
 
         # bpy.ops.transform.translate(context_override,value=offset)  # translate
         bpy.ops.transform.translate(value=offset)  # translate
@@ -200,6 +199,12 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), or
 
 
         bpy.context.scene.frame_end = (n_frame-1) * frames_per_dof
+        # bpy.context.scene.frame_start = 0
+        
+        # bpy.context.area.ui_type = 'FCURVES'   # need to set context back to original afterwards
+        # bpy.ops.graph.select_all(action='SELECT')
+        # bpy.ops.graph.handle_type(type='VECTOR')
+
 
 
 
@@ -520,7 +525,30 @@ scene.collection.objects.link(obj)"""
 
     return code
 
+def nearest_rotation_vector(v0, v1):
+    """Rotation vectors are not unique. This function determines the rotation vector
+    describing rotation v1 (in degrees) nearest to rotation vector v0 and return that
+    vector
+    """
+    v1 = np.array(v1)
 
+    if np.linalg.norm(v1)<1e-6:
+        if np.linalg.norm(v0) < 1e-6:
+            # two zero rotations
+            return (0,0,0)
+        else:
+            n = v0 / np.linalg.norm(v0)  # change-vector in v0 direction
+
+    else:
+        n = v1 / np.linalg.norm(v1)  # normal in v1
+
+    v0_proj = np.dot(v0, n) * n
+
+    d = np.dot(v1 - v0_proj, n) # signed distance in direction of n
+
+    i = round(d / 360)  # integer number of 360*n lengths that v1 is past v0_proj
+
+    return v1 - 360*i*n
 
 def create_blend_and_open(scene, blender_result_file = None, blender_base_file=None, blender_exe_path=None, camera=None, animation_dofs=None, wavefield=None):
 
@@ -550,12 +578,12 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
     pid = subprocess.Popen(command)
     pid.wait()
 
-    command = 'explorer "{}"'.format(blender_result_file)
+    command = '"{}" "{}"'.format(blender_exe_path,blender_result_file)
     subprocess.Popen(command)
 
 
 def blender_py_file(scene, python_file, blender_base_file, blender_result_file, camera=None, animation_dofs=None,
-                    wavefield=None):
+                    wavefield=None,frames_per_step=24):
 
     # If animation dofs are not provided, and the scene has a timeline with a non-zero range, then use that
     timeline = None
@@ -630,7 +658,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
                 code += '\npositions.append([{},{},{}])'.format(*glob_position)
 
-            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations, color={})'.format(
+            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations, color={},frames_per_dof={})'.format(
                 filename,
                 *visual.scale,
                 *_to_quaternion(visual.rotation),
@@ -638,6 +666,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 *_to_quaternion(visual.parent.global_rotation),
                 *visual.parent.global_position,
                 visual.color,
+                frames_per_step,
             )
 
         elif timeline and has_parent:
@@ -646,13 +675,27 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
             time_start, time_end = timeline.range()
 
-            for i_time in range(time_end-time_start):
+            past_rotvec = (0,0,0)
+
+            for i_time in range(time_end-time_start+1):
 
 
                 timeline.activate_time(i_time + time_start)
                 scene.update()
 
-                code += '\norientations.append([{},{},{},{}])'.format(*_to_quaternion(visual.parent.global_rotation))
+                # get the rotation vector nearest to the pervious one (unwinding)
+                rotvec = visual.parent.global_rotation # (degrees)
+
+                # the rotvec can be changed in length by any multiple of 360
+                # it should be as close to the past_rotvec as possible
+                #
+                # to the difference between the current rotation vector and the
+                # previous one projected onto the current one should be <=180
+
+                rotvec = nearest_rotation_vector(past_rotvec, rotvec)
+
+                code += '\norientations.append([{},{},{},{}])'.format(*_to_quaternion(rotvec))
+                past_rotvec = rotvec
 
                 position = visual.parent.global_position
                 # global_offset = visual.parent.to_glob_direction(visual.offset)
@@ -661,14 +704,16 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
                 code += '\npositions.append([{},{},{}])'.format(*glob_position)
 
-            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations, color={})'.format(
+            code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations, color={}, frames_per_dof={})'.format(
                 filename,
                 *visual.scale,
                 *_to_quaternion(visual.rotation),
                 *visual.offset,
                 *_to_quaternion(visual.parent.global_rotation),
                 *visual.parent.global_position,
-                visual.color)
+                visual.color,
+                frames_per_step,
+            )
 
 
         else:
@@ -723,7 +768,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
             code += '\nani_points = []'
             time_start, time_end = timeline.range()
 
-            for i_time in range(time_end - time_start):
+            for i_time in range(time_end - time_start + 1):
 
                 timeline.activate_time(i_time + time_start)
                 scene.update()
@@ -735,7 +780,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 code += ']'
                 code += '\nani_points.append(frame_points)'
 
-            code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points, color = {})'.format(dia, cable.name, cable.color)
+            code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points, color = {}, frames_per_entry = {})'.format(dia, cable.name, cable.color, frames_per_step)
 
 
         else:
@@ -773,7 +818,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
             code += '\nani_points = []'
             time_start, time_end = timeline.range()
-            for i_time in range(time_end - time_start):
+            for i_time in range(time_end - time_start + 1):
                 timeline.activate_time(i_time + time_start)
                 scene.update()
                 points = beam.global_positions
@@ -784,7 +829,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 code += ']'
                 code += '\nani_points.append(frame_points)'
 
-            code += '\nadd_beam(points, diameter={}, name = "{}", ani_points = ani_points, color = {})'.format(dia, beam.name, beam.color)
+            code += '\nadd_beam(points, diameter={}, name = "{}", ani_points = ani_points, color = {}, frames_per_entry = {})'.format(dia, beam.name, beam.color,frames_per_step)
 
         else:
 

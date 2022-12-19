@@ -65,6 +65,7 @@ from copy import deepcopy
 import logging
 
 from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter
+from DAVE.gui.widget_watches import WidgetWatches
 from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import DragInfo
 from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
 from DAVE.gui.widget_footprints import WidgetFootprints
@@ -313,6 +314,11 @@ class Gui:
 
         self.additional_user_resource_paths = []
         """User-defined additional resource paths, stored on user machine - settings dialog"""
+
+
+        self._undo_log = []
+        self._undo_index = 0
+        """Undo log and history"""
 
         settings = QSettings("rdbr", "DAVE")
         paths_str = settings.value(f"additional_paths")
@@ -666,8 +672,7 @@ class Gui:
 
         # ========== undo log =======
 
-        self._undo_log = []
-        self._undo_index = 0
+
 
         self.ui.actionUndo.triggered.connect(self.undo)
         self.ui.actionRedo.triggered.connect(self.redo)
@@ -905,12 +910,14 @@ class Gui:
             self.show_guiWidget("Node Tree", WidgetNodeTree)
             self.show_guiWidget("Properties", WidgetNodeProps)
             self.show_guiWidget("Quick actions", WidgetQuickActions)
+            self.show_guiWidget("Watches", WidgetWatches)
 
         if name == "EXPLORE":
             self.close_all_open_docks()
             self.show_guiWidget("Node Tree", WidgetNodeTree)
             self.show_guiWidget("Derived Properties", WidgetDerivedProperties)
             self.show_guiWidget("Explore 1-to-1", WidgetExplore)
+            self.show_guiWidget("Watches", WidgetWatches)
 
         if name == "DYNAMICS":
             self.close_all_open_docks()
@@ -1365,6 +1372,8 @@ class Gui:
             - store_undo : store undo information AFTER running code
 
         """
+        if isinstance(code, (list, tuple)):
+            code = '\n'.join(code)
 
         start_time = datetime.datetime.now()
         self._model_has_changed = True
