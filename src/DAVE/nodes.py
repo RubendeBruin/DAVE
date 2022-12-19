@@ -5957,6 +5957,11 @@ class Sling(Manager):
         with ClaimManagement(self._scene, self):
             self.main.reversed = (False, *value[1:-1], False)
 
+    @property
+    def tension(self) -> float:
+        """Tension in (main part of) the sling [kN]"""
+        return self.main.tension
+
     def give_python_code(self):
         code = f"# Exporting {self.name}"
 

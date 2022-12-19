@@ -384,6 +384,7 @@ Sling,k_total,float,Total stiffness of the sling ,[kN/m],,True,True,True,Total s
 Sling,connections,tuple,List or Tuple of nodes (Points or Circles) that this sling is connected to. Nodes may be passed by name (string) or by reference.,,,True,False,False,"List or Tuple of nodes (Points or Circles) that this sling is connected to. Nodes may be passed by name (string) or by reference.
         "
 Sling,reversed,tuple,The directions over which the sling runs over any intermediate connection circles,,,True,False,False,The directions over which the sling runs over any intermediate connection circles
+Sling,tension,float,Tension in (main part of) the sling ,[kN],,False,False,True,Tension in (main part of) the sling [kN]
 Sling,length,float,Total length measured between the INSIDE of the eyes of the sling is pulled straight. ,[m],,True,True,True,Total length measured between the INSIDE of the eyes of the sling is pulled straight. [m]
 Sling,LeyeA,float,Total length inside eye A if stretched flat ,[m],,True,True,True,Total length inside eye A if stretched flat [m]
 Sling,LeyeB,float,Total length inside eye B if stretched flat ,[m],,True,True,True,Total length inside eye B if stretched flat [m]
