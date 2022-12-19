@@ -398,6 +398,7 @@ Tank,free_flooding,bool,Tank is filled till global waterline  ,[bool],aka: damag
 Tank,permeability,float,Permeability is the fraction of the enclosed volume that can be filled with fluid ,[-],,True,True,True,Permeability is the fraction of the enclosed volume that can be filled with fluid [-]
 Tank,cog,tuple,Global position of the center of volume / gravity  ,"[m,m,m]",global,False,False,False,"Global position of the center of volume / gravity [m,m,m] (global)"
 Tank,cog_local,tuple,Center of gravity  ,"[m,m,m]",parent axis,False,False,False,"Center of gravity [m,m,m] (parent axis)"
+Tank,cog_when_full_global,tuple,Global position of the center of volume / gravity of the tank when it is filled  ,"[m,m,m]",global,False,False,False,"Global position of the center of volume / gravity of the tank when it is filled [m,m,m] (global)"
 Tank,cog_when_full,tuple,LOCAL position of the center of volume / gravity of the tank when it is filled  ,"[m,m,m]",parent axis,False,False,False,"LOCAL position of the center of volume / gravity of the tank when it is filled [m,m,m] (parent axis)"
 Tank,fill_pct,float,Amount of volume in tank as percentage of capacity ,[%],,True,True,True,Amount of volume in tank as percentage of capacity [%]
 Tank,level_global,float,The fluid plane elevation in the global axis system ,[m],,True,True,True,"The fluid plane elevation in the global axis system [m]
