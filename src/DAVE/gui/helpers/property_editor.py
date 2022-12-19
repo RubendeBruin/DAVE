@@ -1,4 +1,4 @@
-"""Property editor
+"""Property editor widget / dialog
 
 This is a simple Qt GUI (widget) that creates a qui of editable properties for a single object.
 It features a callback to signal change of any of the properties.
@@ -7,44 +7,47 @@ See the example in __main__
 
 Supported property types:
 - string
-- float (int is treated as float)
-
+- float
+- int
+- tuple
 
 Input:
-- target object
-- property names
+- setting names
+- setting types
+- getter callback
+- setter callback
+- into (optional)
+- parent (optional)
+
+An inherited class `PropertyEditorWidget` exists for convenience with objects. For this class
+property types and the getter function can be replaced with a reference to an object. This works
+if all settings are properties of the object.
+
 
 
 """
 from dataclasses import dataclass
+from collections.abc import Callable
 
 from PySide2.QtWidgets import *
 
-class PropertyEditorWidget(QDialog):
+class PropertyEditorDialog(QDialog):
 
-    def __init__(self, dataobject, prop_names : tuple or list, callback_func, info = None, parent=None):
+    def __init__(self, prop_names : tuple or list, prop_types : tuple or list, getter_callback : Callable[str, any], setter_callback : Callable[str, any], info = None, parent=None):
+
+        # checks
+
+        assert len(prop_types) == len(prop_names)
+
+
+        #
         super().__init__(parent=parent)
-
-        if isinstance(prop_names, str):
-            prop_names = (prop_names,)
 
         self.setWindowTitle("Edit")
 
-        self.callback_func = callback_func
-        self.data_object = dataobject
-
-        # get data-types
-        self.prop_types = []
-        for prop in prop_names:
-            test = getattr(dataobject, prop)
-            if isinstance(test, str):
-                self.prop_types.append(str)
-            elif isinstance(test, (int,float)):
-                self.prop_types.append(float)
-            elif isinstance(test, (tuple, list)):
-                self.prop_types.append(tuple)
-            else:
-                raise ValueError(f'Unsupported type for property name {prop} with value {test}')
+        self.setter_callback = setter_callback
+        self.getter_callback = getter_callback
+        self.prop_types = prop_types
 
         # build Gui
 
@@ -62,7 +65,6 @@ class PropertyEditorWidget(QDialog):
             layout.addWidget(label, row, 0)
 
             # editor
-            value = getattr(dataobject, prop)
             edit = QLineEdit()
 
             #   callback
@@ -72,9 +74,10 @@ class PropertyEditorWidget(QDialog):
             layout.addWidget(edit, row, 1)
 
             # info
-            if info is not None:
-                info_label = QLabel(info[row])
-                layout.addWidget(info_label, row, 2)
+            if info:
+                if len(info)>row:
+                    info_label = QLabel(info[row])
+                    layout.addWidget(info_label, row, 2)
 
             row += 1
 
@@ -90,24 +93,25 @@ class PropertyEditorWidget(QDialog):
 
     def load_data(self):
         """Fills the editors with the current values in the dataobject"""
-        for editor, kind, name in zip(self.editors, self.prop_types, self.prop_names):
+        for editor, kind, prop_name in zip(self.editors, self.prop_types, self.prop_names):
 
             if editor.hasFocus():  # do not fill if control has focus
                 continue
 
             editor.blockSignals(True)
 
-
-            value = getattr(self.data_object, name)
+            value = self.getter_callback(prop_name)
 
             if kind == str:
                 editor.setText(value)
             elif kind == float:
                 editor.setText(str(float(value)))
+            elif kind == int:
+                editor.setText(str(int(value)))
             elif kind == tuple:
                 editor.setText('(' + ', '.join([str(v) for v in value]) + ')')
             else:
-                raise ValueError(f'Can not set value for  {name} - unknown type')
+                raise ValueError(f'Can not represent value for  {prop_name} - unknown type. Value is {str(value)}')
 
             editor.setStyleSheet('background: white')
 
@@ -115,8 +119,6 @@ class PropertyEditorWidget(QDialog):
 
 
     def user_changed(self, i_row):
-        print(f'changed {i_row}')
-
         editor = self.editors[i_row]
         kind = self.prop_types[i_row]
         prop_name = self.prop_names[i_row]
@@ -126,6 +128,12 @@ class PropertyEditorWidget(QDialog):
         if kind == float:
             try:
                 value=float(value)
+            except ValueError:
+                editor.setStyleSheet('background:  rgb(255, 170, 127);')
+                return
+        elif kind == int:
+            try:
+                value=int(value)
             except ValueError:
                 editor.setStyleSheet('background:  rgb(255, 170, 127);')
                 return
@@ -143,36 +151,103 @@ class PropertyEditorWidget(QDialog):
 
         editor.setStyleSheet('background: white')
 
-        if self.callback_func(prop_name, value):
+        if self.setter_callback(prop_name, value):
             self.load_data()
+
+
+
+class PropertyEditorWidget(PropertyEditorDialog):
+
+    def __init__(self, dataobject, prop_names : tuple or list, callback_func, info = None, parent=None):
+
+        self.callback_func = callback_func
+        self.data_object = dataobject
+
+        prop_types = []
+        for prop in prop_names:
+            test = getattr(dataobject, prop)
+            if isinstance(test, str):
+                prop_types.append(str)
+            elif isinstance(test, (int,float)):
+                prop_types.append(float)
+            elif isinstance(test, (tuple, list)):
+                prop_types.append(tuple)
+            else:
+                raise ValueError(f'Unsupported type for property name {prop} with value {test}')
+
+        PropertyEditorDialog.__init__(self, prop_names=prop_names,
+                                      prop_types=prop_types,
+                                      setter_callback=self.set_data,
+                                      getter_callback=self.get_data,
+                                      info=info,
+                                      parent=parent)
+
+    def get_data(self, name):
+        value = getattr(self.data_object, name)
+        return value
+
+    def set_data(self, name, value):
+        self.callback_func(name, value)
+
 
 
 if __name__ == '__main__':
     app = QApplication()
 
-    from DAVE import *
-    s = Scene()
+    use_dataobject = False
 
-    node = s.new_frame('DEMO')
+    #
+    if not use_dataobject:
+
+        names = ('een','twee','string','float','tuple')
+        types = (str, int, str, float,tuple)
+
+        database = dict()
+        database['een'] = 'een'
+        database['twee'] = 41
+        database['string'] = 'een'
+        database['float'] = 1.2345
+        database['tuple'] = (1,2,'vijftien')
+
+        info = ('','','','<-- hint for float')
+
+        def getvalue(name):
+            return database[name]
+
+        def setvalue(name, value):
+            database[name] = value
+            print(f'database = {database}')
 
 
-    def callback(prop_name, prop_value):
-        print(f'{prop_name} = {prop_value}')
-        setattr(node,prop_name,prop_value)
+        widget = PropertyEditorDialog(prop_names=names, prop_types=types, getter_callback=getvalue, setter_callback=setvalue, info=info)
 
-        print(f'position of {node.name} is now {node.position}')
+    else:
 
-        return True
+        from DAVE import *
+        s = Scene()
+
+        node = s.new_frame('DEMO')
 
 
-    prop_names = ('name', 'x', 'y')
-    info =       ('','','[m]')
+        def callback(prop_name, prop_value):
+            print(f'{prop_name} = {prop_value}')
+            setattr(node,prop_name,prop_value)
 
-    widget = PropertyEditorWidget(dataobject=node, prop_names=prop_names, info=info, callback_func = callback)
+            print(f'position of {node.name} is now {node.position}')
+
+            return True
+
+
+        prop_names = ('name', 'x', 'y')
+        info =       ('','','[m]')
+
+        widget = PropertyEditorWidget(dataobject=node, prop_names=prop_names, info=info, callback_func = callback)
+
+    # -------- Example without dataobject
+
 
     widget.show()
     app.exec_()
-
 
 
 
