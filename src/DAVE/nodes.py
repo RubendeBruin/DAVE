@@ -6417,21 +6417,13 @@ class Shackle(Manager, RigidBody):
 
         child_nodes = s.nodes_with_parent(self, recursive=False)
 
-        print('Connection force' + str(self.connection_force))
-
         F = max(F, np.linalg.norm(self.connection_force[:3]))
-
-        print('Applied force ' + str(self.applied_force))
         F = max(F, np.linalg.norm(self.applied_force[:3]))
 
         for node in child_nodes:
-            print(node.name)
             if isinstance(node, Frame):
-                print(node.connection_force)
                 F = max(F, np.linalg.norm(node.connection_force[:3]))
-
             elif isinstance(node, Point):
-                print(node.applied_force)
                 F = max(F, np.linalg.norm(node.applied_force[:3]))
 
         return F
