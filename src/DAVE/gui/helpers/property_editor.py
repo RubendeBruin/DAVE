@@ -64,11 +64,13 @@ class PropertyEditorDialog(QDialog):
             label = QLabel(prop)
             layout.addWidget(label, row, 0)
 
-            # editor
-            edit = QLineEdit()
+            if kind==bool:
+                edit = QCheckBox()
+                edit.toggled.connect(lambda *args, a=row: self.user_changed(a))
+            else:
+                edit = QLineEdit()
+                edit.textChanged.connect(lambda *args, a=row: self.user_changed(a))
 
-            #   callback
-            edit.textChanged.connect(lambda *args, a=row: self.user_changed(a))
             self.editors.append(edit)
 
             layout.addWidget(edit, row, 1)
@@ -102,7 +104,9 @@ class PropertyEditorDialog(QDialog):
 
             value = self.getter_callback(prop_name)
 
-            if kind == str:
+            if kind == bool:
+                editor.setChecked(value)
+            elif kind == str:
                 editor.setText(value)
             elif kind == float:
                 editor.setText(str(float(value)))
@@ -123,30 +127,33 @@ class PropertyEditorDialog(QDialog):
         kind = self.prop_types[i_row]
         prop_name = self.prop_names[i_row]
 
-        value = editor.text()
+        if kind == bool:
+            value = editor.isChecked()
+        else:
+            value = editor.text()
 
-        if kind == float:
-            try:
-                value=float(value)
-            except ValueError:
-                editor.setStyleSheet('background:  rgb(255, 170, 127);')
-                return
-        elif kind == int:
-            try:
-                value=int(value)
-            except ValueError:
-                editor.setStyleSheet('background:  rgb(255, 170, 127);')
-                return
-        elif kind == tuple:
-            try:
-                if not value.strip().startswith('('):
-                    value = '(' + value
-                if not value.strip().endswith(')'):
-                    value = value + ')'
-                value = eval(value)
-            except:
-                editor.setStyleSheet('background:  rgb(255, 170, 127);')
-                return
+            if kind == float:
+                try:
+                    value=float(value)
+                except ValueError:
+                    editor.setStyleSheet('background:  rgb(255, 170, 127);')
+                    return
+            elif kind == int:
+                try:
+                    value=int(value)
+                except ValueError:
+                    editor.setStyleSheet('background:  rgb(255, 170, 127);')
+                    return
+            elif kind == tuple:
+                try:
+                    if not value.strip().startswith('('):
+                        value = '(' + value
+                    if not value.strip().endswith(')'):
+                        value = value + ')'
+                    value = eval(value)
+                except:
+                    editor.setStyleSheet('background:  rgb(255, 170, 127);')
+                    return
 
 
         editor.setStyleSheet('background: white')
@@ -168,7 +175,9 @@ class PropertyEditorWidget(PropertyEditorDialog):
             test = getattr(dataobject, prop)
             if isinstance(test, str):
                 prop_types.append(str)
-            elif isinstance(test, (int,float)):
+            elif isinstance(test, bool):  # isinstance(0, bool) --> false
+                prop_types.append(bool)
+            elif isinstance(test, (float, int)): # can not differentiate between int and float
                 prop_types.append(float)
             elif isinstance(test, (tuple, list)):
                 prop_types.append(tuple)
@@ -199,8 +208,8 @@ if __name__ == '__main__':
     #
     if not use_dataobject:
 
-        names = ('een','twee','string','float','tuple')
-        types = (str, int, str, float,tuple)
+        names = ('een','twee','string','float','tuple','yes or no')
+        types = (str, int, str, float,tuple, bool)
 
         database = dict()
         database['een'] = 'een'
@@ -208,6 +217,7 @@ if __name__ == '__main__':
         database['string'] = 'een'
         database['float'] = 1.2345
         database['tuple'] = (1,2,'vijftien')
+        database['yes or no'] = False
 
         info = ('','','','<-- hint for float')
 
@@ -238,8 +248,8 @@ if __name__ == '__main__':
             return True
 
 
-        prop_names = ('name', 'x', 'y')
-        info =       ('','','[m]')
+        prop_names = ('name', 'x', 'y','fixed_x')
+        info =       ('','','[m]','-')
 
         widget = PropertyEditorWidget(dataobject=node, prop_names=prop_names, info=info, callback_func = callback)
 

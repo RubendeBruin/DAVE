@@ -3414,6 +3414,14 @@ class Scene:
         if self.t:
             code.extend(self.t.give_python_code())
 
+        # Optional: Exposed properties of components
+        exposed = getattr(self, 'exposed', [])
+        if exposed:
+            code.append('exposed = list()')
+            for e in exposed:
+                code.append(f'exposed.append({str(e)})')
+            code.append('s.exposed = exposed')
+
         return "\n".join(code)
 
     def save_scene(self, filename):

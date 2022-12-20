@@ -30,6 +30,7 @@ import DAVE.gui.forms.widget_component
 import DAVE.gui.forms.widget_spmt
 import DAVE.gui.forms.widget_connections
 from DAVE.gui.helpers.nodelist_drag_drop_move import call_from_drop_Event, call_from_dragEnter_or_Move_Event
+from DAVE.gui.helpers.property_editor import PropertyEditorDialog
 
 from DAVE.visual import transform_from_node
 from DAVE.gui.helpers.my_qt_helpers import BlockSigs, update_combobox_items_with_completer, EnterKeyPressFilter
@@ -727,6 +728,7 @@ class EditComponent(NodeEditor):
 
         self.ui.cbPath.editTextChanged.connect(self.generate_code)
         self.ui.pbReScan.clicked.connect(self.rescan)
+        self.ui.pbEditExposedProperties.clicked.connect(self.edit_exposed)
 
 
     def rescan(self):
@@ -756,6 +758,32 @@ class EditComponent(NodeEditor):
         if not self.resources_loaded:
             self.update_resource_list()
         cvinf(self.ui.cbPath, str(self.node.path))
+
+        if self.node.exposed_properties:
+            self.ui.pbEditExposedProperties.setEnabled(True)
+        else:
+            self.ui.pbEditExposedProperties.setEnabled(False)
+
+    def edit_exposed(self):
+        """Edit the exposed properties"""
+
+        def getter(name):
+            return self.node.get_exposed(name)
+
+        def setter(name, value):
+            self.node.set_exposed(name, value)
+            self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
+
+        names = self.node.exposed_properties
+        types = [self.node.get_exposed_type(name) for name in names]
+
+        pe = PropertyEditorDialog(prop_names = names,
+                             prop_types = types,
+                             getter_callback=getter,
+                             setter_callback=setter,
+                             parent=self.widget)
+        pe.exec_()
+
 
     def generate_code(self):
         """Generate code to update the node, then run it"""
@@ -2489,12 +2517,13 @@ class EditVisualOutline(NodeEditor):
 
 class WidgetNodeProps(guiDockWidget):
     def guiDefaultLocation(self):
+
         return QtCore.Qt.DockWidgetArea.RightDockWidgetArea
 
     def guiCreate(self):
-
         self.node_picker = None
 
+        self.setMinimumWidth(442)
         self.setVisible(False)
         self.setAllowedAreas(
             QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea
@@ -2554,7 +2583,15 @@ class WidgetNodeProps(guiDockWidget):
 
         self.contents.setLayout(self.main_layout)
 
+
+
         self.layout = QtWidgets.QVBoxLayout()
+
+        self._node_name_editor = EditNode.Instance()
+
+        self._name_widget = self._node_name_editor.widget
+        self.layout.addWidget(self._name_widget)
+
         self.layout.setContentsMargins(0,0,0,0)
         self.props_widget.setLayout(self.layout)
 
@@ -2690,16 +2727,16 @@ class WidgetNodeProps(guiDockWidget):
         self._node_editors.clear()
         self._open_edit_widgets.clear()
 
-        self._node_name_editor = EditNode.Instance()
+        # self._node_name_editor = EditNode.Instance()
         self._node_name_editor.connect(
             node, self.guiScene, self.run_code, self.guiEmitEvent, self.guiPressSolveButton, self.node_picker_register
         )
-
-        # add to layout if not already in
-        name_widget = getattr(self, "_name_widget", None)
-        if name_widget is None:
-            self._name_widget = self._node_name_editor.widget
-            self.layout.addWidget(self._name_widget)
+        #
+        # # add to layout if not already in
+        # name_widget = getattr(self, "_name_widget", None)
+        # if name_widget is None:
+        #     self._name_widget = self._node_name_editor.widget
+        #     self.layout.addWidget(self._name_widget)
 
         try:
             self.layout.removeItem(self._Vspacer)

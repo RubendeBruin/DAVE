@@ -20,7 +20,7 @@ echo call pyside2-uic widget_connections.ui -o "..\src\DAVE\gui\forms\widget_con
 echo call pyside2-uic addnode_form.ui -o "..\src\DAVE\gui\forms\addnode_form.py"
 echo call pyside2-uic widget_name.ui -o "..\src\DAVE\gui\forms\widget_name.py"
 echo call pyside2-uic widget_visual.ui -o "..\src\DAVE\gui\forms\widget_visual.py"
-echo call pyside2-uic widget_component.ui -o "..\src\DAVE\gui\forms\widget_component.py"
+call pyside2-uic widget_component.ui -o "..\src\DAVE\gui\forms\widget_component.py"
 echo call pyside2-uic widget_force.ui -o "..\src\DAVE\gui\forms\widget_force.py"
 echo call pyside2-uic widget_sheave.ui -o "..\src\DAVE\gui\forms\widget_sheave.py"
 echo call pyside2-uic widget_linhyd.ui -o "..\src\DAVE\gui\forms\widget_linhyd.py"
@@ -43,6 +43,6 @@ echo call pyside2-uic widget_selection_actions.ui -o "..\src\DAVE\gui\forms\widg
 echo call pyside2-uic widget_tank.ui -o "..\src\DAVE\gui\forms\widget_tank.py"
 echo call pyside2-uic widget_footprints.ui -o "..\src\DAVE\gui\forms\widget_footprints.py"
 echo call pyside2-uic widget_limits.ui -o "..\src\DAVE\gui\forms\widget_limits.py"
-call pyside2-uic dialog_edit_watch.ui -o "..\src\DAVE\gui\forms\dialog_edit_watch.py"
+echo call pyside2-uic dialog_edit_watch.ui -o "..\src\DAVE\gui\forms\dialog_edit_watch.py"
 
 call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"

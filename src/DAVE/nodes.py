@@ -697,9 +697,6 @@ class NodeWithCoreParentAndTrimesh(NodeWithCoreParent):
             self._scene, source = self._vfNode.trimesh
         )  # the tri-mesh is wrapped in a custom object
 
-    def update(self):
-        self._vfNode.reloadTrimesh()
-
     @property
     def trimesh(self) -> "TriMeshSource":
         """Reference to TriMeshSource object
@@ -4235,7 +4232,8 @@ class Buoyancy(NodeWithCoreParentAndTrimesh):
     def __init__(self, scene, name : str):
         super().__init__(scene, scene._vfc.new_buoyancy(name))
 
-
+    def update(self):
+        self._vfNode.reloadTrimesh()
 
     @property
     def cob(self)->tuple[tuple[float,float,float]]:
@@ -6552,6 +6550,9 @@ class Component(Manager, Frame):
         self._nodes = list()
         """Nodes in the component"""
 
+        self._exposed = []
+        """List of tuples containing the exposed properties (if any)"""
+
     @property
     def name(self)->str:
         """Name of the node (str), must be unique"""
@@ -6632,53 +6633,106 @@ class Component(Manager, Frame):
                 node._limits_by_manager = node.limits.copy()
                 node._watches_by_manager = node.watches.copy()
 
+        # Get exposed properties (if any)
+        self._exposed = getattr(t, 'exposed', [])
+
         self._path = value
 
+    @property
+    def exposed_properties(self) -> tuple:
+        """Names of exposed properties"""
+        return tuple([e[0] for e in self._exposed])
+
+    def _get_exposed_node(self, name):
+        """Returns the managed node with original name name"""
+        full_name = self.name + "/" + name
+        for node in self._nodes:
+            if node.name == full_name:
+                return node
+
+        raise ValueError(f'No exposed node with name {name} in component {self.name}')
+
+    def _get_exposed_property_data(self, name):
+        for e in self._exposed:
+            if e[0] == name:
+                return e
+        raise ValueError(f'No exposed property with name {name}')
+
+    def get_exposed(self, name):
+        """Returns the value of the exposed property"""
+        e = self._get_exposed_property_data(name)
+        node_name = e[1]
+        prop_name = e[2]
+        node = self._get_exposed_node(node_name)
+        return getattr(node, prop_name)
+
+    def get_exposed_type(self, name):
+        """Returns the value of the exposed property"""
+        e = self._get_exposed_property_data(name)
+        node_name = e[1]
+        prop_name = e[2]
+        node = self._get_exposed_node(node_name)
+        doc = self._scene.give_documentation(node, prop_name)
+        return doc.property_type
+
+    def set_exposed(self, name, value):
+        e = self._get_exposed_property_data(name)
+        node_name = e[1]
+        prop_name = e[2]
+        node = self._get_exposed_node(node_name)
+
+        with ClaimManagement(self._scene, self):
+            setattr(node, prop_name, value)
 
     def give_python_code(self):
 
-        code = "# code for {}".format(self.name)
-        code += "\ns.new_component(name='{}',".format(self.name)
-        code += "\n               path=r'{}',".format(self.path)
+        code = []
+        code.append("# code for {}".format(self.name))
+        code.append("c = s.new_component(name='{}',".format(self.name))
+        code.append("               path=r'{}',".format(self.path))
         if self.parent_for_export:
-            code += "\n           parent='{}',".format(self.parent_for_export.name)
+            code.append("           parent='{}',".format(self.parent_for_export.name))
 
         # position
 
         if self.fixed[0] or not self._scene._export_code_with_solved_function:
-            code += "\n           position=({:.6g},".format(self.position[0])
+            code.append("           position=({:.6g},".format(self.position[0]))
         else:
-            code += "\n           position=(solved({:.6g}),".format(self.position[0])
+            code.append("           position=(solved({:.6g}),".format(self.position[0]))
         if self.fixed[1] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {:.6g},".format(self.position[1])
+            code.append("                     {:.6g},".format(self.position[1]))
         else:
-            code += "\n                     solved({:.6g}),".format(self.position[1])
+            code.append("                     solved({:.6g}),".format(self.position[1]))
         if self.fixed[2] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {:.6g}),".format(self.position[2])
+            code.append("                     {:.6g}),".format(self.position[2]))
         else:
-            code += "\n                     solved({:.6g})),".format(self.position[2])
+            code.append("                     solved({:.6g})),".format(self.position[2]))
 
         # rotation
 
         if self.fixed[3] or not self._scene._export_code_with_solved_function:
-            code += "\n           rotation=({:.6g},".format(self.rotation[0])
+            code.append("           rotation=({:.6g},".format(self.rotation[0]))
         else:
-            code += "\n           rotation=(solved({:.6g}),".format(self.rotation[0])
+            code.append("           rotation=(solved({:.6g}),".format(self.rotation[0]))
         if self.fixed[4] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {:.6g},".format(self.rotation[1])
+            code.append("                     {:.6g},".format(self.rotation[1]))
         else:
-            code += "\n                     solved({:.6g}),".format(self.rotation[1])
+            code.append("                     solved({:.6g}),".format(self.rotation[1]))
         if self.fixed[5] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {:.6g}),".format(self.rotation[2])
+            code.append("                     {:.6g}),".format(self.rotation[2]))
         else:
-            code += "\n                     solved({:.6g})),".format(self.rotation[2])
+            code.append("                     solved({:.6g})),".format(self.rotation[2]))
 
         # fixeties
-        code += "\n           fixed =({}, {}, {}, {}, {}, {}) )".format(*self.fixed)
+        code.append("           fixed =({}, {}, {}, {}, {}, {}) )".format(*self.fixed))
 
-        code += self.add_footprint_python_code()
+        code.append(self.add_footprint_python_code())
 
-        return code
+        # exposed properties (if any)
+        for ep in self.exposed_properties:
+            code.append(f"c.set_exposed('{ep}', {self.get_exposed(ep)})")
+
+        return '\n'.join(code)
 
 
 # =================== None-Node Classes
