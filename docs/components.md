@@ -74,6 +74,7 @@ This is done as follows:
 exposed = []
 exposed.append(('description[str] for use user','node_name','property_name'))
 exposed.append(('description2 [str] for use user','node_name2','property_name2'))
+s.exposed = exposed
 ...
 ```
 
