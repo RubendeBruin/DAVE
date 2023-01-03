@@ -587,7 +587,7 @@ class Gui:
 
         self.ui.actionVersion.setText(f"Version {DAVE.__version__}")
         self.ui.actionOnline_help.triggered.connect(
-            lambda: subprocess.Popen("explorer https://davedocs.online")
+            lambda: subprocess.Popen("explorer https://usedave.nl")
         )
 
         # ======================= Code-highlighter ==============
