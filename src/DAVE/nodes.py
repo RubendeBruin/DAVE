@@ -3174,6 +3174,16 @@ class Circle(NodeWithCoreParent):
         else:
             return self.axis
 
+    @global_axis.setter
+    def global_axis(self, value):
+
+        assert3f(value, "axis")
+
+        if self.parent.parent is not None:
+            self.axis = self.parent.parent.to_loc_direction(value)
+        else:
+            self.axis = value
+
 
     @property
     def position(self)->tuple[float,float,float]:
@@ -3194,6 +3204,20 @@ class Circle(NodeWithCoreParent):
         super(Circle, type(self)).parent.fset(
             self, value
         )  # https://bugs.python.org/issue14965
+
+    @node_setter_manageable
+    def change_parent_to(self, new_parent):
+        """Assigns a new parent to the node but keeps the global position and rotation the same.
+
+        See also: .parent (property)
+
+        Args:
+            new_parent: new parent node
+
+        """
+        glob_axis = self.global_axis
+        self.parent = new_parent
+        self.global_axis = glob_axis
 
 
 class HydSpring(NodeWithCoreParent):
