@@ -227,26 +227,31 @@ def carene_table(scene, buoyancy_nodes,
         buoyancy_nodes = [buoyancy_nodes]
 
 
+
+
+
     not_included_bns = [] # childeren that are not included because they are not direct children
 
     if isinstance(buoyancy_nodes, Frame):
-        nodes = scene.nodes_with_parent(buoyancy_nodes, recursive=False)
+
+        scene = scene.copy()
+        frame = scene[buoyancy_nodes.name]
+
+        # Working in a copy from now on
+
+        nodes = scene.nodes_with_parent(frame, recursive=True)
+
         bns = [node for node in nodes if isinstance(node, Buoyancy)]
 
-        nodes_recursive = scene.nodes_with_parent(buoyancy_nodes, recursive=True)
-        bns_recursive = [node for node in nodes_recursive if isinstance(node, Buoyancy)]
+        scene._godmode = True
+        for node in bns:
+            node.change_parent_to(frame)
 
         if not bns:
             raise ValueError(f"There are no Buoyancy Shapes with parent {buoyancy_nodes.name}")
 
         buoyancy_nodes = bns
 
-        # Report buoyancy nodes that are NOT included:
-
-        not_included_bns = []
-        for node in bns_recursive:
-            if node not in bns:
-                not_included_bns.append(node.name)
 
     # Create a new scene with only this buoyancy node and a frame that it is on
     for buoyancy_node in buoyancy_nodes:
@@ -343,8 +348,6 @@ def carene_table(scene, buoyancy_nodes,
 
     df = df.set_index('Draft [m]')
     df.attrs['shape_node_names'] = [node.name for node in nodes]
-
-    df.attrs['shape_node_names_not_included'] = not_included_bns
 
     return df.drop(columns=['waterline', 'displacement_kN','kHeave'])
 

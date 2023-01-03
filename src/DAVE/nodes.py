@@ -4344,7 +4344,7 @@ class Tank(NodeWithCoreParentAndTrimesh):
         return self.parent.to_glob_position(self._vfNode.cog_when_full)
 
     @property
-    def cog_when_full(self)->tuple[tuple[float,float,float]]:
+    def cog_when_full(self)->tuple[float,float,float]:
         """LOCAL position of the center of volume / gravity of the tank when it is filled [m,m,m] (parent axis)"""
         return self._vfNode.cog_when_full
 

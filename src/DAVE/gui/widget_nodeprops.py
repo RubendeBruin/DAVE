@@ -1220,7 +1220,7 @@ class EditConnections(NodeEditor):
 
     def post_update_event(self):
 
-        # update the combombox with points and circles
+        # update the combobox with points and circles
         self.ui.widgetPicker.fill('keep')
 
         self.ui.list.blockSignals(True)  # update the list
@@ -2821,7 +2821,11 @@ class WidgetNodeProps(guiDockWidget):
 
         for key, value in DAVE_GUI_NODE_EDITORS.items():
             if isinstance(node, key):
-                self._node_editors.append(value.Instance())
+                if isinstance(value, (list, tuple)):
+                    for v in value:
+                        self._node_editors.append(v.Instance())
+                else:
+                    self._node_editors.append(value.Instance())
 
         to_be_added = []
         for editor in self._node_editors:

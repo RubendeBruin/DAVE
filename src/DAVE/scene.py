@@ -1222,7 +1222,10 @@ class Scene:
                             d.parent = p
 
                 for d in self.nodes_depending_on(node):
-                    self[d].change_parent_to(p)
+                    # TODO: Fails nodes that do depend on this node, but do not have it as parent,
+                    # for example LC6D and 2d connectors
+                    if hasattr(d, "parent"):
+                        self[d].change_parent_to(p)
 
             node._dissolved = True  # signal for the .delete function to skip deletion of nodes created by the manager
 
