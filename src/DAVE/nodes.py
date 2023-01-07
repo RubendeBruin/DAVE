@@ -1205,15 +1205,16 @@ class Frame(NodeWithParentAndFootprint):
 
         # convert to degrees
         assert3f(var, "Rotation")
-        var_deg = np.deg2rad(var)
 
         current = self.rotation
 
         for i in range(3):
-            if self.fixed[i+3] and abs(current[i] - var_deg[i]) > 1e-6:
+            if self.fixed[i+3] and abs(current[i] - var[i])%360 > 1e-6:
                 self._verify_change_allowed()
 
-        self._vfNode.rotation = var_deg
+        var_rad = np.deg2rad(var)
+
+        self._vfNode.rotation = var_rad
         self._scene._geometry_changed()
 
     # we need to over-ride the parent property to be able to call _geometry_changed afterwards
