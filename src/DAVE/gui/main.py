@@ -711,15 +711,19 @@ class Gui:
                 paths_str = ';'.join([str(p) for p in self.additional_user_resource_paths])
                 settings.setValue(f"additional_paths", paths_str)
 
-    def update_resources_paths(self):
-        """Updates the global settings.DAVE_RESOURCES_PATHS to include the user-defined dirs
+        self.update_resources_paths()
 
-        Note: removing paths required a program restart
+    def update_resources_paths(self):
+        """Updates the global settings.DAVE_RESOURCES_PATHS and current scene to include the user-defined dirs
+
+        Note: removing paths requires a program restart
         """
 
         for p in self.additional_user_resource_paths:
             if p not in DAVE.settings.RESOURCE_PATH:
                 DAVE.settings.RESOURCE_PATH.append(p)
+                self.scene.resources_paths.append(p)
+
 
     def labels_show_hide(self):
         if self.visual.settings.label_scale > 0:

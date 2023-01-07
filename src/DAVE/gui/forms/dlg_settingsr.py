@@ -68,7 +68,7 @@ class Ui_frmSettings(object):
         frmSettings.setWindowTitle(QCoreApplication.translate("frmSettings", u"Dialog", None))
         self.label_3.setText(QCoreApplication.translate("frmSettings", u"Standard resource paths:", None))
         self.label_4.setText(QCoreApplication.translate("frmSettings", u"TextLabel", None))
-        self.label_2.setText(QCoreApplication.translate("frmSettings", u"<html><head/><body><p>Additional info see: <a href=\"https://davedocs.online/assets_and_resources.html\"><span style=\" text-decoration: underline; color:#0000ff;\">https://davedocs.online/assets_and_resources.html</span></a></p></body></html>", None))
+        self.label_2.setText(QCoreApplication.translate("frmSettings", u"<html><head/><body><p>Additional info see: <a href=\"https://usedave.nl/assets_and_resources.html\"><span style=\" text-decoration: underline; color:#0000ff;\">https://usedave.nl/assets_and_resources.html</span></a></p></body></html>", None))
         self.label.setText(QCoreApplication.translate("frmSettings", u"Additional asset paths:", None))
     # retranslateUi
 
