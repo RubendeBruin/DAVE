@@ -250,46 +250,52 @@ if platform.system().lower().startswith('win'):
         try:
             pt = winreg.QueryValue(where, key)
             if pt:
-                BLENDER_EXEC = pt[1:-6]
-                BLENDER_EXEC = BLENDER_EXEC.replace('blender-launcher', 'blender')
-                if os.path.exists(BLENDER_EXEC):
-                    return BLENDER_EXEC
+                if '%1' in pt:
+                    pt = pt[1:-6] # strip the %1
+
+                if os.path.exists(pt):
+                    return pt
+                else:
+                    print(f'Blender NOT found here {pt}')
         finally:
             raise ValueError('Not found here')
 
+    BLENDER_EXEC = None
 
+    where_is_blender_in_the_registry = [
+        (winreg.HKEY_CLASSES_ROOT, r'Applications\blender.exe\shell\open\command'),
+        (winreg.HKEY_CLASSES_ROOT, r'Applications\blender-launcher.exe\shell\open\command'),
+        (winreg.HKEY_CURRENT_USER, r'SOFTWARE\Classes\Applications\blender-launcher.exe\shell\open\command'),
+        (winreg.HKEY_CURRENT_USER, r'SOFTWARE\Classes\Applications\blender-launcher.exe\shell\open\command'),
+        (winreg.HKEY_CURRENT_USER, r'SOFTWARE\Classes\blendfile\shell\open\command'),
+        (winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\Classes\blendfile\shell\open\command')
+    ]
 
-
-    BLENDER_EXEC = "Blender not found"
-    try:
-        BLENDER_EXEC = find_blender_from_reg(winreg.HKEY_CLASSES_ROOT, r'Applications\blender.exe\shell\open\command')
-    except:
+    for possibility in where_is_blender_in_the_registry:
         try:
-            BLENDER_EXEC = find_blender_from_reg(winreg.HKEY_CURRENT_USER,r'SOFTWARE\Classes\blendfile\shell\open\command')
+            BLENDER_EXEC = find_blender_from_reg(*possibility)
         except:
-            try:
-                BLENDER_EXEC = find_blender_from_reg(winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\Classes\blendfile\shell\open\command')
-            except:
-                # find it in a path
-                # by default the windows-store version seems to be installed in a location which is in the path
-                paths = os.environ['PATH'].split(';')
-                for pth in paths:
-                    test = pth + r'\\blender-launcher.exe'
-                    if os.path.exists(test):
-                        BLENDER_EXEC = test
-                        break
-                    # test = pth + r'\\blender-launcher.exe'
-                    # if os.path.exists(test):
-                    #     BLENDER_EXEC = test
-                    #     break
+            pass
 
-    if os.path.exists(BLENDER_EXEC):
+    # find it in a path
+    # by default the windows-store version seems to be installed in a location which is in the path
+
+    if BLENDER_EXEC == None:
+
+        paths = os.environ['PATH'].split(';')
+        for pth in paths:
+            test = pth + r'\\blender-launcher.exe'
+            if os.path.exists(test):
+                BLENDER_EXEC = test
+                break
+
+    if BLENDER_EXEC:
         print("Blender found at: {}".format(BLENDER_EXEC))
     else:
         print("! Blender not found - Blender can be installed from the microsoft windows store."
               "   if you have blender already and want to be able to use blender then please either:\n"
               "   - configure windows to open .blend files with blender automatically \n"
-              "   - add the folder containing blender.exe to the PATH variable.")
+              "   - add the folder containing blender-launcher.exe to the PATH variable.")
 
     print('\nLoading DAVE...')
 else: # assume we're on linux
