@@ -1170,6 +1170,7 @@ class EditConnections(NodeEditor):
         # Set events
         ui.pbRemoveSelected.clicked.connect(self.delete_selected)
         self.ui.pushButton.clicked.connect(self.add_item)
+        ui.pbSetShortestRoute.clicked.connect(self.set_shortest_route)
 
         # ------- setup the drag-and-drop code ---------
 
@@ -1240,6 +1241,8 @@ class EditConnections(NodeEditor):
 
         self.ui.list.blockSignals(False)
 
+        self.ui.pbSetShortestRoute.setVisible(not isinstance(self.node, (Cable, Sling)))
+
     def dropEvent(self, event):
         call_from_drop_Event(self.ui.list, event)
         self.generate_code()
@@ -1279,6 +1282,12 @@ class EditConnections(NodeEditor):
             code += f'{element}.reversed = {reversed}'
 
         self.run_code(code)
+
+    def set_shortest_route(self, *args):
+        self.run_code(f's["{self.node.name}"].set_optimum_connection_directions()', guiEventType.SELECTED_NODE_MODIFIED)
+
+
+
 
 
 @Singleton
@@ -2902,6 +2911,12 @@ class WidgetNodeProps(guiDockWidget):
                 if top<=0:
                     top=5
                 self.setGeometry(self.pos().x(), top, wt, target_height)
+
+        else: # docked
+            if self.height() < ht:
+                wt = wt + 5 # for scrollbar
+            self.setMinimumWidth(wt)
+
 
         self.setUpdatesEnabled(True)
 
