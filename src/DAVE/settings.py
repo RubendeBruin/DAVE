@@ -256,8 +256,9 @@ if platform.system().lower().startswith('win'):
                 if os.path.exists(pt):
                     return pt
                 else:
-                    print(f'Blender NOT found here {pt}')
-        finally:
+                    print(f'Blender NOT found here {pt} as listed in {key}')
+        except Exception as E:
+            print(f'Error when looking for blender here: {key} - {str(E)}')
             raise ValueError('Not found here')
 
     BLENDER_EXEC = None
@@ -269,6 +270,7 @@ if platform.system().lower().startswith('win'):
         (winreg.HKEY_CURRENT_USER, r'SOFTWARE\Classes\Applications\blender-launcher.exe\shell\open\command'),
         (winreg.HKEY_CURRENT_USER, r'SOFTWARE\Classes\blendfile\shell\open\command'),
         (winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\Classes\blendfile\shell\open\command')
+
     ]
 
     for possibility in where_is_blender_in_the_registry:

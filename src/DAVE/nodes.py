@@ -4345,7 +4345,7 @@ class Tank(NodeWithCoreParentAndTrimesh):
 
     @property
     def permeability(self)->float:
-        """Permeability is the fraction of the enclosed volume that can be filled with fluid [-]"""
+        """Permeability is the fraction of the meshed volume that can be filled with fluid [-]"""
         return self._vfNode.permeability
 
     @permeability.setter
@@ -4372,6 +4372,21 @@ class Tank(NodeWithCoreParentAndTrimesh):
     def cog_when_full(self)->tuple[float,float,float]:
         """LOCAL position of the center of volume / gravity of the tank when it is filled [m,m,m] (parent axis)"""
         return self._vfNode.cog_when_full
+
+    @property
+    def cogx_when_full(self)->float:
+        """x position of the center of volume / gravity of the tank when it is filled [m] (parent axis)"""
+        return self._vfNode.cog_when_full[0]
+
+    @property
+    def cogy_when_full(self) -> float:
+        """y position of the center of volume / gravity of the tank when it is filled [m] (parent axis)"""
+        return self._vfNode.cog_when_full[1]
+
+    @property
+    def cogz_when_full(self) -> float:
+        """z position of the center of volume / gravity of the tank when it is filled [m] (parent axis)"""
+        return self._vfNode.cog_when_full[2]
 
     @property
     def fill_pct(self)->float:
@@ -4436,9 +4451,17 @@ class Tank(NodeWithCoreParentAndTrimesh):
 
     @property
     def capacity(self)->float:
-        """Capacity of the tank [m3]
-        This is calculated from the defined geometry and permeability."""
+        """Fillable volume of the tank calcualted as mesh volume times permeability [m3]
+        This is calculated from the defined geometry and permeability.
+        See also: mesh_volume"""
         return self._vfNode.capacity
+
+    @property
+    def mesh_volume(self) -> float:
+        """Volume enclosed by the mesh the tank [m3]
+        This is calculated from the defined geometry and does not account for permeability.
+        See also: capacity"""
+        return self._vfNode.capacity / self._vfNode.permeability
 
     @property
     def ullage(self)->float:

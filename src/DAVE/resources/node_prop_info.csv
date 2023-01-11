@@ -72,7 +72,7 @@ Circle,global_position,tuple,Global position of the center of the sheave ,"[m,m,
 
         Note: this is the same as the global position of the parent point.
         "
-Circle,global_axis,tuple,Global axis direction ,"[m,m,m]",,False,False,False,"Global axis direction [m,m,m]
+Circle,global_axis,tuple,Global axis direction ,"[m,m,m]",,True,False,False,"Global axis direction [m,m,m]
         "
 Circle,position,tuple,Local position of the center of the sheave  (parent axis).,"[m,m,m]",,False,False,False,"Local position of the center of the sheave [m,m,m] (parent axis).
 
@@ -82,6 +82,7 @@ Circle,parent,Point,Point that defines the center of the circle.,,,True,True,Fal
         The parent of that point determines the axis system used for the axis"
 Component,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
 Component,path,str,Path of the model-file. For example res: padeye.dave,,,True,False,False,Path of the model-file. For example res: padeye.dave
+Component,exposed_properties,tuple,Names of exposed properties,,,False,False,False,Names of exposed properties
 Connector2d,angle,float,Actual angle between nodeA and nodeB  ,[deg],read-only,False,False,True,Actual angle between nodeA and nodeB [deg] (read-only)
 Connector2d,force,float,Actual force between nodeA and nodeB  ,[kN],read-only,False,False,True,Actual force between nodeA and nodeB [kN] (read-only)
 Connector2d,moment,float,Actual moment between nodeA and nodeB  ,[kNm],read-only,False,False,True,Actual moment between nodeA and nodeB [kNm] (read-only)
@@ -395,19 +396,26 @@ Sling,EA,float,EA of the wire of the sling ,[kN],,True,True,True,"EA of the wire
         See also: k_total"
 Sling,mass,float,Mass and weight of the sling. This mass is distributed over the two splices ,[mT],,True,True,True,Mass and weight of the sling. This mass is distributed over the two splices [mT]
 Tank,free_flooding,bool,Tank is filled till global waterline  ,[bool],aka: damaged,True,True,False,Tank is filled till global waterline (aka: damaged) [bool]
-Tank,permeability,float,Permeability is the fraction of the enclosed volume that can be filled with fluid ,[-],,True,True,True,Permeability is the fraction of the enclosed volume that can be filled with fluid [-]
+Tank,permeability,float,Permeability is the fraction of the meshed volume that can be filled with fluid ,[-],,True,True,True,Permeability is the fraction of the meshed volume that can be filled with fluid [-]
 Tank,cog,tuple,Global position of the center of volume / gravity  ,"[m,m,m]",global,False,False,False,"Global position of the center of volume / gravity [m,m,m] (global)"
 Tank,cog_local,tuple,Center of gravity  ,"[m,m,m]",parent axis,False,False,False,"Center of gravity [m,m,m] (parent axis)"
 Tank,cog_when_full_global,tuple,Global position of the center of volume / gravity of the tank when it is filled  ,"[m,m,m]",global,False,False,False,"Global position of the center of volume / gravity of the tank when it is filled [m,m,m] (global)"
 Tank,cog_when_full,tuple,LOCAL position of the center of volume / gravity of the tank when it is filled  ,"[m,m,m]",parent axis,False,False,False,"LOCAL position of the center of volume / gravity of the tank when it is filled [m,m,m] (parent axis)"
+Tank,cogx_when_full,float,x position of the center of volume / gravity of the tank when it is filled  ,[m],parent axis,False,False,True,x position of the center of volume / gravity of the tank when it is filled [m] (parent axis)
+Tank,cogy_when_full,float,y position of the center of volume / gravity of the tank when it is filled  ,[m],parent axis,False,False,True,y position of the center of volume / gravity of the tank when it is filled [m] (parent axis)
+Tank,cogz_when_full,float,z position of the center of volume / gravity of the tank when it is filled  ,[m],parent axis,False,False,True,z position of the center of volume / gravity of the tank when it is filled [m] (parent axis)
 Tank,fill_pct,float,Amount of volume in tank as percentage of capacity ,[%],,True,True,True,Amount of volume in tank as percentage of capacity [%]
 Tank,level_global,float,The fluid plane elevation in the global axis system ,[m],,True,True,True,"The fluid plane elevation in the global axis system [m]
         Setting this adjusts the volume"
 Tank,volume,float,The actual volume of fluid in the tank ,[m3],,True,True,True,"The actual volume of fluid in the tank [m3]
         Setting this adjusts the fluid level"
 Tank,density,float,Density of the fluid in the tank ,[mT/m3],,True,True,True,Density of the fluid in the tank [mT/m3]
-Tank,capacity,float,Capacity of the tank ,[m3],,False,False,True,"Capacity of the tank [m3]
-        This is calculated from the defined geometry and permeability."
+Tank,capacity,float,Fillable volume of the tank calcualted as mesh volume times permeability ,[m3],,False,False,True,"Fillable volume of the tank calcualted as mesh volume times permeability [m3]
+        This is calculated from the defined geometry and permeability.
+        See also: mesh_volume"
+Tank,mesh_volume,float,Volume enclosed by the mesh the tank ,[m3],,False,False,True,"Volume enclosed by the mesh the tank [m3]
+        This is calculated from the defined geometry and does not account for permeability.
+        See also: capacity"
 Tank,ullage,float,Ullage of the tank ,[m],,False,False,True,"Ullage of the tank [m]
         The ullage is the distance between a measurement point and the fluid surface. The point is [xf,yf,zv] where
         xf and yf are the x and y coordinates (local) of the center of fluid when the tank is full. zv is the largest z value
