@@ -409,7 +409,7 @@ Tank,level_global,float,The fluid plane elevation in the global axis system ,[m]
         Setting this adjusts the volume"
 Tank,volume,float,The actual volume of fluid in the tank ,[m3],,True,True,True,"The actual volume of fluid in the tank [m3]
         Setting this adjusts the fluid level"
-Tank,density,float,Density of the fluid in the tank ,[mT/m3],,True,True,True,Density of the fluid in the tank [mT/m3]
+Tank,density,float,Density of the fluid in the tank. Density < 0 means use outside water density ,[mT/m3],,True,True,True,Density of the fluid in the tank. Density < 0 means use outside water density [mT/m3]
 Tank,capacity,float,Fillable volume of the tank calcualted as mesh volume times permeability ,[m3],,False,False,True,"Fillable volume of the tank calcualted as mesh volume times permeability [m3]
         This is calculated from the defined geometry and permeability.
         See also: mesh_volume"

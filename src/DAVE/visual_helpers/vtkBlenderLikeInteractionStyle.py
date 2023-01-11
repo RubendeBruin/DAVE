@@ -190,15 +190,75 @@ class BlenderStyle(vtkInteractorStyleUser):
         self.InvokeEvent(vtkCommand.InteractionEvent, None)
 
     def MoveMouseWheel(self, direction):
-        interactor = self.GetInteractor()
+        rwi = self.GetInteractor()
 
         # Find the renderer that is active below the current mouse position
-        x, y = interactor.GetEventPosition()
+        x, y = rwi.GetEventPosition()
         self.FindPokedRenderer(
             x, y
         )  # sets the current renderer [this->SetCurrentRenderer(this->Interactor->FindPokedRenderer(x, y));]
 
-        factor = self.mouse_motion_factor * 0.2 * self.mouse_wheel_motion_factor
+        # The movement
+
+        CurrentRenderer = self.GetCurrentRenderer()
+
+        #   // Calculate the focal depth since we'll be using it a lot
+        camera = CurrentRenderer.GetActiveCamera()
+        viewFocus = camera.GetFocalPoint()
+
+        temp_out = [0, 0, 0]
+        self.ComputeWorldToDisplay(
+            CurrentRenderer, viewFocus[0], viewFocus[1], viewFocus[2], temp_out
+        )
+        focalDepth = temp_out[2]
+
+        newPickPoint = [0, 0, 0, 0]
+        x, y = rwi.GetEventPosition()
+        self.ComputeDisplayToWorld(CurrentRenderer, x, y, focalDepth, newPickPoint)
+
+        #   // Has to recalc old mouse point since the viewport has moved,
+        #   // so can't move it outside the loop
+
+        oldPickPoint = [0, 0, 0, 0]
+        # xp, yp = rwi.GetLastEventPosition()
+
+        # find the center of the window
+        size = rwi.GetRenderWindow().GetSize()
+        xp = size[0] / 2
+        yp = size[1] / 2
+
+        self.ComputeDisplayToWorld(
+            CurrentRenderer, xp, yp, focalDepth, oldPickPoint
+        )
+        #
+        #   // Camera motion is reversed
+        #
+        move_factor = -1 * self.zoom_motion_factor * direction
+
+        motionVector = (
+            move_factor * (oldPickPoint[0] - newPickPoint[0]),
+            move_factor * (oldPickPoint[1] - newPickPoint[1]),
+            move_factor * (oldPickPoint[2] - newPickPoint[2]),
+        )
+
+        viewFocus = (
+            camera.GetFocalPoint()
+        )  # do we need to do this again? Already did this
+        viewPoint = camera.GetPosition()
+
+        camera.SetFocalPoint(
+            motionVector[0] + viewFocus[0],
+            motionVector[1] + viewFocus[1],
+            motionVector[2] + viewFocus[2],
+        )
+        camera.SetPosition(
+            motionVector[0] + viewPoint[0],
+            motionVector[1] + viewPoint[1],
+            motionVector[2] + viewPoint[2],
+        )
+
+        # the Zooming
+        factor = self.mouse_motion_factor * self.mouse_wheel_motion_factor
         self.ZoomByStep(direction*factor)
 
 
@@ -940,7 +1000,6 @@ class BlenderStyle(vtkInteractorStyleUser):
         if rwi.GetLightFollowCamera():
             CurrentRenderer.UpdateLightsGeometryToFollowCamera()
 
-        # rwi.Render()
         self.DoRender()
 
     def Dolly(self, factor):
@@ -956,12 +1015,14 @@ class BlenderStyle(vtkInteractorStyleUser):
                 if self.GetAutoAdjustCameraClippingRange():
                     CurrentRenderer.ResetCameraClippingRange()
 
-            rwi = self.GetInteractor()
-            if rwi.GetLightFollowCamera():
-                CurrentRenderer.UpdateLightsGeometryToFollowCamera()
-
-            # rwi.Render()
-            self.DoRender()
+            # if not do_not_update:
+            #
+            #     rwi = self.GetInteractor()
+            #     if rwi.GetLightFollowCamera():
+            #         CurrentRenderer.UpdateLightsGeometryToFollowCamera()
+            #
+            #     # rwi.Render()
+            #     self.DoRender()
 
     def DrawMeasurement(self):
         rwi = self.GetInteractor()
@@ -1196,7 +1257,8 @@ class BlenderStyle(vtkInteractorStyleUser):
         # settings
 
         self.mouse_motion_factor = 20
-        self.mouse_wheel_motion_factor = 0.5
+        self.mouse_wheel_motion_factor = 0.1
+        self.zoom_motion_factor = 0.25
 
         # internals
 

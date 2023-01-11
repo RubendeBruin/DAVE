@@ -4439,7 +4439,7 @@ class Tank(NodeWithCoreParentAndTrimesh):
 
     @property
     def density(self)->float:
-        """Density of the fluid in the tank [mT/m3]"""
+        """Density of the fluid in the tank. Density < 0 means use outside water density [mT/m3]"""
         return self._vfNode.density
 
     @density.setter
