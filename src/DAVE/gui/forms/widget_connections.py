@@ -87,7 +87,7 @@ class Ui_ConnectionForm(object):
         self.pushButton.setText(QCoreApplication.translate("ConnectionForm", u"Add", None))
         self.pbRemoveSelected.setText(QCoreApplication.translate("ConnectionForm", u"Remove selected point", None))
         self.label_3.setText(QCoreApplication.translate("ConnectionForm", u"Connections (Points/Circles)", None))
-        self.pbSetShortestRoute.setText(QCoreApplication.translate("ConnectionForm", u"Set shortest route", None))
+        self.pbSetShortestRoute.setText(QCoreApplication.translate("ConnectionForm", u"Determine shortest route", None))
         self.lbDirection.setText(QCoreApplication.translate("ConnectionForm", u"For circles the direction in which the cable runs over it is defined by the axis of the circle. Check the box to run over the circle in opposite direction.", None))
     # retranslateUi
 

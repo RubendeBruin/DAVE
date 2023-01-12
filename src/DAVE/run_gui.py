@@ -31,16 +31,17 @@ def run():
 
     app.setWindowIcon(QIcon('DAVE.ico'))
 
-    try:
-        # Include in try/except block if you're also targeting Mac/Linux
-        from PySide2.QtWinExtras import QtWin
-        myappid = 'mycompany.myproduct.subproduct.version'
-        QtWin.setCurrentProcessExplicitAppUserModelID(myappid)
-    except ImportError:
-        pass
+    # try:
+    #     # Include in try/except block if you're also targeting Mac/Linux
+    #     from PySide2.QtWinExtras import QtWin
+    #     myappid = 'mycompany.myproduct.subproduct.version'
+    #     QtWin.setCurrentProcessExplicitAppUserModelID(myappid)
+    # except ImportError:
+    #     pass
 
     splash = QSplashScreen(QPixmap(":/icons/splashscreen.png"))
     splash.show()
+
     from DAVE.gui.main import Gui
 
     import numpy as np

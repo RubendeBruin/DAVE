@@ -64,6 +64,7 @@ import subprocess
 from copy import deepcopy
 import logging
 
+from DAVE.gui.dialog_blender import ExportToBlenderDialog
 from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter
 from DAVE.gui.widget_watches import WidgetWatches
 from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import DragInfo
@@ -1618,10 +1619,16 @@ class Gui:
 
         else:
             dofs = None
+        #
+        # create_blend_and_open(
+        #     self.scene, animation_dofs=dofs, wavefield=self.visual._wavefield
+        # )
+        if getattr(self, "blender_dialog", None) is None:
+            self.blender_dialog = ExportToBlenderDialog()
 
-        create_blend_and_open(
-            self.scene, animation_dofs=dofs, wavefield=self.visual._wavefield
-        )
+        self.blender_dialog.show(self.scene, animation_dofs=dofs, wavefield=self.visual._wavefield)
+
+
 
     def toggle_show_global(self):
         # TODO: fix

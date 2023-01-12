@@ -552,11 +552,11 @@ def nearest_rotation_vector(v0, v1):
 
 def create_blend_and_open(scene, blender_result_file = None, blender_base_file=None, blender_exe_path=None, camera=None, animation_dofs=None, wavefield=None):
 
-    create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path ,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield, open_gui=True)
+    create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path ,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield)
     # command = 'explorer "{}"'.format(str(blender_result_file))
     # subprocess.call(command, creationflags=subprocess.DETACHED_PROCESS)
 
-def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None ,animation_dofs=None, wavefield=None, open_gui = False, timeline = None):
+def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None ,animation_dofs=None, wavefield=None):
     tempfile = Path(consts.PATH_TEMP) / 'blender.py'
 
     if blender_base_file is None:
