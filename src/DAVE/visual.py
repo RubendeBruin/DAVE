@@ -2150,7 +2150,7 @@ class Viewport:
 
         if self.screen:
 
-            actors = self.screen.getMeshes()
+            actors = self.screen.get_meshes()
             for va in self.node_visuals:
                 for a in va.actors.values():
                     if not (a in actors):
