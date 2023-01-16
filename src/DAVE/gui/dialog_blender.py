@@ -6,7 +6,7 @@ from PySide2 import QtWidgets
 
 from DAVE.gui.forms.dlg_export_to_blender import Ui_Dialog
 from DAVE.io.blender import create_blend_and_open
-from DAVE.settings import BLENDER_EXEC, BLENDER_BASE_SCENE
+from DAVE.settings import BLENDER_EXEC, BLENDER_BASE_SCENE, BLENDER_FPS
 
 
 class ExportToBlenderDialog():
@@ -21,6 +21,8 @@ class ExportToBlenderDialog():
 
 
         ui.setupUi(dialog)
+
+        self.ui.sbFrames_per_step.setValue(BLENDER_FPS)
 
         self.settings = QSettings("rdbr", "DAVE")
 
