@@ -94,6 +94,20 @@ class EnterKeyPressFilter(CustomEventFilters):
 
         return False
 
+
+class RightClickEventFilter(CustomEventFilters):
+
+    def eventFilter(self, obj, event):
+        if isinstance(event, PySide2.QtGui.QMouseEvent):
+            if (event.type() == PySide2.QtCore.QEvent.Type.MouseButtonPress):
+                if event.button() == PySide2.QtCore.Qt.MouseButton.RightButton:
+                    self.callback(event)
+                    event.setAccepted(True)
+                    return True
+
+        return False
+
+
 def update_combobox_items_with_completer(comboBox: QtWidgets.QComboBox, items):
     """Updates the possible items of the combobox and adds a completer
     Suppresses signals and preserves the current text

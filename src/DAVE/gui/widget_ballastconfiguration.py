@@ -288,3 +288,5 @@ class WidgetBallastConfiguration(guiDockWidget):
         for t in self._bs.tanks:
             code += '\ns["{}"].fill_pct = {}'.format(t.name, t.fill_pct)
         self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
+
+DAVE_GUI_DOCKS['Tanks'] = WidgetBallastConfiguration

@@ -915,14 +915,14 @@ class Gui:
             self.show_guiWidget("Node Tree", WidgetNodeTree)
             self.show_guiWidget("Properties", WidgetNodeProps)
             self.show_guiWidget("Quick actions", WidgetQuickActions)
-            self.show_guiWidget("Watches", WidgetWatches)
+            self.show_guiWidget("Watches")
 
         if name == "EXPLORE":
             self.close_all_open_docks()
             self.show_guiWidget("Node Tree", WidgetNodeTree)
             self.show_guiWidget("Derived Properties", WidgetDerivedProperties)
             self.show_guiWidget("Explore 1-to-1", WidgetExplore)
-            self.show_guiWidget("Watches", WidgetWatches)
+            self.show_guiWidget("Watches")
 
         if name == "DYNAMICS":
             self.close_all_open_docks()
@@ -931,15 +931,14 @@ class Gui:
 
         if name == "BALLAST":
             self.close_all_open_docks()
-            self.show_guiWidget("Ballast system", WidgetBallastSystemSelect)
-            self.show_guiWidget("Tanks", WidgetBallastConfiguration)
-            self.show_guiWidget("Solver", WidgetBallastSolver)
-            self.show_guiWidget("Tank order", WidgetTankOrder)
+            self.show_guiWidget("BallastSystemSelect")
+            self.show_guiWidget("Tanks")
+            self.show_guiWidget("Ballast Solver")
+            self.show_guiWidget("TankReOrder")
             if self.visual.settings.label_scale == 0:
                 self.labels_show_hide()
             self.activate_paintset("Ballast")
 
-            # self.visual.show_actors_of_type([ActorType.BALLASTTANK])
 
         if name == "ENVIRONMENT":
             self.show_guiWidget("Environment", WidgetEnvironment)
@@ -2099,62 +2098,123 @@ class Gui:
         #
         # we need to find the corresponding node
 
-        node = self.visual.node_from_vtk_actor(props[0])
+        nodes = [self.visual.node_from_vtk_actor(prop) for prop in props]
+        nodes = list(set(nodes)) # make unique
 
-        if node is None:
-            print("Could not find node for this actor")
-            self.selected_nodes.clear()
-            self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+        # find all managers (recursively)
+        added = True
+        while added:
+            added = False
+            for node in tuple(nodes):
+                if node.manager is not None:
+                    if node.manager not in nodes:
+                        nodes.append(node.manager)
+                        added = True
 
-        # find the higest manager of this node
-        manager = node.manager
-        if manager is not None:
-            while manager.manager is not None:
-                manager = manager.manager
+        print(nodes)
 
-            if manager in self.selected_nodes:
-                self.selected_nodes.remove(manager)
-                self.guiSelectNode(node)
-            else:
-                if node in self.selected_nodes:
-                    self.selected_nodes.remove(node)
-                self.guiSelectNode(manager)
+        # We now have a list of all nodes that the user may want to select.
+        # If we have a length 1 then it is easy
+        # if more, then show a context-menu
 
+        if len(nodes) == 1:
+            self._user_clicked_node(nodes[0])
             return
 
-        else:
+        # order in some logical way
+        # unmanaged nodes go first
 
-            _node = node
-            if node in self.selected_nodes:
-                # if the is already selected, then select something different
+        i=0
+        for _ in range(len(nodes)):
+            if nodes[i].manager is not None:
+                nodes.append(nodes.pop(i))
+            else:
+                i+=1
 
-                self.selected_nodes.remove(node)
+        menu = QtWidgets.QMenu()
 
-                # # if node has a manager, then select the manager
-                # if node.manager is not None:
-                #     self.guiSelectNode(node.manager)
-                #     return
+        for node in nodes:
 
-                # cycle between node and its parent
-                try:
-                    node = node.parent
-                except:
-                    try:
-                        node = node.master
-                    except:
-                        try:
-                            node = node.slave
-                        except:
-                            try:
-                                node = node._pois[0]
-                            except:
-                                pass
+            if node.manager is None:
+                text = f'{node.name} [{node.class_name}]'
+            else:
+                text = f'{node.name} [{node.class_name}]\t managed by {node.manager.name}'
 
-            if node is None:  # in case the parent or something was none
-                node = _node
+            action = menu.addAction(text, lambda n = node, *args : self._user_clicked_node(n))
+            # action.hovered.connect(lambda n=node, *args: print(node))
 
+        menu.exec_(QCursor.pos())
+
+
+
+        # old code
+        #
+        # node = self.visual.node_from_vtk_actor(props[0])
+        #
+        # if node is None:
+        #     print("Could not find node for this actor")
+        #     self.selected_nodes.clear()
+        #     self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+        #
+        # # find the higest manager of this node
+        # manager = node.manager
+        # if manager is not None:
+        #     while manager.manager is not None:
+        #         manager = manager.manager
+        #
+        #     if manager in self.selected_nodes:
+        #         self.selected_nodes.remove(manager)
+        #         self.guiSelectNode(node)
+        #     else:
+        #         if node in self.selected_nodes:
+        #             self.selected_nodes.remove(node)
+        #         self.guiSelectNode(manager)
+        #
+        #     return
+        #
+        # else:
+        #
+        #     _node = node
+        #     if node in self.selected_nodes:
+        #         # if the is already selected, then select something different
+        #
+        #         self.selected_nodes.remove(node)
+        #
+        #         # # if node has a manager, then select the manager
+        #         # if node.manager is not None:
+        #         #     self.guiSelectNode(node.manager)
+        #         #     return
+        #
+        #         # cycle between node and its parent
+        #         try:
+        #             node = node.parent
+        #         except:
+        #             try:
+        #                 node = node.master
+        #             except:
+        #                 try:
+        #                     node = node.slave
+        #                 except:
+        #                     try:
+        #                         node = node._pois[0]
+        #                     except:
+        #                         pass
+        #
+        #     if node is None:  # in case the parent or something was none
+        #         node = _node
+        #
+        # if node is None:  # sea or something
+        #     self.selected_nodes.clear()
+        # else:
+        #     self.guiSelectNode(node.name)
+
+    def _user_clicked_node(self, node):
         if node is None:  # sea or something
             self.selected_nodes.clear()
+            self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+        elif node in self.selected_nodes:
+            self.selected_nodes.remove(node)
+            self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
         else:
             self.guiSelectNode(node.name)
 
@@ -2285,6 +2345,11 @@ class Gui:
     def show_guiWidget(self, name, widgetClass=None):
 
         if widgetClass is None:
+
+            if name not in DAVE_GUI_DOCKS:
+                print(DAVE_GUI_DOCKS.keys())
+                raise ValueError(f'Can not activate dock with name {name}, available names are {DAVE_GUI_DOCKS.keys()}')
+
             widgetClass = DAVE_GUI_DOCKS[
                 name
             ]  # TODO, make this the default and remove the widgetClass argument

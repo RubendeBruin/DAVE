@@ -144,4 +144,5 @@ class WidgetBallastSystemSelect(guiDockWidget):
 
 
 
+DAVE_GUI_DOCKS['BallastSystemSelect'] = WidgetBallastSystemSelect
 
