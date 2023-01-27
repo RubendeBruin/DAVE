@@ -3257,7 +3257,7 @@ class Scene:
             print(line)
 
     def give_python_code(
-        self, nodes=None, export_environment_settings=True, _no_sort_nodes=False
+        self, nodes=None, export_environment_settings=True, _no_sort_nodes=False, state_only=False
     ):
         """Generates the python code that rebuilds the scene and elements in its current state.
 
@@ -3265,6 +3265,7 @@ class Scene:
             nodes [None] : generate only for these node(s)
             export_environment_settings [True] : export the environment (wind, gravity, etc)
             _no_sort_nodes [False] : skip sorting of nodes (use if sure that nodes are already sorted)
+            state_only [False] : nodes and settings only, no timelines, reports etc
         """
 
         import datetime
@@ -3327,103 +3328,104 @@ class Scene:
 
                 # print(f'skipping {n.name} ')
 
-        # store the visibility code separately
+        if not state_only:
+            # store the visibility code separately
 
-        for n in nodes_to_be_exported:
-            if not n.visible:
-                code.append(
-                    f"\ns['{n.name}']._visible = False"  # use private, cause may be managed (in which case this statement is probably obsolete)
-                )  # only report is not the default value
+            for n in nodes_to_be_exported:
+                if not n.visible:
+                    code.append(
+                        f"\ns['{n.name}']._visible = False"  # use private, cause may be managed (in which case this statement is probably obsolete)
+                    )  # only report is not the default value
 
-        code.append("\n# Limits")
+            code.append("\n# Limits")
 
-        for n in nodes_to_be_exported:
-            if n.manager is None:
-                for key, value in n.limits.items():
-                    code.append(f"s['{n.name}'].limits['{key}'] = {value}")
-            else:
-                # Limits of managed nodes are only exported if they have been overridden
-                # or are additional.
-                # This is traced using the _limits_by_manager dict
-
-                lbm = getattr(n, '_limits_by_manager',None)
-                if lbm is not None:
+            for n in nodes_to_be_exported:
+                if n.manager is None:
                     for key, value in n.limits.items():
-                        if key not in lbm:
-                            code.append(f"s['{n.name}'].limits['{key}'] = {value}  # additional limit on managed node")
-                        else:
-                            if value != lbm[key]:
-                                code.append(
-                                    f"s['{n.name}'].limits['{key}'] = {value}  # limit overridden")
+                        code.append(f"s['{n.name}'].limits['{key}'] = {value}")
                 else:
-                    warnings.warn(f'Managed node {n.name} does not have _limits_by_manager set')
+                    # Limits of managed nodes are only exported if they have been overridden
+                    # or are additional.
+                    # This is traced using the _limits_by_manager dict
 
-        code.append("\n# Watches")
+                    lbm = getattr(n, '_limits_by_manager',None)
+                    if lbm is not None:
+                        for key, value in n.limits.items():
+                            if key not in lbm:
+                                code.append(f"s['{n.name}'].limits['{key}'] = {value}  # additional limit on managed node")
+                            else:
+                                if value != lbm[key]:
+                                    code.append(
+                                        f"s['{n.name}'].limits['{key}'] = {value}  # limit overridden")
+                    else:
+                        warnings.warn(f'Managed node {n.name} does not have _limits_by_manager set')
 
-        for n in nodes_to_be_exported:
-            if n.manager is None:
-                for key, value in n.watches.items():
-                    code.append(f"s['{n.name}'].watches['{key}'] = {value}")
-            else:
-                # Limits of managed nodes are only exported if they have been overridden
-                # or are additional.
-                # This is traced using the _limits_by_manager dict
+            code.append("\n# Watches")
 
-                lbm = getattr(n, '_watches_by_manager', None)
-                if lbm is not None:
+            for n in nodes_to_be_exported:
+                if n.manager is None:
                     for key, value in n.watches.items():
-                        if key not in lbm:
-                            code.append(f"s['{n.name}'].watches['{key}'] = {value}  # watch limit on managed node")
-                        else:
-                            if value != lbm[key]:
-                                code.append(
-                                    f"s['{n.name}'].watches['{key}'] = {value}  # watch overridden")
+                        code.append(f"s['{n.name}'].watches['{key}'] = {value}")
                 else:
-                    warnings.warn(f'Managed node {n.name} does not have _watches_by_manager set')
+                    # Limits of managed nodes are only exported if they have been overridden
+                    # or are additional.
+                    # This is traced using the _limits_by_manager dict
 
-        code.append("\n# Tags")
+                    lbm = getattr(n, '_watches_by_manager', None)
+                    if lbm is not None:
+                        for key, value in n.watches.items():
+                            if key not in lbm:
+                                code.append(f"s['{n.name}'].watches['{key}'] = {value}  # watch limit on managed node")
+                            else:
+                                if value != lbm[key]:
+                                    code.append(
+                                        f"s['{n.name}'].watches['{key}'] = {value}  # watch overridden")
+                    else:
+                        warnings.warn(f'Managed node {n.name} does not have _watches_by_manager set')
 
-        for n in nodes_to_be_exported:
-            if n.manager is None:
-                if n.tags:
-                    code.append(f"s['{n.name}'].add_tags({n.tags})")
+            code.append("\n# Tags")
 
-        code.append("\n# Colors")
+            for n in nodes_to_be_exported:
+                if n.manager is None:
+                    if n.tags:
+                        code.append(f"s['{n.name}'].add_tags({n.tags})")
 
-        for n in nodes_to_be_exported:
-            if n.manager is None:
-                if n.color is not None:
-                    code.append(f"s['{n.name}'].color = {n.color}")
+            code.append("\n# Colors")
 
-        code.append("\n# Solved state of managed DOFs nodes")
-        _modes = ('x','y','z','rx','ry','rz')
-        for n in self.nodes_of_type(Frame):
-            d = [*n.position, *n.rotation]
-            for i,f in  enumerate(n.fixed):
-                if f is False: # free dof
-                    code.append(f"s['{n.name}'].{_modes[i]} = {d[i]}")
+            for n in nodes_to_be_exported:
+                if n.manager is None:
+                    if n.color is not None:
+                        code.append(f"s['{n.name}'].color = {n.color}")
+
+            code.append("\n# Solved state of managed DOFs nodes")
+            _modes = ('x','y','z','rx','ry','rz')
+            for n in self.nodes_of_type(Frame):
+                d = [*n.position, *n.rotation]
+                for i,f in  enumerate(n.fixed):
+                    if f is False: # free dof
+                        code.append(f"s['{n.name}'].{_modes[i]} = {d[i]}")
 
 
-        # Optional Reports
-        if self.reports:
-            code.append("\n# Reports")
-            for r in self.reports:
-                yml = r.to_yml()
-                code.append(f"\n# Exporting report {r.name}")
-                code.append(f'report_contents = r"""\n{yml}"""')
-                code.append("s.reports.append(Report(s,yml=report_contents))")
+            # Optional Reports
+            if self.reports:
+                code.append("\n# Reports")
+                for r in self.reports:
+                    yml = r.to_yml()
+                    code.append(f"\n# Exporting report {r.name}")
+                    code.append(f'report_contents = r"""\n{yml}"""')
+                    code.append("s.reports.append(Report(s,yml=report_contents))")
 
-        # Optional Timelines
-        if self.t:
-            code.extend(self.t.give_python_code())
+            # Optional Timelines
+            if self.t:
+                code.extend(self.t.give_python_code())
 
-        # Optional: Exposed properties of components
-        exposed = getattr(self, 'exposed', [])
-        if exposed:
-            code.append('exposed = list()')
-            for e in exposed:
-                code.append(f'exposed.append({str(e)})')
-            code.append('s.exposed = exposed')
+            # Optional: Exposed properties of components
+            exposed = getattr(self, 'exposed', [])
+            if exposed:
+                code.append('exposed = list()')
+                for e in exposed:
+                    code.append(f'exposed.append({str(e)})')
+                code.append('s.exposed = exposed')
 
         return "\n".join(code)
 
@@ -3554,6 +3556,7 @@ class Scene:
         nodes=None,
         container=None,
         settings=True,
+        quick=False
     ):
         """Copy-paste all nodes of scene "other" into current scene.
 
@@ -3603,8 +3606,9 @@ class Scene:
 
         store_export_code_with_solved_function = other._export_code_with_solved_function
         other._export_code_with_solved_function = False  # quicker
-        code = other.give_python_code(nodes=nodes, export_environment_settings=settings)
+        code = other.give_python_code(nodes=nodes, export_environment_settings=settings, state_only=quick)
         other._export_code_with_solved_function = store_export_code_with_solved_function
+
 
         self.run_code(code)
 
@@ -3641,11 +3645,12 @@ class Scene:
                 if node.manager is None:
                     node.name = prefix + node.name
 
-    def copy(self, nodes=None):
+    def copy(self, nodes=None, quick=False):
         """Creates a full and independent copy of the scene and returns it.
 
         Args:
-            nodes [None] : copy only these nodes
+            nodes [None]  : copy only these nodes
+            quick [False] : copy only the scene itself - for solving DOFs in separate threads
 
         Example:
             s = Scene()
@@ -3657,8 +3662,36 @@ class Scene:
         c = Scene()
         c.resources_paths.clear()
         c.resources_paths.extend(self.resources_paths)
-        c.import_scene(self, containerize=False, nodes=nodes)
+        c.import_scene(self, containerize=False, nodes=nodes, quick=True)
         return c
+
+    @property
+    def state(self):
+        """The state of the model is the values of all free dofs. This is what the solver solves.
+        The state is returned as a list of tuples containing (node-name (str), mode (str), value)
+        """
+        state = []
+
+        modes = ('x', 'y', 'z', 'rx', 'ry', 'rz')
+
+        for frame in self.nodes_of_type(Frame):
+            for i, mode in enumerate(modes):
+                if not frame.fixed[i]:  # if solved
+                    value = getattr(frame, mode)
+                    state.append((frame.name, mode, value))
+
+
+        for beam in self.nodes_of_type(Beam):
+            # if the Beam has only 1 segment then there are no shapeDofs
+            state.append((beam.name, '_shapeDofs', beam._shapeDofs))
+
+        return state
+
+    @state.setter
+    def state(self, value):
+        for name, prop, val in value:
+            setattr(self[name], prop, val)
+
 
     def duplicate_node(self, node):
         """Duplicates node, the copy will get the first available name.

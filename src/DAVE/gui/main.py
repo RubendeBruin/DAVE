@@ -2136,9 +2136,9 @@ class Gui:
         for node in nodes:
 
             if node.manager is None:
-                text = f'{node.name} [{node.class_name}]'
+                text = f'{node.name}\t[{node.class_name}]'
             else:
-                text = f'{node.name} [{node.class_name}]\t managed by {node.manager.name}'
+                text = f'{node.name}\t[{node.class_name}]\t managed by {node.manager.name}'
 
             action = menu.addAction(text, lambda n = node, *args : self._user_clicked_node(n))
             # action.hovered.connect(lambda n=node, *args: print(node))
