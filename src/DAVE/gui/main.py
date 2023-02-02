@@ -2117,7 +2117,7 @@ class Gui:
         while added:
             added = False
             for node in tuple(nodes):
-                parent = getattr(node,'parent')
+                parent = getattr(node,'parent',None)
                 if parent:
                     if parent not in nodes:
                         nodes.append(parent)
