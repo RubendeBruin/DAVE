@@ -1884,7 +1884,7 @@ class Gui:
                     )  # people often close this one
 
                 menu.addAction("Edit {}".format(node_name), edit)
-                menu.addAction("Properties", lambda *args: self.show_guiWidget("Derived Properties", WidgetDerivedProperties))
+                menu.addAction("Derived Properties", lambda *args: self.show_guiWidget("Derived Properties", WidgetDerivedProperties))
 
                 showhide = menu.addAction("Visible")
                 showhide.setCheckable(True)
@@ -2112,6 +2112,17 @@ class Gui:
                         added = True
 
         print(nodes)
+
+        added = True
+        while added:
+            added = False
+            for node in tuple(nodes):
+                parent = getattr(node,'parent')
+                if parent:
+                    if parent not in nodes:
+                        nodes.append(parent)
+                        added = True
+
 
         # We now have a list of all nodes that the user may want to select.
         # If we have a length 1 then it is easy
