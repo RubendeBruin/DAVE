@@ -719,6 +719,9 @@ def ballast_to_even_keel(bs: BallastSystem, delta_fill = 1, tolerance=0.1, passi
 
         for tank in bs.tanks:
 
+            if bs.is_frozen(tank.name):
+                continue
+
             if not passive_only or (tank.level_global < 0):  # only passive filling
                 if tank.fill_pct <= 100 - (delta_fill+1e-6):
                     gz = f.to_glob_position((*tank.cog_when_full[:2], 0))[

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1270</width>
-    <height>1320</height>
+    <width>441</width>
+    <height>1214</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -67,6 +67,46 @@
          </size>
         </property>
        </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="pgGoEvenKeel">
+        <property name="text">
+         <string>Go even keel</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="rbUp">
+        <property name="text">
+         <string>Up</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="rbDown">
+        <property name="text">
+         <string>Down</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="cbPassive">
+        <property name="toolTip">
+         <string>Only fill tanks using natural flow (no pumps). Tanks are filled to maximum the outside waterline</string>
+        </property>
+        <property name="text">
+         <string>Passive only</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

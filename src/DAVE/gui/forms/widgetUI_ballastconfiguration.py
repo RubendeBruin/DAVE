@@ -17,7 +17,7 @@ class Ui_widget_ballastsystem(object):
     def setupUi(self, widget_ballastsystem):
         if not widget_ballastsystem.objectName():
             widget_ballastsystem.setObjectName(u"widget_ballastsystem")
-        widget_ballastsystem.resize(1270, 1320)
+        widget_ballastsystem.resize(441, 1214)
         widget_ballastsystem.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
         self.verticalLayout = QVBoxLayout(widget_ballastsystem)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -56,6 +56,34 @@ class Ui_widget_ballastsystem(object):
 
 
         self.verticalLayout.addWidget(self.widget_2)
+
+        self.widget = QWidget(widget_ballastsystem)
+        self.widget.setObjectName(u"widget")
+        self.horizontalLayout = QHBoxLayout(self.widget)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.pgGoEvenKeel = QPushButton(self.widget)
+        self.pgGoEvenKeel.setObjectName(u"pgGoEvenKeel")
+
+        self.horizontalLayout.addWidget(self.pgGoEvenKeel)
+
+        self.rbUp = QRadioButton(self.widget)
+        self.rbUp.setObjectName(u"rbUp")
+
+        self.horizontalLayout.addWidget(self.rbUp)
+
+        self.rbDown = QRadioButton(self.widget)
+        self.rbDown.setObjectName(u"rbDown")
+        self.rbDown.setChecked(True)
+
+        self.horizontalLayout.addWidget(self.rbDown)
+
+        self.cbPassive = QCheckBox(self.widget)
+        self.cbPassive.setObjectName(u"cbPassive")
+
+        self.horizontalLayout.addWidget(self.cbPassive)
+
+
+        self.verticalLayout.addWidget(self.widget)
 
         self.tableWidget = QTableWidget(widget_ballastsystem)
         if (self.tableWidget.columnCount() < 6):
@@ -108,6 +136,13 @@ class Ui_widget_ballastsystem(object):
         self.pbToggleFreeze.setText(QCoreApplication.translate("widget_ballastsystem", u"Toggle freeze", None))
         self.pbUnfreezeAll.setText(QCoreApplication.translate("widget_ballastsystem", u"Unfreeze all", None))
         self.pbFreezeAll.setText(QCoreApplication.translate("widget_ballastsystem", u"Freeze all", None))
+        self.pgGoEvenKeel.setText(QCoreApplication.translate("widget_ballastsystem", u"Go even keel", None))
+        self.rbUp.setText(QCoreApplication.translate("widget_ballastsystem", u"Up", None))
+        self.rbDown.setText(QCoreApplication.translate("widget_ballastsystem", u"Down", None))
+#if QT_CONFIG(tooltip)
+        self.cbPassive.setToolTip(QCoreApplication.translate("widget_ballastsystem", u"Only fill tanks using natural flow (no pumps). Tanks are filled to maximum the outside waterline", None))
+#endif // QT_CONFIG(tooltip)
+        self.cbPassive.setText(QCoreApplication.translate("widget_ballastsystem", u"Passive only", None))
         ___qtablewidgetitem = self.tableWidget.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("widget_ballastsystem", u"Capacity [m3]", None));
         ___qtablewidgetitem1 = self.tableWidget.horizontalHeaderItem(1)

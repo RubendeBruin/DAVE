@@ -25,7 +25,7 @@ from DAVE.settings_visuals import (
     COLOR_WATER_TANK_FREEFLOODING,
     COLOR_SELECT, COLOR_WATER_TANK_FULL
 )
-
+from DAVE.marine import ballast_to_even_keel
 
 class WidgetBallastConfiguration(guiDockWidget):
     def guiCreate(self):
@@ -58,6 +58,8 @@ class WidgetBallastConfiguration(guiDockWidget):
         self._bs = None  # active ballast system
         self._filling_table = True
 
+        self.ui.pgGoEvenKeel.clicked.connect(self.go_even_keel)
+
     def guiProcessEvent(self, event):
         """
         Add processing that needs to be done.
@@ -80,7 +82,7 @@ class WidgetBallastConfiguration(guiDockWidget):
     def guiDefaultLocation(self):
         return QtCore.Qt.DockWidgetArea.RightDockWidgetArea
 
-    def select_row_for_tank(self):
+    def select_row_for_tank(self, *args):
         if self.guiSelection:
             name = self.guiSelection[0].name
             for i in range(self.ui.tableWidget.rowCount()):
@@ -90,7 +92,7 @@ class WidgetBallastConfiguration(guiDockWidget):
                         self.ui.tableWidget.setFocus()
                     return
 
-    def selection_changed(self, cur_row, cur_col, prev_row, prev_col):
+    def selection_changed(self, cur_row, cur_col, prev_row, prev_col, *args):
         item = self.ui.tableWidget.verticalHeaderItem(cur_row)
         if item is not None:
             name = item.text()
@@ -105,19 +107,19 @@ class WidgetBallastConfiguration(guiDockWidget):
 
         self.gui.visual.refresh_embeded_view()
 
-    def freeze_all(self):
+    def freeze_all(self, *args):
         if self._bs is None:
             return
         self._bs.frozen = [t.name for t in self._bs.tanks]
         self.fill()
 
-    def unfreeze_all(self):
+    def unfreeze_all(self, *args):
         if self._bs is None:
             return
         self._bs.frozen = list()
         self.fill()
 
-    def toggle_freeze(self):
+    def toggle_freeze(self, *args):
         if self._bs is None:
             return
 
@@ -132,13 +134,13 @@ class WidgetBallastConfiguration(guiDockWidget):
         self._bs.frozen = new_frozen
         self.fill()
 
-    def fill_all_to(self, pct):
+    def fill_all_to(self, pct, *args):
         code = ""
         for t in self._bs.tanks:
             code += '\ns["{}"].fill_pct = {}'.format(t.name, pct)
         self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
 
-    def fill(self):
+    def fill(self, *args):
 
         # display the name of the selected node
         if self.guiSelection:
@@ -215,7 +217,7 @@ class WidgetBallastConfiguration(guiDockWidget):
 
 
 
-    def reorder_rows(self, a, b, c):
+    def reorder_rows(self, a, b, c, *args):
         vh = self.ui.tableWidget.verticalHeader()
         tw = self.ui.tableWidget
         names = list()
@@ -232,7 +234,7 @@ class WidgetBallastConfiguration(guiDockWidget):
 
         self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
 
-    def tankfillchanged(self, a, b):
+    def tankfillchanged(self, a, b, *args):
 
         if self._filling_table:
             return
@@ -258,7 +260,7 @@ class WidgetBallastConfiguration(guiDockWidget):
         self.ui.tableWidget.setCurrentCell(a, b)
         self.ui.tableWidget.setFocus()
 
-    def tankFrozenChanged(self):
+    def tankFrozenChanged(self, *args):
         if self._filling_table:
             return
 
@@ -281,12 +283,25 @@ class WidgetBallastConfiguration(guiDockWidget):
                 self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
                 return
 
-    def report_python(self):
+    def report_python(self, *args):
         """Runs the current tank fillings in python"""
 
         code = ""
         for t in self._bs.tanks:
             code += '\ns["{}"].fill_pct = {}'.format(t.name, t.fill_pct)
         self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
+
+    def go_even_keel(self, *args):
+
+        deballast = self.ui.rbUp.isChecked()
+        passive = self.ui.cbPassive.isChecked()
+
+        code = f"from DAVE.marine import ballast_to_even_keel\nballast_to_even_keel(s['{self._bs.name}'], passive_only={passive}, deballast={deballast})"
+        self.guiRunCodeCallback(code, guiEventType.MODEL_STATE_CHANGED)
+
+        self.guiPressSolveButton()
+
+
+
 
 DAVE_GUI_DOCKS['Tanks'] = WidgetBallastConfiguration
