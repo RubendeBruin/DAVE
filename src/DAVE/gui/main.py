@@ -209,6 +209,7 @@ class Gui:
         block=True,
         workspace=None,
         painters=None,
+        client_mode = False
     ):
         """
         Starts the Gui on scene "scene".
@@ -236,6 +237,7 @@ class Gui:
             painters: [None] (str) painters to activate
 
         """
+        self._client_mode = client_mode
 
         self.plugins_workspace = DAVE_GUI_PLUGINS_WORKSPACE
         self.plugins_context = DAVE_GUI_PLUGINS_CONTEXT
@@ -383,300 +385,320 @@ class Gui:
         self.visual.Style.callbackEndDrag = self.node_dragged
         self.visual.Style.callbackMeasure = self.measured_in_viewport
 
-        # ------ viewport buttons ------
+        if not self._client_mode:
+            # ------ viewport buttons ------
 
-        # right
-        self.ui.btnWater.clicked.connect(self.toggle_show_global)
-        self.ui.pbUC.clicked.connect(self.toggle_show_UC)
-        self.ui.btnBlender.clicked.connect(self.to_blender)
-        self.ui.pbCopyViewCode.clicked.connect(self.copy_screenshot_code)
-        self.ui.btnSSAO.clicked.connect(self.toggle_SSAO)
-        self.ui.btnZoomFit.clicked.connect(self.camera_reset)
+            # right
+            self.ui.btnWater.clicked.connect(self.toggle_show_global)
+            self.ui.pbUC.clicked.connect(self.toggle_show_UC)
+            self.ui.btnBlender.clicked.connect(self.to_blender)
+            self.ui.pbCopyViewCode.clicked.connect(self.copy_screenshot_code)
+            self.ui.btnSSAO.clicked.connect(self.toggle_SSAO)
+            self.ui.btnZoomFit.clicked.connect(self.camera_reset)
 
-        # left
-        self.ui.pbUpdate.clicked.connect(
-            lambda: self.guiEmitEvent(guiEventType.FULL_UPDATE)
-        )
-        self.ui.btnSolveStatics.clicked.connect(self.solve_statics)
-        # self.ui.btnUndoStatics.clicked.connect(self.undo_solve_statics)
+            # left
+            self.ui.pbUpdate.clicked.connect(
+                lambda: self.guiEmitEvent(guiEventType.FULL_UPDATE)
+            )
+            self.ui.btnSolveStatics.clicked.connect(self.solve_statics)
+            # self.ui.btnUndoStatics.clicked.connect(self.undo_solve_statics)
 
-        # bottom
-        self.ui.pbExecute.clicked.connect(self.run_code_in_teCode)
-        self.ui.pbCopyOutput.clicked.connect(self.feedback_copy)
-        self.ui.pbCopyHistory.clicked.connect(self.history_copy)
-        self.ui.pbGenerateSceneCode.clicked.connect(self.generate_scene_code)
-        self.ui.pbClearCode.clicked.connect(self.clear_code)
-        self.ui.tbTidyHistory.clicked.connect(self.tidy_history)
+            # bottom
+            self.ui.pbExecute.clicked.connect(self.run_code_in_teCode)
+            self.ui.pbCopyOutput.clicked.connect(self.feedback_copy)
+            self.ui.pbCopyHistory.clicked.connect(self.history_copy)
+            self.ui.pbGenerateSceneCode.clicked.connect(self.generate_scene_code)
+            self.ui.pbClearCode.clicked.connect(self.clear_code)
+            self.ui.tbTidyHistory.clicked.connect(self.tidy_history)
 
-        # ------ animation buttons ------
-        self.ui.frameAni.setVisible(False)
-        self.ui.btnStopAnimation.clicked.connect(
-            lambda: self.animation_terminate(False)
-        )
-        self.ui.btnPauseAnimation.clicked.connect(
-            self.animation_pause_or_continue_click
-        )
-        self.ui.aniSlider.valueChanged.connect(self.animation_change_time)
-        self.ui.sbPlaybackspeed.valueChanged.connect(self.animation_speed_change)
+            # ------ animation buttons ------
+            self.ui.frameAni.setVisible(False)
+            self.ui.btnStopAnimation.clicked.connect(
+                lambda: self.animation_terminate(False)
+            )
+            self.ui.btnPauseAnimation.clicked.connect(
+                self.animation_pause_or_continue_click
+            )
+            self.ui.aniSlider.valueChanged.connect(self.animation_change_time)
+            self.ui.sbPlaybackspeed.valueChanged.connect(self.animation_speed_change)
 
-        # ======================== Main Menu entries  ======
+            # ======================== Main Menu entries  ======
 
-        self.ui.actionNew.triggered.connect(self.clear)
-        self.ui.actionReload_components.triggered.connect(self.refresh_model)
-        self.ui.actionOpen.triggered.connect(self.open)
-        self.ui.actionSave.triggered.connect(self.menu_save_model)
-        self.ui.actionSave_scene.triggered.connect(self.menu_save_model_as)
-        self.ui.actionSettings.triggered.connect(self.show_settings)
-        self.ui.actionSave_actions_as.triggered.connect(self.menu_save_actions)
-        self.ui.actionImport_sub_scene.triggered.connect(self.menu_import)
-        self.ui.actionImport_browser.triggered.connect(self.import_browser)
-        self.ui.actionOrcaflex.triggered.connect(self.menu_export_orcaflex_yml)
-        self.ui.actionOrcaflex_package.triggered.connect(
-            self.menu_export_orcaflex_package
-        )
-        self.ui.actionBlender.triggered.connect(self.to_blender)
+            self.ui.actionNew.triggered.connect(self.clear)
+            self.ui.actionReload_components.triggered.connect(self.refresh_model)
+            self.ui.actionOpen.triggered.connect(self.open)
+            self.ui.actionSave.triggered.connect(self.menu_save_model)
+            self.ui.actionSave_scene.triggered.connect(self.menu_save_model_as)
+            self.ui.actionSettings.triggered.connect(self.show_settings)
+            self.ui.actionSave_actions_as.triggered.connect(self.menu_save_actions)
+            self.ui.actionImport_sub_scene.triggered.connect(self.menu_import)
+            self.ui.actionImport_browser.triggered.connect(self.import_browser)
+            self.ui.actionOrcaflex.triggered.connect(self.menu_export_orcaflex_yml)
+            self.ui.actionOrcaflex_package.triggered.connect(
+                self.menu_export_orcaflex_package
+            )
+            self.ui.actionBlender.triggered.connect(self.to_blender)
 
-        # --- recent files ---
+            # --- recent files ---
 
-        self.recent_files = []
-        self.ui.menuSolve_Statics.addSeparator()
-        for i in range(8):
-            action = QAction("none")
-            action.triggered.connect(lambda *args, a=i: self.open_recent(a))
-            self.recent_files.append(action)
-            self.ui.menuSolve_Statics.addAction(action)
-        self.update_recent_file_menu()
+            self.recent_files = []
+            self.ui.menuSolve_Statics.addSeparator()
+            for i in range(8):
+                action = QAction("none")
+                action.triggered.connect(lambda *args, a=i: self.open_recent(a))
+                self.recent_files.append(action)
+                self.ui.menuSolve_Statics.addAction(action)
+            self.update_recent_file_menu()
 
-        # -- drag drop files into DAVE --
+            # -- drag drop files into DAVE --
 
-        self.ui.frame3d.dropEvent = self.drop
-        self.ui.frame3d.dragEnterEvent = self.drag_enter
+            self.ui.frame3d.dropEvent = self.drop
+            self.ui.frame3d.dragEnterEvent = self.drag_enter
 
-        # -- visuals --
-        self.ui.actionShow_water_plane.triggered.connect(
-            self.toggle_show_global_from_menu
-        )
-        self.ui.actionShow_force_applying_element.triggered.connect(
-            self.toggle_show_force_applying_elements
-        )
-
-        self.ui.sliderGeometrySize = MenuSlider("Geometry size")
-        self.ui.sliderGeometrySize.setMin(0)
-        self.ui.sliderGeometrySize.slider.setValue(20)
-
-        def set_geo_size(value):
-            if value < 1:
-                self.visual.show_geometry = False
-                self.run_code(
-                    "self.visual.settings.geometry_scale = 0",
-                    guiEventType.VIEWER_SETTINGS_UPDATE,
-                )
-                # self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
-            else:
-                self.visual.show_geometry = True
-                self.run_code(
-                    f"self.visual.settings.geometry_scale = {value**(1.8)/100 : .2f}",
-                    guiEventType.VIEWER_SETTINGS_UPDATE,
-                )
-
-        self.ui.sliderGeometrySize.connectvalueChanged(set_geo_size)
-        self.ui.menuView.addAction(self.ui.sliderGeometrySize)
-
-        # force size
-        self.ui.menuView.addSeparator()
-
-        def normalize_force():
-            self.run_code(
-                "self.visual.settings.force_do_normalize = not self.visual.settings.force_do_normalize",
-                guiEventType.VIEWER_SETTINGS_UPDATE,
+            # -- visuals --
+            self.ui.actionShow_water_plane.triggered.connect(
+                self.toggle_show_global_from_menu
+            )
+            self.ui.actionShow_force_applying_element.triggered.connect(
+                self.toggle_show_force_applying_elements
             )
 
-        forcenormalize = self.ui.menuView.addAction("View all forces at same size")
-        forcenormalize.setCheckable(True)
-        forcenormalize.setChecked(True)
-        forcenormalize.triggered.connect(normalize_force)
-        self.ui.forcenormalize = forcenormalize
+            self.ui.sliderGeometrySize = MenuSlider("Geometry size")
+            self.ui.sliderGeometrySize.setMin(0)
+            self.ui.sliderGeometrySize.slider.setValue(20)
 
-        self.ui.sliderForceSize = MenuSlider("Force size")
-        self.ui.sliderForceSize.setMin(0)
-        self.ui.sliderForceSize.slider.setValue(20.0)
+            def set_geo_size(value):
+                if value < 1:
+                    self.visual.show_geometry = False
+                    self.run_code(
+                        "self.visual.settings.geometry_scale = 0",
+                        guiEventType.VIEWER_SETTINGS_UPDATE,
+                    )
+                    # self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
+                else:
+                    self.visual.show_geometry = True
+                    self.run_code(
+                        f"self.visual.settings.geometry_scale = {value**(1.8)/100 : .2f}",
+                        guiEventType.VIEWER_SETTINGS_UPDATE,
+                    )
 
-        def set_force_size(value):
-            if value < 1:
-                self.visual.show_force = False
+            self.ui.sliderGeometrySize.connectvalueChanged(set_geo_size)
+            self.ui.menuView.addAction(self.ui.sliderGeometrySize)
+
+            # force size
+            self.ui.menuView.addSeparator()
+
+            def normalize_force():
                 self.run_code(
-                    "self.visual.settings.force_scale = 0",
+                    "self.visual.settings.force_do_normalize = not self.visual.settings.force_do_normalize",
                     guiEventType.VIEWER_SETTINGS_UPDATE,
                 )
-                self.visual.refresh_embeded_view()
-            else:
-                self.visual.show_force = True
+
+            forcenormalize = self.ui.menuView.addAction("View all forces at same size")
+            forcenormalize.setCheckable(True)
+            forcenormalize.setChecked(True)
+            forcenormalize.triggered.connect(normalize_force)
+            self.ui.forcenormalize = forcenormalize
+
+            self.ui.sliderForceSize = MenuSlider("Force size")
+            self.ui.sliderForceSize.setMin(0)
+            self.ui.sliderForceSize.slider.setValue(20.0)
+
+            def set_force_size(value):
+                if value < 1:
+                    self.visual.show_force = False
+                    self.run_code(
+                        "self.visual.settings.force_scale = 0",
+                        guiEventType.VIEWER_SETTINGS_UPDATE,
+                    )
+                    self.visual.refresh_embeded_view()
+                else:
+                    self.visual.show_force = True
+                    self.run_code(
+                        f"self.visual.settings.force_scale = {value ** (2) / 10 : .2f}",
+                        guiEventType.VIEWER_SETTINGS_UPDATE,
+                    )
+
+            self.ui.sliderForceSize.connectvalueChanged(set_force_size)
+            self.ui.menuView.addAction(self.ui.sliderForceSize)
+
+            # labels
+            self.ui.actionShow_labels.triggered.connect(self.labels_show_hide)
+
+            # cog size
+            self.ui.menuView.addSeparator()
+
+            def normalize_cog():
                 self.run_code(
-                    f"self.visual.settings.force_scale = {value ** (2) / 10 : .2f}",
+                    "self.visual.settings.cog_do_normalize = not self.visual.settings.cog_do_normalize",
                     guiEventType.VIEWER_SETTINGS_UPDATE,
                 )
 
-        self.ui.sliderForceSize.connectvalueChanged(set_force_size)
-        self.ui.menuView.addAction(self.ui.sliderForceSize)
+            cognormalize = self.ui.menuView.addAction("View all CoGs at same size")
+            cognormalize.setCheckable(True)
+            cognormalize.setChecked(False)
+            cognormalize.triggered.connect(normalize_cog)
+            self.ui.cognormalize = cognormalize
 
-        # labels
-        self.ui.actionShow_labels.triggered.connect(self.labels_show_hide)
+            self.ui.sliderCoGSize = MenuSlider("CoG size")
+            self.ui.sliderCoGSize.setMin(0)
+            self.ui.sliderCoGSize.slider.setValue(20.0)
 
-        # cog size
-        self.ui.menuView.addSeparator()
+            def set_cog_size(value):
+                if value < 1:
+                    self.visual.show_cog = False
+                    self.run_code(
+                        f"self.visual.settings.cog_scale = 0",
+                        guiEventType.VIEWER_SETTINGS_UPDATE,
+                    )
+                    self.visual.refresh_embeded_view()
+                else:
+                    self.visual.show_cog = True
+                    self.run_code(
+                        f"self.visual.settings.cog_scale = {value ** (1.3) / 100}",
+                        guiEventType.VIEWER_SETTINGS_UPDATE,
+                    )
 
-        def normalize_cog():
-            self.run_code(
-                "self.visual.settings.cog_do_normalize = not self.visual.settings.cog_do_normalize",
-                guiEventType.VIEWER_SETTINGS_UPDATE,
+            self.ui.sliderCoGSize.connectvalueChanged(set_cog_size)
+            self.ui.menuView.addAction(self.ui.sliderCoGSize)
+
+            self.ui.action2D_mode.triggered.connect(self.toggle_2D)
+            self.ui.actionX.triggered.connect(lambda: self.camera_set_direction((1, 0, 0)))
+            self.ui.action_x.triggered.connect(
+                lambda: self.camera_set_direction((-1, 0, 0))
+            )
+            self.ui.actionY.triggered.connect(lambda: self.camera_set_direction((0, 1, 0)))
+            self.ui.action_Y.triggered.connect(
+                lambda: self.camera_set_direction((0, -1, 0))
+            )
+            self.ui.actionZ.triggered.connect(lambda: self.camera_set_direction((0, 0, -1)))
+            self.ui.action_Z.triggered.connect(lambda: self.camera_set_direction((0, 0, 1)))
+            self.ui.actionCamera_reset.triggered.connect(self.camera_reset)
+            #
+
+            self.ui.pbTop.clicked.connect(self.visual.Style.SetViewZ)
+            self.ui.pbFront.clicked.connect(self.visual.Style.SetViewY)
+            self.ui.pbSide.clicked.connect(self.visual.Style.SetViewX)
+            self.ui.pb3D.clicked.connect(self.toggle_2D)
+
+            # the python console
+            self.ui.dockWidget_2.setVisible(False)
+            self.ui.actionPython_console_2.triggered.connect(self.show_python_console)
+
+            # dof editor
+            self.ui.actionDegrees_of_Freedom_editor.triggered.connect(lambda: self.show_guiWidget("DOF Editor"))
+
+
+            self.ui.actionVersion.setText(f"Version {DAVE.__version__}")
+            self.ui.actionOnline_help.triggered.connect(
+                lambda: subprocess.Popen("explorer https://usedave.nl")
             )
 
-        cognormalize = self.ui.menuView.addAction("View all CoGs at same size")
-        cognormalize.setCheckable(True)
-        cognormalize.setChecked(False)
-        cognormalize.triggered.connect(normalize_cog)
-        self.ui.cognormalize = cognormalize
+            # ======================= Code-highlighter ==============
 
-        self.ui.sliderCoGSize = MenuSlider("CoG size")
-        self.ui.sliderCoGSize.setMin(0)
-        self.ui.sliderCoGSize.slider.setValue(20.0)
+            font = QFont()
+            font.setPointSize(10)
+            font.setFamily("Consolas")
+            self.ui.teCode.setFont(font)
+            self.ui.teCode.setTabStopDistance(
+                QFontMetricsF(self.ui.teCode.font()).width(" ") * 4
+            )
 
-        def set_cog_size(value):
-            if value < 1:
-                self.visual.show_cog = False
-                self.run_code(
-                    f"self.visual.settings.cog_scale = 0",
-                    guiEventType.VIEWER_SETTINGS_UPDATE,
-                )
-                self.visual.refresh_embeded_view()
+            self.highlight = PythonHighlighter(self.ui.teCode.document())
+
+            self.teCode_eventFilter = ShiftEnterKeyPressFilter()
+            self.teCode_eventFilter.callback = self.run_code_in_teCode
+            self.ui.teCode.installEventFilter(self.teCode_eventFilter)
+
+            # self.delete_eventFilter = DeleteEventFilter()
+            # self.delete_eventFilter.callback = self.delete_key
+            # self.MainWindow.installEventFilter(self.delete_eventFilter)
+
+            # ======================== Docks ====================
+            self.guiWidgets = dict()
+            """Dictionary of all created guiWidgets (dock-widgets)"""
+
+            # def set_pb_style(pb):
+            #     pb.setFlat(True)
+            #     pb.setCheckable(True)
+            #     pb.setAutoExclusive(True)
+            #     pb.setStyleSheet("text-decoration: underline;")
+            #     self.ui.toolBar.addWidget(pb)
+
+            # Workspace buttons
+            btnConstruct = QtWidgets.QPushButton()
+            btnConstruct.setText("&0. Library")
+            btnConstruct.clicked.connect(self.import_browser)
+            btnConstruct.setFlat(True)
+            self.ui.toolBar.addWidget(btnConstruct)
+
+            for i, button in enumerate(DAVE_GUI_WORKSPACE_BUTTONS):
+                name = button[0]
+                workspace_id = button[1]
+
+                btn = QtWidgets.QPushButton()
+                if i<9:
+                    btn.setText(f'&{i+1} {name}')
+                else:
+                    btn.setText(f'{i + 1} {name}')
+                btn.pressed.connect(lambda *args, wsid=workspace_id : self.activate_workspace(wsid))
+
+                # btn.setFlat(True)
+                btn.setCheckable(True)
+                btn.setAutoExclusive(True)
+                # btn.setStyleSheet("text-decoration: underline;")
+                self.ui.toolBar.addWidget(btn)
+                self.ui.toolBar.setMinimumHeight(btn.minimumSizeHint().height())
+
+            # self.ui.toolBar.layout().setContentsMargins(-2, 0, 0, 0)
+            self.ui.toolBar.setStyleSheet("QToolBar{spacing:0px;}")
+            # self.ui.toolBar
+
+            space = QtWidgets.QWidget()
+            space.setSizePolicy(
+                QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
+            )
+            self.ui.toolBar.addWidget(space)
+
+            self._active_workspace = None
+
+            # call plugin(s)
+
+            for plugin_init in DAVE_GUI_PLUGINS_INIT:
+                plugin_init(self)
+
+            # ---------- activate workspace (if any)
+
+            if workspace is None:
+                self.activate_workspace("CONSTRUCT")
             else:
-                self.visual.show_cog = True
-                self.run_code(
-                    f"self.visual.settings.cog_scale = {value ** (1.3) / 100}",
-                    guiEventType.VIEWER_SETTINGS_UPDATE,
-                )
+                self.activate_workspace(workspace)
 
-        self.ui.sliderCoGSize.connectvalueChanged(set_cog_size)
-        self.ui.menuView.addAction(self.ui.sliderCoGSize)
-
-        self.ui.action2D_mode.triggered.connect(self.toggle_2D)
-        self.ui.actionX.triggered.connect(lambda: self.camera_set_direction((1, 0, 0)))
-        self.ui.action_x.triggered.connect(
-            lambda: self.camera_set_direction((-1, 0, 0))
-        )
-        self.ui.actionY.triggered.connect(lambda: self.camera_set_direction((0, 1, 0)))
-        self.ui.action_Y.triggered.connect(
-            lambda: self.camera_set_direction((0, -1, 0))
-        )
-        self.ui.actionZ.triggered.connect(lambda: self.camera_set_direction((0, 0, -1)))
-        self.ui.action_Z.triggered.connect(lambda: self.camera_set_direction((0, 0, 1)))
-        self.ui.actionCamera_reset.triggered.connect(self.camera_reset)
-        #
-
-        self.ui.pbTop.clicked.connect(self.visual.Style.SetViewZ)
-        self.ui.pbFront.clicked.connect(self.visual.Style.SetViewY)
-        self.ui.pbSide.clicked.connect(self.visual.Style.SetViewX)
-        self.ui.pb3D.clicked.connect(self.toggle_2D)
-
-        # the python console
-        self.ui.dockWidget_2.setVisible(False)
-        self.ui.actionPython_console_2.triggered.connect(self.show_python_console)
-
-        # dof editor
-        self.ui.actionDegrees_of_Freedom_editor.triggered.connect(lambda: self.show_guiWidget("DOF Editor"))
+            # ========== undo log =======
 
 
-        self.ui.actionVersion.setText(f"Version {DAVE.__version__}")
-        self.ui.actionOnline_help.triggered.connect(
-            lambda: subprocess.Popen("explorer https://usedave.nl")
-        )
 
-        # ======================= Code-highlighter ==============
+            self.ui.actionUndo.triggered.connect(self.undo)
+            self.ui.actionRedo.triggered.connect(self.redo)
 
-        font = QFont()
-        font.setPointSize(10)
-        font.setFamily("Consolas")
-        self.ui.teCode.setFont(font)
-        self.ui.teCode.setTabStopDistance(
-            QFontMetricsF(self.ui.teCode.font()).width(" ") * 4
-        )
-
-        self.highlight = PythonHighlighter(self.ui.teCode.document())
-
-        self.teCode_eventFilter = ShiftEnterKeyPressFilter()
-        self.teCode_eventFilter.callback = self.run_code_in_teCode
-        self.ui.teCode.installEventFilter(self.teCode_eventFilter)
-
-        # self.delete_eventFilter = DeleteEventFilter()
-        # self.delete_eventFilter.callback = self.delete_key
-        # self.MainWindow.installEventFilter(self.delete_eventFilter)
-
-        # ======================== Docks ====================
-        self.guiWidgets = dict()
-        """Dictionary of all created guiWidgets (dock-widgets)"""
-
-        # def set_pb_style(pb):
-        #     pb.setFlat(True)
-        #     pb.setCheckable(True)
-        #     pb.setAutoExclusive(True)
-        #     pb.setStyleSheet("text-decoration: underline;")
-        #     self.ui.toolBar.addWidget(pb)
-
-        # Workspace buttons
-        btnConstruct = QtWidgets.QPushButton()
-        btnConstruct.setText("&0. Library")
-        btnConstruct.clicked.connect(self.import_browser)
-        btnConstruct.setFlat(True)
-        self.ui.toolBar.addWidget(btnConstruct)
-
-        for i, button in enumerate(DAVE_GUI_WORKSPACE_BUTTONS):
-            name = button[0]
-            workspace_id = button[1]
-
-            btn = QtWidgets.QPushButton()
-            if i<9:
-                btn.setText(f'&{i+1} {name}')
-            else:
-                btn.setText(f'{i + 1} {name}')
-            btn.pressed.connect(lambda *args, wsid=workspace_id : self.activate_workspace(wsid))
-
-            # btn.setFlat(True)
-            btn.setCheckable(True)
-            btn.setAutoExclusive(True)
-            # btn.setStyleSheet("text-decoration: underline;")
-            self.ui.toolBar.addWidget(btn)
-            self.ui.toolBar.setMinimumHeight(btn.minimumSizeHint().height())
-
-        # self.ui.toolBar.layout().setContentsMargins(-2, 0, 0, 0)
-        self.ui.toolBar.setStyleSheet("QToolBar{spacing:0px;}")
-        # self.ui.toolBar
-
-        space = QtWidgets.QWidget()
-        space.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
-        )
-        self.ui.toolBar.addWidget(space)
-
-        self._active_workspace = None
-
-        # call plugin(s)
-
-        for plugin_init in DAVE_GUI_PLUGINS_INIT:
-            plugin_init(self)
-
-        # ---------- activate workspace (if any)
-
-        if workspace is None:
-            self.activate_workspace("CONSTRUCT")
         else:
-            self.activate_workspace(workspace)
+            # Client mode
+            self.guiWidgets = dict()
 
-        # ========== undo log =======
+            self.ui.frameAni.setVisible(False)
+            self.ui.dockWidget_2.setVisible(False)
+
+            self.scene.new_component('all', path = 'res: client_scene.dave')
+
+            self.show_guiWidget("Watches")
+            self._active_workspace = "Client"
 
 
+            self.guiSelectNode('all')
+            self.show_guiWidget("Properties")
 
-        self.ui.actionUndo.triggered.connect(self.undo)
-        self.ui.actionRedo.triggered.connect(self.redo)
+            self.guiEmitEvent(guiEventType.FULL_UPDATE)
+
 
         # ======================== Finalize ========================
         splash.finish(self.MainWindow)
@@ -2097,6 +2119,9 @@ class Gui:
         # at least a single prop is present
         #
         # we need to find the corresponding node
+
+        if self._client_mode:
+            return
 
         nodes = [self.visual.node_from_vtk_actor(prop) for prop in props]
         nodes = list(set(nodes)) # make unique

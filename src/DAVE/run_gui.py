@@ -47,7 +47,7 @@ def run():
     import numpy as np
 
     s = Scene()
-    g = Gui(s,splash=splash, app = app)
+    g = Gui(s,splash=splash, app = app, client_mode=True)
 
 
 if __name__ == '__main__':

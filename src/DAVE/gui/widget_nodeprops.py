@@ -2947,3 +2947,4 @@ class WidgetNodeProps(guiDockWidget):
 
         self.setUpdatesEnabled(True)
 
+DAVE_GUI_DOCKS['Properties'] = WidgetNodeProps
