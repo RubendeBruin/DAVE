@@ -782,8 +782,8 @@ def ballast_to_even_keel(bs: BallastSystem, delta_fill = 1, tolerance=0.01, pass
             if abs(f.trim) < tolerance:
                 break
 
-        if abs(f.heel) + abs(f.trim) > 1.1*(abs(old_heel) + abs(old_trim)):
+        if abs(f.heel) > abs(old_heel) and abs(f.trim) > abs(old_trim):
 
-            raise ValueError("Action did increase total absolute heel or trim by a factor 1.1 or more, stopping - use different tanks or change method?")
+            raise ValueError("Action did increase total absolute heel AND trim, stopping - use different tanks or change method?")
 
     return log
