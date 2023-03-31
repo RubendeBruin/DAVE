@@ -1,5 +1,6 @@
 call conda activate pyside2
 
+call pyside2-uic solverdialog_threaded.ui -o "..\src\DAVE\gui\forms\dlg_solver_threaded.py"
 echo call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
 echo call pyside2-uic widget_environment.ui -o "..\src\DAVE\gui\forms\widgetUI_environment.py"
 echo call pyside2-uic widget_modeshapes.ui -o "..\src\DAVE\gui\forms\widgetUI_modeshapes.py"

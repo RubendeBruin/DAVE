@@ -16,7 +16,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import List  # for python<3.9
 
-import pyo3d
+import DAVEcore as DC
 import numpy as np
 from DAVE.tools import *
 from os.path import isfile, split, dirname, exists
@@ -27,11 +27,11 @@ import datetime
 
 
 
-# we are wrapping all methods of pyo3d such that:
+# we are wrapping all methods of DAVEcore such that:
 # - it is more user-friendly
 # - code-completion is more robust
-# - we can do some additional checks. pyo3d is written for speed, not robustness.
-# - pyo3d is not a hard dependency
+# - we can do some additional checks. DAVEcore is written for speed, not robustness.
+# - DAVEcore is not a hard dependency
 #
 # notes and choices:
 # - properties are returned as tuple to make sure they are not editable.
@@ -4112,7 +4112,7 @@ class TriMeshSource():  # not an instance of Node
         try:
             volume = tm.Volume()
         except:
-            volume = 1  # no available in every pyo3d yet
+            volume = 1  # no available in every DAVEcore yet
 
         if volume < 0:
             messages.append(
@@ -6785,7 +6785,7 @@ class Component(Manager, Frame):
 
 # =================== None-Node Classes
 
-"""This is a container for a pyo3d.MomentDiagram object providing plot methods"""
+"""This is a container for a DC.MomentDiagram object providing plot methods"""
 
 
 class LoadShearMomentDiagram:
@@ -6793,7 +6793,7 @@ class LoadShearMomentDiagram:
         """
 
         Args:
-            datasource: pyo3d.MomentDiagram object
+            datasource: DC.MomentDiagram object
         """
 
         self.datasource = datasource

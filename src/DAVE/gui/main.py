@@ -133,8 +133,10 @@ from DAVE.gui.widget_tank_order import WidgetTankOrder
 from DAVE.gui.widget_rigg_it_right import WidgetQuickActions
 from DAVE.gui.widget_environment import WidgetEnvironment
 from DAVE.gui.widget_dof_edit import WidgetDOFEditor
+from DAVE.gui.forms.dlg_solver_threaded import Ui_SolverDialogThreaded
 
 import numpy as np
+import DAVEcore
 
 # resources
 import DAVE.gui.forms.resources_rc
@@ -182,6 +184,14 @@ class SolverDialog(QDialog, Ui_Dialog):
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.setWindowIcon(QIcon(":/icons/cube.png"))
 
+class SolverDialog_threaded(QDialog, Ui_SolverDialogThreaded):
+    def __init__(self, parent=None):
+        super(SolverDialog_threaded, self).__init__(parent)
+        Ui_Dialog.__init__(self)
+        self.setupUi(self)
+        self.setWindowFlag(Qt.WindowCloseButtonHint, False)
+        self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
+        self.setWindowIcon(QIcon(":/icons/cube.png"))
 
 class SettingsDialog(QDialog, Ui_frmSettings):
     def __init__(self, scene, gui, parent=None):
@@ -305,6 +315,9 @@ class Gui:
 
         self.scene = scene
         """Reference to a scene"""
+
+        self._solver_votality = 50 # default votality for the solver
+
         self.scene.gui_solve_func = self.solve_statics_using_gui_on_scene
 
         self.modelfilename = None
@@ -1529,52 +1542,140 @@ class Gui:
             return True
 
         self._dialog = None
+        result = False # default
 
-        # define the terminate control
-        self._terminate = False
+        if scene_to_solve.USE_NEW_SOLVER:
 
-        def should_we_stop():
-            return self._terminate
+            D0 = self.scene._vfc.get_dofs()
 
-        # define the feedback control
-        self._feedbackcounter = 0
+            self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
+            self.__BackgroundSolver.Start()
 
-        def feedback(message):
+            dialog = SolverDialog_threaded()
+            dialog.pbAccept.setEnabled(False)
+            dialog.frame.setVisible(False)
 
-            self._feedbackcounter += 1  # skip the first
-            if self._feedbackcounter < 2:
-                return
+            def show_settings(*args):
+                dialog.frame.setVisible(True)
 
-            if self._dialog is None:
-                self._dialog = SolverDialog()
-                self._dialog.btnTerminate.clicked.connect(self.stop_solving)
-                self._dialog.label.setText(self.scene.solve_activity_desc)
-                self._dialog.show()
+            dialog.pbShowControls.clicked.connect(show_settings)
 
-            self._dialog.label_2.setText(message)
+            def terminate(*args):
+                self.__BackgroundSolver.Stop()
 
-            self._dialog.update()
+                # restore original state
+                self.scene._vfc.set_dofs(D0)
+                self.visual.position_visuals()
+                self.visual.refresh_embeded_view()
+                result = False
 
-            self.visual.position_visuals()
-            self.visual.refresh_embeded_view()
-            self.app.processEvents()
 
-        # execute the solver
-        result = scene_to_solve._solve_statics_with_optional_control(
-            feedback_func=feedback,
-            do_terminate_func=should_we_stop,
-            timeout_s=timeout_s,
-        )
+            dialog.pbTerminate.clicked.connect(terminate)
 
-        # close the dialog.
-        # if this was a short solve,
-        if self._dialog is not None:
-            self._dialog.close()
+            def reset(*args):
+                self.scene._vfc.set_dofs(D0)
+                self.__BackgroundSolver.Stop()
+                self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
+                self.__BackgroundSolver.votality = self._solver_votality
+                self.__BackgroundSolver.Start()
 
-        else:  # animate the change
-            if DAVE.settings.GUI_DO_ANIMATE and called_by_user:
-                new_dofs = scene_to_solve._vfc.get_dofs()
-                self.animate_change(old_dofs, new_dofs, 10)
+            dialog.pbReset.clicked.connect(reset)
+
+            def accept(*args):
+                dofs = self.__BackgroundSolver.DOFs
+                self.__BackgroundSolver.Stop()
+                self.scene._vfc.set_dofs(dofs)
+
+            dialog.pbAccept.clicked.connect(accept)
+
+            def change_votality(position, *args):
+                self.__BackgroundSolver.votality = position
+                self._solver_votality = position
+                dialog.lbVotality.setText(f"{position}%")
+
+            dialog.votalitySlider.valueChanged.connect(change_votality)
+
+            dialog.votalitySlider.setSliderPosition(self._solver_votality)
+
+            dialog.show()
+            self.MainWindow.setEnabled(False)
+
+
+            while self.__BackgroundSolver.Running:
+                dofs = self.__BackgroundSolver.DOFs
+                if dofs:
+                    dialog.pbAccept.setEnabled(True)
+
+                    dialog.lbInfo.setText(f"Error norm = {self.__BackgroundSolver.Enorm:.6e}\nError max-abs {self.__BackgroundSolver.Emaxabs:.6e}\nMaximum error at {self.__BackgroundSolver.Emaxabs_where}")
+
+                    self.scene._vfc.set_dofs(dofs)
+                    self.visual.position_visuals()
+                    self.visual.refresh_embeded_view()
+
+
+                self.app.processEvents()
+
+            if self.__BackgroundSolver.Converged:
+                dofs = self.__BackgroundSolver.DOFs
+                self.scene._vfc.set_dofs(dofs)
+                self.scene.update()
+                self.give_feedback(f"Converged with Error norm = {self.__BackgroundSolver.Enorm} | max-abs {self.__BackgroundSolver.Emaxabs} in {self.__BackgroundSolver.Emaxabs_where}")
+                result = True
+
+            dialog.close()
+            self.MainWindow.setEnabled(True)
+
+
+
+
+
+        else:
+            # define the terminate control
+            self._terminate = False
+
+            def should_we_stop():
+                return self._terminate
+
+            # define the feedback control
+            self._feedbackcounter = 0
+
+            def feedback(message):
+
+                self._feedbackcounter += 1  # skip the first
+                if self._feedbackcounter < 2:
+                    return
+
+                if self._dialog is None:
+                    self._dialog = SolverDialog()
+                    self._dialog.btnTerminate.clicked.connect(self.stop_solving)
+                    self._dialog.label.setText(self.scene.solve_activity_desc)
+                    self._dialog.show()
+
+                self._dialog.label_2.setText(message)
+
+                self._dialog.update()
+
+                self.visual.position_visuals()
+                self.visual.refresh_embeded_view()
+                self.app.processEvents()
+
+            # execute the solver
+            result = scene_to_solve._solve_statics_with_optional_control(
+                feedback_func=feedback,
+                do_terminate_func=should_we_stop,
+                timeout_s=timeout_s,
+            )
+
+
+            # close the dialog.
+            # if this was a short solve,
+            if self._dialog is not None:
+                self._dialog.close()
+
+            else:  # animate the change
+                if DAVE.settings.GUI_DO_ANIMATE and called_by_user:
+                    new_dofs = scene_to_solve._vfc.get_dofs()
+                    self.animate_change(old_dofs, new_dofs, 10)
 
         if called_by_user:
             self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
