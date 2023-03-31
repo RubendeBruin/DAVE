@@ -1362,6 +1362,11 @@ class Scene:
         # # fallback to normal solve if feedback and control arguments are not provided
         # if feedback_func is None or do_terminate_func is None:
         #     return self.solve_statics()
+        self._vfc.state_update()
+
+        if self._vfc.n_dofs() == 0:  # check for the trivial case
+            self.update()
+            return True
 
         # Two quick helper functions for running in controlled mode
         def give_feedback(txt):

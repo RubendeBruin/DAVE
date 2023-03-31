@@ -1546,6 +1546,8 @@ class Gui:
 
         if scene_to_solve.USE_NEW_SOLVER:
 
+            start_time = datetime.datetime.now()
+
             D0 = self.scene._vfc.get_dofs()
 
             self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
@@ -1597,21 +1599,32 @@ class Gui:
 
             dialog.votalitySlider.setSliderPosition(self._solver_votality)
 
-            dialog.show()
+
             self.MainWindow.setEnabled(False)
+            dialog_open = False
 
 
             while self.__BackgroundSolver.Running:
+                time_diff = (datetime.datetime.now() - start_time)
+                secs = time_diff.total_seconds()
+
                 dofs = self.__BackgroundSolver.DOFs
                 if dofs:
                     dialog.pbAccept.setEnabled(True)
 
                     dialog.lbInfo.setText(f"Error norm = {self.__BackgroundSolver.Enorm:.6e}\nError max-abs {self.__BackgroundSolver.Emaxabs:.6e}\nMaximum error at {self.__BackgroundSolver.Emaxabs_where}")
 
-                    self.scene._vfc.set_dofs(dofs)
-                    self.visual.position_visuals()
-                    self.visual.refresh_embeded_view()
+                    if secs > 0.5:  # else use animation
+                        self.scene._vfc.set_dofs(dofs)
+                        self.visual.position_visuals()
+                        self.visual.refresh_embeded_view()
 
+                dialog.setWindowOpacity(min(secs-0.1,1))  # fade in the window slowly
+
+                if secs > 0.1:  # and open only after 0.1 seconds
+                    if not dialog_open:
+                        dialog.show()
+                        dialog_open = True
 
                 self.app.processEvents()
 
@@ -1622,10 +1635,18 @@ class Gui:
                 self.give_feedback(f"Converged with Error norm = {self.__BackgroundSolver.Enorm} | max-abs {self.__BackgroundSolver.Emaxabs} in {self.__BackgroundSolver.Emaxabs_where}")
                 result = True
 
-            dialog.close()
+            if dialog_open:
+                dialog.close()
+
             self.MainWindow.setEnabled(True)
 
-
+            # Animate if little time has passed
+            time_diff = (datetime.datetime.now() - start_time)
+            secs = time_diff.total_seconds()
+            if secs < 0.5:
+                if DAVE.settings.GUI_DO_ANIMATE and called_by_user:
+                    new_dofs = scene_to_solve._vfc.get_dofs()
+                    self.animate_change(D0, new_dofs, 10)
 
 
 
