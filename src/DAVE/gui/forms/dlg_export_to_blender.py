@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'dlg_export_to_blender.ui',
 # licensing of 'dlg_export_to_blender.ui' applies.
 #
-# Created: Fri Mar 31 17:25:12 2023
+# Created: Fri Mar 31 20:10:03 2023
 #      by: pyside2-uic  running on PySide2 5.13.2
 #
 # WARNING! All changes made in this file will be lost!

@@ -108,6 +108,14 @@ ENVIRONMENT_PROPERTIES = (
 )
 """A list of all environment setting properties as available in Scene"""
 
+# ============== SOLVER ===========
+
+DAVE_DEFAULT_SOLVER_MOBILITY = 60
+"""Mobility of the solver"""
+
+DAVE_DEFAULT_SOLVER_TOLERANCE = 1e-4
+"""Tolerance"""
+
 
 
 print('default resource folders:')

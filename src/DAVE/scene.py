@@ -12,7 +12,7 @@ import functools
 
 import DAVEcore as DC
 
-import DAVE.settings as vfc
+from DAVE.settings import DAVE_DEFAULT_SOLVER_MOBILITY, DAVE_DEFAULT_SOLVER_TOLERANCE, RESOURCE_PATH
 from DAVE.tools import *
 
 from .nodes import *
@@ -83,12 +83,15 @@ class Scene:
         self._nodes = []
         """Contains a list of all nodes in the scene"""
 
-        self.static_tolerance = 0.01
+        self.static_tolerance = DAVE_DEFAULT_SOLVER_TOLERANCE
         """Desired tolerance when solving statics"""
+
+        self.solver_mobility = DAVE_DEFAULT_SOLVER_MOBILITY
+        """Mobility setting for the solver"""
 
         self.resources_paths = []
         """A list of paths where to look for resources such as .obj files. Priority is given to paths earlier in the list."""
-        self.resources_paths.extend(vfc.RESOURCE_PATH)
+        self.resources_paths.extend(RESOURCE_PATH)
 
         if resource_paths is not None:
             for rp in resource_paths:
@@ -1395,6 +1398,8 @@ class Scene:
                 timeout_s = 0.1
 
             BackgroundSolver = DC.BackgroundSolver(self._vfc)
+            BackgroundSolver.tolerance = self.static_tolerance
+            BackgroundSolver.mobility = self.solver_mobility
             BackgroundSolver.Start()
 
             while BackgroundSolver.Running:

@@ -316,7 +316,7 @@ class Gui:
         self.scene = scene
         """Reference to a scene"""
 
-        self._solver_votality = 50 # default votality for the solver
+        self._solver_mobility = vfc.DAVE_DEFAULT_SOLVER_MOBILITY # default mobility for the solver
 
         self.scene.gui_solve_func = self.solve_statics_using_gui_on_scene
 
@@ -1578,7 +1578,7 @@ class Gui:
                 self.scene._vfc.set_dofs(D0)
                 self.__BackgroundSolver.Stop()
                 self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
-                self.__BackgroundSolver.votality = self._solver_votality
+                self.__BackgroundSolver.mobility = self._solver_mobility
                 self.__BackgroundSolver.Start()
 
             dialog.pbReset.clicked.connect(reset)
@@ -1590,14 +1590,14 @@ class Gui:
 
             dialog.pbAccept.clicked.connect(accept)
 
-            def change_votality(position, *args):
-                self.__BackgroundSolver.votality = position
-                self._solver_votality = position
-                dialog.lbVotality.setText(f"{position}%")
+            def change_mobility(position, *args):
+                self.__BackgroundSolver.mobility = position
+                self._solver_mobility = position
+                dialog.lbMobility.setText(f"{position}%")
 
-            dialog.votalitySlider.valueChanged.connect(change_votality)
+            dialog.mobilitySlider.valueChanged.connect(change_mobility)
 
-            dialog.votalitySlider.setSliderPosition(self._solver_votality)
+            dialog.mobilitySlider.setSliderPosition(self._solver_mobility)
 
 
             self.MainWindow.setEnabled(False)
