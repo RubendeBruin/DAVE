@@ -1338,7 +1338,7 @@ class Scene:
         self._vfc.state_update()
 
     def _solve_statics_with_optional_control(
-        self, feedback_func=None, do_terminate_func=None, timeout_s=1
+        self, feedback_func=None, do_terminate_func=None, timeout_s=1, terminate_after_s = 30,
     ):
         """Solves statics with a time-out and feedback/terminate functions.
 
@@ -1382,8 +1382,6 @@ class Scene:
             else:
                 return False
 
-        self.update()
-
         if timeout_s is None:
             timeout_s = -1
 
@@ -1393,6 +1391,8 @@ class Scene:
             # construct a background solver
             # start it
             # wait till it completes or it is cancelled
+
+            start_time = datetime.datetime.now()
 
             if timeout_s < 0:
                 timeout_s = 0.1
@@ -1414,11 +1414,17 @@ class Scene:
                 info = f"Error = {BackgroundSolver.Enorm:.6e}(norm) , {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
                 give_feedback(info)
 
+                time_diff = (datetime.datetime.now() - start_time)
+                secs = time_diff.total_seconds()
+                if secs > terminate_after_s:
+                    raise ValueError(f"Solver maximum time of {terminate_after_s} exceeded - set terminate_after_s to change the allowed time for the solver.")
+
             info = f"Converged within tolerance of {BackgroundSolver.tolerance} with E : {BackgroundSolver.Enorm:.6e}(norm) / {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
             give_feedback(info)
 
             if BackgroundSolver.Converged:
-                self._vfc.set_dofs(BackgroundSolver.DOFs)
+                BackgroundSolver.CopyStateTo(self._vfc)
+
                 self.update()
                 return True
             else:
@@ -1429,6 +1435,7 @@ class Scene:
             # solve_func = lambda: self._vfc.state_solve_statics_with_timeout(
             #     True, timeout_s, True, True, 0
             # )  # 0 = default stability value
+            self.update()
 
             phase = 1
             original_dofs_dict = None

@@ -1551,6 +1551,7 @@ class Gui:
             D0 = self.scene._vfc.get_dofs()
 
             self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
+            self.__BackgroundSolver.mobility = self._solver_mobility
             self.__BackgroundSolver.Start()
 
             dialog = SolverDialog_threaded()

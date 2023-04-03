@@ -4990,6 +4990,15 @@ class Manager(Node, ABC):
                 node.name = new_name + node.name[n:]
 
 
+    def _rename_all_created_nodes(self, old_name, new_name):
+        """Helper to quickly rename all created nodes"""
+
+        with ClaimManagement(self._scene, self):
+            for node in self.created_nodes():
+                n = len(old_name)
+                assert node.name[:n] == old_name
+                node.name = new_name + node.name[n:]
+
 class GeometricContact(Manager):
     """
     GeometricContact
@@ -5107,6 +5116,9 @@ class GeometricContact(Manager):
     @name.setter
     def name(self, value):
         assert self._scene.name_available(value), f"Name {value} already in use"
+
+        # not all managed nodes are created
+        self._rename_all_created_nodes(self._name, value)
 
         self._name = value
 
@@ -5367,13 +5379,17 @@ class GeometricContact(Manager):
     def depends_on(self):
         return [self._parent_circle, self._child_circle]
 
-    def creates(self, node: Node):
-        return node in [
+    def created_nodes(self):
+        """Nodes created by the geometric contact - Note that this is different from managed nodes"""
+        return (
             self._axis_on_parent,
             self._axis_on_child,
             self._pin_hole_connection,
             self._connection_axial_rotation,
-        ]
+        )
+
+    def creates(self, node: Node):
+        return node in self.created_nodes()
 
     @node_setter_manageable
     def flip(self):
