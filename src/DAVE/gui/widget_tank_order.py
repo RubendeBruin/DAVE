@@ -79,3 +79,4 @@ class WidgetTankOrder(guiDockWidget):
 
 
 
+DAVE_GUI_DOCKS['TankReOrder'] = WidgetTankOrder

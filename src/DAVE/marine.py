@@ -695,7 +695,7 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
     return r
 
 
-def ballast_to_even_keel(bs: BallastSystem, delta_fill = 1, tolerance=0.1, passive_only = False, deballast = False):
+def ballast_to_even_keel(bs: BallastSystem, delta_fill = 1, tolerance=0.01, passive_only = False, deballast = False):
     """Adds `delta_fill` fill to the tank at the highest projected elevation until parent
     of ballast-system is within heel and trim tolerance.
 
@@ -718,6 +718,9 @@ def ballast_to_even_keel(bs: BallastSystem, delta_fill = 1, tolerance=0.1, passi
         lowest_tank = None
 
         for tank in bs.tanks:
+
+            if bs.is_frozen(tank.name):
+                continue
 
             if not passive_only or (tank.level_global < 0):  # only passive filling
                 if tank.fill_pct <= 100 - (delta_fill+1e-6):
@@ -750,11 +753,11 @@ def ballast_to_even_keel(bs: BallastSystem, delta_fill = 1, tolerance=0.1, passi
             highest_tank.fill_pct += delta_fill
 
         old_heel = f.heel
-        old_from = f.trim
+        old_trim = f.trim
 
         s.solve_statics(silent=True)
 
-        if (f.heel * old_heel) < 0 and (f.trim*old_from < 0): # overshoot!
+        if (f.heel * old_heel) < 0 and (f.trim*old_trim < 0): # overshoot!
             # undo and lower fill_pct
 
             if deballast:
@@ -778,5 +781,9 @@ def ballast_to_even_keel(bs: BallastSystem, delta_fill = 1, tolerance=0.1, passi
         if abs(f.heel) < tolerance:
             if abs(f.trim) < tolerance:
                 break
+
+        if abs(f.heel) > abs(old_heel) and abs(f.trim) > abs(old_trim):
+
+            raise ValueError("Action did increase total absolute heel AND trim, stopping - use different tanks or change method?")
 
     return log

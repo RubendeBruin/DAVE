@@ -34,7 +34,8 @@ class WidgetWatches(guiDockWidget):
 
         # manual:
 
-        self.flow_layout = FlowLayout()
+        # self.flow_layout = FlowLayout()
+        self.flow_layout = QtWidgets.QVBoxLayout()
         self.contents.setLayout(self.flow_layout)
 
         self.slider = QtWidgets.QSlider()
@@ -262,3 +263,6 @@ class WidgetWatches(guiDockWidget):
 
             menu.exec_(event.globalPos())
 
+# REGISTER
+
+DAVE_GUI_DOCKS['Watches'] = WidgetWatches

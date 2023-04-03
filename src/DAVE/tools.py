@@ -282,3 +282,8 @@ def remove_duplicates_from_list_keep_order(seq):
     seen_add = seen.add
     return [x for x in seq if not (x in seen or seen_add(x))]
 
+def sort_by_name(nodes):
+    """Returns a sorted list of nodes by name in alphabetical order"""
+    nodes = list(nodes)
+    nodes.sort(key=lambda x: x.name, reverse=False)
+    return nodes

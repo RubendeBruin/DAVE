@@ -113,3 +113,4 @@ class WidgetBallastSolver(guiDockWidget):
         self.determineRequiredBallast()
         self.solveBallast()
 
+DAVE_GUI_DOCKS['Ballast Solver'] = WidgetBallastSolver

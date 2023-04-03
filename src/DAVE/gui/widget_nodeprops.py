@@ -33,7 +33,8 @@ from DAVE.gui.helpers.nodelist_drag_drop_move import call_from_drop_Event, call_
 from DAVE.gui.helpers.property_editor import PropertyEditorDialog
 
 from DAVE.visual import transform_from_node
-from DAVE.gui.helpers.my_qt_helpers import BlockSigs, update_combobox_items_with_completer, EnterKeyPressFilter
+from DAVE.gui.helpers.my_qt_helpers import BlockSigs, update_combobox_items_with_completer, EnterKeyPressFilter, \
+    RightClickEventFilter
 import numpy as np
 
 from PySide2.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox, QDesktopWidget, QColorDialog, \
@@ -282,6 +283,11 @@ class EditNode(NodeEditor):
         self.eventFilter.callback = self.nameChangedEnter
         self.ui.tbName.installEventFilter(self.eventFilter)
 
+        self.rightclickfilter = RightClickEventFilter()
+        self.rightclickfilter.callback = self.mouse_event_on_tbName
+        self.ui.tbName.installEventFilter(self.rightclickfilter)
+
+
     def post_update_event(self):
 
         self.ui.tbName.blockSignals(True)
@@ -332,6 +338,28 @@ class EditNode(NodeEditor):
             code = element + ".visible = {}".format(new_visible)
             self.run_code(code, guiEventType.VIEWER_SETTINGS_UPDATE)
 
+    def mouse_event_on_tbName(self, mouseEvent, **kwargs):
+
+        if mouseEvent.button() == QtCore.Qt.MouseButton.RightButton:
+            self.name_right_clicked(mouseEvent.pos())
+            mouseEvent.setAccepted(True)
+
+    def name_right_clicked(self, point, **kwargs):
+        globLoc = self.ui.tbName.mapToGlobal(point)
+
+        menu = QtWidgets.QMenu()
+
+        def copy():
+            QApplication.instance().clipboard().setText(self.ui.tbName.text())
+
+        def copys():
+            QApplication.instance().clipboard().setText(f"s['{self.ui.tbName.text()}']")
+
+        menu.addAction("copy name", copy)
+        menu.addAction("copy s['name']", copys)
+        menu.exec_(globLoc)
+
+
     def color_clicked(self, mouseEvent, **kwargs):
 
         if mouseEvent.button() == QtCore.Qt.MouseButton.RightButton:
@@ -340,7 +368,6 @@ class EditNode(NodeEditor):
             self.ui.lbColor.setStyleSheet('')
             self.ui.lbColor.setText(str('default'))
             return
-
 
         if self.node.color is not None:
             qcolor = QColor(*self.node.color)
