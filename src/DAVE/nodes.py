@@ -16,22 +16,23 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import List  # for python<3.9
 
-import pyo3d
+import DAVEcore as DC
 import numpy as np
 from DAVE.tools import *
 from os.path import isfile, split, dirname, exists
 from os import listdir
 from pathlib import Path
 import datetime
+import DAVE.settings as vfc
 
 
 
 
-# we are wrapping all methods of pyo3d such that:
+# we are wrapping all methods of DAVEcore such that:
 # - it is more user-friendly
 # - code-completion is more robust
-# - we can do some additional checks. pyo3d is written for speed, not robustness.
-# - pyo3d is not a hard dependency
+# - we can do some additional checks. DAVEcore is written for speed, not robustness.
+# - DAVEcore is not a hard dependency
 #
 # notes and choices:
 # - properties are returned as tuple to make sure they are not editable.
@@ -4112,7 +4113,7 @@ class TriMeshSource():  # not an instance of Node
         try:
             volume = tm.Volume()
         except:
-            volume = 1  # no available in every pyo3d yet
+            volume = 1  # no available in every DAVEcore yet
 
         if volume < 0:
             messages.append(
@@ -4997,6 +4998,15 @@ class Manager(Node, ABC):
                 node.name = new_name + node.name[n:]
 
 
+    def _rename_all_created_nodes(self, old_name, new_name):
+        """Helper to quickly rename all created nodes"""
+
+        with ClaimManagement(self._scene, self):
+            for node in self.created_nodes():
+                n = len(old_name)
+                assert node.name[:n] == old_name
+                node.name = new_name + node.name[n:]
+
 class GeometricContact(Manager):
     """
     GeometricContact
@@ -5114,6 +5124,9 @@ class GeometricContact(Manager):
     @name.setter
     def name(self, value):
         assert self._scene.name_available(value), f"Name {value} already in use"
+
+        # not all managed nodes are created
+        self._rename_all_created_nodes(self._name, value)
 
         self._name = value
 
@@ -5374,13 +5387,17 @@ class GeometricContact(Manager):
     def depends_on(self):
         return [self._parent_circle, self._child_circle]
 
-    def creates(self, node: Node):
-        return node in [
+    def created_nodes(self):
+        """Nodes created by the geometric contact - Note that this is different from managed nodes"""
+        return (
             self._axis_on_parent,
             self._axis_on_child,
             self._pin_hole_connection,
             self._connection_axial_rotation,
-        ]
+        )
+
+    def creates(self, node: Node):
+        return node in self.created_nodes()
 
     @node_setter_manageable
     def flip(self):
@@ -6793,7 +6810,7 @@ class Component(Manager, Frame):
 
 # =================== None-Node Classes
 
-"""This is a container for a pyo3d.MomentDiagram object providing plot methods"""
+"""This is a container for a DC.MomentDiagram object providing plot methods"""
 
 
 class LoadShearMomentDiagram:
@@ -6801,7 +6818,7 @@ class LoadShearMomentDiagram:
         """
 
         Args:
-            datasource: pyo3d.MomentDiagram object
+            datasource: DC.MomentDiagram object
         """
 
         self.datasource = datasource

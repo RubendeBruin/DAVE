@@ -1,5 +1,5 @@
 """
-This module tries to import pyo3d. If it can not be imported, then it attempts to download is after the user
+This module tries to import DAVEcore. If it can not be imported, then it attempts to download is after the user
 accepts it.
 
 This module is imported by the Gui, so it only works when using the gui. It needs to because it uses a popup for
@@ -16,7 +16,7 @@ Only supported on windows
   Ruben de Bruin - 2020
 """
 
-MINIMUM_REQUIRED_VERSION_PYO3D = 2.4 # cable weight
+MINIMUM_REQUIRED_VERSION_DAVEcore = 1.0 # cable weight
 
 import os
 import sys
@@ -24,7 +24,7 @@ from pathlib import Path
 
 path = os.path.dirname(os.path.dirname(__file__))
 
-version_file = Path(path) / "pyo3d.version"
+version_file = Path(path) / "DAVEcore.version"
 
 try:
     with open(version_file, "r") as f:
@@ -34,24 +34,24 @@ except:
 
 
 minor = sys.version_info.minor
-filename = f"pyo3d.cp3{minor}-win_amd64.pyd"
+filename = f"DAVEcore.cp3{minor}-win_amd64.pyd"
 
 target = path + "\\" + filename
 
-if version < MINIMUM_REQUIRED_VERSION_PYO3D:
+if version < MINIMUM_REQUIRED_VERSION_DAVEcore:
     if Path(target).exists():
-        print(f"Outdated version of pyo3d found on system - removing : {target}")
+        print(f"Outdated version of DAVEcore found on system - removing : {target}")
         os.remove(target)
 
 try:
-    import pyo3d
+    import DAVEcore
 
     try:
-        version = pyo3d.version()
-        print(f"Equilibrium-core version = {version} from {pyo3d.__file__}")
-        if version < MINIMUM_REQUIRED_VERSION_PYO3D:
+        version = DAVEcore.version()
+        print(f"DAVEcore version = {version} from {DAVEcore.__file__}")
+        if version < MINIMUM_REQUIRED_VERSION_DAVEcore:
             raise ValueError(
-                f"The version of pyo3d found here: {pyo3d.__file__} does not meet the minimum version requirement {MINIMUM_REQUIRED_VERSION_PYO3D}.\n"
+                f"The version of DAVEcore found here: {DAVEcore.__file__} does not meet the minimum version requirement {MINIMUM_REQUIRED_VERSION_DAVEcore}.\n"
                 "Advise to remove the beforementioned file and then restart DAVE to let it automatically download a more recent version"
             )
 
@@ -73,7 +73,7 @@ except ImportError as err:
         print("If problems persist then removing this file from your system may help")
 
     print(
-        "The required version of pyo3d is not found on your system. No problem, we can download and install it automatically for you, proceed?"
+        "The required version of DAVEcore is not found on your system. No problem, we can download and install it automatically for you, proceed?"
     )
 
     import urllib.request
@@ -111,7 +111,7 @@ except ImportError as err:
     layout = QVBoxLayout()
     label = QLabel(dlg)
     label.setText(
-        f"Equilibrium core (pyo3d) was not found on your system.\nNo problem, we can download it automatically\n\nFile will be downloaded from:\n{url} \n\nand will be saved as:\n{target}"
+        f"Equilibrium core (DAVEcore) was not found on your system.\nNo problem, we can download it automatically\n\nFile will be downloaded from:\n{url} \n\nand will be saved as:\n{target}"
     )
     layout.addWidget(label)
 
@@ -126,9 +126,9 @@ except ImportError as err:
     dlg.setLayout(layout)
     dlg.exec_()
 
-    import pyo3d
+    import DAVEcore
 
-    version = pyo3d.version()
+    version = DAVEcore.version()
 
     with open(version_file, "w") as f:
         f.write(str(version))

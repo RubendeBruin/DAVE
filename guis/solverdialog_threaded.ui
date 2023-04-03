@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SolverDialogThreaded</class>
+ <widget class="QDialog" name="SolverDialogThreaded">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>569</width>
+    <height>532</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Finding equilibrium state</string>
+  </property>
+  <property name="windowOpacity">
+   <double>0.010000000000000</double>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="5" column="1">
+    <widget class="QPushButton" name="pbTerminate">
+     <property name="text">
+      <string>Cancel</string>
+     </property>
+     <property name="default">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Details of actual state:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <widget class="QFrame" name="frame">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="3" column="1">
+       <widget class="QLabel" name="label_7">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(45, 165, 79);</string>
+        </property>
+        <property name="text">
+         <string>Usual sweet spot</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="3">
+       <widget class="QSlider" name="mobilitySlider">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2">
+       <widget class="QLabel" name="label_6">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 150, 2);</string>
+        </property>
+        <property name="text">
+         <string>Fast but Funky</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" colspan="3">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Press &quot;reset&quot; to restart the solver from its initial position with its current settings.</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QPushButton" name="pbReset">
+        <property name="text">
+         <string>Reset solver to initial state</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(85, 0, 255);</string>
+        </property>
+        <property name="text">
+         <string>Slow and Steady</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QLabel" name="lbMobility">
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="3">
+       <widget class="QWidget" name="widget" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Slow and Steady (low exploration rate)
++ Good when looking for an equilibrium position with low stability
++ Looks very thoroughly for a solution before going to the next location
+- can converge slowly when set to extreme conditions. 
+
+Move the handle this way if the solver converges to an equilibrium position too far away from the start position or when it keeps jumping around.</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="Line" name="line">
+           <property name="lineWidth">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>Fast and Funky (high exploration rate)
++ can be useful for highly coupled systems with stiff interaction between degrees of freedom.
+- can cause the solver to converge to an equilibrium position further away from the start position.
+- can converge slowly or not at all when set to extreme conditions.
+
+Move the handle this way if the solver moves very slowly towards its equilibrium position.</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="3">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>These settings are applied instantly when the slider is moved.</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="3">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Use the slider to adjust the mobility of the solver.</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <widget class="QLabel" name="lbInfo">
+     <property name="text">
+      <string>ABS
+NORM
+WHERE</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QPushButton" name="pbShowControls">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 255);
+text-decoration: underline;</string>
+     </property>
+     <property name="text">
+      <string>Show solver controls</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0" colspan="2">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>This window automatically closes when solving is complete.</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QPushButton" name="pbAccept">
+     <property name="text">
+      <string>Accept current state</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>pbAccept</tabstop>
+  <tabstop>pbTerminate</tabstop>
+  <tabstop>pbShowControls</tabstop>
+  <tabstop>mobilitySlider</tabstop>
+  <tabstop>pbReset</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

@@ -317,7 +317,7 @@ def apply_parent_translation_on_transform(parent, t: vtk.vtkTransform):
 
 
 def actor_from_trimesh(trimesh):
-    """Creates a vedo.Mesh from a pyo3d.TriMesh"""
+    """Creates a vedo.Mesh from a DAVEcore.TriMesh"""
 
     if trimesh.nFaces == 0:
         return vp.Cube(side=0.00001)

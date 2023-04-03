@@ -5,39 +5,29 @@
 
   Ruben de Bruin - 2019
 """
-# import fnmatch
-# import glob
-# import warnings
-# from abc import ABC, abstractmethod
-# from enum import Enum
-# from typing import List  # for python<3.9
 import weakref
+from time import sleep
 from typing import Tuple
+import functools
 
-import pyo3d
-# import numpy as np
-import DAVE.settings as vfc
+import DAVEcore as DC
+
+from DAVE.settings import DAVE_DEFAULT_SOLVER_MOBILITY, DAVE_DEFAULT_SOLVER_TOLERANCE, RESOURCE_PATH
 from DAVE.tools import *
-# from os.path import isfile, split, dirname, exists
-# from os import listdir
-# from pathlib import Path
-# import datetime
 
 from .nodes import *
 from .nodes import _Area
 
-# we are wrapping all methods of pyo3d such that:
+# we are wrapping all methods of DAVEcore such that:
 # - it is more user-friendly
 # - code-completion is more robust
-# - we can do some additional checks. pyo3d is written for speed, not robustness.
-# - pyo3d is not a hard dependency
+# - we can do some additional checks. DAVEcore is written for speed, not robustness.
+# - DAVEcore is not a hard dependency
 #
 # notes and choices:
 # - properties are returned as tuple to make sure they are not editable.
 #    --> node.position[2] = 5 is not allowed
 
-
-import functools
 
 from .tools import assert1f
 
@@ -47,7 +37,7 @@ class Scene:
     A Scene is the main component of DAVE.
 
     It provides a world to place nodes (elements) in.
-    It interfaces with the equilibrium core for all calculations.
+    It interfaces with DAVEcore for all calculations.
 
     By convention a Scene element is created with the name s, but create as many scenes as you want.
 
@@ -82,21 +72,26 @@ class Scene:
                 "Only one of the named arguments (filename OR copy_from OR code) can be used"
             )
 
+        self.USE_NEW_SOLVER = True
+
         self.verbose = True
         """Report actions using print()"""
 
-        self._vfc = pyo3d.Scene()
+        self._vfc = DC.Scene()
         """_vfc : DAVE Core, where the actual magic happens"""
 
         self._nodes = []
         """Contains a list of all nodes in the scene"""
 
-        self.static_tolerance = 0.01
+        self.static_tolerance = DAVE_DEFAULT_SOLVER_TOLERANCE
         """Desired tolerance when solving statics"""
+
+        self.solver_mobility = DAVE_DEFAULT_SOLVER_MOBILITY
+        """Mobility setting for the solver"""
 
         self.resources_paths = []
         """A list of paths where to look for resources such as .obj files. Priority is given to paths earlier in the list."""
-        self.resources_paths.extend(vfc.RESOURCE_PATH)
+        self.resources_paths.extend(RESOURCE_PATH)
 
         if resource_paths is not None:
             for rp in resource_paths:
@@ -155,7 +150,7 @@ class Scene:
 
         self.t = None  # reset timelines (if any)
 
-        self._vfc = pyo3d.Scene()
+        self._vfc = DC.Scene()
 
     # =========== settings =============
 
@@ -1342,14 +1337,8 @@ class Scene:
             n.update()
         self._vfc.state_update()
 
-    def _solve_debug_tiny_step(self, s=0.001):
-
-        self._solve_statics_with_optional_control(
-            do_terminate_func=lambda: True, timeout_s=s
-        )
-
     def _solve_statics_with_optional_control(
-        self, feedback_func=None, do_terminate_func=None, timeout_s=1
+        self, feedback_func=None, do_terminate_func=None, timeout_s=1, terminate_after_s = 30,
     ):
         """Solves statics with a time-out and feedback/terminate functions.
 
@@ -1376,6 +1365,11 @@ class Scene:
         # # fallback to normal solve if feedback and control arguments are not provided
         # if feedback_func is None or do_terminate_func is None:
         #     return self.solve_statics()
+        self._vfc.state_update()
+
+        if self._vfc.n_dofs() == 0:  # check for the trivial case
+            self.update()
+            return True
 
         # Two quick helper functions for running in controlled mode
         def give_feedback(txt):
@@ -1388,101 +1382,148 @@ class Scene:
             else:
                 return False
 
-        self.update()
-
         if timeout_s is None:
             timeout_s = -1
 
-        # solve_func = lambda: self._vfc.state_solve_statics_with_timeout(
-        #     True, timeout_s, True, True, 0
-        # )  # 0 = default stability value
 
-        phase = 1
-        original_dofs_dict = None
+        if self.USE_NEW_SOLVER:
 
-        first = True
+            # construct a background solver
+            # start it
+            # wait till it completes or it is cancelled
 
-        while True:
+            start_time = datetime.datetime.now()
 
-            if not first and should_terminate():
-                if original_dofs_dict is not None:
-                    self._restore_original_fixes(original_dofs_dict)
-                    self.update()
+            if timeout_s < 0:
+                timeout_s = 0.1
+
+            BackgroundSolver = DC.BackgroundSolver(self._vfc)
+            BackgroundSolver.tolerance = self.static_tolerance
+            BackgroundSolver.mobility = self.solver_mobility
+            BackgroundSolver.Start()
+
+            while BackgroundSolver.Running:
+                for i in range(10):
+                    if should_terminate():
+                        BackgroundSolver.Stop()
+                        return False
+                    sleep(timeout_s / 10)
+                    if BackgroundSolver.Converged:
+                        break
+
+                info = f"Error = {BackgroundSolver.Enorm:.6e}(norm) , {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
+                give_feedback(info)
+
+                time_diff = (datetime.datetime.now() - start_time)
+                secs = time_diff.total_seconds()
+                if secs > terminate_after_s:
+                    raise ValueError(f"Solver maximum time of {terminate_after_s} exceeded - set terminate_after_s to change the allowed time for the solver.")
+
+            info = f"Converged within tolerance of {BackgroundSolver.tolerance} with E : {BackgroundSolver.Enorm:.6e}(norm) / {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
+            give_feedback(info)
+
+            if BackgroundSolver.Converged:
+                BackgroundSolver.CopyStateTo(self._vfc)
+
+                self.update()
+                return True
+            else:
                 return False
 
-            if phase == 1:  # prepare to go to phase 1 (or directly to phase 2)
+        else:
 
-                old_dofs = self._vfc.get_dofs()
-                if len(old_dofs) == 0:
-                    return True  # <---- trivial case
+            # solve_func = lambda: self._vfc.state_solve_statics_with_timeout(
+            #     True, timeout_s, True, True, 0
+            # )  # 0 = default stability value
+            self.update()
 
-                original_dofs_dict = self._fix_vessel_heel_trim()
-                phase = 2
+            phase = 1
+            original_dofs_dict = None
 
-            elif phase == 2:
+            first = True
 
-                this_is_a_re_init = not first
+            while True:
 
-                try:
-                    debug = self._vfc.to_string()
+                if not first and should_terminate():
+                    if original_dofs_dict is not None:
+                        self._restore_original_fixes(original_dofs_dict)
+                        self.update()
+                    return False
 
-                    #
+                if phase == 1:  # prepare to go to phase 1 (or directly to phase 2)
+
+                    old_dofs = self._vfc.get_dofs()
+                    if len(old_dofs) == 0:
+                        return True  # <---- trivial case
+
+                    original_dofs_dict = self._fix_vessel_heel_trim()
+                    phase = 2
+
+                elif phase == 2:
+
+                    this_is_a_re_init = not first
+
+                    try:
+                        debug = self._vfc.to_string()
+
+                        #
+                        status = self._vfc.state_solve_statics_with_timeout(
+                            True, timeout_s, True, True, 0, this_is_a_re_init
+                        )
+                    except:
+                        print(debug)
+                        raise ValueError('oops')
+
+                    first = False
+
+                    if status == 0 or status == -2:
+
+                        # phase 3
+                        self._restore_original_fixes(original_dofs_dict)
+                        phase = 4
+                        this_is_a_re_init = False
+
+                    else:
+                        if (
+                            timeout_s < 0
+                        ):  # we were not using a timeout, so the solver failed
+                            self._restore_original_fixes(original_dofs_dict)
+                            raise ValueError(
+                                f"Could not solve - solver return code {status} during phase 2. Maximum error = {self._vfc.Emaxabs:.6e}"
+                            )
+
+                    give_feedback(f"Maximum error = {self._vfc.Emaxabs:.6e} (phase 2)")
+
+                elif phase == 4:
+
                     status = self._vfc.state_solve_statics_with_timeout(
                         True, timeout_s, True, True, 0, this_is_a_re_init
                     )
-                except:
-                    print(debug)
-                    raise ValueError('oops')
+                    this_is_a_re_init = True
 
-                first = False
-
-                if status == 0 or status == -2:
-
-                    # phase 3
-                    self._restore_original_fixes(original_dofs_dict)
-                    phase = 4
-                    this_is_a_re_init = False
-
-                else:
-                    if (
-                        timeout_s < 0
-                    ):  # we were not using a timeout, so the solver failed
-                        self._restore_original_fixes(original_dofs_dict)
-                        raise ValueError(
-                            f"Could not solve - solver return code {status} during phase 2. Maximum error = {self._vfc.Emaxabs:.6e}"
-                        )
-
-                give_feedback(f"Maximum error = {self._vfc.Emaxabs:.6e} (phase 2)")
-
-            elif phase == 4:
-
-                status = self._vfc.state_solve_statics_with_timeout(
-                    True, timeout_s, True, True, 0, this_is_a_re_init
-                )
-                this_is_a_re_init = True
-
-                if status == 0 or status == -2:
-                    # phase 5
-                    (
-                        changed,
-                        msg,
-                    ) = self._check_and_fix_geometric_contact_orientations()
+                    if status == 0 or status == -2:
+                        # phase 5
+                        (
+                            changed,
+                            msg,
+                        ) = self._check_and_fix_geometric_contact_orientations()
 
 
 
-                    if not changed:
-                        # we are done!
+                        if not changed:
+                            # we are done!
 
-                        if self.t is not None:
-                            self.t.store_solved_results()
+                            if self.t is not None:
+                                self.t.store_solved_results()
 
-                        return True  # <------------- You've found the proper exit!
+                            return True  # <------------- You've found the proper exit!
 
-                    give_feedback(msg)
-                    this_is_a_re_init = False
+                        give_feedback(msg)
+                        this_is_a_re_init = False
 
-                else:
-                    give_feedback(f"Maximum error = {self._vfc.Emaxabs:.6e} (phase 4)")
+                    else:
+                        give_feedback(f"Maximum error = {self._vfc.Emaxabs:.6e} (phase 4)")
+
 
     def solve_statics(self, silent=False, timeout=None):
         """Solves statics
@@ -3952,7 +3993,7 @@ class Scene:
 
 # =================== None-Node Classes
 
-"""This is a container for a pyo3d.MomentDiagram object providing plot methods"""
+"""This is a container for a DC.MomentDiagram object providing plot methods"""
 
 
 class LoadShearMomentDiagram:
@@ -3960,7 +4001,7 @@ class LoadShearMomentDiagram:
         """
 
         Args:
-            datasource: pyo3d.MomentDiagram object
+            datasource: DC.MomentDiagram object
         """
 
         self.datasource = datasource
