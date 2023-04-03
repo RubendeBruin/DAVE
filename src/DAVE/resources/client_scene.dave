@@ -1,0 +1,2 @@
+s.import_scene('res: cheetah.dave')
+exposed = [('cheetah','mass')]
