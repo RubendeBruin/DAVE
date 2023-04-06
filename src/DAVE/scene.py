@@ -1417,6 +1417,7 @@ class Scene:
                 time_diff = (datetime.datetime.now() - start_time)
                 secs = time_diff.total_seconds()
                 if secs > terminate_after_s:
+                    BackgroundSolver.Stop()
                     raise ValueError(f"Solver maximum time of {terminate_after_s} exceeded - set terminate_after_s to change the allowed time for the solver.")
 
             info = f"Converged within tolerance of {BackgroundSolver.tolerance} with E : {BackgroundSolver.Enorm:.6e}(norm) / {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"

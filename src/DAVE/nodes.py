@@ -2113,6 +2113,8 @@ class Cable(CoreConnectedNode):
         self._pois = list()
         self._reversed : List[bool] = list()
 
+        self._render_as_tube = True
+
     def depends_on(self):
         return [*self._pois]
 
@@ -5006,6 +5008,7 @@ class Manager(Node, ABC):
                 n = len(old_name)
                 assert node.name[:n] == old_name
                 node.name = new_name + node.name[n:]
+
 
 class GeometricContact(Manager):
     """

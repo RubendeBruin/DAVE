@@ -52,8 +52,8 @@ PALETTE = (
     _BLUE,
     _ORANGE,
     _GREEN,
-    _PURPLE,
     _YELLOW_DARK,
+    _PURPLE,
     _MEDIUM_GRAY,
     _BLUE_LIGHT,
     _RED,
@@ -249,9 +249,10 @@ painters["Force"] = {"main": copy(surf), "moment1": copy(surf), "moment2": copy(
 
 
 # --- cable
-mesh.lineWidth = 3
-mesh.lineColor = _BLACK
-painters["Cable"] = {"main": copy(mesh)}
+# mesh.lineWidth = 3
+# mesh.lineColor = _BLACK
+surf.surfaceColor = _BLACK
+painters["Cable"] = {"main": copy(surf)}
 painters["Cable"]["main"].labelShow = True
 
 # --- beam

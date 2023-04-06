@@ -308,6 +308,8 @@ class VisualActor:
             False  # parent of this object is selected - render transparent
         )
 
+        self.info = None # Holder for additional info
+
 
     @property
     def center_position(self):
@@ -480,6 +482,7 @@ class VisualActor:
         for key, actor in self.actors.items():
 
             # start_time = actor.GetMTime()
+            props = actor.GetProperty()
 
             if '#' in key:
                 key = key.split('#')[0]
@@ -503,14 +506,15 @@ class VisualActor:
 
             # on or off
             if actor_settings.surfaceShow or actor_settings.lineWidth > 0:
-                actor.on()
+
+                actor.SetVisibility(True)
             else:
-                actor.off()
+                actor.SetVisibility(False)
                 continue
 
             if actor_settings.surfaceShow:
 
-                props = actor.GetProperty()
+
                 props.SetInterpolationToPBR()
                 props.SetRepresentationToSurface()
 
@@ -536,12 +540,12 @@ class VisualActor:
                     props.SetRoughness(actor_settings.roughness)
 
             else:
-                actor.GetProperty().SetRepresentationToWireframe()
+                props.SetRepresentationToWireframe()
 
             if getattr(self.node, '_draw_fat', False):
-                actor.linewidth(2*actor_settings.lineWidth)
+                props.SetLineWidth(2*actor_settings.lineWidth)
             else:
-                actor.linewidth(actor_settings.lineWidth)
+                props.SetLineWidth(actor_settings.lineWidth)
 
             if actor_settings.lineWidth > 0:
                 if uc_paint is None:
@@ -552,15 +556,15 @@ class VisualActor:
                     #         actor_settings.lineColor[2] / 255,
                     #     )
                     # )
-                    actor.GetProperty().SetColor( (
+                    props.SetColor( (
                             actor_settings.lineColor[0] / 255,
                             actor_settings.lineColor[1] / 255,
                             actor_settings.lineColor[2] / 255,
                         ))
                 else:
-                    actor.GetProperty().SetColor(uc_paint[:3])
+                    props.SetColor(uc_paint[:3])
             else:
-                actor.GetProperty().SetLineWidth(0)
+                props.SetLineWidth(0)
 
             # if actor.GetMTime() == start_time:
             #     print('Nothing changed')
@@ -648,10 +652,14 @@ class VisualActor:
 
             points = self.node.get_points_for_visual()
 
-            if len(points) == 0:  # not yet created
-                return
+            if self.node._render_as_tube:
+                self.info['mapper'].SetInputData(create_tube_data(points, self.node.diameter))
+                self.info['mapper'].Modified()
+            else:
+                if len(points) == 0:  # not yet created
+                    return
 
-            update_line_to_points(A, points)
+                update_line_to_points(A, points)
 
             self.setLabelPosition(np.mean(points, axis=0))
 
@@ -1771,6 +1779,7 @@ class Viewport:
                     pass
 
             actors = dict()
+            info = None
 
             if isinstance(N, vf.Buoyancy):
 
@@ -1977,7 +1986,50 @@ class Viewport:
             if isinstance(N, vf.Cable):
 
                 if N._vfNode.global_points:
-                    a = vp.Line(N._vfNode.global_points)
+                    if N._render_as_tube:
+                        # a = vp.Tube(N._vfNode.global_points, r = N.diameter/2)
+
+                        # Ref: vedo / shapes.py :: Tube
+
+                        gp = N._vfNode.global_points # alias
+                        # #
+                        # points = vtk.vtkPoints()
+                        # for p in gp:
+                        #     points.InsertNextPoint(p)
+                        #
+                        # line = vtk.vtkPolyLine()
+                        # line.GetPointIds().SetNumberOfIds(len(gp))
+                        # for i in range(len(gp)):
+                        #     line.GetPointIds().SetId(i, i)
+                        #
+                        # lines = vtk.vtkCellArray()
+                        # lines.InsertNextCell(line)
+                        #
+                        # polyln = vtk.vtkPolyData()
+                        # polyln.SetPoints(points)
+                        # polyln.SetLines(lines)
+                        #
+                        # tuf = vtk.vtkTubeFilter()
+                        # tuf.SetCapping(False)
+                        # tuf.SetNumberOfSides(12)
+                        # tuf.SetInputData(polyln)
+                        #
+                        # dia = max(N._vfNode.diameter, 0.1)
+                        # tuf.SetRadius(dia/2)
+                        # # #
+                        # # # self.tuf.Update()
+                        # #
+
+                        mapper = vtk.vtkPolyDataMapper()
+                        mapper.SetInputData(create_tube_data(gp, N._vfNode.diameter))
+
+                        a = vtk.vtkActor()
+                        a.SetMapper(mapper)
+
+                        info = {'mapper':mapper}
+
+                    else:
+                        a = vp.Line(N._vfNode.global_points)
                 else:
                     a = vp.Line([(0, 0, 0), (0, 0, 0.1), (0, 0, 0)])
 
@@ -2061,7 +2113,10 @@ class Viewport:
                 continue
 
             va = VisualActor(actors, N)
+            va.info = info
+
             va.labelUpdate(N.name)
+
             N._visualObject = va
             N._visualObject.__just_created = True
 

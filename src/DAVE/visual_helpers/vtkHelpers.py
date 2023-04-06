@@ -299,6 +299,40 @@ def update_line_to_points(line_actor, points):
         source.Modified()
 
 
+def create_tube_data(new_points, diameter):
+    """Updates the points of a line-actor"""
+
+    points = vtk.vtkPoints()
+    for p in new_points:
+        points.InsertNextPoint(p)
+
+    line = vtk.vtkPolyLine()
+    line.GetPointIds().SetNumberOfIds(len(new_points))
+    for i in range(len(new_points)):
+        line.GetPointIds().SetId(i, i)
+
+    lines = vtk.vtkCellArray()
+    lines.InsertNextCell(line)
+
+    polyln = vtk.vtkPolyData()
+    polyln.SetPoints(points)
+    polyln.SetLines(lines)
+
+    tuf = vtk.vtkTubeFilter()
+    tuf.SetCapping(False)
+    tuf.SetNumberOfSides(12)
+    tuf.SetInputData(polyln)
+
+    dia = max(diameter, 0.1)
+    tuf.SetRadius(dia / 2)
+
+    tuf.Update()
+
+    return tuf.GetOutput()
+
+
+
+
 def apply_parent_translation_on_transform(parent, t: vtk.vtkTransform):
     """Applies the DAVE global-transform of "parent" on vtkTransform t"""
 
