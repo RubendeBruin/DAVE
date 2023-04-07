@@ -2300,7 +2300,12 @@ class Gui:
                 text = f'{node.name}\t[{node.class_name}]\t managed by {node.manager.name}'
 
             action = menu.addAction(text, lambda n = node, *args : self._user_clicked_node(n))
-            # action.hovered.connect(lambda n=node, *args: print(node))
+
+            if node.manager is None:
+                action.setFont(action.font().setBold(True))
+            else:
+                if getattr(node,'_editor_widget_types_when_managed', None) is not None:  # for partially managed nodes
+                    action.setFont(action.font().setBold(True))
 
         menu.exec_(QCursor.pos())
 

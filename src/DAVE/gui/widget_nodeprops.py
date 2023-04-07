@@ -2750,12 +2750,27 @@ class WidgetNodeProps(guiDockWidget):
             self.setVisible(False)
             return
 
+        manager_workaround = None
+        self._name_widget.setEnabled(True) # default, disabled for partially managed nodes
         if node._manager and not isinstance(node, vfs.Shackle):
+
             self.managed_label.setText(
-                f"The properties of this node are managed by node '{node._manager.name}' and should not be changed manually"
+                f"This node is controlled by node '{node._manager.name}' and can not be changed directly. Select the manager to make changes indirectly."
             )
+            self.managed_label.setStyleSheet("background: gold;")
             self.manager_widget.setVisible(True)
-            self.props_widget.setEnabled(self.guiScene._godmode)
+
+            manager_workaround = getattr(node, '_editor_widget_types_when_managed', None)
+            if manager_workaround is None:
+                self.props_widget.setEnabled(self.guiScene._godmode)
+            else:
+                self._name_widget.setEnabled(False)
+                self.props_widget.setEnabled(True)
+                self.managed_label.setText(
+                    f"Some of the properties of this node are controlled by '{node._manager.name}'. Select that (manager) node to change change those."
+                )
+                self.managed_label.setStyleSheet("background: lightyellow;")
+
         else:
             self.manager_widget.setVisible(False)
             self.props_widget.setEnabled(True)
@@ -2862,6 +2877,11 @@ class WidgetNodeProps(guiDockWidget):
                         self._node_editors.append(v.Instance())
                 else:
                     self._node_editors.append(value.Instance())
+
+        # Remove suppressed editors
+        if manager_workaround:
+            self._node_editors = [editor for editor in self._node_editors if isinstance(editor, manager_workaround)]
+
 
         to_be_added = []
         for editor in self._node_editors:
