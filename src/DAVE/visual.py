@@ -1111,8 +1111,8 @@ class VisualActor:
             self.node.update()
 
             # Points are the vertices in global axis system (transforms applied)
-            points = self.actors["main"].points(True)
-            self.setLabelPosition(np.mean(points, axis=1).flatten())
+            points = self.actors["main"].points(transformed=True)
+            self.setLabelPosition(np.mean(points, axis=0).flatten())
 
             # Update the CoG
             # move the CoG to the new (global!) position
@@ -2230,7 +2230,7 @@ class Viewport:
                     if file == va.actors["main"].loaded_obj:
                         continue
 
-                    self.screen.clear(va.actors["main"])
+                    self.screen.remove(va.actors["main"])
 
                     # update the obj
                     va.actors["main"] = vp_actor_from_file(file)
@@ -2272,7 +2272,7 @@ class Viewport:
                             new_mesh.SetBackfaceProperty(backProp)
 
                         if new_mesh is not None:
-                            self.screen.clear(va.actors["main"])
+                            self.screen.remove(va.actors["main"])
 
                             va.actors["main"] = new_mesh
                             va.actors["main"].actor_type = ActorType.MESH_OR_CONNECTOR

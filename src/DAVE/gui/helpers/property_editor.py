@@ -33,7 +33,7 @@ from PySide2.QtWidgets import *
 
 class PropertyEditorDialog(QDialog):
 
-    def __init__(self, prop_names : tuple or list, prop_types : tuple or list, getter_callback : Callable[str, any], setter_callback : Callable[str, any], info = None, parent=None):
+    def __init__(self, prop_names : tuple or list, prop_types : tuple or list, getter_callback , setter_callback , info = None, parent=None):
 
         # checks
 
