@@ -29,8 +29,6 @@ from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import BlenderStyle
 from DAVE.visual_helpers.vtkHelpers import create_shearline_actors, create_momentline_actors
 
 
-# vedo.settings.renderLinesAsTubes = True
-
 from DAVE.settings_visuals import (
     ViewportSettings,
     ActorSettings,
@@ -46,6 +44,7 @@ from DAVE.settings_visuals import (
     ALPHA_SEA,
     COLOR_SELECT_255,
     UC_CMAP,
+    OUTLINE_WIDTH,
 )
 
 import DAVE.scene as vf
@@ -268,7 +267,8 @@ class VisualOutline:
         self.outline_actor.GetProperty().SetColor(
             color[0] / 255, color[1] / 255, color[2] / 255
         )
-        self.outline_actor.GetProperty().SetLineWidth(2)
+        self.outline_actor.GetProperty().SetLineWidth(OUTLINE_WIDTH)
+        self.outline_actor.GetProperty().SetRenderLinesAsTubes(False)
 
 
 

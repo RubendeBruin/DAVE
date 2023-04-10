@@ -41,6 +41,7 @@ _YELLOW_DARK = [128, 108, 0]
 _PURPLE = [87, 0, 127]
 _WHITE = [255, 255, 255]
 _BLUE = [12, 106, 146]
+_BLUE_GREEN = [6, (127+106)/2, (146+14) / 2 ]# _BLUE + _GREEN / 2
 _BLUE_LIGHT = [203, 224, 239]
 _BLUE_DARK = [57, 76, 90]
 _PINK = [247, 17, 228]
@@ -76,10 +77,12 @@ COLOR_WATER_TANK_FREEFLOODING = _RED
 COLOR_SELECT = rgb(_YELLOW)
 COLOR_SELECT_255 = _YELLOW
 
-OUTLINE_WIDTH = 1
+COLOR_CIRCLE = _BLUE_GREEN
+
+OUTLINE_WIDTH = 1.5
 
 COLOR_BG2 = rgb(_WHITE)
-COLOR_BG1 = rgb(_BLUE_LIGHT)
+COLOR_BG1 = rgb(_WHITE)
 
 COLOR_WATER = rgb(_BLUE_DARK)
 
@@ -235,7 +238,7 @@ painters["RigidBody"]["footprint"] = copy(invisible)
 
 
 # ---- circle
-surf.surfaceColor = _LIGHT_GRAY
+surf.surfaceColor = COLOR_CIRCLE
 painters["Circle"] = {"main": copy(surf)}
 
 # ---- visual

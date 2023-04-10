@@ -233,7 +233,7 @@ class BlenderStyle(vtkInteractorStyleUser):
         #
         #   // Camera motion is reversed
         #
-        move_factor = -1 * self.zoom_motion_factor * direction
+        move_factor = -1 * self.ZOOM_MOTION_FACTOR * direction
 
         motionVector = (
             move_factor * (oldPickPoint[0] - newPickPoint[0]),
@@ -258,7 +258,7 @@ class BlenderStyle(vtkInteractorStyleUser):
         )
 
         # the Zooming
-        factor = self.mouse_motion_factor * self.mouse_wheel_motion_factor
+        factor = self.MOUSE_MOTION_FACTOR * self.MOUSE_WHEEL_MOTION_FACTOR
         self.ZoomByStep(direction*factor)
 
 
@@ -537,8 +537,7 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         camera.OrthogonalizeViewUp()
 
-        if self.GetAutoAdjustCameraClippingRange():
-            CurrentRenderer.ResetCameraClippingRange()
+        self.UpdateClippingRange()
 
         if rwi.GetLightFollowCamera():
             CurrentRenderer.UpdateLightsGeometryToFollowCamera()
@@ -547,6 +546,14 @@ class BlenderStyle(vtkInteractorStyleUser):
             self.callbackCameraDirectionChanged()
 
         self.DoRender()
+
+    def UpdateClippingRange(self):
+        if self.GetAutoAdjustCameraClippingRange():
+            self.GetCurrentRenderer().ResetCameraClippingRange()
+            camera = self.GetCurrentRenderer().GetActiveCamera()
+            near,far = camera.GetClippingRange()
+            camera.SetClippingRange(self.CLIPPING_PLANE_NEAR_FRACTION_OF_FAR * far, far)
+
 
     def PerformPickingOnSelection(self):
         """Preforms prop3d picking on the current dragged selection
@@ -813,8 +820,8 @@ class BlenderStyle(vtkInteractorStyleUser):
             delta_elevation = -20.0 / size[1]
             delta_azimuth = -20.0 / size[0]
 
-            rxf = dx * delta_azimuth * self.mouse_motion_factor
-            ryf = dy * delta_elevation * self.mouse_motion_factor
+            rxf = dx * delta_azimuth * self.MOUSE_MOTION_FACTOR
+            ryf = dy * delta_elevation * self.MOUSE_MOTION_FACTOR
 
             self.RotateTurtableBy(rxf, ryf)
 
@@ -890,8 +897,7 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         # Update
 
-        if self.GetAutoAdjustCameraClippingRange():
-            CurrentRenderer.ResetCameraClippingRange()
+        self.UpdateClippingRange()
 
         if rwi.GetLightFollowCamera():
             CurrentRenderer.UpdateLightsGeometryToFollowCamera()
@@ -993,8 +999,7 @@ class BlenderStyle(vtkInteractorStyleUser):
             position[2] - fp[2] + pos[2],
         )
 
-        if self.GetAutoAdjustCameraClippingRange():
-            CurrentRenderer.ResetCameraClippingRange()
+        self.UpdateClippingRange()
 
         rwi = self.GetInteractor()
         if rwi.GetLightFollowCamera():
@@ -1012,8 +1017,7 @@ class BlenderStyle(vtkInteractorStyleUser):
                 camera.SetParallelScale(camera.GetParallelScale() / factor)
             else:
                 camera.Dolly(factor)
-                if self.GetAutoAdjustCameraClippingRange():
-                    CurrentRenderer.ResetCameraClippingRange()
+                self.UpdateClippingRange()
 
             # if not do_not_update:
             #
@@ -1256,9 +1260,10 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         # settings
 
-        self.mouse_motion_factor = 20
-        self.mouse_wheel_motion_factor = 0.1
-        self.zoom_motion_factor = 0.25
+        self.CLIPPING_PLANE_NEAR_FRACTION_OF_FAR = (1/100)
+        self.MOUSE_MOTION_FACTOR = 20
+        self.MOUSE_WHEEL_MOTION_FACTOR = 0.1
+        self.ZOOM_MOTION_FACTOR = 0.25
 
         # internals
 
