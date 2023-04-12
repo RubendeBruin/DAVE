@@ -78,7 +78,7 @@ except ImportError as err:
 
     import urllib.request
 
-    url = f"https://open-ocean.org/files/{filename}"
+    url = f"https://davecore.nl/files/{filename}"
 
     from PySide2.QtWidgets import QApplication
     from PySide2.QtWidgets import QDialog
@@ -111,13 +111,13 @@ except ImportError as err:
     layout = QVBoxLayout()
     label = QLabel(dlg)
     label.setText(
-        f"Equilibrium core (DAVEcore) was not found on your system.\nNo problem, we can download it automatically\n\nFile will be downloaded from:\n{url} \n\nand will be saved as:\n{target}"
+        f"DAVE-core was not found on your system. This component is required to run DAVE.\nNo problem, we can download it automatically\n\nFile will be downloaded from:\n{url} \n\nand will be saved as:\n{target}"
     )
     layout.addWidget(label)
 
     link = QLabel(dlg)
     link.setText(
-        '<a href="https://www.open-ocean.org/equilibrium-core/">More info: https://www.open-ocean.org/equilibrium-core/ </a>'
+        '<a href="https://www.davecore.nl">More info: https://davecore.nl </a>'
     )
     link.setOpenExternalLinks(True)
     layout.addWidget(link)

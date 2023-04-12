@@ -2247,6 +2247,7 @@ class Gui:
             return
 
         nodes = [self.visual.node_from_vtk_actor(prop) for prop in props]
+        nodes = [node for node in nodes if node is not None]  # remove nones (not all actors have a associated node, for example the sea has none)
         nodes = list(set(nodes)) # make unique
 
         # find all managers (recursively)

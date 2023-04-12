@@ -2310,7 +2310,9 @@ class Viewport:
         """
 
         if offscreen:
-            self.screen = vp.Plotter(axes=0, offscreen=True, size=size, backend='2d')
+            import vedo
+            vedo.settings.default_backend = '2d'
+            self.screen = vp.Plotter(axes=0, offscreen=True, size=size)
 
         else:
 
@@ -2319,19 +2321,19 @@ class Viewport:
             ):  # it is possible to launch the Gui from jupyter, so check for both
 
                 # create embedded notebook (k3d) view
-                import vedo as vtkp
 
-                # vtkp.settings.embedWindow(backend="k3d")
-                self.screen = vp.Plotter(axes=4, bg=COLOR_BG1, bg2=COLOR_BG2,backend="k3d")
+                import vedo
+                vedo.settings.default_backend = 'k3d'
+                self.screen = vp.Plotter(axes=4, bg=COLOR_BG1, bg2=COLOR_BG2)
 
             else:
 
                 if self.vtkWidget is None:
 
                     # create stand-alone interactive view
-                    import vedo as vtkp
 
-                    # vtkp.settings.embedWindow(
+                    import vedo
+                    vedo.settings.default_backend = 'None'
 
                     self.screen = vp.plotter.Plotter(
                         interactive=True,
@@ -2339,18 +2341,16 @@ class Viewport:
                         axes=4,
                         bg=COLOR_BG1,
                         bg2=COLOR_BG2,
-                        backend=None
                     )
 
                 else:
 
                     # create embedded Qt view
-                    import vedo as vtkp
-
-                    # vtkp.settings.embedWindow(backend=None)
+                    import vedo
+                    vedo.settings.default_backend = 'None'
 
                     self.screen = vp.plotter.Plotter(
-                        qt_widget=self.vtkWidget, axes=4, bg=COLOR_BG1, bg2=COLOR_BG2, backend=None
+                        qt_widget=self.vtkWidget, axes=4, bg=COLOR_BG1, bg2=COLOR_BG2
                     )
 
         """ For reference: this is how to load an cubemap texture

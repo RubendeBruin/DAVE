@@ -140,7 +140,7 @@ class ViewportSettings:
 
     show_force: bool = True  # show forces
     show_meshes: bool = True  # show meshes and connectors
-    show_global: bool = False  # show or hide the environment (sea)
+    show_global: bool = False  # show or hide the environment (sea), if false then show the origin
 
     # cogs
     show_cog: bool = True
