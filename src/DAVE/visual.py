@@ -1308,7 +1308,7 @@ class Viewport:
 
     """
 
-    def __init__(self, scene, jupyter=False):
+    def __init__(self, scene):
         self.scene = scene
 
         """These are the visuals for the nodes"""
@@ -1326,8 +1326,6 @@ class Viewport:
 
         self.vtkWidget = None
         """Qt viewport, if any"""
-
-        self.Jupyter = jupyter
 
         self.settings = ViewportSettings()
 
@@ -2310,6 +2308,7 @@ class Viewport:
         """
 
         if offscreen:
+
             import vedo
             vedo.settings.default_backend = '2d'
             self.screen = vp.Plotter(axes=0, offscreen=True, size=size)
@@ -2317,7 +2316,7 @@ class Viewport:
         else:
 
             if (
-                self.Jupyter and self.vtkWidget is None
+                self.vtkWidget is None
             ):  # it is possible to launch the Gui from jupyter, so check for both
 
                 # create embedded notebook (k3d) view
@@ -2439,11 +2438,12 @@ class Viewport:
 
             r.Modified()
 
-    def show(self, include_outlines=True, zoom_fit=False):
+    def show(self, include_outlines=True):
         """Add actors to screen and show
 
         If purpose is to show embedded, then call show_embedded instead
         """
+
         if self.screen is None:
             raise Exception("Please call setup_screen first")
 
@@ -2457,7 +2457,7 @@ class Viewport:
         #     camera["pos"] = [10, -10, 5]
         #     camera["focalPoint"] = [0, 0, 0]
 
-        if self.Jupyter and self.vtkWidget is None:
+        if self.vtkWidget is None:
 
             # show embedded
             for va in self.node_visuals:
@@ -2473,7 +2473,7 @@ class Viewport:
             for outline in self.node_outlines:
                 self.screen.add(outline.outline_actor, render=False)
 
-            return self.screen.show(resetcam=zoom_fit)
+            return self.screen
 
         else:
 

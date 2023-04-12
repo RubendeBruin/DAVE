@@ -118,9 +118,9 @@ DAVE_DEFAULT_SOLVER_TOLERANCE = 1e-4
 
 
 
-print('default resource folders:')
-for a in RESOURCE_PATH:
-    print(a)
+# print('default resource folders:')
+# for a in RESOURCE_PATH:
+#     print(a)
 
 # temporary files:
 #
@@ -264,9 +264,10 @@ if platform.system().lower().startswith('win'):
                 if os.path.exists(pt):
                     return pt
                 else:
-                    print(f'Blender NOT found here {pt} as listed in {key}')
+                    pass
+                    # print(f'Blender NOT found here {pt} as listed in {key}')
         except Exception as E:
-            print(f'Error when looking for blender here: {key} - {str(E)}')
+            # print(f'Error when looking for blender here: {key} - {str(E)}')
             raise ValueError('Not found here')
 
     BLENDER_EXEC = None
@@ -307,7 +308,7 @@ if platform.system().lower().startswith('win'):
               "   - configure windows to open .blend files with blender automatically \n"
               "   - add the folder containing blender-launcher.exe to the PATH variable.")
 
-    print('\nLoading DAVE...')
+    # print('\nLoading DAVE...')
 else: # assume we're on linux
     BLENDER_EXEC = 'blender'
 

@@ -21,31 +21,111 @@ import warnings
 from ..visual import Viewport
 import vedo
 
-
+import PIL
+import vtk
+from vtkmodules.util.numpy_support import vtk_to_numpy
+import numpy as np
 
 def show(
-    scene,
-    camera_pos=None, #
-    lookat=None,
-    width=1024,
-    height=600,
-    show_force: bool = True,  # show forces
-    show_meshes: bool = True,  # show meshes and connectors
-    show_global: bool = False,  # show or hide the environment (sea)
-    show_cog: bool = True,
-    cog_do_normalize: bool = False,
-    cog_scale: float = 1.0,
-    force_do_normalize: bool = True,  # Normalize force size to 1.0 for plotting
-    force_scale: float = 1.6,  # Scale to be applied on (normalized) force magnitude
-    geometry_scale: float = 1.0,  # poi radius of the pois
-    painters="Construction",
-    additional_actors=(),
-    paint_uc = False,
-    projection="3d",
-    zoom_fit=False,
-    scale=None,
+        scene,
+        camera_pos=None,  #
+        lookat=None,
+        width=1024,
+        height=600,
+        show_force: bool = True,  # show forces
+        show_meshes: bool = True,  # show meshes and connectors
+        show_global: bool = False,  # show or hide the environment (sea)
+        show_cog: bool = True,
+        cog_do_normalize: bool = False,
+        cog_scale: float = 1.0,
+        force_do_normalize: bool = True,  # Normalize force size to 1.0 for plotting
+        force_scale: float = 1.6,  # Scale to be applied on (normalized) force magnitude
+        geometry_scale: float = 1.0,  # poi radius of the pois
+        painters="Construction",
+        additional_actors=(),
+        paint_uc=False,
+        projection="3d",
+        zoom_fit=False,
+        scale=None,
 ):
+    """
+    Creates a 3d view of the scene and shows it as a static image.
 
+    Args:
+        scene: the scene
+        sea:   plot sea [bool]
+        camera_pos: camera position [x,y,z]
+        lookat:  camera focal point [x,y,z] OR 'y','-y','x','-x','z','-z' to go to 2D mode
+        show_force: bool = True  # show forces
+        show_meshes: bool = True  # show meshes and connectors
+        show_global: bool = False  # show or hide the environment (sea)
+        show_cog: bool = True
+        cog_do_normalize: bool = False
+        cog_scale: float = 1.0
+        force_do_normalize: bool = True  # Normalize force size to 1.0 for plotting
+        force_scale: float = 1.6  # Scale to be applied on (normalized) force magnitude
+        geometry_scale: float = 1.0  # poi radius of the pois
+        painters : str with key of painters dict, or a painters instance
+        additional_actors : list or tuple of actors that need to be added to the view,
+        projection: '2d' or '3d'
+        zoom_fit: True/False - adjust camera to view full scene
+        paint_uc: Paint unity-checks using colors
+        scale : parallel scale for 2d views
+
+    Returns:
+        A 3d view
+
+    """
+
+    image = pil_image(
+        scene,
+        camera_pos,  #
+        lookat,
+        width,
+        height,
+        show_force,  # show forces
+        show_meshes,  # show meshes and connectors
+        show_global,  # show or hide the environment (sea)
+        show_cog,
+        cog_do_normalize,
+        cog_scale,
+        force_do_normalize,  # Normalize force size to 1.0 for plotting
+        force_scale,  # Scale to be applied on (normalized) force magnitude
+        geometry_scale,  # poi radius of the pois
+        painters,
+        additional_actors,
+        paint_uc,
+        projection,
+        zoom_fit,
+        scale)
+
+    return image
+
+
+
+
+def pil_image(
+        scene,
+        camera_pos=None,  #
+        lookat=None,
+        width=1024,
+        height=600,
+        show_force: bool = True,  # show forces
+        show_meshes: bool = True,  # show meshes and connectors
+        show_global: bool = False,  # show or hide the environment (sea)
+        show_cog: bool = True,
+        cog_do_normalize: bool = False,
+        cog_scale: float = 1.0,
+        force_do_normalize: bool = True,  # Normalize force size to 1.0 for plotting
+        force_scale: float = 1.6,  # Scale to be applied on (normalized) force magnitude
+        geometry_scale: float = 1.0,  # poi radius of the pois
+        painters="Construction",
+        additional_actors=(),
+        paint_uc=False,
+        projection="3d",
+        zoom_fit=False,
+        scale=None,
+):
     """
     Creates a 3d view of the scene and shows it as a static image.
 
@@ -83,10 +163,7 @@ def show(
     if camera_pos is None:
         camera_pos = (50, -25, 10)
 
-    # vedo.embedWindow(backend='2d', verbose=False)  # screenshot
-    vedo.settings.usingQt = False
-
-    vp = Viewport(scene, jupyter=True)
+    vp = Viewport(scene)
 
     if painters is None:
         from DAVE.settings_visuals import PAINTERS
@@ -100,6 +177,8 @@ def show(
         except KeyError as E:
             print(f"Available painters are: {PAINTERS.keys()}")
             raise E
+
+    # Feed all the settings
 
     vp.settings.painter_settings = painters
 
@@ -118,6 +197,8 @@ def show(
 
     vp.settings.geometry_scale = geometry_scale
 
+    # Create screen and add visuals
+
     vp.setup_screen(offscreen=True, size=(width, height))
 
     vp.create_node_visuals(recreate=True)
@@ -127,6 +208,8 @@ def show(
 
     for a in additional_actors:
         vp.add_temporary_actor(actor=a)
+
+    # Set-up the camera
 
     c = vp.screen.camera
 
@@ -163,21 +246,14 @@ def show(
         c.SetViewUp(0, 0, 1)
 
     if projection == "2d":
-        from vedo import settings
 
-        settings.useParallelProjection = True
         c.ParallelProjectionOn()
         if scale is not None:
             c.SetParallelScale(scale)
     else:
-        from vedo import settings
-
-        settings.useParallelProjection = False
 
         if scale is not None:
             warnings.warn("Scale parameter is only used for 2d projections")
-
-    # vp.update_outlines()  # no need to update outlines. The actors are not yet in the scene, so no outlines to add
 
     vp.update_visibility()
 
@@ -187,22 +263,49 @@ def show(
         )
 
     # vp.add_wind_and_current_actors() <-- this crashes - the axis triad of vedo is also not supported
-
-    plotter =  vp.show(zoom_fit=zoom_fit)
-
-    if plotter is None:
-        warnings.warn("VTK/Vedo issue: plotter is None")
-        return plotter
-
-    # manually add all 2d actors... [why is this needed?] : TODO: because viewport does not add them
+    plotter = vp.screen  # vedo plotter
+    vp.show()
 
     for visual in vp.node_visuals:
 
-        label_actor =  visual.label_actor
+        label_actor = visual.label_actor
         if label_actor.GetVisibility():
-            plotter +=label_actor
+            plotter += label_actor
 
     # rotate actors to camera orientation (WindArea)
     vp._rotate_actors_due_to_camera_movement()
 
-    return plotter
+
+    # zoom-fit
+    if zoom_fit:
+        plotter.renderer.ResetCamera()
+
+    # Now we finally have everything setup the way we want
+    # time to render to an image
+    #
+    # This can be done by Vedo, but just as easy (and robust) to do directly
+
+    plotter.renderer.ResetCameraClippingRange()
+    near, far = c.GetClippingRange()
+    c.SetClippingRange((1/100) * far, far)
+
+    win = plotter.window
+    win.Render()
+
+
+    nx, ny = win.GetSize()
+    arr = vtk.vtkUnsignedCharArray()
+    win.GetRGBACharPixelData(0, 0, nx - 1, ny - 1, 0, arr)
+
+    narr = vtk_to_numpy(arr).T[:3].T.reshape([ny, nx, 3])
+    narr = np.flip(narr, axis=0)
+
+    pil_img = PIL.Image.fromarray(narr)
+
+    return pil_img
+
+
+
+
+
+
