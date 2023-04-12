@@ -9,8 +9,7 @@
 
 """
 import DAVE.auto_download
-import DAVE.gui.forms.resources_rc
-from PySide2.QtWidgets import QSplashScreen, QApplication
+from PySide2.QtWidgets import QSplashScreen, QApplication, QLabel
 from PySide2.QtGui import QPixmap, QIcon
 
 # create application
@@ -22,17 +21,31 @@ else:
     app = QApplication()
 
 
-splash = QSplashScreen(QPixmap(":/icons/splashscreen.png"))
-splash.show()
+# get the current folder
+from pathlib import Path
+here = Path(__file__).parent
 
+splash = QSplashScreen(str(here / 'splash.png'))
+label = QLabel(splash)
+label.setText('Loading DAVE')
+label.setStyleSheet("color: white")
+label.move(10,10)
+
+splash.show()
+label.show()
+
+
+import DAVE.gui.forms.resources_rc
 app.setWindowIcon(QIcon('DAVE.ico'))
 
 # Items that need to be available in the scripts
+label.setText('Loading DAVE scenes and nodes')
+label.show()
+
 from DAVE.scene import *
 from DAVE.marine import *
 from DAVE.rigging import *
 from DAVE.frequency_domain import *
-
 
 
 # try:
@@ -43,10 +56,19 @@ from DAVE.frequency_domain import *
 # except ImportError:
 #     pass
 
+label.setText('Loading DAVE Gui')
+label.show()
 
 from DAVE.gui.main import Gui
 
+label.setText('Loading numpy')
+label.show()
+
 import numpy as np
+
+label.setText('Creating Gui')
+label.show()
+
 
 s = Scene()
 g = Gui(s,splash=splash, app = app, client_mode=False)

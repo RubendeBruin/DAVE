@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>DAVE.io.simplify API documentation</title>
+<meta name="description" content="Simplify
+…" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>DAVE.io.simplify</code></h1>
+</header>
+<section id="section-intro">
+<h1 id="simplify">Simplify</h1>
+<p>Not every program supports every feature of DAVE.
+This module contains methods to simplify or re-write a scene such that these features are re-written into something
+that can be exported.</p>
+<p>All methods work in-place. That means that the scene that is passed to the function it modified. As must functions are
+"destructive" it is recommended to run these on a copy of the original model.</p>
+<p>Methods</p>
+<ul>
+<li>
+<p>.. method:: split_cables
+Splits cables into sections without sheaves</p>
+</li>
+<li>
+<p>.. method:: tanks_to_bodies
+Converts tanks to rigidbodies</p>
+</li>
+</ul>
+<p>See also:
+DAVE.marine.linearize_buoyancy</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;
+Simplify
+=========
+
+Not every program supports every feature of DAVE.
+This module contains methods to simplify or re-write a scene such that these features are re-written into something
+that can be exported.
+
+All methods work in-place. That means that the scene that is passed to the function it modified. As must functions are
+&#34;destructive&#34; it is recommended to run these on a copy of the original model.
+
+Methods
+
+- .. method:: split_cables   Splits cables into sections without sheaves
+
+- .. method:: tanks_to_bodies   Converts tanks to rigidbodies
+
+See also:
+    DAVE.marine.linearize_buoyancy
+
+
+&#34;&#34;&#34;
+
+&#34;&#34;&#34;
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+  Ruben de Bruin - 2019
+
+&#34;&#34;&#34;
+
+from DAVE import *
+import numpy as np
+from numpy.linalg import norm
+
+def tanks_to_bodies(s : Scene):
+    &#34;&#34;&#34;Converts tanks with fluid to rigid-bodies. Tanks without fluid are deleted. Rotational inertia of the
+    fluid in the tanks (whatever that may be) is fixed to radii of gyration of 0.1m.
+
+    Free-fluid surface is ignored
+
+    Name will be re-used
+    &#34;&#34;&#34;
+
+    tanks = s.nodes_of_type(Tank)
+
+    for t in tanks:
+        parent = t.parent
+        cog_local = t.cog_local
+        mass = t.volume * t.density
+        name = t.name
+
+        s.delete(t)
+
+        if mass&gt;1e-6:
+            s.new_rigidbody(name, parent=parent, position=cog_local, cog = (0,0,0), mass=mass, inertia_radii=(0.1,0.1,0.1))
+
+
+
+def split_cables(s : Scene):
+    &#34;&#34;&#34;Splits cables that run over intermediate points (sheaves) into separate cables. Cables running over
+    circles are split into cables connected to the centers of the circles.
+
+    Warning: this function does not compensate for the length of the cable on a circle. Circles are reduced to points.
+    &#34;&#34;&#34;
+
+    cables = s.nodes_of_type(Cable)
+
+    for c in cables:
+        if len(c.connections) == 2:
+            continue
+
+        # cable with more than 2 connection points
+        #
+        # Get the points over which the cable runs. For circles get the centerpoint
+        points = []
+        for p in c.connections:
+            if isinstance(p, Point):
+                points.append(p)
+            elif isinstance(p, Circle):
+                points.append(p.parent)
+
+        # calculate the actual length of the cable
+        l_segments = []
+        for i in range(1,len(points)):
+            d = np.array(points[i].global_position) - np.array(points[i-1].global_position)
+            l_segments.append(norm(d))
+
+        l_actual = np.sum(l_segments)
+
+        # create new cables
+        for i, l_seg in enumerate(l_segments):
+            name = s.available_name_like(f&#39;{c.name}_part_{i+1}&#39;)
+            s.new_cable(name,
+                        endA = points[i],
+                        endB = points[i+1],
+                        EA = c.EA,
+                        length = l_seg * c.length / l_actual)  # distribute stretch length evenly
+
+        s.delete(c)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="DAVE.io.simplify.split_cables"><code class="name flex">
+<span>def <span class="ident">split_cables</span></span>(<span>s: <a title="DAVE.scene.Scene" href="../scene.html#DAVE.scene.Scene">Scene</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Splits cables that run over intermediate points (sheaves) into separate cables. Cables running over
+circles are split into cables connected to the centers of the circles.</p>
+<p>Warning: this function does not compensate for the length of the cable on a circle. Circles are reduced to points.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def split_cables(s : Scene):
+    &#34;&#34;&#34;Splits cables that run over intermediate points (sheaves) into separate cables. Cables running over
+    circles are split into cables connected to the centers of the circles.
+
+    Warning: this function does not compensate for the length of the cable on a circle. Circles are reduced to points.
+    &#34;&#34;&#34;
+
+    cables = s.nodes_of_type(Cable)
+
+    for c in cables:
+        if len(c.connections) == 2:
+            continue
+
+        # cable with more than 2 connection points
+        #
+        # Get the points over which the cable runs. For circles get the centerpoint
+        points = []
+        for p in c.connections:
+            if isinstance(p, Point):
+                points.append(p)
+            elif isinstance(p, Circle):
+                points.append(p.parent)
+
+        # calculate the actual length of the cable
+        l_segments = []
+        for i in range(1,len(points)):
+            d = np.array(points[i].global_position) - np.array(points[i-1].global_position)
+            l_segments.append(norm(d))
+
+        l_actual = np.sum(l_segments)
+
+        # create new cables
+        for i, l_seg in enumerate(l_segments):
+            name = s.available_name_like(f&#39;{c.name}_part_{i+1}&#39;)
+            s.new_cable(name,
+                        endA = points[i],
+                        endB = points[i+1],
+                        EA = c.EA,
+                        length = l_seg * c.length / l_actual)  # distribute stretch length evenly
+
+        s.delete(c)</code></pre>
+</details>
+</dd>
+<dt id="DAVE.io.simplify.tanks_to_bodies"><code class="name flex">
+<span>def <span class="ident">tanks_to_bodies</span></span>(<span>s: <a title="DAVE.scene.Scene" href="../scene.html#DAVE.scene.Scene">Scene</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Converts tanks with fluid to rigid-bodies. Tanks without fluid are deleted. Rotational inertia of the
+fluid in the tanks (whatever that may be) is fixed to radii of gyration of 0.1m.</p>
+<p>Free-fluid surface is ignored</p>
+<p>Name will be re-used</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def tanks_to_bodies(s : Scene):
+    &#34;&#34;&#34;Converts tanks with fluid to rigid-bodies. Tanks without fluid are deleted. Rotational inertia of the
+    fluid in the tanks (whatever that may be) is fixed to radii of gyration of 0.1m.
+
+    Free-fluid surface is ignored
+
+    Name will be re-used
+    &#34;&#34;&#34;
+
+    tanks = s.nodes_of_type(Tank)
+
+    for t in tanks:
+        parent = t.parent
+        cog_local = t.cog_local
+        mass = t.volume * t.density
+        name = t.name
+
+        s.delete(t)
+
+        if mass&gt;1e-6:
+            s.new_rigidbody(name, parent=parent, position=cog_local, cog = (0,0,0), mass=mass, inertia_radii=(0.1,0.1,0.1))</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul>
+<li><a href="#simplify">Simplify</a></li>
+</ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="DAVE.io.simplify.split_cables" href="#DAVE.io.simplify.split_cables">split_cables</a></code></li>
+<li><code><a title="DAVE.io.simplify.tanks_to_bodies" href="#DAVE.io.simplify.tanks_to_bodies">tanks_to_bodies</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

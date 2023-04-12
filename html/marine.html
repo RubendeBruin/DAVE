@@ -1,0 +1,1234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>DAVE.marine API documentation</title>
+<meta name="description" content="Helper functions for Marine analysis …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>DAVE.marine</code></h1>
+</header>
+<section id="section-intro">
+<p>Helper functions for Marine analysis</p>
+<p>Main functionality:</p>
+<ul>
+<li>linearize_buoyancy</li>
+<li>calculate_linearized_buoyancy_props</li>
+<li>
+<p>carene_table</p>
+</li>
+<li>
+<p>GZcurve_DisplacementDriven</p>
+</li>
+<li>GZcurve_MomentDriven [TODO]</li>
+</ul>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;
+  Helper functions for Marine analysis
+
+  Main functionality:
+
+  - linearize_buoyancy
+  - calculate_linearized_buoyancy_props
+  - carene_table
+
+  - GZcurve_DisplacementDriven
+  - GZcurve_MomentDriven [TODO]
+
+&#34;&#34;&#34;
+
+&#34;&#34;&#34;
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+  Ruben de Bruin - 2019
+&#34;&#34;&#34;
+
+from DAVE.scene import *
+import matplotlib.pyplot as plt
+from warnings import warn
+
+
+
+
+def linearize_buoyancy(scene : Scene, node : Buoyancy = None, delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
+    &#34;&#34;&#34;Replaces the given Buoyancy node with a HydSpring node using even-keel (rotation = (0,0,0) ) as reference.
+
+    Args:
+        scene : scene
+        node : node to be converted, if omitted then all nodes will be converted
+        delta_draft: draft difference used in linearization [m]
+        delta_roll: roll difference used in linearization [deg]
+        delta_pitch pitch difference used in linearization [deg]
+
+    See Also: calculate_linearized_buoyancy_props
+
+    Returns a reference to the newly created HydSpring node. If node is not specified and multiple buoyancy nodes are
+    present then only a reference to the last converted node is returned
+    &#34;&#34;&#34;
+
+    if node is None:
+        r = None
+        for node in scene.nodes_of_type(Buoyancy):
+            r = linearize_buoyancy(scene, node, delta_draft,delta_roll,delta_pitch)
+        return r
+
+
+
+    props = calculate_linearized_buoyancy_props(scene, node,
+                                                delta_draft=delta_draft, delta_roll = delta_roll, delta_pitch = delta_pitch)
+
+    parent = node.parent
+    name = node.name
+
+    scene.delete(node)  # remove buoyancy node
+
+    return scene.new_hydspring(name = name,
+                        parent = parent,
+                        cob = props[&#39;cob&#39;],
+                        BMT = props[&#39;BMT&#39;],
+                        BML = props[&#39;BML&#39;],
+                        COFX = props[&#39;COFX&#39;] - props[&#39;cob&#39;][0],  # relative to CoB!
+                        COFY = props[&#39;COFY&#39;] - props[&#39;cob&#39;][1],
+                        kHeave=props[&#39;kHeave&#39;],
+                        waterline=props[&#39;waterline&#39;],
+                        displacement_kN=props[&#39;displacement_kN&#39;])
+
+
+
+
+
+def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
+    &#34;&#34;&#34;Obtains the linearized buoyancy properties of a buoyant shape. The properties are derived for the current
+    vertical position of the parent body (draft at origin) and even-keel.
+
+    COFX, COFY and kHeave are evaluated by increasing the draft by delta_draft.
+    BMT, BML are evaluated by increasing the roll/pitch by delta_roll/delta_pitch [deg]. So roll to sb, pitch to bow.
+    Note: negative values are allowed. Zero is not allowed and will result in division by zero.
+
+        cob,&#34;Center of buoyancy in parent axis system (m,m,m)&#34;
+        BMT,Vertical distance between cob and metacenter for roll [m]
+        BML,Vertical distance between cob and metacenter for pitch [m]
+        COFX,&#34;Horizontal x-position Center of Floatation (center of waterplane area), parent axis system [m]&#34;
+        COFY,&#34;Horizontal y-position Center of Floatation (center of waterplane area), parent axis system [m]&#34;
+        kHeave,Heave stiffness in [kN/m]
+        waterline,Waterline-elevation relative to cob for un-stretched heave-spring. Positive if cob is below the waterline (which is where is normally is) [m]
+        displacement_kN,False,Displacement in [kN] when waterline is at waterline-elevation
+    &#34;&#34;&#34;
+
+    if not isinstance(node, Buoyancy):
+        raise ValueError(f&#34;Node {node.name} should be a &#39;buoyancy&#39; type of node but is a {type(node)}.&#34;)
+
+
+
+    s = Scene()
+    s.resources_paths = scene.resources_paths
+    a = s.new_axis(node.parent.name, fixed=True)
+    a.z = node.parent.global_position[2]
+
+    exec(node.give_python_code())  # place a copy of the buoyancy node in scene &#34;s&#34;
+
+    node = s[node.name]
+
+    # get buoyancy
+    s.update()
+
+    displacement_m3 = node.displacement
+    cob = node.cob_local
+    cob_global = node.cob
+
+    # increase draft
+    old_z = a.z
+
+    a.z = a.z - delta_draft
+    s.update()
+
+    new_disp =  node.displacement
+    delta_disp = new_disp - displacement_m3
+
+    if abs(delta_disp) &lt; 1e-6:
+        warn(f&#39;Zero displacement change detected for vertical position of {a.z}m&#39;)
+        return None
+
+
+    Awl = delta_disp / delta_draft
+    kHeave = Awl * 9.81 * node.density
+
+    # calcualte cofx and cofy from change of cob position
+    # x_old * x_disp + cofx * dis_change = x_new * dis_new
+
+    COFX = (node.cob_local[0] * new_disp - cob[0] * displacement_m3) / delta_disp
+    COFY = (node.cob_local[1] * new_disp - cob[1] * displacement_m3) / delta_disp
+
+    a.z = old_z # restore draft
+
+    # calculate BMT and BML by rotating about cob
+
+    rot = s.new_axis(&#39;rot&#39;, position = cob_global)
+    a.change_parent_to(rot)
+
+    rot.rotation = (delta_roll, 0,0) # impose heel
+    s.update()
+
+    delta_MT = node.cob[1] - cob_global[1]
+
+    rot.rotation = (0, delta_pitch, 0)  # impose trim
+    s.update()
+
+    delta_ML = node.cob[0] - cob_global[0]
+
+    BMT = -delta_MT / np.sin(np.deg2rad(delta_roll))
+    BML = delta_ML / np.sin(np.deg2rad(delta_pitch))
+
+    # assemble resuls in a dict
+    results = {&#39;cob&#39;: cob,
+               &#39;BMT&#39;: BMT,
+               &#39;BML&#39;: BML,
+               &#39;COFX&#39; : COFX,
+               &#39;COFY&#39; : COFY,
+               &#39;kHeave&#39;: kHeave,
+               &#39;Awl&#39;: Awl,
+               &#39;displacement_kN&#39;: displacement_m3 * 9.81 * node.density,
+               &#39;displacement&#39; : displacement_m3 ,
+               &#39;waterline&#39;: -cob_global[2]}
+
+    del s
+
+    return results
+
+def carene_table(scene, buoyancy_node, draft_min, draft_max,
+                 stepsize=0.25,
+                 delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
+
+    &#34;&#34;&#34;Creates a carene table for buoyancy node.
+
+    DRAFT refers the origin of the parent of the buoyancy node.
+
+    Args:
+        scene: reference to Scene object
+        buoyancy_node: reference to Buoyancy node in scene
+        draft_min,draft_max: Draft range
+        stepsize: Stepsize for drafts
+
+        delta_draft, delta_roll, delta_pitch: deltas used for derivation of linearized properties (see calculate_linearized_buoyancy_props)
+
+    Returns:
+        Pandas dataframe
+
+    &#34;&#34;&#34;
+
+    zs = np.arange(draft_min, draft_max, stepsize )
+    if max(zs) &lt; draft_max:
+        zs = np.append(zs,draft_max)
+    import pandas as pd
+
+    a = []
+
+    for z in zs:
+        buoyancy_node.parent.z = -z
+        r = calculate_linearized_buoyancy_props(scene, buoyancy_node, delta_roll=delta_roll, delta_pitch=delta_pitch, delta_draft=delta_draft)
+
+        if r is None:
+            break
+
+        r[&#39;CoB x [m]&#39;] = r[&#39;cob&#39;][0]
+        r[&#39;CoB y [m]&#39;] = r[&#39;cob&#39;][1]
+        r[&#39;CoB z [m]&#39;] = r[&#39;cob&#39;][2]
+        del r[&#39;cob&#39;]
+        r[&#39;draft&#39;] = z
+        a.append(r)
+
+    df = pd.DataFrame(a)
+
+    df = df.rename(columns={&#39;draft&#39;:&#39;Draft [m]&#39;,
+                            &#39;BMT&#39;: &#39;BM T [m]&#39;,
+                            &#39;BML&#39;: &#39;BM L [m]&#39;,
+                            &#39;COFX&#39;: &#39;CoF x [m]&#39;,
+                            &#39;COFY&#39;: &#39;CoF y [m]&#39;,
+                            &#39;displacement&#39;: &#39;Displacement [m3]&#39;,
+                            &#39;Awl&#39;: &#39;Awl [m2]&#39;})
+
+    df = df.set_index(&#39;Draft [m]&#39;)
+
+    return df.drop(columns=[&#39;waterline&#39;, &#39;displacement_kN&#39;,&#39;kHeave&#39;])
+
+
+
+
+def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum_heel= 0, maximum_heel=90, steps=180,
+                               teardown=True,
+                               allow_surge=False, allow_sway=False, allow_yaw=False, allow_trim=True,
+                               noplot = False, noshow = False,
+                               fig = None):
+    &#34;&#34;&#34;This works for vessels without a parent.
+
+    The vessels slaved to an axis system and its heel angle is fixed and enforced. After solving statics the GZ
+    curve is derived from the resulting moment on the connection.
+
+    The vessels heel and yaw are fixed.
+    The vessel is free to heave, trim, and
+    Only the vessels heel angle is fixed. The vessel is free to heave and trim.
+
+    Notes:
+        The reported heel is relative to the initial equilibrium position of the vessel. So if the initial heel
+        of the vessel is not zero (vessel not even keel) then the reported heel is the heel relative to that
+        initial heel.
+
+    Args:
+        scene:          the scene
+        vessel_node:    the vessel node or vessel node name
+        displacement_kN: displacement to be used (default value of 1 results in moment in kN*m instead of arm in m)
+        minimum_heel    minimum heel, begin of the curve (0)
+        maximum_heel    maximum heel, end of the curve (90)
+        steps:          number of steps (use un-even number to capture 0)
+        teardown:       remove the helper elements after the calculation
+        [disabled] enforce_even_keel (True) Run the analysis relative to even-keel position; otherwise run relative to equilibrium position
+        allow_surge:    (False)
+        allow_sway:     (False)
+        allow_yaw:      (False)
+        allow_trim:     (True)
+        noplot:         Do not plot results [False]
+        noshow:         Do plot but do not do plt.show() [False]
+        axes:           Axes instance to plot in
+
+    Returns:
+        dictionary with heel, moment, and GM
+
+        Also, it teardown is not selected, the DOFs for each of the displacements are stored in scene._gui_stability_dofs
+        This is used by the Gui to make a movie of the stability calculation
+
+    &#34;&#34;&#34;
+
+
+
+    # --------- verify input -----------
+
+    s = scene # lazy
+    doflog = []
+
+    if minimum_heel &gt; maximum_heel:
+        raise ValueError(&#39;Minimum heel should be smaller than maximum heel&#39;)
+
+    # vessel_node should not have a parent
+    vessel = s._node_from_node_or_str(vessel_node)
+    if vessel.parent is not None:
+        raise ValueError(&#34;Vessel should not have a parent. Got {} as vessel which has parent {}.&#34;.format(vessel.name, vessel.parent.name))
+
+    # make sure that we are in equilibrium before we start
+    s.solve_statics()
+
+    initial_heel = vessel.heel
+    initial_trim = vessel.trim
+
+    no_displacement = False
+    if displacement_kN is None: # default value
+        displacement_kN = 1
+
+    if displacement_kN == 1:
+        no_displacement = True
+
+    if minimum_heel == maximum_heel and steps&gt;1:
+        raise ValueError(&#34;Can not take multiple steps of min and max value are identical&#34;)
+
+    # --------------- store current state -------
+
+    # store current vessel props
+    _position = vessel.position
+    _rotation = vessel.rotation
+    _fixed = vessel.fixed
+    _verbose = s.verbose
+    s.verbose = False
+
+    # --------- construct system to impose heel ---------
+
+    # construct axis system at vessel origin
+    name = s.available_name_like(vessel.name + &#34;_global_motion&#34;)
+    global_motion = s.new_axis(name, parent=vessel) # construct at vessel origin
+    global_motion.change_parent_to(None)
+    global_motion.fixed = (not allow_surge,
+                           not allow_sway,
+                           False,               # heave allowed
+                           True, True,
+                           not allow_yaw)
+
+    trim_motion = s.new_axis(s.available_name_like(vessel.name + &#34;_trim_motion&#34;), parent=global_motion)
+
+    if allow_trim:
+        trim_motion.fixed = (True,True,True,
+                             True,False,True) # allow for trim (rotation about y)
+    else:
+        trim_motion.set_fixed()
+
+    name = s.available_name_like(vessel.name + &#34;_heel&#34;)
+    heel_node = s.new_axis(name, parent=trim_motion)
+
+    heel_node.set_fixed()
+    vessel.change_parent_to(heel_node)
+    vessel.set_fixed()
+
+    # # check initial heel
+    #
+    # if enforce_even_keel:
+    #
+    #     # equilibrium_rotation = global_motion.rotation
+    #
+    #     # force global motion trim and heel to be zero but maintain heading
+    #     dx = global_motion.to_glob_direction((1,0,0))
+    #     yaw = np.arctan2(dx[1],dx[0])
+    #     global_motion.rotation = (0,0, np.rad2deg(yaw))
+
+    initial_rotation = global_motion.rotation
+
+    # record dofs
+    s._vfc.state_update()
+    D0 = s._vfc.get_dofs()
+
+    # ----------------- do the calcs ---------------
+
+    heel = np.linspace(minimum_heel,maximum_heel,num=steps)
+    moment = list()
+    trim = list()
+
+    for x in heel:
+        s._vfc.set_dofs(D0)
+        heel_node.rx = x
+        s.solve_statics(silent=True)
+
+        # for movie replay
+        heel_node.fixed = (True,True,True,False,True,True)
+        s._vfc.state_update()
+        dofs = s._vfc.get_dofs()
+        doflog.append(dofs)
+        heel_node.set_fixed()
+
+        moment.append(-heel_node.applied_force[3])
+        trim.append(trim_motion.ry)
+
+    if no_displacement:
+        GM = np.nan
+    else:
+        GZ = np.array(moment, dtype=float) / displacement_kN
+        # calculate GM, but only if zero is part of the heel curve and at least two points
+        if (np.max(heel)&gt;=0 and np.min(heel)&lt;=0 and len(heel)&gt;1):
+            GMs = np.diff(GZ) / np.diff(np.deg2rad(heel))
+            heels = 0.5*(heel[:-1] + heel[1:])
+            GM = np.interp(0,heels, GMs)
+
+        else:
+            GM = np.nan
+
+        # restore dofs
+        s._vfc.set_dofs(D0)
+
+    # ----------- plot the results -----------
+
+    if not noplot:
+
+        # if np.max(np.abs(initial_rotation)) &gt; 0.01:
+        #     lbl = &#34;Equilibrium heel = {:.2f} deg, trim = {:.2f} deg&#34;.format(initial_heel, initial_trim)
+        # else:
+        #     lbl = None
+
+        if fig is None:
+            fig = plt.figure()
+        else:
+            fig.clear()
+
+        if allow_trim:
+
+            ax_gz = fig.add_subplot(2,1,1,label=&#39;gz&#39;)
+            ax_trim = fig.add_subplot(2,1,2,label=&#39;trim&#39;)
+        else:
+            ax_gz = fig.add_subplot(1,1,1, label=&#39;gz&#39;)
+
+
+        if allow_trim:
+            ax_trim.plot(heel + initial_heel, trim + initial_trim, color=&#39;black&#39;, marker=&#39;+&#39;)
+            ax_trim.set_xlabel(&#39;Heel angle [deg]&#39;)
+            ax_trim.set_ylabel(&#39;Solved trim angle [deg]\n(including initial trim of {:.2f} [deg])&#39;.format(initial_trim))
+            ax_trim.set_title(&#39;Trim resulting from imposed heel&#39;)
+            ax_trim.grid()
+
+        ax_gz.set_xlabel(&#39;Heel angle [deg] including initial heel of {:.2f} deg&#39;.format(initial_heel))
+
+        what = &#39;moment&#39;
+        if no_displacement:
+            ax_gz.plot(heel + initial_heel, moment, color=&#39;black&#39;, marker=&#39;+&#39;)
+            ax_gz.set_ylabel(&#39;Restoring moment [kN*m]&#39;)
+        else:
+            ax_gz.plot(heel + initial_heel, GZ, color=&#39;black&#39;, marker=&#39;+&#39;)
+            what = &#39;arm&#39;
+            ax_gz.set_ylabel(&#39;GZ [m]&#39;)
+
+            # plot the GM line
+            yy = ax_gz.get_ylim()
+            xmax = np.rad2deg(yy[1] / GM)
+            xmin = np.rad2deg(yy[0] / GM)
+
+            xmin = np.max([xmin, np.min(heel)])
+            xmax = np.min([xmax, np.max(heel)])
+
+
+            ax_gz.plot([xmin + initial_heel, xmax+ initial_heel], [np.deg2rad(xmin)*GM, np.deg2rad(xmax)*GM])
+            box_props = dict(boxstyle=&#39;round&#39;, facecolor=&#39;gold&#39;, alpha=1)
+            ax_gz.text(xmax,np.deg2rad(xmax)*GM,&#39;GM = {:.2f}&#39;.format(GM),horizontalalignment=&#39;left&#39;,bbox=box_props)
+
+        ax_gz.set_title(&#39;Restoring {} curve for {};\n Displacement = {} [kN]&#39;.format(what, vessel.name, round(100*displacement_kN)/100))
+
+        ax_gz.grid(&#39;on&#39;)
+        # if lbl:
+        #     plt.legend(facecolor=&#39;gold&#39;)
+        if not noshow:
+            plt.show()
+
+    # -------- clean up -----------
+
+    if teardown:
+        vessel.change_parent_to(None)
+        s.delete(global_motion)
+
+        # restore current vessel props
+        vessel.position = _position
+        vessel.rotation = _rotation
+        vessel.fixed = _fixed
+        s.solve_statics()
+    else:
+        heel_node.fixed = (True, True, True, False, True, True)
+        s._gui_stability_dofs = doflog
+
+    s.verbose = _verbose
+
+    # --------- collect return values --------
+    r = dict()
+    r[&#39;heel&#39;] = heel
+
+    if allow_trim:
+        r[&#39;trim&#39;] = trim
+
+    if not no_displacement:
+        r[&#39;GM&#39;] = GM
+        r[&#39;GZ&#39;] = moment
+    else:
+        r[&#39;moment&#39;] = moment
+
+    return r
+
+
+def GZcurve_MomentDriven():
+
+    &#34;&#34;&#34;Calculates the GZ curve by applying a heeling moment and calculating the resulting heel angle. This method allows for
+    accurate calculation of the curve up till approximately the maximum of the curve.
+
+    - Where to apply moment (poi / body)
+    - Where to obtain roll (body)
+    - Where to get displacement from
+
+    Returns:
+
+    &#34;&#34;&#34;
+
+    # Store the current DOFs of the model
+    # start with a moment (can not be obtained from the GM as more than one buoyancy object may be present)
+    #</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="DAVE.marine.GZcurve_DisplacementDriven"><code class="name flex">
+<span>def <span class="ident">GZcurve_DisplacementDriven</span></span>(<span>scene, vessel_node, displacement_kN=None, minimum_heel=0, maximum_heel=90, steps=180, teardown=True, allow_surge=False, allow_sway=False, allow_yaw=False, allow_trim=True, noplot=False, noshow=False, fig=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This works for vessels without a parent.</p>
+<p>The vessels slaved to an axis system and its heel angle is fixed and enforced. After solving statics the GZ
+curve is derived from the resulting moment on the connection.</p>
+<p>The vessels heel and yaw are fixed.
+The vessel is free to heave, trim, and
+Only the vessels heel angle is fixed. The vessel is free to heave and trim.</p>
+<h2 id="notes">Notes</h2>
+<p>The reported heel is relative to the initial equilibrium position of the vessel. So if the initial heel
+of the vessel is not zero (vessel not even keel) then the reported heel is the heel relative to that
+initial heel.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>scene</code></strong></dt>
+<dd>
+<pre><code> the scene
+</code></pre>
+</dd>
+<dt><strong><code>vessel_node</code></strong></dt>
+<dd>the vessel node or vessel node name</dd>
+<dt><strong><code>displacement_kN</code></strong></dt>
+<dd>displacement to be used (default value of 1 results in moment in kN*m instead of arm in m)</dd>
+<dt>minimum_heel
+minimum heel, begin of the curve (0)</dt>
+<dt>maximum_heel
+maximum heel, end of the curve (90)</dt>
+<dt><strong><code>steps</code></strong></dt>
+<dd>
+<pre><code> number of steps (use un-even number to capture 0)
+</code></pre>
+</dd>
+<dt><strong><code>teardown</code></strong></dt>
+<dd>
+<p>remove the helper elements after the calculation</p>
+</dd>
+<dt>[disabled] enforce_even_keel (True) Run the analysis relative to even-keel position; otherwise run relative to equilibrium position</dt>
+<dt><strong><code>allow_surge</code></strong></dt>
+<dd>(False)</dd>
+<dt><strong><code>allow_sway</code></strong></dt>
+<dd>
+<p>(False)</p>
+</dd>
+<dt><strong><code>allow_yaw</code></strong></dt>
+<dd>
+<p>(False)</p>
+</dd>
+<dt><strong><code>allow_trim</code></strong></dt>
+<dd>
+<p>(True)</p>
+</dd>
+<dt><strong><code>noplot</code></strong></dt>
+<dd>
+<pre><code>Do not plot results [False]
+</code></pre>
+</dd>
+<dt><strong><code>noshow</code></strong></dt>
+<dd>
+<pre><code>Do plot but do not do plt.show() [False]
+</code></pre>
+</dd>
+<dt><strong><code>axes</code></strong></dt>
+<dd>
+<pre><code>  Axes instance to plot in
+</code></pre>
+</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dictionary with heel, moment, and GM</code></dt>
+<dd>&nbsp;</dd>
+<dt><code>Also, it teardown is not selected, the DOFs for each</code> of <code>the displacements are stored in scene._gui_stability_dofs</code></dt>
+<dd>&nbsp;</dd>
+<dt><code>This is used by the Gui to make a movie</code> of <code>the stability calculation</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def GZcurve_DisplacementDriven(scene, vessel_node, displacement_kN=None, minimum_heel= 0, maximum_heel=90, steps=180,
+                               teardown=True,
+                               allow_surge=False, allow_sway=False, allow_yaw=False, allow_trim=True,
+                               noplot = False, noshow = False,
+                               fig = None):
+    &#34;&#34;&#34;This works for vessels without a parent.
+
+    The vessels slaved to an axis system and its heel angle is fixed and enforced. After solving statics the GZ
+    curve is derived from the resulting moment on the connection.
+
+    The vessels heel and yaw are fixed.
+    The vessel is free to heave, trim, and
+    Only the vessels heel angle is fixed. The vessel is free to heave and trim.
+
+    Notes:
+        The reported heel is relative to the initial equilibrium position of the vessel. So if the initial heel
+        of the vessel is not zero (vessel not even keel) then the reported heel is the heel relative to that
+        initial heel.
+
+    Args:
+        scene:          the scene
+        vessel_node:    the vessel node or vessel node name
+        displacement_kN: displacement to be used (default value of 1 results in moment in kN*m instead of arm in m)
+        minimum_heel    minimum heel, begin of the curve (0)
+        maximum_heel    maximum heel, end of the curve (90)
+        steps:          number of steps (use un-even number to capture 0)
+        teardown:       remove the helper elements after the calculation
+        [disabled] enforce_even_keel (True) Run the analysis relative to even-keel position; otherwise run relative to equilibrium position
+        allow_surge:    (False)
+        allow_sway:     (False)
+        allow_yaw:      (False)
+        allow_trim:     (True)
+        noplot:         Do not plot results [False]
+        noshow:         Do plot but do not do plt.show() [False]
+        axes:           Axes instance to plot in
+
+    Returns:
+        dictionary with heel, moment, and GM
+
+        Also, it teardown is not selected, the DOFs for each of the displacements are stored in scene._gui_stability_dofs
+        This is used by the Gui to make a movie of the stability calculation
+
+    &#34;&#34;&#34;
+
+
+
+    # --------- verify input -----------
+
+    s = scene # lazy
+    doflog = []
+
+    if minimum_heel &gt; maximum_heel:
+        raise ValueError(&#39;Minimum heel should be smaller than maximum heel&#39;)
+
+    # vessel_node should not have a parent
+    vessel = s._node_from_node_or_str(vessel_node)
+    if vessel.parent is not None:
+        raise ValueError(&#34;Vessel should not have a parent. Got {} as vessel which has parent {}.&#34;.format(vessel.name, vessel.parent.name))
+
+    # make sure that we are in equilibrium before we start
+    s.solve_statics()
+
+    initial_heel = vessel.heel
+    initial_trim = vessel.trim
+
+    no_displacement = False
+    if displacement_kN is None: # default value
+        displacement_kN = 1
+
+    if displacement_kN == 1:
+        no_displacement = True
+
+    if minimum_heel == maximum_heel and steps&gt;1:
+        raise ValueError(&#34;Can not take multiple steps of min and max value are identical&#34;)
+
+    # --------------- store current state -------
+
+    # store current vessel props
+    _position = vessel.position
+    _rotation = vessel.rotation
+    _fixed = vessel.fixed
+    _verbose = s.verbose
+    s.verbose = False
+
+    # --------- construct system to impose heel ---------
+
+    # construct axis system at vessel origin
+    name = s.available_name_like(vessel.name + &#34;_global_motion&#34;)
+    global_motion = s.new_axis(name, parent=vessel) # construct at vessel origin
+    global_motion.change_parent_to(None)
+    global_motion.fixed = (not allow_surge,
+                           not allow_sway,
+                           False,               # heave allowed
+                           True, True,
+                           not allow_yaw)
+
+    trim_motion = s.new_axis(s.available_name_like(vessel.name + &#34;_trim_motion&#34;), parent=global_motion)
+
+    if allow_trim:
+        trim_motion.fixed = (True,True,True,
+                             True,False,True) # allow for trim (rotation about y)
+    else:
+        trim_motion.set_fixed()
+
+    name = s.available_name_like(vessel.name + &#34;_heel&#34;)
+    heel_node = s.new_axis(name, parent=trim_motion)
+
+    heel_node.set_fixed()
+    vessel.change_parent_to(heel_node)
+    vessel.set_fixed()
+
+    # # check initial heel
+    #
+    # if enforce_even_keel:
+    #
+    #     # equilibrium_rotation = global_motion.rotation
+    #
+    #     # force global motion trim and heel to be zero but maintain heading
+    #     dx = global_motion.to_glob_direction((1,0,0))
+    #     yaw = np.arctan2(dx[1],dx[0])
+    #     global_motion.rotation = (0,0, np.rad2deg(yaw))
+
+    initial_rotation = global_motion.rotation
+
+    # record dofs
+    s._vfc.state_update()
+    D0 = s._vfc.get_dofs()
+
+    # ----------------- do the calcs ---------------
+
+    heel = np.linspace(minimum_heel,maximum_heel,num=steps)
+    moment = list()
+    trim = list()
+
+    for x in heel:
+        s._vfc.set_dofs(D0)
+        heel_node.rx = x
+        s.solve_statics(silent=True)
+
+        # for movie replay
+        heel_node.fixed = (True,True,True,False,True,True)
+        s._vfc.state_update()
+        dofs = s._vfc.get_dofs()
+        doflog.append(dofs)
+        heel_node.set_fixed()
+
+        moment.append(-heel_node.applied_force[3])
+        trim.append(trim_motion.ry)
+
+    if no_displacement:
+        GM = np.nan
+    else:
+        GZ = np.array(moment, dtype=float) / displacement_kN
+        # calculate GM, but only if zero is part of the heel curve and at least two points
+        if (np.max(heel)&gt;=0 and np.min(heel)&lt;=0 and len(heel)&gt;1):
+            GMs = np.diff(GZ) / np.diff(np.deg2rad(heel))
+            heels = 0.5*(heel[:-1] + heel[1:])
+            GM = np.interp(0,heels, GMs)
+
+        else:
+            GM = np.nan
+
+        # restore dofs
+        s._vfc.set_dofs(D0)
+
+    # ----------- plot the results -----------
+
+    if not noplot:
+
+        # if np.max(np.abs(initial_rotation)) &gt; 0.01:
+        #     lbl = &#34;Equilibrium heel = {:.2f} deg, trim = {:.2f} deg&#34;.format(initial_heel, initial_trim)
+        # else:
+        #     lbl = None
+
+        if fig is None:
+            fig = plt.figure()
+        else:
+            fig.clear()
+
+        if allow_trim:
+
+            ax_gz = fig.add_subplot(2,1,1,label=&#39;gz&#39;)
+            ax_trim = fig.add_subplot(2,1,2,label=&#39;trim&#39;)
+        else:
+            ax_gz = fig.add_subplot(1,1,1, label=&#39;gz&#39;)
+
+
+        if allow_trim:
+            ax_trim.plot(heel + initial_heel, trim + initial_trim, color=&#39;black&#39;, marker=&#39;+&#39;)
+            ax_trim.set_xlabel(&#39;Heel angle [deg]&#39;)
+            ax_trim.set_ylabel(&#39;Solved trim angle [deg]\n(including initial trim of {:.2f} [deg])&#39;.format(initial_trim))
+            ax_trim.set_title(&#39;Trim resulting from imposed heel&#39;)
+            ax_trim.grid()
+
+        ax_gz.set_xlabel(&#39;Heel angle [deg] including initial heel of {:.2f} deg&#39;.format(initial_heel))
+
+        what = &#39;moment&#39;
+        if no_displacement:
+            ax_gz.plot(heel + initial_heel, moment, color=&#39;black&#39;, marker=&#39;+&#39;)
+            ax_gz.set_ylabel(&#39;Restoring moment [kN*m]&#39;)
+        else:
+            ax_gz.plot(heel + initial_heel, GZ, color=&#39;black&#39;, marker=&#39;+&#39;)
+            what = &#39;arm&#39;
+            ax_gz.set_ylabel(&#39;GZ [m]&#39;)
+
+            # plot the GM line
+            yy = ax_gz.get_ylim()
+            xmax = np.rad2deg(yy[1] / GM)
+            xmin = np.rad2deg(yy[0] / GM)
+
+            xmin = np.max([xmin, np.min(heel)])
+            xmax = np.min([xmax, np.max(heel)])
+
+
+            ax_gz.plot([xmin + initial_heel, xmax+ initial_heel], [np.deg2rad(xmin)*GM, np.deg2rad(xmax)*GM])
+            box_props = dict(boxstyle=&#39;round&#39;, facecolor=&#39;gold&#39;, alpha=1)
+            ax_gz.text(xmax,np.deg2rad(xmax)*GM,&#39;GM = {:.2f}&#39;.format(GM),horizontalalignment=&#39;left&#39;,bbox=box_props)
+
+        ax_gz.set_title(&#39;Restoring {} curve for {};\n Displacement = {} [kN]&#39;.format(what, vessel.name, round(100*displacement_kN)/100))
+
+        ax_gz.grid(&#39;on&#39;)
+        # if lbl:
+        #     plt.legend(facecolor=&#39;gold&#39;)
+        if not noshow:
+            plt.show()
+
+    # -------- clean up -----------
+
+    if teardown:
+        vessel.change_parent_to(None)
+        s.delete(global_motion)
+
+        # restore current vessel props
+        vessel.position = _position
+        vessel.rotation = _rotation
+        vessel.fixed = _fixed
+        s.solve_statics()
+    else:
+        heel_node.fixed = (True, True, True, False, True, True)
+        s._gui_stability_dofs = doflog
+
+    s.verbose = _verbose
+
+    # --------- collect return values --------
+    r = dict()
+    r[&#39;heel&#39;] = heel
+
+    if allow_trim:
+        r[&#39;trim&#39;] = trim
+
+    if not no_displacement:
+        r[&#39;GM&#39;] = GM
+        r[&#39;GZ&#39;] = moment
+    else:
+        r[&#39;moment&#39;] = moment
+
+    return r</code></pre>
+</details>
+</dd>
+<dt id="DAVE.marine.GZcurve_MomentDriven"><code class="name flex">
+<span>def <span class="ident">GZcurve_MomentDriven</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculates the GZ curve by applying a heeling moment and calculating the resulting heel angle. This method allows for
+accurate calculation of the curve up till approximately the maximum of the curve.</p>
+<ul>
+<li>Where to apply moment (poi / body)</li>
+<li>Where to obtain roll (body)</li>
+<li>Where to get displacement from</li>
+</ul>
+<p>Returns:</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def GZcurve_MomentDriven():
+
+    &#34;&#34;&#34;Calculates the GZ curve by applying a heeling moment and calculating the resulting heel angle. This method allows for
+    accurate calculation of the curve up till approximately the maximum of the curve.
+
+    - Where to apply moment (poi / body)
+    - Where to obtain roll (body)
+    - Where to get displacement from
+
+    Returns:
+
+    &#34;&#34;&#34;
+
+    # Store the current DOFs of the model
+    # start with a moment (can not be obtained from the GM as more than one buoyancy object may be present)
+    #</code></pre>
+</details>
+</dd>
+<dt id="DAVE.marine.calculate_linearized_buoyancy_props"><code class="name flex">
+<span>def <span class="ident">calculate_linearized_buoyancy_props</span></span>(<span>scene: <a title="DAVE.scene.Scene" href="scene.html#DAVE.scene.Scene">Scene</a>, node: <a title="DAVE.scene.Buoyancy" href="scene.html#DAVE.scene.Buoyancy">Buoyancy</a>, delta_draft=0.001, delta_roll=1, delta_pitch=0.3)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Obtains the linearized buoyancy properties of a buoyant shape. The properties are derived for the current
+vertical position of the parent body (draft at origin) and even-keel.</p>
+<p>COFX, COFY and kHeave are evaluated by increasing the draft by delta_draft.
+BMT, BML are evaluated by increasing the roll/pitch by delta_roll/delta_pitch [deg]. So roll to sb, pitch to bow.
+Note: negative values are allowed. Zero is not allowed and will result in division by zero.</p>
+<pre><code>cob,"Center of buoyancy in parent axis system (m,m,m)"
+BMT,Vertical distance between cob and metacenter for roll [m]
+BML,Vertical distance between cob and metacenter for pitch [m]
+COFX,"Horizontal x-position Center of Floatation (center of waterplane area), parent axis system [m]"
+COFY,"Horizontal y-position Center of Floatation (center of waterplane area), parent axis system [m]"
+kHeave,Heave stiffness in [kN/m]
+waterline,Waterline-elevation relative to cob for un-stretched heave-spring. Positive if cob is below the waterline (which is where is normally is) [m]
+displacement_kN,False,Displacement in [kN] when waterline is at waterline-elevation
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def calculate_linearized_buoyancy_props(scene : Scene, node : Buoyancy, delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
+    &#34;&#34;&#34;Obtains the linearized buoyancy properties of a buoyant shape. The properties are derived for the current
+    vertical position of the parent body (draft at origin) and even-keel.
+
+    COFX, COFY and kHeave are evaluated by increasing the draft by delta_draft.
+    BMT, BML are evaluated by increasing the roll/pitch by delta_roll/delta_pitch [deg]. So roll to sb, pitch to bow.
+    Note: negative values are allowed. Zero is not allowed and will result in division by zero.
+
+        cob,&#34;Center of buoyancy in parent axis system (m,m,m)&#34;
+        BMT,Vertical distance between cob and metacenter for roll [m]
+        BML,Vertical distance between cob and metacenter for pitch [m]
+        COFX,&#34;Horizontal x-position Center of Floatation (center of waterplane area), parent axis system [m]&#34;
+        COFY,&#34;Horizontal y-position Center of Floatation (center of waterplane area), parent axis system [m]&#34;
+        kHeave,Heave stiffness in [kN/m]
+        waterline,Waterline-elevation relative to cob for un-stretched heave-spring. Positive if cob is below the waterline (which is where is normally is) [m]
+        displacement_kN,False,Displacement in [kN] when waterline is at waterline-elevation
+    &#34;&#34;&#34;
+
+    if not isinstance(node, Buoyancy):
+        raise ValueError(f&#34;Node {node.name} should be a &#39;buoyancy&#39; type of node but is a {type(node)}.&#34;)
+
+
+
+    s = Scene()
+    s.resources_paths = scene.resources_paths
+    a = s.new_axis(node.parent.name, fixed=True)
+    a.z = node.parent.global_position[2]
+
+    exec(node.give_python_code())  # place a copy of the buoyancy node in scene &#34;s&#34;
+
+    node = s[node.name]
+
+    # get buoyancy
+    s.update()
+
+    displacement_m3 = node.displacement
+    cob = node.cob_local
+    cob_global = node.cob
+
+    # increase draft
+    old_z = a.z
+
+    a.z = a.z - delta_draft
+    s.update()
+
+    new_disp =  node.displacement
+    delta_disp = new_disp - displacement_m3
+
+    if abs(delta_disp) &lt; 1e-6:
+        warn(f&#39;Zero displacement change detected for vertical position of {a.z}m&#39;)
+        return None
+
+
+    Awl = delta_disp / delta_draft
+    kHeave = Awl * 9.81 * node.density
+
+    # calcualte cofx and cofy from change of cob position
+    # x_old * x_disp + cofx * dis_change = x_new * dis_new
+
+    COFX = (node.cob_local[0] * new_disp - cob[0] * displacement_m3) / delta_disp
+    COFY = (node.cob_local[1] * new_disp - cob[1] * displacement_m3) / delta_disp
+
+    a.z = old_z # restore draft
+
+    # calculate BMT and BML by rotating about cob
+
+    rot = s.new_axis(&#39;rot&#39;, position = cob_global)
+    a.change_parent_to(rot)
+
+    rot.rotation = (delta_roll, 0,0) # impose heel
+    s.update()
+
+    delta_MT = node.cob[1] - cob_global[1]
+
+    rot.rotation = (0, delta_pitch, 0)  # impose trim
+    s.update()
+
+    delta_ML = node.cob[0] - cob_global[0]
+
+    BMT = -delta_MT / np.sin(np.deg2rad(delta_roll))
+    BML = delta_ML / np.sin(np.deg2rad(delta_pitch))
+
+    # assemble resuls in a dict
+    results = {&#39;cob&#39;: cob,
+               &#39;BMT&#39;: BMT,
+               &#39;BML&#39;: BML,
+               &#39;COFX&#39; : COFX,
+               &#39;COFY&#39; : COFY,
+               &#39;kHeave&#39;: kHeave,
+               &#39;Awl&#39;: Awl,
+               &#39;displacement_kN&#39;: displacement_m3 * 9.81 * node.density,
+               &#39;displacement&#39; : displacement_m3 ,
+               &#39;waterline&#39;: -cob_global[2]}
+
+    del s
+
+    return results</code></pre>
+</details>
+</dd>
+<dt id="DAVE.marine.carene_table"><code class="name flex">
+<span>def <span class="ident">carene_table</span></span>(<span>scene, buoyancy_node, draft_min, draft_max, stepsize=0.25, delta_draft=0.001, delta_roll=1, delta_pitch=0.3)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a carene table for buoyancy node.</p>
+<p>DRAFT refers the origin of the parent of the buoyancy node.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>scene</code></strong></dt>
+<dd>reference to Scene object</dd>
+<dt><strong><code>buoyancy_node</code></strong></dt>
+<dd>reference to Buoyancy node in scene</dd>
+<dt>draft_min,draft_max: Draft range</dt>
+<dt><strong><code>stepsize</code></strong></dt>
+<dd>Stepsize for drafts</dd>
+<dt><strong><code>delta_draft</code></strong>, <strong><code>delta_roll</code></strong>, <strong><code>delta_pitch</code></strong> :&ensp;<code>deltas used for derivation</code> of <code>linearized properties (see <a title="DAVE.marine.calculate_linearized_buoyancy_props" href="#DAVE.marine.calculate_linearized_buoyancy_props">calculate_linearized_buoyancy_props()</a>)</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Pandas dataframe</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def carene_table(scene, buoyancy_node, draft_min, draft_max,
+                 stepsize=0.25,
+                 delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
+
+    &#34;&#34;&#34;Creates a carene table for buoyancy node.
+
+    DRAFT refers the origin of the parent of the buoyancy node.
+
+    Args:
+        scene: reference to Scene object
+        buoyancy_node: reference to Buoyancy node in scene
+        draft_min,draft_max: Draft range
+        stepsize: Stepsize for drafts
+
+        delta_draft, delta_roll, delta_pitch: deltas used for derivation of linearized properties (see calculate_linearized_buoyancy_props)
+
+    Returns:
+        Pandas dataframe
+
+    &#34;&#34;&#34;
+
+    zs = np.arange(draft_min, draft_max, stepsize )
+    if max(zs) &lt; draft_max:
+        zs = np.append(zs,draft_max)
+    import pandas as pd
+
+    a = []
+
+    for z in zs:
+        buoyancy_node.parent.z = -z
+        r = calculate_linearized_buoyancy_props(scene, buoyancy_node, delta_roll=delta_roll, delta_pitch=delta_pitch, delta_draft=delta_draft)
+
+        if r is None:
+            break
+
+        r[&#39;CoB x [m]&#39;] = r[&#39;cob&#39;][0]
+        r[&#39;CoB y [m]&#39;] = r[&#39;cob&#39;][1]
+        r[&#39;CoB z [m]&#39;] = r[&#39;cob&#39;][2]
+        del r[&#39;cob&#39;]
+        r[&#39;draft&#39;] = z
+        a.append(r)
+
+    df = pd.DataFrame(a)
+
+    df = df.rename(columns={&#39;draft&#39;:&#39;Draft [m]&#39;,
+                            &#39;BMT&#39;: &#39;BM T [m]&#39;,
+                            &#39;BML&#39;: &#39;BM L [m]&#39;,
+                            &#39;COFX&#39;: &#39;CoF x [m]&#39;,
+                            &#39;COFY&#39;: &#39;CoF y [m]&#39;,
+                            &#39;displacement&#39;: &#39;Displacement [m3]&#39;,
+                            &#39;Awl&#39;: &#39;Awl [m2]&#39;})
+
+    df = df.set_index(&#39;Draft [m]&#39;)
+
+    return df.drop(columns=[&#39;waterline&#39;, &#39;displacement_kN&#39;,&#39;kHeave&#39;])</code></pre>
+</details>
+</dd>
+<dt id="DAVE.marine.linearize_buoyancy"><code class="name flex">
+<span>def <span class="ident">linearize_buoyancy</span></span>(<span>scene: <a title="DAVE.scene.Scene" href="scene.html#DAVE.scene.Scene">Scene</a>, node: <a title="DAVE.scene.Buoyancy" href="scene.html#DAVE.scene.Buoyancy">Buoyancy</a> = None, delta_draft=0.001, delta_roll=1, delta_pitch=0.3)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Replaces the given Buoyancy node with a HydSpring node using even-keel (rotation = (0,0,0) ) as reference.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>scene</code></strong> :&ensp;<code>scene</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>node</code></strong> :&ensp;<code>node to be converted, if omitted then all nodes will be converted</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>delta_draft</code></strong></dt>
+<dd>draft difference used in linearization [m]</dd>
+<dt><strong><code>delta_roll</code></strong></dt>
+<dd>roll difference used in linearization [deg]</dd>
+</dl>
+<p>delta_pitch pitch difference used in linearization [deg]
+See Also: calculate_linearized_buoyancy_props</p>
+<p>Returns a reference to the newly created HydSpring node. If node is not specified and multiple buoyancy nodes are
+present then only a reference to the last converted node is returned</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def linearize_buoyancy(scene : Scene, node : Buoyancy = None, delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
+    &#34;&#34;&#34;Replaces the given Buoyancy node with a HydSpring node using even-keel (rotation = (0,0,0) ) as reference.
+
+    Args:
+        scene : scene
+        node : node to be converted, if omitted then all nodes will be converted
+        delta_draft: draft difference used in linearization [m]
+        delta_roll: roll difference used in linearization [deg]
+        delta_pitch pitch difference used in linearization [deg]
+
+    See Also: calculate_linearized_buoyancy_props
+
+    Returns a reference to the newly created HydSpring node. If node is not specified and multiple buoyancy nodes are
+    present then only a reference to the last converted node is returned
+    &#34;&#34;&#34;
+
+    if node is None:
+        r = None
+        for node in scene.nodes_of_type(Buoyancy):
+            r = linearize_buoyancy(scene, node, delta_draft,delta_roll,delta_pitch)
+        return r
+
+
+
+    props = calculate_linearized_buoyancy_props(scene, node,
+                                                delta_draft=delta_draft, delta_roll = delta_roll, delta_pitch = delta_pitch)
+
+    parent = node.parent
+    name = node.name
+
+    scene.delete(node)  # remove buoyancy node
+
+    return scene.new_hydspring(name = name,
+                        parent = parent,
+                        cob = props[&#39;cob&#39;],
+                        BMT = props[&#39;BMT&#39;],
+                        BML = props[&#39;BML&#39;],
+                        COFX = props[&#39;COFX&#39;] - props[&#39;cob&#39;][0],  # relative to CoB!
+                        COFY = props[&#39;COFY&#39;] - props[&#39;cob&#39;][1],
+                        kHeave=props[&#39;kHeave&#39;],
+                        waterline=props[&#39;waterline&#39;],
+                        displacement_kN=props[&#39;displacement_kN&#39;])</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="DAVE.marine.GZcurve_DisplacementDriven" href="#DAVE.marine.GZcurve_DisplacementDriven">GZcurve_DisplacementDriven</a></code></li>
+<li><code><a title="DAVE.marine.GZcurve_MomentDriven" href="#DAVE.marine.GZcurve_MomentDriven">GZcurve_MomentDriven</a></code></li>
+<li><code><a title="DAVE.marine.calculate_linearized_buoyancy_props" href="#DAVE.marine.calculate_linearized_buoyancy_props">calculate_linearized_buoyancy_props</a></code></li>
+<li><code><a title="DAVE.marine.carene_table" href="#DAVE.marine.carene_table">carene_table</a></code></li>
+<li><code><a title="DAVE.marine.linearize_buoyancy" href="#DAVE.marine.linearize_buoyancy">linearize_buoyancy</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
