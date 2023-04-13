@@ -730,7 +730,8 @@ class Gui:
         pass # TODO
 
     def focus_on_viewport(self, *args):
-        self.ui.frame3d.setFocus()
+        self.visual.vtkWidget.setFocus()
+
 
     def show_python_console(self, *args):
         self.ui.dockWidget_2.show()
