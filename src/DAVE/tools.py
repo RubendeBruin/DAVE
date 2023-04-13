@@ -15,6 +15,7 @@ from DAVE.scene import *
 import DAVE.settings as ds
 import numpy as np
 from scipy.spatial.transform import Rotation
+from glob import glob
 
 def MostLikelyMatch(search_for, choices) -> str:
     """Uses rapidfuzz to get a best match"""
@@ -287,3 +288,16 @@ def sort_by_name(nodes):
     nodes = list(nodes)
     nodes.sort(key=lambda x: x.name, reverse=False)
     return nodes
+
+def get_all_files_with_extension(root_dir, extension, include_subdirs=True):
+    """Returns a list of str with files matching the given parameters."""
+
+    if extension.startswith('.'):
+        extension = extension[1:]
+
+    if include_subdirs:
+        a = glob(pathname=f'**/*.{extension}',root_dir=root_dir, recursive=True)
+    else:
+        a = glob(pathname=f'*.{extension}', root_dir=root_dir, recursive=False)
+
+    return a

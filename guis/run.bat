@@ -1,7 +1,7 @@
 call conda activate pyside2
 
 call pyside2-uic solverdialog_threaded.ui -o "..\src\DAVE\gui\forms\dlg_solver_threaded.py"
-echo call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
+call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
 echo call pyside2-uic widget_environment.ui -o "..\src\DAVE\gui\forms\widgetUI_environment.py"
 echo call pyside2-uic widget_modeshapes.ui -o "..\src\DAVE\gui\forms\widgetUI_modeshapes.py"
 call pyside2-uic widget_ballastconfiguration.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastconfiguration.py"
@@ -47,4 +47,4 @@ echo call pyside2-uic widget_limits.ui -o "..\src\DAVE\gui\forms\widget_limits.p
 echo call pyside2-uic dialog_edit_watch.ui -o "..\src\DAVE\gui\forms\dialog_edit_watch.py"
 echo call pyside2-uic dlg_export_to_blender.ui -o "..\src\DAVE\gui\forms\dlg_export_to_blender.py"
 
-echo call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"
+call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"

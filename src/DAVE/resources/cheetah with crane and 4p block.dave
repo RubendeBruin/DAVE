@@ -1,7 +1,7 @@
 s.import_scene('cheetah with crane.dave',containerize=False)
 
-s['crane_slew'].rotation = (0.0, 0.0, 50.0)
-s['crane_Crane_susp_wire'].length = 50.0
+# s['crane_slew'].rotation = (0.0, 0.0, 50.0)
+# s['crane_Crane_susp_wire'].length = 50.0
 
 s.import_scene(s.get_resource_path("crane block 4p.dave"), containerize=False, prefix="")
 s['Upper block'].fixed = False
@@ -10,13 +10,13 @@ s['Upper block'].fixed = False
 
 # code for hw1
 s.new_point(name='hw1',
-          parent='crane_boom',
+          parent='crane/crane_boom',
           position=(52.0,
                     2.0,
                     0.0))
 # code for hw2
 s.new_point(name='hw2',
-          parent='crane_boom',
+          parent='crane/crane_boom',
           position=(52.0,
                     -2.0,
                     0.0))

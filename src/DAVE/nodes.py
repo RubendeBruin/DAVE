@@ -6682,19 +6682,27 @@ class Component(Manager, Frame):
 
         # first see if we can load
         filename = self._scene.get_resource_path(value)
-        t = Scene(filename, resource_paths=self._scene.resources_paths.copy())
+        t = Scene(filename, resource_paths=self._scene.resources_paths.copy(), current_directory=self._scene.current_directory)
 
         # then remove all existing nodes
         self.delete()
 
         # and re-import them
         old_nodes = self._scene._nodes.copy()
+
+        # we're importing the exposed list into the current scene
+        # but we need it inside this component
+
+        old_scene_exposed = getattr(self._scene,'exposed',None)
+
         self._scene.import_scene(
             other=t,
             prefix=self.name + "/",
             container=self,
             settings=False,  # do not import environment and other settings
         )
+
+
 
         # find imported nodes
         self._nodes.clear()
@@ -6711,6 +6719,13 @@ class Component(Manager, Frame):
 
         # Get exposed properties (if any)
         self._exposed = getattr(t, 'exposed', [])
+
+        # and restore the _scenes old exposed
+        if old_scene_exposed is not None:
+            self._scene.exposed = old_scene_exposed
+        else: # there was none, remove it if it is there now
+            if hasattr(self._scene, 'exposed'):
+                del self._scene.exposed
 
         self._path = value
 

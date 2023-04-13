@@ -59,17 +59,16 @@ class CustomEventFilters(PySide2.QtCore.QObject):
         self.callback = None
 
 
-class DeleteEventFilter(CustomEventFilters):
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.callback = None
+class CustonKeyEventFilter(CustomEventFilters):
+    key = Qt.Key_Delete
 
     def eventFilter(self, obj, event):
 
+
+
         if isinstance(event, PySide2.QtGui.QKeyEvent):
 
-            if (event.key() == Qt.Key_Delete):
+            if (event.key() == self.key):
                 if event.type() == PySide2.QtCore.QEvent.KeyPress:
                     if self.callback is None:
                         print('Callback not set')
@@ -83,16 +82,15 @@ class DeleteEventFilter(CustomEventFilters):
         return False
 
 
+class DeleteEventFilter(CustonKeyEventFilter):
+    key = Qt.Key_Delete
+
 class EnterKeyPressFilter(CustomEventFilters):
+    key = Qt.Key_Return
 
-    def eventFilter(self, obj, event):
-        if isinstance(event, PySide2.QtGui.QKeyEvent):
-            if (event.key() == Qt.Key_Return):
-                self.callback()
-                event.setAccepted(True)
-                return True
+class EscKeyPressFilter(CustomEventFilters):
+    key = Qt.Key_Escape
 
-        return False
 
 
 class RightClickEventFilter(CustomEventFilters):

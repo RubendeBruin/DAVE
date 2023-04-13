@@ -81,9 +81,6 @@ if not default_user_dir.exists():
 # get the package directory
 cdir = Path(dirname(__file__))
 
-# get the current working directory
-workdir = Path().absolute()
-
 # The RESOURCE PATH is the initial value for
 # Scene.resources_paths
 #
@@ -92,7 +89,6 @@ workdir = Path().absolute()
 RESOURCE_PATH = []
 RESOURCE_PATH.append(cdir / 'resources')
 RESOURCE_PATH.append(default_user_dir)
-RESOURCE_PATH.append(workdir)
 
 # ============ ENVIRONMENT SETTINGS =========
 

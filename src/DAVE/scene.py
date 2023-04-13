@@ -6,6 +6,10 @@
   Ruben de Bruin - 2019
 """
 import weakref
+from os.path import isdir
+from os import mkdir
+from shutil import copy
+
 from time import sleep
 from typing import Tuple
 import functools
@@ -52,7 +56,7 @@ class Scene:
 
     """
 
-    def __init__(self, filename=None, copy_from=None, code=None, resource_paths=None):
+    def __init__(self, filename=None, copy_from=None, code=None, resource_paths=None, current_directory=None):
         """Creates a new Scene
 
         Args:
@@ -92,6 +96,9 @@ class Scene:
         self.resources_paths = []
         """A list of paths where to look for resources such as .obj files. Priority is given to paths earlier in the list."""
         self.resources_paths.extend(RESOURCE_PATH)
+
+        self.current_directory = current_directory or Path().absolute()
+        """the current working directory"""
 
         if resource_paths is not None:
             for rp in resource_paths:
@@ -458,7 +465,9 @@ class Scene:
     # ======== resources =========
 
     def get_resource_path(self, url) -> Path:
-        """Resolves the path on disk for resource url. Urls statring with res: result in a file from the resources system.
+        """Resolves the path on disk for resource url.
+        Urls statring with res: result in a file from the resources system.
+        Urls statring with cd: result in a file from the current directory.
 
         Looks for a file with "name" in the specified resource-paths and returns the full path to the the first one
         that is found.
@@ -467,9 +476,8 @@ class Scene:
         See Also:
             resource_paths
 
-
         Returns:
-            Full path to resource
+            Full Path to resource : Path
 
         Raises:
             FileExistsError if resource is not found
@@ -484,7 +492,7 @@ class Scene:
             else:
                 test = url
 
-            if not test.startswith("res:"):
+            if not test.startswith("res:") and not test.startswith('cd:'):
                 test = Path(test)
                 if str(test.parent) == ".":
                     # from warnings import warn
@@ -499,9 +507,18 @@ class Scene:
         if isinstance(url, Path):
             file = url
         elif isinstance(url, str):
-            if not url.startswith("res:"):
-                file = Path(url)
-            else:
+            if url.startswith("cd:"):
+                filename = url[3:].strip()
+                file = Path(self.current_directory) / filename
+                if isfile(file):
+                    return file
+
+                raise FileExistsError(
+                    f'Resource "{filename}" not found in current directory "{str(self.current_directory)}"')
+
+
+            elif url.startswith("res:"):
+
                 # we have a string starting with 'res:'
                 filename = url[4:].strip()
 
@@ -532,7 +549,10 @@ class Scene:
                         url
                     )
                 )
-        else:
+            else:
+                file = Path(url)
+
+        else:  # not a Path or a string
             raise ValueError(
                 f"Provided url shall be a Path or a string, not a {type(url)}"
             )
@@ -541,48 +561,41 @@ class Scene:
             return file
 
         raise FileExistsError(
-            'File "{}" not found.\nHint: To obtain a resource put res: in front of the name.'.format(
+            'File "{}" not found.\nHint: To obtain a resource put res: or in front of the name.'.format(
                 url
             )
         )
 
-    def get_resource_list(self, extension, include_subdirs=False):
-        """Returns a list of all resources (strings) with given extension in any of the resource-paths"""
+    def get_resource_list(self, extension, include_subdirs=False, include_current_dir = True):
+        """Returns a list of all resources (strings) with given extension in any of the resource-paths
 
-        # include subdirs excludes the root dir. Scan the root-dir first by doing a non-recursive call
-        if include_subdirs:
-            r = self.get_resource_list(extension=extension, include_subdirs=False)
-        else:
-            r = []
+        extension: (str) extension to look for, for example 'dave' or '.dave'
+        include_subdirs : do a recursive search
+        include_current_dir : return 'cd:' based resources as well
+
+        """
+        r = [] # results
 
         for dir in self.resources_paths:
             try:
-                # files = listdir(dir)
-                # for file in files:
-                #     if file.lower().endswith(extension):
-                #         if file not in r:
-                #             r.append("res: " + file)
-                if include_subdirs:
-                    mask = str(dir) + "/**/*" + extension
-                    recursive = True
-                else:
-                    mask = str(dir) + "/*" + extension
-                    recursive = False
+                files = get_all_files_with_extension(root_dir = dir, extension=extension, include_subdirs=include_subdirs)
 
-                for file in glob.glob(mask, recursive=recursive):
-
-                    file = file.replace(str(dir), "")
-                    if file.startswith("\\"):
-                        file = file[1:]
-                    file = file.replace("\\", "/")
-
+                for file in files:
+                    file = "res: " + file.replace("\\", "/")
                     if file not in r:
-                        r.append("res: " + file)
+                        r.append(file)
 
             except FileNotFoundError:
                 pass
 
-        r = list(set(r)) # remove doubles
+
+        if include_current_dir:
+            files = get_all_files_with_extension(root_dir=self.current_directory, extension=extension, include_subdirs=include_subdirs)
+
+            for file in files:
+                file = "cd: " + file.replace("\\", "/")
+                if file not in r:
+                    r.append(file)
 
         return r
 
@@ -1235,8 +1248,10 @@ class Scene:
 
         self.delete(node)  # do not call delete as that will fail on managers
 
-    def flatten(self, root_node=None):
+    def flatten(self, root_node=None, exclude_known_types = False):
         """Performs a recursive dissolve on Frames (not rigid bodies). If root_node is None (default) then the whole model is flattened"""
+
+        from .nodes import Frame, RigidBody, Shackle, Component, Manager
 
         while True:
             work_done = False
@@ -1251,7 +1266,11 @@ class Scene:
             for node in nodes:
 
                 if isinstance(node, RigidBody):
-                    continue # do not dissible rigid-bodies, that would destroy the weight
+                    continue # do not dissolve rigid-bodies, that would destroy the weight
+
+                if exclude_known_types:
+                    if isinstance(node, (Shackle, Component)):
+                        continue
 
                 if node.manager is None and node.fixed == (True, True, True, True, True, True):
                     self.dissolve(node)
@@ -1280,6 +1299,116 @@ class Scene:
             return True
         else:
             return False
+
+    def create_standalone_copy(self, target_dir, filename, include_visuals = True, flatten = False, zip=True):
+        """Creates a stand-alone copy
+        returns a log of actions"""
+
+        log = []
+
+        from .nodes import Component, Visual
+
+        # create target dir
+        if not isdir(target_dir):
+            mkdir(target_dir)
+
+        s = self.copy(quick=True)
+
+        if flatten:
+            s.flatten(exclude_known_types=True)
+
+        if not include_visuals:
+            s._unmanage_and_delete(s.nodes_of_type(Visual))
+
+        def update_path(path):
+            path = self.get_resource_path(path)
+            return 'cd: ' + str(path.name)
+
+        # Loop all nodes and copy the resources to the target dir
+        for node in tuple(s.unmanged_nodes):
+
+            if isinstance(node, Component):
+                # export component contents recursively
+
+                name = self.get_resource_path(node.path)
+                c = Scene(node.path, resource_paths=self.resources_paths, current_directory=self.current_directory)
+
+                c.create_standalone_copy(target_dir=target_dir, include_visuals=include_visuals, flatten=flatten, filename = Path(name).name)
+
+                #
+                node._path = update_path(node.path)
+
+            elif hasattr(node, 'make_standalone'):  # Use duck-typing for DAVEbaseextensions
+                log.extend(node.make_standalone(target_dir = target_dir))
+
+            else:
+
+                # visuals and hyd
+                trimesh = getattr(node, 'trimesh', None)
+                if trimesh:
+                    path = trimesh._path
+                else:
+                    path = getattr(node, 'path', None)
+
+                if path:
+
+                    log.append(f'Path found: {path} --> {update_path(path)}')
+
+                    # simply copy the resource
+                    source = self.get_resource_path(path)
+                    target = Path(target_dir) /  Path(source).name
+                    copy(source, target)
+
+                    # and update the node
+                    new_path = update_path(path)
+                    if trimesh:
+                        trimesh._path = new_path
+                    else:
+                        if hasattr(node,'_path'):
+                            node._path = new_path
+                        else:
+                            node.path = new_path
+
+
+        s.save_scene(Path(target_dir) / filename)
+
+        # cube.obj is sometimes used as default visual, so copy it
+        # same for default_component
+        required_files = ('shackle_gp800.obj','cube.obj','default_component.dave')
+        for rf in required_files:
+            copy(self.get_resource_path(f'res: {rf}'), Path(target_dir) / rf)
+
+        # Perform a self-check
+        log.append('Perfoming self-check of exported models')
+
+
+        try:
+            t = Scene()
+
+            t.resources_paths.clear()
+            t.resources_paths.append(target_dir)  # for res:cube and res:default_component
+            t.current_directory = target_dir
+            exported_scene = str(Path(target_dir) / filename)
+            t.load_scene(exported_scene)
+
+            log.append('Self-check completed without errors')
+        except Exception as E:
+            log.append(f'Self check FAILED with error {str(E)}')
+
+
+        if zip:
+            try:
+                log.append('Creating zip-file')
+                zip_filename = Path(target_dir).parent / (str(Path(target_dir).parts[-1]))
+
+                from shutil import make_archive
+                make_archive(zip_filename,format='zip',root_dir=target_dir)
+
+                log.append(f'Created zipfile {zip_filename}.zip')
+            except Exception as E:
+                log.append(f'Creating zipfile FAILED with error {str(E)}')
+
+        return log
 
     # ========= Limits ===========
 
@@ -1867,8 +1996,6 @@ class Scene:
 
         """
 
-
-
         # check if we can import the provided path
         try:
             filename = self.get_resource_path(path)
@@ -1877,7 +2004,7 @@ class Scene:
                 f'Error creating component {name}.\nCan not find  path "{path}"; \n {str(E)}'
             )
         try:
-            t = Scene(filename)
+            t = Scene(filename, current_directory=self.current_directory)
         except Exception as E:
             raise ValueError(
                 f'Error creating component {name}.\nCan not import "{filename}" because {str(E)}'
@@ -3461,13 +3588,13 @@ class Scene:
             if self.t:
                 code.extend(self.t.give_python_code())
 
-            # Optional: Exposed properties of components
-            exposed = getattr(self, 'exposed', [])
-            if exposed:
-                code.append('exposed = list()')
-                for e in exposed:
-                    code.append(f'exposed.append({str(e)})')
-                code.append('s.exposed = exposed')
+        # Exposed properties of components
+        exposed = getattr(self, 'exposed', [])
+        if exposed:
+            code.append('exposed = list()')
+            for e in exposed:
+                code.append(f'exposed.append({str(e)})')
+            code.append('s.exposed = exposed')
 
         return "\n".join(code)
 
@@ -3626,7 +3753,7 @@ class Scene:
             other = str(other)
 
         if isinstance(other, str):
-            other = Scene(other, resource_paths=self.resources_paths)
+            other = Scene(other, resource_paths=self.resources_paths, current_directory=self.current_directory)
 
         if not isinstance(other, Scene):
             raise TypeError("Other should be a Scene but is a " + str(type(other)))
@@ -3701,9 +3828,8 @@ class Scene:
 
         """
 
-        c = Scene()
-        c.resources_paths.clear()
-        c.resources_paths.extend(self.resources_paths)
+        c = Scene(resource_paths=self.resources_paths, current_directory=self.current_directory)
+
         c.import_scene(self, containerize=False, nodes=nodes, quick=True)
         return c
 

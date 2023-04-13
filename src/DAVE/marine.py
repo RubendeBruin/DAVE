@@ -103,8 +103,7 @@ def calculate_linearized_buoyancy_props(scene : Scene, nodes : Buoyancy or list[
             raise ValueError(f"Node {node.name} should be a 'buoyancy' type of node but is a {type(node)}.")
 
 
-    s = Scene()
-    s.resources_paths = scene.resources_paths
+    s = Scene(resource_paths=scene.resources_paths, current_directory=scene.current_directory)
 
     # Note that parent is created at 0,0,0 and under zero rotations
     # that means that the global axis system is the local axis system at target draft and even keel
@@ -265,8 +264,7 @@ def carene_table(scene, buoyancy_nodes,
     for bn in buoyancy_nodes:
         assert bn.parent == parent, "All nodes need to have the same parent"
 
-    s = Scene()
-    s.resources_paths = scene.resources_paths
+    s = Scene(resource_paths = scene.resources_paths, current_directory=scene.current_directory)
     parent_node = s.new_frame(buoyancy_nodes[0].parent.name, fixed=True)
 
 

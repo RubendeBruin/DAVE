@@ -65,7 +65,7 @@ from copy import deepcopy
 import logging
 
 from DAVE.gui.dialog_blender import ExportToBlenderDialog
-from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter
+from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter, EscKeyPressFilter
 from DAVE.gui.widget_watches import WidgetWatches
 from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import DragInfo
 from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
@@ -219,7 +219,8 @@ class Gui:
         block=True,
         workspace=None,
         painters=None,
-        client_mode = False
+        client_mode = False,
+        filename = None
     ):
         """
         Starts the Gui on scene "scene".
@@ -451,6 +452,7 @@ class Gui:
                 self.menu_export_orcaflex_package
             )
             self.ui.actionBlender.triggered.connect(self.to_blender)
+            self.ui.actionSelf_contained_DAVE_package.triggered.connect(self.menu_export_DAVE_package)
 
             # --- recent files ---
 
@@ -588,6 +590,7 @@ class Gui:
             self.ui.action_Z.triggered.connect(lambda: self.camera_set_direction((0, 0, 1)))
             self.ui.actionCamera_reset.triggered.connect(self.camera_reset)
             #
+            self.ui.actionSet_input_focus_to_viewport.triggered.connect(self.focus_on_viewport)
 
             self.ui.pbTop.clicked.connect(self.visual.Style.SetViewZ)
             self.ui.pbFront.clicked.connect(self.visual.Style.SetViewY)
@@ -622,10 +625,6 @@ class Gui:
             self.teCode_eventFilter = ShiftEnterKeyPressFilter()
             self.teCode_eventFilter.callback = self.run_code_in_teCode
             self.ui.teCode.installEventFilter(self.teCode_eventFilter)
-
-            # self.delete_eventFilter = DeleteEventFilter()
-            # self.delete_eventFilter.callback = self.delete_key
-            # self.MainWindow.installEventFilter(self.delete_eventFilter)
 
             # ======================== Docks ====================
             self.guiWidgets = dict()
@@ -719,10 +718,19 @@ class Gui:
 
         self.MainWindow.setMinimumWidth(1400)
 
+        if isinstance(filename, str):
+            self.open_file(filename)
+
         if block:
             self.ui.pbUpdate.setVisible(False)
             self.ui.pbCopyViewCode.setVisible(False)
             self.app.exec_()
+
+    def menu_export_DAVE_package(self, *args):
+        pass # TODO
+
+    def focus_on_viewport(self, *args):
+        self.ui.frame3d.setFocus()
 
     def show_python_console(self, *args):
         self.ui.dockWidget_2.show()
@@ -1820,23 +1828,33 @@ class Gui:
 
 
     def open_file(self, filename):
-        code = 's.clear()\ns.load_scene(r"{}")'.format(filename)
-        self.run_code(code, guiEventType.FULL_UPDATE)
+        current_directory = Path(filename).parent
+        code = f's.clear()\ns.current_directory = r"{current_directory}"\ns.load_scene(r"{filename}")'
+
+        try:
+            self.run_code(code, guiEventType.FULL_UPDATE)
+        except:
+            self._model_has_changed = False
+            self.modelfilename = None
+            self.MainWindow.setWindowTitle(f'DAVE - Error during load ; partially loaded model')
+            return
+
         self.modelfilename = filename
 
+        name_and_ext =  str(Path(filename).name)
+
         self._model_has_changed = False
-        self.MainWindow.setWindowTitle(f'DAVE [{self.modelfilename}]')
+        self.MainWindow.setWindowTitle(f'DAVE [{str(self.scene.current_directory)}] - {name_and_ext} ')
         self.add_to_recent_file_menu(filename)
         self.visual.zoom_all()
 
+
     def _get_filename_using_dialog(self):
-        if self.modelfilename is None:
-            folder = self.scene.resources_paths[-2]  # get the lowest one
-            filename, _ = QFileDialog.getOpenFileName(
-                filter="*.dave", caption="Assets", dir=str(folder)
-            )
-        else:
-            filename, _ = QFileDialog.getOpenFileName(filter="*.dave", caption="Assets")
+        folder = self.scene.current_directory
+        filename, _ = QFileDialog.getOpenFileName(
+            filter="*.dave", caption="DAVE models", dir=str(folder)
+        )
+
         return filename
 
     def open(self):

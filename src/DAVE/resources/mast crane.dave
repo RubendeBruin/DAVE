@@ -77,3 +77,7 @@ s.new_visual(name='visual - crane boom',
             offset=(0, 0, 0), 
             rotation=(0, 0, 0), 
             scale=(1, 1, 1) )
+
+s.exposed = []
+s.exposed.append(('Crane slew','crane_slew','rz'))
+s.exposed.append(('Sus. wire length','crane_Crane_susp_wire','length'))
