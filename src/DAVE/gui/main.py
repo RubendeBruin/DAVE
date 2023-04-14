@@ -65,6 +65,7 @@ from copy import deepcopy
 import logging
 
 from DAVE.gui.dialog_blender import ExportToBlenderDialog
+from DAVE.gui.dialog_export_package import ExportAsPackageDialog
 from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter, EscKeyPressFilter
 from DAVE.gui.widget_watches import WidgetWatches
 from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import DragInfo
@@ -728,7 +729,10 @@ class Gui:
             self.app.exec_()
 
     def menu_export_DAVE_package(self, *args):
-        pass # TODO
+        d = ExportAsPackageDialog()
+        d.show(self.scene, str(self.scene.current_directory))
+
+
 
     def focus_on_viewport(self, *args):
         self.visual.vtkWidget.setFocus()
