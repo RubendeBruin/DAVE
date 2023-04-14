@@ -1215,7 +1215,11 @@ class VisualActor:
                 # If not then delete the actor
 
                 # check for number of points
-                if pts.GetNumberOfPoints() == npt:
+                actual_npts = -1
+                if pts is not None:
+                    actual_npts = pts.GetNumberOfPoints()
+
+                if actual_npts == npt:
                     # print(f'setting points for {V.node.name}')
                     vis.points(vertices)
 
@@ -1225,11 +1229,10 @@ class VisualActor:
                     vis._vertices_changed = True
 
                 else:
-
                     if viewport.screen is not None:
                         viewport.screen.remove(self.actors["fluid"])
                         del self.actors["fluid"]
-                        need_new = True
+                    need_new = True
             else:
                 need_new = True
 

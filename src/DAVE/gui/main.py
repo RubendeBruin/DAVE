@@ -320,6 +320,7 @@ class Gui:
         """Reference to a scene"""
 
         self._solver_mobility = vfc.DAVE_DEFAULT_SOLVER_MOBILITY # default mobility for the solver
+        self._solver_do_solve_linear_first = vfc.DAVE_DEFAULT_SOLVER_DO_LINEAR_FIRST
 
         self.scene.gui_solve_func = self.solve_statics_using_gui_on_scene
 
@@ -1582,6 +1583,7 @@ class Gui:
 
             self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
             self.__BackgroundSolver.mobility = self._solver_mobility
+            self.__BackgroundSolver.do_solve_linear_first = self._solver_do_solve_linear_first
             self.__BackgroundSolver.Start()
 
             dialog = SolverDialog_threaded()
@@ -1610,6 +1612,7 @@ class Gui:
                 self.__BackgroundSolver.Stop()
                 self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
                 self.__BackgroundSolver.mobility = self._solver_mobility
+                self.__BackgroundSolver.do_solve_linear_first = self._solver_do_solve_linear_first
                 self.__BackgroundSolver.Start()
 
             dialog.pbReset.clicked.connect(reset)
@@ -1627,8 +1630,15 @@ class Gui:
                 dialog.lbMobility.setText(f"{position}%")
 
             dialog.mobilitySlider.valueChanged.connect(change_mobility)
-
             dialog.mobilitySlider.setSliderPosition(self._solver_mobility)
+
+            def change_do_linear_first(*args):
+                self._solver_do_solve_linear_first = dialog.cbLinearFirst.isChecked()
+
+            dialog.cbLinearFirst.setChecked(self._solver_do_solve_linear_first)
+            dialog.cbLinearFirst.toggled.connect(change_do_linear_first)
+
+
 
 
             self.MainWindow.setEnabled(False)
@@ -1643,7 +1653,11 @@ class Gui:
                 if dofs:
                     dialog.pbAccept.setEnabled(True)
 
-                    dialog.lbInfo.setText(f"Error norm = {self.__BackgroundSolver.Enorm:.6e}\nError max-abs {self.__BackgroundSolver.Emaxabs:.6e}\nMaximum error at {self.__BackgroundSolver.Emaxabs_where}")
+                    text = ''
+                    if self.__BackgroundSolver.RunningLinear:
+                        text = 'Working on linear degrees of freedom only\n'
+                    text += f"Error norm = {self.__BackgroundSolver.Enorm:.6e}\nError max-abs {self.__BackgroundSolver.Emaxabs:.6e}\nMaximum error at {self.__BackgroundSolver.Emaxabs_where}"
+                    dialog.lbInfo.setText(text)
 
                     if secs > 0.5:  # else use animation
                         self.scene._vfc.set_dofs(dofs)

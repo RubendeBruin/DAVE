@@ -117,6 +117,11 @@ class Ui_SolverDialogThreaded(object):
 
         self.gridLayout.addWidget(self.label_9, 0, 0, 1, 3)
 
+        self.cbLinearFirst = QCheckBox(self.frame)
+        self.cbLinearFirst.setObjectName(u"cbLinearFirst")
+
+        self.gridLayout.addWidget(self.cbLinearFirst, 7, 1, 1, 2)
+
 
         self.gridLayout_2.addWidget(self.frame, 3, 0, 1, 2)
 
@@ -178,8 +183,12 @@ class Ui_SolverDialogThreaded(object):
 "- can converge slowly or not at all when set to extreme conditions.\n"
 "\n"
 "Move the handle this way if the solver moves very slowly towards its equilibrium position.", None))
-        self.label_10.setText(QCoreApplication.translate("SolverDialogThreaded", u"These settings are applied instantly when the slider is moved.", None))
+        self.label_10.setText(QCoreApplication.translate("SolverDialogThreaded", u"This setting is applied instantly when the slider is moved.", None))
         self.label_9.setText(QCoreApplication.translate("SolverDialogThreaded", u"Use the slider to adjust the mobility of the solver.", None))
+#if QT_CONFIG(statustip)
+        self.cbLinearFirst.setStatusTip(QCoreApplication.translate("SolverDialogThreaded", u"Takes effect after solver restart", None))
+#endif // QT_CONFIG(statustip)
+        self.cbLinearFirst.setText(QCoreApplication.translate("SolverDialogThreaded", u"Solve linear degrees of freedom before solving full model", None))
         self.lbInfo.setText(QCoreApplication.translate("SolverDialogThreaded", u"ABS\n"
 "NORM\n"
 "WHERE", None))

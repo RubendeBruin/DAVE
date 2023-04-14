@@ -1,7 +1,7 @@
 call conda activate pyside2
 
 call pyside2-uic solverdialog_threaded.ui -o "..\src\DAVE\gui\forms\dlg_solver_threaded.py"
-call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
+echo call pyside2-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
 echo call pyside2-uic widget_environment.ui -o "..\src\DAVE\gui\forms\widgetUI_environment.py"
 echo call pyside2-uic widget_modeshapes.ui -o "..\src\DAVE\gui\forms\widgetUI_modeshapes.py"
 call pyside2-uic widget_ballastconfiguration.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastconfiguration.py"
@@ -12,12 +12,12 @@ echo call pyside2-uic widget_explore.ui -o "..\src\DAVE\gui\forms\widgetUI_explo
 echo call pyside2-uic widget_tank_order.ui -o "..\src\DAVE\gui\forms\widgetUI_tank_order.py"
 echo call pyside2-uic widget_area.ui -o "..\src\DAVE\gui\forms\widget_area.py"
 echo call pyside2-uic widget_bendingmomentpreview.ui -o "..\src\DAVE\gui\forms\widget_bendingmomentpreview.py"
-call pyside2-uic widget_axis.ui -o "..\src\DAVE\gui\forms\widget_axis.py"
+echo call pyside2-uic widget_axis.ui -o "..\src\DAVE\gui\forms\widget_axis.py"
 echo call pyside2-uic widget_body.ui -o "..\src\DAVE\gui\forms\widget_body.py"
 echo call pyside2-uic widget_waveinteraction.ui -o "..\src\DAVE\gui\forms\widget_waveinteraction.py"
 echo call pyside2-uic widget_poi.ui -o "..\src\DAVE\gui\forms\widget_poi.py"
 echo call pyside2-uic widget_cable.ui -o "..\src\DAVE\gui\forms\widget_cable.py"
-call pyside2-uic widget_connecstions.ui -o "..\src\DAVE\gui\forms\widget_connections.py"
+echo call pyside2-uic widget_connections.ui -o "..\src\DAVE\gui\forms\widget_connections.py"
 echo call pyside2-uic addnode_form.ui -o "..\src\DAVE\gui\forms\addnode_form.py"
 echo call pyside2-uic widget_name.ui -o "..\src\DAVE\gui\forms\widget_name.py"
 echo call pyside2-uic widget_visual.ui -o "..\src\DAVE\gui\forms\widget_visual.py"
@@ -47,4 +47,4 @@ echo call pyside2-uic widget_limits.ui -o "..\src\DAVE\gui\forms\widget_limits.p
 echo call pyside2-uic dialog_edit_watch.ui -o "..\src\DAVE\gui\forms\dialog_edit_watch.py"
 echo call pyside2-uic dlg_export_to_blender.ui -o "..\src\DAVE\gui\forms\dlg_export_to_blender.py"
 
-call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"
+echo call pyside2-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"

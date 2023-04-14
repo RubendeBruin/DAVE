@@ -162,7 +162,7 @@ Move the handle this way if the solver moves very slowly towards its equilibrium
       <item row="2" column="0" colspan="3">
        <widget class="QLabel" name="label_10">
         <property name="text">
-         <string>These settings are applied instantly when the slider is moved.</string>
+         <string>This setting is applied instantly when the slider is moved.</string>
         </property>
        </widget>
       </item>
@@ -170,6 +170,16 @@ Move the handle this way if the solver moves very slowly towards its equilibrium
        <widget class="QLabel" name="label_9">
         <property name="text">
          <string>Use the slider to adjust the mobility of the solver.</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1" colspan="2">
+       <widget class="QCheckBox" name="cbLinearFirst">
+        <property name="statusTip">
+         <string>Takes effect after solver restart</string>
+        </property>
+        <property name="text">
+         <string>Solve linear degrees of freedom before solving full model</string>
         </property>
        </widget>
       </item>

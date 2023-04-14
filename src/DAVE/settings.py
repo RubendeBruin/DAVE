@@ -112,6 +112,8 @@ DAVE_DEFAULT_SOLVER_MOBILITY = 60
 DAVE_DEFAULT_SOLVER_TOLERANCE = 1e-4
 """Tolerance"""
 
+DAVE_DEFAULT_SOLVER_DO_LINEAR_FIRST = True
+"""Solver linear before full solve"""
 
 
 # print('default resource folders:')

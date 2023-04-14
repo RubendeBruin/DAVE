@@ -51,11 +51,13 @@ s["Billy spreaderbar"].mass = 50
 s["Billy spreaderbar"].inertia_radii = (1.0,10.0,10)
 s['Billy spreaderbar'].position = (45.0, 0.0, 27.0)
 
-s.new_visual('Billy spreaderbar Visual', parent = 'Billy spreaderbar', path = r'wirecube.obj')
-s['Billy spreaderbar Visual'].path = r'cylinder 1x1x1.obj'
-s['Billy spreaderbar Visual'].rotation = (90.0, 0.0, 0.0)
-s['Billy spreaderbar Visual'].scale = (1.0, 14.0, 1.0)
-s['Billy spreaderbar Visual'].offset = (0.0, 7.0, 0.0)
+# code for Billy spreaderbar Visual
+s.new_visual(name='Billy spreaderbar Visual',
+            parent='Billy spreaderbar',
+            path=r'cylinder 1x1x1.obj',
+            offset=(0, 7, 0),
+            rotation=(90, 0, 0),
+            scale=(1, 1, 14) )
 
 s.new_point('billy spreaderbar end PS', parent = 'Billy spreaderbar')
 
