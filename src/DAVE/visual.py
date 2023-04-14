@@ -2551,14 +2551,17 @@ class Viewport:
 
         # add a widget to gui
         vl = QVBoxLayout()
-        vl.setContentsMargins(0, 0, 0, 0)
+        vl.setContentsMargins(1,1,1,1)
         self.target_frame = target_frame
         self.vtkWidget = QVTKRenderWindowInteractor(target_frame)
+
+        # change the color of the parent widget when the interactor gets/looses focus
+        self.vtkWidget.focusInEvent = self.get_focus
+        self.vtkWidget.focusOutEvent = self.focus_lost
 
         vl.addWidget(self.vtkWidget)
         target_frame.setLayout(vl)
 
-        # self.vtkWidget.setMouseTracking(True)
 
         self.setup_screen()
         screen = self.show()
@@ -2595,6 +2598,14 @@ class Viewport:
         self.add_wind_and_current_actors()
 
 
+
+    def get_focus(self,*args):
+        print('getting focus')
+        self.target_frame.setStyleSheet('background-color: gray')
+
+    def focus_lost(self,*args):
+        print('loosing focus')
+        self.target_frame.setStyleSheet('')
 
 
     def keyPressFunction(self, key):

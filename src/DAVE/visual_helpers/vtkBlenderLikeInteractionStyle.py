@@ -494,6 +494,10 @@ class BlenderStyle(vtkInteractorStyleUser):
         """Sets the camera to display a plane of which direction is the normal - includes logic to reverse the direction if benificial"""
 
         CurrentRenderer = self.GetCurrentRenderer()
+
+        if CurrentRenderer is None:
+            return
+
         camera = CurrentRenderer.GetActiveCamera()
 
         direction = np.array(direction)
