@@ -2775,6 +2775,10 @@ class WidgetNodeProps(guiDockWidget):
             self.manager_widget.setVisible(False)
             self.props_widget.setEnabled(True)
 
+        #
+        no_name_editor = getattr(node, '_no_name_editor', False)
+        self._name_widget.setVisible(not no_name_editor)
+
         self._node_editors.clear()
         self._open_edit_widgets.clear()
 
@@ -2878,6 +2882,8 @@ class WidgetNodeProps(guiDockWidget):
                 else:
                     self._node_editors.append(value.Instance())
 
+        print('Node editor created!', flush=True)
+
         # Remove suppressed editors
         if manager_workaround:
             self._node_editors = [editor for editor in self._node_editors if isinstance(editor, manager_workaround)]
@@ -2964,7 +2970,10 @@ class WidgetNodeProps(guiDockWidget):
                 wt = wt + 5 # for scrollbar
             self.setMinimumWidth(wt)
 
+        print('Setting updates enabled', flush=True)
 
         self.setUpdatesEnabled(True)
+
+        print('Function done', flush=True)
 
 DAVE_GUI_DOCKS['Properties'] = WidgetNodeProps

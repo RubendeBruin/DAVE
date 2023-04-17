@@ -601,22 +601,18 @@ def vtkArrowActor(
     axis = np.asarray(endPoint) - np.asarray(startPoint)
     length = np.linalg.norm(axis)
 
-    axis = axis / length
-
-    phi = np.arctan2(axis[1], axis[0])
-    theta = np.arccos(axis[2])
+    if length==0:
+        phi = 0
+        theta = 0
+    else:
+        axis = axis / length
+        phi = np.arctan2(axis[1], axis[0])
+        theta = np.arccos(axis[2])
 
     arr = vtk.vtkArrowSource()
     arr.SetShaftResolution(res)
     arr.SetTipResolution(res)
     arr.Update()
-
-    # sz = 0.02
-    #
-    # self.arr.SetTipRadius(sz)
-    # self.arr.SetShaftRadius(sz / 1.75)
-    # self.arr.SetTipLength(sz * 15)
-    # self.arr.Update()
 
     t = vtk.vtkTransform()
     t.Translate(startPoint)
@@ -662,10 +658,14 @@ def vtkArrowHeadActor(
     axis = endPoint-startPoint
     length = np.linalg.norm(axis)
 
-    axis = axis / length
+    if length == 0:
+        phi = 0
+        theta = 0
+    else:
+        axis = axis / length
 
-    phi = np.arctan2(axis[1], axis[0])
-    theta = np.arccos(axis[2])
+        phi = np.arctan2(axis[1], axis[0])
+        theta = np.arccos(axis[2])
 
     arr = vtk.vtkConeSource()
     arr.SetResolution(res)

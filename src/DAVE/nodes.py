@@ -159,6 +159,9 @@ class Node(ABC):
 
         scene._nodes.append(self) # adds the node to the list of nodes in the scene
 
+        # some custom properties for gui interaction
+        self._no_name_editor = False
+
 
     def __repr__(self):
         if self.is_valid:

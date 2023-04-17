@@ -804,7 +804,7 @@ class VisualActor:
                         vertices=fp, faces=[range(n_points)]
                     )
 
-                    print("number of points changed, creating new")
+                    # print("number of points changed, creating new")
 
                     if viewport.screen is not None:
                         viewport.screen.remove(self.actors["footprint"])
@@ -2600,11 +2600,11 @@ class Viewport:
 
 
     def get_focus(self,*args):
-        print('getting focus')
+        # print('getting focus')
         self.target_frame.setStyleSheet('background-color: gray')
 
     def focus_lost(self,*args):
-        print('loosing focus')
+        # print('loosing focus')
         self.target_frame.setStyleSheet('')
 
 
