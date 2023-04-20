@@ -5,7 +5,7 @@
 
   Ruben de Bruin - 2019
 """
-from PySide2.QtGui import QIcon
+from PySide6.QtGui import QIcon
 
 """
 The purpose of this widget is to give the user a quick way to do things. A bit like clippy used to be. But then
@@ -21,9 +21,9 @@ The list may be empty.
 """
 from DAVE.nodes import *
 from DAVE.gui.dockwidget import *
-from PySide2 import QtGui, QtCore, QtWidgets
-from PySide2.QtWidgets import QPushButton
-from PySide2.QtCore import QPoint
+from PySide6 import QtGui, QtCore, QtWidgets
+from PySide6.QtWidgets import QPushButton
+from PySide6.QtCore import QPoint
 import DAVE.scene as nodes
 import DAVE.settings as ds
 from DAVE.gui.forms.widget_selection_actions import Ui_SelectionActions

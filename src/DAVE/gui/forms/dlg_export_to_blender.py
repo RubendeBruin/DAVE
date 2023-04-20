@@ -4,11 +4,11 @@
 # licensing of 'dlg_export_to_blender.ui' applies.
 #
 # Created: Fri Mar 31 20:10:03 2023
-#      by: pyside2-uic  running on PySide2 5.13.2
+#      by: pyside2-uic  running on PySide6 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):

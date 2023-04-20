@@ -8,7 +8,7 @@
 """
 
 from DAVE.gui.dockwidget import *
-from PySide2 import QtGui, QtCore, QtWidgets
+from PySide6 import QtGui, QtCore, QtWidgets
 from DAVE.gui.helpers.gridedit import GridEdit
 
 class WidgetPainters(guiDockWidget):

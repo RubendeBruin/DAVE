@@ -13,7 +13,7 @@ import subprocess
 
 from DAVE.gui.dockwidget import *
 from DAVE.gui.forms.widget_bendingmomentpreview import Ui_WidgetBendingMomentPreview
-from PySide2 import QtGui, QtCore, QtWidgets
+from PySide6 import QtGui, QtCore, QtWidgets
 import DAVE.scene as nodes
 from DAVE.visual import create_momentline_actors, create_shearline_actors
 from DAVE import settings

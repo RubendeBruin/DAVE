@@ -29,7 +29,7 @@ if all settings are properties of the object.
 from dataclasses import dataclass
 from collections.abc import Callable
 
-from PySide2.QtWidgets import *
+from PySide6.QtWidgets import *
 
 class PropertyEditorDialog(QDialog):
 

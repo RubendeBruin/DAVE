@@ -1,8 +1,8 @@
 # https://doc.qt.io/qtforpython/examples/example_widgets_layouts_flowlayout.html
 
 import sys
-from PySide2.QtCore import Qt, QMargins, QPoint, QRect, QSize
-from PySide2.QtWidgets import QApplication, QLayout, QPushButton, QSizePolicy, QWidget
+from PySide6.QtCore import Qt, QMargins, QPoint, QRect, QSize
+from PySide6.QtWidgets import QApplication, QLayout, QPushButton, QSizePolicy, QWidget
 
 
 class FlowLayout(QLayout):

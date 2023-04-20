@@ -9,8 +9,8 @@
 
 """
 import DAVE.auto_download
-from PySide2.QtWidgets import QSplashScreen, QApplication, QLabel
-from PySide2.QtGui import QPixmap, QIcon
+from PySide6.QtWidgets import QSplashScreen, QApplication, QLabel
+from PySide6.QtGui import QPixmap, QIcon
 
 # create application
 # note that the auto_download window may have already created one
@@ -25,7 +25,8 @@ else:
 from pathlib import Path
 here = Path(__file__).parent
 
-splash = QSplashScreen(str(here / 'splash.png'))
+picture = QPixmap(str(here / 'splash.png'))
+splash = QSplashScreen(picture)
 label = QLabel(splash)
 label.setText('Loading DAVE')
 label.setStyleSheet("color: white")
@@ -50,7 +51,7 @@ from DAVE.frequency_domain import *
 
 # try:
 #     # Include in try/except block if you're also targeting Mac/Linux
-#     from PySide2.QtWinExtras import QtWin
+#     from PySide6.QtWinExtras import QtWin
 #     myappid = 'mycompany.myproduct.subproduct.version'
 #     QtWin.setCurrentProcessExplicitAppUserModelID(myappid)
 # except ImportError:

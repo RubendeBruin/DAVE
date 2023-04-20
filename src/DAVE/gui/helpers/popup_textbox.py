@@ -1,7 +1,7 @@
-from PySide2.QtWidgets import QApplication, QMenu, QWidgetAction, QLineEdit, QWidget,QHBoxLayout, QPushButton
-from PySide2.QtCore import Qt, QPoint
-import PySide2
-import PySide2.QtGui
+from PySide6.QtWidgets import QApplication, QMenu, QWidgetAction, QLineEdit, QWidget,QHBoxLayout, QPushButton
+from PySide6.QtCore import Qt, QPoint
+import PySide6
+import PySide6.QtGui
 
 from DAVE.gui.helpers.my_qt_helpers import EnterKeyPressFilter
 

@@ -1,7 +1,7 @@
 from DAVE.gui.dockwidget import *
-from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag, QColor
-from PySide2.QtCore import QMimeData, Qt, QItemSelectionModel
-from PySide2.QtWidgets import (
+from PySide6.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag, QColor
+from PySide6.QtCore import QMimeData, Qt, QItemSelectionModel
+from PySide6.QtWidgets import (
     QTreeWidgetItem,
     QCheckBox,
     QListWidget,

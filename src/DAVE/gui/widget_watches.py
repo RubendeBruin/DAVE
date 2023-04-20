@@ -1,9 +1,9 @@
 """
 This is an example/template of how to setup a new dockwidget
 """
-from PySide2.QtCore import Qt
-from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import QCompleter
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QCompleter
 
 from DAVE.gui.helpers.flow_layout import FlowLayout
 
@@ -16,7 +16,7 @@ from DAVE.gui.helpers.flow_layout import FlowLayout
 """
 
 from DAVE.gui.dockwidget import *
-from PySide2 import QtGui, QtCore, QtWidgets
+from PySide6 import QtGui, QtCore, QtWidgets
 import DAVE.scene as nodes
 import DAVE.settings as ds
 from DAVE.gui.forms.dialog_edit_watch import Ui_DialigEditWatch

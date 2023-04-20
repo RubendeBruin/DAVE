@@ -1,9 +1,9 @@
 
-import PySide2.QtCore
-import PySide2.QtGui
-from PySide2 import QtWidgets
-from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QComboBox, QWidget, QCompleter
+import PySide6.QtCore
+import PySide6.QtGui
+from PySide6 import QtWidgets
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QComboBox, QWidget, QCompleter
 
 
 class BlockSigs():
@@ -52,7 +52,7 @@ Example:
 
 """
 
-class CustomEventFilters(PySide2.QtCore.QObject):
+class CustomEventFilters(PySide6.QtCore.QObject):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -66,10 +66,10 @@ class CustonKeyEventFilter(CustomEventFilters):
 
 
 
-        if isinstance(event, PySide2.QtGui.QKeyEvent):
+        if isinstance(event, PySide6.QtGui.QKeyEvent):
 
             if (event.key() == self.key):
-                if event.type() == PySide2.QtCore.QEvent.KeyPress:
+                if event.type() == PySide6.QtCore.QEvent.KeyPress:
                     if self.callback is None:
                         print('Callback not set')
                     else:
@@ -96,9 +96,9 @@ class EscKeyPressFilter(CustomEventFilters):
 class RightClickEventFilter(CustomEventFilters):
 
     def eventFilter(self, obj, event):
-        if isinstance(event, PySide2.QtGui.QMouseEvent):
-            if (event.type() == PySide2.QtCore.QEvent.Type.MouseButtonPress):
-                if event.button() == PySide2.QtCore.Qt.MouseButton.RightButton:
+        if isinstance(event, PySide6.QtGui.QMouseEvent):
+            if (event.type() == PySide6.QtCore.QEvent.Type.MouseButtonPress):
+                if event.button() == PySide6.QtCore.Qt.MouseButton.RightButton:
                     self.callback(event)
                     event.setAccepted(True)
                     return True

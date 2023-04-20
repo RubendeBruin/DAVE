@@ -11,7 +11,7 @@ WidgetBallastSystemSelect
 """
 
 from DAVE.gui.dockwidget import *
-from PySide2 import QtGui, QtCore, QtWidgets
+from PySide6 import QtGui, QtCore, QtWidgets
 from DAVE.gui.forms.widgetUI_ballastsolver import Ui_BallastSolver
 import DAVE.scene as nodes
 import DAVE.settings as ds

@@ -2,7 +2,7 @@
 
    This is the root module for the graphical user interface.
 
-   The GUI is build using QT / PySide2 and is set-up to be easy to extent.
+   The GUI is build using QT / PySide6 and is set-up to be easy to extent.
 
    The nodeA module (this file) provides the nodeA screen with:
      - A 3D viewer with interaction
@@ -85,17 +85,19 @@ from DAVE.gui.widget_tags import WidgetTags
 
 import DAVE.auto_download
 
-from PySide2.QtCore import Qt
-from PySide2.QtCore import QSettings
-from PySide2.QtGui import QIcon, QPixmap, QFont, QFontMetricsF, QCursor
-from PySide2.QtWidgets import (
+from PySide6.QtCore import Qt
+from PySide6.QtCore import QSettings
+from PySide6.QtGui import QIcon, QPixmap, QFont, QFontMetricsF, QCursor, QAction
+from PySide6.QtWidgets import (
     QDialog,
     QFileDialog,
     QMessageBox,
     QMenu,
     QWidgetAction,
-    QAction, QStatusBar,
+    QStatusBar,
 )
+
+
 from DAVE.scene import Scene
 
 from DAVE.gui.forms.main_form import Ui_MainWindow
@@ -107,7 +109,7 @@ from DAVE.gui.forms.dlg_settingsr import Ui_frmSettings
 import DAVE.settings
 from DAVE.settings_visuals import PAINTERS
 
-from DAVE.gui.helpers.highlighter import PythonHighlighter
+# from DAVE.gui.helpers.highlighter import PythonHighlighter
 from DAVE.gui.helpers.ctrl_enter import ShiftEnterKeyPressFilter
 from DAVE.gui.helpers.qmenu import MenuSlider
 from DAVE.gui.forms.menu_nodetypes import Ui_MenuNodes
@@ -619,10 +621,10 @@ class Gui:
             font.setFamily("Consolas")
             self.ui.teCode.setFont(font)
             self.ui.teCode.setTabStopDistance(
-                QFontMetricsF(self.ui.teCode.font()).width(" ") * 4
+                QFontMetricsF(self.ui.teCode.font()).horizontalAdvance(" ")
             )
 
-            self.highlight = PythonHighlighter(self.ui.teCode.document())
+            # self.highlight = PythonHighlighter(self.ui.teCode.document())
 
             self.teCode_eventFilter = ShiftEnterKeyPressFilter()
             self.teCode_eventFilter.callback = self.run_code_in_teCode

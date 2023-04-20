@@ -19,7 +19,7 @@ from enum import Enum
 from scipy.spatial import ConvexHull
 
 import vtkmodules.qt
-vtkmodules.qt.PyQtImpl = "PySide2"
+vtkmodules.qt.PyQtImpl = "PySide6"
 
 import vedo as vp  # ref: https://github.com/marcomusy/vedo
 import vtk
@@ -1364,7 +1364,7 @@ class Viewport:
 
     @staticmethod
     def show_as_qt_app(s, painters=None, sea=False, boundary_edges=False):
-        from PySide2.QtWidgets import QWidget, QApplication
+        from PySide6.QtWidgets import QWidget, QApplication
 
         app = QApplication()
         widget = QWidget()
@@ -2546,7 +2546,7 @@ class Viewport:
     def show_embedded(self, target_frame):
         """target frame : QFrame"""
 
-        from PySide2.QtWidgets import QVBoxLayout
+        from PySide6.QtWidgets import QVBoxLayout
         from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
         # add a widget to gui

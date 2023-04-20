@@ -11,8 +11,8 @@ This is an example/template of how to setup a new dockwidget
 """
 
 from DAVE.gui.dockwidget import *
-from PySide2 import QtGui, QtCore, QtWidgets
-from PySide2.QtWidgets import QApplication, QVBoxLayout, QWidget
+from PySide6 import QtGui, QtCore, QtWidgets
+from PySide6.QtWidgets import QApplication, QVBoxLayout, QWidget
 import DAVE.scene as nodes
 import DAVE.settings as ds
 

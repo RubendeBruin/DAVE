@@ -1,5 +1,5 @@
-from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import QWidget, QComboBox, QHBoxLayout, QToolButton
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QWidget, QComboBox, QHBoxLayout, QToolButton
 
 from DAVE.gui.helpers.my_qt_helpers import update_combobox_items_with_completer
 

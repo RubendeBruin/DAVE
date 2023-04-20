@@ -12,8 +12,8 @@ WidgetBallastConfiguration
 
 from DAVE.gui.dockwidget import *
 from DAVE.gui.forms.widgetUI_ballastconfiguration import Ui_widget_ballastsystem
-from PySide2 import QtGui, QtCore, QtWidgets
-from PySide2.QtGui import QBrush, QColor
+from PySide6 import QtGui, QtCore, QtWidgets
+from PySide6.QtGui import QBrush, QColor
 import DAVE.scene as nodes
 import DAVE.settings as ds
 import numpy as np

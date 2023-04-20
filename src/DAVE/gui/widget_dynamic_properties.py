@@ -1,5 +1,5 @@
 import DAVE.gui.forms.widget_dynprop
-from PySide2.QtWidgets import QCheckBox
+from PySide6.QtWidgets import QCheckBox
 from DAVE.scene import Frame
 
 from DAVE.gui.dockwidget import *

@@ -11,7 +11,7 @@ This is an example/template of how to setup a new dockwidget
 """
 
 from DAVE.gui.dockwidget import *
-from PySide2 import QtGui, QtCore, QtWidgets
+from PySide6 import QtGui, QtCore, QtWidgets
 import DAVE.scene as nodes
 import DAVE.settings as ds
 from DAVE.gui.forms.widgetUI_tank_order import Ui_widget_tank_order
@@ -54,7 +54,8 @@ class WidgetTankOrder(guiDockWidget):
             self.fill()
 
     def guiDefaultLocation(self):
-        return QtCore.Qt.DockWidgetArea.LeftDockWidgetArea
+        # return QtCore.Qt.DockWidgetArea.LeftDockWidgetArea
+        return None # does not fit in left area anymore
 
     def run_action(self, action):
         if self._bs is None:

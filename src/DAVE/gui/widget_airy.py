@@ -8,7 +8,7 @@
 
 from DAVE.gui.dockwidget import *
 import DAVE.gui.forms.widgetUI_airy
-from PySide2 import QtCore
+from PySide6 import QtCore
 import DAVE.frequency_domain as fd
 import numpy as np
 from mafredo.helpers import wavelength

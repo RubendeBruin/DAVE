@@ -1,8 +1,8 @@
 from DAVE.gui.dockwidget import *
-import PySide2
-from PySide2.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag, QColor
-from PySide2.QtCore import QMimeData, Qt, QItemSelectionModel, QPoint
-from PySide2.QtWidgets import (
+import PySide6
+from PySide6.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag, QColor
+from PySide6.QtCore import QMimeData, Qt, QItemSelectionModel, QPoint
+from PySide6.QtWidgets import (
     QTreeWidgetItem,
     QCheckBox,
     QListWidget,
@@ -11,10 +11,10 @@ from PySide2.QtWidgets import (
 import DAVE.scene as ds
 from DAVE.gui.helpers.my_qt_helpers import EnterKeyPressFilter
 
-class EnterKeyPressFilter(PySide2.QtCore.QObject):
+class EnterKeyPressFilter(PySide6.QtCore.QObject):
 
     def eventFilter(self, obj, event):
-        if isinstance(event, PySide2.QtGui.QKeyEvent):
+        if isinstance(event, PySide6.QtGui.QKeyEvent):
             if (event.key() == Qt.Key_Return):
                 self.callback(obj, event)
                 event.setAccepted(True)
@@ -326,7 +326,7 @@ if __name__ == '__main__':
 
     widget.guiProcessEvent(guiEventType.FULL_UPDATE)
 
-    m.addDockWidget(PySide2.QtCore.Qt.LeftDockWidgetArea, widget)
+    m.addDockWidget(PySide6.QtCore.Qt.LeftDockWidgetArea, widget)
 
     m.show()
 

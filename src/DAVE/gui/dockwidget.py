@@ -1,9 +1,9 @@
-from PySide2 import QtWidgets, QtCore
+from PySide6 import QtWidgets, QtCore
 from enum import Enum
 
-from PySide2.QtCore import QPoint
-from PySide2.QtGui import QCursor
-from PySide2.QtWidgets import QApplication
+from PySide6.QtCore import QPoint
+from PySide6.QtGui import QCursor
+from PySide6.QtWidgets import QApplication
 
 from DAVE.scene import *
 

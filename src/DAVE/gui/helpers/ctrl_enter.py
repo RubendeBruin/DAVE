@@ -16,11 +16,11 @@ Example:
 
 """
 
-import PySide2.QtCore
-import PySide2.QtGui
-from PySide2.QtCore import Qt
+import PySide6.QtCore
+import PySide6.QtGui
+from PySide6.QtCore import Qt
 
-class ShiftEnterKeyPressFilter(PySide2.QtCore.QObject):
+class ShiftEnterKeyPressFilter(PySide6.QtCore.QObject):
 
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
@@ -28,11 +28,11 @@ class ShiftEnterKeyPressFilter(PySide2.QtCore.QObject):
 
     def eventFilter(self, obj, event):
 
-        if isinstance(event, PySide2.QtGui.QKeyEvent):
+        if isinstance(event, PySide6.QtGui.QKeyEvent):
 
             if (event.modifiers() == Qt.ShiftModifier):
                 if (event.key() == Qt.Key_Return):
-                    if event.type() == PySide2.QtCore.QEvent.KeyPress:
+                    if event.type() == PySide6.QtCore.QEvent.KeyPress:
                         if self.callback is None:
                             print('Callback not set')
                         else:
@@ -44,7 +44,7 @@ class ShiftEnterKeyPressFilter(PySide2.QtCore.QObject):
 
         return False
 
-class CtrlEnterKeyPressFilter(PySide2.QtCore.QObject):
+class CtrlEnterKeyPressFilter(PySide6.QtCore.QObject):
 
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
@@ -52,11 +52,11 @@ class CtrlEnterKeyPressFilter(PySide2.QtCore.QObject):
 
     def eventFilter(self, obj, event):
 
-        if isinstance(event, PySide2.QtGui.QKeyEvent):
+        if isinstance(event, PySide6.QtGui.QKeyEvent):
 
             if (event.modifiers() == Qt.ControlModifier):
                 if (event.key() == Qt.Key_Return):
-                    if event.type() == PySide2.QtCore.QEvent.KeyPress:
+                    if event.type() == PySide6.QtCore.QEvent.KeyPress:
                         if self.callback is None:
                             print('Callback not set')
                         else:

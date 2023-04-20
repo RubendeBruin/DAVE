@@ -6,10 +6,10 @@
   Ruben de Bruin - 2020
 """
 import numpy as np
-from PySide2 import QtCore
-from PySide2.QtWidgets import *
-from PySide2.QtCore import *
-from PySide2.QtWidgets import QColorDialog
+from PySide6 import QtCore
+from PySide6.QtWidgets import *
+from PySide6.QtCore import *
+from PySide6.QtWidgets import QColorDialog
 
 import sys
 
@@ -57,7 +57,7 @@ SetDataModel sets the data but keeps a reference to the source. The source is up
 The buttons to add and remove rows are only shown when a callback is assigned to onAddRow
 
 """
-from PySide2.QtGui import QColor
+from PySide6.QtGui import QColor
 
 ColorError = QColor(254, 128, 128)
 

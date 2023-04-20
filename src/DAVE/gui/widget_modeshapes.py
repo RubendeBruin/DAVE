@@ -20,8 +20,8 @@ If button pressed:
 """
 
 from DAVE.gui.dockwidget import *
-from PySide2 import QtCore, QtWidgets
-from PySide2.QtGui import QBrush, QColor
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtGui import QBrush, QColor
 from DAVE.gui.forms.widgetUI_modeshapes import Ui_ModeShapesWidget
 import DAVE.frequency_domain
 import numpy as np

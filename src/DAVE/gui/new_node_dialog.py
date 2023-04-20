@@ -17,9 +17,9 @@
 import DAVE.gui.forms.addnode_form
 
 import DAVE.scene as vfs
-from PySide2.QtGui import QIcon
+from PySide6.QtGui import QIcon
 
-from PySide2 import QtWidgets
+from PySide6 import QtWidgets
 
 
 def fill_dropdown_boxes(ui, scene, selection=None):

@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 import vedo as vp
-from PySide2.QtGui import QColor
+from PySide6.QtGui import QColor, QGuiApplication
 
 from DAVE import Point
 from DAVE.gui.dockwidget import *
-from PySide2.QtCore import Qt
+from PySide6.QtCore import Qt
 import DAVE.scene as vfs
 
 import DAVE.gui.forms.widget_axis
@@ -37,9 +37,9 @@ from DAVE.gui.helpers.my_qt_helpers import BlockSigs, update_combobox_items_with
     RightClickEventFilter
 import numpy as np
 
-from PySide2.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox, QDesktopWidget, QColorDialog, \
+from PySide6.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox, QColorDialog, \
     QPushButton, QSizePolicy
-from PySide2 import QtWidgets
+from PySide6 import QtWidgets
 
 DAVE_GUI_NODE_EDITORS = dict() # Key: node-class, value: editor-class
 
@@ -82,6 +82,7 @@ def code_if_changed_d(node, value, ref, dec=3):
     current = getattr(node, ref)
 
     if abs(value - current) > 10 ** (-dec):
+        value = round(value, dec)
         return f"\ns['{node.name}'].{ref} = {value}"
     else:
         return ""
@@ -2946,8 +2947,8 @@ class WidgetNodeProps(guiDockWidget):
         if self.isFloating():
             target_height = ht
 
-            qdw = QDesktopWidget()
-            geo = qdw.screenGeometry(self)
+
+            geo = QGuiApplication.primaryScreen().availableGeometry()
 
             if target_height > geo.height():
                 target_height = geo.height()

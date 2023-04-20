@@ -15,7 +15,7 @@ import DAVE.scene as ds
 
 import DAVE.gui.forms.frm_standard_assets
 
-from PySide2 import QtWidgets
+from PySide6 import QtWidgets
 
 from DAVE.settings_visuals import PAINTERS
 

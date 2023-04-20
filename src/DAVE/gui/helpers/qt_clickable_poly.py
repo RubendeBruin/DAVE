@@ -1,5 +1,5 @@
-import PySide2
-from PySide2.QtWidgets import QGraphicsPolygonItem
+import PySide6
+from PySide6.QtWidgets import QGraphicsPolygonItem
 
 """Assing .callback and/or .callback_doubleclick to handle events"""
 
@@ -11,19 +11,19 @@ class ClickablePolygonItem(QGraphicsPolygonItem):
 
     def mousePressEvent(self, event):
 
-        if event.type() == PySide2.QtCore.QEvent.Type.GraphicsSceneMousePress:
+        if event.type() == PySide6.QtCore.QEvent.Type.GraphicsSceneMousePress:
             if self.callback is not None:
                 self.callback(self)
-        if event.type() == PySide2.QtCore.QEvent.Type.GraphicsSceneMouseDoubleClick:
+        if event.type() == PySide6.QtCore.QEvent.Type.GraphicsSceneMouseDoubleClick:
             if self.callback_doubleclick is not None:
                 self.callback_doubleclick(self)
 
 if __name__ == '__main__':
-    import PySide2
-    from PySide2 import QtWidgets
-    from PySide2.QtCore import Qt, QPointF
-    from PySide2.QtGui import QBrush, QPen, QPolygonF, QPalette
-    from PySide2.QtWidgets import QDialog, QApplication, QGraphicsView, QVBoxLayout, QGraphicsScene, \
+    import PySide6
+    from PySide6 import QtWidgets
+    from PySide6.QtCore import Qt, QPointF
+    from PySide6.QtGui import QBrush, QPen, QPolygonF, QPalette
+    from PySide6.QtWidgets import QDialog, QApplication, QGraphicsView, QVBoxLayout, QGraphicsScene, \
         QGraphicsPolygonItem
 
     a = QApplication()

@@ -3,7 +3,7 @@ This is an example/template of how to setup a new dockwidget
 """
 import subprocess
 
-from PySide2.QtGui import QIcon
+from PySide6.QtGui import QIcon
 
 """
   This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,10 +14,10 @@ from PySide2.QtGui import QIcon
 """
 
 from DAVE.gui.dockwidget import *
-from PySide2 import QtGui, QtCore, QtWidgets
+from PySide6 import QtGui, QtCore, QtWidgets
 import DAVE.scene as ds
 from DAVE.gui.forms.widget_footprints import Ui_FootprintForm
-from PySide2.QtWidgets import QTreeWidgetItem, QMessageBox
+from PySide6.QtWidgets import QTreeWidgetItem, QMessageBox
 from DAVE.gui.helpers.gridedit import GridEdit
 from DAVE import settings
 

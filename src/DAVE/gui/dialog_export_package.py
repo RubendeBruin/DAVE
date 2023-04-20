@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from PySide2.QtCore import QSettings
-from PySide2.QtGui import QIcon
-from PySide2 import QtWidgets
-from PySide2.QtWidgets import QFileDialog
+from PySide6.QtCore import QSettings
+from PySide6.QtGui import QIcon
+from PySide6 import QtWidgets
+from PySide6.QtWidgets import QFileDialog
 
 from DAVE.gui.forms.dlg_export_package import Ui_ExportPackage
 

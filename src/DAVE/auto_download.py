@@ -80,9 +80,9 @@ except ImportError as err:
 
     url = f"https://davecore.nl/files/{filename}"
 
-    from PySide2.QtWidgets import QApplication
-    from PySide2.QtWidgets import QDialog
-    from PySide2.QtWidgets import QDialogButtonBox, QVBoxLayout, QLabel
+    from PySide6.QtWidgets import QApplication
+    from PySide6.QtWidgets import QDialog
+    from PySide6.QtWidgets import QDialogButtonBox, QVBoxLayout, QLabel
 
     app = QApplication()
     dlg = QDialog()
