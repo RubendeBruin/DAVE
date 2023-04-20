@@ -96,7 +96,7 @@ class WidgetDerivedProperties(guiDockWidget):
             except:
                 result = 'Error evaluating {}'.format(w)
             pa = QtWidgets.QTreeWidgetItem(self.dispPropTree)
-            pa.setTextColor(0,QColor(0,120,0))
+            pa.setForeground(0,QBrush(QColor(0,120,0)))
 
             v = QtWidgets.QTreeWidgetItem(pa)
             pa.setText(0, w)

@@ -180,7 +180,7 @@ class UndoType(Enum):
 
 class SolverDialog(QDialog, Ui_Dialog):
     def __init__(self, parent=None):
-        super(SolverDialog, self).__init__(parent)
+        super(SolverDialog, self).__init__()
         Ui_Dialog.__init__(self)
         self.setupUi(self)
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
@@ -189,7 +189,7 @@ class SolverDialog(QDialog, Ui_Dialog):
 
 class SolverDialog_threaded(QDialog, Ui_SolverDialogThreaded):
     def __init__(self, parent=None):
-        super(SolverDialog_threaded, self).__init__(parent)
+        super(SolverDialog_threaded, self).__init__()
         Ui_Dialog.__init__(self)
         self.setupUi(self)
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
@@ -198,7 +198,7 @@ class SolverDialog_threaded(QDialog, Ui_SolverDialogThreaded):
 
 class SettingsDialog(QDialog, Ui_frmSettings):
     def __init__(self, scene, gui, parent=None):
-        super(SettingsDialog, self).__init__(parent)
+        super(SettingsDialog, self).__init__()
         Ui_frmSettings.__init__(self)
         self.setupUi(self)
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)

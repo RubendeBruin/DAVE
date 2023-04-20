@@ -1,5 +1,5 @@
 from DAVE.gui.dockwidget import *
-from PySide6.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag, QColor
+from PySide6.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag, QColor, QBrush
 from PySide6.QtCore import QMimeData, Qt, QItemSelectionModel
 from PySide6.QtWidgets import (
     QTreeWidgetItem,
@@ -257,11 +257,11 @@ class WidgetNodeTree(guiDockWidget):
             # item not visible? then mark gray
             node = self.guiScene[name]
             if not node.visible:
-                item.setTextColor(0, QColor(124, 124, 124))
+                item.setForeground(0,QBrush(QColor(124, 124, 124)))
             elif node.manager is not None:
-                item.setTextColor(0, QColor(0, 150, 0))
+                item.setForeground(0,QBrush(QColor(0, 150, 0)))
             else:
-                item.setTextColor(0, QColor(0, 0, 0))
+                item.setForeground(0,QBrush(QColor(0,0,0)))
 
     def update_node_data_and_tree(self):
         """
@@ -435,7 +435,7 @@ class WidgetNodeTree(guiDockWidget):
 
             if node.manager and show_managed_node:          # are we showing managed nodes?
 
-                item.setTextColor(0, QColor(0, 150, 0))
+                item.setForeground(0,QBrush(QColor(0, 150, 0)))
                 self.items[node.name] = item
                 give_parent_item(node).addChild(item)
 

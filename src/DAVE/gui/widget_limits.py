@@ -287,9 +287,9 @@ class WidgetLimits(guiDockWidget):
                                                   ))
 
                 if uc > 0.2 and uc < 0.7:
-                    uc_item.setTextColor(QColor(0,0,0,255))
+                    uc_item.setForeground(0,QBrush(QColor(0,0,0,255)))
                 else:
-                    uc_item.setTextColor(QColor(255, 255, 255, 255))
+                    uc_item.setForeground(0,QBrush(QColor(255, 255, 255, 255)))
                 table.setItem(irow, 4, uc_item)
 
                 irow += 1

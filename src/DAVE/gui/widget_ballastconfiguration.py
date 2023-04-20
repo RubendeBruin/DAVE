@@ -182,19 +182,19 @@ class WidgetBallastConfiguration(guiDockWidget):
 
             if t.fill_pct < 0.1:
                 item.setBackground(QBrush(empty))
-                item.setTextColor(black)
+                item.setForeground(QBrush(black))
             elif t.fill_pct < 5:
                 item.setBackground(QBrush(min5))
-                item.setTextColor(black)
+                item.setForeground(QBrush(black))
             elif t.fill_pct < 95:
                 item.setBackground(QBrush(partial))
-                item.setTextColor(black)
+                item.setForeground(QBrush(black))
             elif t.fill_pct < 99.9:
                 item.setBackground(QBrush(above95))
-                item.setTextColor(empty)
+                item.setForeground(QBrush(empty))
             else:
                 item.setBackground(QBrush(full))
-                item.setTextColor(empty)
+                item.setForeground(QBrush(empty))
 
             tw.setItem(rows, 1, item)
 

@@ -3,15 +3,22 @@
 ################################################################################
 ## Form generated from reading UI file 'widget_modeshapes.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.6
+## Created by: Qt User Interface Compiler version 6.5.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import *  # type: ignore
-from PySide6.QtGui import *  # type: ignore
-from PySide6.QtWidgets import *  # type: ignore
-
+from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
+    QMetaObject, QObject, QPoint, QRect,
+    QSize, QTime, QUrl, Qt)
+from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
+    QFont, QFontDatabase, QGradient, QIcon,
+    QImage, QKeySequence, QLinearGradient, QPainter,
+    QPalette, QPixmap, QRadialGradient, QTransform)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QGridLayout,
+    QHeaderView, QLabel, QPushButton, QSizePolicy,
+    QSlider, QSpacerItem, QTableWidget, QTableWidgetItem,
+    QVBoxLayout, QWidget)
 
 class Ui_ModeShapesWidget(object):
     def setupUi(self, ModeShapesWidget):
@@ -124,7 +131,6 @@ class Ui_ModeShapesWidget(object):
         self.lblPeriod.setObjectName(u"lblPeriod")
         font = QFont()
         font.setBold(True)
-        font.setWeight(75)
         self.lblPeriod.setFont(font)
 
         self.gridLayout.addWidget(self.lblPeriod, 0, 2, 1, 1)

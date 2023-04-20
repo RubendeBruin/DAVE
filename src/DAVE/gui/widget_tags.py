@@ -217,7 +217,7 @@ class WidgetTags(guiDockWidget):
                 if show_managed_node:
 
                     # item.setTextColor(0, Qt.gray)
-                    item.setTextColor(0, QColor(0, 150, 0))
+                    item.setForeground(0,QBrush(QColor(0, 150, 0)))
 
                     # if the item does not have a parent, then show it under the manager
                     if parent is None:
