@@ -84,7 +84,10 @@ except ImportError as err:
     from PySide6.QtWidgets import QDialog
     from PySide6.QtWidgets import QDialogButtonBox, QVBoxLayout, QLabel
 
-    app = QApplication()
+    if QApplication().instance() is not None:
+        app = QApplication().instance()
+    else:
+        app = QApplication()
     dlg = QDialog()
     QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
 

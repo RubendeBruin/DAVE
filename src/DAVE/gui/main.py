@@ -2342,10 +2342,14 @@ class Gui:
             action = menu.addAction(text, lambda n = node, *args : self._user_clicked_node(n))
 
             if node.manager is None:
-                action.setFont(action.font().setBold(True))
+                font = action.font()
+                font.setBold(True)
+                action.setFont(font)
             else:
                 if getattr(node,'_editor_widget_types_when_managed', None) is not None:  # for partially managed nodes
-                    action.setFont(action.font().setBold(True))
+                    font = action.font()
+                    font.setBold(True)
+                    action.setFont(font)
 
         menu.exec_(QCursor.pos())
 

@@ -8,17 +8,19 @@
   File to open the Gui
 
 """
-import DAVE.auto_download
 from PySide6.QtWidgets import QSplashScreen, QApplication, QLabel
 from PySide6.QtGui import QPixmap, QIcon
 
 # create application
 # note that the auto_download window may have already created one
 
+
 if QApplication.instance() is not None:
     app = QApplication.instance()
 else:
     app = QApplication()
+
+
 
 
 # get the current folder
@@ -34,6 +36,9 @@ label.move(10,10)
 
 splash.show()
 label.show()
+app.processEvents()
+
+import DAVE.auto_download
 
 
 import DAVE.gui.forms.resources_rc
