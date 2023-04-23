@@ -269,11 +269,6 @@ class Gui:
 
         self.app.aboutToQuit.connect(self.onCloseApplication)
 
-        if splash is None:
-            splash = QtWidgets.QSplashScreen()
-            splash.setPixmap(QPixmap(":/icons/splashscreen.png"))
-            splash.show()
-
         if scene is None:
             scene = Scene()
 
@@ -717,13 +712,15 @@ class Gui:
 
 
         # ======================== Finalize ========================
-        splash.finish(self.MainWindow)
         self.MainWindow.show()
 
         self.MainWindow.setMinimumWidth(1400)
 
         if isinstance(filename, str):
             self.open_file(filename)
+
+        if splash:
+            splash.finish(self.MainWindow)
 
         if block:
             self.ui.pbUpdate.setVisible(False)

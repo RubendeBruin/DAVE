@@ -32,7 +32,6 @@ try:
 except:
     version = 0
 
-
 minor = sys.version_info.minor
 filename = f"DAVEcore.cp3{minor}-win_amd64.pyd"
 
@@ -84,10 +83,7 @@ except ImportError as err:
     from PySide6.QtWidgets import QDialog
     from PySide6.QtWidgets import QDialogButtonBox, QVBoxLayout, QLabel
 
-    if QApplication().instance() is not None:
-        app = QApplication().instance()
-    else:
-        app = QApplication()
+    app = QApplication.instance() or QApplication()
     dlg = QDialog()
     QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
 
