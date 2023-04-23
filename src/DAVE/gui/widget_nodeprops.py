@@ -2617,6 +2617,7 @@ class WidgetNodeProps(guiDockWidget):
         self.main_layout.addWidget(self.warning_label)
         self.main_layout.addWidget(self.manager_widget)
         self.main_layout.addWidget(self.props_widget)
+        self.main_layout.setContentsMargins(0,6,6,6)
 
         self.contents.setLayout(self.main_layout)
 

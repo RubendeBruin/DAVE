@@ -80,6 +80,7 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
 class WidgetNodeTree(guiDockWidget):
     def guiCreate(self):
 
+        self.contents.setContentsMargins(0,0,0,0)
         self.treeView = NodeTreeWidget(self.contents)
         self.treeView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.treeView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
@@ -124,6 +125,8 @@ class WidgetNodeTree(guiDockWidget):
         layout.addWidget(self.checkbox)
         layout.addWidget(self.listbox)
         self.contents.setLayout(layout)
+
+        layout.setContentsMargins(4,0,0,0)
 
         self.recent_items = list()
 
