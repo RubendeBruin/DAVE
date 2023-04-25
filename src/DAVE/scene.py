@@ -2404,13 +2404,14 @@ class Scene:
     def new_cable(
         self,
         name,
-        endA,
-        endB,
+        endA=None,
+        endB=None,
         length=None,
         EA=0,
         diameter:float=0,
         sheaves=None,
         mass=None,
+        connections = None,
         mass_per_length=None,
     ) -> Cable:
         """Creates a new *cable* node and adds it to the scene.
@@ -2424,6 +2425,8 @@ class Scene:
             mass [0] or mass_per_length [0] : mass of the cable - warning: only valid if tension in cable > 10x cable weight.
             mass_per_length [alternative for mass]
             sheaves : [optional] A list of pois, these are sheaves that the cable runs over. Defined from endA to endB
+
+            connections: May be used instead of endA, endB and sheaves. If connections is provided then endA = connections[0], endB = connections[-1] and sheaves = connections[1:-1]
 
         Examples:
 
@@ -2450,6 +2453,21 @@ class Scene:
         if length is not None:
             assert1f(length, "length")
         assert1f(EA, "EA")
+
+        # check if connections is supplied
+        if connections is not None:
+            if endA is not None:
+                warnings.warn('provided EndA will not be used, it is overwritten by connections')
+            if endB is not None:
+                warnings.warn('provided EndB will not be used, it is overwritten by connections')
+            if sheaves is not None:
+                warnings.warn('provided sheaves will not be used, it is overwritten by connections')
+
+            endA = connections[0]
+            endB = connections[-1]
+            sheaves = connections[1:-1]
+
+
 
         endA = self._poi_or_sheave_from_node(endA)
         endB = self._poi_or_sheave_from_node(endB)

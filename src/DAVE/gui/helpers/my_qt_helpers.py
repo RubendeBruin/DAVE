@@ -59,7 +59,7 @@ class CustomEventFilters(PySide6.QtCore.QObject):
         self.callback = None
 
 
-class CustonKeyEventFilter(CustomEventFilters):
+class CustomKeyEventFilter(CustomEventFilters):
     key = Qt.Key_Delete
 
     def eventFilter(self, obj, event):
@@ -82,13 +82,13 @@ class CustonKeyEventFilter(CustomEventFilters):
         return False
 
 
-class DeleteEventFilter(CustonKeyEventFilter):
+class DeleteEventFilter(CustomKeyEventFilter):
     key = Qt.Key_Delete
 
-class EnterKeyPressFilter(CustomEventFilters):
+class EnterKeyPressFilter(CustomKeyEventFilter):
     key = Qt.Key_Return
 
-class EscKeyPressFilter(CustomEventFilters):
+class EscKeyPressFilter(CustomKeyEventFilter):
     key = Qt.Key_Escape
 
 
