@@ -45,6 +45,9 @@ from DAVE.settings_visuals import (
     COLOR_SELECT_255,
     UC_CMAP,
     OUTLINE_WIDTH,
+    COLOR_OUTLINE,
+    COLOR_BG1_GUI,
+    COLOR_BG2_GUI,
 )
 
 import DAVE.scene as vf
@@ -263,7 +266,7 @@ class VisualOutline:
         )
 
         # get color
-        color = getattr(self.parent_vp_actor, "_outline_color", (0, 0, 0))
+        color = getattr(self.parent_vp_actor, "_outline_color", COLOR_OUTLINE)
         self.outline_actor.GetProperty().SetColor(
             color[0] / 255, color[1] / 255, color[2] / 255
         )
@@ -2352,7 +2355,7 @@ class Viewport:
                     vedo.settings.default_backend = 'None'
 
                     self.screen = vp.plotter.Plotter(
-                        qt_widget=self.vtkWidget, axes=4, bg=COLOR_BG1, bg2=COLOR_BG2
+                        qt_widget=self.vtkWidget, axes=4, bg=COLOR_BG1_GUI, bg2=COLOR_BG2_GUI
                     )
 
         """ For reference: this is how to load an cubemap texture

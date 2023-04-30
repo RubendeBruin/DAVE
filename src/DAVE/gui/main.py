@@ -722,6 +722,8 @@ class Gui:
         if splash:
             splash.finish(self.MainWindow)
 
+        self.visual.zoom_all()
+
         if block:
             self.ui.pbUpdate.setVisible(False)
             self.ui.pbCopyViewCode.setVisible(False)
@@ -2430,7 +2432,7 @@ class Gui:
 
         for node in self.selected_nodes:
             if isinstance(node, Manager):
-                visually_selected_nodes.extend(self.scene.nodes_managed_by(node))
+                visually_selected_nodes.extend(self.scene.nodes_managed_by(node, recursive=True))
 
         # loop over visuals, and set _is_selected or _is_sub_selected based on the referenced node
 

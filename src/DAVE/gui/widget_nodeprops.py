@@ -62,7 +62,53 @@ def cvinf(combobox: QtWidgets.QComboBox,value : str):
         return
     combobox.setCurrentText(value)
 
+def code_if_user_focus(node, control, ref, dec = 3):
+    """Returns the code to update property "ref" of node "node" with the value in the control if the control has the current focus
 
+
+    """
+
+    if not control.hasFocus():
+        return ""
+
+    try: # try value
+        value = control.value() # for spinboxes and sliders
+
+        if isinstance(value, (int, float)): # it is a number?
+            return code_if_changed_d(node, value, ref, dec=dec)
+        else:
+            raise ValueError("Not a number")
+    except:
+        pass
+
+    try: # try bool
+        value = control.isChecked()
+        return code_if_changed_b(node, value, ref)
+    except:
+        pass
+
+    raise ValueError('Can not get value from this control')
+
+
+
+def code_if_changed_b(node, value, ref):
+    """Returns code to change value of property "ref" to "value" if different from target value
+
+    Args:
+        node: node
+        value: value to check and set
+        ref: name of the property
+
+    Returns:
+        str
+
+    """
+    current = getattr(node, ref)
+
+    if value != current:
+        return f"\ns['{node.name}'].{ref} = {value}"
+    else:
+        return ""
 
 
 def code_if_changed_d(node, value, ref, dec=3):
@@ -2781,6 +2827,8 @@ class WidgetNodeProps(guiDockWidget):
         no_name_editor = getattr(node, '_no_name_editor', False)
         self._name_widget.setVisible(not no_name_editor)
 
+        suppressed_editors = getattr(node, '_suppressed_node_editors', [])
+
         self._node_editors.clear()
         self._open_edit_widgets.clear()
 
@@ -2806,74 +2854,74 @@ class WidgetNodeProps(guiDockWidget):
         #     if cls is not None:
         #         self._node_editors.append(cls.Instance())
 
-        if isinstance(node, vfs.Visual):
+        if isinstance(node, vfs.Visual) and (vfs.Visual not in suppressed_editors):
             self._node_editors.append(EditVisualOutline.Instance())
             self._node_editors.append(EditVisual.Instance())
 
-        if isinstance(node, vfs.WaveInteraction1):
+        if isinstance(node, vfs.WaveInteraction1) and (vfs.WaveInteraction1 not in suppressed_editors):
             self._node_editors.append(EditWaveInteraction.Instance())
 
-        if isinstance(node, vfs.Component):
+        if isinstance(node, vfs.Component) and (vfs.Component not in suppressed_editors):
             self._node_editors.append(EditComponent.Instance())
 
-        if isinstance(node, vfs.Frame):
+        if isinstance(node, vfs.Frame) and (vfs.Frame not in suppressed_editors):
             self._node_editors.append(EditAxis.Instance())
 
-        if isinstance(node, vfs.RigidBody) and not isinstance(node, vfs.Shackle):
+        if isinstance(node, vfs.RigidBody) and (vfs.RigidBody not in suppressed_editors):
             self._node_editors.append(EditBody.Instance())
 
-        if isinstance(node, vfs.Point):
+        if isinstance(node, vfs.Point) and (vfs.Point not in suppressed_editors):
             self._node_editors.append(EditPoi.Instance())
 
-        if isinstance(node, vfs.Cable):
+        if isinstance(node, vfs.Cable) and (vfs.Cable not in suppressed_editors):
             self._node_editors.append(EditCable.Instance())
             self._node_editors.append(EditConnections.Instance())
 
-        if isinstance(node, vfs.Force):
+        if isinstance(node, vfs.Force) and (vfs.Force not in suppressed_editors):
             self._node_editors.append(EditForce.Instance())
 
-        if isinstance(node, vfs.Circle):
+        if isinstance(node, vfs.Circle) and (vfs.Circle not in suppressed_editors):
             self._node_editors.append(EditSheave.Instance())
 
-        if isinstance(node, vfs.HydSpring):
+        if isinstance(node, vfs.HydSpring) and (vfs.HydSpring not in suppressed_editors):
             self._node_editors.append(EditHydSpring.Instance())
 
-        if isinstance(node, vfs.LC6d):
+        if isinstance(node, vfs.LC6d) and (vfs.LC6d not in suppressed_editors):
             self._node_editors.append(EditLC6d.Instance())
 
-        if isinstance(node, vfs.Connector2d):
+        if isinstance(node, vfs.Connector2d) and (vfs.Connector2d not in suppressed_editors):
             self._node_editors.append(EditConnector2d.Instance())
 
-        if isinstance(node, vfs.Beam):
+        if isinstance(node, vfs.Beam) and (vfs.Beam not in suppressed_editors):
             self._node_editors.append(EditBeam.Instance())
 
-        if isinstance(node, vfs.ContactBall):
+        if isinstance(node, vfs.ContactBall) and (vfs.ContactBall not in suppressed_editors):
             self._node_editors.append(EditContactBall.Instance())
 
-        if isinstance(node, vfs.GeometricContact):
+        if isinstance(node, vfs.GeometricContact) and (vfs.GeometricContact not in suppressed_editors):
             self._node_editors.append(EditGeometricContact.Instance())
 
-        if isinstance(node, vfs.Sling):
+        if isinstance(node, vfs.Sling) and (vfs.Sling not in suppressed_editors):
             self._node_editors.append(EditSling.Instance())
             self._node_editors.append(EditConnections.Instance())
 
-        if isinstance(node, vfs.SPMT):
+        if isinstance(node, vfs.SPMT) and (vfs.SPMT not in suppressed_editors):
             self._node_editors.append(EditSPMT.Instance())
 
-        if isinstance(node, vfs._Area):
+        if isinstance(node, vfs._Area) and (vfs._Area not in suppressed_editors):
             self._node_editors.append(EditArea.Instance())
 
         if (
             isinstance(node, vfs.Buoyancy)
             or isinstance(node, vfs.ContactMesh)
             or isinstance(node, vfs.Tank)
-        ):
+        ) and (vfs.Buoyancy not in suppressed_editors) and (vfs.ContactMesh not in suppressed_editors) and (vfs.Tank not in suppressed_editors):
             self._node_editors.append(EditBuoyancyOrContactMesh.Instance())
 
-        if isinstance(node, vfs.Tank):
+        if isinstance(node, vfs.Tank) and (vfs.Tank not in suppressed_editors):
             self._node_editors.append(EditTank.Instance())
 
-        if isinstance(node, vfs.Shackle):
+        if isinstance(node, vfs.Shackle) and (vfs.Shackle not in suppressed_editors):
             self._node_editors.append(EditShackle.Instance())
 
         for key, value in DAVE_GUI_NODE_EDITORS.items():

@@ -825,6 +825,8 @@ class Scene:
                         print(f"  depends on: {d.name}")
                     if node._manager:
                         print(f"   managed by: {node._manager.name}")
+                    if node in node.depends_on():
+                        raise Exception(f'Node {node.name} depends on itself - that is not possible')
 
                 raise Exception(
                     "Could not sort nodes by dependency, circular references exist?"
@@ -900,10 +902,19 @@ class Scene:
 
         return self._vfc.element_A_depends_on_B(A._vfNode.name, B._vfNode.name)
 
-    def nodes_managed_by(self, manager: Manager):
+    def nodes_managed_by(self, manager: Manager, recursive=False) -> list:
         """Returns a list of nodes managed by manager"""
+        if recursive:
+            nodes = self.nodes_managed_by(manager, recursive=False)
 
-        return [node for node in self._nodes if node.manager == manager]
+            for node in tuple(nodes):
+                if isinstance(node, Manager):
+                    nodes.extend([*self.nodes_managed_by(node, recursive=True)])
+
+            return nodes
+
+        else:
+            return [node for node in self._nodes if node.manager == manager]
 
     def nodes_depending_on(self, node):
         """Returns a list of nodes that physically depend on node. Only direct dependants are obtained with a connection to the core.

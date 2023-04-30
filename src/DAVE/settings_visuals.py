@@ -84,6 +84,11 @@ OUTLINE_WIDTH = 1.5
 COLOR_BG2 = rgb(_WHITE)
 COLOR_BG1 = rgb(_WHITE)
 
+COLOR_BG1_GUI = rgb((247,247,247))
+COLOR_BG2_GUI = rgb((247,247,247))
+
+COLOR_OUTLINE = rgb(_BLACK)
+
 COLOR_WATER = rgb(_BLUE_DARK)
 
 # ------------ colormap for unity-checks

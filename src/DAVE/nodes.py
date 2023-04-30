@@ -6364,6 +6364,7 @@ class Shackle(Manager, RigidBody):
     """
 
     data = dict()
+    _suppressed_node_editors = [RigidBody]
 
     # Read the shackle data
 
@@ -6616,26 +6617,20 @@ class Shackle(Manager, RigidBody):
         return code
 
 
-class Component(Manager, Frame):
-    """Components are frame-nodes containing a scene. The imported scene is referenced by a file-name. All impored nodes
-    are placed in the components frame.
-    """
+class Container(Manager):
+    """Containers are nodes containing nodes. Nodes are stored in self._nodes"""
 
     def __init__(self, scene, name):
-        Manager.__init__(self, scene, name=name)
-        Frame.__init__(self, scene, name=name)
-
-        self._path = ""
-        self._nodes = list()
+        super().__init__(scene, name=name)
+        self._nodes = []
         """Nodes in the component"""
 
-        self._exposed = []
-        """List of tuples containing the exposed properties (if any)"""
+        self._name = name
 
     @property
-    def name(self)->str:
+    def name(self) -> str:
         """Name of the node (str), must be unique"""
-        return self._vfNode.name
+        return self._name
 
     @name.setter
     @node_setter_manageable
@@ -6647,7 +6642,7 @@ class Component(Manager, Frame):
 
         old_prefix = self.name + "/"
         new_prefix = value + "/"
-        self._vfNode.name = value
+        self._name = value
 
         # update the node names of all of the properties , the direct way
         with ClaimManagement(self._scene, self):
@@ -6656,25 +6651,46 @@ class Component(Manager, Frame):
                     if node.name.startswith(old_prefix):
                         node.name = node.name.replace(old_prefix, new_prefix)
                     else:
-                        raise Exception(f"Unexpected name when re-naming managed node '{node.name}' of component '{self.name}'")
+                        raise Exception(
+                            f"Unexpected name when re-naming managed node '{node.name}' of component '{self.name}'")
 
     def delete(self):
         # remove all imported nodes
-
         self._scene._unmanage_and_delete(self._nodes)
-        #
-        # for node in self._nodes:
-        #     node._manager = None
-        #
-        # for node in self._nodes:
-        #     if node in self._scene._nodes:
-        #         self._scene.delete(node)
 
     def creates(self, node: Node):
         return node in self._nodes
 
+class SubScene(Container):
+    """A group of nodes (container) that can be loaded from a .DAVE file. Basically a component without a frame.
+    The nodes can have "exposed" properties"""
+
+    """Components are frame-nodes containing a scene. The imported scene is referenced by a file-name. All impored nodes
+        are placed in the components frame.
+        """
+
+    def __init__(self, scene, name):
+        Container.__init__(self, scene, name=name)
+
+        self._path = ""
+
+        self._exposed = []
+        """List of tuples containing the exposed properties (if any)"""
+
     @property
-    def path(self)->str:
+    def name(self) -> str:
+        """Name of the node (str), must be unique"""
+        return Container.name.fget(self)
+
+    @name.setter
+    @node_setter_manageable
+    def name(self, value):
+
+        Container.name.fset(self, value)
+        self._vfNode.name = value
+
+    @property
+    def path(self) -> str:
         """Path of the model-file. For example res: padeye.dave"""
         return self._path
 
@@ -6685,7 +6701,8 @@ class Component(Manager, Frame):
 
         # first see if we can load
         filename = self._scene.get_resource_path(value)
-        t = Scene(filename, resource_paths=self._scene.resources_paths.copy(), current_directory=self._scene.current_directory)
+        t = Scene(filename, resource_paths=self._scene.resources_paths.copy(),
+                  current_directory=self._scene.current_directory)
 
         # then remove all existing nodes
         self.delete()
@@ -6696,16 +6713,9 @@ class Component(Manager, Frame):
         # we're importing the exposed list into the current scene
         # but we need it inside this component
 
-        old_scene_exposed = getattr(self._scene,'exposed',None)
+        old_scene_exposed = getattr(self._scene, 'exposed', None)
 
-        self._scene.import_scene(
-            other=t,
-            prefix=self.name + "/",
-            container=self,
-            settings=False,  # do not import environment and other settings
-        )
-
-
+        self._import_scene_func(other_scene=t)
 
         # find imported nodes
         self._nodes.clear()
@@ -6726,11 +6736,20 @@ class Component(Manager, Frame):
         # and restore the _scenes old exposed
         if old_scene_exposed is not None:
             self._scene.exposed = old_scene_exposed
-        else: # there was none, remove it if it is there now
+        else:  # there was none, remove it if it is there now
             if hasattr(self._scene, 'exposed'):
                 del self._scene.exposed
 
         self._path = value
+
+    def _import_scene_func(self, other_scene):
+        self._scene.import_scene(
+            other=other_scene,
+            prefix=self.name + "/",
+            containerize=False,
+            settings=False,  # do not import environment and other settings
+        )
+
 
     @property
     def exposed_properties(self) -> tuple:
@@ -6777,6 +6796,41 @@ class Component(Manager, Frame):
 
         with ClaimManagement(self._scene, self):
             setattr(node, prop_name, value)
+
+
+class Component(SubScene, Frame):
+    """Components are frame-nodes containing a scene. The imported scene is referenced by a file-name. All impored nodes
+    are placed in the components frame.
+    """
+
+    def __init__(self, scene, name):
+        SubScene.__init__(self, scene, name=name)
+        Frame.__init__(self, scene, name=name)
+
+        self._path = ""
+
+        self._exposed = []
+        """List of tuples containing the exposed properties (if any)"""
+
+    @property
+    def name(self)->str:
+        """Name of the node (str), must be unique"""
+        return SubScene.name.fget(self)
+
+    @name.setter
+    @node_setter_manageable
+    def name(self, value):
+
+        SubScene.name.fset(self, value)
+        self._vfNode.name = value
+
+    def _import_scene_func(self, other_scene):
+        self._scene.import_scene(
+            other=other_scene,
+            prefix=self.name + "/",
+            container=self,
+            settings=False,  # do not import environment and other settings
+        )
 
     def give_python_code(self):
 

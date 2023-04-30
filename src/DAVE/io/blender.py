@@ -128,7 +128,11 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), or
 
 
     elif filepath.endswith('.stl'):
-        print('STL not yet implemented')
+        obj = bpy.ops.import_mesh.stl(filepath=filepath)
+        objects = []
+        for obj in bpy.context.selected_objects:
+            obj.rotation_euler[0] = 0
+            objects.append(obj)
 
     view3d_area = get_context_area()
 
