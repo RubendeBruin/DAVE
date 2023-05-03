@@ -6680,7 +6680,7 @@ class SubScene(Container):
     @property
     def name(self) -> str:
         """Name of the node (str), must be unique"""
-        return Container.name.fget(self)
+        return super().name
 
     @name.setter
     @node_setter_manageable
@@ -6804,8 +6804,8 @@ class Component(SubScene, Frame):
     """
 
     def __init__(self, scene, name):
-        SubScene.__init__(self, scene, name=name)
-        Frame.__init__(self, scene, name=name)
+        super().__init__(scene, name=name)
+        # Frame.__init__(self, scene, name=name)
 
         self._path = ""
 
@@ -6815,7 +6815,7 @@ class Component(SubScene, Frame):
     @property
     def name(self)->str:
         """Name of the node (str), must be unique"""
-        return SubScene.name.fget(self)
+        return super().name
 
     @name.setter
     @node_setter_manageable
