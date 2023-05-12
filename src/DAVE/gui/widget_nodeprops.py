@@ -38,10 +38,24 @@ from DAVE.gui.helpers.my_qt_helpers import BlockSigs, update_combobox_items_with
 import numpy as np
 
 from PySide6.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox, QColorDialog, \
-    QPushButton, QSizePolicy
+    QPushButton, QSizePolicy, QCheckBox
 from PySide6 import QtWidgets
 
 DAVE_GUI_NODE_EDITORS = dict() # Key: node-class, value: editor-class
+
+def cbvinf(checkbox: QCheckBox, value: bool, do_block = True):
+    """Updates the value in the spinbox IF it does not have focus. Blocks signals during change if do_block is true (default)"""
+    if checkbox.hasFocus():
+        return
+
+    if do_block:
+        remember = checkbox.signalsBlocked()
+        checkbox.blockSignals(True)
+        checkbox.setChecked(value)
+        checkbox.blockSignals(remember)
+    else:
+        checkbox.setChecked(value)
+
 
 def svinf(spinbox: QDoubleSpinBox, value: float, do_block = True):
     """Updates the value in the spinbox IF it does not have focus. Blocks signals during change if do_block is true (default)"""

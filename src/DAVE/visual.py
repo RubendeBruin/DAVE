@@ -1369,9 +1369,9 @@ class Viewport:
     def show_as_qt_app(s, painters=None, sea=False, boundary_edges=False):
         from PySide6.QtWidgets import QWidget, QApplication
 
-        app = QApplication()
+        app = QApplication.instance() or QApplication()
+
         widget = QWidget()
-        widget.show()
 
         if painters is None:
             from DAVE.settings_visuals import PAINTERS
@@ -1396,7 +1396,13 @@ class Viewport:
 
         v.zoom_all()
 
-        app.exec_()
+        widget.show()
+
+        from PySide6.QtCore import QEventLoop
+        if not QEventLoop().isRunning():
+            app.exec_()
+
+
 
     def initialize_node_drag(self, nodes):
         # Initialize dragging on selected node

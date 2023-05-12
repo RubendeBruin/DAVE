@@ -623,6 +623,7 @@ PAINTERS["Visual"] = animation_painters
 # Rigging
 PAINTERS["Rigging"] = deepcopy(animation_painters)
 PAINTERS["Rigging"]["Circle"] = deepcopy(PAINTERS["Construction"]["Circle"])
+PAINTERS["Rigging"]["Cable"]["main"].labelShow = True
 
 
 # Xray

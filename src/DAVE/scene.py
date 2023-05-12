@@ -962,6 +962,21 @@ class Scene:
 
         return r
 
+    def node_is_fully_fixed_to_world(self, node) -> bool:
+        """Returns true if this node will never move"""
+        if node is None:
+            return True
+
+        if not hasattr(node, 'parent'):
+            return True
+
+        if isinstance(node, Frame):
+            if not all(node.fixed):
+                return False
+
+        return self.node_is_fully_fixed_to_world(node.parent)  # recursive call on parent. Parent None returns True
+
+
     def common_ancestor_of_nodes(self, nodes: List[Node]) -> Node or None:
         """Finds a nearest ancestor (parent) that is common to all of the nodes.
 
@@ -1208,7 +1223,7 @@ class Scene:
             if isinstance(node, RigidBody):
 
                 p = self.new_rigidbody(
-                    node.name + "_dissolved",
+                    self.available_name_like(node.name + "_dissolved"),
                     mass=node.mass,
                     position=node.position,
                     rotation=node.rotation,
@@ -1219,7 +1234,7 @@ class Scene:
                 )
             elif isinstance(node, Frame):
                 p = self.new_frame(
-                    node.name + "_dissolved",
+                    self.available_name_like(node.name + "_dissolved"),
                     position=node.position,
                     rotation=node.rotation,
                     inertia=node.inertia,
@@ -1257,46 +1272,79 @@ class Scene:
                 "Only nodes of type Frame and Manager can be dissolved at this moment"
             )
 
-        self.delete(node)  # do not call delete as that will fail on managers
+        self.delete(node)
 
     def flatten(self, root_node=None, exclude_known_types = False):
         """Performs a recursive dissolve on Frames (not rigid bodies). If root_node is None (default) then the whole model is flattened"""
 
         from .nodes import Frame, RigidBody, Shackle, Component, Manager
 
+        dissolved_node_name = None
+        dissolved_node_names = []
+
         while True:
+
+            if dissolved_node_name is not None:
+                dissolved_node_names.append(dissolved_node_name)
+
+            print("=================================")
+            for d in dissolved_node_names:
+                print(d)
+
             work_done = False
 
             if root_node is None:
-                nodes = self.nodes_of_type(Frame)
+                nodes = self.nodes_of_type((Frame, Manager))
             else:
                 all_nodes = self.nodes_depending_on(root_node)
                 nodes = [node for node in all_nodes if isinstance(node, Frame)]
 
-
             for node in nodes:
 
-                if isinstance(node, RigidBody):
-                    continue # do not dissolve rigid-bodies, that would destroy the weight
+                dissolved_node_name = node.name  # for debugging
 
                 if exclude_known_types:
                     if isinstance(node, (Shackle, Component)):
                         continue
 
-                if node.manager is None and node.fixed == (True, True, True, True, True, True):
+
+                if isinstance(node, Frame):
+
+                    if isinstance(node, RigidBody):
+                        if node.mass > 0:
+                            continue # do not dissolve rigid-bodies, that would destroy the weight
+
+                    if node.manager is None and node.fixed == (True, True, True, True, True, True):
+                        try:
+                            self.dissolve(node)
+                            work_done = True
+                            break
+                        except:
+                            pass
+
+                elif isinstance(node, Manager):
                     self.dissolve(node)
                     work_done = True
                     break
-                if isinstance(node, Manager):
-                    self.dissolve(node)
-                    work_done = True
-                    break
+
+                if 'SuperElement' in DAVE_ADDITIONAL_RUNTIME_MODULES:
+                    if isinstance(node, DAVE_ADDITIONAL_RUNTIME_MODULES['SuperElement']):
+
+                        if isinstance(node, RigidBody):
+                            if node.mass > 0:
+                                continue # do not dissolve rigid-bodies, that would destroy the weight
+
+                        self.dissolve(node)
+                        work_done = True
+                        break
 
             if not work_done:
                 break
 
         if root_node is not None:
             self.dissolve(root_node)
+
+        return dissolved_node_names
 
 
     def savepoint_make(self):
@@ -3859,8 +3907,47 @@ class Scene:
 
         c = Scene(resource_paths=self.resources_paths, current_directory=self.current_directory)
 
-        c.import_scene(self, containerize=False, nodes=nodes, quick=True)
+        c.import_scene(self, containerize=False, nodes=nodes, quick=quick)
         return c
+
+    def get_free_frame_state_dict(self) -> dict:
+        """Returns a dictionary with the positions and rotations of all Frames that have at least one dof free
+        key: Node name
+        value: 6d tuple with global position and rotation
+        """
+        result = dict()
+
+        for frame in self.nodes_of_type(Frame):
+            if not all(frame.fixed):  # at least one free
+                result[frame.name] = (*frame.global_position, *frame.global_rotation)
+
+        return result
+
+    def maximum_relative_rotation(self, reference_state : dict) -> tuple:
+        """Returns the maximum relative rotation between the current state and the reference state.
+        reference_state is a state as obtained from get_free_frame_state_dict
+
+        Returns the largest angle of rotation in degrees and the name of the node where that occurs
+
+        """
+
+        maxrot = 0
+        name = 'Rotations match'
+        state2 = self.get_free_frame_state_dict()
+        for key, value in reference_state.items():
+            this_rotation = state2[key][3:]
+            ref_rotation = value[3:]
+
+            # compare
+            rel_rot = angle_between_rotvects(this_rotation, ref_rotation)
+
+            if rel_rot > maxrot:
+                maxrot = rel_rot
+                name = key
+
+        return (maxrot, name)
+
+
 
     @property
     def state(self):

@@ -1,5 +1,5 @@
 from DAVE.gui.dockwidget import *
-from PySide6.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag
+from PySide6.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag, QBrush
 from PySide6.QtCore import QMimeData, Qt, QItemSelectionModel
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QTreeWidgetItem, QLabel, QLineEdit

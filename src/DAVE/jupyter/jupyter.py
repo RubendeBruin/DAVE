@@ -6,7 +6,7 @@
   Ruben de Bruin - 2019
 
 
-  Helper functions for running DAVE from jupyter
+  Helper functions for running DAVE from jupyter or generating reports in PDF
 
 """
 
@@ -19,7 +19,6 @@
 import warnings
 
 from ..visual import Viewport
-import vedo
 
 import PIL
 import vtk
@@ -47,6 +46,7 @@ def show(
         projection="3d",
         zoom_fit=False,
         scale=None,
+        transparent=False,
 ):
     """
     Creates a 3d view of the scene and shows it as a static image.
@@ -78,26 +78,27 @@ def show(
     """
 
     image = pil_image(
-        scene,
-        camera_pos,  #
-        lookat,
-        width,
-        height,
-        show_force,  # show forces
-        show_meshes,  # show meshes and connectors
-        show_global,  # show or hide the environment (sea)
-        show_cog,
-        cog_do_normalize,
-        cog_scale,
-        force_do_normalize,  # Normalize force size to 1.0 for plotting
-        force_scale,  # Scale to be applied on (normalized) force magnitude
-        geometry_scale,  # poi radius of the pois
-        painters,
-        additional_actors,
-        paint_uc,
-        projection,
-        zoom_fit,
-        scale)
+        scene=scene,
+        camera_pos=camera_pos,  #
+        lookat=lookat,
+        width=width,
+        height = height,
+        show_force= show_force,  # show forces
+        show_meshes = show_meshes,  # show meshes and connectors
+        show_global = show_global,  # show or hide the environment (sea)
+        show_cog = show_cog,
+        cog_do_normalize = cog_do_normalize,
+        cog_scale = cog_scale,
+        force_do_normalize = force_do_normalize,  # Normalize force size to 1.0 for plotting
+        force_scale = force_scale,  # Scale to be applied on (normalized) force magnitude
+        geometry_scale = geometry_scale,  # poi radius of the pois
+        painters = painters,
+        additional_actors = additional_actors,
+        paint_uc = paint_uc,
+        projection = projection,
+        zoom_fit = zoom_fit,
+        scale = scale,
+        transparent = transparent,)
 
     return image
 
@@ -106,6 +107,9 @@ def show(
 
 def pil_image(
         scene,
+        do_sequence=True,
+        use_step0_as_background=True,
+        use_only_steps_with_labels=False,
         camera_pos=None,  #
         lookat=None,
         width=1024,
@@ -125,6 +129,7 @@ def pil_image(
         projection="3d",
         zoom_fit=False,
         scale=None,
+        transparent = True,  # render using a transparent background
 ):
     """
     Creates a 3d view of the scene and shows it as a static image.
@@ -148,6 +153,7 @@ def pil_image(
         projection: '2d' or '3d'
         zoom_fit: True/False - adjust camera to view full scene
         paint_uc: Paint unity-checks using colors
+        transparent : If one image: render image transparent. Multiple images: Renders the first image with solid background and the rest with transparent background
         scale : parallel scale for 2d views
 
     Returns:
@@ -289,15 +295,84 @@ def pil_image(
     near, far = c.GetClippingRange()
     c.SetClippingRange((1/100) * far, far)
 
-    win = plotter.window
-    win.Render()
 
+    do_timeline = do_sequence
+    timeline = getattr(scene, 't')
+
+    win = plotter.window
+
+
+    if timeline is not None and do_timeline:
+        times = [tt for tt in timeline.times()]
+
+        images = list()
+        _transparent = False # first image transparent
+
+        for time in times:
+            timeline.activate_time(time)
+
+            caption = timeline.get_label(time)
+
+            if use_only_steps_with_labels and caption is None:
+                continue
+
+            vp.position_visuals()
+            vp._rotate_actors_due_to_camera_movement()
+            vp.update_visibility()  # UC paint
+
+            if use_step0_as_background and len(images) > 1:
+                # we need to clean the background as the previous image is still there
+                nx, ny = win.GetSize()
+                arr = vtk.vtkUnsignedCharArray()
+                win.GetRGBACharPixelData(0, 0, nx - 1, ny - 1, 0, arr)
+                arr.Fill(0)
+                win.SetRGBACharPixelData(0, 0, nx - 1, ny - 1, arr, 0)
+
+                win.Frame()
+
+            win.Render()
+
+            nx, ny = win.GetSize()
+            arr = vtk.vtkUnsignedCharArray()
+            win.GetRGBACharPixelData(0, 0, nx - 1, ny - 1, 0, arr)
+
+            if use_step0_as_background and len(images) == 1:
+                _transparent = True
+                plotter.renderer.SetLayer(1)
+                win.SetNumberOfLayers(2)
+
+
+            if _transparent:
+                narr = vtk_to_numpy(arr).T[:4].T.reshape([ny, nx, 4])
+            else:
+                narr = vtk_to_numpy(arr).T[:3].T.reshape([ny, nx, 3])
+
+            narr = np.flip(narr, axis=0)
+
+            pil_img = PIL.Image.fromarray(narr)
+
+            pil_img.DAVE_caption = caption
+
+            images.append(pil_img)
+
+
+        return images
+
+    if transparent:
+        plotter.renderer.SetLayer(1)
+        win.SetNumberOfLayers(2)
+
+    win.Render()
 
     nx, ny = win.GetSize()
     arr = vtk.vtkUnsignedCharArray()
     win.GetRGBACharPixelData(0, 0, nx - 1, ny - 1, 0, arr)
 
-    narr = vtk_to_numpy(arr).T[:3].T.reshape([ny, nx, 3])
+    if transparent:
+        narr = vtk_to_numpy(arr).T[:4].T.reshape([ny, nx, 4])
+    else:
+        narr = vtk_to_numpy(arr).T[:3].T.reshape([ny, nx, 3])
+
     narr = np.flip(narr, axis=0)
 
     pil_img = PIL.Image.fromarray(narr)

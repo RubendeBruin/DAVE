@@ -268,6 +268,15 @@ def rotation_from_axis_direction(direction, source_axis):
 
     return np.rad2deg(angle * axis)
 
+def angle_between_rotvects(v1, v2):
+    """Returns the angle of rotation required to rotate from v1 to v2 via the shortest path"""
+
+    R1 = Rotation.from_rotvec(rotvec = v1, degrees=True)
+    R2 = Rotation.from_rotvec(rotvec = v2, degrees=True)
+
+    relative = R1.inv() * R2
+    return np.rad2deg(relative.magnitude())
+
 
 def round3d(value):
     """Rounds to three decimal places, the expected way; not the numpy way (ie: 0.0005 --> 0.001)"""
