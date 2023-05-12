@@ -197,6 +197,16 @@ class Node(ABC):
             f"Derived class should implement this method, but {type(self)} does not"
         )
 
+    def dissolve(self) -> bool:
+        """This method is called to see if the node can be dissolved and, if so, make the necessary preparations such as
+        deleting or re-parenting child nodes.
+
+        Returns:
+            True if the node has been dissolved
+            False if the node can not be dissolved.
+        """
+        return False
+
     def give_python_code(self):
         """Returns the python code that can be executed to re-create this node"""
         return "# No python code generated for element {}".format(self.name)
@@ -738,6 +748,281 @@ class NodeWithCoreParentAndTrimesh(NodeWithCoreParent):
                                rotation = new_rotation,
                                scale = self.trimesh._scale,
                                invert_normals= self.trimesh._invert_normals)
+
+
+class Manager(Node, ABC):
+    """
+    Notes:
+        1. A manager shall manage the names of all nodes it creates
+    """
+
+    @abstractmethod
+    def delete(self):
+        """Carefully remove the manager, reinstate situation as before.
+        - Delete all the nodes it created.
+        - Release management on all other nodes
+        - Do not delete the manager itself
+        """
+        pass
+
+    @abstractmethod
+    def creates(self, node: Node):
+        """Returns True if node is created by this manager"""
+        pass
+
+    @property
+    @abstractmethod
+    def name(self)->str:
+        """Name of the node (str), must be unique"""
+        # Example:
+        #     @property
+        #     def name(self):
+        #         """Name of the node (str), must be unique"""
+        #         return RigidBody.name.fget(self)
+        #
+
+        pass
+
+    @name.setter
+    @abstractmethod
+    def name(self, value):
+        # example
+        # @name.setter
+        # def name(self, value):
+        #     if value == self.name: # no change
+        #         return
+        #     old_name = self.name
+        #     RigidBody.name.fset(self,value)
+        #     self._rename_all_manged_nodes(old_name, value)
+        #
+        pass
+
+    def store_copy_of_limits(self):
+        """Creates/updates a copy of the limits of all managed nodes and stores that in
+        each node in a dict ._limits_by_manager.
+
+        This is used to determine which limits need to be saved by the scene
+        """
+
+        for node in self.managed_nodes():
+            node._limits_by_manager = node.limits.copy()
+
+    def _rename_all_manged_nodes(self, old_name, new_name):
+        """Helper to quickly rename all managed nodes"""
+
+        with ClaimManagement(self._scene, self):
+            for node in self.managed_nodes():
+                n = len(old_name)
+                assert node.name[:n] == old_name
+                node.name = new_name + node.name[n:]
+
+
+    def _rename_all_created_nodes(self, old_name, new_name):
+        """Helper to quickly rename all created nodes"""
+
+        with ClaimManagement(self._scene, self):
+            for node in self.created_nodes():
+                n = len(old_name)
+                assert node.name[:n] == old_name
+                node.name = new_name + node.name[n:]
+
+    def dissolve(self) -> bool:
+        """Managers can always be dissolved. Simply release management of all managed nodes"""
+
+        with ClaimManagement(self._scene, self):
+            for d in self._scene.nodes_managed_by(self):
+                if self in d.observers:
+                    d.observers.remove(self)
+                d.manager = None
+
+        self._dissolved = True  # secret signal to "delete" that this node is not managing anything anymore and can be deleted without deleting its managed nodes
+        self._scene.delete(self)
+
+        return True
+
+
+
+class Container(Manager):
+    """Containers are nodes containing nodes. Nodes are stored in self._nodes"""
+
+    def __init__(self, scene, name):
+        super().__init__(scene, name=name)
+        self._nodes = []
+        """Nodes in the component"""
+
+        self._name = name
+
+    @property
+    def name(self) -> str:
+        """Name of the node (str), must be unique"""
+        return self._name
+
+    @name.setter
+    @node_setter_manageable
+    def name(self, value):
+        if value == self.name:
+            return
+
+        self._scene._verify_name_available(name=value)
+
+        old_prefix = self.name + "/"
+        new_prefix = value + "/"
+        self._name = value
+
+        # update the node names of all of the properties , the direct way
+        with ClaimManagement(self._scene, self):
+            for node in self._nodes:
+                if node.manager is None or node.manager == self:  # only rename un-managed nodes or nodes managed by me - managed nodes will be renamed by their manager
+                    if node.name.startswith(old_prefix):
+                        node.name = node.name.replace(old_prefix, new_prefix)
+                    else:
+                        raise Exception(
+                            f"Unexpected name when re-naming managed node '{node.name}' of component '{self.name}'")
+
+    def delete(self):
+        # remove all imported nodes
+        self._scene._unmanage_and_delete(self._nodes)
+
+    def creates(self, node: Node):
+        return node in self._nodes
+
+class SubScene(Container):
+    """A group of nodes (container) that can be loaded from a .DAVE file. Basically a component without a frame.
+    The nodes can have "exposed" properties"""
+
+    """Components are frame-nodes containing a scene. The imported scene is referenced by a file-name. All impored nodes
+        are placed in the components frame.
+        """
+
+    def __init__(self, scene, name):
+        Container.__init__(self, scene, name=name)
+
+        self._path = ""
+
+        self._exposed = []
+        """List of tuples containing the exposed properties (if any)"""
+
+    @property
+    def name(self) -> str:
+        """Name of the node (str), must be unique"""
+        return super().name
+
+    @name.setter
+    @node_setter_manageable
+    def name(self, value):
+
+        Container.name.fset(self, value)
+        self._vfNode.name = value
+
+    @property
+    def path(self) -> str:
+        """Path of the model-file. For example res: padeye.dave"""
+        return self._path
+
+    @path.setter
+    @node_setter_manageable
+    def path(self, value):
+        from .scene import Scene
+
+        # first see if we can load
+        filename = self._scene.get_resource_path(value)
+        t = Scene(filename, resource_paths=self._scene.resources_paths.copy(),
+                  current_directory=self._scene.current_directory)
+
+        # then remove all existing nodes
+        self.delete()
+
+        # and re-import them
+        old_nodes = self._scene._nodes.copy()
+
+        # we're importing the exposed list into the current scene
+        # but we need it inside this component
+
+        old_scene_exposed = getattr(self._scene, 'exposed', None)
+
+        self._import_scene_func(other_scene=t)
+
+        # find imported nodes
+        self._nodes.clear()
+        for node in self._scene._nodes:
+            if node not in old_nodes:
+                self._nodes.append(node)
+
+        # claim ownership of unmanaged nodes
+        for node in self._nodes:
+            if node.manager is None:
+                node._manager = self
+                node._limits_by_manager = node.limits.copy()
+                node._watches_by_manager = node.watches.copy()
+
+        # Get exposed properties (if any)
+        self._exposed = getattr(t, 'exposed', [])
+
+        # and restore the _scenes old exposed
+        if old_scene_exposed is not None:
+            self._scene.exposed = old_scene_exposed
+        else:  # there was none, remove it if it is there now
+            if hasattr(self._scene, 'exposed'):
+                del self._scene.exposed
+
+        self._path = value
+
+    def _import_scene_func(self, other_scene):
+        self._scene.import_scene(
+            other=other_scene,
+            prefix=self.name + "/",
+            containerize=False,
+            settings=False,  # do not import environment and other settings
+        )
+
+
+    @property
+    def exposed_properties(self) -> tuple:
+        """Names of exposed properties"""
+        return tuple([e[0] for e in self._exposed])
+
+    def _get_exposed_node(self, name):
+        """Returns the managed node with original name name"""
+        full_name = self.name + "/" + name
+        for node in self._nodes:
+            if node.name == full_name:
+                return node
+
+        raise ValueError(f'No exposed node with name {name} in component {self.name}')
+
+    def _get_exposed_property_data(self, name):
+        for e in self._exposed:
+            if e[0] == name:
+                return e
+        raise ValueError(f'No exposed property with name {name}')
+
+    def get_exposed(self, name):
+        """Returns the value of the exposed property"""
+        e = self._get_exposed_property_data(name)
+        node_name = e[1]
+        prop_name = e[2]
+        node = self._get_exposed_node(node_name)
+        return getattr(node, prop_name)
+
+    def get_exposed_type(self, name):
+        """Returns the value of the exposed property"""
+        e = self._get_exposed_property_data(name)
+        node_name = e[1]
+        prop_name = e[2]
+        node = self._get_exposed_node(node_name)
+        doc = self._scene.give_documentation(node, prop_name)
+        return doc.property_type
+
+    def set_exposed(self, name, value):
+        e = self._get_exposed_property_data(name)
+        node_name = e[1]
+        prop_name = e[2]
+        node = self._get_exposed_node(node_name)
+
+        with ClaimManagement(self._scene, self):
+            setattr(node, prop_name, value)
+
+
 
 
 # ==============================================================
@@ -1620,6 +1905,48 @@ class Frame(NodeWithParentAndFootprint):
         self.global_position = glob_pos
         self.global_rotation = glob_rot
 
+    def _can_dissolve(self):
+
+        # Frames can only be dissolved when they are fixed
+        if not all(self.fixed):
+            return False
+
+        # All nodes depending on this Frame need to be able to function
+        # without it.
+        # That is possible if they have this node as parent and that parent is this node.
+        for node_name in (self._scene.nodes_depending_on(self)):
+            node = self._scene[node_name]
+            parent = getattr(node, "parent", -1)  # -1 is a dummy value, None is a valid parent
+            if parent is not self:
+                return False
+
+            if node.manager is not None:  # can not change the parent of this node
+                return False
+
+        return True
+
+    def dissolve(self):
+        """Dissolves the node and removes it from the scene. All children will be assigned to the parent of this node."""
+
+        if not self._can_dissolve():
+            return False
+
+        # All checks passed, we can dissolve this node
+        for node_name in (self._scene.nodes_depending_on(self)):
+            node = self._scene[node_name]
+            node.change_parent_to(self.parent)
+
+        # Check that we have indeed fixed all the dependencies, we've only checked for
+        # "parent" and assumed that changing the parent removes the dependancy.
+        # In the future there could be node-types that have other dependancies as well
+
+        for node_name in (self._scene.nodes_depending_on(self)):
+            raise ValueError(f'After changing parent, node {node_name} still depends on {self.name} - can not dissolve')
+
+        self._scene.delete(self)
+        return True
+
+
     def give_python_code(self):
         code = "# code for {}".format(self.name)
         code += "\ns.new_frame(name='{}',".format(self.name)
@@ -2028,6 +2355,14 @@ class RigidBody(Frame):
             self.inertia_radii = (0, 0, 0)
         self.inertia = newmass
         self._vfForce.force = (0, 0, -self._scene.g * newmass)
+
+    def dissolve(self):
+        """A RigidBody can only be dissolved if it has no mass, in that case it is actually a frame"""
+
+        if self.mass == 0:
+            return super().dissolve()
+
+        return False
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -4936,84 +5271,7 @@ class WaveInteraction1(Node):
 # ============== Managed nodes
 
 
-class Manager(Node, ABC):
-    """
-    Notes:
-        1. A manager shall manage the names of all nodes it creates
-    """
-
-    @abstractmethod
-    def delete(self):
-        """Carefully remove the manager, reinstate situation as before.
-        - Delete all the nodes it created.
-        - Release management on all other nodes
-        - Do not delete the manager itself
-        """
-        pass
-
-    @abstractmethod
-    def creates(self, node: Node):
-        """Returns True if node is created by this manager"""
-        pass
-
-    @property
-    @abstractmethod
-    def name(self)->str:
-        """Name of the node (str), must be unique"""
-        # Example:
-        #     @property
-        #     def name(self):
-        #         """Name of the node (str), must be unique"""
-        #         return RigidBody.name.fget(self)
-        #
-
-        pass
-
-    @name.setter
-    @abstractmethod
-    def name(self, value):
-        # example
-        # @name.setter
-        # def name(self, value):
-        #     if value == self.name: # no change
-        #         return
-        #     old_name = self.name
-        #     RigidBody.name.fset(self,value)
-        #     self._rename_all_manged_nodes(old_name, value)
-        #
-        pass
-
-    def store_copy_of_limits(self):
-        """Creates/updates a copy of the limits of all managed nodes and stores that in
-        each node in a dict ._limits_by_manager.
-
-        This is used to determine which limits need to be saved by the scene
-        """
-
-        for node in self.managed_nodes():
-            node._limits_by_manager = node.limits.copy()
-
-    def _rename_all_manged_nodes(self, old_name, new_name):
-        """Helper to quickly rename all managed nodes"""
-
-        with ClaimManagement(self._scene, self):
-            for node in self.managed_nodes():
-                n = len(old_name)
-                assert node.name[:n] == old_name
-                node.name = new_name + node.name[n:]
-
-
-    def _rename_all_created_nodes(self, old_name, new_name):
-        """Helper to quickly rename all created nodes"""
-
-        with ClaimManagement(self._scene, self):
-            for node in self.created_nodes():
-                n = len(old_name)
-                assert node.name[:n] == old_name
-                node.name = new_name + node.name[n:]
-
-
-class GeometricContact(Manager):
+class GeometricContact(Manager):  # Note: can not derive from Container because managed nodes is not equal to created nodes
     """
     GeometricContact
 
@@ -5593,7 +5851,7 @@ class GeometricContact(Manager):
         return "\n".join(code)
 
 
-class Sling(Manager):
+class Sling(Container):
     """A Sling is a single wire with an eye on each end. The eyes are created by splicing the end of the sling back
     into the itself.
 
@@ -5689,29 +5947,29 @@ class Sling(Manager):
         # create the two splices
 
         self.sa1 = scene.new_rigidbody(
-            scene.available_name_like(name_prefix + "_spliceA1"), fixed=(False,False,False,True,True,True)
+            scene.available_name_like(name_prefix + "spliceA1"), fixed=(False,False,False,True,True,True)
         )
 
         self.sa2 = scene.new_rigidbody(
-            scene.available_name_like(name_prefix + "_spliceA2"), fixed=(False,False,False,True,True,True)
+            scene.available_name_like(name_prefix + "spliceA2"), fixed=(False,False,False,True,True,True)
         )
 
         self.a1 = scene.new_point(
-            scene.available_name_like(name_prefix + "_spliceA1p"), parent=self.sa1
+            scene.available_name_like(name_prefix + "spliceA1p"), parent=self.sa1
         )
         self.a2 = scene.new_point(
-            scene.available_name_like(name_prefix + "_spliceA2p"), parent=self.sa2
+            scene.available_name_like(name_prefix + "spliceA2p"), parent=self.sa2
         )
 
 
         self.sb1 = scene.new_rigidbody(
-            scene.available_name_like(name_prefix + "_spliceB1"),
+            scene.available_name_like(name_prefix + "spliceB1"),
             rotation=(0, 0, 180),
             fixed=(False,False,False,True,True,True),
         )
 
         self.sb2 = scene.new_rigidbody(
-            scene.available_name_like(name_prefix + "_spliceB2"),
+            scene.available_name_like(name_prefix + "spliceB2"),
             rotation=(0, 0, 180),
             fixed=(False,False,False,True,True,True),
         )
@@ -5719,15 +5977,15 @@ class Sling(Manager):
 
 
         self.b1 = scene.new_point(
-            scene.available_name_like(name_prefix + "_spliceB1p"), parent=self.sb1
+            scene.available_name_like(name_prefix + "spliceB1p"), parent=self.sb1
         )
         self.b2 = scene.new_point(
-            scene.available_name_like(name_prefix + "_spliceB2p"), parent=self.sb2
+            scene.available_name_like(name_prefix + "spliceB2p"), parent=self.sb2
         )
 
 
         self.main = scene.new_cable(
-            scene.available_name_like(name_prefix + "_main_part"),
+            scene.available_name_like(name_prefix + "main_part"),
             endA=self.a1,
             endB=self.b1,
             length=1,
@@ -5736,7 +5994,7 @@ class Sling(Manager):
         )
 
         self.eyeA = scene.new_cable(
-            scene.available_name_like(name_prefix + "_eyeA"),
+            scene.available_name_like(name_prefix + "eyeA"),
             endA=self.a2,
             endB=self.a2,
             sheaves = self._endA,
@@ -5744,7 +6002,7 @@ class Sling(Manager):
             EA=1,
         )
         self.eyeB = scene.new_cable(
-            scene.available_name_like(name_prefix + "_eyeB"),
+            scene.available_name_like(name_prefix + "eyeB"),
             endA=self.b2,
             endB=self.b2,
             sheaves=self._endB,
@@ -5757,7 +6015,7 @@ class Sling(Manager):
         if self.SPLICE_AS_BEAM:
             # Model splices as beams
             self.spliceA = scene.new_beam(
-                scene.available_name_like(name_prefix + "_spliceA"),
+                scene.available_name_like(name_prefix + "spliceA"),
                 nodeA=self.sa1, nodeB=self.sa2,
                 mass=0,
                 EA=1,
@@ -5766,7 +6024,7 @@ class Sling(Manager):
             )
 
             self.spliceB = scene.new_beam(
-                scene.available_name_like(name_prefix + "_spliceB"),
+                scene.available_name_like(name_prefix + "spliceB"),
                 nodeA=self.sb1, nodeB=self.sb2,
                 mass=0,
                 EA=1,
@@ -5776,7 +6034,7 @@ class Sling(Manager):
 
         else:
             self.spliceA = scene.new_cable(
-                scene.available_name_like(name_prefix + "_spliceA"),
+                scene.available_name_like(name_prefix + "spliceA"),
                 endA=self.a1,
                 endB=self.a2,
                 length=1,
@@ -5784,7 +6042,7 @@ class Sling(Manager):
             )
 
             self.spliceB = scene.new_cable(
-                scene.available_name_like(name_prefix + "_spliceB"),
+                scene.available_name_like(name_prefix + "spliceB"),
                 endA=self.b1,
                 endB=self.b2,
                 length=1,
@@ -5800,28 +6058,34 @@ class Sling(Manager):
 
 
 
-        # set initial positions of splices if we can
-
-
-
         # Update properties
         self.sheaves = sheaves
         self._update_properties()
 
-        for n in self.managed_nodes():
+        self._nodes = [
+            self.spliceA,
+            self.a1,
+            self.sa1,
+            self.a2,
+            self.sa2,
+            # self.am,
+            # self.avis,
+            # self.sb,
+            self.b1,
+            self.sb1,
+            self.b2,
+            self.sb2,
+            self.spliceB,
+            # self.bvis,
+            self.main,
+            self.eyeA,
+            self.eyeB,
+        ]
+
+        for n in self._nodes:
             n.manager = self
 
-    @property
-    def name(self)->str:
-        """Name of the node (str), must be unique"""
-        return self._name
 
-    @name.setter
-    def name(self, value):
-        assert self._scene.name_available(value), f"Name {value} already in use"
-
-        self._rename_all_manged_nodes(self.name, value)
-        self._name = value
 
     @property
     def _Lmain(self):
@@ -6005,44 +6269,7 @@ class Sling(Manager):
 
         return a
 
-    def managed_nodes(self):
-        a = [
-            self.spliceA,
-            self.a1,
-            self.sa1,
-            self.a2,
-            self.sa2,
-            # self.am,
-            # self.avis,
-            # self.sb,
-            self.b1,
-            self.sb1,
-            self.b2,
-            self.sb2,
-            self.spliceB,
-            # self.bvis,
-            self.main,
-            self.eyeA,
-            self.eyeB,
 
-        ]
-
-        return a
-
-    def creates(self, node: Node):
-        return node in self.managed_nodes()  # all these are created
-
-    def delete(self):
-
-        # delete created nodes
-        a = self.managed_nodes()
-
-        for n in a:
-            n._manager = None
-
-        for n in a:
-            if n in self._scene._nodes:
-                self._scene.delete(n)  # delete if it is still available
 
     @property
     def spliceApos(self)->tuple[float,float,float,float,float,float]:
@@ -6344,7 +6571,7 @@ class Sling(Manager):
         self._update_properties()
 
 
-class Shackle(Manager, RigidBody):
+class Shackle(Container, RigidBody):
     """
     Shackle catalog
     - GP: Green-Pin Heavy Duty Bow Shackle BN (P-6036 Green Pin® Heavy Duty Bow Shackle BN (mm))
@@ -6432,30 +6659,30 @@ class Shackle(Manager, RigidBody):
 
         # pin
         self.pin_point = scene.new_point(
-            name=name + "_pin_point", parent=self, position=(0.0, 0.0, 0.0)
+            name=name + "/pin_point", parent=self, position=(0.0, 0.0, 0.0)
         )
         self.pin = scene.new_circle(
-            name=name + "_pin", parent=self.pin_point, axis=(0.0, 1.0, 0.0)
+            name=name + "/pin", parent=self.pin_point, axis=(0.0, 1.0, 0.0)
         )
 
         # bow
-        self.bow_point = scene.new_point(name=name + "_bow_point", parent=self)
+        self.bow_point = scene.new_point(name=name + "/bow_point", parent=self)
 
         self.bow = scene.new_circle(
-            name=name + "_bow", parent=self.bow_point, axis=(0.0, 1.0, 0.0)
+            name=name + "/bow", parent=self.bow_point, axis=(0.0, 1.0, 0.0)
         )
 
         # inside circle
         self.inside_point = scene.new_point(
-            name=name + "_inside_circle_center", parent=self
+            name=name + "/inside_circle_center", parent=self
         )
         self.inside = scene.new_circle(
-            name=name + "_inside", parent=self.inside_point, axis=(1.0, 0, 0)
+            name=name + "/inside", parent=self.inside_point, axis=(1.0, 0, 0)
         )
 
         # code for GP800_visual
         self.visual_node = scene.new_visual(
-            name=name + "_visual",
+            name=name + "/visual",
             parent=self,
             path=r"res: shackle_gp800.obj",
             offset=(0, 0, 0),
@@ -6463,15 +6690,26 @@ class Shackle(Manager, RigidBody):
         )
 
         self.kind = kind
-        self._name = name # do not set name in managed nodes, names there are already set
-                          # so that would raise an error
 
         self.inside_point._visible = False
         self.bow_point._visible = False
         self.pin_point._visible = False
 
-        for n in self.managed_nodes():
-            n.manager = self
+        self._nodes = [
+            self.pin_point,
+            self.pin,
+            self.bow_point,
+            self.bow,
+            self.inside_point,
+            self.inside,
+            self.visual_node,
+        ]
+
+        for node in self._nodes:
+            node._manager = self
+
+        self.name = name  # do not set name in managed nodes, names there are already set
+        # so that would raise an error
 
     @property
     def kind(self)->str:
@@ -6527,31 +6765,8 @@ class Shackle(Manager, RigidBody):
 
         self._kind = kind
 
-    def managed_nodes(self):
-        return [
-            self.pin_point,
-            self.pin,
-            self.bow_point,
-            self.bow,
-            self.inside_point,
-            self.inside,
-            self.visual_node,
-        ]
 
-    def creates(self, node: Node):
-        return node in self.managed_nodes()  # all these are created
 
-    def delete(self):
-
-        # delete created nodes
-        a = self.managed_nodes()
-
-        for n in a:
-            n._manager = None
-
-        for n in a:
-            if n in self._scene._nodes:
-                self._scene.delete(n)  # delete if it is still available
 
     @property
     def name(self)->str:
@@ -6560,9 +6775,8 @@ class Shackle(Manager, RigidBody):
 
     @name.setter
     def name(self, value):
-        old_name = self.name
-        RigidBody.name.fset(self, value)
-        self._rename_all_manged_nodes(old_name, value)
+        RigidBody.name.fset(self, value)  # rename self
+        Container.name.fset(self, value)  # rename managed nodes
 
     @property
     def shackle_data_dict(self) -> dict:
@@ -6616,186 +6830,6 @@ class Shackle(Manager, RigidBody):
 
         return code
 
-
-class Container(Manager):
-    """Containers are nodes containing nodes. Nodes are stored in self._nodes"""
-
-    def __init__(self, scene, name):
-        super().__init__(scene, name=name)
-        self._nodes = []
-        """Nodes in the component"""
-
-        self._name = name
-
-    @property
-    def name(self) -> str:
-        """Name of the node (str), must be unique"""
-        return self._name
-
-    @name.setter
-    @node_setter_manageable
-    def name(self, value):
-        if value == self.name:
-            return
-
-        self._scene._verify_name_available(name=value)
-
-        old_prefix = self.name + "/"
-        new_prefix = value + "/"
-        self._name = value
-
-        # update the node names of all of the properties , the direct way
-        with ClaimManagement(self._scene, self):
-            for node in self._nodes:
-                if node.manager is None or node.manager == self:  # only rename un-managed nodes or nodes managed by me - managed nodes will be renamed by their manager
-                    if node.name.startswith(old_prefix):
-                        node.name = node.name.replace(old_prefix, new_prefix)
-                    else:
-                        raise Exception(
-                            f"Unexpected name when re-naming managed node '{node.name}' of component '{self.name}'")
-
-    def delete(self):
-        # remove all imported nodes
-        self._scene._unmanage_and_delete(self._nodes)
-
-    def creates(self, node: Node):
-        return node in self._nodes
-
-class SubScene(Container):
-    """A group of nodes (container) that can be loaded from a .DAVE file. Basically a component without a frame.
-    The nodes can have "exposed" properties"""
-
-    """Components are frame-nodes containing a scene. The imported scene is referenced by a file-name. All impored nodes
-        are placed in the components frame.
-        """
-
-    def __init__(self, scene, name):
-        Container.__init__(self, scene, name=name)
-
-        self._path = ""
-
-        self._exposed = []
-        """List of tuples containing the exposed properties (if any)"""
-
-    @property
-    def name(self) -> str:
-        """Name of the node (str), must be unique"""
-        return super().name
-
-    @name.setter
-    @node_setter_manageable
-    def name(self, value):
-
-        Container.name.fset(self, value)
-        self._vfNode.name = value
-
-    @property
-    def path(self) -> str:
-        """Path of the model-file. For example res: padeye.dave"""
-        return self._path
-
-    @path.setter
-    @node_setter_manageable
-    def path(self, value):
-        from .scene import Scene
-
-        # first see if we can load
-        filename = self._scene.get_resource_path(value)
-        t = Scene(filename, resource_paths=self._scene.resources_paths.copy(),
-                  current_directory=self._scene.current_directory)
-
-        # then remove all existing nodes
-        self.delete()
-
-        # and re-import them
-        old_nodes = self._scene._nodes.copy()
-
-        # we're importing the exposed list into the current scene
-        # but we need it inside this component
-
-        old_scene_exposed = getattr(self._scene, 'exposed', None)
-
-        self._import_scene_func(other_scene=t)
-
-        # find imported nodes
-        self._nodes.clear()
-        for node in self._scene._nodes:
-            if node not in old_nodes:
-                self._nodes.append(node)
-
-        # claim ownership of unmanaged nodes
-        for node in self._nodes:
-            if node.manager is None:
-                node._manager = self
-                node._limits_by_manager = node.limits.copy()
-                node._watches_by_manager = node.watches.copy()
-
-        # Get exposed properties (if any)
-        self._exposed = getattr(t, 'exposed', [])
-
-        # and restore the _scenes old exposed
-        if old_scene_exposed is not None:
-            self._scene.exposed = old_scene_exposed
-        else:  # there was none, remove it if it is there now
-            if hasattr(self._scene, 'exposed'):
-                del self._scene.exposed
-
-        self._path = value
-
-    def _import_scene_func(self, other_scene):
-        self._scene.import_scene(
-            other=other_scene,
-            prefix=self.name + "/",
-            containerize=False,
-            settings=False,  # do not import environment and other settings
-        )
-
-
-    @property
-    def exposed_properties(self) -> tuple:
-        """Names of exposed properties"""
-        return tuple([e[0] for e in self._exposed])
-
-    def _get_exposed_node(self, name):
-        """Returns the managed node with original name name"""
-        full_name = self.name + "/" + name
-        for node in self._nodes:
-            if node.name == full_name:
-                return node
-
-        raise ValueError(f'No exposed node with name {name} in component {self.name}')
-
-    def _get_exposed_property_data(self, name):
-        for e in self._exposed:
-            if e[0] == name:
-                return e
-        raise ValueError(f'No exposed property with name {name}')
-
-    def get_exposed(self, name):
-        """Returns the value of the exposed property"""
-        e = self._get_exposed_property_data(name)
-        node_name = e[1]
-        prop_name = e[2]
-        node = self._get_exposed_node(node_name)
-        return getattr(node, prop_name)
-
-    def get_exposed_type(self, name):
-        """Returns the value of the exposed property"""
-        e = self._get_exposed_property_data(name)
-        node_name = e[1]
-        prop_name = e[2]
-        node = self._get_exposed_node(node_name)
-        doc = self._scene.give_documentation(node, prop_name)
-        return doc.property_type
-
-    def set_exposed(self, name, value):
-        e = self._get_exposed_property_data(name)
-        node_name = e[1]
-        prop_name = e[2]
-        node = self._get_exposed_node(node_name)
-
-        with ClaimManagement(self._scene, self):
-            setattr(node, prop_name, value)
 
 
 class Component(SubScene, Frame):

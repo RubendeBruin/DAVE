@@ -1199,6 +1199,80 @@ class Scene:
         # validate timelines
         self._validate_timelines()
 
+    def dissolve_attempt(self, node):
+        """Attempts to dissolve a node, returns True if the node has been dissolved and can be deleted,
+        otherwise returns False
+
+        See Also:
+            dissolve
+        """
+
+        if isinstance(node, str):
+            node = self[node]
+
+        if node.manager is not None:
+            return False
+
+        return node.dissolve()
+
+        #
+        # if isinstance(node, Manager):
+        #
+        #     if isinstance(node, RigidBody):
+        #
+        #         p = self.new_rigidbody(
+        #             self.available_name_like(node.name + "_dissolved"),
+        #             mass=node.mass,
+        #             position=node.position,
+        #             rotation=node.rotation,
+        #             inertia_radii=node.inertia_radii,
+        #             fixed=node.fixed,
+        #             cog=node.cog,
+        #             parent=node.parent,
+        #         )
+        #     elif isinstance(node, Frame):
+        #         p = self.new_frame(
+        #             self.available_name_like(node.name + "_dissolved"),
+        #             position=node.position,
+        #             rotation=node.rotation,
+        #             inertia=node.inertia,
+        #             inertia_radii=node.inertia_radii,
+        #             fixed=node.fixed,
+        #             parent=node.parent,
+        #         )
+        #     else:
+        #         p = None
+        #
+        #     with ClaimManagement(self, node):
+        #         for d in self.nodes_managed_by(node):
+        #             if node in d.observers:
+        #                 d.observers.remove(node)
+        #             d.manager = None
+        #
+        #             if hasattr(d, "parent"):
+        #                 if d.parent == node:
+        #                     d.parent = p
+        #
+        #         for d in self.nodes_depending_on(node):
+        #             # TODO: Fails nodes that do depend on this node, but do not have it as parent,
+        #             # for example LC6D and 2d connectors
+        #             if hasattr(d, "parent"):
+        #                 self[d].change_parent_to(p)
+        #
+        #     node._dissolved = True  # signal for the .delete function to skip deletion of nodes created by the manager
+        #
+        # elif isinstance(node, Frame):
+        #     for d in self.nodes_depending_on(node):
+        #         self[d].change_parent_to(node.parent)
+        #
+        # else:
+        #     raise TypeError(
+        #         "Only nodes of type Frame and Manager can be dissolved at this moment"
+        #     )
+
+
+
+
     def dissolve(self, node):
         """Attempts to delete the given node without affecting the rest of the model.
 
@@ -1206,73 +1280,15 @@ class Scene:
         2. Attach those nodes to the parent of this node.
         3. Delete this node.
 
-        There are many situations in which this will fail because an it is impossible to dissolve
+        There are many situations in which this will fail because it is impossible to dissolve
         the element. For example a poi can only be dissolved when nothing is attached to it.
 
-        For now this function only works on Frames and Managers
         """
-
-        if isinstance(node, str):
-            node = self[node]
-
-        if node.manager is not None:
-            raise Exception("Managed nodes can not be dissolved")
-
-        if isinstance(node, Manager):
-
-            if isinstance(node, RigidBody):
-
-                p = self.new_rigidbody(
-                    self.available_name_like(node.name + "_dissolved"),
-                    mass=node.mass,
-                    position=node.position,
-                    rotation=node.rotation,
-                    inertia_radii=node.inertia_radii,
-                    fixed=node.fixed,
-                    cog=node.cog,
-                    parent=node.parent,
-                )
-            elif isinstance(node, Frame):
-                p = self.new_frame(
-                    self.available_name_like(node.name + "_dissolved"),
-                    position=node.position,
-                    rotation=node.rotation,
-                    inertia=node.inertia,
-                    inertia_radii=node.inertia_radii,
-                    fixed=node.fixed,
-                    parent=node.parent,
-                )
-            else:
-                p = None
-
-            with ClaimManagement(self, node):
-                for d in self.nodes_managed_by(node):
-                    if node in d.observers:
-                        d.observers.remove(node)
-                    d.manager = None
-
-                    if hasattr(d, "parent"):
-                        if d.parent == node:
-                            d.parent = p
-
-                for d in self.nodes_depending_on(node):
-                    # TODO: Fails nodes that do depend on this node, but do not have it as parent,
-                    # for example LC6D and 2d connectors
-                    if hasattr(d, "parent"):
-                        self[d].change_parent_to(p)
-
-            node._dissolved = True  # signal for the .delete function to skip deletion of nodes created by the manager
-
-        elif isinstance(node, Frame):
-            for d in self.nodes_depending_on(node):
-                self[d].change_parent_to(node.parent)
-
+        if self.dissolve_attempt(node):
+            pass
         else:
-            raise TypeError(
-                "Only nodes of type Frame and Manager can be dissolved at this moment"
-            )
+            raise ValueError("Could not dissolve node")
 
-        self.delete(node)
 
     def flatten(self, root_node=None, exclude_known_types = False):
         """Performs a recursive dissolve on Frames (not rigid bodies). If root_node is None (default) then the whole model is flattened"""
