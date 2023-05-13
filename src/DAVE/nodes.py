@@ -486,7 +486,7 @@ class CoreConnectedNode(Node):
         assert not isinstance(vfNode, str), "This constructor needs to be called with a daveCore node, not a string - for example 'super().__init__(scene, scene._vfc.new_axis(name))'"
 
         self._vfNode = vfNode
-        super().__init__(scene, self._vfNode.name)
+        Node.__init__(self, scene, self._vfNode.name)
 
     @property
     def name(self) -> str:
@@ -520,7 +520,7 @@ class NodeWithCoreParent(CoreConnectedNode):
     """
 
     def __init__(self, scene, vfNode):
-        super().__init__(scene, vfNode)
+        CoreConnectedNode.__init__(self,scene, vfNode)
         self._parent = None
         self._None_parent_acceptable = False
         self._parent_for_code_export = True
@@ -672,7 +672,7 @@ class NodeWithParentAndFootprint(NodeWithCoreParent):
     """
 
     def __init__(self, scene, vfNode):
-        super().__init__(scene, vfNode)
+        NodeWithCoreParent.__init__(self, scene, vfNode)
 
     @property
     def footprint(self) -> tuple:
@@ -704,7 +704,7 @@ class NodeWithParentAndFootprint(NodeWithCoreParent):
 
 class NodeWithCoreParentAndTrimesh(NodeWithCoreParent):
     def __init__(self, scene, core_node):
-        super().__init__(scene, core_node)
+        NodeWithCoreParent.__init__(self, scene, core_node)
 
         self._None_parent_acceptable = False
         self._trimesh = TriMeshSource(
@@ -1053,7 +1053,7 @@ class Visual(Node):
 
     def __init__(self, scene, name : str):
 
-        super().__init__(scene, name)
+        Node.__init__(self, scene, name)
 
         self.offset = [0, 0, 0]
         """Offset (x,y,z) of the visual. Offset is applied after scaling"""
@@ -1144,9 +1144,10 @@ class Frame(NodeWithParentAndFootprint):
 
     def __init__(self, scene, name : str):
 
-        assert getattr(self, "_vfNode", None) is None, "A Node is already present in the core, error in constructor sequence?"
+        assert getattr(self, "_vfNode",
+                       None) is None, "A Node is already present in the core, error in constructor sequence?"
 
-        super().__init__(scene, scene._vfc.new_axis(name))
+        NodeWithParentAndFootprint.__init__(self, scene, scene._vfc.new_axis(name))
 
 
         self._None_parent_acceptable = True
@@ -1174,7 +1175,7 @@ class Frame(NodeWithParentAndFootprint):
         for p in self._pointmasses:
             self._scene._vfc.delete(p.name)
 
-        super()._delete_vfc()
+        NodeWithParentAndFootprint._delete_vfc(self)
 
     @property
     def inertia(self) -> float:
@@ -1526,7 +1527,7 @@ class Frame(NodeWithParentAndFootprint):
             c.parent = None
 
         """
-        return super().parent
+        return NodeWithParentAndFootprint.parent.fget(self)
 
     @parent.setter
     @node_setter_manageable
@@ -2057,7 +2058,7 @@ class Point(NodeWithParentAndFootprint):
     # init parent and name are fully derived from NodeWithParent
     # _vfNode is a poi
     def __init__(self, scene, name : str):
-        super().__init__(scene, scene._vfc.new_poi(name))
+        NodeWithParentAndFootprint.__init__(self, scene, scene._vfc.new_poi(name))
 
         self._None_parent_acceptable = True
 
@@ -2067,11 +2068,11 @@ class Point(NodeWithParentAndFootprint):
     @property
     def parent(self) -> Frame or None:
         """Frame that the point is located on, determines the local axis system"""
-        return super().parent
+        return NodeWithParentAndFootprint.parent.fget(self)
 
     @parent.setter # need to override because we did override getter
     def parent(self, value):
-        super(Point, type(self)).parent.fset(
+        NodeWithParentAndFootprint.parent.fset(
             self, value
         )  # https://bugs.python.org/issue14965
 
@@ -2294,14 +2295,14 @@ class RigidBody(Frame):
     # - name : sets the names of poi and force as well
 
     def _delete_vfc(self):
-        super()._delete_vfc()
+        Frame._delete_vfc(self)
         self._scene._vfc.delete(self._vfPoi.name)
         self._scene._vfc.delete(self._vfForce.name)
 
     @property  # can not define a setter without a getter..?
     def name(self) -> str:
         """Name of the node (str), must be unique"""
-        return super().name
+        return Frame.name.fget(self)
 
     @name.setter
     @node_setter_manageable
@@ -2310,18 +2311,18 @@ class RigidBody(Frame):
         """Name of the node (str), must be unique"""
 
         # super().name = newname
-        super(RigidBody, self.__class__).name.fset(self, newname)
+        Frame.name.fset(self, newname)
         self._vfPoi.name = newname + vfc.VF_NAME_SPLIT + "cog"
         self._vfForce.name = newname + vfc.VF_NAME_SPLIT + "gravity"
 
     @property
     def footprint(self)->tuple[tuple[float,float,float]]:
         """Sets the footprint vertices. Supply as an iterable with each element containing three floats"""
-        return super().footprint
+        return Frame.footprint.fget(self)
 
     @footprint.setter
     def footprint(self, value):
-        super(RigidBody, type(self)).footprint.fset(
+        Frame.footprint.fset(
             self, value
         )  # https://bugs.python.org/issue14965
 
@@ -2504,7 +2505,7 @@ class Cable(CoreConnectedNode):
     """
 
     def __init__(self, scene, name : str):
-        super().__init__(scene, scene._vfc.new_cable(name))
+        CoreConnectedNode.__init__(self, scene, scene._vfc.new_cable(name))
 
         self._pois = list()
         self._reversed : List[bool] = list()
@@ -2781,7 +2782,7 @@ class Force(NodeWithCoreParent):
     """
 
     def __init__(self, scene, name):
-        super().__init__(scene, scene._vfc.new_force(name))
+        NodeWithCoreParent.__init__(self, scene, scene._vfc.new_force(name))
 
     @property
     def force(self)->tuple[float,float,float]:
@@ -3028,7 +3029,7 @@ class ContactMesh(NodeWithCoreParentAndTrimesh):
     """A ContactMesh is a tri-mesh with an axis parent"""
 
     def __init__(self, scene, name):
-        super().__init__(scene, scene._vfc.new_contactmesh(name))
+        NodeWithCoreParentAndTrimesh.__init__(self, scene, scene._vfc.new_contactmesh(name))
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -3056,7 +3057,7 @@ class ContactBall(NodeWithCoreParent):
     """
 
     def __init__(self, scene, name : str):
-        super().__init__(scene, scene._vfc.new_contactball(name))
+        NodeWithCoreParent.__init__(self, scene, scene._vfc.new_contactball(name))
 
         self._meshes = list()
 
@@ -3210,7 +3211,7 @@ class SPMT(NodeWithCoreParent):
     """
 
     def __init__(self, scene, name : str):
-        super().__init__(scene, scene._vfc.new_spmt(name))
+        NodeWithCoreParent.__init__(self, scene, scene._vfc.new_spmt(name))
 
         self._meshes = list()
 
@@ -3224,7 +3225,7 @@ class SPMT(NodeWithCoreParent):
         self._n_width = None
 
     def depends_on(self):
-        inherited = super().depends_on()
+        inherited = NodeWithCoreParent.depends_on(self)
         inherited.extend(self.meshes)
 
         return inherited
@@ -3505,7 +3506,7 @@ class Circle(NodeWithCoreParent):
     direction about which the cable runs over the sheave."""
 
     def __init__(self, scene, name):
-        super().__init__(scene, scene._vfc.new_sheave(name))
+        NodeWithCoreParent.__init__(self, scene, scene._vfc.new_sheave(name))
 
 
     @property
@@ -3597,11 +3598,11 @@ class Circle(NodeWithCoreParent):
     def parent(self) -> Point:
         """Point that defines the center of the circle.
         The parent of that point determines the axis system used for the axis"""
-        return super().parent
+        return NodeWithCoreParent.parent.fget(self)
 
     @parent.setter
     def parent(self, value):
-        super(Circle, type(self)).parent.fset(
+        NodeWithCoreParent.parent.fset(
             self, value
         )  # https://bugs.python.org/issue14965
 
@@ -3766,7 +3767,7 @@ class LC6d(CoreConnectedNode):
     """
 
     def __init__(self, scene, name : str):
-        super().__init__(scene, scene._vfc.new_linearconnector6d(name))
+        CoreConnectedNode.__init__(self, scene, scene._vfc.new_linearconnector6d(name))
 
         self._main = None
         self._secondary = None
@@ -3882,7 +3883,7 @@ class Connector2d(CoreConnectedNode):
     """
 
     def __init__(self, scene, name : str):
-        super().__init__(scene, scene._vfc.new_connector2d(name))
+        CoreConnectedNode.__init__(self, scene, scene._vfc.new_connector2d(name))
 
         self._nodeA = None
         self._nodeB = None
@@ -4030,7 +4031,7 @@ class Beam(CoreConnectedNode):
     """
 
     def __init__(self, scene, name : str):
-        super().__init__(scene, scene._vfc.new_linearbeam(name))
+        CoreConnectedNode.__init__(self, scene, scene._vfc.new_linearbeam(name))
 
         self._nodeA = None
         self._nodeB = None
@@ -4654,7 +4655,7 @@ class Buoyancy(NodeWithCoreParentAndTrimesh):
     # init parent and name are fully derived from NodeWithParent
     # _vfNode is a buoyancy
     def __init__(self, scene, name : str):
-        super().__init__(scene, scene._vfc.new_buoyancy(name))
+        NodeWithCoreParentAndTrimesh.__init__(self, scene, scene._vfc.new_buoyancy(name))
 
     def update(self):
         self._vfNode.reloadTrimesh()
@@ -4712,7 +4713,7 @@ class Tank(NodeWithCoreParentAndTrimesh):
     # _vfNode is a tank
     def __init__(self, scene, name):
 
-        super().__init__(scene, scene._vfc.new_tank(name))
+        NodeWithCoreParentAndTrimesh.__init__(self, scene, scene._vfc.new_tank(name))
 
         self._inertia = scene._vfc.new_pointmass(
             self.name + vfc.VF_NAME_SPLIT + "inertia"
@@ -4728,7 +4729,7 @@ class Tank(NodeWithCoreParentAndTrimesh):
 
     def _delete_vfc(self):
         self._scene._vfc.delete(self._inertia.name)
-        super()._delete_vfc()
+        NodeWithCoreParentAndTrimesh._delete_vfc(self)
 
     @property
     def free_flooding(self)->bool:
@@ -4938,7 +4939,7 @@ class BallastSystem(Node):
     """
 
     def __init__(self, scene, name, parent):
-        super().__init__(scene, name)
+        Node.__init__(self, scene, name)
 
         self.tanks = []
         """List of Tank objects"""
@@ -5278,7 +5279,7 @@ class WaveInteraction1(Node):
 
     def __init__(self, scene, name : str):
 
-        super().__init__(scene, name)
+        Node.__init__(self, scene, name)
 
         self.offset = [0, 0, 0]
         """Position (x,y,z) of the hydrodynamic origin in its parents axis system"""
@@ -5387,7 +5388,7 @@ class GeometricContact(Manager):  # Note: can not derive from Container because 
                 "The child circle needs to be located on an axis but is not."
             )
 
-        super().__init__(scene, name)
+        Manager.__init__(self, scene, name)
 
         name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
 
@@ -5987,7 +5988,7 @@ class Sling(Container):
 
         """
 
-        super().__init__(scene, name)
+        Manager.__init__(self, scene, name)
         name_prefix = self.name + vfc.MANAGED_NODE_IDENTIFIER
 
         # store the properties
