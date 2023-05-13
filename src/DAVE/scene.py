@@ -1200,20 +1200,21 @@ class Scene:
         self._validate_timelines()
 
     def dissolve_attempt(self, node):
-        """Attempts to dissolve a node, returns True if the node has been dissolved and can be deleted,
-        otherwise returns False
+        """Attempts to dissolve a node, returns True if the node has been dissolved
 
         See Also:
-            dissolve
+            dissolve - same but raises an exception if the node can not be dissolved
         """
 
         if isinstance(node, str):
             node = self[node]
 
         if node.manager is not None:
-            return False
+            return False, f"Node is managed by {node.manager.name}"
 
-        return node.dissolve()
+        succes, reason = node.dissolve()
+
+        return succes, reason
 
         #
         # if isinstance(node, Manager):
@@ -1281,13 +1282,12 @@ class Scene:
         3. Delete this node.
 
         There are many situations in which this will fail because it is impossible to dissolve
-        the element. For example a poi can only be dissolved when nothing is attached to it.
+        the element. For example a Point can only be dissolved when nothing is attached to it.
 
         """
-        if self.dissolve_attempt(node):
-            pass
-        else:
-            raise ValueError("Could not dissolve node")
+        succes, reason = self.dissolve_attempt(node)
+        if not succes:
+            raise ValueError(f"Could not dissolve node because {reason}")
 
 
     def flatten(self, root_node=None, exclude_known_types = False):

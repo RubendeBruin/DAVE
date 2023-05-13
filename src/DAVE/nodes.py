@@ -197,7 +197,7 @@ class Node(ABC):
             f"Derived class should implement this method, but {type(self)} does not"
         )
 
-    def dissolve(self) -> bool:
+    def dissolve(self) -> tuple:
         """This method is called to see if the node can be dissolved and, if so, make the necessary preparations such as
         deleting or re-parenting child nodes.
 
@@ -205,7 +205,7 @@ class Node(ABC):
             True if the node has been dissolved
             False if the node can not be dissolved.
         """
-        return False
+        return False, "This node can not be dissolved"
 
     def give_python_code(self):
         """Returns the python code that can be executed to re-create this node"""
@@ -826,7 +826,7 @@ class Manager(Node, ABC):
                 assert node.name[:n] == old_name
                 node.name = new_name + node.name[n:]
 
-    def dissolve(self) -> bool:
+    def dissolve(self) -> tuple:
         """Managers can always be dissolved. Simply release management of all managed nodes"""
 
         with ClaimManagement(self._scene, self):
@@ -838,7 +838,7 @@ class Manager(Node, ABC):
         self._dissolved = True  # secret signal to "delete" that this node is not managing anything anymore and can be deleted without deleting its managed nodes
         self._scene.delete(self)
 
-        return True
+        return True, ""
 
 
 
@@ -846,7 +846,7 @@ class Container(Manager):
     """Containers are nodes containing nodes. Nodes are stored in self._nodes"""
 
     def __init__(self, scene, name):
-        super().__init__(scene, name=name)
+        Manager.__init__(self, scene, name=name)
         self._nodes = []
         """Nodes in the component"""
 
@@ -1143,6 +1143,8 @@ class Frame(NodeWithParentAndFootprint):
     """
 
     def __init__(self, scene, name : str):
+
+        assert getattr(self, "_vfNode", None) is None, "A Node is already present in the core, error in constructor sequence?"
 
         super().__init__(scene, scene._vfc.new_axis(name))
 
@@ -1905,11 +1907,11 @@ class Frame(NodeWithParentAndFootprint):
         self.global_position = glob_pos
         self.global_rotation = glob_rot
 
-    def _can_dissolve(self):
+    def _can_dissolve(self, allowed_managers = (None,)) -> tuple:
 
         # Frames can only be dissolved when they are fixed
         if not all(self.fixed):
-            return False
+            return False, "This node has degrees of freedom"
 
         # All nodes depending on this Frame need to be able to function
         # without it.
@@ -1918,23 +1920,72 @@ class Frame(NodeWithParentAndFootprint):
             node = self._scene[node_name]
             parent = getattr(node, "parent", -1)  # -1 is a dummy value, None is a valid parent
             if parent is not self:
-                return False
+                return False, f"Node {node_name} can not function without this node."
 
-            if node.manager is not None:  # can not change the parent of this node
-                return False
+            if node.manager not in allowed_managers:
 
-        return True
+                # It could be that the manager itself has a parent property and changes the parent of the node when it is changed.
+                # this whole next part of code handles cases like that. One of the unit-checks that depends on this part of the
+                # code is the "test_dissolve_filled_standard_equipment" from the SuperElements test suite.
 
-    def dissolve(self):
-        """Dissolves the node and removes it from the scene. All children will be assigned to the parent of this node."""
+                if getattr(node.manager, 'parent', None) == self:
+                    # We're not sure that this will fail, but we can't be sure that it will succeed either.
+                    # so let's check using a dummy
+                    s = self._scene
+                    dummy = s.new_frame(s.available_name_like('dummy'))
 
-        if not self._can_dissolve():
-            return False
+                    if node.manager.manager is not None:
+                        if node.manager.manager != self:
+                            return False, f"Node {node_name} on this node can not be moved to another parent because it is managed by {node.manager.name}."
+
+                    old_manager = self._scene.current_manager
+                    self._scene.current_manager = self
+
+                    node.manager.parent = dummy
+                    if node.parent == dummy:
+                        pass # ok
+                    else:
+                        node.manager.parent = self # resTore
+                        s.delete(dummy)
+                        self._scene.current_manager = old_manager
+                        return False, f"Node {node_name} on this node can not be moved to another parent because it is managed by {node.manager.name}."
+
+                    node.manager.parent = self  # resTore
+                    s.delete(dummy)
+                    self._scene.current_manager = old_manager
+
+                    # -------------
+
+                else:
+                    # can not change the parent of this node
+                    return False, f"Node {node_name} on this node can not be moved to another parent because it is managed by {node.manager.name}."
+
+            none_parent_acceptable = getattr(node, '_None_parent_acceptable', True)
+            if self.parent is None and not none_parent_acceptable: # Trimesh based nodes do not accept None as parent
+                return False, f"Node {node_name} on this node needs to have a parent other than None."
+
+        return True, ""
+
+    def dissolve(self) -> tuple:
+        """Dissolves the node and removes it from the scene. All children will be assigned to the parent of this node.
+
+        There is some difficult logic involved with managed nodes, especially for the weird case where both the manager
+        itself as well as a node that it manages show up as direct dependants of the node that is being dissolved. For
+        example a WindAreaPoint.
+        """
+
+        can, reason = self._can_dissolve()
+        if not can:
+            return False, reason
 
         # All checks passed, we can dissolve this node
         for node_name in (self._scene.nodes_depending_on(self)):
             node = self._scene[node_name]
-            node.change_parent_to(self.parent)
+
+            # could be a managed node of which the parent is changed by the manager which itself is one of the nodes
+            # of which the parent will be changed.
+            if node.manager is None or node.manager == self._scene.current_manager:
+                node.parent = self.parent
 
         # Check that we have indeed fixed all the dependencies, we've only checked for
         # "parent" and assumed that changing the parent removes the dependancy.
@@ -1944,7 +1995,7 @@ class Frame(NodeWithParentAndFootprint):
             raise ValueError(f'After changing parent, node {node_name} still depends on {self.name} - can not dissolve')
 
         self._scene.delete(self)
-        return True
+        return True, ""
 
 
     def give_python_code(self):
@@ -2218,7 +2269,14 @@ class RigidBody(Frame):
     """A Rigid body, internally composed of an axis, a point (cog) and a force (gravity)"""
 
     def __init__(self, scene, name : str):
-        super().__init__(scene, name)
+
+        # Some checks on properties of the node to make sure MRO is going well
+        assert getattr(self, "_vfPoi", None) is None, "A Poi is already present in the core, error in constructor sequence?"
+        assert getattr(self, "_vfForce", None) is None, "A Force is already present in the core, error in constructor sequence?"
+
+        Frame.__init__(self, scene, name)
+
+
 
         # The axis is the Node
         # poi and force are added separately
@@ -2362,7 +2420,7 @@ class RigidBody(Frame):
         if self.mass == 0:
             return super().dissolve()
 
-        return False
+        return False, "RigidBodies with mass can not be dissolved"
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -6570,8 +6628,69 @@ class Sling(Container):
         self._sheaves = s
         self._update_properties()
 
+class RigidBodyContainer(Container, RigidBody):
+    """A container that is also a rigid body - used by Shackles and LiftPoint"""
 
-class Shackle(Container, RigidBody):
+    def __init__(self, scene, name):
+        Container.__init__(self, scene, name)
+        RigidBody.__init__(self, scene, name)
+
+    @property
+    def name(self)->str:
+        """Name of the node (str), must be unique"""
+        return RigidBody.name.fget(self)
+
+    @name.setter
+    def name(self, value):
+        RigidBody.name.fset(self, value)  # rename self
+        Container.name.fset(self, value)  # rename managed nodes
+
+    def dissolve(self) -> tuple:
+        """First try to dissolve the container, then see if we can dissolve the rigidbody as well"""
+
+        s = self._scene
+
+        # first check if it is possible to dissolve
+        # but temporary set as fully fixed because free dofs are a case that we CAN handle
+        remember_fixed = self.fixed
+        self.fixed = True
+        can, reason = Frame._can_dissolve(self, allowed_managers=(self, None))
+        self.fixed = remember_fixed
+        if not can:
+            return False, reason
+
+        # start with actual dissolve
+
+        RB = s.new_rigidbody(s.available_name_like(self.name + "_dissolved"),
+                        position=self.position,
+                        rotation=self.rotation,
+                        mass=self.mass,
+                        inertia_radii=self.inertia_radii,
+                        fixed=self.fixed,
+                        parent=self.parent,
+                        )
+
+        # un-manage
+
+        # created nodes == managed nodes
+        for node in self._nodes:
+            if node.manager == self:
+                node._manager = None
+
+        # re-parent
+        for node in self._nodes:
+            if getattr(node, 'parent', None) == self:
+                node.parent = RB
+
+        # try to dissolve the rigidBody
+        s.dissolve_attempt(RB)
+
+        self._dissolved = True
+        s.delete(self)
+
+        return True, ""
+
+class Shackle(RigidBodyContainer):
     """
     Shackle catalog
     - GP: Green-Pin Heavy Duty Bow Shackle BN (P-6036 Green Pin® Heavy Duty Bow Shackle BN (mm))
@@ -6648,8 +6767,7 @@ class Shackle(Container, RigidBody):
 
         _ = self.shackle_kind_properties(kind)  # to make sure it exists
 
-        Manager.__init__(self, scene, name)
-        RigidBody.__init__(self, scene, name)
+        RigidBodyContainer.__init__(self, scene, name)
 
         # origin is at center of pin
         # z-axis up
@@ -6768,15 +6886,7 @@ class Shackle(Container, RigidBody):
 
 
 
-    @property
-    def name(self)->str:
-        """Name of the node (str), must be unique"""
-        return RigidBody.name.fget(self)
 
-    @name.setter
-    def name(self, value):
-        RigidBody.name.fset(self, value)  # rename self
-        Container.name.fset(self, value)  # rename managed nodes
 
     @property
     def shackle_data_dict(self) -> dict:
