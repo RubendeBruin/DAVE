@@ -99,6 +99,7 @@ from PySide6.QtWidgets import (
 
 
 from DAVE.scene import Scene
+import DAVE.settings as vfc
 
 from DAVE.gui.forms.main_form import Ui_MainWindow
 from DAVE.visual import Viewport, ActorType, DelayRenderingTillDone

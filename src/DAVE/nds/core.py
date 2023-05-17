@@ -4,1257 +4,14 @@ import logging
 from .helpers import *
 from .abstracts import *
 from .mixins import *
+from .geometry import *
 from .enums import *
+from .mixins import HasParentCore
+from .trimesh import TriMeshSource
 
 from ..settings import VF_NAME_SPLIT
 from ..tools import *
 
-
-class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
-    """
-    Frame
-
-    Frames are the main building blocks of the geometry. They have a position and a rotation in space. Other nodes can be placed on them.
-    Frames can be nested by parent/child relationships meaning that an frame can be placed on another frame.
-    The possible movements of a frame can be controlled in each degree of freedom using the "fixed" property.
-
-    Frames are also the main building block of inertia.
-    Dynamics are controlled using the inertia properties of an frame: inertia [mT], inertia_position[m,m,m] and inertia_radii [m,m,m]
-
-
-    Notes:
-         - circular references are not allowed: It is not allowed to place a on b and b on a
-
-    """
-
-    # _valid_parent_types = [Frame, type(None)]  # defined later in this file
-
-    def __init__(self, scene, name : str):
-
-        assert getattr(self, "_vfNode",
-                       None) is None, "A Node is already present in the core, error in constructor sequence?"
-
-        assert scene.name_available(name), f"Name {name} is already taken in scene"
-
-        self._vfNode = scene._vfc.new_axis(name)
-        super().__init__(scene, name)
-
-        self._inertia = 0
-        self._inertia_position = (0, 0, 0)
-        self._inertia_radii = (0, 0, 0)
-
-        self._pointmasses = list()
-        for i in range(6):
-            p = scene._vfc.new_pointmass(
-                name + VF_NAME_SPLIT + "pointmass_{}".format(i)
-            )
-            p.parent = self._vfNode
-            self._pointmasses.append(p)
-        self._update_inertia()
-
-
-    def depends_on(self):
-        return HasParentCore.depends_on(self)
-
-    def _delete_vfc(self):
-
-        for p in self._pointmasses:
-            if p.name == "":
-                raise ValueError(f"Pointmass on node {self.name} has no name, can not be deleted - this is a bug")
-            self._scene._vfc.delete(p.name)
-
-        super()._delete_vfc()
-
-    @property
-    def inertia(self) -> float:
-        """The linear inertia or 'mass' of the axis [mT]
-        - used only for dynamics"""
-        return self._inertia
-
-    @inertia.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def inertia(self, val):
-
-        assert1f(val, "Inertia")
-        self._inertia = val
-        self._update_inertia()
-
-    @property
-    def inertia_position(self) -> tuple[float,float,float]:
-        """The position of the center of inertia. Aka: "cog" [m,m,m] (local axis)
-        - used only for dynamics
-        - defined in local axis system"""
-        return tuple(self._inertia_position)
-
-    @inertia_position.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def inertia_position(self, val):
-
-        assert3f(val, "Inertia position")
-        self._inertia_position = tuple(val)
-        self._update_inertia()
-
-    @property
-    def inertia_radii(self)-> tuple[float,float,float]:
-        """The radii of gyration of the inertia [m,m,m] (local axis)
-
-        Used to calculate the mass moments of inertia via
-
-        Ixx = rxx^2 * inertia
-        Iyy = rxx^2 * inertia
-        Izz = rxx^2 * inertia
-
-        Note that DAVE does not directly support cross terms in the interia matrix of an axis system. If you want to
-        use cross terms then combine multiple axis system to reach the same result. This is because inertia matrices with
-        diagonal terms can not be translated.
-        """
-        return np.array(self._inertia_radii, dtype=float)
-
-    @inertia_radii.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def inertia_radii(self, val):
-
-        assert3f_positive(val, "Inertia radii of gyration")
-        self._inertia_radii = val
-        self._update_inertia()
-
-    def _update_inertia(self):
-        # update mass
-        for i in range(6):
-            self._pointmasses[i].inertia = self._inertia / 6
-
-        if self._inertia <= 0:
-            return
-
-        # update radii and position
-        pos = radii_to_positions(*self._inertia_radii)
-        for i in range(6):
-            p = (
-                pos[i][0] + self._inertia_position[0],
-                pos[i][1] + self._inertia_position[1],
-                pos[i][2] + self._inertia_position[2],
-            )
-            self._pointmasses[i].position = p
-            # print('{} at {} {} {}'.format(self._inertia/6, *p))
-
-    @property
-    def fixed(self) -> tuple[bool,bool,bool,bool,bool,bool]:
-        """Determines which of the six degrees of freedom are fixed, if any. (x,y,z,rx,ry,rz).
-        True means that that degree of freedom will not change when solving statics.
-        False means a that is may be changed in order to find equilibrium.
-
-        These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)
-
-        See Also: set_free, set_fixed
-        """
-        return self._vfNode.fixed
-
-    @fixed.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def fixed(self, var):
-
-        if var == True:
-            var = (True, True, True, True, True, True)
-        if var == False:
-            var = (False, False, False, False, False, False)
-
-        self._vfNode.fixed = var
-
-    def _getfixed(self,imode):
-        return self.fixed[imode]
-
-    def _setfixed(self, imode, value):
-        assert isinstance(value, bool), f'Fixed needs to be a boolean, not {value}'
-        fixed = list(self.fixed)
-        fixed[imode] = value
-        self.fixed = fixed
-
-    @property
-    def fixed_x(self) -> bool:
-        """Restricts/allows movement in x direction of parent"""
-        return self.fixed[0]
-
-    @fixed_x.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def fixed_x(self, value):
-        self._setfixed(0,value)
-
-    @property
-    def fixed_y(self)  -> bool:
-        """Restricts/allows movement in y direction of parent"""
-        return self.fixed[1]
-
-    @fixed_y.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def fixed_y(self, value):
-        self._setfixed(1, value)
-
-    @property
-    def fixed_z(self)  -> bool:
-        """Restricts/allows movement in z direction of parent"""
-        return self.fixed[2]
-
-    @fixed_z.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def fixed_z(self, value):
-        self._setfixed(2, value)
-
-    @property
-    def fixed_rx(self) -> bool:
-        """Restricts/allows movement about x direction of parent"""
-        return self.fixed[3]
-
-    @fixed_rx.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def fixed_rx(self, value):
-        self._setfixed(3, value)
-
-    @property
-    def fixed_ry(self) -> bool:
-        """Restricts/allows movement about y direction of parent"""
-        return self.fixed[4]
-
-    @fixed_ry.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def fixed_ry(self, value):
-        self._setfixed(4, value)
-
-    @property
-    def fixed_rz(self) -> bool:
-        """Restricts/allows movement about z direction of parent"""
-        return self.fixed[5]
-
-    @fixed_rz.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def fixed_rz(self, value):
-        self._setfixed(5, value)
-
-
-
-    @node_setter_manageable
-    def set_free(self):
-        """Sets .fixed to (False,False,False,False,False,False)"""
-        self._vfNode.set_free()
-
-    @node_setter_manageable
-    def set_fixed(self):
-        """Sets .fixed to (True,True,True,True,True,True)"""
-
-        self._vfNode.set_fixed()
-
-    @node_setter_manageable
-    def set_even_keel(self):
-        """Changes the rotation of the node such that it is 'even-keel'"""
-        if self.parent is not None:
-            warnings.warn(
-                f"Using set_even_keel may not work as expected because frame {self.name} is located on {self.parent.name}"
-            )
-        self.rotation = (0, 0, self.heading)
-
-    @property
-    def x(self) -> float:
-        """The x-component of the position vector (parent axis) [m]"""
-        return self.position[0]
-
-    @property
-    def y(self) -> float:
-        """The y-component of the position vector (parent axis) [m]"""
-        return self.position[1]
-
-    @property
-    def z(self) -> float:
-        """The z-component of the position vector (parent axis) [m]"""
-        return self.position[2]
-
-    @x.setter
-    @node_setter_observable
-    def x(self, var):
-
-        if self.fixed[0]:
-            self._verify_change_allowed()
-
-        a = self.position
-        self.position = (var, a[1], a[2])
-
-    @y.setter
-    @node_setter_observable
-    def y(self, var):
-
-        if self.fixed[1]:
-            self._verify_change_allowed()
-
-        a = self.position
-        self.position = (a[0], var, a[2])
-
-    @z.setter
-    @node_setter_observable
-    def z(self, var):
-
-        if self.fixed[2]:
-            self._verify_change_allowed()
-
-        a = self.position
-        self.position = (a[0], a[1], var)
-
-    @property
-    def position(self) ->tuple[float,float,float]:
-        """Position of the axis (parent axis) [m,m,m]
-
-        These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)"""
-        return self._vfNode.position
-
-    @position.setter
-    @node_setter_observable
-    def position(self, var):
-
-        current = self.position
-
-        for i in range(3):
-            if self.fixed[i] and abs(current[i] - var[i]) > 1e-6:
-                self._verify_change_allowed()
-
-        assert3f(var, "Position ")
-        self._vfNode.position = var
-        self._scene._geometry_changed()
-
-    @property
-    def rx(self)  -> float:
-        """The x-component of the rotation vector [degrees] (parent axis)"""
-        return self.rotation[0]
-
-    @property
-    def ry(self) -> float:
-        """The y-component of the rotation vector [degrees] (parent axis)"""
-        return self.rotation[1]
-
-    @property
-    def rz(self) -> float:
-        """The z-component of the rotation vector [degrees], (parent axis)"""
-        return self.rotation[2]
-
-    @rx.setter
-    @node_setter_observable
-    def rx(self, var):
-
-        if self.fixed[3]:
-            self._verify_change_allowed()
-
-        a = self.rotation
-        self.rotation = (var, a[1], a[2])
-
-    @ry.setter
-    @node_setter_observable
-    def ry(self, var):
-
-        if self.fixed[4]:
-            self._verify_change_allowed()
-
-        a = self.rotation
-        self.rotation = (a[0], var, a[2])
-
-    @rz.setter
-    @node_setter_observable
-    def rz(self, var):
-
-        if self.fixed[5]:
-            self._verify_change_allowed()
-
-        a = self.rotation
-        self.rotation = (a[0], a[1], var)
-
-    @property
-    def rotation(self)  -> tuple[float,float,float]:
-        """Rotation of the frame about its origin as rotation-vector (rx,ry,rz) [degrees].
-        Defined as a rotation about an axis where the direction of the axis is (rx,ry,rz) and the angle of rotation is |(rx,ry,rz| degrees.
-        These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)"""
-        return tuple([n.item() for n in np.rad2deg(self._vfNode.rotation)]) # convert to float
-
-    @rotation.setter
-    @node_setter_observable
-    def rotation(self, var):
-
-        # convert to degrees
-        assert3f(var, "Rotation")
-
-        current = self.rotation
-
-        for i in range(3):
-            if self.fixed[i+3] and abs(current[i] - var[i])%360 > 1e-6:
-                self._verify_change_allowed()
-
-        var_rad = np.deg2rad(var)
-
-        self._vfNode.rotation = var_rad
-        self._scene._geometry_changed()
-
-    # we need to over-ride the parent property to be able to call _geometry_changed afterwards
-    @property
-    def parent(self) -> 'Frame' or None:
-        """Determines the parent of the axis. Should either be another axis or 'None'
-
-        Other axis may be refered to by reference or by name (str). So the following are identical
-
-            p = s.new_frame('parent_axis')
-            c = s.new_frame('child axis')
-
-            c.parent = p
-            c.parent = 'parent_axis'
-
-        To define that an axis does not have a parent use
-
-            c.parent = None
-
-        """
-        return HasParentCore.parent.fget(self)
-
-    @parent.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def parent(self, val):
-
-        if val == self:
-            raise ValueError(f"{self.name} can not be its own parent.")
-
-        if val is not None:
-            if val.name in self._scene.nodes_depending_on(self, recursive=True):
-                raise ValueError(f'Setting {val.name} as parent of {self.name} would create a circular dependency, that is not allowed')
-
-
-        HasParentCore.parent.fset(self, val)
-        self._scene._geometry_changed()
-
-    @property
-    def gx(self) -> float:
-        """The x-component of the global position vector [m] (global axis )"""
-        return self.global_position[0]
-
-    @property
-    def gy(self) -> float:
-        """The y-component of the global position vector [m] (global axis )"""
-        return self.global_position[1]
-
-    @property
-    def gz(self) -> float:
-        """The z-component of the global position vector [m] (global axis )"""
-        return self.global_position[2]
-
-    @gx.setter
-    @node_setter_observable
-    def gx(self, var):
-
-        a = self.global_position
-        self.global_position = (var, a[1], a[2])
-
-    @gy.setter
-    @node_setter_observable
-    def gy(self, var):
-
-        a = self.global_position
-        self.global_position = (a[0], var, a[2])
-
-    @gz.setter
-    @node_setter_observable
-    def gz(self, var):
-
-        a = self.global_position
-        self.global_position = (a[0], a[1], var)
-
-    @property
-    def global_position(self)  -> tuple[float,float,float]:
-        """The global position of the origin of the axis system  [m,m,m] (global axis)"""
-        return self._vfNode.global_position
-
-    @global_position.setter
-    @node_setter_observable
-    def global_position(self, val):
-
-        assert3f(val, "Global Position")
-        if self.parent:
-            self.position = self.parent.to_loc_position(val)
-        else:
-            self.position = val
-
-    @property
-    def grx(self) -> float:
-        """The x-component of the global rotation vector [degrees] (global axis)"""
-        return self.global_rotation[0]
-
-    @property
-    def gry(self) -> float:
-        """The y-component of the global rotation vector [degrees] (global axis)"""
-        return self.global_rotation[1]
-
-    @property
-    def grz(self) -> float:
-        """The z-component of the global rotation vector [degrees] (global axis)"""
-        return self.global_rotation[2]
-
-    @grx.setter
-    @node_setter_observable
-    def grx(self, var):
-
-        a = self.global_rotation
-        self.global_rotation = (var, a[1], a[2])
-
-    @gry.setter
-    @node_setter_observable
-    def gry(self, var):
-
-        a = self.global_rotation
-        self.global_rotation = (a[0], var, a[2])
-
-    @grz.setter
-    @node_setter_observable
-    def grz(self, var):
-
-        a = self.global_rotation
-        self.global_rotation = (a[0], a[1], var)
-
-    @property
-    def tilt_x(self) -> float:
-        """Tilt percentage about local x-axis [%]
-        This is the z-component of the unit y vector.
-
-        See Also: heel, tilt_y
-        """
-        y = (0, 1, 0)
-        uy = self.to_glob_direction(y)
-        return float(100 * uy[2])
-
-    @property
-    def heel(self) -> float:
-        """Heel in degrees. SB down is positive [deg]
-        This is the inverse sin of the unit y vector(This is the arcsin of the tiltx)
-
-        See also: tilt_x
-        """
-        angle = np.rad2deg(np.arcsin(self.tilt_x / 100))
-
-        if self.uz[2] < 0: # rotation beyond 90 or -90 degrees
-            if angle<0:
-                angle = -180 - angle
-            else:
-                angle = 180 - angle
-
-        return angle
-
-    @property
-    def tilt_y(self) -> float:
-        """Tilt percentage about local y-axis [%]
-
-        This is the z-component of the unit -x vector.
-        So a positive rotation about the y axis results in a positive tilt_y.
-
-        See Also: trim
-        """
-        x = (-1, 0, 0)
-        ux = self.to_glob_direction(x)
-        return float(100 * ux[2])
-
-    @property
-    def trim(self) -> float:
-        """Trim in degrees. Bow-down is positive [deg]
-
-        This is the inverse sin of the unit -x vector(This is the arcsin of the tilt_y)
-
-        See also: tilt_y
-        """
-        return np.rad2deg(np.arcsin(self.tilt_y / 100))
-
-    @property
-    def heading(self) -> float:
-        """Direction (0..360) [deg] of the local x-axis relative to the global x axis. Measured about the global z axis
-
-        heading = atan(u_y,u_x)
-
-        typically:
-            heading 0  --> local axis align with global axis
-            heading 90 --> local x-axis in direction of global y axis
-
-
-        See also: heading_compass
-        """
-        x = (1, 0, 0)
-        ux = self.to_glob_direction(x)
-        heading = np.rad2deg(np.arctan2(ux[1], ux[0]))
-        return np.mod(heading, 360)
-
-    @property
-    def heading_compass(self) -> float:
-        """The heading (0..360)[deg] assuming that the global y-axis is North and global x-axis is East and rotation according compass definition"""
-        return np.mod(90 - self.heading, 360)
-
-    @property
-    def global_rotation(self) -> tuple[float,float,float]:
-        """Rotation vector [deg,deg,deg] (global axis)"""
-        return tuple(np.rad2deg(self._vfNode.global_rotation))
-
-    @global_rotation.setter
-    @node_setter_observable
-    def global_rotation(self, val):
-
-        assert3f(val, "Global Rotation")
-        if self.parent:
-            self.rotation = self.parent.to_loc_rotation(val)
-        else:
-            self.rotation = val
-
-    @property
-    def global_transform(self)->tuple[float,float,float,float,
-                                      float,float,float,float,
-                                      float, float, float, float,
-                                      float, float, float, float]  :
-        """Read-only: The global transform of the axis system [matrix]
-        #NOGUI"""
-        return self._vfNode.global_transform
-
-    @property
-    def connection_force(self)->tuple[float,float,float,float,float,float]:
-        """The forces and moments that this axis applies on its parent at the origin of this axis system. [kN, kN, kN, kNm, kNm, kNm] (Parent axis)
-
-        If this axis would be connected to a point on its parent, and that point would be located at the location of the origin of this axis system
-        then the connection force equals the force and moment applied on that point.
-
-        Example:
-            parent axis with name A
-            this axis with name B
-            this axis is located on A at position (10,0,0)
-            there is a Point at the center of this axis system.
-            A force with Fz = -10 acts on the Point.
-
-            The connection_force is (-10,0,0,0,0,0)
-
-            This is the force and moment as applied on A at point (10,0,0)
-
-
-        """
-        return self._vfNode.connection_force
-
-    @property
-    def connection_force_x(self)->float:
-        """The x-component of the connection-force vector [kN] (Parent axis)"""
-        return self.connection_force[0]
-
-    @property
-    def connection_force_y(self)->float:
-        """The y-component of the connection-force vector [kN] (Parent axis)"""
-        return self.connection_force[1]
-
-    @property
-    def connection_force_z(self)->float:
-        """The z-component of the connection-force vector [kN] (Parent axis)"""
-        return self.connection_force[2]
-
-    @property
-    def connection_moment_x(self)->float:
-        """The mx-component of the connection-force vector [kNm] (Parent axis)"""
-        return self.connection_force[3]
-
-    @property
-    def connection_moment_y(self)->float:
-        """The my-component of the connection-force vector [kNm] (Parent axis)"""
-        return self.connection_force[4]
-
-    @property
-    def connection_moment_z(self)->float:
-        """The mx-component of the connection-force vector [kNm] (Parent axis)"""
-        return self.connection_force[5]
-
-    @property
-    def applied_force(self)->tuple[float,float,float]:
-        """The force and moment that is applied on origin of this axis [kN, kN, kN, kNm, kNm, kNm] (Global axis)"""
-        return self._vfNode.applied_force
-
-    @property
-    def ux(self)->tuple[float,float,float]:
-        """The unit x axis [m,m,m] (Global axis)"""
-        return self.to_glob_direction((1, 0, 0))
-
-    @property
-    def uy(self)->tuple[float,float,float]:
-        """The unit y axis [m,m,m] (Global axis)"""
-        return self.to_glob_direction((0, 1, 0))
-
-    @property
-    def uz(self)->tuple[float,float,float]:
-        """The unit z axis [m,m,m] (Global axis)"""
-        return self.to_glob_direction((0, 0, 1))
-
-    @property
-    def equilibrium_error(self)->tuple[float,float,float,float,float,float]:
-        """The remaining force and moment on this axis. Should be zero when in equilibrium [kN,kN,kN,kNm,kNm,kNm] (applied-force minus connection force, Parent axis)"""
-        return self._vfNode.equilibrium_error
-
-    def to_loc_position(self, value):
-        """Returns the local position of a point in the global axis system.
-        This considers the position and the rotation of the axis system.
-        See Also: to_loc_direction
-        """
-        return self._vfNode.global_to_local_point(value)
-
-    def to_glob_position(self, value):
-        """Returns the global position of a point in the local axis system.
-        This considers the position and the rotation of the axis system.
-        See Also: to_glob_direction
-        """
-        return self._vfNode.local_to_global_point(value)
-
-    def to_loc_direction(self, value):
-        """Returns the local direction of a point in the global axis system.
-        This considers only the rotation of the axis system.
-        See Also: to_loc_position
-        """
-        return self._vfNode.global_to_local_vector(value)
-
-    def to_glob_direction(self, value):
-        """Returns the global direction of a point in the local axis system.
-        This considers only the rotation of the axis system.
-        See Also: to_glob_position"""
-        return self._vfNode.local_to_global_vector(value)
-
-    def to_loc_rotation(self, value):
-        """Returns the local rotation. Used for rotating rotations.
-        See Also: to_loc_position, to_loc_direction
-        """
-        return np.rad2deg(self._vfNode.global_to_local_rotation(np.deg2rad(value)))
-
-    def to_glob_rotation(self, value):
-        """Returns the global rotation. Used for rotating rotations.
-        See Also: to_loc_position, to_loc_direction
-        """
-        return np.rad2deg(self._vfNode.local_to_global_rotation(np.deg2rad(value)))
-
-    def give_load_shear_moment_diagram(
-        self, axis_system=None
-    ) -> "LoadShearMomentDiagram":
-        """Returns a LoadShearMoment diagram
-
-        Args:
-            axis_system : optional : coordinate system [axis node] to be used for calculation of the diagram.
-            Defaults to the local axis system
-        """
-
-        if axis_system is None:
-            axis_system = self
-
-        assert isinstance(axis_system, Frame), ValueError(
-            f"axis_system shall be an instance of Axis, but it is of type {type(axis_system)}"
-        )
-
-        self._scene.update()
-
-        # calculate in the right global direction
-        glob_dir = axis_system.to_glob_direction((1, 0, 0))
-        self._scene._vfc.calculateBendingMoments(*glob_dir)
-
-        lsm = self._vfNode.getBendingMomentDiagram(axis_system._vfNode)
-
-        from DAVE import LoadShearMomentDiagram
-        return LoadShearMomentDiagram(lsm)
-
-    @node_setter_manageable
-    def change_parent_to(self, new_parent):
-        """Assigns a new parent to the node but keeps the global position and rotation the same.
-
-        See also: .parent (property)
-
-        Args:
-            new_parent: new parent node
-
-        """
-
-        glob_pos = self.global_position
-        glob_rot = self.global_rotation
-
-        self.parent = new_parent  # all checks are preformed here
-
-        self.global_position = glob_pos
-        self.global_rotation = glob_rot
-
-    def _can_dissolve(self, allowed_managers = (None,)) -> tuple:
-
-        # Frames can only be dissolved when they are fixed
-        if not all(self.fixed):
-            return False, "This node has degrees of freedom"
-
-        # All nodes depending on this Frame need to be able to function
-        # without it.
-        # That is possible if they have this node as parent and that parent is this node.
-        for node_name in (self._scene.nodes_depending_on(self)):
-            node = self._scene[node_name]
-            parent = getattr(node, "parent", -1)  # -1 is a dummy value, None is a valid parent
-            if parent is not self:
-                return False, f"Node {node_name} can not function without this node."
-
-            if node.manager not in allowed_managers:
-
-                # It could be that the manager itself has a parent property and changes the parent of the node when it is changed.
-                # this whole next part of code handles cases like that. One of the unit-checks that depends on this part of the
-                # code is the "test_dissolve_filled_standard_equipment" from the SuperElements test suite.
-
-                if getattr(node.manager, 'parent', None) == self:
-                    # We're not sure that this will fail, but we can't be sure that it will succeed either.
-                    # so let's check using a dummy
-                    s = self._scene
-                    dummy = s.new_frame(s.available_name_like('dummy'))
-
-                    if node.manager.manager is not None:
-                        if node.manager.manager != self:
-                            return False, f"Node {node_name} on this node can not be moved to another parent because it is managed by {node.manager.name}."
-
-                    old_manager = self._scene.current_manager
-                    self._scene.current_manager = self
-
-                    node.manager.parent = dummy
-                    if node.parent == dummy:
-                        pass # ok
-                    else:
-                        node.manager.parent = self # resTore
-                        s.delete(dummy)
-                        self._scene.current_manager = old_manager
-                        return False, f"Node {node_name} on this node can not be moved to another parent because it is managed by {node.manager.name}."
-
-                    node.manager.parent = self  # resTore
-                    s.delete(dummy)
-                    self._scene.current_manager = old_manager
-
-                    # -------------
-
-                else:
-                    # can not change the parent of this node
-                    return False, f"Node {node_name} on this node can not be moved to another parent because it is managed by {node.manager.name}."
-
-            none_parent_acceptable = getattr(node, '_None_parent_acceptable', True)
-            if self.parent is None and not none_parent_acceptable: # Trimesh based nodes do not accept None as parent
-                return False, f"Node {node_name} on this node needs to have a parent other than None."
-
-        return True, ""
-
-    def dissolve(self) -> tuple:
-        """Dissolves the node and removes it from the scene. All children will be assigned to the parent of this node.
-
-        There is some difficult logic involved with managed nodes, especially for the weird case where both the manager
-        itself as well as a node that it manages show up as direct dependants of the node that is being dissolved. For
-        example a WindAreaPoint.
-        """
-
-        can, reason = self._can_dissolve()
-        if not can:
-            return False, reason
-
-        # All checks passed, we can dissolve this node
-        for node_name in (self._scene.nodes_depending_on(self)):
-            node = self._scene[node_name]
-
-            # could be a managed node of which the parent is changed by the manager which itself is one of the nodes
-            # of which the parent will be changed.
-            if node.manager is None or node.manager == self._scene.current_manager:
-                node.parent = self.parent
-
-        # Check that we have indeed fixed all the dependencies, we've only checked for
-        # "parent" and assumed that changing the parent removes the dependancy.
-        # In the future there could be node-types that have other dependancies as well
-
-        for node_name in (self._scene.nodes_depending_on(self)):
-            raise ValueError(f'After changing parent, node {node_name} still depends on {self.name} - can not dissolve')
-
-        self._scene.delete(self)
-        return True, ""
-
-
-    def give_python_code(self):
-        code = "# code for {}".format(self.name)
-        code += "\ns.new_frame(name='{}',".format(self.name)
-        if self.parent_for_export:
-            code += "\n           parent='{}',".format(self.parent_for_export.name)
-
-        # position
-
-        if self.fixed[0] or not self._scene._export_code_with_solved_function:
-            code += "\n           position=({:.6g},".format(self.position[0])
-        else:
-            code += "\n           position=(solved({:.6g}),".format(self.position[0])
-        if self.fixed[1] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {:.6g},".format(self.position[1])
-        else:
-            code += "\n                     solved({:.6g}),".format(self.position[1])
-        if self.fixed[2] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {:.6g}),".format(self.position[2])
-        else:
-            code += "\n                     solved({:.6g})),".format(self.position[2])
-
-        # rotation
-
-        if self.fixed[3] or not self._scene._export_code_with_solved_function:
-            code += "\n           rotation=({:.6g},".format(self.rotation[0])
-        else:
-            code += "\n           rotation=(solved({:.6g}),".format(self.rotation[0])
-        if self.fixed[4] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {:.6g},".format(self.rotation[1])
-        else:
-            code += "\n                     solved({:.6g}),".format(self.rotation[1])
-        if self.fixed[5] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {:.6g}),".format(self.rotation[2])
-        else:
-            code += "\n                     solved({:.6g})),".format(self.rotation[2])
-
-        # inertia and radii of gyration
-        if self.inertia > 0:
-            code += "\n                     inertia = {:.6g},".format(self.inertia)
-
-        if np.any(self.inertia_radii > 0):
-            code += "\n                     inertia_radii = ({:.6g}, {:.6g}, {:.6g}),".format(
-                *self.inertia_radii
-            )
-
-        # fixeties
-        code += "\n           fixed =({}, {}, {}, {}, {}, {}) )".format(*self.fixed)
-
-        code += self.add_footprint_python_code()
-
-        return code
-
-
-Frame._valid_parent_types = (Frame, type(None)) # can only be exectuted after Frame class has been defined
-
-
-class Point(NodeCoreConnected, HasParentCore, HasFootprint):
-    """A location on an axis"""
-
-    _valid_parent_types = (Frame, type(None))
-
-    # init parent and name are fully derived from NodeWithParent
-    # _vfNode is a poi
-    def __init__(self, scene, name : str):
-        logging.info("Point.__init__")
-        scene.assert_name_available(name)
-
-        self._vfNode = scene._vfc.new_poi(name)
-        super().__init__(scene, name)
-
-    def change_parent_to(self, new_parent):
-        gpos = self.global_position
-        self.parent = new_parent
-        self.global_position = gpos
-
-    def depends_on(self) -> list:
-        return HasParentCore.depends_on(self)
-
-    @property
-    def x(self)->float:
-        """x component of local position [m] (parent axis)"""
-        return self.position[0]
-
-    @property
-    def y(self)->float:
-        """y component of local position [m] (parent axis)"""
-        return self.position[1]
-
-    @property
-    def z(self)->float:
-        """z component of local position [m] (parent axis)"""
-        return self.position[2]
-
-    @property
-    def applied_force(self)->tuple[float,float,float]:
-        """Applied force [kN,kN,kN] (parent axis)"""
-        force = self.applied_force_and_moment_global[:3]
-        if self.parent:
-            return self.parent.to_loc_direction(force)
-        else:
-            return force
-
-    @property
-    def force(self)->float:
-        """total force magnitude as applied on the point [kN]"""
-        return np.linalg.norm(self.applied_force)
-
-    @property
-    def fx(self)->float:
-        """x component of applied force [kN] (parent axis)"""
-        return self.applied_force[0]
-
-    @property
-    def fy(self)->float:
-        """y component of applied force [kN] (parent axis)"""
-        return self.applied_force[1]
-
-    @property
-    def fz(self)->float:
-        """z component of applied force [kN] (parent axis)"""
-        return self.applied_force[2]
-
-    @property
-    def applied_moment(self)->tuple[float,float,float]:
-        """Applied moment [kNm,kNm,kNm] (parent axis)"""
-        force = self.applied_force_and_moment_global[3:]
-        if self.parent:
-            return self.parent.to_loc_direction(force)
-        else:
-            return force
-
-    @property
-    def moment(self)->float:
-        """total moment magnitude as applied on the point [kNm]"""
-        return np.linalg.norm(self.applied_moment)
-
-    @property
-    def mx(self)->float:
-        """x component of applied moment [kNm] (parent axis)"""
-        return self.applied_moment[0]
-
-    @property
-    def my(self)->float:
-        """y component of applied moment [kNm] (parent axis)"""
-        return self.applied_moment[1]
-
-    @property
-    def mz(self)->float:
-        """z component of applied moment [kNm] (parent axis)"""
-        return self.applied_moment[2]
-
-    @x.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def x(self, var):
-
-        a = self.position
-        self.position = (var, a[1], a[2])
-
-    @y.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def y(self, var):
-
-        a = self.position
-        self.position = (a[0], var, a[2])
-
-    @z.setter
-    @node_setter_manageable
-    @node_setter_observable
-    @node_setter_manageable
-    def z(self, var):
-
-        """z component of local position"""
-        a = self.position
-        self.position = (a[0], a[1], var)
-
-    @property
-    def position(self)->tuple[float,float,float]:
-        """Local position [m,m,m] (parent axis)"""
-        return self._vfNode.position
-
-    @position.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def position(self, new_position):
-
-        assert3f(new_position)
-        self._vfNode.position = new_position
-
-    @property
-    def applied_force_and_moment_global(self)->tuple[float,float,float,float,float,float]:
-        """Applied force and moment on this point [kN, kN, kN, kNm, kNm, kNm] (Global axis)"""
-        return self._vfNode.applied_force
-
-    @property
-    def gx(self)->float:
-        """x component of position [m] (global axis)"""
-        return self.global_position[0]
-
-    @property
-    def gy(self)->float:
-        """y component of position [m] (global axis)"""
-        return self.global_position[1]
-
-    @property
-    def gz(self)->float:
-        """z component of position [m] (global axis)"""
-        return self.global_position[2]
-
-    @gx.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def gx(self, var):
-
-        a = self.global_position
-        self.global_position = (var, a[1], a[2])
-
-    @gy.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def gy(self, var):
-
-        a = self.global_position
-        self.global_position = (a[0], var, a[2])
-
-    @gz.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def gz(self, var):
-
-        a = self.global_position
-        self.global_position = (a[0], a[1], var)
-
-    @property
-    def global_position(self)->tuple[float,float,float]:
-        """Global position [m,m,m] (global axis)"""
-        return self._vfNode.global_position
-
-    @global_position.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def global_position(self, val):
-
-        assert3f(val, "Global Position")
-        if self.parent:
-            self.position = self.parent.to_loc_position(val)
-        else:
-            self.position = val
-
-    def give_python_code(self):
-        code = "# code for {}".format(self.name)
-        code += "\ns.new_point(name='{}',".format(self.name)
-        if self.parent_for_export:
-            code += "\n          parent='{}',".format(self.parent_for_export.name)
-
-        # position
-
-        code += "\n          position=({:.6g},".format(self.position[0])
-        code += "\n                    {:.6g},".format(self.position[1])
-        code += "\n                    {:.6g}))".format(self.position[2])
-
-        code += self.add_footprint_python_code()
-
-        return code
-
-class Circle(NodeCoreConnected, HasParentCore):
-    """A Circle models a circle shape based on a diameter and an axis direction. Circles can be used by
-    geometric contact nodes and cables/slings. For cables the direction of the axis determines the
-    direction about which the cable runs over the sheave."""
-
-    _valid_parent_types = (Point, )
-
-    def __init__(self, scene, name):
-
-        logging.info("Circle.__init__")
-
-        scene._verify_name_available(name)
-        self._vfNode = scene._vfc.new_circle(name)
-
-        super().__init__(scene, name)
-
-    def depends_on(self) -> list:
-        return [self.parent]
-
-    @property
-    def axis(self) -> tuple[float,float,float]:
-        """Direction of the sheave axis (parent axis system) [m,m,m]
-
-        Note:
-            The direction of the axis is also used to determine the positive direction over the circumference of the
-            circle. This is then used when cables run over the circle or the circle is used for geometric contacts. So
-            if a cable runs over the circle in the wrong direction then a solution is to change the axis direction to
-            its opposite:  circle.axis =- circle.axis. (another solution in that case is to define the connections of
-            the cable in the reverse order)
-        """
-        ad = self._vfNode.axis_direction
-        l = np.linalg.norm(ad)
-        if l == 0:
-            return ad
-        else:
-            return (ad[0]/l, ad[1]/l, ad[2]/l)
-
-    @axis.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def axis(self, val):
-
-        assert3f(val)
-        if np.linalg.norm(val) == 0:
-            raise ValueError("Axis can not be 0,0,0")
-        self._vfNode.axis_direction = val
-
-    @property
-    def radius(self)->float:
-        """Radius of the circle [m]"""
-        return self._vfNode.radius
-
-    @radius.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def radius(self, val):
-        assert1f(val)
-        self._vfNode.radius = val
-
-    def give_python_code(self):
-        code = "# code for {}".format(self.name)
-        code += "\ns.new_circle(name='{}',".format(self.name)
-        code += "\n            parent='{}',".format(self.parent_for_export.name)
-        code += "\n            axis=({:.6g}, {:.6g}, {:.6g}),".format(*self.axis)
-        code += "\n            radius={:.6g} )".format(self.radius)
-        return code
-
-    @property
-    def global_position(self)->tuple[float,float,float]:
-        """Global position of the center of the sheave [m,m,m]
-
-        Note: this is the same as the global position of the parent point.
-        """
-        return self.parent.global_position
-
-    @property
-    def global_axis(self)->tuple[float,float,float]:
-        """Global axis direction [m,m,m]
-        """
-        if self.parent.parent is not None:
-            return self.parent.parent.to_glob_direction(self.axis)
-        else:
-            return self.axis
-
-    @global_axis.setter
-    def global_axis(self, value):
-
-        assert3f(value, "axis")
-
-        if self.parent.parent is not None:
-            self.axis = self.parent.parent.to_loc_direction(value)
-        else:
-            self.axis = value
-
-
-    @property
-    def position(self)->tuple[float,float,float]:
-        """Local position of the center of the sheave [m,m,m] (parent axis).
-
-        Note: this is the same as the local position of the parent point.
-        """
-        return self.parent.position
-
-
-    @node_setter_manageable
-    def change_parent_to(self, new_parent):
-        """Assigns a new parent to the node but keeps the global position and rotation the same.
-
-        See also: .parent (property)
-
-        Args:
-            new_parent: new parent node
-
-        """
-        glob_axis = self.global_axis
-        self.parent = new_parent
-        self.global_axis = glob_axis
 
 
 class RigidBody(Frame):
@@ -1266,7 +23,7 @@ class RigidBody(Frame):
         assert getattr(self, "_vfPoi", None) is None, "A Poi is already present in the core, error in constructor sequence?"
         assert getattr(self, "_vfForce", None) is None, "A Force is already present in the core, error in constructor sequence?"
 
-        super().__init__(scene, name)
+        super().__init__(scene=scene, name=name)
 
         # The axis is the Node
         # poi and force are added separately
@@ -1288,21 +45,11 @@ class RigidBody(Frame):
         self._scene._vfc.delete(self._vfPoi.name)
         self._scene._vfc.delete(self._vfForce.name)
 
-    @property  # can not define a setter without a getter..?
-    def name(self) -> str:
-        """Name of the node (str), must be unique"""
-        return Frame.name.fget(self)
-
-    @name.setter
-    @node_setter_manageable
-    @node_setter_observable
-    def name(self, newname):
-        """Name of the node (str), must be unique"""
-
-        # super().name = newname
-        Frame.name.fset(self, newname)
-        self._vfPoi.name = newname + vfc.VF_NAME_SPLIT + "cog"
-        self._vfForce.name = newname + vfc.VF_NAME_SPLIT + "gravity"
+    def _on_name_changed(self):
+        """Called when the name of the node changes"""
+        super()._on_name_changed()
+        self._vfPoi.name = self.name + VF_NAME_SPLIT + "cog"
+        self._vfForce.name = self.name + VF_NAME_SPLIT + "gravity"
 
     @property
     def footprint(self)->tuple[tuple[float,float,float]]:
@@ -1470,9 +217,1248 @@ class RigidBody(Frame):
 
         return code
 
+RigidBody._valid_parent_types = (Frame, NoneType)
+
+class Force(NodeCoreConnected, HasParentCore):
+    """A Force models a force and moment on a poi.
+
+    Both are expressed in the global axis system.
+
+    """
+
+    _valid_parent_types = (Point, )
+
+    def __init__(self, scene, name):
+        scene._verify_name_available(name)
+        self._vfNode = scene._vfc.new_force(name)
+
+        super().__init__(scene=scene, name=name)
+
+    def depends_on(self) -> list:
+        HasParentCore.depends_on(self)
+
+    def change_parent_to(self, new_parent):
+        self.parent = new_parent
+
+    @property
+    def force(self)->tuple[float,float,float]:
+        """The x,y and z components of the force [kN,kN,kN] (global axis)
+
+        Example s['wind'].force = (12,34,56)
+        """
+        return self._vfNode.force
+
+    @force.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def force(self, val):
+
+        assert3f(val)
+        self._vfNode.force = val
+
+    @property
+    def fx(self)->float:
+        """The global x-component of the force [kN] (global axis)"""
+        return self.force[0]
+
+    @fx.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def fx(self, var):
+
+        a = self.force
+        self.force = (var, a[1], a[2])
+
+    @property
+    def fy(self)->float:
+        """The global y-component of the force [kN]  (global axis)"""
+        return self.force[1]
+
+    @fy.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def fy(self, var):
+
+        a = self.force
+        self.force = (a[0], var, a[2])
+
+    @property
+    def fz(self)->float:
+        """The global z-component of the force [kN]  (global axis)"""
+
+        return self.force[2]
+
+    @fz.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def fz(self, var):
+
+        a = self.force
+        self.force = (a[0], a[1], var)
+
+    @property
+    def moment(self)->tuple[float,float,float]:
+        """Moment [kNm,kNm,kNm] (global).
+
+        Example s['wind'].moment = (12,34,56)
+        """
+        return self._vfNode.moment
+
+    @moment.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def moment(self, val):
+
+        assert3f(val)
+        self._vfNode.moment = val
+
+    @property
+    def mx(self)->float:
+        """The global x-component of the moment [kNm]  (global axis)"""
+        return self.moment[0]
+
+    @mx.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def mx(self, var):
+
+        a = self.moment
+        self.moment = (var, a[1], a[2])
+
+    @property
+    def my(self)->float:
+        """The global y-component of the moment [kNm]  (global axis)"""
+        return self.moment[1]
+
+    @my.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def my(self, var):
+
+        a = self.moment
+        self.moment = (a[0], var, a[2])
+
+    @property
+    def mz(self)->float:
+        """The global z-component of the moment [kNm]  (global axis)"""
+        return self.moment[2]
+
+    @mz.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def mz(self, var):
+
+        a = self.moment
+        self.moment = (a[0], a[1], var)
+
+    def give_python_code(self):
+        code = "# code for {}".format(self.name)
+
+        # new_force(self, name, parent=None, force=None, moment=None):
+
+        code += "\ns.new_force(name='{}',".format(self.name)
+        code += "\n            parent='{}',".format(self.parent_for_export.name)
+        code += "\n            force=({:.6g}, {:.6g}, {:.6g}),".format(*self.force)
+        code += "\n            moment=({:.6g}, {:.6g}, {:.6g}) )".format(*self.moment)
+        return code
+
+class WindOrCurrentArea(NodeCoreConnected, HasParentCore):
+    """Abstract Based class for wind and current areas."""
+
+    _valid_parent_types = (Point, )
+    # defined in the derived classes
+
+    def __init__(self, scene, name):
+
+        scene._verify_name_available(name)
+        self._vfNode = scene._vfc.new_wind(name)
+
+        super().__init__(scene=scene, name=name)
+
+    def depends_on(self) -> list:
+        return [self.parent]
+
+    def change_parent_to(self, new_parent):
+        self.parent = new_parent
+
+    def Ae_for_global_direction(self, global_direction):
+        """Returns the effective area in the provided global direction, see"""
+
+        if self.parent.parent is not None:
+            dir = self.parent.parent.to_glob_direction(self.direction)
+        else:
+            dir = self.direction
+
+        if self.areakind == AreaKind.SPHERE:
+            return self.A
+        elif self.areakind == AreaKind.PLANE:
+            return self.A * abs(np.dot(global_direction, dir))
+        elif self.areakind == AreaKind.CYLINDER:
+            dot = np.dot(global_direction, dir)
+            return self.A * np.sqrt(1 - dot ** 2)
+        else:
+            raise ValueError("Unknown area-kind")
+
+    @property
+    def force(self)->tuple[float,float,float]:
+        """The x,y and z components of the force [kN,kN,kN] (global axis)"""
+        return self._vfNode.force
+
+    @property
+    def fx(self)->float:
+        """The global x-component of the force [kN] (global axis)"""
+        return self.force[0]
+
+    @property
+    def fy(self)->float:
+        """The global y-component of the force [kN]  (global axis)"""
+        return self.force[1]
+
+    @property
+    def fz(self)->float:
+        """The global z-component of the force [kN]  (global axis)"""
+
+        return self.force[2]
+
+    @property
+    def A(self)->float:
+        """Total area [m2]. See also Ae"""
+        return self._vfNode.A0
+
+    @A.setter
+    def A(self, value):
+        assert1f_positive_or_zero(value, "Area")
+        self._vfNode.A0 = value
+
+    @property
+    def Ae(self)->float:
+        """Effective area [m2]. This is the projection of the total to the actual wind/current direction. Read only."""
+        return self._vfNode.Ae
+
+    @property
+    def Cd(self)->float:
+        """Cd coefficient [-]"""
+        return self._vfNode.Cd
+
+    @Cd.setter
+    def Cd(self, value):
+        assert1f_positive_or_zero(value, "Cd")
+        self._vfNode.Cd = value
+
+    @property
+    def direction(self)->tuple[float,float,float]:
+        """Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is
+        the direction of the axis and for 'sphere' this is not used [m,m,m]"""
+        return self._vfNode.direction
+
+    @direction.setter
+    def direction(self, value):
+        assert3f(value, "direction")
+        assert np.linalg.norm(value) > 0, ValueError("direction can not be 0,0,0")
+
+        self._vfNode.direction = value
+
+    @property
+    def areakind(self)->AreaKind:
+        """Defines how to interpret the area.
+        See also: `direction`"""
+        return AreaKind(self._vfNode.type)
+
+    @areakind.setter
+    def areakind(self, value):
+        if not isinstance(value, AreaKind):
+            raise ValueError("kind shall be an instance of Area")
+        self._vfNode.type = value.value
+
+    def _give_python_code(self, new_command):
+        code = "# code for {}".format(self.name)
+
+        # new_force(self, name, parent=None, force=None, moment=None):
+
+        code += "\ns.{}(name='{}',".format(new_command, self.name)
+        code += "\n            parent='{}',".format(self.parent_for_export.name)
+        code += f"\n            A={self.A:.6g}, "
+        code += f"\n            Cd={self.Cd:.6g}, "
+        if self.areakind != AreaKind.SPHERE:
+            code += "\n            direction=({:.6g},{:.6g},{:.6g}),".format(*self.direction)
+        code += f"\n            areakind={str(self.areakind)})"
+
+        return code
 
 
 
+class WindArea(WindOrCurrentArea):
+
+    # _valid_parent_types = (Point, )
+
+    def __init__(self, scene, name):
+        super().__init__(scene=scene, name=name)
+        self._vfNode.isWind = True
+
+    def give_python_code(self):
+        return self._give_python_code("new_windarea")
+
+
+class CurrentArea(WindOrCurrentArea):
+
+    # _valid_parent_types = (Point,)
+
+    def __init__(self, scene, name):
+        super().__init__(scene=scene, name=name)
+        self._vfNode.isWind = True
+
+    def give_python_code(self):
+        return self._give_python_code("new_currentarea")
+
+class ContactBall(NodeCoreConnected, HasParentCore):
+    """A ContactBall is a linear elastic ball which can contact with ContactMeshes.
+
+    It is modelled as a sphere around a Poi. Radius and stiffness can be controlled using radius and k.
+
+    The force is applied on the Poi and it not registered separately.
+    """
+
+    _valid_parent_types = (Point, )
+
+    def __init__(self, scene, name : str):
+        scene._verify_name_available(name)
+        self._vfNode = scene._vfc.new_contactball(name)
+
+        super().__init__(scene=scene, name=name)
+
+        self._meshes = list()
+
+    def change_parent_to(self, new_parent):
+        self.parent = new_parent
+
+    def depends_on(self) -> list:
+        deps = HasParentCore.depends_on(self)
+        deps.extend(self._meshes)
+        return deps
+
+    @property
+    def can_contact(self) -> bool:
+        """True if the ball is currently perpendicular to at least one of the faces of one of the meshes. So when contact is possible. To check if there is contact use "force".
+        See Also: Force
+        """
+        return self._vfNode.has_contact
+
+    @property
+    def contact_force(self) -> tuple:
+        """Returns the force on the ball [kN, kN, kN] (global axis)
+
+        The force is applied at the center of the ball
+
+        See Also: contact_force_magnitude
+        """
+        return self._vfNode.force
+
+    @property
+    def contact_force_magnitude(self) -> float:
+        """Returns the absolute force on the ball, if any [kN]
+
+        The force is applied on the center of the ball
+
+        See Also: contact_force
+        """
+        return np.linalg.norm(self._vfNode.force)
+
+    @property
+    def compression(self) -> float:
+        """Returns the absolute compression of the ball, if any [m]"""
+        return self._vfNode.force
+
+    @property
+    def contactpoint(self) -> tuple[float,float,float]:
+        """Nearest point on the nearest mesh, if contact [m,m,m] (global)"""
+        return self._vfNode.contact_point
+
+    def update(self):
+        """Updates the contact-points and applies forces on mesh and point"""
+        self._vfNode.update()
+
+    @property
+    def meshes(self) -> tuple:
+        """List of contact-mesh nodes.
+        When getting this will yield a list of node references.
+        When setting node references and node-names may be used.
+
+        eg: ball.meshes = [mesh1, 'mesh2']
+        """
+        return tuple(self._meshes)
+
+    @meshes.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def meshes(self, value):
+
+        meshes = []
+
+        for m in value:
+            cm = self._scene._node_from_node_or_str(m)
+
+            if not isinstance(cm, ContactMesh):
+                raise ValueError(
+                    f"Only ContactMesh nodes can be used as mesh, but {cm.name} is a {type(cm)}"
+                )
+            if cm in meshes:
+                raise ValueError(f"Can not add {cm.name} twice")
+
+            meshes.append(cm)
+
+        # copy to meshes
+        self._meshes.clear()
+        self._vfNode.clear_contactmeshes()
+        for mesh in meshes:
+            self._meshes.append(mesh)
+            self._vfNode.add_contactmesh(mesh._vfNode)
+
+    @property
+    def meshes_names(self) -> tuple[str]:
+        """List with the names of the meshes"""
+        return tuple([m.name for m in self._meshes])
+
+    @property
+    def radius(self) ->float:
+        """Radius of the contact-ball [m]"""
+        return self._vfNode.radius
+
+    @radius.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def radius(self, value):
+
+        assert1f_positive_or_zero(value, "radius")
+        self._vfNode.radius = value
+        pass
+
+    @property
+    def k(self) ->float:
+        """Compression stiffness of the ball in force per meter of compression [kN/m]"""
+        return self._vfNode.k
+
+    @k.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def k(self, value):
+
+        assert1f_positive_or_zero(value, "k")
+        self._vfNode.k = value
+        pass
+
+    def give_python_code(self):
+        code = "# code for {}".format(self.name)
+
+        code += "\ns.new_contactball(name='{}',".format(self.name)
+        code += "\n                  parent='{}',".format(self.parent_for_export.name)
+        code += "\n                  radius={:.6g},".format(self.radius)
+        code += "\n                  k={:.6g},".format(self.k)
+        code += "\n                  meshes = [ "
+
+        for m in self._meshes:
+            code += '"' + m.name + '",'
+        code = code[:-1] + "])"
+
+        return code
+
+
+class SPMT(NodeCoreConnected, HasParentCore):
+    """An SPMT is a Self-propelled modular transporter
+
+    These are platform vehicles
+
+    ============  =======
+    0 0 0 0 0 0   0 0 0 0
+
+    This SPMT node models the wheels and hydraulics of a single suspension system.
+
+    A set of wheels is called an "axle". The hydraulics are modelled as a linear spring.
+    The axles can make contact with a contact shape.
+
+    The positions of the axles are controlled by n_length, n_width, spacing_length and spacing_width.
+    The hydraulics are controlled by reference_extension, reference_force and k.
+
+    Setting use_friction to True (default) adds friction such that all contact-forces are purely vertical.
+    Setting use_friction to False will make contact-forces perpendicular to the contacted surface.
+
+    """
+
+    _valid_parent_types = (Frame,)
+
+    def __init__(self, scene, name: str):
+        scene._verify_name_available(name)
+        self._vfNode = scene._vfc.new_spmt(name)
+
+        super().__init__(scene=scene, name=name)
+
+        self._meshes = list()
+
+        # These are set by Scene.new_spmt
+        self._k = None
+        self._reference_extension = None
+        self._reference_force = None
+        self._spacing_length = None
+        self._spacing_width = None
+        self._n_length = None
+        self._n_width = None
+
+    def change_parent_to(self, new_parent):
+        self.parent = new_parent
+
+    def depends_on(self) -> list:
+        deps = HasParentCore.depends_on(self)
+        deps.extend(self._meshes)
+        return deps
+
+
+    # read-only properties
+
+    @property
+    def force(self) -> tuple[float]:
+        """Returns the force component perpendicular to the SPMT in each of the axles (negative mean uplift) [kN]"""
+        return self._vfNode.force
+
+    @property
+    def contact_force(self) -> tuple[tuple[float]]:
+        """Returns the contact force in each of the axles (global) [kN,kN,kN]"""
+        return self._vfNode.forces
+
+    @property
+    def compression(self) -> float:
+        """Returns the total compression (negative means uplift) [m]"""
+        return self._vfNode.compression
+
+    @property
+    def extensions(self) -> tuple[float]:
+        """Returns the extension of each of the axles (bottom of wheel to top of spmt) [m]"""
+        return tuple(self._vfNode.extensions)
+
+    @property
+    def max_extension(self) -> float:
+        """Maximum extension of the axles [m]
+        See Also: extensions"""
+        return max(self.extensions)
+
+    @property
+    def min_extension(self) -> float:
+        """Minimum extension of the axles [m]
+        See Also: extensions"""
+        return min(self.extensions)
+
+    def get_actual_global_points(self):
+        """Returns a list of points: axle1, bottom wheels 1, axle2, bottom wheels 2, etc"""
+        gp = self._vfNode.actual_global_points
+
+        pts = []
+        n2 = int(len(gp) / 2)
+        for i in range(n2):
+            pts.append(gp[2 * i + 1])
+            pts.append(gp[2 * i])
+
+            if i < n2 - 1:
+                pts.append(gp[2 * i + 2])
+
+        return pts
+
+    # controllable
+
+    # name is derived
+    # parent is derived
+
+    # axles and stiffness are combined
+    def _update_vfNode(self):
+        """Updates vfNode with stiffness and axles"""
+        offx = (self._n_length - 1) * self._spacing_length / 2
+        offy = (self._n_width - 1) * self._spacing_width / 2
+        self._vfNode.clear_axles()
+
+        for ix in range(self._n_length):
+            for iy in range(self._n_width):
+                self._vfNode.add_axle(ix * self._spacing_length - offx, iy * self._spacing_width - offy, 0)
+
+        n_axles = self._n_length * self._n_width
+        self._vfNode.k = self._k / (n_axles*n_axles)
+        self._vfNode.nominal_length = self._reference_extension + self._reference_force / self._k
+
+    @property
+    def n_width(self) -> int:
+        """number of axles in transverse direction [-]"""
+        return self._n_width
+
+    @n_width.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def n_width(self, value):
+        assert1i_positive_or_zero(value, "n_width")
+        self._n_width = value
+        self._update_vfNode()
+
+    @property
+    def n_length(self)->int:
+        """number of axles in length direction [-]"""
+        return self._n_length
+
+    @n_length.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def n_length(self, value):
+        assert1i_positive_or_zero(value, "n_length")
+        self._n_length = value
+        self._update_vfNode()
+
+    @property
+    def spacing_width(self) -> float:
+        """distance between axles in transverse direction [m]"""
+        return self._spacing_width
+
+    @spacing_width.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def spacing_width(self, value):
+        assert1f_positive_or_zero(value, "spacing_width")
+        self._spacing_width = value
+        self._update_vfNode()
+
+    @property
+    def spacing_length(self)->float:
+        """distance between axles in length direction [m]"""
+        return self._spacing_length
+
+    @spacing_length.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def spacing_length(self, value):
+        assert1f_positive_or_zero(value, "spacing_length")
+        self._spacing_length = value
+        self._update_vfNode()
+
+    @property
+    def reference_force(self)->float:
+        """total force (sum of all axles) when at reference extension [kN]"""
+        return self._reference_force
+
+    @reference_force.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def reference_force(self, value):
+        assert1f_positive_or_zero(value, "reference_force")
+        self._reference_force = value
+        self._update_vfNode()
+
+    @property
+    def reference_extension(self)->float:
+        """Distance between top of SPMT and bottom of wheel at which compression is zero [m]"""
+        return self._reference_extension
+
+    @reference_extension.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def reference_extension(self, value):
+        """nominal extension of axles for reference force [m]"""
+        assert1f_positive_or_zero(value, "reference_extension")
+        self._reference_extension = value
+        self._update_vfNode()
+
+    @property
+    def k(self)->float:
+        """Vertical stiffness of all axles together [kN/m]"""
+        return self._k
+
+    @k.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def k(self, value):
+        assert1f_positive_or_zero(value, "k")
+        self._k = value
+        self._update_vfNode()
+
+    # ==== friction ====
+
+    @property
+    def use_friction(self)->bool:
+        """Apply friction between wheel and surface such that resulting force is vertical [True/False]
+        False: Force is perpendicular to the surface
+        True: Force is vertical
+        """
+        return self._vfNode.use_friction
+
+    @use_friction.setter
+    def use_friction(self, value):
+        assertBool(value, "use friction")
+        self._vfNode.use_friction = value
+
+    # === control meshes ====
+
+    @property
+    def meshes(self) -> tuple:
+        """List of contact-mesh nodes. If empty list then the SPMT can contact all contact meshes.
+        When getting this will yield a list of node references.
+        When setting node references and node-names may be used.
+
+        eg: ball.meshes = [mesh1, 'mesh2']
+        """
+        return tuple(self._meshes)
+
+    @meshes.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def meshes(self, value):
+
+        meshes = []
+
+        for m in value:
+            cm = self._scene._node_from_node_or_str(m)
+
+            if not isinstance(cm, ContactMesh):
+                raise ValueError(
+                    f"Only ContactMesh nodes can be used as mesh, but {cm.name} is a {type(cm)}"
+                )
+            if cm in meshes:
+                raise ValueError(f"Can not add {cm.name} twice")
+
+            meshes.append(cm)
+
+        # copy to meshes
+        self._meshes.clear()
+        self._vfNode.clear_contact_meshes()
+        for mesh in meshes:
+            self._meshes.append(mesh)
+            self._vfNode.add_contact_mesh(mesh._vfNode)
+
+    @property
+    def meshes_names(self) -> tuple[str]:
+        """List with the names of the meshes"""
+        return tuple([m.name for m in self._meshes])
+
+    # === control axles ====
+
+
+    @property
+    def axles(self) -> tuple[tuple[float,float,float]]:
+        """Axles is a list axle positions [m,m,m] (parent axis)
+        Each entry is a (x,y,z) entry which determines the location of the axle on SPMT. This is relative to the parent of the SPMT.
+
+        Example:
+            [(-10,0,0),(-5,0,0),(0,0,0)] for three axles
+        """
+        return self._vfNode.get_axles()
+
+    @axles.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def axles(self, value):
+        self._vfNode.clear_axles()
+        for v in value:
+            assert3f(v, "Each entry should contain three floating point numbers")
+            self._vfNode.add_axle(*v)
+
+    # actions
+
+    def update(self):
+        """Updates the contact-points and applies forces on mesh and point"""
+        self._vfNode.update()
+
+    def give_python_code(self):
+        code = ["# code for {}".format(self.name)]
+
+        code.append(f"s.new_spmt(name='{self.name}',")
+        code.append(f"           parent='{self.parent_for_export.name}',")
+        code.append(f"           reference_force = {self.reference_force:.6g},")
+        code.append(f"           reference_extension = {self.reference_extension:.6g},")
+        code.append(f"           k = {self.k},")
+        code.append(f"           spacing_length = {self.spacing_length:.6g},")
+        code.append(f"           spacing_width = {self.spacing_width:.6g},")
+        code.append(f"           n_length = {self.n_length},")
+        code.append(f"           n_width = {self.n_width},")
+
+        if self._meshes:
+            code.append("                  meshes = [ ")
+            for m in self._meshes:
+                code.append('"' + m.name + '",')
+            code.append("                           ],")
+        code.append("            )")
+
+        return '\n'.join(code)
+
+
+
+
+class HydSpring(NodeCoreConnected, HasParentCore):
+    """A HydSpring models a linearized hydrostatic spring.
+
+    The cob (center of buoyancy) is defined in the parent axis system.
+    All other properties are defined relative to the cob.
+
+    """
+
+    _valid_parent_types = (Frame, )
+
+    def __init__(self, scene, name):
+        scene.assert_name_available(name)
+
+        self._vfNode = scene._vfc.new_hydspring(name)
+        super().__init__(scene=scene, name = name)
+
+    def depends_on(self) -> list:
+        return HasParentCore.depends_on(self)
+
+    def change_parent_to(self, new_parent):
+        self.parent = new_parent
+
+    @property
+    def cob(self)->tuple[float,float,float]:
+        """Center of buoyancy in (parent axis) [m,m,m]"""
+        return self._vfNode.position
+
+    @cob.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def cob(self, val):
+
+        assert3f(val)
+        self._vfNode.position = val
+
+    @property
+    def BMT(self)->float:
+        """Vertical distance between cob and metacenter for roll [m]"""
+        return self._vfNode.BMT
+
+    @BMT.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def BMT(self, val):
+
+        self._vfNode.BMT = val
+
+    @property
+    def BML(self)->float:
+        """Vertical distance between cob and metacenter for pitch [m]"""
+        return self._vfNode.BML
+
+    @BML.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def BML(self, val):
+
+        self._vfNode.BML = val
+
+    @property
+    def COFX(self)->float:
+        """Horizontal x-position Center of Floatation (center of waterplane area), relative to cob [m]"""
+        return self._vfNode.COFX
+
+    @COFX.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def COFX(self, val):
+
+        self._vfNode.COFX = val
+
+    @property
+    def COFY(self)->float:
+        """Horizontal y-position Center of Floatation (center of waterplane area), relative to cob [m]"""
+        return self._vfNode.COFY
+
+    @COFY.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def COFY(self, val):
+
+        self._vfNode.COFY = val
+
+    @property
+    def kHeave(self)->float:
+        """Heave stiffness [kN/m]"""
+        return self._vfNode.kHeave
+
+    @kHeave.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def kHeave(self, val):
+
+        self._vfNode.kHeave = val
+
+    @property
+    def waterline(self)->float:
+        """Waterline-elevation relative to cob for un-stretched heave-spring. Positive if cob is below the waterline (which is where is normally is) [m]"""
+        return self._vfNode.waterline
+
+    @waterline.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def waterline(self, val):
+
+        self._vfNode.waterline = val
+
+    @property
+    def displacement_kN(self)->float:
+        """Displacement when waterline is at waterline-elevation [kN]"""
+        return self._vfNode.displacement_kN
+
+    @displacement_kN.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def displacement_kN(self, val):
+
+        self._vfNode.displacement_kN = val
+
+    def give_python_code(self):
+        code = "# code for {}".format(self.name)
+
+        # new_force(self, name, parent=None, force=None, moment=None):
+
+        code += "\ns.new_hydspring(name='{}',".format(self.name)
+        code += "\n            parent='{}',".format(self.parent_for_export.name)
+        code += "\n            cob=({}, {}, {}),".format(*self.cob)
+        code += "\n            BMT={},".format(self.BMT)
+        code += "\n            BML={},".format(self.BML)
+        code += "\n            COFX={},".format(self.COFX)
+        code += "\n            COFY={},".format(self.COFY)
+        code += "\n            kHeave={},".format(self.kHeave)
+        code += "\n            waterline={},".format(self.waterline)
+        code += "\n            displacement_kN={} )".format(self.displacement_kN)
+
+        return code
+
+
+# =========== Parent and Trimesh
+
+class ContactMesh(NodeCoreConnected, HasParentCore, HasTrimesh):
+    """A ContactMesh is a tri-mesh with an axis parent"""
+
+    _valid_parent_types = (Frame, NoneType, )
+
+    def __init__(self, scene, name):
+        logging.info("ContactMesh.__init__")
+        scene._verify_name_available(name)
+
+        self._vfNode = scene._vfc.new_contactmesh(name)
+        super().__init__(scene=scene, name=name)
+
+    def depends_on(self) -> list:
+        return HasParentCore.depends_on(self)
+
+    def change_parent_to(self, new_parent):
+        HasTrimesh.change_parent_to(self, new_parent)
+
+
+    def give_python_code(self):
+        code = "# code for {}".format(self.name)
+        code += "\nmesh = s.new_contactmesh(name='{}'".format(self.name)
+        if self.parent_for_export:
+            code += ", parent='{}')".format(self.parent_for_export.name)
+        else:
+            code += ")"
+        code += "\nmesh.trimesh.load_file(r'{}', scale = ({:.6g},{:.6g},{:.6g}), rotation = ({:.6g},{:.6g},{:.6g}), offset = ({:.6g},{:.6g},{:.6g}))".format(
+            self.trimesh._path,
+            *self.trimesh._scale,
+            *self.trimesh._rotation,
+            *self.trimesh._offset,
+        )
+
+        return code
+
+
+class Buoyancy(NodeCoreConnected, HasParentCore, HasTrimesh):
+    """Buoyancy provides a buoyancy force based on a buoyancy mesh. The mesh is triangulated and chopped at the instantaneous flat water surface. Buoyancy is applied as an upwards force that the center of buoyancy.
+    The calculation of buoyancy is as accurate as the provided geometry.
+
+    There as no restrictions to the size or aspect ratio of the panels. It is excellent to model as box using 6 faces. Using smaller panels has a negative effect on performance.
+
+    The normals of the panels should point towards to water.
+    """
+
+    # init parent and name are fully derived from NodeWithParent
+    # _vfNode is a buoyancy
+
+    _valid_parent_types = (Frame,)
+
+    def __init__(self, scene, name):
+        logging.info("Buoyancy.__init__")
+        scene._verify_name_available(name)
+
+        self._vfNode = scene._vfc.new_buoyancy(name)
+        super().__init__(scene=scene, name=name)
+
+    def depends_on(self) -> list:
+        return HasParentCore.depends_on(self)
+
+    def change_parent_to(self, new_parent):
+        HasTrimesh.change_parent_to(self, new_parent)
+
+    def update(self):
+        self._vfNode.reloadTrimesh()
+
+    @property
+    def cob(self)->tuple[tuple[float,float,float]]:
+        """GLOBAL position of the center of buoyancy [m,m,m] (global axis)"""
+        return self._vfNode.cob
+
+    @property
+    def cob_local(self)->tuple[tuple[float,float,float]]:
+        """Position of the center of buoyancy [m,m,m] (local axis)"""
+
+        return self.parent.to_loc_position(self.cob)
+
+    @property
+    def displacement(self)->float:
+        """Displaced volume of fluid [m^3]"""
+        return self._vfNode.displacement
+
+    def give_python_code(self):
+        code = "# code for {}".format(self.name)
+        code += "\nmesh = s.new_buoyancy(name='{}',".format(self.name)
+
+        code += "\n          parent='{}')".format(self.parent_for_export.name)
+
+        if self.trimesh._invert_normals:
+            code += "\nmesh.trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}), invert_normals=True)".format(
+                self.trimesh._path,
+                *self.trimesh._scale,
+                *self.trimesh._rotation,
+                *self.trimesh._offset,
+            )
+        else:
+            code += "\nmesh.trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
+                self.trimesh._path,
+                *self.trimesh._scale,
+                *self.trimesh._rotation,
+                *self.trimesh._offset,
+            )
+
+        return code
+
+
+
+class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
+    """Tank provides a fillable tank based on a mesh. The mesh is triangulated and chopped at the instantaneous flat fluid surface. Gravity is applied as an downwards force that the center of fluid.
+    The calculation of fluid volume and center is as accurate as the provided geometry.
+
+    There as no restrictions to the size or aspect ratio of the panels. It is excellent to model as box using 6 faces. Using smaller panels has a negative effect on performance.
+
+    The normals of the panels should point *away* from the fluid. This means that the same basic shapes can be used for both buoyancy and tanks.
+    """
+
+    # init parent and name are fully derived from NodeWithParent
+    # _vfNode is a tank
+
+    _valid_parent_types = (Frame,)
+
+    def __init__(self, scene, name):
+
+        logging.info("Tank.__init__")
+        scene._verify_name_available(name)
+
+        self._vfNode = scene._vfc.new_tank(name)
+        super().__init__(scene=scene, name=name)
+
+        self._inertia = scene._vfc.new_pointmass(
+            self.name + VF_NAME_SPLIT + "inertia"
+        )
+
+    def depends_on(self) -> list:
+        return HasParentCore.depends_on(self)
+
+    def change_parent_to(self, new_parent):
+        HasTrimesh.change_parent_to(self, new_parent)
+
+
+
+    def update(self):
+        self._vfNode.reloadTrimesh()
+
+        # update inertia
+        self._inertia.parent = self.parent._vfNode
+        self._inertia.position = self.cog_local
+        self._inertia.inertia = self.volume * self.density
+
+    def _delete_vfc(self):
+        self._scene._vfc.delete(self._inertia.name)
+        super()._delete_vfc()
+
+    @property
+    def free_flooding(self)->bool:
+        """Tank is filled till global waterline (aka: damaged) [bool]"""
+        return self._vfNode.free_flooding
+
+    @free_flooding.setter
+    def free_flooding(self, value):
+        assert isinstance(value, bool), ValueError(
+            f"free_flooding shall be a bool, you passed a {type(value)}"
+        )
+        self._vfNode.free_flooding = value
+
+    @property
+    def permeability(self)->float:
+        """Permeability is the fraction of the meshed volume that can be filled with fluid [-]"""
+        return self._vfNode.permeability
+
+    @permeability.setter
+    def permeability(self, value):
+        assert1f_positive_or_zero(value)
+        self._vfNode.permeability = value
+
+    @property
+    def cog(self)->tuple[tuple[float,float,float]]:
+        """Global position of the center of volume / gravity [m,m,m] (global)"""
+        return self._vfNode.cog
+
+    @property
+    def cog_local(self)->tuple[tuple[float,float,float]]:
+        """Center of gravity [m,m,m] (parent axis)"""
+        return self.parent.to_loc_position(self.cog)
+
+    @property
+    def cog_when_full_global(self) -> tuple[tuple[float, float, float]]:
+        """Global position of the center of volume / gravity of the tank when it is filled [m,m,m] (global)"""
+        return self.parent.to_glob_position(self._vfNode.cog_when_full)
+
+    @property
+    def cog_when_full(self)->tuple[float,float,float]:
+        """LOCAL position of the center of volume / gravity of the tank when it is filled [m,m,m] (parent axis)"""
+        return self._vfNode.cog_when_full
+
+    @property
+    def cogx_when_full(self)->float:
+        """x position of the center of volume / gravity of the tank when it is filled [m] (parent axis)"""
+        return self._vfNode.cog_when_full[0]
+
+    @property
+    def cogy_when_full(self) -> float:
+        """y position of the center of volume / gravity of the tank when it is filled [m] (parent axis)"""
+        return self._vfNode.cog_when_full[1]
+
+    @property
+    def cogz_when_full(self) -> float:
+        """z position of the center of volume / gravity of the tank when it is filled [m] (parent axis)"""
+        return self._vfNode.cog_when_full[2]
+
+    @property
+    def fill_pct(self)->float:
+        """Amount of volume in tank as percentage of capacity [%]"""
+        if self.capacity == 0:
+            return 0
+        return 100 * self.volume / self.capacity
+
+    @fill_pct.setter
+    @node_setter_observable
+    def fill_pct(self, value):
+
+        if value < 0 and value > -0.01:
+            value = 0
+
+        assert1f_positive_or_zero(value)
+
+        if value > 100.1:
+            raise ValueError(
+                f"Fill percentage should be between 0 and 100 [%], {value} is not valid"
+            )
+        if value > 100:
+            value = 100
+        self.volume = value * self.capacity / 100
+
+    @property
+    def level_global(self)->float:
+        """The fluid plane elevation in the global axis system [m]
+        Setting this adjusts the volume"""
+        return self._vfNode.fluid_level_global
+
+    @level_global.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def level_global(self, value):
+        assert1f(value)
+        self._vfNode.fluid_level_global = value
+
+    @property
+    def volume(self)->float:
+        """The actual volume of fluid in the tank [m3]
+        Setting this adjusts the fluid level"""
+        return self._vfNode.volume
+
+    @volume.setter
+    @node_setter_observable
+    def volume(self, value):
+        assert1f_positive_or_zero(value, "Volume")
+        self._vfNode.volume = value
+
+    @property
+    def used_density(self) -> float:
+        """Density of the fluid in the tank [mT/m3]"""
+        if self.density > 0:
+            return self.density
+        else:
+            return self._scene.rho_water
+
+    @property
+    def density(self)->float:
+        """Density of the fluid in the tank. Density < 0 means use outside water density. See also used_density [mT/m3]"""
+        return self._vfNode.density
+
+    @density.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def density(self, value):
+        assert1f(value)
+        self._vfNode.density = value
+
+    @property
+    def capacity(self)->float:
+        """Fillable volume of the tank calcualted as mesh volume times permeability [m3]
+        This is calculated from the defined geometry and permeability.
+        See also: mesh_volume"""
+        return self._vfNode.capacity
+
+    @property
+    def mesh_volume(self) -> float:
+        """Volume enclosed by the mesh the tank [m3]
+        This is calculated from the defined geometry and does not account for permeability.
+        See also: capacity"""
+        return self._vfNode.capacity / self._vfNode.permeability
+
+    @property
+    def ullage(self)->float:
+        """Ullage of the tank [m]
+        The ullage is the distance between a measurement point and the fluid surface. The point is [xf,yf,zv] where
+        xf and yf are the x and y coordinates (local) of the center of fluid when the tank is full. zv is the largest z value
+        of all the vertices of the tank.
+        The measurement direction is in local z-direction. If the tank is under an angle then this is not perpendicular to the fluid.
+        It is possible that this definition returns an ullage larger than the physical tank depth. In that case the physical depth of
+        the tank is returned instead.
+        """
+        return self._vfNode.ullage
+
+    def give_python_code(self):
+        code = "# code for {}".format(self.name)
+        code += "\nmesh = s.new_tank(name='{}',".format(self.name)
+
+        if self.density != 1.025:
+            code += f"\n          density={self.density:.6g},"
+
+        if self.free_flooding:
+            code += f"\n          free_flooding=True,"
+
+        code += "\n          parent='{}')".format(self.parent_for_export.name)
+
+        if self.trimesh._invert_normals:
+            code += "\nmesh.trimesh.load_file(r'{}', scale = ({:.6g},{:.6g},{:.6g}), rotation = ({:.6g},{:.6g},{:.6g}), offset = ({:.6g},{:.6g},{:.6g}), invert_normals=True)".format(
+                self.trimesh._path,
+                *self.trimesh._scale,
+                *self.trimesh._rotation,
+                *self.trimesh._offset,
+            )
+        else:
+            code += "\nmesh.trimesh.load_file(r'{}', scale = ({},{},{}), rotation = ({},{},{}), offset = ({},{},{}))".format(
+                self.trimesh._path,
+                *self.trimesh._scale,
+                *self.trimesh._rotation,
+                *self.trimesh._offset,
+            )
+        code += f"\ns['{self.name}'].volume = {self.volume:.6g}   # first load mesh, then set volume"
+
+        return code
+
+# -------- non-parent types
 
 class Cable(NodeCoreConnected):
     """A Cable represents a linear elastic wire running from a Poi or sheave to another Poi of sheave.
@@ -1501,7 +1487,7 @@ class Cable(NodeCoreConnected):
         scene._verify_name_available(name)
         self._vfNode = scene._vfc.new_cable(name)
 
-        super().__init__(scene, name)
+        super().__init__(scene=scene, name=name)
 
         self._pois = list()
         self._reversed : List[bool] = list()
@@ -1768,3 +1754,539 @@ class Cable(NodeCoreConnected):
             code.append(f"s['{self.name}'].reversed = {self.reversed}")
 
         return '\n'.join(code)
+
+
+class LC6d(NodeCoreConnected):
+    """A LC6d models a Linear Connector with 6 dofs.
+
+    It connects two Axis elements with six linear springs.
+
+    The first axis system is called "main", the second is called "secondary". The difference is that
+    the "main" axis system defines the directions of the stiffness values.
+
+    The translational-springs are straight forward. The rotational springs may not be as intuitive. They are defined as:
+
+      - rotation_x = arc-tan ( uy[0] / uy[1] )
+      - rotation_y = arc-tan ( -ux[0] / ux[2] )
+      - rotation_z = arc-tan ( ux[0] / ux [1] )
+
+    which works fine for small rotations and rotations about only a single axis.
+
+    Tip:
+    It is better to use the "fixed" property of axis systems to create joints.
+
+    """
+
+    def __init__(self, scene, name : str):
+        scene.assert_name_available(name)
+        self._vfNode = scene._vfc.new_linearconnector6d(name)
+        super().__init__(scene=scene, name=name)
+
+        self._main = None
+        self._secondary = None
+
+    def depends_on(self):
+        return [self._main, self._secondary]
+
+    @property
+    def stiffness(self)->tuple[float,float,float,float,float,float]:
+        """Stiffness of the connector: kx, ky, kz, krx, kry, krz in [kN/m and kNm/rad] (axis system of the main axis)"""
+        return self._vfNode.stiffness
+
+    @stiffness.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def stiffness(self, val):
+
+        self._vfNode.stiffness = val
+
+    @property
+    def main(self)->Frame:
+        """Main axis system. This axis system dictates the axis system that the stiffness is expressed in
+        #NOGUI"""
+        return self._main
+
+    @main.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def main(self, val):
+
+        val = self._scene._node_from_node_or_str(val)
+        if not isinstance(val, Frame):
+            raise TypeError("Provided nodeA should be a Axis")
+
+        self._main = val
+        self._vfNode.master = val._vfNode
+
+    @property
+    def secondary(self)->Frame:
+        """Secondary (connected) axis system
+        #NOGUI"""
+        return self._secondary
+
+    @secondary.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def secondary(self, val):
+
+        val = self._scene._node_from_node_or_str(val)
+        if not isinstance(val, Frame):
+            raise TypeError("Provided nodeA should be a Axis")
+
+        self._secondary = val
+        self._vfNode.slave = val._vfNode
+
+    @property
+    def fgx(self)->float:
+        """Force on main in global coordinate frame [kN]"""
+        return self._vfNode.global_force[0]
+
+    @property
+    def fgy(self)->float:
+        """Force on main in global coordinate frame [kN]"""
+        return self._vfNode.global_force[1]
+
+    @property
+    def fgz(self)->float:
+        """Force on main in global coordinate frame [kN]"""
+        return self._vfNode.global_force[2]
+
+    @property
+    def force_global(self)->tuple[float,float,float]:
+        """Force on main in global coordinate frame [kN,kN,kN,kNm,kNm,kNm]"""
+        return self._vfNode.global_force
+
+    @property
+    def mgx(self)->float:
+        """Moment on main in global coordinate frame [kNm]"""
+        return self._vfNode.global_moment[0]
+
+    @property
+    def mgy(self)->float:
+        """Moment on main in global coordinate frame [kNm]"""
+        return self._vfNode.global_moment[1]
+
+    @property
+    def mgz(self)->float:
+        """Moment on main in global coordinate frame [kNm]"""
+        return self._vfNode.global_moment[2]
+
+    @property
+    def moment_global(self)->tuple[float,float,float]:
+        """Moment on main in global coordinate frame [kNm, kNm, kNm]"""
+        return self._vfNode.global_moment
+
+    def give_python_code(self):
+        code = "# code for {}".format(self.name)
+
+        code += "\ns.new_linear_connector_6d(name='{}',".format(self.name)
+        code += "\n            main='{}',".format(self.main.name)
+        code += "\n            secondary='{}',".format(self.secondary.name)
+        code += "\n            stiffness=({:.6g}, {:.6g}, {:.6g}, ".format(*self.stiffness[:3])
+        code += "\n                       {:.6g}, {:.6g}, {:.6g}) )".format(*self.stiffness[3:])
+
+        return code
+
+
+class Connector2d(NodeCoreConnected):
+    """A Connector2d linear connector with acts both on linear displacement and angular displacement.
+
+    * the linear stiffness is defined by k_linear and is defined over the actual shortest direction between nodeA and nodeB.
+    * the angular stiffness is defined by k_angular and is defined over the actual smallest angle between the two systems.
+    """
+
+    def __init__(self, scene, name : str):
+        scene.assert_name_available(name)
+        self._vfNode = scene._vfc.new_connector2d(name)
+        super().__init__(scene=scene, name=name)
+
+        self._nodeA = None
+        self._nodeB = None
+
+    def depends_on(self):
+        return [self._nodeA, self._nodeB]
+
+    @property
+    def angle(self) -> float:
+        """Actual angle between nodeA and nodeB [deg] (read-only)"""
+        return np.rad2deg(self._vfNode.angle)
+
+    @property
+    def force(self)-> float:
+        """Actual force between nodeA and nodeB [kN] (read-only)"""
+        return self._vfNode.force
+
+    @property
+    def moment(self)-> float:
+        """Actual moment between nodeA and nodeB [kNm] (read-only)"""
+        return self._vfNode.moment
+
+    @property
+    def axis(self)->tuple[float,float,float]:
+        """Actual rotation axis between nodeA and nodeB [m,m,m](read-only)"""
+        return self._vfNode.axis
+
+    @property
+    def ax(self)-> float:
+        """X component of actual rotation axis between nodeA and nodeB [deg](read-only)"""
+        return self._vfNode.axis[0]
+
+    @property
+    def ay(self)-> float:
+        """Y component of actual rotation axis between nodeA and nodeB [deg] (read-only)"""
+        return self._vfNode.axis[1]
+
+    @property
+    def az(self)-> float:
+        """Z component of actual rotation axis between nodeA and nodeB [deg] (read-only)"""
+        return self._vfNode.axis[2]
+
+    @property
+    def k_linear(self)-> float:
+        """Linear stiffness [kN/m]"""
+        return self._vfNode.k_linear
+
+    @k_linear.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def k_linear(self, value):
+
+        self._vfNode.k_linear = value
+
+    @property
+    def k_angular(self)-> float:
+        """Angular stiffness [kNm/rad]"""
+        return self._vfNode.k_angular
+
+    @k_angular.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def k_angular(self, value):
+
+        self._vfNode.k_angular = value
+
+    @property
+    def nodeA(self) -> Frame:
+        """Connected axis system A
+        #NOGUI"""
+        return self._nodeA
+
+    @nodeA.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def nodeA(self, val):
+
+        val = self._scene._node_from_node_or_str(val)
+        if not isinstance(val, Frame):
+            raise TypeError("Provided nodeA should be a Axis")
+
+        self._nodeA = val
+        self._vfNode.master = val._vfNode
+
+    @property
+    def nodeB(self) -> Frame:
+        """Connected axis system B
+        #NOGUI"""
+        return self._nodeB
+
+    @nodeB.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def nodeB(self, val):
+
+        val = self._scene._node_from_node_or_str(val)
+        if not isinstance(val, Frame):
+            raise TypeError("Provided nodeA should be a Axis")
+
+        self._nodeB = val
+        self._vfNode.slave = val._vfNode
+
+    def give_python_code(self):
+        code = "# code for {}".format(self.name)
+
+        code += "\ns.new_connector2d(name='{}',".format(self.name)
+        code += "\n            nodeA='{}',".format(self.nodeA.name)
+        code += "\n            nodeB='{}',".format(self.nodeB.name)
+        code += "\n            k_linear ={:.6g},".format(self.k_linear)
+        code += "\n            k_angular ={:.6g})".format(self.k_angular)
+
+        return code
+
+
+
+class Beam(NodeCoreConnected):
+    """A LinearBeam models a FEM-like linear beam element.
+
+    A LinearBeam node connects two Axis elements
+
+    By definition the beam runs in the X-direction of the nodeA axis system. So it may be needed to create a
+    dedicated Axis element for the beam to control the orientation.
+
+    The beam is defined using the following properties:
+
+    *  EIy  - bending stiffness about y-axis
+    *  EIz  - bending stiffness about z-axis
+    *  GIp  - torsional stiffness about x-axis
+    *  EA   - axis stiffness in x-direction
+    *  L    - the un-stretched length of the beam
+    *  mass - mass of the beam in [mT]
+
+    The beam element is in rest if the nodeB axis system
+
+    1. has the same global orientation as the nodeA system
+    2. is at global position equal to the global position of local point (L,0,0) of the nodeA axis. (aka: the end of the beam)
+
+    The scene.new_linearbeam automatically creates a dedicated axis system for each end of the beam. The orientation of this axis-system
+    is determined as follows:
+
+    First the direction from nodeA to nodeB is determined: D
+    The axis of rotation is the cross-product of the unit x-axis and D    AXIS = ux x D
+    The angle of rotation is the angle between the nodeA x-axis and D
+    The rotation about the rotated X-axis is undefined.
+
+    """
+
+    def __init__(self, scene, name : str):
+        scene.assert_name_available(name)
+        self._vfNode = scene._vfc.new_linearbeam(name)
+        super().__init__(scene=scene, name=name)
+
+        self._nodeA = None
+        self._nodeB = None
+
+        self._nodeA = None
+        self._nodeB = None
+
+    def depends_on(self):
+        return [self._nodeA, self._nodeB]
+
+    @property
+    def n_segments(self)-> int:
+        """Number of segments used in beam [-]"""
+        return self._vfNode.nSegments
+
+    @n_segments.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def n_segments(self, value):
+        if value < 1:
+            raise ValueError("Number of segments in beam should be 1 or more")
+        self._vfNode.nSegments = int(value)
+
+    @property
+    def EIy(self)-> float:
+        """E * Iyy : bending stiffness in the XZ plane [kN m2]
+
+        E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
+        Iyy is the cross section moment of inertia [m4]
+        """
+        return self._vfNode.EIy
+
+    @EIy.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def EIy(self, value):
+
+        self._vfNode.EIy = value
+
+    @property
+    def EIz(self)-> float:
+        """E * Izz : bending stiffness in the XY plane [kN m2]
+
+        E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
+        Iyy is the cross section moment of inertia [m4]
+        """
+        return self._vfNode.EIz
+
+    @EIz.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def EIz(self, value):
+
+        self._vfNode.EIz = value
+
+    @property
+    def GIp(self)-> float:
+        """G * Ipp : torsional stiffness about the X (length) axis [kN m2]
+
+        G is the shear-modulus of elasticity; for steel 75-80 GPa (10^6 kN/m2)
+        Ip is the cross section polar moment of inertia [m4]
+        """
+        return self._vfNode.GIp
+
+    @GIp.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def GIp(self, value):
+
+        self._vfNode.GIp = value
+
+    @property
+    def EA(self)-> float:
+        """E * A : stiffness in the length direction [kN]
+
+        E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
+        A is the cross-section area in [m2]
+        """
+        return self._vfNode.EA
+
+    @EA.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def EA(self, value):
+
+        self._vfNode.EA = value
+
+    @property
+    def tension_only(self)->bool:
+        """axial stiffness (EA) only applicable to tension [True/False]"""
+        return self._vfNode.tensionOnly
+
+    @tension_only.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def tension_only(self, value):
+        assert isinstance(value, bool), ValueError(
+            "Value for tension_only shall be True or False"
+        )
+        self._vfNode.tensionOnly = value
+
+    @property
+    def mass(self)-> float:
+        """Mass of the beam in [mT]"""
+        return self._vfNode.Mass
+
+    @mass.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def mass(self, value):
+
+        assert1f(value, "Mass shall be a number")
+        self._vfNode.Mass = value
+        pass
+
+    @property
+    def L(self)-> float:
+        """Length of the beam in unloaded condition [m]"""
+        return self._vfNode.L
+
+    @L.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def L(self, value):
+
+        self._vfNode.L = value
+
+    @property
+    def nodeA(self) -> Frame:
+        """The axis system that the A-end of the beam is connected to. The beam leaves this axis system along the X-axis [Frame]"""
+        return self._nodeA
+
+    @nodeA.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def nodeA(self, val):
+
+        val = self._scene._node_from_node_or_str(val)
+
+        if not isinstance(val, Frame):
+            raise TypeError("Provided nodeA should be a Axis")
+
+        self._nodeA = val
+        self._vfNode.master = val._vfNode
+
+    @property
+    def nodeB(self)->Frame:
+        """The axis system that the B-end of the beam is connected to. The beam arrives at this axis system along the X-axis [Frame]"""
+        return self._nodeB
+
+    @nodeB.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def nodeB(self, val):
+
+        val = self._scene._node_from_node_or_str(val)
+        if not isinstance(val, Frame):
+            raise TypeError("Provided nodeA should be a Axis")
+
+        self._nodeB = val
+        self._vfNode.slave = val._vfNode
+
+    # private, for beam-shapes in timeline
+    @property
+    def _shapeDofs(self):
+        return self._vfNode.shapeDofs
+
+    @_shapeDofs.setter
+    def _shapeDofs(self, value):
+        self._vfNode.shapeDofs = value
+
+    # read-only
+    @property
+    def moment_A(self) -> tuple[float,float,float]:
+        """Moment on beam at node A [kNm, kNm, kNm] (axis system of node A)"""
+        return self._vfNode.moment_on_master
+
+    @property
+    def moment_B(self)-> tuple[float,float,float]:
+        """Moment on beam at node B [kNm, kNm, kNm] (axis system of node B)"""
+        return self._vfNode.moment_on_slave
+
+    @property
+    def tension(self)->float:
+        """Tension in the beam [kN], negative for compression
+
+        tension is calculated at the midpoints of the beam segments.
+        """
+        return self._vfNode.tension
+
+    @property
+    def torsion(self)->float:
+        """Torsion moment [kNm]. Positive if end B has a positive rotation about the x-axis of end A
+
+        torsion is calculated at the midpoints of the beam segments.
+        """
+        return self._vfNode.torsion
+
+    @property
+    def X_nodes(self)->tuple[float]:
+        """Returns the x-positions of the end nodes and internal nodes along the length of the beam [m]"""
+        return self._vfNode.x
+
+    @property
+    def X_midpoints(self)->tuple[float]:
+        """X-positions of the beam centers measured along the length of the beam [m]"""
+        return tuple(
+            0.5 * (np.array(self._vfNode.x[:-1]) + np.array(self._vfNode.x[1:]))
+        )
+
+    @property
+    def global_positions(self)->tuple[tuple[float,float,float]]:
+        """Global-positions of the end nodes and internal nodes [m,m,m]"""
+        return np.array(self._vfNode.global_position, dtype=float)
+
+    @property
+    def global_orientations(self)->tuple[tuple[float,float,float]]:
+        """Global-orientations of the end nodes and internal nodes [deg,deg,deg]"""
+        return np.rad2deg(self._vfNode.global_orientation)
+
+    @property
+    def bending(self)->tuple[tuple[float,float,float]]:
+        """Bending forces of the end nodes and internal nodes [0, kNm, kNm]"""
+        return np.array(self._vfNode.bending)
+
+    def give_python_code(self):
+        code = "# code for beam {}".format(self.name)
+        code += "\ns.new_beam(name='{}',".format(self.name)
+        code += "\n            nodeA='{}',".format(self.nodeA.name)
+        code += "\n            nodeB='{}',".format(self.nodeB.name)
+        code += "\n            n_segments={},".format(self.n_segments)
+        code += "\n            tension_only={},".format(self.tension_only)
+        code += "\n            EIy ={:.6g},".format(self.EIy)
+        code += "\n            EIz ={:.6g},".format(self.EIz)
+        code += "\n            GIp ={:.6g},".format(self.GIp)
+        code += "\n            EA ={:.6g},".format(self.EA)
+        code += "\n            mass ={:.6g},".format(self.mass)
+        code += "\n            L ={:.6g}) # L can possibly be omitted".format(self.L)
+
+        return code

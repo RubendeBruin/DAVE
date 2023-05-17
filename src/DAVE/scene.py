@@ -6,12 +6,12 @@
   Ruben de Bruin - 2019
 """
 import weakref
-from os.path import isdir
+from os.path import isdir, isfile
 from os import mkdir
 from shutil import copy
 
 from time import sleep
-from typing import Tuple
+from typing import Tuple, List
 import functools
 
 import DAVEcore as DC
@@ -33,7 +33,7 @@ from .nodes import *
 #    --> node.position[2] = 5 is not allowed
 
 
-from .tools import assert1f
+from .tools import assert1f, assert1f_positive_or_zero
 
 
 class Scene:
@@ -2015,250 +2015,248 @@ class Scene:
         # self._nodes.append(new_node)
         return new_node
 
-    # def new_component(
-    #     self,
-    #     name,
-    #     path="res: default_component.dave",
-    #     parent=None,
-    #     position=None,
-    #     rotation=None,
-    #     fixed=True,
-    # ) -> Component:
-    #     """Creates a new *component* node and adds it to the scene.
-    #
-    #     Args:
-    #         name: Name for the node, should be unique
-    #         parent: optional, name of the parent of the node
-    #         position: optional, position for the node (x,y,z)
-    #         rotation: optional, rotation for the node (rx,ry,rz)
-    #         fixed [True]: optional, determines whether the frame is fixed [True] or free [False]. May also be a sequence of 6 booleans.
-    #         path: component resource (.dave file)
-    #
-    #     Returns:
-    #         Reference to newly created component
-    #
-    #     """
-    #
-    #     # check if we can import the provided path
-    #     try:
-    #         filename = self.get_resource_path(path)
-    #     except Exception as E:
-    #         raise ValueError(
-    #             f'Error creating component {name}.\nCan not find  path "{path}"; \n {str(E)}'
-    #         )
-    #     try:
-    #         t = Scene(filename, current_directory=self.current_directory)
-    #     except Exception as E:
-    #         raise ValueError(
-    #             f'Error creating component {name}.\nCan not import "{filename}" because {str(E)}'
-    #         )
-    #
-    #     # first check
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #     b = self._parent_from_node(parent)
-    #
-    #     if position is not None:
-    #         assert3f(position, "Position ")
-    #     if rotation is not None:
-    #         assert3f(rotation, "Rotation ")
-    #
-    #     if not isinstance(fixed, bool):
-    #         if len(fixed) != 6:
-    #             raise Exception(
-    #                 '"fixed" parameter should either be True/False or a 6x bool sequence such as (True,True,False,False,True,False)'
-    #             )
-    #
-    #     # then create
-    #     new_node = Component(self, name)
-    #
-    #     # and set properties
-    #     if b is not None:
-    #         new_node.parent = b
-    #     if position is not None:
-    #         new_node.position = position
-    #     if rotation is not None:
-    #         new_node.rotation = rotation
-    #     if isinstance(fixed, bool):
-    #         if fixed:
-    #             new_node.set_fixed()
-    #         else:
-    #             new_node.set_free()
-    #     else:
-    #         new_node.fixed = fixed
-    #
-    #     new_node.path = path
-    #
-    #     # self._nodes.append(new_node)
-    #     return new_node
-    #
-    # def new_geometriccontact(
-    #     self,
-    #     name,
-    #     child,
-    #     parent,
-    #     inside=False,
-    #     swivel=None,
-    #     rotation_on_parent=None,
-    #     child_rotation=None,
-    #     swivel_fixed=True,
-    #     fixed_to_parent=False,
-    #     child_fixed=False,
-    # ) -> GeometricContact:
-    #     """Creates a new *new_geometriccontact* node and adds it to the scene.
-    #
-    #     Geometric contact connects two circular elements and can be used to model bar-bar connections or pin-in-hole connections.
-    #
-    #     By default a bar-bar connection is created between item1 and item2.
-    #
-    #     Args:
-    #         name: Name for the node, should be unique
-    #         child : [Sheave] will be the nodeA of the connection
-    #         parent : [Sheave] will be the nodeB of the connection
-    #         inside: [False] False creates a pinpin connection. True creates a pin-hole type of connection
-    #         swivel: Rotation angle between the two items. Defaults to 90 for pinpin and 0 for pin-hole
-    #         rotation_on_parent: Angle of the connecting hinge relative to nodeA or None for default
-    #         child_rotation: Angle of the nodeB relative to the connecting hinge or None for default
-    #         swivel_fixed: Fix swivel [True]
-    #         fixed_to_parent: Fix connecting hinge to nodeA [False]
-    #         child_fixed: Fix nodeB to connecting hinge [False]
-    #
-    #     Note:
-    #         For pin-hole connections there is no geometrical difference between the pin and the hole. Therefore it is not needed to specify
-    #         which is the pin and which is the hole
-    #
-    #     Returns:
-    #         Reference to newly created new_geometriccontact
-    #
-    #     """
-    #
-    #
-    #
-    #     # first check
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #
-    #     name_prefix = name + vfc.MANAGED_NODE_IDENTIFIER
-    #     postfixes = [
-    #         "_axis_on_parent",
-    #         "_pin_hole_connection",
-    #         "_axis_on_child",
-    #         "_connection_axial_rotation",
-    #     ]
-    #
-    #     for pf in postfixes:
-    #         self._verify_name_available(name_prefix + pf)
-    #
-    #     child = self._sheave_from_node(child)
-    #     parent = self._sheave_from_node(parent)
-    #
-    #     assertBool(inside, "inside")
-    #     assertBool(swivel_fixed, "swivel_fixed")
-    #     assertBool(fixed_to_parent, "fixed_to_parent")
-    #     assertBool(child_fixed, "child_fixed")
-    #
-    #     GeometricContact._assert_parent_child_possible(parent, child)
-    #
-    #     if swivel is None:
-    #         if inside:
-    #             swivel = 0
-    #         else:
-    #             swivel = 90
-    #
-    #     assert1f(swivel, "swivel_angle")
-    #
-    #     if rotation_on_parent is not None:
-    #         assert1f(rotation_on_parent, "rotation_on_parent should be either None or ")
-    #     if child_rotation is not None:
-    #         assert1f(child_rotation, "child_rotation should be either None or ")
-    #
-    #     if child is None:
-    #         raise ValueError("child needs to be a sheave-type node")
-    #     if parent is None:
-    #         raise ValueError("parent needs to be a sheave-type node")
-    #
-    #     if child.parent.parent is None:
-    #         raise ValueError(
-    #             f"The parent {child.parent.name} of the child item {child.name} is not located on an axis. Can not create the connection because there is no axis to nodeB"
-    #         )
-    #
-    #     if child.parent.parent.manager is not None:
-    #         self.print_node_tree()
-    #         raise ValueError(
-    #             f"The axis or body that {child.name} is on is already managed by {child.parent.parent.manager.name} and can therefore not be changed - unable to create geometric contact"
-    #         )
-    #
-    #     new_node = GeometricContact(self, name, child, parent)
-    #     if inside:
-    #         new_node.set_pin_in_hole_connection()
-    #     else:
-    #         new_node.set_pin_pin_connection()
-    #
-    #     new_node.swivel = swivel
-    #     if rotation_on_parent is not None:
-    #         new_node.rotation_on_parent = rotation_on_parent
-    #     if child_rotation is not None:
-    #         new_node.child_rotation = child_rotation
-    #
-    #     new_node.fixed_to_parent = fixed_to_parent
-    #     new_node.child_fixed = child_fixed
-    #     new_node.swivel_fixed = swivel_fixed
-    #
-    #     # self._nodes.append(new_node)
-    #     return new_node
-    #
-    # def new_waveinteraction(
-    #     self,
-    #     name,
-    #     path,
-    #     parent=None,
-    #     offset=None,
-    # ) -> WaveInteraction1:
-    #     """Creates a new *wave interaction* node and adds it to the scene.
-    #
-    #     Args:
-    #         name: Name for the node, should be unique
-    #         path: Path to the hydrodynamic database
-    #         parent: optional, name of the parent of the node
-    #         offset: optional, position for the node (x,y,z)
-    #
-    #     Returns:
-    #         Reference to newly created wave-interaction object
-    #
-    #     """
-    #
-    #     if not parent:
-    #         raise ValueError("Wave-interaction has to be located on an Axis")
-    #
-    #
-    #
-    #     # first check
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #     b = self._parent_from_node(parent)
-    #
-    #     if b is None:
-    #         raise ValueError("Wave-interaction has to be located on an Axis")
-    #
-    #     if offset is not None:
-    #         assert3f(offset, "Offset ")
-    #
-    #     self.get_resource_path(path)  # raises error when resource is not found
-    #
-    #     # then create
-    #
-    #     new_node = WaveInteraction1(self, name)
-    #
-    #     new_node.path = path
-    #     new_node.parent = parent
-    #
-    #     # and set properties
-    #     new_node.parent = b
-    #     if offset is not None:
-    #         new_node.offset = offset
-    #
-    #     # self._nodes.append(new_node)
-    #     return new_node
+    def new_component(
+        self,
+        name,
+        path="res: default_component.dave",
+        parent=None,
+        position=None,
+        rotation=None,
+        fixed=True,
+    ) -> Component:
+        """Creates a new *component* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: optional, name of the parent of the node
+            position: optional, position for the node (x,y,z)
+            rotation: optional, rotation for the node (rx,ry,rz)
+            fixed [True]: optional, determines whether the frame is fixed [True] or free [False]. May also be a sequence of 6 booleans.
+            path: component resource (.dave file)
+
+        Returns:
+            Reference to newly created component
+
+        """
+
+        # check if we can import the provided path
+        try:
+            filename = self.get_resource_path(path)
+        except Exception as E:
+            raise ValueError(
+                f'Error creating component {name}.\nCan not find  path "{path}"; \n {str(E)}'
+            )
+        try:
+            t = Scene(filename, current_directory=self.current_directory)
+        except Exception as E:
+            raise ValueError(
+                f'Error creating component {name}.\nCan not import "{filename}" because {str(E)}'
+            )
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._parent_from_node(parent)
+
+        if position is not None:
+            assert3f(position, "Position ")
+        if rotation is not None:
+            assert3f(rotation, "Rotation ")
+
+        if not isinstance(fixed, bool):
+            if len(fixed) != 6:
+                raise Exception(
+                    '"fixed" parameter should either be True/False or a 6x bool sequence such as (True,True,False,False,True,False)'
+                )
+
+        # then create
+        new_node = Component(self, name)
+
+        # and set properties
+        if b is not None:
+            new_node.parent = b
+        if position is not None:
+            new_node.position = position
+        if rotation is not None:
+            new_node.rotation = rotation
+        if isinstance(fixed, bool):
+            if fixed:
+                new_node.set_fixed()
+            else:
+                new_node.set_free()
+        else:
+            new_node.fixed = fixed
+
+        new_node.path = path
+
+        # self._nodes.append(new_node)
+        return new_node
+
+    def new_geometriccontact(
+        self,
+        name,
+        child,
+        parent,
+        inside=False,
+        swivel=None,
+        rotation_on_parent=None,
+        child_rotation=None,
+        swivel_fixed=True,
+        fixed_to_parent=False,
+        child_fixed=False,
+    ) -> GeometricContact:
+        """Creates a new *new_geometriccontact* node and adds it to the scene.
+
+        Geometric contact connects two circular elements and can be used to model bar-bar connections or pin-in-hole connections.
+
+        By default a bar-bar connection is created between item1 and item2.
+
+        Args:
+            name: Name for the node, should be unique
+            child : [Sheave] will be the nodeA of the connection
+            parent : [Sheave] will be the nodeB of the connection
+            inside: [False] False creates a pinpin connection. True creates a pin-hole type of connection
+            swivel: Rotation angle between the two items. Defaults to 90 for pinpin and 0 for pin-hole
+            rotation_on_parent: Angle of the connecting hinge relative to nodeA or None for default
+            child_rotation: Angle of the nodeB relative to the connecting hinge or None for default
+            swivel_fixed: Fix swivel [True]
+            fixed_to_parent: Fix connecting hinge to nodeA [False]
+            child_fixed: Fix nodeB to connecting hinge [False]
+
+        Note:
+            For pin-hole connections there is no geometrical difference between the pin and the hole. Therefore it is not needed to specify
+            which is the pin and which is the hole
+
+        Returns:
+            Reference to newly created new_geometriccontact
+
+        """
+
+
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+
+        name_prefix = name + vfc.MANAGED_NODE_IDENTIFIER
+        postfixes = [
+            "_axis_on_parent",
+            "_pin_hole_connection",
+            "_axis_on_child",
+            "_connection_axial_rotation",
+        ]
+
+        for pf in postfixes:
+            self._verify_name_available(name_prefix + pf)
+
+        child = self._sheave_from_node(child)
+        parent = self._sheave_from_node(parent)
+
+        assertBool(inside, "inside")
+        assertBool(swivel_fixed, "swivel_fixed")
+        assertBool(fixed_to_parent, "fixed_to_parent")
+        assertBool(child_fixed, "child_fixed")
+
+        GeometricContact._assert_parent_child_possible(parent, child)
+
+        if swivel is None:
+            if inside:
+                swivel = 0
+            else:
+                swivel = 90
+
+        assert1f(swivel, "swivel_angle")
+
+        if rotation_on_parent is not None:
+            assert1f(rotation_on_parent, "rotation_on_parent should be either None or ")
+        if child_rotation is not None:
+            assert1f(child_rotation, "child_rotation should be either None or ")
+
+        if child is None:
+            raise ValueError("child needs to be a sheave-type node")
+        if parent is None:
+            raise ValueError("parent needs to be a sheave-type node")
+
+        if child.parent.parent is None:
+            raise ValueError(
+                f"The parent {child.parent.name} of the child item {child.name} is not located on an axis. Can not create the connection because there is no axis to nodeB"
+            )
+
+        if child.parent.parent.manager is not None:
+            self.print_node_tree()
+            raise ValueError(
+                f"The axis or body that {child.name} is on is already managed by {child.parent.parent.manager.name} and can therefore not be changed - unable to create geometric contact"
+            )
+
+        new_node = GeometricContact(self, name, child, parent)
+        if inside:
+            new_node.set_pin_in_hole_connection()
+        else:
+            new_node.set_pin_pin_connection()
+
+        new_node.swivel = swivel
+        if rotation_on_parent is not None:
+            new_node.rotation_on_parent = rotation_on_parent
+        if child_rotation is not None:
+            new_node.child_rotation = child_rotation
+
+        new_node.fixed_to_parent = fixed_to_parent
+        new_node.child_fixed = child_fixed
+        new_node.swivel_fixed = swivel_fixed
+
+        # self._nodes.append(new_node)
+        return new_node
+
+    def new_waveinteraction(
+        self,
+        name,
+        path,
+        parent=None,
+        offset=None,
+    ) -> WaveInteraction1:
+        """Creates a new *wave interaction* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            path: Path to the hydrodynamic database
+            parent: optional, name of the parent of the node
+            offset: optional, position for the node (x,y,z)
+
+        Returns:
+            Reference to newly created wave-interaction object
+
+        """
+
+        if not parent:
+            raise ValueError("Wave-interaction has to be located on an Axis")
+
+
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._parent_from_node(parent)
+
+        if b is None:
+            raise ValueError("Wave-interaction has to be located on an Axis")
+
+        if offset is not None:
+            assert3f(offset, "Offset ")
+
+        self.get_resource_path(path)  # raises error when resource is not found
+
+        # then create
+        new_node = WaveInteraction1(self, name)
+
+        new_node.path = path
+        new_node.parent = parent
+
+        # and set properties
+        new_node.parent = b
+        if offset is not None:
+            new_node.offset = offset
+
+        return new_node
 
     def new_visual(
         self, name, path, parent=None, offset=None, rotation=None, scale=None
@@ -2581,165 +2579,158 @@ class Scene:
 
         return new_node
 
-    # def new_force(self, name, parent=None, force=None, moment=None) -> Force:
-    #     """Creates a new *force* node and adds it to the scene.
-    #
-    #     Args:
-    #         name: Name for the node, should be unique
-    #         parent: name of the parent of the node [Poi]
-    #         force: optional, global force on the node (x,y,z)
-    #         moment: optional, global force on the node (x,y,z)
-    #
-    #
-    #     Returns:
-    #         Reference to newly created force
-    #
-    #     """
-    #
-    #
-    #
-    #     # first check
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #     b = self._poi_from_node(parent)
-    #
-    #     if force is not None:
-    #         assert3f(force, "Force ")
-    #
-    #     if moment is not None:
-    #         assert3f(moment, "Moment ")
-    #
-    #     # then create
-    #     new_node = Force(self, name)
-    #
-    #     # and set properties
-    #     if b is not None:
-    #         new_node.parent = b
-    #     if force is not None:
-    #         new_node.force = force
-    #     if moment is not None:
-    #         new_node.moment = moment
-    #
-    #     # self._nodes.append(new_node)
-    #     return new_node
-    #
-    # def _new_area(self, is_wind, name, parent, direction, Cd, A, areakind):
-    #     """Creates a new WindArea* node and adds it to the scene.
-    #
-    #     Args:
-    #         name: Name for the node, should be unique
-    #         parent: name of the parent of the node [Poi]
-    #         Cd : Cd-coefficient
-    #         A  : Area
-    #         kind : interpretation of the direction (Area.PLANE, AREA.SPHERE, AREA.CYLINDER)
-    #         direction : direction of the area
-    #
-    #     Returns:
-    #         Reference to newly created wind area
-    #
-    #     """
-    #
-    #
-    #
-    #     # first check
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #     b = self._poi_from_node(parent)
-    #
-    #     assert3f(direction, "Direction ")
-    #     assert np.linalg.norm(direction) > 0, ValueError("Direction shall not be 0,0,0")
-    #     assert1f_positive_or_zero(Cd, "Cd coefficient")
-    #     assert1f_positive_or_zero(A, "Area ")
-    #     assert isinstance(areakind, AreaKind)
-    #
-    #     a = self._vfc.new_wind(name)
-    #
-    #     if is_wind:
-    #         a.isWind = True
-    #         new_node = WindArea(self, a)
-    #     else:
-    #         a.isWind = False
-    #         new_node = CurrentArea(self, a)
-    #
-    #     # and set properties
-    #     if b is not None:
-    #         new_node.parent = b
-    #     new_node.areakind = areakind
-    #     new_node.direction = direction
-    #     new_node.Cd = Cd
-    #     new_node.A = A
-    #
-    #     # self._nodes.append(new_node)
-    #     return new_node
-    #
-    # def new_windarea(
-    #     self,
-    #     name,
-    #     parent=None,
-    #     direction=(0, 1, 0),
-    #     Cd=2,
-    #     A=10,
-    #     areakind=AreaKind.PLANE,
-    # ) -> WindArea:
-    #     """Creates a new *WindArea* node and adds it to the scene.
-    #
-    #     Args:
-    #         name: Name for the node, should be unique
-    #         parent: name of the parent of the node [Poi]
-    #         Cd : Cd-coefficient
-    #         A  : Area
-    #         kind : interpretation of the direction (Area.PLANE, AREA.SPHERE, AREA.CYLINDER)
-    #         direction : direction of the area
-    #
-    #     Returns:
-    #         Reference to newly created wind area
-    #
-    #     """
-    #
-    #     return self._new_area(
-    #         True,
-    #         name=name,
-    #         parent=parent,
-    #         direction=direction,
-    #         Cd=Cd,
-    #         A=A,
-    #         areakind=areakind,
-    #     )
-    #
-    # def new_currentarea(
-    #     self,
-    #     name,
-    #     parent=None,
-    #     direction=(0, 1, 0),
-    #     Cd=2,
-    #     A=10,
-    #     areakind=AreaKind.PLANE,
-    # ) -> CurrentArea:
-    #     """Creates a new *CurrentArea* node and adds it to the scene.
-    #
-    #     Args:
-    #         name: Name for the node, should be unique
-    #         parent: name of the parent of the node [Poi]
-    #         Cd : Cd-coefficient
-    #         A  : Area
-    #         kind : interpretation of the direction (Area.PLANE, AREA.SPHERE, AREA.CYLINDER)
-    #         direction : direction of the area
-    #
-    #     Returns:
-    #         Reference to newly created wind area
-    #
-    #     """
-    #
-    #     return self._new_area(
-    #         False,
-    #         name=name,
-    #         parent=parent,
-    #         direction=direction,
-    #         Cd=Cd,
-    #         A=A,
-    #         areakind=areakind,
-    #     )
-    #
+    def new_force(self, name, parent=None, force=None, moment=None) -> Force:
+        """Creates a new *force* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: name of the parent of the node [Poi]
+            force: optional, global force on the node (x,y,z)
+            moment: optional, global force on the node (x,y,z)
+
+
+        Returns:
+            Reference to newly created force
+
+        """
+
+
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._poi_from_node(parent)
+
+        if force is not None:
+            assert3f(force, "Force ")
+
+        if moment is not None:
+            assert3f(moment, "Moment ")
+
+        # then create
+        new_node = Force(self, name)
+
+        # and set properties
+        if b is not None:
+            new_node.parent = b
+        if force is not None:
+            new_node.force = force
+        if moment is not None:
+            new_node.moment = moment
+
+        # self._nodes.append(new_node)
+        return new_node
+
+    def _new_area(self, is_wind, name, parent, direction, Cd, A, areakind):
+        """Creates a new WindArea* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: name of the parent of the node [Poi]
+            Cd : Cd-coefficient
+            A  : Area
+            kind : interpretation of the direction (Area.PLANE, AREA.SPHERE, AREA.CYLINDER)
+            direction : direction of the area
+
+        Returns:
+            Reference to newly created wind area
+
+        """
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._poi_from_node(parent)
+
+        assert3f(direction, "Direction ")
+        assert np.linalg.norm(direction) > 0, ValueError("Direction shall not be 0,0,0")
+        assert1f_positive_or_zero(Cd, "Cd coefficient")
+        assert1f_positive_or_zero(A, "Area ")
+        assert isinstance(areakind, AreaKind)
+
+        if is_wind:
+            new_node = WindArea(self, name)
+        else:
+            new_node = CurrentArea(self, name)
+
+        # and set properties
+        if b is not None:
+            new_node.parent = b
+        new_node.areakind = areakind
+        new_node.direction = direction
+        new_node.Cd = Cd
+        new_node.A = A
+
+        return new_node
+
+    def new_windarea(
+        self,
+        name,
+        parent=None,
+        direction=(0, 1, 0),
+        Cd=2,
+        A=10,
+        areakind=AreaKind.PLANE,
+    ) -> WindArea:
+        """Creates a new *WindArea* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: name of the parent of the node [Poi]
+            Cd : Cd-coefficient
+            A  : Area
+            kind : interpretation of the direction (Area.PLANE, AREA.SPHERE, AREA.CYLINDER)
+            direction : direction of the area
+
+        Returns:
+            Reference to newly created wind area
+
+        """
+
+        return self._new_area(
+            True,
+            name=name,
+            parent=parent,
+            direction=direction,
+            Cd=Cd,
+            A=A,
+            areakind=areakind,
+        )
+
+    def new_currentarea(
+        self,
+        name,
+        parent=None,
+        direction=(0, 1, 0),
+        Cd=2,
+        A=10,
+        areakind=AreaKind.PLANE,
+    ) -> CurrentArea:
+        """Creates a new *CurrentArea* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: name of the parent of the node [Poi]
+            Cd : Cd-coefficient
+            A  : Area
+            kind : interpretation of the direction (Area.PLANE, AREA.SPHERE, AREA.CYLINDER)
+            direction : direction of the area
+
+        Returns:
+            Reference to newly created wind area
+
+        """
+
+        return self._new_area(
+            False,
+            name=name,
+            parent=parent,
+            direction=direction,
+            Cd=Cd,
+            A=A,
+            areakind=areakind,
+        )
+
     def new_circle(self, name, parent, axis, radius=0.0) -> Circle:
         """Creates a new *sheave* node and adds it to the scene.
 
@@ -2776,695 +2767,667 @@ class Scene:
         # self._nodes.append(new_node)
         return new_node
 
-    # def new_hydspring(
-    #     self,
-    #     name,
-    #     parent,
-    #     cob,
-    #     BMT,
-    #     BML,
-    #     COFX,
-    #     COFY,
-    #     kHeave,
-    #     waterline,
-    #     displacement_kN,
-    # ) -> HydSpring:
-    #     """Creates a new *hydspring* node and adds it to the scene.
-    #
-    #     Args:
-    #         name: Name for the node, should be unique
-    #         parent: name of the parent of the node [Axis]
-    #         cob: position of the CoB (x,y,z) in the parent axis system
-    #         BMT: Vertical distance between CoB and meta-center for roll
-    #         BML: Vertical distance between CoB and meta-center for pitch
-    #         COFX: X-location of center of flotation (center of waterplane) relative to CoB
-    #         COFY: Y-location of center of flotation (center of waterplane) relative to CoB
-    #         kHeave : heave stiffness (typically Awl * rho * g)
-    #         waterline : Z-position (elevation) of the waterline relative to CoB
-    #         displacement_kN : displacement (typically volume * rho * g)
-    #
-    #
-    #     Returns:
-    #         Reference to newly created hydrostatic spring
-    #
-    #     """
-    #
-    #
-    #
-    #     # first check
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #     b = self._parent_from_node(parent)
-    #     assert3f(cob, "CoB ")
-    #     assert1f(BMT, "BMT ")
-    #     assert1f(BML, "BML ")
-    #     assert1f(COFX, "COFX ")
-    #     assert1f(COFY, "COFY ")
-    #     assert1f(kHeave, "kHeave ")
-    #     assert1f(waterline, "waterline ")
-    #     assert1f(displacement_kN, "displacement_kN ")
-    #
-    #     # then create
-    #     a = self._vfc.new_hydspring(name)
-    #     new_node = HydSpring(self, a)
-    #
-    #     new_node.cob = cob
-    #     new_node.parent = b
-    #     new_node.BMT = BMT
-    #     new_node.BML = BML
-    #     new_node.COFX = COFX
-    #     new_node.COFY = COFY
-    #     new_node.kHeave = kHeave
-    #     new_node.waterline = waterline
-    #     new_node.displacement_kN = displacement_kN
-    #
-    #     # self._nodes.append(new_node)
-    #
-    #     return new_node
-    #
-    # def new_linear_connector_6d(self, name, secondary, main, stiffness=None) -> LC6d:
-    #     """Creates a new *linear connector 6d* node and adds it to the scene. The node connects secondary to main.
-    #
-    #     Args:
-    #         name: Name for the node, should be unique
-    #         main: Main axis system [Axis]
-    #         secondary: Secondary axis system [Axis]
-    #         stiffness: optional, connection stiffness (x,y,z, rx,ry,rz)
-    #
-    #     See :py:class:`LC6d` for details
-    #
-    #     Returns:
-    #         Reference to newly created connector
-    #
-    #     """
-    #
-    #
-    #
-    #     # first check
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #     m = self._parent_from_node(main)
-    #     s = self._parent_from_node(secondary)
-    #
-    #     if stiffness is not None:
-    #         assert6f(stiffness, "Stiffness ")
-    #     else:
-    #         stiffness = (0, 0, 0, 0, 0, 0)
-    #
-    #     # then create
-    #
-    #
-    #     new_node = LC6d(self, name)
-    #
-    #     # and set properties
-    #     new_node.main = m
-    #     new_node.secondary = s
-    #     new_node.stiffness = stiffness
-    #
-    #     # self._nodes.append(new_node)
-    #     return new_node
-    #
-    # def new_connector2d(
-    #     self, name, nodeA, nodeB, k_linear=0, k_angular=0
-    # ) -> Connector2d:
-    #     """Creates a new *new_connector2d* node and adds it to the scene.
-    #
-    #     Args:
-    #         name: Name for the node, should be unique
-    #         nodeB: First axis system [Axis]
-    #         nodeA: Second axis system [Axis]
-    #
-    #         k_linear : linear stiffness in kN/m
-    #         k_angular : angular stiffness in kN*m / rad
-    #
-    #     Returns:
-    #         Reference to newly created connector2d
-    #
-    #     """
-    #
-    #
-    #
-    #     # first check
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #     m = self._parent_from_node(nodeA)
-    #     s = self._parent_from_node(nodeB)
-    #
-    #     assert1f(k_linear, "Linear stiffness")
-    #     assert1f(k_angular, "Angular stiffness")
-    #
-    #     # then create
-    #
-    #
-    #     new_node = Connector2d(self, name)
-    #
-    #     # and set properties
-    #     new_node.nodeA = m
-    #     new_node.nodeB = s
-    #     new_node.k_linear = k_linear
-    #     new_node.k_angular = k_angular
-    #
-    #     # self._nodes.append(new_node)
-    #     return new_node
-    #
-    # def new_beam(
-    #     self,
-    #     name,
-    #     nodeA,
-    #     nodeB,
-    #     EIy=0,
-    #     EIz=0,
-    #     GIp=0,
-    #     EA=0,
-    #     L=None,
-    #     mass=0,
-    #     n_segments=1,
-    #     tension_only=False,
-    # ) -> Beam:
-    #     """Creates a new *beam* node and adds it to the scene.
-    #
-    #     Args:
-    #         name: Name for the node, should be unique
-    #         nodeA: First axis system [Axis]
-    #         nodeB: Second axis system [Axis]
-    #
-    #         All stiffness terms default to 0
-    #         The length defaults to the distance between nodeA and nodeB
-    #
-    #
-    #     See :py:class:`LinearBeam` for details
-    #
-    #     Returns:
-    #         Reference to newly created beam
-    #
-    #     """
-    #
-    #
-    #
-    #     # first check
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #     m = self._parent_from_node(nodeA)
-    #     s = self._parent_from_node(nodeB)
-    #
-    #     if L is None:
-    #         L = np.linalg.norm(
-    #             np.array(m.global_position) - np.array(s.global_position)
-    #         )
-    #     else:
-    #         if L <= 0:
-    #             raise ValueError("L should be > 0 as stiffness is defined per length.")
-    #
-    #     assert1f_positive_or_zero(EIy, "EIy should be >= 0")
-    #     assert1f_positive_or_zero(EIz, "EIz should be >= 0")
-    #     assert1f_positive_or_zero(GIp, "GIp should be >= 0")
-    #     assert1f_positive_or_zero(EA, "EA should be >= 0")
-    #     assertBool(tension_only, "tension_only should be bool")
-    #     assert1f(mass, "Mass shall be a number")
-    #     n_segments = int(round(n_segments))
-    #
-    #     # then create
-    #
-    #     new_node = Beam(self, name)
-    #
-    #     # and set properties
-    #     new_node.nodeA = m
-    #     new_node.nodeB = s
-    #     new_node.EIy = EIy
-    #     new_node.EIz = EIz
-    #     new_node.GIp = GIp
-    #     new_node.EA = EA
-    #     new_node.L = L
-    #     new_node.mass = mass
-    #     new_node.n_segments = n_segments
-    #     new_node.tension_only = tension_only
-    #
-    #     # self._nodes.append(new_node)
-    #     return new_node
-    #
-    # def new_buoyancy(self, name, parent=None) -> Buoyancy:
-    #     """Creates a new *buoyancy* node and adds it to the scene.
-    #
-    #     Args:
-    #         name: Name for the node, should be unique
-    #         parent: optional, name of the parent of the node
-    #
-    #
-    #     Returns:
-    #         Reference to newly created buoyancy
-    #
-    #     """
-    #
-    #
-    #
-    #     # first check
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #     b = self._parent_from_node(parent)
-    #
-    #     if b is None:
-    #         raise ValueError("A valid parent must be defined for a Buoyancy node")
-    #
-    #     # then create
-    #     new_node = Buoyancy(self, name)
-    #
-    #     # and set properties
-    #     if b is not None:
-    #         new_node.parent = b
-    #
-    #     # self._nodes.append(new_node)
-    #     return new_node
-    #
-    # def new_tank(self, name, parent=None, density=1.025, free_flooding=False) -> Tank:
-    #     """Creates a new *tank* node and adds it to the scene.
-    #
-    #     Args:
-    #         name: Name for the node, should be unique
-    #         parent: optional, name of the parent of the node
-    #
-    #     Returns:
-    #         Reference to newly created Tank
-    #
-    #     """
-    #
-    #
-    #
-    #     # first check
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #     b = self._parent_from_node(parent)
-    #
-    #     if b is None:
-    #         raise ValueError("A valid parent must be defined for a Tank")
-    #
-    #     assert isinstance(free_flooding, bool), ValueError(
-    #         "free_flooding shall be True or False"
-    #     )
-    #
-    #     assert1f(density, "density")
-    #
-    #     # then create
-    #     new_node = Tank(self, name)
-    #     new_node.density = density
-    #
-    #     # and set properties
-    #     if b is not None:
-    #         new_node.parent = b
-    #
-    #     new_node.free_flooding = free_flooding
-    #
-    #     # self._nodes.append(new_node)
-    #     return new_node
-    #
-    # def new_contactmesh(self, name, parent=None) -> ContactMesh:
-    #     """Creates a new *contactmesh* node and adds it to the scene.
-    #
-    #     Args:
-    #         name: Name for the node, should be unique
-    #         parent: optional, name of the parent of the node
-    #
-    #     Returns:
-    #         Reference to newly created contact mesh
-    #
-    #     """
-    #
-    #
-    #
-    #     # first check
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #     b = self._parent_from_node(parent)
-    #
-    #     # then create
-    #     new_node = ContactMesh(self, name)
-    #
-    #     # and set properties
-    #     if b is not None:
-    #         new_node.parent = b
-    #
-    #     # self._nodes.append(new_node)
-    #     return new_node
-    #
-    # def new_spmt(
-    #     self,
-    #     name,
-    #     parent,
-    #     reference_force=0,
-    #     reference_extension=1.5,
-    #     k=1e5,
-    #     spacing_length=1.4,
-    #     spacing_width=1.45,
-    #     n_length=6,
-    #     n_width=2,
-    #     meshes=None,
-    #     use_friction=False,
-    # ) -> SPMT:
-    #     """Creates a new *SPMT* node and adds it to the scene.
-    #
-    #     Args:
-    #         name: Name for the node, should be unique
-    #         parent: name of the parent of the node [Axis]
-    #         reference_force : total force (sum of all axles) when at reference extension [kN]
-    #         reference_extension : nominal extension of axles for reference force [m]
-    #         k : force variation as result of average axle extension relative to reference_extension
-    #         spacing_length : distance between axles in length direction
-    #         spacing_width : distance between axles in tranverse direction
-    #         n_length : number of axles in length direction
-    #         n_width : number of axles in transverse direction
-    #         meshes : [] List of contact meshes that the SPMT sees. If empty then the SPMT sees all contact meshes.
-    #         use_friction : (True) Use friction
-    #
-    #
-    #     Returns:
-    #         Reference to newly created SPMT
-    #
-    #     """
-    #
-    #
-    #
-    #     # first check
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #     parent = self._node_from_node_or_str(parent)
-    #     assert isinstance(parent, Frame), ValueError(
-    #         f"Parent should be an axis system or derived, not a {type(parent)}"
-    #     )
-    #
-    #     assert1f_positive_or_zero(reference_force, "reference force")
-    #     assert1f_positive_or_zero(reference_extension, "reference extension")
-    #     assert1f_positive(k, "stiffness (k)")
-    #     assert1f_positive(spacing_length, "spacing length")
-    #     assert1f_positive(spacing_width, "spacing width")
-    #     assert1f_positive(n_length, "n-length")
-    #     assert1f_positive(n_width, "n-width")
-    #     assertBool(use_friction, "use_friction")
-    #
-    #     if meshes is not None:
-    #         meshes = make_iterable(meshes)
-    #         for mesh in meshes:
-    #             test = self._node_from_node(
-    #                 mesh, ContactMesh
-    #             )  # throws error if not found
-    #
-    #     # then create
-    #
-    #
-    #     new_node = SPMT(self, name)
-    #
-    #     # and set properties
-    #     new_node.parent = parent
-    #
-    #     new_node._reference_force = reference_force
-    #     new_node._reference_extension = reference_extension
-    #     new_node._k = k
-    #     new_node._spacing_length = spacing_length
-    #     new_node._spacing_width = spacing_width
-    #     new_node._n_length = n_length
-    #     new_node._n_width = n_width
-    #     new_node.use_friction = use_friction
-    #     new_node._update_vfNode()
-    #
-    #     if meshes is not None:
-    #         new_node.meshes = meshes
-    #
-    #     # self._nodes.append(new_node)
-    #     return new_node
-    #
-    # def new_contactball(
-    #     self, name, parent=None, radius=1, k=9999, meshes=None
-    # ) -> ContactBall:
-    #     """Creates a new *force* node and adds it to the scene.
-    #
-    #     Args:
-    #         name: Name for the node, should be unique
-    #         parent: name of the parent of the node [Poi]
-    #         force: optional, global force on the node (x,y,z)
-    #         moment: optional, global force on the node (x,y,z)
-    #
-    #
-    #     Returns:
-    #         Reference to newly created force
-    #
-    #     """
-    #
-    #
-    #
-    #     # first check
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #     b = self._poi_from_node(parent)
-    #
-    #     assert1f_positive_or_zero(radius, "Radius ")
-    #     assert1f_positive_or_zero(k, "k ")
-    #
-    #     if meshes is not None:
-    #         meshes = make_iterable(meshes)
-    #         for mesh in meshes:
-    #             test = self._node_from_node(mesh, ContactMesh)
-    #
-    #     # then create
-    #
-    #
-    #     new_node = ContactBall(self, name)
-    #
-    #     # and set properties
-    #     if b is not None:
-    #         new_node.parent = b
-    #     if k is not None:
-    #         new_node.k = k
-    #     if radius is not None:
-    #         new_node.radius = radius
-    #
-    #     if meshes is not None:
-    #         new_node.meshes = meshes
-    #
-    #     # self._nodes.append(new_node)
-    #     return new_node
-    #
-    # def new_ballastsystem(self, name, parent: Frame or str) -> BallastSystem:
-    #     """Creates a new *rigidbody* node and adds it to the scene.
-    #
-    #     Args:
-    #         name: Name for the node, should be unique
-    #         parent: name of the parent of the ballast system (ie: the vessel axis system)
-    #
-    #     Examples:
-    #         scene.new_ballastsystem("cheetah_ballast", parent="Cheetah")
-    #
-    #     Returns:
-    #         Reference to newly created BallastSystem
-    #
-    #     """
-    #
-    #
-    #
-    #     # check input
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #     b = self._parent_from_node(parent)
-    #
-    #     parent = self._parent_from_node(parent)  # handles verification of type as well
-    #
-    #     # make elements
-    #     r = BallastSystem(self, name, parent)
-    #
-    #     # self._nodes.append(r)
-    #     return r
-    #
-    # def new_sling(
-    #     self,
-    #     name,
-    #     length:float=-1,
-    #     EA=None,
-    #     mass=0.1,
-    #     endA=None,
-    #     endB=None,
-    #     LeyeA=None,
-    #     LeyeB=None,
-    #     LspliceA=None,
-    #     LspliceB=None,
-    #     diameter=0.1,
-    #     sheaves=None,
-    #     k_total=None,
-    # ) -> Sling:
-    #     """
-    #     Creates a new sling, adds it to the scene and returns a reference to the newly created object.
-    #
-    #     See Also:
-    #         Sling
-    #
-    #     Args:
-    #         name:    name
-    #         length:  length of the sling [m], defaults to distance between endpoints
-    #         EA:      stiffness in kN, default: 1.0 (note: equilibrium will fail if mass >0 and EA=0)
-    #         k_total: stiffness in kN/m, default: None
-    #         mass:    mass in mT, default  0.1
-    #         endA:    element to connect end A to [poi, circle]
-    #         endB:    element to connect end B to [poi, circle]
-    #         LeyeA:   inside eye on side A length [m], defaults to 1/6th of length
-    #         LeyeB:   inside eye on side B length [m], defaults to 1/6th of length
-    #         LspliceA: splice length on side A [m] (the part where the cable is connected to itself)
-    #         LspliceB: splice length on side B [m] (the part where the cable is connected to itself)
-    #         diameter: cable diameter in m, defaul to 0.1
-    #         sheaves:  optional: list of sheaves/pois that the sling runs over
-    #
-    #     Returns:
-    #         a reference to the newly created Sling object.
-    #
-    #     """
-    #
-    #
-    #
-    #     # first check
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #
-    #     name_prefix = name + vfc.MANAGED_NODE_IDENTIFIER
-    #     postfixes = [
-    #         "_spliceA",
-    #         "_spliceA",
-    #         "_spliceA2",
-    #         "_spliceAM",
-    #         "_spliceA_visual",
-    #         "spliceB",
-    #         "_spliceB1",
-    #         "_spliceB2",
-    #         "_spliceBM",
-    #         "_spliceB_visual",
-    #         "_main_part",
-    #         "_eyeA",
-    #         "_eyeB",
-    #     ]
-    #
-    #     for pf in postfixes:
-    #         self._verify_name_available(name_prefix + pf)
-    #
-    #     endA = self._poi_or_sheave_from_node(endA)
-    #     endB = self._poi_or_sheave_from_node(endB)
-    #
-    #     if length == -1:  # default
-    #         if endA is None or endB is None:
-    #             raise ValueError(
-    #                 "Length for cable is not provided, so defaults to distance between endpoints; but at least one of the endpoints is None."
-    #             )
-    #
-    #         length = np.linalg.norm(
-    #             np.array(endA.global_position) - np.array(endB.global_position)
-    #         )
-    #
-    #     if LeyeA is None:  # default
-    #         LeyeA = length / 6
-    #     if LeyeB is None:  # default
-    #         LeyeB = length / 6
-    #     if LspliceA is None:  # default
-    #         LspliceA = length / 6
-    #     if LspliceB is None:  # default
-    #         LspliceB = length / 6
-    #
-    #     if sheaves is None:
-    #         sheaves = []
-    #
-    #     if EA is not None and k_total is not None:
-    #         warnings.warn(
-    #             "Value for EA is given by will not be used as k_total is defined as well. Value for EA will be derived from k_total"
-    #         )
-    #
-    #     if EA is None:
-    #         EA = 1  # possibly overwritten by k_total
-    #
-    #     assert1f_positive_or_zero(diameter, "Diameter")
-    #     assert1f_positive_or_zero(mass, "mass")
-    #
-    #     assert1f_positive(length, "Length")
-    #     assert1f_positive(LeyeA, "length of eye A")
-    #     assert1f_positive(LeyeB, "length of eye B")
-    #     assert1f_positive(LspliceA, "length of splice A")
-    #     assert1f_positive(LspliceB, "length of splice B")
-    #
-    #     if k_total is not None:
-    #         assert1f_positive_or_zero(k_total, "Total stiffness (k_total)")
-    #
-    #     for s in sheaves:
-    #         _ = self._poi_or_sheave_from_node(s)
-    #
-    #     # then make element
-    #     # __init__(self, scene, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
-    #
-    #     node = Sling(
-    #         scene=self,
-    #         name=name,
-    #         length=length,
-    #         LeyeA=LeyeA,
-    #         LeyeB=LeyeB,
-    #         LspliceA=LspliceA,
-    #         LspliceB=LspliceB,
-    #         diameter=diameter,
-    #         EA=EA,
-    #         mass=mass,
-    #         endA=endA,
-    #         endB=endB,
-    #         sheaves=sheaves,
-    #     )
-    #
-    #     if k_total is not None:
-    #         node.k_total = k_total
-    #
-    #     # self._nodes.append(node)
-    #
-    #     return node
-    #
-    # def new_shackle(self, name, kind="GP500") -> Shackle:
-    #     """
-    #     Creates a new shackle, adds it to the scene and returns a reference to the newly created object.
-    #
-    #     See Also:
-    #         Shackle
-    #
-    #     Args:
-    #         name:   name
-    #         kind:  type of shackle; eg 'GP500'
-    #
-    #
-    #     Returns:
-    #         a reference to the newly created Shackle object.
-    #
-    #     """
-    #
-    #
-    #
-    #     # first check
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #
-    #     name_prefix = name + vfc.MANAGED_NODE_IDENTIFIER
-    #     postfixes = [
-    #         "_body",
-    #         "_pin_point",
-    #         "_bow_point",
-    #         "_inside_circle_center",
-    #         "_inside",
-    #         "_visual",
-    #     ]
-    #     for pf in postfixes:
-    #         self._verify_name_available(name_prefix + pf)
-    #
-    #     # then make element
-    #
-    #     # make elements
-    #     #
-    #     # a = self._vfc.new_axis(name)
-    #     #
-    #     # p = self._vfc.new_poi(name + vfc.VF_NAME_SPLIT + "cog")
-    #     # p.parent = a
-    #     #
-    #     # g = self._vfc.new_force(name + vfc.VF_NAME_SPLIT + "gravity")
-    #     # g.parent = p
-    #
-    #     node = Shackle(scene=self, name=name, kind=kind)
-    #
-    #     # self._nodes.append(node)
-    #
-    #     return node
+    def new_hydspring(
+        self,
+        name,
+        parent,
+        cob,
+        BMT,
+        BML,
+        COFX,
+        COFY,
+        kHeave,
+        waterline,
+        displacement_kN,
+    ) -> HydSpring:
+        """Creates a new *hydspring* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: name of the parent of the node [Axis]
+            cob: position of the CoB (x,y,z) in the parent axis system
+            BMT: Vertical distance between CoB and meta-center for roll
+            BML: Vertical distance between CoB and meta-center for pitch
+            COFX: X-location of center of flotation (center of waterplane) relative to CoB
+            COFY: Y-location of center of flotation (center of waterplane) relative to CoB
+            kHeave : heave stiffness (typically Awl * rho * g)
+            waterline : Z-position (elevation) of the waterline relative to CoB
+            displacement_kN : displacement (typically volume * rho * g)
+
+
+        Returns:
+            Reference to newly created hydrostatic spring
+
+        """
+
+
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._parent_from_node(parent)
+        assert3f(cob, "CoB ")
+        assert1f(BMT, "BMT ")
+        assert1f(BML, "BML ")
+        assert1f(COFX, "COFX ")
+        assert1f(COFY, "COFY ")
+        assert1f(kHeave, "kHeave ")
+        assert1f(waterline, "waterline ")
+        assert1f(displacement_kN, "displacement_kN ")
+
+        # then create
+
+        new_node = HydSpring(self, name)
+
+        new_node.cob = cob
+        new_node.parent = b
+        new_node.BMT = BMT
+        new_node.BML = BML
+        new_node.COFX = COFX
+        new_node.COFY = COFY
+        new_node.kHeave = kHeave
+        new_node.waterline = waterline
+        new_node.displacement_kN = displacement_kN
+
+        # self._nodes.append(new_node)
+
+        return new_node
+
+    def new_linear_connector_6d(self, name, secondary, main, stiffness=None) -> LC6d:
+        """Creates a new *linear connector 6d* node and adds it to the scene. The node connects secondary to main.
+
+        Args:
+            name: Name for the node, should be unique
+            main: Main axis system [Axis]
+            secondary: Secondary axis system [Axis]
+            stiffness: optional, connection stiffness (x,y,z, rx,ry,rz)
+
+        See :py:class:`LC6d` for details
+
+        Returns:
+            Reference to newly created connector
+
+        """
+
+
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        m = self._parent_from_node(main)
+        s = self._parent_from_node(secondary)
+
+        if stiffness is not None:
+            assert6f(stiffness, "Stiffness ")
+        else:
+            stiffness = (0, 0, 0, 0, 0, 0)
+
+        # then create
+        new_node = LC6d(self, name)
+
+        # and set properties
+        new_node.main = m
+        new_node.secondary = s
+        new_node.stiffness = stiffness
+
+        return new_node
+
+    def new_connector2d(
+        self, name, nodeA, nodeB, k_linear=0, k_angular=0
+    ) -> Connector2d:
+        """Creates a new *new_connector2d* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            nodeB: First axis system [Axis]
+            nodeA: Second axis system [Axis]
+
+            k_linear : linear stiffness in kN/m
+            k_angular : angular stiffness in kN*m / rad
+
+        Returns:
+            Reference to newly created connector2d
+
+        """
+
+
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        m = self._parent_from_node(nodeA)
+        s = self._parent_from_node(nodeB)
+
+        assert1f(k_linear, "Linear stiffness")
+        assert1f(k_angular, "Angular stiffness")
+
+        # then create
+        new_node = Connector2d(self, name)
+
+        # and set properties
+        new_node.nodeA = m
+        new_node.nodeB = s
+        new_node.k_linear = k_linear
+        new_node.k_angular = k_angular
+
+        return new_node
+
+    def new_beam(
+        self,
+        name,
+        nodeA,
+        nodeB,
+        EIy=0,
+        EIz=0,
+        GIp=0,
+        EA=0,
+        L=None,
+        mass=0,
+        n_segments=1,
+        tension_only=False,
+    ) -> Beam:
+        """Creates a new *beam* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            nodeA: First axis system [Axis]
+            nodeB: Second axis system [Axis]
+
+            All stiffness terms default to 0
+            The length defaults to the distance between nodeA and nodeB
+
+
+        See :py:class:`LinearBeam` for details
+
+        Returns:
+            Reference to newly created beam
+
+        """
+
+
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        m = self._parent_from_node(nodeA)
+        s = self._parent_from_node(nodeB)
+
+        if L is None:
+            L = np.linalg.norm(
+                np.array(m.global_position) - np.array(s.global_position)
+            )
+        else:
+            if L <= 0:
+                raise ValueError("L should be > 0 as stiffness is defined per length.")
+
+        assert1f_positive_or_zero(EIy, "EIy should be >= 0")
+        assert1f_positive_or_zero(EIz, "EIz should be >= 0")
+        assert1f_positive_or_zero(GIp, "GIp should be >= 0")
+        assert1f_positive_or_zero(EA, "EA should be >= 0")
+        assertBool(tension_only, "tension_only should be bool")
+        assert1f(mass, "Mass shall be a number")
+        n_segments = int(round(n_segments))
+
+        # then create
+
+        new_node = Beam(self, name)
+
+        # and set properties
+        new_node.nodeA = m
+        new_node.nodeB = s
+        new_node.EIy = EIy
+        new_node.EIz = EIz
+        new_node.GIp = GIp
+        new_node.EA = EA
+        new_node.L = L
+        new_node.mass = mass
+        new_node.n_segments = n_segments
+        new_node.tension_only = tension_only
+
+        # self._nodes.append(new_node)
+        return new_node
+
+    def new_buoyancy(self, name, parent=None) -> Buoyancy:
+        """Creates a new *buoyancy* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: optional, name of the parent of the node
+
+
+        Returns:
+            Reference to newly created buoyancy
+
+        """
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._parent_from_node(parent)
+
+        if b is None:
+            raise ValueError("A valid parent must be defined for a Buoyancy node")
+
+        # then create
+        new_node = Buoyancy(self, name)
+
+        # and set properties
+        if b is not None:
+            new_node.parent = b
+
+        return new_node
+
+    def new_tank(self, name, parent=None, density=1.025, free_flooding=False) -> Tank:
+        """Creates a new *tank* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: optional, name of the parent of the node
+
+        Returns:
+            Reference to newly created Tank
+
+        """
+
+
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._parent_from_node(parent)
+
+        if b is None:
+            raise ValueError("A valid parent must be defined for a Tank")
+
+        assert isinstance(free_flooding, bool), ValueError(
+            "free_flooding shall be True or False"
+        )
+
+        assert1f(density, "density")
+
+        # then create
+        new_node = Tank(self, name)
+        new_node.density = density
+
+        # and set properties
+        if b is not None:
+            new_node.parent = b
+
+        new_node.free_flooding = free_flooding
+
+        # self._nodes.append(new_node)
+        return new_node
+
+    def new_contactmesh(self, name, parent=None) -> ContactMesh:
+        """Creates a new *contactmesh* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: optional, name of the parent of the node
+
+        Returns:
+            Reference to newly created contact mesh
+
+        """
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._parent_from_node(parent)
+
+        # then create
+        new_node = ContactMesh(self, name)
+
+        # and set properties
+        if b is not None:
+            new_node.parent = b
+
+        # self._nodes.append(new_node)
+        return new_node
+
+    def new_spmt(
+        self,
+        name,
+        parent,
+        reference_force=0,
+        reference_extension=1.5,
+        k=1e5,
+        spacing_length=1.4,
+        spacing_width=1.45,
+        n_length=6,
+        n_width=2,
+        meshes=None,
+        use_friction=False,
+    ) -> SPMT:
+        """Creates a new *SPMT* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: name of the parent of the node [Axis]
+            reference_force : total force (sum of all axles) when at reference extension [kN]
+            reference_extension : nominal extension of axles for reference force [m]
+            k : force variation as result of average axle extension relative to reference_extension
+            spacing_length : distance between axles in length direction
+            spacing_width : distance between axles in tranverse direction
+            n_length : number of axles in length direction
+            n_width : number of axles in transverse direction
+            meshes : [] List of contact meshes that the SPMT sees. If empty then the SPMT sees all contact meshes.
+            use_friction : (True) Use friction
+
+
+        Returns:
+            Reference to newly created SPMT
+
+        """
+
+
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        parent = self._node_from_node_or_str(parent)
+        assert isinstance(parent, Frame), ValueError(
+            f"Parent should be an axis system or derived, not a {type(parent)}"
+        )
+
+        assert1f_positive_or_zero(reference_force, "reference force")
+        assert1f_positive_or_zero(reference_extension, "reference extension")
+        assert1f_positive(k, "stiffness (k)")
+        assert1f_positive(spacing_length, "spacing length")
+        assert1f_positive(spacing_width, "spacing width")
+        assert1f_positive(n_length, "n-length")
+        assert1f_positive(n_width, "n-width")
+        assertBool(use_friction, "use_friction")
+
+        if meshes is not None:
+            meshes = make_iterable(meshes)
+            for mesh in meshes:
+                test = self._node_from_node(
+                    mesh, ContactMesh
+                )  # throws error if not found
+
+        # then create
+
+
+        new_node = SPMT(self, name)
+
+        # and set properties
+        new_node.parent = parent
+
+        new_node._reference_force = reference_force
+        new_node._reference_extension = reference_extension
+        new_node._k = k
+        new_node._spacing_length = spacing_length
+        new_node._spacing_width = spacing_width
+        new_node._n_length = n_length
+        new_node._n_width = n_width
+        new_node.use_friction = use_friction
+        new_node._update_vfNode()
+
+        if meshes is not None:
+            new_node.meshes = meshes
+
+        # self._nodes.append(new_node)
+        return new_node
+
+    def new_contactball(
+        self, name, parent=None, radius=1, k=9999, meshes=None
+    ) -> ContactBall:
+        """Creates a new *force* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: name of the parent of the node [Poi]
+            force: optional, global force on the node (x,y,z)
+            moment: optional, global force on the node (x,y,z)
+
+
+        Returns:
+            Reference to newly created force
+
+        """
+
+
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._poi_from_node(parent)
+
+        assert1f_positive_or_zero(radius, "Radius ")
+        assert1f_positive_or_zero(k, "k ")
+
+        if meshes is not None:
+            meshes = make_iterable(meshes)
+            for mesh in meshes:
+                test = self._node_from_node(mesh, ContactMesh)
+
+        # then create
+        new_node = ContactBall(self, name)
+
+        # and set properties
+        if b is not None:
+            new_node.parent = b
+        if k is not None:
+            new_node.k = k
+        if radius is not None:
+            new_node.radius = radius
+
+        if meshes is not None:
+            new_node.meshes = meshes
+
+        # self._nodes.append(new_node)
+        return new_node
+
+    def new_ballastsystem(self, name, parent: Frame or str) -> BallastSystem:
+        """Creates a new *rigidbody* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            parent: name of the parent of the ballast system (ie: the vessel axis system)
+
+        Examples:
+            scene.new_ballastsystem("cheetah_ballast", parent="Cheetah")
+
+        Returns:
+            Reference to newly created BallastSystem
+
+        """
+
+        # check input
+        assertValidName(name)
+        self._verify_name_available(name)
+        b = self._parent_from_node(parent)
+
+        parent = self._parent_from_node(parent)  # handles verification of type as well
+
+        # make elements
+        r = BallastSystem(self, name)
+        r.parent = parent
+
+        return r
+
+    def new_sling(
+        self,
+        name,
+        length:float=-1,
+        EA=None,
+        mass=0.1,
+        endA=None,
+        endB=None,
+        LeyeA=None,
+        LeyeB=None,
+        LspliceA=None,
+        LspliceB=None,
+        diameter=0.1,
+        sheaves=None,
+        k_total=None,
+    ) -> Sling:
+        """
+        Creates a new sling, adds it to the scene and returns a reference to the newly created object.
+
+        See Also:
+            Sling
+
+        Args:
+            name:    name
+            length:  length of the sling [m], defaults to distance between endpoints
+            EA:      stiffness in kN, default: 1.0 (note: equilibrium will fail if mass >0 and EA=0)
+            k_total: stiffness in kN/m, default: None
+            mass:    mass in mT, default  0.1
+            endA:    element to connect end A to [poi, circle]
+            endB:    element to connect end B to [poi, circle]
+            LeyeA:   inside eye on side A length [m], defaults to 1/6th of length
+            LeyeB:   inside eye on side B length [m], defaults to 1/6th of length
+            LspliceA: splice length on side A [m] (the part where the cable is connected to itself)
+            LspliceB: splice length on side B [m] (the part where the cable is connected to itself)
+            diameter: cable diameter in m, defaul to 0.1
+            sheaves:  optional: list of sheaves/pois that the sling runs over
+
+        Returns:
+            a reference to the newly created Sling object.
+
+        """
+
+
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+
+        name_prefix = name + vfc.MANAGED_NODE_IDENTIFIER
+        postfixes = [
+            "_spliceA",
+            "_spliceA",
+            "_spliceA2",
+            "_spliceAM",
+            "_spliceA_visual",
+            "spliceB",
+            "_spliceB1",
+            "_spliceB2",
+            "_spliceBM",
+            "_spliceB_visual",
+            "_main_part",
+            "_eyeA",
+            "_eyeB",
+        ]
+
+        for pf in postfixes:
+            self._verify_name_available(name_prefix + pf)
+
+        endA = self._poi_or_sheave_from_node(endA)
+        endB = self._poi_or_sheave_from_node(endB)
+
+        if length == -1:  # default
+            if endA is None or endB is None:
+                raise ValueError(
+                    "Length for cable is not provided, so defaults to distance between endpoints; but at least one of the endpoints is None."
+                )
+
+            length = np.linalg.norm(
+                np.array(endA.global_position) - np.array(endB.global_position)
+            )
+
+        if LeyeA is None:  # default
+            LeyeA = length / 6
+        if LeyeB is None:  # default
+            LeyeB = length / 6
+        if LspliceA is None:  # default
+            LspliceA = length / 6
+        if LspliceB is None:  # default
+            LspliceB = length / 6
+
+        if sheaves is None:
+            sheaves = []
+
+        if EA is not None and k_total is not None:
+            warnings.warn(
+                "Value for EA is given by will not be used as k_total is defined as well. Value for EA will be derived from k_total"
+            )
+
+        if EA is None:
+            EA = 1  # possibly overwritten by k_total
+
+        assert1f_positive_or_zero(diameter, "Diameter")
+        assert1f_positive_or_zero(mass, "mass")
+
+        assert1f_positive(length, "Length")
+        assert1f_positive(LeyeA, "length of eye A")
+        assert1f_positive(LeyeB, "length of eye B")
+        assert1f_positive(LspliceA, "length of splice A")
+        assert1f_positive(LspliceB, "length of splice B")
+
+        if k_total is not None:
+            assert1f_positive_or_zero(k_total, "Total stiffness (k_total)")
+
+        for s in sheaves:
+            _ = self._poi_or_sheave_from_node(s)
+
+        # then make element
+        # __init__(self, scene, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
+
+        node = Sling(
+            scene=self,
+            name=name,
+            length=length,
+            LeyeA=LeyeA,
+            LeyeB=LeyeB,
+            LspliceA=LspliceA,
+            LspliceB=LspliceB,
+            diameter=diameter,
+            EA=EA,
+            mass=mass,
+            endA=endA,
+            endB=endB,
+            sheaves=sheaves,
+        )
+
+        if k_total is not None:
+            node.k_total = k_total
+
+        # self._nodes.append(node)
+
+        return node
+
+    def new_shackle(self, name, kind="GP500") -> Shackle:
+        """
+        Creates a new shackle, adds it to the scene and returns a reference to the newly created object.
+
+        See Also:
+            Shackle
+
+        Args:
+            name:   name
+            kind:  type of shackle; eg 'GP500'
+
+
+        Returns:
+            a reference to the newly created Shackle object.
+
+        """
+
+
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+
+        name_prefix = name + vfc.MANAGED_NODE_IDENTIFIER
+        postfixes = [
+            "/body",
+            "/pin_point",
+            "/bow_point",
+            "/inside_circle_center",
+            "/inside",
+            "/visual",
+        ]
+        for pf in postfixes:
+            self._verify_name_available(name_prefix + pf)
+
+        # then make element
+        node = Shackle(scene=self, name=name, kind=kind)
+
+        return node
 
     def print_python_code(self):
         """Prints the python code that generates the current scene

@@ -644,7 +644,7 @@ class VisualActor:
 
             return
 
-        if isinstance(self.node, vf._Area):
+        if isinstance(self.node, vf.WindOrCurrentArea):
             self.actors["main"].SetScale(np.sqrt(self.node.A))
             return
 
@@ -767,7 +767,7 @@ class VisualActor:
             return
 
         # footprints
-        if isinstance(self.node, vf.NodeWithParentAndFootprint):
+        if isinstance(self.node, vf.HasFootprint):
 
             fp = self.node.footprint
             if fp:
@@ -1913,7 +1913,7 @@ class Viewport:
                 # footprint
                 actors["footprint"] = vp.Cube(side=0.00001)  # dummy
 
-            if isinstance(N, vf._Area):  # wind or current area
+            if isinstance(N, vf.WindOrCurrentArea):  # wind or current area
                 # circle with area 1m2
                 # and then scale with sqrt(A)
                 # A = pi * r**2 --> r = sqrt(1/pi)
@@ -2687,7 +2687,7 @@ class Viewport:
         for V in self.node_visuals:
             node = V.node
 
-            if isinstance(node, dn._Area):
+            if isinstance(node, dn.WindOrCurrentArea):
                 actor = V.actors["main"]
 
                 # calculate scale

@@ -78,11 +78,6 @@ Circle,position,tuple,Local position of the center of the sheave  (parent axis).
 
         Note: this is the same as the local position of the parent point.
         "
-Circle,parent,Point,Point that defines the center of the circle.,,,True,True,False,"Point that defines the center of the circle.
-        The parent of that point determines the axis system used for the axis"
-Component,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
-Component,path,str,Path of the model-file. For example res: padeye.dave,,,True,False,False,Path of the model-file. For example res: padeye.dave
-Component,exposed_properties,tuple,Names of exposed properties,,,False,False,False,Names of exposed properties
 Connector2d,angle,float,Actual angle between nodeA and nodeB  ,[deg],read-only,False,False,True,Actual angle between nodeA and nodeB [deg] (read-only)
 Connector2d,force,float,Actual force between nodeA and nodeB  ,[kN],read-only,False,False,True,Actual force between nodeA and nodeB [kN] (read-only)
 Connector2d,moment,float,Actual moment between nodeA and nodeB  ,[kNm],read-only,False,False,True,Actual moment between nodeA and nodeB [kNm] (read-only)
@@ -118,7 +113,6 @@ ContactBall,meshes,tuple,List of contact-mesh nodes.,,,True,False,False,"List of
 ContactBall,meshes_names,tuple,List with the names of the meshes,,,False,False,False,List with the names of the meshes
 ContactBall,radius,float,Radius of the contact-ball ,[m],,True,True,True,Radius of the contact-ball [m]
 ContactBall,k,float,Compression stiffness of the ball in force per meter of compression ,[kN/m],,True,True,True,Compression stiffness of the ball in force per meter of compression [kN/m]
-CoreConnectedNode,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
 Force,force,tuple,"The x,y and z components of the force  ","[kN,kN,kN]",global axis,True,False,False,"The x,y and z components of the force [kN,kN,kN] (global axis)
 
         Example s['wind'].force = (12,34,56)
@@ -263,7 +257,6 @@ Frame,ux,tuple,The unit x axis  ,"[m,m,m]",Global axis,False,False,False,"The un
 Frame,uy,tuple,The unit y axis  ,"[m,m,m]",Global axis,False,False,False,"The unit y axis [m,m,m] (Global axis)"
 Frame,uz,tuple,The unit z axis  ,"[m,m,m]",Global axis,False,False,False,"The unit z axis [m,m,m] (Global axis)"
 Frame,equilibrium_error,tuple,The remaining force and moment on this axis. Should be zero when in equilibrium  ,"[kN,kN,kN,kNm,kNm,kNm]","applied-force minus connection force, Parent axis",False,False,False,"The remaining force and moment on this axis. Should be zero when in equilibrium [kN,kN,kN,kNm,kNm,kNm] (applied-force minus connection force, Parent axis)"
-GeometricContact,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
 GeometricContact,swivel,float,Swivel angle between parent and child objects ,[degrees],,True,True,True,Swivel angle between parent and child objects [degrees]
 GeometricContact,swivel_fixed,bool,Allow parent and child to swivel relative to eachother ,[boolean],,True,True,False,Allow parent and child to swivel relative to eachother [boolean]
 GeometricContact,rotation_on_parent,float,Angle between the line connecting the centers of the circles and the axis system of the parent node ,[degrees],,True,True,True,Angle between the line connecting the centers of the circles and the axis system of the parent node [degrees]
@@ -290,10 +283,9 @@ LC6d,mgx,float,Moment on main in global coordinate frame ,[kNm],,False,False,Tru
 LC6d,mgy,float,Moment on main in global coordinate frame ,[kNm],,False,False,True,Moment on main in global coordinate frame [kNm]
 LC6d,mgz,float,Moment on main in global coordinate frame ,[kNm],,False,False,True,Moment on main in global coordinate frame [kNm]
 LC6d,moment_global,tuple,Moment on main in global coordinate frame ,"[kNm, kNm, kNm]",,False,False,False,"Moment on main in global coordinate frame [kNm, kNm, kNm]"
-Manager,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
+Node,name,str,Name of the node ,[str],,True,False,False,Name of the node [str]
 Node,color,tuple,"The color (r,g,b) of the node - use None for default",,,True,False,False,"The color (r,g,b) of the node - use None for default"
 Node,visible,bool,Determines if this node is visible in the viewport ,[bool],,True,True,False,Determines if this node is visible in the viewport [bool]
-Node,name,str,"Name of the node (str), must be unique ",[str],,True,False,False,"Name of the node (str), must be unique [str]"
 Node,UC,float,"Returns the governing UC of the node, returns None is no limits are defined ",[-],,False,False,True,"Returns the governing UC of the node, returns None is no limits are defined [-]
 
         See Also: give_UC, UC_governing_details
@@ -307,9 +299,8 @@ Node,UC_governing_details,tuple,Returns the details of the governing UC for this
         Returns (None, None, None, None) if no limits are supplied
         "
 Node,tags,tuple,All tags of this node ,,tuple of str,False,False,False,All tags of this node (tuple of str)
-NodeWithParentAndFootprint,footprint,tuple,Determines where on its parent the force of this node is applied.,,,True,False,False,"Determines where on its parent the force of this node is applied.
-        Tuple of tuples ((x1,y1,z1), (x2,y2,z2), .... (xn,yn,zn))"
-Point,parent,Frame,"Frame that the point is located on, determines the local axis system",,,True,True,False,"Frame that the point is located on, determines the local axis system"
+NodeCoreConnected,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
+NodePurePython,name,str,"Name of the node (str), must be unique ",[str],,True,False,False,"Name of the node (str), must be unique [str]"
 Point,x,float,x component of local position  ,[m],parent axis,True,True,True,x component of local position [m] (parent axis)
 Point,y,float,y component of local position  ,[m],parent axis,True,True,True,y component of local position [m] (parent axis)
 Point,z,float,z component of local position  ,[m],parent axis,True,True,True,z component of local position [m] (parent axis)
@@ -329,7 +320,6 @@ Point,gx,float,x component of position  ,[m],global axis,True,True,True,x compon
 Point,gy,float,y component of position  ,[m],global axis,True,True,True,y component of position [m] (global axis)
 Point,gz,float,z component of position  ,[m],global axis,True,True,True,z component of position [m] (global axis)
 Point,global_position,tuple,Global position  ,"[m,m,m]",global axis,True,False,False,"Global position [m,m,m] (global axis)"
-RigidBody,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
 RigidBody,footprint,tuple,Sets the footprint vertices. Supply as an iterable with each element containing three floats,,,True,False,False,Sets the footprint vertices. Supply as an iterable with each element containing three floats
 RigidBody,cogx,float,x-component of cog position  ,[m],local axis,True,True,True,x-component of cog position [m] (local axis)
 RigidBody,cogy,float,y-component of cog position  ,[m],local axis,True,True,True,y-component of cog position [m] (local axis)
@@ -371,7 +361,6 @@ SPMT,axles,tuple,Axles is a list axle positions  ,"[m,m,m]",parent axis,True,Fal
         Example:
             [(-10,0,0),(-5,0,0),(0,0,0)] for three axles
         "
-Shackle,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
 Shackle,kind,str,"Type of shackle, for example GP800 ",[text],,True,False,False,"Type of shackle, for example GP800 [text]"
 Shackle,shackle_data_dict,dict,Returns the shackle data for the actual shackle kind,,,False,False,False,Returns the shackle data for the actual shackle kind
 Shackle,MBL,float,MBL ,[t],,False,False,True,MBL [t]
@@ -380,7 +369,6 @@ Shackle,load,float,The force traveling through this shackle ,[kN],,False,False,T
         Calculated as the maximum absolute value of all nodes attached to the shackle as well as the connection force. May be incorrect
         for situations where more than two nodes connect to different locations on the shackle.
         "
-Sling,name,str,"Name of the node (str), must be unique",,,True,False,False,"Name of the node (str), must be unique"
 Sling,k_total,float,Total stiffness of the sling ,[kN/m],,True,True,True,Total stiffness of the sling [kN/m]
 Sling,connections,tuple,List or Tuple of nodes (Points or Circles) that this sling is connected to. Nodes may be passed by name (string) or by reference.,,,True,False,False,"List or Tuple of nodes (Points or Circles) that this sling is connected to. Nodes may be passed by name (string) or by reference.
         "
@@ -409,7 +397,8 @@ Tank,level_global,float,The fluid plane elevation in the global axis system ,[m]
         Setting this adjusts the volume"
 Tank,volume,float,The actual volume of fluid in the tank ,[m3],,True,True,True,"The actual volume of fluid in the tank [m3]
         Setting this adjusts the fluid level"
-Tank,density,float,Density of the fluid in the tank. Density < 0 means use outside water density ,[mT/m3],,True,True,True,Density of the fluid in the tank. Density < 0 means use outside water density [mT/m3]
+Tank,used_density,float,Density of the fluid in the tank ,[mT/m3],,False,False,True,Density of the fluid in the tank [mT/m3]
+Tank,density,float,Density of the fluid in the tank. Density < 0 means use outside water density. See also used_density ,[mT/m3],,True,True,True,Density of the fluid in the tank. Density < 0 means use outside water density. See also used_density [mT/m3]
 Tank,capacity,float,Fillable volume of the tank calcualted as mesh volume times permeability ,[m3],,False,False,True,"Fillable volume of the tank calcualted as mesh volume times permeability [m3]
         This is calculated from the defined geometry and permeability.
         See also: mesh_volume"
@@ -424,20 +413,25 @@ Tank,ullage,float,Ullage of the tank ,[m],,False,False,True,"Ullage of the tank 
         It is possible that this definition returns an ullage larger than the physical tank depth. In that case the physical depth of
         the tank is returned instead.
         "
-_Area,force,tuple,"The x,y and z components of the force  ","[kN,kN,kN]",global axis,False,False,False,"The x,y and z components of the force [kN,kN,kN] (global axis)"
-_Area,fx,float,The global x-component of the force  ,[kN],global axis,False,False,True,The global x-component of the force [kN] (global axis)
-_Area,fy,float,The global y-component of the force   ,[kN],global axis,False,False,True,The global y-component of the force [kN]  (global axis)
-_Area,fz,float,The global z-component of the force   ,[kN],global axis,False,False,True,The global z-component of the force [kN]  (global axis)
-_Area,A,float,Total area . See also Ae,[m2],,True,True,True,Total area [m2]. See also Ae
-_Area,Ae,float,Effective area . This is the projection of the total to the actual wind/current direction. Read only.,[m2],,False,False,True,Effective area [m2]. This is the projection of the total to the actual wind/current direction. Read only.
-_Area,Cd,float,Cd coefficient ,[-],,True,True,True,Cd coefficient [-]
-_Area,direction,tuple,"Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is",,,True,False,False,"Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is
+WindOrCurrentArea,force,tuple,"The x,y and z components of the force  ","[kN,kN,kN]",global axis,False,False,False,"The x,y and z components of the force [kN,kN,kN] (global axis)"
+WindOrCurrentArea,fx,float,The global x-component of the force  ,[kN],global axis,False,False,True,The global x-component of the force [kN] (global axis)
+WindOrCurrentArea,fy,float,The global y-component of the force   ,[kN],global axis,False,False,True,The global y-component of the force [kN]  (global axis)
+WindOrCurrentArea,fz,float,The global z-component of the force   ,[kN],global axis,False,False,True,The global z-component of the force [kN]  (global axis)
+WindOrCurrentArea,A,float,Total area . See also Ae,[m2],,True,True,True,Total area [m2]. See also Ae
+WindOrCurrentArea,Ae,float,Effective area . This is the projection of the total to the actual wind/current direction. Read only.,[m2],,False,False,True,Effective area [m2]. This is the projection of the total to the actual wind/current direction. Read only.
+WindOrCurrentArea,Cd,float,Cd coefficient ,[-],,True,True,True,Cd coefficient [-]
+WindOrCurrentArea,direction,tuple,"Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is",,,True,False,False,"Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is
         the direction of the axis and for 'sphere' this is not used [m,m,m]"
-_Area,areakind,AreaKind,Defines how to interpret the area.,,,True,True,False,"Defines how to interpret the area.
+WindOrCurrentArea,areakind,AreaKind,Defines how to interpret the area.,,,True,True,False,"Defines how to interpret the area.
         See also: `direction`"
-BallastSystem,target_elevation,float,The target elevation of the parent of the ballast system ,[m],,True,True,True,The target elevation of the parent of the ballast system [m]
-BallastSystem,cogx,float,X position of combined CoG of all tank contents in the ballast-system.  ,[m],global coordinate,False,False,True,X position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]
-BallastSystem,cogy,float,Y position of combined CoG of all tank contents in the ballast-system.  ,[m],global coordinate,False,False,True,Y position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]
-BallastSystem,cogz,float,Z position of combined CoG of all tank contents in the ballast-system.  ,[m],global coordinate,False,False,True,Z position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]
-BallastSystem,cog,tuple,Combined CoG of all tank contents in the ballast-system.  ,"[m,m,m]",global coordinate,False,False,False,"Combined CoG of all tank contents in the ballast-system. (global coordinate) [m,m,m]"
-BallastSystem,weight,float,Total weight of all tank fillings in the ballast system ,[kN],,False,False,True,Total weight of all tank fillings in the ballast system [kN]
+WindOrCurrentArea,force,tuple,"The x,y and z components of the force  ","[kN,kN,kN]",global axis,False,False,False,"The x,y and z components of the force [kN,kN,kN] (global axis)"
+WindOrCurrentArea,fx,float,The global x-component of the force  ,[kN],global axis,False,False,True,The global x-component of the force [kN] (global axis)
+WindOrCurrentArea,fy,float,The global y-component of the force   ,[kN],global axis,False,False,True,The global y-component of the force [kN]  (global axis)
+WindOrCurrentArea,fz,float,The global z-component of the force   ,[kN],global axis,False,False,True,The global z-component of the force [kN]  (global axis)
+WindOrCurrentArea,A,float,Total area . See also Ae,[m2],,True,True,True,Total area [m2]. See also Ae
+WindOrCurrentArea,Ae,float,Effective area . This is the projection of the total to the actual wind/current direction. Read only.,[m2],,False,False,True,Effective area [m2]. This is the projection of the total to the actual wind/current direction. Read only.
+WindOrCurrentArea,Cd,float,Cd coefficient ,[-],,True,True,True,Cd coefficient [-]
+WindOrCurrentArea,direction,tuple,"Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is",,,True,False,False,"Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is
+        the direction of the axis and for 'sphere' this is not used [m,m,m]"
+WindOrCurrentArea,areakind,AreaKind,Defines how to interpret the area.,,,True,True,False,"Defines how to interpret the area.
+        See also: `direction`"

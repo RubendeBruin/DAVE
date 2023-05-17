@@ -2922,7 +2922,7 @@ class WidgetNodeProps(guiDockWidget):
         if isinstance(node, vfs.SPMT) and (vfs.SPMT not in suppressed_editors):
             self._node_editors.append(EditSPMT.Instance())
 
-        if isinstance(node, vfs._Area) and (vfs._Area not in suppressed_editors):
+        if isinstance(node, vfs.WindOrCurrentArea) and (vfs.WindOrCurrentArea not in suppressed_editors):
             self._node_editors.append(EditArea.Instance())
 
         if (

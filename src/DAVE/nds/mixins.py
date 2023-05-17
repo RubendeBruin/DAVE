@@ -2,9 +2,10 @@
 from types import NoneType
 
 from .abstracts import *
+from .trimesh import TriMeshSource
 from ..tools import *
 
-class HasParent(myABC):
+class HasParent(DAVENodeBase, ABC):
 
     def __init__(self, scene, name):
         logging.info("HasParent.__init__")
@@ -15,7 +16,7 @@ class HasParent(myABC):
         Node : use that Node
         Used to prevent circular references, see groups section in documentation"""
 
-        super().__init__(scene, name)
+        super().__init__(scene=scene, name=name)
 
     @property
     def parent_for_export(self) -> Node or None:
@@ -49,7 +50,7 @@ class HasParentCore(HasParent):
 
     def __init__(self, scene, name):
         logging.info("HasParentCore.__init__")
-        super().__init__(scene, name)
+        super().__init__(scene=scene, name=name)
 
     def depends_on(self):
         if self.parent_for_export is not None:
@@ -77,7 +78,7 @@ class HasParentCore(HasParent):
         """
         new_parent = self._scene._node_from_node_or_str_or_None(var)
 
-        assert isinstance(new_parent, self._valid_parent_types), f"Invalid parent type when setting the parent of Node [{self.name}] to [{var.name or 'None'}], allowed types are {self._valid_parent_types}, got {type(new_parent)}"
+        assert isinstance(new_parent, self._valid_parent_types), f"Invalid parent type when setting the parent of Node [{self.name}] to [{var.name if var else 'None'}], allowed types are {self._valid_parent_types}, got {type(new_parent)}"
         if new_parent is None:
             self._vfNode.parent = None
         else:
@@ -89,7 +90,7 @@ class HasParentPure(HasParent):
     def __init__(self, scene, name):
 
         self._parent = None
-        super().__init__(self, scene, name)
+        super().__init__(scene=scene, name=name)
 
     @property
     def parent(self) -> Node or None:
@@ -107,12 +108,12 @@ class HasParentPure(HasParent):
         """
         self._parent = self._scene._node_from_node_or_str(var)
 
-class HasFootprint():
+class HasFootprint(DAVENodeBase):
 
     def __init__(self, scene, name):
         logging.info("HasFootprint.__init__")
-
         assert isinstance(self, HasParentCore), "Only Core nodes with a parent can have a footprint"
+        super().__init__(scene=scene, name=name)
 
     @property
     def footprint(self) -> tuple:
@@ -141,22 +142,28 @@ class HasFootprint():
         else:
             return ""
 
-class HasTrimesh():
+class HasTrimesh(DAVENodeBase):
 
         def __init__(self, scene, name):
-            assert isinstance(self, HasParentCore), "Only Core nodes with a parent can have a footprint"
+            logging.info("HasTrimesh.__init__")
+            assert isinstance(self, HasParentCore), "Only Core nodes with a parent can have a trimesh"
 
             self._trimesh = TriMeshSource(
                 self._scene, source=self._vfNode.trimesh
             )  # the tri-mesh is wrapped in a custom object
 
-            super().__init__(scene, name)
+            super().__init__(scene=scene, name=name)
 
         @property
         def trimesh(self) -> "TriMeshSource":
             """Reference to TriMeshSource object
             #NOGUI"""
             return self._trimesh
+
+        @property
+        def trimesh_is_empty(self):
+            """True if the trimesh is empty"""
+            return self.trimesh.is_empty
 
         @node_setter_manageable
         def change_parent_to(self, new_parent):
@@ -166,8 +173,13 @@ class HasTrimesh():
 
             if not (isinstance(new_parent, Frame) or new_parent is None):
                 raise ValueError(
-                    "Trimeshes can only be attached to an axis (or derived) or None"
+                    "Trimeshes can only be attached to a Frame (or derived) or None"
                 )
+
+            if self.trimesh_is_empty:
+                self.parent = new_parent
+                return
+
 
             # get current position and orientation
             if self.parent is not None:
@@ -192,7 +204,7 @@ class HasTrimesh():
                                    scale=self.trimesh._scale,
                                    invert_normals=self.trimesh._invert_normals)
 
-class Manager(myABC):
+class Manager(DAVENodeBase, ABC):
     """
     Notes:
         1. A manager shall manage the names of all nodes it creates
@@ -200,7 +212,21 @@ class Manager(myABC):
 
     def __init__(self, scene, name):
         logging.info("Manager.__init__")
-        super().__init__(scene, name)
+        super().__init__(scene=scene, name=name)
+
+    def helper_update_node_prefix(self, nodes, old_prefix, new_prefix):
+        """Helper function to update the node names of the given nodes, management is claimed"""
+
+        with ClaimManagement(self._scene, self):
+            for node in nodes:
+                if node.manager is None or node.manager == self:  # only rename un-managed nodes or nodes managed by me - managed nodes will be renamed by their manager
+                    if node.name.startswith(old_prefix):
+                        node.name = node.name.replace(old_prefix, new_prefix)
+                    else:
+                        raise Exception(
+                            f"Unexpected name when re-naming managed node '{node.name}' of node '{self.name}'. Expected name to start with {old_prefix}.")
+
+
 
     @abstractmethod
     def delete(self):
@@ -216,6 +242,10 @@ class Manager(myABC):
         """Returns True if node is created by this manager"""
         pass
 
+    @abstractmethod
+    def name(self):
+        "Enforce that the name property is implemented in any derived class"
+        pass
 
     def store_copy_of_limits(self):
         """Creates/updates a copy of the limits of all managed nodes and stores that in
@@ -246,37 +276,20 @@ class Container(Manager):
     """Containers are nodes containing nodes. Nodes are stored in self._nodes"""
 
     def __init__(self, scene, name):
-        super().__init__(self, scene, name=name)
+        logging.info("Container.__init__")
+        super().__init__(scene=scene, name=name)
         self._nodes = []
         """Nodes contained in and managed by this node"""
 
-    @property
-    def name(self) -> str:
-        """Name of the node (str), must be unique"""
-        return super().name.fget()
+        self._name_prefix = name + "/"  # prefix used for all nodes created by this container
 
-    @name.setter
-    @node_setter_manageable
-    def name(self, value):
-        if value == self.name:
-            return
+    def _on_name_changed(self):
+        super()._on_name_changed()
 
-        self._scene._verify_name_available(name=value)
-
-        super().name.fset(value)
-
-        old_prefix = self.name + "/"
-        new_prefix = value + "/"
-
-        # update the node names of all of the properties , the direct way
-        with ClaimManagement(self._scene, self):
-            for node in self._nodes:
-                if node.manager is None or node.manager == self:  # only rename un-managed nodes or nodes managed by me - managed nodes will be renamed by their manager
-                    if node.name.startswith(old_prefix):
-                        node.name = node.name.replace(old_prefix, new_prefix)
-                    else:
-                        raise Exception(
-                            f"Unexpected name when re-naming managed node '{node.name}' of component '{self.name}'")
+        old_prefix = self._name_prefix
+        new_prefix = self.name + "/"
+        self.helper_update_node_prefix(self._nodes, old_prefix, new_prefix)
+        self._name_prefix = new_prefix
 
     def delete(self):
         # remove all imported nodes
@@ -292,21 +305,12 @@ class SubScene(Container):
 
 
     def __init__(self, scene, name):
-        super().__init__(self, scene, name=name)
+        super().__init__(scene=scene, name=name)
 
         self._path = ""
         self._exposed = []
         """List of tuples containing the exposed properties (if any)"""
 
-    @property
-    def name(self) -> str:
-        """Name of the node (str), must be unique"""
-        return super().name.fget(self)
-
-    @name.setter
-    @node_setter_manageable
-    def name(self, value):
-        super().name.fset(self, value)
 
     @property
     def path(self) -> str:

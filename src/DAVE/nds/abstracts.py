@@ -15,13 +15,26 @@ import numpy as np
 from .helpers import *
 
 
-class myABC(ABC):
-    """Intermediate class that strips the constructor arguments"""
+class DAVENodeBase():
+    """Shall be the ultimate base class for nodes as well as anything mixed into nodes.
 
-    def __init__(self, scene, name):
-        ABC.__init__(self)  # <-- explicitly call super without arguments
+    - The constructor really does nothing except making sure that object is not called with arguments
+      This is an unfortunate workaround for super().
 
-class Node(myABC):
+    - _on_name_changed is called when the name of the node has changed. Defining it here ensures
+      that mixin classes can override the method.
+
+    """
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def _on_name_changed(self):
+        """Called when the name of the node has changed
+        !! When overriding this method, call super()._on_name_changed() in the implementation !!
+        """
+        pass
+
+class Node(DAVENodeBase, ABC):
     """ABSTRACT CLASS - Properties defined here are applicable to all derived classes
     Master class for all nodes"""
 
@@ -65,18 +78,20 @@ class Node(myABC):
         # some custom properties for gui interaction
         self._no_name_editor = False
 
-        super().__init__(scene, name)
+        super().__init__(scene=scene, name=name)
 
 
     @property
     @abstractmethod
     def name(self) -> str:
+        """Name of the node [str]"""
         pass
 
     @name.setter
     @abstractmethod
     def name(self, val):
-        pass
+        self._on_name_changed()
+
 
     def __repr__(self):
         if self.is_valid:
@@ -382,7 +397,7 @@ class NodeCoreConnected(Node):
     def __init__(self, scene, name):
         logging.info("NodeCoreConnected.__init__")
         assert hasattr(self, '_vfNode'), "_vfNode must be assigned BEFORE calling super()__init__"
-        super().__init__(scene, name)
+        super().__init__(scene=scene, name=name)
 
     @property
     def name(self) -> str:
@@ -400,6 +415,8 @@ class NodeCoreConnected(Node):
             self._scene._verify_name_available(name)
             self._vfNode.name = name
 
+        self._on_name_changed()
+
     def _delete_vfc(self):
         name = self._vfNode.name
         self._vfNode = None  # this node will become invalid.
@@ -410,7 +427,7 @@ class NodePurePython(Node):
 
     def __init__(self, scene, name):
         self._name = name
-        super().__init__(scene, name)
+        super().__init__(scene=scene, name=name)
 
     @property
     def name(self) -> str:
@@ -422,6 +439,8 @@ class NodePurePython(Node):
     @node_setter_observable
     def name(self, name):
         self._name = name
+
+        self._on_name_changed()
 
     def _delete_vfc(self):
         pass # nothing to delete
