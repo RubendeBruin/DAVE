@@ -3,6 +3,7 @@
 It receives a reference to the scene,
 TODO: would be more logical to have a reference to the node that is belongs to instead.
 """
+import numpy as np
 
 class TriMeshSource():  # not an instance of Node
     """

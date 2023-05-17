@@ -430,6 +430,7 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
     @node_setter_manageable
     @node_setter_observable
     def parent(self, val):
+        val = self._scene._node_from_node_or_str_or_None(val)
 
         if val == self:
             raise ValueError(f"{self.name} can not be its own parent.")
@@ -799,7 +800,7 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         # All nodes depending on this Frame need to be able to function
         # without it.
         # That is possible if they have this node as parent and that parent is this node.
-        for node_name in (self._scene.nodes_depending_on(self)):
+        for node_name in (self._scene.nodes_depending_on(self, recursive=False)):
             node = self._scene[node_name]
             parent = getattr(node, "parent", -1)  # -1 is a dummy value, None is a valid parent
             if parent is not self:
@@ -857,28 +858,52 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         example a WindAreaPoint.
         """
 
-        can, reason = self._can_dissolve()
-        if not can:
-            return False, reason
+        work_done = False
+        msg = ''
 
-        # All checks passed, we can dissolve this node
-        for node_name in (self._scene.nodes_depending_on(self)):
-            node = self._scene[node_name]
+        # Frames can only be dissolved when they are fixed
+        if not all(self.fixed):
+            msg = f"Node {self.name} has degrees of freedom and can therefore not be dissolved\n"
+        else:
+            for node_name in (self._scene.nodes_depending_on(self, recursive=False)):
+                node = self._scene[node_name]
+                if node.manager is None:
+                    if node.try_swap(self, self.parent):
+                        work_done = True
+                        if self.parent:
+                            msg += f"Node {node_name} was moved to parent {self.parent.name}\n"
+                        else:
+                            msg += f"Node {node_name} was moved to parent None\n"
 
-            # could be a managed node of which the parent is changed by the manager which itself is one of the nodes
-            # of which the parent will be changed.
-            if node.manager is None or node.manager == self._scene.current_manager:
-                node.parent = self.parent
+        other_done, other_msg = super().dissolve()
 
-        # Check that we have indeed fixed all the dependencies, we've only checked for
-        # "parent" and assumed that changing the parent removes the dependancy.
-        # In the future there could be node-types that have other dependancies as well
+        work_done = work_done or other_done
+        msg = '\n'.join([msg, other_msg]) if msg else other_msg
 
-        for node_name in (self._scene.nodes_depending_on(self)):
-            raise ValueError(f'After changing parent, node {node_name} still depends on {self.name} - can not dissolve')
-
-        self._scene.delete(self)
-        return True, ""
+        return work_done, msg
+        #
+        # can, reason = self._can_dissolve()
+        # if not can:
+        #     return False, reason
+        #
+        # # All checks passed, we can dissolve this node
+        # for node_name in (self._scene.nodes_depending_on(self)):
+        #     node = self._scene[node_name]
+        #
+        #     # could be a managed node of which the parent is changed by the manager which itself is one of the nodes
+        #     # of which the parent will be changed.
+        #     if node.manager is None or node.manager == self._scene.current_manager:
+        #         node.parent = self.parent
+        #
+        # # Check that we have indeed fixed all the dependencies, we've only checked for
+        # # "parent" and assumed that changing the parent removes the dependancy.
+        # # In the future there could be node-types that have other dependancies as well
+        #
+        # for node_name in (self._scene.nodes_depending_on(self)):
+        #     raise ValueError(f'After changing parent, node {node_name} still depends on {self.name} - can not dissolve')
+        #
+        # self._scene.delete(self)
+        # return True, ""
 
 
     def give_python_code(self):
@@ -1262,6 +1287,11 @@ class Circle(NodeCoreConnected, HasParentCore):
 
         """
         glob_axis = self.global_axis
+
+        move = np.linalg.norm(np.array(self.global_position) - np.array(new_parent.global_position))
+        if move > 1e-7:
+            raise ValueError("Global position of new parent must be the same as the global position of the node")
+
         self.parent = new_parent
         self.global_axis = glob_axis
 

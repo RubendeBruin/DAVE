@@ -18,11 +18,14 @@ from .helpers import *
 class DAVENodeBase():
     """Shall be the ultimate base class for nodes as well as anything mixed into nodes.
 
+    - Implements "black holes" for all methods that are to be implemented with super()
+
     - The constructor really does nothing except making sure that object is not called with arguments
       This is an unfortunate workaround for super().
 
-    - _on_name_changed is called when the name of the node has changed. Defining it here ensures
-      that mixin classes can override the method.
+    - _on_name_changed: called after the name has changed
+    - dissolve
+    - try_swap
 
     """
     def __init__(self, *args, **kwargs):
@@ -33,6 +36,16 @@ class DAVENodeBase():
         !! When overriding this method, call super()._on_name_changed() in the implementation !!
         """
         pass
+
+    def dissolve(self) -> tuple[bool, str]:
+        """Dissolves the node into its children. Returns True if work was done, False otherwise"""
+        return False, ""
+
+    def try_swap(self, old: 'Node', new: 'Node') -> bool:
+        """Tries to swap old for new. Returns True if work was done, False otherwise"""
+        return False
+
+
 
 class Node(DAVENodeBase, ABC):
     """ABSTRACT CLASS - Properties defined here are applicable to all derived classes
@@ -126,15 +139,6 @@ class Node(DAVENodeBase, ABC):
             f"Derived class should implement this method, but {type(self)} does not"
         )
 
-    def dissolve(self) -> tuple:
-        """This method is called to see if the node can be dissolved and, if so, make the necessary preparations such as
-        deleting or re-parenting child nodes.
-
-        Returns:
-            True if the node has been dissolved
-            False if the node can not be dissolved.
-        """
-        return False, "This node can not be dissolved"
 
     def give_python_code(self):
         """Returns the python code that can be executed to re-create this node"""

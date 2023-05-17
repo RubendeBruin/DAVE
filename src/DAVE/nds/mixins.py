@@ -44,6 +44,25 @@ class HasParent(DAVENodeBase, ABC):
     def change_parent_to(self, new_parent):
         pass
 
+    @node_setter_manageable
+    def try_swap(self, old: 'Node', new: 'Node') -> bool:
+        """Tries to swap the parent of this node from old to new.
+        Returns True if successful, False otherwise.
+        """
+        succes = False
+        if self.parent == old:
+            try:
+                self.change_parent_to(new)
+                succes = True
+            except:
+                pass
+
+        if succes:
+            return True
+        else:
+            return super().try_swap(old, new)
+
+
 class HasParentCore(HasParent):
 
     _valid_parent_types = (NoneType, )
@@ -290,6 +309,18 @@ class Container(Manager):
         new_prefix = self.name + "/"
         self.helper_update_node_prefix(self._nodes, old_prefix, new_prefix)
         self._name_prefix = new_prefix
+
+    def dissolve(self) -> tuple[bool, str]:
+        # Unmanage all managed nodes
+        if self._nodes:
+            with ClaimManagement(self._scene, self):
+                for node in self._nodes:
+                    node.manager = None
+
+            self._nodes = []
+            return True, "Managed nodes unmanaged" # No need to call other supers, work was done so good enough
+
+        return super().dissolve()
 
     def delete(self):
         # remove all imported nodes

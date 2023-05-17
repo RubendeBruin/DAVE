@@ -1,4 +1,7 @@
+# pylint: disable=protected-access
+
 """These are the core-connected classes for DAVE nodes"""
+
 import logging
 
 from .helpers import *
@@ -13,15 +16,17 @@ from ..settings import VF_NAME_SPLIT
 from ..tools import *
 
 
-
 class RigidBody(Frame):
     """A Rigid body, internally composed of an axis, a point (cog) and a force (gravity)"""
 
-    def __init__(self, scene, name : str):
-
+    def __init__(self, scene, name: str):
         # Some checks on properties of the node to make sure MRO is going well
-        assert getattr(self, "_vfPoi", None) is None, "A Poi is already present in the core, error in constructor sequence?"
-        assert getattr(self, "_vfForce", None) is None, "A Force is already present in the core, error in constructor sequence?"
+        assert (
+            getattr(self, "_vfPoi", None) is None
+        ), "A Poi is already present in the core, error in constructor sequence?"
+        assert (
+            getattr(self, "_vfForce", None) is None
+        ), "A Force is already present in the core, error in constructor sequence?"
 
         super().__init__(scene=scene, name=name)
 
@@ -52,15 +57,13 @@ class RigidBody(Frame):
         self._vfForce.name = self.name + VF_NAME_SPLIT + "gravity"
 
     @property
-    def footprint(self)->tuple[tuple[float,float,float]]:
+    def footprint(self) -> tuple[tuple[float, float, float]]:
         """Sets the footprint vertices. Supply as an iterable with each element containing three floats"""
         return Frame.footprint.fget(self)
 
     @footprint.setter
     def footprint(self, value):
-        Frame.footprint.fset(
-            self, value
-        )  # https://bugs.python.org/issue14965
+        Frame.footprint.fset(self, value)  # https://bugs.python.org/issue14965
 
         # assign the footprint to the CoG as well,
         # but subtract the cog position as
@@ -79,22 +82,22 @@ class RigidBody(Frame):
             self._vfPoi.footprintVertexAdd(*relpos)
 
     @property
-    def cogx(self)->float:
+    def cogx(self) -> float:
         """x-component of cog position [m] (local axis)"""
         return self.cog[0]
 
     @property
-    def cogy(self)->float:
+    def cogy(self) -> float:
         """y-component of cog position [m] (local axis)"""
         return self.cog[1]
 
     @property
-    def cogz(self)->float:
+    def cogz(self) -> float:
         """z-component of cog position [m] (local axis)"""
         return self.cog[2]
 
     @property
-    def cog(self)->tuple[float,float,float]:
+    def cog(self) -> tuple[float, float, float]:
         """Center of Gravity position [m,m,m] (local axis)"""
         return self._vfPoi.position
 
@@ -102,7 +105,6 @@ class RigidBody(Frame):
     @node_setter_manageable
     @node_setter_observable
     def cogx(self, var):
-
         a = self.cog
         self.cog = (var, a[1], a[2])
 
@@ -110,7 +112,6 @@ class RigidBody(Frame):
     @node_setter_manageable
     @node_setter_observable
     def cogy(self, var):
-
         a = self.cog
         self.cog = (a[0], var, a[2])
 
@@ -118,7 +119,6 @@ class RigidBody(Frame):
     @node_setter_manageable
     @node_setter_observable
     def cogz(self, var):
-
         a = self.cog
         self.cog = (a[0], a[1], var)
 
@@ -126,14 +126,13 @@ class RigidBody(Frame):
     @node_setter_manageable
     @node_setter_observable
     def cog(self, newcog):
-
         assert3f(newcog)
         self._vfPoi.position = newcog
         self.inertia_position = self.cog
         self._sync_selfweight_footprint()
 
     @property
-    def mass(self)->float:
+    def mass(self) -> float:
         """Static mass of the body [mT]
 
         See Also: inertia
@@ -144,7 +143,6 @@ class RigidBody(Frame):
     @node_setter_manageable
     @node_setter_observable
     def mass(self, newmass):
-
         assert1f(newmass)
         if newmass == 0:
             self.inertia_radii = (0, 0, 0)
@@ -154,10 +152,12 @@ class RigidBody(Frame):
     def dissolve(self):
         """A RigidBody can only be dissolved if it has no mass, in that case it is actually a frame"""
 
-        if self.mass == 0:
-            return Frame.dissolve(self)
+        return super().dissolve()
 
-        return False, "RigidBodies with mass can not be dissolved"
+        # if self.mass == 0:
+        #     return Frame.dissolve(self)
+        #
+        # return False, "RigidBodies with mass can not be dissolved"
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -175,36 +175,48 @@ class RigidBody(Frame):
         if self.fixed[0] or not self._scene._export_code_with_solved_function:
             code += "\n                position=({:.6g},".format(self.position[0])
         else:
-            code += "\n                position=(solved({:.6g}),".format(self.position[0])
+            code += "\n                position=(solved({:.6g}),".format(
+                self.position[0]
+            )
 
         if self.fixed[1] or not self._scene._export_code_with_solved_function:
             code += "\n                          {:.6g},".format(self.position[1])
         else:
-            code += "\n                          solved({:.6g}),".format(self.position[1])
+            code += "\n                          solved({:.6g}),".format(
+                self.position[1]
+            )
 
         if self.fixed[2] or not self._scene._export_code_with_solved_function:
             code += "\n                          {:.6g}),".format(self.position[2])
         else:
-            code += "\n                          solved({:.6g})),".format(self.position[2])
+            code += "\n                          solved({:.6g})),".format(
+                self.position[2]
+            )
 
         # rotation
 
         if self.fixed[3] or not self._scene._export_code_with_solved_function:
             code += "\n                rotation=({:.6g},".format(self.rotation[0])
         else:
-            code += "\n                rotation=(solved({:.6g}),".format(self.rotation[0])
+            code += "\n                rotation=(solved({:.6g}),".format(
+                self.rotation[0]
+            )
 
         if self.fixed[4] or not self._scene._export_code_with_solved_function:
             code += "\n                          {:.6g},".format(self.rotation[1])
         else:
-            code += "\n                          solved({:.6g}),".format(self.rotation[1])
+            code += "\n                          solved({:.6g}),".format(
+                self.rotation[1]
+            )
 
         if self.fixed[5] or not self._scene._export_code_with_solved_function:
             code += "\n                          {:.6g}),".format(self.rotation[2])
         else:
-            code += "\n                          solved({:.6g})),".format(self.rotation[2])
+            code += "\n                          solved({:.6g})),".format(
+                self.rotation[2]
+            )
 
-        if np.any(self.inertia_radii > 0):
+        if np.any(self.inertia_radii):
             code += "\n                     inertia_radii = ({}, {}, {}),".format(
                 *self.inertia_radii
             )
@@ -217,7 +229,9 @@ class RigidBody(Frame):
 
         return code
 
+
 RigidBody._valid_parent_types = (Frame, NoneType)
+
 
 class Force(NodeCoreConnected, HasParentCore):
     """A Force models a force and moment on a poi.
@@ -226,22 +240,22 @@ class Force(NodeCoreConnected, HasParentCore):
 
     """
 
-    _valid_parent_types = (Point, )
+    _valid_parent_types = (Point,)
 
     def __init__(self, scene, name):
-        scene._verify_name_available(name)
+        scene.assert_name_available(name)
         self._vfNode = scene._vfc.new_force(name)
 
         super().__init__(scene=scene, name=name)
 
     def depends_on(self) -> list:
-        HasParentCore.depends_on(self)
+        return HasParentCore.depends_on(self)
 
     def change_parent_to(self, new_parent):
         self.parent = new_parent
 
     @property
-    def force(self)->tuple[float,float,float]:
+    def force(self) -> tuple[float, float, float]:
         """The x,y and z components of the force [kN,kN,kN] (global axis)
 
         Example s['wind'].force = (12,34,56)
@@ -252,12 +266,11 @@ class Force(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def force(self, val):
-
         assert3f(val)
         self._vfNode.force = val
 
     @property
-    def fx(self)->float:
+    def fx(self) -> float:
         """The global x-component of the force [kN] (global axis)"""
         return self.force[0]
 
@@ -265,12 +278,11 @@ class Force(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def fx(self, var):
-
         a = self.force
         self.force = (var, a[1], a[2])
 
     @property
-    def fy(self)->float:
+    def fy(self) -> float:
         """The global y-component of the force [kN]  (global axis)"""
         return self.force[1]
 
@@ -278,12 +290,11 @@ class Force(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def fy(self, var):
-
         a = self.force
         self.force = (a[0], var, a[2])
 
     @property
-    def fz(self)->float:
+    def fz(self) -> float:
         """The global z-component of the force [kN]  (global axis)"""
 
         return self.force[2]
@@ -292,12 +303,11 @@ class Force(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def fz(self, var):
-
         a = self.force
         self.force = (a[0], a[1], var)
 
     @property
-    def moment(self)->tuple[float,float,float]:
+    def moment(self) -> tuple[float, float, float]:
         """Moment [kNm,kNm,kNm] (global).
 
         Example s['wind'].moment = (12,34,56)
@@ -308,12 +318,11 @@ class Force(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def moment(self, val):
-
         assert3f(val)
         self._vfNode.moment = val
 
     @property
-    def mx(self)->float:
+    def mx(self) -> float:
         """The global x-component of the moment [kNm]  (global axis)"""
         return self.moment[0]
 
@@ -321,12 +330,11 @@ class Force(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def mx(self, var):
-
         a = self.moment
         self.moment = (var, a[1], a[2])
 
     @property
-    def my(self)->float:
+    def my(self) -> float:
         """The global y-component of the moment [kNm]  (global axis)"""
         return self.moment[1]
 
@@ -334,12 +342,11 @@ class Force(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def my(self, var):
-
         a = self.moment
         self.moment = (a[0], var, a[2])
 
     @property
-    def mz(self)->float:
+    def mz(self) -> float:
         """The global z-component of the moment [kNm]  (global axis)"""
         return self.moment[2]
 
@@ -347,7 +354,6 @@ class Force(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def mz(self, var):
-
         a = self.moment
         self.moment = (a[0], a[1], var)
 
@@ -362,15 +368,16 @@ class Force(NodeCoreConnected, HasParentCore):
         code += "\n            moment=({:.6g}, {:.6g}, {:.6g}) )".format(*self.moment)
         return code
 
+
 class WindOrCurrentArea(NodeCoreConnected, HasParentCore):
     """Abstract Based class for wind and current areas."""
 
-    _valid_parent_types = (Point, )
+    _valid_parent_types = (Point,)
+
     # defined in the derived classes
 
     def __init__(self, scene, name):
-
-        scene._verify_name_available(name)
+        scene.assert_name_available(name)
         self._vfNode = scene._vfc.new_wind(name)
 
         super().__init__(scene=scene, name=name)
@@ -395,33 +402,33 @@ class WindOrCurrentArea(NodeCoreConnected, HasParentCore):
             return self.A * abs(np.dot(global_direction, dir))
         elif self.areakind == AreaKind.CYLINDER:
             dot = np.dot(global_direction, dir)
-            return self.A * np.sqrt(1 - dot ** 2)
+            return self.A * np.sqrt(1 - dot**2)
         else:
             raise ValueError("Unknown area-kind")
 
     @property
-    def force(self)->tuple[float,float,float]:
+    def force(self) -> tuple[float, float, float]:
         """The x,y and z components of the force [kN,kN,kN] (global axis)"""
         return self._vfNode.force
 
     @property
-    def fx(self)->float:
+    def fx(self) -> float:
         """The global x-component of the force [kN] (global axis)"""
         return self.force[0]
 
     @property
-    def fy(self)->float:
+    def fy(self) -> float:
         """The global y-component of the force [kN]  (global axis)"""
         return self.force[1]
 
     @property
-    def fz(self)->float:
+    def fz(self) -> float:
         """The global z-component of the force [kN]  (global axis)"""
 
         return self.force[2]
 
     @property
-    def A(self)->float:
+    def A(self) -> float:
         """Total area [m2]. See also Ae"""
         return self._vfNode.A0
 
@@ -431,12 +438,12 @@ class WindOrCurrentArea(NodeCoreConnected, HasParentCore):
         self._vfNode.A0 = value
 
     @property
-    def Ae(self)->float:
+    def Ae(self) -> float:
         """Effective area [m2]. This is the projection of the total to the actual wind/current direction. Read only."""
         return self._vfNode.Ae
 
     @property
-    def Cd(self)->float:
+    def Cd(self) -> float:
         """Cd coefficient [-]"""
         return self._vfNode.Cd
 
@@ -446,7 +453,7 @@ class WindOrCurrentArea(NodeCoreConnected, HasParentCore):
         self._vfNode.Cd = value
 
     @property
-    def direction(self)->tuple[float,float,float]:
+    def direction(self) -> tuple[float, float, float]:
         """Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is
         the direction of the axis and for 'sphere' this is not used [m,m,m]"""
         return self._vfNode.direction
@@ -459,7 +466,7 @@ class WindOrCurrentArea(NodeCoreConnected, HasParentCore):
         self._vfNode.direction = value
 
     @property
-    def areakind(self)->AreaKind:
+    def areakind(self) -> AreaKind:
         """Defines how to interpret the area.
         See also: `direction`"""
         return AreaKind(self._vfNode.type)
@@ -480,15 +487,15 @@ class WindOrCurrentArea(NodeCoreConnected, HasParentCore):
         code += f"\n            A={self.A:.6g}, "
         code += f"\n            Cd={self.Cd:.6g}, "
         if self.areakind != AreaKind.SPHERE:
-            code += "\n            direction=({:.6g},{:.6g},{:.6g}),".format(*self.direction)
+            code += "\n            direction=({:.6g},{:.6g},{:.6g}),".format(
+                *self.direction
+            )
         code += f"\n            areakind={str(self.areakind)})"
 
         return code
 
 
-
 class WindArea(WindOrCurrentArea):
-
     # _valid_parent_types = (Point, )
 
     def __init__(self, scene, name):
@@ -500,7 +507,6 @@ class WindArea(WindOrCurrentArea):
 
 
 class CurrentArea(WindOrCurrentArea):
-
     # _valid_parent_types = (Point,)
 
     def __init__(self, scene, name):
@@ -510,6 +516,7 @@ class CurrentArea(WindOrCurrentArea):
     def give_python_code(self):
         return self._give_python_code("new_currentarea")
 
+
 class ContactBall(NodeCoreConnected, HasParentCore):
     """A ContactBall is a linear elastic ball which can contact with ContactMeshes.
 
@@ -518,10 +525,10 @@ class ContactBall(NodeCoreConnected, HasParentCore):
     The force is applied on the Poi and it not registered separately.
     """
 
-    _valid_parent_types = (Point, )
+    _valid_parent_types = (Point,)
 
-    def __init__(self, scene, name : str):
-        scene._verify_name_available(name)
+    def __init__(self, scene, name: str):
+        scene.assert_name_available(name)
         self._vfNode = scene._vfc.new_contactball(name)
 
         super().__init__(scene=scene, name=name)
@@ -569,7 +576,7 @@ class ContactBall(NodeCoreConnected, HasParentCore):
         return self._vfNode.force
 
     @property
-    def contactpoint(self) -> tuple[float,float,float]:
+    def contactpoint(self) -> tuple[float, float, float]:
         """Nearest point on the nearest mesh, if contact [m,m,m] (global)"""
         return self._vfNode.contact_point
 
@@ -591,7 +598,6 @@ class ContactBall(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def meshes(self, value):
-
         meshes = []
 
         for m in value:
@@ -616,10 +622,10 @@ class ContactBall(NodeCoreConnected, HasParentCore):
     @property
     def meshes_names(self) -> tuple[str]:
         """List with the names of the meshes"""
-        return tuple([m.name for m in self._meshes])
+        return tuple([m.name for m in self._meshes])  # type: ignore
 
     @property
-    def radius(self) ->float:
+    def radius(self) -> float:
         """Radius of the contact-ball [m]"""
         return self._vfNode.radius
 
@@ -627,13 +633,12 @@ class ContactBall(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def radius(self, value):
-
         assert1f_positive_or_zero(value, "radius")
         self._vfNode.radius = value
         pass
 
     @property
-    def k(self) ->float:
+    def k(self) -> float:
         """Compression stiffness of the ball in force per meter of compression [kN/m]"""
         return self._vfNode.k
 
@@ -641,7 +646,6 @@ class ContactBall(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def k(self, value):
-
         assert1f_positive_or_zero(value, "k")
         self._vfNode.k = value
         pass
@@ -686,7 +690,7 @@ class SPMT(NodeCoreConnected, HasParentCore):
     _valid_parent_types = (Frame,)
 
     def __init__(self, scene, name: str):
-        scene._verify_name_available(name)
+        scene.assert_name_available(name)
         self._vfNode = scene._vfc.new_spmt(name)
 
         super().__init__(scene=scene, name=name)
@@ -709,7 +713,6 @@ class SPMT(NodeCoreConnected, HasParentCore):
         deps = HasParentCore.depends_on(self)
         deps.extend(self._meshes)
         return deps
-
 
     # read-only properties
 
@@ -774,11 +777,15 @@ class SPMT(NodeCoreConnected, HasParentCore):
 
         for ix in range(self._n_length):
             for iy in range(self._n_width):
-                self._vfNode.add_axle(ix * self._spacing_length - offx, iy * self._spacing_width - offy, 0)
+                self._vfNode.add_axle(
+                    ix * self._spacing_length - offx, iy * self._spacing_width - offy, 0
+                )
 
         n_axles = self._n_length * self._n_width
-        self._vfNode.k = self._k / (n_axles*n_axles)
-        self._vfNode.nominal_length = self._reference_extension + self._reference_force / self._k
+        self._vfNode.k = self._k / (n_axles * n_axles)
+        self._vfNode.nominal_length = (
+            self._reference_extension + self._reference_force / self._k
+        )
 
     @property
     def n_width(self) -> int:
@@ -794,7 +801,7 @@ class SPMT(NodeCoreConnected, HasParentCore):
         self._update_vfNode()
 
     @property
-    def n_length(self)->int:
+    def n_length(self) -> int:
         """number of axles in length direction [-]"""
         return self._n_length
 
@@ -820,7 +827,7 @@ class SPMT(NodeCoreConnected, HasParentCore):
         self._update_vfNode()
 
     @property
-    def spacing_length(self)->float:
+    def spacing_length(self) -> float:
         """distance between axles in length direction [m]"""
         return self._spacing_length
 
@@ -833,7 +840,7 @@ class SPMT(NodeCoreConnected, HasParentCore):
         self._update_vfNode()
 
     @property
-    def reference_force(self)->float:
+    def reference_force(self) -> float:
         """total force (sum of all axles) when at reference extension [kN]"""
         return self._reference_force
 
@@ -846,7 +853,7 @@ class SPMT(NodeCoreConnected, HasParentCore):
         self._update_vfNode()
 
     @property
-    def reference_extension(self)->float:
+    def reference_extension(self) -> float:
         """Distance between top of SPMT and bottom of wheel at which compression is zero [m]"""
         return self._reference_extension
 
@@ -860,7 +867,7 @@ class SPMT(NodeCoreConnected, HasParentCore):
         self._update_vfNode()
 
     @property
-    def k(self)->float:
+    def k(self) -> float:
         """Vertical stiffness of all axles together [kN/m]"""
         return self._k
 
@@ -875,7 +882,7 @@ class SPMT(NodeCoreConnected, HasParentCore):
     # ==== friction ====
 
     @property
-    def use_friction(self)->bool:
+    def use_friction(self) -> bool:
         """Apply friction between wheel and surface such that resulting force is vertical [True/False]
         False: Force is perpendicular to the surface
         True: Force is vertical
@@ -903,7 +910,6 @@ class SPMT(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def meshes(self, value):
-
         meshes = []
 
         for m in value:
@@ -928,13 +934,12 @@ class SPMT(NodeCoreConnected, HasParentCore):
     @property
     def meshes_names(self) -> tuple[str]:
         """List with the names of the meshes"""
-        return tuple([m.name for m in self._meshes])
+        return tuple([m.name for m in self._meshes])  # type: ignore
 
     # === control axles ====
 
-
     @property
-    def axles(self) -> tuple[tuple[float,float,float]]:
+    def axles(self) -> tuple[tuple[float, float, float]]:
         """Axles is a list axle positions [m,m,m] (parent axis)
         Each entry is a (x,y,z) entry which determines the location of the axle on SPMT. This is relative to the parent of the SPMT.
 
@@ -978,9 +983,7 @@ class SPMT(NodeCoreConnected, HasParentCore):
             code.append("                           ],")
         code.append("            )")
 
-        return '\n'.join(code)
-
-
+        return "\n".join(code)
 
 
 class HydSpring(NodeCoreConnected, HasParentCore):
@@ -991,13 +994,13 @@ class HydSpring(NodeCoreConnected, HasParentCore):
 
     """
 
-    _valid_parent_types = (Frame, )
+    _valid_parent_types = (Frame,)
 
     def __init__(self, scene, name):
         scene.assert_name_available(name)
 
         self._vfNode = scene._vfc.new_hydspring(name)
-        super().__init__(scene=scene, name = name)
+        super().__init__(scene=scene, name=name)
 
     def depends_on(self) -> list:
         return HasParentCore.depends_on(self)
@@ -1006,7 +1009,7 @@ class HydSpring(NodeCoreConnected, HasParentCore):
         self.parent = new_parent
 
     @property
-    def cob(self)->tuple[float,float,float]:
+    def cob(self) -> tuple[float, float, float]:
         """Center of buoyancy in (parent axis) [m,m,m]"""
         return self._vfNode.position
 
@@ -1014,12 +1017,11 @@ class HydSpring(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def cob(self, val):
-
         assert3f(val)
         self._vfNode.position = val
 
     @property
-    def BMT(self)->float:
+    def BMT(self) -> float:
         """Vertical distance between cob and metacenter for roll [m]"""
         return self._vfNode.BMT
 
@@ -1027,11 +1029,10 @@ class HydSpring(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def BMT(self, val):
-
         self._vfNode.BMT = val
 
     @property
-    def BML(self)->float:
+    def BML(self) -> float:
         """Vertical distance between cob and metacenter for pitch [m]"""
         return self._vfNode.BML
 
@@ -1039,11 +1040,10 @@ class HydSpring(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def BML(self, val):
-
         self._vfNode.BML = val
 
     @property
-    def COFX(self)->float:
+    def COFX(self) -> float:
         """Horizontal x-position Center of Floatation (center of waterplane area), relative to cob [m]"""
         return self._vfNode.COFX
 
@@ -1051,11 +1051,10 @@ class HydSpring(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def COFX(self, val):
-
         self._vfNode.COFX = val
 
     @property
-    def COFY(self)->float:
+    def COFY(self) -> float:
         """Horizontal y-position Center of Floatation (center of waterplane area), relative to cob [m]"""
         return self._vfNode.COFY
 
@@ -1063,11 +1062,10 @@ class HydSpring(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def COFY(self, val):
-
         self._vfNode.COFY = val
 
     @property
-    def kHeave(self)->float:
+    def kHeave(self) -> float:
         """Heave stiffness [kN/m]"""
         return self._vfNode.kHeave
 
@@ -1075,11 +1073,10 @@ class HydSpring(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def kHeave(self, val):
-
         self._vfNode.kHeave = val
 
     @property
-    def waterline(self)->float:
+    def waterline(self) -> float:
         """Waterline-elevation relative to cob for un-stretched heave-spring. Positive if cob is below the waterline (which is where is normally is) [m]"""
         return self._vfNode.waterline
 
@@ -1087,11 +1084,10 @@ class HydSpring(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def waterline(self, val):
-
         self._vfNode.waterline = val
 
     @property
-    def displacement_kN(self)->float:
+    def displacement_kN(self) -> float:
         """Displacement when waterline is at waterline-elevation [kN]"""
         return self._vfNode.displacement_kN
 
@@ -1099,7 +1095,6 @@ class HydSpring(NodeCoreConnected, HasParentCore):
     @node_setter_manageable
     @node_setter_observable
     def displacement_kN(self, val):
-
         self._vfNode.displacement_kN = val
 
     def give_python_code(self):
@@ -1123,14 +1118,18 @@ class HydSpring(NodeCoreConnected, HasParentCore):
 
 # =========== Parent and Trimesh
 
+
 class ContactMesh(NodeCoreConnected, HasParentCore, HasTrimesh):
     """A ContactMesh is a tri-mesh with an axis parent"""
 
-    _valid_parent_types = (Frame, NoneType, )
+    _valid_parent_types = (
+        Frame,
+        NoneType,
+    )
 
     def __init__(self, scene, name):
         logging.info("ContactMesh.__init__")
-        scene._verify_name_available(name)
+        scene.assert_name_available(name)
 
         self._vfNode = scene._vfc.new_contactmesh(name)
         super().__init__(scene=scene, name=name)
@@ -1140,7 +1139,6 @@ class ContactMesh(NodeCoreConnected, HasParentCore, HasTrimesh):
 
     def change_parent_to(self, new_parent):
         HasTrimesh.change_parent_to(self, new_parent)
-
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -1175,7 +1173,7 @@ class Buoyancy(NodeCoreConnected, HasParentCore, HasTrimesh):
 
     def __init__(self, scene, name):
         logging.info("Buoyancy.__init__")
-        scene._verify_name_available(name)
+        scene.assert_name_available(name)
 
         self._vfNode = scene._vfc.new_buoyancy(name)
         super().__init__(scene=scene, name=name)
@@ -1190,18 +1188,18 @@ class Buoyancy(NodeCoreConnected, HasParentCore, HasTrimesh):
         self._vfNode.reloadTrimesh()
 
     @property
-    def cob(self)->tuple[tuple[float,float,float]]:
+    def cob(self) -> tuple[tuple[float, float, float]]:
         """GLOBAL position of the center of buoyancy [m,m,m] (global axis)"""
         return self._vfNode.cob
 
     @property
-    def cob_local(self)->tuple[tuple[float,float,float]]:
+    def cob_local(self) -> tuple[tuple[float, float, float]]:
         """Position of the center of buoyancy [m,m,m] (local axis)"""
 
         return self.parent.to_loc_position(self.cob)
 
     @property
-    def displacement(self)->float:
+    def displacement(self) -> float:
         """Displaced volume of fluid [m^3]"""
         return self._vfNode.displacement
 
@@ -1229,7 +1227,6 @@ class Buoyancy(NodeCoreConnected, HasParentCore, HasTrimesh):
         return code
 
 
-
 class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
     """Tank provides a fillable tank based on a mesh. The mesh is triangulated and chopped at the instantaneous flat fluid surface. Gravity is applied as an downwards force that the center of fluid.
     The calculation of fluid volume and center is as accurate as the provided geometry.
@@ -1245,24 +1242,19 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
     _valid_parent_types = (Frame,)
 
     def __init__(self, scene, name):
-
         logging.info("Tank.__init__")
-        scene._verify_name_available(name)
+        scene.assert_name_available(name)
 
         self._vfNode = scene._vfc.new_tank(name)
         super().__init__(scene=scene, name=name)
 
-        self._inertia = scene._vfc.new_pointmass(
-            self.name + VF_NAME_SPLIT + "inertia"
-        )
+        self._inertia = scene._vfc.new_pointmass(self.name + VF_NAME_SPLIT + "inertia")
 
     def depends_on(self) -> list:
         return HasParentCore.depends_on(self)
 
     def change_parent_to(self, new_parent):
         HasTrimesh.change_parent_to(self, new_parent)
-
-
 
     def update(self):
         self._vfNode.reloadTrimesh()
@@ -1277,7 +1269,7 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
         super()._delete_vfc()
 
     @property
-    def free_flooding(self)->bool:
+    def free_flooding(self) -> bool:
         """Tank is filled till global waterline (aka: damaged) [bool]"""
         return self._vfNode.free_flooding
 
@@ -1289,7 +1281,7 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
         self._vfNode.free_flooding = value
 
     @property
-    def permeability(self)->float:
+    def permeability(self) -> float:
         """Permeability is the fraction of the meshed volume that can be filled with fluid [-]"""
         return self._vfNode.permeability
 
@@ -1299,12 +1291,12 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
         self._vfNode.permeability = value
 
     @property
-    def cog(self)->tuple[tuple[float,float,float]]:
+    def cog(self) -> tuple[tuple[float, float, float]]:
         """Global position of the center of volume / gravity [m,m,m] (global)"""
         return self._vfNode.cog
 
     @property
-    def cog_local(self)->tuple[tuple[float,float,float]]:
+    def cog_local(self) -> tuple[tuple[float, float, float]]:
         """Center of gravity [m,m,m] (parent axis)"""
         return self.parent.to_loc_position(self.cog)
 
@@ -1314,12 +1306,12 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
         return self.parent.to_glob_position(self._vfNode.cog_when_full)
 
     @property
-    def cog_when_full(self)->tuple[float,float,float]:
+    def cog_when_full(self) -> tuple[float, float, float]:
         """LOCAL position of the center of volume / gravity of the tank when it is filled [m,m,m] (parent axis)"""
         return self._vfNode.cog_when_full
 
     @property
-    def cogx_when_full(self)->float:
+    def cogx_when_full(self) -> float:
         """x position of the center of volume / gravity of the tank when it is filled [m] (parent axis)"""
         return self._vfNode.cog_when_full[0]
 
@@ -1334,7 +1326,7 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
         return self._vfNode.cog_when_full[2]
 
     @property
-    def fill_pct(self)->float:
+    def fill_pct(self) -> float:
         """Amount of volume in tank as percentage of capacity [%]"""
         if self.capacity == 0:
             return 0
@@ -1343,8 +1335,7 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
     @fill_pct.setter
     @node_setter_observable
     def fill_pct(self, value):
-
-        if value < 0 and value > -0.01:
+        if (value < 0) and (value > -0.01):
             value = 0
 
         assert1f_positive_or_zero(value)
@@ -1358,7 +1349,7 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
         self.volume = value * self.capacity / 100
 
     @property
-    def level_global(self)->float:
+    def level_global(self) -> float:
         """The fluid plane elevation in the global axis system [m]
         Setting this adjusts the volume"""
         return self._vfNode.fluid_level_global
@@ -1371,7 +1362,7 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
         self._vfNode.fluid_level_global = value
 
     @property
-    def volume(self)->float:
+    def volume(self) -> float:
         """The actual volume of fluid in the tank [m3]
         Setting this adjusts the fluid level"""
         return self._vfNode.volume
@@ -1391,7 +1382,7 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
             return self._scene.rho_water
 
     @property
-    def density(self)->float:
+    def density(self) -> float:
         """Density of the fluid in the tank. Density < 0 means use outside water density. See also used_density [mT/m3]"""
         return self._vfNode.density
 
@@ -1403,7 +1394,7 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
         self._vfNode.density = value
 
     @property
-    def capacity(self)->float:
+    def capacity(self) -> float:
         """Fillable volume of the tank calcualted as mesh volume times permeability [m3]
         This is calculated from the defined geometry and permeability.
         See also: mesh_volume"""
@@ -1417,7 +1408,7 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
         return self._vfNode.capacity / self._vfNode.permeability
 
     @property
-    def ullage(self)->float:
+    def ullage(self) -> float:
         """Ullage of the tank [m]
         The ullage is the distance between a measurement point and the fluid surface. The point is [xf,yf,zv] where
         xf and yf are the x and y coordinates (local) of the center of fluid when the tank is full. zv is the largest z value
@@ -1458,7 +1449,9 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
 
         return code
 
+
 # -------- non-parent types
+
 
 class Cable(NodeCoreConnected):
     """A Cable represents a linear elastic wire running from a Poi or sheave to another Poi of sheave.
@@ -1482,15 +1475,14 @@ class Cable(NodeCoreConnected):
 
     """
 
-    def __init__(self, scene, name : str):
-
-        scene._verify_name_available(name)
+    def __init__(self, scene, name: str):
+        scene.assert_name_available(name)
         self._vfNode = scene._vfc.new_cable(name)
 
         super().__init__(scene=scene, name=name)
 
         self._pois = list()
-        self._reversed : List[bool] = list()
+        self._reversed: List[bool] = list()
 
         self._render_as_tube = True
 
@@ -1498,22 +1490,22 @@ class Cable(NodeCoreConnected):
         return [*self._pois]
 
     @property
-    def tension(self)->float:
+    def tension(self) -> float:
         """Tension in the cable [kN]"""
         return self._vfNode.tension
 
     @property
-    def stretch(self)->float:
+    def stretch(self) -> float:
         """Stretch of the cable [m]"""
         return self._vfNode.stretch
 
     @property
-    def actual_length(self)->float:
+    def actual_length(self) -> float:
         """Current length of the cable: length + stretch [m]"""
         return self.length + self.stretch
 
     @property
-    def length(self)->float:
+    def length(self) -> float:
         """Length of the cable when in rest [m]"""
         return self._vfNode.Length
 
@@ -1521,7 +1513,6 @@ class Cable(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def length(self, val):
-
         if val < 1e-9:
             raise Exception(
                 "Length shall be more than 0 (otherwise stiffness EA/L becomes infinite)"
@@ -1529,7 +1520,7 @@ class Cable(NodeCoreConnected):
         self._vfNode.Length = val
 
     @property
-    def EA(self)->float:
+    def EA(self) -> float:
         """Stiffness of the cable [kN]"""
         return self._vfNode.EA
 
@@ -1537,11 +1528,10 @@ class Cable(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def EA(self, ea):
-
         self._vfNode.EA = ea
 
     @property
-    def diameter(self)->float:
+    def diameter(self) -> float:
         """Diameter of the cable. Used when a cable runs over a circle. [m]"""
         return self._vfNode.diameter
 
@@ -1549,11 +1539,10 @@ class Cable(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def diameter(self, diameter):
-
         self._vfNode.diameter = diameter
 
     @property
-    def mass_per_length(self)->float:
+    def mass_per_length(self) -> float:
         """Mass per length of the cable [mT/m]"""
         return self._vfNode.mass_per_length
 
@@ -1564,7 +1553,7 @@ class Cable(NodeCoreConnected):
         self._vfNode.mass_per_length = mass_per_length
 
     @property
-    def mass(self)->float:
+    def mass(self) -> float:
         """Mass of the cable (derived from length and mass-per-length) [mT]"""
         return self._vfNode.mass_per_length * self.length
 
@@ -1575,7 +1564,7 @@ class Cable(NodeCoreConnected):
         self._vfNode.mass_per_length = mass / self.length
 
     @property
-    def reversed(self)->tuple[bool]:
+    def reversed(self) -> tuple[bool]:
         """Diameter of the cable. Used when a cable runs over a circle. [m]"""
         return tuple(self._reversed)
 
@@ -1583,12 +1572,11 @@ class Cable(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def reversed(self, reversed):
-
         self._reversed = list(reversed)
         self._update_pois()
 
     @property
-    def connections(self)->tuple[Point or Circle]:
+    def connections(self) -> tuple[Point or Circle]:
         """List or Tuple of nodes that this cable is connected to. Nodes may be passed by name (string) or by reference.
 
         Example:
@@ -1626,8 +1614,6 @@ class Cable(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def connections(self, value):
-
-
         if len(value) < 2:
             raise ValueError("At least two connections required")
 
@@ -1670,7 +1656,7 @@ class Cable(NodeCoreConnected):
         """A list of 3D locations which can be used for visualization"""
         return self._vfNode.global_points
 
-    def _add_connection_to_core(self, connection, reversed = False):
+    def _add_connection_to_core(self, connection, reversed=False):
         if isinstance(connection, Point):
             self._vfNode.add_connection_poi(connection._vfNode)
         if isinstance(connection, Circle):
@@ -1682,11 +1668,10 @@ class Cable(NodeCoreConnected):
         # sync length of reversed
         while len(self._reversed) < len(self._pois):
             self._reversed.append(False)
-        self._reversed = self._reversed[0:len(self._pois)]
+        self._reversed = self._reversed[0 : len(self._pois)]
 
         for point, reversed in zip(self._pois, self._reversed):
             self._add_connection_to_core(point, reversed)
-
 
     def _give_poi_names(self):
         """Returns a list with the names of all the pois"""
@@ -1707,9 +1692,10 @@ class Cable(NodeCoreConnected):
         self.length = (self.actual_length) * self.EA / (target_tension + self.EA)
 
     @node_setter_manageable
-    def set_length_for_stretched_length_under_tension(self, stretched_length, target_tension=None):
-        """Changes the length of cable such that its stretched length under target-tension becomes stretched-length.
-        """
+    def set_length_for_stretched_length_under_tension(
+        self, stretched_length, target_tension=None
+    ):
+        """Changes the length of cable such that its stretched length under target-tension becomes stretched-length."""
 
         # F = stretch * EA / L
         # so : L = L0*EA / (F + EA)
@@ -1732,7 +1718,9 @@ class Cable(NodeCoreConnected):
         code.append("            length={:.6g},".format(self.length))
 
         if self.mass_per_length != 0:
-            code.append("            mass_per_length={:.6g},".format(self.mass_per_length))
+            code.append(
+                "            mass_per_length={:.6g},".format(self.mass_per_length)
+            )
 
         if self.diameter != 0:
             code.append("            diameter={:.6g},".format(self.diameter))
@@ -1753,7 +1741,7 @@ class Cable(NodeCoreConnected):
         if np.any(self.reversed):
             code.append(f"s['{self.name}'].reversed = {self.reversed}")
 
-        return '\n'.join(code)
+        return "\n".join(code)
 
 
 class LC6d(NodeCoreConnected):
@@ -1777,7 +1765,7 @@ class LC6d(NodeCoreConnected):
 
     """
 
-    def __init__(self, scene, name : str):
+    def __init__(self, scene, name: str):
         scene.assert_name_available(name)
         self._vfNode = scene._vfc.new_linearconnector6d(name)
         super().__init__(scene=scene, name=name)
@@ -1789,7 +1777,7 @@ class LC6d(NodeCoreConnected):
         return [self._main, self._secondary]
 
     @property
-    def stiffness(self)->tuple[float,float,float,float,float,float]:
+    def stiffness(self) -> tuple[float, float, float, float, float, float]:
         """Stiffness of the connector: kx, ky, kz, krx, kry, krz in [kN/m and kNm/rad] (axis system of the main axis)"""
         return self._vfNode.stiffness
 
@@ -1797,11 +1785,10 @@ class LC6d(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def stiffness(self, val):
-
         self._vfNode.stiffness = val
 
     @property
-    def main(self)->Frame:
+    def main(self) -> Frame:
         """Main axis system. This axis system dictates the axis system that the stiffness is expressed in
         #NOGUI"""
         return self._main
@@ -1810,7 +1797,6 @@ class LC6d(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def main(self, val):
-
         val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Frame):
             raise TypeError("Provided nodeA should be a Axis")
@@ -1819,7 +1805,7 @@ class LC6d(NodeCoreConnected):
         self._vfNode.master = val._vfNode
 
     @property
-    def secondary(self)->Frame:
+    def secondary(self) -> Frame:
         """Secondary (connected) axis system
         #NOGUI"""
         return self._secondary
@@ -1828,7 +1814,6 @@ class LC6d(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def secondary(self, val):
-
         val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Frame):
             raise TypeError("Provided nodeA should be a Axis")
@@ -1837,42 +1822,42 @@ class LC6d(NodeCoreConnected):
         self._vfNode.slave = val._vfNode
 
     @property
-    def fgx(self)->float:
+    def fgx(self) -> float:
         """Force on main in global coordinate frame [kN]"""
         return self._vfNode.global_force[0]
 
     @property
-    def fgy(self)->float:
+    def fgy(self) -> float:
         """Force on main in global coordinate frame [kN]"""
         return self._vfNode.global_force[1]
 
     @property
-    def fgz(self)->float:
+    def fgz(self) -> float:
         """Force on main in global coordinate frame [kN]"""
         return self._vfNode.global_force[2]
 
     @property
-    def force_global(self)->tuple[float,float,float]:
+    def force_global(self) -> tuple[float, float, float]:
         """Force on main in global coordinate frame [kN,kN,kN,kNm,kNm,kNm]"""
         return self._vfNode.global_force
 
     @property
-    def mgx(self)->float:
+    def mgx(self) -> float:
         """Moment on main in global coordinate frame [kNm]"""
         return self._vfNode.global_moment[0]
 
     @property
-    def mgy(self)->float:
+    def mgy(self) -> float:
         """Moment on main in global coordinate frame [kNm]"""
         return self._vfNode.global_moment[1]
 
     @property
-    def mgz(self)->float:
+    def mgz(self) -> float:
         """Moment on main in global coordinate frame [kNm]"""
         return self._vfNode.global_moment[2]
 
     @property
-    def moment_global(self)->tuple[float,float,float]:
+    def moment_global(self) -> tuple[float, float, float]:
         """Moment on main in global coordinate frame [kNm, kNm, kNm]"""
         return self._vfNode.global_moment
 
@@ -1882,8 +1867,12 @@ class LC6d(NodeCoreConnected):
         code += "\ns.new_linear_connector_6d(name='{}',".format(self.name)
         code += "\n            main='{}',".format(self.main.name)
         code += "\n            secondary='{}',".format(self.secondary.name)
-        code += "\n            stiffness=({:.6g}, {:.6g}, {:.6g}, ".format(*self.stiffness[:3])
-        code += "\n                       {:.6g}, {:.6g}, {:.6g}) )".format(*self.stiffness[3:])
+        code += "\n            stiffness=({:.6g}, {:.6g}, {:.6g}, ".format(
+            *self.stiffness[:3]
+        )
+        code += "\n                       {:.6g}, {:.6g}, {:.6g}) )".format(
+            *self.stiffness[3:]
+        )
 
         return code
 
@@ -1895,7 +1884,7 @@ class Connector2d(NodeCoreConnected):
     * the angular stiffness is defined by k_angular and is defined over the actual smallest angle between the two systems.
     """
 
-    def __init__(self, scene, name : str):
+    def __init__(self, scene, name: str):
         scene.assert_name_available(name)
         self._vfNode = scene._vfc.new_connector2d(name)
         super().__init__(scene=scene, name=name)
@@ -1912,37 +1901,37 @@ class Connector2d(NodeCoreConnected):
         return np.rad2deg(self._vfNode.angle)
 
     @property
-    def force(self)-> float:
+    def force(self) -> float:
         """Actual force between nodeA and nodeB [kN] (read-only)"""
         return self._vfNode.force
 
     @property
-    def moment(self)-> float:
+    def moment(self) -> float:
         """Actual moment between nodeA and nodeB [kNm] (read-only)"""
         return self._vfNode.moment
 
     @property
-    def axis(self)->tuple[float,float,float]:
+    def axis(self) -> tuple[float, float, float]:
         """Actual rotation axis between nodeA and nodeB [m,m,m](read-only)"""
         return self._vfNode.axis
 
     @property
-    def ax(self)-> float:
+    def ax(self) -> float:
         """X component of actual rotation axis between nodeA and nodeB [deg](read-only)"""
         return self._vfNode.axis[0]
 
     @property
-    def ay(self)-> float:
+    def ay(self) -> float:
         """Y component of actual rotation axis between nodeA and nodeB [deg] (read-only)"""
         return self._vfNode.axis[1]
 
     @property
-    def az(self)-> float:
+    def az(self) -> float:
         """Z component of actual rotation axis between nodeA and nodeB [deg] (read-only)"""
         return self._vfNode.axis[2]
 
     @property
-    def k_linear(self)-> float:
+    def k_linear(self) -> float:
         """Linear stiffness [kN/m]"""
         return self._vfNode.k_linear
 
@@ -1950,11 +1939,10 @@ class Connector2d(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def k_linear(self, value):
-
         self._vfNode.k_linear = value
 
     @property
-    def k_angular(self)-> float:
+    def k_angular(self) -> float:
         """Angular stiffness [kNm/rad]"""
         return self._vfNode.k_angular
 
@@ -1962,7 +1950,6 @@ class Connector2d(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def k_angular(self, value):
-
         self._vfNode.k_angular = value
 
     @property
@@ -1975,7 +1962,6 @@ class Connector2d(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def nodeA(self, val):
-
         val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Frame):
             raise TypeError("Provided nodeA should be a Axis")
@@ -1993,7 +1979,6 @@ class Connector2d(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def nodeB(self, val):
-
         val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Frame):
             raise TypeError("Provided nodeA should be a Axis")
@@ -2011,7 +1996,6 @@ class Connector2d(NodeCoreConnected):
         code += "\n            k_angular ={:.6g})".format(self.k_angular)
 
         return code
-
 
 
 class Beam(NodeCoreConnected):
@@ -2046,7 +2030,7 @@ class Beam(NodeCoreConnected):
 
     """
 
-    def __init__(self, scene, name : str):
+    def __init__(self, scene, name: str):
         scene.assert_name_available(name)
         self._vfNode = scene._vfc.new_linearbeam(name)
         super().__init__(scene=scene, name=name)
@@ -2061,7 +2045,7 @@ class Beam(NodeCoreConnected):
         return [self._nodeA, self._nodeB]
 
     @property
-    def n_segments(self)-> int:
+    def n_segments(self) -> int:
         """Number of segments used in beam [-]"""
         return self._vfNode.nSegments
 
@@ -2074,7 +2058,7 @@ class Beam(NodeCoreConnected):
         self._vfNode.nSegments = int(value)
 
     @property
-    def EIy(self)-> float:
+    def EIy(self) -> float:
         """E * Iyy : bending stiffness in the XZ plane [kN m2]
 
         E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
@@ -2086,11 +2070,10 @@ class Beam(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def EIy(self, value):
-
         self._vfNode.EIy = value
 
     @property
-    def EIz(self)-> float:
+    def EIz(self) -> float:
         """E * Izz : bending stiffness in the XY plane [kN m2]
 
         E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
@@ -2102,11 +2085,10 @@ class Beam(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def EIz(self, value):
-
         self._vfNode.EIz = value
 
     @property
-    def GIp(self)-> float:
+    def GIp(self) -> float:
         """G * Ipp : torsional stiffness about the X (length) axis [kN m2]
 
         G is the shear-modulus of elasticity; for steel 75-80 GPa (10^6 kN/m2)
@@ -2118,11 +2100,10 @@ class Beam(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def GIp(self, value):
-
         self._vfNode.GIp = value
 
     @property
-    def EA(self)-> float:
+    def EA(self) -> float:
         """E * A : stiffness in the length direction [kN]
 
         E is the modulus of elasticity; for steel 190-210 GPa (10^6 kN/m2)
@@ -2134,11 +2115,10 @@ class Beam(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def EA(self, value):
-
         self._vfNode.EA = value
 
     @property
-    def tension_only(self)->bool:
+    def tension_only(self) -> bool:
         """axial stiffness (EA) only applicable to tension [True/False]"""
         return self._vfNode.tensionOnly
 
@@ -2152,7 +2132,7 @@ class Beam(NodeCoreConnected):
         self._vfNode.tensionOnly = value
 
     @property
-    def mass(self)-> float:
+    def mass(self) -> float:
         """Mass of the beam in [mT]"""
         return self._vfNode.Mass
 
@@ -2160,13 +2140,12 @@ class Beam(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def mass(self, value):
-
         assert1f(value, "Mass shall be a number")
         self._vfNode.Mass = value
         pass
 
     @property
-    def L(self)-> float:
+    def L(self) -> float:
         """Length of the beam in unloaded condition [m]"""
         return self._vfNode.L
 
@@ -2174,7 +2153,6 @@ class Beam(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def L(self, value):
-
         self._vfNode.L = value
 
     @property
@@ -2186,7 +2164,6 @@ class Beam(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def nodeA(self, val):
-
         val = self._scene._node_from_node_or_str(val)
 
         if not isinstance(val, Frame):
@@ -2196,7 +2173,7 @@ class Beam(NodeCoreConnected):
         self._vfNode.master = val._vfNode
 
     @property
-    def nodeB(self)->Frame:
+    def nodeB(self) -> Frame:
         """The axis system that the B-end of the beam is connected to. The beam arrives at this axis system along the X-axis [Frame]"""
         return self._nodeB
 
@@ -2204,7 +2181,6 @@ class Beam(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def nodeB(self, val):
-
         val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Frame):
             raise TypeError("Provided nodeA should be a Axis")
@@ -2223,17 +2199,17 @@ class Beam(NodeCoreConnected):
 
     # read-only
     @property
-    def moment_A(self) -> tuple[float,float,float]:
+    def moment_A(self) -> tuple[float, float, float]:
         """Moment on beam at node A [kNm, kNm, kNm] (axis system of node A)"""
         return self._vfNode.moment_on_master
 
     @property
-    def moment_B(self)-> tuple[float,float,float]:
+    def moment_B(self) -> tuple[float, float, float]:
         """Moment on beam at node B [kNm, kNm, kNm] (axis system of node B)"""
         return self._vfNode.moment_on_slave
 
     @property
-    def tension(self)->float:
+    def tension(self) -> float:
         """Tension in the beam [kN], negative for compression
 
         tension is calculated at the midpoints of the beam segments.
@@ -2241,7 +2217,7 @@ class Beam(NodeCoreConnected):
         return self._vfNode.tension
 
     @property
-    def torsion(self)->float:
+    def torsion(self) -> float:
         """Torsion moment [kNm]. Positive if end B has a positive rotation about the x-axis of end A
 
         torsion is calculated at the midpoints of the beam segments.
@@ -2249,29 +2225,29 @@ class Beam(NodeCoreConnected):
         return self._vfNode.torsion
 
     @property
-    def X_nodes(self)->tuple[float]:
+    def X_nodes(self) -> tuple[float]:
         """Returns the x-positions of the end nodes and internal nodes along the length of the beam [m]"""
         return self._vfNode.x
 
     @property
-    def X_midpoints(self)->tuple[float]:
+    def X_midpoints(self) -> tuple[float]:
         """X-positions of the beam centers measured along the length of the beam [m]"""
         return tuple(
             0.5 * (np.array(self._vfNode.x[:-1]) + np.array(self._vfNode.x[1:]))
         )
 
     @property
-    def global_positions(self)->tuple[tuple[float,float,float]]:
+    def global_positions(self) -> np.array:
         """Global-positions of the end nodes and internal nodes [m,m,m]"""
         return np.array(self._vfNode.global_position, dtype=float)
 
     @property
-    def global_orientations(self)->tuple[tuple[float,float,float]]:
+    def global_orientations(self) -> tuple[tuple[float, float, float]]:
         """Global-orientations of the end nodes and internal nodes [deg,deg,deg]"""
         return np.rad2deg(self._vfNode.global_orientation)
 
     @property
-    def bending(self)->tuple[tuple[float,float,float]]:
+    def bending(self) -> np.array:
         """Bending forces of the end nodes and internal nodes [0, kNm, kNm]"""
         return np.array(self._vfNode.bending)
 

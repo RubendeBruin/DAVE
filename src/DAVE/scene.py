@@ -6,6 +6,7 @@
   Ruben de Bruin - 2019
 """
 import weakref
+import  datetime
 from os.path import isdir, isfile
 from os import mkdir
 from shutil import copy
@@ -16,9 +17,10 @@ import functools
 
 import DAVEcore as DC
 
-from DAVE.settings import DAVE_DEFAULT_SOLVER_MOBILITY, DAVE_DEFAULT_SOLVER_TOLERANCE, RESOURCE_PATH, NodePropertyInfo
-from DAVE.tools import *
+from DAVE.settings import DAVE_DEFAULT_SOLVER_MOBILITY, DAVE_DEFAULT_SOLVER_TOLERANCE, RESOURCE_PATH, NodePropertyInfo, \
+    MANAGED_NODE_IDENTIFIER
 
+from .tools import *
 from .nodes import *
 # from .nodes import _Area
 
@@ -33,7 +35,6 @@ from .nodes import *
 #    --> node.position[2] = 5 is not allowed
 
 
-from .tools import assert1f, assert1f_positive_or_zero
 
 
 class Scene:
@@ -1302,6 +1303,21 @@ class Scene:
         if not succes:
             raise ValueError(f"Could not dissolve node because {reason}")
 
+    def delete_empty_frames_and_bodies(self):
+        """Deletes all empty frames and rigid bodies"""
+
+        for node in self._nodes:
+            if isinstance(node, RigidBody):
+                if node.mass == 0:
+                    if len(self.nodes_depending_on(node)) == 0:
+                        self.delete(node)
+                        return True
+            elif isinstance(node, Frame):
+                if len(self.nodes_depending_on(node)) == 0:
+                    self.delete(node)
+                    return True
+
+        return False
 
     def flatten(self, root_node=None, exclude_known_types = False):
         """Performs a recursive dissolve on Frames (not rigid bodies). If root_node is None (default) then the whole model is flattened"""
@@ -1322,21 +1338,24 @@ class Scene:
             if root_node is None:
                 nodes = (*self._nodes,)
             else:
-                all_nodes = self.nodes_depending_on(root_node)
-                nodes = [node for node in all_nodes if isinstance(node, Frame)]
+                nodes = self.nodes_depending_on(root_node)
+                # nodes = [node for node in all_nodes if isinstance(node, Frame)]
 
             for node in nodes:
 
-                dissolved_node_name = node.name  # for debugging
+                # dissolved_node_name = node.name  # for debugging
+                #
+                # if exclude_known_types:
+                #     if isinstance(node, (Shackle, Component, Sling)):
+                #         continue
+                #
+                # done, reason = self.dissolve_attempt(node)
+                work_done, reason = node.dissolve()
 
-                if exclude_known_types:
-                    if isinstance(node, (Shackle, Component, Sling)):
-                        continue
-
-                done, reason = self.dissolve_attempt(node)
-                if done:
-                    work_done = True
+                if work_done:
                     break
+
+            work_done = work_done or self.delete_empty_frames_and_bodies()
 
             if not work_done:
                 break
@@ -2138,7 +2157,7 @@ class Scene:
         assertValidName(name)
         self._verify_name_available(name)
 
-        name_prefix = name + vfc.MANAGED_NODE_IDENTIFIER
+        name_prefix = name + MANAGED_NODE_IDENTIFIER
         postfixes = [
             "_axis_on_parent",
             "_pin_hole_connection",
@@ -3295,7 +3314,7 @@ class Scene:
         assertValidName(name)
         self._verify_name_available(name)
 
-        name_prefix = name + vfc.MANAGED_NODE_IDENTIFIER
+        name_prefix = name + MANAGED_NODE_IDENTIFIER
         postfixes = [
             "_spliceA",
             "_spliceA",
@@ -3412,7 +3431,7 @@ class Scene:
         assertValidName(name)
         self._verify_name_available(name)
 
-        name_prefix = name + vfc.MANAGED_NODE_IDENTIFIER
+        name_prefix = name + MANAGED_NODE_IDENTIFIER
         postfixes = [
             "/body",
             "/pin_point",

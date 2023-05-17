@@ -6,6 +6,8 @@ class super_black_hole():
     def __init__(self, *args, **kwargs):
         pass
 
+
+
 if __name__ == '__main__':
 
 
@@ -189,3 +191,50 @@ def test_getters_and_setters():
     assert 'B' in c._value
     assert 'C' in c._value
     assert '0' in c._value
+
+def test_super_and_return_args():
+
+    # Base-class (Z) implements a method that returns a tuple and does NOT call super()
+
+    class Z():
+        def m(self):
+            return False, "Z"
+
+    class A(Z):
+        def m(self) -> tuple:
+            b, s = super().m()
+            return False or b, s + "A"
+
+    class B(Z):
+        def m(self) -> tuple:
+            b, s = super().m()
+            return True or b, s + "B0"
+
+    class B2(B):
+        pass
+
+    class B3(B2):
+        def m(self) -> tuple:
+            b, s = super().m()
+            return False or b, s + "B3"
+
+    class C(Z):
+        def m(self) -> tuple:
+            b, s = super().m()
+            return False or b, s + "C"
+
+    class D(A,B3,C):
+        def m(self) -> tuple:
+            b, s = super().m()
+            return False or b, s + "D"
+
+    t = D()
+    b, s = t.m()
+
+    assert b
+    assert "Z" in s
+    assert "B0" in s
+    assert "B3" in s
+    assert "C" in s
+    assert "A" in s
+    assert "D" in s
