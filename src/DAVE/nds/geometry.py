@@ -850,7 +850,7 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
 
         return True, ""
 
-    def dissolve(self) -> tuple:
+    def dissolve_some(self) -> tuple:
         """Dissolves the node and removes it from the scene. All children will be assigned to the parent of this node.
 
         There is some difficult logic involved with managed nodes, especially for the weird case where both the manager
@@ -875,7 +875,7 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
                         else:
                             msg += f"Node {node_name} was moved to parent None\n"
 
-        other_done, other_msg = super().dissolve()
+        other_done, other_msg = super().dissolve_some()
 
         work_done = work_done or other_done
         msg = '\n'.join([msg, other_msg]) if msg else other_msg
@@ -905,6 +905,19 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         # self._scene.delete(self)
         # return True, ""
 
+    def dissolve(self):
+        work_done = True
+        msg = ''
+
+        while work_done:
+            work_done, msg = self.dissolve_some()
+            if work_done:
+                self._partially_dissolved = True
+
+        if not self._scene.nodes_depending_on(self):
+            self._scene.delete(self)
+        else:
+            raise ValueError(f'Node {self.name} can not be dissolved because it still has dependants, last message was: {msg}')
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)

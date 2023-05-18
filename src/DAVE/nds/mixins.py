@@ -277,7 +277,7 @@ class Manager(DAVENodeBase, ABC):
             node._limits_by_manager = node.limits.copy()
 
 
-    def dissolve(self) -> tuple:
+    def dissolve_some(self) -> tuple:
         """Managers can always be dissolved. Simply release management of all managed nodes"""
 
         with ClaimManagement(self._scene, self):
@@ -310,7 +310,7 @@ class Container(Manager):
         self.helper_update_node_prefix(self._nodes, old_prefix, new_prefix)
         self._name_prefix = new_prefix
 
-    def dissolve(self) -> tuple[bool, str]:
+    def dissolve_some(self) -> tuple[bool, str]:
         # Unmanage all managed nodes
         if self._nodes:
             with ClaimManagement(self._scene, self):
@@ -320,7 +320,7 @@ class Container(Manager):
             self._nodes = []
             return True, "Managed nodes unmanaged" # No need to call other supers, work was done so good enough
 
-        return super().dissolve()
+        return super().dissolve_some()
 
     def delete(self):
         # remove all imported nodes

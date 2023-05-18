@@ -16,10 +16,10 @@ class RigidBodyContainer(RigidBody, Container):
         scene.assert_name_available(name)
         super().__init__(scene=scene, name=name)
 
-    def dissolve(self) -> tuple[bool, str]:
+    def dissolve_some(self) -> tuple[bool, str]:
         """First try to dissolve the container, then see if we can dissolve the rigidbody as well"""
 
-        return super().dissolve()
+        return super().dissolve_some()
 
         #
         # s = self._scene

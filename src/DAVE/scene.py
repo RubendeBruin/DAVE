@@ -1350,7 +1350,7 @@ class Scene:
                 #         continue
                 #
                 # done, reason = self.dissolve_attempt(node)
-                work_done, reason = node.dissolve()
+                work_done, reason = node.dissolve_some()
 
                 if work_done:
                     break

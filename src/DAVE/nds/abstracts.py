@@ -37,13 +37,14 @@ class DAVENodeBase():
         """
         pass
 
-    def dissolve(self) -> tuple[bool, str]:
+    def dissolve_some(self) -> tuple[bool, str]:
         """Dissolves the node into its children. Returns True if work was done, False otherwise"""
         return False, ""
 
     def try_swap(self, old: 'Node', new: 'Node') -> bool:
         """Tries to swap old for new. Returns True if work was done, False otherwise"""
         return False
+
 
 
 
@@ -114,6 +115,10 @@ class Node(DAVENodeBase, ABC):
 
     def __str__(self):
         return self.name
+
+    def dissolve(self):
+        """Dissolves the node, raises an exception if not possible. """
+        raise Exception(f"Dissolve not implemented for node {self.__repr__()}")
 
     @property
     def color(self) -> tuple or None:

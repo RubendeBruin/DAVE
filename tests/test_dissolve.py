@@ -72,6 +72,18 @@ def test_swap_circle2():
     assert c.try_swap(p, p2) == False  # can not swap because position is different
     assert c.parent == p
 
+def test_dissolvesome_frame():
+    s = Scene()
+    f = s.new_frame('f')
+    f2 = s.new_frame('f2', parent=f)
+    p = s.new_point('p', parent=f2)
+
+    c = s.new_circle('c', parent=p, axis=(0,1,0))
+
+    done, why = f2.dissolve_some()
+    assert done
+    assert p.parent == f
+
 def test_dissolve_frame():
     s = Scene()
     f = s.new_frame('f')
@@ -80,9 +92,11 @@ def test_dissolve_frame():
 
     c = s.new_circle('c', parent=p, axis=(0,1,0))
 
-    done, why = f2.dissolve()
-    assert done
+    f2.dissolve()
     assert p.parent == f
+
+    assert f2 not in s._nodes
+
 
 def test_dissolve_frame2():
     s = Scene()
@@ -92,7 +106,7 @@ def test_dissolve_frame2():
 
     c = s.new_circle('c', parent=p, axis=(0,1,0))
 
-    done, why = f2.dissolve()
+    done, why = f2.dissolve_some()
     assert why
     assert p.parent == f2
     assert not done
@@ -105,7 +119,7 @@ def test_dissolve_RB():
 
     c = s.new_circle('c', parent=p, axis=(0,1,0))
 
-    done, why = f2.dissolve()
+    done, why = f2.dissolve_some()
     assert done
     assert p.parent == f
 
@@ -118,7 +132,7 @@ def test_dissolve_RB2():
 
     c = s.new_circle('c', parent=p, axis=(0,1,0))
 
-    done, why = f2.dissolve()
+    done, why = f2.dissolve_some()
     assert why
     assert p.parent == f
     assert done
@@ -145,11 +159,6 @@ def test_flatten2():
 def test_dissolve_shackle():
     s = Scene()
     sh = s.new_shackle('sh', kind = "GP300")
-    work_done, msg = sh.dissolve()
+    work_done, msg = sh.dissolve_some()
     assert work_done
 
-====================================================================================
- Dissolve as it is implemented now should actually be called "Simplify"
-
-Dissolving should simplify as much as possible and then delete the node if possible
-=====================================================================================

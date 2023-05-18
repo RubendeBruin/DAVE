@@ -149,10 +149,10 @@ class RigidBody(Frame):
         self.inertia = newmass
         self._vfForce.force = (0, 0, -self._scene.g * newmass)
 
-    def dissolve(self):
+    def dissolve_some(self):
         """A RigidBody can only be dissolved if it has no mass, in that case it is actually a frame"""
 
-        return super().dissolve()
+        return super().dissolve_some()
 
         # if self.mass == 0:
         #     return Frame.dissolve(self)
