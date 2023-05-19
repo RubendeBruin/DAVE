@@ -3,7 +3,10 @@
 Dissolve is a function that removes information from the model without modifying the model itself.
 Ususally this takes the form of removing empty Frames or removing management layers.
 
-## Examples
+There are many situations where a Node can not be dissolved. For example a Point can only be dissolved when nothing is attached to it.
+       
+
+## Examples where dissolving is possible
 - Removing an intermediate Frame without degrees of freedom.
 - Breaking a shackle into up into a rigid-body, points and circles - while looing option to control the shackle type and associated information.
 - Breaking a component into its nodes - while losing the reference to the file that it was loaded from.
@@ -27,5 +30,9 @@ Node.dissolve_some() is a methods that a class can implement. Because mixins are
 Flatten calls dissolve() on all nodes in the model repeatedly until all of them raise an exception (no work is done).
 
 Again this can result in partially dissolved nodes in the scene.
+
+# Dissolve-lock
+
+Inter-twisted node trees and managers can make it impossible to wholly dissolve a node at once. Calling dissolve_some iteratively will solve this. 
 
 

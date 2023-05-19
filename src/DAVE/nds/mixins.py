@@ -125,7 +125,7 @@ class HasParentPure(HasParent):
 
         See also: change_parent_to
         """
-        self._parent = self._scene._node_from_node_or_str(var)
+        self._parent = self._scene._node_from_node_or_str_or_None(var)
 
 class HasFootprint(DAVENodeBase):
 
@@ -280,18 +280,20 @@ class Manager(DAVENodeBase, ABC):
     def dissolve_some(self) -> tuple:
         """Managers can always be dissolved. Simply release management of all managed nodes"""
 
+        work_done = False
         with ClaimManagement(self._scene, self):
             for d in self._scene.nodes_managed_by(self):
+                work_done = True
                 if self in d.observers:
                     d.observers.remove(self)
                 d.manager = None
 
-        self._dissolved = True  # secret signal to "delete" that this node is not managing anything anymore and can be deleted without deleting its managed nodes
-        self._scene.delete(self)
+        if work_done:
+            return True, "Unmanaged all managed nodes of {}".format(self.name)
+        else:
+            return False, "Nothing to unmanage"
 
-        return True, ""
-
-class Container(Manager):
+class HasContainer(Manager):
     """Containers are nodes containing nodes. Nodes are stored in self._nodes"""
 
     def __init__(self, scene, name):
@@ -322,6 +324,15 @@ class Container(Manager):
 
         return super().dissolve_some()
 
+    def dissolve(self):
+        """This is a mixin-class. Only un-manage the managed nodes"""
+
+        with ClaimManagement(self._scene, self):
+            for node in self._nodes:
+                node.manager = None
+
+        self._nodes = []
+
     def delete(self):
         # remove all imported nodes
         self._scene._unmanage_and_delete(self._nodes)
@@ -330,7 +341,7 @@ class Container(Manager):
         return node in self._nodes
 
 
-class SubScene(Container):
+class HasSubScene(HasContainer):
     """A group of nodes (container) that can be loaded from a .DAVE file. Basically a component without a frame.
     The nodes can have "exposed" properties"""
 
@@ -342,6 +353,8 @@ class SubScene(Container):
         self._exposed = []
         """List of tuples containing the exposed properties (if any)"""
 
+    def dissolve(self):
+        return HasContainer.dissolve(self)
 
     @property
     def path(self) -> str:

@@ -9,7 +9,7 @@ from .mixins import HasParentPure
 from .core import Frame
 
 
-class Visual(NodePurePython):
+class Visual(NodePurePython, HasParentPure):
     """
     Visual
 

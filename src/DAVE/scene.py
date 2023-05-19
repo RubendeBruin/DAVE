@@ -19,6 +19,7 @@ import DAVEcore as DC
 
 from DAVE.settings import DAVE_DEFAULT_SOLVER_MOBILITY, DAVE_DEFAULT_SOLVER_TOLERANCE, RESOURCE_PATH, NodePropertyInfo, \
     MANAGED_NODE_IDENTIFIER
+from .nds.mixins import Manager
 
 from .tools import *
 from .nodes import *
@@ -818,6 +819,32 @@ class Scene:
         to_be_exported = self._nodes.copy()
         counter = 0
 
+        # Some of the nodes are created by another node in this list.
+        # Remove those nodes from the to_be_exported list and add
+        # them to exported when the node that creates them is exported
+
+        # create a dict "creates" that contains the nodes that are created by a manager as values of the manager as key.
+
+        creates = dict()
+        for node in to_be_exported:
+            if isinstance(node, Manager):
+                c = []
+                for n in self._nodes:
+                    if node.creates(n):
+                        c.append(n)
+
+                if c:
+                    print(f"Manager {node.name} creates:")
+                    for n in c:
+                        print(f"  {n.name}")
+                    creates[node] = c
+
+        for v in creates.values():
+            for node in v:
+                to_be_exported.remove(node)
+
+        # Move from the to_be_exported list to the exported list when all dependencies are exported
+
         while to_be_exported:
 
             counter += 1
@@ -841,10 +868,6 @@ class Scene:
             can_be_exported = []
 
             for node in to_be_exported:
-                # if node._manager:
-                #     if node._manager in exported:
-                #         can_be_exported.append(node)
-                # el
                 if all(el in exported for el in node.depends_on()):
                     can_be_exported.append(node)
 
@@ -854,7 +877,11 @@ class Scene:
 
             exported.extend(can_be_exported)
 
-        self._nodes = exported
+            for node in can_be_exported:
+                if node in creates:
+                    exported.extend(creates[node])
+
+        self._nodes = exported  # set the sorted list
 
     def assert_name_available(self, name):
         """Raises an error is name is not available"""
@@ -1213,95 +1240,14 @@ class Scene:
         # validate timelines
         self._validate_timelines()
 
-    def dissolve_attempt(self, node):
-        """Attempts to dissolve a node, returns True if the node has been dissolved
-
-        See Also:
-            dissolve - same but raises an exception if the node can not be dissolved
-        """
-
-        if isinstance(node, str):
-            node = self[node]
-
-        if node.manager is not None:
-            return False, f"Node is managed by {node.manager.name}"
-
-        succes, reason = node.dissolve()
-
-        return succes, reason
-
-        #
-        # if isinstance(node, Manager):
-        #
-        #     if isinstance(node, RigidBody):
-        #
-        #         p = self.new_rigidbody(
-        #             self.available_name_like(node.name + "_dissolved"),
-        #             mass=node.mass,
-        #             position=node.position,
-        #             rotation=node.rotation,
-        #             inertia_radii=node.inertia_radii,
-        #             fixed=node.fixed,
-        #             cog=node.cog,
-        #             parent=node.parent,
-        #         )
-        #     elif isinstance(node, Frame):
-        #         p = self.new_frame(
-        #             self.available_name_like(node.name + "_dissolved"),
-        #             position=node.position,
-        #             rotation=node.rotation,
-        #             inertia=node.inertia,
-        #             inertia_radii=node.inertia_radii,
-        #             fixed=node.fixed,
-        #             parent=node.parent,
-        #         )
-        #     else:
-        #         p = None
-        #
-        #     with ClaimManagement(self, node):
-        #         for d in self.nodes_managed_by(node):
-        #             if node in d.observers:
-        #                 d.observers.remove(node)
-        #             d.manager = None
-        #
-        #             if hasattr(d, "parent"):
-        #                 if d.parent == node:
-        #                     d.parent = p
-        #
-        #         for d in self.nodes_depending_on(node):
-        #             # TODO: Fails nodes that do depend on this node, but do not have it as parent,
-        #             # for example LC6D and 2d connectors
-        #             if hasattr(d, "parent"):
-        #                 self[d].change_parent_to(p)
-        #
-        #     node._dissolved = True  # signal for the .delete function to skip deletion of nodes created by the manager
-        #
-        # elif isinstance(node, Frame):
-        #     for d in self.nodes_depending_on(node):
-        #         self[d].change_parent_to(node.parent)
-        #
-        # else:
-        #     raise TypeError(
-        #         "Only nodes of type Frame and Manager can be dissolved at this moment"
-        #     )
-
 
 
 
     def dissolve(self, node):
-        """Attempts to delete the given node without affecting the rest of the model.
+        """Calls node.dissolve()"""
 
-        1. Look for nodes that have this node as parent
-        2. Attach those nodes to the parent of this node.
-        3. Delete this node.
-
-        There are many situations in which this will fail because it is impossible to dissolve
-        the element. For example a Point can only be dissolved when nothing is attached to it.
-
-        """
-        succes, reason = self.dissolve_attempt(node)
-        if not succes:
-            raise ValueError(f"Could not dissolve node because {reason}")
+        node = self._node_from_node_or_str(node)
+        node.dissolve()
 
     def delete_empty_frames_and_bodies(self):
         """Deletes all empty frames and rigid bodies"""
@@ -1322,7 +1268,9 @@ class Scene:
     def flatten(self, root_node=None, exclude_known_types = False):
         """Performs a recursive dissolve on Frames (not rigid bodies). If root_node is None (default) then the whole model is flattened"""
 
-        from .nodes import Frame, RigidBody, Shackle, Component, Manager
+        from .nodes import Shackle, Component, Sling
+
+        known_types = (Shackle, Component, Sling)
 
         dissolved_node_name = None
         dissolved_node_names = []
@@ -1332,36 +1280,49 @@ class Scene:
             if dissolved_node_name is not None:
                 dissolved_node_names.append(dissolved_node_name)
 
-
             work_done = False
 
             if root_node is None:
                 nodes = (*self._nodes,)
             else:
                 nodes = self.nodes_depending_on(root_node)
-                # nodes = [node for node in all_nodes if isinstance(node, Frame)]
+
+            if exclude_known_types:
+                nodes = [n for n in nodes if not isinstance(n, known_types)]
+
+            # check for partial dissolve
+            if not "Con6d_Sling/spliceB2_to_Component" in [n.name for n in nodes]:
+                print('break')
+
+
 
             for node in nodes:
 
-                # dissolved_node_name = node.name  # for debugging
-                #
-                # if exclude_known_types:
-                #     if isinstance(node, (Shackle, Component, Sling)):
-                #         continue
-                #
-                # done, reason = self.dissolve_attempt(node)
+                if node.name == "Component":
+                    print('break')
+
                 work_done, reason = node.dissolve_some()
 
                 if work_done:
                     break
 
-            work_done = work_done or self.delete_empty_frames_and_bodies()
+            if not work_done:
+
+                for node in nodes:
+                    try:
+                        node.dissolve()
+                        work_done = True
+                    except:
+                        pass
 
             if not work_done:
                 break
 
         if root_node is not None:
-            self.dissolve(root_node)
+            try:
+                self.dissolve(root_node)
+            except:
+                pass
 
         return dissolved_node_names
 

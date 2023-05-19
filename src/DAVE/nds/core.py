@@ -151,13 +151,16 @@ class RigidBody(Frame):
 
     def dissolve_some(self):
         """A RigidBody can only be dissolved if it has no mass, in that case it is actually a frame"""
-
         return super().dissolve_some()
 
-        # if self.mass == 0:
-        #     return Frame.dissolve(self)
-        #
-        # return False, "RigidBodies with mass can not be dissolved"
+    def dissolve(self):
+        if self.mass == 0:
+            return Frame.dissolve(self)
+
+        else:
+            raise ValueError(f"Cannot dissolve RigidBody {self.name} with mass {self.mass}. Only massless rigidbodies can be dissolved.")
+
+
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -1776,6 +1779,22 @@ class LC6d(NodeCoreConnected):
     def depends_on(self):
         return [self._main, self._secondary]
 
+    def try_swap(self, old: Frame, new: Frame) -> bool:
+        """Try to swap existing main/secondary connection with the new frame. Returns True if the swap was successful. Checks global position"""
+        if new is None:
+            return False # not an acceptable connection
+
+        if not old.same_position_and_orientation(new, tol=1e-9):
+            return False
+
+        if self._main == old:
+            self.main = new
+            return True
+        if self._secondary == old:
+            self.secondary = new
+            return True
+        return False
+
     @property
     def stiffness(self) -> tuple[float, float, float, float, float, float]:
         """Stiffness of the connector: kx, ky, kz, krx, kry, krz in [kN/m and kNm/rad] (axis system of the main axis)"""
@@ -1894,6 +1913,22 @@ class Connector2d(NodeCoreConnected):
 
     def depends_on(self):
         return [self._nodeA, self._nodeB]
+
+    def try_swap(self, old: Frame, new: Frame) -> bool:
+        """Try to swap existing main/secondary connection with the new frame. Returns True if the swap was successful. Checks global position"""
+        if new is None:
+            return False # not an acceptable connection
+
+        if not old.same_position_and_orientation(new, tol=1e-9):
+            return False
+
+        if self.nodeA == old:
+            self.nodeA = new
+            return True
+        if self.nodeB == old:
+            self.nodeB = new
+            return True
+        return False
 
     @property
     def angle(self) -> float:
@@ -2043,6 +2078,22 @@ class Beam(NodeCoreConnected):
 
     def depends_on(self):
         return [self._nodeA, self._nodeB]
+
+    def try_swap(self, old: Frame, new: Frame) -> bool:
+        """Try to swap existing nodeA, nodeB connection with the new frame. Returns True if the swap was successful. Checks global position"""
+        if new is None:
+            return False # not an acceptable connection
+
+        if not old.same_position_and_orientation(new, tol=1e-9):
+            return False
+
+        if self.nodeA == old:
+            self.nodeA = new
+            return True
+        if self.nodeB == old:
+            self.nodeB = new
+            return True
+        return False
 
     @property
     def n_segments(self) -> int:

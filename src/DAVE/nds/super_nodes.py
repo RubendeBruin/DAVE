@@ -14,7 +14,7 @@ from .base import RigidBodyContainer
 from .mixins import *
 
 
-class Sling(NodePurePython, Container):
+class Sling(NodePurePython, HasContainer):
     """A Sling is a single wire with an eye on each end. The eyes are created by splicing the end of the sling back
     into the itself.
 
@@ -250,7 +250,9 @@ class Sling(NodePurePython, Container):
         for n in self._nodes:
             n.manager = self
 
-
+    def dissolve(self):
+        HasContainer.dissolve(self)
+        self._scene.delete(self)
 
     @property
     def _Lmain(self):
@@ -775,9 +777,6 @@ class Shackle(RigidBodyContainer):
 
     """
 
-
-
-
     data = _read_shackle_data()
     _suppressed_node_editors = [RigidBody]
 
@@ -980,7 +979,7 @@ class Shackle(RigidBodyContainer):
 
 
 
-class Component(Frame, SubScene):
+class Component(Frame, HasSubScene):
     """Components are frame-nodes containing a scene. The imported scene is referenced by a file-name. All impored nodes
     are placed in the components frame.
     """
@@ -1001,6 +1000,12 @@ class Component(Frame, SubScene):
             container=self,
             settings=False,  # do not import environment and other settings
         )
+
+    def dissolve(self):
+        """Unmanange all contained nodes, downcast self to Frame"""
+
+        HasSubScene.dissolve(self)
+        self.__class__ = Frame
 
     def give_python_code(self):
 

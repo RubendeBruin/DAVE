@@ -874,6 +874,8 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
                             msg += f"Node {node_name} was moved to parent {self.parent.name}\n"
                         else:
                             msg += f"Node {node_name} was moved to parent None\n"
+                    else:
+                        msg += f"Node {node_name} could not be relocated\n"
 
         other_done, other_msg = super().dissolve_some()
 
@@ -917,7 +919,25 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         if not self._scene.nodes_depending_on(self):
             self._scene.delete(self)
         else:
-            raise ValueError(f'Node {self.name} can not be dissolved because it still has dependants, last message was: {msg}')
+            raise ValueError(f'Node {self.name} can not be dissolved because it still has dependants: {self._scene.nodes_depending_on(self)} , last message was: {msg}')
+
+    def same_position_and_orientation(self, other, tol = 1e-9):
+        """Compares the global position and rotation of this node with another node. Returns True if they are the same within the given tolerance."""
+
+        if other is None:
+            position = np.zeros(3)
+            rotation = np.zeros(3)
+        else:
+            position = other.global_position
+            rotation = other.global_rotation
+
+        if not np.allclose(self.global_position, position, atol=tol):
+            return False
+
+        if not np.allclose(self.global_rotation, rotation, atol=tol):
+            return False
+
+        return True
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)

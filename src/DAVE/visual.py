@@ -2808,6 +2808,8 @@ class WaveField:
         actor.SetMapper(mapper)
         #
         #
+        # actor.GetProperty().SetColor(0.0, 0.5, 0.5)
+        actor.GetProperty().SetOpacity(0.8)
         actor.GetProperty().SetAmbient(1.0)
         actor.GetProperty().SetDiffuse(0.0)
         actor.GetProperty().SetSpecular(0.0)
