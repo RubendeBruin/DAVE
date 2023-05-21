@@ -63,6 +63,23 @@ notes and choices:
    --> node.position[2] = 5 is not allowed
 
 
+Checklist for adding new node classes:
+--------------------------------------
+
+Node:
+- If possible, derive directly from one of the core, pure or base classes
+
+- If not:
+    - Derive from one of the fully implemented node classes and one or more mixins
+    - Create a constructor that calls super().__init__(scene, name)
+    
+
+Mixin:
+- Derive from DAVENodeBase
+- 
+
+
+
 """
 from .nds.abstracts import *
 from .nds.enums import *

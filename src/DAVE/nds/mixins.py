@@ -226,11 +226,14 @@ class HasTrimesh(DAVENodeBase):
 class Manager(DAVENodeBase, ABC):
     """
     Notes:
-        1. A manager shall manage the names of all nodes it creates
+        1. A manager shall manage the names of all nodes it creates - do this by implementing _on_name_changed()
     """
 
     def __init__(self, scene, name):
         logging.info("Manager.__init__")
+
+        assert isinstance(self, (NodePurePython, NodeCoreConnected)), "Manager is a mixin class and must be used togeher with NodePurePython or NodeCoreConnected"
+
         super().__init__(scene=scene, name=name)
 
     def helper_update_node_prefix(self, nodes, old_prefix, new_prefix):
@@ -254,7 +257,7 @@ class Manager(DAVENodeBase, ABC):
         - Release management on all other nodes
         - Do not delete the manager itself
         """
-        pass
+        super().delete()
 
     @abstractmethod
     def creates(self, node: Node):

@@ -417,7 +417,7 @@ def test_testscene_flatten_with_component_position_changed():
     assert not isinstance(s['Component'], Component) # should be a frame now and should still be here
 
 
-def test_testscene_flatten_with_component_position_changed_and_intermediate_frame_added():
+def test_testscene_dissolves_with_component_position_changed_and_intermediate_frame_added():
     s = gimme()
     f3 = s.new_frame('f3', position=s['Component'].position)
     com = s['Component']
@@ -426,9 +426,9 @@ def test_testscene_flatten_with_component_position_changed_and_intermediate_fram
 
     com.dissolve()
     com.dissolve()
-
-    from DAVE.gui import Gui
-    Gui(s)
+    #
+    # from DAVE.gui import Gui
+    # Gui(s)
 
     assert com not in s._nodes  # should be a frame now and should still be here
 

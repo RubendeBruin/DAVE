@@ -33,9 +33,10 @@ class DAVENodeBase():
 
     def _on_name_changed(self):
         """Called when the name of the node has changed
-        !! When overriding this method, call super()._on_name_changed() in the implementation !!
+        !! When implementing this method, call super()._on_name_changed() in the implementation !!
         """
-        pass
+        pass # black hole because super does not have this method
+
 
     def dissolve_some(self) -> tuple[bool, str]:
         """Dissolves the node into its children. Returns True if work was done, False otherwise"""

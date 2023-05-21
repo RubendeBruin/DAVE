@@ -819,6 +819,8 @@ class Scene:
         to_be_exported = self._nodes.copy()
         counter = 0
 
+        originally_present  = tuple(to_be_exported)  # for check
+
         # Some of the nodes are created by another node in this list.
         # Remove those nodes from the to_be_exported list and add
         # them to exported when the node that creates them is exported
@@ -834,9 +836,9 @@ class Scene:
                         c.append(n)
 
                 if c:
-                    print(f"Manager {node.name} creates:")
-                    for n in c:
-                        print(f"  {n.name}")
+                    # print(f"Manager {node.name} creates:")
+                    # for n in c:
+                    #     print(f"  {n.name}")
                     creates[node] = c
 
         for v in creates.values():
@@ -875,17 +877,33 @@ class Scene:
             for n in can_be_exported:
                 to_be_exported.remove(n)
 
-            exported.extend(can_be_exported)
+            # check for nodes that are created by the can_be_exported nodes
+            #   and then recursively check on the nodes created by those nodes as well
+
+            def expand_by_using_creates(node):
+                nodes = [node]
+                if node in creates:
+                    for created_node in creates[node]:
+                        nodes.extend(expand_by_using_creates(created_node))
+                return nodes
 
             for node in can_be_exported:
-                if node in creates:
-                    exported.extend(creates[node])
+                exported.extend(expand_by_using_creates(node))
+
+        # self-check
+        for n in originally_present:
+            assert n in exported, f"Node {n.name} got lost during the sorting process"
 
         self._nodes = exported  # set the sorted list
 
     def assert_name_available(self, name):
         """Raises an error is name is not available"""
         assert self.name_available(name), f"Name {name} is already in use"
+
+    @property
+    def node_names(self) -> tuple:
+        """Returns a tuple of all node names"""
+        return tuple([n.name for n in self._nodes])
 
     def name_available(self, name):
         """Returns True if the name is still available. See Also: node_exists"""
