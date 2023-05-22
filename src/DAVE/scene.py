@@ -5,6 +5,7 @@
 
   Ruben de Bruin - 2019
 """
+import itertools
 import weakref
 import  datetime
 from os.path import isdir, isfile
@@ -701,21 +702,29 @@ class Scene:
         # Renames are _ to /
         #            >>> to /
 
-        replacements = []
-        replacements.append(node_name.replace('>>>','/'))
-        replacements.append(node_name.replace('_pin', '/pin'))
-        replacements.append(node_name.replace('_bow', '/bow'))
-        replacements.append(node_name.replace('_inside', '/inside'))
+        # See if we get a single match when we just ignore _ / and >>>
 
-        replacements.append(node_name.replace('/pin', '_pin'))
-        replacements.append(node_name.replace('/bow', '_bow'))
-        replacements.append(node_name.replace('/inside', '_inside'))
+        search_for = node_name.replace("_", "^").replace(">>>", "^").replace("/", "^")
+        options = [t.replace("_", "^").replace(">>>", "^").replace("/", "^") for t in self.node_names]
 
-        for replacement in replacements:
-            for N in self._nodes:
-                if N.name == replacement:
-                    warnings.warn("Selecting node {node_name} based on fuzzy-match {replacement}. Please use the correct name in the future.")
-                    return N
+        if search_for in options:
+
+            if options.count(search_for) == 1:
+
+                index = options.index(search_for)
+                N = self._nodes[index]
+
+                warnings.warn(
+                    f"Selecting node {node_name} based on fuzzy-match {N.name}. If you are not importing an old file then please use the correct the name in the future.")
+
+                return N
+
+            else:
+                # multiple matches
+                warnings.warn(
+                    f"Selecting node {node_name} based on fuzzy-match {N.name}. If you are not importing an old file then please use the correct the name in the future.")
+
+        # end work-around
 
         if not silent:
             self.print_node_tree()
@@ -851,9 +860,9 @@ class Scene:
                                     raise Exception(f'Node {n} is already created by {k} , can not be created by {node} as well')
 
                 if c:
-                    print(f"Manager {node.name} creates:")
-                    for n in c:
-                        print(f"  {n.name}")
+                    # print(f"Manager {node.name} creates:")
+                    # for n in c:
+                    #     print(f"  {n.name}")
                     creates[node] = c
 
         return creates
@@ -1055,12 +1064,17 @@ class Scene:
             names = self._vfc.elements_depending_directly_on(node)
 
         r = []
-        for name in names:
-            try:
-                node = self.node_by_name(name, silent=True)
-                r.append(node.name)
-            except:
-                pass
+        # filter to only the nodes that are in the scene (remove pointmasses etc)
+        nodes_names_in_scene = self.node_names
+
+        r = [n for n in names if n in nodes_names_in_scene]
+        #
+        # for name in names:
+        #     try:
+        #         node = self.node_by_name(name, silent=True)
+        #         r.append(node.name)
+        #     except:
+        #         pass
 
         # check all other nodes in the scene
 

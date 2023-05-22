@@ -252,6 +252,7 @@ class Sling(NodePurePython, HasContainer):
 
     def dissolve(self):
         HasContainer.dissolve(self)
+        self.__class__ = NodePurePython
         self._scene.delete(self)
 
     @property

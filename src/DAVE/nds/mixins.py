@@ -382,6 +382,11 @@ class HasSubScene(HasContainer):
     @path.setter
     @node_setter_manageable
     def path(self, value):
+        self.load_subscene(value)
+        self._path = value
+
+    def load_subscene(self, value):
+        """Load the subscene into self._nodes"""
         from ..scene import Scene
 
         # first see if we can load
@@ -393,18 +398,9 @@ class HasSubScene(HasContainer):
         self.delete()
 
         # and re-import them
-
-        """We need to find out which nodes are imported. We do this by comparing the old nodes with the new nodes.
-        
-        ???? Why not simply use the names from t ?????
-        
-        """
-
         old_scene_exposed = getattr(self._scene, 'exposed', None)
 
         self._import_scene_func(other_scene=t)
-
-
 
         all_imported_nodes = t._nodes.copy()
         auto_created_nodes = t.get_implicitly_created_nodes()
