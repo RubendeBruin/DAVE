@@ -127,6 +127,30 @@ class GeometricContact(NodePurePython, Manager):  # Note: can not derive from Co
 
         self._update_connection()
 
+    def dissolve_some(self) -> tuple:
+        self.dissolve()
+        return True, "Geometric contact dissolved"
+
+    def dissolve(self):
+        """Unmanages all created nodes and then deletes itself"""
+
+        with ClaimManagement(self._scene, self):
+
+            for node in self._scene.nodes_managed_by(self):
+                node.manager = self.manager
+
+            self._parent_circle.observers.remove(self)
+            self._parent_circle_parent.observers.remove(self)
+
+            self._child_circle.observers.remove(self)
+            self._child_circle_parent.observers.remove(self)
+
+            self._child_circle_parent_parent._parent_for_code_export = True
+
+
+        self.__class__ = NodePurePython
+        self._scene.delete(self)
+
     def on_observed_node_changed(self, changed_node):
         self._update_connection()
 
@@ -259,12 +283,9 @@ class GeometricContact(NodePurePython, Manager):  # Note: can not derive from Co
         self._child_circle_parent.observers.remove(self)
 
     def _update_connection(self):
-
-        remember = self._scene.current_manager
-        self._scene.current_manager = self  # claim management
+        """Update the connection between the two circles"""
 
         # get current properties
-
         c_swivel = self.swivel
         c_swivel_fixed = self.swivel_fixed
         c_rotation_on_parent = self.rotation_on_parent
@@ -272,83 +293,86 @@ class GeometricContact(NodePurePython, Manager):  # Note: can not derive from Co
         c_child_rotation = self.child_rotation
         c_child_fixed = self.child_fixed
 
-        child_circle = self._child_circle  # nodeB
-        parent_circle = self._parent_circle  # nodeA
+        with ClaimManagement(self._scene, self):
 
-        if child_circle.parent.parent is None:
-            raise ValueError(
-                "The pin that is to be connected is not located on a Frame. Can not create the connection because there is no Frame for nodeB"
-            )
+            child_circle = self._child_circle  # nodeB
+            parent_circle = self._parent_circle  # nodeA
 
-        # --------- prepare hole
+            if child_circle.parent.parent is None:
+                raise ValueError(
+                    "The pin that is to be connected is not located on a Frame. Can not create the connection because there is no Frame for nodeB"
+                )
 
-        if parent_circle.parent.parent is not None:
-            self._axis_on_parent.parent = parent_circle.parent.parent
-            z = parent_circle.parent.parent.uz
-        else:
-            z = (0,0,1)
-        self._axis_on_parent.position = parent_circle.parent.position
-        self._axis_on_parent.fixed = (True, True, True, True, True, True)
+            # --------- prepare hole
 
-        # self._axis_on_parent.global_rotation = rotvec_from_y_and_z_axis_direction(parent_circle.global_axis, z)  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
-        self._axis_on_parent.rotation = rotvec_from_y_and_z_axis_direction(parent_circle.axis, (0,0,1))  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
+            if parent_circle.parent.parent is not None:
+                self._axis_on_parent.parent = parent_circle.parent.parent
+                z = parent_circle.parent.parent.uz
+            else:
+                z = (0,0,1)
+            self._axis_on_parent.position = parent_circle.parent.position
+            self._axis_on_parent.fixed = (True, True, True, True, True, True)
 
-        # a1 = self._axis_on_parent.uy
-        # a2 = parent_circle.global_axis
+            # self._axis_on_parent.global_rotation = rotvec_from_y_and_z_axis_direction(parent_circle.global_axis, z)  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
+            self._axis_on_parent.rotation = rotvec_from_y_and_z_axis_direction(parent_circle.axis, (0,0,1))  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
 
-        # Position connection axis at the center of the nodeA axis (pin2)
-        # and allow it to rotate about the pin
-        self._pin_hole_connection.position = (0, 0, 0)
-        self._pin_hole_connection.parent = self._axis_on_parent
-        self._pin_hole_connection.fixed = (True, True, True, True, False, True)
+            # a1 = self._axis_on_parent.uy
+            # a2 = parent_circle.global_axis
 
-        self._connection_axial_rotation.parent = self._pin_hole_connection
-        self._connection_axial_rotation.position = (0, 0, 0)
+            # Position connection axis at the center of the nodeA axis (pin2)
+            # and allow it to rotate about the pin
+            self._pin_hole_connection.position = (0, 0, 0)
+            self._pin_hole_connection.parent = self._axis_on_parent
+            self._pin_hole_connection.fixed = (True, True, True, True, False, True)
 
-        # Position the connection pin (self) on the target pin and
-        # place the parent of the parent of the pin (the axis) on the connection axis
-        # and fix it
-        child_frame = child_circle.parent.parent
+            self._connection_axial_rotation.parent = self._pin_hole_connection
+            self._connection_axial_rotation.position = (0, 0, 0)
 
-        child_frame.parent = self._axis_on_child
-        # slaved_axis.rotation = rotation_from_y_axis_direction(-1 * np.array(pin1.axis))
+            # Position the connection pin (self) on the target pin and
+            # place the parent of the parent of the pin (the axis) on the connection axis
+            # and fix it
+            child_frame = child_circle.parent.parent
 
-        # the child frame needs to be rotated by the inverse of the circle rotation
-        #
-        rotation = rotvec_from_y_and_z_axis_direction(y = child_circle.axis, z = (0,0,1)) # local rotation
-        child_frame.rotation = rotvec_inverse(rotation)
+            child_frame.parent = self._axis_on_child
+            # slaved_axis.rotation = rotation_from_y_axis_direction(-1 * np.array(pin1.axis))
 
-        parent_to_point = child_frame.to_glob_direction(child_circle.parent.position)
+            # the child frame needs to be rotated by the inverse of the circle rotation
+            #
+            rotation = rotvec_from_y_and_z_axis_direction(y = child_circle.axis, z = (0,0,1)) # local rotation
+            child_frame.rotation = rotvec_inverse(rotation)
 
-        child_frame.position = -np.array(self._axis_on_child.to_loc_direction(parent_to_point))
+            parent_to_point = child_frame.to_glob_direction(child_circle.parent.position)
 
-        child_frame.fixed = True
+            child_frame.position = -np.array(self._axis_on_child.to_loc_direction(parent_to_point))
 
-        self._axis_on_child.parent = self._connection_axial_rotation
-        self._axis_on_child.rotation = (0, 0, 0)
-        self._axis_on_child.fixed = (True, True, True, True, False, True)
+            child_frame.fixed = True
 
-        if self._inside_connection:
+            self._axis_on_child.parent = self._connection_axial_rotation
+            self._axis_on_child.rotation = (0, 0, 0)
+            self._axis_on_child.fixed = (True, True, True, True, False, True)
 
-            # Place the pin in the hole
-            self._connection_axial_rotation.rotation = (0, 0, 0)
-            self._axis_on_child.position = (parent_circle.radius - child_circle.radius, 0, 0)
+            if self._inside_connection:
 
-        else:
+                # Place the pin in the hole
+                self._connection_axial_rotation.rotation = (0, 0, 0)
+                self._axis_on_child.position = (parent_circle.radius - child_circle.radius, 0, 0)
 
-            # pin-pin connection
-            self._axis_on_child.position = (child_circle.radius + parent_circle.radius, 0, 0)
-            self._connection_axial_rotation.rotation = (90, 0, 0)
+            else:
+
+                # pin-pin connection
+                self._axis_on_child.position = (child_circle.radius + parent_circle.radius, 0, 0)
+                self._connection_axial_rotation.rotation = (90, 0, 0)
 
         # restore settings
-        self.swivel = c_swivel
-        self.swivel_fixed = c_swivel_fixed
-        self.rotation_on_parent = c_rotation_on_parent
-        self.fixed_to_parent = c_fixed_to_parent
-        self.child_rotation = c_child_rotation
-        self.child_fixed = c_child_fixed
+        with ClaimManagement(self._scene, self._manager):
+            self.swivel = c_swivel
+            self.swivel_fixed = c_swivel_fixed
+            self.rotation_on_parent = c_rotation_on_parent
+            self.fixed_to_parent = c_fixed_to_parent
+            self.child_rotation = c_child_rotation
+            self.child_fixed = c_child_fixed
 
-        self._scene.current_manager = remember
+
 
     def set_pin_pin_connection(self):
         """Sets the connection to be of type pin-pin"""

@@ -31,7 +31,9 @@ class HasParent(DAVENodeBase, ABC):
     @property
     @abstractmethod
     def parent(self) -> Node or None:
+        """The node that this node is located on, if any [Node]"""
         pass
+
     @parent.setter
     @abstractmethod
     @node_setter_manageable
@@ -180,8 +182,9 @@ class HasTrimesh(DAVENodeBase):
             return self._trimesh
 
         @property
-        def trimesh_is_empty(self):
-            """True if the trimesh is empty"""
+        def trimesh_is_empty(self) -> bool:
+            """True if the trimesh is empty
+            #NOGUI"""
             return self.trimesh.is_empty
 
         @node_setter_manageable
@@ -316,25 +319,37 @@ class HasContainer(Manager):
         self._name_prefix = new_prefix
 
     def dissolve_some(self) -> tuple[bool, str]:
-        # Unmanage all managed nodes
+        # Un-manage all managed nodes
+
+        """Note that not all created nodes are necessarily managed by this container.
+         This container may have created a geometric contact between one or two of the created nodes.
+         In that case the geometric contract will manage the nodes.
+         """
+
+        unmanaged = []
+
         if self._nodes:
             with ClaimManagement(self._scene, self):
-                for node in self._nodes:
-                    node.manager = None
+                for node in self._scene.nodes_managed_by(self):
+                    if node.manager == self:
+                        node.manager = self.manager
+                        if self in node.observers:
+                            node.observers.remove(self)
+                        unmanaged.append(node)
 
-            self._nodes = []
-            return True, "Managed nodes unmanaged" # No need to call other supers, work was done so good enough
+            for node in unmanaged:
+                self._nodes.remove(node)
+
+            if unmanaged:
+                return True, "Managed nodes unmanaged" # No need to call other supers, work was done so good enough
 
         return super().dissolve_some()
 
     def dissolve(self):
-        """This is a mixin-class. Only un-manage the managed nodes"""
+        """Un-manage all managed nodes and then delete the container"""
+        Manager.dissolve_some(self)
 
-        with ClaimManagement(self._scene, self):
-            for node in self._nodes:
-                node.manager = None
 
-        self._nodes = []
 
     def delete(self):
         # remove all imported nodes
@@ -378,27 +393,39 @@ class HasSubScene(HasContainer):
         self.delete()
 
         # and re-import them
-        old_nodes = self._scene._nodes.copy()
 
-        # we're importing the exposed list into the current scene
-        # but we need it inside this component
+        """We need to find out which nodes are imported. We do this by comparing the old nodes with the new nodes.
+        
+        ???? Why not simply use the names from t ?????
+        
+        """
 
         old_scene_exposed = getattr(self._scene, 'exposed', None)
 
         self._import_scene_func(other_scene=t)
 
-        # find imported nodes
+
+
+        all_imported_nodes = t._nodes.copy()
+        auto_created_nodes = t.get_implicitly_created_nodes()
+
+        # Use the name of the nodes to created references to the imported nodes
+
+        directly_created_nodes = [node for node in all_imported_nodes if node not in auto_created_nodes]
+
         self._nodes.clear()
-        for node in self._scene._nodes:
-            if node not in old_nodes:
-                self._nodes.append(node)
+        self._nodes.extend([self._scene[node.name] for node in directly_created_nodes])
+
+
 
         # claim ownership of unmanaged nodes
         for node in self._nodes:
-            if node.manager is None:
-                node._manager = self
-                node._limits_by_manager = node.limits.copy()
-                node._watches_by_manager = node.watches.copy()
+            # if node.manager is None:
+            node._manager = self
+            node._limits_by_manager = node.limits.copy()
+            node._watches_by_manager = node.watches.copy()
+
+
 
         # Get exposed properties (if any)
         self._exposed = getattr(t, 'exposed', [])

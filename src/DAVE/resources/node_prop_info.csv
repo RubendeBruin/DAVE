@@ -43,9 +43,7 @@ Beam,torsion,float,Torsion moment . Positive if end B has a positive rotation ab
         "
 Beam,X_nodes,tuple,Returns the x-positions of the end nodes and internal nodes along the length of the beam ,[m],,False,False,False,Returns the x-positions of the end nodes and internal nodes along the length of the beam [m]
 Beam,X_midpoints,tuple,X-positions of the beam centers measured along the length of the beam ,[m],,False,False,False,X-positions of the beam centers measured along the length of the beam [m]
-Beam,global_positions,tuple,Global-positions of the end nodes and internal nodes ,"[m,m,m]",,False,False,False,"Global-positions of the end nodes and internal nodes [m,m,m]"
-Beam,global_orientations,tuple,Global-orientations of the end nodes and internal nodes ,"[deg,deg,deg]",,False,False,False,"Global-orientations of the end nodes and internal nodes [deg,deg,deg]"
-Beam,bending,tuple,Bending forces of the end nodes and internal nodes ,"[0, kNm, kNm]",,False,False,False,"Bending forces of the end nodes and internal nodes [0, kNm, kNm]"
+Beam,bending,array,Bending forces of the end nodes and internal nodes ,"[0, kNm, kNm]",,False,False,False,"Bending forces of the end nodes and internal nodes [0, kNm, kNm]"
 Buoyancy,cob,tuple,GLOBAL position of the center of buoyancy  ,"[m,m,m]",global axis,False,False,False,"GLOBAL position of the center of buoyancy [m,m,m] (global axis)"
 Buoyancy,cob_local,tuple,Position of the center of buoyancy  ,"[m,m,m]",local axis,False,False,False,"Position of the center of buoyancy [m,m,m] (local axis)"
 Buoyancy,displacement,float,Displaced volume of fluid ,[m^3],,False,False,True,Displaced volume of fluid [m^3]
@@ -266,6 +264,11 @@ GeometricContact,fixed_to_parent,bool,Allow rotation around parent ,[boolean],,T
 GeometricContact,child_rotation,float,Angle between the line connecting the centers of the circles and the axis system of the child node ,[degrees],,True,True,True,Angle between the line connecting the centers of the circles and the axis system of the child node [degrees]
 GeometricContact,child_fixed,bool,"Allow rotation of child relative to connection, see also: child_rotation ",[boolean],,True,True,False,"Allow rotation of child relative to connection, see also: child_rotation [boolean]"
 GeometricContact,inside,bool,"Type of connection: True means child circle is inside parent circle, False means the child circle is outside but the circumferences contact ",[boolean],,True,True,False,"Type of connection: True means child circle is inside parent circle, False means the child circle is outside but the circumferences contact [boolean]"
+HasFootprint,footprint,tuple,Determines where on its parent the force of this node is applied.,,,True,False,False,"Determines where on its parent the force of this node is applied.
+        Tuple of tuples ((x1,y1,z1), (x2,y2,z2), .... (xn,yn,zn))"
+HasParent,parent,Node,"The node that this node is located on, if any ",[Node],,True,True,False,"The node that this node is located on, if any [Node]"
+HasSubScene,path,str,Path of the model-file. For example res: padeye.dave,,,True,False,False,Path of the model-file. For example res: padeye.dave
+HasSubScene,exposed_properties,tuple,Names of exposed properties,,,False,False,False,Names of exposed properties
 HydSpring,cob,tuple,Center of buoyancy in  ,"[m,m,m]",parent axis,True,False,False,"Center of buoyancy in (parent axis) [m,m,m]"
 HydSpring,BMT,float,Vertical distance between cob and metacenter for roll ,[m],,True,True,True,Vertical distance between cob and metacenter for roll [m]
 HydSpring,BML,float,Vertical distance between cob and metacenter for pitch ,[m],,True,True,True,Vertical distance between cob and metacenter for pitch [m]
@@ -424,14 +427,20 @@ WindOrCurrentArea,direction,tuple,"Depends on 'areakind'. For 'plane' this is th
         the direction of the axis and for 'sphere' this is not used [m,m,m]"
 WindOrCurrentArea,areakind,AreaKind,Defines how to interpret the area.,,,True,True,False,"Defines how to interpret the area.
         See also: `direction`"
-WindOrCurrentArea,force,tuple,"The x,y and z components of the force  ","[kN,kN,kN]",global axis,False,False,False,"The x,y and z components of the force [kN,kN,kN] (global axis)"
-WindOrCurrentArea,fx,float,The global x-component of the force  ,[kN],global axis,False,False,True,The global x-component of the force [kN] (global axis)
-WindOrCurrentArea,fy,float,The global y-component of the force   ,[kN],global axis,False,False,True,The global y-component of the force [kN]  (global axis)
-WindOrCurrentArea,fz,float,The global z-component of the force   ,[kN],global axis,False,False,True,The global z-component of the force [kN]  (global axis)
-WindOrCurrentArea,A,float,Total area . See also Ae,[m2],,True,True,True,Total area [m2]. See also Ae
-WindOrCurrentArea,Ae,float,Effective area . This is the projection of the total to the actual wind/current direction. Read only.,[m2],,False,False,True,Effective area [m2]. This is the projection of the total to the actual wind/current direction. Read only.
-WindOrCurrentArea,Cd,float,Cd coefficient ,[-],,True,True,True,Cd coefficient [-]
-WindOrCurrentArea,direction,tuple,"Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is",,,True,False,False,"Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is
-        the direction of the axis and for 'sphere' this is not used [m,m,m]"
-WindOrCurrentArea,areakind,AreaKind,Defines how to interpret the area.,,,True,True,False,"Defines how to interpret the area.
-        See also: `direction`"
+HasParent,parent,Node,"The node that this node is located on, if any ",[Node],,True,True,False,"The node that this node is located on, if any [Node]"
+Node,name,str,Name of the node ,[str],,True,False,False,Name of the node [str]
+Node,color,tuple,"The color (r,g,b) of the node - use None for default",,,True,False,False,"The color (r,g,b) of the node - use None for default"
+Node,visible,bool,Determines if this node is visible in the viewport ,[bool],,True,True,False,Determines if this node is visible in the viewport [bool]
+Node,UC,float,"Returns the governing UC of the node, returns None is no limits are defined ",[-],,False,False,True,"Returns the governing UC of the node, returns None is no limits are defined [-]
+
+        See Also: give_UC, UC_governing_details
+        "
+Node,UC_governing_details,tuple,Returns the details of the governing UC for this node :,"[-, name, limit value, actual value]",,False,False,False,"Returns the details of the governing UC for this node [-, name, limit value, actual value]:
+        0: UC,
+        1: property-name,
+        2: property-limits
+        3: property value
+
+        Returns (None, None, None, None) if no limits are supplied
+        "
+Node,tags,tuple,All tags of this node ,,tuple of str,False,False,False,All tags of this node (tuple of str)

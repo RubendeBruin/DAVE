@@ -695,6 +695,28 @@ class Scene:
             if N.name == node_name:
                 return N
 
+        # work-around for renames
+        # TODO: remove this when renames are implemented
+        #
+        # Renames are _ to /
+        #            >>> to /
+
+        replacements = []
+        replacements.append(node_name.replace('>>>','/'))
+        replacements.append(node_name.replace('_pin', '/pin'))
+        replacements.append(node_name.replace('_bow', '/bow'))
+        replacements.append(node_name.replace('_inside', '/inside'))
+
+        replacements.append(node_name.replace('/pin', '_pin'))
+        replacements.append(node_name.replace('/bow', '_bow'))
+        replacements.append(node_name.replace('/inside', '_inside'))
+
+        for replacement in replacements:
+            for N in self._nodes:
+                if N.name == replacement:
+                    warnings.warn("Selecting node {node_name} based on fuzzy-match {replacement}. Please use the correct name in the future.")
+                    return N
+
         if not silent:
             self.print_node_tree()
 
@@ -804,6 +826,51 @@ class Scene:
 
         self._nodes = exported
 
+    def get_created_by_dict(self) -> dict:
+        """Returns a dictionary containing the nodes created by each manager.
+        Keys are the manager nodes
+        Values are lists of nodes created by that manager
+
+        Raises and exception if a node is created by multiple managers
+
+        See Also: get_implicitly_created_nodes
+        """
+
+        creates = dict()
+        for node in self._nodes:
+            if isinstance(node, Manager):
+                c = []
+                for n in self._nodes:
+                    if node.creates(n):
+                        c.append(n)
+
+                        # check if not already created by another manager
+                        for k, v in creates.items():
+                            for vnode in v:
+                                if vnode == n:
+                                    raise Exception(f'Node {n} is already created by {k} , can not be created by {node} as well')
+
+                if c:
+                    print(f"Manager {node.name} creates:")
+                    for n in c:
+                        print(f"  {n.name}")
+                    creates[node] = c
+
+        return creates
+
+    def get_implicitly_created_nodes(self):
+        """Returns a list of nodes that are created by a manager.
+
+        See Also: get_created_by_dict
+        """
+        r = []
+        for val in self.get_created_by_dict().values():
+            r.extend(val)
+
+        return r
+
+
+
     def sort_nodes_by_dependency(self):
         """Sorts the nodes such that a nodes creation only depends on nodes earlier in the list.
 
@@ -827,19 +894,8 @@ class Scene:
 
         # create a dict "creates" that contains the nodes that are created by a manager as values of the manager as key.
 
-        creates = dict()
-        for node in to_be_exported:
-            if isinstance(node, Manager):
-                c = []
-                for n in self._nodes:
-                    if node.creates(n):
-                        c.append(n)
+        creates = self.get_created_by_dict()
 
-                if c:
-                    # print(f"Manager {node.name} creates:")
-                    # for n in c:
-                    #     print(f"  {n.name}")
-                    creates[node] = c
 
         for v in creates.values():
             for node in v:
@@ -2045,7 +2101,7 @@ class Scene:
                 f'Error creating component {name}.\nCan not find  path "{path}"; \n {str(E)}'
             )
         try:
-            t = Scene(filename, current_directory=self.current_directory)
+            t = Scene(filename, current_directory=self.current_directory, resource_paths=self.resources_paths)
         except Exception as E:
             raise ValueError(
                 f'Error creating component {name}.\nCan not import "{filename}" because {str(E)}'
@@ -3657,16 +3713,40 @@ class Scene:
 
         return filename
 
-    def print_node_tree(self):
+    def print_node_tree(self, more=False):
 
         self.sort_nodes_by_dependency()
         to_be_printed = self._nodes.copy()
+
+        if more:
+            c = self.get_created_by_dict()
+            cb = dict()
+            for k,v in c.items():
+                for node in v:
+                    cb[node] = k
 
         def print_deps(node, spaces):
 
             deps = self.nodes_with_parent(node)
 
-            print(spaces + node.name + " [" + str(type(node)).split(".")[-1][:-2] + "]")
+            extra = ""
+            if more:
+                created_by = None
+                managed_by = None
+                if node in cb:
+                    created_by = cb[node].name
+                    extra += f" Created by: {cb[node].name}"
+                if node.manager is not None:
+                    extra += f" Managed by: {node.manager.name} "
+                    managed_by = node.manager.name
+
+                if created_by is not None:
+                    if created_by == managed_by:
+                        extra = " Created and managed by: " + created_by
+
+
+
+            print(spaces + node.name + " [" + str(type(node)).split(".")[-1][:-2] + "]" + extra)
 
             if deps is not None:
                 for dep in deps:

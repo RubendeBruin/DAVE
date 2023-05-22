@@ -1,6 +1,8 @@
 import csv
 from abc import ABC
 
+import numpy as np
+
 import DAVE.scene as ds
 import DAVE.nodes as dn
 import DAVE.settings as settings
@@ -22,7 +24,7 @@ node_property_infos = []
 
 for cls_name, cls in clsmembers:
 
-    if not issubclass(cls, ds.Node):  # Only report nodes
+    if not issubclass(cls, ds.DAVENodeBase):  # Only report nodes and mixins
         continue
 
     for name, what in cls.__dict__.items():
@@ -53,12 +55,18 @@ for cls_name, cls in clsmembers:
 
             property_type = value_type["return"]
 
+            print(f'{cls_name}.{name} --> {property_type}')
+
             # figure out if this is a float, int or Node
             if property_type in (int, float, bool):
                 is_single = True
             elif property_type in (str, tuple) or 'tuple' in str(property_type):
                 is_single = False
+            elif property_type == np.array:
+                is_single = False
             else:
+                print(property_type)
+
                 if dn.Node in property_type.mro():
                     is_single = True
                 elif isinstance(property_type,enum.EnumMeta):

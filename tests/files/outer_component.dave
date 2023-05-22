@@ -1,0 +1,2 @@
+s.new_frame('frame_by_outer_component')
+s.new_component('inner_component','res: inner_component.dave')

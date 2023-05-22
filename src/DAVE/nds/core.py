@@ -2289,13 +2289,15 @@ class Beam(NodeCoreConnected):
 
     @property
     def global_positions(self) -> np.array:
-        """Global-positions of the end nodes and internal nodes [m,m,m]"""
+        """Global-positions of the end nodes and internal nodes [m,m,m]
+        #NOGUI"""
         return np.array(self._vfNode.global_position, dtype=float)
 
     @property
-    def global_orientations(self) -> tuple[tuple[float, float, float]]:
-        """Global-orientations of the end nodes and internal nodes [deg,deg,deg]"""
-        return np.rad2deg(self._vfNode.global_orientation)
+    def global_orientations(self) -> np.array:
+        """Global-orientations of the end nodes and internal nodes [deg,deg,deg]
+        #NOGUI"""
+        return np.rad2deg(self._vfNode.global_orientation, dtype=float)
 
     @property
     def bending(self) -> np.array:

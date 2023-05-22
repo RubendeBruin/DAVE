@@ -432,6 +432,28 @@ def test_testscene_dissolves_with_component_position_changed_and_intermediate_fr
 
     assert com not in s._nodes  # should be a frame now and should still be here
 
+def test_dissolve_geometric_contact():
+    s = Scene()
+    sh1 = s.new_shackle('sh1')
+    sh2 = s.new_shackle('sh2')
+
+    gc = s.new_geometriccontact('gc', sh1.pin, sh2.bow)
+
+    gc.dissolve()
+
+    assert sh1.depends_on() == [s['gc/_axis_on_child']]
+    s.sort_nodes_by_dependency()
+    s.print_node_tree()
+
+def test_flatten_geometric_contact():
+    s = Scene()
+    sh1 = s.new_shackle('sh1')
+    sh2 = s.new_shackle('sh2')
+    gc = s.new_geometriccontact('gc', sh1.pin, sh2.bow)
+
+    s.flatten()
+
+    s.print_node_tree(more=True)
 
 
 

@@ -72,11 +72,14 @@ Node:
 - If not:
     - Derive from one of the fully implemented node classes and one or more mixins
     - Create a constructor that calls super().__init__(scene, name)
-    
+    - Implement any DAVENodeBase methods that are not implemented in the superclasses
+    - Shackle and Sling are good examples for containers
+    - GeometricContact is a good example for something complex.
 
 Mixin:
 - Derive from DAVENodeBase
-- 
+
+
 
 
 
@@ -136,6 +139,8 @@ DAVE_ADDITIONAL_RUNTIME_MODULES['Manager'] = Manager
 DAVE_ADDITIONAL_RUNTIME_MODULES['Node'] = Node
 DAVE_ADDITIONAL_RUNTIME_MODULES['HasFootprint'] = HasFootprint
 DAVE_ADDITIONAL_RUNTIME_MODULES['HasTrimesh'] = HasTrimesh
+DAVE_ADDITIONAL_RUNTIME_MODULES['HasParent'] = HasParent
+DAVE_ADDITIONAL_RUNTIME_MODULES['HasSubScene'] = HasSubScene
 
 
 # Helpers
@@ -159,6 +164,7 @@ if filename.exists():
     types['bool'] = bool
     types['str'] = str
     types['dict'] = type(dict)
+    types['array'] = type(np.array)
 
     btypes = dict()
     btypes['True'] = True
