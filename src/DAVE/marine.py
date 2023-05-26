@@ -542,7 +542,7 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
 
             s._solve_statics_with_optional_control(feedback_func=feedback, do_terminate_func=check_terminate)
 
-            print(global_motion.rotation)
+            # print(global_motion.rotation)
 
             moment_wind.append(-vessel.connection_moment_x)
 
