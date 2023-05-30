@@ -1723,13 +1723,13 @@ class Cable(NodeCoreConnected):
         self._friction_factor = value
 
     @property
-    def tension_maxfriction(self) -> float:
-        """Maximum tension in the cable when accounting for friction [kN]"""
-
-        T0 = self.tension
+    def friction_factor_used(self) -> float:
+        """Read only - the friction factor used in the calculation [-]
+        See Also: friction_factor
+        """
 
         if self.friction_factor > 0:        # user-defined friction factor
-            return T0 * self.friction_factor
+            return self.friction_factor
 
         connections = self.connections # alias
         n_connections = len(connections)
@@ -1737,10 +1737,18 @@ class Cable(NodeCoreConnected):
         if connections[0] == connections[-1] and isinstance(connections[0], Circle): # loop
             N = n_connections - 1
             M = floor(N/2)
-            return T0 * 1.1**M
+            return 1.1**M
         else:                           # no loop
             N = n_connections - 2
-            return T0 * 1.1**N
+            return 1.1**N
+
+
+    @property
+    def tension_maxfriction(self) -> float:
+        """Maximum tension in the cable when accounting for friction [kN]"""
+        T0 = self.tension
+        return self.friction_factor_used * T0
+
 
 
 

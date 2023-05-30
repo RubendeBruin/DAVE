@@ -57,6 +57,9 @@ Cable,mass_per_length,float,Mass per length of the cable ,[mT/m],,True,True,True
 Cable,mass,float,Mass of the cable  ,[mT],derived from length and mass-per-length,True,True,True,Mass of the cable (derived from length and mass-per-length) [mT]
 Cable,reversed,tuple,Diameter of the cable. Used when a cable runs over a circle. ,[m],,True,False,False,Diameter of the cable. Used when a cable runs over a circle. [m]
 Cable,friction_factor,float,"Friction factor, negative means use default model with 10% ",[-],,True,True,True,"Friction factor, negative means use default model with 10% [-]"
+Cable,friction_factor_used,float,Read only - the friction factor used in the calculation ,[-],,False,False,True,"Read only - the friction factor used in the calculation [-]
+        See Also: friction_factor
+        "
 Cable,tension_maxfriction,float,Maximum tension in the cable when accounting for friction ,[kN],,False,False,True,Maximum tension in the cable when accounting for friction [kN]
 Circle,axis,tuple,Direction of the sheave axis  ,"[m,m,m]",parent axis system,True,False,False,"Direction of the sheave axis (parent axis system) [m,m,m]
 
