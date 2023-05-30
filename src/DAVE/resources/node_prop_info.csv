@@ -56,6 +56,8 @@ Cable,diameter,float,Diameter of the cable. Used when a cable runs over a circle
 Cable,mass_per_length,float,Mass per length of the cable ,[mT/m],,True,True,True,Mass per length of the cable [mT/m]
 Cable,mass,float,Mass of the cable  ,[mT],derived from length and mass-per-length,True,True,True,Mass of the cable (derived from length and mass-per-length) [mT]
 Cable,reversed,tuple,Diameter of the cable. Used when a cable runs over a circle. ,[m],,True,False,False,Diameter of the cable. Used when a cable runs over a circle. [m]
+Cable,friction_factor,float,"Friction factor, negative means use default model with 10% ",[-],,True,True,True,"Friction factor, negative means use default model with 10% [-]"
+Cable,tension_maxfriction,float,Maximum tension in the cable when accounting for friction ,[kN],,False,False,True,Maximum tension in the cable when accounting for friction [kN]
 Circle,axis,tuple,Direction of the sheave axis  ,"[m,m,m]",parent axis system,True,False,False,"Direction of the sheave axis (parent axis system) [m,m,m]
 
         Note:
@@ -427,7 +429,6 @@ WindOrCurrentArea,direction,tuple,"Depends on 'areakind'. For 'plane' this is th
         the direction of the axis and for 'sphere' this is not used [m,m,m]"
 WindOrCurrentArea,areakind,AreaKind,Defines how to interpret the area.,,,True,True,False,"Defines how to interpret the area.
         See also: `direction`"
-HasParent,parent,Node,"The node that this node is located on, if any ",[Node],,True,True,False,"The node that this node is located on, if any [Node]"
 Node,name,str,Name of the node ,[str],,True,False,False,Name of the node [str]
 Node,color,tuple,"The color (r,g,b) of the node - use None for default",,,True,False,False,"The color (r,g,b) of the node - use None for default"
 Node,visible,bool,Determines if this node is visible in the viewport ,[bool],,True,True,False,Determines if this node is visible in the viewport [bool]

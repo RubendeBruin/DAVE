@@ -3,6 +3,7 @@
 """These are the core-connected classes for DAVE nodes"""
 
 import logging
+from math import floor
 
 from .helpers import *
 from .abstracts import *
@@ -1488,6 +1489,8 @@ class Cable(NodeCoreConnected):
         self._reversed: List[bool] = list()
 
         self._render_as_tube = True
+        self._friction_factor = -1
+        """Negative means use default formulation"""
 
     def depends_on(self):
         return [*self._pois]
@@ -1636,7 +1639,7 @@ class Cable(NodeCoreConnected):
             node1 = nodes[i]
             node2 = nodes[i + 1]
 
-            # Taken care off in c++
+            # Taken care off in core
             # # # if first or last node is a sheave, the this will be replaced by the poi of the sheave
             # # Except if the fist and the last sheave are the same (loop)
             #
@@ -1708,6 +1711,39 @@ class Cable(NodeCoreConnected):
 
         self.length = stretched_length * self.EA / (target_tension + self.EA)
 
+    @property
+    def friction_factor(self) ->float:
+        """Friction factor, negative means use default model with 10% [-]"""
+        return self._friction_factor
+
+    @friction_factor.setter
+    @node_setter_manageable
+    def friction_factor(self, value):
+        assert1f(value, "Friction factor shall be a single floating-point number")
+        self._friction_factor = value
+
+    @property
+    def tension_maxfriction(self) -> float:
+        """Maximum tension in the cable when accounting for friction [kN]"""
+
+        T0 = self.tension
+
+        if self.friction_factor > 0:        # user-defined friction factor
+            return T0 * self.friction_factor
+
+        connections = self.connections # alias
+        n_connections = len(connections)
+
+        if connections[0] == connections[-1] and isinstance(connections[0], Circle): # loop
+            N = n_connections - 1
+            M = floor(N/2)
+            return T0 * 1.1**M
+        else:                           # no loop
+            N = n_connections - 2
+            return T0 * 1.1**N
+
+
+
     def give_python_code(self):
         code = list()
         code.append("# code for {}".format(self.name))
@@ -1743,6 +1779,9 @@ class Cable(NodeCoreConnected):
 
         if np.any(self.reversed):
             code.append(f"s['{self.name}'].reversed = {self.reversed}")
+
+        if self.friction_factor >0:
+            code.append(f"s['{self.name}'].friction_factor = {self.friction_factor}")
 
         return "\n".join(code)
 
