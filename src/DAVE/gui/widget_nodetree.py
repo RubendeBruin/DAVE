@@ -80,6 +80,8 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
 class WidgetNodeTree(guiDockWidget):
     def guiCreate(self):
 
+        self._current_tree = None
+
         self.contents.setContentsMargins(0,0,0,0)
         self.treeView = NodeTreeWidget(self.contents)
         self.treeView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
@@ -275,6 +277,39 @@ class WidgetNodeTree(guiDockWidget):
 
         """
 
+
+        # lets first see if anything has changed
+        # to quickly check that, we comparent the current parents and managers with the ones from the last update
+        # Node --> Parent node, manager node
+
+        if self._current_tree is not None:
+            # check additional nodes
+            if len(self._current_tree) == len(self.guiScene._nodes):
+                for node in self.guiScene._nodes:
+                    if node.name not in self._current_tree.keys():
+                        print('name changed')
+                        break
+                else:
+                    # no new nodes, check if the parents and managers are the same
+                    for node in self.guiScene._nodes:
+                        if self._current_tree[node.name] != (getattr(node,'parent',None), node.manager):
+                            print('structure changed')
+                            break
+                    else:
+                        # nothing changed, so we can skip the update
+                        return
+
+
+        # store new tree
+
+        self._current_tree = dict()
+        for node in self.guiScene._nodes:
+            self._current_tree[node.name] = (getattr(node, 'parent',None), node.manager)
+
+        # start the update
+
+        self.guiScene.sort_nodes_by_parent()
+
         self.items = dict()
 
         # # store the open/closed state of the current tree - based on Name
@@ -290,7 +325,6 @@ class WidgetNodeTree(guiDockWidget):
 
         walk_node(self.treeView.invisibleRootItem(), closed_items)
 
-        self.guiScene.sort_nodes_by_parent()
 
         # store the current scroll position
         vertical_position = self.treeView.verticalScrollBar().sliderPosition()

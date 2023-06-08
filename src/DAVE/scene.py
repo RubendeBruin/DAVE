@@ -5,9 +5,11 @@
 
   Ruben de Bruin - 2019
 """
+import graphlib
 import itertools
 import weakref
 import  datetime
+from graphlib import TopologicalSorter
 from os.path import isdir, isfile
 from os import mkdir
 from shutil import copy
@@ -800,40 +802,59 @@ class Scene:
         self.assert_unique_names()
         self.assert_no_external_managers()
 
-        exported = []
-        to_be_exported = self._nodes.copy()
-        counter = 0
+        graph = dict()
+        for node in self._nodes:
 
-        while to_be_exported:
+            deps = []
 
-            counter += 1
-            if counter > len(self._nodes):
-                raise Exception(
-                    "Could not sort nodes by dependency, circular references exist?"
-                )
+            if isinstance(node, HasParent):
+                if node.parent is not None:
+                    deps.append(node.parent)
 
-            can_be_exported = []
+            if node.manager is not None:
+                deps.append(node.manager)
 
-            for node in to_be_exported:
+            graph[node] = deps
 
-                if hasattr(node, "parent"):
-                    parent = node.parent
-                    if parent is not None and parent not in exported:
-                        continue
+        try:
+            ts = TopologicalSorter(graph)
+        except graphlib.CycleError as M:
+            raise Exception(f"Could not sort nodes by parent, circular references exist: {str(M)}")
 
-                if node.manager is not None and node.manager not in exported:
-                    continue
+        self._nodes = list(ts.static_order())
 
-                # otherwise the node can be exported
-                can_be_exported.append(node)
-
-            # remove exported nodes from
-            for n in can_be_exported:
-                to_be_exported.remove(n)
-
-            exported.extend(can_be_exported)
-
-        self._nodes = exported
+        #
+        #
+        # while to_be_exported:
+        #
+        #     counter += 1
+        #     if counter > len(self._nodes):
+        #         raise Exception(
+        #             "Could not sort nodes by dependency, circular references exist?"
+        #         )
+        #
+        #     can_be_exported = []
+        #
+        #     for node in to_be_exported:
+        #
+        #         if hasattr(node, "parent"):
+        #             parent = node.parent
+        #             if parent is not None and parent not in exported:
+        #                 continue
+        #
+        #         if node.manager is not None and node.manager not in exported:
+        #             continue
+        #
+        #         # otherwise the node can be exported
+        #         can_be_exported.append(node)
+        #
+        #     # remove exported nodes from
+        #     for n in can_be_exported:
+        #         to_be_exported.remove(n)
+        #
+        #     exported.extend(can_be_exported)
+        #
+        # self._nodes = exported
 
     def get_created_by_dict(self) -> dict:
         """Returns a dictionary containing the nodes created by each manager.

@@ -1522,7 +1522,6 @@ class Gui:
                 message = c.stdout + "\n" + str(E) + "\n\nWhen running: \n\n" + code
                 self.show_exception(message)
 
-                raise (E)
 
             self.ui.pbExecute.setStyleSheet("")
             self.ui.pbExecute.update()

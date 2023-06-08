@@ -1,3 +1,5 @@
+from time import time
+
 from DAVE import *
 
 def test_tracedeps():
@@ -15,3 +17,15 @@ def test_tracedeps():
 
     assert fr40.name in deps
     assert vis.name in deps
+
+def test_sort_by_parent():
+    s = Scene()
+
+    last = None
+    for i in range(200):
+        last = s.new_frame(f'frame{i}', parent = last)
+
+    tic = time()
+    s.sort_nodes_by_parent()
+    toc = time() - tic
+    print(toc)
