@@ -436,9 +436,10 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
             raise ValueError(f"{self.name} can not be its own parent.")
 
         if val is not None:
-            if val.name in self._scene.nodes_depending_on(self, recursive=True):
+            A = val.name
+            B = self.name
+            if self._scene._vfc.element_A_depends_on_B(A,B):
                 raise ValueError(f'Setting {val.name} as parent of {self.name} would create a circular dependency, that is not allowed')
-
 
         HasParentCore.parent.fset(self, val)
         self._scene._geometry_changed()
@@ -540,6 +541,22 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         y = (0, 1, 0)
         uy = self.to_glob_direction(y)
         return float(100 * uy[2])
+
+    @property
+    def tilt_x_opposite(self) -> float:
+        """Tilt percentage about local NEGATIVE x-axis [%]
+
+        See Also: heel, tilt_y, tilt_x
+        """
+        return -self.tilt_x
+
+    @property
+    def tilt_y_opposite(self) -> float:
+        """Tilt percentage about local NEGATIVE y-axis [%]
+
+        See Also: heel, tilt_y, tilt_x
+        """
+        return -self.tilt_y
 
     @property
     def heel(self) -> float:

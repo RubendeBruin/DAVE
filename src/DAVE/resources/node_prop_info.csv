@@ -200,6 +200,14 @@ Frame,tilt_x,float,Tilt percentage about local x-axis ,[%],,False,False,True,"Ti
 
         See Also: heel, tilt_y
         "
+Frame,tilt_x_opposite,float,Tilt percentage about local NEGATIVE x-axis ,[%],,False,False,True,"Tilt percentage about local NEGATIVE x-axis [%]
+
+        See Also: heel, tilt_y, tilt_x
+        "
+Frame,tilt_y_opposite,float,Tilt percentage about local NEGATIVE y-axis ,[%],,False,False,True,"Tilt percentage about local NEGATIVE y-axis [%]
+
+        See Also: heel, tilt_y, tilt_x
+        "
 Frame,heel,float,Heel in degrees. SB down is positive ,[deg],,False,False,True,"Heel in degrees. SB down is positive [deg]
         This is the inverse sin of the unit y vector(This is the arcsin of the tiltx)
 

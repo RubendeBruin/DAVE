@@ -1061,31 +1061,41 @@ class Scene:
         if not isinstance(_node, NodeCoreConnected):
             return []
         else:
-            names = self._vfc.elements_depending_directly_on(node)
+            if recursive:
+                names = self._vfc.elements_depending_on(node)
+            else:
+                names = self._vfc.elements_depending_directly_on(node)
 
-        r = []
         # filter to only the nodes that are in the scene (remove pointmasses etc)
         nodes_names_in_scene = self.node_names
-
         r = [n for n in names if n in nodes_names_in_scene]
-        #
-        # for name in names:
-        #     try:
-        #         node = self.node_by_name(name, silent=True)
-        #         r.append(node.name)
-        #     except:
-        #         pass
 
         # check all other nodes in the scene
+        #
+        # Up till now we've covered all core-connected nodes
+        # Now we need to check if there are any other nodes that depend on any of these nodes
+        #
+        # This is only a single pass as there are no nodes depending on a node that is not core-connected
 
         for n in self._nodes:
-            if _node in n.depends_on():
-                if n.name not in r:
+            for pre in n.depends_on():
+                if pre.name in r:
                     r.append(n.name)
 
-        if recursive:
-            for n in tuple(r):
-                r.extend(self.nodes_depending_on(n, recursive=True))
+        # is this blowing up?
+        # should doubles be removed?
+        # if recursive:
+        #
+        #     to_be_scanned = r.copy()
+        #
+        #     while to_be_scanned:
+        #         node = to_be_scanned.pop(0)
+        #         for n in self.nodes_depending_on(node, recursive=False):
+        #             if n not in r:
+        #                 r.append(n)
+        #                 to_be_scanned.append(n)
+
+
 
         return r
 

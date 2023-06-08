@@ -2955,9 +2955,11 @@ class WidgetNodeProps(guiDockWidget):
 
         to_be_added = []
         for editor in self._node_editors:
-            to_be_added.append(
-                editor.connect(node, self.guiScene, self.run_code, self.guiEmitEvent, self.guiPressSolveButton, self.node_picker_register)
-            )  # this function returns the widget
+            # add a check for the return value of connect because the program will hard-crash if the return value is None
+            # this function returns the widget
+            widget = editor.connect(node, self.guiScene, self.run_code, self.guiEmitEvent, self.guiPressSolveButton, self.node_picker_register)
+            assert widget is not None, f'Editor {editor} returned None when connecting to node {node}'
+            to_be_added.append(widget)
 
         # for item in to_be_added:
         #    print('to be added: ' + str(type(item)))

@@ -6,8 +6,77 @@ from PySide6 import QtWidgets
 
 from DAVE.gui.forms.dlg_export_to_blender import Ui_Dialog
 from DAVE.io.blender import create_blend_and_open
-from DAVE.settings import BLENDER_EXEC, BLENDER_BASE_SCENE, BLENDER_FPS
+from DAVE.settings import BLENDER_BASE_SCENE, BLENDER_FPS
 
+def try_get_blender_executable():
+
+    import platform
+    if platform.system().lower().startswith('win'):
+        # on windows we can possibly get blender from the registry
+        import winreg
+        import os
+
+        def find_blender_from_reg(where, key):
+            try:
+                pt = winreg.QueryValue(where, key)
+                if pt:
+                    if '%1' in pt:
+                        pt = pt[1:-6]  # strip the %1
+
+                    if os.path.exists(pt):
+                        return pt
+                    else:
+                        pass
+                        # print(f'Blender NOT found here {pt} as listed in {key}')
+            except Exception as E:
+                # print(f'Error when looking for blender here: {key} - {str(E)}')
+                raise ValueError('Not found here')
+
+        BLENDER_EXEC = None
+
+        where_is_blender_in_the_registry = [
+            (winreg.HKEY_CLASSES_ROOT, r'Applications\blender.exe\shell\open\command'),
+            (winreg.HKEY_CLASSES_ROOT, r'Applications\blender-launcher.exe\shell\open\command'),
+            (winreg.HKEY_CURRENT_USER, r'SOFTWARE\Classes\Applications\blender-launcher.exe\shell\open\command'),
+            (winreg.HKEY_CURRENT_USER, r'SOFTWARE\Classes\Applications\blender-launcher.exe\shell\open\command'),
+            (winreg.HKEY_CURRENT_USER, r'SOFTWARE\Classes\blendfile\shell\open\command'),
+            (winreg.HKEY_LOCAL_MACHINE, r'SOFTWARE\Classes\blendfile\shell\open\command')
+
+        ]
+
+        for possibility in where_is_blender_in_the_registry:
+            try:
+                BLENDER_EXEC = find_blender_from_reg(*possibility)
+            except:
+                pass
+
+        # find it in a path
+        # by default the windows-store version seems to be installed in a location which is in the path
+
+        if BLENDER_EXEC == None:
+
+            paths = os.environ['PATH'].split(';')
+            for pth in paths:
+                test = pth + r'\\blender-launcher.exe'
+                if os.path.exists(test):
+                    BLENDER_EXEC = test
+                    break
+
+        if BLENDER_EXEC:
+            print("Blender found at: {}".format(BLENDER_EXEC))
+        else:
+            print("! Blender not found - Blender can be installed from the microsoft windows store."
+                  "   if you have blender already and want to be able to use blender then please either:\n"
+                  "   - configure windows to open .blend files with blender automatically \n"
+                  "   - add the folder containing blender-launcher.exe to the PATH variable.")
+
+            return "Blender can not be found automatically"
+
+        # print('\nLoading DAVE...')
+    else:  # assume we're on linux
+        BLENDER_EXEC = 'blender'
+
+    return BLENDER_EXEC
 
 class ExportToBlenderDialog():
 
@@ -28,7 +97,7 @@ class ExportToBlenderDialog():
 
         blender_executable = self.settings.value(f"blender_executable")
         if blender_executable is None:
-            blender_executable = BLENDER_EXEC
+            blender_executable = try_get_blender_executable()
 
         self.blender_templates = self.settings.value(f"blender_templates")
         if self.blender_templates is None:
