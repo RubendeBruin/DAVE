@@ -412,6 +412,8 @@ class NodeCoreConnected(Node):
     @property
     def name(self) -> str:
         """Name of the node (str), must be unique"""
+        if self._vfNode is None:  # node has been deleted
+            return None
         return self._vfNode.name
 
     @name.setter

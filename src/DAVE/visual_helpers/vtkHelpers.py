@@ -587,7 +587,7 @@ def VisualToSlice(
 def vtkArrowActor(
         startPoint=(0,0,0),
         endPoint=(1,0,0),
-        res = 12
+        res = 8
     ):
 
     """Creates a vtkActor representing an arrow from startpoint to endpoint.

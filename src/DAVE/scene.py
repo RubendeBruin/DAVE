@@ -92,6 +92,9 @@ class Scene:
         self._nodes = []
         """Contains a list of all nodes in the scene"""
 
+        self._node_dict = {}
+        """Temporary dict of nodes and names - for internal use only"""
+
         self.static_tolerance = DAVE_DEFAULT_SOLVER_TOLERANCE
         """Desired tolerance when solving statics"""
 
@@ -688,18 +691,37 @@ class Scene:
         return docs
 
     def node_by_name(self, node_name, silent=False):
+        """Returns a node with the given name. Raises an error if no node is found."""
+
+        # For faster lookup we keep a dict with node names as keys and nodes as values
+        #
+        # This has a good chance of quickly returning the node
+        # to verify that it is indeed the correct node we check the name
+        #
+        # There is nothing keeping the dict in sync with _nodes, so we rebuild it
+        # when we can not find the node that we're looking for.
+
+
+        # the quick way
+        if node_name in self._node_dict:
+            node = self._node_dict[node_name]
+            if node is not None:
+                if node.name == node_name:
+                    return node
+
 
         assert isinstance(
             node_name, str
         ), f"Node name should be a string, but is a {type(node_name)}"
 
+        # rebuild nodes dict
 
-        for N in self._nodes:
-            if N.name == node_name:
-                return N
+        self._node_dict = {node.name: node for node in self._nodes}
+        if node_name in self._node_dict:
+            return self._node_dict[node_name]  # return directly
 
         # work-around for renames
-        # TODO: remove this when renames are implemented
+        # TODO: remove this when renames are implemented (May 2023) - Removing this break models created before May 2023
         #
         # Renames are _ to /
         #            >>> to /
@@ -1409,27 +1431,21 @@ class Scene:
             if exclude_known_types:
                 nodes = [n for n in nodes if not isinstance(n, known_types)]
 
-            # check for partial dissolve
-            if not "Con6d_Sling/spliceB2_to_Component" in [n.name for n in nodes]:
-                print('break')
-
-
-
             for node in nodes:
-
-                if node.name == "Component":
-                    print('break')
 
                 work_done, reason = node.dissolve_some()
 
                 if work_done:
+                    print(f'reason: {reason}')
                     break
 
             if not work_done:
 
                 for node in nodes:
                     try:
+                        nodename = node.name
                         node.dissolve()
+                        print(f'Dissolved: {nodename}')
                         work_done = True
                     except:
                         pass
