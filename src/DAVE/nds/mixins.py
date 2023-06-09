@@ -338,10 +338,13 @@ class HasContainer(Manager):
                         unmanaged.append(node)
 
             for node in unmanaged:
-                self._nodes.remove(node)
+                try:
+                    self._nodes.remove(node)
+                except Exception as M:
+                    print(f"Failed to remove node list of managed nodes of {self.name} because {str(M)}")
 
             if unmanaged:
-                return True, "Managed nodes unmanaged" # No need to call other supers, work was done so good enough
+                return True, f"Managed nodes of {self.name} unmanaged" # No need to call other supers, work was done so good enough
 
         return super().dissolve_some()
 

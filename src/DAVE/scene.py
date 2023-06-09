@@ -1409,9 +1409,9 @@ class Scene:
     def flatten(self, root_node=None, exclude_known_types = False):
         """Performs a recursive dissolve on Frames (not rigid bodies). If root_node is None (default) then the whole model is flattened"""
 
-        from .nodes import Shackle, Component, Sling
+        from .nodes import Shackle, Component, Sling, GeometricContact
 
-        known_types = (Shackle, Component, Sling)
+        known_types = (Shackle, Component, Sling, GeometricContact)
 
         dissolved_node_name = None
         dissolved_node_names = []
