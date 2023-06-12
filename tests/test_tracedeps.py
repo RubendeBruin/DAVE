@@ -29,3 +29,9 @@ def test_sort_by_parent():
     s.sort_nodes_by_parent()
     toc = time() - tic
     print(toc)
+
+def test_noncore_direct_parent():
+    s = Scene()
+    s.new_frame('frame')
+    v = s.new_visual('vis', parent = s['frame'], path="res: cube.obj")
+    assert v.name in s.nodes_depending_on('frame')

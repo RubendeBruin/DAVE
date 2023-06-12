@@ -1120,9 +1120,12 @@ class Scene:
         #
         # This is only a single pass as there are no nodes depending on a node that is not core-connected
 
+        dependants_and_self = r.copy()
+        dependants_and_self.append(node)
+
         for n in self._nodes:
             for pre in n.depends_on():
-                if pre.name in r:
+                if pre.name in dependants_and_self:
                     r.append(n.name)
 
         # is this blowing up?
