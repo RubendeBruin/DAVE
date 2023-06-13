@@ -15,15 +15,15 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDial, QDoubleSpinBox, QGridLayout,
-    QLabel, QPushButton, QSizePolicy, QSpacerItem,
+from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QGridLayout, QLabel,
+    QPushButton, QSizePolicy, QSpacerItem, QSpinBox,
     QVBoxLayout, QWidget)
 
 class Ui_frmAiryWave(object):
     def setupUi(self, frmAiryWave):
         if not frmAiryWave.objectName():
             frmAiryWave.setObjectName(u"frmAiryWave")
-        frmAiryWave.resize(503, 321)
+        frmAiryWave.resize(503, 357)
         frmAiryWave.setMaximumSize(QSize(16777215, 500))
         frmAiryWave.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
         self.verticalLayout_2 = QVBoxLayout(frmAiryWave)
@@ -52,6 +52,18 @@ class Ui_frmAiryWave(object):
         self.widget_2.setObjectName(u"widget_2")
         self.verticalLayout = QVBoxLayout(self.widget_2)
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.label = QLabel(self.widget_2)
+        self.label.setObjectName(u"label")
+
+        self.verticalLayout.addWidget(self.label)
+
+        self.sbHeading = QSpinBox(self.widget_2)
+        self.sbHeading.setObjectName(u"sbHeading")
+        self.sbHeading.setMaximum(360)
+        self.sbHeading.setSingleStep(5)
+
+        self.verticalLayout.addWidget(self.sbHeading)
+
         self.label_2 = QLabel(self.widget_2)
         self.label_2.setObjectName(u"label_2")
 
@@ -59,7 +71,7 @@ class Ui_frmAiryWave(object):
 
         self.amplitude = QDoubleSpinBox(self.widget_2)
         self.amplitude.setObjectName(u"amplitude")
-        self.amplitude.setSingleStep(0.500000000000000)
+        self.amplitude.setSingleStep(0.250000000000000)
         self.amplitude.setValue(2.000000000000000)
 
         self.verticalLayout.addWidget(self.amplitude)
@@ -75,26 +87,26 @@ class Ui_frmAiryWave(object):
 
         self.verticalLayout.addWidget(self.period)
 
+        self.pushButton = QPushButton(self.widget_2)
+        self.pushButton.setObjectName(u"pushButton")
 
-        self.gridLayout.addWidget(self.widget_2, 1, 2, 1, 1)
+        self.verticalLayout.addWidget(self.pushButton)
 
-        self.heading = QDial(self.widget)
-        self.heading.setObjectName(u"heading")
-        self.heading.setMaximum(360)
-        self.heading.setPageStep(45)
-        self.heading.setValue(0)
-        self.heading.setOrientation(Qt.Vertical)
-        self.heading.setWrapping(True)
-        self.heading.setNotchTarget(0.000000000000000)
-        self.heading.setNotchesVisible(True)
+        self.lblInfo = QLabel(self.widget_2)
+        self.lblInfo.setObjectName(u"lblInfo")
+        font = QFont()
+        font.setPointSize(16)
+        self.lblInfo.setFont(font)
 
-        self.gridLayout.addWidget(self.heading, 1, 1, 1, 1)
+        self.verticalLayout.addWidget(self.lblInfo)
 
-        self.lblHeading = QLabel(self.widget)
-        self.lblHeading.setObjectName(u"lblHeading")
-        self.lblHeading.setAlignment(Qt.AlignCenter)
 
-        self.gridLayout.addWidget(self.lblHeading, 2, 1, 1, 1)
+        self.gridLayout.addWidget(self.widget_2, 1, 1, 1, 1)
+
+        self.label_4 = QLabel(self.widget)
+        self.label_4.setObjectName(u"label_4")
+
+        self.gridLayout.addWidget(self.label_4, 0, 1, 1, 1)
 
 
         self.verticalLayout_2.addWidget(self.widget)
@@ -114,8 +126,11 @@ class Ui_frmAiryWave(object):
         self.label_5.setText(QCoreApplication.translate("frmAiryWave", u"RAO calculation, no linearization of quadratic damping", None))
         self.pushButton_2.setText(QCoreApplication.translate("frmAiryWave", u"Show RAOs", None))
         self.label_6.setText(QCoreApplication.translate("frmAiryWave", u"Visualization", None))
+        self.label.setText(QCoreApplication.translate("frmAiryWave", u"Wave heading", None))
         self.label_2.setText(QCoreApplication.translate("frmAiryWave", u"Amplitude [m]", None))
         self.label_3.setText(QCoreApplication.translate("frmAiryWave", u"Period [s]", None))
-        self.lblHeading.setText(QCoreApplication.translate("frmAiryWave", u"heading", None))
+        self.pushButton.setText(QCoreApplication.translate("frmAiryWave", u"Show", None))
+        self.lblInfo.setText(QCoreApplication.translate("frmAiryWave", u"press show to activate animation", None))
+        self.label_4.setText(QCoreApplication.translate("frmAiryWave", u"Airy wave", None))
     # retranslateUi
 

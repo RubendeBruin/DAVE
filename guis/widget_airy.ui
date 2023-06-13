@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>503</width>
-    <height>321</height>
+    <height>357</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -50,9 +50,26 @@
    <item>
     <widget class="QWidget" name="widget" native="true">
      <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="2">
+      <item row="1" column="1">
        <widget class="QWidget" name="widget_2" native="true">
         <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Wave heading</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="sbHeading">
+           <property name="maximum">
+            <number>360</number>
+           </property>
+           <property name="singleStep">
+            <number>5</number>
+           </property>
+          </widget>
+         </item>
          <item>
           <widget class="QLabel" name="label_2">
            <property name="text">
@@ -63,7 +80,7 @@
          <item>
           <widget class="QDoubleSpinBox" name="amplitude">
            <property name="singleStep">
-            <double>0.500000000000000</double>
+            <double>0.250000000000000</double>
            </property>
            <property name="value">
             <double>2.000000000000000</double>
@@ -84,41 +101,32 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QPushButton" name="pushButton">
+           <property name="text">
+            <string>Show</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="lblInfo">
+           <property name="font">
+            <font>
+             <pointsize>16</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>press show to activate animation</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QDial" name="heading">
-        <property name="maximum">
-         <number>360</number>
-        </property>
-        <property name="pageStep">
-         <number>45</number>
-        </property>
-        <property name="value">
-         <number>0</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="wrapping">
-         <bool>true</bool>
-        </property>
-        <property name="notchTarget">
-         <double>0.000000000000000</double>
-        </property>
-        <property name="notchesVisible">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLabel" name="lblHeading">
+      <item row="0" column="1">
+       <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>heading</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
+         <string>Airy wave</string>
         </property>
        </widget>
       </item>

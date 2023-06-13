@@ -663,12 +663,19 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0) -> np.ndarray:
         critial_damping_diag = 2*np.sqrt(Kdiag * Mdiag)
         min_damping = ds.FD_GLOBAL_MIN_DAMPING_FRACTION * critial_damping_diag
 
+        log = []
+
         for i in range(M.shape[0]):
             if B[i,i] < min_damping[i]:
-                print('Increasing diagonal damping for mode {} to {} ,global minimum damping set to {}% of critical damping for this mode (settings.FD_GLOBAL_MIN_DAMPING_FRACTION)'.format(i, min_damping[i],100*ds.FD_GLOBAL_MIN_DAMPING_FRACTION))
+                log.append('Increasing diagonal damping for mode {} to {} ,global minimum damping set to {}% of critical damping for this mode (settings.FD_GLOBAL_MIN_DAMPING_FRACTION)'.format(i, min_damping[i],100*ds.FD_GLOBAL_MIN_DAMPING_FRACTION))
                 B[i,i] = min_damping[i]
 
         # A = np.zeros_like(M)
+
+        if log:
+            print(log[0])
+            print('..<stripped>..')
+            print(log[-1])
 
         A = -(omega ** 2) * M_total  \
             + 1j * omega * B  \

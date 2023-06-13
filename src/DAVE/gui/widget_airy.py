@@ -28,9 +28,7 @@ class WidgetAiry(guiDockWidget):
         self.ui.setupUi(self.contents)
         self.d0 = None
 
-        self.ui.heading.valueChanged.connect(self.action)
-        self.ui.amplitude.valueChanged.connect(self.action)
-        self.ui.period.valueChanged.connect(self.action)
+        self.ui.pushButton.clicked.connect(self.action)
         self.ui.pushButton_2.clicked.connect(self.plot_raos)
 
     def guiProcessEvent(self, event):
@@ -61,10 +59,10 @@ class WidgetAiry(guiDockWidget):
         code = """from DAVE.frequency_domain import plot_RAO_1d
 import matplotlib.pyplot as plt
 wave_direction = 90
-min = 0.01
-max = 4
+start = 0.01
+end = 4
 steps = 100
-plot_RAO_1d(s, np.linspace(min,max,steps), wave_direction)
+plot_RAO_1d(s, np.linspace(start,end,steps), wave_direction)
 plt.show()
 """
 
@@ -90,7 +88,7 @@ plt.show()
 
         self.guiScene.solve_statics()
 
-        wave_direction = self.ui.heading.value()
+        wave_direction = self.ui.sbHeading.value()
         amplitude = self.ui.amplitude.value()
         period = self.ui.period.value()
 
@@ -102,10 +100,10 @@ plt.show()
 
         n_frames = int(60*period)
 
-        self.ui.lblHeading.setText(str(wave_direction) + '[deg]')
         dofs = fd.generate_unitwave_response(s=self.guiScene, d0 = self.d0, rao=x[:,0], wave_amplitude=amplitude, n_frames=n_frames)
         t = np.linspace(0, period, n_frames)
 
+        self.ui.lblInfo.setText(f"Wave direction: {wave_direction} deg\nT = {period} s\nAmplitude = {amplitude} m")
 
         import DAVE.visual
 
@@ -116,12 +114,27 @@ plt.show()
         # to make sure that there is sufficient resolution in the waves
 
         wf = DAVE.visual.WaveField()
+
+        n = int(2500 / wave_length)
+
+        # dx, dy is the size of the plane
+        # nx, ny are the number of grid points in that direction
+        if wave_direction in [0,180]:
+            nx = n
+            ny = 2
+        elif wave_direction in [90,270]:
+            nx = 2
+            ny = n
+        else:
+            nx = n
+            ny = n
+
         wf.create_waveplane(wave_direction=wave_direction,
                             wave_amplitude=amplitude,
                             wave_length=wave_length,
                             wave_period = period,
                             nt = n_frames,
-                            nx = 50, ny = 50, dx=4*wave_length,dy=4*wave_length)
+                            nx = nx, ny = ny, dx=250,dy=100)
 
         self.gui.animation_terminate()
         self.gui.visual.add_dynamic_wave_plane(wf)
