@@ -2737,8 +2737,16 @@ class WaveField:
         self.texture = vtk.vtkTexture()
         input = vtk.vtkJPEGReader()
         input.SetFileName(TEXTURE_SEA)
+        # input.SetFileName(r"C:\Users\beneden\Desktop\sea.jpg")
         self.texture.SetInputConnection(input.GetOutputPort())
+
+        self.texture.SetRepeat(True)
+        self.texture.SetEdgeClamp(True)
+
+        self.texture.Modified()
+
         self.ttp = vtk.vtkTextureMapToPlane()
+
 
     def update(self, t):
         t = np.mod(t, self.period)

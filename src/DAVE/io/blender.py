@@ -74,12 +74,13 @@ def change_color_of_object(object, new_rgb):
         return
     
     # copy material
-    material = object.active_material.copy()
-    BSDF_node = material.node_tree.nodes['Principled BSDF']
-    BSDF_node.inputs['Base Color'].default_value = (new_rgb[0]/255,new_rgb[1]/255,new_rgb[2]/255,1)
-    
-    print(f'Changing material to color {new_rgb}')
-    object.active_material = material
+    if object.active_material:
+        material = object.active_material.copy()
+        BSDF_node = material.node_tree.nodes['Principled BSDF']
+        BSDF_node.inputs['Base Color'].default_value = (new_rgb[0]/255,new_rgb[1]/255,new_rgb[2]/255,1)
+        
+        print(f'Changing material to color {new_rgb}')
+        object.active_material = material
     
 
 def get_context_area():
@@ -370,7 +371,7 @@ def _to_quaternion(rotation):
     return r.as_quat()
 
 
-def _wavefield_to_blender(wavefield):
+def _wavefield_to_blender(wavefield, frames_per_step=1,export_only_1_in_x_frames=1):
     """Returns blender python code to generate the wavefield in Blender
 
     Args:
@@ -466,29 +467,25 @@ mesh.polygons.foreach_set("loop_total", loop_total)
 
 """
 
-    wavefield.nt  # number of key-frames
-
-    last_frame_nr = 0
-
     for i_source_frame in range(wavefield.nt):
-        t = wavefield.period * i_source_frame / wavefield.nt
 
-        n_frame = consts.BLENDER_FPS * t
 
-        if i_source_frame != wavefield.nt -1:
-            if i_source_frame != 0:
-                if n_frame - last_frame_nr < 5:
-                    continue
+        i_frame = i_source_frame * frames_per_step
 
-        last_frame_nr = n_frame
+        # skip some of the frames, but not the fist or last
+        if i_source_frame != wavefield.nt -1 and \
+            i_source_frame != 0 and \
+            i_source_frame % export_only_1_in_x_frames != 0:
+                    continue                   # skip this frame
 
-        print('exporting wave-frame {} of {}'.format(n_frame ,wavefield.nt))
+        # print('exporting wave-frame {} of {}'.format(i_frame ,wavefield.nt))
 
         # update wave-field
+        t = wavefield.period * i_source_frame / wavefield.nt
         wavefield.update(t)
         wavefield.actor.GetMapper().Update()
 
-        filename = consts.PATH_TEMP / 'waves_frame{}.npy'.format(n_frame)
+        filename = consts.PATH_TEMP / 'waves_frame{}.npy'.format(i_frame)
         # data = v.actor.GetMapper().GetInputAsDataSet()
 
         # pre-allocate data
@@ -501,7 +498,7 @@ mesh.polygons.foreach_set("loop_total", loop_total)
 
         np.save(filename ,np.ravel(points))
 
-        code += '\nprint("Importing wave-frame {} / {}")'.format(n_frame, wavefield.nt)
+        code += '\nprint("Importing wave-frame {} / {}")'.format(i_frame, wavefield.nt)
 
         code += '\nvertices = np.load(r"{}")'.format(str(filename))
         code += """
@@ -510,7 +507,7 @@ mesh.vertices.foreach_set("co", vertices)
 print("creating keyframes")
 for vertex in mesh.vertices:
     """
-        code += 'vertex.keyframe_insert(data_path="co", frame = {})'.format(np.round(n_frame))
+        code += 'vertex.keyframe_insert(data_path="co", frame = {})'.format(np.round(i_frame))
 
         # ============= END OF THE LOOP
 
@@ -554,13 +551,13 @@ def nearest_rotation_vector(v0, v1):
 
     return v1 - 360*i*n
 
-def create_blend_and_open(scene, blender_result_file = None, blender_base_file=None, blender_exe_path=None, camera=None, animation_dofs=None, wavefield=None):
+def create_blend_and_open(scene, blender_result_file = None, blender_base_file=None, blender_exe_path=None, camera=None, animation_dofs=None, wavefield=None, frames_per_step=1):
 
-    create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path ,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield)
+    create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path ,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield, frames_per_step=frames_per_step)
     # command = 'explorer "{}"'.format(str(blender_result_file))
     # subprocess.call(command, creationflags=subprocess.DETACHED_PROCESS)
 
-def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None ,animation_dofs=None, wavefield=None):
+def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None ,animation_dofs=None, wavefield=None, frames_per_step=1):
     tempfile = Path(consts.PATH_TEMP) / 'blender.py'
 
     if blender_base_file is None:
@@ -570,10 +567,10 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
         blender_result_file = consts.BLENDER_DEFAULT_OUTFILE
 
     blender_py_file(scene, tempfile, blender_base_file = blender_base_file , blender_result_file = blender_result_file
-                    ,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield)
+                    ,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield, frames_per_step=frames_per_step)
 
     if blender_exe_path is None:
-        blender_exe_path = consts.BLENDER_EXEC
+        raise ValueError('Path of Blender executable needs to be specified (in create_blend)')
 
     command = '"{}" -b --python "{}"'.format(blender_exe_path, tempfile)
 
@@ -592,9 +589,10 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
     # If animation dofs are not provided, and the scene has a timeline with a non-zero range, then use that
     timeline = None
     if animation_dofs is None:
-        if scene.t:
-            if scene.t.range() is not None:
-                timeline = scene.t
+        t  = getattr(scene, 't', None)
+        if t:
+            if t.range() is not None:
+                timeline = t
 
 
     code = '# Auto-generated python file for blender\n# Execute using blender.exe -b --python "{}"\n\n'.format(
@@ -639,10 +637,10 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
         has_parent = visual.parent is not None
 
-        if has_parent is None:
-            rot = Rotation.from_rotvec(deg2rad(visual.parent.global_rotation))
-        else:
-            rot = (0, 0, 0)
+        # if has_parent is None:
+        #     rot = Rotation.from_rotvec(deg2rad(visual.parent.global_rotation))
+        # else:
+        #     rot = (0, 0, 0)
 
         # rotated_offset = rot.apply(visual.offset)
 
@@ -897,7 +895,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
     # Add the wave-plane
     if wavefield is not None:
         code += '\n# wavefield'
-        code += _wavefield_to_blender(wavefield)
+        code += _wavefield_to_blender(wavefield, frames_per_step=frames_per_step)
 
     code += '\nbpy.ops.wm.save_mainfile(filepath=r"{}")'.format(blender_result_file)
     # bpy.ops.wm.quit_blender() # not needed

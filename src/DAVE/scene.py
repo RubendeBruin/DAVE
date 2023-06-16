@@ -1466,7 +1466,10 @@ class Scene:
 
 
     def savepoint_make(self):
-        self._savepoint = self.give_python_code()
+        """Makes a safepoint if non is present"""
+        if self._savepoint is None:
+            self._savepoint = self.give_python_code()
+
 
     def savepoint_restore(self):
         if self._savepoint is not None:

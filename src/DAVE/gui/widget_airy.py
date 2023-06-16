@@ -88,6 +88,8 @@ plt.show()
 
         self.guiScene.solve_statics()
 
+
+
         wave_direction = self.ui.sbHeading.value()
         amplitude = self.ui.amplitude.value()
         period = self.ui.period.value()

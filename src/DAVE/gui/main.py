@@ -1785,7 +1785,7 @@ class Gui:
         if self.animation_running():
             dofs = []
 
-            n_frames = np.round(self._animation_length * DAVE.settings.BLENDER_FPS)
+            n_frames = np.round(self._animation_length)
             for t in np.linspace(0, self._animation_length, int(n_frames)):
                 dofs.append(self._animation_keyframe_interpolation_object(t))
 
