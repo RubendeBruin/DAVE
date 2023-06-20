@@ -569,9 +569,40 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0) -> np.ndarray:
     Phase-angles are relative to the global origin. Waterdepth is needed to
     calculate the wave-lengths for shallow water (default: deep water)
 
+    Args:
+        s : Scene
+        omegas : list of frequencies - If None then the frequencies present in the wave-interactions are used
+        wave_direction : direction of the wave progression in degrees (global)
+        waterdepth : waterdepth in meters (default: 0)
+
+
     Returns:
         numpy array with dimensions [iDOF, iOmega]
+        or
+        numpy array with dimensions [iDOF, iOmega], omegas if omegas is None
+
     """
+
+    return_omegas = False
+    if omegas is None:
+        # get the omegas from the wave-interactions
+        return_omegas = True
+
+        omegas = []
+
+        for ws in s.nodes_of_type(WaveInteraction1):
+            omegas.extend(ws._hyddb.frequencies)
+
+
+        if min(omegas)>0.01:
+            omegas = np.insert(omegas, 0, 0.01)
+
+        if max(omegas)<10:
+            omegas = np.append(omegas, 10)
+
+        omegas = np.unique(omegas)
+
+
 
     M = s.dynamics_M(1e-6)
     K = s.dynamics_K(1e-6)
@@ -701,7 +732,10 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0) -> np.ndarray:
         x = np.linalg.solve(A, excitation )  # solve
         RAO[:,i_omega] = x
 
-    return RAO
+    if return_omegas:
+        return RAO, omegas
+    else:
+        return RAO
 
 
 

@@ -470,7 +470,7 @@ mesh.polygons.foreach_set("loop_total", loop_total)
     for i_source_frame in range(wavefield.nt):
 
 
-        i_frame = i_source_frame * frames_per_step
+
 
         # skip some of the frames, but not the fist or last
         if i_source_frame != wavefield.nt -1 and \
@@ -481,7 +481,10 @@ mesh.polygons.foreach_set("loop_total", loop_total)
         # print('exporting wave-frame {} of {}'.format(i_frame ,wavefield.nt))
 
         # update wave-field
-        t = wavefield.period * i_source_frame / wavefield.nt
+
+        t = i_source_frame * wavefield.dt
+        i_frame = int(t * frames_per_step)
+
         wavefield.update(t)
         wavefield.actor.GetMapper().Update()
 
@@ -572,15 +575,19 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
     if blender_exe_path is None:
         raise ValueError('Path of Blender executable needs to be specified (in create_blend)')
 
-    command = '"{}" -b --python "{}"'.format(blender_exe_path, tempfile)
+    command_run = '"{}" -b --python "{}"'.format(blender_exe_path, tempfile)
+    command_open = '"{}" "{}"'.format(blender_exe_path,blender_result_file)
 
-    print(command)
+    command = command_run + ' && ' + command_open
 
-    pid = subprocess.Popen(command)
-    pid.wait()
+    pid = subprocess.Popen(command, shell=True)
 
-    command = '"{}" "{}"'.format(blender_exe_path,blender_result_file)
-    subprocess.Popen(command)
+
+
+    # pid.wait()
+    #
+    # command = '"{}" "{}"'.format(blender_exe_path,blender_result_file)
+    # subprocess.Popen(command)
 
 
 def blender_py_file(scene, python_file, blender_base_file, blender_result_file, camera=None, animation_dofs=None,

@@ -20,6 +20,7 @@ PAINTERS = dict()  # this is the dictionary with sets of paint, it will be fille
 
 VISUAL_BUOYANCY_PLANE_EXTEND = 5
 TEXTURE_SEA = str(ds.RESOURCE_PATH[0] / "virtualSea.jpg")
+TEXTURE_WAVEPLANE = str(ds.RESOURCE_PATH[0] / "waveplane.jpg")
 LIGHT_TEXTURE_SKYBOX = ds.RESOURCE_PATH[0] / "white.png"
 ALPHA_SEA = 0.8
 

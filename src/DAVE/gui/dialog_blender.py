@@ -129,7 +129,7 @@ class ExportToBlenderDialog():
 
     def export(self, *args):
 
-        self.ui.btnOK.setText("Working")
+        self.ui.btnOK.setText("Working - background task is being prepared...")
         QtWidgets.QApplication.processEvents()
 
         template = self.ui.cbBaseScene.currentText()

@@ -42,6 +42,7 @@ from DAVE.settings_visuals import (
     COLOR_SELECT,
     LIGHT_TEXTURE_SKYBOX,
     ALPHA_SEA,
+    TEXTURE_WAVEPLANE,
     COLOR_SELECT_255,
     UC_CMAP,
     OUTLINE_WIDTH,
@@ -1700,6 +1701,7 @@ class Viewport:
     def add_dynamic_wave_plane(self, waveplane):
         self.remove_dynamic_wave_plane()
         self.screen.renderer.AddActor(waveplane.actor)
+        self.screen.renderer.AddActor(waveplane.line_actor)
         self._wavefield = waveplane
 
         self.settings.show_global = False
@@ -1713,6 +1715,7 @@ class Viewport:
     def remove_dynamic_wave_plane(self):
         if self._wavefield is not None:
             self.screen.renderer.RemoveActor(self._wavefield.actor)
+            self.screen.renderer.RemoveActor(self._wavefield.line_actor)
             self._wavefield = None
 
             # if self._staticwaveplane:
@@ -2728,36 +2731,84 @@ class Viewport:
 
 
 class WaveField:
-    def __init__(self):
+    def __init__(self, texture=None):
         self.actor = None
         self.pts = None
-        self.nt = 0
         self.elevation = None
 
         self.texture = vtk.vtkTexture()
         input = vtk.vtkJPEGReader()
-        input.SetFileName(TEXTURE_SEA)
-        # input.SetFileName(r"C:\Users\beneden\Desktop\sea.jpg")
+
+        if texture is None:
+            input.SetFileName(TEXTURE_WAVEPLANE)
+        else:
+            input.SetFileName(texture)
         self.texture.SetInputConnection(input.GetOutputPort())
 
         self.texture.SetRepeat(True)
         self.texture.SetEdgeClamp(True)
-
         self.texture.Modified()
 
-        self.ttp = vtk.vtkTextureMapToPlane()
-
+    @property
+    def nt(self):
+        if self.elevation is None:
+            return 0
+        else:
+            _ ,_ , nt = self.elevation.shape
+            return nt
 
     def update(self, t):
-        t = np.mod(t, self.period)
-        i = int(self.nt * t / self.period)
 
-        count = 0
-        for ix, xx in enumerate(self.x):
-            for iy, yy in enumerate(self.y):
-                self.pts.SetPoint(count, xx, yy, self.elevation[iy, ix, i])
-                count += 1
+        nx, ny, nt = self.elevation.shape
+        i = int(t / self.dt) % nt
+
+
+        for ix in range(nx):
+            for iy in range(ny):
+                count = ix + iy * nx
+
+                x,y,_ = self.pts.GetPoint(count)
+                self.pts.SetPoint(count, x, y, self.elevation[ix, iy, i])
+
+
         self.pts.Modified()
+
+        pts = getattr(self, 'line_pts', None)
+        if pts is not None:
+            for ix in range(nx):
+                x,y,_ = pts.GetPoint(ix)
+                pts.SetPoint(ix, x, y, self.elevation[ix, 0, i])
+            pts.Modified()
+
+    def make_grid(self, xmin, xmax, ymin, ymax, nx, ny, wave_direction):
+        """Constructs the wave-grid and stores the result in
+        self.xv and self.yv.
+
+        wave-direction is the direction in which the waves progress. Mathematical angle in [deg]
+        """
+
+        # xfactor = np.linspace(-1,1, nx)
+        # xg = dx * xfactor * np.sqrt(np.abs(xfactor))
+        xg = np.linspace(xmin, xmax, nx)
+        yg = np.linspace(ymin, ymax, ny)
+
+        # create a grid in direction of wave-direction
+        # xv, yv = np.meshgrid(xg, yg) # pre-allocate the grid
+        yv, xv = np.meshgrid(yg, xg)  # pre-allocate the grid
+
+        for iy in range(ny):
+            for ix in range(nx):
+                x = xg[ix]
+                y = yg[iy]
+
+                xr = np.cos(np.deg2rad(wave_direction)) * x - np.sin(np.deg2rad(wave_direction)) * y
+                yr = np.sin(np.deg2rad(wave_direction)) * x + np.cos(np.deg2rad(wave_direction)) * y
+
+                xv[ix, iy] = xr
+                yv[ix, iy] = yr
+
+        self.yv = yv
+        self.xv = xv
 
     def create_waveplane(
         self,
@@ -2772,9 +2823,12 @@ class WaveField:
         dy,
     ):
 
-        x = np.linspace(-dx, dx, nx)
-        y = np.linspace(-dy, dy, ny)
-        xv, yv = np.meshgrid(x, y)
+        # create the grid
+        self.make_grid(-dx / 2, 1.5 * dx, -dy, dy, nx, 2, wave_direction)
+
+        xv = self.xv  # alias
+        yv = self.yv
+
 
         u = np.array(
             (np.cos(np.deg2rad(wave_direction)), np.sin(np.deg2rad(wave_direction)))
@@ -2791,12 +2845,60 @@ class WaveField:
             elevation[:, :, i] = wave_amplitude * np.real(time_phasor[i] * dist_phasor)
 
         # the vtk stuff
+        self.elevation = elevation
+
+        self.dt = wave_period / nt
+
+        self.create_actor()
+        self.create_line_actor()
+
+
+
+    def create_line_actor(self):
+        nx, ny, nt = self.elevation.shape
 
         # make grid
         pts = vtk.vtkPoints()
-        for ix, xx in enumerate(x):
-            for iy, yy in enumerate(y):
-                pts.InsertNextPoint(yy, xx, elevation[iy, ix, 1])
+        for ix in range(nx):
+            x = self.xv[ix,0]
+            y = self.yv[ix,0]
+
+            pts.InsertNextPoint(x,y, self.elevation[ix, 0,0])  # use t=0 and y=y[0]
+
+        segments = vtk.vtkCellArray()
+        segments.InsertNextCell(nx)
+        for i in range(nx):
+            segments.InsertCellPoint(i)
+
+
+        poly = vtk.vtkPolyData()
+        poly.SetPoints(pts)
+        poly.SetLines(segments)
+
+        # make mapper
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputData(poly)
+
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+        actor.GetProperty().SetColor(0.0, 0.0, 0.0)
+        actor.GetProperty().SetLineWidth(2)
+
+        self.line_actor = actor
+        self.line_pts = pts
+
+
+    def create_actor(self):
+
+        ny, nx, nt = self.elevation.shape
+
+        # make grid
+        pts = vtk.vtkPoints()
+        for ix in range(nx):
+            for iy in range(ny):
+                pts.InsertNextPoint(self.xv[iy, ix],
+                                    self.yv[iy, ix],
+                                    self.elevation[iy, ix, 1])
 
         grid = vtk.vtkStructuredGrid()
         grid.SetDimensions(ny, nx, 1)
@@ -2807,10 +2909,20 @@ class WaveField:
         filter.SetInputData(grid)
 
         # texture stuff
-        self.ttp.SetInputConnection(filter.GetOutputPort())
+        TextureCooridinates = vtk.vtkFloatArray()
+        TextureCooridinates.SetNumberOfComponents(2)
+        TextureCooridinates.SetName("TextureCoordinates")
+
+        tex_repeat = 4
+
+        for i in range(0, nx):
+            for j in range(0, ny):
+                TextureCooridinates.InsertNextTuple2(tex_repeat * i / (nx - 1), tex_repeat * j / (ny - 1))
+
+        grid.GetPointData().SetTCoords(TextureCooridinates)
 
         mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputConnection(self.ttp.GetOutputPort())
+        mapper.SetInputConnection(filter.GetOutputPort())
 
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
@@ -2823,19 +2935,5 @@ class WaveField:
         actor.GetProperty().SetSpecular(0.0)
         actor.SetTexture(self.texture)
 
-        # alternative: use PBR
-        #
-        # Does not render nicely: wave grid clearly visible
-        #
-        # props = actor.GetProperty()
-        # props.SetInterpolationToPBR()
-        # props.SetMetallic(0.8)
-        # props.SetRoughness(0.1)
-
-        self.pts = pts
         self.actor = actor
-        self.elevation = elevation
-        self.nt = nt
-        self.period = wave_period
-        self.x = x
-        self.y = y
+        self.pts = pts
