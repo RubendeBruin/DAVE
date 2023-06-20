@@ -119,24 +119,13 @@ plt.show()
 
         n = int(2500 / wave_length)
 
-        # dx, dy is the size of the plane
-        # nx, ny are the number of grid points in that direction
-        if wave_direction in [0,180]:
-            nx = n
-            ny = 2
-        elif wave_direction in [90,270]:
-            nx = 2
-            ny = n
-        else:
-            nx = n
-            ny = n
 
         wf.create_waveplane(wave_direction=wave_direction,
                             wave_amplitude=amplitude,
                             wave_length=wave_length,
                             wave_period = period,
                             nt = n_frames,
-                            nx = nx, ny = ny, dx=250,dy=100)
+                            nx = n, ny = 2, dx=250,dy=100)
 
         self.gui.animation_terminate()
         self.gui.visual.add_dynamic_wave_plane(wf)
