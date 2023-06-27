@@ -449,7 +449,10 @@ def prepare_for_fd(s):
 def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
     """Calculates and plots the RAOs. Call plt.show afterwards to show the plots"""
 
-    RAOs = RAO_1d(s=s,omegas=omegas,wave_direction=wave_direction, waterdepth=waterdepth)
+    if omegas is None:
+        RAOs, omegas = RAO_1d(s=s,omegas=omegas,wave_direction=wave_direction, waterdepth=waterdepth)
+    else:
+        RAOs = RAO_1d(s=s, omegas=omegas, wave_direction=wave_direction, waterdepth=waterdepth)
 
     # now plot
     # Use one figure per node
