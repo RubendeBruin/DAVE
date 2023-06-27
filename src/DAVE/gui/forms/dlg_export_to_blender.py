@@ -24,7 +24,7 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog):
         if not Dialog.objectName():
             Dialog.setObjectName(u"Dialog")
-        Dialog.resize(482, 160)
+        Dialog.resize(492, 169)
         self.gridLayout = QGridLayout(Dialog)
         self.gridLayout.setObjectName(u"gridLayout")
         self.sbFrames_per_step = QSpinBox(Dialog)
@@ -115,7 +115,7 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Dialog", None))
         self.label_6.setText(QCoreApplication.translate("Dialog", u".blend file", None))
-        self.radioButton_2.setText(QCoreApplication.translate("Dialog", u"All frames from timeline with", None))
+        self.radioButton_2.setText(QCoreApplication.translate("Dialog", u"Animation using", None))
         self.label.setText(QCoreApplication.translate("Dialog", u"Blender template file", None))
         self.label_2.setText(QCoreApplication.translate("Dialog", u"Blender executable:", None))
         self.label_5.setText(QCoreApplication.translate("Dialog", u"blender-launcher.exe", None))

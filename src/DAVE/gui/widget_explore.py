@@ -15,6 +15,7 @@ from PySide6 import QtGui, QtCore, QtWidgets
 from DAVE.gui.forms.widgetUI_explore import Ui_widgetExplore11
 import DAVE.scene as nodes
 import DAVE.settings as ds
+from DAVE.gui.helpers.flow_layout import FlowLayout
 
 class WidgetExplore(guiDockWidget):
 
@@ -36,7 +37,9 @@ class WidgetExplore(guiDockWidget):
         self.ui.btnGoalSeek.clicked.connect(self.goalseek)
         self.ui.btnGraph.clicked.connect(self.plot)
 
-
+        # self.ui.editEvaluate.textChanged.connect(self.test_evaluation)
+        self.flow_layout = FlowLayout()
+        self.ui.wigetHistory.setLayout(self.flow_layout)
 
 
     def guiProcessEvent(self, event):
@@ -71,7 +74,7 @@ class WidgetExplore(guiDockWidget):
             self.ui.editResult.setStyleSheet("background-color: pink;")
 
 
-    # ==== Goal-seel
+    # ==== Goal-seek
 
     def goalseek(self):
         """Setup the goal-seek code and run"""
@@ -94,6 +97,13 @@ class WidgetExplore(guiDockWidget):
             change)
 
         self.guiRunCodeCallback(code, guiEventType.MODEL_STATE_CHANGED)
+
+        # add a button to the history
+        btn = QtWidgets.QPushButton()
+        btn.setText("Goal-seek: {} to {}".format(self.ui.editEvaluate.toPlainText().split('.')[-1], self.ui.editTarget.value()))
+        btn.pressed.connect(lambda c = code, *args: self.guiRunCodeCallback(c, guiEventType.MODEL_STATE_CHANGED))
+        self.flow_layout.addWidget(btn)
+
 
     def plot(self):
 

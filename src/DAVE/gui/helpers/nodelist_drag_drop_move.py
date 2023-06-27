@@ -79,7 +79,7 @@ if __name__ == '__main__':
         data.setText("test")
         drag = QDrag(label)
         drag.setMimeData(data)
-        drag.start(QtCore.Qt.MoveAction)
+        drag.exec(QtCore.Qt.MoveAction)
 
 
     label.mousePressEvent = mousePressed

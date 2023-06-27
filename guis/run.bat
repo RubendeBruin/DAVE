@@ -1,5 +1,3 @@
-
-
 echo call pyside6-uic solverdialog_threaded.ui -o "..\src\DAVE\gui\forms\dlg_solver_threaded.py"
 echo call pyside6-uic dlg_export_package.ui -o "..\src\DAVE\gui\forms\dlg_export_package.py"
 echo call pyside6-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
@@ -9,7 +7,7 @@ echo call pyside6-uic widget_ballastconfiguration.ui -o "..\src\DAVE\gui\forms\w
 echo call pyside6-uic widget_ballastsolver.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastsolver.py"
 call pyside6-uic widget_airy.ui -o "..\src\DAVE\gui\forms\widgetUI_airy.py"
 echo call pyside6-uic widget_stability_displ.ui -o "..\src\DAVE\gui\forms\widget_stability_displUI.py"
-echo call pyside6-uic widget_explore.ui -o "..\src\DAVE\gui\forms\widgetUI_explore.py"
+call pyside6-uic widget_explore.ui -o "..\src\DAVE\gui\forms\widgetUI_explore.py"
 echo call pyside6-uic widget_tank_order.ui -o "..\src\DAVE\gui\forms\widgetUI_tank_order.py"
 echo call pyside6-uic widget_area.ui -o "..\src\DAVE\gui\forms\widget_area.py"
 echo call pyside6-uic widget_bendingmomentpreview.ui -o "..\src\DAVE\gui\forms\widget_bendingmomentpreview.py"
@@ -46,5 +44,5 @@ echo call pyside6-uic widget_tank.ui -o "..\src\DAVE\gui\forms\widget_tank.py"
 echo call pyside6-uic widget_footprints.ui -o "..\src\DAVE\gui\forms\widget_footprints.py"
 echo call pyside6-uic widget_limits.ui -o "..\src\DAVE\gui\forms\widget_limits.py"
 echo call pyside6-uic dialog_edit_watch.ui -o "..\src\DAVE\gui\forms\dialog_edit_watch.py"
-call pyside6-uic dlg_export_to_blender.ui -o "..\src\DAVE\gui\forms\dlg_export_to_blender.py"
+echo call pyside6-uic dlg_export_to_blender.ui -o "..\src\DAVE\gui\forms\dlg_export_to_blender.py"
 echo call pyside6-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"

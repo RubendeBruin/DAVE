@@ -2741,6 +2741,7 @@ class WaveField:
 
         if texture is None:
             input.SetFileName(TEXTURE_WAVEPLANE)
+            input.SetFileName(TEXTURE_WAVEPLANE)
         else:
             input.SetFileName(texture)
         self.texture.SetInputConnection(input.GetOutputPort())
