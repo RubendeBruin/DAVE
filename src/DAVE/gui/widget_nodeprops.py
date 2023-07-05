@@ -485,6 +485,7 @@ class EditAxis(AbstractNodeEditorWithParent):
             cb.blockSignals(True)
             cb.setChecked(not cb.isChecked())
             cb.blockSignals(False)
+        self.check_fixities()
         self.generate_code()
 
 
@@ -529,9 +530,41 @@ class EditAxis(AbstractNodeEditorWithParent):
         self.ui.checkBox_5.setChecked(self.node.fixed[4])
         self.ui.checkBox_6.setChecked(self.node.fixed[5])
 
+        self.check_fixities()
+
         for widget in widgets:
             widget.blockSignals(False)
 
+    def check_fixities(self):
+        """Verifies that the dof fixities in the gui are allowed and displays a warning in the gui if not"""
+
+        # 4,5 and 6 are the checkboxes for the rotations
+        freeRX = not self.ui.checkBox_4.isChecked()
+        freeRY = not self.ui.checkBox_5.isChecked()
+        freeRZ = not self.ui.checkBox_6.isChecked()
+
+        count = [freeRX,freeRY,freeRZ].count(True)
+
+        # set all fine:
+
+        self.ui.lblRotationsWarning.setVisible(False)
+        self.ui.doubleSpinBox_4.setEnabled(True)
+        self.ui.doubleSpinBox_5.setEnabled(True)
+        self.ui.doubleSpinBox_6.setEnabled(True)
+
+        if count == 2:
+            self.ui.lblRotationsWarning.setVisible(True)
+
+        if count==1 or count==2:
+            if not freeRX:
+                self.ui.doubleSpinBox_4.setValue(0)
+                self.ui.doubleSpinBox_4.setEnabled(False)
+            if not freeRY:
+                self.ui.doubleSpinBox_5.setValue(0)
+                self.ui.doubleSpinBox_5.setEnabled(False)
+            if not freeRZ:
+                self.ui.doubleSpinBox_6.setValue(0)
+                self.ui.doubleSpinBox_6.setEnabled(False)
 
 
     def generate_code(self):
