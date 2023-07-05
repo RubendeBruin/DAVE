@@ -693,7 +693,9 @@ class Scene:
     def node_by_name(self, node_name, silent=False):
         """Returns a node with the given name. Raises an error if no node is found."""
 
-        # For faster lookup we keep a dict with node names as keys and nodes as values
+        # For faster lookup we keep a dict with node names as keys and node indices as values
+        # (Keeping the index instead of the node itself assures that the node in indeed in the _nodes list
+        # if not then a node with the same name may be returned by accident)
         #
         # This has a good chance of quickly returning the node
         # to verify that it is indeed the correct node we check the name
@@ -704,10 +706,12 @@ class Scene:
 
         # the quick way
         if node_name in self._node_dict:
-            node = self._node_dict[node_name]
-            if node is not None:
+            index = self._node_dict[node_name]
+            if index<len(self._nodes):
+                node = self._nodes[index]
                 if node.name == node_name:
                     return node
+
 
 
         assert isinstance(
@@ -716,9 +720,9 @@ class Scene:
 
         # rebuild nodes dict
 
-        self._node_dict = {node.name: node for node in self._nodes}
+        self._node_dict = {node.name: index for index, node in enumerate(self._nodes)}
         if node_name in self._node_dict:
-            return self._node_dict[node_name]  # return directly
+            return self._nodes[self._node_dict[node_name]]  # return directly
 
         # work-around for renames
         # TODO: remove this when renames are implemented (May 2023) - Removing this break models created before May 2023
@@ -1375,6 +1379,7 @@ class Scene:
 
         # then remove the vtk node itself
         # self._print('removing vfc node')
+        node.invalidate()
         node._delete_vfc()
         self._nodes.remove(node)
 
@@ -3935,10 +3940,7 @@ class Scene:
         code = other.give_python_code(nodes=nodes, export_environment_settings=settings, state_only=quick)
         other._export_code_with_solved_function = store_export_code_with_solved_function
 
-
         self.run_code(code)
-
-        
 
         # Move all imported elements without a parent into a newly created or supplied frame (container)
         if containerize:

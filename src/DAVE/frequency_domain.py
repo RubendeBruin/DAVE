@@ -446,8 +446,11 @@ def prepare_for_fd(s):
         w.offset = (0,0,0)
 
 
-def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
-    """Calculates and plots the RAOs. Call plt.show afterwards to show the plots"""
+def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0) -> dict:
+    """Calculates and plots the RAOs. Call plt.show afterwards to show the plots
+
+    return the figure objects as a dictionary
+    """
 
     if omegas is None:
         RAOs, omegas = RAO_1d(s=s,omegas=omegas,wave_direction=wave_direction, waterdepth=waterdepth)
@@ -487,6 +490,8 @@ def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
 
     import matplotlib.pyplot as plt
     from matplotlib.figure import figaspect
+
+    fig_list = []
 
     for figure in figures.values():
 
@@ -534,24 +539,23 @@ def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
             omax = omegas[imax]
             ax1.text(omegas[imax], 0, f"{omax:.2f} rad/s\n{2*np.pi/omax:.2f} s", horizontalalignment='left', verticalalignment='top')
 
+            ax1.grid()
 
-            plt.grid()
-
-            yy = plt.ylim()
+            yy = ax1.get_ylim()
             if yy[1] < 1e-4:
-                plt.ylim((0, 1))
+                ax1.set_ylim((0, 1))
                 continue
             elif yy[1] < 1.0:
-                plt.ylim((0, 1))
+                ax1.set_ylim((0, 1))
             else:
-                plt.ylim((0, yy[1]))
+                ax1.set_ylim((0, yy[1]))
 
 
-            xx = plt.xlim()     # force min x to 0
-            plt.xlim((0.0, xx[1]))
+            xx = ax1.get_xlim()     # force min x to 0
+            ax1.set_xlim((0.0, xx[1]))
 
             ax2 = ax1.twinx()
-            ax2.plot(omegas, np.angle(a), label="phase", color='black', linestyle=':', linewidth=1)
+            ax2.plot(omegas, np.angle(a), label="phase", color='gray', linestyle=':', linewidth=1)
 
             align_y0_axis_and_below_half_height(ax1, ax2)
             ax2.set_ylabel('phase [rad] ....')
@@ -563,8 +567,11 @@ def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
 
             plt.suptitle('{}\nIncoming wave direction = {}'.format(node_name, wave_direction))
 
-        plt.figtext(0.995, 0.01, 'Amplitude (solid) in [m] or [deg] on left axis\nPhase (dashed) in [rad] on right axis', ha='right', va='bottom', fontsize=6)
         plt.tight_layout()
+
+        fig_list.append(f)
+
+    return fig_list
 
 def RAO_1d(s, omegas, wave_direction, waterdepth=0) -> np.ndarray:
     """Calculates the response to a unit-wave

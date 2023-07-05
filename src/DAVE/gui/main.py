@@ -308,6 +308,8 @@ class Gui:
         self._animation_available = False
         """Animation available"""
 
+        self._animation_current_time = None
+
         self._animation_speed = 1.0
 
 
@@ -1134,6 +1136,7 @@ class Gui:
         self._animation_speed = self.ui.sbPlaybackspeed.value()
 
     def animation_activate_time(self, t):
+        self._animation_current_time = t
         dofs = self._animation_keyframe_interpolation_object(t)
         self.scene._vfc.set_dofs(dofs)
         self.visual.update_dynamic_waveplane(t)
@@ -1255,7 +1258,7 @@ class Gui:
 
     def animation_pause_or_continue_click(self):
         """Pauses or continues the animation"""
-        if self.ui.btnPauseAnimation.isChecked():
+        if not self.ui.btnPauseAnimation.isChecked():
             self.animation_continue()
         else:
             self.animation_pause()

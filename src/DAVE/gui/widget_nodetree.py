@@ -136,6 +136,8 @@ class WidgetNodeTree(guiDockWidget):
         self.delete_eventFilter.callback = self.delete_key
         self.installEventFilter(self.delete_eventFilter)
 
+        self.show_managed_nodes = False
+
     def guiProcessEvent(self, event):
         if event in [
             guiEventType.MODEL_STRUCTURE_CHANGED,
@@ -282,22 +284,23 @@ class WidgetNodeTree(guiDockWidget):
         # to quickly check that, we comparent the current parents and managers with the ones from the last update
         # Node --> Parent node, manager node
 
-        if self._current_tree is not None:
-            # check additional nodes
-            if len(self._current_tree) == len(self.guiScene._nodes):
-                for node in self.guiScene._nodes:
-                    if node.name not in self._current_tree.keys():
-                        print('name changed')
-                        break
-                else:
-                    # no new nodes, check if the parents and managers are the same
+        if self.show_managed_nodes == self.checkbox.isChecked():
+            if self._current_tree is not None:
+                # check additional nodes
+                if len(self._current_tree) == len(self.guiScene._nodes):
                     for node in self.guiScene._nodes:
-                        if self._current_tree[node.name] != (getattr(node,'parent',None), node.manager):
-                            print('structure changed')
+                        if node.name not in self._current_tree.keys():
+                            print('name changed')
                             break
                     else:
-                        # nothing changed, so we can skip the update
-                        return
+                        # no new nodes, check if the parents and managers are the same
+                        for node in self.guiScene._nodes:
+                            if self._current_tree[node.name] != (getattr(node,'parent',None), node.manager):
+                                print('structure changed')
+                                break
+                        else:
+                            # nothing changed, so we can skip the update
+                            return
 
 
         # store new tree
@@ -333,7 +336,7 @@ class WidgetNodeTree(guiDockWidget):
         self.treeView.clear()
         self.treeView.guiScene = self.guiScene
 
-        show_managed_nodes = self.checkbox.isChecked()
+        self.show_managed_nodes = self.checkbox.isChecked()
 
 
         def give_parent_item(node):
@@ -448,7 +451,7 @@ class WidgetNodeTree(guiDockWidget):
                 parent = None
 
             # node is managed by a manager
-            show_managed_node = show_managed_nodes
+            show_managed_node = self.show_managed_nodes
 
             # custom work-around for showing the "out-frame" for managed geometric connectors
             if isinstance(node._manager, GeometricContact):
