@@ -814,7 +814,7 @@ class VisualActor:
                         viewport.screen.remove(self.actors["footprint"])
                         # remove outline as well
                         self.actors["footprint"] = new_actor
-                        viewport.screen.add(self.actors["footprint"], render=False)
+                        viewport.screen.add(self.actors["footprint"])
 
         if isinstance(self.node, vf.Point):
             t = vtk.vtkTransform()
@@ -881,7 +881,7 @@ class VisualActor:
                 self.actors["main"]._force
                 == viewport._scaled_force_vector(self.node.force)
             ):
-                viewport.screen.remove(self.actors["main"], render=False)
+                viewport.screen.remove(self.actors["main"])
 
                 endpoint = viewport._scaled_force_vector(self.node.force)
 
@@ -893,15 +893,15 @@ class VisualActor:
                 p._force = endpoint
 
                 self.actors["main"] = p
-                viewport.screen.add(self.actors["main"], render=False)
+                viewport.screen.add(self.actors["main"])
 
             # check is the arrows are still what they should be
             if not np.all(
                 np.array(self.actors["moment1"]._moment)
                 == viewport._scaled_force_vector(self.node.moment)
             ):
-                viewport.screen.remove(self.actors["moment1"], render=False)
-                viewport.screen.remove(self.actors["moment2"], render=False)
+                viewport.screen.remove(self.actors["moment1"])
+                viewport.screen.remove(self.actors["moment2"])
 
                 endpoint = viewport._scaled_force_vector(self.node.moment)
                 p = vtkArrowActor(
@@ -919,8 +919,8 @@ class VisualActor:
                 p.actor_type = ActorType.FORCE
                 self.actors["moment2"] = p
 
-                viewport.screen.add(self.actors["moment1"], render=False)
-                viewport.screen.add(self.actors["moment2"], render=False)
+                viewport.screen.add(self.actors["moment1"])
+                viewport.screen.add(self.actors["moment2"])
 
             t = self.actors["main"].get_transform()
             t.Identity()
@@ -1082,7 +1082,7 @@ class VisualActor:
                 self.update_paint(viewport.settings)
 
                 if viewport.screen is not None:
-                    viewport.screen.add(vis, render=False)
+                    viewport.screen.add(vis)
 
             return
 
@@ -1255,7 +1255,7 @@ class VisualActor:
                     logging.info(f"Creating new fluid actor for {self.node.name}")
 
                     if viewport.screen is not None:
-                        viewport.screen.add(vis, render=False)
+                        viewport.screen.add(vis)
 
                 if not self.node.visible:
                     vis.off()
@@ -1422,7 +1422,7 @@ class Viewport:
     def add_temporary_actor(self, actor: vtk.vtkActor):
         self.temporary_actors.append(actor)
         if self.screen:
-            self.screen.add(actor, render=False)
+            self.screen.add(actor)
 
     def remove_temporary_actors(self):
         if self.temporary_actors:
@@ -1627,7 +1627,7 @@ class Viewport:
         self.global_visuals["z"].negative = True
 
         for actor in self.global_visuals.values():
-            self.screen.add(actor, render=False)
+            self.screen.add(actor)
 
         wind_actor = vp.Lines(
             start_pts=[(0, 0, 0), (0, 0, 0)], end_pts=[(10, 0, 0), (-0.5, 1, 0)]
@@ -1647,7 +1647,7 @@ class Viewport:
         self.current_actor = current_actor
         self.wind_actor = wind_actor
 
-        self.screen.add(self.colorbar_actor, render=False)
+        self.screen.add(self.colorbar_actor)
 
     def add_wind_and_current_actors(self):
         self.screen.add_icon(self.wind_actor, pos=2, size=0.06)
@@ -2229,7 +2229,7 @@ class Viewport:
                         to_be_added.append(va.label_actor)
 
             if to_be_added:
-                self.screen.add(to_be_added, render=False)
+                self.screen.add(to_be_added)
 
             # check if objs or meshes need to be re-loaded
             for va in self.node_visuals:
@@ -2265,7 +2265,7 @@ class Viewport:
                     if not va.node.visible:
                         va.actors["main"].off()
 
-                    self.screen.add(va.actors["main"], render=False)
+                    self.screen.add(va.actors["main"])
 
                 if (
                     isinstance(va.node, vf.Buoyancy)
@@ -2301,7 +2301,7 @@ class Viewport:
                             if not va.node.visible:
                                 va.actors["main"].off()
 
-                            self.screen.add(va.actors["main"], render=False)  # add after positioning
+                            self.screen.add(va.actors["main"])  # add after positioning
 
                             # va.node.trimesh._new_mesh = False  # is set to False by position_visuals
 
@@ -2478,7 +2478,7 @@ class Viewport:
             for va in self.node_visuals:
                 for a in va.actors.values():
                     # if a.GetVisibility():  # also invisible nodes need to be added because they may be x-rayed
-                    self.screen.add(a, render=False)
+                    self.screen.add(a)
 
             self.update_visibility()  # needs to be called after actors have been added to screen
             self.update_global_visibility()
@@ -2486,7 +2486,7 @@ class Viewport:
             self.screen.resetcam = False
 
             for outline in self.node_outlines:
-                self.screen.add(outline.outline_actor, render=False)
+                self.screen.add(outline.outline_actor)
 
             return self.screen
 
@@ -2496,11 +2496,11 @@ class Viewport:
 
             for va in self.node_visuals:
                 for a in va.actors.values():
-                    screen.add(a, render=False)
+                    screen.add(a)
 
             if include_outlines:
                 for outline in self.node_outlines:
-                    screen.add(outline.outline_actor, render=False)
+                    screen.add(outline.outline_actor)
 
             screen.resetcam = False
 
