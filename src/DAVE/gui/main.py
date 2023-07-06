@@ -479,6 +479,28 @@ class Gui:
             self.ui.actionShow_force_applying_element.triggered.connect(
                 self.toggle_show_force_applying_elements
             )
+            # --- label size
+
+            # cog size
+            self.ui.menuView.addSeparator()
+
+            self.ui.sliderLabelSize = MenuSlider("Label size")
+            self.ui.sliderLabelSize.setMin(0)
+            self.ui.sliderLabelSize.setMax(100)
+            self.ui.sliderLabelSize.slider.setValue(10)
+
+            def set_label_size(value):
+                self.run_code(
+                    f"self.visual.settings.label_scale = {value / 20}",
+                    guiEventType.VIEWER_SETTINGS_UPDATE,
+                )
+                self.visual.refresh_embeded_view()
+
+
+            self.ui.sliderLabelSize.connectvalueChanged(set_label_size)
+            self.ui.menuView.addAction(self.ui.sliderLabelSize)
+
+            # ---- label size
 
             self.ui.sliderGeometrySize = MenuSlider("Geometry size")
             self.ui.sliderGeometrySize.setMin(0)
@@ -736,10 +758,12 @@ class Gui:
         d = ExportAsPackageDialog()
         d.show(self.scene, str(self.scene.current_directory))
 
-
-
     def focus_on_viewport(self, *args):
-        self.visual.vtkWidget.setFocus()
+        # Executed when escape is pressed
+        if self.visual.vtkWidget.hasFocus():
+            self.escPressed()
+        else:
+            self.visual.vtkWidget.setFocus()
 
 
     def show_python_console(self, *args):

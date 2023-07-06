@@ -367,7 +367,12 @@ def actor_from_trimesh(trimesh):
 def actor_from_vertices_and_faces(vertices, faces):
     """Creates a mesh based on the given vertices and faces. Cleans up
     the structure before creating by removing duplicate vertices"""
-    unique_vertices = np.unique(vertices, axis=0)
+
+    vertices = np.array(vertices, dtype=float)
+    if vertices.ndim > 1:
+        unique_vertices = np.unique(vertices, axis=0)
+    else:
+        unique_vertices = vertices
 
     if len(unique_vertices) != len(vertices):  # reconstruct faces and vertices
         unique_vertices, indices = np.unique(vertices, axis=0, return_inverse=True)

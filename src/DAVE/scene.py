@@ -138,6 +138,9 @@ class Scene:
         self.solve_activity_desc = "Solving static equilibrium"
         """This string may be used for feedback to user - read by Gui"""
 
+        if current_directory is None and filename is not None:
+            self.current_directory = Path(filename).parent
+
         if filename is not None:
             self.load_scene(filename)
 

@@ -349,23 +349,21 @@ class VisualActor:
         position = self.center_position
 
         # print(f'{txt} : at {position}')
-
+        la.GetProperty().SetColor(0, 0, 0)
         la.SetAttachmentPoint(*position)
 
         la.SetPickable(True)
 
         cap = la.GetTextActor().GetTextProperty()
+
+        la.GetTextActor().SetTextScaleModeToViewport()
         la.GetTextActor().SetPickable(True)
 
-        size = 0.02
-
         cap.SetColor(0, 0, 0)
-        la.SetWidth(100 * size)
-        la.SetHeight(size)
-        la.SetPosition(-size / 2, -size / 2)
         la.SetBorder(False)
-        cap.SetBold(True)
+        cap.SetBold(False)
         cap.SetItalic(False)
+        cap.SetFontFamilyToArial()
 
         la.no_outline = True
 
@@ -458,7 +456,14 @@ class VisualActor:
 
         # label
         if settings.label_scale > 0:
-            self.label_actor.SetVisibility(node_painter_settings["main"].labelShow)
+            if self.label_actor.GetVisibility() != node_painter_settings["main"].labelShow:
+                self.label_actor.SetVisibility(node_painter_settings["main"].labelShow)
+
+            ta = self.label_actor.GetTextActor()
+            txtprop = ta.GetTextProperty()
+
+            if txtprop.GetFontSize() != int(settings.label_scale * 10):
+                txtprop.SetFontSize(int(settings.label_scale * 10))
         else:
             self.label_actor.SetVisibility(False)
 
@@ -1138,7 +1143,7 @@ class VisualActor:
             if self.node.fill_pct > 99.99 and not self.node.free_flooding:
 
                 # tank is full
-                vertices = points[0]
+                vertices = points
                 faces = self.actors["main"].faces()
 
             else:
