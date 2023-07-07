@@ -43,6 +43,8 @@ from PySide6 import QtWidgets
 
 DAVE_GUI_NODE_EDITORS = dict() # Key: node-class, value: editor-class
 
+
+
 def cbvinf(checkbox: QCheckBox, value: bool, do_block = True):
     """Updates the value in the spinbox IF it does not have focus. Blocks signals during change if do_block is true (default)"""
     if checkbox.hasFocus():

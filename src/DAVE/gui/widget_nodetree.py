@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
     QAbstractScrollArea, QApplication,
 )
 import DAVE.scene as ds
-from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter
+from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter, update_combobox_items_with_completer
 
 from DAVE.settings_visuals import ICONS
 
@@ -83,6 +83,17 @@ class WidgetNodeTree(guiDockWidget):
         self._current_tree = None
 
         self.contents.setContentsMargins(0,0,0,0)
+
+        self.tbFilter = QtWidgets.QComboBox(self.contents)
+        self.tbFilter.setPlaceholderText("Filter")
+        self.tbFilter.setEditable(True)
+
+        filter_options = []
+        for key in DAVE_NODEPROP_INFO.keys():
+            filter_options.append(f"type:{key.__name__}")
+
+        update_combobox_items_with_completer(self.tbFilter, filter_options)
+
         self.treeView = NodeTreeWidget(self.contents)
         self.treeView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.treeView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
@@ -123,6 +134,7 @@ class WidgetNodeTree(guiDockWidget):
         self.treeView.others.append(self)
 
         layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.tbFilter)
         layout.addWidget(self.treeView)
         layout.addWidget(self.checkbox)
         layout.addWidget(self.listbox)
@@ -135,6 +147,8 @@ class WidgetNodeTree(guiDockWidget):
         self.delete_eventFilter = DeleteEventFilter()
         self.delete_eventFilter.callback = self.delete_key
         self.installEventFilter(self.delete_eventFilter)
+
+        self.tbFilter.editTextChanged.connect(self.filter_changed)
 
         self.show_managed_nodes = False
 
@@ -256,19 +270,73 @@ class WidgetNodeTree(guiDockWidget):
         self.listbox.clear()
         self.listbox.addItems([node.name for node in self.recent_items])
 
+    def filter_changed(self, *args):
+        self.update_node_visibility()
 
     def update_node_visibility(self):
-        """Updates the visibility of the nodes in the tree"""
+        """Updates the visibility of the nodes in the tree
+        passes the filter and the visibility settings of the viewer"""
+
+        filter_type = ""
+        filter_name = ""
+
+        filter = self.tbFilter.currentText()
+        parts = filter.split(" ")
+        parts = [part for part in parts if part != ""]
+        for part in parts:
+            part = part.lower()
+            if part.startswith("type:"):
+                filter_type = part[5:].lower()
+            else:
+                filter_name = part.lower()
+
+
         for name, item in self.items.items():
 
             # item not visible? then mark gray
             node = self.guiScene[name]
+            #
+            # process node visibility from node settings itself
             if not node.visible:
                 item.setForeground(0,QBrush(QColor(124, 124, 124)))
             elif node.manager is not None:
                 item.setForeground(0,QBrush(QColor(0, 150, 0)))
             else:
                 item.setForeground(0,QBrush(QColor(0,0,0)))
+
+            # process node visibility from filter
+            # only set doHide to True if node should be hidden
+            # actual hiding is done later because we need to check if children are visible
+            hide = False
+            if filter_type != "":
+                if filter_type not in node.__class__.__name__.lower():
+                    hide = True
+            if filter_name != "":
+                if filter_name not in name.lower():
+                    hide = True
+
+            item.doHide = hide
+
+
+        def has_visible_children(item):
+            for i in range(item.childCount()):
+                child = item.child(i)
+                if not child.doHide:
+                    return True
+                if has_visible_children(child):
+                    return True
+            return False
+
+        for name, item in self.items.items():
+            if item.doHide:
+                if has_visible_children(item):
+                    item.setForeground(0, QBrush(QColor(120, 120, 200)))
+                    item.setHidden(False)
+                else:
+                    item.setHidden(True)
+            else:
+                item.setHidden(False)
+
 
     def update_node_data_and_tree(self):
         """
