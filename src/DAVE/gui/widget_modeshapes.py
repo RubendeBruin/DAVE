@@ -25,6 +25,7 @@ from PySide6.QtGui import QBrush, QColor
 from DAVE.gui.forms.widgetUI_modeshapes import Ui_ModeShapesWidget
 import DAVE.frequency_domain
 import numpy as np
+from DAVE.io.simplify import tanks_to_bodies
 
 class WidgetModeShapes(guiDockWidget):
 
@@ -45,6 +46,7 @@ class WidgetModeShapes(guiDockWidget):
         self.ui.sliderSize.actionTriggered.connect(self.activate_modeshape)
         self.ui.lblError.setText('')
         self.ui.pushButton_2.clicked.connect(self.quickfix)
+        self.ui.pbTanksToBodies.clicked.connect(self.tanks_to_bodies)
         self._shapes_calculated = False
 
     def guiProcessEvent(self, event):
@@ -89,6 +91,10 @@ class WidgetModeShapes(guiDockWidget):
 
         self.gui.animation_terminate()
 
+        if self.guiScene._vfc.n_dofs() == 0:
+            self.ui.lblError.setText('No degrees of freedom')
+            return
+
         if self.d0 is None:
             if not self.guiScene.verify_equilibrium():
                 self.gui.solve_statics()
@@ -110,6 +116,10 @@ class WidgetModeShapes(guiDockWidget):
 
         warnings = ''
 
+        if self.guiScene.nodes_of_type(Tank):
+            warnings += 'Fluid in tanks is not considered in dynamics. Advised to convert to bodies.\n'
+
+
         if np.any(np.iscomplex(V)):
             warnings += 'MASSLESS '
         else:
@@ -117,6 +127,7 @@ class WidgetModeShapes(guiDockWidget):
 
         if np.any(np.isnan(V)):
             warnings += ' UNCONTRAINED'
+
 
         self.ui.lblError.setText(warnings)
         self.ui.btnCalc.setStyleSheet("")
@@ -132,6 +143,11 @@ class WidgetModeShapes(guiDockWidget):
         summary = DAVE.frequency_domain.dynamics_quickfix(self.guiScene)
         self.guiEmitEvent(guiEventType.MODEL_STRUCTURE_CHANGED)
         self.fill_results_table_with(summary)  # do this after emitting the event
+
+    def tanks_to_bodies(self):
+        self.gui.animation_terminate()
+        self.gui.run_code('from DAVE.io.simplify import tanks_to_bodies\ntanks_to_bodies(s)', guiEventType.MODEL_STRUCTURE_CHANGED)
+
 
     def activate_modeshape(self):
 

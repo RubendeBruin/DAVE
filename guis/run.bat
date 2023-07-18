@@ -2,7 +2,7 @@ echo call pyside6-uic solverdialog_threaded.ui -o "..\src\DAVE\gui\forms\dlg_sol
 call pyside6-uic dlg_export_package.ui -o "..\src\DAVE\gui\forms\dlg_export_package.py"
 echo call pyside6-uic main_form.ui -o "..\src\DAVE\gui\forms\main_form.py"
 echo call pyside6-uic widget_environment.ui -o "..\src\DAVE\gui\forms\widgetUI_environment.py"
-echo call pyside6-uic widget_modeshapes.ui -o "..\src\DAVE\gui\forms\widgetUI_modeshapes.py"
+call pyside6-uic widget_modeshapes.ui -o "..\src\DAVE\gui\forms\widgetUI_modeshapes.py"
 echo call pyside6-uic widget_ballastconfiguration.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastconfiguration.py"
 echo call pyside6-uic widget_ballastsolver.ui -o "..\src\DAVE\gui\forms\widgetUI_ballastsolver.py"
 echo call pyside6-uic widget_airy.ui -o "..\src\DAVE\gui\forms\widgetUI_airy.py"

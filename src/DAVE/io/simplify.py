@@ -46,6 +46,8 @@ def tanks_to_bodies(s : Scene):
     tanks = s.nodes_of_type(Tank)
 
     for t in tanks:
+        if t.manager is not None:
+            raise ValueError(f'Can not convert tank {t.name} with manager {t.manager.name} to rigid-body. Please dissolve first')
         parent = t.parent
         cog_local = t.cog_local
         mass = t.volume * t.density
