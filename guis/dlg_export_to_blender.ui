@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>492</width>
+    <width>629</width>
     <height>169</height>
    </rect>
   </property>
@@ -85,7 +85,7 @@
    <item row="1" column="3">
     <widget class="QLabel" name="label_4">
      <property name="text">
-      <string>frames per step</string>
+      <string>frames per step or second</string>
      </property>
     </widget>
    </item>
@@ -96,7 +96,7 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="2" colspan="2">
+   <item row="4" column="1" colspan="3">
     <widget class="QFrame" name="frame">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>

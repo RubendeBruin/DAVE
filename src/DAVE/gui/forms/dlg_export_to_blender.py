@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'dlg_export_to_blender.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.0
+## Created by: Qt User Interface Compiler version 6.5.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -24,7 +24,7 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog):
         if not Dialog.objectName():
             Dialog.setObjectName(u"Dialog")
-        Dialog.resize(492, 169)
+        Dialog.resize(629, 169)
         self.gridLayout = QGridLayout(Dialog)
         self.gridLayout.setObjectName(u"gridLayout")
         self.sbFrames_per_step = QSpinBox(Dialog)
@@ -104,7 +104,7 @@ class Ui_Dialog(object):
         self.horizontalLayout.addWidget(self.btnCancel)
 
 
-        self.gridLayout.addWidget(self.frame, 4, 2, 1, 2)
+        self.gridLayout.addWidget(self.frame, 4, 1, 1, 3)
 
 
         self.retranslateUi(Dialog)
@@ -121,7 +121,7 @@ class Ui_Dialog(object):
         self.label_5.setText(QCoreApplication.translate("Dialog", u"blender-launcher.exe", None))
         self.label_3.setText(QCoreApplication.translate("Dialog", u"Export", None))
         self.radioButton.setText(QCoreApplication.translate("Dialog", u"Current view (image)", None))
-        self.label_4.setText(QCoreApplication.translate("Dialog", u"frames per step", None))
+        self.label_4.setText(QCoreApplication.translate("Dialog", u"frames per step or second", None))
         self.btnOK.setText(QCoreApplication.translate("Dialog", u"Export", None))
         self.btnCancel.setText(QCoreApplication.translate("Dialog", u"Cancel", None))
     # retranslateUi

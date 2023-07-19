@@ -78,8 +78,6 @@ class ExportAsPackageDialog():
             folder = Path(self.ui.tbFolder.text()) / name
             folder.mkdir(exist_ok=False)
 
-
-
             log.append(f"Created folder {folder}")
 
             log.extend(self.scene.create_standalone_copy(target_dir=folder,

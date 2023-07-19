@@ -108,11 +108,6 @@ class Ui_ModeShapesWidget(object):
 
         self.verticalLayout_2.addWidget(self.pushButton_2)
 
-        self.pbTanksToBodies = QPushButton(self.frame_2)
-        self.pbTanksToBodies.setObjectName(u"pbTanksToBodies")
-
-        self.verticalLayout_2.addWidget(self.pbTanksToBodies)
-
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.verticalLayout_2.addItem(self.verticalSpacer)
@@ -200,7 +195,6 @@ class Ui_ModeShapesWidget(object):
         ___qtablewidgetitem6 = self.tableWidget.horizontalHeaderItem(6)
         ___qtablewidgetitem6.setText(QCoreApplication.translate("ModeShapesWidget", u"no-inertia", None));
         self.pushButton_2.setText(QCoreApplication.translate("ModeShapesWidget", u"Quick-fix model", None))
-        self.pbTanksToBodies.setText(QCoreApplication.translate("ModeShapesWidget", u"Convert tanks to bodies", None))
         self.btnCalc.setText(QCoreApplication.translate("ModeShapesWidget", u"Calculate Modeshapes", None))
         self.label.setText(QCoreApplication.translate("ModeShapesWidget", u"Mode-shape", None))
         self.lblPeriod.setText(QCoreApplication.translate("ModeShapesWidget", u"Period", None))
