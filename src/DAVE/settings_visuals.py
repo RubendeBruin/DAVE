@@ -23,10 +23,14 @@ TEXTURE_SEA = str(ds.RESOURCE_PATH[0] / "virtualSea.jpg")
 LIGHT_TEXTURE_SKYBOX = ds.RESOURCE_PATH[0] / "white.png"
 ALPHA_SEA = 0.8
 
-# ============ visuals :: geometry =========
+# ============ visuals :: geometry and cables =========
 
 RESOLUTION_SPHERE = 12
 RESOLUTION_ARROW = 12
+RESOLUTION_CABLE_OVER_CIRCLE = 36 # NUMBER OF POINTS IN A FULL CIRCLE
+RESOLUTION_CABLE_SAG = 30  # NUMBER OF POINTS IN A CATENARY
+
+
 
 # ============ visuals :: colors ===========
 

@@ -13,7 +13,8 @@ from .enums import *
 from .mixins import HasParentCore
 from .trimesh import TriMeshSource
 
-from ..settings import VF_NAME_SPLIT
+from ..settings import VF_NAME_SPLIT, RENDER_CURVE_RESOLUTION, RENDER_CATENARY_RESOLUTION
+from ..settings_visuals import RESOLUTION_CABLE_OVER_CIRCLE, RESOLUTION_CABLE_SAG
 from ..tools import *
 
 
@@ -1487,6 +1488,7 @@ class Cable(NodeCoreConnected):
 
         self._pois = list()
         self._reversed: List[bool] = list()
+        self._friction: List[float] = list()
 
         self._render_as_tube = True
         self._friction_factor = -1
@@ -1582,6 +1584,48 @@ class Cable(NodeCoreConnected):
         self._update_pois()
 
     @property
+    def friction(self) -> tuple[float]:
+        """Diameter of the cable. Used when a cable runs over a circle. [m]"""
+        return tuple(self._friction)
+
+    @property
+    def _isloop(self):
+        return self.connections[0] == self.connections[-1]
+
+    @friction.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def friction(self, friction):
+
+        # check length
+        req_len = len(self._pois) - 2
+        if self._isloop:
+            req_len += 1
+        assert len(friction) == req_len, f"Friction should be defined for {req_len} connections"
+
+        if self._isloop:
+            assert list(friction).count(None) == 1, "When defining friction for a loop, exactly of the frictions should be 'None'. The friction at that last connection is calculated from the other frictions."
+
+        self._friction = list(friction)
+
+        if self._isloop:
+            self._vfNode.unkonwn_friction_index = self._friction.index(None)
+
+        self._update_pois()
+
+    @property
+    def friction_forces(self) -> tuple[float]:
+        """Forces at the connections due to friction [kN]
+        """
+        return tuple(self._vfNode.friction_forces)
+
+    @property
+    def segment_forces(self) -> tuple[float]:
+        """Forces at the free segments of the cable EXCLUDING weight [kN]
+        """
+        return tuple(self._vfNode.free_segment_forces_excl_weight)
+
+    @property
     def connections(self) -> tuple[Point or Circle]:
         """List or Tuple of nodes that this cable is connected to. Nodes may be passed by name (string) or by reference.
 
@@ -1660,13 +1704,22 @@ class Cable(NodeCoreConnected):
 
     def get_points_for_visual(self):
         """A list of 3D locations which can be used for visualization"""
-        return self._vfNode.global_points
+        points, tensions = self._vfNode.get_drawing_data(RESOLUTION_CABLE_SAG, RESOLUTION_CABLE_OVER_CIRCLE,
+                                                         False)
+        return points
 
-    def _add_connection_to_core(self, connection, reversed=False):
+
+    def get_points_for_visual_blender(self):
+        """A list of 3D locations which can be used for visualization"""
+        constant_point_count = True
+        points, tensions = self._vfNode.get_drawing_data(RENDER_CATENARY_RESOLUTION, RENDER_CURVE_RESOLUTION, constant_point_count)
+        return points
+
+    def _add_connection_to_core(self, connection, reversed=False, friction = 0):
         if isinstance(connection, Point):
-            self._vfNode.add_connection_poi(connection._vfNode)
+            self._vfNode.add_connection_poi(connection._vfNode, friction)
         if isinstance(connection, Circle):
-            self._vfNode.add_connection_sheave(connection._vfNode, reversed)
+            self._vfNode.add_connection_sheave(connection._vfNode, reversed, friction)
 
     def _update_pois(self):
         self._vfNode.clear_connections()
@@ -1676,8 +1729,21 @@ class Cable(NodeCoreConnected):
             self._reversed.append(False)
         self._reversed = self._reversed[0 : len(self._pois)]
 
+        # sync length of friction
+        req_friction_length = len(self._pois) - 2
+        if self._isloop:
+            req_friction_length += 1
+
+        while len(self._friction) < req_friction_length:
+            self._friction.append(0)
+        self._friction = self._friction[0: req_friction_length]
+
         for point, reversed in zip(self._pois, self._reversed):
             self._add_connection_to_core(point, reversed)
+
+        # replace none friction by 0
+
+        self._vfNode.friction_fractions = [f if f is not None else 0 for f in self._friction]
 
     def _give_poi_names(self):
         """Returns a list with the names of all the pois"""
@@ -1749,6 +1815,9 @@ class Cable(NodeCoreConnected):
         T0 = self.tension
         return self.friction_factor_used * T0
 
+    def update(self):
+        """Update the cable internals"""
+        self._vfNode.update()
 
 
 

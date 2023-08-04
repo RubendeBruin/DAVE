@@ -1709,11 +1709,11 @@ class Scene:
             BackgroundSolver.Start()
 
             while BackgroundSolver.Running:
-                for i in range(10):
+                for i in range(int(10*timeout_s)):
                     if should_terminate():
                         BackgroundSolver.Stop()
                         return False
-                    sleep(timeout_s / 10)
+                    sleep(0.1)
                     if BackgroundSolver.Converged:
                         break
 
@@ -2560,6 +2560,7 @@ class Scene:
         mass=None,
         connections = None,
         mass_per_length=None,
+        friction = None,
     ) -> Cable:
         """Creates a new *cable* node and adds it to the scene.
 
@@ -2572,6 +2573,8 @@ class Scene:
             mass [0] or mass_per_length [0] : mass of the cable - warning: only valid if tension in cable > 10x cable weight.
             mass_per_length [alternative for mass]
             sheaves : [optional] A list of pois, these are sheaves that the cable runs over. Defined from endA to endB
+            connections [optional] : Alternative to [EndA, sheaves, EndB]
+            friction : [optional] A list of friction coefficients for each connection. aligned with connection
 
             connections: May be used instead of endA, endB and sheaves. If connections is provided then endA = connections[0], endB = connections[-1] and sheaves = connections[1:-1]
 
@@ -2661,6 +2664,16 @@ class Scene:
         if mass is not None:
             assert1f(mass, "mass")
 
+        if friction is not None:
+
+            req_len = len(pois)-2
+            if connections[0]==connections[-1]:
+                req_len += 1
+
+            assert len(friction) == req_len, "friction should be a list with the same length as the number of intermediate points/circles"
+            for _ in friction:
+                assert isinstance(_, (float, int, type(None))), "friction should be a list with floats or None"
+
         # then create
 
         new_node = Cable(self, name)
@@ -2671,6 +2684,10 @@ class Scene:
         new_node.diameter = diameter
 
         new_node.connections = pois
+
+        if friction is not None:
+            new_node.friction = friction
+
 
         # and add to the scene
         # self._nodes.append(new_node)
@@ -2694,6 +2711,8 @@ class Scene:
             mass_per_length = mass / new_node.length
 
         new_node.mass_per_length = mass_per_length
+
+        new_node.update()
 
         return new_node
 

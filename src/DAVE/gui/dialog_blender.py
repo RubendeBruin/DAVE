@@ -166,5 +166,13 @@ if __name__ == '__main__':
 
     app = QtWidgets.QApplication()
     etb = ExportToBlenderDialog()
-    etb.show(None)
+
+    from DAVE.scene import Scene
+    from DAVE.nodes import Frame, Visual
+
+    s = Scene()
+    s.new_frame('frame')
+    s.new_visual('vis',path='res: cube.obj', parent='frame')
+
+    etb.show(s)
 

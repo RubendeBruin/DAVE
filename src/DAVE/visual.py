@@ -1626,7 +1626,7 @@ class Viewport:
         self.global_visuals["z"].negative = True
 
         for actor in self.global_visuals.values():
-            self.screen.add(actor, render=False)
+            self.screen.add(actor)
 
         wind_actor = vp.Lines(
             start_pts=[(0, 0, 0), (0, 0, 0)], end_pts=[(10, 0, 0), (-0.5, 1, 0)]
@@ -1646,7 +1646,7 @@ class Viewport:
         self.current_actor = current_actor
         self.wind_actor = wind_actor
 
-        self.screen.add(self.colorbar_actor, render=False)
+        self.screen.add(self.colorbar_actor)
 
     def add_wind_and_current_actors(self):
         self.screen.add_icon(self.wind_actor, pos=2, size=0.06)
@@ -2226,7 +2226,7 @@ class Viewport:
                         to_be_added.append(va.label_actor)
 
             if to_be_added:
-                self.screen.add(to_be_added, render=False)
+                self.screen.add(to_be_added)
 
             # check if objs or meshes need to be re-loaded
             for va in self.node_visuals:
@@ -2493,7 +2493,7 @@ class Viewport:
 
             for va in self.node_visuals:
                 for a in va.actors.values():
-                    screen.add(a, render=False)
+                    screen.add(a)
 
             if include_outlines:
                 for outline in self.node_outlines:

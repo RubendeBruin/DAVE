@@ -43,6 +43,13 @@ if version < MINIMUM_REQUIRED_VERSION_DAVEcore:
         os.remove(target)
 
 try:
+
+    import importlib.util
+
+    DAVE_details = importlib.util.find_spec("DAVEcore")
+    if DAVE_details is not None:
+        print(f'Loading DAVEcore from: {DAVE_details.origin}')
+
     import DAVEcore
 
     try:

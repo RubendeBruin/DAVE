@@ -554,13 +554,13 @@ def nearest_rotation_vector(v0, v1):
 
     return v1 - 360*i*n
 
-def create_blend_and_open(scene, blender_result_file = None, blender_base_file=None, blender_exe_path=None, camera=None, animation_dofs=None, wavefield=None):
+def create_blend_and_open(scene, blender_exe_path, blender_result_file = None, blender_base_file=None,  camera=None, animation_dofs=None, wavefield=None):
 
     create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path ,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield)
     # command = 'explorer "{}"'.format(str(blender_result_file))
     # subprocess.call(command, creationflags=subprocess.DETACHED_PROCESS)
 
-def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None ,animation_dofs=None, wavefield=None):
+def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path, camera=None ,animation_dofs=None, wavefield=None):
     tempfile = Path(consts.PATH_TEMP) / 'blender.py'
 
     if blender_base_file is None:
@@ -572,8 +572,6 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
     blender_py_file(scene, tempfile, blender_base_file = blender_base_file , blender_result_file = blender_result_file
                     ,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield)
 
-    if blender_exe_path is None:
-        blender_exe_path = consts.BLENDER_EXEC
 
     command = '"{}" -b --python "{}"'.format(blender_exe_path, tempfile)
 
@@ -740,7 +738,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
     for cable in scene.nodes_of_type(dc.Cable):
 
-        points = cable.get_points_for_visual()
+        points = cable.get_points_for_visual_blender()
         dia = cable.diameter
 
         if dia < consts.BLENDER_CABLE_DIA:
@@ -757,7 +755,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
             for dof in animation_dofs:
                 scene._vfc.set_dofs(dof)
                 scene.update()
-                points = cable.get_points_for_visual()
+                points = cable.get_points_for_visual_blender()
                 code += '\nframe_points=['
                 for p in points:
                     code += '({},{},{},1.0),'.format(*p)
@@ -776,7 +774,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
                 timeline.activate_time(i_time + time_start)
                 scene.update()
-                points = cable.get_points_for_visual()
+                points = cable.get_points_for_visual_blender()
                 code += '\nframe_points=['
                 for p in points:
                     code += '({},{},{},1.0),'.format(*p)
@@ -992,4 +990,7 @@ if __name__ == '__main__':
     s['Visual2'].color = (254, 0, 0)
     s['Beam'].color = (0,100,254)
 
-    create_blend_and_open(s)
+    from DAVE.gui.dialog_blender import try_get_blender_executable
+    blender_executable = try_get_blender_executable()
+
+    create_blend_and_open(s, blender_exe_path=blender_executable)
