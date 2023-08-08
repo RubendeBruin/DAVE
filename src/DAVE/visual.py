@@ -434,6 +434,21 @@ class VisualActor:
 
         # Override paint settings if node is selected or sub-selected
 
+        if isinstance(self.node, dn.Cable):
+            # apply colors to cable
+            # apply_colors_to_cable_node_actor(self.node, self.actors["main"])
+            actor = self.actors["main"]
+            mapper = actor.GetMapper()
+
+            if self.node.do_color_by_tension:
+                mapper.SetScalarModeToUsePointFieldData()
+                mapper.ScalarVisibilityOn()
+                mapper.SelectColorArray("TubeColors")
+                mapper.Modified()
+            else:
+                mapper.ScalarVisibilityOff()
+
+
         if self._is_selected:
             new_painter_settings = dict()
             for k, value in node_painter_settings.items():
@@ -653,10 +668,10 @@ class VisualActor:
             # # check the number of points
             A = self.actors["main"]
 
-            points = self.node.get_points_for_visual()
+            points, tensions = self.node.get_points_and_tensions_for_visual()
 
             if self.node._render_as_tube:
-                self.info['mapper'].SetInputData(create_tube_data(points, self.node.diameter))
+                self.info['mapper'].SetInputData(create_tube_data(points, self.node.diameter, colors=tensions ))
                 self.info['mapper'].Modified()
             else:
                 if len(points) == 0:  # not yet created

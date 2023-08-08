@@ -1572,7 +1572,7 @@ class Gui:
                 msgBox.setText("No degrees of freedom - nothing to solve")
                 msgBox.setWindowTitle("DAVE")
                 msgBox.exec_()
-
+                self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
                 print("No dofs")
 
             return True

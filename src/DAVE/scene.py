@@ -278,6 +278,10 @@ class Scene:
     def _print_cpp(self):
         print(self._vfc.to_string())
 
+    def _save_cpp(self, filename):
+        with open(filename, "w") as f:
+            f.write(self._vfc.to_string())
+
     def _print(self, what):
         if self.verbose:
             print(what)

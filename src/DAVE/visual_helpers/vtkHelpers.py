@@ -299,7 +299,7 @@ def update_line_to_points(line_actor, points):
         source.Modified()
 
 
-def create_tube_data(new_points, diameter):
+def create_tube_data(new_points, diameter, colors = None):
     """Updates the points of a line-actor"""
 
     points = vtk.vtkPoints()
@@ -318,6 +318,11 @@ def create_tube_data(new_points, diameter):
     polyln.SetPoints(points)
     polyln.SetLines(lines)
 
+    if colors is not None:
+        cc = get_color_array(colors)
+        cc.SetName("TubeColors")
+        polyln.GetPointData().SetScalars(cc)
+
     tuf = vtk.vtkTubeFilter()
     tuf.SetCapping(False)
     tuf.SetNumberOfSides(12)
@@ -330,7 +335,17 @@ def create_tube_data(new_points, diameter):
 
     return tuf.GetOutput()
 
+def get_color_array(c):
+    cc = vtk.vtkUnsignedCharArray()
+    cc.SetName("TubeColors")
+    cc.SetNumberOfComponents(3)
+    cc.SetNumberOfTuples(len(c))
 
+    colors = vp.color_map(c, 'turbo', vmin=min(c) * 0.95, vmax=max(c) * 1.05)
+
+    for i, (r,g,b) in enumerate(colors):
+        cc.InsertTuple3(i, int(255 * r), int(255 * g), int(255 * b))
+    return cc
 
 
 def apply_parent_translation_on_transform(parent, t: vtk.vtkTransform):

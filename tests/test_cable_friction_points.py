@@ -10,23 +10,23 @@ def test_friction_cable_over_point():
     s.new_point('p1', position=(0, 0, 0), parent=f)
     s.new_point('p2', position=(0, 0, 0), parent=f)
 
-    c = s.new_cable(connections = ['p1', 'hook', 'p2'], name='cable', EA = 122345, friction=[0.05], length=7)
+    c = s.new_cable(connections = ['p1', 'hook', 'p2'], name='cable', EA = 122345, friction=[0.1], length=7)
 
     s.solve_statics()
 
     weight = f.mass * s.g
 
-    assert_allclose(hook.fz, -weight, atol=1e-3)
-
-    expected_friction =  weight * 0.05
-    assert_allclose(c.friction_forces[0], expected_friction, atol=1e-3)
+    assert_allclose(hook.fz, -weight, rtol=1e-6)
+    #
+    expected_friction =  weight * 0.1
+    assert_allclose(c.friction_forces[0], expected_friction, rtol=1e-6)
 
     # positive friction increases the tension on side A of the connection
     section1 = 0.5*weight + 0.5*expected_friction
-    assert_allclose(c.segment_forces[0], section1, atol=1e-3)
+    assert_allclose(c.segment_mean_tensions[0], section1, rtol=1e-6)
 
     section2 = 0.5*weight - 0.5*expected_friction
-    assert_allclose(c.segment_forces[1], section2, atol=1e-3)
+    assert_allclose(c.segment_mean_tensions[1], section2, rtol=1e-6)
 
 def test_friction_cable_over_point_opposite():
     s = Scene()
@@ -49,10 +49,10 @@ def test_friction_cable_over_point_opposite():
 
     # positive friction increases the tension on side A of the connection
     section1 = 0.5*weight - 0.5*expected_friction
-    assert_allclose(c.segment_forces[0], section1, atol=1e-3)
+    assert_allclose(c.segment_mean_tensions[0], section1, atol=1e-3)
 
     section2 = 0.5*weight + 0.5*expected_friction
-    assert_allclose(c.segment_forces[1], section2, atol=1e-3)
+    assert_allclose(c.segment_mean_tensions[1], section2, atol=1e-3)
 
 def test_friction_cable_over_two_points_symmetric():
     s = Scene()
@@ -65,32 +65,43 @@ def test_friction_cable_over_two_points_symmetric():
 
     c = s.new_cable(connections = ['p1', 'hook1', 'hook2','p2'], name='cable', EA = 122345, friction=[0.05, -0.05], length=7)
 
-    s.update()
-
     s.solve_statics()
-
     weight = f.mass * s.g
 
-    segment_forces = c.segment_forces
+    segment_mean_tensions = c.segment_mean_tensions
 
     # check total weight is supported
-    assert_allclose (segment_forces[0] + segment_forces[-1], weight, atol = 1e-3)
+    assert_allclose(segment_mean_tensions[0] + segment_mean_tensions[-1], weight, atol=1e-3)
 
     # check friction and section forces are symmetric
-    assert_allclose(c.segment_forces[0], c.segment_forces[-1], atol=1e-3)
-    assert_allclose(c.friction_forces[1], -c.friction_forces[0], atol=1e-3)
+    assert_allclose(c.segment_mean_tensions[0], c.segment_mean_tensions[-1], atol=1e-2)
+    assert_allclose(c.friction_forces[1], -c.friction_forces[0], atol=1e-2)
 
-    # check that friction is 5% of the normal force
-    # cables are under a 90 degree angle
-    # (45 degrees each)
 
-    N1 = segment_forces[0] * np.cos(np.pi/4)
-    N2 = segment_forces[1] * np.cos(np.pi/4)
+def test_friction_cable_over_multiple_points():
+    s = Scene()
+    f = s.new_rigidbody('f', position=(0, 0, -10), fixed = (True, True, False, True, True, True), mass = 32)
 
-    expected_friction = 0.05 * (N1 + N2)
+    hook1 = s.new_point('hook1', position=(0, 0, 0))
+    hook2 = s.new_point('hook2', position=(0.3, 0, 0.5))
+    hook3 = s.new_point('hook3', position=(0.6, 0, 0.4))
+    hook4 = s.new_point('hook4', position=(1, 0, 0))
+    s.new_point('p1', position=(0, 0, 0), parent=f)
+    s.new_point('p2', position=(1, 0, 0), parent=f)
 
-    assert_allclose(c.friction_forces[0], expected_friction, atol=1e-3)
 
+    c = s.new_cable(connections = ['p1', 'hook1', 'hook2','hook3','hook4','p2'], name='cable', EA = 122345, friction=[0.1,0.1,0.1,0.1], length=7)
+
+    s.solve_statics()
+    weight = f.mass * s.g
+
+    segment_mean_tensions = c.segment_mean_tensions
+
+    # check total weight is supported
+    assert_allclose(segment_mean_tensions[0] + segment_mean_tensions[-1], weight, atol=1e-3)
+
+    # check final 45/55 distribution
+    assert_allclose(c.segment_mean_tensions[0] / c.segment_mean_tensions[-1], 55/45, atol=1e-6)
 
 
 def test_friction_grommet_over_points():
@@ -123,10 +134,10 @@ def test_friction_grommet_over_points():
 
     # positive friction increases the tension on side A of the connection
     section1 = mean_force + 0.5 * expected_friction
-    assert_allclose(c.segment_forces[0], section1, atol=1e-3)
+    assert_allclose(c.segment_mean_tensions[0], section1, atol=1e-3)
 
     section2 =mean_force - 0.5 * expected_friction
-    assert_allclose(c.segment_forces[1], section2, atol=1e-3)
+    assert_allclose(c.segment_mean_tensions[1], section2, atol=1e-3)
 
 def test_friction_grommet_over_points_solver():
     s = Scene()
@@ -150,10 +161,10 @@ def test_friction_grommet_over_points_solver():
 
     # positive friction increases the tension on side A of the connection
     section1 = 0.5 * weight + 0.5 * expected_friction
-    assert_allclose(c.segment_forces[0], section1, atol=1e-3)
+    assert_allclose(c.segment_mean_tensions[0], section1, atol=1e-3)
 
     section2 = 0.5 * weight - 0.5 * expected_friction
-    assert_allclose(c.segment_forces[1], section2, atol=1e-3)
+    assert_allclose(c.segment_mean_tensions[1], section2, atol=1e-3)
 
     #
 

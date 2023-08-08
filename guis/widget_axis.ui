@@ -288,7 +288,8 @@
    <item>
     <widget class="QLabel" name="label_9">
      <property name="text">
-      <string>These rotations and positions are define relative to the parent. If parent is empty then the global axis system is used.</string>
+      <string>These rotations and positions are defined relative to the parent.
+If parent is empty then the global axis system is used.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

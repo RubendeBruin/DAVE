@@ -1491,6 +1491,7 @@ class Cable(NodeCoreConnected):
         self._friction: List[float] = list()
 
         self._render_as_tube = True
+        self.do_color_by_tension = True
         self._friction_factor = -1
         """Negative means use default formulation"""
 
@@ -1585,7 +1586,7 @@ class Cable(NodeCoreConnected):
 
     @property
     def friction(self) -> tuple[float]:
-        """Diameter of the cable. Used when a cable runs over a circle. [m]"""
+        """Friction factors at the connections. [-]"""
         return tuple(self._friction)
 
     @property
@@ -1596,6 +1597,9 @@ class Cable(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def friction(self, friction):
+
+        if isinstance(friction, (float, int)):
+            friction = [friction]
 
         # check length
         req_len = len(self._pois) - 2
@@ -1620,10 +1624,22 @@ class Cable(NodeCoreConnected):
         return tuple(self._vfNode.friction_forces)
 
     @property
-    def segment_forces(self) -> tuple[float]:
-        """Forces at the free segments of the cable EXCLUDING weight [kN]
+    def segment_end_tensions(self) -> tuple[tuple[float]]:
+        """Tensions at the ends of each of the cable segments. [kN, kN]
+        These are identical if the cable weight is zero.
         """
-        return tuple(self._vfNode.free_segment_forces_excl_weight)
+        segment_end_forces = self._vfNode.get_segment_end_tensions
+        combined = [(segment_end_forces[2*i], segment_end_forces[2*i+1]) for i in range(len(segment_end_forces)//2)]
+
+        return tuple(combined)
+
+    @property
+    def segment_mean_tensions(self) -> tuple[float]:
+        """Mean tensions in the free segments of the cable. [kN]
+        Note that the tension in a segment is constant if the cable weight is zero.
+        """
+
+        return tuple([0.5*(p[0]+p[1]) for p in self.segment_end_tensions])
 
     @property
     def connections(self) -> tuple[Point or Circle]:
@@ -1707,6 +1723,13 @@ class Cable(NodeCoreConnected):
         points, tensions = self._vfNode.get_drawing_data(RESOLUTION_CABLE_SAG, RESOLUTION_CABLE_OVER_CIRCLE,
                                                          False)
         return points
+
+    def get_points_and_tensions_for_visual(self):
+        """A list of 3D locations which can be used for visualization"""
+        points, tensions = self._vfNode.get_drawing_data(RESOLUTION_CABLE_SAG, RESOLUTION_CABLE_OVER_CIRCLE,
+                                                         False)
+        return points, tensions
+
 
 
     def get_points_for_visual_blender(self):
