@@ -162,9 +162,11 @@ class Scene:
         self._nodes = []
         del self._vfc
 
-        # validate reports
+        # clear reports
         self._validate_reports()
-        self.reports.clear()  # and then delete them
+        # for report in self.reports:
+        #     report.clear()
+        self.reports.clear()
 
         self.t = None  # reset timelines (if any)
 

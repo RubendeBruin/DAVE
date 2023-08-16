@@ -1201,7 +1201,7 @@ class Gui:
         do_not_reset_time=False,
         show_animation_bar=True,
     ):
-        """Start an new animation
+        """Start a new animation
 
         Args:
             t:    List of times at keyframes
@@ -1212,7 +1212,7 @@ class Gui:
 
 
         """
-        self.animation_terminate(keep_current_dofs=True)  # end old animation, if any
+        self.animation_terminate(keep_current_dofs=False)  # end old animation, if any
 
         if len(dofs) != len(t):
             raise ValueError("dofs and t should have the same length (list or tuple)")

@@ -226,6 +226,8 @@ def dynamics_summary_data(scene):
             else:
                 other = total - own
 
+
+
             # print('Node {}; Mode {}; associated inertia {:.3f} (own) +   {:.3f} (children); associated stiffness {:.3f}'.format(node.name, mode, own, other, K[i,i]))
 
             if K[i,i]<1e-9:

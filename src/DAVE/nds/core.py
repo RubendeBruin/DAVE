@@ -1266,7 +1266,7 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
         # update inertia
         self._inertia.parent = self.parent._vfNode
         self._inertia.position = self.cog_local
-        self._inertia.inertia = self.volume * self.density
+        self._inertia.inertia = self.volume * self.used_density
 
     def _delete_vfc(self):
         self._scene._vfc.delete(self._inertia.name)
