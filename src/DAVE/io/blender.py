@@ -510,7 +510,7 @@ mesh.vertices.foreach_set("co", vertices)
 print("creating keyframes")
 for vertex in mesh.vertices:
     """
-        code += 'vertex.keyframe_insert(data_path="co", frame = {})'.format(np.round(i_frame))
+        code += 'vertex.keyframe_insert(data_path="co", frame = {})'.format(i_frame)
 
         # ============= END OF THE LOOP
 
@@ -770,7 +770,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 code += ']'
                 code += '\nani_points.append(frame_points)'
 
-            code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points, color = {})'.format(dia, cable.name, cable.color)
+            code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points, color = {},frames_per_entry = {})'.format(dia, cable.name, cable.color,frames_per_step)
 
         elif timeline:
 
