@@ -1489,10 +1489,11 @@ class Cable(NodeCoreConnected):
         self._pois = list()
         self._reversed: List[bool] = list()
         self._friction: List[float] = list()
+        self._max_winding_angle: List[float] = list()
 
         self._render_as_tube = True
         self.do_color_by_tension = True
-        self._friction_factor = -1
+        self._friction_factor = -1  # deprecated
         """Negative means use default formulation"""
 
     def depends_on(self):
@@ -1585,13 +1586,13 @@ class Cable(NodeCoreConnected):
         self._update_pois()
 
     @property
+    def _isloop(self):
+        return self.connections[0] == self.connections[-1]
+
+    @property
     def friction(self) -> tuple[float]:
         """Friction factors at the connections. [-]"""
         return tuple(self._friction)
-
-    @property
-    def _isloop(self):
-        return self.connections[0] == self.connections[-1]
 
     @friction.setter
     @node_setter_manageable
@@ -1618,6 +1619,30 @@ class Cable(NodeCoreConnected):
         self._update_pois()
 
     @property
+    def max_winding_angles(self) -> tuple[float]:
+        """Friction factors at the connections. [-]"""
+        return tuple(self._max_winding_angle)
+
+    @friction.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def max_winding_angles(self, max_winding_angles):
+
+        if isinstance(max_winding_angles, (float, int)):
+            max_winding_angles = [max_winding_angles]
+
+        # check length
+        req_len = len(self._pois)
+        assert len(max_winding_angles) == req_len, f"max_winding_angles should be defined for all {req_len} connections"
+
+        for _ in max_winding_angles:
+            if _ > 0:
+                assert _ > 180 ,f"max_winding_angles should be more than 180 degrees, {_} is not."
+
+        self._max_winding_angle = list(max_winding_angles)
+        self._update_pois()
+
+    @property
     def friction_forces(self) -> tuple[float]:
         """Forces at the connections due to friction [kN]
         """
@@ -1638,7 +1663,6 @@ class Cable(NodeCoreConnected):
         """Mean tensions in the free segments of the cable. [kN]
         Note that the tension in a segment is constant if the cable weight is zero.
         """
-
         return tuple([0.5*(p[0]+p[1]) for p in self.segment_end_tensions])
 
     @property
@@ -1738,11 +1762,13 @@ class Cable(NodeCoreConnected):
         points, tensions = self._vfNode.get_drawing_data(RENDER_CATENARY_RESOLUTION, RENDER_CURVE_RESOLUTION, constant_point_count)
         return points
 
-    def _add_connection_to_core(self, connection, reversed=False, friction = 0):
+    def _add_connection_to_core(self, connection, reversed=False, friction=0, max_winding=999):
         if isinstance(connection, Point):
             self._vfNode.add_connection_poi(connection._vfNode, friction)
         if isinstance(connection, Circle):
-            self._vfNode.add_connection_sheave(connection._vfNode, reversed, friction)
+            self._vfNode.add_connection_sheave(connection._vfNode, reversed, friction, np.deg2rad(max_winding))
+
+        print(np.deg2rad(max_winding))
 
     def _update_pois(self):
         self._vfNode.clear_connections()
@@ -1761,12 +1787,18 @@ class Cable(NodeCoreConnected):
             self._friction.append(0)
         self._friction = self._friction[0: req_friction_length]
 
-        for point, reversed in zip(self._pois, self._reversed):
-            self._add_connection_to_core(point, reversed)
+        # sync length of maximum winding angles
+        while len(self._max_winding_angle) < len(self._pois):
+            self._max_winding_angle.append(999)
+        self._max_winding_angle = self._max_winding_angle[0: len(self._pois)]
 
+        for point, reversed, max_winding in zip(self._pois, self._reversed, self._max_winding_angle):
+            self._add_connection_to_core(point, reversed, 0, max_winding)  # friction will be overwritten later
+
+        # set friction
         # replace none friction by 0
-
         self._vfNode.friction_fractions = [f if f is not None else 0 for f in self._friction]
+
 
     def _give_poi_names(self):
         """Returns a list with the names of all the pois"""
@@ -1800,36 +1832,36 @@ class Cable(NodeCoreConnected):
 
         self.length = stretched_length * self.EA / (target_tension + self.EA)
 
-    @property
-    def friction_factor(self) ->float:
-        """Friction factor, negative means use default model with 10% [-]"""
-        return self._friction_factor
-
-    @friction_factor.setter
-    @node_setter_manageable
-    def friction_factor(self, value):
-        assert1f(value, "Friction factor shall be a single floating-point number")
-        self._friction_factor = value
-
-    @property
-    def friction_factor_used(self) -> float:
-        """Read only - the friction factor used in the calculation [-]
-        See Also: friction_factor
-        """
-
-        if self.friction_factor > 0:        # user-defined friction factor
-            return self.friction_factor
-
-        connections = self.connections # alias
-        n_connections = len(connections)
-
-        if connections[0] == connections[-1] and isinstance(connections[0], Circle): # loop
-            N = n_connections - 1
-            M = floor(N/2)
-            return 1.1**M
-        else:                           # no loop
-            N = n_connections - 2
-            return 1.1**N
+    # @property
+    # def friction_factor(self) ->float:
+    #     """Friction factor, negative means use default model with 10% [-]"""
+    #     return self._friction_factor
+    #
+    # @friction_factor.setter
+    # @node_setter_manageable
+    # def friction_factor(self, value):
+    #     assert1f(value, "Friction factor shall be a single floating-point number")
+    #     self._friction_factor = value
+    #
+    # @property
+    # def friction_factor_used(self) -> float:
+    #     """Read only - the friction factor used in the calculation [-]
+    #     See Also: friction_factor
+    #     """
+    #
+    #     if self.friction_factor > 0:        # user-defined friction factor
+    #         return self.friction_factor
+    #
+    #     connections = self.connections # alias
+    #     n_connections = len(connections)
+    #
+    #     if connections[0] == connections[-1] and isinstance(connections[0], Circle): # loop
+    #         N = n_connections - 1
+    #         M = floor(N/2)
+    #         return 1.1**M
+    #     else:                           # no loop
+    #         N = n_connections - 2
+    #         return 1.1**N
 
 
     @property
@@ -1880,8 +1912,14 @@ class Cable(NodeCoreConnected):
         if np.any(self.reversed):
             code.append(f"s['{self.name}'].reversed = {self.reversed}")
 
-        if self.friction_factor >0:
-            code.append(f"s['{self.name}'].friction_factor = {self.friction_factor}")
+        # if self.friction_factor >0:
+        #     code.append(f"s['{self.name}'].friction_factor = {self.friction_factor}")
+
+        if np.any(self._max_winding_angle):
+            code.append(f"s['{self.name}'].max_winding_angles = {self._max_winding_angle}")
+
+        if np.any(self._friction):
+            code.append(f"s['{self.name}'].friction = {self._friction}")
 
         return "\n".join(code)
 

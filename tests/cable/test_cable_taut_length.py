@@ -57,7 +57,7 @@ def test_cable_loop_length_circles():
     assert_allclose(c.actual_length, expected_length, rtol=1e-6)
 
     # check the drawing length
-    points, tensions = c._vfNode.global_points
+    points, tensions = c.get_points_and_tensions_for_visual()
 
     pd = np.array(points)
     d = np.diff(pd, axis=0)
@@ -86,7 +86,7 @@ def test_cable_loop_drawing_length_slack():
 
 
     # # check drawing length
-    points, tensions = c._vfNode.global_points
+    points, tensions = c.get_points_and_tensions_for_visual()
     #
     pd = np.array(points)
     d = np.diff(pd, axis=0)

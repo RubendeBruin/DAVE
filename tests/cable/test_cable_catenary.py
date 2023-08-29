@@ -143,6 +143,7 @@ def test_elastic_catenary_estimations_taut():
 
 def test_elastic_catenary_estimations_various():
 
+    doplot = False
     variations = [(18, 1e6, 1),
                   (17, 1e5, 2),
                   (17.5, 1e4, 3),
@@ -153,7 +154,8 @@ def test_elastic_catenary_estimations_various():
                   (15, 1e2, 5),
                   ]
 
-    import matplotlib.pyplot as plt
+    if doplot:
+        import matplotlib.pyplot as plt
 
     for (L, EA, mass) in variations:
         s = give_beam_and_cable_scene(L=L, EA=EA, mass=mass)
@@ -161,12 +163,14 @@ def test_elastic_catenary_estimations_various():
         s.solve_statics()
         assertS(s)
 
-        bp = s['Beam'].global_positions
-        bx = [p[0] for p in bp]
-        bz = [p[2] for p in bp]
-        plt.plot(bx, bz)
+        if doplot:
+            bp = s['Beam'].global_positions
+            bx = [p[0] for p in bp]
+            bz = [p[2] for p in bp]
+            plt.plot(bx, bz)
 
-    plt.show()
+    if doplot:
+        plt.show()
 
 
 def compare(p1, p2, c):

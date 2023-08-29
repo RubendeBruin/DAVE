@@ -278,7 +278,7 @@ class Scene:
     def _print_cpp(self):
         print(self._vfc.to_string())
 
-    def _save_cpp(self, filename):
+    def _save_coredump(self, filename = r'c:\data\test.txt'):
         with open(filename, "w") as f:
             f.write(self._vfc.to_string())
 
@@ -1721,6 +1721,10 @@ class Scene:
                     if BackgroundSolver.Converged:
                         break
 
+                    # print(BackgroundSolver.log)
+                    # info = f"Error = {BackgroundSolver.Enorm:.6e}(norm) , {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
+                    # print(info)
+
                 info = f"Error = {BackgroundSolver.Enorm:.6e}(norm) , {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
                 give_feedback(info)
 
@@ -2066,7 +2070,7 @@ class Scene:
         rotation=None,
         inertia=None,
         inertia_radii=None,
-        fixed=True,
+        fixed : bool or (bool, bool, bool, bool, bool, bool) =True,
     ) -> Frame:
         """Creates a new *frame* node and adds it to the scene.
 
@@ -2471,14 +2475,14 @@ class Scene:
 
     def new_rigidbody(
         self,
-        name,
-        mass=0,
-        cog=(0, 0, 0),
+        name : str,
+        mass : float =0,
+        cog : (float, float, float) =(0, 0, 0),
         parent=None,
         position=None,
         rotation=None,
         inertia_radii=None,
-        fixed=True,
+        fixed : bool or (bool, bool, bool, bool, bool, bool) = True,
     ) -> RigidBody:
         """Creates a new *rigidbody* node and adds it to the scene.
 
@@ -2563,6 +2567,7 @@ class Scene:
         sheaves=None,
         mass=None,
         connections = None,
+        reversed = None,
         mass_per_length=None,
         friction = None,
     ) -> Cable:
@@ -2578,6 +2583,7 @@ class Scene:
             mass_per_length [alternative for mass]
             sheaves : [optional] A list of pois, these are sheaves that the cable runs over. Defined from endA to endB
             connections [optional] : Alternative to [EndA, sheaves, EndB]
+            reversed [optional] : Reversed property for each of the connections
             friction : [optional] A list of friction coefficients for each connection. aligned with connection
 
             connections: May be used instead of endA, endB and sheaves. If connections is provided then endA = connections[0], endB = connections[-1] and sheaves = connections[1:-1]
@@ -2678,6 +2684,11 @@ class Scene:
             for _ in friction:
                 assert isinstance(_, (float, int, type(None))), "friction should be a list with floats or None"
 
+        if reversed is not None:
+            assert len(reversed) == len(pois), "reversed should be a list with the same length as the number of connections"
+            for _ in reversed:
+                assert isinstance(_, bool), "reversed should be a list with booleans"
+
         # then create
 
         new_node = Cable(self, name)
@@ -2692,6 +2703,8 @@ class Scene:
         if friction is not None:
             new_node.friction = friction
 
+        if reversed is not None:
+            new_node.reversed = reversed
 
         # and add to the scene
         # self._nodes.append(new_node)
@@ -2872,7 +2885,7 @@ class Scene:
             areakind=areakind,
         )
 
-    def new_circle(self, name, parent, axis, radius=0.0) -> Circle:
+    def new_circle(self, name, parent, axis, radius=0.0, roundbar=False) -> Circle:
         """Creates a new *sheave* node and adds it to the scene.
 
         Args:
@@ -2880,10 +2893,11 @@ class Scene:
             parent: name of the parent of the node [Poi]
             axis: direction of the axis of rotation (x,y,z)
             radius: optional, radius of the sheave
+            roundbar: optional, circle is a roundbar (cylinder)
 
 
         Returns:
-            Reference to newly created sheave
+            Reference to newly created Circle
 
         """
 
@@ -2897,6 +2911,7 @@ class Scene:
         assert3f(axis, "Axis of rotation ")
 
         assert1f(radius, "Radius of sheave")
+        assertBool(roundbar, "Roundbar property")
 
         new_node = Circle(self, name)
 
@@ -2904,6 +2919,7 @@ class Scene:
         new_node.parent = b
         new_node.axis = axis
         new_node.radius = radius
+        new_node.is_roundbar = roundbar
 
         # self._nodes.append(new_node)
         return new_node
@@ -4250,49 +4266,49 @@ class Scene:
     #
     #     return sling
     #
-    # def to_frame(self, body: RigidBody):
-    #     """Converts the body to a frame"""
-    #     name = self.available_name_like('temp')
-    #     new_frame = self.new_frame(name=name,
-    #                                parent=body.parent,
-    #                                position = body.position,
-    #                                rotation = body.rotation,
-    #                                inertia = body.inertia,
-    #                                inertia_radii = body.inertia_radii,
-    #                                fixed= body.fixed)
-    #     for node in self._nodes:
-    #         parent = getattr(node,'parent',None)
-    #         if parent == body:
-    #             node.parent = new_frame
-    #
-    #     name = body.name
-    #     self.delete(body)
-    #     new_frame.name = name
-    #
-    #     return new_frame
-    #
-    # def to_rigidbody(self, frame: Frame):
-    #     """Converts the body to a frame"""
-    #     name = self.available_name_like('temp')
-    #     new_body = self.new_rigidbody(name=name,
-    #                                    parent=frame.parent,
-    #                                    position=frame.position,
-    #                                    rotation=frame.rotation,
-    #                                    mass=frame.inertia,
-    #                                    fixed=frame.fixed)
-    #     if new_body.mass > 0:
-    #         new_body.inertia_radii = frame.inertia_radii
-    #
-    #     for node in self._nodes:
-    #         parent = getattr(node, 'parent', None)
-    #         if parent == frame:
-    #             node.parent = new_body
-    #
-    #     name = frame.name
-    #     self.delete(frame)
-    #     new_body.name = name
-    #
-    #     return new_body
+    def to_frame(self, body: RigidBody):
+        """Converts the body to a frame"""
+        name = self.available_name_like('temp')
+        new_frame = self.new_frame(name=name,
+                                   parent=body.parent,
+                                   position = body.position,
+                                   rotation = body.rotation,
+                                   inertia = body.inertia,
+                                   inertia_radii = body.inertia_radii,
+                                   fixed= body.fixed)
+        for node in self._nodes:
+            parent = getattr(node,'parent',None)
+            if parent == body:
+                node.parent = new_frame
+
+        name = body.name
+        self.delete(body)
+        new_frame.name = name
+
+        return new_frame
+
+    def to_rigidbody(self, frame: Frame):
+        """Converts the body to a frame"""
+        name = self.available_name_like('temp')
+        new_body = self.new_rigidbody(name=name,
+                                       parent=frame.parent,
+                                       position=frame.position,
+                                       rotation=frame.rotation,
+                                       mass=frame.inertia,
+                                       fixed=frame.fixed)
+        if new_body.mass > 0:
+            new_body.inertia_radii = frame.inertia_radii
+
+        for node in self._nodes:
+            parent = getattr(node, 'parent', None)
+            if parent == frame:
+                node.parent = new_body
+
+        name = frame.name
+        self.delete(frame)
+        new_body.name = name
+
+        return new_body
 
     # =================== DYNAMICS ==================
 

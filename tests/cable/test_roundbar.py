@@ -1,0 +1,201 @@
+from numpy.testing import assert_allclose
+
+from DAVE import *
+
+"""
+A round-bar is active when its edge passes at the positive side of the cable.
+The positive side is the cross-product of the cable segement direction and the bar axis.
+The positive side may be reversed by setting the roundbar's 'reversed' property to True.
+
+In test 1:
+the segment direction is (1,0,0) and the bar axis is (0,1,0).
+The positive side is (0,0,1).
+
+as b is on the positive side of the cable, the bar is active.
+This can be checked by looking at the cable's actual_length. That should be "much" more than 20.
+
+Test 2 tests the same but then with the bar axis reversed (0,-1,0).
+
+Tests 1_reversed and 2_reversed check the same, but with the reversed property set to True (in the connection).
+
+"""
+def test_roundbar_active_1():
+    s = Scene()
+    s.new_point(name='p1',position = (-10,0,0))
+    s.new_point(name='p2',position = (10,0,0))
+    s.new_point(name='b', position = (0,0,2))
+    s.new_circle(name='bar',parent='b',radius=1.2,axis=(0,1,0), roundbar=True)
+
+    c = s.new_cable(connections=['p1','bar','p2'],name='cable',EA=1e6,length=20)
+
+    c.update()
+
+    assert(c.actual_length>20.1)
+
+def test_roundbar_active_1_reversed():
+    s = Scene()
+    s.new_point(name='p1',position = (-10,0,0))
+    s.new_point(name='p2',position = (10,0,0))
+    s.new_point(name='b', position = (0,0,2))
+    s.new_circle(name='bar',parent='b',radius=1.2,axis=(0,1,0), roundbar=True)
+
+    c = s.new_cable(connections=['p1','bar','p2'],name='cable',EA=1e6,length=20)
+    c.reversed = [False, True, False]
+    c.update()
+
+    assert(c.actual_length<20.1)
+
+def test_roundbar_active_2():
+    s = Scene()
+    s.new_point(name='p1',position = (0,-10,0))
+    s.new_point(name='p2',position = (0,10,0))
+    s.new_point(name='b', position = (0,0,2))
+    s.new_circle(name='bar',parent='b',radius=1.2,axis=(-1,0,0), roundbar=True)
+
+    c = s.new_cable(connections=['p1','bar','p2'],name='cable',EA=1e6,length=20)
+
+    c.update()
+
+    assert(c.actual_length>20.1)
+
+def test_roundbar_active_2_reversed():
+    s = Scene()
+    s.new_point(name='p1', position=(0, -10, 0))
+    s.new_point(name='p2', position=(0, 10, 0))
+    s.new_point(name='b', position=(0, 0, 2))
+    s.new_circle(name='bar', parent='b', radius=1.2, axis=(-1, 0, 0), roundbar=True)
+
+    c = s.new_cable(connections=['p1','bar','p2'],name='cable',EA=1e6,length=20)
+    c.reversed = [False, True, False]
+    c.update()
+
+    assert(c.actual_length<20.1)
+
+
+
+def test_calc_equilibrium_and_cable_length():
+    """Checks if an equilibrium can be found for this 1d system, and then
+    checks if the final cable length (as drawn) is correct.
+
+    """
+    s = Scene()
+    s.new_point(name='p1',
+              position=(0,
+                        0,
+                        4))
+    s.new_point(name='p2',
+              position=(10,
+                        2,
+                        2))
+    body = s.new_rigidbody(name='body',mass=1, fixed=True)
+    body.fixed_z = False
+    body.x = 4
+
+    s.new_point('pbody', parent=body)
+    c = s.new_circle('c1', parent='pbody', radius=1, axis=(0, 1, 0))
+    c.is_roundbar = True
+
+    c = s.new_cable(connections=['p1', 'c1', 'p2'], name='cable', EA=1e6, length=20, reversed = (False, True, False))
+
+    s.solve_statics()
+
+    pts, _ = c.get_points_and_tensions_for_visual()
+
+    p = pts[0]
+    L = 0
+    for p2 in pts[1:]:
+        L += math.sqrt((p2[0] - p[0])**2 + (p2[1] - p[1])**2 + (p2[2] - p[2])**2)
+        p = p2
+
+
+    assert_allclose(L, 20, rtol=1e-3)
+
+
+def test_roundbar_and_circles_mixed():
+    s = Scene()
+
+    # code for Frame
+    s.new_frame(name='Frame',
+                position=(7,
+                          -3,
+                          -12))
+
+    # code for Point1
+    s.new_point(name='Point1',
+                position=(0,
+                          0,
+                          9))
+
+    # code for Point2
+    s.new_point(name='Point2',
+                position=(7.414,
+                          4.583,
+                          -8.943))
+
+    s.new_point(name='OtherPoint',
+                position=(0,
+                          1,
+                          -10))
+
+    # code for Point
+    s.new_point(name='Point',
+                parent='Frame',
+                position=(0,
+                          0,
+                          9))
+
+    # code for Point
+    s.new_point(name='PointBar',
+                parent='Frame',
+                position=(0,
+                          0,
+                          0))
+
+    # code for Visual
+    s.new_visual(name='Visual',
+                 parent='Frame',
+                 path=r'res: cylinder 1x1x1.obj',
+                 offset=(0, 13, 0),
+                 rotation=(90, 0, 0),
+                 scale=(2.4, 2.4, 22))
+
+    # code for Circle
+    circle = s.new_circle(name='Circle',
+                          parent='Point',
+                          axis=(0, 1, 0),
+                          radius=1.2)
+
+    # code for Circle
+    bar = s.new_circle(name='Bar',
+                       parent='PointBar',
+                       axis=(0, -1, 0),
+                       radius=1.2,
+                       roundbar=True)
+
+    # code for Circle
+    circle = s.new_circle(name='Circle2',
+                          parent='OtherPoint',
+                          axis=(0, 1, 0),
+                          radius=1.2)
+
+    # code for Cable
+    c = s.new_cable(name='Cable',
+                    endA='Point1',
+                    endB='Point2',
+                    length=20,
+                    mass_per_length=0.25,
+                    diameter=0.3,
+                    EA=1000.0,
+                    sheaves=['Circle2', 'Bar', 'Circle'])
+
+    c.update()
+
+    pts, _ = c.get_points_and_tensions_for_visual()
+
+    p = pts[0]
+    L = 0
+    for p2 in pts[1:]:
+        L += math.sqrt((p2[0] - p[0]) ** 2 + (p2[1] - p[1]) ** 2 + (p2[2] - p[2]) ** 2)
+        p = p2
+
+    assert_allclose(L, 59.829521, rtol=1e-3)
