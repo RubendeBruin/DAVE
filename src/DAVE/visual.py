@@ -632,7 +632,8 @@ class VisualActor:
             t.Identity()
 
             # scale to flat disk
-            t.Scale(self.node.radius, self.node.radius, 0.1)
+            thickness = 1 if self.node.is_roundbar else 0.1
+            t.Scale(self.node.radius, self.node.radius, thickness)
 
             # rotate z-axis (length axis is cylinder) is direction of axis
             axis = self.node.axis / np.linalg.norm(self.node.axis)

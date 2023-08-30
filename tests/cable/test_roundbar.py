@@ -107,7 +107,6 @@ def test_calc_equilibrium_and_cable_length():
         L += math.sqrt((p2[0] - p[0])**2 + (p2[1] - p[1])**2 + (p2[2] - p[2])**2)
         p = p2
 
-
     assert_allclose(L, 20, rtol=1e-3)
 
 
@@ -199,3 +198,36 @@ def test_roundbar_and_circles_mixed():
         p = p2
 
     assert_allclose(L, 59.829521, rtol=1e-3)
+
+def test_compare_bar_and_circle():
+    """Compares the results of a bar and a circle with the same radius"""
+
+    s = Scene()
+    s.new_point(name='p1',position = (0,-1,0))
+    s.new_point(name='p2',position = (0,1,0))
+
+    b = s.new_rigidbody(name='body',mass=1, fixed=True)
+    b.fixed_z = False
+
+    s.new_point('pbody', parent=b)
+    c = s.new_circle(name='c1', parent='pbody', radius=1, axis=(1, 0,0))
+
+    assert c.is_roundbar == False
+
+    c.is_roundbar = True
+
+    c = s.new_cable(connections=['p1', 'c1', 'p2'], name='cable', EA=1e6, length=20)
+
+    s.solve_statics()
+
+    z_bar = b.gz
+    c.is_roundbar = False
+    b.gz = 3 # set to a different value to enforce solving again
+
+
+    s.solve_statics()
+
+    z_circle = b.gz
+
+    assert_allclose(z_bar, z_circle, rtol=1e-6)
+

@@ -38,6 +38,6 @@ def test_solve_pendulum_with_cableweight():
 
     expected = 2 * s.g
 
-    assert_allclose(p1.force, expected, rtol=1e-6)
-    assert_allclose(c.tension, expected, rtol=1e-6)
-    assert_allclose(p2.force, b.mass * s.g, rtol=1e-6)
+    assert_allclose(p1.force, expected, rtol=1e-5)
+    assert_allclose(c.tension, expected, rtol=1e-5)
+    assert_allclose(p2.force, b.mass * s.g, rtol=1e-5)

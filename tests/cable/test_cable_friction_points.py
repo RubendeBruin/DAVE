@@ -89,7 +89,6 @@ def test_friction_cable_over_multiple_points():
     s.new_point('p1', position=(0, 0, 0), parent=f)
     s.new_point('p2', position=(1, 0, 0), parent=f)
 
-
     c = s.new_cable(connections = ['p1', 'hook1', 'hook2','hook3','hook4','p2'], name='cable', EA = 122345, friction=[0.1,0.1,0.1,0.1], length=7)
 
     s.solve_statics()
