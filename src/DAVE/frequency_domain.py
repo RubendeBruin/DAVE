@@ -539,7 +539,7 @@ def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0) -> dict:
 
             imax = np.argmax(amplitude)
             omax = omegas[imax]
-            ax1.text(omegas[imax], 0, f"{omax:.2f} rad/s\n{2*np.pi/omax:.2f} s", horizontalalignment='left', verticalalignment='top')
+            ax1.text(omegas[imax], 0, f"{omax:.2f} rad/s\n{2*np.pi/omax:.2f} s", horizontalalignment='left', verticalalignment='top', size=8)
 
             ax1.grid()
 
