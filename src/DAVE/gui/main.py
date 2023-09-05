@@ -309,6 +309,8 @@ class Gui:
         self._animation_available = False
         """Animation available"""
 
+        self._animation_current_time = None
+
         self._animation_speed = 1.0
 
 
@@ -478,6 +480,28 @@ class Gui:
             self.ui.actionShow_force_applying_element.triggered.connect(
                 self.toggle_show_force_applying_elements
             )
+            # --- label size
+
+            # cog size
+            self.ui.menuView.addSeparator()
+
+            self.ui.sliderLabelSize = MenuSlider("Label size")
+            self.ui.sliderLabelSize.setMin(0)
+            self.ui.sliderLabelSize.setMax(100)
+            self.ui.sliderLabelSize.slider.setValue(10)
+
+            def set_label_size(value):
+                self.run_code(
+                    f"self.visual.settings.label_scale = {value / 20}",
+                    guiEventType.VIEWER_SETTINGS_UPDATE,
+                )
+                self.visual.refresh_embeded_view()
+
+
+            self.ui.sliderLabelSize.connectvalueChanged(set_label_size)
+            self.ui.menuView.addAction(self.ui.sliderLabelSize)
+
+            # ---- label size
 
             self.ui.sliderGeometrySize = MenuSlider("Geometry size")
             self.ui.sliderGeometrySize.setMin(0)
@@ -735,10 +759,12 @@ class Gui:
         d = ExportAsPackageDialog()
         d.show(self.scene, str(self.scene.current_directory))
 
-
-
     def focus_on_viewport(self, *args):
-        self.visual.vtkWidget.setFocus()
+        # Executed when escape is pressed
+        if self.visual.vtkWidget.hasFocus():
+            self.escPressed()
+        else:
+            self.visual.vtkWidget.setFocus()
 
 
     def show_python_console(self, *args):
@@ -1135,6 +1161,7 @@ class Gui:
         self._animation_speed = self.ui.sbPlaybackspeed.value()
 
     def animation_activate_time(self, t):
+        self._animation_current_time = t
         dofs = self._animation_keyframe_interpolation_object(t)
         self.scene._vfc.set_dofs(dofs)
         self.visual.update_dynamic_waveplane(t)
@@ -1175,7 +1202,7 @@ class Gui:
         do_not_reset_time=False,
         show_animation_bar=True,
     ):
-        """Start an new animation
+        """Start a new animation
 
         Args:
             t:    List of times at keyframes
@@ -1186,7 +1213,7 @@ class Gui:
 
 
         """
-        self.animation_terminate(keep_current_dofs=True)  # end old animation, if any
+        self.animation_terminate(keep_current_dofs=False)  # end old animation, if any
 
         if len(dofs) != len(t):
             raise ValueError("dofs and t should have the same length (list or tuple)")
@@ -1256,7 +1283,7 @@ class Gui:
 
     def animation_pause_or_continue_click(self):
         """Pauses or continues the animation"""
-        if self.ui.btnPauseAnimation.isChecked():
+        if not self.ui.btnPauseAnimation.isChecked():
             self.animation_continue()
         else:
             self.animation_pause()
@@ -1788,7 +1815,7 @@ class Gui:
         if self.animation_running():
             dofs = []
 
-            n_frames = np.round(self._animation_length * DAVE.settings.BLENDER_FPS)
+            n_frames = np.round(self._animation_length)
             for t in np.linspace(0, self._animation_length, int(n_frames)):
                 dofs.append(self._animation_keyframe_interpolation_object(t))
 

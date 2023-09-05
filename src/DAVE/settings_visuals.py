@@ -20,6 +20,7 @@ PAINTERS = dict()  # this is the dictionary with sets of paint, it will be fille
 
 VISUAL_BUOYANCY_PLANE_EXTEND = 5
 TEXTURE_SEA = str(ds.RESOURCE_PATH[0] / "virtualSea.jpg")
+TEXTURE_WAVEPLANE = str(ds.RESOURCE_PATH[0] / "waveplane.jpg")
 LIGHT_TEXTURE_SKYBOX = ds.RESOURCE_PATH[0] / "white.png"
 ALPHA_SEA = 0.8
 
@@ -168,7 +169,7 @@ class ViewportSettings:
     )
 
     # labels
-    label_scale: float = 0.0  # scale for the labels, set 0 to turn labels off
+    label_scale: float = 0.5  # scale for the labels, set 0 to turn labels off
 
     painter_settings: dict = None
 
@@ -265,13 +266,13 @@ painters["Force"] = {"main": copy(surf), "moment1": copy(surf), "moment2": copy(
 # mesh.lineColor = _BLACK
 surf.surfaceColor = _BLACK
 painters["Cable"] = {"main": copy(surf)}
-painters["Cable"]["main"].labelShow = True
+painters["Cable"]["main"].labelShow = False
 
 # --- beam
 mesh.lineWidth = 5
 mesh.lineColor = _BLACK
 painters["Beam"] = {"main": copy(mesh)}
-painters["Beam"]["main"].labelShow = True
+painters["Beam"]["main"].labelShow = False
 
 # lincon2d
 

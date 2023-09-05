@@ -28,6 +28,11 @@ class BlockSigs():
         self.widget.blockSignals(self.remember)
 
 
+def set_text_no_signal(widget, text):
+    widget.blockSignals(True)
+    widget.setText(text)
+    widget.blockSignals(False)
+
 def combobox_update_items(combobox : QComboBox, items, doBlock=True):
     """Updates the items of the combobox while maintaining the current text if possible"""
 

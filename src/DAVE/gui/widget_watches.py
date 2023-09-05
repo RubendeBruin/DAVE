@@ -99,7 +99,7 @@ class WidgetWatches(guiDockWidget):
 
         try:
             if self.active_w == w:
-                print('Nothing changed')
+                # print('Nothing changed')
                 return
         except: # may fail if results are arrays
             warnings.warn('Comparison errored, can not check if watches changed')

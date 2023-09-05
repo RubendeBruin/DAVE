@@ -129,7 +129,7 @@ class ExportToBlenderDialog():
 
     def export(self, *args):
 
-        self.ui.btnOK.setText("Working")
+        self.ui.btnOK.setText("Working - background task is being prepared...")
         QtWidgets.QApplication.processEvents()
 
         template = self.ui.cbBaseScene.currentText()
@@ -144,10 +144,16 @@ class ExportToBlenderDialog():
         self.settings.setValue('blender_templates', ';'.join(templates))
         self.settings.setValue('blender_executable', executable)
 
+        # do export animation?
+        if self.ui.radioButton_2.isChecked():
+            animation_dofs = self.animation_dofs
+        else:
+            animation_dofs = None
+
         # execute blender
         create_blend_and_open(
             self.scene, animation_dofs=self.animation_dofs, wavefield=self.wavefield,
-            blender_base_file=template, blender_exe_path=executable
+            blender_base_file=template, blender_exe_path=executable, frames_per_step=self.ui.sbFrames_per_step.value()
         )
 
         # and close

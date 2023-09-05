@@ -15,10 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QFormLayout, QGridLayout,
+from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QGridLayout, QGroupBox,
     QLabel, QLineEdit, QPlainTextEdit, QPushButton,
-    QSizePolicy, QSpinBox, QToolBox, QVBoxLayout,
-    QWidget)
+    QSizePolicy, QSpinBox, QVBoxLayout, QWidget)
 
 class Ui_widgetExplore11(object):
     def setupUi(self, widgetExplore11):
@@ -78,98 +77,86 @@ class Ui_widgetExplore11(object):
 
         self.verticalLayout.addWidget(self.widget)
 
-        self.toolBox = QToolBox(widgetExplore11)
-        self.toolBox.setObjectName(u"toolBox")
-        self.page = QWidget()
-        self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 567, 416))
-        self.formLayout = QFormLayout(self.page)
-        self.formLayout.setObjectName(u"formLayout")
-        self.label_4 = QLabel(self.page)
+        self.groupBox = QGroupBox(widgetExplore11)
+        self.groupBox.setObjectName(u"groupBox")
+        self.gridLayout_3 = QGridLayout(self.groupBox)
+        self.gridLayout_3.setObjectName(u"gridLayout_3")
+        self.editTarget = QDoubleSpinBox(self.groupBox)
+        self.editTarget.setObjectName(u"editTarget")
+        self.editTarget.setDecimals(3)
+        self.editTarget.setMinimum(-100000000000000000.000000000000000)
+        self.editTarget.setMaximum(99999999999999991611392.000000000000000)
+
+        self.gridLayout_3.addWidget(self.editTarget, 0, 1, 1, 1)
+
+        self.btnGoalSeek = QPushButton(self.groupBox)
+        self.btnGoalSeek.setObjectName(u"btnGoalSeek")
+
+        self.gridLayout_3.addWidget(self.btnGoalSeek, 0, 0, 1, 1)
+
+        self.wigetHistory = QWidget(self.groupBox)
+        self.wigetHistory.setObjectName(u"wigetHistory")
+
+        self.gridLayout_3.addWidget(self.wigetHistory, 3, 0, 1, 2)
+
+
+        self.verticalLayout.addWidget(self.groupBox)
+
+        self.groupBox_2 = QGroupBox(widgetExplore11)
+        self.groupBox_2.setObjectName(u"groupBox_2")
+        self.gridLayout_2 = QGridLayout(self.groupBox_2)
+        self.gridLayout_2.setObjectName(u"gridLayout_2")
+        self.label_4 = QLabel(self.groupBox_2)
         self.label_4.setObjectName(u"label_4")
 
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.label_4)
+        self.gridLayout_2.addWidget(self.label_4, 0, 0, 1, 1)
 
-        self.editFrom = QDoubleSpinBox(self.page)
+        self.editFrom = QDoubleSpinBox(self.groupBox_2)
         self.editFrom.setObjectName(u"editFrom")
         self.editFrom.setDecimals(3)
         self.editFrom.setMinimum(-100000000000000000.000000000000000)
         self.editFrom.setMaximum(99999999999999991611392.000000000000000)
 
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.editFrom)
+        self.gridLayout_2.addWidget(self.editFrom, 0, 1, 1, 1)
 
-        self.label_5 = QLabel(self.page)
+        self.label_5 = QLabel(self.groupBox_2)
         self.label_5.setObjectName(u"label_5")
 
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.label_5)
+        self.gridLayout_2.addWidget(self.label_5, 1, 0, 1, 1)
 
-        self.editTo = QDoubleSpinBox(self.page)
+        self.editTo = QDoubleSpinBox(self.groupBox_2)
         self.editTo.setObjectName(u"editTo")
         self.editTo.setDecimals(3)
         self.editTo.setMinimum(-100000000000000000.000000000000000)
         self.editTo.setMaximum(99999999999999991611392.000000000000000)
         self.editTo.setValue(20.000000000000000)
 
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.editTo)
+        self.gridLayout_2.addWidget(self.editTo, 1, 1, 1, 1)
 
-        self.label_6 = QLabel(self.page)
+        self.label_6 = QLabel(self.groupBox_2)
         self.label_6.setObjectName(u"label_6")
 
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.label_6)
+        self.gridLayout_2.addWidget(self.label_6, 2, 0, 1, 1)
 
-        self.editSteps = QSpinBox(self.page)
+        self.editSteps = QSpinBox(self.groupBox_2)
         self.editSteps.setObjectName(u"editSteps")
         self.editSteps.setMaximum(100)
         self.editSteps.setValue(10)
 
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.editSteps)
+        self.gridLayout_2.addWidget(self.editSteps, 2, 1, 1, 1)
 
-        self.btnGraph = QPushButton(self.page)
+        self.btnGraph = QPushButton(self.groupBox_2)
         self.btnGraph.setObjectName(u"btnGraph")
 
-        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.btnGraph)
+        self.gridLayout_2.addWidget(self.btnGraph, 3, 1, 1, 1)
 
-        self.toolBox.addItem(self.page, u"Graph")
-        self.page_2 = QWidget()
-        self.page_2.setObjectName(u"page_2")
-        self.page_2.setGeometry(QRect(0, 0, 567, 401))
-        self.formLayout_2 = QFormLayout(self.page_2)
-        self.formLayout_2.setObjectName(u"formLayout_2")
-        self.label_7 = QLabel(self.page_2)
-        self.label_7.setObjectName(u"label_7")
 
-        self.formLayout_2.setWidget(0, QFormLayout.LabelRole, self.label_7)
-
-        self.editTarget = QDoubleSpinBox(self.page_2)
-        self.editTarget.setObjectName(u"editTarget")
-        self.editTarget.setDecimals(3)
-        self.editTarget.setMinimum(-100000000000000000.000000000000000)
-        self.editTarget.setMaximum(99999999999999991611392.000000000000000)
-
-        self.formLayout_2.setWidget(0, QFormLayout.FieldRole, self.editTarget)
-
-        self.btnGoalSeek = QPushButton(self.page_2)
-        self.btnGoalSeek.setObjectName(u"btnGoalSeek")
-
-        self.formLayout_2.setWidget(1, QFormLayout.FieldRole, self.btnGoalSeek)
-
-        self.toolBox.addItem(self.page_2, u"Goal-seek")
-
-        self.verticalLayout.addWidget(self.toolBox)
+        self.verticalLayout.addWidget(self.groupBox_2)
 
         QWidget.setTabOrder(self.editSet, self.editEvaluate)
-        QWidget.setTabOrder(self.editEvaluate, self.editFrom)
-        QWidget.setTabOrder(self.editFrom, self.editTo)
-        QWidget.setTabOrder(self.editTo, self.editSteps)
-        QWidget.setTabOrder(self.editSteps, self.btnGraph)
-        QWidget.setTabOrder(self.btnGraph, self.editTarget)
-        QWidget.setTabOrder(self.editTarget, self.btnGoalSeek)
-        QWidget.setTabOrder(self.btnGoalSeek, self.editResult)
+        QWidget.setTabOrder(self.editEvaluate, self.editResult)
 
         self.retranslateUi(widgetExplore11)
-
-        self.toolBox.setCurrentIndex(1)
-
 
         QMetaObject.connectSlotsByName(widgetExplore11)
     # setupUi
@@ -183,13 +170,12 @@ class Ui_widgetExplore11(object):
         self.label_3.setText(QCoreApplication.translate("widgetExplore11", u"Evaluate", None))
         self.editEvaluate.setPlaceholderText(QCoreApplication.translate("widgetExplore11", u"(Hint, drag and drop this from the \"derived properties\" widget).", None))
         self.editResult.setPlaceholderText(QCoreApplication.translate("widgetExplore11", u"The result of the evaluation will appear here", None))
+        self.groupBox.setTitle(QCoreApplication.translate("widgetExplore11", u"Goal-seek", None))
+        self.btnGoalSeek.setText(QCoreApplication.translate("widgetExplore11", u"Goal-seek to", None))
+        self.groupBox_2.setTitle(QCoreApplication.translate("widgetExplore11", u"Graph", None))
         self.label_4.setText(QCoreApplication.translate("widgetExplore11", u"From value", None))
         self.label_5.setText(QCoreApplication.translate("widgetExplore11", u"To value", None))
         self.label_6.setText(QCoreApplication.translate("widgetExplore11", u"number of steps", None))
         self.btnGraph.setText(QCoreApplication.translate("widgetExplore11", u"produce graph", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("widgetExplore11", u"Graph", None))
-        self.label_7.setText(QCoreApplication.translate("widgetExplore11", u"Target value:", None))
-        self.btnGoalSeek.setText(QCoreApplication.translate("widgetExplore11", u"Goal-seek", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page_2), QCoreApplication.translate("widgetExplore11", u"Goal-seek", None))
     # retranslateUi
 

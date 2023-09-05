@@ -310,3 +310,38 @@ def get_all_files_with_extension(root_dir, extension, include_subdirs=True):
         a = glob(pathname=f'*.{extension}', root_dir=root_dir, recursive=False)
 
     return a
+
+def align_y0_axis_and_below_half_height(ax1, ax2):
+    """Aligns the y0 axis of the two given axes
+
+
+
+    Source: the internet
+    """
+
+    ax1_ylims = ax1.axes.get_ylim()  # Find y-axis limits set by the plotter
+    ax2_ylims = ax2.axes.get_ylim()  # Find y-axis limits set by the plotter
+
+    if -ax1_ylims[0] > ax1_ylims[1] or -ax2_ylims[0] > ax2_ylims[1]:  #  More data below 0 than above
+        # move 0 line to center
+        max1 = max(abs(ax1_ylims[0]), abs(ax1_ylims[1]))
+        max2 = max(abs(ax2_ylims[0]), abs(ax2_ylims[1]))
+
+        ax1.set_ylim((-max1, max1))
+        ax2.set_ylim((-max2, max2))
+        return
+
+    ax1_yratio = ax1_ylims[0] / ax1_ylims[1]  # Calculate ratio of lowest limit to highest limit
+    ax2_yratio = ax2_ylims[0] / ax2_ylims[1]  # Calculate ratio of lowest limit to highest limit
+
+    # If the plot limits ratio of plot 1 is smaller than plot 2, the first data set has
+    # a wider range than the second data set. Calculate a new low limit for the
+    # second data set to obtain a similar ratio to the first data set.
+    # Else, do it the other way around
+
+    if ax1_yratio < ax2_yratio:
+        ax2.set_ylim(bottom=ax2_ylims[1] * ax1_yratio)
+    else:
+        ax1.set_ylim(bottom=ax1_ylims[1] * ax2_yratio)
+
+    #

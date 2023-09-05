@@ -21,17 +21,19 @@ class TreeWithDragOut(QtWidgets.QTreeWidget):
         item = item[0]
 
         # item should not have a parent (should not be a value)
-        if item.parent() is None:
-            drag = QDrag(self)
-            mime = QtCore.QMimeData()
+        if item.parent() is not None:
+            item  = item.parent()
 
-            text = item.text(0)
-            if text[0]=='.':
-                text = "s['{}']{}".format(self.nodename, text)
+        drag = QDrag(self)
+        mime = QtCore.QMimeData()
 
-            mime.setText(text)
-            drag.setMimeData(mime)
-            drag.start(QtCore.Qt.MoveAction)
+        text = item.text(0)
+        if text[0]=='.':
+            text = "s['{}']{}".format(self.nodename, text)
+
+        mime.setText(text)
+        drag.setMimeData(mime)
+        drag.exec(QtCore.Qt.MoveAction)
 
 
 class WidgetDerivedProperties(guiDockWidget):

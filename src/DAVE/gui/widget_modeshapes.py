@@ -25,6 +25,7 @@ from PySide6.QtGui import QBrush, QColor
 from DAVE.gui.forms.widgetUI_modeshapes import Ui_ModeShapesWidget
 import DAVE.frequency_domain
 import numpy as np
+from DAVE.io.simplify import tanks_to_bodies
 
 class WidgetModeShapes(guiDockWidget):
 
@@ -89,6 +90,10 @@ class WidgetModeShapes(guiDockWidget):
 
         self.gui.animation_terminate()
 
+        if self.guiScene._vfc.n_dofs() == 0:
+            self.ui.lblError.setText('No degrees of freedom')
+            return
+
         if self.d0 is None:
             if not self.guiScene.verify_equilibrium():
                 self.gui.solve_statics()
@@ -110,6 +115,7 @@ class WidgetModeShapes(guiDockWidget):
 
         warnings = ''
 
+
         if np.any(np.iscomplex(V)):
             warnings += 'MASSLESS '
         else:
@@ -117,6 +123,7 @@ class WidgetModeShapes(guiDockWidget):
 
         if np.any(np.isnan(V)):
             warnings += ' UNCONTRAINED'
+
 
         self.ui.lblError.setText(warnings)
         self.ui.btnCalc.setStyleSheet("")

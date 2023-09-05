@@ -226,6 +226,8 @@ def dynamics_summary_data(scene):
             else:
                 other = total - own
 
+
+
             # print('Node {}; Mode {}; associated inertia {:.3f} (own) +   {:.3f} (children); associated stiffness {:.3f}'.format(node.name, mode, own, other, K[i,i]))
 
             if K[i,i]<1e-9:
@@ -446,10 +448,16 @@ def prepare_for_fd(s):
         w.offset = (0,0,0)
 
 
-def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
-    """Calculates and plots the RAOs. Call plt.show afterwards to show the plots"""
+def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0) -> dict:
+    """Calculates and plots the RAOs. Call plt.show afterwards to show the plots
 
-    RAOs = RAO_1d(s=s,omegas=omegas,wave_direction=wave_direction, waterdepth=waterdepth)
+    return the figure objects as a dictionary
+    """
+
+    if omegas is None:
+        RAOs, omegas = RAO_1d(s=s,omegas=omegas,wave_direction=wave_direction, waterdepth=waterdepth)
+    else:
+        RAOs = RAO_1d(s=s, omegas=omegas, wave_direction=wave_direction, waterdepth=waterdepth)
 
     # now plot
     # Use one figure per node
@@ -484,6 +492,8 @@ def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
 
     import matplotlib.pyplot as plt
     from matplotlib.figure import figaspect
+
+    fig_list = []
 
     for figure in figures.values():
 
@@ -524,33 +534,46 @@ def plot_RAO_1d(s, omegas, wave_direction, waterdepth=0):
 
             ax1.plot(omegas, amplitude, label="amplitude", color='black', linewidth=1)
             plt.title(mode_names[mode])
-            ax1.set_xlabel('omega [rad/s]')
-            plt.grid()
+            ax1.set_xlabel('$\omega$ [rad/s]')
+            ax1.set_ylabel('|RAO| [-] ━━━━━ ')
 
-            yy = plt.ylim()
+            imax = np.argmax(amplitude)
+            omax = omegas[imax]
+            ax1.text(omegas[imax], 0, f"{omax:.2f} rad/s\n{2*np.pi/omax:.2f} s", horizontalalignment='left', verticalalignment='top', size=8)
+
+            ax1.grid()
+
+            yy = ax1.get_ylim()
             if yy[1] < 1e-4:
-                plt.ylim((0, 1))
+                ax1.set_ylim((0, 1))
                 continue
             elif yy[1] < 1.0:
-                plt.ylim((0, 1))
+                ax1.set_ylim((0, 1))
             else:
-                plt.ylim((0, yy[1]))
+                ax1.set_ylim((0, yy[1]))
 
 
-            xx = plt.xlim()     # force min x to 0
-            plt.xlim((0, xx[1]))
+            xx = ax1.get_xlim()     # force min x to 0
+            ax1.set_xlim((0.0, xx[1]))
 
             ax2 = ax1.twinx()
-            ax2.plot(omegas, np.angle(a), label="phase", color='black', linestyle=':', linewidth=1)
+            ax2.plot(omegas, np.angle(a), label="phase", color='gray', linestyle=':', linewidth=1)
+
+            align_y0_axis_and_below_half_height(ax1, ax2)
+            ax2.set_ylabel('phase [rad] ....')
 
             if node is not None:
                 node_name = node.name
             else:
                 node_name = 'noname'
+
             plt.suptitle('{}\nIncoming wave direction = {}'.format(node_name, wave_direction))
 
-        plt.figtext(0.995, 0.01, 'Amplitude (solid) in [m] or [deg] on left axis\nPhase (dashed) in [rad] on right axis', ha='right', va='bottom', fontsize=6)
         plt.tight_layout()
+
+        fig_list.append(f)
+
+    return fig_list
 
 def RAO_1d(s, omegas, wave_direction, waterdepth=0) -> np.ndarray:
     """Calculates the response to a unit-wave
@@ -558,9 +581,40 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0) -> np.ndarray:
     Phase-angles are relative to the global origin. Waterdepth is needed to
     calculate the wave-lengths for shallow water (default: deep water)
 
+    Args:
+        s : Scene
+        omegas : list of frequencies - If None then the frequencies present in the wave-interactions are used
+        wave_direction : direction of the wave progression in degrees (global)
+        waterdepth : waterdepth in meters (default: 0)
+
+
     Returns:
         numpy array with dimensions [iDOF, iOmega]
+        or
+        numpy array with dimensions [iDOF, iOmega], omegas if omegas is None
+
     """
+
+    return_omegas = False
+    if omegas is None:
+        # get the omegas from the wave-interactions
+        return_omegas = True
+
+        omegas = []
+
+        for ws in s.nodes_of_type(WaveInteraction1):
+            omegas.extend(ws._hyddb.frequencies)
+
+
+        if min(omegas)>0.01:
+            omegas = np.insert(omegas, 0, 0.01)
+
+        if max(omegas)<10:
+            omegas = np.append(omegas, 10)
+
+        omegas = np.unique(omegas)
+
+
 
     M = s.dynamics_M(1e-6)
     K = s.dynamics_K(1e-6)
@@ -663,12 +717,19 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0) -> np.ndarray:
         critial_damping_diag = 2*np.sqrt(Kdiag * Mdiag)
         min_damping = ds.FD_GLOBAL_MIN_DAMPING_FRACTION * critial_damping_diag
 
+        log = []
+
         for i in range(M.shape[0]):
             if B[i,i] < min_damping[i]:
-                print('Increasing diagonal damping for mode {} to {} ,global minimum damping set to {}% of critical damping for this mode (settings.FD_GLOBAL_MIN_DAMPING_FRACTION)'.format(i, min_damping[i],100*ds.FD_GLOBAL_MIN_DAMPING_FRACTION))
+                log.append('Increasing diagonal damping for mode {} to {} ,global minimum damping set to {}% of critical damping for this mode (settings.FD_GLOBAL_MIN_DAMPING_FRACTION)'.format(i, min_damping[i],100*ds.FD_GLOBAL_MIN_DAMPING_FRACTION))
                 B[i,i] = min_damping[i]
 
         # A = np.zeros_like(M)
+
+        if log:
+            print(log[0])
+            print('..<stripped>..')
+            print(log[-1])
 
         A = -(omega ** 2) * M_total  \
             + 1j * omega * B  \
@@ -683,7 +744,10 @@ def RAO_1d(s, omegas, wave_direction, waterdepth=0) -> np.ndarray:
         x = np.linalg.solve(A, excitation )  # solve
         RAO[:,i_omega] = x
 
-    return RAO
+    if return_omegas:
+        return RAO, omegas
+    else:
+        return RAO
 
 
 
