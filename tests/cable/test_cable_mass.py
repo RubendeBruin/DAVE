@@ -15,12 +15,20 @@ def test_wide_hammock_with_mass():
 
     s.solve_statics()
 
+    assert_allclose(p1.fz, p2.fz, atol=1e-6)
+    assert_allclose(p1.fz + p2.fz, -11 * s.g, atol=1e-4)
+
     s._save_coredump()
 
-    _, tensions = c.get_points_and_tensions_for_visual()
+    # s.update()
+
+    _, tensions = c.get_points_and_tensions_for_visual()  # should not modify the forces!
 
     for i in range(int(len(tensions) / 2)):
         assert_allclose(tensions[i], tensions[-(i+1)], atol=1e-6)
+
+    # from DAVE.gui import Gui
+    # Gui(s)
 
     assert_allclose(p1.fz, p2.fz, atol=1e-6)
     assert_allclose(p1.fz + p2.fz, -11 * s.g, atol=1e-4)

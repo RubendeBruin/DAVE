@@ -1590,6 +1590,17 @@ class Cable(NodeCoreConnected):
         return self.connections[0] == self.connections[-1]
 
     @property
+    def solve_segment_lengths(self):
+        """If True then lengths of the segment are solved for a continuous tension distribution including weight. If false then the segment lengths are determined only on the geometry [bool]
+        Note that the solution is typically not unique!"""
+        return self._vfNode.solve_section_lengths
+    
+    @solve_segment_lengths.setter
+    def solve_segment_lengths(self, value):
+        assertBool(value, "solve_segment_lengths")
+        self._vfNode.solve_section_lengths = value
+
+    @property
     def friction(self) -> tuple[float]:
         """Friction factors at the connections. [-]"""
         return tuple(self._friction)

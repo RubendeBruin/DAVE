@@ -829,7 +829,7 @@ class VisualActor:
                         viewport.screen.remove(self.actors["footprint"])
                         # remove outline as well
                         self.actors["footprint"] = new_actor
-                        viewport.screen.add(self.actors["footprint"], render=False)
+                        viewport.screen.add(self.actors["footprint"])
 
         if isinstance(self.node, vf.Point):
             t = vtk.vtkTransform()
@@ -1097,7 +1097,7 @@ class VisualActor:
                 self.update_paint(viewport.settings)
 
                 if viewport.screen is not None:
-                    viewport.screen.add(vis, render=False)
+                    viewport.screen.add(vis)
 
             return
 

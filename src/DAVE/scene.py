@@ -1710,7 +1710,14 @@ class Scene:
             BackgroundSolver = DC.BackgroundSolver(self._vfc)
             BackgroundSolver.tolerance = self.static_tolerance
             BackgroundSolver.mobility = self.solver_mobility
-            BackgroundSolver.Start()
+            started = BackgroundSolver.Start()
+
+            if started is None:  # todo: WORKAROUND, remove this
+                started = True
+
+            if not started:
+                print(BackgroundSolver.log)
+                return True
 
             while BackgroundSolver.Running:
                 for i in range(int(10*timeout_s)):
@@ -1721,12 +1728,8 @@ class Scene:
                     if BackgroundSolver.Converged:
                         break
 
-                    # print(BackgroundSolver.log)
-                    # info = f"Error = {BackgroundSolver.Enorm:.6e}(norm) , {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
-                    # print(info)
-
-                info = f"Error = {BackgroundSolver.Enorm:.6e}(norm) , {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
-                give_feedback(info)
+                    info = f"Error = {BackgroundSolver.Enorm:.6e}(norm) , {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
+                    give_feedback(info)
 
                 time_diff = (datetime.datetime.now() - start_time)
                 secs = time_diff.total_seconds()
@@ -2677,10 +2680,18 @@ class Scene:
         if friction is not None:
 
             req_len = len(pois)-2
+            is_loop = False
             if connections[0]==connections[-1]:
+                is_loop = True
                 req_len += 1
 
-            assert len(friction) == req_len, "friction should be a list with the same length as the number of intermediate points/circles"
+            if is_loop:
+                assert len(friction) == req_len, f"friction (for a loop) should be a list with the same length as the number of unique connections (={req_len}), got {len(friction)}"
+            else:
+                assert (
+                    len(friction) == req_len
+                ), "friction should be a list with the same length as the number of intermediate points/circles (={req_len}), got {len(friction)}"
+
             for _ in friction:
                 assert isinstance(_, (float, int, type(None))), "friction should be a list with floats or None"
 

@@ -351,6 +351,7 @@ class HasContainer(Manager):
     def dissolve(self):
         """Un-manage all managed nodes and then delete the container"""
         Manager.dissolve_some(self)
+        self._nodes = tuple()  # clear the list, we're not managing anything anymore
 
 
 

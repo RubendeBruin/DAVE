@@ -160,6 +160,7 @@ def test_elastic_catenary_estimations_various():
     for (L, EA, mass) in variations:
         s = give_beam_and_cable_scene(L=L, EA=EA, mass=mass)
         s['Frame2'].x = 20
+
         s.solve_statics()
         assertS(s)
 
@@ -261,3 +262,8 @@ def compare(p1, p2, c):
 #         # ax4.plot(weight_fraction, dFV2, 'r*')
 #
 # plt.show()
+
+if __name__ == '__main__':
+    from DAVE.gui import Gui
+    s = give_beam_and_cable_scene(L=18, EA=1e6, mass=0.1)
+    Gui(s)

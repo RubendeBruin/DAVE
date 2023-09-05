@@ -267,6 +267,7 @@ class Gui:
         else:
             self.app = app
 
+        # self.app.setStyle("Fusion")
 
         self.app.aboutToQuit.connect(self.onCloseApplication)
 
@@ -1589,7 +1590,9 @@ class Gui:
             self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
             self.__BackgroundSolver.mobility = self._solver_mobility
             self.__BackgroundSolver.do_solve_linear_first = self._solver_do_solve_linear_first
-            self.__BackgroundSolver.Start()
+            running = self.__BackgroundSolver.Start()
+            if not running:
+                return True # system already converged, nothing started so nothing to wait for
 
             dialog = SolverDialog_threaded()
             dialog.pbAccept.setEnabled(False)

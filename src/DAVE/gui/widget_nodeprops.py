@@ -1397,6 +1397,7 @@ class EditCable(NodeEditor):
         ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
         ui.doubleSpinBox_3.valueChanged.connect(self.generate_code)
         ui.doubleSpinBox_4.valueChanged.connect(self.generate_code)
+        ui.cbSolveSegmentLengths.toggled.connect(self.generate_code)
 
 
     def post_update_event(self):
@@ -1406,6 +1407,7 @@ class EditCable(NodeEditor):
         svinf(self.ui.doubleSpinBox, self.node.diameter)
         svinf(self.ui.doubleSpinBox_3, self.node.mass_per_length)
         svinf(self.ui.doubleSpinBox_4, self.node.mass)
+        cbvinf(self.ui.cbSolveSegmentLengths, self.node.solve_segment_lengths)
         self.set_colors()
 
 
@@ -1432,6 +1434,7 @@ class EditCable(NodeEditor):
         code += code_if_changed_d(self.node, new_diameter, 'diameter')
         code += code_if_changed_d(self.node, new_mass_per_length, 'mass_per_length')
         code += code_if_changed_d(self.node, self.ui.doubleSpinBox_4.value(), 'mass')
+        code += code_if_changed_b(self.node, self.ui.cbSolveSegmentLengths.isChecked(), "solve_segment_lengths")
 
         self.run_code(code)
 
