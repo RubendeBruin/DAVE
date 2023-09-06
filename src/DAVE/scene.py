@@ -1190,8 +1190,12 @@ class Scene:
             node.parent
         )  # recursive call on parent. Parent None returns True
 
-    def common_ancestor_of_nodes(self, nodes: List[Node]) -> Node or None:
+    def common_ancestor_of_nodes(
+        self, nodes: List[Node], required_type=None
+    ) -> Node or None:
         """Finds a nearest ancestor (parent) that is common to all of the nodes.
+
+        If required type is specified then the common anchestor needs to be in instance of that type.
 
         frame [Frame]
          |-> frame2 [Frame]
@@ -1221,6 +1225,13 @@ class Scene:
                 parent = getattr(parent, "parent", None)
 
             parents_of_node.append(parents)
+
+        # remove any non-required types for the database
+        if required_type is not None:
+            parents_of_node = [
+                [p for p in parents if isinstance(p, required_type)]
+                for parents in parents_of_node
+            ]
 
         # Now find the first entry that is common in all of the lists of parent_of_node - maintain the order
         common = parents_of_node[0]

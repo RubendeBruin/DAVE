@@ -5,8 +5,8 @@ from .abstracts import *
 from .trimesh import TriMeshSource
 from ..tools import *
 
-class HasParent(DAVENodeBase, ABC):
 
+class HasParent(DAVENodeBase, ABC):
     def __init__(self, scene, name):
         logging.info("HasParent.__init__")
 
@@ -27,6 +27,16 @@ class HasParent(DAVENodeBase, ABC):
         else:
             return self._parent_for_code_export
 
+    @property
+    def parents(self) -> tuple:
+        """Returns a tuple of all parents of this node"""
+        r = []
+        p = self.parent
+        while p is not None:
+            r.append(p)
+            p = p.parent
+
+        return tuple(r)
 
     @property
     @abstractmethod
@@ -47,7 +57,7 @@ class HasParent(DAVENodeBase, ABC):
         pass
 
     @node_setter_manageable
-    def try_swap(self, old: 'Node', new: 'Node') -> bool:
+    def try_swap(self, old: "Node", new: "Node") -> bool:
         """Tries to swap the parent of this node from old to new.
         Returns True if successful, False otherwise.
         """
@@ -66,8 +76,7 @@ class HasParent(DAVENodeBase, ABC):
 
 
 class HasParentCore(HasParent):
-
-    _valid_parent_types = (NoneType, )
+    _valid_parent_types = (NoneType,)
 
     def __init__(self, scene, name):
         logging.info("HasParentCore.__init__")
@@ -78,7 +87,6 @@ class HasParentCore(HasParent):
             return [self.parent_for_export]
         else:
             return []
-
 
     @property
     def parent(self) -> Node or None:
@@ -99,7 +107,9 @@ class HasParentCore(HasParent):
         """
         new_parent = self._scene._node_from_node_or_str_or_None(var)
 
-        assert isinstance(new_parent, self._valid_parent_types), f"Invalid parent type when setting the parent of Node [{self.name}] to [{var.name if var else 'None'}], allowed types are {self._valid_parent_types}, got {type(new_parent)}"
+        assert isinstance(
+            new_parent, self._valid_parent_types
+        ), f"Invalid parent type when setting the parent of Node [{self.name}] to [{var.name if var else 'None'}], allowed types are {self._valid_parent_types}, got {type(new_parent)}"
         if new_parent is None:
             self._vfNode.parent = None
         else:
@@ -107,9 +117,7 @@ class HasParentCore(HasParent):
 
 
 class HasParentPure(HasParent):
-
     def __init__(self, scene, name):
-
         self._parent = None
         super().__init__(scene=scene, name=name)
 
@@ -129,11 +137,13 @@ class HasParentPure(HasParent):
         """
         self._parent = self._scene._node_from_node_or_str_or_None(var)
 
-class HasFootprint(DAVENodeBase):
 
+class HasFootprint(DAVENodeBase):
     def __init__(self, scene, name):
         logging.info("HasFootprint.__init__")
-        assert isinstance(self, HasParentCore), "Only Core nodes with a parent can have a footprint"
+        assert isinstance(
+            self, HasParentCore
+        ), "Only Core nodes with a parent can have a footprint"
         super().__init__(scene=scene, name=name)
 
     @property
@@ -163,68 +173,72 @@ class HasFootprint(DAVENodeBase):
         else:
             return ""
 
+
 class HasTrimesh(DAVENodeBase):
+    def __init__(self, scene, name):
+        logging.info("HasTrimesh.__init__")
+        assert isinstance(
+            self, HasParentCore
+        ), "Only Core nodes with a parent can have a trimesh"
 
-        def __init__(self, scene, name):
-            logging.info("HasTrimesh.__init__")
-            assert isinstance(self, HasParentCore), "Only Core nodes with a parent can have a trimesh"
+        self._trimesh = TriMeshSource(
+            self._scene, source=self._vfNode.trimesh
+        )  # the tri-mesh is wrapped in a custom object
 
-            self._trimesh = TriMeshSource(
-                self._scene, source=self._vfNode.trimesh
-            )  # the tri-mesh is wrapped in a custom object
+        super().__init__(scene=scene, name=name)
 
-            super().__init__(scene=scene, name=name)
+    @property
+    def trimesh(self) -> "TriMeshSource":
+        """Reference to TriMeshSource object
+        #NOGUI"""
+        return self._trimesh
 
-        @property
-        def trimesh(self) -> "TriMeshSource":
-            """Reference to TriMeshSource object
-            #NOGUI"""
-            return self._trimesh
+    @property
+    def trimesh_is_empty(self) -> bool:
+        """True if the trimesh is empty
+        #NOGUI"""
+        return self.trimesh.is_empty
 
-        @property
-        def trimesh_is_empty(self) -> bool:
-            """True if the trimesh is empty
-            #NOGUI"""
-            return self.trimesh.is_empty
+    @node_setter_manageable
+    def change_parent_to(self, new_parent):
+        """See also Visual.change_parent_to"""
 
-        @node_setter_manageable
-        def change_parent_to(self, new_parent):
-            """See also Visual.change_parent_to"""
+        from DAVE.nodes import Frame
 
-            from DAVE.nodes import Frame
+        if not (isinstance(new_parent, Frame) or new_parent is None):
+            raise ValueError(
+                "Trimeshes can only be attached to a Frame (or derived) or None"
+            )
 
-            if not (isinstance(new_parent, Frame) or new_parent is None):
-                raise ValueError(
-                    "Trimeshes can only be attached to a Frame (or derived) or None"
-                )
-
-            if self.trimesh_is_empty:
-                self.parent = new_parent
-                return
-
-
-            # get current position and orientation
-            if self.parent is not None:
-                cur_position = self.parent.to_glob_position(self.trimesh._offset)
-                cur_rotation = self.parent.to_glob_rotation(self.trimesh._rotation)
-            else:
-                cur_position = self.trimesh._offset
-                cur_rotation = self.trimesh._rotation
-
+        if self.trimesh_is_empty:
             self.parent = new_parent
+            return
 
-            if new_parent is None:
-                new_offset = cur_position
-                new_rotation = cur_rotation
-            else:
-                new_offset = new_parent.to_loc_position(cur_position)
-                new_rotation = new_parent.to_loc_rotation(cur_rotation)
+        # get current position and orientation
+        if self.parent is not None:
+            cur_position = self.parent.to_glob_position(self.trimesh._offset)
+            cur_rotation = self.parent.to_glob_rotation(self.trimesh._rotation)
+        else:
+            cur_position = self.trimesh._offset
+            cur_rotation = self.trimesh._rotation
 
-            self.trimesh.load_file(url=self.trimesh._path,
-                                   offset=new_offset,
-                                   rotation=new_rotation,
-                                   scale=self.trimesh._scale,
-                                   invert_normals=self.trimesh._invert_normals)
+        self.parent = new_parent
+
+        if new_parent is None:
+            new_offset = cur_position
+            new_rotation = cur_rotation
+        else:
+            new_offset = new_parent.to_loc_position(cur_position)
+            new_rotation = new_parent.to_loc_rotation(cur_rotation)
+
+        self.trimesh.load_file(
+            url=self.trimesh._path,
+            offset=new_offset,
+            rotation=new_rotation,
+            scale=self.trimesh._scale,
+            invert_normals=self.trimesh._invert_normals,
+        )
+
 
 class Manager(DAVENodeBase, ABC):
     """
@@ -235,7 +249,9 @@ class Manager(DAVENodeBase, ABC):
     def __init__(self, scene, name):
         logging.info("Manager.__init__")
 
-        assert isinstance(self, (NodePurePython, NodeCoreConnected)), "Manager is a mixin class and must be used togeher with NodePurePython or NodeCoreConnected"
+        assert isinstance(
+            self, (NodePurePython, NodeCoreConnected)
+        ), "Manager is a mixin class and must be used togeher with NodePurePython or NodeCoreConnected"
 
         super().__init__(scene=scene, name=name)
 
@@ -244,14 +260,15 @@ class Manager(DAVENodeBase, ABC):
 
         with ClaimManagement(self._scene, self):
             for node in nodes:
-                if node.manager is None or node.manager == self:  # only rename un-managed nodes or nodes managed by me - managed nodes will be renamed by their manager
+                if (
+                    node.manager is None or node.manager == self
+                ):  # only rename un-managed nodes or nodes managed by me - managed nodes will be renamed by their manager
                     if node.name.startswith(old_prefix):
                         node.name = node.name.replace(old_prefix, new_prefix)
                     else:
                         raise Exception(
-                            f"Unexpected name when re-naming managed node '{node.name}' of node '{self.name}'. Expected name to start with {old_prefix}.")
-
-
+                            f"Unexpected name when re-naming managed node '{node.name}' of node '{self.name}'. Expected name to start with {old_prefix}."
+                        )
 
     @abstractmethod
     def delete(self):
@@ -282,7 +299,6 @@ class Manager(DAVENodeBase, ABC):
         for node in self.managed_nodes():
             node._limits_by_manager = node.limits.copy()
 
-
     def dissolve_some(self) -> tuple:
         """Managers can always be dissolved. Simply release management of all managed nodes"""
 
@@ -299,6 +315,7 @@ class Manager(DAVENodeBase, ABC):
         else:
             return False, "Nothing to unmanage"
 
+
 class HasContainer(Manager):
     """Containers are nodes containing nodes. Nodes are stored in self._nodes"""
 
@@ -308,7 +325,9 @@ class HasContainer(Manager):
         self._nodes = []
         """Nodes contained in and managed by this node"""
 
-        self._name_prefix = name + "/"  # prefix used for all nodes created by this container
+        self._name_prefix = (
+            name + "/"
+        )  # prefix used for all nodes created by this container
 
     def _on_name_changed(self):
         super()._on_name_changed()
@@ -322,9 +341,9 @@ class HasContainer(Manager):
         # Un-manage all managed nodes
 
         """Note that not all created nodes are necessarily managed by this container.
-         This container may have created a geometric contact between one or two of the created nodes.
-         In that case the geometric contract will manage the nodes.
-         """
+        This container may have created a geometric contact between one or two of the created nodes.
+        In that case the geometric contract will manage the nodes.
+        """
 
         unmanaged = []
 
@@ -341,10 +360,15 @@ class HasContainer(Manager):
                 try:
                     self._nodes.remove(node)
                 except Exception as M:
-                    print(f"Failed to remove node list of managed nodes of {self.name} because {str(M)}")
+                    print(
+                        f"Failed to remove node list of managed nodes of {self.name} because {str(M)}"
+                    )
 
             if unmanaged:
-                return True, f"Managed nodes of {self.name} unmanaged" # No need to call other supers, work was done so good enough
+                return (
+                    True,
+                    f"Managed nodes of {self.name} unmanaged",
+                )  # No need to call other supers, work was done so good enough
 
         return super().dissolve_some()
 
@@ -352,8 +376,6 @@ class HasContainer(Manager):
         """Un-manage all managed nodes and then delete the container"""
         Manager.dissolve_some(self)
         self._nodes = tuple()  # clear the list, we're not managing anything anymore
-
-
 
     def delete(self):
         # remove all imported nodes
@@ -366,7 +388,6 @@ class HasContainer(Manager):
 class HasSubScene(HasContainer):
     """A group of nodes (container) that can be loaded from a .DAVE file. Basically a component without a frame.
     The nodes can have "exposed" properties"""
-
 
     def __init__(self, scene, name):
         super().__init__(scene=scene, name=name)
@@ -395,14 +416,17 @@ class HasSubScene(HasContainer):
 
         # first see if we can load
         filename = self._scene.get_resource_path(value)
-        t = Scene(filename, resource_paths=self._scene.resources_paths.copy(),
-                  current_directory=self._scene.current_directory)
+        t = Scene(
+            filename,
+            resource_paths=self._scene.resources_paths.copy(),
+            current_directory=self._scene.current_directory,
+        )
 
         # then remove all existing nodes
         self.delete()
 
         # and re-import them
-        old_scene_exposed = getattr(self._scene, 'exposed', None)
+        old_scene_exposed = getattr(self._scene, "exposed", None)
 
         self._import_scene_func(other_scene=t)
 
@@ -411,12 +435,12 @@ class HasSubScene(HasContainer):
 
         # Use the name of the nodes to created references to the imported nodes
 
-        directly_created_nodes = [node for node in all_imported_nodes if node not in auto_created_nodes]
+        directly_created_nodes = [
+            node for node in all_imported_nodes if node not in auto_created_nodes
+        ]
 
         self._nodes.clear()
         self._nodes.extend([self._scene[node.name] for node in directly_created_nodes])
-
-
 
         # claim ownership of unmanaged nodes
         for node in self._nodes:
@@ -425,16 +449,14 @@ class HasSubScene(HasContainer):
             node._limits_by_manager = node.limits.copy()
             node._watches_by_manager = node.watches.copy()
 
-
-
         # Get exposed properties (if any)
-        self._exposed = getattr(t, 'exposed', [])
+        self._exposed = getattr(t, "exposed", [])
 
         # and restore the _scenes old exposed
         if old_scene_exposed is not None:
             self._scene.exposed = old_scene_exposed
         else:  # there was none, remove it if it is there now
-            if hasattr(self._scene, 'exposed'):
+            if hasattr(self._scene, "exposed"):
                 del self._scene.exposed
 
         self._path = value
@@ -446,7 +468,6 @@ class HasSubScene(HasContainer):
             containerize=False,
             settings=False,  # do not import environment and other settings
         )
-
 
     @property
     def exposed_properties(self) -> tuple:
@@ -460,13 +481,13 @@ class HasSubScene(HasContainer):
             if node.name == full_name:
                 return node
 
-        raise ValueError(f'No exposed node with name {name} in component {self.name}')
+        raise ValueError(f"No exposed node with name {name} in component {self.name}")
 
     def _get_exposed_property_data(self, name):
         for e in self._exposed:
             if e[0] == name:
                 return e
-        raise ValueError(f'No exposed property with name {name}')
+        raise ValueError(f"No exposed property with name {name}")
 
     def get_exposed(self, name):
         """Returns the value of the exposed property"""
@@ -493,4 +514,3 @@ class HasSubScene(HasContainer):
 
         with ClaimManagement(self._scene, self):
             setattr(node, prop_name, value)
-

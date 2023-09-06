@@ -1775,7 +1775,7 @@ class Cable(NodeCoreConnected):
             raise ValueError(
                 f"Error when setting connections of '{self.name}': First connection '{nodes[0].name}' is a round-bar. This is not allowed. Connections to a round-bar must always be between two non-roundbar connections"
             )
-        if is_roundbar(nodes[1]):
+        if is_roundbar(nodes[-1]):
             raise ValueError(
                 f"Error when setting connections of '{self.name}': Last connection '{nodes[-1].name}' is a round-bar. This is not allowed. Connections to a round-bar must always be between two non-roundbar connections"
             )
