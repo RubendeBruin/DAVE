@@ -1295,16 +1295,23 @@ class EditConnections(NodeEditor):
         self.ui.pushButton.clicked.connect(self.add_item)
         ui.pbSetShortestRoute.clicked.connect(self.set_shortest_route)
 
+        ui.list.keyPressEvent = self.listKeyPressEvent
+
         # ------- setup the drag-and-drop code ---------
 
         ui.list.dropEvent = self.dropEvent
         ui.list.dragEnterEvent = self.dragEnterEvent
         ui.list.dragMoveEvent = self.dragEnterEvent
+
+        ui.pbRemoveSelected.dragEnterEvent = self.dragOntoDeleteButtonEvent
+        ui.pbRemoveSelected.dropEvent = self.dropOnDeleteButtonEvent
+
         ui.list.itemChanged.connect(self.itemChanged)
 
+        ui.pbRemoveSelected.setAcceptDrops(True)
         ui.list.setDragEnabled(True)
         ui.list.setAcceptDrops(True)
-        ui.list.setDragEnabled(True)
+
 
     def connect(self, node, scene, run_code, guiEmitEvent,gui_solve_func,node_picker_register_func):
         self.ui.widgetPicker.initialize(scene=scene,
@@ -1361,9 +1368,7 @@ class EditConnections(NodeEditor):
             self.ui.list.addItem(item)
 
         self.ui.lbDirection.setVisible(labelVisible)
-
         self.ui.list.blockSignals(False)
-
         self.ui.pbSetShortestRoute.setVisible(not isinstance(self.node, (Cable, Sling)))
 
     def dropEvent(self, event):
@@ -1373,12 +1378,25 @@ class EditConnections(NodeEditor):
     def dragEnterEvent(self, event):
         call_from_dragEnter_or_Move_Event(self.ui.list, self.scene, (Circle, Point), event)
 
+    def dropOnDeleteButtonEvent(self, event):
+       if event.source() == self.ui.list:
+            self.ui.pbRemoveSelected.click()
+            event.accept()
+
+    def dragOntoDeleteButtonEvent(self, event):
+        if event.source() == self.ui.list:
+            event.accept()
+
 
     def delete_selected(self):
         row = self.ui.list.currentRow()
         if row > -1:
             self.ui.list.takeItem(row)
         self.generate_code()
+
+    def listKeyPressEvent(self, event):
+        if event.key() == Qt.Key_Delete:
+            self.delete_selected()
 
     def generate_code(self):
 

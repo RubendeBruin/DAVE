@@ -23,37 +23,21 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="0">
-       <widget class="QNodePicker" name="widgetPicker" native="true"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_8">
+      <item row="3" column="1">
+       <widget class="QPushButton" name="pbSetShortestRoute">
         <property name="text">
-         <string>Drag items to change order. You can also drag items from the node-tree to add them</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
+         <string>Determine shortest route</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="0" colspan="2">
-       <widget class="QListWidget" name="list"/>
-      </item>
-      <item row="1" column="1">
+      <item row="5" column="1">
        <widget class="QPushButton" name="pushButton">
         <property name="text">
          <string>Add</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QPushButton" name="pbRemoveSelected">
-        <property name="text">
-         <string>Remove selected point</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" colspan="2">
+      <item row="0" column="1" colspan="2">
        <widget class="QLabel" name="label_3">
         <property name="text">
          <string>Connections (Points/Circles)</string>
@@ -66,14 +50,30 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QPushButton" name="pbSetShortestRoute">
+      <item row="2" column="3">
+       <widget class="QPushButton" name="pbRemoveSelected">
         <property name="text">
-         <string>Determine shortest route</string>
+         <string>Remove selected point</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="2" column="1" colspan="2">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Drag/drop items to change order, add or remove.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1" colspan="3">
+       <widget class="QListWidget" name="list"/>
+      </item>
+      <item row="5" column="2" colspan="2">
+       <widget class="QNodePicker" name="widgetPicker" native="true"/>
+      </item>
+      <item row="3" column="2" colspan="2">
        <widget class="QLabel" name="lbDirection">
         <property name="text">
          <string>For circles the direction in which the cable runs over it is defined by the axis of the circle. Check the box to run over the circle in opposite direction.</string>
