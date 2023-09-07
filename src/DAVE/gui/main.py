@@ -67,6 +67,7 @@ import logging
 from DAVE.gui.dialog_blender import ExportToBlenderDialog
 from DAVE.gui.dialog_export_package import ExportAsPackageDialog
 from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter, EscKeyPressFilter
+from DAVE.gui.helpers.qt_action_draggable import QDraggableNodeActionWidget
 from DAVE.gui.widget_watches import WidgetWatches
 from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import DragInfo
 from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
@@ -85,7 +86,7 @@ from DAVE.gui.widget_tags import WidgetTags
 
 import DAVE.auto_download
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QMimeData
 from PySide6.QtCore import QSettings
 from PySide6.QtGui import QIcon, QPixmap, QFont, QFontMetricsF, QCursor, QAction
 from PySide6.QtWidgets import (
@@ -2343,7 +2344,7 @@ class Gui:
         nodes = [self.visual.node_from_vtk_actor(prop) for prop in props]
         nodes = [
             node for node in nodes if node is not None
-        ]  # remove nones (not all actors have a associated node, for example the sea has none)
+        ]  # remove nones (not all actors have an associated node, for example the sea has none)
         nodes = list(set(nodes))  # make unique
 
         # find all managers (recursively)
@@ -2355,8 +2356,6 @@ class Gui:
                     if node.manager not in nodes:
                         nodes.append(node.manager)
                         added = True
-
-        print(nodes)
 
         added = True
         while added:
@@ -2372,9 +2371,17 @@ class Gui:
         # If we have a length 1 then it is easy
         # if more, then show a context-menu
 
-        if len(nodes) == 1:
-            self._user_clicked_node(nodes[0])
-            return
+        # Even with length 1, we may still want to show a context menu such that
+        # the user can drag the selected node to somewhere.
+        # Implement by checking if the SHIFT, ALT or CTRL keys are down
+        # If so, show the context menu
+
+        if self.app.keyboardModifiers() and (QtCore.Qt.KeyboardModifier.ControlModifier or QtCore.Qt.KeyboardModifier.AltModifier or QtCore.Qt.KeyboardModifier.ShiftModifier):
+            pass
+        else:
+            if len(nodes) == 1:
+                self._user_clicked_node(nodes[0])
+                return
 
         # order in some logical way
         # unmanaged nodes go first
@@ -2396,21 +2403,22 @@ class Gui:
                     f"{node.name}\t[{node.class_name}]\t managed by {node.manager.name}"
                 )
 
-            action = menu.addAction(
-                text, lambda n=node, *args: self._user_clicked_node(n)
-            )
+            # action = menu.addAction(
+            #     text, lambda n=node, *args: self._user_clicked_node(n)
+            # )
+
+            action = QDraggableNodeActionWidget(text, mime_text=node.name)
+            action.clicked.connect(lambda n=node, *args: self._user_clicked_node(n, args))
+
+            menu.addAction(action)
 
             if node.manager is None:
-                font = action.font()
-                font.setBold(True)
-                action.setFont(font)
+                action.setBold(True)
             else:
                 if (
                     getattr(node, "_editor_widget_types_when_managed", None) is not None
                 ):  # for partially managed nodes
-                    font = action.font()
-                    font.setBold(True)
-                    action.setFont(font)
+                    action.setBold(True)
 
         # See if there are multiple nodes with the same class
         # if so, offer a menu option to select all of them
@@ -2428,7 +2436,8 @@ class Gui:
 
         menu.exec_(QCursor.pos())
 
-    def _user_clicked_node(self, node):
+    def _user_clicked_node(self, node, event = None):
+
         if node is None:  # sea or something
             self.selected_nodes.clear()
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)

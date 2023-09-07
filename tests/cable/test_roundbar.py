@@ -231,3 +231,62 @@ def test_compare_bar_and_circle():
 
     assert_allclose(z_bar, z_circle, rtol=1e-6)
 
+def test_get_drawing_points_without_crashing():
+    s = Scene()
+
+    # code for Frame
+    s.new_frame(
+        name="Frame",
+        position=(-0.46, 1.039, 7.825),
+        rotation=(0, 0, 0),
+        fixed=(True, True, True, True, True, True),
+    )
+    
+    # code for Frame_1
+    s.new_frame(
+        name="Frame_1",
+        position=(0, 0, 0),
+        rotation=(0, 0, 0),
+        fixed=(True, True, True, True, True, True),
+    )
+    
+    # code for Point
+    s.new_point(name="Point", parent="Frame", position=(0, 0, 0))
+    
+    # code for Point_1
+    s.new_point(name="Point_1", parent="Frame_1", position=(0, -1, -4))
+    
+    # code for Point_2
+    s.new_point(name="Point_2", parent="Frame_1", position=(2, 0, 0))
+    
+    # code for Circle
+    s.new_circle(name="Circle", parent="Point", axis=(0, 1, 0), radius=1)
+    
+    # code for Circle_1
+    s.new_circle(name="Circle_1", parent="Point_1", axis=(0, 1, 0), radius=1)
+    
+    # code for RB
+    s.new_circle(name="RB", parent="Point_2", axis=(0, 1, 0), roundbar=True, radius=1)
+    
+    # code for sling_grommet/_grommet
+    c =s.new_cable(
+        name="sling_grommet/_grommet",
+        endA="Circle",
+        endB="Circle",
+        length=20.421,
+        mass_per_length=0.002038,
+        diameter=0.025,
+        EA=19938.641374783227,
+        sheaves=["Circle_1", "RB"],
+    )
+    s["sling_grommet/_grommet"].max_winding_angles = [999, 999, 999, 999]
+
+    # This model crashed in the GUI when rotating Frame_1 over ry
+    rys = [0, -10, -20, -30, -40, -50, -60, -70, -80, -90, -80 , -70, -60, -50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50, 60, 70 , 80, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0]
+
+    for ry in rys:
+        s["Frame_1"].ry = ry
+        print(ry)
+        c.get_points_and_tensions_for_visual()
+
+    assert True, "No crash"
