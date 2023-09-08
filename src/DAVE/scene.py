@@ -297,6 +297,7 @@ class Scene:
     def _save_coredump(self, filename=r"c:\data\test.txt"):
         with open(filename, "w") as f:
             f.write(self._vfc.to_string())
+        print('Saved coredump to "{}"'.format(filename))
 
     def _print(self, what):
         if self.verbose:
@@ -3855,7 +3856,7 @@ class Scene:
         return filename
 
     def print_node_tree(self, more=False):
-        self.sort_nodes_by_dependency()
+        self.sort_nodes_by_parent()
         to_be_printed = self._nodes.copy()
 
         if more:
@@ -3900,10 +3901,15 @@ class Scene:
                         spaces_plus = " |   " + spaces
                     print_deps(dep, spaces_plus)
 
-            to_be_printed.remove(node)
+            if node not in to_be_printed:
+                print('** node "{}" occured before'.format(node.name))
+            else:
+                to_be_printed.remove(node)
 
         while to_be_printed:
             node = to_be_printed[0]
+            # if node.name == "string_2/Shackle_1":
+            #     print("stop")
             print_deps(node, "")
 
     def run_code(self, code):

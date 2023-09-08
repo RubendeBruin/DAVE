@@ -1757,8 +1757,9 @@ class Cable(NodeCoreConnected):
             #         node2 = node2.parent
 
             if node1 == node2:
+                nodes_str = "\n-".join([node.name for node in nodes])
                 raise ValueError(
-                    f"It is not allowed to have the same node repeated - you have {node1.name} and {node2.name}"
+                    f"Error when setting connections of {self.name} to {nodes_str}\n\nIt is not allowed to have the same node repeated - you have {node1.name} and {node2.name}"
                 )
 
         # check for round-bar restrictions:
@@ -1824,8 +1825,6 @@ class Cable(NodeCoreConnected):
             self._vfNode.add_connection_sheave(
                 connection._vfNode, reversed, friction, np.deg2rad(max_winding)
             )
-
-        print(np.deg2rad(max_winding))
 
     def _update_pois(self):
         self._vfNode.clear_connections()
