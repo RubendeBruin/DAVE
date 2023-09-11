@@ -166,4 +166,4 @@ def test_solver_accepts_invalid_static_equilibrium():
 
     s.update()
 
-    assert s.verify_equilibrium()
+    assert s.verify_equilibrium()  # Make sure that we're at (an) equilibrium
