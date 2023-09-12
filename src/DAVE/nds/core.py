@@ -1639,16 +1639,6 @@ class Cable(NodeCoreConnected):
             node1 = nodes[i]
             node2 = nodes[i + 1]
 
-            # Taken care off in core
-            # # # if first or last node is a sheave, the this will be replaced by the poi of the sheave
-            # # Except if the fist and the last sheave are the same (loop)
-            #
-            # if nodes[0] != nodes[-1]:  # first node is not the same as last node
-            #     if i == 0 and isinstance(node1, Circle):
-            #         node1 = node1.parent
-            #     if i == n - 2 and isinstance(node2, Circle):
-            #         node2 = node2.parent
-
             if node1 == node2:
                 raise ValueError(
                     f"It is not allowed to have the same node repeated - you have {node1.name} and {node2.name}"

@@ -166,12 +166,13 @@ DAVE_GUI_WORKSPACE_BUTTONS = [
     ("Airy [beta]", "AIRY"),
 ]
 
-DAVE_GUI_PLUGINS_INIT=[]
-DAVE_GUI_PLUGINS_WORKSPACE=[]
-DAVE_GUI_PLUGINS_CONTEXT=[]
-DAVE_GUI_PLUGINS_EDITOR=[]
+DAVE_GUI_PLUGINS_INIT = []
+DAVE_GUI_PLUGINS_WORKSPACE = []
+DAVE_GUI_PLUGINS_CONTEXT = []
+DAVE_GUI_PLUGINS_EDITOR = []
 
 # ====================================================
+
 
 class UndoType(Enum):
     CLEAR_AND_RUN_CODE = 1
@@ -188,6 +189,7 @@ class SolverDialog(QDialog, Ui_Dialog):
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.setWindowIcon(QIcon(":/icons/cube.png"))
 
+
 class SolverDialog_threaded(QDialog, Ui_SolverDialogThreaded):
     def __init__(self, parent=None):
         super(SolverDialog_threaded, self).__init__()
@@ -197,6 +199,7 @@ class SolverDialog_threaded(QDialog, Ui_SolverDialogThreaded):
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.setWindowIcon(QIcon(":/icons/cube.png"))
 
+
 class SettingsDialog(QDialog, Ui_frmSettings):
     def __init__(self, scene, gui, parent=None):
         super(SettingsDialog, self).__init__()
@@ -205,11 +208,15 @@ class SettingsDialog(QDialog, Ui_frmSettings):
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.setWindowIcon(QIcon(":/icons/cube.png"))
 
-        paths_str = ['- ' + str(p) for p in scene.resources_paths if p not in gui.additional_user_resource_paths]
-        self.label_4.setText('\n'.join(paths_str))
+        paths_str = [
+            "- " + str(p)
+            for p in scene.resources_paths
+            if p not in gui.additional_user_resource_paths
+        ]
+        self.label_4.setText("\n".join(paths_str))
 
         paths_str = [str(p) for p in gui.additional_user_resource_paths]
-        self.plainTextEdit.setPlainText('\n'.join(paths_str))
+        self.plainTextEdit.setPlainText("\n".join(paths_str))
 
 
 class Gui:
@@ -223,8 +230,8 @@ class Gui:
         block=True,
         workspace=None,
         painters=None,
-        client_mode = False,
-        filename = None
+        client_mode=False,
+        filename=None,
     ):
         """
         Starts the Gui on scene "scene".
@@ -259,14 +266,12 @@ class Gui:
         self.plugins_editor = DAVE_GUI_PLUGINS_EDITOR
 
         if app is None:
-
             if QtWidgets.QApplication.instance() is not None:
                 self.app = QtWidgets.QApplication.instance()
             else:
                 self.app = QtWidgets.QApplication()
         else:
             self.app = app
-
 
         self.app.aboutToQuit.connect(self.onCloseApplication)
 
@@ -312,7 +317,6 @@ class Gui:
 
         self._animation_speed = 1.0
 
-
         # ================= Create globally available properties =======
         self.selected_nodes: [Node] = []
         """A list of selected nodes (if any)"""
@@ -320,7 +324,9 @@ class Gui:
         self.scene = scene
         """Reference to a scene"""
 
-        self._solver_mobility = vfc.DAVE_DEFAULT_SOLVER_MOBILITY # default mobility for the solver
+        self._solver_mobility = (
+            vfc.DAVE_DEFAULT_SOLVER_MOBILITY
+        )  # default mobility for the solver
         self._solver_do_solve_linear_first = vfc.DAVE_DEFAULT_SOLVER_DO_LINEAR_FIRST
 
         self.scene.gui_solve_func = self.solve_statics_using_gui_on_scene
@@ -334,7 +340,6 @@ class Gui:
         self.additional_user_resource_paths = []
         """User-defined additional resource paths, stored on user machine - settings dialog"""
 
-
         self._undo_log = []
         self._undo_index = 0
         """Undo log and history"""
@@ -342,7 +347,7 @@ class Gui:
         settings = QSettings("rdbr", "DAVE")
         paths_str = settings.value(f"additional_paths")
         if paths_str:
-            for p in paths_str.split(';'):
+            for p in paths_str.split(";"):
                 if p:
                     self.additional_user_resource_paths.append(Path(p))
                     self.scene.resources_paths.append(Path(p))
@@ -405,7 +410,8 @@ class Gui:
             # ------ viewport buttons ------
 
             # right
-            self.ui.btnWater.clicked.connect(self.toggle_show_global)
+            self.ui.btnWater.clicked.connect(self.toggle_show_sea)
+            self.ui.pbOrigin.clicked.connect(self.toggle_show_origin)
             self.ui.pbUC.clicked.connect(self.toggle_show_UC)
             self.ui.btnBlender.clicked.connect(self.to_blender)
             self.ui.pbCopyViewCode.clicked.connect(self.copy_screenshot_code)
@@ -454,7 +460,9 @@ class Gui:
                 self.menu_export_orcaflex_package
             )
             self.ui.actionBlender.triggered.connect(self.to_blender)
-            self.ui.actionSelf_contained_DAVE_package.triggered.connect(self.menu_export_DAVE_package)
+            self.ui.actionSelf_contained_DAVE_package.triggered.connect(
+                self.menu_export_DAVE_package
+            )
 
             # --- recent files ---
 
@@ -473,9 +481,8 @@ class Gui:
             self.ui.frame3d.dragEnterEvent = self.drag_enter
 
             # -- visuals --
-            self.ui.actionShow_water_plane.triggered.connect(
-                self.toggle_show_global_from_menu
-            )
+            self.ui.actionShow_origin.triggered.connect(self.toggle_show_origin)
+            self.ui.actionShow_water_plane.triggered.connect(self.toggle_show_sea)
             self.ui.actionShow_force_applying_element.triggered.connect(
                 self.toggle_show_force_applying_elements
             )
@@ -495,7 +502,6 @@ class Gui:
                     guiEventType.VIEWER_SETTINGS_UPDATE,
                 )
                 self.visual.refresh_embeded_view()
-
 
             self.ui.sliderLabelSize.connectvalueChanged(set_label_size)
             self.ui.menuView.addAction(self.ui.sliderLabelSize)
@@ -602,19 +608,29 @@ class Gui:
             self.ui.menuView.addAction(self.ui.sliderCoGSize)
 
             self.ui.action2D_mode.triggered.connect(self.toggle_2D)
-            self.ui.actionX.triggered.connect(lambda: self.camera_set_direction((1, 0, 0)))
+            self.ui.actionX.triggered.connect(
+                lambda: self.camera_set_direction((1, 0, 0))
+            )
             self.ui.action_x.triggered.connect(
                 lambda: self.camera_set_direction((-1, 0, 0))
             )
-            self.ui.actionY.triggered.connect(lambda: self.camera_set_direction((0, 1, 0)))
+            self.ui.actionY.triggered.connect(
+                lambda: self.camera_set_direction((0, 1, 0))
+            )
             self.ui.action_Y.triggered.connect(
                 lambda: self.camera_set_direction((0, -1, 0))
             )
-            self.ui.actionZ.triggered.connect(lambda: self.camera_set_direction((0, 0, -1)))
-            self.ui.action_Z.triggered.connect(lambda: self.camera_set_direction((0, 0, 1)))
+            self.ui.actionZ.triggered.connect(
+                lambda: self.camera_set_direction((0, 0, -1))
+            )
+            self.ui.action_Z.triggered.connect(
+                lambda: self.camera_set_direction((0, 0, 1))
+            )
             self.ui.actionCamera_reset.triggered.connect(self.camera_reset)
             #
-            self.ui.actionSet_input_focus_to_viewport.triggered.connect(self.focus_on_viewport)
+            self.ui.actionSet_input_focus_to_viewport.triggered.connect(
+                self.focus_on_viewport
+            )
 
             self.ui.pbTop.clicked.connect(self.visual.Style.SetViewZ)
             self.ui.pbFront.clicked.connect(self.visual.Style.SetViewY)
@@ -626,8 +642,9 @@ class Gui:
             self.ui.actionPython_console_2.triggered.connect(self.show_python_console)
 
             # dof editor
-            self.ui.actionDegrees_of_Freedom_editor.triggered.connect(lambda: self.show_guiWidget("DOF Editor"))
-
+            self.ui.actionDegrees_of_Freedom_editor.triggered.connect(
+                lambda: self.show_guiWidget("DOF Editor")
+            )
 
             self.ui.actionVersion.setText(f"Version {DAVE.__version__}")
             self.ui.actionOnline_help.triggered.connect(
@@ -673,11 +690,13 @@ class Gui:
                 workspace_id = button[1]
 
                 btn = QtWidgets.QPushButton()
-                if i<9:
-                    btn.setText(f'&{i+1} {name}')
+                if i < 9:
+                    btn.setText(f"&{i+1} {name}")
                 else:
-                    btn.setText(f'{i + 1} {name}')
-                btn.pressed.connect(lambda *args, wsid=workspace_id : self.activate_workspace(wsid))
+                    btn.setText(f"{i + 1} {name}")
+                btn.pressed.connect(
+                    lambda *args, wsid=workspace_id: self.activate_workspace(wsid)
+                )
 
                 # btn.setFlat(True)
                 btn.setCheckable(True)
@@ -712,8 +731,6 @@ class Gui:
 
             # ========== undo log =======
 
-
-
             self.ui.actionUndo.triggered.connect(self.undo)
             self.ui.actionRedo.triggered.connect(self.redo)
 
@@ -724,17 +741,15 @@ class Gui:
             self.ui.frameAni.setVisible(False)
             self.ui.dockWidget_2.setVisible(False)
 
-            self.scene.new_component('all', path = 'res: client_scene.dave')
+            self.scene.new_component("all", path="res: client_scene.dave")
 
             self.show_guiWidget("Watches")
             self._active_workspace = "Client"
 
-
-            self.guiSelectNode('all')
+            self.guiSelectNode("all")
             self.show_guiWidget("Properties")
 
             self.guiEmitEvent(guiEventType.FULL_UPDATE)
-
 
         # ======================== Finalize ========================
         self.MainWindow.show()
@@ -765,7 +780,6 @@ class Gui:
         else:
             self.visual.vtkWidget.setFocus()
 
-
     def show_python_console(self, *args):
         self.ui.dockWidget_2.show()
 
@@ -777,16 +791,17 @@ class Gui:
         dlg = SettingsDialog(scene=self.scene, gui=self)
         result = dlg.exec_()
         if result > 0:
-
             text = dlg.plainTextEdit.toPlainText()
-            paths = text.split('\n')
+            paths = text.split("\n")
 
             self.additional_user_resource_paths.clear()
             for p in paths:
                 if p:
                     self.additional_user_resource_paths.append(Path(p))
                 settings = QSettings("rdbr", "DAVE")
-                paths_str = ';'.join([str(p) for p in self.additional_user_resource_paths])
+                paths_str = ";".join(
+                    [str(p) for p in self.additional_user_resource_paths]
+                )
                 settings.setValue(f"additional_paths", paths_str)
 
         self.update_resources_paths()
@@ -801,7 +816,6 @@ class Gui:
             if p not in DAVE.settings.RESOURCE_PATH:
                 DAVE.settings.RESOURCE_PATH.append(p)
                 self.scene.resources_paths.append(p)
-
 
     def labels_show_hide(self):
         if self.visual.settings.label_scale > 0:
@@ -832,7 +846,6 @@ class Gui:
 
         need_refresh = False
         for name in names:
-
             # does the node still exist?
             if self.scene.node_exists(name):
                 need_refresh = True
@@ -848,7 +861,6 @@ class Gui:
         """Updates the paintset of the viewport to the value of cbPainterSelect"""
 
         with DelayRenderingTillDone(self.visual):
-
             # Clear selection to make sure that the paint is updated for all actors
             selected_node_names = [node.name for node in self.selected_nodes]
             self.select_none()
@@ -883,8 +895,7 @@ class Gui:
                 )
 
     def copy_screenshot_code(self):
-
-        sea = self.visual.settings.show_global
+        sea = self.visual.settings.show_sea
         camera_pos = self.visual.screen.camera.GetPosition()
         lookat = self.visual.screen.camera.GetFocalPoint()
 
@@ -962,7 +973,6 @@ class Gui:
                 self.refresh_3dview()
 
     def savepoint_restore(self):
-
         if self.scene._savepoint is not None:
             self.animation_terminate(keep_current_dofs=True)
 
@@ -974,9 +984,7 @@ class Gui:
         for g in self.guiWidgets.values():
             g.close()
 
-
     def activate_workspace(self, name):
-
         self._active_workspace = name
 
         self.animation_terminate()
@@ -1016,7 +1024,6 @@ class Gui:
                 self.labels_show_hide()
             self.activate_paintset("Ballast")
 
-
         if name == "ENVIRONMENT":
             self.show_guiWidget("Environment", WidgetEnvironment)
 
@@ -1052,7 +1059,6 @@ class Gui:
         self.visual.update_visibility()
 
     def import_browser(self):
-
         G = DAVE.gui.standard_assets.Gui()
         r = G.showModal()
 
@@ -1135,7 +1141,6 @@ class Gui:
         return self._timerid is not None
 
     def timerEvent(self, a, b):
-
         if self._timerid is None:  # timer is going to be destroyed
             return
 
@@ -1167,7 +1172,6 @@ class Gui:
         self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
 
     def animation_terminate(self, keep_current_dofs=False):
-
         # if not self.animation_running():
         #    return # nothing to destroy
         if not self._animation_available:
@@ -1242,7 +1246,6 @@ class Gui:
             self._animation_paused = False
 
         if not self._animation_paused:
-
             iren = self.visual.renwin.GetInteractor()
             if self._timerid is None:
                 self._timerid = iren.CreateRepeatingTimer(
@@ -1267,7 +1270,6 @@ class Gui:
         self._animation_paused = True
 
     def animation_continue(self):
-
         if not self._animation_paused:
             return
 
@@ -1292,7 +1294,6 @@ class Gui:
             self.visual.quick_updates_only = remember
 
     def animation_change_time(self):
-
         # only works if animation is paused
         if not self._animation_paused:
             return
@@ -1321,7 +1322,9 @@ class Gui:
 
         if self._undo_index == len(self._undo_log) - 1:
             # Make an undo point for the current state
-            self._undo_log.append((UndoType.CLEAR_AND_RUN_CODE, self.scene.give_python_code()))
+            self._undo_log.append(
+                (UndoType.CLEAR_AND_RUN_CODE, self.scene.give_python_code())
+            )
 
         self.activate_undo_index(self._undo_index)
 
@@ -1337,13 +1340,11 @@ class Gui:
         self.activate_undo_index(self._undo_index)
 
     def activate_undo_index(self, index):
-
         print(f"Activating undo index {index} of {len(self._undo_log)-1}")
 
         undo_type, undo_contents = self._undo_log[index]  # unpack
 
         if undo_type == UndoType.CLEAR_AND_RUN_CODE or undo_type == UndoType.RUN_CODE:
-
             # capture selected node names before deleting the scene
             selected_names = [node.name for node in self.selected_nodes]
 
@@ -1363,25 +1364,28 @@ class Gui:
             self.selected_nodes.extend(nodes)
 
             self.guiEmitEvent(guiEventType.FULL_UPDATE)
-            self.give_feedback(f"Activating undo index {index} of {len(self._undo_log)-1}")
+            self.give_feedback(
+                f"Activating undo index {index} of {len(self._undo_log)-1}"
+            )
 
         elif undo_type == UndoType.SET_DOFS:
             if undo_contents is not None:
-                self.scene._vfc.set_dofs(undo_contents) # UNDO SOLVE STATICS"
+                self.scene._vfc.set_dofs(undo_contents)  # UNDO SOLVE STATICS"
                 self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
-                self.give_feedback(f"Activating undo index {index} of {len(self._undo_log)} - Solve-statics reverted")
+                self.give_feedback(
+                    f"Activating undo index {index} of {len(self._undo_log)} - Solve-statics reverted"
+                )
 
-
-    def add_undo_point(self, undo_type = UndoType.CLEAR_AND_RUN_CODE, code = ''):
-
+    def add_undo_point(self, undo_type=UndoType.CLEAR_AND_RUN_CODE, code=""):
         logging.info(f"Creating undo point with type {undo_type}")
 
         if undo_type == UndoType.CLEAR_AND_RUN_CODE:
-
             """Adds the current model to the undo-list"""
             if len(self._undo_log) > self._undo_index:
                 self._undo_log = self._undo_log[: self._undo_index]
-            self._undo_log.append((UndoType.CLEAR_AND_RUN_CODE, self.scene.give_python_code()))
+            self._undo_log.append(
+                (UndoType.CLEAR_AND_RUN_CODE, self.scene.give_python_code())
+            )
 
         elif undo_type == UndoType.RUN_CODE:
             self._undo_log.append((UndoType.RUN_CODE, code))
@@ -1390,7 +1394,7 @@ class Gui:
             self._undo_log.append((UndoType.SET_DOFS, self.scene._vfc.get_dofs()))
 
         else:
-            raise Exception('Unsupported undo type')
+            raise Exception("Unsupported undo type")
 
         self._undo_index = len(self._undo_log)
         logging.info(f"current log index = number of points = {self._undo_index}")
@@ -1413,14 +1417,15 @@ class Gui:
         )
         print(self.give_clean_history())
 
-
     def measured_in_viewport(self, distance):
-        self.give_feedback(f'View-plane distance = {distance:.3f}m\n (does not measure depth)')
+        self.give_feedback(
+            f"View-plane distance = {distance:.3f}m\n (does not measure depth)"
+        )
 
     def show_exception(self, e):
         self.give_feedback(e, style=1)
 
-    def give_feedback(self, what, style = 0):
+    def give_feedback(self, what, style=0):
         self.ui.teFeedback.setText(str(what))
         if style == 0:
             self.ui.teFeedback.setStyleSheet("background-color: white;")
@@ -1429,19 +1434,23 @@ class Gui:
 
         self.statusbar.showMessage(str(what))
 
-        if not self.ui.dockWidget_2.isVisible() and style==1:
-
-            tool_long = len(what) > 1000 or len(what.split('\n')) > 30
+        if not self.ui.dockWidget_2.isVisible() and style == 1:
+            tool_long = len(what) > 1000 or len(what.split("\n")) > 30
 
             short = what[-1000:]
-            short = '\n'.join(short.split('\n')[-30:])
+            short = "\n".join(short.split("\n")[-30:])
 
             if tool_long:
                 print(what)
-                QMessageBox.warning(self.ui.widget, "error", short + '\n\n !!! first part omitted,\n see (python) console for full error message', QMessageBox.Ok)
+                QMessageBox.warning(
+                    self.ui.widget,
+                    "error",
+                    short
+                    + "\n\n !!! first part omitted,\n see (python) console for full error message",
+                    QMessageBox.Ok,
+                )
             else:
                 QMessageBox.warning(self.ui.widget, "error", what, QMessageBox.Ok)
-
 
     def run_code(self, code, event, store_undo=True, sender=None):
         """Runs the provided code
@@ -1455,7 +1464,7 @@ class Gui:
 
         """
         if isinstance(code, (list, tuple)):
-            code = '\n'.join(code)
+            code = "\n".join(code)
 
         start_time = datetime.datetime.now()
         self._model_has_changed = True
@@ -1481,9 +1490,7 @@ class Gui:
         select_node_name_edit_field = False
 
         with capture_output() as c:
-
             try:
-
                 glob_vars = globals()
                 glob_vars.update(DAVE.settings.DAVE_ADDITIONAL_RUNTIME_MODULES)
                 glob_vars["s"] = self.scene
@@ -1517,7 +1524,6 @@ class Gui:
                 emitted = False
                 for node in self.scene._nodes:
                     if node not in before:
-
                         logging.info(f"New node detected: {node.name}")
 
                         self.selected_nodes.clear()
@@ -1536,10 +1542,11 @@ class Gui:
                     self.guiEmitEvent(event, sender=sender)
 
                 if to_be_removed and not emitted:
-                    self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED, sender=sender)
+                    self.guiEmitEvent(
+                        guiEventType.SELECTED_NODE_MODIFIED, sender=sender
+                    )
 
             except Exception as E:
-
                 self.ui.teCode.clear()
                 self.ui.teCode.append(code)
 
@@ -1548,7 +1555,6 @@ class Gui:
 
                 message = c.stdout + "\n" + str(E) + "\n\nWhen running: \n\n" + code
                 self.show_exception(message)
-
 
             self.ui.pbExecute.setStyleSheet("")
             self.ui.pbExecute.update()
@@ -1562,17 +1568,15 @@ class Gui:
 
     def place_input_focus_on_name_of_node(self):
         """Places the input focus on the name of the node such that the user can directly change it if needed"""
-        if 'Properties' in self.guiWidgets:
-            props = self.guiWidgets['Properties']
+        if "Properties" in self.guiWidgets:
+            props = self.guiWidgets["Properties"]
             props._node_name_editor.ui.tbName.setFocus()
             props._node_name_editor.ui.tbName.selectAll()
-
 
     def stop_solving(self):
         self._terminate = True
 
     def solve_statics(self, timeout_s=0.5, called_by_user=True):
-
         self.scene.solve_activity_desc = "Solving static equilibrium"
 
         self.solve_statics_using_gui_on_scene(
@@ -1581,7 +1585,9 @@ class Gui:
             called_by_user=called_by_user,
         )
 
-        self.give_feedback(f"Solved statics - remaining error = {self.scene._vfc.Emaxabs} kN or kNm")
+        self.give_feedback(
+            f"Solved statics - remaining error = {self.scene._vfc.Emaxabs} kN or kNm"
+        )
 
     def solve_statics_using_gui_on_scene(
         self, scene_to_solve, timeout_s=0.5, called_by_user=True
@@ -1605,17 +1611,18 @@ class Gui:
             return True
 
         self._dialog = None
-        result = False # default
+        result = False  # default
 
         if scene_to_solve.USE_NEW_SOLVER:
-
             start_time = datetime.datetime.now()
 
             D0 = self.scene._vfc.get_dofs()
 
             self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
             self.__BackgroundSolver.mobility = self._solver_mobility
-            self.__BackgroundSolver.do_solve_linear_first = self._solver_do_solve_linear_first
+            self.__BackgroundSolver.do_solve_linear_first = (
+                self._solver_do_solve_linear_first
+            )
             self.__BackgroundSolver.Start()
 
             dialog = SolverDialog_threaded()
@@ -1636,7 +1643,6 @@ class Gui:
                 self.visual.refresh_embeded_view()
                 result = False
 
-
             dialog.pbTerminate.clicked.connect(terminate)
 
             def reset(*args):
@@ -1644,7 +1650,9 @@ class Gui:
                 self.__BackgroundSolver.Stop()
                 self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
                 self.__BackgroundSolver.mobility = self._solver_mobility
-                self.__BackgroundSolver.do_solve_linear_first = self._solver_do_solve_linear_first
+                self.__BackgroundSolver.do_solve_linear_first = (
+                    self._solver_do_solve_linear_first
+                )
                 self.__BackgroundSolver.Start()
 
             dialog.pbReset.clicked.connect(reset)
@@ -1670,24 +1678,20 @@ class Gui:
             dialog.cbLinearFirst.setChecked(self._solver_do_solve_linear_first)
             dialog.cbLinearFirst.toggled.connect(change_do_linear_first)
 
-
-
-
             self.MainWindow.setEnabled(False)
             dialog_open = False
 
-
             while self.__BackgroundSolver.Running:
-                time_diff = (datetime.datetime.now() - start_time)
+                time_diff = datetime.datetime.now() - start_time
                 secs = time_diff.total_seconds()
 
                 dofs = self.__BackgroundSolver.DOFs
                 if dofs:
                     dialog.pbAccept.setEnabled(True)
 
-                    text = ''
+                    text = ""
                     if self.__BackgroundSolver.RunningLinear:
-                        text = 'Working on linear degrees of freedom only\n'
+                        text = "Working on linear degrees of freedom only\n"
                     text += f"Error norm = {self.__BackgroundSolver.Enorm:.6e}\nError max-abs {self.__BackgroundSolver.Emaxabs:.6e}\nMaximum error at {self.__BackgroundSolver.Emaxabs_where}"
                     dialog.lbInfo.setText(text)
 
@@ -1696,7 +1700,7 @@ class Gui:
                         self.visual.position_visuals()
                         self.visual.refresh_embeded_view()
 
-                dialog.setWindowOpacity(min(secs-0.1,1))  # fade in the window slowly
+                dialog.setWindowOpacity(min(secs - 0.1, 1))  # fade in the window slowly
 
                 if secs > 0.1:  # and open only after 0.1 seconds
                     if not dialog_open:
@@ -1709,7 +1713,9 @@ class Gui:
                 dofs = self.__BackgroundSolver.DOFs
                 self.scene._vfc.set_dofs(dofs)
                 self.scene.update()
-                self.give_feedback(f"Converged with Error norm = {self.__BackgroundSolver.Enorm} | max-abs {self.__BackgroundSolver.Emaxabs} in {self.__BackgroundSolver.Emaxabs_where}")
+                self.give_feedback(
+                    f"Converged with Error norm = {self.__BackgroundSolver.Enorm} | max-abs {self.__BackgroundSolver.Emaxabs} in {self.__BackgroundSolver.Emaxabs_where}"
+                )
                 result = True
 
             if dialog_open:
@@ -1718,14 +1724,12 @@ class Gui:
             self.MainWindow.setEnabled(True)
 
             # Animate if little time has passed
-            time_diff = (datetime.datetime.now() - start_time)
+            time_diff = datetime.datetime.now() - start_time
             secs = time_diff.total_seconds()
             if secs < 0.5:
                 if DAVE.settings.GUI_DO_ANIMATE and called_by_user:
                     new_dofs = scene_to_solve._vfc.get_dofs()
                     self.animate_change(D0, new_dofs, 10)
-
-
 
         else:
             # define the terminate control
@@ -1738,7 +1742,6 @@ class Gui:
             self._feedbackcounter = 0
 
             def feedback(message):
-
                 self._feedbackcounter += 1  # skip the first
                 if self._feedbackcounter < 2:
                     return
@@ -1763,7 +1766,6 @@ class Gui:
                 do_terminate_func=should_we_stop,
                 timeout_s=timeout_s,
             )
-
 
             # close the dialog.
             # if this was a short solve,
@@ -1796,7 +1798,6 @@ class Gui:
         new_dof = np.array(new_dof)
 
         for i in range(n_steps + 1):
-
             factor = i / n_steps
             old = 0.5 + 0.5 * np.cos(3.14159 * factor)
 
@@ -1806,7 +1807,6 @@ class Gui:
         self.animation_start(t, dofs, is_loop=False, show_animation_bar=False)
 
     def to_blender(self):
-
         from DAVE.io.blender import create_blend_and_open
 
         if self.animation_running():
@@ -1825,25 +1825,26 @@ class Gui:
         if getattr(self, "blender_dialog", None) is None:
             self.blender_dialog = ExportToBlenderDialog()
 
-        self.blender_dialog.show(self.scene, animation_dofs=dofs, wavefield=self.visual._wavefield)
-
-
-
-    def toggle_show_global(self):
-        # TODO: fix
-        self.ui.actionShow_water_plane.setChecked(
-            not self.ui.actionShow_water_plane.isChecked()
+        self.blender_dialog.show(
+            self.scene, animation_dofs=dofs, wavefield=self.visual._wavefield
         )
-        self.toggle_show_global_from_menu()
+
+    def toggle_show_sea(self):
+        self.visual.settings.show_sea = not self.visual.settings.show_sea
+        self.ui.actionShow_water_plane.setChecked(self.visual.settings.show_sea)
+        self.ui.btnWater.setChecked(self.visual.settings.show_sea)
+        self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
+
+    def toggle_show_origin(self):
+        self.visual.settings.show_origin = not self.visual.settings.show_origin
+        self.ui.actionShow_origin.setChecked(self.visual.settings.show_origin)
+        self.ui.pbOrigin.setChecked(self.visual.settings.show_origin)
+        self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def toggle_show_UC(self):
         self.visual.settings.paint_uc = not self.visual.settings.paint_uc
 
         self.ui.pbUC.setChecked(self.visual.settings.paint_uc)
-        self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
-
-    def toggle_show_global_from_menu(self):
-        self.visual.settings.show_global = self.ui.actionShow_water_plane.isChecked()
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def toggle_show_force_applying_elements(self):
@@ -1855,7 +1856,7 @@ class Gui:
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def camera_reset(self):
-        self.visual.zoom_all() # this function takes care of ignoring the sea-plane
+        self.visual.zoom_all()  # this function takes care of ignoring the sea-plane
         # self.visual.Style.ZoomFit()
         # self.visual.refresh_embeded_view()
 
@@ -1866,13 +1867,11 @@ class Gui:
             self.visual.DisableSSAO()
         self.visual.refresh_embeded_view()
 
-
     def clear(self):
         self.run_code("s.clear()", guiEventType.FULL_UPDATE)
         self._model_has_changed = False
         self.modelfilename = None
-        self.MainWindow.setWindowTitle(f'DAVE [unnamed scene]')
-
+        self.MainWindow.setWindowTitle(f"DAVE [unnamed scene]")
 
     def open_file(self, filename):
         current_directory = Path(filename).parent
@@ -1883,18 +1882,21 @@ class Gui:
         except:
             self._model_has_changed = False
             self.modelfilename = None
-            self.MainWindow.setWindowTitle(f'DAVE - Error during load ; partially loaded model')
+            self.MainWindow.setWindowTitle(
+                f"DAVE - Error during load ; partially loaded model"
+            )
             return
 
         self.modelfilename = filename
 
-        name_and_ext =  str(Path(filename).name)
+        name_and_ext = str(Path(filename).name)
 
         self._model_has_changed = False
-        self.MainWindow.setWindowTitle(f'DAVE [{str(self.scene.current_directory)}] - {name_and_ext} ')
+        self.MainWindow.setWindowTitle(
+            f"DAVE [{str(self.scene.current_directory)}] - {name_and_ext} "
+        )
         self.add_to_recent_file_menu(filename)
         self.visual.zoom_all()
-
 
     def _get_filename_using_dialog(self):
         folder = self.scene.current_directory
@@ -1918,7 +1920,6 @@ class Gui:
             self.visual.update_visibility()
 
     def menu_save_model(self):
-
         if self.modelfilename is None:
             self.menu_save_model_as()
             return
@@ -1929,7 +1930,6 @@ class Gui:
         self.give_feedback(f"File saved: [{self.modelfilename}]")
 
     def menu_save_model_as(self):
-
         if self.modelfilename is not None:
             dir = str(Path(self.modelfilename).parent)
         else:
@@ -1946,7 +1946,7 @@ class Gui:
 
             self._model_has_changed = False
             self.modelfilename = filename
-            self.MainWindow.setWindowTitle(f'DAVE [{self.modelfilename}]')
+            self.MainWindow.setWindowTitle(f"DAVE [{self.modelfilename}]")
 
             self.add_to_recent_file_menu(filename)
 
@@ -1954,10 +1954,13 @@ class Gui:
         if not self._model_has_changed:
             return True
 
-        ret = QMessageBox.question(self.MainWindow, "Message",
-                "<h4><p>The scene has unsaved changes.</p>\n" 
-                "<p>Do you want to save changes?</p></h4>",
-                QMessageBox.Yes | QMessageBox.Discard | QMessageBox.Cancel)
+        ret = QMessageBox.question(
+            self.MainWindow,
+            "Message",
+            "<h4><p>The scene has unsaved changes.</p>\n"
+            "<p>Do you want to save changes?</p></h4>",
+            QMessageBox.Yes | QMessageBox.Discard | QMessageBox.Cancel,
+        )
 
         if ret == QMessageBox.Yes:
             if self.modelfilename is None:
@@ -2009,7 +2012,6 @@ class Gui:
 
         f = []
         for s in self._codelog:
-
             # filter repeated assignments to same target
             if s.split("=")[0] == prev_line.split("=")[0]:
                 prev_line = s
@@ -2029,12 +2031,10 @@ class Gui:
             directory=self.scene.resources_paths[0],
         )
         if filename:
-
             prev_line = ""
 
             f = open(filename, "w+")
             for s in self._codelog:
-
                 # filter repeated assignments to same target
                 if s.split("=")[0] == prev_line.split("=")[0]:
                     prev_line = s
@@ -2081,7 +2081,6 @@ class Gui:
         menu = QtWidgets.QMenu()
 
         if node_name is not None:
-
             node = self.scene[node_name]
 
             if node._manager is None:
@@ -2094,7 +2093,12 @@ class Gui:
                     )  # people often close this one
 
                 menu.addAction("Edit {}".format(node_name), edit)
-                menu.addAction("Derived Properties", lambda *args: self.show_guiWidget("Derived Properties", WidgetDerivedProperties))
+                menu.addAction(
+                    "Derived Properties",
+                    lambda *args: self.show_guiWidget(
+                        "Derived Properties", WidgetDerivedProperties
+                    ),
+                )
 
                 showhide = menu.addAction("Visible")
                 showhide.setCheckable(True)
@@ -2156,17 +2160,40 @@ class Gui:
                         menu.addAction("Duplicate", duplicate_branch)
 
                 if isinstance(node, Cable):
-                    menu.addAction("Convert Cable --> Sling", lambda *args: self.run_code(f"s.to_sling(s['{node.name}'])", guiEventType.MODEL_STRUCTURE_CHANGED))
+                    menu.addAction(
+                        "Convert Cable --> Sling",
+                        lambda *args: self.run_code(
+                            f"s.to_sling(s['{node.name}'])",
+                            guiEventType.MODEL_STRUCTURE_CHANGED,
+                        ),
+                    )
 
                 if isinstance(node, Sling):
-                    menu.addAction("Convert Sling --> Cable", lambda *args: self.run_code(f"s.to_cable(s['{node.name}'])", guiEventType.MODEL_STRUCTURE_CHANGED))
+                    menu.addAction(
+                        "Convert Sling --> Cable",
+                        lambda *args: self.run_code(
+                            f"s.to_cable(s['{node.name}'])",
+                            guiEventType.MODEL_STRUCTURE_CHANGED,
+                        ),
+                    )
 
                 if type(node) == RigidBody:
-                    menu.addAction("Downgrade Body --> Frame", lambda *args: self.run_code(f"s.to_frame(s['{node.name}'])", guiEventType.MODEL_STRUCTURE_CHANGED))
+                    menu.addAction(
+                        "Downgrade Body --> Frame",
+                        lambda *args: self.run_code(
+                            f"s.to_frame(s['{node.name}'])",
+                            guiEventType.MODEL_STRUCTURE_CHANGED,
+                        ),
+                    )
 
                 if type(node) == Frame:
-                    menu.addAction("Upgrade Frame --> Body", lambda *args: self.run_code(f"s.to_rigidbody(s['{node.name}'])", guiEventType.MODEL_STRUCTURE_CHANGED))
-
+                    menu.addAction(
+                        "Upgrade Frame --> Body",
+                        lambda *args: self.run_code(
+                            f"s.to_rigidbody(s['{node.name}'])",
+                            guiEventType.MODEL_STRUCTURE_CHANGED,
+                        ),
+                    )
 
                 menu.addAction("Duplicate node", duplicate)
 
@@ -2302,7 +2329,6 @@ class Gui:
     # ================= viewer code ===================
 
     def view3d_select_element(self, props):
-
         # info is a list of props
         # at least a single prop is present
         #
@@ -2312,8 +2338,10 @@ class Gui:
             return
 
         nodes = [self.visual.node_from_vtk_actor(prop) for prop in props]
-        nodes = [node for node in nodes if node is not None]  # remove nones (not all actors have a associated node, for example the sea has none)
-        nodes = list(set(nodes)) # make unique
+        nodes = [
+            node for node in nodes if node is not None
+        ]  # remove nones (not all actors have a associated node, for example the sea has none)
+        nodes = list(set(nodes))  # make unique
 
         # find all managers (recursively)
         added = True
@@ -2331,12 +2359,11 @@ class Gui:
         while added:
             added = False
             for node in tuple(nodes):
-                parent = getattr(node,'parent',None)
+                parent = getattr(node, "parent", None)
                 if parent:
                     if parent not in nodes:
                         nodes.append(parent)
                         added = True
-
 
         # We now have a list of all nodes that the user may want to select.
         # If we have a length 1 then it is easy
@@ -2349,37 +2376,40 @@ class Gui:
         # order in some logical way
         # unmanaged nodes go first
 
-        i=0
+        i = 0
         for _ in range(len(nodes)):
             if nodes[i].manager is not None:
                 nodes.append(nodes.pop(i))
             else:
-                i+=1
+                i += 1
 
         menu = QtWidgets.QMenu()
 
         for node in nodes:
-
             if node.manager is None:
-                text = f'{node.name}\t[{node.class_name}]'
+                text = f"{node.name}\t[{node.class_name}]"
             else:
-                text = f'{node.name}\t[{node.class_name}]\t managed by {node.manager.name}'
+                text = (
+                    f"{node.name}\t[{node.class_name}]\t managed by {node.manager.name}"
+                )
 
-            action = menu.addAction(text, lambda n = node, *args : self._user_clicked_node(n))
+            action = menu.addAction(
+                text, lambda n=node, *args: self._user_clicked_node(n)
+            )
 
             if node.manager is None:
                 font = action.font()
                 font.setBold(True)
                 action.setFont(font)
             else:
-                if getattr(node,'_editor_widget_types_when_managed', None) is not None:  # for partially managed nodes
+                if (
+                    getattr(node, "_editor_widget_types_when_managed", None) is not None
+                ):  # for partially managed nodes
                     font = action.font()
                     font.setBold(True)
                     action.setFont(font)
 
         menu.exec_(QCursor.pos())
-
-
 
         # old code
         #
@@ -2459,7 +2489,9 @@ class Gui:
 
         for node in self.selected_nodes:
             if isinstance(node, Manager):
-                visually_selected_nodes.extend(self.scene.nodes_managed_by(node, recursive=True))
+                visually_selected_nodes.extend(
+                    self.scene.nodes_managed_by(node, recursive=True)
+                )
 
         # loop over visuals, and set _is_selected or _is_sub_selected based on the referenced node
 
@@ -2490,11 +2522,9 @@ class Gui:
     # ================= guiWidget codes
 
     def guiEmitEvent(self, event, sender=None):
-
         with DelayRenderingTillDone(
             self.visual
         ):  # temporary freezes rendering and calls update afterwards
-
             for widget in self.guiWidgets.values():
                 if not (widget is sender):
                     if widget.isVisible():
@@ -2577,12 +2607,12 @@ class Gui:
             w.move_away_from_cursor()
 
     def show_guiWidget(self, name, widgetClass=None):
-
         if widgetClass is None:
-
             if name not in DAVE_GUI_DOCKS:
                 print(DAVE_GUI_DOCKS.keys())
-                raise ValueError(f'Can not activate dock with name {name}, available names are {DAVE_GUI_DOCKS.keys()}')
+                raise ValueError(
+                    f"Can not activate dock with name {name}, available names are {DAVE_GUI_DOCKS.keys()}"
+                )
 
             widgetClass = DAVE_GUI_DOCKS[
                 name
@@ -2617,8 +2647,6 @@ class Gui:
         d._active = True
         d.guiEvent(guiEventType.FULL_UPDATE)
 
-
-
     # =============================
 
     def refresh_3dview(self):
@@ -2634,7 +2662,10 @@ class Gui:
 
         # only works on one node
         if len(self.selected_nodes) != 1:
-            self.give_feedback(f"Can not start drag - number of selected nodes should be exactly 1 but is {len(self.selected_nodes)}", style=1)
+            self.give_feedback(
+                f"Can not start drag - number of selected nodes should be exactly 1 but is {len(self.selected_nodes)}",
+                style=1,
+            )
             return
 
         node = self.selected_nodes[0]
@@ -2648,7 +2679,7 @@ class Gui:
                 self.visual.initialize_node_drag(nodes)
                 break
 
-            parent = getattr(node, 'parent', None)
+            parent = getattr(node, "parent", None)
 
             if parent is None:
                 break
@@ -2656,7 +2687,7 @@ class Gui:
             node = node.parent
             nodes.append(node)
 
-    def node_dragged(self, info : DragInfo):  # callback from self.visual.Style
+    def node_dragged(self, info: DragInfo):  # callback from self.visual.Style
         """Apply the translation of the dragged node"""
 
         node = self._dragged_node
@@ -2664,7 +2695,7 @@ class Gui:
         new_position = old_position + info.delta
 
         code = f"s['{node.name}'].global_position = ({new_position[0]:.3f},{new_position[1]:.3f},{new_position[2]:.3f})"
-        self.run_code(code,guiEventType.MODEL_STATE_CHANGED, store_undo=True)
+        self.run_code(code, guiEventType.MODEL_STATE_CHANGED, store_undo=True)
 
 
 # ======================================

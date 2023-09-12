@@ -42,7 +42,7 @@ _YELLOW_DARK = [128, 108, 0]
 _PURPLE = [87, 0, 127]
 _WHITE = [255, 255, 255]
 _BLUE = [12, 106, 146]
-_BLUE_GREEN = [6, (127+106)/2, (146+14) / 2 ]# _BLUE + _GREEN / 2
+_BLUE_GREEN = [6, (127 + 106) / 2, (146 + 14) / 2]  # _BLUE + _GREEN / 2
 _BLUE_LIGHT = [203, 224, 239]
 _BLUE_DARK = [57, 76, 90]
 _PINK = [247, 17, 228]
@@ -85,8 +85,8 @@ OUTLINE_WIDTH = 1.5
 COLOR_BG2 = rgb(_WHITE)
 COLOR_BG1 = rgb(_WHITE)
 
-COLOR_BG1_GUI = rgb((247,247,247))
-COLOR_BG2_GUI = rgb((247,247,247))
+COLOR_BG1_GUI = rgb((247, 247, 247))
+COLOR_BG2_GUI = rgb((247, 247, 247))
 
 COLOR_OUTLINE = rgb(_BLACK)
 
@@ -146,7 +146,8 @@ class ViewportSettings:
 
     show_force: bool = True  # show forces
     show_meshes: bool = True  # show meshes and connectors
-    show_global: bool = False  # show or hide the environment (sea), if false then show the origin
+    show_sea: bool = False  # show or hide the sea
+    show_origin: bool = True  # show or hide the origin
 
     # cogs
     show_cog: bool = True
@@ -686,10 +687,10 @@ foot_painters["CurrentArea"] = {"main": copy(invisible)}
 
 PAINTERS["Footprints"] = foot_painters
 
+
 def AddPaintForNodeClassAsCopyOfOtherClass(node_class: str, other_class: str):
     for P in PAINTERS.values():
         P[node_class] = deepcopy(P[other_class])
-
 
 
 if __name__ == "__main__":
@@ -697,8 +698,8 @@ if __name__ == "__main__":
 
     plt.plot()
 
-    for i,COL in enumerate(PALETTE):
-        c = [r/255 for r in COL]
-        plt.plot((0,10),(i,0), color = c, lw=10)
+    for i, COL in enumerate(PALETTE):
+        c = [r / 255 for r in COL]
+        plt.plot((0, 10), (i, 0), color=c, lw=10)
 
     plt.show()

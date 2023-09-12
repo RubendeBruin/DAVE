@@ -3,169 +3,227 @@
 ################################################################################
 ## Form generated from reading UI file 'main_form.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.0
+## Created by: Qt User Interface Compiler version 6.5.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
-    QMetaObject, QObject, QPoint, QRect,
-    QSize, QTime, QUrl, Qt)
-from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
-    QCursor, QFont, QFontDatabase, QGradient,
-    QIcon, QImage, QKeySequence, QLinearGradient,
-    QPainter, QPalette, QPixmap, QRadialGradient,
-    QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QDockWidget, QDoubleSpinBox,
-    QFrame, QGridLayout, QHBoxLayout, QLabel,
-    QMainWindow, QMenu, QMenuBar, QPushButton,
-    QSizePolicy, QSlider, QSpacerItem, QTextEdit,
-    QToolBar, QToolButton, QVBoxLayout, QWidget)
+from PySide6.QtCore import (
+    QCoreApplication,
+    QDate,
+    QDateTime,
+    QLocale,
+    QMetaObject,
+    QObject,
+    QPoint,
+    QRect,
+    QSize,
+    QTime,
+    QUrl,
+    Qt,
+)
+from PySide6.QtGui import (
+    QAction,
+    QBrush,
+    QColor,
+    QConicalGradient,
+    QCursor,
+    QFont,
+    QFontDatabase,
+    QGradient,
+    QIcon,
+    QImage,
+    QKeySequence,
+    QLinearGradient,
+    QPainter,
+    QPalette,
+    QPixmap,
+    QRadialGradient,
+    QTransform,
+)
+from PySide6.QtWidgets import (
+    QApplication,
+    QComboBox,
+    QDockWidget,
+    QDoubleSpinBox,
+    QFrame,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
+    QMainWindow,
+    QMenu,
+    QMenuBar,
+    QPushButton,
+    QSizePolicy,
+    QSlider,
+    QSpacerItem,
+    QTextEdit,
+    QToolBar,
+    QToolButton,
+    QVBoxLayout,
+    QWidget,
+)
 import DAVE.gui.forms.resources_rc
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
-            MainWindow.setObjectName(u"MainWindow")
+            MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1099, 819)
         MainWindow.setAcceptDrops(True)
         icon = QIcon()
-        icon.addFile(u":/icons/Dave_icon.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(":/icons/Dave_icon.png", QSize(), QIcon.Normal, QIcon.Off)
         MainWindow.setWindowIcon(icon)
         MainWindow.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
         self.actionSave_scene = QAction(MainWindow)
-        self.actionSave_scene.setObjectName(u"actionSave_scene")
+        self.actionSave_scene.setObjectName("actionSave_scene")
         self.actionImport_sub_scene = QAction(MainWindow)
-        self.actionImport_sub_scene.setObjectName(u"actionImport_sub_scene")
+        self.actionImport_sub_scene.setObjectName("actionImport_sub_scene")
         self.actionNew = QAction(MainWindow)
-        self.actionNew.setObjectName(u"actionNew")
+        self.actionNew.setObjectName("actionNew")
         self.actionHorizontal_camera = QAction(MainWindow)
-        self.actionHorizontal_camera.setObjectName(u"actionHorizontal_camera")
+        self.actionHorizontal_camera.setObjectName("actionHorizontal_camera")
         self.action = QAction(MainWindow)
-        self.action.setObjectName(u"action")
+        self.action.setObjectName("action")
         self.action2D_mode = QAction(MainWindow)
-        self.action2D_mode.setObjectName(u"action2D_mode")
+        self.action2D_mode.setObjectName("action2D_mode")
         self.action2D_mode.setCheckable(True)
         self.actionDark_mode = QAction(MainWindow)
-        self.actionDark_mode.setObjectName(u"actionDark_mode")
+        self.actionDark_mode.setObjectName("actionDark_mode")
         self.actionDark_mode.setCheckable(False)
         self.actionShow_visuals = QAction(MainWindow)
-        self.actionShow_visuals.setObjectName(u"actionShow_visuals")
+        self.actionShow_visuals.setObjectName("actionShow_visuals")
         self.actionShow_visuals.setCheckable(True)
         self.actionShow_visuals.setChecked(True)
         self.actionShow_Geometry_elements = QAction(MainWindow)
-        self.actionShow_Geometry_elements.setObjectName(u"actionShow_Geometry_elements")
+        self.actionShow_Geometry_elements.setObjectName("actionShow_Geometry_elements")
         self.actionShow_Geometry_elements.setCheckable(True)
         self.actionShow_Geometry_elements.setChecked(True)
         self.actionShow_force_applying_element = QAction(MainWindow)
-        self.actionShow_force_applying_element.setObjectName(u"actionShow_force_applying_element")
+        self.actionShow_force_applying_element.setObjectName(
+            "actionShow_force_applying_element"
+        )
         self.actionShow_force_applying_element.setCheckable(True)
         self.actionShow_force_applying_element.setChecked(True)
         self.actionSet_all_visible = QAction(MainWindow)
-        self.actionSet_all_visible.setObjectName(u"actionSet_all_visible")
+        self.actionSet_all_visible.setObjectName("actionSet_all_visible")
         self.actionSet_all_hidden = QAction(MainWindow)
-        self.actionSet_all_hidden.setObjectName(u"actionSet_all_hidden")
+        self.actionSet_all_hidden.setObjectName("actionSet_all_hidden")
         self.actionFull_refresh = QAction(MainWindow)
-        self.actionFull_refresh.setObjectName(u"actionFull_refresh")
+        self.actionFull_refresh.setObjectName("actionFull_refresh")
         self.actionShow_water_plane = QAction(MainWindow)
-        self.actionShow_water_plane.setObjectName(u"actionShow_water_plane")
+        self.actionShow_water_plane.setObjectName("actionShow_water_plane")
         self.actionShow_water_plane.setCheckable(True)
         self.actionShow_water_plane.setChecked(False)
         self.actionAdd_light = QAction(MainWindow)
-        self.actionAdd_light.setObjectName(u"actionAdd_light")
+        self.actionAdd_light.setObjectName("actionAdd_light")
         self.actionShow_all_forces_at_same_size = QAction(MainWindow)
-        self.actionShow_all_forces_at_same_size.setObjectName(u"actionShow_all_forces_at_same_size")
+        self.actionShow_all_forces_at_same_size.setObjectName(
+            "actionShow_all_forces_at_same_size"
+        )
         self.actionShow_all_forces_at_same_size.setCheckable(True)
         self.actionShow_all_forces_at_same_size.setChecked(True)
         self.actionIncrease_force_size = QAction(MainWindow)
-        self.actionIncrease_force_size.setObjectName(u"actionIncrease_force_size")
+        self.actionIncrease_force_size.setObjectName("actionIncrease_force_size")
         self.actionDecrease_force_size = QAction(MainWindow)
-        self.actionDecrease_force_size.setObjectName(u"actionDecrease_force_size")
+        self.actionDecrease_force_size.setObjectName("actionDecrease_force_size")
         self.actionIncrease_Geometry_size = QAction(MainWindow)
-        self.actionIncrease_Geometry_size.setObjectName(u"actionIncrease_Geometry_size")
+        self.actionIncrease_Geometry_size.setObjectName("actionIncrease_Geometry_size")
         self.actionDecrease_Geometry_size = QAction(MainWindow)
-        self.actionDecrease_Geometry_size.setObjectName(u"actionDecrease_Geometry_size")
+        self.actionDecrease_Geometry_size.setObjectName("actionDecrease_Geometry_size")
         self.actionPython_console = QAction(MainWindow)
-        self.actionPython_console.setObjectName(u"actionPython_console")
+        self.actionPython_console.setObjectName("actionPython_console")
         self.actionGoal_seek = QAction(MainWindow)
-        self.actionGoal_seek.setObjectName(u"actionGoal_seek")
+        self.actionGoal_seek.setObjectName("actionGoal_seek")
         self.actionStability_curve = QAction(MainWindow)
-        self.actionStability_curve.setObjectName(u"actionStability_curve")
+        self.actionStability_curve.setObjectName("actionStability_curve")
         self.actionOptimize = QAction(MainWindow)
-        self.actionOptimize.setObjectName(u"actionOptimize")
+        self.actionOptimize.setObjectName("actionOptimize")
         self.actionOpen = QAction(MainWindow)
-        self.actionOpen.setObjectName(u"actionOpen")
+        self.actionOpen.setObjectName("actionOpen")
         self.actionImport_browser = QAction(MainWindow)
-        self.actionImport_browser.setObjectName(u"actionImport_browser")
+        self.actionImport_browser.setObjectName("actionImport_browser")
         self.actionRender_current_view = QAction(MainWindow)
-        self.actionRender_current_view.setObjectName(u"actionRender_current_view")
+        self.actionRender_current_view.setObjectName("actionRender_current_view")
         self.actionModal_shapes = QAction(MainWindow)
-        self.actionModal_shapes.setObjectName(u"actionModal_shapes")
+        self.actionModal_shapes.setObjectName("actionModal_shapes")
         self.actionInertia_properties = QAction(MainWindow)
-        self.actionInertia_properties.setObjectName(u"actionInertia_properties")
+        self.actionInertia_properties.setObjectName("actionInertia_properties")
         self.actionSave_actions_as = QAction(MainWindow)
-        self.actionSave_actions_as.setObjectName(u"actionSave_actions_as")
+        self.actionSave_actions_as.setObjectName("actionSave_actions_as")
         self.actionsee_open_ocean_org = QAction(MainWindow)
-        self.actionsee_open_ocean_org.setObjectName(u"actionsee_open_ocean_org")
+        self.actionsee_open_ocean_org.setObjectName("actionsee_open_ocean_org")
         self.actionX = QAction(MainWindow)
-        self.actionX.setObjectName(u"actionX")
+        self.actionX.setObjectName("actionX")
         self.action_x = QAction(MainWindow)
-        self.action_x.setObjectName(u"action_x")
+        self.action_x.setObjectName("action_x")
         self.actionY = QAction(MainWindow)
-        self.actionY.setObjectName(u"actionY")
+        self.actionY.setObjectName("actionY")
         self.action_Y = QAction(MainWindow)
-        self.action_Y.setObjectName(u"action_Y")
+        self.action_Y.setObjectName("action_Y")
         self.actionZ = QAction(MainWindow)
-        self.actionZ.setObjectName(u"actionZ")
+        self.actionZ.setObjectName("actionZ")
         self.action_Z = QAction(MainWindow)
-        self.action_Z.setObjectName(u"action_Z")
+        self.action_Z.setObjectName("action_Z")
         self.actionLook_towards_center = QAction(MainWindow)
-        self.actionLook_towards_center.setObjectName(u"actionLook_towards_center")
+        self.actionLook_towards_center.setObjectName("actionLook_towards_center")
         self.actionCamera_reset = QAction(MainWindow)
-        self.actionCamera_reset.setObjectName(u"actionCamera_reset")
+        self.actionCamera_reset.setObjectName("actionCamera_reset")
         self.actionShow_CoG_positions = QAction(MainWindow)
-        self.actionShow_CoG_positions.setObjectName(u"actionShow_CoG_positions")
+        self.actionShow_CoG_positions.setObjectName("actionShow_CoG_positions")
         self.actionBlender = QAction(MainWindow)
-        self.actionBlender.setObjectName(u"actionBlender")
+        self.actionBlender.setObjectName("actionBlender")
         self.actionOrcaflex = QAction(MainWindow)
-        self.actionOrcaflex.setObjectName(u"actionOrcaflex")
+        self.actionOrcaflex.setObjectName("actionOrcaflex")
         self.actionOrcaflex_package = QAction(MainWindow)
-        self.actionOrcaflex_package.setObjectName(u"actionOrcaflex_package")
+        self.actionOrcaflex_package.setObjectName("actionOrcaflex_package")
         self.actionPython_console_2 = QAction(MainWindow)
-        self.actionPython_console_2.setObjectName(u"actionPython_console_2")
+        self.actionPython_console_2.setObjectName("actionPython_console_2")
         self.actionVersion = QAction(MainWindow)
-        self.actionVersion.setObjectName(u"actionVersion")
+        self.actionVersion.setObjectName("actionVersion")
         self.actionOnline_help = QAction(MainWindow)
-        self.actionOnline_help.setObjectName(u"actionOnline_help")
+        self.actionOnline_help.setObjectName("actionOnline_help")
         self.actionReload_components = QAction(MainWindow)
-        self.actionReload_components.setObjectName(u"actionReload_components")
+        self.actionReload_components.setObjectName("actionReload_components")
         self.actionUndo = QAction(MainWindow)
-        self.actionUndo.setObjectName(u"actionUndo")
+        self.actionUndo.setObjectName("actionUndo")
         self.actionRedo = QAction(MainWindow)
-        self.actionRedo.setObjectName(u"actionRedo")
+        self.actionRedo.setObjectName("actionRedo")
         self.actionSave = QAction(MainWindow)
-        self.actionSave.setObjectName(u"actionSave")
+        self.actionSave.setObjectName("actionSave")
         self.actionClear = QAction(MainWindow)
-        self.actionClear.setObjectName(u"actionClear")
+        self.actionClear.setObjectName("actionClear")
         self.actionShow_labels = QAction(MainWindow)
-        self.actionShow_labels.setObjectName(u"actionShow_labels")
+        self.actionShow_labels.setObjectName("actionShow_labels")
         self.actionShow_labels.setCheckable(True)
+        self.actionShow_labels.setChecked(True)
         self.actionSettings = QAction(MainWindow)
-        self.actionSettings.setObjectName(u"actionSettings")
+        self.actionSettings.setObjectName("actionSettings")
         self.actionDegrees_of_Freedom_editor = QAction(MainWindow)
-        self.actionDegrees_of_Freedom_editor.setObjectName(u"actionDegrees_of_Freedom_editor")
+        self.actionDegrees_of_Freedom_editor.setObjectName(
+            "actionDegrees_of_Freedom_editor"
+        )
         self.actionSet_input_focus_to_viewport = QAction(MainWindow)
-        self.actionSet_input_focus_to_viewport.setObjectName(u"actionSet_input_focus_to_viewport")
+        self.actionSet_input_focus_to_viewport.setObjectName(
+            "actionSet_input_focus_to_viewport"
+        )
         self.actionSelf_contained_DAVE_package = QAction(MainWindow)
-        self.actionSelf_contained_DAVE_package.setObjectName(u"actionSelf_contained_DAVE_package")
+        self.actionSelf_contained_DAVE_package.setObjectName(
+            "actionSelf_contained_DAVE_package"
+        )
+        self.actionShow_origin = QAction(MainWindow)
+        self.actionShow_origin.setObjectName("actionShow_origin")
+        self.actionShow_origin.setCheckable(True)
+        self.actionShow_origin.setChecked(True)
         self.centralwidget = QWidget(MainWindow)
-        self.centralwidget.setObjectName(u"centralwidget")
+        self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout_3 = QVBoxLayout(self.centralwidget)
         self.verticalLayout_3.setSpacing(0)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.widget_3 = QWidget(self.centralwidget)
-        self.widget_3.setObjectName(u"widget_3")
+        self.widget_3.setObjectName("widget_3")
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -174,38 +232,40 @@ class Ui_MainWindow(object):
         self.widget_3.setMinimumSize(QSize(0, 24))
         self.widget_3.setMaximumSize(QSize(16777215, 30))
         self.horizontalLayout_2 = QHBoxLayout(self.widget_3)
-        self.horizontalLayout_2.setSpacing(2)
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalLayout_2.setSpacing(0)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.pbUpdate = QPushButton(self.widget_3)
-        self.pbUpdate.setObjectName(u"pbUpdate")
+        self.pbUpdate.setObjectName("pbUpdate")
         icon1 = QIcon()
-        icon1.addFile(u":/icons/import.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(":/icons/import.png", QSize(), QIcon.Normal, QIcon.Off)
         self.pbUpdate.setIcon(icon1)
 
         self.horizontalLayout_2.addWidget(self.pbUpdate)
 
         self.btnSolveStatics = QPushButton(self.widget_3)
-        self.btnSolveStatics.setObjectName(u"btnSolveStatics")
+        self.btnSolveStatics.setObjectName("btnSolveStatics")
         self.btnSolveStatics.setIcon(icon)
 
         self.horizontalLayout_2.addWidget(self.btnSolveStatics)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer = QSpacerItem(
+            40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum
+        )
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer)
 
         self.pbCopyViewCode = QPushButton(self.widget_3)
-        self.pbCopyViewCode.setObjectName(u"pbCopyViewCode")
+        self.pbCopyViewCode.setObjectName("pbCopyViewCode")
         icon2 = QIcon()
-        icon2.addFile(u":/icons/icon_copy.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(":/icons/icon_copy.png", QSize(), QIcon.Normal, QIcon.Off)
         self.pbCopyViewCode.setIcon(icon2)
         self.pbCopyViewCode.setFlat(True)
 
         self.horizontalLayout_2.addWidget(self.pbCopyViewCode)
 
         self.pb3D = QPushButton(self.widget_3)
-        self.pb3D.setObjectName(u"pb3D")
+        self.pb3D.setObjectName("pb3D")
         self.pb3D.setMaximumSize(QSize(30, 16777215))
         self.pb3D.setCheckable(True)
         self.pb3D.setFlat(True)
@@ -213,27 +273,27 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.pb3D)
 
         self.pbSide = QPushButton(self.widget_3)
-        self.pbSide.setObjectName(u"pbSide")
+        self.pbSide.setObjectName("pbSide")
         icon3 = QIcon()
-        icon3.addFile(u":/icons/side.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon3.addFile(":/icons/side.png", QSize(), QIcon.Normal, QIcon.Off)
         self.pbSide.setIcon(icon3)
         self.pbSide.setFlat(True)
 
         self.horizontalLayout_2.addWidget(self.pbSide)
 
         self.pbFront = QPushButton(self.widget_3)
-        self.pbFront.setObjectName(u"pbFront")
+        self.pbFront.setObjectName("pbFront")
         icon4 = QIcon()
-        icon4.addFile(u":/icons/front.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon4.addFile(":/icons/front.png", QSize(), QIcon.Normal, QIcon.Off)
         self.pbFront.setIcon(icon4)
         self.pbFront.setFlat(True)
 
         self.horizontalLayout_2.addWidget(self.pbFront)
 
         self.pbTop = QPushButton(self.widget_3)
-        self.pbTop.setObjectName(u"pbTop")
+        self.pbTop.setObjectName("pbTop")
         icon5 = QIcon()
-        icon5.addFile(u":/icons/top.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon5.addFile(":/icons/top.png", QSize(), QIcon.Normal, QIcon.Off)
         self.pbTop.setIcon(icon5)
         self.pbTop.setCheckable(False)
         self.pbTop.setFlat(True)
@@ -241,54 +301,58 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.pbTop)
 
         self.btnZoomFit = QPushButton(self.widget_3)
-        self.btnZoomFit.setObjectName(u"btnZoomFit")
+        self.btnZoomFit.setObjectName("btnZoomFit")
         icon6 = QIcon()
-        icon6.addFile(u":/icons/cube_open.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon6.addFile(":/icons/cube_open.png", QSize(), QIcon.Normal, QIcon.Off)
         self.btnZoomFit.setIcon(icon6)
         self.btnZoomFit.setFlat(True)
 
         self.horizontalLayout_2.addWidget(self.btnZoomFit)
 
         self.cbPainerSelect = QComboBox(self.widget_3)
-        self.cbPainerSelect.setObjectName(u"cbPainerSelect")
-        self.cbPainerSelect.setStyleSheet(u"")
+        self.cbPainerSelect.setObjectName("cbPainerSelect")
+        self.cbPainerSelect.setStyleSheet("")
         self.cbPainerSelect.setFrame(True)
 
         self.horizontalLayout_2.addWidget(self.cbPainerSelect)
 
         self.pbUC = QPushButton(self.widget_3)
-        self.pbUC.setObjectName(u"pbUC")
+        self.pbUC.setObjectName("pbUC")
         icon7 = QIcon()
-        icon7.addFile(u":/icons/UC_icon.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon7.addFile(":/icons/UC_icon.png", QSize(), QIcon.Normal, QIcon.Off)
         self.pbUC.setIcon(icon7)
         self.pbUC.setCheckable(True)
         self.pbUC.setFlat(True)
 
         self.horizontalLayout_2.addWidget(self.pbUC)
 
-        self.btnWater = QPushButton(self.widget_3)
-        self.btnWater.setObjectName(u"btnWater")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.btnWater.sizePolicy().hasHeightForWidth())
-        self.btnWater.setSizePolicy(sizePolicy1)
-        self.btnWater.setMinimumSize(QSize(30, 0))
-        self.btnWater.setMaximumSize(QSize(60, 16777215))
-        self.btnWater.setBaseSize(QSize(30, 0))
+        self.pbOrigin = QPushButton(self.widget_3)
+        self.pbOrigin.setObjectName("pbOrigin")
         icon8 = QIcon()
-        icon8.addFile(u":/icons/fish.png", QSize(), QIcon.Normal, QIcon.On)
-        self.btnWater.setIcon(icon8)
+        icon8.addFile(":/icons/axis.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbOrigin.setIcon(icon8)
+        self.pbOrigin.setCheckable(True)
+        self.pbOrigin.setChecked(True)
+        self.pbOrigin.setFlat(True)
+
+        self.horizontalLayout_2.addWidget(self.pbOrigin)
+
+        self.btnWater = QPushButton(self.widget_3)
+        self.btnWater.setObjectName("btnWater")
+        self.btnWater.setBaseSize(QSize(0, 0))
+        icon9 = QIcon()
+        icon9.addFile(":/icons/fish.png", QSize(), QIcon.Normal, QIcon.On)
+        self.btnWater.setIcon(icon9)
         self.btnWater.setCheckable(True)
         self.btnWater.setFlat(True)
 
         self.horizontalLayout_2.addWidget(self.btnWater)
 
         self.btnSSAO = QPushButton(self.widget_3)
-        self.btnSSAO.setObjectName(u"btnSSAO")
-        icon9 = QIcon()
-        icon9.addFile(u":/icons/cube_shaded.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.btnSSAO.setIcon(icon9)
+        self.btnSSAO.setObjectName("btnSSAO")
+        icon10 = QIcon()
+        icon10.addFile(":/icons/cube_shaded.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.btnSSAO.setIcon(icon10)
         self.btnSSAO.setCheckable(True)
         self.btnSSAO.setChecked(False)
         self.btnSSAO.setFlat(True)
@@ -296,20 +360,21 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.btnSSAO)
 
         self.btnBlender = QPushButton(self.widget_3)
-        self.btnBlender.setObjectName(u"btnBlender")
+        self.btnBlender.setObjectName("btnBlender")
         self.btnBlender.setMaximumSize(QSize(100, 16777215))
-        icon10 = QIcon()
-        icon10.addFile(u":/icons/blender_icon_64x64.png", QSize(), QIcon.Normal, QIcon.On)
-        self.btnBlender.setIcon(icon10)
+        icon11 = QIcon()
+        icon11.addFile(
+            ":/icons/blender_icon_64x64.png", QSize(), QIcon.Normal, QIcon.On
+        )
+        self.btnBlender.setIcon(icon11)
         self.btnBlender.setFlat(True)
 
         self.horizontalLayout_2.addWidget(self.btnBlender)
 
-
         self.verticalLayout_3.addWidget(self.widget_3)
 
         self.frame3d = QFrame(self.centralwidget)
-        self.frame3d.setObjectName(u"frame3d")
+        self.frame3d.setObjectName("frame3d")
         self.frame3d.setAcceptDrops(True)
         self.frame3d.setFrameShape(QFrame.NoFrame)
         self.frame3d.setFrameShadow(QFrame.Plain)
@@ -318,35 +383,35 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.addWidget(self.frame3d)
 
         self.frameAni = QWidget(self.centralwidget)
-        self.frameAni.setObjectName(u"frameAni")
+        self.frameAni.setObjectName("frameAni")
         sizePolicy.setHeightForWidth(self.frameAni.sizePolicy().hasHeightForWidth())
         self.frameAni.setSizePolicy(sizePolicy)
         self.frameAni.setMinimumSize(QSize(0, 20))
         self.frameAni.setMaximumSize(QSize(16777215, 30))
         self.horizontalLayout = QHBoxLayout(self.frameAni)
         self.horizontalLayout.setSpacing(0)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.horizontalLayout.setObjectName("horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.widget_2 = QWidget(self.frameAni)
-        self.widget_2.setObjectName(u"widget_2")
+        self.widget_2.setObjectName("widget_2")
         self.gridLayout = QGridLayout(self.widget_2)
-        self.gridLayout.setObjectName(u"gridLayout")
+        self.gridLayout.setObjectName("gridLayout")
         self.gridLayout.setHorizontalSpacing(2)
         self.gridLayout.setVerticalSpacing(0)
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.btnPauseAnimation = QToolButton(self.widget_2)
-        self.btnPauseAnimation.setObjectName(u"btnPauseAnimation")
+        self.btnPauseAnimation.setObjectName("btnPauseAnimation")
         self.btnPauseAnimation.setCheckable(True)
 
         self.gridLayout.addWidget(self.btnPauseAnimation, 0, 1, 1, 1)
 
         self.btnStopAnimation = QToolButton(self.widget_2)
-        self.btnStopAnimation.setObjectName(u"btnStopAnimation")
+        self.btnStopAnimation.setObjectName("btnStopAnimation")
 
         self.gridLayout.addWidget(self.btnStopAnimation, 0, 0, 1, 1)
 
         self.sbPlaybackspeed = QDoubleSpinBox(self.widget_2)
-        self.sbPlaybackspeed.setObjectName(u"sbPlaybackspeed")
+        self.sbPlaybackspeed.setObjectName("sbPlaybackspeed")
         self.sbPlaybackspeed.setToolTipDuration(0)
         self.sbPlaybackspeed.setMinimum(0.100000000000000)
         self.sbPlaybackspeed.setMaximum(10.000000000000000)
@@ -355,179 +420,199 @@ class Ui_MainWindow(object):
 
         self.gridLayout.addWidget(self.sbPlaybackspeed, 0, 2, 1, 1)
 
-
         self.horizontalLayout.addWidget(self.widget_2)
 
         self.aniSlider = QSlider(self.frameAni)
-        self.aniSlider.setObjectName(u"aniSlider")
+        self.aniSlider.setObjectName("aniSlider")
         self.aniSlider.setOrientation(Qt.Horizontal)
         self.aniSlider.setTickPosition(QSlider.TicksAbove)
 
         self.horizontalLayout.addWidget(self.aniSlider)
 
-
         self.verticalLayout_3.addWidget(self.frameAni)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
-        self.menubar.setObjectName(u"menubar")
+        self.menubar.setObjectName("menubar")
         self.menubar.setGeometry(QRect(0, 0, 1099, 22))
         self.menuSolve_Statics = QMenu(self.menubar)
-        self.menuSolve_Statics.setObjectName(u"menuSolve_Statics")
+        self.menuSolve_Statics.setObjectName("menuSolve_Statics")
         self.menuExport = QMenu(self.menuSolve_Statics)
-        self.menuExport.setObjectName(u"menuExport")
+        self.menuExport.setObjectName("menuExport")
         self.menuView = QMenu(self.menubar)
-        self.menuView.setObjectName(u"menuView")
+        self.menuView.setObjectName("menuView")
         self.menuLook_towards = QMenu(self.menuView)
-        self.menuLook_towards.setObjectName(u"menuLook_towards")
+        self.menuLook_towards.setObjectName("menuLook_towards")
         self.menuHelp = QMenu(self.menubar)
-        self.menuHelp.setObjectName(u"menuHelp")
+        self.menuHelp.setObjectName("menuHelp")
         self.menuEdit = QMenu(self.menubar)
-        self.menuEdit.setObjectName(u"menuEdit")
+        self.menuEdit.setObjectName("menuEdit")
         self.menuScene = QMenu(self.menubar)
-        self.menuScene.setObjectName(u"menuScene")
+        self.menuScene.setObjectName("menuScene")
         MainWindow.setMenuBar(self.menubar)
         self.dockWidget_2 = QDockWidget(MainWindow)
-        self.dockWidget_2.setObjectName(u"dockWidget_2")
+        self.dockWidget_2.setObjectName("dockWidget_2")
         self.dockWidgetContents_2 = QWidget()
-        self.dockWidgetContents_2.setObjectName(u"dockWidgetContents_2")
+        self.dockWidgetContents_2.setObjectName("dockWidgetContents_2")
         self.horizontalLayout_4 = QHBoxLayout(self.dockWidgetContents_2)
-        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
         self.widget_5 = QWidget(self.dockWidgetContents_2)
-        self.widget_5.setObjectName(u"widget_5")
+        self.widget_5.setObjectName("widget_5")
         self.verticalLayout_4 = QVBoxLayout(self.widget_5)
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.widget_6 = QWidget(self.widget_5)
-        self.widget_6.setObjectName(u"widget_6")
+        self.widget_6.setObjectName("widget_6")
         self.horizontalLayout_3 = QHBoxLayout(self.widget_6)
-        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.label_3 = QLabel(self.widget_6)
-        self.label_3.setObjectName(u"label_3")
+        self.label_3.setObjectName("label_3")
 
         self.horizontalLayout_3.addWidget(self.label_3)
 
         self.pbClearCode = QToolButton(self.widget_6)
-        self.pbClearCode.setObjectName(u"pbClearCode")
-        icon11 = QIcon()
-        icon11.addFile(u":/icons/file_new.png", QSize(), QIcon.Normal, QIcon.On)
-        self.pbClearCode.setIcon(icon11)
+        self.pbClearCode.setObjectName("pbClearCode")
+        icon12 = QIcon()
+        icon12.addFile(":/icons/file_new.png", QSize(), QIcon.Normal, QIcon.On)
+        self.pbClearCode.setIcon(icon12)
         self.pbClearCode.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         self.horizontalLayout_3.addWidget(self.pbClearCode)
 
         self.pbExecute = QToolButton(self.widget_6)
-        self.pbExecute.setObjectName(u"pbExecute")
-        icon12 = QIcon()
-        icon12.addFile(u":/icons/python logo klein.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbExecute.setIcon(icon12)
+        self.pbExecute.setObjectName("pbExecute")
+        icon13 = QIcon()
+        icon13.addFile(
+            ":/icons/python logo klein.png", QSize(), QIcon.Normal, QIcon.Off
+        )
+        self.pbExecute.setIcon(icon13)
         self.pbExecute.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         self.horizontalLayout_3.addWidget(self.pbExecute)
 
-
         self.verticalLayout_4.addWidget(self.widget_6)
 
         self.teCode = QTextEdit(self.widget_5)
-        self.teCode.setObjectName(u"teCode")
+        self.teCode.setObjectName("teCode")
 
         self.verticalLayout_4.addWidget(self.teCode)
-
 
         self.horizontalLayout_4.addWidget(self.widget_5)
 
         self.frame_3 = QFrame(self.dockWidgetContents_2)
-        self.frame_3.setObjectName(u"frame_3")
+        self.frame_3.setObjectName("frame_3")
         self.frame_3.setFrameShape(QFrame.StyledPanel)
         self.frame_3.setFrameShadow(QFrame.Raised)
         self.verticalLayout = QVBoxLayout(self.frame_3)
-        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setObjectName("verticalLayout")
         self.verticalLayout.setContentsMargins(13, 0, 13, 0)
         self.widget_7 = QWidget(self.frame_3)
-        self.widget_7.setObjectName(u"widget_7")
+        self.widget_7.setObjectName("widget_7")
         self.horizontalLayout_5 = QHBoxLayout(self.widget_7)
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
         self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.label_2 = QLabel(self.widget_7)
-        self.label_2.setObjectName(u"label_2")
-        self.label_2.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
+        self.label_2.setObjectName("label_2")
+        self.label_2.setAlignment(Qt.AlignLeading | Qt.AlignLeft | Qt.AlignTop)
 
         self.horizontalLayout_5.addWidget(self.label_2)
 
         self.pbGenerateSceneCode = QToolButton(self.widget_7)
-        self.pbGenerateSceneCode.setObjectName(u"pbGenerateSceneCode")
-        icon13 = QIcon()
-        icon13.addFile(u":/icons/cube.png", QSize(), QIcon.Normal, QIcon.On)
-        self.pbGenerateSceneCode.setIcon(icon13)
+        self.pbGenerateSceneCode.setObjectName("pbGenerateSceneCode")
+        icon14 = QIcon()
+        icon14.addFile(":/icons/cube.png", QSize(), QIcon.Normal, QIcon.On)
+        self.pbGenerateSceneCode.setIcon(icon14)
         self.pbGenerateSceneCode.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         self.horizontalLayout_5.addWidget(self.pbGenerateSceneCode)
 
         self.pbCopyOutput = QToolButton(self.widget_7)
-        self.pbCopyOutput.setObjectName(u"pbCopyOutput")
-        icon14 = QIcon()
-        icon14.addFile(u":/icons/icon_copy.png", QSize(), QIcon.Normal, QIcon.On)
-        self.pbCopyOutput.setIcon(icon14)
+        self.pbCopyOutput.setObjectName("pbCopyOutput")
+        icon15 = QIcon()
+        icon15.addFile(":/icons/icon_copy.png", QSize(), QIcon.Normal, QIcon.On)
+        self.pbCopyOutput.setIcon(icon15)
 
         self.horizontalLayout_5.addWidget(self.pbCopyOutput)
-
 
         self.verticalLayout.addWidget(self.widget_7)
 
         self.teFeedback = QTextEdit(self.frame_3)
-        self.teFeedback.setObjectName(u"teFeedback")
+        self.teFeedback.setObjectName("teFeedback")
         self.teFeedback.setAutoFillBackground(False)
         self.teFeedback.setFrameShape(QFrame.StyledPanel)
 
         self.verticalLayout.addWidget(self.teFeedback)
 
-
         self.horizontalLayout_4.addWidget(self.frame_3)
 
         self.widget_4 = QWidget(self.dockWidgetContents_2)
-        self.widget_4.setObjectName(u"widget_4")
+        self.widget_4.setObjectName("widget_4")
         self.verticalLayout_5 = QVBoxLayout(self.widget_4)
-        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.verticalLayout_5.setObjectName("verticalLayout_5")
         self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.widget = QWidget(self.widget_4)
-        self.widget.setObjectName(u"widget")
+        self.widget.setObjectName("widget")
         self.horizontalLayout_6 = QHBoxLayout(self.widget)
-        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
         self.horizontalLayout_6.setContentsMargins(-1, 0, 0, 0)
         self.label = QLabel(self.widget)
-        self.label.setObjectName(u"label")
-        self.label.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
+        self.label.setObjectName("label")
+        self.label.setAlignment(Qt.AlignLeading | Qt.AlignLeft | Qt.AlignTop)
 
         self.horizontalLayout_6.addWidget(self.label)
 
         self.tbTidyHistory = QToolButton(self.widget)
-        self.tbTidyHistory.setObjectName(u"tbTidyHistory")
+        self.tbTidyHistory.setObjectName("tbTidyHistory")
 
         self.horizontalLayout_6.addWidget(self.tbTidyHistory)
 
         self.pbCopyHistory = QToolButton(self.widget)
-        self.pbCopyHistory.setObjectName(u"pbCopyHistory")
-        self.pbCopyHistory.setIcon(icon14)
+        self.pbCopyHistory.setObjectName("pbCopyHistory")
+        self.pbCopyHistory.setIcon(icon15)
 
         self.horizontalLayout_6.addWidget(self.pbCopyHistory)
-
 
         self.verticalLayout_5.addWidget(self.widget)
 
         self.teHistory = QTextEdit(self.widget_4)
-        self.teHistory.setObjectName(u"teHistory")
+        self.teHistory.setObjectName("teHistory")
 
         self.verticalLayout_5.addWidget(self.teHistory)
-
 
         self.horizontalLayout_4.addWidget(self.widget_4)
 
         self.dockWidget_2.setWidget(self.dockWidgetContents_2)
         MainWindow.addDockWidget(Qt.BottomDockWidgetArea, self.dockWidget_2)
         self.toolBar = QToolBar(MainWindow)
-        self.toolBar.setObjectName(u"toolBar")
+        self.toolBar.setObjectName("toolBar")
         MainWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
+        QWidget.setTabOrder(self.aniSlider, self.btnSolveStatics)
+        QWidget.setTabOrder(self.btnSolveStatics, self.pbCopyViewCode)
+        QWidget.setTabOrder(self.pbCopyViewCode, self.pb3D)
+        QWidget.setTabOrder(self.pb3D, self.pbSide)
+        QWidget.setTabOrder(self.pbSide, self.pbFront)
+        QWidget.setTabOrder(self.pbFront, self.pbTop)
+        QWidget.setTabOrder(self.pbTop, self.btnZoomFit)
+        QWidget.setTabOrder(self.btnZoomFit, self.cbPainerSelect)
+        QWidget.setTabOrder(self.cbPainerSelect, self.pbUpdate)
+        QWidget.setTabOrder(self.pbUpdate, self.pbUC)
+        QWidget.setTabOrder(self.pbUC, self.pbOrigin)
+        QWidget.setTabOrder(self.pbOrigin, self.btnWater)
+        QWidget.setTabOrder(self.btnWater, self.btnSSAO)
+        QWidget.setTabOrder(self.btnSSAO, self.btnBlender)
+        QWidget.setTabOrder(self.btnBlender, self.teCode)
+        QWidget.setTabOrder(self.teCode, self.pbClearCode)
+        QWidget.setTabOrder(self.pbClearCode, self.pbExecute)
+        QWidget.setTabOrder(self.pbExecute, self.pbGenerateSceneCode)
+        QWidget.setTabOrder(self.pbGenerateSceneCode, self.pbCopyOutput)
+        QWidget.setTabOrder(self.pbCopyOutput, self.teFeedback)
+        QWidget.setTabOrder(self.teFeedback, self.tbTidyHistory)
+        QWidget.setTabOrder(self.tbTidyHistory, self.pbCopyHistory)
+        QWidget.setTabOrder(self.pbCopyHistory, self.teHistory)
+        QWidget.setTabOrder(self.teHistory, self.btnStopAnimation)
+        QWidget.setTabOrder(self.btnStopAnimation, self.btnPauseAnimation)
+        QWidget.setTabOrder(self.btnPauseAnimation, self.sbPlaybackspeed)
 
         self.menubar.addAction(self.menuSolve_Statics.menuAction())
         self.menubar.addAction(self.menuScene.menuAction())
@@ -555,6 +640,7 @@ class Ui_MainWindow(object):
         self.menuView.addAction(self.menuLook_towards.menuAction())
         self.menuView.addSeparator()
         self.menuView.addAction(self.actionShow_water_plane)
+        self.menuView.addAction(self.actionShow_origin)
         self.menuView.addAction(self.actionShow_labels)
         self.menuView.addSeparator()
         self.menuView.addAction(self.actionFull_refresh)
@@ -581,155 +667,346 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
 
         QMetaObject.connectSlotsByName(MainWindow)
+
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"DAVE", None))
-        self.actionSave_scene.setText(QCoreApplication.translate("MainWindow", u"Save as", None))
-        self.actionImport_sub_scene.setText(QCoreApplication.translate("MainWindow", u"Import (file)", None))
-        self.actionNew.setText(QCoreApplication.translate("MainWindow", u"New", None))
-        self.actionHorizontal_camera.setText(QCoreApplication.translate("MainWindow", u"Level camera (make horizon horizontal)", None))
-#if QT_CONFIG(shortcut)
-        self.actionHorizontal_camera.setShortcut(QCoreApplication.translate("MainWindow", u"Alt+L", None))
-#endif // QT_CONFIG(shortcut)
-        self.action.setText(QCoreApplication.translate("MainWindow", u"---", None))
-        self.action2D_mode.setText(QCoreApplication.translate("MainWindow", u"2D mode", None))
-        self.actionDark_mode.setText(QCoreApplication.translate("MainWindow", u"Make darker", None))
-#if QT_CONFIG(shortcut)
-        self.actionDark_mode.setShortcut(QCoreApplication.translate("MainWindow", u"Alt+-", None))
-#endif // QT_CONFIG(shortcut)
-        self.actionShow_visuals.setText(QCoreApplication.translate("MainWindow", u"Show visuals", None))
-        self.actionShow_Geometry_elements.setText(QCoreApplication.translate("MainWindow", u"Show Geometry elements", None))
-        self.actionShow_force_applying_element.setText(QCoreApplication.translate("MainWindow", u"Show physics only elements (connectors, meshes)", None))
-        self.actionSet_all_visible.setText(QCoreApplication.translate("MainWindow", u"Set all visible", None))
-        self.actionSet_all_hidden.setText(QCoreApplication.translate("MainWindow", u"Set all hidden", None))
-        self.actionFull_refresh.setText(QCoreApplication.translate("MainWindow", u"Full refresh", None))
-        self.actionShow_water_plane.setText(QCoreApplication.translate("MainWindow", u"Show water-plane", None))
-        self.actionAdd_light.setText(QCoreApplication.translate("MainWindow", u"Make lighter", None))
-#if QT_CONFIG(shortcut)
-        self.actionAdd_light.setShortcut(QCoreApplication.translate("MainWindow", u"Alt+=", None))
-#endif // QT_CONFIG(shortcut)
-        self.actionShow_all_forces_at_same_size.setText(QCoreApplication.translate("MainWindow", u"Show all forces same size (normalize)", None))
-        self.actionIncrease_force_size.setText(QCoreApplication.translate("MainWindow", u"Increase force size", None))
-#if QT_CONFIG(shortcut)
-        self.actionIncrease_force_size.setShortcut(QCoreApplication.translate("MainWindow", u"Alt+]", None))
-#endif // QT_CONFIG(shortcut)
-        self.actionDecrease_force_size.setText(QCoreApplication.translate("MainWindow", u"Decrease force size", None))
-#if QT_CONFIG(shortcut)
-        self.actionDecrease_force_size.setShortcut(QCoreApplication.translate("MainWindow", u"Alt+[", None))
-#endif // QT_CONFIG(shortcut)
-        self.actionIncrease_Geometry_size.setText(QCoreApplication.translate("MainWindow", u"Increase Geometry size (poi, axis)", None))
-#if QT_CONFIG(shortcut)
-        self.actionIncrease_Geometry_size.setShortcut(QCoreApplication.translate("MainWindow", u"Alt+Shift+]", None))
-#endif // QT_CONFIG(shortcut)
-        self.actionDecrease_Geometry_size.setText(QCoreApplication.translate("MainWindow", u"Decrease Geometry size", None))
-#if QT_CONFIG(shortcut)
-        self.actionDecrease_Geometry_size.setShortcut(QCoreApplication.translate("MainWindow", u"Alt+Shift+[", None))
-#endif // QT_CONFIG(shortcut)
-        self.actionPython_console.setText(QCoreApplication.translate("MainWindow", u"Python console", None))
-        self.actionGoal_seek.setText(QCoreApplication.translate("MainWindow", u"Goal-seek (one variable)", None))
-        self.actionStability_curve.setText(QCoreApplication.translate("MainWindow", u"Stability-curve", None))
-        self.actionOptimize.setText(QCoreApplication.translate("MainWindow", u"TODO: Optimize (multiple variables)", None))
-        self.actionOpen.setText(QCoreApplication.translate("MainWindow", u"Open", None))
-        self.actionImport_browser.setText(QCoreApplication.translate("MainWindow", u"Import (browser)", None))
-        self.actionRender_current_view.setText(QCoreApplication.translate("MainWindow", u"Render current view", None))
-        self.actionModal_shapes.setText(QCoreApplication.translate("MainWindow", u"Modal shapes", None))
-        self.actionInertia_properties.setText(QCoreApplication.translate("MainWindow", u"Inertia properties", None))
-        self.actionSave_actions_as.setText(QCoreApplication.translate("MainWindow", u"Save actions as", None))
-        self.actionsee_open_ocean_org.setText(QCoreApplication.translate("MainWindow", u"see open-ocean.org", None))
-        self.actionX.setText(QCoreApplication.translate("MainWindow", u"X", None))
-        self.action_x.setText(QCoreApplication.translate("MainWindow", u"-X", None))
-        self.actionY.setText(QCoreApplication.translate("MainWindow", u"Y", None))
-        self.action_Y.setText(QCoreApplication.translate("MainWindow", u"-Y", None))
-        self.actionZ.setText(QCoreApplication.translate("MainWindow", u"From top", None))
-        self.action_Z.setText(QCoreApplication.translate("MainWindow", u"From bottom", None))
-        self.actionLook_towards_center.setText(QCoreApplication.translate("MainWindow", u"Look towards center", None))
-        self.actionCamera_reset.setText(QCoreApplication.translate("MainWindow", u"Camera reset", None))
-        self.actionShow_CoG_positions.setText(QCoreApplication.translate("MainWindow", u"Show CoGs", None))
-        self.actionBlender.setText(QCoreApplication.translate("MainWindow", u"Blender", None))
-        self.actionOrcaflex.setText(QCoreApplication.translate("MainWindow", u"Orcaflex .yml", None))
-        self.actionOrcaflex_package.setText(QCoreApplication.translate("MainWindow", u"Orcaflex run and collect package", None))
-        self.actionPython_console_2.setText(QCoreApplication.translate("MainWindow", u"Python console", None))
-        self.actionVersion.setText(QCoreApplication.translate("MainWindow", u"Version", None))
-        self.actionOnline_help.setText(QCoreApplication.translate("MainWindow", u"Online help", None))
-        self.actionReload_components.setText(QCoreApplication.translate("MainWindow", u"Reload components from files", None))
-        self.actionUndo.setText(QCoreApplication.translate("MainWindow", u"Undo", None))
-#if QT_CONFIG(shortcut)
-        self.actionUndo.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+Z", None))
-#endif // QT_CONFIG(shortcut)
-        self.actionRedo.setText(QCoreApplication.translate("MainWindow", u"Redo", None))
-#if QT_CONFIG(shortcut)
-        self.actionRedo.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+Y", None))
-#endif // QT_CONFIG(shortcut)
-        self.actionSave.setText(QCoreApplication.translate("MainWindow", u"Save", None))
-#if QT_CONFIG(shortcut)
-        self.actionSave.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+S", None))
-#endif // QT_CONFIG(shortcut)
-        self.actionClear.setText(QCoreApplication.translate("MainWindow", u"Remove al nodes", None))
-        self.actionShow_labels.setText(QCoreApplication.translate("MainWindow", u"Show/hide labels", None))
-        self.actionSettings.setText(QCoreApplication.translate("MainWindow", u"Settings", None))
-        self.actionDegrees_of_Freedom_editor.setText(QCoreApplication.translate("MainWindow", u"Degrees of Freedom overview", None))
-        self.actionSet_input_focus_to_viewport.setText(QCoreApplication.translate("MainWindow", u"Set input focus to viewport", None))
-#if QT_CONFIG(shortcut)
-        self.actionSet_input_focus_to_viewport.setShortcut(QCoreApplication.translate("MainWindow", u"Esc", None))
-#endif // QT_CONFIG(shortcut)
-        self.actionSelf_contained_DAVE_package.setText(QCoreApplication.translate("MainWindow", u"Self-contained DAVE package", None))
-        self.pbUpdate.setText(QCoreApplication.translate("MainWindow", u"Update", None))
-        self.btnSolveStatics.setText(QCoreApplication.translate("MainWindow", u"Solve &statics", None))
-#if QT_CONFIG(tooltip)
-        self.pbCopyViewCode.setToolTip(QCoreApplication.translate("MainWindow", u"Copy screenshot code", None))
-#endif // QT_CONFIG(tooltip)
+        MainWindow.setWindowTitle(
+            QCoreApplication.translate("MainWindow", "DAVE", None)
+        )
+        self.actionSave_scene.setText(
+            QCoreApplication.translate("MainWindow", "Save as", None)
+        )
+        self.actionImport_sub_scene.setText(
+            QCoreApplication.translate("MainWindow", "Import (file)", None)
+        )
+        self.actionNew.setText(QCoreApplication.translate("MainWindow", "New", None))
+        self.actionHorizontal_camera.setText(
+            QCoreApplication.translate(
+                "MainWindow", "Level camera (make horizon horizontal)", None
+            )
+        )
+        # if QT_CONFIG(shortcut)
+        self.actionHorizontal_camera.setShortcut(
+            QCoreApplication.translate("MainWindow", "Alt+L", None)
+        )
+        # endif // QT_CONFIG(shortcut)
+        self.action.setText(QCoreApplication.translate("MainWindow", "---", None))
+        self.action2D_mode.setText(
+            QCoreApplication.translate("MainWindow", "2D mode", None)
+        )
+        self.actionDark_mode.setText(
+            QCoreApplication.translate("MainWindow", "Make darker", None)
+        )
+        # if QT_CONFIG(shortcut)
+        self.actionDark_mode.setShortcut(
+            QCoreApplication.translate("MainWindow", "Alt+-", None)
+        )
+        # endif // QT_CONFIG(shortcut)
+        self.actionShow_visuals.setText(
+            QCoreApplication.translate("MainWindow", "Show visuals", None)
+        )
+        self.actionShow_Geometry_elements.setText(
+            QCoreApplication.translate("MainWindow", "Show Geometry elements", None)
+        )
+        self.actionShow_force_applying_element.setText(
+            QCoreApplication.translate(
+                "MainWindow", "Show physics only elements (connectors, meshes)", None
+            )
+        )
+        self.actionSet_all_visible.setText(
+            QCoreApplication.translate("MainWindow", "Set all visible", None)
+        )
+        self.actionSet_all_hidden.setText(
+            QCoreApplication.translate("MainWindow", "Set all hidden", None)
+        )
+        self.actionFull_refresh.setText(
+            QCoreApplication.translate("MainWindow", "Full refresh", None)
+        )
+        self.actionShow_water_plane.setText(
+            QCoreApplication.translate("MainWindow", "Show water-plane", None)
+        )
+        self.actionAdd_light.setText(
+            QCoreApplication.translate("MainWindow", "Make lighter", None)
+        )
+        # if QT_CONFIG(shortcut)
+        self.actionAdd_light.setShortcut(
+            QCoreApplication.translate("MainWindow", "Alt+=", None)
+        )
+        # endif // QT_CONFIG(shortcut)
+        self.actionShow_all_forces_at_same_size.setText(
+            QCoreApplication.translate(
+                "MainWindow", "Show all forces same size (normalize)", None
+            )
+        )
+        self.actionIncrease_force_size.setText(
+            QCoreApplication.translate("MainWindow", "Increase force size", None)
+        )
+        # if QT_CONFIG(shortcut)
+        self.actionIncrease_force_size.setShortcut(
+            QCoreApplication.translate("MainWindow", "Alt+]", None)
+        )
+        # endif // QT_CONFIG(shortcut)
+        self.actionDecrease_force_size.setText(
+            QCoreApplication.translate("MainWindow", "Decrease force size", None)
+        )
+        # if QT_CONFIG(shortcut)
+        self.actionDecrease_force_size.setShortcut(
+            QCoreApplication.translate("MainWindow", "Alt+[", None)
+        )
+        # endif // QT_CONFIG(shortcut)
+        self.actionIncrease_Geometry_size.setText(
+            QCoreApplication.translate(
+                "MainWindow", "Increase Geometry size (poi, axis)", None
+            )
+        )
+        # if QT_CONFIG(shortcut)
+        self.actionIncrease_Geometry_size.setShortcut(
+            QCoreApplication.translate("MainWindow", "Alt+Shift+]", None)
+        )
+        # endif // QT_CONFIG(shortcut)
+        self.actionDecrease_Geometry_size.setText(
+            QCoreApplication.translate("MainWindow", "Decrease Geometry size", None)
+        )
+        # if QT_CONFIG(shortcut)
+        self.actionDecrease_Geometry_size.setShortcut(
+            QCoreApplication.translate("MainWindow", "Alt+Shift+[", None)
+        )
+        # endif // QT_CONFIG(shortcut)
+        self.actionPython_console.setText(
+            QCoreApplication.translate("MainWindow", "Python console", None)
+        )
+        self.actionGoal_seek.setText(
+            QCoreApplication.translate("MainWindow", "Goal-seek (one variable)", None)
+        )
+        self.actionStability_curve.setText(
+            QCoreApplication.translate("MainWindow", "Stability-curve", None)
+        )
+        self.actionOptimize.setText(
+            QCoreApplication.translate(
+                "MainWindow", "TODO: Optimize (multiple variables)", None
+            )
+        )
+        self.actionOpen.setText(QCoreApplication.translate("MainWindow", "Open", None))
+        self.actionImport_browser.setText(
+            QCoreApplication.translate("MainWindow", "Import (browser)", None)
+        )
+        self.actionRender_current_view.setText(
+            QCoreApplication.translate("MainWindow", "Render current view", None)
+        )
+        self.actionModal_shapes.setText(
+            QCoreApplication.translate("MainWindow", "Modal shapes", None)
+        )
+        self.actionInertia_properties.setText(
+            QCoreApplication.translate("MainWindow", "Inertia properties", None)
+        )
+        self.actionSave_actions_as.setText(
+            QCoreApplication.translate("MainWindow", "Save actions as", None)
+        )
+        self.actionsee_open_ocean_org.setText(
+            QCoreApplication.translate("MainWindow", "see open-ocean.org", None)
+        )
+        self.actionX.setText(QCoreApplication.translate("MainWindow", "X", None))
+        self.action_x.setText(QCoreApplication.translate("MainWindow", "-X", None))
+        self.actionY.setText(QCoreApplication.translate("MainWindow", "Y", None))
+        self.action_Y.setText(QCoreApplication.translate("MainWindow", "-Y", None))
+        self.actionZ.setText(QCoreApplication.translate("MainWindow", "From top", None))
+        self.action_Z.setText(
+            QCoreApplication.translate("MainWindow", "From bottom", None)
+        )
+        self.actionLook_towards_center.setText(
+            QCoreApplication.translate("MainWindow", "Look towards center", None)
+        )
+        self.actionCamera_reset.setText(
+            QCoreApplication.translate("MainWindow", "Camera reset", None)
+        )
+        self.actionShow_CoG_positions.setText(
+            QCoreApplication.translate("MainWindow", "Show CoGs", None)
+        )
+        self.actionBlender.setText(
+            QCoreApplication.translate("MainWindow", "Blender", None)
+        )
+        self.actionOrcaflex.setText(
+            QCoreApplication.translate("MainWindow", "Orcaflex .yml", None)
+        )
+        self.actionOrcaflex_package.setText(
+            QCoreApplication.translate(
+                "MainWindow", "Orcaflex run and collect package", None
+            )
+        )
+        self.actionPython_console_2.setText(
+            QCoreApplication.translate("MainWindow", "Python console", None)
+        )
+        self.actionVersion.setText(
+            QCoreApplication.translate("MainWindow", "Version", None)
+        )
+        self.actionOnline_help.setText(
+            QCoreApplication.translate("MainWindow", "Online help", None)
+        )
+        self.actionReload_components.setText(
+            QCoreApplication.translate(
+                "MainWindow", "Reload components from files", None
+            )
+        )
+        self.actionUndo.setText(QCoreApplication.translate("MainWindow", "Undo", None))
+        # if QT_CONFIG(shortcut)
+        self.actionUndo.setShortcut(
+            QCoreApplication.translate("MainWindow", "Ctrl+Z", None)
+        )
+        # endif // QT_CONFIG(shortcut)
+        self.actionRedo.setText(QCoreApplication.translate("MainWindow", "Redo", None))
+        # if QT_CONFIG(shortcut)
+        self.actionRedo.setShortcut(
+            QCoreApplication.translate("MainWindow", "Ctrl+Y", None)
+        )
+        # endif // QT_CONFIG(shortcut)
+        self.actionSave.setText(QCoreApplication.translate("MainWindow", "Save", None))
+        # if QT_CONFIG(shortcut)
+        self.actionSave.setShortcut(
+            QCoreApplication.translate("MainWindow", "Ctrl+S", None)
+        )
+        # endif // QT_CONFIG(shortcut)
+        self.actionClear.setText(
+            QCoreApplication.translate("MainWindow", "Remove al nodes", None)
+        )
+        self.actionShow_labels.setText(
+            QCoreApplication.translate("MainWindow", "Show labels", None)
+        )
+        self.actionSettings.setText(
+            QCoreApplication.translate("MainWindow", "Settings", None)
+        )
+        self.actionDegrees_of_Freedom_editor.setText(
+            QCoreApplication.translate(
+                "MainWindow", "Degrees of Freedom overview", None
+            )
+        )
+        self.actionSet_input_focus_to_viewport.setText(
+            QCoreApplication.translate(
+                "MainWindow", "Set input focus to viewport", None
+            )
+        )
+        # if QT_CONFIG(shortcut)
+        self.actionSet_input_focus_to_viewport.setShortcut(
+            QCoreApplication.translate("MainWindow", "Esc", None)
+        )
+        # endif // QT_CONFIG(shortcut)
+        self.actionSelf_contained_DAVE_package.setText(
+            QCoreApplication.translate(
+                "MainWindow", "Self-contained DAVE package", None
+            )
+        )
+        self.actionShow_origin.setText(
+            QCoreApplication.translate("MainWindow", "Show origin", None)
+        )
+        self.pbUpdate.setText(QCoreApplication.translate("MainWindow", "Update", None))
+        self.btnSolveStatics.setText(
+            QCoreApplication.translate("MainWindow", "Solve &statics", None)
+        )
+        # if QT_CONFIG(tooltip)
+        self.pbCopyViewCode.setToolTip(
+            QCoreApplication.translate("MainWindow", "Copy screenshot code", None)
+        )
+        # endif // QT_CONFIG(tooltip)
         self.pbCopyViewCode.setText("")
-        self.pb3D.setText(QCoreApplication.translate("MainWindow", u"2D", None))
+        self.pb3D.setText(QCoreApplication.translate("MainWindow", "2D", None))
         self.pbSide.setText("")
         self.pbFront.setText("")
         self.pbTop.setText("")
         self.btnZoomFit.setText("")
         self.pbUC.setText("")
+        self.pbOrigin.setText("")
         self.btnWater.setText("")
         self.btnSSAO.setText("")
         self.btnBlender.setText("")
-        self.btnPauseAnimation.setText(QCoreApplication.translate("MainWindow", u"||", None))
-        self.btnStopAnimation.setText(QCoreApplication.translate("MainWindow", u"X", None))
-#if QT_CONFIG(tooltip)
+        self.btnPauseAnimation.setText(
+            QCoreApplication.translate("MainWindow", "||", None)
+        )
+        self.btnStopAnimation.setText(
+            QCoreApplication.translate("MainWindow", "X", None)
+        )
+        # if QT_CONFIG(tooltip)
         self.sbPlaybackspeed.setToolTip("")
-#endif // QT_CONFIG(tooltip)
-        self.menuSolve_Statics.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
-        self.menuExport.setTitle(QCoreApplication.translate("MainWindow", u"Export", None))
-        self.menuView.setTitle(QCoreApplication.translate("MainWindow", u"View", None))
-        self.menuLook_towards.setTitle(QCoreApplication.translate("MainWindow", u"Look in direction", None))
-        self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
-        self.menuEdit.setTitle(QCoreApplication.translate("MainWindow", u"Edit", None))
-        self.menuScene.setTitle(QCoreApplication.translate("MainWindow", u"Scene", None))
-        self.dockWidget_2.setWindowTitle(QCoreApplication.translate("MainWindow", u"Python engine", None))
-        self.label_3.setText(QCoreApplication.translate("MainWindow", u"Code", None))
-        self.pbClearCode.setText(QCoreApplication.translate("MainWindow", u"&Clear", None))
-#if QT_CONFIG(tooltip)
-        self.pbExecute.setToolTip(QCoreApplication.translate("MainWindow", u"Shift + Enter", None))
-#endif // QT_CONFIG(tooltip)
-        self.pbExecute.setText(QCoreApplication.translate("MainWindow", u"Execute", None))
-        self.teCode.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">print(&quot;type python code here&quot;)</p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"># press shift+enter to execute</p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"># press alt+c to clear and focus here</p></body></html>", None))
-        self.label_2.setText(QCoreApplication.translate("MainWindow", u"Output", None))
-        self.pbGenerateSceneCode.setText(QCoreApplication.translate("MainWindow", u"Generate scene code", None))
-#if QT_CONFIG(tooltip)
-        self.pbCopyOutput.setToolTip(QCoreApplication.translate("MainWindow", u"Copy text below", None))
-#endif // QT_CONFIG(tooltip)
-        self.pbCopyOutput.setText(QCoreApplication.translate("MainWindow", u"Copy", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"History (actions)", None))
-#if QT_CONFIG(tooltip)
-        self.tbTidyHistory.setToolTip(QCoreApplication.translate("MainWindow", u"Removes redundant code from history", None))
-#endif // QT_CONFIG(tooltip)
-        self.tbTidyHistory.setText(QCoreApplication.translate("MainWindow", u"tidy", None))
-#if QT_CONFIG(tooltip)
-        self.pbCopyHistory.setToolTip(QCoreApplication.translate("MainWindow", u"Copy text below", None))
-#endif // QT_CONFIG(tooltip)
-        self.pbCopyHistory.setText(QCoreApplication.translate("MainWindow", u"Copy", None))
-        self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"toolBar", None))
-    # retranslateUi
+        # endif // QT_CONFIG(tooltip)
+        self.menuSolve_Statics.setTitle(
+            QCoreApplication.translate("MainWindow", "File", None)
+        )
+        self.menuExport.setTitle(
+            QCoreApplication.translate("MainWindow", "Export", None)
+        )
+        self.menuView.setTitle(QCoreApplication.translate("MainWindow", "View", None))
+        self.menuLook_towards.setTitle(
+            QCoreApplication.translate("MainWindow", "Look in direction", None)
+        )
+        self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", "Help", None))
+        self.menuEdit.setTitle(QCoreApplication.translate("MainWindow", "Edit", None))
+        self.menuScene.setTitle(QCoreApplication.translate("MainWindow", "Scene", None))
+        self.dockWidget_2.setWindowTitle(
+            QCoreApplication.translate("MainWindow", "Python engine", None)
+        )
+        self.label_3.setText(QCoreApplication.translate("MainWindow", "Code", None))
+        self.pbClearCode.setText(
+            QCoreApplication.translate("MainWindow", "&Clear", None)
+        )
+        # if QT_CONFIG(tooltip)
+        self.pbExecute.setToolTip(
+            QCoreApplication.translate("MainWindow", "Shift + Enter", None)
+        )
+        # endif // QT_CONFIG(tooltip)
+        self.pbExecute.setText(
+            QCoreApplication.translate("MainWindow", "Execute", None)
+        )
+        self.teCode.setHtml(
+            QCoreApplication.translate(
+                "MainWindow",
+                '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">\n'
+                '<html><head><meta name="qrichtext" content="1" /><meta charset="utf-8" /><style type="text/css">\n'
+                "p, li { white-space: pre-wrap; }\n"
+                "hr { height: 1px; border-width: 0; }\n"
+                'li.unchecked::marker { content: "\\2610"; }\n'
+                'li.checked::marker { content: "\\2612"; }\n'
+                "</style></head><body style=\" font-family:'Segoe UI'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+                '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-family:\'MS Shell Dlg 2\'; font-size:8pt;">print(&quot;type python code here&quot;)</span></p>\n'
+                '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-family:\'MS Shell Dlg 2\'; font-size:8pt;"># press shift+enter to execute</span></p>\n'
+                '<p style=" margin-top:0px; margin-bottom:0px; margin-lef'
+                't:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-family:\'MS Shell Dlg 2\'; font-size:8pt;"># press alt+c to clear and focus here</span></p></body></html>',
+                None,
+            )
+        )
+        self.label_2.setText(QCoreApplication.translate("MainWindow", "Output", None))
+        self.pbGenerateSceneCode.setText(
+            QCoreApplication.translate("MainWindow", "Generate scene code", None)
+        )
+        # if QT_CONFIG(tooltip)
+        self.pbCopyOutput.setToolTip(
+            QCoreApplication.translate("MainWindow", "Copy text below", None)
+        )
+        # endif // QT_CONFIG(tooltip)
+        self.pbCopyOutput.setText(
+            QCoreApplication.translate("MainWindow", "Copy", None)
+        )
+        self.label.setText(
+            QCoreApplication.translate("MainWindow", "History (actions)", None)
+        )
+        # if QT_CONFIG(tooltip)
+        self.tbTidyHistory.setToolTip(
+            QCoreApplication.translate(
+                "MainWindow", "Removes redundant code from history", None
+            )
+        )
+        # endif // QT_CONFIG(tooltip)
+        self.tbTidyHistory.setText(
+            QCoreApplication.translate("MainWindow", "tidy", None)
+        )
+        # if QT_CONFIG(tooltip)
+        self.pbCopyHistory.setToolTip(
+            QCoreApplication.translate("MainWindow", "Copy text below", None)
+        )
+        # endif // QT_CONFIG(tooltip)
+        self.pbCopyHistory.setText(
+            QCoreApplication.translate("MainWindow", "Copy", None)
+        )
+        self.toolBar.setWindowTitle(
+            QCoreApplication.translate("MainWindow", "toolBar", None)
+        )
 
+    # retranslateUi
