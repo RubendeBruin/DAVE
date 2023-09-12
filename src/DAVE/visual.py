@@ -1623,9 +1623,9 @@ class Viewport:
             raise ValueError("Global visuals already created - can not create again")
 
         plane = vp.Plane(pos=(0, 0, 0), normal=(0, 0, 1), s=(1000, 1000)).c(COLOR_WATER)
+        plane.alpha(0.4)
         plane.texture(TEXTURE_SEA)
         plane.lighting(ambient=1.0, diffuse=0.0, specular=0.0, specular_power=1e-7)
-        plane.alpha(0.4)
 
         self.sea_visuals["sea"] = plane
         self.sea_visuals["sea"].actor_type = ActorType.GLOBAL

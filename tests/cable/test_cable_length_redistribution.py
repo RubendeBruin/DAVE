@@ -1,3 +1,5 @@
+from numpy.testing import assert_allclose
+
 from DAVE import *
 
 def do_test_cable_segment_length_redistribution(loop=True):
@@ -103,6 +105,8 @@ def test_sheaved_catenary_with_3dof_body():
 
     s['cable'].connections = ('p1','p2','Point','p3','p1')
 
+    s.solve_statics()
+
     from DAVE.gui import Gui
     Gui(s)
 
@@ -140,11 +144,52 @@ def test_two_points_one_mass():
 
     c.solve_segment_lengths = True
 
+    s.solve_statics()
+
+    assert_allclose(s['Point'].gz, -17, atol=2)
+
+def test_three_parts():
+
+    s = Scene()
+    f = s.new_frame("global")
+
+    p1 = s.new_point("p1", position=(-10, 0, 0), parent=f)
+    s.new_point("p2", position=(1, 2, 0), parent=f)
+    s.new_point("p3", position=(4, 4, 0), parent=f)
+
+    s.new_cable(
+        connections=["p1", "p2", "p3", "p1"],
+        name="cable",
+        EA=122345,
+        mass=1000,
+        length=30,
+    )
+    #
+
+
+    s["cable"].solve_segment_lengths = False
+
+    s['cable'].length = 40.0
+    s.new_rigidbody(name = 'Body',mass=100).fixed = (False, False, False, True, True, True)
+
+    s.new_point('Point', parent = 'Body')
+
+    s['cable'].connections = ('p1','p2','Point','p3','p1')
+
+    s.solve_statics()
+
+    s["cable"].solve_segment_lengths = True
+    s['Body'].fixed = True
     s._save_coredump()
 
-    from DAVE.gui import Gui
-    Gui(s)
+    try:
+        s.solve_statics(terminate_after_s=5) # <-- will not converge; but should at least not crash
+    except ValueError as M:
+        assert "Solver maximum time of 5" in str(M)
+        pass # <-- will not converge; but should at least not crash
 
+    # from DAVE.gui import Gui
+    # Gui(s)
 
 
 if __name__ == '__main__':

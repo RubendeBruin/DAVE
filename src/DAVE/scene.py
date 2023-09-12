@@ -1722,7 +1722,8 @@ class Scene:
         # # fallback to normal solve if feedback and control arguments are not provided
         # if feedback_func is None or do_terminate_func is None:
         #     return self.solve_statics()
-        self._vfc.state_update()
+        self.update()
+        # self._vfc.state_update()
 
         if self._vfc.n_dofs() == 0:  # check for the trivial case
             self.update()
@@ -1883,7 +1884,7 @@ class Scene:
                             f"Maximum error = {self._vfc.Emaxabs:.6e} (phase 4)"
                         )
 
-    def solve_statics(self, silent=False, timeout=None):
+    def solve_statics(self, silent=False, timeout=None, terminate_after_s=30):
         """Solves statics
 
         If a timeout is provided then each pass will take at most 'timeout' seconds. This means you may need to call
@@ -1918,7 +1919,7 @@ class Scene:
         if self.gui_solve_func is not None:
             return self.gui_solve_func(self, called_by_user=False)
         else:
-            return self._solve_statics_with_optional_control(timeout_s=timeout)
+            return self._solve_statics_with_optional_control(timeout_s=timeout, terminate_after_s=terminate_after_s)
 
     def verify_equilibrium(self, tol=1e-2):
         """Checks if the current state is an equilibrium

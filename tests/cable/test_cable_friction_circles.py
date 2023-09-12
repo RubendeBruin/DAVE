@@ -388,6 +388,7 @@ def test_demo_90deg():
 
     factor = ((1-0.1)/(1+0.1))**(90/180)
 
+
     tensions = c.segment_mean_tensions
     assert_allclose(tensions[0], s.g*mass, atol=1e-5)
     assert_allclose(tensions[1], s.g*mass * factor, atol=1e-5)
