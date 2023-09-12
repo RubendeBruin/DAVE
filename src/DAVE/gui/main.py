@@ -274,7 +274,6 @@ class Gui:
         else:
             self.app = app
 
-        # self.app.setStyle("Fusion")
 
         self.app.aboutToQuit.connect(self.onCloseApplication)
 
@@ -413,7 +412,8 @@ class Gui:
             # ------ viewport buttons ------
 
             # right
-            self.ui.btnWater.clicked.connect(self.toggle_show_global)
+            self.ui.btnWater.clicked.connect(self.toggle_show_sea)
+            self.ui.pbOrigin.clicked.connect(self.toggle_show_origin)
             self.ui.pbUC.clicked.connect(self.toggle_show_UC)
             self.ui.btnBlender.clicked.connect(self.to_blender)
             self.ui.pbCopyViewCode.clicked.connect(self.copy_screenshot_code)
@@ -483,9 +483,8 @@ class Gui:
             self.ui.frame3d.dragEnterEvent = self.drag_enter
 
             # -- visuals --
-            self.ui.actionShow_water_plane.triggered.connect(
-                self.toggle_show_global_from_menu
-            )
+            self.ui.actionShow_origin.triggered.connect(self.toggle_show_origin)
+            self.ui.actionShow_water_plane.triggered.connect(self.toggle_show_sea)
             self.ui.actionShow_force_applying_element.triggered.connect(
                 self.toggle_show_force_applying_elements
             )
@@ -898,7 +897,8 @@ class Gui:
                 )
 
     def copy_screenshot_code(self):
-        sea = self.visual.settings.show_global
+        sea = self.visual.settings.show_sea
+
         camera_pos = self.visual.screen.camera.GetPosition()
         lookat = self.visual.screen.camera.GetFocalPoint()
 
@@ -1834,21 +1834,22 @@ class Gui:
             self.scene, animation_dofs=dofs, wavefield=self.visual._wavefield
         )
 
-    def toggle_show_global(self):
-        # TODO: fix
-        self.ui.actionShow_water_plane.setChecked(
-            not self.ui.actionShow_water_plane.isChecked()
-        )
-        self.toggle_show_global_from_menu()
+    def toggle_show_sea(self):
+        self.visual.settings.show_sea = not self.visual.settings.show_sea
+        self.ui.actionShow_water_plane.setChecked(self.visual.settings.show_sea)
+        self.ui.btnWater.setChecked(self.visual.settings.show_sea)
+        self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
+
+    def toggle_show_origin(self):
+        self.visual.settings.show_origin = not self.visual.settings.show_origin
+        self.ui.actionShow_origin.setChecked(self.visual.settings.show_origin)
+        self.ui.pbOrigin.setChecked(self.visual.settings.show_origin)
+        self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def toggle_show_UC(self):
         self.visual.settings.paint_uc = not self.visual.settings.paint_uc
 
         self.ui.pbUC.setChecked(self.visual.settings.paint_uc)
-        self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
-
-    def toggle_show_global_from_menu(self):
-        self.visual.settings.show_global = self.ui.actionShow_water_plane.isChecked()
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def toggle_show_force_applying_elements(self):

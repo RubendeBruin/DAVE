@@ -19,6 +19,7 @@ from enum import Enum
 from scipy.spatial import ConvexHull
 
 import vtkmodules.qt
+
 vtkmodules.qt.PyQtImpl = "PySide6"
 
 import vedo as vp  # ref: https://github.com/marcomusy/vedo
@@ -26,7 +27,10 @@ import vtk
 
 import vedo.settings
 from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import BlenderStyle
-from DAVE.visual_helpers.vtkHelpers import create_shearline_actors, create_momentline_actors
+from DAVE.visual_helpers.vtkHelpers import (
+    create_shearline_actors,
+    create_momentline_actors,
+)
 
 
 from DAVE.settings_visuals import (
@@ -202,6 +206,7 @@ In that case the ._vertices_changed = True flag of the outlined actor should be 
 
 from DAVE.visual_helpers.vtkHelpers import *
 
+
 class ActorType(Enum):
     FORCE = 1
     VISUAL = 2
@@ -212,7 +217,6 @@ class ActorType(Enum):
     BALLASTTANK = 7
     MESH_OR_CONNECTOR = 8
     COG = 9
-
 
 
 class VisualOutline:
@@ -229,6 +233,7 @@ class VisualOutline:
     edge detection
 
     """
+
     parent_vp_actor = None
     outline_actor = None
     outline_transform = None
@@ -237,14 +242,14 @@ class VisualOutline:
     I.Identity()
 
     def update(self):
-
         # update transform
 
         do_silhouette = getattr(self.parent_vp_actor, "do_silhouette", True)
 
-
         if do_silhouette:
-            SetTransformIfDifferent(self.outline_actor, self.I) # outline actor shall have identity
+            SetTransformIfDifferent(
+                self.outline_actor, self.I
+            )  # outline actor shall have identity
 
             new_matrix = self.parent_vp_actor.GetMatrix()
 
@@ -254,12 +259,14 @@ class VisualOutline:
                 self.outline_transform.GetTransform().SetMatrix(new_matrix)
 
         else:
-
-            if not vtkMatricesAlmostEqual(self.I.GetMatrix(), self.outline_transform.GetTransform().GetMatrix()):
+            if not vtkMatricesAlmostEqual(
+                self.I.GetMatrix(), self.outline_transform.GetTransform().GetMatrix()
+            ):
                 self.outline_transform.SetTransform(self.I)
 
-            SetMatrixIfDifferent(self.outline_actor, self.parent_vp_actor.GetMatrix())  # outline transform shall have identity
-
+            SetMatrixIfDifferent(
+                self.outline_actor, self.parent_vp_actor.GetMatrix()
+            )  # outline transform shall have identity
 
         self.outline_actor.SetVisibility(
             getattr(self.parent_vp_actor, "xray", False)
@@ -273,9 +280,6 @@ class VisualOutline:
         )
         self.outline_actor.GetProperty().SetLineWidth(OUTLINE_WIDTH)
         self.outline_actor.GetProperty().SetRenderLinesAsTubes(False)
-
-
-
 
 
 class VisualActor:
@@ -294,7 +298,6 @@ class VisualActor:
     """
 
     def __init__(self, actors: dict, node):
-
         # check if 'main' is available
         if "main" not in actors:
             raise ValueError(
@@ -312,8 +315,7 @@ class VisualActor:
             False  # parent of this object is selected - render transparent
         )
 
-        self.info = None # Holder for additional info
-
+        self.info = None  # Holder for additional info
 
     @property
     def center_position(self):
@@ -335,7 +337,6 @@ class VisualActor:
         return self.actors["main"].GetVisibility()
 
     def setLabelPosition(self, position):
-
         if len(position) != 3:
             raise ValueError("Position should have length 3")
 
@@ -471,7 +472,10 @@ class VisualActor:
 
         # label
         if settings.label_scale > 0:
-            if self.label_actor.GetVisibility() != node_painter_settings["main"].labelShow:
+            if (
+                self.label_actor.GetVisibility()
+                != node_painter_settings["main"].labelShow
+            ):
                 self.label_actor.SetVisibility(node_painter_settings["main"].labelShow)
 
             ta = self.label_actor.GetTextActor()
@@ -485,7 +489,6 @@ class VisualActor:
         # check for UCs, create uc_paint accordingly
         uc_paint = None
         if settings.paint_uc:
-
             uc_node = self.node
             if isinstance(
                 self.node, DAVE.Visual
@@ -504,12 +507,11 @@ class VisualActor:
         # and apply their paint or the uc_paint
 
         for key, actor in self.actors.items():
-
             # start_time = actor.GetMTime()
             props = actor.GetProperty()
 
-            if '#' in key:
-                key = key.split('#')[0]
+            if "#" in key:
+                key = key.split("#")[0]
 
             if key in node_painter_settings:
                 actor_settings = node_painter_settings[key]
@@ -518,7 +520,7 @@ class VisualActor:
                 continue
 
             # ****** Some very-custom code ********
-            if settings.show_global:
+            if settings.show_sea:
                 if node_class == "Buoyancy":
                     if key == "waterplane":
                         actor.off()
@@ -530,20 +532,16 @@ class VisualActor:
 
             # on or off
             if actor_settings.surfaceShow or actor_settings.lineWidth > 0:
-
                 actor.SetVisibility(True)
             else:
                 actor.SetVisibility(False)
                 continue
 
             if actor_settings.surfaceShow:
-
-
                 props.SetInterpolationToPBR()
                 props.SetRepresentationToSurface()
 
                 if uc_paint is None:
-
                     props.SetColor(
                         (
                             actor_settings.surfaceColor[0] / 255,
@@ -566,8 +564,8 @@ class VisualActor:
             else:
                 props.SetRepresentationToWireframe()
 
-            if getattr(self.node, '_draw_fat', False):
-                props.SetLineWidth(2*actor_settings.lineWidth)
+            if getattr(self.node, "_draw_fat", False):
+                props.SetLineWidth(2 * actor_settings.lineWidth)
             else:
                 props.SetLineWidth(actor_settings.lineWidth)
 
@@ -580,11 +578,13 @@ class VisualActor:
                     #         actor_settings.lineColor[2] / 255,
                     #     )
                     # )
-                    props.SetColor( (
+                    props.SetColor(
+                        (
                             actor_settings.lineColor[0] / 255,
                             actor_settings.lineColor[1] / 255,
                             actor_settings.lineColor[2] / 255,
-                        ))
+                        )
+                    )
                 else:
                     props.SetColor(uc_paint[:3])
             else:
@@ -627,12 +627,10 @@ class VisualActor:
 
             SetTransformIfDifferent(A, t)
 
-
             return
 
         if isinstance(self.node, vf.Circle):
             A = self.actors["main"]
-
 
             t = vtk.vtkTransform()
             t.Identity()
@@ -671,7 +669,6 @@ class VisualActor:
             return
 
         if isinstance(self.node, vf.Cable):
-
             # # check the number of points
             A = self.actors["main"]
 
@@ -680,6 +677,7 @@ class VisualActor:
             if self.node._render_as_tube:
                 self.info['mapper'].SetInputData(create_tube_data(points, self.node.diameter, colors=tensions ))
                 self.info['mapper'].Modified()
+
             else:
                 if len(points) == 0:  # not yet created
                     return
@@ -696,52 +694,61 @@ class VisualActor:
             # the length extents half the distance between the axles
             # the width extents half the wheel_width
 
-            N= self.node
+            N = self.node
             N.update()
 
             # The deck
             WHEEL_WIDTH = 1.0  # [m, a wheel is actually a pair of wheels]
             TOP_THICKNESS = 0.5  # m
-            WHEEL_RADIUS = 0.3 # [m]#
+            WHEEL_RADIUS = 0.3  # [m]#
 
             top_length = N.n_length * N.spacing_length
             top_width = (N.n_width - 1) * N.spacing_width + WHEEL_WIDTH
 
-            top_deck = self.actors['main']
+            top_deck = self.actors["main"]
             top_deck.SetScale(top_length, top_width, TOP_THICKNESS)
-            SetMatrixIfDifferent(top_deck, mat4x4_from_point_on_frame(N.parent, (0,0,-0.5*TOP_THICKNESS)))
+            SetMatrixIfDifferent(
+                top_deck,
+                mat4x4_from_point_on_frame(N.parent, (0, 0, -0.5 * TOP_THICKNESS)),
+            )
 
             # The wheels
             #
             # sync the number of wheels
             n_wheels = N.n_length * N.n_width
-            n_wheel_actors = len(self.actors) - 2 # 2 other actors
+            n_wheel_actors = len(self.actors) - 2  # 2 other actors
 
             #    wheel actors are named wheel#xx
 
             if n_wheel_actors > n_wheels:  # remove actors
-                for i in range(n_wheel_actors-n_wheels):
-                    name = f'wheel#{n_wheels + i}'
-                    viewport.screen.remove(self.actors[name], render = False)
+                for i in range(n_wheel_actors - n_wheels):
+                    name = f"wheel#{n_wheels + i}"
+                    viewport.screen.remove(self.actors[name], render=False)
                     del self.actors[name]
-            if n_wheel_actors < n_wheels: # add actors
-                for i in range(n_wheels-n_wheel_actors):
-                    actor = vp.Cylinder(pos = (0,0,0), r = WHEEL_RADIUS, height = WHEEL_WIDTH, axis = (0,1,0), res=24)
-                    self.actors[f'wheel#{n_wheel_actors+i}'] = actor
-                    viewport.screen.add(actor, render = False)
+            if n_wheel_actors < n_wheels:  # add actors
+                for i in range(n_wheels - n_wheel_actors):
+                    actor = vp.Cylinder(
+                        pos=(0, 0, 0),
+                        r=WHEEL_RADIUS,
+                        height=WHEEL_WIDTH,
+                        axis=(0, 1, 0),
+                        res=24,
+                    )
+                    self.actors[f"wheel#{n_wheel_actors+i}"] = actor
+                    viewport.screen.add(actor, render=False)
 
             # position the wheels
             axle_positions = N.axles
             extensions = N.extensions
 
             for i in range(n_wheels):
-                actor = self.actors[f'wheel#{i}']
+                actor = self.actors[f"wheel#{i}"]
                 pos = axle_positions[i]
 
-                m44 = mat4x4_from_point_on_frame(self.node.parent, (pos[0],pos[1],-extensions[i] + WHEEL_RADIUS))
+                m44 = mat4x4_from_point_on_frame(
+                    self.node.parent, (pos[0], pos[1], -extensions[i] + WHEEL_RADIUS)
+                )
                 SetMatrixIfDifferent(actor, m44)
-
-
 
             # The lines
             A = self.actors["line"]
@@ -790,7 +797,6 @@ class VisualActor:
 
         # footprints
         if isinstance(self.node, vf.HasFootprint):
-
             fp = self.node.footprint
             if fp:
                 n_points = len(fp)
@@ -812,13 +818,12 @@ class VisualActor:
                         fp = local_position
 
                 elif isinstance(self.node, vf.Frame):
-                    fp = [
-                        self.node.to_glob_position(loc)
-                        for loc in fp
-                    ]
+                    fp = [self.node.to_glob_position(loc) for loc in fp]
 
                 else:
-                    raise Exception('Footprint on node which is not a Point or Frame -- unexpected')
+                    raise Exception(
+                        "Footprint on node which is not a Point or Frame -- unexpected"
+                    )
 
                 if n_points == current_n_points:
                     self.actors["footprint"].points(fp)
@@ -843,15 +848,13 @@ class VisualActor:
 
             t.Translate(self.node.global_position)
 
-
             SetTransformIfDifferent(self.actors["main"], t)
-            SetScaleIfDifferent(self.actors["main"],viewport.settings.geometry_scale)
+            SetScaleIfDifferent(self.actors["main"], viewport.settings.geometry_scale)
 
             self.setLabelPosition(self.node.global_position)
             return
 
         if isinstance(self.node, vf.ContactBall):
-
             self.node.update()
 
             t = vtk.vtkTransform()
@@ -896,7 +899,6 @@ class VisualActor:
             return
 
         if isinstance(self.node, vf.Force):
-
             # check is the arrows are still what they should be
             if not np.all(
                 self.actors["main"]._force
@@ -933,7 +935,11 @@ class VisualActor:
                 p._moment = endpoint
                 self.actors["moment1"] = p
 
-                p = vtkArrowHeadActor(startPoint=0.96*endpoint, endPoint=1.36*endpoint,res=RESOLUTION_ARROW)
+                p = vtkArrowHeadActor(
+                    startPoint=0.96 * endpoint,
+                    endPoint=1.36 * endpoint,
+                    res=RESOLUTION_ARROW,
+                )
                 p.PickableOn()
                 p.actor_type = ActorType.FORCE
 
@@ -952,7 +958,6 @@ class VisualActor:
             return
 
         if isinstance(self.node, vf.RigidBody):
-
             # Some custom code to place and scale the Actor[3] of the body.
             # This actor should be placed at the CoG position and scaled to a solid steel block
 
@@ -966,7 +971,7 @@ class VisualActor:
             t = vtk.vtkTransform()
             t.Identity()
 
-            t.Translate(self.node.cog)    # the set to local cog position
+            t.Translate(self.node.cog)  # the set to local cog position
             t.Scale(scale, scale, scale)  # then scale
 
             # apply parent transform
@@ -979,16 +984,17 @@ class VisualActor:
             # The arrows
             t = vtk.vtkTransform()
             t.Identity()
-            t.Scale(viewport.settings.geometry_scale,
-                    viewport.settings.geometry_scale,
-                    viewport.settings.geometry_scale)  # scale first
+            t.Scale(
+                viewport.settings.geometry_scale,
+                viewport.settings.geometry_scale,
+                viewport.settings.geometry_scale,
+            )  # scale first
 
             t.PostMultiply()
             t.Concatenate(mat4x4)  # apply position and orientatation
 
-            for key in ('x','y','z'):
+            for key in ("x", "y", "z"):
                 SetTransformIfDifferent(self.actors[key], t)
-
 
             return
 
@@ -1029,7 +1035,7 @@ class VisualActor:
                 #
                 # the source-mesh itself is updated in "add_new_actors_to_screen"
                 if changed:
-                    SetMatrixIfDifferent(self.actors["main"],mat4x4)
+                    SetMatrixIfDifferent(self.actors["main"], mat4x4)
 
             if not changed:
                 if isinstance(self.node, vf.Tank):
@@ -1043,7 +1049,6 @@ class VisualActor:
                     return  # skip the other update functions
 
         if isinstance(self.node, vf.Buoyancy):
-
             ## Buoyancy has multiple actors
             #
             # actor 0 : the source mesh :: main
@@ -1062,7 +1067,7 @@ class VisualActor:
             # Update the CoB
             # move the CoB to the new (global!) position
             cob = self.node.cob
-            SetMatrixIfDifferent(self.actors["cob"],transform_from_point(*cob))
+            SetMatrixIfDifferent(self.actors["cob"], transform_from_point(*cob))
 
             # update water-plane
             x1, x2, y1, y2, _, _ = self.node.trimesh.get_extends()
@@ -1095,7 +1100,6 @@ class VisualActor:
             mesh = self.node._vfNode.current_mesh
 
             if mesh.nVertices > 0:  # only add when available
-
                 vis = actor_from_trimesh(mesh)
 
                 vis.actor_type = ActorType.MESH_OR_CONNECTOR
@@ -1111,7 +1115,6 @@ class VisualActor:
             return
 
         if isinstance(self.node, vf.Tank):
-
             ## Tank has multiple actors
             #
             # main : source-mesh
@@ -1141,7 +1144,9 @@ class VisualActor:
 
             # Update the CoG
             # move the CoG to the new (global!) position
-            SetMatrixIfDifferent(self.actors["cog"],transform_from_point(*self.node.cog))
+            SetMatrixIfDifferent(
+                self.actors["cog"], transform_from_point(*self.node.cog)
+            )
 
             if self.node.volume <= 1:  # the "cog node" has a volume of
                 self.actors["cog"].off()
@@ -1157,17 +1162,14 @@ class VisualActor:
             # If tank is full, then simply copy the mesh from the tank itself
 
             if self.node.fill_pct > 99.99 and not self.node.free_flooding:
-
                 # tank is full
                 vertices = points
                 faces = self.actors["main"].faces()
 
             else:
-
                 mesh = self.node._vfNode.current_mesh
 
                 if mesh.nVertices > 0:  # only add when available
-
                     vertices = []
                     for i in range(mesh.nVertices):
                         vertices.append(mesh.GetVertex(i))
@@ -1188,7 +1190,6 @@ class VisualActor:
                     d2 = top_plane_verts[:, 0:2]
 
                     try:
-
                         hull = ConvexHull(d2)
 
                         points = top_plane_verts[
@@ -1262,9 +1263,7 @@ class VisualActor:
                 need_new = True
 
             if len(vertices) > 0:  # if we have an actor
-
                 if need_new:
-
                     # print(f'Creating new actor for for {V.node.name}')
 
                     vis = actor_from_vertices_and_faces(vertices, faces)
@@ -1289,14 +1288,14 @@ class VisualActor:
             return
 
         if isinstance(self.node, vf.Frame):
-
             # The arrows
             t = vtk.vtkTransform()
             t.Identity()
-            t.Scale(viewport.settings.geometry_scale,
-                    viewport.settings.geometry_scale,
-                    viewport.settings.geometry_scale)  # scale first
-
+            t.Scale(
+                viewport.settings.geometry_scale,
+                viewport.settings.geometry_scale,
+                viewport.settings.geometry_scale,
+            )  # scale first
 
             mat4x4 = transform_to_mat4x4(self.node.global_transform)
             t.PostMultiply()
@@ -1304,7 +1303,6 @@ class VisualActor:
 
             for a in self.actors.values():
                 SetTransformIfDifferent(a, t)
-
 
             return
 
@@ -1322,7 +1320,6 @@ class VisualActor:
 
         for A in self.actors.values():
             SetMatrixIfDifferent(A, mat4x4)
-
 
 
 class Viewport:
@@ -1347,7 +1344,8 @@ class Viewport:
         self.temporary_actors: List[vtk.vtkActor] = list()
 
         """These are all non-node-bound visuals , visuals for the global environment"""
-        self.global_visuals = dict()
+        self.sea_visuals = dict()
+        self.origin_visuals = dict()
 
         self.screen = None
         """Becomes assigned when a screen is active (or was active...)"""
@@ -1384,7 +1382,9 @@ class Viewport:
         """The colorbar for UCs is a static image"""
 
         self.Style = BlenderStyle()
-        self.Style.callbackCameraDirectionChanged = self._rotate_actors_due_to_camera_movement
+        self.Style.callbackCameraDirectionChanged = (
+            self._rotate_actors_due_to_camera_movement
+        )
         self.Style.callbackAnyKey = self.keyPressFunction
 
     @staticmethod
@@ -1404,7 +1404,8 @@ class Viewport:
 
         v.settings.painter_settings = painters
 
-        v.settings.show_global = sea
+        v.settings.show_sea = sea
+        v.settings.show_origin = not sea
 
         v.show_embedded(widget)
         v.quick_updates_only = False
@@ -1421,10 +1422,9 @@ class Viewport:
         widget.show()
 
         from PySide6.QtCore import QEventLoop
+
         if not QEventLoop().isRunning():
             app.exec_()
-
-
 
     def initialize_node_drag(self, nodes):
         # Initialize dragging on selected node
@@ -1434,11 +1434,15 @@ class Viewport:
 
         for node in nodes:
             actors.extend([*self.actor_from_node(node).actors.values()])
-            outlines.extend([ol.outline_actor for ol in self.node_outlines if ol.parent_vp_actor in actors])
-
+            outlines.extend(
+                [
+                    ol.outline_actor
+                    for ol in self.node_outlines
+                    if ol.parent_vp_actor in actors
+                ]
+            )
 
         self.Style.StartDragOnProps([*actors, *outlines])
-
 
     def add_temporary_actor(self, actor: vtk.vtkActor):
         self.temporary_actors.append(actor)
@@ -1493,16 +1497,16 @@ class Viewport:
         to_be_deleted = []
 
         for ol in self.node_outlines:
-            if getattr(ol.parent_vp_actor,'_vertices_changed', False):
-                logging.info('Force-recreating outline due to vertices_changed flag on outlined actor')
+            if getattr(ol.parent_vp_actor, "_vertices_changed", False):
+                logging.info(
+                    "Force-recreating outline due to vertices_changed flag on outlined actor"
+                )
                 to_be_deleted.append(ol)
                 _outlines.remove(ol.parent_vp_actor)
                 ol.parent_vp_actor._vertices_changed = False
 
-
         # loop over actors, add outlines if needed
         for vp_actor in self.screen.actors:
-
             if isinstance(
                 vp_actor.GetProperty(), vtkmodules.vtkRenderingCore.vtkProperty2D
             ):  # annotations
@@ -1523,8 +1527,6 @@ class Viewport:
             if isinstance(data, vtk.vtkPolyData):
                 # this actor can have an outline
                 if vp_actor not in _outlines:
-
-
                     # create outline and add to self.outlines
 
                     # clean the input data to ensure continuous faces
@@ -1544,7 +1546,6 @@ class Viewport:
                     tr.Update()
 
                     if do_silhouette:
-
                         ol = vtk.vtkPolyDataSilhouette()
                         ol.SetInputConnection(tr.GetOutputPort())
                         ol.SetEnableFeatureAngle(True)
@@ -1586,7 +1587,6 @@ class Viewport:
         for record in self.node_outlines:
             # is the parent actor still present?
             if record.parent_vp_actor in self.screen.actors:
-
                 record.update()
 
             else:
@@ -1619,35 +1619,33 @@ class Viewport:
     def create_world_actors(self):
         """Creates the sea and global axes"""
 
-        if "sea" in self.global_visuals:
+        if "sea" in self.sea_visuals:
             raise ValueError("Global visuals already created - can not create again")
 
-        plane = vp.Plane(pos=(0, 0, 0), normal=(0, 0, 1), s =(1000, 1000)).c(
-            COLOR_WATER
-        )
+        plane = vp.Plane(pos=(0, 0, 0), normal=(0, 0, 1), s=(1000, 1000)).c(COLOR_WATER)
         plane.texture(TEXTURE_SEA)
         plane.lighting(ambient=1.0, diffuse=0.0, specular=0.0, specular_power=1e-7)
         plane.alpha(0.4)
 
-        self.global_visuals["sea"] = plane
-        self.global_visuals["sea"].actor_type = ActorType.GLOBAL
-        self.global_visuals["sea"].no_outline = False  # If outlines are used, then they need to be disabled
-                                                       # when performing a zoom-fit (see zoom-all)
-        self.global_visuals["sea"].negative = False
+        self.sea_visuals["sea"] = plane
+        self.sea_visuals["sea"].actor_type = ActorType.GLOBAL
+        self.sea_visuals[
+            "sea"
+        ].no_outline = False  # If outlines are used, then they need to be disabled
+        # when performing a zoom-fit (see zoom-all)
 
-        self.global_visuals["main"] = vp.Line((0, 0, 0), (10, 0, 0)).c("red")
-        self.global_visuals["main"].actor_type = ActorType.GEOMETRY
-        self.global_visuals["main"].negative = True
+        self.origin_visuals["main"] = vp.Line((0, 0, 0), (10, 0, 0)).c("red")
+        self.origin_visuals["main"].actor_type = ActorType.GEOMETRY
 
-        self.global_visuals["y"] = vp.Line((0, 0, 0), (0, 10, 0)).c("green")
-        self.global_visuals["y"].actor_type = ActorType.GEOMETRY
-        self.global_visuals["y"].negative = True
+        self.origin_visuals["y"] = vp.Line((0, 0, 0), (0, 10, 0)).c("green")
+        self.origin_visuals["y"].actor_type = ActorType.GEOMETRY
 
-        self.global_visuals["z"] = vp.Line((0, 0, 0), (0, 0, 10)).c("blue")
-        self.global_visuals["z"].actor_type = ActorType.GEOMETRY
-        self.global_visuals["z"].negative = True
+        self.origin_visuals["z"] = vp.Line((0, 0, 0), (0, 0, 10)).c("blue")
+        self.origin_visuals["z"].actor_type = ActorType.GEOMETRY
 
-        for actor in self.global_visuals.values():
+        for actor in self.sea_visuals.values():
+            self.screen.add(actor)
+        for actor in self.origin_visuals.values():
             self.screen.add(actor)
 
         wind_actor = vp.Lines(
@@ -1675,7 +1673,6 @@ class Viewport:
         self.screen.add_icon(self.current_actor, pos=4, size=0.06)
 
     def deselect_all(self):
-
         for v in self.node_visuals:
             if v._is_selected:
                 v._is_selected = False
@@ -1692,7 +1689,7 @@ class Viewport:
         """
         # print(actor)
 
-        outlined_actor = getattr(actor,'outlined_actor',None)
+        outlined_actor = getattr(actor, "outlined_actor", None)
         if outlined_actor is not None:
             return self.node_from_vtk_actor(outlined_actor)
 
@@ -1725,7 +1722,7 @@ class Viewport:
         self.screen.renderer.AddActor(waveplane.line_actor)
         self._wavefield = waveplane
 
-        self.settings.show_global = False
+        self.settings.show_sea = False
         #
         # if self.settings.show_global = False:
         #     self._staticwaveplane = True
@@ -1765,7 +1762,6 @@ class Viewport:
             exclude_nodes = []
         for V in self.node_visuals:
             for A in V.actors.values():
-
                 if V.node in exclude_nodes:
                     continue
 
@@ -1773,16 +1769,12 @@ class Viewport:
                     continue
                 A.alpha(alpha)
 
-
-
     def toggle_2D(self):
         """Toggles between 2d and 3d mode. Returns True if mode is 2d after toggling"""
         self.Style.ToggleParallelProjection()
         return bool(self.renderer.GetActiveCamera().GetParallelProjection())
 
-
     def _scaled_force_vector(self, vector):
-
         r = np.array(vector)
         len = np.linalg.norm(r)
         if len == 0:
@@ -1803,7 +1795,6 @@ class Viewport:
         """
 
         for N in self.scene._nodes:
-
             if not recreate:
                 try:  # if we already have a visual, then no need to create another one
                     N._visualObject
@@ -1816,7 +1807,6 @@ class Viewport:
             info = None
 
             if isinstance(N, vf.Buoyancy):
-
                 # source-mesh : main
                 # cob
                 # water-plane
@@ -1861,7 +1851,6 @@ class Viewport:
                 actors["waterplane"] = p
 
             if isinstance(N, vf.Tank):
-
                 # source-mesh
                 # cog
                 # filled part of mesh (added later)
@@ -1879,7 +1868,6 @@ class Viewport:
                 actors["cog"] = c
 
             if isinstance(N, vf.ContactMesh):
-
                 # 0 : source-mesh
 
                 # This is the source-mesh. Connect it to the parent
@@ -1982,7 +1970,6 @@ class Viewport:
                 actors["main"] = p
 
             if isinstance(N, vf.Force):
-
                 endpoint = self._scaled_force_vector(N.force)
                 p = vtkArrowActor(
                     startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
@@ -2002,7 +1989,9 @@ class Viewport:
                 p._moment = endpoint
                 actors["moment1"] = p
 
-                p = vtkArrowHeadActor(startPoint=0.96*endpoint, endPoint=1.36*endpoint,
+                p = vtkArrowHeadActor(
+                    startPoint=0.96 * endpoint,
+                    endPoint=1.36 * endpoint,
                     res=RESOLUTION_ARROW,
                 )
                 p.PickableOn()
@@ -2018,14 +2007,13 @@ class Viewport:
                 actors["main"] = p
 
             if isinstance(N, vf.Cable):
-
                 if N._vfNode.global_points:
                     if N._render_as_tube:
                         # a = vp.Tube(N._vfNode.global_points, r = N.diameter/2)
 
                         # Ref: vedo / shapes.py :: Tube
 
-                        gp = N._vfNode.global_points # alias
+                        gp = N._vfNode.global_points  # alias
                         # #
                         # points = vtk.vtkPoints()
                         # for p in gp:
@@ -2060,7 +2048,7 @@ class Viewport:
                         a = vtk.vtkActor()
                         a.SetMapper(mapper)
 
-                        info = {'mapper':mapper}
+                        info = {"mapper": mapper}
 
                     else:
                         a = vp.Line(N._vfNode.global_points)
@@ -2073,7 +2061,6 @@ class Viewport:
                 actors["main"] = a
 
             if isinstance(N, vf.SPMT):
-
                 # SPMT
                 #
                 # 'main' is a cube spanning the upper surface of the SPMT
@@ -2081,11 +2068,11 @@ class Viewport:
                 # the length extents half the distance between the axles
                 # the width extents half the wheel_width
 
-                WHEEL_WIDTH = 1.0 # [m, a wheel is actually a pair of wheels]
-                TOP_THICKNESS = 0.5 # m
+                WHEEL_WIDTH = 1.0  # [m, a wheel is actually a pair of wheels]
+                TOP_THICKNESS = 0.5  # m
 
                 top_length = N.n_length * N.spacing_length
-                top_width = (N.n_width-1) * N.spacing_width + WHEEL_WIDTH
+                top_width = (N.n_width - 1) * N.spacing_width + WHEEL_WIDTH
 
                 actors["main"] = vp.Cube(side=1)
 
@@ -2100,7 +2087,6 @@ class Viewport:
                 actors["line"] = a
 
             if isinstance(N, vf.Beam):
-
                 gp = N.global_positions
 
                 if len(gp) > 0:
@@ -2114,7 +2100,6 @@ class Viewport:
                 actors["main"] = a
 
             if isinstance(N, vf.Connector2d):
-
                 points = list()
 
                 for i in range(2):
@@ -2128,7 +2113,6 @@ class Viewport:
                 actors["main"] = a
 
             if isinstance(N, vf.LC6d):
-
                 points = list()
 
                 for i in range(2):
@@ -2167,7 +2151,6 @@ class Viewport:
         to_be_removed = []
 
         for V in self.node_visuals:
-
             # check if the node still exists
             # if not, then remove the visual
 
@@ -2238,7 +2221,6 @@ class Viewport:
         to_be_added = []
 
         if self.screen:
-
             actors = self.screen.get_meshes()
             for va in self.node_visuals:
                 for a in va.actors.values():
@@ -2255,7 +2237,6 @@ class Viewport:
             # check if objs or meshes need to be re-loaded
             for va in self.node_visuals:
                 if isinstance(va.node, vf.Visual):
-
                     try:
                         file = self.scene.get_resource_path(va.node.path)
                     except FileExistsError:
@@ -2294,7 +2275,6 @@ class Viewport:
                     or isinstance(va.node, vf.Tank)
                 ):
                     if va.node.trimesh._new_mesh:
-
                         # va.node.update() # the whole scene is already updated when executing code
 
                         new_mesh = actor_from_trimesh(va.node.trimesh._TriMesh)
@@ -2314,7 +2294,7 @@ class Viewport:
                             if va.node.parent is not None:
                                 tr = va.node.parent.global_transform
                                 mat4x4 = transform_to_mat4x4(tr)
-                                SetMatrixIfDifferent(va.actors["main"],mat4x4)
+                                SetMatrixIfDifferent(va.actors["main"], mat4x4)
 
                             else:
                                 print("Trimesh without a parent")
@@ -2344,31 +2324,29 @@ class Viewport:
         """
 
         if offscreen:
-
             import vedo
-            vedo.settings.default_backend = '2d'
+
+            vedo.settings.default_backend = "2d"
             self.screen = vp.Plotter(axes=0, offscreen=True, size=size)
 
         else:
-
             if (
                 self.vtkWidget is None
             ):  # it is possible to launch the Gui from jupyter, so check for both
-
                 # create embedded notebook (k3d) view
 
                 import vedo
-                vedo.settings.default_backend = 'k3d'
+
+                vedo.settings.default_backend = "k3d"
                 self.screen = vp.Plotter(axes=4, bg=COLOR_BG1, bg2=COLOR_BG2)
 
             else:
-
                 if self.vtkWidget is None:
-
                     # create stand-alone interactive view
 
                     import vedo
-                    vedo.settings.default_backend = 'None'
+
+                    vedo.settings.default_backend = "None"
 
                     self.screen = vp.plotter.Plotter(
                         interactive=True,
@@ -2379,13 +2357,16 @@ class Viewport:
                     )
 
                 else:
-
                     # create embedded Qt view
                     import vedo
-                    vedo.settings.default_backend = 'None'
+
+                    vedo.settings.default_backend = "None"
 
                     self.screen = vp.plotter.Plotter(
-                        qt_widget=self.vtkWidget, axes=4, bg=COLOR_BG1_GUI, bg2=COLOR_BG2_GUI
+                        qt_widget=self.vtkWidget,
+                        axes=4,
+                        bg=COLOR_BG1_GUI,
+                        bg2=COLOR_BG2_GUI,
                     )
 
         """ For reference: this is how to load an cubemap texture
@@ -2494,7 +2475,6 @@ class Viewport:
         #     camera["focalPoint"] = [0, 0, 0]
 
         if self.vtkWidget is None:
-
             # show embedded
             for va in self.node_visuals:
                 for a in va.actors.values():
@@ -2512,7 +2492,6 @@ class Viewport:
             return self.screen
 
         else:
-
             screen = self.screen
 
             for va in self.node_visuals:
@@ -2535,7 +2514,6 @@ class Viewport:
             return screen
 
     def EnableSSAO(self):
-
         # from documentation:
         # virtual void 	UseSSAOOn ()
         # virtual void 	UseSSAOOff ()
@@ -2553,7 +2531,7 @@ class Viewport:
 
     def zoom_all(self):
         """Set camera to view the whole scene (ignoring the sea)"""
-        sea_actor = self.global_visuals["sea"]
+        sea_actor = self.sea_visuals["sea"]
         sea_actor.SetUseBounds(False)
 
         # find outline actor for sea
@@ -2568,7 +2546,7 @@ class Viewport:
             try:
                 self.renderer.ResetCamera()  # try to use the current renderer
             except:
-                warn('Can not perform zoom-all, no active renderer/camera')
+                warn("Can not perform zoom-all, no active renderer/camera")
 
         sea_actor.SetUseBounds(True)
 
@@ -2584,7 +2562,7 @@ class Viewport:
 
         # add a widget to gui
         vl = QVBoxLayout()
-        vl.setContentsMargins(1,1,1,1)
+        vl.setContentsMargins(1, 1, 1, 1)
         self.target_frame = target_frame
         self.vtkWidget = QVTKRenderWindowInteractor(target_frame)
 
@@ -2594,7 +2572,6 @@ class Viewport:
 
         vl.addWidget(self.vtkWidget)
         target_frame.setLayout(vl)
-
 
         self.setup_screen()
         screen = self.show()
@@ -2607,7 +2584,6 @@ class Viewport:
         iren = self.renwin.GetInteractor()
 
         style = self.Style
-
 
         iren.SetInteractorStyle(style)
 
@@ -2630,16 +2606,13 @@ class Viewport:
         self.create_world_actors()
         self.add_wind_and_current_actors()
 
-
-
-    def get_focus(self,*args):
+    def get_focus(self, *args):
         # print('getting focus')
-        self.target_frame.setStyleSheet('background-color: gray')
+        self.target_frame.setStyleSheet("background-color: gray")
 
-    def focus_lost(self,*args):
+    def focus_lost(self, *args):
         # print('loosing focus')
-        self.target_frame.setStyleSheet('')
-
+        self.target_frame.setStyleSheet("")
 
     def keyPressFunction(self, key):
         """Most key-pressed are handled by the Style,
@@ -2656,7 +2629,6 @@ class Viewport:
             self.refresh_embeded_view()
             return True
 
-
     def refresh_embeded_view(self):
         if self.vtkWidget is not None:
             self.vtkWidget.update()
@@ -2665,7 +2637,6 @@ class Viewport:
         """Updates the settings of the viewport to reflect the settings in self.settings.painter_settings"""
 
         for v in self.node_visuals:
-
             # on-off from node overrides everything
             if v.node is not None:
                 for a in v.actors.values():
@@ -2686,22 +2657,14 @@ class Viewport:
         self.update_global_visibility()
         self.update_outlines()
 
-
     def update_global_visibility(self):
         """Syncs the visibility of the global actors to Viewport-settings"""
 
-        if self.settings.show_global:
-            for actor in self.global_visuals.values():
-                if actor.negative:
-                    actor.off()
-                else:
-                    actor.on()
-        else:
-            for actor in self.global_visuals.values():
-                if actor.negative:
-                    actor.on()
-                else:
-                    actor.off()
+        for actor in self.sea_visuals.values():
+            actor.SetVisibility(self.settings.show_sea)
+
+        for actor in self.origin_visuals.values():
+            actor.SetVisibility(self.settings.show_origin)
 
         self.colorbar_actor.SetVisibility(self.settings.paint_uc)
 
@@ -2743,10 +2706,10 @@ class Viewport:
                         direction = direction / np.linalg.norm(direction)
 
                 transform = transform_from_direction(
-                    direction, position=node.parent.global_position, scale = scale
+                    direction, position=node.parent.global_position, scale=scale
                 )
 
-                SetMatrixIfDifferent(actor,transform)
+                SetMatrixIfDifferent(actor, transform)
                 if hasattr(actor, "_outline"):
                     actor._outline.update()
 
@@ -2776,29 +2739,26 @@ class WaveField:
         if self.elevation is None:
             return 0
         else:
-            _ ,_ , nt = self.elevation.shape
+            _, _, nt = self.elevation.shape
             return nt
 
     def update(self, t):
-
         nx, ny, nt = self.elevation.shape
         i = int(t / self.dt) % nt
-
 
         for ix in range(nx):
             for iy in range(ny):
                 count = ix + iy * nx
 
-                x,y,_ = self.pts.GetPoint(count)
+                x, y, _ = self.pts.GetPoint(count)
                 self.pts.SetPoint(count, x, y, self.elevation[ix, iy, i])
-
 
         self.pts.Modified()
 
-        pts = getattr(self, 'line_pts', None)
+        pts = getattr(self, "line_pts", None)
         if pts is not None:
             for ix in range(nx):
-                x,y,_ = pts.GetPoint(ix)
+                x, y, _ = pts.GetPoint(ix)
                 pts.SetPoint(ix, x, y, self.elevation[ix, 0, i])
             pts.Modified()
 
@@ -2823,8 +2783,14 @@ class WaveField:
                 x = xg[ix]
                 y = yg[iy]
 
-                xr = np.cos(np.deg2rad(wave_direction)) * x - np.sin(np.deg2rad(wave_direction)) * y
-                yr = np.sin(np.deg2rad(wave_direction)) * x + np.cos(np.deg2rad(wave_direction)) * y
+                xr = (
+                    np.cos(np.deg2rad(wave_direction)) * x
+                    - np.sin(np.deg2rad(wave_direction)) * y
+                )
+                yr = (
+                    np.sin(np.deg2rad(wave_direction)) * x
+                    + np.cos(np.deg2rad(wave_direction)) * y
+                )
 
                 xv[ix, iy] = xr
                 yv[ix, iy] = yr
@@ -2844,13 +2810,11 @@ class WaveField:
         dx,
         dy,
     ):
-
         # create the grid
         self.make_grid(-dx / 2, 1.5 * dx, -dy, dy, nx, 2, wave_direction)
 
         xv = self.xv  # alias
         yv = self.yv
-
 
         u = np.array(
             (np.cos(np.deg2rad(wave_direction)), np.sin(np.deg2rad(wave_direction)))
@@ -2874,24 +2838,21 @@ class WaveField:
         self.create_actor()
         self.create_line_actor()
 
-
-
     def create_line_actor(self):
         nx, ny, nt = self.elevation.shape
 
         # make grid
         pts = vtk.vtkPoints()
         for ix in range(nx):
-            x = self.xv[ix,0]
-            y = self.yv[ix,0]
+            x = self.xv[ix, 0]
+            y = self.yv[ix, 0]
 
-            pts.InsertNextPoint(x,y, self.elevation[ix, 0,0])  # use t=0 and y=y[0]
+            pts.InsertNextPoint(x, y, self.elevation[ix, 0, 0])  # use t=0 and y=y[0]
 
         segments = vtk.vtkCellArray()
         segments.InsertNextCell(nx)
         for i in range(nx):
             segments.InsertCellPoint(i)
-
 
         poly = vtk.vtkPolyData()
         poly.SetPoints(pts)
@@ -2909,18 +2870,16 @@ class WaveField:
         self.line_actor = actor
         self.line_pts = pts
 
-
     def create_actor(self):
-
         ny, nx, nt = self.elevation.shape
 
         # make grid
         pts = vtk.vtkPoints()
         for ix in range(nx):
             for iy in range(ny):
-                pts.InsertNextPoint(self.xv[iy, ix],
-                                    self.yv[iy, ix],
-                                    self.elevation[iy, ix, 1])
+                pts.InsertNextPoint(
+                    self.xv[iy, ix], self.yv[iy, ix], self.elevation[iy, ix, 1]
+                )
 
         grid = vtk.vtkStructuredGrid()
         grid.SetDimensions(ny, nx, 1)
@@ -2939,7 +2898,9 @@ class WaveField:
 
         for i in range(0, nx):
             for j in range(0, ny):
-                TextureCooridinates.InsertNextTuple2(tex_repeat * i / (nx - 1), tex_repeat * j / (ny - 1))
+                TextureCooridinates.InsertNextTuple2(
+                    tex_repeat * i / (nx - 1), tex_repeat * j / (ny - 1)
+                )
 
         grid.GetPointData().SetTCoords(TextureCooridinates)
 

@@ -25,28 +25,29 @@ import vtk
 from vtkmodules.util.numpy_support import vtk_to_numpy
 import numpy as np
 
+
 def show(
-        scene,
-        camera_pos=None,  #
-        lookat=None,
-        width=1024,
-        height=600,
-        show_force: bool = True,  # show forces
-        show_meshes: bool = True,  # show meshes and connectors
-        show_global: bool = False,  # show or hide the environment (sea)
-        show_cog: bool = True,
-        cog_do_normalize: bool = False,
-        cog_scale: float = 1.0,
-        force_do_normalize: bool = True,  # Normalize force size to 1.0 for plotting
-        force_scale: float = 1.6,  # Scale to be applied on (normalized) force magnitude
-        geometry_scale: float = 1.0,  # poi radius of the pois
-        painters="Construction",
-        additional_actors=(),
-        paint_uc=False,
-        projection="3d",
-        zoom_fit=False,
-        scale=None,
-        transparent=False,
+    scene,
+    camera_pos=None,  #
+    lookat=None,
+    width=1024,
+    height=600,
+    show_force: bool = True,  # show forces
+    show_meshes: bool = True,  # show meshes and connectors
+    show_global: bool = False,  # show or hide the environment (sea)
+    show_cog: bool = True,
+    cog_do_normalize: bool = False,
+    cog_scale: float = 1.0,
+    force_do_normalize: bool = True,  # Normalize force size to 1.0 for plotting
+    force_scale: float = 1.6,  # Scale to be applied on (normalized) force magnitude
+    geometry_scale: float = 1.0,  # poi radius of the pois
+    painters="Construction",
+    additional_actors=(),
+    paint_uc=False,
+    projection="3d",
+    zoom_fit=False,
+    scale=None,
+    transparent=False,
 ):
     """
     Creates a 3d view of the scene and shows it as a static image.
@@ -82,54 +83,53 @@ def show(
         camera_pos=camera_pos,  #
         lookat=lookat,
         width=width,
-        height = height,
-        show_force= show_force,  # show forces
-        show_meshes = show_meshes,  # show meshes and connectors
-        show_global = show_global,  # show or hide the environment (sea)
-        show_cog = show_cog,
-        cog_do_normalize = cog_do_normalize,
-        cog_scale = cog_scale,
-        force_do_normalize = force_do_normalize,  # Normalize force size to 1.0 for plotting
-        force_scale = force_scale,  # Scale to be applied on (normalized) force magnitude
-        geometry_scale = geometry_scale,  # poi radius of the pois
-        painters = painters,
-        additional_actors = additional_actors,
-        paint_uc = paint_uc,
-        projection = projection,
-        zoom_fit = zoom_fit,
-        scale = scale,
-        transparent = transparent,)
+        height=height,
+        show_force=show_force,  # show forces
+        show_meshes=show_meshes,  # show meshes and connectors
+        show_global=show_global,  # show or hide the environment (sea)
+        show_cog=show_cog,
+        cog_do_normalize=cog_do_normalize,
+        cog_scale=cog_scale,
+        force_do_normalize=force_do_normalize,  # Normalize force size to 1.0 for plotting
+        force_scale=force_scale,  # Scale to be applied on (normalized) force magnitude
+        geometry_scale=geometry_scale,  # poi radius of the pois
+        painters=painters,
+        additional_actors=additional_actors,
+        paint_uc=paint_uc,
+        projection=projection,
+        zoom_fit=zoom_fit,
+        scale=scale,
+        transparent=transparent,
+    )
 
     return image
 
 
-
-
 def pil_image(
-        scene,
-        do_sequence=True,
-        use_step0_as_background=True,
-        use_only_steps_with_labels=False,
-        camera_pos=None,  #
-        lookat=None,
-        width=1024,
-        height=600,
-        show_force: bool = True,  # show forces
-        show_meshes: bool = True,  # show meshes and connectors
-        show_global: bool = False,  # show or hide the environment (sea)
-        show_cog: bool = True,
-        cog_do_normalize: bool = False,
-        cog_scale: float = 1.0,
-        force_do_normalize: bool = True,  # Normalize force size to 1.0 for plotting
-        force_scale: float = 1.6,  # Scale to be applied on (normalized) force magnitude
-        geometry_scale: float = 1.0,  # poi radius of the pois
-        painters="Construction",
-        additional_actors=(),
-        paint_uc=False,
-        projection="3d",
-        zoom_fit=False,
-        scale=None,
-        transparent = True,  # render using a transparent background
+    scene,
+    do_sequence=True,
+    use_step0_as_background=True,
+    use_only_steps_with_labels=False,
+    camera_pos=None,  #
+    lookat=None,
+    width=1024,
+    height=600,
+    show_force: bool = True,  # show forces
+    show_meshes: bool = True,  # show meshes and connectors
+    show_global: bool = False,  # show or hide the environment (sea)
+    show_cog: bool = True,
+    cog_do_normalize: bool = False,
+    cog_scale: float = 1.0,
+    force_do_normalize: bool = True,  # Normalize force size to 1.0 for plotting
+    force_scale: float = 1.6,  # Scale to be applied on (normalized) force magnitude
+    geometry_scale: float = 1.0,  # poi radius of the pois
+    painters="Construction",
+    additional_actors=(),
+    paint_uc=False,
+    projection="3d",
+    zoom_fit=False,
+    scale=None,
+    transparent=True,  # render using a transparent background
 ):
     """
     Creates a 3d view of the scene and shows it as a static image.
@@ -190,7 +190,7 @@ def pil_image(
 
     vp.settings.show_force = show_force
     vp.settings.show_meshes = show_meshes
-    vp.settings.show_global = show_global
+    vp.settings.show_sea = show_global
 
     vp.settings.show_cog = show_cog
     vp.settings.cog_do_normalize = cog_do_normalize
@@ -246,18 +246,15 @@ def pil_image(
         projection = "2d"
 
     else:
-
         c.SetPosition(*camera_pos)
         c.SetFocalPoint(*lookat)
         c.SetViewUp(0, 0, 1)
 
     if projection == "2d":
-
         c.ParallelProjectionOn()
         if scale is not None:
             c.SetParallelScale(scale)
     else:
-
         if scale is not None:
             warnings.warn("Scale parameter is only used for 2d projections")
 
@@ -273,14 +270,12 @@ def pil_image(
     vp.show()
 
     for visual in vp.node_visuals:
-
         label_actor = visual.label_actor
         if label_actor.GetVisibility():
             plotter += label_actor
 
     # rotate actors to camera orientation (WindArea)
     vp._rotate_actors_due_to_camera_movement()
-
 
     # zoom-fit
     if zoom_fit:
@@ -293,20 +288,18 @@ def pil_image(
 
     plotter.renderer.ResetCameraClippingRange()
     near, far = c.GetClippingRange()
-    c.SetClippingRange((1/100) * far, far)
-
+    c.SetClippingRange((1 / 100) * far, far)
 
     do_timeline = do_sequence
-    timeline = getattr(scene, 't')
+    timeline = getattr(scene, "t")
 
     win = plotter.window
-
 
     if timeline is not None and do_timeline:
         times = [tt for tt in timeline.times()]
 
         images = list()
-        _transparent = False # first image transparent
+        _transparent = False  # first image transparent
 
         for time in times:
             timeline.activate_time(time)
@@ -341,7 +334,6 @@ def pil_image(
                 plotter.renderer.SetLayer(1)
                 win.SetNumberOfLayers(2)
 
-
             if _transparent:
                 narr = vtk_to_numpy(arr).T[:4].T.reshape([ny, nx, 4])
             else:
@@ -354,7 +346,6 @@ def pil_image(
             pil_img.DAVE_caption = caption
 
             images.append(pil_img)
-
 
         return images
 
@@ -378,9 +369,3 @@ def pil_image(
     pil_img = PIL.Image.fromarray(narr)
 
     return pil_img
-
-
-
-
-
-
