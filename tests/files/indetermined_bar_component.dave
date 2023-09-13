@@ -1,0 +1,89 @@
+# auto generated python code
+# By MS12H
+# Time: 2023-09-11 13:18:06 UTC
+
+# To be able to distinguish the important number (eg: fixed positions) from
+# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
+# For anything written as solved(number) that actual number does not influence the static solution
+
+def solved(number):
+    return number
+
+
+# Environment settings
+s.g = 9.80665
+s.waterlevel = 0.0
+s.rho_air = 0.00126
+s.rho_water = 1.025
+s.wind_direction = 0.0
+s.wind_velocity = 0.0
+s.current_direction = 0.0
+s.current_velocity = 0.0
+
+
+
+# code for TopPoint
+s.new_point(name='TopPoint',
+          position=(0,
+                    0,
+                    0))
+
+# code for Bar
+s.new_rigidbody(name='Bar',
+                mass=1,
+                cog=(0,
+                     0,
+                     0),
+                position=(solved(-6.59131e-05),
+                          solved(0),
+                          solved(-8.04455)),
+                rotation=(solved(0),
+                          solved(1.538),
+                          solved(5)),
+                fixed =(False, False, False, False, False, False) )
+
+# code for Circle
+s.new_circle(name='Circle',
+            parent='TopPoint',
+            axis=(0, 1, 0),
+            radius=1 )
+
+# code for Point_1
+s.new_point(name='Point_1',
+          parent='Bar',
+          position=(5,
+                    0,
+                    0))
+
+# code for Point_1_1
+s.new_point(name='Point_1_1',
+          parent='Bar',
+          position=(-5,
+                    0,
+                    0))
+
+# code for Cable
+s.new_cable(name='Cable',
+            endA='Point_1_1',
+            endB='Point_1',
+            length=19.2221,
+            mass_per_length=0.104047,
+            EA=11000.0,
+            sheaves = ['Circle'])
+s['Cable'].max_winding_angles = [999, 999, 999]
+
+# Limits
+
+# Watches
+
+# Tags
+
+# Colors
+
+# Solved state of managed DOFs nodes
+s['Bar'].x = -6.59130795129063e-05
+s['Bar'].y = 0.0
+s['Bar'].z = -8.044549535673788
+s['Bar'].rx = 0.0
+s['Bar'].ry = 1.5379999999999998
+s['Bar'].rz = 5.0
