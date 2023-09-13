@@ -770,7 +770,7 @@ class Gui:
         if block:
             self.ui.pbUpdate.setVisible(False)
             self.ui.pbCopyViewCode.setVisible(False)
-            self.app.exec_()
+            self.app.exec()
 
     def menu_export_DAVE_package(self, *args):
         d = ExportAsPackageDialog()

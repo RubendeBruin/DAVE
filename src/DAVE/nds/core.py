@@ -1977,7 +1977,7 @@ class Cable(NodeCoreConnected):
                 code.append("            sheaves = ['{}',".format(poi_names[1]))
                 for i in range(n_sheaves - 2):
                     code.append("                       '{}',".format(poi_names[2 + i]))
-                code.append("                       '{}']),".format(poi_names[-2]))
+                code.append("                       '{}'])".format(poi_names[-2]))
 
         if np.any(self.reversed):
             code.append(f"s['{self.name}'].reversed = {self.reversed}")
@@ -1985,7 +1985,8 @@ class Cable(NodeCoreConnected):
         # if self.friction_factor >0:
         #     code.append(f"s['{self.name}'].friction_factor = {self.friction_factor}")
 
-        if np.any(self._max_winding_angle):
+
+        if np.any([_ != 999 for _ in self._max_winding_angle]):
             code.append(
                 f"s['{self.name}'].max_winding_angles = {self._max_winding_angle}"
             )
