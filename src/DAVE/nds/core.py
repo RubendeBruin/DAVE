@@ -1591,10 +1591,12 @@ class Cable(NodeCoreConnected):
 
     @property
     def _isloop(self):
+        if len(self.connections)<2:
+            return False
         return self.connections[0] == self.connections[-1]
 
     @property
-    def solve_segment_lengths(self):
+    def solve_segment_lengths(self) -> bool:
         """If True then lengths of the segment are solved for a continuous tension distribution including weight. If false then the segment lengths are determined only on the geometry [bool]
         Note that the solution is typically not unique!"""
         return self._vfNode.solve_section_lengths
@@ -1606,7 +1608,7 @@ class Cable(NodeCoreConnected):
 
     @property
     def friction(self) -> tuple[float]:
-        """Friction factors at the connections. [-]"""
+        """Friction factors at the connections [-]"""
         return tuple(self._friction)
 
     @friction.setter
@@ -1638,10 +1640,10 @@ class Cable(NodeCoreConnected):
 
     @property
     def max_winding_angles(self) -> tuple[float]:
-        """Friction factors at the connections. [-]"""
+        """Friction factors at the connections [-]"""
         return tuple(self._max_winding_angle)
 
-    @friction.setter
+    @max_winding_angles.setter
     @node_setter_manageable
     @node_setter_observable
     def max_winding_angles(self, max_winding_angles):
@@ -1670,7 +1672,7 @@ class Cable(NodeCoreConnected):
 
     @property
     def segment_end_tensions(self) -> tuple[tuple[float]]:
-        """Tensions at the ends of each of the cable segments. [kN, kN]
+        """Tensions at the ends of each of the cable segments [kN, kN]
         These are identical if the cable weight is zero.
         """
         segment_end_forces = self._vfNode.get_segment_end_tensions
@@ -1683,7 +1685,7 @@ class Cable(NodeCoreConnected):
 
     @property
     def segment_mean_tensions(self) -> tuple[float]:
-        """Mean tensions in the free segments of the cable. [kN]
+        """Mean tensions in the free segments of the cable [kN]
         Note that the tension in a segment is constant if the cable weight is zero.
         """
         return tuple([0.5 * (p[0] + p[1]) for p in self.segment_end_tensions])
@@ -1780,8 +1782,26 @@ class Cable(NodeCoreConnected):
                         f"before is {nodes[i].name} and after is {nodes[i+2].name}"
                     )
 
+
+        was_loop = self._isloop
+
         self._pois.clear()
         self._pois.extend(nodes)
+
+        # are we switching from a line to a loop?
+        if not was_loop and self._isloop:
+            # yes, we are switching from a line to a loop
+            # so we need to add a friction factor (None) at the start and set the unknown friction index
+            self._friction.insert(0, None)
+            self._vfNode.unkonwn_friction_index = 0
+
+        if was_loop and not self._isloop:
+            # switching from loop to line
+            # pop the first friction factor
+            self._friction.pop(0)
+            self._vfNode.unkonwn_friction_index = -1
+
+
         self._update_pois()
 
     def get_points_for_visual(self):
@@ -1850,6 +1870,8 @@ class Cable(NodeCoreConnected):
         self._vfNode.friction_fractions = [
             f if f is not None else 0 for f in self._friction
         ]
+
+        self._vfNode.update()
 
     def _give_poi_names(self):
         """Returns a list with the names of all the pois"""

@@ -3,8 +3,9 @@ import vedo as vp
 from PySide6.QtGui import QColor, QGuiApplication
 
 from DAVE import Point
+from DAVE.gui.dialog_advanced_cable_settings import AdvancedCableSettings
 from DAVE.gui.dockwidget import *
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize
 import DAVE.scene as vfs
 
 import DAVE.gui.forms.widget_axis
@@ -1290,6 +1291,8 @@ class EditConnections(NodeEditor):
         self._widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.additional_pois = list()
 
+        self.ui.list.sizeHint = lambda: QSize(0, 0)  # disable the size-hint
+
         # Set events
         ui.pbRemoveSelected.clicked.connect(self.delete_selected)
         self.ui.pushButton.clicked.connect(self.add_item)
@@ -1311,6 +1314,8 @@ class EditConnections(NodeEditor):
         ui.pbRemoveSelected.setAcceptDrops(True)
         ui.list.setDragEnabled(True)
         ui.list.setAcceptDrops(True)
+
+        ui.pbAdvancedSettings.clicked.connect(self.show_advanced_settings)
 
 
     def connect(self, node, scene, run_code, guiEmitEvent,gui_solve_func,node_picker_register_func):
@@ -1427,7 +1432,11 @@ class EditConnections(NodeEditor):
     def set_shortest_route(self, *args):
         self.run_code(f's["{self.node.name}"].set_optimum_connection_directions()', guiEventType.SELECTED_NODE_MODIFIED)
 
-
+    def show_advanced_settings(self):
+        dialog = AdvancedCableSettings(cable = self.node)
+        dialog.exec()
+        if dialog.code:
+            self.run_code(dialog.code, guiEventType.SELECTED_NODE_MODIFIED)
 
 
 

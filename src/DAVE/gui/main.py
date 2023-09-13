@@ -156,6 +156,7 @@ import DAVE.gui.forms.resources_rc
 # Clicking a button will call activate_workspace with WORKSPACE_ID
 DAVE_GUI_WORKSPACE_BUTTONS = [
     ("Construct", "CONSTRUCT"),
+    ("Watches", "WATCHES"),
     ("Explore", "EXPLORE"),
     ("Ballast", "BALLAST"),
     ("Shear and Bending", "MOMENTS"),
@@ -988,21 +989,30 @@ class Gui:
             g.close()
 
     def activate_workspace(self, name):
+
         self._active_workspace = name
 
         self.animation_terminate()
         self.savepoint_restore()
 
-        self.activate_paintset("Construction")
+
 
         if name == "PAINTERS":
             self.show_guiWidget("vanGogh", WidgetPainters)
 
         if name == "CONSTRUCT":
+
+            keep_watches = "Watches" in self.guiWidgets.keys()
+
             self.close_all_open_docks()
             self.show_guiWidget("Node Tree", WidgetNodeTree)
             self.show_guiWidget("Properties", WidgetNodeProps)
             self.show_guiWidget("Quick actions", WidgetQuickActions)
+
+            if keep_watches:
+                self.show_guiWidget("Watches")
+
+        if name == "WATCHES":
             self.show_guiWidget("Watches")
 
         if name == "EXPLORE":

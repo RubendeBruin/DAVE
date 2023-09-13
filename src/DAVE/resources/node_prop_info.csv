@@ -56,9 +56,16 @@ Cable,diameter,float,Diameter of the cable. Used when a cable runs over a circle
 Cable,mass_per_length,float,Mass per length of the cable ,[mT/m],,True,True,True,Mass per length of the cable [mT/m]
 Cable,mass,float,Mass of the cable  ,[mT],derived from length and mass-per-length,True,True,True,Mass of the cable (derived from length and mass-per-length) [mT]
 Cable,reversed,tuple,Diameter of the cable. Used when a cable runs over a circle. ,[m],,True,False,False,Diameter of the cable. Used when a cable runs over a circle. [m]
-Cable,friction_factor,float,"Friction factor, negative means use default model with 10% ",[-],,True,True,True,"Friction factor, negative means use default model with 10% [-]"
-Cable,friction_factor_used,float,Read only - the friction factor used in the calculation ,[-],,False,False,True,"Read only - the friction factor used in the calculation [-]
-        See Also: friction_factor
+Cable,solve_segment_lengths,bool,If True then lengths of the segment are solved for a continuous tension distribution including weight. If false then the segment lengths are determined only on the geometry ,[bool],,True,True,False,"If True then lengths of the segment are solved for a continuous tension distribution including weight. If false then the segment lengths are determined only on the geometry [bool]
+        Note that the solution is typically not unique!"
+Cable,friction,tuple,Friction factors at the connections ,[-],,True,False,False,Friction factors at the connections [-]
+Cable,max_winding_angles,tuple,Friction factors at the connections ,[-],,True,False,False,Friction factors at the connections [-]
+Cable,friction_forces,tuple,Forces at the connections due to friction ,[kN],,False,False,False,Forces at the connections due to friction [kN]
+Cable,segment_end_tensions,tuple,Tensions at the ends of each of the cable segments ,"[kN, kN]",,False,False,False,"Tensions at the ends of each of the cable segments [kN, kN]
+        These are identical if the cable weight is zero.
+        "
+Cable,segment_mean_tensions,tuple,Mean tensions in the free segments of the cable ,[kN],,False,False,False,"Mean tensions in the free segments of the cable [kN]
+        Note that the tension in a segment is constant if the cable weight is zero.
         "
 Cable,tension_maxfriction,float,Maximum tension in the cable when accounting for friction ,[kN],,False,False,True,Maximum tension in the cable when accounting for friction [kN]
 Circle,axis,tuple,Direction of the sheave axis  ,"[m,m,m]",parent axis system,True,False,False,"Direction of the sheave axis (parent axis system) [m,m,m]
@@ -71,6 +78,7 @@ Circle,axis,tuple,Direction of the sheave axis  ,"[m,m,m]",parent axis system,Tr
             the cable in the reverse order)
         "
 Circle,radius,float,Radius of the circle ,[m],,True,True,True,Radius of the circle [m]
+Circle,is_roundbar,bool,Flag to indicate that the circle should be treated as round-bar ,[true/false],,True,True,False,Flag to indicate that the circle should be treated as round-bar [true/false]
 Circle,global_position,tuple,Global position of the center of the sheave ,"[m,m,m]",,False,False,False,"Global position of the center of the sheave [m,m,m]
 
         Note: this is the same as the global position of the parent point.
@@ -279,6 +287,7 @@ GeometricContact,child_fixed,bool,"Allow rotation of child relative to connectio
 GeometricContact,inside,bool,"Type of connection: True means child circle is inside parent circle, False means the child circle is outside but the circumferences contact ",[boolean],,True,True,False,"Type of connection: True means child circle is inside parent circle, False means the child circle is outside but the circumferences contact [boolean]"
 HasFootprint,footprint,tuple,Determines where on its parent the force of this node is applied.,,,True,False,False,"Determines where on its parent the force of this node is applied.
         Tuple of tuples ((x1,y1,z1), (x2,y2,z2), .... (xn,yn,zn))"
+HasParent,parents,tuple,Returns a tuple of all parents of this node,,,False,False,False,Returns a tuple of all parents of this node
 HasParent,parent,Node,"The node that this node is located on, if any ",[Node],,True,True,False,"The node that this node is located on, if any [Node]"
 HasSubScene,path,str,Path of the model-file. For example res: padeye.dave,,,True,False,False,Path of the model-file. For example res: padeye.dave
 HasSubScene,exposed_properties,tuple,Names of exposed properties,,,False,False,False,Names of exposed properties

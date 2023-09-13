@@ -1282,7 +1282,8 @@ class Circle(NodeCoreConnected, HasParentCore):
         self._vfNode.radius = val
 
     @property
-    def is_roundbar(self):
+    def is_roundbar(self) -> bool:
+        """Flag to indicate that the circle should be treated as round-bar [true/false]"""
         return self._vfNode.is_roundbar
 
     @is_roundbar.setter
