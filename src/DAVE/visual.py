@@ -2009,38 +2009,8 @@ class Viewport:
             if isinstance(N, vf.Cable):
                 if N._vfNode.global_points:
                     if N._render_as_tube:
-                        # a = vp.Tube(N._vfNode.global_points, r = N.diameter/2)
-
                         # Ref: vedo / shapes.py :: Tube
-
                         gp = N._vfNode.global_points  # alias
-                        # #
-                        # points = vtk.vtkPoints()
-                        # for p in gp:
-                        #     points.InsertNextPoint(p)
-                        #
-                        # line = vtk.vtkPolyLine()
-                        # line.GetPointIds().SetNumberOfIds(len(gp))
-                        # for i in range(len(gp)):
-                        #     line.GetPointIds().SetId(i, i)
-                        #
-                        # lines = vtk.vtkCellArray()
-                        # lines.InsertNextCell(line)
-                        #
-                        # polyln = vtk.vtkPolyData()
-                        # polyln.SetPoints(points)
-                        # polyln.SetLines(lines)
-                        #
-                        # tuf = vtk.vtkTubeFilter()
-                        # tuf.SetCapping(False)
-                        # tuf.SetNumberOfSides(12)
-                        # tuf.SetInputData(polyln)
-                        #
-                        # dia = max(N._vfNode.diameter, 0.1)
-                        # tuf.SetRadius(dia/2)
-                        # # #
-                        # # # self.tuf.Update()
-                        # #
 
                         mapper = vtk.vtkPolyDataMapper()
                         mapper.SetInputData(create_tube_data(gp, N._vfNode.diameter))

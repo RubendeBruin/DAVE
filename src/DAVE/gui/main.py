@@ -1598,9 +1598,13 @@ class Gui:
             called_by_user=called_by_user,
         )
 
-        self.give_feedback(
-            f"Solved statics - remaining error = {self.scene._vfc.Emaxabs} kN or kNm"
-        )
+        if len(self.scene._vfc.get_dofs())==0:
+            self.give_feedback("Solved statics - no degrees of freedom")
+        else:
+
+            self.give_feedback(
+                f"Solved statics - remaining error = {self.scene._vfc.Emaxabs} kN or kNm"
+            )
 
     def solve_statics_using_gui_on_scene(
         self, scene_to_solve, timeout_s=0.5, called_by_user=True
@@ -1613,14 +1617,6 @@ class Gui:
         old_dofs = scene_to_solve._vfc.get_dofs()
 
         if len(old_dofs) == 0:  # no degrees of freedom
-            if called_by_user:
-                msgBox = QMessageBox()
-                msgBox.setText("No degrees of freedom - nothing to solve")
-                msgBox.setWindowTitle("DAVE")
-                msgBox.exec_()
-                self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
-                print("No dofs")
-
             return True
 
         self._dialog = None

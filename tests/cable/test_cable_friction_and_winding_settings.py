@@ -1,3 +1,5 @@
+from numpy.testing import assert_allclose
+
 from DAVE import Scene, Watch
 
 
@@ -36,8 +38,6 @@ def cable_with_circle():
     s.new_cable("cable", connections=["p1", "c1", "p2"], EA = 1000, length=9)
 
     return s["cable"]
-
-
 
 
 def test_cable_default_winding_settings():
@@ -101,9 +101,53 @@ def test_break_loop_by_changing_a_point():
     assert c.max_winding_angles == (999, 999, 999, 999, 999)
     assert c.friction == (0.1, -0.1,0)
 
-# def test_revesed():
+def test_revesed():
+    c  = cable_with_circle()
+    c.friction = (0.1, )
+    c.update()
+    tensions = c.segment_mean_tensions
+    assert tensions[0] > tensions[1]  # friction from A to B
 
+    assert c.reversed[1] == False
+    c.reversed = (False, True, False)
 
+    c.update()
+
+    tensions = c.segment_mean_tensions
+    assert tensions[0] > tensions[1]  # friction still from A to B
+
+def test_resuls():
+    c= cable_with_circle()
+
+    assert len(c.friction) == 1
+    assert len(c.friction_forces) == 1
+    assert len(c.segment_mean_tensions) == 2
+    assert len(c.segment_end_tensions) == 2
+
+    for c in c.segment_end_tensions:
+        assert len(c) == 2
+
+def test_resuls_loop():
+    c= cable_with_circle()
+    c.connections = ["p1", "c1", "p2", "p1"]
+
+    assert c._isloop
+
+    assert len(c.friction) == 3
+    assert len(c.friction_forces) == 3
+    assert len(c.segment_mean_tensions) == 3
+    assert len(c.segment_end_tensions) == 3
+
+    for _ in c.segment_end_tensions:
+        assert len(_) == 2
+
+    import vedo
+
+    points, tensions = c.get_points_and_tensions_for_visual()
+    #
+    # colors = vedo.color_map(tensions, 'viridis', vmin = min(tensions), vmax = max(tensions))
+    # t = vedo.Tube(points, c=colors)
+    # t.show()
 
 if __name__ == '__main__':
 

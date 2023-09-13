@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
     QTableWidgetItem,
 )
 
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QColor, QIcon
 
 from DAVE import Scene, Cable
 
@@ -25,6 +25,8 @@ class AdvancedCableSettings(QDialog):
         super().__init__()
         self.code = ''
         self.cable = cable
+
+        self.setWindowIcon(QIcon(":/icons/cable.png"))
 
         # create the ui
         self.layout = QVBoxLayout()
