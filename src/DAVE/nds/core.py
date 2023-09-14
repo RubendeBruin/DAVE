@@ -1671,6 +1671,14 @@ class Cable(NodeCoreConnected):
         return tuple(self._vfNode.friction_forces)
 
     @property
+    def calculated_friction_factor(self) -> float or None:
+        """The friction factor that was left for DAVE to calculate [-], only applicable to loops"""
+        if self._isloop:
+            return self._vfNode.calculated_unknonw_friction_factor
+        else:
+            return None
+
+    @property
     def segment_end_tensions(self) -> tuple[tuple[float]]:
         """Tensions at the ends of each of the cable segments [kN, kN]
         These are identical if the cable weight is zero.
@@ -1867,7 +1875,7 @@ class Cable(NodeCoreConnected):
 
         # set friction
         # replace none friction by 0
-        self._vfNode.friction_fractions = [
+        self._vfNode.friction_factors = [
             f if f is not None else 0 for f in self._friction
         ]
 
@@ -1905,42 +1913,7 @@ class Cable(NodeCoreConnected):
 
         self.length = stretched_length * self.EA / (target_tension + self.EA)
 
-    # @property
-    # def friction_factor(self) ->float:
-    #     """Friction factor, negative means use default model with 10% [-]"""
-    #     return self._friction_factor
-    #
-    # @friction_factor.setter
-    # @node_setter_manageable
-    # def friction_factor(self, value):
-    #     assert1f(value, "Friction factor shall be a single floating-point number")
-    #     self._friction_factor = value
-    #
-    # @property
-    # def friction_factor_used(self) -> float:
-    #     """Read only - the friction factor used in the calculation [-]
-    #     See Also: friction_factor
-    #     """
-    #
-    #     if self.friction_factor > 0:        # user-defined friction factor
-    #         return self.friction_factor
-    #
-    #     connections = self.connections # alias
-    #     n_connections = len(connections)
-    #
-    #     if connections[0] == connections[-1] and isinstance(connections[0], Circle): # loop
-    #         N = n_connections - 1
-    #         M = floor(N/2)
-    #         return 1.1**M
-    #     else:                           # no loop
-    #         N = n_connections - 2
-    #         return 1.1**N
 
-    @property
-    def tension_maxfriction(self) -> float:
-        """Maximum tension in the cable when accounting for friction [kN]"""
-        T0 = self.tension
-        return self.friction_factor_used * T0
 
     def update(self):
         """Update the cable internals"""

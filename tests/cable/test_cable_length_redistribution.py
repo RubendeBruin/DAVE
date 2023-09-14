@@ -94,7 +94,6 @@ def test_sheaved_catenary_with_3dof_body():
         length=30,
     )
     #
-    s._save_coredump()
 
     s["cable"].solve_segment_lengths = False
 
@@ -107,8 +106,6 @@ def test_sheaved_catenary_with_3dof_body():
 
     s.solve_statics()
 
-    from DAVE.gui import Gui
-    Gui(s)
 
 def test_two_points_one_mass():
     s = Scene()
@@ -180,7 +177,6 @@ def test_three_parts():
 
     s["cable"].solve_segment_lengths = True
     s['Body'].fixed = True
-    s._save_coredump()
 
     try:
         s.solve_statics(terminate_after_s=5) # <-- will not converge; but should at least not crash

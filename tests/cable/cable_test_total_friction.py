@@ -1,9 +1,9 @@
 from numpy.testing import assert_allclose
-
 from DAVE import *
 
 
-def test_convex_loop_180():
+
+def convex_loop_180():
     s = Scene()
 
     # code for p1
@@ -15,12 +15,8 @@ def test_convex_loop_180():
     # code for p3
     s.new_point(name="p3", position=(0, 0, -1))
 
-
-
     # code for c_p1
     s.new_circle(name="c_p1", parent="p1", axis=(0, 1, 0), radius=1)
-
-
 
     # code for c
     c = s.new_cable(
@@ -31,7 +27,10 @@ def test_convex_loop_180():
         sheaves=["c_p2", "c_p3", "c_p4"],
     )
 
+    return c,s
 
+def test_convex_loop_180():
+    c,s = convex_loop_180()
 
     A = 0.3
     c.friction = [A, -A , None]
@@ -45,3 +44,28 @@ def test_convex_loop_180():
     F2 = c.friction_forces
 
     assert_allclose(F1, F2, atol=1e-3)
+
+def test_get_calculated_values():
+    c,s  = convex_loop_180()
+
+    A = 0.3
+    c.friction = [A, -A , None]
+
+    s.update()
+
+    F = c.calculated_friction_factor
+    assert_allclose(F, -A)
+
+    c.friction = [None, -A , -A ]
+    s.update()
+    F = c.calculated_friction_factor
+    assert_allclose(F, A)
+
+    c.friction = [A, None, -A]
+    s.update()
+    F = c.calculated_friction_factor
+    assert_allclose(F, -A)
+
+
+
+
