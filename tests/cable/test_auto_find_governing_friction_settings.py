@@ -109,32 +109,64 @@ def minimize_me(x):
 
     return -grommet.tension
 
-
-# guess = np.array([-target,target,target])  # very good initial guess
-guess = np.array([-target,0,0])     # good initial guess
-guess = np.array([target,0,0])      # good initial guess
-guess = np.array([target,target,target])  # "good" initial guess
-guess = np.array([0,0,0])           # bad initial guess
-guess = np.array([0.01,0.01,0.01])  # bad initial guess
-
-
-bounds = [(-target, target) for g in guess]
-
-from scipy.optimize import minimize
-
+#
+# # guess = np.array([-target,target,target])  # very good initial guess
+# guess = np.array([-target,0,0])     # good initial guess
+# guess = np.array([target,0,0])      # good initial guess
+# guess = np.array([target,target,target])  # "good" initial guess
+# guess = np.array([0,0,0])           # bad initial guess
+# guess = np.array([0.01,0.01,0.01])  # bad initial guess
+#
+#
+# bounds = [(-target, target) for g in guess]
+#
+# from scipy.optimize import minimize
+#
 # method = 'Nelder-Mead'   # works even for bad initial guess
-method = 'L-BFGS-B'     # fails for bad initial guess (but quick)
-# method = 'TNC'          # probably works for bad initial guess, but very slow
-# method = 'SLSQP'        # fails for bad initial guess
-# method = 'Powell'       # fails for bad initial guess
-# method = 'trust-constr' # SLOW - fails for bad initial guess
-# method = 'COBYLA'      # fails for bad initial guess  #<-- does not use bounds..?
+# # method = 'L-BFGS-B'     # fails for bad initial guess (but quick)
+# # method = 'TNC'          # probably works for bad initial guess, but very slow
+# # method = 'SLSQP'        # fails for bad initial guess
+# # method = 'Powell'       # fails for bad initial guess
+# # method = 'trust-constr' # SLOW - fails for bad initial guess
+# # method = 'COBYLA'      # fails for bad initial guess  #<-- does not use bounds...?
+#
+# R = minimize(minimize_me, x0 = guess, bounds=bounds, method=method, tol=1e-6)
+#
+# print(R)
+# print(grommet.friction)
 
-R = minimize(minimize_me, x0 = guess, bounds=bounds, method=method, tol=1e-6)
 
-print(R)
-print(grommet.friction)
+# Nelder-Mead needs 41 evaluations to reach the optimum
+# Brute-force on the edges would need 2^3 = 8 evaluations
 
+n = 3
+grid = np.meshgrid(
+            *[(target, -target) for i in range(n)])  # this produces numpy booleans, which can not be yaml-ized
+
+n_combinations = len(grid[0].flat)
+
+combination = []
+for i in range(n_combinations):
+    combination.append([a.flat[i] for a in grid])
+
+
+print(n_combinations)
+print(combination)
+
+governing = 0
+for c in combination:
+
+    x = np.array(c)
+    f = -minimize_me(x)
+
+    print(f"Friction: {x} -> {f}")
+
+    if f > governing:
+        governing = f
+        governing_friction = x
+    print('---')
+
+print(governing, governing_friction)
 
 
 
