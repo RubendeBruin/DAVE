@@ -3,8 +3,9 @@ import vedo as vp
 from PySide6.QtGui import QColor, QGuiApplication
 
 from DAVE import Point
+from DAVE.gui.dialog_advanced_cable_settings import AdvancedCableSettings
 from DAVE.gui.dockwidget import *
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize
 import DAVE.scene as vfs
 
 import DAVE.gui.forms.widget_axis
@@ -1290,21 +1291,32 @@ class EditConnections(NodeEditor):
         self._widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.additional_pois = list()
 
+        self.ui.list.sizeHint = lambda: QSize(0, 0)  # disable the size-hint
+
         # Set events
         ui.pbRemoveSelected.clicked.connect(self.delete_selected)
         self.ui.pushButton.clicked.connect(self.add_item)
         ui.pbSetShortestRoute.clicked.connect(self.set_shortest_route)
+
+        ui.list.keyPressEvent = self.listKeyPressEvent
 
         # ------- setup the drag-and-drop code ---------
 
         ui.list.dropEvent = self.dropEvent
         ui.list.dragEnterEvent = self.dragEnterEvent
         ui.list.dragMoveEvent = self.dragEnterEvent
+
+        ui.pbRemoveSelected.dragEnterEvent = self.dragOntoDeleteButtonEvent
+        ui.pbRemoveSelected.dropEvent = self.dropOnDeleteButtonEvent
+
         ui.list.itemChanged.connect(self.itemChanged)
 
+        ui.pbRemoveSelected.setAcceptDrops(True)
         ui.list.setDragEnabled(True)
         ui.list.setAcceptDrops(True)
-        ui.list.setDragEnabled(True)
+
+        ui.pbAdvancedSettings.clicked.connect(self.show_advanced_settings)
+
 
     def connect(self, node, scene, run_code, guiEmitEvent,gui_solve_func,node_picker_register_func):
         self.ui.widgetPicker.initialize(scene=scene,
@@ -1361,9 +1373,7 @@ class EditConnections(NodeEditor):
             self.ui.list.addItem(item)
 
         self.ui.lbDirection.setVisible(labelVisible)
-
         self.ui.list.blockSignals(False)
-
         self.ui.pbSetShortestRoute.setVisible(not isinstance(self.node, (Cable, Sling)))
 
     def dropEvent(self, event):
@@ -1373,12 +1383,25 @@ class EditConnections(NodeEditor):
     def dragEnterEvent(self, event):
         call_from_dragEnter_or_Move_Event(self.ui.list, self.scene, (Circle, Point), event)
 
+    def dropOnDeleteButtonEvent(self, event):
+       if event.source() == self.ui.list:
+            self.ui.pbRemoveSelected.click()
+            event.accept()
+
+    def dragOntoDeleteButtonEvent(self, event):
+        if event.source() == self.ui.list:
+            event.accept()
+
 
     def delete_selected(self):
         row = self.ui.list.currentRow()
         if row > -1:
             self.ui.list.takeItem(row)
         self.generate_code()
+
+    def listKeyPressEvent(self, event):
+        if event.key() == Qt.Key_Delete:
+            self.delete_selected()
 
     def generate_code(self):
 
@@ -1409,7 +1432,11 @@ class EditConnections(NodeEditor):
     def set_shortest_route(self, *args):
         self.run_code(f's["{self.node.name}"].set_optimum_connection_directions()', guiEventType.SELECTED_NODE_MODIFIED)
 
-
+    def show_advanced_settings(self):
+        dialog = AdvancedCableSettings(cable = self.node)
+        dialog.exec()
+        if dialog.code:
+            self.run_code(dialog.code, guiEventType.SELECTED_NODE_MODIFIED)
 
 
 
@@ -1432,6 +1459,7 @@ class EditCable(NodeEditor):
         ui.doubleSpinBox_2.valueChanged.connect(self.generate_code)
         ui.doubleSpinBox_3.valueChanged.connect(self.generate_code)
         ui.doubleSpinBox_4.valueChanged.connect(self.generate_code)
+        ui.cbSolveSegmentLengths.toggled.connect(self.generate_code)
 
 
     def post_update_event(self):
@@ -1441,6 +1469,7 @@ class EditCable(NodeEditor):
         svinf(self.ui.doubleSpinBox, self.node.diameter)
         svinf(self.ui.doubleSpinBox_3, self.node.mass_per_length)
         svinf(self.ui.doubleSpinBox_4, self.node.mass)
+        cbvinf(self.ui.cbSolveSegmentLengths, self.node.solve_segment_lengths)
         self.set_colors()
 
 
@@ -1467,6 +1496,7 @@ class EditCable(NodeEditor):
         code += code_if_changed_d(self.node, new_diameter, 'diameter')
         code += code_if_changed_d(self.node, new_mass_per_length, 'mass_per_length')
         code += code_if_changed_d(self.node, self.ui.doubleSpinBox_4.value(), 'mass')
+        code += code_if_changed_b(self.node, self.ui.cbSolveSegmentLengths.isChecked(), "solve_segment_lengths")
 
         self.run_code(code)
 

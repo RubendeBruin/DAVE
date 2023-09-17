@@ -434,6 +434,21 @@ class VisualActor:
 
         # Override paint settings if node is selected or sub-selected
 
+        if isinstance(self.node, dn.Cable):
+            # apply colors to cable
+            # apply_colors_to_cable_node_actor(self.node, self.actors["main"])
+            actor = self.actors["main"]
+            mapper = actor.GetMapper()
+
+            if self.node.do_color_by_tension:
+                mapper.SetScalarModeToUsePointFieldData()
+                mapper.ScalarVisibilityOn()
+                mapper.SelectColorArray("TubeColors")
+                mapper.Modified()
+            else:
+                mapper.ScalarVisibilityOff()
+
+
         if self._is_selected:
             new_painter_settings = dict()
             for k, value in node_painter_settings.items():
@@ -621,7 +636,8 @@ class VisualActor:
             t.Identity()
 
             # scale to flat disk
-            t.Scale(self.node.radius, self.node.radius, 0.1)
+            thickness = 1 if self.node.is_roundbar else 0.1
+            t.Scale(self.node.radius, self.node.radius, thickness)
 
             # rotate z-axis (length axis is cylinder) is direction of axis
             axis = self.node.axis / np.linalg.norm(self.node.axis)
@@ -656,13 +672,12 @@ class VisualActor:
             # # check the number of points
             A = self.actors["main"]
 
-            points = self.node.get_points_for_visual()
+            points, tensions = self.node.get_points_and_tensions_for_visual()
 
             if self.node._render_as_tube:
-                self.info["mapper"].SetInputData(
-                    create_tube_data(points, self.node.diameter)
-                )
-                self.info["mapper"].Modified()
+                self.info['mapper'].SetInputData(create_tube_data(points, self.node.diameter, colors=tensions ))
+                self.info['mapper'].Modified()
+
             else:
                 if len(points) == 0:  # not yet created
                     return
@@ -1608,9 +1623,9 @@ class Viewport:
             raise ValueError("Global visuals already created - can not create again")
 
         plane = vp.Plane(pos=(0, 0, 0), normal=(0, 0, 1), s=(1000, 1000)).c(COLOR_WATER)
+        plane.alpha(0.4)
         plane.texture(TEXTURE_SEA)
         plane.lighting(ambient=1.0, diffuse=0.0, specular=0.0, specular_power=1e-7)
-        plane.alpha(0.4)
 
         self.sea_visuals["sea"] = plane
         self.sea_visuals["sea"].actor_type = ActorType.GLOBAL
@@ -1994,38 +2009,8 @@ class Viewport:
             if isinstance(N, vf.Cable):
                 if N._vfNode.global_points:
                     if N._render_as_tube:
-                        # a = vp.Tube(N._vfNode.global_points, r = N.diameter/2)
-
                         # Ref: vedo / shapes.py :: Tube
-
                         gp = N._vfNode.global_points  # alias
-                        # #
-                        # points = vtk.vtkPoints()
-                        # for p in gp:
-                        #     points.InsertNextPoint(p)
-                        #
-                        # line = vtk.vtkPolyLine()
-                        # line.GetPointIds().SetNumberOfIds(len(gp))
-                        # for i in range(len(gp)):
-                        #     line.GetPointIds().SetId(i, i)
-                        #
-                        # lines = vtk.vtkCellArray()
-                        # lines.InsertNextCell(line)
-                        #
-                        # polyln = vtk.vtkPolyData()
-                        # polyln.SetPoints(points)
-                        # polyln.SetLines(lines)
-                        #
-                        # tuf = vtk.vtkTubeFilter()
-                        # tuf.SetCapping(False)
-                        # tuf.SetNumberOfSides(12)
-                        # tuf.SetInputData(polyln)
-                        #
-                        # dia = max(N._vfNode.diameter, 0.1)
-                        # tuf.SetRadius(dia/2)
-                        # # #
-                        # # # self.tuf.Update()
-                        # #
 
                         mapper = vtk.vtkPolyDataMapper()
                         mapper.SetInputData(create_tube_data(gp, N._vfNode.diameter))

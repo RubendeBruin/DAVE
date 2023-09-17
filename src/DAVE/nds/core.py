@@ -13,7 +13,12 @@ from .enums import *
 from .mixins import HasParentCore
 from .trimesh import TriMeshSource
 
-from ..settings import VF_NAME_SPLIT
+from ..settings import (
+    VF_NAME_SPLIT,
+    RENDER_CURVE_RESOLUTION,
+    RENDER_CATENARY_RESOLUTION,
+)
+from ..settings_visuals import RESOLUTION_CABLE_OVER_CIRCLE, RESOLUTION_CABLE_SAG
 from ..tools import *
 
 
@@ -159,9 +164,9 @@ class RigidBody(Frame):
             return Frame.dissolve(self)
 
         else:
-            raise ValueError(f"Cannot dissolve RigidBody {self.name} with mass {self.mass}. Only massless rigidbodies can be dissolved.")
-
-
+            raise ValueError(
+                f"Cannot dissolve RigidBody {self.name} with mass {self.mass}. Only massless rigidbodies can be dissolved."
+            )
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
@@ -1487,9 +1492,12 @@ class Cable(NodeCoreConnected):
 
         self._pois = list()
         self._reversed: List[bool] = list()
+        self._friction: List[float] = list()
+        self._max_winding_angle: List[float] = list()
 
         self._render_as_tube = True
-        self._friction_factor = -1
+        self.do_color_by_tension = True
+        self._friction_factor = -1  # deprecated
         """Negative means use default formulation"""
 
     def depends_on(self):
@@ -1582,6 +1590,115 @@ class Cable(NodeCoreConnected):
         self._update_pois()
 
     @property
+    def _isloop(self):
+        if len(self.connections)<2:
+            return False
+        return self.connections[0] == self.connections[-1]
+
+    @property
+    def solve_segment_lengths(self) -> bool:
+        """If True then lengths of the segment are solved for a continuous tension distribution including weight. If false then the segment lengths are determined only on the geometry [bool]
+        Note that the solution is typically not unique!"""
+        return self._vfNode.solve_section_lengths
+
+    @solve_segment_lengths.setter
+    def solve_segment_lengths(self, value):
+        assertBool(value, "solve_segment_lengths")
+        self._vfNode.solve_section_lengths = value
+
+    @property
+    def friction(self) -> tuple[float]:
+        """Friction factors at the connections [-]"""
+        return tuple(self._friction)
+
+    @friction.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def friction(self, friction):
+        if isinstance(friction, (float, int)):
+            friction = [friction]
+
+        # check length
+        req_len = len(self._pois) - 2
+        if self._isloop:
+            req_len += 1
+        assert (
+            len(friction) == req_len
+        ), f"Friction should be defined for {req_len} connections"
+
+        if self._isloop:
+            assert (
+                list(friction).count(None) == 1
+            ), "When defining friction for a loop, exactly of the frictions should be 'None'. The friction at that last connection is calculated from the other frictions."
+
+        self._friction = list(friction)
+
+        if self._isloop:
+            self._vfNode.unkonwn_friction_index = self._friction.index(None)
+
+        self._update_pois()
+
+    @property
+    def max_winding_angles(self) -> tuple[float]:
+        """Friction factors at the connections [-]"""
+        return tuple(self._max_winding_angle)
+
+    @max_winding_angles.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def max_winding_angles(self, max_winding_angles):
+        if isinstance(max_winding_angles, (float, int)):
+            max_winding_angles = [max_winding_angles]
+
+        # check length
+        req_len = len(self._pois)
+        assert (
+            len(max_winding_angles) == req_len
+        ), f"max_winding_angles should be defined for all {req_len} connections"
+
+        for _ in max_winding_angles:
+            if _ > 0:
+                assert (
+                    _ > 180
+                ), f"max_winding_angles should be more than 180 degrees, {_} is not."
+
+        self._max_winding_angle = list(max_winding_angles)
+        self._update_pois()
+
+    @property
+    def friction_forces(self) -> tuple[float]:
+        """Forces at the connections due to friction [kN]"""
+        return tuple(self._vfNode.friction_forces)
+
+    @property
+    def calculated_friction_factor(self) -> float or None:
+        """The friction factor that was left for DAVE to calculate [-], only applicable to loops"""
+        if self._isloop:
+            return self._vfNode.calculated_unknonw_friction_factor
+        else:
+            return None
+
+    @property
+    def segment_end_tensions(self) -> tuple[tuple[float]]:
+        """Tensions at the ends of each of the cable segments [kN, kN]
+        These are identical if the cable weight is zero.
+        """
+        segment_end_forces = self._vfNode.get_segment_end_tensions
+        combined = [
+            (segment_end_forces[2 * i], segment_end_forces[2 * i + 1])
+            for i in range(len(segment_end_forces) // 2)
+        ]
+
+        return tuple(combined)
+
+    @property
+    def segment_mean_tensions(self) -> tuple[float]:
+        """Mean tensions in the free segments of the cable [kN]
+        Note that the tension in a segment is constant if the cable weight is zero.
+        """
+        return tuple([0.5 * (p[0] + p[1]) for p in self.segment_end_tensions])
+
+    @property
     def connections(self) -> tuple[Point or Circle]:
         """List or Tuple of nodes that this cable is connected to. Nodes may be passed by name (string) or by reference.
 
@@ -1640,23 +1757,92 @@ class Cable(NodeCoreConnected):
             node2 = nodes[i + 1]
 
             if node1 == node2:
+                nodes_str = "\n-".join([node.name for node in nodes])
                 raise ValueError(
-                    f"It is not allowed to have the same node repeated - you have {node1.name} and {node2.name}"
+                    f"Error when setting connections of {self.name} to {nodes_str}\n\nIt is not allowed to have the same node repeated - you have {node1.name} and {node2.name}"
                 )
+
+        # check for round-bar restrictions:
+        #
+        # If a connection is a round-bar, then it shall be surrounded by two nodes that are not round-bars.
+
+        def is_roundbar(node):
+            if isinstance(node, Circle):
+                return node.is_roundbar
+            else:
+                return False
+
+        if is_roundbar(nodes[0]):
+            raise ValueError(
+                f"Error when setting connections of '{self.name}': First connection '{nodes[0].name}' is a round-bar. This is not allowed. Connections to a round-bar must always be between two non-roundbar connections"
+            )
+        if is_roundbar(nodes[-1]):
+            raise ValueError(
+                f"Error when setting connections of '{self.name}': Last connection '{nodes[-1].name}' is a round-bar. This is not allowed. Connections to a round-bar must always be between two non-roundbar connections"
+            )
+
+        for i in range(len(nodes) - 2):
+            if is_roundbar(nodes[i + 1]):
+                if is_roundbar(nodes[i]) or is_roundbar(nodes[i + 2]):
+                    raise ValueError(
+                        f"Error when setting connections of '{self.name}': Connection '{nodes[i+1].name}' is a round-bar and is not surrounded by two non-roundbars. This is not allowed.\n"
+                        f"Connections to a round-bar must always be between two non-roundbar connections\n"
+                        f"before is {nodes[i].name} and after is {nodes[i+2].name}"
+                    )
+
+
+        was_loop = self._isloop
 
         self._pois.clear()
         self._pois.extend(nodes)
+
+        # are we switching from a line to a loop?
+        if not was_loop and self._isloop:
+            # yes, we are switching from a line to a loop
+            # so we need to add a friction factor (None) at the start and set the unknown friction index
+            self._friction.insert(0, None)
+            self._vfNode.unkonwn_friction_index = 0
+
+        if was_loop and not self._isloop:
+            # switching from loop to line
+            # pop the first friction factor
+            self._friction.pop(0)
+            self._vfNode.unkonwn_friction_index = -1
+
+
         self._update_pois()
 
     def get_points_for_visual(self):
         """A list of 3D locations which can be used for visualization"""
-        return self._vfNode.global_points
+        points, tensions = self._vfNode.get_drawing_data(
+            RESOLUTION_CABLE_SAG, RESOLUTION_CABLE_OVER_CIRCLE, False
+        )
+        return points
 
-    def _add_connection_to_core(self, connection, reversed=False):
+    def get_points_and_tensions_for_visual(self):
+        """A list of 3D locations which can be used for visualization"""
+        points, tensions = self._vfNode.get_drawing_data(
+            RESOLUTION_CABLE_SAG, RESOLUTION_CABLE_OVER_CIRCLE, False
+        )
+        return points, tensions
+
+    def get_points_for_visual_blender(self):
+        """A list of 3D locations which can be used for visualization"""
+        constant_point_count = True
+        points, tensions = self._vfNode.get_drawing_data(
+            RENDER_CATENARY_RESOLUTION, RENDER_CURVE_RESOLUTION, constant_point_count
+        )
+        return points
+
+    def _add_connection_to_core(
+        self, connection, reversed=False, friction=0, max_winding=999
+    ):
         if isinstance(connection, Point):
-            self._vfNode.add_connection_poi(connection._vfNode)
+            self._vfNode.add_connection_poi(connection._vfNode, friction)
         if isinstance(connection, Circle):
-            self._vfNode.add_connection_sheave(connection._vfNode, reversed)
+            self._vfNode.add_connection_sheave(
+                connection._vfNode, reversed, friction, np.deg2rad(max_winding)
+            )
 
     def _update_pois(self):
         self._vfNode.clear_connections()
@@ -1666,8 +1852,34 @@ class Cable(NodeCoreConnected):
             self._reversed.append(False)
         self._reversed = self._reversed[0 : len(self._pois)]
 
-        for point, reversed in zip(self._pois, self._reversed):
-            self._add_connection_to_core(point, reversed)
+        # sync length of friction
+        req_friction_length = len(self._pois) - 2
+        if self._isloop:
+            req_friction_length += 1
+
+        while len(self._friction) < req_friction_length:
+            self._friction.append(0)
+        self._friction = self._friction[0:req_friction_length]
+
+        # sync length of maximum winding angles
+        while len(self._max_winding_angle) < len(self._pois):
+            self._max_winding_angle.append(999)
+        self._max_winding_angle = self._max_winding_angle[0 : len(self._pois)]
+
+        for point, reversed, max_winding in zip(
+            self._pois, self._reversed, self._max_winding_angle
+        ):
+            self._add_connection_to_core(
+                point, reversed, 0, max_winding
+            )  # friction will be overwritten later
+
+        # set friction
+        # replace none friction by 0
+        self._vfNode.friction_factors = [
+            f if f is not None else 0 for f in self._friction
+        ]
+
+        self._vfNode.update()
 
     def _give_poi_names(self):
         """Returns a list with the names of all the pois"""
@@ -1701,46 +1913,11 @@ class Cable(NodeCoreConnected):
 
         self.length = stretched_length * self.EA / (target_tension + self.EA)
 
-    @property
-    def friction_factor(self) ->float:
-        """Friction factor, negative means use default model with 10% [-]"""
-        return self._friction_factor
-
-    @friction_factor.setter
-    @node_setter_manageable
-    def friction_factor(self, value):
-        assert1f(value, "Friction factor shall be a single floating-point number")
-        self._friction_factor = value
-
-    @property
-    def friction_factor_used(self) -> float:
-        """Read only - the friction factor used in the calculation [-]
-        See Also: friction_factor
-        """
-
-        if self.friction_factor > 0:        # user-defined friction factor
-            return self.friction_factor
-
-        connections = self.connections # alias
-        n_connections = len(connections)
-
-        if connections[0] == connections[-1] and isinstance(connections[0], Circle): # loop
-            N = n_connections - 1
-            M = floor(N/2)
-            return 1.1**M
-        else:                           # no loop
-            N = n_connections - 2
-            return 1.1**N
 
 
-    @property
-    def tension_maxfriction(self) -> float:
-        """Maximum tension in the cable when accounting for friction [kN]"""
-        T0 = self.tension
-        return self.friction_factor_used * T0
-
-
-
+    def update(self):
+        """Update the cable internals"""
+        self._vfNode.update()
 
     def give_python_code(self):
         code = list()
@@ -1773,13 +1950,22 @@ class Cable(NodeCoreConnected):
                 code.append("            sheaves = ['{}',".format(poi_names[1]))
                 for i in range(n_sheaves - 2):
                     code.append("                       '{}',".format(poi_names[2 + i]))
-                code.append("                       '{}']),".format(poi_names[-2]))
+                code.append("                       '{}'])".format(poi_names[-2]))
 
         if np.any(self.reversed):
             code.append(f"s['{self.name}'].reversed = {self.reversed}")
 
-        if self.friction_factor >0:
-            code.append(f"s['{self.name}'].friction_factor = {self.friction_factor}")
+        # if self.friction_factor >0:
+        #     code.append(f"s['{self.name}'].friction_factor = {self.friction_factor}")
+
+
+        if np.any([_ != 999 for _ in self._max_winding_angle]):
+            code.append(
+                f"s['{self.name}'].max_winding_angles = {self._max_winding_angle}"
+            )
+
+        if np.any(self._friction):
+            code.append(f"s['{self.name}'].friction = {self._friction}")
 
         return "\n".join(code)
 
@@ -1819,7 +2005,7 @@ class LC6d(NodeCoreConnected):
     def try_swap(self, old: Frame, new: Frame) -> bool:
         """Try to swap existing main/secondary connection with the new frame. Returns True if the swap was successful. Checks global position"""
         if new is None:
-            return False # not an acceptable connection
+            return False  # not an acceptable connection
 
         if not old.same_position_and_orientation(new, tol=1e-9):
             return False
@@ -1954,7 +2140,7 @@ class Connector2d(NodeCoreConnected):
     def try_swap(self, old: Frame, new: Frame) -> bool:
         """Try to swap existing main/secondary connection with the new frame. Returns True if the swap was successful. Checks global position"""
         if new is None:
-            return False # not an acceptable connection
+            return False  # not an acceptable connection
 
         if not old.same_position_and_orientation(new, tol=1e-9):
             return False
@@ -2119,7 +2305,7 @@ class Beam(NodeCoreConnected):
     def try_swap(self, old: Frame, new: Frame) -> bool:
         """Try to swap existing nodeA, nodeB connection with the new frame. Returns True if the swap was successful. Checks global position"""
         if new is None:
-            return False # not an acceptable connection
+            return False  # not an acceptable connection
 
         if not old.same_position_and_orientation(new, tol=1e-9):
             return False

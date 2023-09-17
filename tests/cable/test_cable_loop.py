@@ -3,33 +3,35 @@ from numpy.testing import assert_allclose
 
 from DAVE import *
 
-def test_simple_loop():
+def basemodel(radius = 1.2):
     s = Scene()
 
-    radius = 1.2
-
+    
     # code for Point
-    s.new_point(name='Point',
-              position=(0.0,
-                        0.0,
-                        5.0))
+    s.new_point(name="Point", position=(0.0, 0.0, 5.0))
     # code for point2
-    s.new_point(name='point2',
-              position=(0.0,
-                        0.0,
-                        -5.0))
+    s.new_point(name="point2", position=(0.0, 0.0, -5.0))
     # code for Circle
-    s.new_circle(name='Circle',
-                parent='Point',
-                axis=(0.0, 1.0, 0.0),
-                radius=radius)
+    s.new_circle(name="Circle", parent="Point", axis=(0.0, 1.0, 0.0), radius=radius)
     # code for Circle_1
-    s.new_circle(name='Circle_1',
-                parent='point2',
-                axis=(0.0, 1.0, 0.0),
-                radius=radius )
+    s.new_circle(name="Circle_1", parent="point2", axis=(0.0, 1.0, 0.0), radius=radius)
+    
+    cab = s.new_cable(
+        "Cable",
+        endA="Circle_1",
+        endB="Circle_1",
+        sheaves=["Circle"],
+        length=2,
+        diameter=0.3,
+    )
+    return s
 
-    cab = s.new_cable('Cable', endA = 'Circle_1', endB= 'Circle_1',sheaves=['Circle'], length=2, diameter=0.3)
+def test_simple_loop():
+
+    radius = 1.2
+    s = basemodel(radius=radius)
+
+    cab = s["Cable"]
 
     # print(s._vfc.to_string())
     #
@@ -94,3 +96,50 @@ def test_table_loop_solve():
                 sheaves=['Circle_1_1',
                          'Circle'])
     s.solve_statics()
+
+def test_loop_twist():
+    s = basemodel(radius=1)
+    circle2 = s['Circle_1']
+    circle2.axis = (1,0,0) # rotated 90 degrees
+
+
+    cab : Cable = s["Cable"]
+    cab.EA = 1000
+    cab.update()
+    cab.set_length_for_tension(1000)
+
+    s.update()
+
+    assert_allclose(cab.tension,1000, atol=1e-3)
+
+    # the vertical distance between the circle axis is 10m
+    # the diameter of the wire is 0.3m
+    # the radius of the circle is 1.0m
+    # so the distance between the endpoint of the straight cable section and the vertical axis is 1.15m
+
+    d = 1.15
+
+    # the angle between the circles is 90 degrees
+
+    # the horizontal distance between the cable enddpoints is
+    dh = math.sqrt(2*d**2)
+
+    # the length of the straight section is
+    L = 9.9 # m  <== approximation, should be slightly less than 10
+    Ls = math.sqrt(d**2 + d**2 + L**2)
+
+    # the component of the force in "moment" direction is
+    Fm = cab.tension * d / Ls
+
+    print(Fm)
+
+    Mz = Fm * d
+
+    # and we have two cable sections
+    Mz *= 2
+
+    assert_allclose(s['point2'].applied_moment[2], Mz, rtol=1e-2)
+    assert_allclose(s['Point'].applied_moment[2], -Mz, rtol=1e-2)
+
+
+

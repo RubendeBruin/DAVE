@@ -1,0 +1,188 @@
+# auto generated python code
+# By MS12H
+# Time: 2023-09-11 13:20:01 UTC
+
+# To be able to distinguish the important number (eg: fixed positions) from
+# non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
+# For anything written as solved(number) that actual number does not influence the static solution
+
+def solved(number):
+    return number
+
+
+# Environment settings
+s.g = 9.80665
+s.waterlevel = 0.0
+s.rho_air = 0.00126
+s.rho_water = 1.025
+s.wind_direction = 0.0
+s.wind_velocity = 0.0
+s.current_direction = 0.0
+s.current_velocity = 0.0
+
+
+
+# code for Component
+c = s.new_component(name='Component',
+               path=r'cd: indetermined_bar_component.dave',
+           position=(0,
+                     0,
+                     0),
+           rotation=(0,
+                     0,
+                     0),
+           fixed =(True, True, True, True, True, True) )
+
+
+# code for Body
+s.new_rigidbody(name='Body',
+                mass=2,
+                cog=(0,
+                     0,
+                     -2),
+                position=(solved(-1.34781),
+                          solved(0.0804811),
+                          solved(-32.8075)),
+                rotation=(solved(-0.284779),
+                          solved(-0.0615645),
+                          solved(-155.602)),
+                fixed =(False, False, False, False, False, False) )
+
+# Exporting Shackle
+# Create Shackle
+s.new_shackle("Shackle", kind = "GP500")
+s['Shackle'].position = (-0,-0,-0)
+s['Shackle'].rotation = (-0,-0,-0)
+
+# Exporting Shackle_1
+# Create Shackle
+s.new_shackle("Shackle_1", kind = "GP500")
+s['Shackle_1'].position = (-0,-0,-0)
+s['Shackle_1'].rotation = (-0,-0,-0)
+
+s.new_geometriccontact(name = 'Shackle_1_connection',
+                       child = 'Shackle_1/pin',
+                       parent = 'Shackle/inside',
+                       inside=True,
+                       rotation_on_parent=solved(-89.99999999984168),
+                       child_rotation=solved(89.99999999984158) )
+
+# code for Point_2
+s.new_point(name='Point_2',
+          parent='Body',
+          position=(0,
+                    0,
+                    0))
+
+# code for Component_1
+c = s.new_component(name='Component_1',
+               path=r'cd: indetermined_bar_component.dave',
+           parent='Component/Bar',
+           position=(9.784,
+                     0.009,
+                     -1),
+           rotation=(0,
+                     0,
+                     40),
+           fixed =(True, True, True, True, True, True) )
+
+
+# code for Component_1_1
+c = s.new_component(name='Component_1_1',
+               path=r'cd: indetermined_bar_component.dave',
+           parent='Component/Bar',
+           position=(-9.784,
+                     0.009,
+                     -1),
+           rotation=(0,
+                     0,
+                     -70),
+           fixed =(True, True, True, True, True, True) )
+
+
+# code for Circle
+s.new_circle(name='Circle',
+            parent='Point_2',
+            axis=(0, 1, 0),
+            radius=1 )
+
+# code for Point_1
+s.new_point(name='Point_1',
+          parent='Component_1/Bar',
+          position=(0,
+                    0,
+                    -1))
+
+# code for Point
+s.new_point(name='Point',
+          parent='Component_1_1/Bar',
+          position=(0,
+                    0,
+                    -1))
+
+s.new_geometriccontact(name = 'Shackle_connection',
+                       child = 'Shackle/pin',
+                       parent = 'Circle',
+                       inside=True,
+                       rotation_on_parent=solved(90.20972210692763),
+                       child_rotation=solved(90.0) )
+
+# code for Cable
+s.new_cable(name='Cable',
+            endA='Point',
+            endB='Point_1',
+            length=36.893,
+            mass_per_length=0.35237,
+            EA=14000.0,
+            sheaves = ['Circle'])
+s['Cable'].max_winding_angles = [999, 999, 999]
+
+s['Shackle/pin_point']._visible = False
+
+s['Shackle/bow_point']._visible = False
+
+s['Shackle/inside_circle_center']._visible = False
+
+s['Shackle_1/pin_point']._visible = False
+
+s['Shackle_1/bow_point']._visible = False
+
+s['Shackle_1/inside_circle_center']._visible = False
+
+# Limits
+
+# Watches
+
+# Tags
+
+# Colors
+
+# Solved state of managed DOFs nodes
+s['Component/Bar'].x = -1.1438424424595661
+s['Component/Bar'].y = -0.16669133072067163
+s['Component/Bar'].z = -7.690583972043397
+s['Component/Bar'].rx = 1.7464841311501818
+s['Component/Bar'].ry = -42.10053736972308
+s['Component/Bar'].rz = 5.700007387648982
+s['Body'].x = -1.3478129137512995
+s['Body'].y = 0.08048107417509001
+s['Body'].z = -32.80745922278765
+s['Body'].rx = -0.284779338478219
+s['Body'].ry = -0.06156451878127218
+s['Body'].rz = -155.60244866117125
+s['Shackle_1_connection/_pin_hole_connection'].ry = -89.99999999984168
+s['Shackle_1_connection/_axis_on_child'].ry = 89.99999999984158
+s['Component_1/Bar'].x = -5.080109396897909
+s['Component_1/Bar'].y = 3.9863687543314517
+s['Component_1/Bar'].z = -4.805314141311196
+s['Component_1/Bar'].rx = 22.368808264296895
+s['Component_1/Bar'].ry = -22.93852735510485
+s['Component_1/Bar'].rz = -21.32682510213761
+s['Component_1_1/Bar'].x = -0.8275045291287303
+s['Component_1_1/Bar'].y = -4.190102704308891
+s['Component_1_1/Bar'].z = -6.809786370984422
+s['Component_1_1/Bar'].rx = -13.97578993169379
+s['Component_1_1/Bar'].ry = 68.96745296218968
+s['Component_1_1/Bar'].rz = -32.11835045819578
+s['Shackle_connection/_pin_hole_connection'].ry = 90.20972210692763
+s['Shackle_connection/_axis_on_child'].ry = 90.0

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>307</width>
-    <height>228</height>
+    <width>293</width>
+    <height>237</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -117,27 +117,10 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Mass per length [mT/m] *</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
-        <property name="decimals">
-         <number>3</number>
-        </property>
-        <property name="singleStep">
-         <double>0.001000000000000</double>
-        </property>
-       </widget>
-      </item>
       <item row="3" column="0">
        <widget class="QLabel" name="label_9">
         <property name="text">
-         <string>Mass [mT]*</string>
+         <string>Mass [mT]</string>
         </property>
        </widget>
       </item>
@@ -151,14 +134,71 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="0" colspan="2">
-       <widget class="QLabel" name="label_6">
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_5">
         <property name="text">
-         <string>* Intended for lift-rigging calculations. Mass is only accurately accounted for when cable is tension exceeds its own weight. Mass is calculated from mass_per_length.</string>
+         <string>Mass per length [mT/m] </string>
         </property>
-        <property name="wordWrap">
-         <bool>true</bool>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
+        <property name="decimals">
+         <number>3</number>
         </property>
+        <property name="singleStep">
+         <double>0.001000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="2">
+       <widget class="QWidget" name="widget" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="spacing">
+          <number>9</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QCheckBox" name="cbSolveSegmentLengths">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>[Experimental!] Solve cable length re-distribution due to cable weight</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>
@@ -171,7 +211,6 @@
   <tabstop>doubleSpinBox_2</tabstop>
   <tabstop>doubleSpinBox</tabstop>
   <tabstop>doubleSpinBox_4</tabstop>
-  <tabstop>doubleSpinBox_3</tabstop>
  </tabstops>
  <resources/>
  <connections/>

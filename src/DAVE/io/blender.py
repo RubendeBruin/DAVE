@@ -745,7 +745,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
     for cable in scene.nodes_of_type(dc.Cable):
 
-        points = cable.get_points_for_visual()
+        points = cable.get_points_for_visual_blender()
         dia = cable.diameter
 
         if dia < consts.BLENDER_CABLE_DIA:
@@ -762,7 +762,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
             for dof in animation_dofs:
                 scene._vfc.set_dofs(dof)
                 scene.update()
-                points = cable.get_points_for_visual()
+                points = cable.get_points_for_visual_blender()
                 code += '\nframe_points=['
                 for p in points:
                     code += '({},{},{},1.0),'.format(*p)
@@ -781,7 +781,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
                 timeline.activate_time(i_time + time_start)
                 scene.update()
-                points = cable.get_points_for_visual()
+                points = cable.get_points_for_visual_blender()
                 code += '\nframe_points=['
                 for p in points:
                     code += '({},{},{},1.0),'.format(*p)
@@ -997,4 +997,7 @@ if __name__ == '__main__':
     s['Visual2'].color = (254, 0, 0)
     s['Beam'].color = (0,100,254)
 
-    create_blend_and_open(s)
+    from DAVE.gui.dialog_blender import try_get_blender_executable
+    blender_executable = try_get_blender_executable()
+
+    create_blend_and_open(s, blender_exe_path=blender_executable)

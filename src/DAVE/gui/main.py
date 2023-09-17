@@ -67,6 +67,7 @@ import logging
 from DAVE.gui.dialog_blender import ExportToBlenderDialog
 from DAVE.gui.dialog_export_package import ExportAsPackageDialog
 from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter, EscKeyPressFilter
+from DAVE.gui.helpers.qt_action_draggable import QDraggableNodeActionWidget
 from DAVE.gui.widget_watches import WidgetWatches
 from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import DragInfo
 from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
@@ -85,7 +86,7 @@ from DAVE.gui.widget_tags import WidgetTags
 
 import DAVE.auto_download
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QMimeData
 from PySide6.QtCore import QSettings
 from PySide6.QtGui import QIcon, QPixmap, QFont, QFontMetricsF, QCursor, QAction
 from PySide6.QtWidgets import (
@@ -155,6 +156,7 @@ import DAVE.gui.forms.resources_rc
 # Clicking a button will call activate_workspace with WORKSPACE_ID
 DAVE_GUI_WORKSPACE_BUTTONS = [
     ("Construct", "CONSTRUCT"),
+    ("Watches", "WATCHES"),
     ("Explore", "EXPLORE"),
     ("Ballast", "BALLAST"),
     ("Shear and Bending", "MOMENTS"),
@@ -272,6 +274,7 @@ class Gui:
                 self.app = QtWidgets.QApplication()
         else:
             self.app = app
+
 
         self.app.aboutToQuit.connect(self.onCloseApplication)
 
@@ -767,7 +770,7 @@ class Gui:
         if block:
             self.ui.pbUpdate.setVisible(False)
             self.ui.pbCopyViewCode.setVisible(False)
-            self.app.exec_()
+            self.app.exec()
 
     def menu_export_DAVE_package(self, *args):
         d = ExportAsPackageDialog()
@@ -896,6 +899,7 @@ class Gui:
 
     def copy_screenshot_code(self):
         sea = self.visual.settings.show_sea
+
         camera_pos = self.visual.screen.camera.GetPosition()
         lookat = self.visual.screen.camera.GetFocalPoint()
 
@@ -985,21 +989,30 @@ class Gui:
             g.close()
 
     def activate_workspace(self, name):
+
         self._active_workspace = name
 
         self.animation_terminate()
         self.savepoint_restore()
 
-        self.activate_paintset("Construction")
+
 
         if name == "PAINTERS":
             self.show_guiWidget("vanGogh", WidgetPainters)
 
         if name == "CONSTRUCT":
+
+            keep_watches = "Watches" in self.guiWidgets.keys()
+
             self.close_all_open_docks()
             self.show_guiWidget("Node Tree", WidgetNodeTree)
             self.show_guiWidget("Properties", WidgetNodeProps)
             self.show_guiWidget("Quick actions", WidgetQuickActions)
+
+            if keep_watches:
+                self.show_guiWidget("Watches")
+
+        if name == "WATCHES":
             self.show_guiWidget("Watches")
 
         if name == "EXPLORE":
@@ -1585,9 +1598,13 @@ class Gui:
             called_by_user=called_by_user,
         )
 
-        self.give_feedback(
-            f"Solved statics - remaining error = {self.scene._vfc.Emaxabs} kN or kNm"
-        )
+        if len(self.scene._vfc.get_dofs())==0:
+            self.give_feedback("Solved statics - no degrees of freedom")
+        else:
+
+            self.give_feedback(
+                f"Solved statics - remaining error = {self.scene._vfc.Emaxabs} kN or kNm"
+            )
 
     def solve_statics_using_gui_on_scene(
         self, scene_to_solve, timeout_s=0.5, called_by_user=True
@@ -1600,14 +1617,6 @@ class Gui:
         old_dofs = scene_to_solve._vfc.get_dofs()
 
         if len(old_dofs) == 0:  # no degrees of freedom
-            if called_by_user:
-                msgBox = QMessageBox()
-                msgBox.setText("No degrees of freedom - nothing to solve")
-                msgBox.setWindowTitle("DAVE")
-                msgBox.exec_()
-
-                print("No dofs")
-
             return True
 
         self._dialog = None
@@ -1623,7 +1632,9 @@ class Gui:
             self.__BackgroundSolver.do_solve_linear_first = (
                 self._solver_do_solve_linear_first
             )
-            self.__BackgroundSolver.Start()
+            running = self.__BackgroundSolver.Start()
+            if not running:
+                return True  # system already converged, nothing started so nothing to wait for
 
             dialog = SolverDialog_threaded()
             dialog.pbAccept.setEnabled(False)
@@ -2340,7 +2351,7 @@ class Gui:
         nodes = [self.visual.node_from_vtk_actor(prop) for prop in props]
         nodes = [
             node for node in nodes if node is not None
-        ]  # remove nones (not all actors have a associated node, for example the sea has none)
+        ]  # remove nones (not all actors have an associated node, for example the sea has none)
         nodes = list(set(nodes))  # make unique
 
         # find all managers (recursively)
@@ -2352,8 +2363,6 @@ class Gui:
                     if node.manager not in nodes:
                         nodes.append(node.manager)
                         added = True
-
-        print(nodes)
 
         added = True
         while added:
@@ -2369,9 +2378,17 @@ class Gui:
         # If we have a length 1 then it is easy
         # if more, then show a context-menu
 
-        if len(nodes) == 1:
-            self._user_clicked_node(nodes[0])
-            return
+        # Even with length 1, we may still want to show a context menu such that
+        # the user can drag the selected node to somewhere.
+        # Implement by checking if the SHIFT, ALT or CTRL keys are down
+        # If so, show the context menu
+
+        if self.app.keyboardModifiers() and (QtCore.Qt.KeyboardModifier.ControlModifier or QtCore.Qt.KeyboardModifier.AltModifier or QtCore.Qt.KeyboardModifier.ShiftModifier):
+            pass
+        else:
+            if len(nodes) == 1:
+                self._user_clicked_node(nodes[0])
+                return
 
         # order in some logical way
         # unmanaged nodes go first
@@ -2393,86 +2410,41 @@ class Gui:
                     f"{node.name}\t[{node.class_name}]\t managed by {node.manager.name}"
                 )
 
-            action = menu.addAction(
-                text, lambda n=node, *args: self._user_clicked_node(n)
-            )
+            # action = menu.addAction(
+            #     text, lambda n=node, *args: self._user_clicked_node(n)
+            # )
+
+            action = QDraggableNodeActionWidget(text, mime_text=node.name)
+            action.clicked.connect(lambda n=node, *args: self._user_clicked_node(n, args))
+
+            menu.addAction(action)
 
             if node.manager is None:
-                font = action.font()
-                font.setBold(True)
-                action.setFont(font)
+                action.setBold(True)
             else:
                 if (
                     getattr(node, "_editor_widget_types_when_managed", None) is not None
                 ):  # for partially managed nodes
-                    font = action.font()
-                    font.setBold(True)
-                    action.setFont(font)
+                    action.setBold(True)
+
+        # See if there are multiple nodes with the same class
+        # if so, offer a menu option to select all of them
+
+        class_names = [node.class_name for node in nodes]
+        class_names = list(set(class_names))  # make unique
+
+        for class_name in class_names:
+            nodes_with_class = [node for node in nodes if node.class_name == class_name]
+            if len(nodes_with_class) > 1:
+                menu.addAction(
+                    f"Select all {class_name}s",
+                    lambda nodes=nodes_with_class, *args: self.guiSelectNodes(nodes),
+                )
 
         menu.exec_(QCursor.pos())
 
-        # old code
-        #
-        # node = self.visual.node_from_vtk_actor(props[0])
-        #
-        # if node is None:
-        #     print("Could not find node for this actor")
-        #     self.selected_nodes.clear()
-        #     self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
-        #
-        # # find the higest manager of this node
-        # manager = node.manager
-        # if manager is not None:
-        #     while manager.manager is not None:
-        #         manager = manager.manager
-        #
-        #     if manager in self.selected_nodes:
-        #         self.selected_nodes.remove(manager)
-        #         self.guiSelectNode(node)
-        #     else:
-        #         if node in self.selected_nodes:
-        #             self.selected_nodes.remove(node)
-        #         self.guiSelectNode(manager)
-        #
-        #     return
-        #
-        # else:
-        #
-        #     _node = node
-        #     if node in self.selected_nodes:
-        #         # if the is already selected, then select something different
-        #
-        #         self.selected_nodes.remove(node)
-        #
-        #         # # if node has a manager, then select the manager
-        #         # if node.manager is not None:
-        #         #     self.guiSelectNode(node.manager)
-        #         #     return
-        #
-        #         # cycle between node and its parent
-        #         try:
-        #             node = node.parent
-        #         except:
-        #             try:
-        #                 node = node.master
-        #             except:
-        #                 try:
-        #                     node = node.slave
-        #                 except:
-        #                     try:
-        #                         node = node._pois[0]
-        #                     except:
-        #                         pass
-        #
-        #     if node is None:  # in case the parent or something was none
-        #         node = _node
-        #
-        # if node is None:  # sea or something
-        #     self.selected_nodes.clear()
-        # else:
-        #     self.guiSelectNode(node.name)
+    def _user_clicked_node(self, node, event = None):
 
-    def _user_clicked_node(self, node):
         if node is None:  # sea or something
             self.selected_nodes.clear()
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
@@ -2568,13 +2540,36 @@ class Gui:
             self.visual.position_visuals()
             self.visual_update_selection()
 
-    def guiSelectNode(self, node_name):
+    def guiSelectNodes(self, nodes):
+        """Replace or extend the current selection with the given nodes (depending on keyboard-modifiers). Nodes may be passed as strings or nodes, but must be an tuple or list."""
+
+        assert isinstance(
+            nodes, (tuple, list)
+        ), f"Nodes must be an iterable, but is {type(nodes)}"
+
+        nodes = [self.scene._node_from_node_or_str(node) for node in nodes]
+        last_node = nodes[-1]
+        first_nodes = nodes[:-1]
+
+        if not (
+            self.app.keyboardModifiers() and QtCore.Qt.KeyboardModifier.ControlModifier
+        ):
+            self.selected_nodes.clear()
+
+        self.selected_nodes.extend(first_nodes)
+        self.guiSelectNode(last_node, extend=True)
+
+    def guiSelectNode(self, node_name, extend=False):
         # Select a node with name, pass None to deselect all
 
         old_selection = self.selected_nodes.copy()
 
         if not (
-            self.app.keyboardModifiers() and QtCore.Qt.KeyboardModifier.ControlModifier
+            (
+                self.app.keyboardModifiers()
+                and QtCore.Qt.KeyboardModifier.ControlModifier
+            )
+            or extend
         ):
             self.selected_nodes.clear()
 

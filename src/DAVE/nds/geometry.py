@@ -1281,11 +1281,22 @@ class Circle(NodeCoreConnected, HasParentCore):
         assert1f(val)
         self._vfNode.radius = val
 
+    @property
+    def is_roundbar(self) -> bool:
+        """Flag to indicate that the circle should be treated as round-bar [true/false]"""
+        return self._vfNode.is_roundbar
+
+    @is_roundbar.setter
+    def is_roundbar(self, value):
+        self._vfNode.is_roundbar = value
+
     def give_python_code(self):
         code = "# code for {}".format(self.name)
         code += "\ns.new_circle(name='{}',".format(self.name)
         code += "\n            parent='{}',".format(self.parent_for_export.name)
         code += "\n            axis=({:.6g}, {:.6g}, {:.6g}),".format(*self.axis)
+        if self.is_roundbar:
+            code += "\n            roundbar=True,"
         code += "\n            radius={:.6g} )".format(self.radius)
         return code
 

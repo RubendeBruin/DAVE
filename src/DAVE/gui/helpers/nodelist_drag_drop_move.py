@@ -1,13 +1,21 @@
 from PySide6.QtCore import QMimeData
 from PySide6.QtGui import QDrag
 from PySide6 import QtCore
-from PySide6.QtWidgets import QApplication, QListWidget, QWidget, QVBoxLayout, QLabel, QMainWindow
+from PySide6.QtWidgets import (
+    QApplication,
+    QListWidget,
+    QWidget,
+    QVBoxLayout,
+    QLabel,
+    QMainWindow,
+)
 
 """Two drop-in functions that can be used to enable dragging and dropping of nodes in an
 ordered list.
 
 See EditSling for example use
 """
+
 
 def call_from_drop_Event(list_widget, event):
     list = list_widget
@@ -34,8 +42,12 @@ def call_from_drop_Event(list_widget, event):
     else:
         list.addItem(name)
 
+
 def call_from_dragEnter_or_Move_Event(list_widget, scene, allowed_nodetypes, event):
-    if event.source() == list_widget:
+    if not isinstance(list_widget, (tuple, list)):
+        list_widget = [list_widget]
+
+    if event.source() in list_widget:
         event.accept()
     else:
         try:
@@ -47,7 +59,7 @@ def call_from_dragEnter_or_Move_Event(list_widget, scene, allowed_nodetypes, eve
             return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QApplication()
 
     window = QMainWindow()
@@ -58,7 +70,7 @@ if __name__ == '__main__':
 
     scene = Scene()
 
-    scene.new_point('test')
+    scene.new_point("test")
 
     list = QListWidget()
     label = QLabel("Drag me out!")
@@ -81,22 +93,22 @@ if __name__ == '__main__':
         drag.setMimeData(data)
         drag.exec(QtCore.Qt.MoveAction)
 
-
     label.mousePressEvent = mousePressed
 
     def drag(*args):
         call_from_dragEnter_or_Move_Event(list, scene, (Point, Circle), *args)
-        print('Regenerate code')
+        print("Regenerate code")
+
     def drop(*args):
         call_from_drop_Event(list, *args)
-        print('Regenerate code')
+        print("Regenerate code")
 
     # Note - set three
     list.dragEnterEvent = drag
     list.dropEvent = drop
     list.dragMoveEvent = drag
 
-    list.addItems(["One","Two","Three"])
+    list.addItems(["One", "Two", "Three"])
 
     window.show()
     app.exec_()

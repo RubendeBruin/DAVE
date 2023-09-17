@@ -8,7 +8,7 @@
 import graphlib
 import itertools
 import weakref
-import  datetime
+import datetime
 from graphlib import TopologicalSorter
 from os.path import isdir, isfile
 from os import mkdir
@@ -20,12 +20,18 @@ import functools
 
 import DAVEcore as DC
 
-from DAVE.settings import DAVE_DEFAULT_SOLVER_MOBILITY, DAVE_DEFAULT_SOLVER_TOLERANCE, RESOURCE_PATH, NodePropertyInfo, \
-    MANAGED_NODE_IDENTIFIER
+from DAVE.settings import (
+    DAVE_DEFAULT_SOLVER_MOBILITY,
+    DAVE_DEFAULT_SOLVER_TOLERANCE,
+    RESOURCE_PATH,
+    NodePropertyInfo,
+    MANAGED_NODE_IDENTIFIER,
+)
 from .nds.mixins import Manager
 
 from .tools import *
 from .nodes import *
+
 # from .nodes import _Area
 
 # we are wrapping all methods of DAVEcore such that:
@@ -37,8 +43,6 @@ from .nodes import *
 # notes and choices:
 # - properties are returned as tuple to make sure they are not editable.
 #    --> node.position[2] = 5 is not allowed
-
-
 
 
 class Scene:
@@ -61,7 +65,14 @@ class Scene:
 
     """
 
-    def __init__(self, filename=None, copy_from=None, code=None, resource_paths=None, current_directory=None):
+    def __init__(
+        self,
+        filename=None,
+        copy_from=None,
+        code=None,
+        resource_paths=None,
+        current_directory=None,
+    ):
         """Creates a new Scene
 
         Args:
@@ -283,6 +294,11 @@ class Scene:
     def _print_cpp(self):
         print(self._vfc.to_string())
 
+    def _save_coredump(self, filename=r"c:\data\test.txt"):
+        with open(filename, "w") as f:
+            f.write(self._vfc.to_string())
+        print('Saved coredump to "{}"'.format(filename))
+
     def _print(self, what):
         if self.verbose:
             print(what)
@@ -467,7 +483,6 @@ class Scene:
         message = ""
         for n in self.nodes_of_type(GeometricContact):
             if not n.inside:
-
                 # connection force of the child is the
                 # force applied on the connecting rod
                 # in the axis system of the rod
@@ -510,7 +525,7 @@ class Scene:
             else:
                 test = url
 
-            if not test.startswith("res:") and not test.startswith('cd:'):
+            if not test.startswith("res:") and not test.startswith("cd:"):
                 test = Path(test)
                 if str(test.parent) == ".":
                     # from warnings import warn
@@ -532,11 +547,10 @@ class Scene:
                     return file
 
                 raise FileExistsError(
-                    f'Resource "{filename}" not found in current directory "{str(self.current_directory)}"')
-
+                    f'Resource "{filename}" not found in current directory "{str(self.current_directory)}"'
+                )
 
             elif url.startswith("res:"):
-
                 # we have a string starting with 'res:'
                 filename = url[4:].strip()
 
@@ -584,7 +598,9 @@ class Scene:
             )
         )
 
-    def get_resource_list(self, extension, include_subdirs=False, include_current_dir = True):
+    def get_resource_list(
+        self, extension, include_subdirs=False, include_current_dir=True
+    ):
         """Returns a list of all resources (strings) with given extension in any of the resource-paths
 
         extension: (str) extension to look for, for example 'dave' or '.dave'
@@ -592,11 +608,13 @@ class Scene:
         include_current_dir : return 'cd:' based resources as well
 
         """
-        r = [] # results
+        r = []  # results
 
         for dir in self.resources_paths:
             try:
-                files = get_all_files_with_extension(root_dir = dir, extension=extension, include_subdirs=include_subdirs)
+                files = get_all_files_with_extension(
+                    root_dir=dir, extension=extension, include_subdirs=include_subdirs
+                )
 
                 for file in files:
                     file = "res: " + file.replace("\\", "/")
@@ -606,9 +624,12 @@ class Scene:
             except FileNotFoundError:
                 pass
 
-
         if include_current_dir:
-            files = get_all_files_with_extension(root_dir=self.current_directory, extension=extension, include_subdirs=include_subdirs)
+            files = get_all_files_with_extension(
+                root_dir=self.current_directory,
+                extension=extension,
+                include_subdirs=include_subdirs,
+            )
 
             for file in files:
                 file = "cd: " + file.replace("\\", "/")
@@ -708,16 +729,13 @@ class Scene:
         # There is nothing keeping the dict in sync with _nodes, so we rebuild it
         # when we can not find the node that we're looking for.
 
-
         # the quick way
         if node_name in self._node_dict:
             index = self._node_dict[node_name]
-            if index<len(self._nodes):
+            if index < len(self._nodes):
                 node = self._nodes[index]
                 if node.name == node_name:
                     return node
-
-
 
         assert isinstance(
             node_name, str
@@ -738,24 +756,27 @@ class Scene:
         # See if we get a single match when we just ignore _ / and >>>
 
         search_for = node_name.replace("_", "^").replace(">>>", "^").replace("/", "^")
-        options = [t.replace("_", "^").replace(">>>", "^").replace("/", "^") for t in self.node_names]
+        options = [
+            t.replace("_", "^").replace(">>>", "^").replace("/", "^")
+            for t in self.node_names
+        ]
 
         if search_for in options:
-
             if options.count(search_for) == 1:
-
                 index = options.index(search_for)
                 N = self._nodes[index]
 
                 warnings.warn(
-                    f"Selecting node {node_name} based on fuzzy-match {N.name}. If you are not importing an old file then please use the correct the name in the future.")
+                    f"Selecting node {node_name} based on fuzzy-match {N.name}. If you are not importing an old file then please use the correct the name in the future."
+                )
 
                 return N
 
             else:
                 # multiple matches
                 warnings.warn(
-                    f"Selecting node {node_name} based on fuzzy-match {N.name}. If you are not importing an old file then please use the correct the name in the future.")
+                    f"Selecting node {node_name} based on fuzzy-match {N.name}. If you are not importing an old file then please use the correct the name in the future."
+                )
 
         # end work-around
 
@@ -835,7 +856,6 @@ class Scene:
 
         graph = dict()
         for node in self._nodes:
-
             deps = []
 
             if isinstance(node, HasParent):
@@ -850,7 +870,9 @@ class Scene:
         try:
             ts = TopologicalSorter(graph)
         except graphlib.CycleError as M:
-            raise Exception(f"Could not sort nodes by parent, circular references exist: {str(M)}")
+            raise Exception(
+                f"Could not sort nodes by parent, circular references exist: {str(M)}"
+            )
 
         self._nodes = list(ts.static_order())
 
@@ -909,7 +931,9 @@ class Scene:
                         for k, v in creates.items():
                             for vnode in v:
                                 if vnode == n:
-                                    raise Exception(f'Node {n} is already created by {k} , can not be created by {node} as well')
+                                    raise Exception(
+                                        f"Node {n} is already created by {k} , can not be created by {node} as well"
+                                    )
 
                 if c:
                     # print(f"Manager {node.name} creates:")
@@ -930,8 +954,6 @@ class Scene:
 
         return r
 
-
-
     def sort_nodes_by_dependency(self):
         """Sorts the nodes such that a nodes creation only depends on nodes earlier in the list.
 
@@ -947,7 +969,7 @@ class Scene:
         to_be_exported = self._nodes.copy()
         counter = 0
 
-        originally_present  = tuple(to_be_exported)  # for check
+        originally_present = tuple(to_be_exported)  # for check
 
         # Some of the nodes are created by another node in this list.
         # Remove those nodes from the to_be_exported list and add
@@ -957,7 +979,6 @@ class Scene:
 
         creates = self.get_created_by_dict()
 
-
         for v in creates.values():
             for node in v:
                 to_be_exported.remove(node)
@@ -965,10 +986,8 @@ class Scene:
         # Move from the to_be_exported list to the exported list when all dependencies are exported
 
         while to_be_exported:
-
             counter += 1
             if counter > len(self._nodes):
-
                 print("Error when exporting, could not resolve dependancies:")
 
                 for node in to_be_exported:
@@ -978,7 +997,9 @@ class Scene:
                     if node._manager:
                         print(f"   managed by: {node._manager.name}")
                     if node in node.depends_on():
-                        raise Exception(f'Node {node.name} depends on itself - that is not possible')
+                        raise Exception(
+                            f"Node {node.name} depends on itself - that is not possible"
+                        )
 
                 raise Exception(
                     "Could not sort nodes by dependency, circular references exist?"
@@ -1038,7 +1059,9 @@ class Scene:
     def add_node(self, node):
         """Adds a node to the scene"""
         # called by base constructor, name property may not be set yet hence supplied separately
-        assert node.name not in [node.name for node in self._nodes], f"Node with name {node.name} already exists in the scene"
+        assert node.name not in [
+            node.name for node in self._nodes
+        ], f"Node with name {node.name} already exists in the scene"
         self._nodes.append(node)
 
     def available_name_like(self, like, _additional_names=()):
@@ -1150,8 +1173,6 @@ class Scene:
         #                 r.append(n)
         #                 to_be_scanned.append(n)
 
-
-
         return r
 
     def node_is_fully_fixed_to_world(self, node) -> bool:
@@ -1159,18 +1180,23 @@ class Scene:
         if node is None:
             return True
 
-        if not hasattr(node, 'parent'):
+        if not hasattr(node, "parent"):
             return True
 
         if isinstance(node, Frame):
             if not all(node.fixed):
                 return False
 
-        return self.node_is_fully_fixed_to_world(node.parent)  # recursive call on parent. Parent None returns True
+        return self.node_is_fully_fixed_to_world(
+            node.parent
+        )  # recursive call on parent. Parent None returns True
 
-
-    def common_ancestor_of_nodes(self, nodes: List[Node]) -> Node or None:
+    def common_ancestor_of_nodes(
+        self, nodes: List[Node], required_type=None
+    ) -> Node or None:
         """Finds a nearest ancestor (parent) that is common to all of the nodes.
+
+        If required type is specified then the common anchestor needs to be in instance of that type.
 
         frame [Frame]
          |-> frame2 [Frame]
@@ -1200,6 +1226,13 @@ class Scene:
                 parent = getattr(parent, "parent", None)
 
             parents_of_node.append(parents)
+
+        # remove any non-required types for the database
+        if required_type is not None:
+            parents_of_node = [
+                [p for p in parents if isinstance(p, required_type)]
+                for parents in parents_of_node
+            ]
 
         # Now find the first entry that is common in all of the lists of parent_of_node - maintain the order
         common = parents_of_node[0]
@@ -1231,7 +1264,6 @@ class Scene:
         r = []
 
         for n in self._nodes:
-
             try:
                 parent = n.parent
             except AttributeError:
@@ -1329,8 +1361,6 @@ class Scene:
             dissolve
         """
 
-
-
         if isinstance(node, str):
             node = self[node]
 
@@ -1394,9 +1424,6 @@ class Scene:
         # validate timelines
         self._validate_timelines()
 
-
-
-
     def dissolve(self, node):
         """Calls node.dissolve()"""
 
@@ -1419,7 +1446,7 @@ class Scene:
 
         return False
 
-    def flatten(self, root_node=None, exclude_known_types = False):
+    def flatten(self, root_node=None, exclude_known_types=False):
         """Performs a recursive dissolve on Frames (not rigid bodies). If root_node is None (default) then the whole model is flattened"""
 
         from .nodes import Shackle, Component, Sling, GeometricContact
@@ -1430,7 +1457,6 @@ class Scene:
         dissolved_node_names = []
 
         while True:
-
             if dissolved_node_name is not None:
                 dissolved_node_names.append(dissolved_node_name)
 
@@ -1445,20 +1471,18 @@ class Scene:
                 nodes = [n for n in nodes if not isinstance(n, known_types)]
 
             for node in nodes:
-
                 work_done, reason = node.dissolve_some()
 
                 if work_done:
-                    print(f'reason: {reason}')
+                    print(f"reason: {reason}")
                     break
 
             if not work_done:
-
                 for node in nodes:
                     try:
                         nodename = node.name
                         node.dissolve()
-                        print(f'Dissolved: {nodename}')
+                        print(f"Dissolved: {nodename}")
                         work_done = True
                     except:
                         pass
@@ -1474,12 +1498,10 @@ class Scene:
 
         return dissolved_node_names
 
-
     def savepoint_make(self):
         """Makes a safepoint if non is present"""
         if self._savepoint is None:
             self._savepoint = self.give_python_code()
-
 
     def savepoint_restore(self):
         if self._savepoint is not None:
@@ -1490,7 +1512,9 @@ class Scene:
         else:
             return False
 
-    def create_standalone_copy(self, target_dir, filename, include_visuals = True, flatten = False, zip=True):
+    def create_standalone_copy(
+        self, target_dir, filename, include_visuals=True, flatten=False, zip=True
+    ):
         """Creates a stand-alone copy
         returns a log of actions"""
 
@@ -1512,41 +1536,49 @@ class Scene:
 
         def update_path(path):
             path = self.get_resource_path(path)
-            return 'cd: ' + str(path.name)
+            return "cd: " + str(path.name)
 
         # Loop all nodes and copy the resources to the target dir
         for node in tuple(s.unmanged_nodes):
-
             if isinstance(node, Component):
                 # export component contents recursively
 
                 name = self.get_resource_path(node.path)
-                c = Scene(node.path, resource_paths=self.resources_paths, current_directory=self.current_directory)
+                c = Scene(
+                    node.path,
+                    resource_paths=self.resources_paths,
+                    current_directory=self.current_directory,
+                )
 
-                c.create_standalone_copy(target_dir=target_dir, include_visuals=include_visuals, flatten=flatten, filename = Path(name).name)
+                c.create_standalone_copy(
+                    target_dir=target_dir,
+                    include_visuals=include_visuals,
+                    flatten=flatten,
+                    filename=Path(name).name,
+                )
 
                 #
                 node._path = update_path(node.path)
 
-            elif hasattr(node, 'make_standalone'):  # Use duck-typing for DAVEbaseextensions
-                log.extend(node.make_standalone(target_dir = target_dir))
+            elif hasattr(
+                node, "make_standalone"
+            ):  # Use duck-typing for DAVEbaseextensions
+                log.extend(node.make_standalone(target_dir=target_dir))
 
             else:
-
                 # visuals and hyd
-                trimesh = getattr(node, 'trimesh', None)
+                trimesh = getattr(node, "trimesh", None)
                 if trimesh:
                     path = trimesh._path
                 else:
-                    path = getattr(node, 'path', None)
+                    path = getattr(node, "path", None)
 
                 if path:
-
-                    log.append(f'Path found: {path} --> {update_path(path)}')
+                    log.append(f"Path found: {path} --> {update_path(path)}")
 
                     # simply copy the resource
                     source = self.get_resource_path(path)
-                    target = Path(target_dir) /  Path(source).name
+                    target = Path(target_dir) / Path(source).name
                     copy(source, target)
 
                     # and update the node
@@ -1554,49 +1586,51 @@ class Scene:
                     if trimesh:
                         trimesh._path = new_path
                     else:
-                        if hasattr(node,'_path'):
+                        if hasattr(node, "_path"):
                             node._path = new_path
                         else:
                             node.path = new_path
-
 
         s.save_scene(Path(target_dir) / filename)
 
         # cube.obj is sometimes used as default visual, so copy it
         # same for default_component
-        required_files = ('shackle_gp800.obj','cube.obj','default_component.dave')
+        required_files = ("shackle_gp800.obj", "cube.obj", "default_component.dave")
         for rf in required_files:
-            copy(self.get_resource_path(f'res: {rf}'), Path(target_dir) / rf)
+            copy(self.get_resource_path(f"res: {rf}"), Path(target_dir) / rf)
 
         # Perform a self-check
-        log.append('Perfoming self-check of exported models')
-
+        log.append("Perfoming self-check of exported models")
 
         try:
             t = Scene()
 
             t.resources_paths.clear()
-            t.resources_paths.append(target_dir)  # for res:cube and res:default_component
+            t.resources_paths.append(
+                target_dir
+            )  # for res:cube and res:default_component
             t.current_directory = target_dir
             exported_scene = str(Path(target_dir) / filename)
             t.load_scene(exported_scene)
 
-            log.append('Self-check completed without errors')
+            log.append("Self-check completed without errors")
         except Exception as E:
-            log.append(f'Self check FAILED with error {str(E)}')
-
+            log.append(f"Self check FAILED with error {str(E)}")
 
         if zip:
             try:
-                log.append('Creating zip-file')
-                zip_filename = Path(target_dir).parent / (str(Path(target_dir).parts[-1]))
+                log.append("Creating zip-file")
+                zip_filename = Path(target_dir).parent / (
+                    str(Path(target_dir).parts[-1])
+                )
 
                 from shutil import make_archive
-                make_archive(zip_filename,format='zip',root_dir=target_dir)
 
-                log.append(f'Created zipfile {zip_filename}.zip')
+                make_archive(zip_filename, format="zip", root_dir=target_dir)
+
+                log.append(f"Created zipfile {zip_filename}.zip")
             except Exception as E:
-                log.append(f'Creating zipfile FAILED with error {str(E)}')
+                log.append(f"Creating zipfile FAILED with error {str(E)}")
 
         return log
 
@@ -1657,7 +1691,11 @@ class Scene:
         self._vfc.state_update()
 
     def _solve_statics_with_optional_control(
-        self, feedback_func=None, do_terminate_func=None, timeout_s=1, terminate_after_s = 30,
+        self,
+        feedback_func=None,
+        do_terminate_func=None,
+        timeout_s=1,
+        terminate_after_s=30,
     ):
         """Solves statics with a time-out and feedback/terminate functions.
 
@@ -1684,7 +1722,8 @@ class Scene:
         # # fallback to normal solve if feedback and control arguments are not provided
         # if feedback_func is None or do_terminate_func is None:
         #     return self.solve_statics()
-        self._vfc.state_update()
+        self.update()
+        # self._vfc.state_update()
 
         if self._vfc.n_dofs() == 0:  # check for the trivial case
             self.update()
@@ -1704,9 +1743,7 @@ class Scene:
         if timeout_s is None:
             timeout_s = -1
 
-
         if self.USE_NEW_SOLVER:
-
             # construct a background solver
             # start it
             # wait till it completes or it is cancelled
@@ -1719,25 +1756,34 @@ class Scene:
             BackgroundSolver = DC.BackgroundSolver(self._vfc)
             BackgroundSolver.tolerance = self.static_tolerance
             BackgroundSolver.mobility = self.solver_mobility
-            BackgroundSolver.Start()
+            started = BackgroundSolver.Start()
+
+            if started is None:  # todo: WORKAROUND, remove this
+                started = True
+
+            if not started:
+                print(BackgroundSolver.log)
+                return True
 
             while BackgroundSolver.Running:
-                for i in range(10):
+                for i in range(int(10 * timeout_s)):
                     if should_terminate():
                         BackgroundSolver.Stop()
                         return False
-                    sleep(timeout_s / 10)
+                    sleep(0.1)
                     if BackgroundSolver.Converged:
                         break
 
-                info = f"Error = {BackgroundSolver.Enorm:.6e}(norm) , {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
-                give_feedback(info)
+                    info = f"Error = {BackgroundSolver.Enorm:.6e}(norm) , {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
+                    give_feedback(info)
 
-                time_diff = (datetime.datetime.now() - start_time)
+                time_diff = datetime.datetime.now() - start_time
                 secs = time_diff.total_seconds()
                 if secs > terminate_after_s:
                     BackgroundSolver.Stop()
-                    raise ValueError(f"Solver maximum time of {terminate_after_s} exceeded - set terminate_after_s to change the allowed time for the solver.")
+                    raise ValueError(
+                        f"Solver maximum time of {terminate_after_s} exceeded - set terminate_after_s to change the allowed time for the solver."
+                    )
 
             info = f"Converged within tolerance of {BackgroundSolver.tolerance} with E : {BackgroundSolver.Enorm:.6e}(norm) / {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
             give_feedback(info)
@@ -1751,7 +1797,6 @@ class Scene:
                 return False
 
         else:
-
             # solve_func = lambda: self._vfc.state_solve_statics_with_timeout(
             #     True, timeout_s, True, True, 0
             # )  # 0 = default stability value
@@ -1763,7 +1808,6 @@ class Scene:
             first = True
 
             while True:
-
                 if not first and should_terminate():
                     if original_dofs_dict is not None:
                         self._restore_original_fixes(original_dofs_dict)
@@ -1771,7 +1815,6 @@ class Scene:
                     return False
 
                 if phase == 1:  # prepare to go to phase 1 (or directly to phase 2)
-
                     old_dofs = self._vfc.get_dofs()
                     if len(old_dofs) == 0:
                         return True  # <---- trivial case
@@ -1780,7 +1823,6 @@ class Scene:
                     phase = 2
 
                 elif phase == 2:
-
                     this_is_a_re_init = not first
 
                     try:
@@ -1792,12 +1834,11 @@ class Scene:
                         )
                     except:
                         print(debug)
-                        raise ValueError('oops')
+                        raise ValueError("oops")
 
                     first = False
 
                     if status == 0 or status == -2:
-
                         # phase 3
                         self._restore_original_fixes(original_dofs_dict)
                         phase = 4
@@ -1815,7 +1856,6 @@ class Scene:
                     give_feedback(f"Maximum error = {self._vfc.Emaxabs:.6e} (phase 2)")
 
                 elif phase == 4:
-
                     status = self._vfc.state_solve_statics_with_timeout(
                         True, timeout_s, True, True, 0, this_is_a_re_init
                     )
@@ -1827,8 +1867,6 @@ class Scene:
                             changed,
                             msg,
                         ) = self._check_and_fix_geometric_contact_orientations()
-
-
 
                         if not changed:
                             # we are done!
@@ -1842,10 +1880,11 @@ class Scene:
                         this_is_a_re_init = False
 
                     else:
-                        give_feedback(f"Maximum error = {self._vfc.Emaxabs:.6e} (phase 4)")
+                        give_feedback(
+                            f"Maximum error = {self._vfc.Emaxabs:.6e} (phase 4)"
+                        )
 
-
-    def solve_statics(self, silent=False, timeout=None):
+    def solve_statics(self, silent=False, timeout=None, terminate_after_s=30):
         """Solves statics
 
         If a timeout is provided then each pass will take at most 'timeout' seconds. This means you may need to call
@@ -1880,7 +1919,7 @@ class Scene:
         if self.gui_solve_func is not None:
             return self.gui_solve_func(self, called_by_user=False)
         else:
-            return self._solve_statics_with_optional_control(timeout_s=timeout)
+            return self._solve_statics_with_optional_control(timeout_s=timeout, terminate_after_s=terminate_after_s)
 
     def verify_equilibrium(self, tol=1e-2):
         """Checks if the current state is an equilibrium
@@ -1894,9 +1933,7 @@ class Scene:
 
     # ====== goal seek ========
 
-    def goal_seek(
-        self, evaluate, target, change, bracket=None, tol=1e-3, tol_out=0.1
-    ):
+    def goal_seek(self, evaluate, target, change, bracket=None, tol=1e-3, tol_out=0.1):
         """goal_seek
 
         Goal seek is the classic goal-seek. It changes a single property of a single node in order to get
@@ -1934,26 +1971,29 @@ class Scene:
             "Attempting to evaluate {} to {} (now {})".format(evaluate, target, test)
         )
 
-        if isinstance(change,str):
-            change = (change,) # make tuple
+        if isinstance(change, str):
+            change = (change,)  # make tuple
 
         if not isinstance(change, (tuple, list)):
-            raise ValueError('Variable to be changed shall be a tuple (of strings) or string')
+            raise ValueError(
+                "Variable to be changed shall be a tuple (of strings) or string"
+            )
 
         initial = eval(change[0])
 
         self._print(f"By changing the value of {change} (now {initial})")
 
         def set_and_get(x):
-
             s = self
 
             for c in change:
-                code = f'{c} = {x}'
+                code = f"{c} = {x}"
                 try:
                     exec(code)
                 except Exception as E:
-                    raise ValueError(f'Error when running [{code}]. The error was:\n {str(E)}')
+                    raise ValueError(
+                        f"Error when running [{code}]. The error was:\n {str(E)}"
+                    )
 
             self.solve_statics(silent=True)
             result = eval(evaluate)
@@ -2066,7 +2106,6 @@ class Scene:
 
     # ======== create functions =========
 
-
     def new_frame(
         self,
         name,
@@ -2075,7 +2114,7 @@ class Scene:
         rotation=None,
         inertia=None,
         inertia_radii=None,
-        fixed=True,
+        fixed: bool or (bool, bool, bool, bool, bool, bool) = True,
     ) -> Frame:
         """Creates a new *frame* node and adds it to the scene.
 
@@ -2092,8 +2131,6 @@ class Scene:
             Reference to newly created frame
 
         """
-
-
 
         # first check
         assertValidName(name)
@@ -2178,7 +2215,11 @@ class Scene:
                 f'Error creating component {name}.\nCan not find  path "{path}"; \n {str(E)}'
             )
         try:
-            t = Scene(filename, current_directory=self.current_directory, resource_paths=self.resources_paths)
+            t = Scene(
+                filename,
+                current_directory=self.current_directory,
+                resource_paths=self.resources_paths,
+            )
         except Exception as E:
             raise ValueError(
                 f'Error creating component {name}.\nCan not import "{filename}" because {str(E)}'
@@ -2262,8 +2303,6 @@ class Scene:
             Reference to newly created new_geometriccontact
 
         """
-
-
 
         # first check
         assertValidName(name)
@@ -2361,8 +2400,6 @@ class Scene:
         if not parent:
             raise ValueError("Wave-interaction has to be located on an Axis")
 
-
-
         # first check
         assertValidName(name)
         self._verify_name_available(name)
@@ -2406,8 +2443,6 @@ class Scene:
             Reference to newly created visual
 
         """
-
-
 
         # first check
         assertValidName(name)
@@ -2456,8 +2491,6 @@ class Scene:
 
         """
 
-
-
         # first check
         assertValidName(name)
         self._verify_name_available(name)
@@ -2480,14 +2513,14 @@ class Scene:
 
     def new_rigidbody(
         self,
-        name,
-        mass=0,
-        cog=(0, 0, 0),
+        name: str,
+        mass: float = 0,
+        cog: (float, float, float) = (0, 0, 0),
         parent=None,
         position=None,
         rotation=None,
         inertia_radii=None,
-        fixed=True,
+        fixed: bool or (bool, bool, bool, bool, bool, bool) = True,
     ) -> RigidBody:
         """Creates a new *rigidbody* node and adds it to the scene.
 
@@ -2509,8 +2542,6 @@ class Scene:
 
         """
 
-
-
         # check input
         assertValidName(name)
         self._verify_name_available(name)
@@ -2525,7 +2556,9 @@ class Scene:
             assert3f_positive(inertia_radii, "Radii of inertia")
 
             if not mass > 0:
-                warnings.warn(f"Can not set radii of gyration without specifying mass - ignoring radii of gyration for {name}")
+                warnings.warn(
+                    f"Can not set radii of gyration without specifying mass - ignoring radii of gyration for {name}"
+                )
                 inertia_radii = None
 
         if not isinstance(fixed, bool):
@@ -2568,11 +2601,13 @@ class Scene:
         endB=None,
         length=None,
         EA=0,
-        diameter:float=0,
+        diameter: float = 0,
         sheaves=None,
         mass=None,
-        connections = None,
+        connections=None,
+        reversed=None,
         mass_per_length=None,
+        friction=None,
     ) -> Cable:
         """Creates a new *cable* node and adds it to the scene.
 
@@ -2585,6 +2620,9 @@ class Scene:
             mass [0] or mass_per_length [0] : mass of the cable - warning: only valid if tension in cable > 10x cable weight.
             mass_per_length [alternative for mass]
             sheaves : [optional] A list of pois, these are sheaves that the cable runs over. Defined from endA to endB
+            connections [optional] : Alternative to [EndA, sheaves, EndB]
+            reversed [optional] : Reversed property for each of the connections
+            friction : [optional] A list of friction coefficients for each connection. aligned with connection
 
             connections: May be used instead of endA, endB and sheaves. If connections is provided then endA = connections[0], endB = connections[-1] and sheaves = connections[1:-1]
 
@@ -2605,8 +2643,6 @@ class Scene:
 
         """
 
-
-
         # first check
         assertValidName(name)
         self._verify_name_available(name)
@@ -2617,24 +2653,27 @@ class Scene:
         # check if connections is supplied
         if connections is not None:
             if endA is not None:
-                warnings.warn('provided EndA will not be used, it is overwritten by connections')
+                warnings.warn(
+                    "provided EndA will not be used, it is overwritten by connections"
+                )
             if endB is not None:
-                warnings.warn('provided EndB will not be used, it is overwritten by connections')
+                warnings.warn(
+                    "provided EndB will not be used, it is overwritten by connections"
+                )
             if sheaves is not None:
-                warnings.warn('provided sheaves will not be used, it is overwritten by connections')
+                warnings.warn(
+                    "provided sheaves will not be used, it is overwritten by connections"
+                )
 
             endA = connections[0]
             endB = connections[-1]
             sheaves = connections[1:-1]
-
-
 
         endA = self._poi_or_sheave_from_node(endA)
         endB = self._poi_or_sheave_from_node(endB)
 
         pois = [endA]
         if sheaves is not None:
-
             if isinstance(sheaves, Point):  # single sheave as poi or string
                 sheaves = [sheaves]
 
@@ -2674,6 +2713,34 @@ class Scene:
         if mass is not None:
             assert1f(mass, "mass")
 
+        if friction is not None:
+            req_len = len(pois) - 2
+            is_loop = False
+            if connections[0] == connections[-1]:
+                is_loop = True
+                req_len += 1
+
+            if is_loop:
+                assert (
+                    len(friction) == req_len
+                ), f"friction (for a loop) should be a list with the same length as the number of unique connections (={req_len}), got {len(friction)}"
+            else:
+                assert (
+                    len(friction) == req_len
+                ), "friction should be a list with the same length as the number of intermediate points/circles (={req_len}), got {len(friction)}"
+
+            for _ in friction:
+                assert isinstance(
+                    _, (float, int, type(None))
+                ), "friction should be a list with floats or None"
+
+        if reversed is not None:
+            assert len(reversed) == len(
+                pois
+            ), "reversed should be a list with the same length as the number of connections"
+            for _ in reversed:
+                assert isinstance(_, bool), "reversed should be a list with booleans"
+
         # then create
 
         new_node = Cable(self, name)
@@ -2684,6 +2751,12 @@ class Scene:
         new_node.diameter = diameter
 
         new_node.connections = pois
+
+        if friction is not None:
+            new_node.friction = friction
+
+        if reversed is not None:
+            new_node.reversed = reversed
 
         # and add to the scene
         # self._nodes.append(new_node)
@@ -2708,6 +2781,8 @@ class Scene:
 
         new_node.mass_per_length = mass_per_length
 
+        new_node.update()
+
         return new_node
 
     def new_force(self, name, parent=None, force=None, moment=None) -> Force:
@@ -2724,8 +2799,6 @@ class Scene:
             Reference to newly created force
 
         """
-
-
 
         # first check
         assertValidName(name)
@@ -2862,7 +2935,7 @@ class Scene:
             areakind=areakind,
         )
 
-    def new_circle(self, name, parent, axis, radius=0.0) -> Circle:
+    def new_circle(self, name, parent, axis, radius=0.0, roundbar=False) -> Circle:
         """Creates a new *sheave* node and adds it to the scene.
 
         Args:
@@ -2870,14 +2943,13 @@ class Scene:
             parent: name of the parent of the node [Poi]
             axis: direction of the axis of rotation (x,y,z)
             radius: optional, radius of the sheave
+            roundbar: optional, circle is a roundbar (cylinder)
 
 
         Returns:
-            Reference to newly created sheave
+            Reference to newly created Circle
 
         """
-
-
 
         # first check
         assertValidName(name)
@@ -2887,6 +2959,7 @@ class Scene:
         assert3f(axis, "Axis of rotation ")
 
         assert1f(radius, "Radius of sheave")
+        assertBool(roundbar, "Roundbar property")
 
         new_node = Circle(self, name)
 
@@ -2894,6 +2967,7 @@ class Scene:
         new_node.parent = b
         new_node.axis = axis
         new_node.radius = radius
+        new_node.is_roundbar = roundbar
 
         # self._nodes.append(new_node)
         return new_node
@@ -2930,8 +3004,6 @@ class Scene:
             Reference to newly created hydrostatic spring
 
         """
-
-
 
         # first check
         assertValidName(name)
@@ -2980,8 +3052,6 @@ class Scene:
 
         """
 
-
-
         # first check
         assertValidName(name)
         self._verify_name_available(name)
@@ -3020,8 +3090,6 @@ class Scene:
             Reference to newly created connector2d
 
         """
-
-
 
         # first check
         assertValidName(name)
@@ -3074,8 +3142,6 @@ class Scene:
             Reference to newly created beam
 
         """
-
-
 
         # first check
         assertValidName(name)
@@ -3159,8 +3225,6 @@ class Scene:
             Reference to newly created Tank
 
         """
-
-
 
         # first check
         assertValidName(name)
@@ -3251,8 +3315,6 @@ class Scene:
 
         """
 
-
-
         # first check
         assertValidName(name)
         self._verify_name_available(name)
@@ -3278,7 +3340,6 @@ class Scene:
                 )  # throws error if not found
 
         # then create
-
 
         new_node = SPMT(self, name)
 
@@ -3317,8 +3378,6 @@ class Scene:
             Reference to newly created force
 
         """
-
-
 
         # first check
         assertValidName(name)
@@ -3381,7 +3440,7 @@ class Scene:
     def new_sling(
         self,
         name,
-        length:float=-1,
+        length: float = -1,
         EA=None,
         mass=0.1,
         endA=None,
@@ -3419,8 +3478,6 @@ class Scene:
             a reference to the newly created Sling object.
 
         """
-
-
 
         # first check
         assertValidName(name)
@@ -3537,8 +3594,6 @@ class Scene:
 
         """
 
-
-
         # first check
         assertValidName(name)
         self._verify_name_available(name)
@@ -3569,7 +3624,11 @@ class Scene:
             print(line)
 
     def give_python_code(
-        self, nodes=None, export_environment_settings=True, _no_sort_nodes=False, state_only=False
+        self,
+        nodes=None,
+        export_environment_settings=True,
+        _no_sort_nodes=False,
+        state_only=False,
     ):
         """Generates the python code that rebuilds the scene and elements in its current state.
 
@@ -3601,7 +3660,6 @@ class Scene:
         code.append("# Time: {} UTC".format(str(datetime.datetime.now()).split(".")[0]))
 
         if self._export_code_with_solved_function:
-
             code.append(
                 "\n# To be able to distinguish the important number (eg: fixed positions) from"
             )
@@ -3622,7 +3680,6 @@ class Scene:
         code.append("\n")
 
         for n in nodes_to_be_exported:
-
             if n._manager is None:
                 code.append("\n" + n.give_python_code())
             else:
@@ -3660,17 +3717,22 @@ class Scene:
                     # or are additional.
                     # This is traced using the _limits_by_manager dict
 
-                    lbm = getattr(n, '_limits_by_manager',None)
+                    lbm = getattr(n, "_limits_by_manager", None)
                     if lbm is not None:
                         for key, value in n.limits.items():
                             if key not in lbm:
-                                code.append(f"s['{n.name}'].limits['{key}'] = {value}  # additional limit on managed node")
+                                code.append(
+                                    f"s['{n.name}'].limits['{key}'] = {value}  # additional limit on managed node"
+                                )
                             else:
                                 if value != lbm[key]:
                                     code.append(
-                                        f"s['{n.name}'].limits['{key}'] = {value}  # limit overridden")
+                                        f"s['{n.name}'].limits['{key}'] = {value}  # limit overridden"
+                                    )
                     else:
-                        warnings.warn(f'Managed node {n.name} does not have _limits_by_manager set')
+                        warnings.warn(
+                            f"Managed node {n.name} does not have _limits_by_manager set"
+                        )
 
             code.append("\n# Watches")
 
@@ -3679,21 +3741,26 @@ class Scene:
                     for key, value in n.watches.items():
                         code.append(f"s['{n.name}'].watches['{key}'] = {value}")
                 else:
-                    # Limits of managed nodes are only exported if they have been overridden
+                    # Watches of managed nodes are only exported if they have been overridden
                     # or are additional.
-                    # This is traced using the _limits_by_manager dict
+                    # This is traced using the _watches_by_manager dict
 
-                    lbm = getattr(n, '_watches_by_manager', None)
+                    lbm = getattr(n, "_watches_by_manager", None)
                     if lbm is not None:
                         for key, value in n.watches.items():
                             if key not in lbm:
-                                code.append(f"s['{n.name}'].watches['{key}'] = {value}  # watch limit on managed node")
+                                code.append(
+                                    f"s['{n.name}'].watches['{key}'] = {value}  # watch limit on managed node"
+                                )
                             else:
                                 if value != lbm[key]:
                                     code.append(
-                                        f"s['{n.name}'].watches['{key}'] = {value}  # watch overridden")
+                                        f"s['{n.name}'].watches['{key}'] = {value}  # watch overridden"
+                                    )
                     else:
-                        warnings.warn(f'Managed node {n.name} does not have _watches_by_manager set')
+                        warnings.warn(
+                            f"Managed node {n.name} does not have _watches_by_manager set"
+                        )
 
             code.append("\n# Tags")
 
@@ -3710,13 +3777,12 @@ class Scene:
                         code.append(f"s['{n.name}'].color = {n.color}")
 
             code.append("\n# Solved state of managed DOFs nodes")
-            _modes = ('x','y','z','rx','ry','rz')
+            _modes = ("x", "y", "z", "rx", "ry", "rz")
             for n in self.nodes_of_type(Frame):
                 d = [*n.position, *n.rotation]
-                for i,f in  enumerate(n.fixed):
-                    if f is False: # free dof
+                for i, f in enumerate(n.fixed):
+                    if f is False:  # free dof
                         code.append(f"s['{n.name}'].{_modes[i]} = {d[i]}")
-
 
             # Optional Reports
             if self.reports:
@@ -3732,12 +3798,12 @@ class Scene:
                 code.extend(self.t.give_python_code())
 
         # Exposed properties of components
-        exposed = getattr(self, 'exposed', [])
+        exposed = getattr(self, "exposed", [])
         if exposed:
-            code.append('exposed = list()')
+            code.append("exposed = list()")
             for e in exposed:
-                code.append(f'exposed.append({str(e)})')
-            code.append('s.exposed = exposed')
+                code.append(f"exposed.append({str(e)})")
+            code.append("s.exposed = exposed")
 
         return "\n".join(code)
 
@@ -3791,19 +3857,17 @@ class Scene:
         return filename
 
     def print_node_tree(self, more=False):
-
-        self.sort_nodes_by_dependency()
+        self.sort_nodes_by_parent()
         to_be_printed = self._nodes.copy()
 
         if more:
             c = self.get_created_by_dict()
             cb = dict()
-            for k,v in c.items():
+            for k, v in c.items():
                 for node in v:
                     cb[node] = k
 
         def print_deps(node, spaces):
-
             deps = self.nodes_with_parent(node)
 
             extra = ""
@@ -3821,9 +3885,14 @@ class Scene:
                     if created_by == managed_by:
                         extra = " Created and managed by: " + created_by
 
-
-
-            print(spaces + node.name + " [" + str(type(node)).split(".")[-1][:-2] + "]" + extra)
+            print(
+                spaces
+                + node.name
+                + " ["
+                + str(type(node)).split(".")[-1][:-2]
+                + "]"
+                + extra
+            )
 
             if deps is not None:
                 for dep in deps:
@@ -3833,10 +3902,15 @@ class Scene:
                         spaces_plus = " |   " + spaces
                     print_deps(dep, spaces_plus)
 
-            to_be_printed.remove(node)
+            if node not in to_be_printed:
+                print('** node "{}" occured before'.format(node.name))
+            else:
+                to_be_printed.remove(node)
 
         while to_be_printed:
             node = to_be_printed[0]
+            # if node.name == "string_2/Shackle_1":
+            #     print("stop")
             print_deps(node, "")
 
     def run_code(self, code):
@@ -3892,7 +3966,7 @@ class Scene:
         nodes=None,
         container=None,
         settings=True,
-        quick=False
+        quick=False,
     ):
         """Copy-paste all nodes of scene "other" into current scene.
 
@@ -3920,14 +3994,17 @@ class Scene:
             other = str(other)
 
         if isinstance(other, str):
-            other = Scene(other, resource_paths=self.resources_paths, current_directory=self.current_directory)
+            other = Scene(
+                other,
+                resource_paths=self.resources_paths,
+                current_directory=self.current_directory,
+            )
 
         if not isinstance(other, Scene):
             raise TypeError("Other should be a Scene but is a " + str(type(other)))
 
         # apply prefix
         other.prefix_element_names(prefix)
-
 
         # check for double names after applying prefix
         for imported_node in other._nodes:
@@ -3938,25 +4015,23 @@ class Scene:
                     )
                 )
 
-
-
         store_export_code_with_solved_function = other._export_code_with_solved_function
         other._export_code_with_solved_function = False  # quicker
-        code = other.give_python_code(nodes=nodes, export_environment_settings=settings, state_only=quick)
+        code = other.give_python_code(
+            nodes=nodes, export_environment_settings=settings, state_only=quick
+        )
         other._export_code_with_solved_function = store_export_code_with_solved_function
 
         self.run_code(code)
 
         # Move all imported elements without a parent into a newly created or supplied frame (container)
         if containerize:
-
             if container is None:
                 container_name = self.available_name_like("import_container")
                 container = self.new_frame(prefix + container_name)
 
             imported_element_names = [node.name for node in other._nodes]
             for name in imported_element_names:
-
                 imported_node = self[name]
 
                 if not imported_node.manager:
@@ -3970,7 +4045,7 @@ class Scene:
 
         return None
 
-    def prefix_element_names(self, prefix=''):
+    def prefix_element_names(self, prefix=""):
         """Applies the given prefix to all un-managed nodes"""
 
         if prefix:
@@ -3992,7 +4067,10 @@ class Scene:
 
         """
 
-        c = Scene(resource_paths=self.resources_paths, current_directory=self.current_directory)
+        c = Scene(
+            resource_paths=self.resources_paths,
+            current_directory=self.current_directory,
+        )
 
         c.import_scene(self, containerize=False, nodes=nodes, quick=quick)
         return c
@@ -4010,7 +4088,7 @@ class Scene:
 
         return result
 
-    def maximum_relative_rotation(self, reference_state : dict) -> tuple:
+    def maximum_relative_rotation(self, reference_state: dict) -> tuple:
         """Returns the maximum relative rotation between the current state and the reference state.
         reference_state is a state as obtained from get_free_frame_state_dict
 
@@ -4019,7 +4097,7 @@ class Scene:
         """
 
         maxrot = 0
-        name = 'Rotations match'
+        name = "Rotations match"
         state2 = self.get_free_frame_state_dict()
         for key, value in reference_state.items():
             this_rotation = state2[key][3:]
@@ -4034,8 +4112,6 @@ class Scene:
 
         return (maxrot, name)
 
-
-
     @property
     def state(self):
         """The state of the model is the values of all free dofs. This is what the solver solves.
@@ -4043,7 +4119,7 @@ class Scene:
         """
         state = []
 
-        modes = ('x', 'y', 'z', 'rx', 'ry', 'rz')
+        modes = ("x", "y", "z", "rx", "ry", "rz")
 
         for frame in self.nodes_of_type(Frame):
             for i, mode in enumerate(modes):
@@ -4051,10 +4127,9 @@ class Scene:
                     value = getattr(frame, mode)
                     state.append((frame.name, mode, value))
 
-
         for beam in self.nodes_of_type(Beam):
             # if the Beam has only 1 segment then there are no shapeDofs
-            state.append((beam.name, '_shapeDofs', beam._shapeDofs))
+            state.append((beam.name, "_shapeDofs", beam._shapeDofs))
 
         return state
 
@@ -4062,7 +4137,6 @@ class Scene:
     def state(self, value):
         for name, prop, val in value:
             setattr(self[name], prop, val)
-
 
     def duplicate_node(self, node):
         """Duplicates node, the copy will get the first available name.
@@ -4077,7 +4151,7 @@ class Scene:
 
         # get the python code to generate the node with the new name
         remember = self._godmode
-        self._godmode = True # the node may be managed
+        self._godmode = True  # the node may be managed
         node.name = name_of_duplicate  # temporary rename just for code-generation
 
         try:
@@ -4094,7 +4168,8 @@ class Scene:
 
     def duplicate_branch(self, root_node):
         """Duplicates a whole branch of the node-tree. Branch is defined by all the nodes that have the root_node as
-        (grand) parent as well as all the nodes whose dependancies are within the branch (ie: cables between child-nodes)"""
+        (grand) parent as well as all the nodes whose dependancies are within the branch (ie: cables between child-nodes)
+        """
 
         if isinstance(root_node, str):
             root_node = self[root_node]
@@ -4105,12 +4180,13 @@ class Scene:
             root_node.parent = None
 
         try:
-
             nodes = self.nodes_with_parent(root_node, recursive=True)
             more_nodes = self.nodes_with_dependancies_in_and_satifsfied_by(nodes)
             branch = list({*nodes, *more_nodes})  # unique nodes (use set)
 
-            branch = [node for node in branch if node.manager is None] # exclude managed nodes
+            branch = [
+                node for node in branch if node.manager is None
+            ]  # exclude managed nodes
 
             branch.append(root_node)
 
@@ -4132,7 +4208,6 @@ class Scene:
             self.import_scene(s2, containerize=False)
 
         finally:
-
             # restore the parent (if any)
             if old_parent is not None:
                 copy_of_root_node = self[copy_of_root_node_in_s2.name]
@@ -4237,49 +4312,53 @@ class Scene:
     #
     #     return sling
     #
-    # def to_frame(self, body: RigidBody):
-    #     """Converts the body to a frame"""
-    #     name = self.available_name_like('temp')
-    #     new_frame = self.new_frame(name=name,
-    #                                parent=body.parent,
-    #                                position = body.position,
-    #                                rotation = body.rotation,
-    #                                inertia = body.inertia,
-    #                                inertia_radii = body.inertia_radii,
-    #                                fixed= body.fixed)
-    #     for node in self._nodes:
-    #         parent = getattr(node,'parent',None)
-    #         if parent == body:
-    #             node.parent = new_frame
-    #
-    #     name = body.name
-    #     self.delete(body)
-    #     new_frame.name = name
-    #
-    #     return new_frame
-    #
-    # def to_rigidbody(self, frame: Frame):
-    #     """Converts the body to a frame"""
-    #     name = self.available_name_like('temp')
-    #     new_body = self.new_rigidbody(name=name,
-    #                                    parent=frame.parent,
-    #                                    position=frame.position,
-    #                                    rotation=frame.rotation,
-    #                                    mass=frame.inertia,
-    #                                    fixed=frame.fixed)
-    #     if new_body.mass > 0:
-    #         new_body.inertia_radii = frame.inertia_radii
-    #
-    #     for node in self._nodes:
-    #         parent = getattr(node, 'parent', None)
-    #         if parent == frame:
-    #             node.parent = new_body
-    #
-    #     name = frame.name
-    #     self.delete(frame)
-    #     new_body.name = name
-    #
-    #     return new_body
+    def to_frame(self, body: RigidBody):
+        """Converts the body to a frame"""
+        name = self.available_name_like("temp")
+        new_frame = self.new_frame(
+            name=name,
+            parent=body.parent,
+            position=body.position,
+            rotation=body.rotation,
+            inertia=body.inertia,
+            inertia_radii=body.inertia_radii,
+            fixed=body.fixed,
+        )
+        for node in self._nodes:
+            parent = getattr(node, "parent", None)
+            if parent == body:
+                node.parent = new_frame
+
+        name = body.name
+        self.delete(body)
+        new_frame.name = name
+
+        return new_frame
+
+    def to_rigidbody(self, frame: Frame):
+        """Converts the body to a frame"""
+        name = self.available_name_like("temp")
+        new_body = self.new_rigidbody(
+            name=name,
+            parent=frame.parent,
+            position=frame.position,
+            rotation=frame.rotation,
+            mass=frame.inertia,
+            fixed=frame.fixed,
+        )
+        if new_body.mass > 0:
+            new_body.inertia_radii = frame.inertia_radii
+
+        for node in self._nodes:
+            parent = getattr(node, "parent", None)
+            if parent == frame:
+                node.parent = new_body
+
+        name = frame.name
+        self.delete(frame)
+        new_body.name = name
+
+        return new_body
 
     # =================== DYNAMICS ==================
 
@@ -4354,7 +4433,6 @@ class LoadShearMomentDiagram:
         point_loads = []
         distributed_loads = []
         for i in range(n):
-
             load = list(m.load_origin(i))
             effect = m.load(i)
 
@@ -4371,7 +4449,6 @@ class LoadShearMomentDiagram:
                 point_loads.append(load)
 
             if is_distributed:
-
                 name = effect[-1]  # name without the *
                 P = load[1]
                 F = load[2]
@@ -4460,7 +4537,6 @@ class LoadShearMomentDiagram:
         # merge loads with same source and matching endpoints
 
         if merge_adjacent_loads:
-
             to_be_plotted = [loads[0]]
 
             for load in loads[1:]:
@@ -4474,7 +4550,6 @@ class LoadShearMomentDiagram:
                 if len(prev_load[0]) != 2:  # not a point-load
                     if len(load[0]) != 2:  # not a point-load
                         if prev_load[2] == load[2]:  # same name
-
                             # merge the two
                             # remove the last (zero) entry of the previous lds
                             # as well as the first entry of these
@@ -4507,7 +4582,6 @@ class LoadShearMomentDiagram:
         ax0_second = ax0.twinx()
 
         for icol, ld in enumerate(to_be_plotted):
-
             xx = ld[0]
             yy = ld[1]
             name = ld[2]
