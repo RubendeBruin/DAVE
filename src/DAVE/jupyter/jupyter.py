@@ -34,7 +34,8 @@ def show(
     height=600,
     show_force: bool = True,  # show forces
     show_meshes: bool = True,  # show meshes and connectors
-    show_global: bool = False,  # show or hide the environment (sea)
+    show_sea: bool = False,
+    show_origin = True,
     show_cog: bool = True,
     cog_do_normalize: bool = False,
     cog_scale: float = 1.0,
@@ -59,7 +60,8 @@ def show(
         lookat:  camera focal point [x,y,z] OR 'y','-y','x','-x','z','-z' to go to 2D mode
         show_force: bool = True  # show forces
         show_meshes: bool = True  # show meshes and connectors
-        show_global: bool = False  # show or hide the environment (sea)
+        show_sea: bool = False,
+        show_origin = True,
         show_cog: bool = True
         cog_do_normalize: bool = False
         cog_scale: float = 1.0
@@ -86,7 +88,8 @@ def show(
         height=height,
         show_force=show_force,  # show forces
         show_meshes=show_meshes,  # show meshes and connectors
-        show_global=show_global,  # show or hide the environment (sea)
+        show_sea = show_sea,
+        show_origin = show_origin,
         show_cog=show_cog,
         cog_do_normalize=cog_do_normalize,
         cog_scale=cog_scale,
@@ -116,8 +119,9 @@ def pil_image(
     height=600,
     show_force: bool = True,  # show forces
     show_meshes: bool = True,  # show meshes and connectors
-    show_global: bool = False,  # show or hide the environment (sea)
-    show_cog: bool = True,
+    show_origin : bool = True,
+    show_sea: bool = False,
+    show_cog: bool = False,
     cog_do_normalize: bool = False,
     cog_scale: float = 1.0,
     force_do_normalize: bool = True,  # Normalize force size to 1.0 for plotting
@@ -141,7 +145,8 @@ def pil_image(
         lookat:  camera focal point [x,y,z] OR 'y','-y','x','-x','z','-z' to go to 2D mode
         show_force: bool = True  # show forces
         show_meshes: bool = True  # show meshes and connectors
-        show_global: bool = False  # show or hide the environment (sea)
+        show_origin : bool = True : show the origin
+        show_sea : bool = False : show the sea
         show_cog: bool = True
         cog_do_normalize: bool = False
         cog_scale: float = 1.0
@@ -190,7 +195,8 @@ def pil_image(
 
     vp.settings.show_force = show_force
     vp.settings.show_meshes = show_meshes
-    vp.settings.show_sea = show_global
+    vp.settings.show_sea = show_sea
+    vp.settings.show_origin = show_origin
 
     vp.settings.show_cog = show_cog
     vp.settings.cog_do_normalize = cog_do_normalize
