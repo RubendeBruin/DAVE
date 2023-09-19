@@ -1640,7 +1640,7 @@ class Cable(NodeCoreConnected):
 
     @property
     def max_winding_angles(self) -> tuple[float]:
-        """Friction factors at the connections [-]"""
+        """Maximum winding angles at the connections [deg]"""
         return tuple(self._max_winding_angle)
 
     @max_winding_angles.setter
@@ -1664,6 +1664,16 @@ class Cable(NodeCoreConnected):
 
         self._max_winding_angle = list(max_winding_angles)
         self._update_pois()
+
+
+    def _get_advanced_settings_dialog_settings(self):
+        # Function to tell the dialog what is editable
+        # returns: (endAFr, endAMaxWind, endBFr, endBMaxWind, is_grommet_in_line_mode)
+        if self._isloop:
+            return  True, True, False, True, False
+        else:
+            return False, True, False, True, False
+
 
     @property
     def friction_forces(self) -> tuple[float]:
