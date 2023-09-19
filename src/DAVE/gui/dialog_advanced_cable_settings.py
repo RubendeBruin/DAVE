@@ -1,3 +1,4 @@
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QDialog,
     QVBoxLayout,
@@ -11,6 +12,31 @@ from PySide6.QtGui import QColor, QIcon
 
 from DAVE import Scene, Cable
 
+"""
+Depending on what "cable" really is, the following settings are exposed:
+
+endA friction
+endA max winding angle
+endB friction
+endB max winding angle
+
+                          Cable          Cable    SlingGrommet*     SlingGrommet          SlingGrommet
+                          line           loop       sling           Grommet/circle        Grommet/line
+                          
+endA friction              no             yes        no              yes                       yes
+endA max winding angle     no             yes        no              yes                       yes
+endB friction              no             no         no              yes                       yes
+endB max winding angle     no             no         no              yes                       yes
+
+
+* SlingGrommet is a node from the Rigging extension
+
+is_grommet_in_line_mode : In this case either the first or the last friction needs to be None. 
+
+Max_winding_angle is defined for ALL connections
+Friction is only defined for the connections where it is applicable
+
+"""
 
 
 class AdvancedCableSettings(QDialog):
@@ -20,10 +46,20 @@ class AdvancedCableSettings(QDialog):
     Code to apply the settings is generated and stored in self.code (string)
     """
 
-    def __init__(self, cable : Cable):
-
+    def __init__(self, cable: "Cable or SlingGrommet"):
         super().__init__()
-        self.code = ''
+
+        self.code = ""
+
+        # store settings
+        (
+            self.endAFr,
+            self.endAMaxWind,
+            self.endBFr,
+            self.endBMaxWind,
+            self.is_grommet_in_line_mode,
+        ) = cable._get_advanced_settings_dialog_settings()
+
         self.cable = cable
 
         self.setWindowIcon(QIcon(":/icons/cable.png"))
@@ -35,10 +71,14 @@ class AdvancedCableSettings(QDialog):
         title = f"Editing '{cable.name}'"
         self.setWindowTitle(title)
 
-        self.label = QLabel(f"- Friction, if defined, shall be between -1 and 1\n- Max winding angle, if defined, shall be between 180 and 360")
+        self.label = QLabel(
+            f"- Friction, if defined, shall be between -1 and 1\n- Max winding angle, if defined, shall be >180"
+        )
         self.layout.addWidget(self.label)
 
-        self.loop_label = QLabel(f"This is a looped cable, exactly one friction must be empty or all friction must be empty or zero")
+        self.loop_label = QLabel(
+            f"This is a looped cable, exactly one friction must be empty or all friction must be empty or zero"
+        )
         self.loop_label.setWordWrap(True)
         self.layout.addWidget(self.loop_label)
 
@@ -50,7 +90,6 @@ class AdvancedCableSettings(QDialog):
         self.code_label = QLabel()
         self.layout.addWidget(self.code_label)
         self.code_label.setWordWrap(True)
-
 
         # fill the table
         self.is_loop = cable._isloop
@@ -68,34 +107,44 @@ class AdvancedCableSettings(QDialog):
 
         # fill the table with the current values
         if self.is_loop:
-            offset = 0
             self.loop_label.setVisible(True)
         else:
-            offset = 1
             self.loop_label.setVisible(False)
 
-            # disable the first row
-            self.table.setRowHidden(0, True)
+        # fill the table with the current values for max winding
+        # max winding is defined for all connections
 
+        for i_row in range(N):
+            max_wind = cable.max_winding_angles[i_row]
+            self.table.setItem(i_row, 1, QTableWidgetItem(max_wind))
 
+        if not self.endAMaxWind:
+            it = self.table.item(0, 1)
+            it.setFlags(it.flags() & ~Qt.ItemIsEditable)
 
-        for i_row in range(N-1-offset):
-            friction = cable.friction[i_row-offset]
-            max_wind = cable.max_winding_angles[i_row-offset]
+        if not self.endBMaxWind:
+            it = self.table.item(N - 1, 1)
+            it.setFlags(it.flags() & ~Qt.ItemIsEditable)
 
+        # fill the table with the current values for friction
+        # friction is only defined for the connections where it is applicable
+
+        offset = 0 if self.endAFr else 1
+        for i, friction in enumerate(cable.friction):
             if friction is not None:
                 friction = str(friction)
-            if max_wind is not None:
-                max_wind = str(max_wind)
 
-            self.table.setItem(i_row+offset, 0, QTableWidgetItem(friction))
-            self.table.setItem(i_row+offset, 1, QTableWidgetItem(max_wind))
+            self.table.setItem(i + offset, 0, QTableWidgetItem(friction))
 
-        # disable the last row
-        self.table.setRowHidden(N-1, True)
+        if not self.endAFr:
+            it = self.table.setItem(0, 0, QTableWidgetItem("-"))
+            it = self.table.item(0, 0)
+            it.setFlags(it.flags() & ~Qt.ItemIsEditable)
 
-
-
+        if not self.endBFr:
+            self.table.setItem(N - 1, 0, QTableWidgetItem("-"))
+            it = self.table.item(N - 1, 0)
+            it.setFlags(it.flags() & ~Qt.ItemIsEditable)
 
         self.buttons = QDialogButtonBox()
         self.buttons.setStandardButtons(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -117,37 +166,42 @@ class AdvancedCableSettings(QDialog):
 
         result = True
 
+        # Set all backgrounds to "OK"
         for i_row in range(N):
             for i_col in range(2):
                 item = self.table.item(i_row, i_col)
                 if item is not None:
-                    item.setBackground(QColor.fromString('white'))
+                    if item.flags() & Qt.ItemIsEditable:
+                        item.setBackground(QColor.fromString("white"))
+                    else:
+                        item.setBackground(QColor.fromRgb(200, 200, 200, 255))
 
         None_supplied = False
         error = ""
 
-        for i_row in range(N-1):
+        # friction values
+        offset = 0 if self.endAFr else 1
 
+        for i_row in range(len(self.cable.friction)):
             # frictions
-            item = self.table.item(i_row, 0)
+            item = self.table.item(i_row + offset, 0)
 
             value = None
             if item is not None:
                 value = item.text()
-                if value == '':
+                if value == "":
                     value = None
                 else:
                     try:
                         value = float(value)
                     except:
-                        value = -99 # wrong
-
+                        value = -99  # wrong
 
             if value is not None:
                 if value < -1 or value > 1:
                     result = False
-                    item.setBackground(QColor.fromRgb(255,100,100,255))
-            else: # item is none
+                    item.setBackground(QColor.fromRgb(255, 100, 100, 255))
+            else:  # item is none
                 if self.is_loop:
                     if None_supplied:
                         result = False
@@ -156,27 +210,56 @@ class AdvancedCableSettings(QDialog):
 
         if self.is_loop:
             if not None_supplied:
-                error = "At one friction must be empty for a looped cable"
+                error = "One friction must be un-defined (empty) for a looped cable"
                 result = False
 
-            # max winding angles
+        if self.is_grommet_in_line_mode:
+            # either the first or the last entry shall be None
+
+            first_none = False
+            if self.table.item(0, 0) is not None:
+                if self.table.item(0, 0).text() != "":
+                    first_none = True
+            else:
+                first_none = True
+
+            last_none = False
+            if self.table.item(N - 1, 0) is not None:
+                if self.table.item(N - 1, 0).text() != "":
+                    last_none = True
+            else:
+                last_none = True
+
+            if (not first_none and not last_none) or (first_none and last_none):
+                result = False
+                error = "Either the first OR the last friction must be empty for a grommet in line mode"
+                self.table.item(0, 0).setBackground(QColor.fromRgb(255, 100, 100, 255))
+                self.table.item(N - 1, 0).setBackground(
+                    QColor.fromRgb(255, 100, 100, 255)
+                )
+
+        # max winding angles
+
         for i_row in range(N):
             item = self.table.item(i_row, 1)
             if item is not None:
-                try:
-                    max_wind = float(item.text())
-                except:
-                    max_wind = -99 # wrong
+                if item.text() == "":
+                    max_wind = 999
+                else:
+                    try:
+                        max_wind = float(item.text())
+                    except:
+                        max_wind = -99  # wrong
                 if max_wind < 180:
                     result = False
-                    item.setBackground(QColor.fromRgb(255,100,100,255))
+                    item.setBackground(QColor.fromRgb(255, 100, 100, 255))
 
         self.table.blockSignals(False)
 
         if result:
             self.generate_code()
             self.code_label.setText(self.code)
-            self.code_label.setStyleSheet('')
+            self.code_label.setStyleSheet("")
 
         if error:
             self.code_label.setText(error)
@@ -190,19 +273,16 @@ class AdvancedCableSettings(QDialog):
 
         friction = []
 
-        if self.is_loop:
-            offset = 0
-        else:
-            offset = 1
+        offset = 0 if self.endAFr else 1
 
-        for i_row in range(N-1-offset):
-            item = self.table.item(i_row+offset, 0)
+        for i_row in range(len(self.cable.friction)):
+            item = self.table.item(i_row + offset, 0)
 
             if item is None:
                 value = None
             else:
                 value = item.text()
-                if value == '':
+                if value == "":
                     value = None
                 else:
                     value = float(value)
@@ -213,22 +293,21 @@ class AdvancedCableSettings(QDialog):
 
             friction.append(value)
 
-
         max_wind = []
         for i_row in range(N):
             item = self.table.item(i_row, 1)
             if item is not None:
-                max_wind.append(float(item.text()))
+                if item.text() == "":
+                    max_wind.append(999)
+                else:
+                    max_wind.append(float(item.text()))
             else:
                 max_wind.append(999)
 
         node = f"s['{self.cable.name}']"
-        self.code = ''
-        if any(friction):
-            self.code += f"{node}.friction = {friction}\n"
+        self.code = ""
+        self.code += f"{node}.friction = {friction}\n"
         self.code += f"{node}.max_winding_angles = {max_wind}\n"
-
-
 
     def accept(self):
         # update the cable
@@ -239,8 +318,7 @@ class AdvancedCableSettings(QDialog):
             super().accept()
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
     from PySide6.QtWidgets import QApplication
 
@@ -248,22 +326,34 @@ if __name__ == '__main__':
     f = s.new_rigidbody(
         "f", position=(0, 0, -10), fixed=(True, True, False, True, True, True), mass=32
     )
-    
+
     hook1 = s.new_point("hook1", position=(0, 0, 0))
     hook2 = s.new_point("hook2", position=(1, 0, 0))
     s.new_point("p1", position=(0, 0, 0), parent=f)
     s.new_point("p2", position=(1, 0, 0), parent=f)
-    
-    c = s.new_cable(
+
+    # line
+    line = s.new_cable(
+        connections=["p1", "hook1", "hook2", "p2"],
+        name="line",
+        EA=122345,
+        friction=[0.05, -0.05],
+        length=7,
+    )
+
+    # loop
+    loop = s.new_cable(
         connections=["p1", "hook1", "hook2", "p2", "p1"],
-        name="cable",
+        name="loop",
         EA=122345,
         friction=[0.05, -0.05, 0, None],
         length=7,
     )
 
-
     app = QApplication(sys.argv)
-    dialog = AdvancedCableSettings(cable = c)
+
+    dialog = AdvancedCableSettings(cable=loop)
     dialog.exec()
     print(dialog.code)
+
+    exec(dialog.code)

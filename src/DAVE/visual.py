@@ -723,7 +723,7 @@ class VisualActor:
             if n_wheel_actors > n_wheels:  # remove actors
                 for i in range(n_wheel_actors - n_wheels):
                     name = f"wheel#{n_wheels + i}"
-                    viewport.screen.remove(self.actors[name], render=False)
+                    viewport.screen.remove(self.actors[name])
                     del self.actors[name]
             if n_wheel_actors < n_wheels:  # add actors
                 for i in range(n_wheels - n_wheel_actors):
@@ -735,7 +735,7 @@ class VisualActor:
                         res=24,
                     )
                     self.actors[f"wheel#{n_wheel_actors+i}"] = actor
-                    viewport.screen.add(actor, render=False)
+                    viewport.screen.add(actor)
 
             # position the wheels
             axle_positions = N.axles
