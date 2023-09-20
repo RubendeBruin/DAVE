@@ -59,15 +59,15 @@ Cable,reversed,tuple,Diameter of the cable. Used when a cable runs over a circle
 Cable,solve_segment_lengths,bool,If True then lengths of the segment are solved for a continuous tension distribution including weight. If false then the segment lengths are determined only on the geometry ,[bool],,True,True,False,"If True then lengths of the segment are solved for a continuous tension distribution including weight. If false then the segment lengths are determined only on the geometry [bool]
         Note that the solution is typically not unique!"
 Cable,friction,tuple,Friction factors at the connections ,[-],,True,False,False,Friction factors at the connections [-]
-Cable,max_winding_angles,tuple,Friction factors at the connections ,[-],,True,False,False,Friction factors at the connections [-]
+Cable,max_winding_angles,tuple,Maximum winding angles at the connections ,[deg],,True,False,False,Maximum winding angles at the connections [deg]
 Cable,friction_forces,tuple,Forces at the connections due to friction ,[kN],,False,False,False,Forces at the connections due to friction [kN]
+Cable,calculated_friction_factor,float,"The friction factor that was left for DAVE to calculate , only applicable to loops",[-],,False,False,True,"The friction factor that was left for DAVE to calculate [-], only applicable to loops"
 Cable,segment_end_tensions,tuple,Tensions at the ends of each of the cable segments ,"[kN, kN]",,False,False,False,"Tensions at the ends of each of the cable segments [kN, kN]
         These are identical if the cable weight is zero.
         "
 Cable,segment_mean_tensions,tuple,Mean tensions in the free segments of the cable ,[kN],,False,False,False,"Mean tensions in the free segments of the cable [kN]
         Note that the tension in a segment is constant if the cable weight is zero.
         "
-Cable,tension_maxfriction,float,Maximum tension in the cable when accounting for friction ,[kN],,False,False,True,Maximum tension in the cable when accounting for friction [kN]
 Circle,axis,tuple,Direction of the sheave axis  ,"[m,m,m]",parent axis system,True,False,False,"Direction of the sheave axis (parent axis system) [m,m,m]
 
         Note:
@@ -435,7 +435,15 @@ Tank,ullage,float,Ullage of the tank ,[m],,False,False,True,"Ullage of the tank 
         xf and yf are the x and y coordinates (local) of the center of fluid when the tank is full. zv is the largest z value
         of all the vertices of the tank.
         The measurement direction is in local z-direction. If the tank is under an angle then this is not perpendicular to the fluid.
-        It is possible that this definition returns an ullage larger than the physical tank depth. In that case the physical depth of
+        It is possible that this definition results in an ullage larger than the physical tank depth. In that case the physical depth of
+        the tank is returned instead.
+        "
+Tank,sounding,float,Sounding of the tank ,[m],,False,False,True,"Sounding of the tank [m]
+        The sounding is the distance between a measurement point and the fluid surface. The point is [xf,yf,zv] where
+        xf and yf are the x and y coordinates (local) of the center of fluid when the tank is full. zv is the lowest z value
+        of all the vertices of the tank.
+        The measurement direction is in local z-direction. If the tank is under an angle then this is not perpendicular to the fluid.
+        It is possible that this definition results in a sounding larger than the physical tank depth. In that case the physical depth of
         the tank is returned instead.
         "
 WindOrCurrentArea,force,tuple,"The x,y and z components of the force  ","[kN,kN,kN]",global axis,False,False,False,"The x,y and z components of the force [kN,kN,kN] (global axis)"

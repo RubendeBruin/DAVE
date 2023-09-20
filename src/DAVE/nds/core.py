@@ -1423,10 +1423,22 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
         xf and yf are the x and y coordinates (local) of the center of fluid when the tank is full. zv is the largest z value
         of all the vertices of the tank.
         The measurement direction is in local z-direction. If the tank is under an angle then this is not perpendicular to the fluid.
-        It is possible that this definition returns an ullage larger than the physical tank depth. In that case the physical depth of
+        It is possible that this definition results in an ullage larger than the physical tank depth. In that case the physical depth of
         the tank is returned instead.
         """
         return self._vfNode.ullage
+
+    @property
+    def sounding(self) -> float:
+        """Sounding of the tank [m]
+        The sounding is the distance between a measurement point and the fluid surface. The point is [xf,yf,zv] where
+        xf and yf are the x and y coordinates (local) of the center of fluid when the tank is full. zv is the lowest z value
+        of all the vertices of the tank.
+        The measurement direction is in local z-direction. If the tank is under an angle then this is not perpendicular to the fluid.
+        It is possible that this definition results in a sounding larger than the physical tank depth. In that case the physical depth of
+        the tank is returned instead.
+        """
+        return self._vfNode.sounding
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)

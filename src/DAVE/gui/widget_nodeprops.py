@@ -977,6 +977,7 @@ class EditTank(NodeEditor):
         self.ui.widgetContents.setEnabled(not self.node.free_flooding)
         self.ui.lblCapacity.setText(f"{self.node.capacity:.3f} m3")
         self.ui.lbUllage.setText(f"{self.node.ullage:.3f} m")
+        self.ui.lbSounding.setText(f"{self.node.sounding:.3f} m")
 
     def generate_code(self):
 
