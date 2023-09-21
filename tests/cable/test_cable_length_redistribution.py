@@ -32,7 +32,7 @@ def do_test_cable_segment_length_redistribution(loop=True):
 
     p1.gz = 2
     
-    s.solve_statics()
+    s.solve_statics(terminate_after_s=5)
 
     assert len(s._vfc.get_dofs()) == 2
 
@@ -42,13 +42,13 @@ def test_cable_segment_length_redistribution():
     do_test_cable_segment_length_redistribution(loop=False)
 
 def test_cable_segment_length_redistribution_loop():
-    assert False, "Fails forcefully"
+    assert False, "Does not converge - experimental feature"
     do_test_cable_segment_length_redistribution(loop=True)
 
 
 
 def test_sheaved_catenary():
-    assert False, "Fails forcefully"
+    assert False, "Does not converge - experimental feature"
     s = Scene()
     f = s.new_frame('global')
 
@@ -68,11 +68,11 @@ def test_sheaved_catenary():
     
     print(f"DOFS = {s._vfc.get_dofs()}")
 
-    s.solve_statics()
+    s.solve_statics(terminate_after_s=3)
 
     p1.gz = 2
 
-    s.solve_statics()
+    s.solve_statics(terminate_after_s=3)
 
     s.update()
 

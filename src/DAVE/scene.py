@@ -27,6 +27,7 @@ from DAVE.settings import (
     NodePropertyInfo,
     MANAGED_NODE_IDENTIFIER,
 )
+from .helpers.string_functions import increment_string_end
 from .nds.mixins import Manager
 
 from .tools import *
@@ -1074,13 +1075,14 @@ class Scene:
         if self.name_available(like):
             if like not in _additional_names:
                 return like
-        counter = 1
+
+        name = like
         while True:
-            name = like + "_" + str(counter)
             if self.name_available(name):
                 if name not in _additional_names:
                     return name
-            counter += 1
+            name = increment_string_end(name)
+
 
     def node_A_core_depends_on_B_core(self, A, B):
         """Returns True if the node core of node A depends on the core node of node B"""
@@ -4174,45 +4176,70 @@ class Scene:
         if isinstance(root_node, str):
             root_node = self[root_node]
 
-        # set the parent of the root_node to None (if any)
-        old_parent = getattr(root_node, "parent", None)
-        if old_parent is not None:
-            root_node.parent = None
 
-        try:
-            nodes = self.nodes_with_parent(root_node, recursive=True)
-            more_nodes = self.nodes_with_dependancies_in_and_satifsfied_by(nodes)
-            branch = list({*nodes, *more_nodes})  # unique nodes (use set)
+        nodes = self.nodes_with_parent(root_node, recursive=True)
+        more_nodes = self.nodes_with_dependancies_in_and_satifsfied_by(nodes)
+        branch = list({*nodes, *more_nodes})  # unique nodes (use set)
 
-            branch = [
-                node for node in branch if node.manager is None
-            ]  # exclude managed nodes
+        to_be_copied = [
+            node for node in branch if node.manager is None
+        ]  # exclude managed nodes
 
-            branch.append(root_node)
+        to_be_copied.append(root_node)
 
-            # make a copy of these nodes in a new scene
-            s2 = self.copy(branch)
+        # first copy each of these nodes
+        copies = dict()
+        new_names = dict()
+        for node in to_be_copied:
+            copies[node] = self.duplicate_node(node)
+            new_names[node.name] = copies[node].name
 
-            copy_of_root_node_in_s2 = s2[root_node.name]
+        # now loop through the copies. If the parent or one of the connections is in the to-be-copied
+        # nodes, then replace it with the copy.
 
-            # now find new names for all of the nodes.
-            # names need to be unique in both self and s2
-            for n in s2._nodes:
-                if n.manager is None:
-                    node_names_in_s2 = [node.name for node in s2._nodes]
-                    new_name = self.available_name_like(
-                        n.name, _additional_names=node_names_in_s2
-                    )
-                    n.name = new_name
+        possible_attributes = ('parent',
+                               'child'     # geometric contact
+                               'main',      # LC6d
+                               'secondary',
+                               'nodeA',     # beam ; connector2d
+                               'nodeB',
+                               'endA',
+                               'endB')
 
-            self.import_scene(s2, containerize=False)
 
-        finally:
-            # restore the parent (if any)
-            if old_parent is not None:
-                copy_of_root_node = self[copy_of_root_node_in_s2.name]
-                copy_of_root_node.parent = old_parent
-                root_node.parent = old_parent
+
+        for node in copies.values():
+
+            for att in possible_attributes:
+                if hasattr(node, att):
+                    value = getattr(node, att)
+                    if value in to_be_copied:
+                        setattr(node, att, copies[value])
+
+            # cables, slings, etc
+            if hasattr(node, 'connections'):
+                for i, connection in enumerate(node.connections):
+                    if connection in to_be_copied:
+                        connections = list(node.connections)
+                        connections[i] = copies[connection]
+                        node.connections = connections
+
+            # meshes
+            if hasattr(node, 'meshes_names'):
+                meshes = list(node.meshes_names)
+                for i, mesh in enumerate(meshes):
+                    if mesh in new_names:
+                        meshes[i] = new_names[mesh]
+                node.meshes_names = meshes
+
+
+            # connectors
+
+
+
+
+
+
 
     # =================== Conversions ===============
 
