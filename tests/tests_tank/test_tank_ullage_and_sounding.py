@@ -28,7 +28,4 @@ def test_ullage_and_sounding2():
     assert mesh.ullage == 9
     assert mesh.sounding == 1
 
-    from DAVE.gui import Gui
-    Gui(s)
-
 
