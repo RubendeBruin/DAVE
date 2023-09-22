@@ -93,8 +93,6 @@ class Scene:
                 "Only one of the named arguments (filename OR copy_from OR code) can be used"
             )
 
-        self.USE_NEW_SOLVER = True
-
         self.verbose = True
         """Report actions using print()"""
 
@@ -1083,7 +1081,6 @@ class Scene:
                     return name
             name = increment_string_end(name)
 
-
     def node_A_core_depends_on_B_core(self, A, B):
         """Returns True if the node core of node A depends on the core node of node B"""
 
@@ -1745,146 +1742,57 @@ class Scene:
         if timeout_s is None:
             timeout_s = -1
 
-        if self.USE_NEW_SOLVER:
-            # construct a background solver
-            # start it
-            # wait till it completes or it is cancelled
+        # construct a background solver
+        # start it
+        # wait till it completes or it is cancelled
 
-            start_time = datetime.datetime.now()
+        start_time = datetime.datetime.now()
 
-            if timeout_s < 0:
-                timeout_s = 0.1
+        if timeout_s < 0:
+            timeout_s = 0.1
 
-            BackgroundSolver = DC.BackgroundSolver(self._vfc)
-            BackgroundSolver.tolerance = self.static_tolerance
-            BackgroundSolver.mobility = self.solver_mobility
-            started = BackgroundSolver.Start()
+        BackgroundSolver = DC.BackgroundSolver(self._vfc)
+        BackgroundSolver.tolerance = self.static_tolerance
+        BackgroundSolver.mobility = self.solver_mobility
+        started = BackgroundSolver.Start()
 
-            if started is None:  # todo: WORKAROUND, remove this
-                started = True
+        if started is None:  # todo: WORKAROUND, remove this
+            started = True
 
-            if not started:
-                print(BackgroundSolver.log)
-                return True
+        if not started:
+            print(BackgroundSolver.log)
+            return True
 
-            while BackgroundSolver.Running:
-                for i in range(int(10 * timeout_s)):
-                    if should_terminate():
-                        BackgroundSolver.Stop()
-                        return False
-                    sleep(0.1)
-                    if BackgroundSolver.Converged:
-                        break
-
-                    info = f"Error = {BackgroundSolver.Enorm:.6e}(norm) , {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
-                    give_feedback(info)
-
-                time_diff = datetime.datetime.now() - start_time
-                secs = time_diff.total_seconds()
-                if secs > terminate_after_s:
+        while BackgroundSolver.Running:
+            for i in range(int(10 * timeout_s)):
+                if should_terminate():
                     BackgroundSolver.Stop()
-                    raise ValueError(
-                        f"Solver maximum time of {terminate_after_s} exceeded - set terminate_after_s to change the allowed time for the solver."
-                    )
-
-            info = f"Converged within tolerance of {BackgroundSolver.tolerance} with E : {BackgroundSolver.Enorm:.6e}(norm) / {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
-            give_feedback(info)
-
-            if BackgroundSolver.Converged:
-                BackgroundSolver.CopyStateTo(self._vfc)
-
-                self.update()
-                return True
-            else:
-                return False
-
-        else:
-            # solve_func = lambda: self._vfc.state_solve_statics_with_timeout(
-            #     True, timeout_s, True, True, 0
-            # )  # 0 = default stability value
-            self.update()
-
-            phase = 1
-            original_dofs_dict = None
-
-            first = True
-
-            while True:
-                if not first and should_terminate():
-                    if original_dofs_dict is not None:
-                        self._restore_original_fixes(original_dofs_dict)
-                        self.update()
                     return False
+                sleep(0.1)
+                if BackgroundSolver.Converged:
+                    break
 
-                if phase == 1:  # prepare to go to phase 1 (or directly to phase 2)
-                    old_dofs = self._vfc.get_dofs()
-                    if len(old_dofs) == 0:
-                        return True  # <---- trivial case
+            if not BackgroundSolver.Converged:
+                break
 
-                    original_dofs_dict = self._fix_vessel_heel_trim()
-                    phase = 2
+            time_diff = datetime.datetime.now() - start_time
+            secs = time_diff.total_seconds()
+            if secs > terminate_after_s:
+                BackgroundSolver.Stop()
+                raise ValueError(
+                    f"Solver maximum time of {terminate_after_s} exceeded - set terminate_after_s to change the allowed time for the solver."
+                )
 
-                elif phase == 2:
-                    this_is_a_re_init = not first
+        info = f"Converged within tolerance of {BackgroundSolver.tolerance} with E : {BackgroundSolver.Enorm:.6e}(norm) / {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
+        give_feedback(info)
 
-                    try:
-                        debug = self._vfc.to_string()
+        if BackgroundSolver.Converged:
+            BackgroundSolver.CopyStateTo(self._vfc)
 
-                        #
-                        status = self._vfc.state_solve_statics_with_timeout(
-                            True, timeout_s, True, True, 0, this_is_a_re_init
-                        )
-                    except:
-                        print(debug)
-                        raise ValueError("oops")
-
-                    first = False
-
-                    if status == 0 or status == -2:
-                        # phase 3
-                        self._restore_original_fixes(original_dofs_dict)
-                        phase = 4
-                        this_is_a_re_init = False
-
-                    else:
-                        if (
-                            timeout_s < 0
-                        ):  # we were not using a timeout, so the solver failed
-                            self._restore_original_fixes(original_dofs_dict)
-                            raise ValueError(
-                                f"Could not solve - solver return code {status} during phase 2. Maximum error = {self._vfc.Emaxabs:.6e}"
-                            )
-
-                    give_feedback(f"Maximum error = {self._vfc.Emaxabs:.6e} (phase 2)")
-
-                elif phase == 4:
-                    status = self._vfc.state_solve_statics_with_timeout(
-                        True, timeout_s, True, True, 0, this_is_a_re_init
-                    )
-                    this_is_a_re_init = True
-
-                    if status == 0 or status == -2:
-                        # phase 5
-                        (
-                            changed,
-                            msg,
-                        ) = self._check_and_fix_geometric_contact_orientations()
-
-                        if not changed:
-                            # we are done!
-
-                            if self.t is not None:
-                                self.t.store_solved_results()
-
-                            return True  # <------------- You've found the proper exit!
-
-                        give_feedback(msg)
-                        this_is_a_re_init = False
-
-                    else:
-                        give_feedback(
-                            f"Maximum error = {self._vfc.Emaxabs:.6e} (phase 4)"
-                        )
+            self.update()
+            return True
+        else:
+            return False
 
     def solve_statics(self, silent=False, timeout=None, terminate_after_s=30):
         """Solves statics
@@ -1921,7 +1829,9 @@ class Scene:
         if self.gui_solve_func is not None:
             return self.gui_solve_func(self, called_by_user=False)
         else:
-            return self._solve_statics_with_optional_control(timeout_s=timeout, terminate_after_s=terminate_after_s)
+            return self._solve_statics_with_optional_control(
+                timeout_s=timeout, terminate_after_s=terminate_after_s
+            )
 
     def verify_equilibrium(self, tol=1e-2):
         """Checks if the current state is an equilibrium
@@ -4176,7 +4086,6 @@ class Scene:
         if isinstance(root_node, str):
             root_node = self[root_node]
 
-
         nodes = self.nodes_with_parent(root_node, recursive=True)
         more_nodes = self.nodes_with_dependancies_in_and_satifsfied_by(nodes)
         branch = list({*nodes, *more_nodes})  # unique nodes (use set)
@@ -4197,19 +4106,17 @@ class Scene:
         # now loop through the copies. If the parent or one of the connections is in the to-be-copied
         # nodes, then replace it with the copy.
 
-        possible_attributes = ('parent',
-                               'child'     # geometric contact
-                               'main',      # LC6d
-                               'secondary',
-                               'nodeA',     # beam ; connector2d
-                               'nodeB',
-                               'endA',
-                               'endB')
-
-
+        possible_attributes = (
+            "parent",
+            "child" "main",  # geometric contact  # LC6d
+            "secondary",
+            "nodeA",  # beam ; connector2d
+            "nodeB",
+            "endA",
+            "endB",
+        )
 
         for node in copies.values():
-
             for att in possible_attributes:
                 if hasattr(node, att):
                     value = getattr(node, att)
@@ -4217,7 +4124,7 @@ class Scene:
                         setattr(node, att, copies[value])
 
             # cables, slings, etc
-            if hasattr(node, 'connections'):
+            if hasattr(node, "connections"):
                 for i, connection in enumerate(node.connections):
                     if connection in to_be_copied:
                         connections = list(node.connections)
@@ -4225,21 +4132,14 @@ class Scene:
                         node.connections = connections
 
             # meshes
-            if hasattr(node, 'meshes_names'):
+            if hasattr(node, "meshes_names"):
                 meshes = list(node.meshes_names)
                 for i, mesh in enumerate(meshes):
                     if mesh in new_names:
                         meshes[i] = new_names[mesh]
                 node.meshes_names = meshes
 
-
             # connectors
-
-
-
-
-
-
 
     # =================== Conversions ===============
 

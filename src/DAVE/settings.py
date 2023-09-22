@@ -29,6 +29,8 @@ from dataclasses import dataclass
 DAVE_ADDITIONAL_RUNTIME_MODULES = dict()
 """Variables in this dict will be made available to the interpreter when executing code. Useful when introducing new  
 Node types via plugins.
+Example
+DAVE_ADDITIONAL_RUNTIME_MODULES['MyNode'] = MyNode
 """
 
 QUICK_ACTION_REGISTER = []
@@ -46,7 +48,6 @@ def qa_demo(scene, selection, *args):
 
 QUICK_ACTION_REGISTER.append(qa_demo)
 """
-
 
 
 from os.path import expanduser
@@ -72,10 +73,9 @@ FD_GLOBAL_MIN_DAMPING_FRACTION = 0.005
 # By default we create a subfolder DAVE_models in the users home folder
 
 home = Path(expanduser("~"))
-default_user_dir = home / 'DAVE_models'
+default_user_dir = home / "DAVE_models"
 if not default_user_dir.exists():
     mkdir(default_user_dir)
-
 
 
 # get the package directory
@@ -87,7 +87,7 @@ cdir = Path(dirname(__file__))
 # By default we fill it with the build-in assets
 # and a subfolder 'DAVE_models' in the user directory
 RESOURCE_PATH = []
-RESOURCE_PATH.append(cdir / 'resources')
+RESOURCE_PATH.append(cdir / "resources")
 RESOURCE_PATH.append(default_user_dir)
 
 # ============ ENVIRONMENT SETTINGS =========
@@ -124,10 +124,10 @@ DAVE_DEFAULT_SOLVER_DO_LINEAR_FIRST = True
 #
 # Save temporary files in the default user dir
 
-PATH_TEMP = Path(default_user_dir / 'temp')   # stored in the user dir by default
+PATH_TEMP = Path(default_user_dir / "temp")  # stored in the user dir by default
 if not PATH_TEMP.exists():
     mkdir(PATH_TEMP)
-PATH_TEMP_SCREENSHOT = PATH_TEMP / 'screenshot.png'
+PATH_TEMP_SCREENSHOT = PATH_TEMP / "screenshot.png"
 
 
 """
@@ -135,13 +135,13 @@ Debugging/logging
 
 By default a file "log.txt" is saved in the users temporary folder
 """
-LOGFILE = PATH_TEMP / 'log.txt'
+LOGFILE = PATH_TEMP / "log.txt"
 
 """
 Node-name settings
 """
 
-VF_NAME_SPLIT = "-->"    # used for node-names, eg:    Body23-->Cog
+VF_NAME_SPLIT = "-->"  # used for node-names, eg:    Body23-->Cog
 
 MANAGED_NODE_IDENTIFIER = "/"  # used for managed nodes, eg: SlingSL1242>>>eyeA
 
@@ -151,7 +151,7 @@ MANAGED_NODE_IDENTIFIER = "/"  # used for managed nodes, eg: SlingSL1242>>>eyeA
  This section defines color and geometry options for visualization in VTK
  
 """
- # Moved settings_visuals
+# Moved settings_visuals
 
 
 """
@@ -160,74 +160,90 @@ Registration of properties
 
 """
 
+
 @dataclass
 class NodePropertyInfo:
-    node_class : type
-    property_name : str
-    property_type : type
-    doc_short : str
-    doc_long : str
-    units : str
-    remarks : str
-    is_settable : bool
-    is_single_settable : bool
-    is_single_numeric : bool
+    node_class: type
+    property_name: str
+    property_type: type
+    doc_short: str
+    doc_long: str
+    units: str
+    remarks: str
+    is_settable: bool
+    is_single_settable: bool
+    is_single_numeric: bool
 
     def as_tuple(self):
-
         # derive class name
         class_name = None
-        assert self.node_class in DAVE_ADDITIONAL_RUNTIME_MODULES.values(), f'{self.node_class} not found in DAVE_ADDITIONAL_RUNTIME_MODULES'
+        assert (
+            self.node_class in DAVE_ADDITIONAL_RUNTIME_MODULES.values()
+        ), f"{self.node_class} not found in DAVE_ADDITIONAL_RUNTIME_MODULES"
         for key, value in DAVE_ADDITIONAL_RUNTIME_MODULES.items():
-            if value==self.node_class:
+            if value == self.node_class:
                 class_name = key
                 break
 
         # derive type name
         type_name = self.property_type.__name__
 
-
-        return (class_name,
-                self.property_name,
-                type_name,
-                self.doc_short,
-                self.units,
-                self.remarks,
-                self.is_settable,
-                self.is_single_settable,
-                self.is_single_numeric,
-                self.doc_long)
-
+        return (
+            class_name,
+            self.property_name,
+            type_name,
+            self.doc_short,
+            self.units,
+            self.remarks,
+            self.is_settable,
+            self.is_single_settable,
+            self.is_single_numeric,
+            self.doc_long,
+        )
 
     def header_as_tuple(self):
-        return ('Class',
-                'Property',
-                'Property value type',
-                'Doc (short)',
-                'units',
-                'remarks',
-                'is_settable',
-                'is_single_settable',
-                'is_single_numeric',
-                'Doc (long)')
+        return (
+            "Class",
+            "Property",
+            "Property value type",
+            "Doc (short)",
+            "units",
+            "remarks",
+            "is_settable",
+            "is_single_settable",
+            "is_single_numeric",
+            "Doc (long)",
+        )
 
 
 DAVE_NODEPROP_INFO = dict()
 
-# Convenience function to add a prop to the register
-def register_nodeprop(node_class: type,
-                      property_name: str,
-                      property_type: type,
-                      doc_short: str,
-                      doc_long: str,
-                      units: str,
-                      remarks: str,
-                      is_settable: bool,
-                      is_single_settable: bool,
-                      is_single_numeric: bool):
 
-    new_type = NodePropertyInfo(node_class, property_name, property_type, doc_short, doc_long, units, remarks,
-                                is_settable, is_single_settable, is_single_numeric)
+# Convenience function to add a prop to the register
+def register_nodeprop(
+    node_class: type,
+    property_name: str,
+    property_type: type,
+    doc_short: str,
+    doc_long: str,
+    units: str,
+    remarks: str,
+    is_settable: bool,
+    is_single_settable: bool,
+    is_single_numeric: bool,
+):
+    new_type = NodePropertyInfo(
+        node_class,
+        property_name,
+        property_type,
+        doc_short,
+        doc_long,
+        units,
+        remarks,
+        is_settable,
+        is_single_settable,
+        is_single_numeric,
+    )
 
     if node_class not in DAVE_NODEPROP_INFO:
         DAVE_NODEPROP_INFO[node_class] = dict()
@@ -238,15 +254,15 @@ def register_nodeprop(node_class: type,
 # ======= Animate after solving =========
 
 GUI_DO_ANIMATE = True
-GUI_SOLVER_ANIMATION_DURATION = 0.5 # S
+GUI_SOLVER_ANIMATION_DURATION = 0.5  # S
 GUI_ANIMATION_FPS = 60
 
 # ========== BLENDER ==============
 
-BLENDER_BASE_SCENE = RESOURCE_PATH[0] / 'base ocean.blend'
-BLENDER_DEFAULT_OUTFILE = PATH_TEMP / 'blenderout.blend'
-BLENDER_CABLE_DIA = 0.1 # m
-BLENDER_BEAM_DIA = 0.5 # m
+BLENDER_BASE_SCENE = RESOURCE_PATH[0] / "base ocean.blend"
+BLENDER_DEFAULT_OUTFILE = PATH_TEMP / "blenderout.blend"
+BLENDER_CABLE_DIA = 0.1  # m
+BLENDER_BEAM_DIA = 0.5  # m
 BLENDER_FPS = 30
 
 RENDER_CURVE_RESOLUTION = 50

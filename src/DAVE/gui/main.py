@@ -275,7 +275,6 @@ class Gui:
         else:
             self.app = app
 
-
         self.app.aboutToQuit.connect(self.onCloseApplication)
 
         if scene is None:
@@ -989,19 +988,15 @@ class Gui:
             g.close()
 
     def activate_workspace(self, name):
-
         self._active_workspace = name
 
         self.animation_terminate()
         self.savepoint_restore()
 
-
-
         if name == "PAINTERS":
             self.show_guiWidget("vanGogh", WidgetPainters)
 
         if name == "CONSTRUCT":
-
             keep_watches = "Watches" in self.guiWidgets.keys()
 
             self.close_all_open_docks()
@@ -1598,10 +1593,9 @@ class Gui:
             called_by_user=called_by_user,
         )
 
-        if len(self.scene._vfc.get_dofs())==0:
+        if len(self.scene._vfc.get_dofs()) == 0:
             self.give_feedback("Solved statics - no degrees of freedom")
         else:
-
             self.give_feedback(
                 f"Solved statics - remaining error = {self.scene._vfc.Emaxabs} kN or kNm"
             )
@@ -1622,171 +1616,126 @@ class Gui:
         self._dialog = None
         result = False  # default
 
-        if scene_to_solve.USE_NEW_SOLVER:
-            start_time = datetime.datetime.now()
+        start_time = datetime.datetime.now()
 
-            D0 = self.scene._vfc.get_dofs()
+        D0 = self.scene._vfc.get_dofs()
 
+        self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
+        self.__BackgroundSolver.mobility = self._solver_mobility
+        self.__BackgroundSolver.do_solve_linear_first = (
+            self._solver_do_solve_linear_first
+        )
+        running = self.__BackgroundSolver.Start()
+        if not running:
+            return (
+                True  # system already converged, nothing started so nothing to wait for
+            )
+
+        dialog = SolverDialog_threaded()
+        dialog.pbAccept.setEnabled(False)
+        dialog.frame.setVisible(False)
+
+        def show_settings(*args):
+            dialog.frame.setVisible(True)
+
+        dialog.pbShowControls.clicked.connect(show_settings)
+
+        def terminate(*args):
+            self.__BackgroundSolver.Stop()
+
+            # restore original state
+            self.scene._vfc.set_dofs(D0)
+            self.visual.position_visuals()
+            self.visual.refresh_embeded_view()
+            result = False
+
+        dialog.pbTerminate.clicked.connect(terminate)
+
+        def reset(*args):
+            self.scene._vfc.set_dofs(D0)
+            self.__BackgroundSolver.Stop()
             self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
             self.__BackgroundSolver.mobility = self._solver_mobility
             self.__BackgroundSolver.do_solve_linear_first = (
                 self._solver_do_solve_linear_first
             )
-            running = self.__BackgroundSolver.Start()
-            if not running:
-                return True  # system already converged, nothing started so nothing to wait for
+            self.__BackgroundSolver.Start()
 
-            dialog = SolverDialog_threaded()
-            dialog.pbAccept.setEnabled(False)
-            dialog.frame.setVisible(False)
+        dialog.pbReset.clicked.connect(reset)
 
-            def show_settings(*args):
-                dialog.frame.setVisible(True)
+        def accept(*args):
+            dofs = self.__BackgroundSolver.DOFs
+            self.__BackgroundSolver.Stop()
+            self.scene._vfc.set_dofs(dofs)
 
-            dialog.pbShowControls.clicked.connect(show_settings)
+        dialog.pbAccept.clicked.connect(accept)
 
-            def terminate(*args):
-                self.__BackgroundSolver.Stop()
+        def change_mobility(position, *args):
+            self.__BackgroundSolver.mobility = position
+            self._solver_mobility = position
+            dialog.lbMobility.setText(f"{position}%")
 
-                # restore original state
-                self.scene._vfc.set_dofs(D0)
-                self.visual.position_visuals()
-                self.visual.refresh_embeded_view()
-                result = False
+        dialog.mobilitySlider.valueChanged.connect(change_mobility)
+        dialog.mobilitySlider.setSliderPosition(self._solver_mobility)
 
-            dialog.pbTerminate.clicked.connect(terminate)
+        def change_do_linear_first(*args):
+            self._solver_do_solve_linear_first = dialog.cbLinearFirst.isChecked()
 
-            def reset(*args):
-                self.scene._vfc.set_dofs(D0)
-                self.__BackgroundSolver.Stop()
-                self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
-                self.__BackgroundSolver.mobility = self._solver_mobility
-                self.__BackgroundSolver.do_solve_linear_first = (
-                    self._solver_do_solve_linear_first
-                )
-                self.__BackgroundSolver.Start()
+        dialog.cbLinearFirst.setChecked(self._solver_do_solve_linear_first)
+        dialog.cbLinearFirst.toggled.connect(change_do_linear_first)
 
-            dialog.pbReset.clicked.connect(reset)
+        self.MainWindow.setEnabled(False)
+        dialog_open = False
 
-            def accept(*args):
-                dofs = self.__BackgroundSolver.DOFs
-                self.__BackgroundSolver.Stop()
-                self.scene._vfc.set_dofs(dofs)
-
-            dialog.pbAccept.clicked.connect(accept)
-
-            def change_mobility(position, *args):
-                self.__BackgroundSolver.mobility = position
-                self._solver_mobility = position
-                dialog.lbMobility.setText(f"{position}%")
-
-            dialog.mobilitySlider.valueChanged.connect(change_mobility)
-            dialog.mobilitySlider.setSliderPosition(self._solver_mobility)
-
-            def change_do_linear_first(*args):
-                self._solver_do_solve_linear_first = dialog.cbLinearFirst.isChecked()
-
-            dialog.cbLinearFirst.setChecked(self._solver_do_solve_linear_first)
-            dialog.cbLinearFirst.toggled.connect(change_do_linear_first)
-
-            self.MainWindow.setEnabled(False)
-            dialog_open = False
-
-            while self.__BackgroundSolver.Running:
-                time_diff = datetime.datetime.now() - start_time
-                secs = time_diff.total_seconds()
-
-                dofs = self.__BackgroundSolver.DOFs
-                if dofs:
-                    dialog.pbAccept.setEnabled(True)
-
-                    text = ""
-                    if self.__BackgroundSolver.RunningLinear:
-                        text = "Working on linear degrees of freedom only\n"
-                    text += f"Error norm = {self.__BackgroundSolver.Enorm:.6e}\nError max-abs {self.__BackgroundSolver.Emaxabs:.6e}\nMaximum error at {self.__BackgroundSolver.Emaxabs_where}"
-                    dialog.lbInfo.setText(text)
-
-                    if secs > 0.5:  # else use animation
-                        self.scene._vfc.set_dofs(dofs)
-                        self.visual.position_visuals()
-                        self.visual.refresh_embeded_view()
-
-                dialog.setWindowOpacity(min(secs - 0.1, 1))  # fade in the window slowly
-
-                if secs > 0.1:  # and open only after 0.1 seconds
-                    if not dialog_open:
-                        dialog.show()
-                        dialog_open = True
-
-                self.app.processEvents()
-
-            if self.__BackgroundSolver.Converged:
-                dofs = self.__BackgroundSolver.DOFs
-                self.scene._vfc.set_dofs(dofs)
-                self.scene.update()
-                self.give_feedback(
-                    f"Converged with Error norm = {self.__BackgroundSolver.Enorm} | max-abs {self.__BackgroundSolver.Emaxabs} in {self.__BackgroundSolver.Emaxabs_where}"
-                )
-                result = True
-
-            if dialog_open:
-                dialog.close()
-
-            self.MainWindow.setEnabled(True)
-
-            # Animate if little time has passed
+        while self.__BackgroundSolver.Running:
             time_diff = datetime.datetime.now() - start_time
             secs = time_diff.total_seconds()
-            if secs < 0.5:
-                if DAVE.settings.GUI_DO_ANIMATE and called_by_user:
-                    new_dofs = scene_to_solve._vfc.get_dofs()
-                    self.animate_change(D0, new_dofs, 10)
 
-        else:
-            # define the terminate control
-            self._terminate = False
+            dofs = self.__BackgroundSolver.DOFs
+            if dofs:
+                dialog.pbAccept.setEnabled(True)
 
-            def should_we_stop():
-                return self._terminate
+                text = ""
+                if self.__BackgroundSolver.RunningLinear:
+                    text = "Working on linear degrees of freedom only\n"
+                text += f"Error norm = {self.__BackgroundSolver.Enorm:.6e}\nError max-abs {self.__BackgroundSolver.Emaxabs:.6e}\nMaximum error at {self.__BackgroundSolver.Emaxabs_where}"
+                dialog.lbInfo.setText(text)
 
-            # define the feedback control
-            self._feedbackcounter = 0
+                if secs > 0.5:  # else use animation
+                    self.scene._vfc.set_dofs(dofs)
+                    self.visual.position_visuals()
+                    self.visual.refresh_embeded_view()
 
-            def feedback(message):
-                self._feedbackcounter += 1  # skip the first
-                if self._feedbackcounter < 2:
-                    return
+            dialog.setWindowOpacity(min(secs - 0.1, 1))  # fade in the window slowly
 
-                if self._dialog is None:
-                    self._dialog = SolverDialog()
-                    self._dialog.btnTerminate.clicked.connect(self.stop_solving)
-                    self._dialog.label.setText(self.scene.solve_activity_desc)
-                    self._dialog.show()
+            if secs > 0.1:  # and open only after 0.1 seconds
+                if not dialog_open:
+                    dialog.show()
+                    dialog_open = True
 
-                self._dialog.label_2.setText(message)
+            self.app.processEvents()
 
-                self._dialog.update()
-
-                self.visual.position_visuals()
-                self.visual.refresh_embeded_view()
-                self.app.processEvents()
-
-            # execute the solver
-            result = scene_to_solve._solve_statics_with_optional_control(
-                feedback_func=feedback,
-                do_terminate_func=should_we_stop,
-                timeout_s=timeout_s,
+        if self.__BackgroundSolver.Converged:
+            dofs = self.__BackgroundSolver.DOFs
+            self.scene._vfc.set_dofs(dofs)
+            self.scene.update()
+            self.give_feedback(
+                f"Converged with Error norm = {self.__BackgroundSolver.Enorm} | max-abs {self.__BackgroundSolver.Emaxabs} in {self.__BackgroundSolver.Emaxabs_where}"
             )
+            result = True
 
-            # close the dialog.
-            # if this was a short solve,
-            if self._dialog is not None:
-                self._dialog.close()
+        if dialog_open:
+            dialog.close()
 
-            else:  # animate the change
-                if DAVE.settings.GUI_DO_ANIMATE and called_by_user:
-                    new_dofs = scene_to_solve._vfc.get_dofs()
-                    self.animate_change(old_dofs, new_dofs, 10)
+        self.MainWindow.setEnabled(True)
+
+        # Animate if little time has passed
+        time_diff = datetime.datetime.now() - start_time
+        secs = time_diff.total_seconds()
+        if secs < 0.5:
+            if DAVE.settings.GUI_DO_ANIMATE and called_by_user:
+                new_dofs = scene_to_solve._vfc.get_dofs()
+                self.animate_change(D0, new_dofs, 10)
 
         if called_by_user:
             self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
@@ -2383,7 +2332,11 @@ class Gui:
         # Implement by checking if the SHIFT, ALT or CTRL keys are down
         # If so, show the context menu
 
-        if self.app.keyboardModifiers() and (QtCore.Qt.KeyboardModifier.ControlModifier or QtCore.Qt.KeyboardModifier.AltModifier or QtCore.Qt.KeyboardModifier.ShiftModifier):
+        if self.app.keyboardModifiers() and (
+            QtCore.Qt.KeyboardModifier.ControlModifier
+            or QtCore.Qt.KeyboardModifier.AltModifier
+            or QtCore.Qt.KeyboardModifier.ShiftModifier
+        ):
             pass
         else:
             if len(nodes) == 1:
@@ -2415,7 +2368,9 @@ class Gui:
             # )
 
             action = QDraggableNodeActionWidget(text, mime_text=node.name)
-            action.clicked.connect(lambda n=node, *args: self._user_clicked_node(n, args))
+            action.clicked.connect(
+                lambda n=node, *args: self._user_clicked_node(n, args)
+            )
 
             menu.addAction(action)
 
@@ -2443,8 +2398,7 @@ class Gui:
 
         menu.exec_(QCursor.pos())
 
-    def _user_clicked_node(self, node, event = None):
-
+    def _user_clicked_node(self, node, event=None):
         if node is None:  # sea or something
             self.selected_nodes.clear()
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)

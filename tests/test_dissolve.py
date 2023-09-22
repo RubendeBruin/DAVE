@@ -5,12 +5,11 @@ Dissolving:
 - The function returns False and a message if no work was done. The message specifies why no work was done and is for the user.
 
 Dissolving a Frame or derived may need to alter its dependants:
-- children need to be reparented
+- children need to be re-parented
 - beams and springs need to have their end points repointed. This is only possible if the new parent is at the same global location and orientation as the old parent.
 
-Should this logic be implemented in Frame, Scene or in the spring elements themselves?
+This is implemented on node-level using the try_swap method:
 
-Implementing in the spring elements is the most future proof:
     if node.depends_on(self):
         node.try_swap(self, new)
 
@@ -454,6 +453,19 @@ def test_flatten_geometric_contact():
     s.flatten()
 
     s.print_node_tree(more=True)
+
+
+def test_dissolve_rigidbodycontainer():
+    """Dissolving an Node that derives from both Frame and Manager is always possible as the management can be voided.
+    Dissolving
+    """
+
+    s = Scene()
+    sh1 = s.new_shackle('sh1')
+    sh1.fixed = False
+    s.dissolve(sh1)
+
+    s.print_node_tree()
 
 
 
