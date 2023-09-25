@@ -1764,15 +1764,15 @@ class Scene:
             return True
 
         while BackgroundSolver.Running:
-            for i in range(int(10 * timeout_s)):
+            for i in range(int(100 * timeout_s)):
                 if should_terminate():
                     BackgroundSolver.Stop()
                     return False
-                sleep(0.1)
+                sleep(0.01)
                 if BackgroundSolver.Converged:
                     break
 
-            if not BackgroundSolver.Converged:
+            if BackgroundSolver.Converged:
                 break
 
             time_diff = datetime.datetime.now() - start_time
@@ -1785,11 +1785,17 @@ class Scene:
 
         info = f"Converged within tolerance of {BackgroundSolver.tolerance} with E : {BackgroundSolver.Enorm:.6e}(norm) / {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
         give_feedback(info)
+        logging.info(info)
 
         if BackgroundSolver.Converged:
             BackgroundSolver.CopyStateTo(self._vfc)
 
             self.update()
+
+            assert (
+                self.verify_equilibrium()
+            ), "Solver self-check failed: Equilibrium not reached after solving"
+
             return True
         else:
             return False
@@ -1833,13 +1839,16 @@ class Scene:
                 timeout_s=timeout, terminate_after_s=terminate_after_s
             )
 
-    def verify_equilibrium(self, tol=1e-2):
+    def verify_equilibrium(self, tol=None):
         """Checks if the current state is an equilibrium
 
         Returns:
             bool: True if successful, False if not an equilibrium.
 
         """
+        if tol is None:
+            tol = self.static_tolerance
+
         self.update()
         return self._vfc.Emaxabs < tol
 
