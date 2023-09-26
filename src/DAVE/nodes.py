@@ -92,88 +92,85 @@ from .nds.base import *
 from .nds.pure import *
 from .nds.core import *
 from .nds.results import *
-from .nds.geometry import *
+from .nds.geometry import Frame, Point, Circle
 from .nds.geometric_contact import *
 from .nds.super_nodes import *
 
 
+from DAVE.settings import DAVE_ADDITIONAL_RUNTIME_MODULES, RESOURCE_PATH
 
-from DAVE.settings import DAVE_ADDITIONAL_RUNTIME_MODULES,RESOURCE_PATH
-
-DAVE_ADDITIONAL_RUNTIME_MODULES['Watch'] = Watch
-DAVE_ADDITIONAL_RUNTIME_MODULES['AreaKind'] = AreaKind
-DAVE_ADDITIONAL_RUNTIME_MODULES['BallastSystem'] = BallastSystem
-DAVE_ADDITIONAL_RUNTIME_MODULES['Beam'] = Beam
-DAVE_ADDITIONAL_RUNTIME_MODULES['Buoyancy'] = Buoyancy
-DAVE_ADDITIONAL_RUNTIME_MODULES['Cable'] = Cable
-DAVE_ADDITIONAL_RUNTIME_MODULES['Circle'] = Circle
-DAVE_ADDITIONAL_RUNTIME_MODULES['Component'] = Component
-DAVE_ADDITIONAL_RUNTIME_MODULES['Connector2d'] = Connector2d
-DAVE_ADDITIONAL_RUNTIME_MODULES['ContactBall'] = ContactBall
-DAVE_ADDITIONAL_RUNTIME_MODULES['ContactMesh'] = ContactMesh
-DAVE_ADDITIONAL_RUNTIME_MODULES['CurrentArea'] = CurrentArea
-DAVE_ADDITIONAL_RUNTIME_MODULES['Force'] = Force
-DAVE_ADDITIONAL_RUNTIME_MODULES['Frame'] = Frame
-DAVE_ADDITIONAL_RUNTIME_MODULES['GeometricContact'] = GeometricContact
-DAVE_ADDITIONAL_RUNTIME_MODULES['HydSpring'] = HydSpring
-DAVE_ADDITIONAL_RUNTIME_MODULES['LC6d'] = LC6d
-DAVE_ADDITIONAL_RUNTIME_MODULES['LoadShearMomentDiagram'] = LoadShearMomentDiagram
-DAVE_ADDITIONAL_RUNTIME_MODULES['Point'] = Point
-DAVE_ADDITIONAL_RUNTIME_MODULES['RigidBody'] = RigidBody
-DAVE_ADDITIONAL_RUNTIME_MODULES['Shackle'] = Shackle
-DAVE_ADDITIONAL_RUNTIME_MODULES['Sling'] = Sling
-DAVE_ADDITIONAL_RUNTIME_MODULES['SPMT'] = SPMT
-DAVE_ADDITIONAL_RUNTIME_MODULES['Tank'] = Tank
-DAVE_ADDITIONAL_RUNTIME_MODULES['TriMeshSource'] = TriMeshSource
-DAVE_ADDITIONAL_RUNTIME_MODULES['Visual'] = Visual
-DAVE_ADDITIONAL_RUNTIME_MODULES['WaveInteraction1'] = WaveInteraction1
-DAVE_ADDITIONAL_RUNTIME_MODULES['WindArea'] = WindArea
-DAVE_ADDITIONAL_RUNTIME_MODULES['WindOrCurrentArea'] = WindOrCurrentArea
+DAVE_ADDITIONAL_RUNTIME_MODULES["Watch"] = Watch
+DAVE_ADDITIONAL_RUNTIME_MODULES["AreaKind"] = AreaKind
+DAVE_ADDITIONAL_RUNTIME_MODULES["BallastSystem"] = BallastSystem
+DAVE_ADDITIONAL_RUNTIME_MODULES["Beam"] = Beam
+DAVE_ADDITIONAL_RUNTIME_MODULES["Buoyancy"] = Buoyancy
+DAVE_ADDITIONAL_RUNTIME_MODULES["Cable"] = Cable
+DAVE_ADDITIONAL_RUNTIME_MODULES["Circle"] = Circle
+DAVE_ADDITIONAL_RUNTIME_MODULES["Component"] = Component
+DAVE_ADDITIONAL_RUNTIME_MODULES["Connector2d"] = Connector2d
+DAVE_ADDITIONAL_RUNTIME_MODULES["ContactBall"] = ContactBall
+DAVE_ADDITIONAL_RUNTIME_MODULES["ContactMesh"] = ContactMesh
+DAVE_ADDITIONAL_RUNTIME_MODULES["CurrentArea"] = CurrentArea
+DAVE_ADDITIONAL_RUNTIME_MODULES["Force"] = Force
+DAVE_ADDITIONAL_RUNTIME_MODULES["Frame"] = Frame
+DAVE_ADDITIONAL_RUNTIME_MODULES["GeometricContact"] = GeometricContact
+DAVE_ADDITIONAL_RUNTIME_MODULES["HydSpring"] = HydSpring
+DAVE_ADDITIONAL_RUNTIME_MODULES["LC6d"] = LC6d
+DAVE_ADDITIONAL_RUNTIME_MODULES["LoadShearMomentDiagram"] = LoadShearMomentDiagram
+DAVE_ADDITIONAL_RUNTIME_MODULES["Point"] = Point
+DAVE_ADDITIONAL_RUNTIME_MODULES["RigidBody"] = RigidBody
+DAVE_ADDITIONAL_RUNTIME_MODULES["Shackle"] = Shackle
+DAVE_ADDITIONAL_RUNTIME_MODULES["Sling"] = Sling
+DAVE_ADDITIONAL_RUNTIME_MODULES["SPMT"] = SPMT
+DAVE_ADDITIONAL_RUNTIME_MODULES["Tank"] = Tank
+DAVE_ADDITIONAL_RUNTIME_MODULES["TriMeshSource"] = TriMeshSource
+DAVE_ADDITIONAL_RUNTIME_MODULES["Visual"] = Visual
+DAVE_ADDITIONAL_RUNTIME_MODULES["WaveInteraction1"] = WaveInteraction1
+DAVE_ADDITIONAL_RUNTIME_MODULES["WindArea"] = WindArea
+DAVE_ADDITIONAL_RUNTIME_MODULES["WindOrCurrentArea"] = WindOrCurrentArea
 
 # ABSTRACTS and MIXINS
-DAVE_ADDITIONAL_RUNTIME_MODULES['DAVENodeBase'] = DAVENodeBase
-DAVE_ADDITIONAL_RUNTIME_MODULES['NodeCoreConnected'] = NodeCoreConnected
-DAVE_ADDITIONAL_RUNTIME_MODULES['NodePurePython'] = NodePurePython
+DAVE_ADDITIONAL_RUNTIME_MODULES["DAVENodeBase"] = DAVENodeBase
+DAVE_ADDITIONAL_RUNTIME_MODULES["NodeCoreConnected"] = NodeCoreConnected
+DAVE_ADDITIONAL_RUNTIME_MODULES["NodePurePython"] = NodePurePython
 
-DAVE_ADDITIONAL_RUNTIME_MODULES['Manager'] = Manager
-DAVE_ADDITIONAL_RUNTIME_MODULES['Node'] = Node
-DAVE_ADDITIONAL_RUNTIME_MODULES['HasFootprint'] = HasFootprint
-DAVE_ADDITIONAL_RUNTIME_MODULES['HasTrimesh'] = HasTrimesh
-DAVE_ADDITIONAL_RUNTIME_MODULES['HasParent'] = HasParent
-DAVE_ADDITIONAL_RUNTIME_MODULES['HasSubScene'] = HasSubScene
+DAVE_ADDITIONAL_RUNTIME_MODULES["Manager"] = Manager
+DAVE_ADDITIONAL_RUNTIME_MODULES["Node"] = Node
+DAVE_ADDITIONAL_RUNTIME_MODULES["HasFootprint"] = HasFootprint
+DAVE_ADDITIONAL_RUNTIME_MODULES["HasTrimesh"] = HasTrimesh
+DAVE_ADDITIONAL_RUNTIME_MODULES["HasParent"] = HasParent
+DAVE_ADDITIONAL_RUNTIME_MODULES["HasSubScene"] = HasSubScene
 
 
 # Helpers
-DAVE_ADDITIONAL_RUNTIME_MODULES['AreaKind'] = AreaKind
-DAVE_ADDITIONAL_RUNTIME_MODULES['ClaimManagement'] = ClaimManagement
-DAVE_ADDITIONAL_RUNTIME_MODULES['VisualOutlineType'] = VisualOutlineType
+DAVE_ADDITIONAL_RUNTIME_MODULES["AreaKind"] = AreaKind
+DAVE_ADDITIONAL_RUNTIME_MODULES["ClaimManagement"] = ClaimManagement
+DAVE_ADDITIONAL_RUNTIME_MODULES["VisualOutlineType"] = VisualOutlineType
 
 
 # Register the documentation
 #
 cdir = Path(dirname(__file__))
-filename = cdir / './resources/node_prop_info.csv'
+filename = cdir / "./resources/node_prop_info.csv"
 from DAVE.settings import DAVE_NODEPROP_INFO, NodePropertyInfo
 
 if filename.exists():
-
     types = DAVE_ADDITIONAL_RUNTIME_MODULES.copy()
-    types['tuple'] = tuple
-    types['int'] = int
-    types['float'] = float
-    types['bool'] = bool
-    types['str'] = str
-    types['dict'] = type(dict)
-    types['array'] = type(np.array)
+    types["tuple"] = tuple
+    types["int"] = int
+    types["float"] = float
+    types["bool"] = bool
+    types["str"] = str
+    types["dict"] = type(dict)
+    types["array"] = type(np.array)
 
     btypes = dict()
-    btypes['True'] = True
-    btypes['False'] = False
-    btypes['true'] = True
-    btypes['false'] = False
+    btypes["True"] = True
+    btypes["False"] = False
+    btypes["true"] = True
+    btypes["false"] = False
 
-
-    with open(filename, newline='') as csvfile:
+    with open(filename, newline="") as csvfile:
         prop_reader = csv.reader(csvfile)
         header = prop_reader.__next__()  # skip the header
         for row in prop_reader:
@@ -183,20 +180,22 @@ if filename.exists():
             prop_name = row[1]
             val_type = types[row[2]]
 
-            info = NodePropertyInfo(node_class=cls,
-                                    property_name=row[1],
-                                    property_type=val_type,
-                                    doc_short=row[3],
-                                    units=row[4],
-                                    remarks=row[5],
-                                    is_settable=btypes[row[6]],
-                                    is_single_settable=btypes[row[7]],
-                                    is_single_numeric=btypes[row[8]],
-                                    doc_long=row[9])
+            info = NodePropertyInfo(
+                node_class=cls,
+                property_name=row[1],
+                property_type=val_type,
+                doc_short=row[3],
+                units=row[4],
+                remarks=row[5],
+                is_settable=btypes[row[6]],
+                is_single_settable=btypes[row[7]],
+                is_single_numeric=btypes[row[8]],
+                doc_long=row[9],
+            )
 
             if cls not in DAVE_NODEPROP_INFO:
                 DAVE_NODEPROP_INFO[cls] = dict()
-            DAVE_NODEPROP_INFO[cls][prop_name]=info
+            DAVE_NODEPROP_INFO[cls][prop_name] = info
 
 else:
-    print(f'Could not register node property info because {filename} does not exist')
+    print(f"Could not register node property info because {filename} does not exist")
