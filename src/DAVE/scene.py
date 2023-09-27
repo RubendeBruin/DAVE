@@ -3697,13 +3697,33 @@ class Scene:
                     if n.color is not None:
                         code.append(f"s['{n.name}'].color = {n.color}")
 
-            code.append("\n# Solved state of managed DOFs nodes")
+
+            # Solved state of managed DOFs nodes
+
             _modes = ("x", "y", "z", "rx", "ry", "rz")
+            _dofs = []
             for n in self.nodes_of_type(Frame):
-                d = [*n.position, *n.rotation]
-                for i, f in enumerate(n.fixed):
-                    if f is False:  # free dof
-                        code.append(f"s['{n.name}'].{_modes[i]} = {d[i]}")
+                if n.manager is not None:
+                    d = [*n.position, *n.rotation]
+                    for i, f in enumerate(n.fixed):
+                        if f is False:  # free dof
+                            _dofs.append((n.name, _modes[i], d[i]))
+                            # code.append(f"s['{n.name}'].{_modes[i]} = {d[i]}")
+            if _dofs:
+                code.append("\n# Solved state of managed DOFs nodes")
+                code.append("# wrapped in try/except because some nodes or dofs may not be present anymore (eg changed components)")
+                code.append("solved_dofs = [")
+                for dof in _dofs:
+                    code.append(f"    ('{dof[0]}', '{dof[1]}', {dof[2]}),")
+                code.append("]")
+                code.append("for dof in solved_dofs:")
+                code.append("    try:")
+                code.append("       setattr(s[dof[0]],dof[1],dof[2])")
+                code.append("    except:")
+                code.append("       pass")
+                code.append("")
+
+
 
             # Optional Reports
             if self.reports:

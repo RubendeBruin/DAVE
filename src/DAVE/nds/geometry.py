@@ -956,53 +956,71 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
 
         return True
 
+    def _export_frame_property_code(self) -> str:
+        # position
+        code = ''
+
+        if self._scene._export_code_with_solved_function:
+
+            # export solved numbers using the "solved" function with full decimal precision
+            # export fixed numbers using 6 decimals
+
+            # position
+
+
+            if self.fixed[0]:
+                code += "\n           position=({:.6g},".format(self.position[0])
+            else:
+                code += "\n           position=(solved({}),".format(self.position[0])
+            if self.fixed[1]:
+                code += "\n                     {:.6g},".format(self.position[1])
+            else:
+                code += "\n                     solved({:}),".format(self.position[1])
+            if self.fixed[2]:
+                code += "\n                     {:.6g}),".format(self.position[2])
+            else:
+                code += "\n                     solved({:})),".format(self.position[2])
+
+            # rotation
+            if self.fixed[3]:
+                code += "\n           rotation=({:.6g},".format(self.rotation[0])
+            else:
+                code += "\n           rotation=(solved({:.6g}),".format(self.rotation[0])
+            if self.fixed[4]:
+                code += "\n                     {:.6g},".format(self.rotation[1])
+            else:
+                code += "\n                     solved({:.6g}),".format(self.rotation[1])
+            if self.fixed[5]:
+                code += "\n                     {:.6g}),".format(self.rotation[2])
+            else:
+                code += "\n                     solved({:.6g})),".format(self.rotation[2])
+
+        else:
+            code += "\n           position=({}, {}, {}),".format(*self.position)
+            code += "\n           rotation=({}, {}, {}),".format(*self.rotation)
+
+        if np.any(self.inertia_radii):
+            code += "\n           inertia_radii = ({}, {}, {}),".format(
+                *self.inertia_radii
+            )
+
+        code += "\n           fixed =({}, {}, {}, {}, {}, {}),".format(
+            *self.fixed
+        )
+
+
+
+        return code
+
     def give_python_code(self):
         code = "# code for {}".format(self.name)
         code += "\ns.new_frame(name='{}',".format(self.name)
         if self.parent_for_export:
             code += "\n           parent='{}',".format(self.parent_for_export.name)
 
-        # position
+        code += self._export_frame_property_code()
 
-        if self.fixed[0] or not self._scene._export_code_with_solved_function:
-            code += "\n           position=({:.6g},".format(self.position[0])
-        else:
-            code += "\n           position=(solved({:.6g}),".format(self.position[0])
-        if self.fixed[1] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {:.6g},".format(self.position[1])
-        else:
-            code += "\n                     solved({:.6g}),".format(self.position[1])
-        if self.fixed[2] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {:.6g}),".format(self.position[2])
-        else:
-            code += "\n                     solved({:.6g})),".format(self.position[2])
-
-        # rotation
-
-        if self.fixed[3] or not self._scene._export_code_with_solved_function:
-            code += "\n           rotation=({:.6g},".format(self.rotation[0])
-        else:
-            code += "\n           rotation=(solved({:.6g}),".format(self.rotation[0])
-        if self.fixed[4] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {:.6g},".format(self.rotation[1])
-        else:
-            code += "\n                     solved({:.6g}),".format(self.rotation[1])
-        if self.fixed[5] or not self._scene._export_code_with_solved_function:
-            code += "\n                     {:.6g}),".format(self.rotation[2])
-        else:
-            code += "\n                     solved({:.6g})),".format(self.rotation[2])
-
-        # inertia and radii of gyration
-        if self.inertia > 0:
-            code += "\n                     inertia = {:.6g},".format(self.inertia)
-
-        if np.any(self.inertia_radii > 0):
-            code += "\n                     inertia_radii = ({:.6g}, {:.6g}, {:.6g}),".format(
-                *self.inertia_radii
-            )
-
-        # fixeties
-        code += "\n           fixed =({}, {}, {}, {}, {}, {}) )".format(*self.fixed)
+        code += "\n            )"
 
         code += self.add_footprint_python_code()
 

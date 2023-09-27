@@ -14,5 +14,23 @@ def test_copy_in_equilibruim():
     s.solve_statics()
     assert s.verify_equilibrium()
 
+    print(s['Box'].z)
+
+    s.print_python_code()
+
     s2 = s.copy()
     assert s2.verify_equilibrium()
+
+def test_copy_in_equilibruim_nosolved():
+    s = box_model()
+    s.solve_statics()
+    assert s.verify_equilibrium()
+
+    print(s["Box"].z)
+
+    s._export_code_with_solved_function = False
+    s.print_python_code()
+
+    s2 = s.copy()
+    assert s2.verify_equilibrium()
+

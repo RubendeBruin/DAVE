@@ -80,9 +80,21 @@ def test_duplicate_node():
 
 def test_duplicate_branch():
     s = give_model()
-    s.duplicate_branch(s['f1'])
 
-    s.print_node_tree()
+    """
+        The numbered names of the nodes depend on the order in which they are created.
+    
+        So this check only works the nodes are not numbered sequentially.
+    
+    """
+
+
+    for node in s._nodes:
+        node.name = node.name + '_'
+
+    s.duplicate_branch(s['f1_'])
+
+
     """
    f1 [Frame]
      |-> f2 [Frame]
@@ -93,28 +105,35 @@ def test_duplicate_branch():
     f3 [Frame]
     c1 [Cable]
     f5 [Frame]
-     |-> p3 [Point]
-     |    |-> Circle2 [Circle]
      |-> f4 [Frame]
      |    |-> Visual2 [Visual]
      |    |-> p4 [Point]
+     |-> p3 [Point]
+     |    |-> Circle2 [Circle]     
     c2 [Cable]
     """
 
     def assert_parent(a,b):
         assert s[a].parent == s[b]
 
-    assert_parent('f2','f1')
-    assert_parent('p2','f2')
-    assert_parent('Visual','f2')
-    assert_parent('p1','f1')
-    assert_parent('Circle','p1')
+    print('\n===================================')
+    s.print_node_tree()
+    print("\n===================================")
+    #
+    assert_parent('f2_','f1_')
+    assert_parent('p2_','f2_')
+    assert_parent('Visual_','f2_')
+    assert_parent('p1_','f1_')
+    assert_parent('Circle_','p1_')
 
-    assert_parent('f4','f5')
-    assert_parent('p4','f5')
-    assert_parent('Visual2','f4')
-    assert_parent('p3','f4')
-    assert_parent('Circle2','p4')
+    # the copies are post-fixed with '2'
+    assert_parent('f2_2','f1_2')
+    assert_parent('p2_2','f2_2')
+    assert_parent('Visual_2','f2_2')
+    assert_parent('p1_2','f1_2')
+    assert_parent('Circle_2','p1_2')
+
+
 
 def test_duplicate_sub_branch_f2():
     s = give_model()
