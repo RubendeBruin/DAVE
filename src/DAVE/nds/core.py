@@ -182,7 +182,6 @@ class RigidBody(Frame):
         code += self._export_frame_property_code()
         code += "\n                )"  # end of new_rigidbody
 
-
         code += self.add_footprint_python_code()
 
         return code
@@ -1552,7 +1551,7 @@ class Cable(NodeCoreConnected):
 
     @property
     def _isloop(self):
-        if len(self.connections)<2:
+        if len(self.connections) < 2:
             return False
         return self.connections[0] == self.connections[-1]
 
@@ -1626,15 +1625,13 @@ class Cable(NodeCoreConnected):
         self._max_winding_angle = list(max_winding_angles)
         self._update_pois()
 
-
     def _get_advanced_settings_dialog_settings(self):
         # Function to tell the dialog what is editable
         # returns: (endAFr, endAMaxWind, endBFr, endBMaxWind, is_grommet_in_line_mode)
         if self._isloop:
-            return  True, True, False, True, False
+            return True, True, False, True, False
         else:
             return False, True, False, True, False
-
 
     @property
     def friction_forces(self) -> tuple[float]:
@@ -1645,9 +1642,21 @@ class Cable(NodeCoreConnected):
     def calculated_friction_factor(self) -> float or None:
         """The friction factor that was left for DAVE to calculate [-], only applicable to loops"""
         if self._isloop:
-            return self._vfNode.calculated_unknonw_friction_factor
+            return self._vfNode.calculated_unknown_friction_factor
         else:
             return None
+
+    @property
+    def friction_factors_as_calculated(self):
+        """The friction factors as calculated by DAVE [-], only applicable to loops"""
+        if self._isloop:
+            fr = list(self.friction)
+            fr[
+                self._vfNode.unkonwn_friction_index
+            ] = self._vfNode.calculated_unknown_friction_factor
+            return tuple(fr)
+        else:
+            return self.friction
 
     @property
     def segment_end_tensions(self) -> tuple[tuple[float]]:
@@ -1761,7 +1770,6 @@ class Cable(NodeCoreConnected):
                         f"before is {nodes[i].name} and after is {nodes[i+2].name}"
                     )
 
-
         was_loop = self._isloop
 
         self._pois.clear()
@@ -1779,7 +1787,6 @@ class Cable(NodeCoreConnected):
             # pop the first friction factor
             self._friction.pop(0)
             self._vfNode.unkonwn_friction_index = -1
-
 
         self._update_pois()
 
@@ -1884,8 +1891,6 @@ class Cable(NodeCoreConnected):
 
         self.length = stretched_length * self.EA / (target_tension + self.EA)
 
-
-
     def update(self):
         """Update the cable internals"""
         self._vfNode.update()
@@ -1928,7 +1933,6 @@ class Cable(NodeCoreConnected):
 
         # if self.friction_factor >0:
         #     code.append(f"s['{self.name}'].friction_factor = {self.friction_factor}")
-
 
         if np.any([_ != 999 for _ in self._max_winding_angle]):
             code.append(
