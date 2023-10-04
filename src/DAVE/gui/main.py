@@ -64,6 +64,7 @@ import subprocess
 from copy import deepcopy
 import logging
 
+from DAVE.gui.autosave import DaveAutoSave
 from DAVE.gui.dialog_blender import ExportToBlenderDialog
 from DAVE.gui.dialog_export_package import ExportAsPackageDialog
 from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter, EscKeyPressFilter
@@ -86,7 +87,7 @@ from DAVE.gui.widget_tags import WidgetTags
 
 import DAVE.auto_download
 
-from PySide6.QtCore import Qt, QMimeData
+from PySide6.QtCore import Qt, QMimeData, QTimer
 from PySide6.QtCore import QSettings
 from PySide6.QtGui import QIcon, QPixmap, QFont, QFontMetricsF, QCursor, QAction
 from PySide6.QtWidgets import (
@@ -758,7 +759,14 @@ class Gui:
 
         self.MainWindow.setMinimumWidth(1400)
 
-        if isinstance(filename, str):
+        #
+
+
+        open_autosave = self.autosave_startup()
+
+        if open_autosave:
+            self.open_file(open_autosave)
+        elif isinstance(filename, str):
             self.open_file(filename)
 
         if splash:
@@ -770,6 +778,44 @@ class Gui:
             self.ui.pbUpdate.setVisible(False)
             self.ui.pbCopyViewCode.setVisible(False)
             self.app.exec()
+
+    def autosave_startup(self) -> str:
+        # check for autosave files
+        filename = None
+        autosave_files = DaveAutoSave.scan()
+        if autosave_files:
+            autosave_file = autosave_files[-1]
+            autosave_file = autosave_file.absolute()
+            print(f"Autosave file found: {autosave_file}")
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText(
+                f"An autosave file was found:\n{autosave_file}\n\nDo you want to open it?"
+            )
+            msg.setWindowTitle("Autosave file found")
+            msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            retval = msg.exec()
+            if retval == QMessageBox.Yes:
+                filename = autosave_file
+            else:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Warning)
+                msg.setText(f"Do you want to open the autosave folder (for example to manually delete the file if you do no longer need it)?")
+                msg.setWindowTitle("Open autosave folder?")
+                msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                retval = msg.exec_()
+                if retval == QMessageBox.Yes:
+                    DaveAutoSave.open_folder()
+
+        self._autosave = DaveAutoSave()
+
+        # create a new autosave file
+        self._autosave = DaveAutoSave()
+        self._autosavetimer = QTimer()
+        self._autosavetimer.timeout.connect(self._autosave_write)
+        self._autosavetimer.start(1000 * vfc.AUTOSAVE_INTERVAL_S)
+
+        return filename
 
     def menu_export_DAVE_package(self, *args):
         d = ExportAsPackageDialog()
@@ -1316,6 +1362,23 @@ class Gui:
 
     # =================================================== end of animation functions ==================
 
+    def _autosave_write(self):
+
+        try:
+            code = '# DAVE autosave file\n'
+            code += f'# for: {self.modelfilename}\n#\n'
+
+            curdir = self.scene.current_directory
+            if curdir is not None:
+                code += 's.current_directory = r"{}"\n'.format(curdir)
+
+            code += self.scene.give_python_code()
+            self._autosave.write(code)
+            self.give_feedback("Autosaved to {}".format(self._autosave.autosave_file))
+        except Exception as e:
+            self.show_exception(f"Could not save autosave file because {e}")
+
+
     # ==== undo functions ====
 
     def undo(self):
@@ -1420,9 +1483,14 @@ class Gui:
         """This is the on-close for the Application"""
 
         self.visual.shutdown_qt()
+
+        print('removing autosave files')
+        self._autosave.cleanup()
+
         print(
             "-- closing the gui : these were the actions you performed while the gui was open --"
         )
+
         print(self.give_clean_history())
 
     def measured_in_viewport(self, distance):

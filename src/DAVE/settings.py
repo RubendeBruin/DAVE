@@ -77,6 +77,12 @@ default_user_dir = home / "DAVE_models"
 if not default_user_dir.exists():
     mkdir(default_user_dir)
 
+autosave_dir = default_user_dir / ".autosave"
+if not autosave_dir.exists():
+    mkdir(autosave_dir)
+
+AUTOSAVE_INTERVAL_S = 10
+
 
 # get the package directory
 cdir = Path(dirname(__file__))

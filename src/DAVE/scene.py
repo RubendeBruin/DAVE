@@ -13,6 +13,7 @@ from graphlib import TopologicalSorter
 from os.path import isdir, isfile
 from os import mkdir
 from shutil import copy
+import re
 
 from time import sleep
 from typing import Tuple, List
@@ -704,6 +705,10 @@ class Scene:
 
         # get docs for type of Node and all classes it inherits from
         anchestors = type(node).mro()
+
+        # strip [] from property_name
+        if "[" in property_name:
+            property_name = re.sub(r"\[.*?\]", "", property_name)
 
         docs = None
 
@@ -3697,7 +3702,6 @@ class Scene:
                     if n.color is not None:
                         code.append(f"s['{n.name}'].color = {n.color}")
 
-
             # Solved state of managed DOFs nodes
 
             _modes = ("x", "y", "z", "rx", "ry", "rz")
@@ -3711,7 +3715,9 @@ class Scene:
                             # code.append(f"s['{n.name}'].{_modes[i]} = {d[i]}")
             if _dofs:
                 code.append("\n# Solved state of managed DOFs nodes")
-                code.append("# wrapped in try/except because some nodes or dofs may not be present anymore (eg changed components)")
+                code.append(
+                    "# wrapped in try/except because some nodes or dofs may not be present anymore (eg changed components)"
+                )
                 code.append("solved_dofs = [")
                 for dof in _dofs:
                     code.append(f"    ('{dof[0]}', '{dof[1]}', {dof[2]}),")
@@ -3722,8 +3728,6 @@ class Scene:
                 code.append("    except:")
                 code.append("       pass")
                 code.append("")
-
-
 
             # Optional Reports
             if self.reports:

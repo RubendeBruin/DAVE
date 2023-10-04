@@ -1571,8 +1571,8 @@ class Cable(NodeCoreConnected):
         """Friction factors at the connections [-]"""
         return tuple(self._friction)
 
+    # note: not managed because it is technically a DOF (and we need it in rigging variations)
     @friction.setter
-    @node_setter_manageable
     @node_setter_observable
     def friction(self, friction):
         if isinstance(friction, (float, int)):
