@@ -81,7 +81,7 @@ autosave_dir = default_user_dir / ".autosave"
 if not autosave_dir.exists():
     mkdir(autosave_dir)
 
-AUTOSAVE_INTERVAL_S = 10
+AUTOSAVE_INTERVAL_S = 60  # save every 60 seconds
 
 
 # get the package directory
