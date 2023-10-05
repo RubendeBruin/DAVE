@@ -11,7 +11,6 @@ import numpy as np
 from numpy.testing import assert_allclose
 
 from DAVE import *
-from DAVEcore import estimate_taut_catenary
 
 
 

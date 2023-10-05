@@ -314,6 +314,29 @@ class Force(NodeCoreConnected, HasParentCore):
         a = self.moment
         self.moment = (a[0], a[1], var)
 
+    @property
+    def is_global(self):
+        """True if the force and moment are expressed in the global axis system. False if they are expressed in the local axis system, aka followers [-]"""
+        return self._vfNode.is_global
+
+    @is_global.setter
+    def is_global(self, value):
+        assertBool(value, "is_global")
+        self._vfNode.is_global = value
+
+    @property
+    def global_force(self):
+        """The force in the global axis system [kN,kN,kN]"""
+        self._vfNode.update()
+        return self._vfNode.global_force
+
+    @property
+    def global_moment(self):
+        """The moment in the global axis system [kNm,kNm,kNm]"""
+        self._vfNode.update()
+        return self._vfNode.global_moment
+
+
     def give_python_code(self):
         code = "# code for {}".format(self.name)
 
@@ -321,6 +344,10 @@ class Force(NodeCoreConnected, HasParentCore):
 
         code += "\ns.new_force(name='{}',".format(self.name)
         code += "\n            parent='{}',".format(self.parent_for_export.name)
+
+        if not self.is_global:
+            code += "\n            local=True,"
+
         code += "\n            force=({:.6g}, {:.6g}, {:.6g}),".format(*self.force)
         code += "\n            moment=({:.6g}, {:.6g}, {:.6g}) )".format(*self.moment)
         return code

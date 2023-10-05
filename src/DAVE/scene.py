@@ -2711,12 +2711,13 @@ class Scene:
 
         return new_node
 
-    def new_force(self, name, parent=None, force=None, moment=None) -> Force:
+    def new_force(self, name, parent=None, local=False, force=None, moment=None) -> Force:
         """Creates a new *force* node and adds it to the scene.
 
         Args:
             name: Name for the node, should be unique
             parent: name of the parent of the node [Poi]
+            local: optional, if True the force is applied in the local coordinate system of the parent
             force: optional, global force on the node (x,y,z)
             moment: optional, global force on the node (x,y,z)
 
@@ -2737,6 +2738,8 @@ class Scene:
         if moment is not None:
             assert3f(moment, "Moment ")
 
+        assertBool(local, "Local property")
+
         # then create
         new_node = Force(self, name)
 
@@ -2747,6 +2750,8 @@ class Scene:
             new_node.force = force
         if moment is not None:
             new_node.moment = moment
+
+        new_node.local = local
 
         # self._nodes.append(new_node)
         return new_node

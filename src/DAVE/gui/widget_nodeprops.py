@@ -1524,6 +1524,8 @@ class EditForce(AbstractNodeEditorWithParent):
         ui.doubleSpinBox_5.valueChanged.connect(self.generate_code)
         ui.doubleSpinBox_6.valueChanged.connect(self.generate_code)
 
+        ui.cbDefinition.currentIndexChanged.connect(self.generate_code)  # index 0 --> global, index 1 --> local
+
     def post_update_event(self):
 
         self.ui.widgetParent.fill()
@@ -1535,6 +1537,7 @@ class EditForce(AbstractNodeEditorWithParent):
             self.ui.doubleSpinBox_4,
             self.ui.doubleSpinBox_5,
             self.ui.doubleSpinBox_6,
+            self.ui.cbDefinition
         ]
 
         for widget in widgets:
@@ -1546,6 +1549,9 @@ class EditForce(AbstractNodeEditorWithParent):
         svinf(self.ui.doubleSpinBox_4, self.node.moment[0])
         svinf(self.ui.doubleSpinBox_5, self.node.moment[1])
         svinf(self.ui.doubleSpinBox_6, self.node.moment[2])
+
+        if not self.ui.cbDefinition.hasFocus():
+            self.ui.cbDefinition.setCurrentIndex(0 if self.node.is_global else 1)
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -1570,10 +1576,15 @@ class EditForce(AbstractNodeEditorWithParent):
             )
         )
 
+        new_force_is_global = self.ui.cbDefinition.currentIndex() == 0
+
         if not np.all(new_force == self.node.force):
             code += element + ".force = ({}, {}, {})".format(*new_force)
         if not np.all(new_moment == self.node.moment):
             code += element + ".moment = ({}, {}, {})".format(*new_moment)
+
+        if not (new_force_is_global == self.node.is_global):
+            code += element + ".is_global = {}".format(new_force_is_global)
 
         self.run_code(code)
 

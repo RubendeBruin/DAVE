@@ -902,11 +902,11 @@ class VisualActor:
             # check is the arrows are still what they should be
             if not np.all(
                 self.actors["main"]._force
-                == viewport._scaled_force_vector(self.node.force)
+                == viewport._scaled_force_vector(self.node.global_force)
             ):
                 viewport.screen.remove(self.actors["main"])
 
-                endpoint = viewport._scaled_force_vector(self.node.force)
+                endpoint = viewport._scaled_force_vector(self.node.global_force)
 
                 p = vtkArrowActor(
                     startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
@@ -921,12 +921,12 @@ class VisualActor:
             # check is the arrows are still what they should be
             if not np.all(
                 np.array(self.actors["moment1"]._moment)
-                == viewport._scaled_force_vector(self.node.moment)
+                == viewport._scaled_force_vector(self.node.global_moment)
             ):
                 viewport.screen.remove(self.actors["moment1"])
                 viewport.screen.remove(self.actors["moment2"])
 
-                endpoint = viewport._scaled_force_vector(self.node.moment)
+                endpoint = viewport._scaled_force_vector(self.node.global_moment)
                 p = vtkArrowActor(
                     startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
                 )
@@ -1970,7 +1970,7 @@ class Viewport:
                 actors["main"] = p
 
             if isinstance(N, vf.Force):
-                endpoint = self._scaled_force_vector(N.force)
+                endpoint = self._scaled_force_vector(N.global_force)
                 p = vtkArrowActor(
                     startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
                 )
@@ -1980,7 +1980,7 @@ class Viewport:
 
                 actors["main"] = p
 
-                endpoint = self._scaled_force_vector(N.moment)
+                endpoint = self._scaled_force_vector(N.global_moment)
                 p = vtkArrowActor(
                     startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
                 )

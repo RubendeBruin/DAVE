@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'widget_force.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.0
+## Created by: Qt User Interface Compiler version 6.5.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QFormLayout, QFrame,
-    QHBoxLayout, QLabel, QSizePolicy, QSpacerItem,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QDoubleSpinBox, QFormLayout,
+    QFrame, QGridLayout, QHBoxLayout, QLabel,
+    QSizePolicy, QSpacerItem, QWidget)
 
 from DAVE.gui.helpers.qnodepicker import QNodePicker
 
@@ -25,42 +25,37 @@ class Ui_widget_force(object):
     def setupUi(self, widget_force):
         if not widget_force.objectName():
             widget_force.setObjectName(u"widget_force")
-        widget_force.resize(315, 288)
+        widget_force.resize(366, 337)
         widget_force.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
-        self.verticalLayout = QVBoxLayout(widget_force)
-        self.verticalLayout.setObjectName(u"verticalLayout")
-        self.widget = QWidget(widget_force)
-        self.widget.setObjectName(u"widget")
-        self.horizontalLayout = QHBoxLayout(self.widget)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.label_10 = QLabel(self.widget)
-        self.label_10.setObjectName(u"label_10")
+        self.gridLayout = QGridLayout(widget_force)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.label_8 = QLabel(widget_force)
+        self.label_8.setObjectName(u"label_8")
         sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label_10.sizePolicy().hasHeightForWidth())
-        self.label_10.setSizePolicy(sizePolicy)
+        sizePolicy.setHeightForWidth(self.label_8.sizePolicy().hasHeightForWidth())
+        self.label_8.setSizePolicy(sizePolicy)
 
-        self.horizontalLayout.addWidget(self.label_10)
+        self.gridLayout.addWidget(self.label_8, 1, 0, 1, 1)
 
-        self.widgetParent = QNodePicker(self.widget)
-        self.widgetParent.setObjectName(u"widgetParent")
-        sizePolicy1 = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Preferred)
+        self.cbDefinition = QComboBox(widget_force)
+        self.cbDefinition.addItem("")
+        self.cbDefinition.addItem("")
+        self.cbDefinition.setObjectName(u"cbDefinition")
+        sizePolicy1 = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.widgetParent.sizePolicy().hasHeightForWidth())
-        self.widgetParent.setSizePolicy(sizePolicy1)
+        sizePolicy1.setHeightForWidth(self.cbDefinition.sizePolicy().hasHeightForWidth())
+        self.cbDefinition.setSizePolicy(sizePolicy1)
 
-        self.horizontalLayout.addWidget(self.widgetParent)
-
-
-        self.verticalLayout.addWidget(self.widget)
+        self.gridLayout.addWidget(self.cbDefinition, 1, 1, 1, 1)
 
         self.label_7 = QLabel(widget_force)
         self.label_7.setObjectName(u"label_7")
         self.label_7.setWordWrap(True)
 
-        self.verticalLayout.addWidget(self.label_7)
+        self.gridLayout.addWidget(self.label_7, 2, 0, 1, 1)
 
         self.frame = QFrame(widget_force)
         self.frame.setObjectName(u"frame")
@@ -73,6 +68,7 @@ class Ui_widget_force(object):
         self.frame.setFrameShadow(QFrame.Raised)
         self.formLayout = QFormLayout(self.frame)
         self.formLayout.setObjectName(u"formLayout")
+        self.formLayout.setContentsMargins(0, 0, 0, -1)
         self.label = QLabel(self.frame)
         self.label.setObjectName(u"label")
 
@@ -119,13 +115,13 @@ class Ui_widget_force(object):
         self.formLayout.setWidget(2, QFormLayout.FieldRole, self.doubleSpinBox_3)
 
 
-        self.verticalLayout.addWidget(self.frame)
+        self.gridLayout.addWidget(self.frame, 3, 0, 1, 2)
 
         self.label_9 = QLabel(widget_force)
         self.label_9.setObjectName(u"label_9")
         self.label_9.setWordWrap(True)
 
-        self.verticalLayout.addWidget(self.label_9)
+        self.gridLayout.addWidget(self.label_9, 4, 0, 1, 1)
 
         self.frame_2 = QFrame(widget_force)
         self.frame_2.setObjectName(u"frame_2")
@@ -135,6 +131,7 @@ class Ui_widget_force(object):
         self.frame_2.setFrameShadow(QFrame.Raised)
         self.formLayout_2 = QFormLayout(self.frame_2)
         self.formLayout_2.setObjectName(u"formLayout_2")
+        self.formLayout_2.setContentsMargins(0, 0, 0, -1)
         self.doubleSpinBox_5 = QDoubleSpinBox(self.frame_2)
         self.doubleSpinBox_5.setObjectName(u"doubleSpinBox_5")
         sizePolicy2.setHeightForWidth(self.doubleSpinBox_5.sizePolicy().hasHeightForWidth())
@@ -181,17 +178,36 @@ class Ui_widget_force(object):
         self.formLayout_2.setWidget(1, QFormLayout.FieldRole, self.doubleSpinBox_4)
 
 
-        self.verticalLayout.addWidget(self.frame_2)
-
-        self.label_8 = QLabel(widget_force)
-        self.label_8.setObjectName(u"label_8")
-        self.label_8.setWordWrap(True)
-
-        self.verticalLayout.addWidget(self.label_8)
+        self.gridLayout.addWidget(self.frame_2, 5, 0, 1, 2)
 
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        self.verticalLayout.addItem(self.verticalSpacer)
+        self.gridLayout.addItem(self.verticalSpacer, 6, 1, 1, 1)
+
+        self.widget = QWidget(widget_force)
+        self.widget.setObjectName(u"widget")
+        self.horizontalLayout = QHBoxLayout(self.widget)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.horizontalLayout.setContentsMargins(0, -1, 0, -1)
+        self.label_10 = QLabel(self.widget)
+        self.label_10.setObjectName(u"label_10")
+        sizePolicy.setHeightForWidth(self.label_10.sizePolicy().hasHeightForWidth())
+        self.label_10.setSizePolicy(sizePolicy)
+
+        self.horizontalLayout.addWidget(self.label_10)
+
+        self.widgetParent = QNodePicker(self.widget)
+        self.widgetParent.setObjectName(u"widgetParent")
+        sizePolicy3 = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Preferred)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.widgetParent.sizePolicy().hasHeightForWidth())
+        self.widgetParent.setSizePolicy(sizePolicy3)
+
+        self.horizontalLayout.addWidget(self.widgetParent)
+
+
+        self.gridLayout.addWidget(self.widget, 0, 0, 1, 2)
 
         QWidget.setTabOrder(self.doubleSpinBox_1, self.doubleSpinBox_2)
         QWidget.setTabOrder(self.doubleSpinBox_2, self.doubleSpinBox_3)
@@ -206,7 +222,10 @@ class Ui_widget_force(object):
 
     def retranslateUi(self, widget_force):
         widget_force.setWindowTitle(QCoreApplication.translate("widget_force", u"Form", None))
-        self.label_10.setText(QCoreApplication.translate("widget_force", u"Parent", None))
+        self.label_8.setText(QCoreApplication.translate("widget_force", u"Definition", None))
+        self.cbDefinition.setItemText(0, QCoreApplication.translate("widget_force", u"Global (Fixed directions)", None))
+        self.cbDefinition.setItemText(1, QCoreApplication.translate("widget_force", u"Local (Follower)", None))
+
         self.label_7.setText(QCoreApplication.translate("widget_force", u"<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Force</span></p></body></html>", None))
         self.label.setText(QCoreApplication.translate("widget_force", u"X", None))
         self.label_2.setText(QCoreApplication.translate("widget_force", u"Y", None))
@@ -215,6 +234,6 @@ class Ui_widget_force(object):
         self.label_5.setText(QCoreApplication.translate("widget_force", u"Y", None))
         self.label_6.setText(QCoreApplication.translate("widget_force", u"Z", None))
         self.label_4.setText(QCoreApplication.translate("widget_force", u"X", None))
-        self.label_8.setText(QCoreApplication.translate("widget_force", u"<html><head/><body><p>Force components are defined in global axis.</p></body></html>", None))
+        self.label_10.setText(QCoreApplication.translate("widget_force", u"Parent", None))
     # retranslateUi
 
