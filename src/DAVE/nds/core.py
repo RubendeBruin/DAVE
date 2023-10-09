@@ -1618,6 +1618,14 @@ class Cable(NodeCoreConnected):
                 list(friction).count(None) == 1
             ), "When defining friction for a loop, exactly of the frictions should be 'None'. The friction at that last connection is calculated from the other frictions."
 
+            # the None friction shall not be on a roundbar
+            index = friction.index(None)
+            connection = self.connections[index]
+            if isinstance(connection, Circle):
+                if connection.is_roundbar:
+                    raise ValueError(f"Defining the unknown friction for '{self.name}' to be on connection '{connection.name}' which is a round-bar. This would become invalid if the round-bar disconnected and is thus not allowed.")
+
+
         self._friction = list(friction)
 
         if self._isloop:
