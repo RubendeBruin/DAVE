@@ -17,6 +17,7 @@ def scene_1():
 
 def test_roundbar_active_1():
     s,c = scene_1()
+
     c.update()
 
     assert len(c.friction) == 1

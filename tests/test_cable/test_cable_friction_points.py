@@ -2,6 +2,18 @@ from numpy.testing import assert_allclose
 
 from DAVE import *
 
+def test_friction_over_one_point():
+    s = Scene()
+    p1 = s.new_point('p1', position=(-10, 0, 0))
+    p2 = s.new_point('p2', position=(0, 5, 0))
+    p3 = s.new_point('p3', position=(10, 0, 0))
+
+    c = s.new_cable(connections=['p1', 'p2', 'p3'], name='cable', EA=122345, friction=[0.1], length=20)
+
+    s._save_coredump()
+
+    assert_allclose(c.segment_mean_tensions, [14869.796095, 14014.613876], atol=1)  # DAVE result, not checked
+
 def test_friction_cable_over_point():
     s = Scene()
     f = s.new_rigidbody('f', position=(0, 0, 0), fixed = (True, True, False, True, True, True), mass = 32)
@@ -11,6 +23,8 @@ def test_friction_cable_over_point():
     s.new_point('p2', position=(0, 0, 0), parent=f)
 
     c = s.new_cable(connections = ['p1', 'hook', 'p2'], name='cable', EA = 122345, friction=[0.1], length=7)
+
+    s._save_coredump()
 
     s.solve_statics()
 
@@ -121,6 +135,8 @@ def test_friction_grommet_over_points():
 
     c = s.new_cable(connections=['p1', 'hook', 'p1'], name='cable', EA=122345, friction=[None, 0.05], length=7)
 
+    s._save_coredump()
+
     s.update()
 
     normal_force = -hook.fz
@@ -167,3 +183,84 @@ def test_friction_grommet_over_points_solver():
 
     #
 
+def test_friction_over_three_point_loop_test_calcualted_friction_factor():
+    """
+    Note: the friction factors do NOT add up to zero because the tension at each
+    of the points is different.
+
+    We check that, if the friction is small enough, the sum approaches zero.
+    """
+
+
+    s = Scene()
+    p1 = s.new_point('p1', position=(-10, 0, 0))
+    p3 = s.new_point('p2', position=(0, 0, math.sqrt(20**2 - 10**2)))
+    p2 = s.new_point('p3', position=(10, 0, 0))
+
+    c = s.new_cable(connections=['p1', 'p2', 'p3', 'p1'], name='cable', EA=122345, friction=[0.0001, None, 0.0001], length=20)
+
+    assert_allclose(c.calculated_friction_factor, -0.0002, atol=1e-2)
+
+def test_friction_over_three_point_loop_test_frictions_sum_to_zero():
+    s = Scene()
+    p1 = s.new_point("p1", position=(-10, 0, 0))
+    p3 = s.new_point("p2", position=(0, 0, math.sqrt(20**2 - 10**2)))
+    p2 = s.new_point("p3", position=(10, 0, 0))
+
+    c = s.new_cable(
+        connections=["p1", "p2", "p3", "p1"],
+        name="cable",
+        EA=122345,
+        friction=[0.1, None, 0.1],
+        length=20,
+    )
+
+    frictions = [(0.1, None, 0.1),
+                 (0.1, None, -0.1),
+                 (0.1, 0.1, None),
+                 (None, -.1, 0.1)]
+
+    for friction in frictions:
+
+        c.friction = friction
+        c.update()
+
+        assert np.max(c.friction_forces) > 0
+        assert np.min(c.friction_forces) < 0
+        assert np.sum(c.friction_forces) == 0
+
+def test_friction_over_three_point_loop():
+    """
+    Equal sides:
+
+            p2
+
+        p1      p3
+
+
+    Returns:
+
+    """
+
+    s = Scene()
+    p1 = s.new_point("p1", position=(-10, 0, 0))
+    p3 = s.new_point("p2", position=(0, 0, math.sqrt(20**2 - 10**2)))
+    p2 = s.new_point("p3", position=(10, 0, 0))
+
+    c = s.new_cable(
+        connections=["p1", "p2", "p3", "p1"],
+        name="cable",
+        EA=122345,
+        friction=[0.1, None, 0.1],
+        length=20,
+        diameter=0.4
+    )
+
+    # s._save_coredump()
+
+    expected = [214476.438238, 280272.071291, 245176.988292]
+    assert_allclose (c.segment_mean_tensions, expected, atol=1e-3)
+    #
+    #
+    # from DAVE.gui import Gui
+    # Gui(s)

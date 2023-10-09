@@ -43,7 +43,7 @@ def test_cable_segment_length_redistribution():
 
 def test_cable_segment_length_redistribution_loop():
     assert False, "Does not converge - experimental feature"
-    do_test_cable_segment_length_redistribution(loop=True)
+    # do_test_cable_segment_length_redistribution(loop=True)
 
 
 

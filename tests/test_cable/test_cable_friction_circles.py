@@ -275,6 +275,8 @@ def test_friction_grommet_over_circles():
 
     c = s.new_cable(connections=['p1', 'hook', 'p1'], name='cable', EA=122345, friction=[None, 0.05], length=7)
 
+    # s._save_coredump()
+
     s.update()
 
     normal_force = -hook_point.fz
@@ -446,3 +448,39 @@ def test_demo_270deg():
     tensions = c.segment_mean_tensions
     assert_allclose(tensions[0], s.g * mass, atol=1e-5)
     assert_allclose(tensions[1], s.g * mass * factor, atol=1e-5)
+
+
+def test_friction_over_three_circle_loop():
+    """Equal sides:
+
+            c2
+
+        c1      c3
+
+
+    Returns:
+
+    """
+
+    s = Scene()
+    p1 = s.new_point("p1", position=(-10, 0, 0))
+    p3 = s.new_point("p2", position=(0, 0, math.sqrt(20**2 - 10**2)))
+    p2 = s.new_point("p3", position=(10, 0, 0))
+
+    c1 = s.new_circle("c1", radius=1, parent="p1", axis=(0,1,0))
+    c2 = s.new_circle("c2", radius=1, parent="p2", axis=(0,1,0))
+    c3 = s.new_circle("c3", radius=1, parent="p3", axis=(0,1,0))
+
+    c = s.new_cable(
+        connections=["c1", "c2", "c3", "c1"],
+        name="cable",
+        EA=122345,
+        friction=[0.1, None, 0.1],
+        length=20,
+        diameter=0.4
+    )
+
+    s._save_coredump()
+
+    expected = [254963.727468, 333184.395387, 291461.721985]
+    assert_allclose(c.segment_mean_tensions, expected, atol=1e-6)
