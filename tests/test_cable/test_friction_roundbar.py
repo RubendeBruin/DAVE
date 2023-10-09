@@ -44,13 +44,5 @@ def test_roundbar_in_loop_continuous_tension():
 def test_roundbar_in_loop_set_friction_on_roundbar_to_None():
     s,c = model()
 
-    c.friction = (0.1, None, 0.1)
-
     with pytest.raises(ValueError):
         c.friction = (0.1, None, 0.1)
-
-
-
-    #
-    # from DAVE.gui import Gui
-    # Gui(s)
