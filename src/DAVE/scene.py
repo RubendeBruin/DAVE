@@ -2670,48 +2670,56 @@ class Scene:
         # then create
 
         new_node = Cable(self, name)
-        if length is not None:
-            new_node.length = length
-        new_node.EA = EA
 
-        new_node.diameter = diameter
+        try:
+            if length is not None:
+                new_node.length = length
+            new_node.EA = EA
 
-        new_node.connections = pois
+            new_node.diameter = diameter
 
-        if friction is not None:
-            new_node.friction = friction
+            new_node.connections = pois
 
-        if reversed is not None:
-            new_node.reversed = reversed
+            if friction is not None:
+                new_node.friction = friction
 
-        # and add to the scene
-        # self._nodes.append(new_node)
+            if reversed is not None:
+                new_node.reversed = reversed
 
-        if length is None:
-            new_node.length = 1e-8
-            self._vfc.state_update()
+            # and add to the scene
+            # self._nodes.append(new_node)
 
-            new_length = new_node.stretch + 1e-8
+            if length is None:
+                new_node.length = 1e-8
+                self._vfc.state_update()
 
-            if new_length > 0:
-                new_node.length = new_length
-            else:
-                # is is possible that all nodes are at the same location which means the total length becomes 0
-                self.delete(new_node.name)
-                raise ValueError(
-                    "No lengh has been supplied and all connection points are at the same location - unable to determine a non-zero default length. Please supply a length"
-                )
+                new_length = new_node.stretch + 1e-8
 
-        if mass is not None:
-            mass_per_length = mass / new_node.length
+                if new_length > 0:
+                    new_node.length = new_length
+                else:
+                    # is is possible that all nodes are at the same location which means the total length becomes 0
+                    raise ValueError(
+                        "No lengh has been supplied and all connection points are at the same location - unable to determine a non-zero default length. Please supply a length"
+                    )
 
-        new_node.mass_per_length = mass_per_length
+            if mass is not None:
+                mass_per_length = mass / new_node.length
 
-        new_node.update()
+            new_node.mass_per_length = mass_per_length
+
+            new_node.update()
+
+        except Exception as E:
+            # remove created node
+            self.delete(new_node.name)
+            raise E
 
         return new_node
 
-    def new_force(self, name, parent=None, local=False, force=None, moment=None) -> Force:
+    def new_force(
+        self, name, parent=None, local=False, force=None, moment=None
+    ) -> Force:
         """Creates a new *force* node and adds it to the scene.
 
         Args:

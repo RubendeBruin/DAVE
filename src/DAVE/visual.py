@@ -448,7 +448,6 @@ class VisualActor:
             else:
                 mapper.ScalarVisibilityOff()
 
-
         if self._is_selected:
             new_painter_settings = dict()
             for k, value in node_painter_settings.items():
@@ -636,10 +635,19 @@ class VisualActor:
             t.Identity()
 
             # scale to flat disk
-            thickness = 1 if self.node.is_roundbar else 0.1
+            thickness = (
+                (self.node.draw_stop - self.node.draw_start) / 2
+                if self.node.is_roundbar
+                else 0.1
+            )
+
+            if self.node.is_roundbar:
+                move = (self.node.draw_start + self.node.draw_stop) / 2
+                t.Translate(0, 0, move)
+
             t.Scale(self.node.radius, self.node.radius, thickness)
 
-            # rotate z-axis (length axis is cylinder) is direction of axis
+            # rotate z-axis (length axis of cylinder) is direction of axis
             axis = self.node.axis / np.linalg.norm(self.node.axis)
             z = (0, 0, 1)
             rot_axis = np.cross(z, axis)
@@ -675,8 +683,10 @@ class VisualActor:
             points, tensions = self.node.get_points_and_tensions_for_visual()
 
             if self.node._render_as_tube:
-                self.info['mapper'].SetInputData(create_tube_data(points, self.node.diameter, colors=tensions ))
-                self.info['mapper'].Modified()
+                self.info["mapper"].SetInputData(
+                    create_tube_data(points, self.node.diameter, colors=tensions)
+                )
+                self.info["mapper"].Modified()
 
             else:
                 if len(points) == 0:  # not yet created

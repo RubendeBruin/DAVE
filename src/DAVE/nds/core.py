@@ -336,7 +336,6 @@ class Force(NodeCoreConnected, HasParentCore):
         self._vfNode.update()
         return self._vfNode.global_moment
 
-
     def give_python_code(self):
         code = "# code for {}".format(self.name)
 
@@ -1623,8 +1622,9 @@ class Cable(NodeCoreConnected):
             connection = self.connections[index]
             if isinstance(connection, Circle):
                 if connection.is_roundbar:
-                    raise ValueError(f"Defining the unknown friction for '{self.name}' to be on connection '{connection.name}' which is a round-bar. This would become invalid if the round-bar disconnected and is thus not allowed.")
-
+                    raise ValueError(
+                        f"Defining the unknown friction for '{self.name}' to be on connection '{connection.name}' which is a round-bar. This would become invalid if the round-bar disconnected and is thus not allowed."
+                    )
 
         self._friction = list(friction)
 
@@ -1632,6 +1632,11 @@ class Cable(NodeCoreConnected):
             self._vfNode.unkonwn_friction_index = self._friction.index(None)
 
         self._update_pois()
+
+    @property
+    def angles_at_connections(self):
+        """Change in cable direction at each of the connections [deg]"""
+        return tuple(np.rad2deg(self._vfNode.angles_at_connections))
 
     @property
     def max_winding_angles(self) -> tuple[float]:

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>315</width>
+    <width>323</width>
     <height>813</height>
    </rect>
   </property>
@@ -182,6 +182,71 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="cbIsRoundBar">
+     <property name="text">
+      <string>Is a round-bar</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="rbWidget" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>show visual between</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QDoubleSpinBox" name="sbStart">
+        <property name="decimals">
+         <number>3</number>
+        </property>
+        <property name="minimum">
+         <double>-999999.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>999999.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>-1.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_5">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>and</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QDoubleSpinBox" name="sbStop">
+        <property name="decimals">
+         <number>3</number>
+        </property>
+        <property name="minimum">
+         <double>-999999.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>999999.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>1.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="label_8">
      <property name="text">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Axis direction is defined in parent axis system.&lt;/p&gt;&lt;p&gt;Wire runs over the circle in positive direction (apply right hand rule on axis direction).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -215,9 +280,13 @@
   </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>sbRadius</tabstop>
   <tabstop>sbAX</tabstop>
   <tabstop>sbAY</tabstop>
   <tabstop>sbAZ</tabstop>
+  <tabstop>cbIsRoundBar</tabstop>
+  <tabstop>sbStart</tabstop>
+  <tabstop>sbStop</tabstop>
  </tabstops>
  <resources/>
  <connections/>

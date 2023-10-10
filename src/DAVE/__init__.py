@@ -18,3 +18,11 @@ finally:
 from . import auto_download
 from .scene import *
 from .nodes import *
+
+
+# convenience function for showing the gui
+def gui(scene=None):
+    print("loading gui")
+    from .gui import Gui
+
+    Gui(scene)

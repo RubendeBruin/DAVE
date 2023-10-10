@@ -12,6 +12,7 @@ from .trimesh import TriMeshSource
 from ..settings import VF_NAME_SPLIT
 from ..tools import *
 
+
 class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
     """
     Frame
@@ -31,10 +32,10 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
 
     # _valid_parent_types = [Frame, type(None)]  # defined later in this file
 
-    def __init__(self, scene, name : str):
-
-        assert getattr(self, "_vfNode",
-                       None) is None, "A Node is already present in the core, error in constructor sequence?"
+    def __init__(self, scene, name: str):
+        assert (
+            getattr(self, "_vfNode", None) is None
+        ), "A Node is already present in the core, error in constructor sequence?"
 
         assert scene.name_available(name), f"Name {name} is already taken in scene"
 
@@ -54,7 +55,6 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
             self._pointmasses.append(p)
         self._update_inertia()
 
-
     def depends_on(self):
         return HasParentCore.depends_on(self)
 
@@ -66,10 +66,11 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
             p.name = self.name + VF_NAME_SPLIT + "pointmass_{}".format(i)
 
     def _delete_vfc(self):
-
         for p in self._pointmasses:
             if p.name == "":
-                raise ValueError(f"Pointmass on node {self.name} has no name, can not be deleted - this is a bug")
+                raise ValueError(
+                    f"Pointmass on node {self.name} has no name, can not be deleted - this is a bug"
+                )
             self._scene._vfc.delete(p.name)
 
         super()._delete_vfc()
@@ -84,13 +85,12 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
     @node_setter_manageable
     @node_setter_observable
     def inertia(self, val):
-
         assert1f(val, "Inertia")
         self._inertia = val
         self._update_inertia()
 
     @property
-    def inertia_position(self) -> tuple[float,float,float]:
+    def inertia_position(self) -> tuple[float, float, float]:
         """The position of the center of inertia. Aka: "cog" [m,m,m] (local axis)
         - used only for dynamics
         - defined in local axis system"""
@@ -100,13 +100,12 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
     @node_setter_manageable
     @node_setter_observable
     def inertia_position(self, val):
-
         assert3f(val, "Inertia position")
         self._inertia_position = tuple(val)
         self._update_inertia()
 
     @property
-    def inertia_radii(self)-> tuple[float,float,float]:
+    def inertia_radii(self) -> tuple[float, float, float]:
         """The radii of gyration of the inertia [m,m,m] (local axis)
 
         Used to calculate the mass moments of inertia via
@@ -125,7 +124,6 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
     @node_setter_manageable
     @node_setter_observable
     def inertia_radii(self, val):
-
         assert3f_positive(val, "Inertia radii of gyration")
         self._inertia_radii = val
         self._update_inertia()
@@ -150,7 +148,7 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
             # print('{} at {} {} {}'.format(self._inertia/6, *p))
 
     @property
-    def fixed(self) -> tuple[bool,bool,bool,bool,bool,bool]:
+    def fixed(self) -> tuple[bool, bool, bool, bool, bool, bool]:
         """Determines which of the six degrees of freedom are fixed, if any. (x,y,z,rx,ry,rz).
         True means that that degree of freedom will not change when solving statics.
         False means a that is may be changed in order to find equilibrium.
@@ -165,7 +163,6 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
     @node_setter_manageable
     @node_setter_observable
     def fixed(self, var):
-
         if var == True:
             var = (True, True, True, True, True, True)
         if var == False:
@@ -173,11 +170,11 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
 
         self._vfNode.fixed = var
 
-    def _getfixed(self,imode):
+    def _getfixed(self, imode):
         return self.fixed[imode]
 
     def _setfixed(self, imode, value):
-        assert isinstance(value, bool), f'Fixed needs to be a boolean, not {value}'
+        assert isinstance(value, bool), f"Fixed needs to be a boolean, not {value}"
         fixed = list(self.fixed)
         fixed[imode] = value
         self.fixed = fixed
@@ -191,10 +188,10 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
     @node_setter_manageable
     @node_setter_observable
     def fixed_x(self, value):
-        self._setfixed(0,value)
+        self._setfixed(0, value)
 
     @property
-    def fixed_y(self)  -> bool:
+    def fixed_y(self) -> bool:
         """Restricts/allows movement in y direction of parent"""
         return self.fixed[1]
 
@@ -205,7 +202,7 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         self._setfixed(1, value)
 
     @property
-    def fixed_z(self)  -> bool:
+    def fixed_z(self) -> bool:
         """Restricts/allows movement in z direction of parent"""
         return self.fixed[2]
 
@@ -248,8 +245,6 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
     def fixed_rz(self, value):
         self._setfixed(5, value)
 
-
-
     @node_setter_manageable
     def set_free(self):
         """Sets .fixed to (False,False,False,False,False,False)"""
@@ -288,7 +283,6 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
     @x.setter
     @node_setter_observable
     def x(self, var):
-
         if self.fixed[0]:
             self._verify_change_allowed()
 
@@ -298,7 +292,6 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
     @y.setter
     @node_setter_observable
     def y(self, var):
-
         if self.fixed[1]:
             self._verify_change_allowed()
 
@@ -308,7 +301,6 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
     @z.setter
     @node_setter_observable
     def z(self, var):
-
         if self.fixed[2]:
             self._verify_change_allowed()
 
@@ -316,16 +308,16 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         self.position = (a[0], a[1], var)
 
     @property
-    def position(self) ->tuple[float,float,float]:
+    def position(self) -> tuple[float, float, float]:
         """Position of the axis (parent axis) [m,m,m]
 
-        These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)"""
+        These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)
+        """
         return self._vfNode.position
 
     @position.setter
     @node_setter_observable
     def position(self, var):
-
         current = self.position
 
         for i in range(3):
@@ -337,7 +329,7 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         self._scene._geometry_changed()
 
     @property
-    def rx(self)  -> float:
+    def rx(self) -> float:
         """The x-component of the rotation vector [degrees] (parent axis)"""
         return self.rotation[0]
 
@@ -354,7 +346,6 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
     @rx.setter
     @node_setter_observable
     def rx(self, var):
-
         if self.fixed[3]:
             self._verify_change_allowed()
 
@@ -364,7 +355,6 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
     @ry.setter
     @node_setter_observable
     def ry(self, var):
-
         if self.fixed[4]:
             self._verify_change_allowed()
 
@@ -374,7 +364,6 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
     @rz.setter
     @node_setter_observable
     def rz(self, var):
-
         if self.fixed[5]:
             self._verify_change_allowed()
 
@@ -382,23 +371,25 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         self.rotation = (a[0], a[1], var)
 
     @property
-    def rotation(self)  -> tuple[float,float,float]:
+    def rotation(self) -> tuple[float, float, float]:
         """Rotation of the frame about its origin as rotation-vector (rx,ry,rz) [degrees].
         Defined as a rotation about an axis where the direction of the axis is (rx,ry,rz) and the angle of rotation is |(rx,ry,rz| degrees.
-        These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)"""
-        return tuple([n.item() for n in np.rad2deg(self._vfNode.rotation)]) # convert to float
+        These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)
+        """
+        return tuple(
+            [n.item() for n in np.rad2deg(self._vfNode.rotation)]
+        )  # convert to float
 
     @rotation.setter
     @node_setter_observable
     def rotation(self, var):
-
         # convert to degrees
         assert3f(var, "Rotation")
 
         current = self.rotation
 
         for i in range(3):
-            if self.fixed[i+3] and abs(current[i] - var[i])%360 > 1e-6:
+            if self.fixed[i + 3] and abs(current[i] - var[i]) % 360 > 1e-6:
                 self._verify_change_allowed()
 
         var_rad = np.deg2rad(var)
@@ -408,7 +399,7 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
 
     # we need to over-ride the parent property to be able to call _geometry_changed afterwards
     @property
-    def parent(self) -> 'Frame' or None:
+    def parent(self) -> "Frame" or None:
         """Determines the parent of the axis. Should either be another axis or 'None'
 
         Other axis may be refered to by reference or by name (str). So the following are identical
@@ -438,8 +429,10 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         if val is not None:
             A = val.name
             B = self.name
-            if self._scene._vfc.element_A_depends_on_B(A,B):
-                raise ValueError(f'Setting {val.name} as parent of {self.name} would create a circular dependency, that is not allowed')
+            if self._scene._vfc.element_A_depends_on_B(A, B):
+                raise ValueError(
+                    f"Setting {val.name} as parent of {self.name} would create a circular dependency, that is not allowed"
+                )
 
         HasParentCore.parent.fset(self, val)
         self._scene._geometry_changed()
@@ -462,33 +455,29 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
     @gx.setter
     @node_setter_observable
     def gx(self, var):
-
         a = self.global_position
         self.global_position = (var, a[1], a[2])
 
     @gy.setter
     @node_setter_observable
     def gy(self, var):
-
         a = self.global_position
         self.global_position = (a[0], var, a[2])
 
     @gz.setter
     @node_setter_observable
     def gz(self, var):
-
         a = self.global_position
         self.global_position = (a[0], a[1], var)
 
     @property
-    def global_position(self)  -> tuple[float,float,float]:
+    def global_position(self) -> tuple[float, float, float]:
         """The global position of the origin of the axis system  [m,m,m] (global axis)"""
         return self._vfNode.global_position
 
     @global_position.setter
     @node_setter_observable
     def global_position(self, val):
-
         assert3f(val, "Global Position")
         if self.parent:
             self.position = self.parent.to_loc_position(val)
@@ -513,21 +502,18 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
     @grx.setter
     @node_setter_observable
     def grx(self, var):
-
         a = self.global_rotation
         self.global_rotation = (var, a[1], a[2])
 
     @gry.setter
     @node_setter_observable
     def gry(self, var):
-
         a = self.global_rotation
         self.global_rotation = (a[0], var, a[2])
 
     @grz.setter
     @node_setter_observable
     def grz(self, var):
-
         a = self.global_rotation
         self.global_rotation = (a[0], a[1], var)
 
@@ -567,8 +553,8 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         """
         angle = np.rad2deg(np.arcsin(self.tilt_x / 100))
 
-        if self.uz[2] < 0: # rotation beyond 90 or -90 degrees
-            if angle<0:
+        if self.uz[2] < 0:  # rotation beyond 90 or -90 degrees
+            if angle < 0:
                 angle = -180 - angle
             else:
                 angle = 180 - angle
@@ -622,14 +608,13 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         return np.mod(90 - self.heading, 360)
 
     @property
-    def global_rotation(self) -> tuple[float,float,float]:
+    def global_rotation(self) -> tuple[float, float, float]:
         """Rotation vector [deg,deg,deg] (global axis)"""
         return tuple(np.rad2deg(self._vfNode.global_rotation))
 
     @global_rotation.setter
     @node_setter_observable
     def global_rotation(self, val):
-
         assert3f(val, "Global Rotation")
         if self.parent:
             self.rotation = self.parent.to_loc_rotation(val)
@@ -637,16 +622,32 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
             self.rotation = val
 
     @property
-    def global_transform(self)->tuple[float,float,float,float,
-                                      float,float,float,float,
-                                      float, float, float, float,
-                                      float, float, float, float]  :
+    def global_transform(
+        self,
+    ) -> tuple[
+        float,
+        float,
+        float,
+        float,
+        float,
+        float,
+        float,
+        float,
+        float,
+        float,
+        float,
+        float,
+        float,
+        float,
+        float,
+        float,
+    ]:
         """Read-only: The global transform of the axis system [matrix]
         #NOGUI"""
         return self._vfNode.global_transform
 
     @property
-    def connection_force(self)->tuple[float,float,float,float,float,float]:
+    def connection_force(self) -> tuple[float, float, float, float, float, float]:
         """The forces and moments that this axis applies on its parent at the origin of this axis system. [kN, kN, kN, kNm, kNm, kNm] (Parent axis)
 
         If this axis would be connected to a point on its parent, and that point would be located at the location of the origin of this axis system
@@ -668,57 +669,57 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         return self._vfNode.connection_force
 
     @property
-    def connection_force_x(self)->float:
+    def connection_force_x(self) -> float:
         """The x-component of the connection-force vector [kN] (Parent axis)"""
         return self.connection_force[0]
 
     @property
-    def connection_force_y(self)->float:
+    def connection_force_y(self) -> float:
         """The y-component of the connection-force vector [kN] (Parent axis)"""
         return self.connection_force[1]
 
     @property
-    def connection_force_z(self)->float:
+    def connection_force_z(self) -> float:
         """The z-component of the connection-force vector [kN] (Parent axis)"""
         return self.connection_force[2]
 
     @property
-    def connection_moment_x(self)->float:
+    def connection_moment_x(self) -> float:
         """The mx-component of the connection-force vector [kNm] (Parent axis)"""
         return self.connection_force[3]
 
     @property
-    def connection_moment_y(self)->float:
+    def connection_moment_y(self) -> float:
         """The my-component of the connection-force vector [kNm] (Parent axis)"""
         return self.connection_force[4]
 
     @property
-    def connection_moment_z(self)->float:
+    def connection_moment_z(self) -> float:
         """The mx-component of the connection-force vector [kNm] (Parent axis)"""
         return self.connection_force[5]
 
     @property
-    def applied_force(self)->tuple[float,float,float]:
+    def applied_force(self) -> tuple[float, float, float]:
         """The force and moment that is applied on origin of this axis [kN, kN, kN, kNm, kNm, kNm] (Global axis)"""
         return self._vfNode.applied_force
 
     @property
-    def ux(self)->tuple[float,float,float]:
+    def ux(self) -> tuple[float, float, float]:
         """The unit x axis [m,m,m] (Global axis)"""
         return self.to_glob_direction((1, 0, 0))
 
     @property
-    def uy(self)->tuple[float,float,float]:
+    def uy(self) -> tuple[float, float, float]:
         """The unit y axis [m,m,m] (Global axis)"""
         return self.to_glob_direction((0, 1, 0))
 
     @property
-    def uz(self)->tuple[float,float,float]:
+    def uz(self) -> tuple[float, float, float]:
         """The unit z axis [m,m,m] (Global axis)"""
         return self.to_glob_direction((0, 0, 1))
 
     @property
-    def equilibrium_error(self)->tuple[float,float,float,float,float,float]:
+    def equilibrium_error(self) -> tuple[float, float, float, float, float, float]:
         """The remaining force and moment on this axis. Should be zero when in equilibrium [kN,kN,kN,kNm,kNm,kNm] (applied-force minus connection force, Parent axis)"""
         return self._vfNode.equilibrium_error
 
@@ -787,6 +788,7 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         lsm = self._vfNode.getBendingMomentDiagram(axis_system._vfNode)
 
         from DAVE import LoadShearMomentDiagram
+
         return LoadShearMomentDiagram(lsm)
 
     @node_setter_manageable
@@ -808,8 +810,7 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         self.global_position = glob_pos
         self.global_rotation = glob_rot
 
-    def _can_dissolve(self, allowed_managers = (None,)) -> tuple:
-
+    def _can_dissolve(self, allowed_managers=(None,)) -> tuple:
         # Frames can only be dissolved when they are fixed
         if not all(self.fixed):
             return False, "This node has degrees of freedom"
@@ -817,39 +818,46 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         # All nodes depending on this Frame need to be able to function
         # without it.
         # That is possible if they have this node as parent and that parent is this node.
-        for node_name in (self._scene.nodes_depending_on(self, recursive=False)):
+        for node_name in self._scene.nodes_depending_on(self, recursive=False):
             node = self._scene[node_name]
-            parent = getattr(node, "parent", -1)  # -1 is a dummy value, None is a valid parent
+            parent = getattr(
+                node, "parent", -1
+            )  # -1 is a dummy value, None is a valid parent
             if parent is not self:
                 return False, f"Node {node_name} can not function without this node."
 
             if node.manager not in allowed_managers:
-
                 # It could be that the manager itself has a parent property and changes the parent of the node when it is changed.
                 # this whole next part of code handles cases like that. One of the unit-checks that depends on this part of the
                 # code is the "test_dissolve_filled_standard_equipment" from the SuperElements test suite.
 
-                if getattr(node.manager, 'parent', None) == self:
+                if getattr(node.manager, "parent", None) == self:
                     # We're not sure that this will fail, but we can't be sure that it will succeed either.
                     # so let's check using a dummy
                     s = self._scene
-                    dummy = s.new_frame(s.available_name_like('dummy'))
+                    dummy = s.new_frame(s.available_name_like("dummy"))
 
                     if node.manager.manager is not None:
                         if node.manager.manager != self:
-                            return False, f"Node {node_name} on this node can not be moved to another parent because it is managed by {node.manager.name}."
+                            return (
+                                False,
+                                f"Node {node_name} on this node can not be moved to another parent because it is managed by {node.manager.name}.",
+                            )
 
                     old_manager = self._scene.current_manager
                     self._scene.current_manager = self
 
                     node.manager.parent = dummy
                     if node.parent == dummy:
-                        pass # ok
+                        pass  # ok
                     else:
-                        node.manager.parent = self # resTore
+                        node.manager.parent = self  # resTore
                         s.delete(dummy)
                         self._scene.current_manager = old_manager
-                        return False, f"Node {node_name} on this node can not be moved to another parent because it is managed by {node.manager.name}."
+                        return (
+                            False,
+                            f"Node {node_name} on this node can not be moved to another parent because it is managed by {node.manager.name}.",
+                        )
 
                     node.manager.parent = self  # resTore
                     s.delete(dummy)
@@ -859,11 +867,19 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
 
                 else:
                     # can not change the parent of this node
-                    return False, f"Node {node_name} on this node can not be moved to another parent because it is managed by {node.manager.name}."
+                    return (
+                        False,
+                        f"Node {node_name} on this node can not be moved to another parent because it is managed by {node.manager.name}.",
+                    )
 
-            none_parent_acceptable = getattr(node, '_None_parent_acceptable', True)
-            if self.parent is None and not none_parent_acceptable: # Trimesh based nodes do not accept None as parent
-                return False, f"Node {node_name} on this node needs to have a parent other than None."
+            none_parent_acceptable = getattr(node, "_None_parent_acceptable", True)
+            if (
+                self.parent is None and not none_parent_acceptable
+            ):  # Trimesh based nodes do not accept None as parent
+                return (
+                    False,
+                    f"Node {node_name} on this node needs to have a parent other than None.",
+                )
 
         return True, ""
 
@@ -876,13 +892,13 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         """
 
         work_done = False
-        msg = ''
+        msg = ""
 
         # Frames can only be dissolved when they are fixed
         if not all(self.fixed):
             msg = f"Node {self.name} has degrees of freedom and can therefore not be dissolved\n"
         else:
-            for node_name in (self._scene.nodes_depending_on(self, recursive=False)):
+            for node_name in self._scene.nodes_depending_on(self, recursive=False):
                 node = self._scene[node_name]
                 if node.manager is None:
                     if node.try_swap(self, self.parent):
@@ -897,7 +913,7 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         other_done, other_msg = super().dissolve_some()
 
         work_done = work_done or other_done
-        msg = '\n'.join([msg, other_msg]) if msg else other_msg
+        msg = "\n".join([msg, other_msg]) if msg else other_msg
 
         return work_done, msg
         #
@@ -926,7 +942,7 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
 
     def dissolve(self):
         work_done = True
-        msg = ''
+        msg = ""
 
         while work_done:
             work_done, msg = self.dissolve_some()
@@ -936,9 +952,11 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         if not self._scene.nodes_depending_on(self):
             self._scene.delete(self)
         else:
-            raise ValueError(f'Node {self.name} can not be dissolved because it still has dependants: {self._scene.nodes_depending_on(self)} , last message was: {msg}')
+            raise ValueError(
+                f"Node {self.name} can not be dissolved because it still has dependants: {self._scene.nodes_depending_on(self)} , last message was: {msg}"
+            )
 
-    def same_position_and_orientation(self, other, tol = 1e-9):
+    def same_position_and_orientation(self, other, tol=1e-9):
         """Compares the global position and rotation of this node with another node. Returns True if they are the same within the given tolerance."""
 
         if other is None:
@@ -958,15 +976,13 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
 
     def _export_frame_property_code(self) -> str:
         # position
-        code = ''
+        code = ""
 
         if self._scene._export_code_with_solved_function:
-
             # export solved numbers using the "solved" function with full decimal precision
             # export fixed numbers using 6 decimals
 
             # position
-
 
             if self.fixed[0]:
                 code += "\n           position=({:.6g},".format(self.position[0])
@@ -985,15 +1001,21 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
             if self.fixed[3]:
                 code += "\n           rotation=({:.6g},".format(self.rotation[0])
             else:
-                code += "\n           rotation=(solved({:.6g}),".format(self.rotation[0])
+                code += "\n           rotation=(solved({:.6g}),".format(
+                    self.rotation[0]
+                )
             if self.fixed[4]:
                 code += "\n                     {:.6g},".format(self.rotation[1])
             else:
-                code += "\n                     solved({:.6g}),".format(self.rotation[1])
+                code += "\n                     solved({:.6g}),".format(
+                    self.rotation[1]
+                )
             if self.fixed[5]:
                 code += "\n                     {:.6g}),".format(self.rotation[2])
             else:
-                code += "\n                     solved({:.6g})),".format(self.rotation[2])
+                code += "\n                     solved({:.6g})),".format(
+                    self.rotation[2]
+                )
 
         else:
             code += "\n           position=({}, {}, {}),".format(*self.position)
@@ -1004,11 +1026,7 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
                 *self.inertia_radii
             )
 
-        code += "\n           fixed =({}, {}, {}, {}, {}, {}),".format(
-            *self.fixed
-        )
-
-
+        code += "\n           fixed =({}, {}, {}, {}, {}, {}),".format(*self.fixed)
 
         return code
 
@@ -1027,7 +1045,10 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         return code
 
 
-Frame._valid_parent_types = (Frame, type(None)) # can only be exectuted after Frame class has been defined
+Frame._valid_parent_types = (
+    Frame,
+    type(None),
+)  # can only be exectuted after Frame class has been defined
 
 
 class Point(NodeCoreConnected, HasParentCore, HasFootprint):
@@ -1037,7 +1058,7 @@ class Point(NodeCoreConnected, HasParentCore, HasFootprint):
 
     # init parent and name are fully derived from NodeWithParent
     # _vfNode is a poi
-    def __init__(self, scene, name : str):
+    def __init__(self, scene, name: str):
         logging.info("Point.__init__")
         scene.assert_name_available(name)
 
@@ -1053,22 +1074,22 @@ class Point(NodeCoreConnected, HasParentCore, HasFootprint):
         return HasParentCore.depends_on(self)
 
     @property
-    def x(self)->float:
+    def x(self) -> float:
         """x component of local position [m] (parent axis)"""
         return self.position[0]
 
     @property
-    def y(self)->float:
+    def y(self) -> float:
         """y component of local position [m] (parent axis)"""
         return self.position[1]
 
     @property
-    def z(self)->float:
+    def z(self) -> float:
         """z component of local position [m] (parent axis)"""
         return self.position[2]
 
     @property
-    def applied_force(self)->tuple[float,float,float]:
+    def applied_force(self) -> tuple[float, float, float]:
         """Applied force [kN,kN,kN] (parent axis)"""
         force = self.applied_force_and_moment_global[:3]
         if self.parent:
@@ -1077,27 +1098,27 @@ class Point(NodeCoreConnected, HasParentCore, HasFootprint):
             return force
 
     @property
-    def force(self)->float:
+    def force(self) -> float:
         """total force magnitude as applied on the point [kN]"""
         return np.linalg.norm(self.applied_force)
 
     @property
-    def fx(self)->float:
+    def fx(self) -> float:
         """x component of applied force [kN] (parent axis)"""
         return self.applied_force[0]
 
     @property
-    def fy(self)->float:
+    def fy(self) -> float:
         """y component of applied force [kN] (parent axis)"""
         return self.applied_force[1]
 
     @property
-    def fz(self)->float:
+    def fz(self) -> float:
         """z component of applied force [kN] (parent axis)"""
         return self.applied_force[2]
 
     @property
-    def applied_moment(self)->tuple[float,float,float]:
+    def applied_moment(self) -> tuple[float, float, float]:
         """Applied moment [kNm,kNm,kNm] (parent axis)"""
         force = self.applied_force_and_moment_global[3:]
         if self.parent:
@@ -1106,22 +1127,22 @@ class Point(NodeCoreConnected, HasParentCore, HasFootprint):
             return force
 
     @property
-    def moment(self)->float:
+    def moment(self) -> float:
         """total moment magnitude as applied on the point [kNm]"""
         return np.linalg.norm(self.applied_moment)
 
     @property
-    def mx(self)->float:
+    def mx(self) -> float:
         """x component of applied moment [kNm] (parent axis)"""
         return self.applied_moment[0]
 
     @property
-    def my(self)->float:
+    def my(self) -> float:
         """y component of applied moment [kNm] (parent axis)"""
         return self.applied_moment[1]
 
     @property
-    def mz(self)->float:
+    def mz(self) -> float:
         """z component of applied moment [kNm] (parent axis)"""
         return self.applied_moment[2]
 
@@ -1129,7 +1150,6 @@ class Point(NodeCoreConnected, HasParentCore, HasFootprint):
     @node_setter_manageable
     @node_setter_observable
     def x(self, var):
-
         a = self.position
         self.position = (var, a[1], a[2])
 
@@ -1137,7 +1157,6 @@ class Point(NodeCoreConnected, HasParentCore, HasFootprint):
     @node_setter_manageable
     @node_setter_observable
     def y(self, var):
-
         a = self.position
         self.position = (a[0], var, a[2])
 
@@ -1146,13 +1165,12 @@ class Point(NodeCoreConnected, HasParentCore, HasFootprint):
     @node_setter_observable
     @node_setter_manageable
     def z(self, var):
-
         """z component of local position"""
         a = self.position
         self.position = (a[0], a[1], var)
 
     @property
-    def position(self)->tuple[float,float,float]:
+    def position(self) -> tuple[float, float, float]:
         """Local position [m,m,m] (parent axis)"""
         return self._vfNode.position
 
@@ -1160,27 +1178,28 @@ class Point(NodeCoreConnected, HasParentCore, HasFootprint):
     @node_setter_manageable
     @node_setter_observable
     def position(self, new_position):
-
         assert3f(new_position)
         self._vfNode.position = new_position
 
     @property
-    def applied_force_and_moment_global(self)->tuple[float,float,float,float,float,float]:
+    def applied_force_and_moment_global(
+        self,
+    ) -> tuple[float, float, float, float, float, float]:
         """Applied force and moment on this point [kN, kN, kN, kNm, kNm, kNm] (Global axis)"""
         return self._vfNode.applied_force
 
     @property
-    def gx(self)->float:
+    def gx(self) -> float:
         """x component of position [m] (global axis)"""
         return self.global_position[0]
 
     @property
-    def gy(self)->float:
+    def gy(self) -> float:
         """y component of position [m] (global axis)"""
         return self.global_position[1]
 
     @property
-    def gz(self)->float:
+    def gz(self) -> float:
         """z component of position [m] (global axis)"""
         return self.global_position[2]
 
@@ -1188,7 +1207,6 @@ class Point(NodeCoreConnected, HasParentCore, HasFootprint):
     @node_setter_manageable
     @node_setter_observable
     def gx(self, var):
-
         a = self.global_position
         self.global_position = (var, a[1], a[2])
 
@@ -1196,7 +1214,6 @@ class Point(NodeCoreConnected, HasParentCore, HasFootprint):
     @node_setter_manageable
     @node_setter_observable
     def gy(self, var):
-
         a = self.global_position
         self.global_position = (a[0], var, a[2])
 
@@ -1204,12 +1221,11 @@ class Point(NodeCoreConnected, HasParentCore, HasFootprint):
     @node_setter_manageable
     @node_setter_observable
     def gz(self, var):
-
         a = self.global_position
         self.global_position = (a[0], a[1], var)
 
     @property
-    def global_position(self)->tuple[float,float,float]:
+    def global_position(self) -> tuple[float, float, float]:
         """Global position [m,m,m] (global axis)"""
         return self._vfNode.global_position
 
@@ -1217,7 +1233,6 @@ class Point(NodeCoreConnected, HasParentCore, HasFootprint):
     @node_setter_manageable
     @node_setter_observable
     def global_position(self, val):
-
         assert3f(val, "Global Position")
         if self.parent:
             self.position = self.parent.to_loc_position(val)
@@ -1240,19 +1255,22 @@ class Point(NodeCoreConnected, HasParentCore, HasFootprint):
 
         return code
 
+
 class Circle(NodeCoreConnected, HasParentCore):
     """A Circle models a circle shape based on a diameter and an axis direction. Circles can be used by
     geometric contact nodes and cables/slings. For cables the direction of the axis determines the
     direction about which the cable runs over the sheave."""
 
-    _valid_parent_types = (Point, )
+    _valid_parent_types = (Point,)
 
     def __init__(self, scene, name):
-
         logging.info("Circle.__init__")
 
         scene._verify_name_available(name)
         self._vfNode = scene._vfc.new_circle(name)
+
+        self.draw_start = -1
+        self.draw_stop = 1
 
         super().__init__(scene=scene, name=name)
 
@@ -1260,7 +1278,7 @@ class Circle(NodeCoreConnected, HasParentCore):
         return HasParentCore.depends_on(self)
 
     @property
-    def axis(self) -> tuple[float,float,float]:
+    def axis(self) -> tuple[float, float, float]:
         """Direction of the sheave axis (parent axis system) [m,m,m]
 
         Note:
@@ -1275,20 +1293,19 @@ class Circle(NodeCoreConnected, HasParentCore):
         if l == 0:
             return ad
         else:
-            return (ad[0]/l, ad[1]/l, ad[2]/l)
+            return (ad[0] / l, ad[1] / l, ad[2] / l)
 
     @axis.setter
     @node_setter_manageable
     @node_setter_observable
     def axis(self, val):
-
         assert3f(val)
         if np.linalg.norm(val) == 0:
             raise ValueError("Axis can not be 0,0,0")
         self._vfNode.axis_direction = val
 
     @property
-    def radius(self)->float:
+    def radius(self) -> float:
         """Radius of the circle [m]"""
         return self._vfNode.radius
 
@@ -1310,16 +1327,22 @@ class Circle(NodeCoreConnected, HasParentCore):
 
     def give_python_code(self):
         code = "# code for {}".format(self.name)
-        code += "\ns.new_circle(name='{}',".format(self.name)
+        code += "\nc = s.new_circle(name='{}',".format(self.name)
         code += "\n            parent='{}',".format(self.parent_for_export.name)
         code += "\n            axis=({:.6g}, {:.6g}, {:.6g}),".format(*self.axis)
         if self.is_roundbar:
             code += "\n            roundbar=True,"
         code += "\n            radius={:.6g} )".format(self.radius)
+
+        if self.draw_start != -1:
+            code += f"\nc.draw_start = {self.draw_start}"
+        if self.draw_stop != 1:
+            code += f"\nc.draw_stop = {self.draw_stop}"
+
         return code
 
     @property
-    def global_position(self)->tuple[float,float,float]:
+    def global_position(self) -> tuple[float, float, float]:
         """Global position of the center of the sheave [m,m,m]
 
         Note: this is the same as the global position of the parent point.
@@ -1327,9 +1350,8 @@ class Circle(NodeCoreConnected, HasParentCore):
         return self.parent.global_position
 
     @property
-    def global_axis(self)->tuple[float,float,float]:
-        """Global axis direction [m,m,m]
-        """
+    def global_axis(self) -> tuple[float, float, float]:
+        """Global axis direction [m,m,m]"""
         if self.parent.parent is not None:
             return self.parent.parent.to_glob_direction(self.axis)
         else:
@@ -1337,7 +1359,6 @@ class Circle(NodeCoreConnected, HasParentCore):
 
     @global_axis.setter
     def global_axis(self, value):
-
         assert3f(value, "axis")
 
         if self.parent.parent is not None:
@@ -1345,15 +1366,13 @@ class Circle(NodeCoreConnected, HasParentCore):
         else:
             self.axis = value
 
-
     @property
-    def position(self)->tuple[float,float,float]:
+    def position(self) -> tuple[float, float, float]:
         """Local position of the center of the sheave [m,m,m] (parent axis).
 
         Note: this is the same as the local position of the parent point.
         """
         return self.parent.position
-
 
     @node_setter_manageable
     def change_parent_to(self, new_parent):
@@ -1367,10 +1386,13 @@ class Circle(NodeCoreConnected, HasParentCore):
         """
         glob_axis = self.global_axis
 
-        move = np.linalg.norm(np.array(self.global_position) - np.array(new_parent.global_position))
+        move = np.linalg.norm(
+            np.array(self.global_position) - np.array(new_parent.global_position)
+        )
         if move > 1e-7:
-            raise ValueError("Global position of new parent must be the same as the global position of the node")
+            raise ValueError(
+                "Global position of new parent must be the same as the global position of the node"
+            )
 
         self.parent = new_parent
         self.global_axis = glob_axis
-

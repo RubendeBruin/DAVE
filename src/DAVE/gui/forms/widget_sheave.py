@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'widget_sheave.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.0
+## Created by: Qt User Interface Compiler version 6.5.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QFormLayout, QFrame,
-    QHBoxLayout, QLabel, QSizePolicy, QSpacerItem,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QDoubleSpinBox, QFormLayout,
+    QFrame, QHBoxLayout, QLabel, QSizePolicy,
+    QSpacerItem, QVBoxLayout, QWidget)
 
 from DAVE.gui.helpers.qnodepicker import QNodePicker
 
@@ -25,7 +25,7 @@ class Ui_widget_sheave(object):
     def setupUi(self, widget_sheave):
         if not widget_sheave.objectName():
             widget_sheave.setObjectName(u"widget_sheave")
-        widget_sheave.resize(315, 813)
+        widget_sheave.resize(323, 813)
         widget_sheave.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
         self.verticalLayout = QVBoxLayout(widget_sheave)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -137,6 +137,48 @@ class Ui_widget_sheave(object):
 
         self.verticalLayout.addWidget(self.frame)
 
+        self.cbIsRoundBar = QCheckBox(widget_sheave)
+        self.cbIsRoundBar.setObjectName(u"cbIsRoundBar")
+
+        self.verticalLayout.addWidget(self.cbIsRoundBar)
+
+        self.rbWidget = QWidget(widget_sheave)
+        self.rbWidget.setObjectName(u"rbWidget")
+        self.horizontalLayout_2 = QHBoxLayout(self.rbWidget)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.label_4 = QLabel(self.rbWidget)
+        self.label_4.setObjectName(u"label_4")
+
+        self.horizontalLayout_2.addWidget(self.label_4)
+
+        self.sbStart = QDoubleSpinBox(self.rbWidget)
+        self.sbStart.setObjectName(u"sbStart")
+        self.sbStart.setDecimals(3)
+        self.sbStart.setMinimum(-999999.000000000000000)
+        self.sbStart.setMaximum(999999.000000000000000)
+        self.sbStart.setValue(-1.000000000000000)
+
+        self.horizontalLayout_2.addWidget(self.sbStart)
+
+        self.label_5 = QLabel(self.rbWidget)
+        self.label_5.setObjectName(u"label_5")
+        sizePolicy.setHeightForWidth(self.label_5.sizePolicy().hasHeightForWidth())
+        self.label_5.setSizePolicy(sizePolicy)
+
+        self.horizontalLayout_2.addWidget(self.label_5)
+
+        self.sbStop = QDoubleSpinBox(self.rbWidget)
+        self.sbStop.setObjectName(u"sbStop")
+        self.sbStop.setDecimals(3)
+        self.sbStop.setMinimum(-999999.000000000000000)
+        self.sbStop.setMaximum(999999.000000000000000)
+        self.sbStop.setValue(1.000000000000000)
+
+        self.horizontalLayout_2.addWidget(self.sbStop)
+
+
+        self.verticalLayout.addWidget(self.rbWidget)
+
         self.label_8 = QLabel(widget_sheave)
         self.label_8.setObjectName(u"label_8")
         self.label_8.setWordWrap(True)
@@ -147,8 +189,12 @@ class Ui_widget_sheave(object):
 
         self.verticalLayout.addItem(self.verticalSpacer)
 
+        QWidget.setTabOrder(self.sbRadius, self.sbAX)
         QWidget.setTabOrder(self.sbAX, self.sbAY)
         QWidget.setTabOrder(self.sbAY, self.sbAZ)
+        QWidget.setTabOrder(self.sbAZ, self.cbIsRoundBar)
+        QWidget.setTabOrder(self.cbIsRoundBar, self.sbStart)
+        QWidget.setTabOrder(self.sbStart, self.sbStop)
 
         self.retranslateUi(widget_sheave)
 
@@ -163,6 +209,9 @@ class Ui_widget_sheave(object):
         self.label.setText(QCoreApplication.translate("widget_sheave", u"X", None))
         self.label_2.setText(QCoreApplication.translate("widget_sheave", u"Y", None))
         self.label_3.setText(QCoreApplication.translate("widget_sheave", u"Z", None))
+        self.cbIsRoundBar.setText(QCoreApplication.translate("widget_sheave", u"Is a round-bar", None))
+        self.label_4.setText(QCoreApplication.translate("widget_sheave", u"show visual between", None))
+        self.label_5.setText(QCoreApplication.translate("widget_sheave", u"and", None))
         self.label_8.setText(QCoreApplication.translate("widget_sheave", u"<html><head/><body><p>Axis direction is defined in parent axis system.</p><p>Wire runs over the circle in positive direction (apply right hand rule on axis direction).</p></body></html>", None))
     # retranslateUi
 

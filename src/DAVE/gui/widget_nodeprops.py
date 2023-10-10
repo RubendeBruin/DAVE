@@ -30,24 +30,37 @@ import DAVE.gui.forms.widget_area
 import DAVE.gui.forms.widget_component
 import DAVE.gui.forms.widget_spmt
 import DAVE.gui.forms.widget_connections
-from DAVE.gui.helpers.nodelist_drag_drop_move import call_from_drop_Event, call_from_dragEnter_or_Move_Event
+from DAVE.gui.helpers.nodelist_drag_drop_move import (
+    call_from_drop_Event,
+    call_from_dragEnter_or_Move_Event,
+)
 from DAVE.gui.helpers.property_editor import PropertyEditorDialog
 
 from DAVE.visual import transform_from_node
-from DAVE.gui.helpers.my_qt_helpers import BlockSigs, update_combobox_items_with_completer, EnterKeyPressFilter, \
-    RightClickEventFilter
+from DAVE.gui.helpers.my_qt_helpers import (
+    BlockSigs,
+    update_combobox_items_with_completer,
+    EnterKeyPressFilter,
+    RightClickEventFilter,
+)
 import numpy as np
 
-from PySide6.QtWidgets import QListWidgetItem, QMessageBox, QDoubleSpinBox, QColorDialog, \
-    QPushButton, QSizePolicy, QCheckBox
+from PySide6.QtWidgets import (
+    QListWidgetItem,
+    QMessageBox,
+    QDoubleSpinBox,
+    QColorDialog,
+    QPushButton,
+    QSizePolicy,
+    QCheckBox,
+)
 from PySide6 import QtWidgets
 
-DAVE_GUI_NODE_EDITORS = dict() # Key: node-class, value: editor-class
+DAVE_GUI_NODE_EDITORS = dict()  # Key: node-class, value: editor-class
 
 
-
-def cbvinf(checkbox: QCheckBox, value: bool, do_block = True):
-    """Updates the value in the spinbox IF it does not have focus. Blocks signals during change if do_block is true (default)"""
+def cbvinf(checkbox: QCheckBox, value: bool, do_block=True):
+    """Updates the value in the checkbox IF it does not have focus. Blocks signals during change if do_block is true (default)"""
     if checkbox.hasFocus():
         return
 
@@ -60,7 +73,7 @@ def cbvinf(checkbox: QCheckBox, value: bool, do_block = True):
         checkbox.setChecked(value)
 
 
-def svinf(spinbox: QDoubleSpinBox, value: float, do_block = True):
+def svinf(spinbox: QDoubleSpinBox, value: float, do_block=True):
     """Updates the value in the spinbox IF it does not have focus. Blocks signals during change if do_block is true (default)"""
     if spinbox.hasFocus():
         return
@@ -73,39 +86,37 @@ def svinf(spinbox: QDoubleSpinBox, value: float, do_block = True):
     else:
         spinbox.setValue(value)
 
-def cvinf(combobox: QtWidgets.QComboBox,value : str):
+
+def cvinf(combobox: QtWidgets.QComboBox, value: str):
     """Updates the value in the combobox IF it does not have focus"""
     if combobox.hasFocus():
         return
     combobox.setCurrentText(value)
 
-def code_if_user_focus(node, control, ref, dec = 3):
-    """Returns the code to update property "ref" of node "node" with the value in the control if the control has the current focus
 
-
-    """
+def code_if_user_focus(node, control, ref, dec=3):
+    """Returns the code to update property "ref" of node "node" with the value in the control if the control has the current focus"""
 
     if not control.hasFocus():
         return ""
 
-    try: # try value
-        value = control.value() # for spinboxes and sliders
+    try:  # try value
+        value = control.value()  # for spinboxes and sliders
 
-        if isinstance(value, (int, float)): # it is a number?
+        if isinstance(value, (int, float)):  # it is a number?
             return code_if_changed_d(node, value, ref, dec=dec)
         else:
             raise ValueError("Not a number")
     except:
         pass
 
-    try: # try bool
+    try:  # try bool
         value = control.isChecked()
         return code_if_changed_b(node, value, ref)
     except:
         pass
 
-    raise ValueError('Can not get value from this control')
-
+    raise ValueError("Can not get value from this control")
 
 
 def code_if_changed_b(node, value, ref):
@@ -193,7 +204,6 @@ def code_if_changed_v3(node, value, ref, dec=3):
         or abs(value[1] - current[1]) > 10 ** (-dec)
         or abs(value[2] - current[2]) > 10 ** (-dec)
     ):
-
         return f"\ns['{node.name}'].{ref} = ({value[0]}, {value[1]},{value[2]})"
     else:
         return ""
@@ -254,7 +264,15 @@ class NodeEditor(ABC):
         """Creates the gui and connects signals"""
         pass
 
-    def connect(self, node, scene, run_code, guiEmitEvent,gui_solve_func,node_picker_register_func):
+    def connect(
+        self,
+        node,
+        scene,
+        run_code,
+        guiEmitEvent,
+        gui_solve_func,
+        node_picker_register_func,
+    ):
         self.node = node
         self.scene = scene
         self._run_code = run_code
@@ -271,7 +289,6 @@ class NodeEditor(ABC):
         return self._widget
 
     def run_code(self, code, event=None, sender=None):
-
         if code == "":
             return
 
@@ -294,7 +311,7 @@ class AbstractNodeEditorWithParent(NodeEditor):
     - if needed, override generate_parent_code
     """
 
-    nodetypes_for_parent = (DAVE.nodes.Frame)
+    nodetypes_for_parent = DAVE.nodes.Frame
     NoneAllowedAsParent = True
 
     def generate_parent_code(self):
@@ -302,7 +319,7 @@ class AbstractNodeEditorWithParent(NodeEditor):
         element = "\ns['{}']".format(self.node.name)
 
         new_parent = self.ui.widgetParent.value
-        if new_parent == '':
+        if new_parent == "":
             new_parent = None
         else:
             new_parent = self.scene[new_parent]
@@ -315,17 +332,31 @@ class AbstractNodeEditorWithParent(NodeEditor):
 
         self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
-    def connect(self, node, scene, run_code, guiEmitEvent,gui_solve_func,node_picker_register_func):
-
-        self.ui.widgetParent.initialize(scene=scene,
-                                        nodetypes=self.nodetypes_for_parent,
-                                        callback=self.generate_parent_code,
-                                        register_func=node_picker_register_func,
-                                        NoneAllowed=self.NoneAllowedAsParent,
-                                        node=node)
-        return super().connect(node, scene, run_code, guiEmitEvent, gui_solve_func, node_picker_register_func)
-
-
+    def connect(
+        self,
+        node,
+        scene,
+        run_code,
+        guiEmitEvent,
+        gui_solve_func,
+        node_picker_register_func,
+    ):
+        self.ui.widgetParent.initialize(
+            scene=scene,
+            nodetypes=self.nodetypes_for_parent,
+            callback=self.generate_parent_code,
+            register_func=node_picker_register_func,
+            NoneAllowed=self.NoneAllowedAsParent,
+            node=node,
+        )
+        return super().connect(
+            node,
+            scene,
+            run_code,
+            guiEmitEvent,
+            gui_solve_func,
+            node_picker_register_func,
+        )
 
 
 @Singleton
@@ -351,9 +382,7 @@ class EditNode(NodeEditor):
         self.rightclickfilter.callback = self.mouse_event_on_tbName
         self.ui.tbName.installEventFilter(self.rightclickfilter)
 
-
     def post_update_event(self):
-
         self.ui.tbName.blockSignals(True)
         self.ui.cbVisible.blockSignals(True)
 
@@ -364,10 +393,12 @@ class EditNode(NodeEditor):
         self.ui.cbVisible.blockSignals(False)
 
         if self.node.color is None:
-            self.ui.lbColor.setStyleSheet('')
-            self.ui.lbColor.setText('default')
+            self.ui.lbColor.setStyleSheet("")
+            self.ui.lbColor.setText("default")
         else:
-            self.ui.lbColor.setStyleSheet("background-color: rgb({}, {}, {});".format(*self.node.color))
+            self.ui.lbColor.setStyleSheet(
+                "background-color: rgb({}, {}, {});".format(*self.node.color)
+            )
             self.ui.lbColor.setText(str(self.node.color))
 
         self.name_changed()
@@ -379,7 +410,6 @@ class EditNode(NodeEditor):
             self.ui.lblInfo.setVisible(True)
         else:
             self.ui.lblInfo.setVisible(False)
-
 
     def nameChangedEnter(self):
         node = self.node
@@ -393,7 +423,6 @@ class EditNode(NodeEditor):
                 self.run_code(code, guiEventType.SELECTED_NODE_MODIFIED)
                 self.ui.lblInfo.setVisible(False)
 
-
     def visible_changed(self):
         node = self.node
         element = "\ns['{}']".format(node.name)
@@ -403,7 +432,6 @@ class EditNode(NodeEditor):
             self.run_code(code, guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def mouse_event_on_tbName(self, mouseEvent, **kwargs):
-
         if mouseEvent.button() == QtCore.Qt.MouseButton.RightButton:
             self.name_right_clicked(mouseEvent.pos())
             mouseEvent.setAccepted(True)
@@ -423,14 +451,12 @@ class EditNode(NodeEditor):
         menu.addAction("copy s['name']", copys)
         menu.exec_(globLoc)
 
-
     def color_clicked(self, mouseEvent, **kwargs):
-
         if mouseEvent.button() == QtCore.Qt.MouseButton.RightButton:
             code = f"s['{self.node.name}'].color = None"
             self.run_code(code, guiEventType.VIEWER_SETTINGS_UPDATE)
-            self.ui.lbColor.setStyleSheet('')
-            self.ui.lbColor.setText(str('default'))
+            self.ui.lbColor.setStyleSheet("")
+            self.ui.lbColor.setText(str("default"))
             return
 
         if self.node.color is not None:
@@ -442,15 +468,15 @@ class EditNode(NodeEditor):
         if result.isValid():
             code = f"s['{self.node.name}'].color = ({result.red()},{result.green()},{result.blue()})"
             self.run_code(code, guiEventType.VIEWER_SETTINGS_UPDATE)
-            self.ui.lbColor.setStyleSheet("background-color: rgb({}, {}, {});".format(*self.node.color))
+            self.ui.lbColor.setStyleSheet(
+                "background-color: rgb({}, {}, {});".format(*self.node.color)
+            )
             self.ui.lbColor.setText(str(self.node.color))
-
 
 
 @Singleton
 class EditAxis(AbstractNodeEditorWithParent):
-
-    nodetypes_for_parent = (DAVE.nodes.Frame)
+    nodetypes_for_parent = DAVE.nodes.Frame
     NoneAllowedAsParent = True
 
     def __init__(self):
@@ -479,27 +505,27 @@ class EditAxis(AbstractNodeEditorWithParent):
         self._widget = widget
 
     def toggle_fixes(self):
-        for cb in (self.ui.checkBox_1,
-                   self.ui.checkBox_2,
-                   self.ui.checkBox_3,
-                   self.ui.checkBox_4,
-                   self.ui.checkBox_5,
-                   self.ui.checkBox_6):
+        for cb in (
+            self.ui.checkBox_1,
+            self.ui.checkBox_2,
+            self.ui.checkBox_3,
+            self.ui.checkBox_4,
+            self.ui.checkBox_5,
+            self.ui.checkBox_6,
+        ):
             cb.blockSignals(True)
             cb.setChecked(not cb.isChecked())
             cb.blockSignals(False)
         self.check_fixities()
         self.generate_code()
 
-
     def post_update_event(self):
-
         self.ui.widgetParent.fill()
 
         if self.node.parent is not None:
             self.ui.widgetParent.setValue(self.node.parent.name)
         else:
-            self.ui.widgetParent.setValue('')
+            self.ui.widgetParent.setValue("")
 
         widgets = [
             self.ui.checkBox_1,
@@ -546,7 +572,7 @@ class EditAxis(AbstractNodeEditorWithParent):
         freeRY = not self.ui.checkBox_5.isChecked()
         freeRZ = not self.ui.checkBox_6.isChecked()
 
-        count = [freeRX,freeRY,freeRZ].count(True)
+        count = [freeRX, freeRY, freeRZ].count(True)
 
         # set all fine:
 
@@ -558,7 +584,7 @@ class EditAxis(AbstractNodeEditorWithParent):
         if count == 2:
             self.ui.lblRotationsWarning.setVisible(True)
 
-        if count==1 or count==2:
+        if count == 1 or count == 2:
             if not freeRX:
                 self.ui.doubleSpinBox_4.setValue(0)
                 self.ui.doubleSpinBox_4.setEnabled(False)
@@ -569,9 +595,7 @@ class EditAxis(AbstractNodeEditorWithParent):
                 self.ui.doubleSpinBox_6.setValue(0)
                 self.ui.doubleSpinBox_6.setEnabled(False)
 
-
     def generate_code(self):
-
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
@@ -600,8 +624,6 @@ class EditAxis(AbstractNodeEditorWithParent):
             )
         )
 
-
-
         if not np.all(round3d(new_position) == round3d(self.node.position)):
             code += element + ".position = ({}, {}, {})".format(*new_position)
 
@@ -616,8 +638,7 @@ class EditAxis(AbstractNodeEditorWithParent):
 
 @Singleton
 class EditVisual(AbstractNodeEditorWithParent):
-
-    nodetypes_for_parent = (DAVE.nodes.Frame)
+    nodetypes_for_parent = DAVE.nodes.Frame
     NoneAllowedAsParent = True
 
     def __init__(self):
@@ -649,18 +670,15 @@ class EditVisual(AbstractNodeEditorWithParent):
         # find the actor in the viewport and re-set its  va.actors["main"].loaded_obj property
 
         store = self.node.path
-        self.node.path = 'res: cube_with_bevel.obj'
+        self.node.path = "res: cube_with_bevel.obj"
         self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
         self.node.path = store
         self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
-        print('Visual refreshed')
-
-
+        print("Visual refreshed")
 
     def update_resource_list(self):
-
         stl = self.scene.get_resource_list("stl", include_subdirs=True)
         obj = self.scene.get_resource_list("obj", include_subdirs=True)
 
@@ -668,9 +686,7 @@ class EditVisual(AbstractNodeEditorWithParent):
 
         update_combobox_items_with_completer(self.ui.comboBox, names)
 
-
     def post_update_event(self):
-
         self.ui.widgetParent.fill()
 
         if not self.resources_loaded:
@@ -710,7 +726,6 @@ class EditVisual(AbstractNodeEditorWithParent):
             widget.blockSignals(False)
 
     def generate_code(self):
-
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
@@ -755,12 +770,10 @@ class EditVisual(AbstractNodeEditorWithParent):
 
 @Singleton
 class EditWaveInteraction(AbstractNodeEditorWithParent):
-
-    nodetypes_for_parent = (DAVE.nodes.Frame)
+    nodetypes_for_parent = DAVE.nodes.Frame
     NoneAllowedAsParent = False
 
     def __init__(self):
-
         widget = QtWidgets.QWidget()
         ui = DAVE.gui.forms.widget_waveinteraction.Ui_widget_waveinteraction()
         ui.setupUi(widget)
@@ -777,7 +790,6 @@ class EditWaveInteraction(AbstractNodeEditorWithParent):
         self.ui = ui
 
     def update_resource_list(self):
-
         dhyd = self.scene.get_resource_list("dhyd", include_subdirs=True)
         hyd = self.scene.get_resource_list("hyd", include_subdirs=True)
 
@@ -785,9 +797,7 @@ class EditWaveInteraction(AbstractNodeEditorWithParent):
 
         update_combobox_items_with_completer(self.ui.comboBox, names)
 
-
     def post_update_event(self):
-
         self.ui.widgetParent.fill()
 
         if not self.resources_loaded:
@@ -814,7 +824,6 @@ class EditWaveInteraction(AbstractNodeEditorWithParent):
             widget.blockSignals(False)
 
     def generate_code(self):
-
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
@@ -854,10 +863,9 @@ class EditComponent(NodeEditor):
         self.ui.pbReScan.clicked.connect(self.rescan)
         self.ui.pbEditExposedProperties.clicked.connect(self.edit_exposed)
 
-
     def rescan(self):
         self.update_resource_list()
-        
+
         text = (
             f"Rescan completed for files ending with {self.fileextension} in folders:"
         )
@@ -901,13 +909,14 @@ class EditComponent(NodeEditor):
         names = self.node.exposed_properties
         types = [self.node.get_exposed_type(name) for name in names]
 
-        pe = PropertyEditorDialog(prop_names = names,
-                             prop_types = types,
-                             getter_callback=getter,
-                             setter_callback=setter,
-                             parent=self.widget)
+        pe = PropertyEditorDialog(
+            prop_names=names,
+            prop_types=types,
+            getter_callback=getter,
+            setter_callback=setter,
+            parent=self.widget,
+        )
         pe.exec_()
-
 
     def generate_code(self):
         """Generate code to update the node, then run it"""
@@ -928,7 +937,6 @@ class EditComponent(NodeEditor):
 @Singleton
 class EditTank(NodeEditor):
     def __init__(self):
-
         widget = QtWidgets.QWidget()
         ui = DAVE.gui.forms.widget_tank.Ui_Form()
         ui.setupUi(widget)
@@ -944,7 +952,6 @@ class EditTank(NodeEditor):
         self.ui.cbUseOutsideDensity.toggled.connect(self.generate_code)
 
     def post_update_event(self):
-
         widgets = [
             self.ui.sbDenstiy,
             self.ui.sbVolume,
@@ -980,7 +987,6 @@ class EditTank(NodeEditor):
         self.ui.lbSounding.setText(f"{self.node.sounding:.3f} m")
 
     def generate_code(self):
-
         new_density = self.ui.sbDenstiy.value()
         new_permeability = self.ui.sbPermeability.value()
         new_volume = self.ui.sbVolume.value()
@@ -992,7 +998,6 @@ class EditTank(NodeEditor):
             new_density = -1
 
         def add(name, value, ref, dec=3):
-
             current = getattr(self.node, ref)
 
             if abs(value - current) > 10 ** (-dec):
@@ -1015,12 +1020,10 @@ class EditTank(NodeEditor):
 
 @Singleton
 class EditBuoyancyOrContactMesh(AbstractNodeEditorWithParent):
-
-    nodetypes_for_parent = (DAVE.nodes.Frame)
+    nodetypes_for_parent = DAVE.nodes.Frame
     NoneAllowedAsParent = False
 
     def __init__(self):
-
         widget = QtWidgets.QWidget()
         ui = DAVE.gui.forms.widget_visual.Ui_widget_axis()  # same as visual widget!
         ui.setupUi(widget)
@@ -1045,7 +1048,6 @@ class EditBuoyancyOrContactMesh(AbstractNodeEditorWithParent):
         self.resources_loaded = False
 
     def update_resource_list(self):
-
         stl = self.scene.get_resource_list("stl", include_subdirs=True)
         obj = self.scene.get_resource_list("obj", include_subdirs=True)
 
@@ -1053,13 +1055,11 @@ class EditBuoyancyOrContactMesh(AbstractNodeEditorWithParent):
 
         update_combobox_items_with_completer(self.ui.comboBox, names)
 
-
     def reload_file(self):
         self.node.trimesh._load_from_privates()
-        print('Mesh reloaded')
+        print("Mesh reloaded")
 
     def post_update_event(self):
-
         self.ui.widgetParent.fill()
 
         if not self.resources_loaded:
@@ -1102,7 +1102,6 @@ class EditBuoyancyOrContactMesh(AbstractNodeEditorWithParent):
             widget.blockSignals(False)
 
     def generate_code(self):
-
         # check if resource is valid, if not then do not reload
         # only fire if resource is valid
         resource = self.ui.comboBox.currentText()
@@ -1147,7 +1146,6 @@ class EditBuoyancyOrContactMesh(AbstractNodeEditorWithParent):
             or invert_normals != self.node.trimesh._invert_normals
             or self.node.trimesh._path != new_path
         ):
-
             if invert_normals:
                 code = (
                     element
@@ -1181,7 +1179,6 @@ class EditBody(NodeEditor):
         ui.doubleSpinBox_mass.valueChanged.connect(self.generate_code)
 
     def post_update_event(self):
-
         widgets = [
             self.ui.doubleSpinBox_1,
             self.ui.doubleSpinBox_2,
@@ -1224,12 +1221,10 @@ class EditBody(NodeEditor):
 
 @Singleton
 class EditPoi(AbstractNodeEditorWithParent):
-
-    nodetypes_for_parent = (DAVE.nodes.Frame)
+    nodetypes_for_parent = DAVE.nodes.Frame
     NoneAllowedAsParent = True
 
     def __init__(self):
-
         widget = QtWidgets.QWidget()
         ui = DAVE.gui.forms.widget_poi.Ui_Poi()
         ui.setupUi(widget)
@@ -1241,7 +1236,6 @@ class EditPoi(AbstractNodeEditorWithParent):
         ui.doubleSpinBox_3.valueChanged.connect(self.generate_code)
 
     def post_update_event(self):
-
         self.ui.widgetParent.fill()
 
         widgets = [
@@ -1261,7 +1255,6 @@ class EditPoi(AbstractNodeEditorWithParent):
             widget.blockSignals(False)
 
     def generate_code(self):
-
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
@@ -1278,10 +1271,10 @@ class EditPoi(AbstractNodeEditorWithParent):
 
         self.run_code(code)
 
+
 @Singleton
 class EditConnections(NodeEditor):
     def __init__(self):
-
         widget = QtWidgets.QWidget()
         ui = DAVE.gui.forms.widget_connections.Ui_ConnectionForm()
         ui.setupUi(widget)
@@ -1318,16 +1311,31 @@ class EditConnections(NodeEditor):
 
         ui.pbAdvancedSettings.clicked.connect(self.show_advanced_settings)
 
-
-    def connect(self, node, scene, run_code, guiEmitEvent,gui_solve_func,node_picker_register_func):
-        self.ui.widgetPicker.initialize(scene=scene,
-                                        nodetypes=(Point, Circle),
-                                        callback=None,
-                                        register_func=node_picker_register_func,
-                                        NoneAllowed=True,
-                                        node=node)
-        return super().connect(node, scene, run_code, guiEmitEvent, gui_solve_func, node_picker_register_func)
-
+    def connect(
+        self,
+        node,
+        scene,
+        run_code,
+        guiEmitEvent,
+        gui_solve_func,
+        node_picker_register_func,
+    ):
+        self.ui.widgetPicker.initialize(
+            scene=scene,
+            nodetypes=(Point, Circle),
+            callback=None,
+            register_func=node_picker_register_func,
+            NoneAllowed=True,
+            node=node,
+        )
+        return super().connect(
+            node,
+            scene,
+            run_code,
+            guiEmitEvent,
+            gui_solve_func,
+            node_picker_register_func,
+        )
 
     def itemChanged(self, *args):
         self.generate_code()
@@ -1335,12 +1343,11 @@ class EditConnections(NodeEditor):
     def add_item(self):
         name = self.ui.widgetPicker.value
         if self.scene.node_exists(name):
-
             # get a selected node
             index = self.ui.list.count()
             for i in range(index):
                 if self.ui.list.item(i).isSelected():
-                    index=i
+                    index = i
                     break
 
             node_names = [node.name for node in self.node.connections]
@@ -1354,11 +1361,9 @@ class EditConnections(NodeEditor):
         else:
             self.run_code(f"raise ValueError(f'No node with name {name}')")
 
-
     def post_update_event(self):
-
         # update the combobox with points and circles
-        self.ui.widgetPicker.fill('keep')
+        self.ui.widgetPicker.fill("keep")
 
         self.ui.list.blockSignals(True)  # update the list
         self.ui.list.clear()
@@ -1368,7 +1373,9 @@ class EditConnections(NodeEditor):
             item = QtWidgets.QListWidgetItem(connection.name)
 
             if isinstance(connection, Circle):
-                item.setCheckState(Qt.CheckState.Checked if reversed else Qt.CheckState.Unchecked)
+                item.setCheckState(
+                    Qt.CheckState.Checked if reversed else Qt.CheckState.Unchecked
+                )
                 labelVisible = True
 
             self.ui.list.addItem(item)
@@ -1382,17 +1389,18 @@ class EditConnections(NodeEditor):
         self.generate_code()
 
     def dragEnterEvent(self, event):
-        call_from_dragEnter_or_Move_Event(self.ui.list, self.scene, (Circle, Point), event)
+        call_from_dragEnter_or_Move_Event(
+            self.ui.list, self.scene, (Circle, Point), event
+        )
 
     def dropOnDeleteButtonEvent(self, event):
-       if event.source() == self.ui.list:
+        if event.source() == self.ui.list:
             self.ui.pbRemoveSelected.click()
             event.accept()
 
     def dragOntoDeleteButtonEvent(self, event):
         if event.source() == self.ui.list:
             event.accept()
-
 
     def delete_selected(self):
         row = self.ui.list.currentRow()
@@ -1405,7 +1413,6 @@ class EditConnections(NodeEditor):
             self.delete_selected()
 
     def generate_code(self):
-
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
@@ -1423,35 +1430,40 @@ class EditConnections(NodeEditor):
             code = code[:-1] + ")"
 
         # reversed
-        reversed = tuple([self.ui.list.item(irow).checkState() == Qt.CheckState.Checked for irow in range(self.ui.list.count())])
+        reversed = tuple(
+            [
+                self.ui.list.item(irow).checkState() == Qt.CheckState.Checked
+                for irow in range(self.ui.list.count())
+            ]
+        )
 
         if reversed != self.node.reversed:
-            code += f'{element}.reversed = {reversed}'
+            code += f"{element}.reversed = {reversed}"
 
         self.run_code(code)
 
     def set_shortest_route(self, *args):
-        self.run_code(f's["{self.node.name}"].set_optimum_connection_directions()', guiEventType.SELECTED_NODE_MODIFIED)
+        self.run_code(
+            f's["{self.node.name}"].set_optimum_connection_directions()',
+            guiEventType.SELECTED_NODE_MODIFIED,
+        )
 
     def show_advanced_settings(self):
-        dialog = AdvancedCableSettings(cable = self.node)
+        dialog = AdvancedCableSettings(cable=self.node)
         dialog.exec()
         if dialog.code:
             self.run_code(dialog.code, guiEventType.SELECTED_NODE_MODIFIED)
 
 
-
 @Singleton
 class EditCable(NodeEditor):
     def __init__(self):
-
         widget = QtWidgets.QWidget()
         ui = DAVE.gui.forms.widget_cable.Ui_Cable_form()
         ui.setupUi(widget)
 
         self.ui = ui
         self._widget = widget
-
 
         # Set events
 
@@ -1462,9 +1474,7 @@ class EditCable(NodeEditor):
         ui.doubleSpinBox_4.valueChanged.connect(self.generate_code)
         ui.cbSolveSegmentLengths.toggled.connect(self.generate_code)
 
-
     def post_update_event(self):
-
         svinf(self.ui.doubleSpinBox_1, self.node.length)
         svinf(self.ui.doubleSpinBox_2, self.node.EA)
         svinf(self.ui.doubleSpinBox, self.node.diameter)
@@ -1473,7 +1483,6 @@ class EditCable(NodeEditor):
         cbvinf(self.ui.cbSolveSegmentLengths, self.node.solve_segment_lengths)
         self.set_colors()
 
-
     def set_colors(self):
         if self.ui.doubleSpinBox_2.value() == 0:
             self.ui.doubleSpinBox_2.setStyleSheet("background: orange")
@@ -1481,7 +1490,6 @@ class EditCable(NodeEditor):
             self.ui.doubleSpinBox_2.setStyleSheet("background: white")
 
     def generate_code(self):
-
         self.set_colors()
 
         code = ""
@@ -1492,24 +1500,26 @@ class EditCable(NodeEditor):
         new_diameter = self.ui.doubleSpinBox.value()
         new_mass_per_length = self.ui.doubleSpinBox_3.value()
 
-        code += code_if_changed_d(self.node, new_length, 'length')
-        code += code_if_changed_d(self.node, new_EA, 'EA')
-        code += code_if_changed_d(self.node, new_diameter, 'diameter')
-        code += code_if_changed_d(self.node, new_mass_per_length, 'mass_per_length')
-        code += code_if_changed_d(self.node, self.ui.doubleSpinBox_4.value(), 'mass')
-        code += code_if_changed_b(self.node, self.ui.cbSolveSegmentLengths.isChecked(), "solve_segment_lengths")
+        code += code_if_changed_d(self.node, new_length, "length")
+        code += code_if_changed_d(self.node, new_EA, "EA")
+        code += code_if_changed_d(self.node, new_diameter, "diameter")
+        code += code_if_changed_d(self.node, new_mass_per_length, "mass_per_length")
+        code += code_if_changed_d(self.node, self.ui.doubleSpinBox_4.value(), "mass")
+        code += code_if_changed_b(
+            self.node,
+            self.ui.cbSolveSegmentLengths.isChecked(),
+            "solve_segment_lengths",
+        )
 
         self.run_code(code)
 
 
 @Singleton
 class EditForce(AbstractNodeEditorWithParent):
-
-    nodetypes_for_parent = (DAVE.nodes.Point)
+    nodetypes_for_parent = DAVE.nodes.Point
     NoneAllowedAsParent = False
 
     def __init__(self):
-
         widget = QtWidgets.QWidget()
         ui = DAVE.gui.forms.widget_force.Ui_widget_force()
         ui.setupUi(widget)
@@ -1524,10 +1534,11 @@ class EditForce(AbstractNodeEditorWithParent):
         ui.doubleSpinBox_5.valueChanged.connect(self.generate_code)
         ui.doubleSpinBox_6.valueChanged.connect(self.generate_code)
 
-        ui.cbDefinition.currentIndexChanged.connect(self.generate_code)  # index 0 --> global, index 1 --> local
+        ui.cbDefinition.currentIndexChanged.connect(
+            self.generate_code
+        )  # index 0 --> global, index 1 --> local
 
     def post_update_event(self):
-
         self.ui.widgetParent.fill()
 
         widgets = [
@@ -1537,7 +1548,7 @@ class EditForce(AbstractNodeEditorWithParent):
             self.ui.doubleSpinBox_4,
             self.ui.doubleSpinBox_5,
             self.ui.doubleSpinBox_6,
-            self.ui.cbDefinition
+            self.ui.cbDefinition,
         ]
 
         for widget in widgets:
@@ -1557,7 +1568,6 @@ class EditForce(AbstractNodeEditorWithParent):
             widget.blockSignals(False)
 
     def generate_code(self):
-
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
@@ -1594,8 +1604,7 @@ class EditForce(AbstractNodeEditorWithParent):
 
 @Singleton
 class EditArea(AbstractNodeEditorWithParent):
-
-    nodetypes_for_parent = (DAVE.nodes.Point)
+    nodetypes_for_parent = DAVE.nodes.Point
     NoneAllowedAsParent = False
 
     def __init__(self):
@@ -1618,7 +1627,6 @@ class EditArea(AbstractNodeEditorWithParent):
         ui.rbNoOrientation.toggled.connect(self.generate_code)
 
     def post_update_event(self):
-
         self.ui.widgetParent.fill()
 
         widgets = [
@@ -1705,12 +1713,10 @@ class EditArea(AbstractNodeEditorWithParent):
 
 @Singleton
 class EditSheave(AbstractNodeEditorWithParent):
-
-    nodetypes_for_parent = (DAVE.nodes.Point)
+    nodetypes_for_parent = DAVE.nodes.Point
     NoneAllowedAsParent = False
 
     def __init__(self):
-
         widget = QtWidgets.QWidget()
         ui = DAVE.gui.forms.widget_sheave.Ui_widget_sheave()
         ui.setupUi(widget)
@@ -1721,16 +1727,26 @@ class EditSheave(AbstractNodeEditorWithParent):
         self.ui.sbAY.valueChanged.connect(self.generate_code)
         self.ui.sbAZ.valueChanged.connect(self.generate_code)
 
+        self.ui.cbIsRoundBar.toggled.connect(self.generate_code)
+        self.ui.sbStart.valueChanged.connect(self.generate_code)
+        self.ui.sbStop.valueChanged.connect(self.generate_code)
+
         self.ui.sbRadius.valueChanged.connect(self.generate_code)
 
     def post_update_event(self):
-
         self.ui.widgetParent.fill()
 
         self.ui.widgetParent.setValue(self.node.parent.name)
 
-
-        widgets = [self.ui.sbAX, self.ui.sbAY, self.ui.sbAZ, self.ui.sbRadius]
+        widgets = [
+            self.ui.sbAX,
+            self.ui.sbAY,
+            self.ui.sbAZ,
+            self.ui.sbRadius,
+            self.ui.sbStop,
+            self.ui.sbStart,
+            self.ui.cbIsRoundBar,
+        ]
 
         for widget in widgets:
             widget.blockSignals(True)
@@ -1739,19 +1755,27 @@ class EditSheave(AbstractNodeEditorWithParent):
         # this has to do with the normalization which should only
         # be applied to the gui once editing is done
 
-        if not self.ui.sbAX.hasFocus() and not self.ui.sbAY.hasFocus() and not self.ui.sbAZ.hasFocus():
+        if (
+            not self.ui.sbAX.hasFocus()
+            and not self.ui.sbAY.hasFocus()
+            and not self.ui.sbAZ.hasFocus()
+        ):
             svinf(self.ui.sbAX, self.node.axis[0])
             svinf(self.ui.sbAY, self.node.axis[1])
             svinf(self.ui.sbAZ, self.node.axis[2])
 
+        cbvinf(self.ui.cbIsRoundBar, self.node.is_roundbar)
 
         svinf(self.ui.sbRadius, self.node.radius)
+        svinf(self.ui.sbStop, self.node.draw_stop)
+        svinf(self.ui.sbStart, self.node.draw_start)
 
         for widget in widgets:
             widget.blockSignals(False)
 
-    def generate_code(self):
+        self.ui.rbWidget.setVisible(self.node.is_roundbar)
 
+    def generate_code(self):
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
@@ -1765,13 +1789,19 @@ class EditSheave(AbstractNodeEditorWithParent):
         if not new_radius == self.node.radius:
             code += element + ".radius = {}".format(new_radius)
 
-        self.run_code(code)
+        code += code_if_changed_b(
+            self.node, self.ui.cbIsRoundBar.isChecked(), "is_roundbar"
+        )
+        code += code_if_changed_d(self.node, self.ui.sbStart.value(), "draw_start")
+        code += code_if_changed_d(self.node, self.ui.sbStop.value(), "draw_stop")
+
+        if code:
+            self.run_code(code)
 
 
 @Singleton
 class EditHydSpring(AbstractNodeEditorWithParent):
-
-    nodetypes_for_parent = (DAVE.nodes.Frame)
+    nodetypes_for_parent = DAVE.nodes.Frame
     NoneAllowedAsParent = False
 
     def __init__(self):
@@ -1793,7 +1823,6 @@ class EditHydSpring(AbstractNodeEditorWithParent):
         ui.disp.valueChanged.connect(self.generate_code)
 
     def post_update_event(self):
-
         self.ui.widgetParent.fill()
 
         widgets = [
@@ -1827,7 +1856,6 @@ class EditHydSpring(AbstractNodeEditorWithParent):
             widget.blockSignals(False)
 
     def generate_code(self):
-
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
@@ -1876,7 +1904,6 @@ class EditHydSpring(AbstractNodeEditorWithParent):
 @Singleton
 class EditLC6d(NodeEditor):
     def __init__(self):
-
         widget = QtWidgets.QWidget()
         ui = DAVE.gui.forms.widget_lincon6.Ui_widget_lincon6()
         ui.setupUi(widget)
@@ -1893,22 +1920,25 @@ class EditLC6d(NodeEditor):
         # ui.cbMasterAxis.currentIndexChanged.connect(self.generate_code)
         # ui.cbSlaveAxis.currentIndexChanged.connect(self.generate_code)
 
-        self.ui.widgetMain.initialize(None,
-                                      nodetypes=DAVE.Frame,
-                                      callback = self.main_changed,
-                                      register_func=None,
-                                      NoneAllowed=False,
-                                      node=None)
+        self.ui.widgetMain.initialize(
+            None,
+            nodetypes=DAVE.Frame,
+            callback=self.main_changed,
+            register_func=None,
+            NoneAllowed=False,
+            node=None,
+        )
 
-        self.ui.widgetSecondary.initialize(None,
-                                      nodetypes=DAVE.Frame,
-                                      callback = self.secondary_changed,
-                                      register_func=None,
-                                      NoneAllowed=False,
-                                      node=None)
+        self.ui.widgetSecondary.initialize(
+            None,
+            nodetypes=DAVE.Frame,
+            callback=self.secondary_changed,
+            register_func=None,
+            NoneAllowed=False,
+            node=None,
+        )
 
     def post_update_event(self):
-
         self.ui.widgetMain.scene = self.scene
         self.ui.widgetMain.register_func = self.node_picker_register_func
         self.ui.widgetMain.node = self.node
@@ -1917,8 +1947,8 @@ class EditLC6d(NodeEditor):
         self.ui.widgetSecondary.register_func = self.node_picker_register_func
         self.ui.widgetSecondary.node = self.node
 
-        self.ui.widgetMain.fill('main')
-        self.ui.widgetSecondary.fill('secondary')
+        self.ui.widgetMain.fill("main")
+        self.ui.widgetSecondary.fill("secondary")
 
         widgets = [
             self.ui.doubleSpinBox_1,
@@ -1927,12 +1957,10 @@ class EditLC6d(NodeEditor):
             self.ui.doubleSpinBox_4,
             self.ui.doubleSpinBox_5,
             self.ui.doubleSpinBox_6,
-
         ]
 
         for widget in widgets:
             widget.blockSignals(True)
-
 
         svinf(self.ui.doubleSpinBox_1, self.node.stiffness[0])
         svinf(self.ui.doubleSpinBox_2, self.node.stiffness[1])
@@ -1966,7 +1994,6 @@ class EditLC6d(NodeEditor):
         self.run_code(code)
 
     def generate_code(self):
-
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
@@ -2003,24 +2030,25 @@ class EditConnector2d(NodeEditor):
         # Partial initialization
         # remaining properties are set during post-update-event
 
-        self.ui.widgetMain.initialize(None,
-                                      nodetypes=DAVE.Frame,
-                                      callback = self.main_changed,
-                                      register_func=None,
-                                      NoneAllowed=False,
-                                      node=None)
+        self.ui.widgetMain.initialize(
+            None,
+            nodetypes=DAVE.Frame,
+            callback=self.main_changed,
+            register_func=None,
+            NoneAllowed=False,
+            node=None,
+        )
 
-        self.ui.widgetSecondary.initialize(None,
-                                      nodetypes=DAVE.Frame,
-                                      callback = self.secondary_changed,
-                                      register_func=None,
-                                      NoneAllowed=False,
-                                      node=None)
-
-
+        self.ui.widgetSecondary.initialize(
+            None,
+            nodetypes=DAVE.Frame,
+            callback=self.secondary_changed,
+            register_func=None,
+            NoneAllowed=False,
+            node=None,
+        )
 
     def post_update_event(self):
-
         self.ui.widgetMain.scene = self.scene
         self.ui.widgetMain.register_func = self.node_picker_register_func
         self.ui.widgetMain.node = self.node
@@ -2029,8 +2057,8 @@ class EditConnector2d(NodeEditor):
         self.ui.widgetSecondary.register_func = self.node_picker_register_func
         self.ui.widgetSecondary.node = self.node
 
-        self.ui.widgetMain.fill('nodeA')
-        self.ui.widgetSecondary.fill('nodeB')
+        self.ui.widgetMain.fill("nodeA")
+        self.ui.widgetSecondary.fill("nodeB")
 
         widgets = [
             self.ui.doubleSpinBox_1,
@@ -2039,7 +2067,6 @@ class EditConnector2d(NodeEditor):
 
         for widget in widgets:
             widget.blockSignals(True)
-
 
         svinf(self.ui.doubleSpinBox_1, self.node.k_linear)
         svinf(self.ui.doubleSpinBox_4, self.node.k_angular)
@@ -2067,9 +2094,7 @@ class EditConnector2d(NodeEditor):
 
         self.run_code(code)
 
-
     def generate_code(self):
-
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
@@ -2106,22 +2131,25 @@ class EditBeam(NodeEditor):
         # Partial initialization
         # remaining properties are set during post-update-event
 
-        self.ui.widgetMain.initialize(None,
-                                      nodetypes=DAVE.Frame,
-                                      callback=self.main_changed,
-                                      register_func=None,
-                                      NoneAllowed=False,
-                                      node=None)
+        self.ui.widgetMain.initialize(
+            None,
+            nodetypes=DAVE.Frame,
+            callback=self.main_changed,
+            register_func=None,
+            NoneAllowed=False,
+            node=None,
+        )
 
-        self.ui.widgetSecondary.initialize(None,
-                                           nodetypes=DAVE.Frame,
-                                           callback=self.secondary_changed,
-                                           register_func=None,
-                                           NoneAllowed=False,
-                                           node=None)
+        self.ui.widgetSecondary.initialize(
+            None,
+            nodetypes=DAVE.Frame,
+            callback=self.secondary_changed,
+            register_func=None,
+            NoneAllowed=False,
+            node=None,
+        )
 
     def post_update_event(self):
-
         self.ui.widgetMain.scene = self.scene
         self.ui.widgetMain.register_func = self.node_picker_register_func
         self.ui.widgetMain.node = self.node
@@ -2130,8 +2158,8 @@ class EditBeam(NodeEditor):
         self.ui.widgetSecondary.register_func = self.node_picker_register_func
         self.ui.widgetSecondary.node = self.node
 
-        self.ui.widgetMain.fill('nodeA')
-        self.ui.widgetSecondary.fill('nodeB')
+        self.ui.widgetMain.fill("nodeA")
+        self.ui.widgetSecondary.fill("nodeB")
 
         widgets = [
             self.ui.sbnSegments,
@@ -2146,7 +2174,6 @@ class EditBeam(NodeEditor):
 
         for widget in widgets:
             widget.blockSignals(True)
-
 
         self.ui.sbnSegments.setValue(self.node.n_segments)
 
@@ -2165,7 +2192,6 @@ class EditBeam(NodeEditor):
             widget.blockSignals(False)
 
     def generate_code(self):
-
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
@@ -2177,7 +2203,6 @@ class EditBeam(NodeEditor):
         new_mass = self.ui.sbMass.value()
         new_n = self.ui.sbnSegments.value()
         new_tensiononly = self.ui.cbTensionOnly.isChecked()
-
 
         if not new_L == self.node.L:
             code += element + ".L = {}".format(new_L)
@@ -2225,10 +2250,10 @@ class EditBeam(NodeEditor):
 
         self.run_code(code)
 
+
 @Singleton
 class EditGeometricContact(NodeEditor):
     def __init__(self):
-
         widget = QtWidgets.QWidget()
         ui = DAVE.gui.forms.widget_geometricconnection.Ui_GeometricConnection()
         ui.setupUi(widget)
@@ -2249,7 +2274,6 @@ class EditGeometricContact(NodeEditor):
         ui.pbChangeSide.clicked.connect(self.change_side)
 
     def post_update_event(self):
-
         widgets = [
             self.ui.lblParent,
             self.ui.lblChild,
@@ -2310,7 +2334,6 @@ class EditGeometricContact(NodeEditor):
             # self.post_update_event() # no need, done automatically by run_code
 
     def generate_code(self):
-
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
@@ -2344,12 +2367,10 @@ class EditGeometricContact(NodeEditor):
 
 @Singleton
 class EditContactBall(AbstractNodeEditorWithParent):
-
-    nodetypes_for_parent = (DAVE.nodes.Point)
+    nodetypes_for_parent = DAVE.nodes.Point
     NoneAllowedAsParent = False
 
     def __init__(self):
-
         widget = QtWidgets.QWidget()
         ui = DAVE.gui.forms.widget_contactball.Ui_widget_contactball()
         ui.setupUi(widget)
@@ -2365,7 +2386,6 @@ class EditContactBall(AbstractNodeEditorWithParent):
         ui.sbK.valueChanged.connect(self.generate_code)
 
     def post_update_event(self):
-
         self.ui.widgetParent.fill()
 
         self.ui.sbR.blockSignals(True)
@@ -2390,7 +2410,6 @@ class EditContactBall(AbstractNodeEditorWithParent):
             return
 
     def onDrop(self, event):
-
         try:
             dragged_name = event.mimeData().text()
         except:
@@ -2421,7 +2440,6 @@ class EditContactBall(AbstractNodeEditorWithParent):
             self.ui.lwMeshes.addItem(QListWidgetItem(name))
 
     def generate_code(self):
-
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
@@ -2438,7 +2456,6 @@ class EditContactBall(AbstractNodeEditorWithParent):
             new_names.append(self.ui.lwMeshes.item(i).text())
 
         if not (new_names == self.node.meshes_names):
-
             if new_names:
                 code += element + ".meshes = ["
                 for name in new_names:
@@ -2453,7 +2470,6 @@ class EditContactBall(AbstractNodeEditorWithParent):
 @Singleton
 class EditSling(NodeEditor):
     def __init__(self):
-
         widget = QtWidgets.QWidget()
         ui = DAVE.gui.forms.widget_sling.Ui_Form()
         ui.setupUi(widget)
@@ -2473,7 +2489,6 @@ class EditSling(NodeEditor):
         ui.sbK.valueChanged.connect(self.generate_code)
 
     def post_update_event(self):
-
         widgets = [
             self.ui.sbLength,
             self.ui.sbEA,
@@ -2498,7 +2513,6 @@ class EditSling(NodeEditor):
         svinf(self.ui.sbLSpliceA, self.node.LspliceA)
         svinf(self.ui.sbLSpliceB, self.node.LspliceB)
         svinf(self.ui.sbK, self.node.k_total)
-
 
         for widget in widgets:
             widget.blockSignals(False)
@@ -2548,9 +2562,7 @@ class EditShackle(NodeEditor):
 
         self.ui.comboBox.currentTextChanged.connect(self.generate_code)
 
-
     def post_update_event(self):
-
         self.ui.comboBox.blockSignals(True)
 
         self.ui.comboBox.clear()
@@ -2560,8 +2572,7 @@ class EditShackle(NodeEditor):
         self.ui.comboBox.blockSignals(False)
 
         data = self.node.shackle_kind_properties(self.node.kind)
-        self.ui.lbInfo.setText(data['description'])
-
+        self.ui.lbInfo.setText(data["description"])
 
     def generate_code(self):
         kind = self.ui.comboBox.currentText()
@@ -2574,8 +2585,7 @@ class EditShackle(NodeEditor):
 
 @Singleton
 class EditSPMT(AbstractNodeEditorWithParent):
-
-    nodetypes_for_parent = (DAVE.nodes.Frame)
+    nodetypes_for_parent = DAVE.nodes.Frame
     NoneAllowedAsParent = False
 
     def __init__(self):
@@ -2597,7 +2607,6 @@ class EditSPMT(AbstractNodeEditorWithParent):
         self.ui.sbRefForce.valueChanged.connect(self.generate_code)
         self.ui.sbStiffness.valueChanged.connect(self.generate_code)
 
-
     def post_update_event(self):
         # self.ui.comboBox.blockSignals(True)
         self.ui.widgetParent.fill()
@@ -2618,7 +2627,6 @@ class EditSPMT(AbstractNodeEditorWithParent):
         svinf(self.ui.sbRefForce, self.node.reference_force)
         svinf(self.ui.sbStiffness, self.node.k)
 
-
     def generate_code(self):
         code = ""
         if self.ui.rbVertical.isChecked() and not self.node.use_friction:
@@ -2626,13 +2634,17 @@ class EditSPMT(AbstractNodeEditorWithParent):
         if self.ui.rbPerpendicular.isChecked() and self.node.use_friction:
             code = f"s['{self.node.name}'].use_friction = False"
 
-        code += code_if_changed_d(self.node, self.ui.sbDX.value(), 'spacing_length')
-        code += code_if_changed_d(self.node, self.ui.sbDY.value(), 'spacing_width')
-        code += code_if_changed_d(self.node, self.ui.sbNX.value(), 'n_length')
-        code += code_if_changed_d(self.node, self.ui.sbNY.value(), 'n_width')
-        code += code_if_changed_d(self.node, self.ui.sbRefExtension.value(), 'reference_extension')
-        code += code_if_changed_d(self.node, self.ui.sbRefForce.value(), 'reference_force')
-        code += code_if_changed_d(self.node, self.ui.sbStiffness.value(), 'k')
+        code += code_if_changed_d(self.node, self.ui.sbDX.value(), "spacing_length")
+        code += code_if_changed_d(self.node, self.ui.sbDY.value(), "spacing_width")
+        code += code_if_changed_d(self.node, self.ui.sbNX.value(), "n_length")
+        code += code_if_changed_d(self.node, self.ui.sbNY.value(), "n_width")
+        code += code_if_changed_d(
+            self.node, self.ui.sbRefExtension.value(), "reference_extension"
+        )
+        code += code_if_changed_d(
+            self.node, self.ui.sbRefForce.value(), "reference_force"
+        )
+        code += code_if_changed_d(self.node, self.ui.sbStiffness.value(), "k")
 
         self.run_code(code, self)
 
@@ -2646,30 +2658,28 @@ class EditVisualOutline(NodeEditor):
         layout = QtWidgets.QVBoxLayout()
         widget.setLayout(layout)
         self.cbOutline = QtWidgets.QComboBox()
-        self.cbOutline.addItems(('None','Feature','Feature and Silhouette'))
+        self.cbOutline.addItems(("None", "Feature", "Feature and Silhouette"))
         layout.addWidget(self.cbOutline)
 
         self.cbOutline.currentTextChanged.connect(self.generate_code)
 
-
     def post_update_event(self):
         self.cbOutline.blockSignals(True)
         if self.node.visual_outline == VisualOutlineType.NONE:
-            text = 'None'
+            text = "None"
         elif self.node.visual_outline == VisualOutlineType.FEATURE_AND_SILHOUETTE:
-            text = 'Feature and Silhouette'
+            text = "Feature and Silhouette"
         else:
-            text = 'Feature'
+            text = "Feature"
         self.cbOutline.setCurrentText(text)
 
         self.cbOutline.blockSignals(False)
 
     def generate_code(self):
-
         q = dict()
-        q['None']=VisualOutlineType.NONE
-        q['Feature']=VisualOutlineType.FEATURE
-        q['Feature and Silhouette']=VisualOutlineType.FEATURE_AND_SILHOUETTE
+        q["None"] = VisualOutlineType.NONE
+        q["Feature"] = VisualOutlineType.FEATURE
+        q["Feature and Silhouette"] = VisualOutlineType.FEATURE_AND_SILHOUETTE
 
         value = q[self.cbOutline.currentText()]
 
@@ -2679,7 +2689,7 @@ class EditVisualOutline(NodeEditor):
 
             # Enforce reload
             store = self.node.path
-            self.node.path = 'res: cube_with_bevel.obj'
+            self.node.path = "res: cube_with_bevel.obj"
             self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
             self.node.path = store
             self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
@@ -2691,7 +2701,6 @@ class EditVisualOutline(NodeEditor):
 
 class WidgetNodeProps(guiDockWidget):
     def guiDefaultLocation(self):
-
         return QtCore.Qt.DockWidgetArea.RightDockWidgetArea
 
     def guiCreate(self):
@@ -2709,7 +2718,7 @@ class WidgetNodeProps(guiDockWidget):
         self.scroll_area = QtWidgets.QScrollArea()
         scroll_area_layout = QtWidgets.QVBoxLayout()
         scroll_area_layout.setSpacing(0)
-        scroll_area_layout.setContentsMargins(0,0,0,0)
+        scroll_area_layout.setContentsMargins(0, 0, 0, 0)
         self.scroll_area.setLayout(scroll_area_layout)
 
         self.scroll_area.setWidget(self.contents)
@@ -2723,7 +2732,6 @@ class WidgetNodeProps(guiDockWidget):
         # contents (main layout)
         #   manager_widget ( manager_layout )
         #   props_widget ( layout )
-
 
         self.main_layout = QtWidgets.QVBoxLayout()
 
@@ -2754,11 +2762,9 @@ class WidgetNodeProps(guiDockWidget):
         self.main_layout.addWidget(self.warning_label)
         self.main_layout.addWidget(self.manager_widget)
         self.main_layout.addWidget(self.props_widget)
-        self.main_layout.setContentsMargins(0,6,6,6)
+        self.main_layout.setContentsMargins(0, 6, 6, 6)
 
         self.contents.setLayout(self.main_layout)
-
-
 
         self.layout = QtWidgets.QVBoxLayout()
 
@@ -2767,7 +2773,7 @@ class WidgetNodeProps(guiDockWidget):
         self._name_widget = self._node_name_editor.widget
         self.layout.addWidget(self._name_widget)
 
-        self.layout.setContentsMargins(0,0,0,0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
         self.props_widget.setLayout(self.layout)
 
         self._Vspacer = QtWidgets.QSpacerItem(
@@ -2778,10 +2784,8 @@ class WidgetNodeProps(guiDockWidget):
         self.positioned = False
         self.node = None
 
-
     def node_picker_register(self, node_picker):
         self.node_picker = node_picker
-
 
     def select_manager(self):
         node = self.guiSelection[0]
@@ -2789,19 +2793,21 @@ class WidgetNodeProps(guiDockWidget):
         self.guiSelectNode(manager)
 
     def guiProcessEvent(self, event):
-
         # structure changed is emitted when a node is moved in the tree.
         # if the moved node is the active node then it needs to be updated as its local-position may have changed
 
         if event is guiEventType.SELECTION_CHANGED:
             if self.node_picker is not None:
-
-                _old_node = self.node # make a copy because the function below may execute "STRUCTURE CHANGED" or something
-                                      # which changes self.node
+                _old_node = (
+                    self.node
+                )  # make a copy because the function below may execute "STRUCTURE CHANGED" or something
+                # which changes self.node
 
                 if self.guiSelection:
-                    if not self.node_picker.nodesSelected(self.guiSelection):  # if nothing was done with the selection
-                        return                                                 # then keep it this way
+                    if not self.node_picker.nodesSelected(
+                        self.guiSelection
+                    ):  # if nothing was done with the selection
+                        return  # then keep it this way
 
                 # clear node_picker and re-select current node
                 self.node_picker.unregister()
@@ -2809,14 +2815,17 @@ class WidgetNodeProps(guiDockWidget):
                 self.guiSelectNode(_old_node)
                 return
 
-        if event in [guiEventType.SELECTION_CHANGED, guiEventType.FULL_UPDATE, guiEventType.MODEL_STRUCTURE_CHANGED, guiEventType.MODEL_STEP_ACTIVATED, ]:
-
+        if event in [
+            guiEventType.SELECTION_CHANGED,
+            guiEventType.FULL_UPDATE,
+            guiEventType.MODEL_STRUCTURE_CHANGED,
+            guiEventType.MODEL_STEP_ACTIVATED,
+        ]:
             # check if we have a selection
             if self.guiSelection:
                 self.select_node(self.guiSelection[0])
 
         if self._open_edit_widgets:
-
             self.setVisible(True)
 
             # first time, position the widget at the upper-right corner of the 3d view
@@ -2844,7 +2853,9 @@ class WidgetNodeProps(guiDockWidget):
 
     def run_code(self, code, event=None, sender=None):
         if event is None:
-            self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED, sender=sender)
+            self.guiRunCodeCallback(
+                code, guiEventType.SELECTED_NODE_MODIFIED, sender=sender
+            )
         else:
             self.guiRunCodeCallback(code, event, sender=sender)
         self.check_for_warnings()
@@ -2880,7 +2891,6 @@ class WidgetNodeProps(guiDockWidget):
                     self.gui.visual.add_temporary_actor(actor)
 
     def select_node(self, node):
-
         self.setUpdatesEnabled(False)
 
         to_be_removed = self._open_edit_widgets.copy()
@@ -2890,16 +2900,19 @@ class WidgetNodeProps(guiDockWidget):
             return
 
         manager_workaround = None
-        self._name_widget.setEnabled(True) # default, disabled for partially managed nodes
+        self._name_widget.setEnabled(
+            True
+        )  # default, disabled for partially managed nodes
         if node._manager and not isinstance(node, vfs.Shackle):
-
             self.managed_label.setText(
                 f"This node is controlled by node '{node._manager.name}' and can not be changed directly. Select the manager to make changes indirectly."
             )
             self.managed_label.setStyleSheet("background: gold;")
             self.manager_widget.setVisible(True)
 
-            manager_workaround = getattr(node, '_editor_widget_types_when_managed', None)
+            manager_workaround = getattr(
+                node, "_editor_widget_types_when_managed", None
+            )
             if manager_workaround is None:
                 self.props_widget.setEnabled(self.guiScene._godmode)
             else:
@@ -2915,17 +2928,22 @@ class WidgetNodeProps(guiDockWidget):
             self.props_widget.setEnabled(True)
 
         #
-        no_name_editor = getattr(node, '_no_name_editor', False)
+        no_name_editor = getattr(node, "_no_name_editor", False)
         self._name_widget.setVisible(not no_name_editor)
 
-        suppressed_editors = getattr(node, '_suppressed_node_editors', [])
+        suppressed_editors = getattr(node, "_suppressed_node_editors", [])
 
         self._node_editors.clear()
         self._open_edit_widgets.clear()
 
         # self._node_name_editor = EditNode.Instance()
         self._node_name_editor.connect(
-            node, self.guiScene, self.run_code, self.guiEmitEvent, self.guiPressSolveButton, self.node_picker_register
+            node,
+            self.guiScene,
+            self.run_code,
+            self.guiEmitEvent,
+            self.guiPressSolveButton,
+            self.node_picker_register,
         )
         #
         # # add to layout if not already in
@@ -2937,7 +2955,7 @@ class WidgetNodeProps(guiDockWidget):
         try:
             self.layout.removeItem(self._Vspacer)
         except:
-            pass # _Vspacer is not always in
+            pass  # _Vspacer is not always in
 
         # # check the plugins
         # for plugin in self.gui.plugins_editor:
@@ -2949,16 +2967,22 @@ class WidgetNodeProps(guiDockWidget):
             self._node_editors.append(EditVisualOutline.Instance())
             self._node_editors.append(EditVisual.Instance())
 
-        if isinstance(node, vfs.WaveInteraction1) and (vfs.WaveInteraction1 not in suppressed_editors):
+        if isinstance(node, vfs.WaveInteraction1) and (
+            vfs.WaveInteraction1 not in suppressed_editors
+        ):
             self._node_editors.append(EditWaveInteraction.Instance())
 
-        if isinstance(node, vfs.Component) and (vfs.Component not in suppressed_editors):
+        if isinstance(node, vfs.Component) and (
+            vfs.Component not in suppressed_editors
+        ):
             self._node_editors.append(EditComponent.Instance())
 
         if isinstance(node, vfs.Frame) and (vfs.Frame not in suppressed_editors):
             self._node_editors.append(EditAxis.Instance())
 
-        if isinstance(node, vfs.RigidBody) and (vfs.RigidBody not in suppressed_editors):
+        if isinstance(node, vfs.RigidBody) and (
+            vfs.RigidBody not in suppressed_editors
+        ):
             self._node_editors.append(EditBody.Instance())
 
         if isinstance(node, vfs.Point) and (vfs.Point not in suppressed_editors):
@@ -2974,22 +2998,30 @@ class WidgetNodeProps(guiDockWidget):
         if isinstance(node, vfs.Circle) and (vfs.Circle not in suppressed_editors):
             self._node_editors.append(EditSheave.Instance())
 
-        if isinstance(node, vfs.HydSpring) and (vfs.HydSpring not in suppressed_editors):
+        if isinstance(node, vfs.HydSpring) and (
+            vfs.HydSpring not in suppressed_editors
+        ):
             self._node_editors.append(EditHydSpring.Instance())
 
         if isinstance(node, vfs.LC6d) and (vfs.LC6d not in suppressed_editors):
             self._node_editors.append(EditLC6d.Instance())
 
-        if isinstance(node, vfs.Connector2d) and (vfs.Connector2d not in suppressed_editors):
+        if isinstance(node, vfs.Connector2d) and (
+            vfs.Connector2d not in suppressed_editors
+        ):
             self._node_editors.append(EditConnector2d.Instance())
 
         if isinstance(node, vfs.Beam) and (vfs.Beam not in suppressed_editors):
             self._node_editors.append(EditBeam.Instance())
 
-        if isinstance(node, vfs.ContactBall) and (vfs.ContactBall not in suppressed_editors):
+        if isinstance(node, vfs.ContactBall) and (
+            vfs.ContactBall not in suppressed_editors
+        ):
             self._node_editors.append(EditContactBall.Instance())
 
-        if isinstance(node, vfs.GeometricContact) and (vfs.GeometricContact not in suppressed_editors):
+        if isinstance(node, vfs.GeometricContact) and (
+            vfs.GeometricContact not in suppressed_editors
+        ):
             self._node_editors.append(EditGeometricContact.Instance())
 
         if isinstance(node, vfs.Sling) and (vfs.Sling not in suppressed_editors):
@@ -2999,14 +3031,21 @@ class WidgetNodeProps(guiDockWidget):
         if isinstance(node, vfs.SPMT) and (vfs.SPMT not in suppressed_editors):
             self._node_editors.append(EditSPMT.Instance())
 
-        if isinstance(node, vfs.WindOrCurrentArea) and (vfs.WindOrCurrentArea not in suppressed_editors):
+        if isinstance(node, vfs.WindOrCurrentArea) and (
+            vfs.WindOrCurrentArea not in suppressed_editors
+        ):
             self._node_editors.append(EditArea.Instance())
 
         if (
-            isinstance(node, vfs.Buoyancy)
-            or isinstance(node, vfs.ContactMesh)
-            or isinstance(node, vfs.Tank)
-        ) and (vfs.Buoyancy not in suppressed_editors) and (vfs.ContactMesh not in suppressed_editors) and (vfs.Tank not in suppressed_editors):
+            (
+                isinstance(node, vfs.Buoyancy)
+                or isinstance(node, vfs.ContactMesh)
+                or isinstance(node, vfs.Tank)
+            )
+            and (vfs.Buoyancy not in suppressed_editors)
+            and (vfs.ContactMesh not in suppressed_editors)
+            and (vfs.Tank not in suppressed_editors)
+        ):
             self._node_editors.append(EditBuoyancyOrContactMesh.Instance())
 
         if isinstance(node, vfs.Tank) and (vfs.Tank not in suppressed_editors):
@@ -3023,19 +3062,31 @@ class WidgetNodeProps(guiDockWidget):
                 else:
                     self._node_editors.append(value.Instance())
 
-        print('Node editor created!', flush=True)
+        print("Node editor created!", flush=True)
 
         # Remove suppressed editors
         if manager_workaround:
-            self._node_editors = [editor for editor in self._node_editors if isinstance(editor, manager_workaround)]
-
+            self._node_editors = [
+                editor
+                for editor in self._node_editors
+                if isinstance(editor, manager_workaround)
+            ]
 
         to_be_added = []
         for editor in self._node_editors:
             # add a check for the return value of connect because the program will hard-crash if the return value is None
             # this function returns the widget
-            widget = editor.connect(node, self.guiScene, self.run_code, self.guiEmitEvent, self.guiPressSolveButton, self.node_picker_register)
-            assert widget is not None, f'Editor {editor} returned None when connecting to node {node}'
+            widget = editor.connect(
+                node,
+                self.guiScene,
+                self.run_code,
+                self.guiEmitEvent,
+                self.guiPressSolveButton,
+                self.node_picker_register,
+            )
+            assert (
+                widget is not None
+            ), f"Editor {editor} returned None when connecting to node {node}"
             to_be_added.append(widget)
 
         # for item in to_be_added:
@@ -3066,7 +3117,9 @@ class WidgetNodeProps(guiDockWidget):
         ht = sum([w.sizeHint().height() for w in widgets])
         wt = max([w.sizeHint().width() for w in widgets])
 
-        self.contents.setMinimumSize(QtCore.QSize(wt,ht-5))  # minus 5 to avoid scrollbar to show
+        self.contents.setMinimumSize(
+            QtCore.QSize(wt, ht - 5)
+        )  # minus 5 to avoid scrollbar to show
 
         # check if one of the widgets is "expanding"
         # if not, then add a spacer
@@ -3089,12 +3142,11 @@ class WidgetNodeProps(guiDockWidget):
         if self.isFloating():
             target_height = ht
 
-
             geo = QGuiApplication.primaryScreen().availableGeometry()
 
             if target_height > geo.height():
                 target_height = geo.height()
-                wt = wt + 20 # for scrollbar
+                wt = wt + 20  # for scrollbar
 
             self.resize(
                 QtCore.QSize(wt, target_height)
@@ -3104,19 +3156,20 @@ class WidgetNodeProps(guiDockWidget):
 
             if top + target_height > geo.height():
                 top = geo.height() - target_height
-                if top<=0:
-                    top=5
+                if top <= 0:
+                    top = 5
                 self.setGeometry(self.pos().x(), top, wt, target_height)
 
-        else: # docked
+        else:  # docked
             if self.height() < ht:
-                wt = wt + 5 # for scrollbar
+                wt = wt + 5  # for scrollbar
             self.setMinimumWidth(wt)
 
-        print('Setting updates enabled', flush=True)
+        print("Setting updates enabled", flush=True)
 
         self.setUpdatesEnabled(True)
 
-        print('Function done', flush=True)
+        print("Function done", flush=True)
 
-DAVE_GUI_DOCKS['Properties'] = WidgetNodeProps
+
+DAVE_GUI_DOCKS["Properties"] = WidgetNodeProps
