@@ -1117,37 +1117,39 @@ class Scene:
         else:
             return [node for node in self._nodes if node.manager == manager]
 
-    def nodes_depending_on(self, node, recursive=True):
-        """Returns a list of nodes that physically depend on node. Only direct dependants are obtained with a connection to the core.
+    def nodes_depending_on(self, node, recursive=True) -> list[str]:
+        """Returns a list of nodes that physically depend on node. Only direct dependants are obtained if recursive is False.
         This function should be used to determine if a node can be created, deleted, exported.
 
         For making node-trees please use nodes_with_parent instead.
 
         Args:
-            node : Node or node-name
+            node_name : Node or node-name
 
         Returns:
-            list of names
+            list of names [str]
 
         See Also: nodes_with_parent
         """
 
         if isinstance(node, Node):
-            node = node.name
+            node_name = node.name
+        else:
+            node_name = node
 
         # check the node type
-        _node = self[node]
+        _node = self[node_name]
         if not isinstance(_node, NodeCoreConnected):
-            return []
+            r = []
         else:
             if recursive:
-                names = self._vfc.elements_depending_on(node)
+                names = self._vfc.elements_depending_on(node_name)
             else:
-                names = self._vfc.elements_depending_directly_on(node)
+                names = self._vfc.elements_depending_directly_on(node_name)
 
-        # filter to only the nodes that are in the scene (remove pointmasses etc)
-        nodes_names_in_scene = self.node_names
-        r = [n for n in names if n in nodes_names_in_scene]
+            # filter to only the nodes that are in the scene (remove pointmasses etc)
+            nodes_names_in_scene = self.node_names
+            r = [n for n in names if n in nodes_names_in_scene]
 
         # check all other nodes in the scene
         #
@@ -1157,25 +1159,22 @@ class Scene:
         # This is only a single pass as there are no nodes depending on a node that is not core-connected
 
         dependants_and_self = r.copy()
-        dependants_and_self.append(node)
+        dependants_and_self.append(node_name)
 
         for n in self._nodes:
-            for pre in n.depends_on():
-                if pre.name in dependants_and_self:
-                    r.append(n.name)
+            try:
+                nodes = n.depends_on()
+            except Exception as E:
+                raise Exception(
+                    f"Error when checking dependancies of node {n.name} of type {type(n)}"
+                    + ":"
+                    + str(E)
+                )
+            nodes_names = [node.name for node in nodes]
 
-        # is this blowing up?
-        # should doubles be removed?
-        # if recursive:
-        #
-        #     to_be_scanned = r.copy()
-        #
-        #     while to_be_scanned:
-        #         node = to_be_scanned.pop(0)
-        #         for n in self.nodes_depending_on(node, recursive=False):
-        #             if n not in r:
-        #                 r.append(n)
-        #                 to_be_scanned.append(n)
+            for pre in nodes_names:
+                if pre in dependants_and_self:
+                    r.append(n.name)
 
         return r
 

@@ -15,7 +15,7 @@ import numpy as np
 from .helpers import *
 
 
-class DAVENodeBase():
+class DAVENodeBase:
     """Shall be the ultimate base class for nodes as well as anything mixed into nodes.
 
     - Implements "black holes" for all methods that are to be implemented with super()
@@ -28,6 +28,7 @@ class DAVENodeBase():
     - try_swap
 
     """
+
     def __init__(self, *args, **kwargs):
         pass
 
@@ -35,33 +36,29 @@ class DAVENodeBase():
         """Called when the name of the node has changed
         !! When implementing this method, call super()._on_name_changed() in the implementation !!
         """
-        pass # black hole because super does not have this method
-
+        pass  # black hole because super does not have this method
 
     def dissolve_some(self) -> tuple[bool, str]:
         """Dissolves the node into its children. Returns True if work was done, False otherwise"""
         return False, ""
 
-    def try_swap(self, old: 'Node', new: 'Node') -> bool:
+    def try_swap(self, old: "Node", new: "Node") -> bool:
         """Tries to swap old for new. Returns True if work was done, False otherwise"""
         return False
-
-
 
 
 class Node(DAVENodeBase, ABC):
     """ABSTRACT CLASS - Properties defined here are applicable to all derived classes
     Master class for all nodes"""
 
-    def __init__(self, scene : 'Scene', name: str or None = None):
-
+    def __init__(self, scene: "Scene", name: str or None = None):
         logging.info("Node.__init__")
 
         # Checks
-        if hasattr(self, '_scene'):
+        if hasattr(self, "_scene"):
             raise ValueError("_scene already exists, error in MRO?")
 
-        self._scene: 'Scene' = scene
+        self._scene: "Scene" = scene
         """reference to the scene that the node lives is"""
 
         self._manager: Node or None = None
@@ -89,12 +86,10 @@ class Node(DAVENodeBase, ABC):
 
         scene.add_node(self)  # adds the node to the scene
 
-
         # some custom properties for gui interaction
         self._no_name_editor = False
 
         super().__init__(scene=scene, name=name)
-
 
     @property
     @abstractmethod
@@ -107,7 +102,6 @@ class Node(DAVENodeBase, ABC):
     def name(self, val):
         self._on_name_changed()
 
-
     def __repr__(self):
         if self.is_valid:
             return f"{self.name} <{self.__class__.__name__}>"
@@ -118,7 +112,7 @@ class Node(DAVENodeBase, ABC):
         return self.name
 
     def dissolve(self):
-        """Dissolves the node, raises an exception if not possible. """
+        """Dissolves the node, raises an exception if not possible."""
         raise Exception(f"Dissolve not implemented for node {self.__repr__()}")
 
     @property
@@ -145,7 +139,6 @@ class Node(DAVENodeBase, ABC):
             f"Derived class should implement this method, but {type(self)} does not"
         )
 
-
     def give_python_code(self):
         """Returns the python code that can be executed to re-create this node"""
         return "# No python code generated for element {}".format(self.name)
@@ -164,7 +157,7 @@ class Node(DAVENodeBase, ABC):
         self._visible = value
 
     @property
-    def manager(self) -> 'Manager' or None:
+    def manager(self) -> "Manager" or None:
         """If this node is managed then this is a reference to the node that manages this node. Otherwise None [Manager]
         #NOGUI"""
         return self._manager
@@ -339,11 +332,11 @@ class Node(DAVENodeBase, ABC):
             self.add_tag(tag)
 
     def has_tag(self, tag: str):
-        """Returns true if node has the given tag - tag can be a tag selection expression """
+        """Returns true if node has the given tag - tag can be a tag selection expression"""
         if tag in self._tags:  # simple first quick check
             return True
 
-        req_tags = [_.strip() for _ in tag.split(',')]
+        req_tags = [_.strip() for _ in tag.split(",")]
 
         for tag in self._tags:
             matching = [fnmatch.fnmatch(tag, fltr) for fltr in req_tags]
@@ -374,14 +367,17 @@ class Node(DAVENodeBase, ABC):
         hidden = []
 
         for desc, w in self.watches.items():
-
             try:
-                value = eval(w.evaluate, {'np': np}, {'s': self._scene, 'self': self})
+                value = eval(w.evaluate, {"np": np}, {"s": self._scene, "self": self})
             except Exception as M:
-                value = f'ERROR: {w.evaluate} -> {str(M)}'
+                value = f"ERROR: {w.evaluate} -> {str(M)}"
 
             if w.condition:
-                condition = eval(w.condition, {'np': np}, {'s': self._scene, 'self': self, 'value': value})
+                condition = eval(
+                    w.condition,
+                    {"np": np},
+                    {"s": self._scene, "self": self, "value": value},
+                )
             else:
                 condition = True
 
@@ -390,7 +386,6 @@ class Node(DAVENodeBase, ABC):
                 value = tuple(value)
 
             if condition:
-
                 if w.decimals >= 0:
                     if isinstance(value, float):
                         value = round(value, w.decimals)
@@ -402,11 +397,13 @@ class Node(DAVENodeBase, ABC):
 
         return r, hidden
 
-class NodeCoreConnected(Node):
 
+class NodeCoreConnected(Node):
     def __init__(self, scene, name):
         logging.info("NodeCoreConnected.__init__")
-        assert hasattr(self, '_vfNode'), "_vfNode must be assigned BEFORE calling super()__init__"
+        assert hasattr(
+            self, "_vfNode"
+        ), "_vfNode must be assigned BEFORE calling super()__init__"
         super().__init__(scene=scene, name=name)
 
     @property
@@ -421,7 +418,7 @@ class NodeCoreConnected(Node):
     @node_setter_observable
     def name(self, name):
         if self._vfNode is None:
-            raise ValueError(f'No connection to core - can not set name {name}')
+            raise ValueError(f"No connection to core - can not set name {name}")
 
         if not name == self._vfNode.name:
             self._scene._verify_name_available(name)
@@ -435,8 +432,8 @@ class NodeCoreConnected(Node):
         self._scene._vfc.delete(name)
         self.invalidate()
 
-class NodePurePython(Node):
 
+class NodePurePython(Node):
     def __init__(self, scene, name):
         self._name = name
         super().__init__(scene=scene, name=name)
@@ -445,6 +442,10 @@ class NodePurePython(Node):
     def name(self) -> str:
         """Name of the node (str), must be unique [str]"""
         return self._name
+
+    def depends_on(self) -> list:
+        """Returns a list of nodes that need to be present for this node to exist"""
+        return []  # no dependencies by default
 
     @name.setter
     @node_setter_manageable
@@ -455,9 +456,4 @@ class NodePurePython(Node):
         self._on_name_changed()
 
     def _delete_vfc(self):
-        pass # nothing to delete
-
-
-
-
-
+        pass  # nothing to delete

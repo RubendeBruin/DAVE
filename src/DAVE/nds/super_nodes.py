@@ -112,11 +112,13 @@ class Sling(NodePurePython, HasContainer):
         # create the two splices
 
         self.sa1 = scene.new_rigidbody(
-            scene.available_name_like(name_prefix + "spliceA1"), fixed=(False,False,False,True,True,True)
+            scene.available_name_like(name_prefix + "spliceA1"),
+            fixed=(False, False, False, True, True, True),
         )
 
         self.sa2 = scene.new_rigidbody(
-            scene.available_name_like(name_prefix + "spliceA2"), fixed=(False,False,False,True,True,True)
+            scene.available_name_like(name_prefix + "spliceA2"),
+            fixed=(False, False, False, True, True, True),
         )
 
         self.a1 = scene.new_point(
@@ -126,20 +128,17 @@ class Sling(NodePurePython, HasContainer):
             scene.available_name_like(name_prefix + "spliceA2p"), parent=self.sa2
         )
 
-
         self.sb1 = scene.new_rigidbody(
             scene.available_name_like(name_prefix + "spliceB1"),
             rotation=(0, 0, 180),
-            fixed=(False,False,False,True,True,True),
+            fixed=(False, False, False, True, True, True),
         )
 
         self.sb2 = scene.new_rigidbody(
             scene.available_name_like(name_prefix + "spliceB2"),
             rotation=(0, 0, 180),
-            fixed=(False,False,False,True,True,True),
+            fixed=(False, False, False, True, True, True),
         )
-
-
 
         self.b1 = scene.new_point(
             scene.available_name_like(name_prefix + "spliceB1p"), parent=self.sb1
@@ -147,7 +146,6 @@ class Sling(NodePurePython, HasContainer):
         self.b2 = scene.new_point(
             scene.available_name_like(name_prefix + "spliceB2p"), parent=self.sb2
         )
-
 
         self.main = scene.new_cable(
             scene.available_name_like(name_prefix + "main_part"),
@@ -162,7 +160,7 @@ class Sling(NodePurePython, HasContainer):
             scene.available_name_like(name_prefix + "eyeA"),
             endA=self.a2,
             endB=self.a2,
-            sheaves = self._endA,
+            sheaves=self._endA,
             length=1,
             EA=1,
         )
@@ -181,20 +179,22 @@ class Sling(NodePurePython, HasContainer):
             # Model splices as beams
             self.spliceA = scene.new_beam(
                 scene.available_name_like(name_prefix + "spliceA"),
-                nodeA=self.sa1, nodeB=self.sa2,
+                nodeA=self.sa1,
+                nodeB=self.sa2,
                 mass=0,
                 EA=1,
                 L=1,
-                n_segments=1
+                n_segments=1,
             )
 
             self.spliceB = scene.new_beam(
                 scene.available_name_like(name_prefix + "spliceB"),
-                nodeA=self.sb1, nodeB=self.sb2,
+                nodeA=self.sb1,
+                nodeB=self.sb2,
                 mass=0,
                 EA=1,
                 L=1,
-                n_segments=1
+                n_segments=1,
             )
 
         else:
@@ -216,12 +216,8 @@ class Sling(NodePurePython, HasContainer):
 
             self.spliceA._draw_fat = True
             self.spliceB._draw_fat = True
-            self.spliceA.color = (117,94,78)
-            self.spliceB.color = (117,94,78)
-
-
-
-
+            self.spliceA.color = (117, 94, 78)
+            self.spliceB.color = (117, 94, 78)
 
         # Update properties
         self.sheaves = sheaves
@@ -262,10 +258,9 @@ class Sling(NodePurePython, HasContainer):
             self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
         )
 
-
     def _calcEyeWireLength(self, Leye):
         r = 0.5 * self._diameter
-        straight = np.sqrt(Leye ** 2 - r ** 2)
+        straight = np.sqrt(Leye**2 - r**2)
         alpha = np.arccos(r / Leye)
         circular_length_rad = 2 * (np.pi - alpha)
         bend = circular_length_rad * r
@@ -281,13 +276,12 @@ class Sling(NodePurePython, HasContainer):
         """
         return self._calcEyeWireLength(self._LeyeA)
 
-
     @property
     def _LwireEyeB(self):
         return self._calcEyeWireLength(self._LeyeB)
 
     @property
-    def k_total(self)->float:
+    def k_total(self) -> float:
         """Total stiffness of the sling [kN/m]"""
 
         k_eye_A = 4 * self._EA / self._LwireEyeA
@@ -323,7 +317,6 @@ class Sling(NodePurePython, HasContainer):
         self.EA = EA
 
     def _update_properties(self):
-
         # The stiffness of the main part is corrected to account for the stiffness of the splices.
         # It is considered that the stiffness of the splices is two times that of the wire.
         #
@@ -335,7 +328,6 @@ class Sling(NodePurePython, HasContainer):
         Lmain = (
             self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
         )
-
 
         self.sa1.mass = self._mass / 4
         self.sa2.mass = self._mass / 4
@@ -354,11 +346,11 @@ class Sling(NodePurePython, HasContainer):
             self.spliceA.length = self._LspliceA
             self.spliceB.length = self._LspliceB
 
-        self.spliceA.EA = 2*self._EA
-        self.spliceA.diameter = 2*self._diameter
+        self.spliceA.EA = 2 * self._EA
+        self.spliceA.diameter = 2 * self._diameter
 
-        self.spliceB.EA = 2*self._EA
-        self.spliceB.diameter = 2*self._diameter
+        self.spliceB.EA = 2 * self._EA
+        self.spliceB.diameter = 2 * self._diameter
 
         self.eyeA.length = self._LwireEyeA
         self.eyeA.EA = self._EA
@@ -367,7 +359,7 @@ class Sling(NodePurePython, HasContainer):
         if self._endA is not None:
             self.eyeA.connections = (self.a1, self._endA, self.a1)
         else:
-            raise ValueError('End A needs to be connected to something')
+            raise ValueError("End A needs to be connected to something")
             # self.eyeA.connections = (self.a1, self.a1)
 
         self.eyeB.length = self._LwireEyeB
@@ -377,26 +369,28 @@ class Sling(NodePurePython, HasContainer):
         if self._endB is not None:
             self.eyeB.connections = (self.b1, self._endB, self.b1)
         else:
-            raise ValueError('End B needs to be connected to something')
+            raise ValueError("End B needs to be connected to something")
             # self.eyeB.connections = (self.b1, self.b1)
 
         # Set positions of splice bodies
         A = np.array(self._endA.global_position)
         B = np.array(self._endB.global_position)
 
-        D = B-A
+        D = B - A
         Lmain = (
-                self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
+            self._length - self._LspliceA - self._LspliceB - self._LeyeA - self._LeyeB
         )
 
         if self._endA is not None and self._endB is not None:
-
-
             # endA
 
             a = np.array(self._endA.global_position)
             if len(self.connections) > 2:
-                p = np.array(self._scene._node_from_node_or_str(self.connections[1]).global_position)
+                p = np.array(
+                    self._scene._node_from_node_or_str(
+                        self.connections[1]
+                    ).global_position
+                )
             else:
                 p = np.array(self._endB.global_position)
 
@@ -410,7 +404,11 @@ class Sling(NodePurePython, HasContainer):
 
             b = np.array(self._endB.global_position)
             if len(self.connections) > 2:
-                p = np.array(self._scene._node_from_node_or_str(self.connections[-2]).global_position)
+                p = np.array(
+                    self._scene._node_from_node_or_str(
+                        self.connections[-2]
+                    ).global_position
+                )
             else:
                 p = np.array(self._endA.global_position)
 
@@ -419,7 +417,6 @@ class Sling(NodePurePython, HasContainer):
                 dir /= np.linalg.norm(dir)
                 self.sb1.position = b + self._LeyeB * dir
                 self.sb2.position = b + (self._LeyeB + self._LspliceB) * dir
-
 
         self._scene.current_manager = backup  # restore
 
@@ -437,10 +434,8 @@ class Sling(NodePurePython, HasContainer):
 
         return a
 
-
-
     @property
-    def spliceApos(self)->tuple[float,float,float,float,float,float]:
+    def spliceApos(self) -> tuple[float, float, float, float, float, float]:
         """The 6-dof of splice on end A. Solved [m,m,m,m,m,m]
         #NOGUI"""
         return (*self.sa1.position, *self.sa2.position)
@@ -488,9 +483,8 @@ class Sling(NodePurePython, HasContainer):
     #     # self.sb._vfNode.rotation = np.deg2rad(value[3:])
 
     @property
-    def connections(self)->tuple[Point or Circle]:
-        """List or Tuple of nodes (Points or Circles) that this sling is connected to. Nodes may be passed by name (string) or by reference.
-        """
+    def connections(self) -> tuple[Point or Circle]:
+        """List or Tuple of nodes (Points or Circles) that this sling is connected to. Nodes may be passed by name (string) or by reference."""
         return (self.endA, *self.main.connections[1:-1], self.endB)
 
     @connections.setter
@@ -547,19 +541,22 @@ class Sling(NodePurePython, HasContainer):
             sheaves = "None"
 
         code += f"\n            sheaves = {sheaves})"
-        code += "\nsl.spliceApos = ({},{},{},{},{},{}) # solved".format(*self.spliceApos)
-        code += "\nsl.spliceBpos = ({},{},{},{},{},{}) # solved".format(*self.spliceBpos)
+        code += "\nsl.spliceApos = ({},{},{},{},{},{}) # solved".format(
+            *self.spliceApos
+        )
+        code += "\nsl.spliceBpos = ({},{},{},{},{},{}) # solved".format(
+            *self.spliceBpos
+        )
 
         if self.sheaves:
             if np.any(self.reversed):
                 code += f"\nsl.reversed = {self.reversed}"
 
-
         return code
 
     # properties
     @property
-    def length(self)->float:
+    def length(self) -> float:
         """Total length measured between the INSIDE of the eyes of the sling is pulled straight. [m]"""
         return self._length
 
@@ -567,7 +564,6 @@ class Sling(NodePurePython, HasContainer):
     @node_setter_manageable
     @node_setter_observable
     def length(self, value):
-
         min_length = self.LeyeA + self.LeyeB + self.LspliceA + self.LspliceB
         if value <= min_length:
             raise ValueError(
@@ -578,7 +574,7 @@ class Sling(NodePurePython, HasContainer):
         self._update_properties()
 
     @property
-    def LeyeA(self)->float:
+    def LeyeA(self) -> float:
         """Total length inside eye A if stretched flat [m]"""
         return self._LeyeA
 
@@ -586,7 +582,6 @@ class Sling(NodePurePython, HasContainer):
     @node_setter_manageable
     @node_setter_observable
     def LeyeA(self, value):
-
         max_length = self.length - (self.LeyeB + self.LspliceA + self.LspliceB)
         if value >= max_length:
             raise ValueError(
@@ -597,7 +592,7 @@ class Sling(NodePurePython, HasContainer):
         self._update_properties()
 
     @property
-    def LeyeB(self)->float:
+    def LeyeB(self) -> float:
         """Total length inside eye B if stretched flat [m]"""
         return self._LeyeB
 
@@ -605,7 +600,6 @@ class Sling(NodePurePython, HasContainer):
     @node_setter_manageable
     @node_setter_observable
     def LeyeB(self, value):
-
         max_length = self.length - (self.LeyeA + self.LspliceA + self.LspliceB)
         if value >= max_length:
             raise ValueError(
@@ -616,7 +610,7 @@ class Sling(NodePurePython, HasContainer):
         self._update_properties()
 
     @property
-    def LspliceA(self)->float:
+    def LspliceA(self) -> float:
         """Length of the splice at end A [m]"""
         return self._LspliceA
 
@@ -624,7 +618,6 @@ class Sling(NodePurePython, HasContainer):
     @node_setter_manageable
     @node_setter_observable
     def LspliceA(self, value):
-
         max_length = self.length - (self.LeyeA + self.LeyeB + self.LspliceB)
         if value >= max_length:
             raise ValueError(
@@ -635,7 +628,7 @@ class Sling(NodePurePython, HasContainer):
         self._update_properties()
 
     @property
-    def LspliceB(self)->float:
+    def LspliceB(self) -> float:
         """Length of the splice at end B [m]"""
         return self._LspliceB
 
@@ -643,7 +636,6 @@ class Sling(NodePurePython, HasContainer):
     @node_setter_manageable
     @node_setter_observable
     def LspliceB(self, value):
-
         max_length = self.length - (self.LeyeA + self.LeyeB + self.LspliceA)
         if value >= max_length:
             raise ValueError(
@@ -654,7 +646,7 @@ class Sling(NodePurePython, HasContainer):
         self._update_properties()
 
     @property
-    def diameter(self)->float:
+    def diameter(self) -> float:
         """Diameter of the sling (except the splices) [m]"""
         return self._diameter
 
@@ -666,7 +658,7 @@ class Sling(NodePurePython, HasContainer):
         self._update_properties()
 
     @property
-    def EA(self)->float:
+    def EA(self) -> float:
         """EA of the wire of the sling [kN]
         See also: k_total"""
         return self._EA
@@ -679,7 +671,7 @@ class Sling(NodePurePython, HasContainer):
         self._update_properties()
 
     @property
-    def mass(self)->float:
+    def mass(self) -> float:
         """Mass and weight of the sling. This mass is distributed over the two splices [mT]"""
         return self._mass
 
@@ -691,7 +683,7 @@ class Sling(NodePurePython, HasContainer):
         self._update_properties()
 
     @property
-    def endA(self)->Circle or Point:
+    def endA(self) -> Circle or Point:
         """End A [circle or point node]
         #NOGUI"""
         return self._endA
@@ -705,7 +697,7 @@ class Sling(NodePurePython, HasContainer):
         self._update_properties()
 
     @property
-    def endB(self)->Circle or Point:
+    def endB(self) -> Circle or Point:
         """End B [circle or point node]
         #NOGUI"""
         return self._endB
@@ -719,7 +711,7 @@ class Sling(NodePurePython, HasContainer):
         self._update_properties()
 
     @property
-    def sheaves(self)->tuple[Circle or Point]:
+    def sheaves(self) -> tuple[Circle or Point]:
         """List of sheaves (circles, points) that the sling runs over between the two ends.
 
         May be provided as list of nodes or node-names.
@@ -743,10 +735,10 @@ class Sling(NodePurePython, HasContainer):
 def _read_shackle_data():
     data = dict()
     cdir = Path(dirname(__file__)).parent
-    filename = cdir /  './resources/shackle_data.csv'
+    filename = cdir / "./resources/shackle_data.csv"
 
     if filename.exists():
-        with open(filename, newline='') as csvfile:
+        with open(filename, newline="") as csvfile:
             __shackle_data = csv.reader(csvfile)
             header = __shackle_data.__next__()  # skip the header
 
@@ -755,9 +747,10 @@ def _read_shackle_data():
                 data[name] = row[1:]
 
     else:
-        warnings.warn(f'Could not load shackle data because {filename} does not exist')
+        warnings.warn(f"Could not load shackle data because {filename} does not exist")
 
     return data
+
 
 class Shackle(RigidBodyContainer):
     """
@@ -796,20 +789,21 @@ class Shackle(RigidBodyContainer):
             )
 
         data = Shackle.data[kind]
-        return {'kind':kind,
-                'description':data[0],
-                'WLL':float(data[1]),
-                'MBL':float(data[2]),
-                'weight':float(data[3]),
-                'pin_diameter':float(data[4]),
-                'bow_diameter':float(data[5]),
-                'inside_length':float(data[6]),
-                'inside_width':float(data[7]),
-                'visual':data[8],
-                'scale':float(data[9])}
+        return {
+            "kind": kind,
+            "description": data[0],
+            "WLL": float(data[1]),
+            "MBL": float(data[2]),
+            "weight": float(data[3]),
+            "pin_diameter": float(data[4]),
+            "bow_diameter": float(data[5]),
+            "inside_length": float(data[6]),
+            "inside_width": float(data[7]),
+            "visual": data[8],
+            "scale": float(data[9]),
+        }
 
-    def __init__(self, scene, name, kind='GP800'):
-
+    def __init__(self, scene, name, kind="GP800"):
         _ = self.shackle_kind_properties(kind)  # to make sure it exists
 
         super().__init__(scene=scene, name=name)
@@ -871,9 +865,8 @@ class Shackle(RigidBodyContainer):
         for node in self._nodes:
             node._manager = self
 
-
     @property
-    def kind(self)->str:
+    def kind(self) -> str:
         """Type of shackle, for example GP800 [text]"""
         return self._kind
 
@@ -881,13 +874,12 @@ class Shackle(RigidBodyContainer):
     # @node_setter_manageable   : allow changing of shackle kind
     @node_setter_observable
     def kind(self, kind):
-
         values = self.shackle_kind_properties(kind)
-        weight = values['weight'] / 1000  # convert to tonne
-        pin_dia = values['pin_diameter'] / 1000
-        bow_dia = values['bow_diameter'] / 1000
-        bow_length_inside = values['inside_length'] / 1000
-        bow_circle_inside = values['inside_width'] / 1000
+        weight = values["weight"] / 1000  # convert to tonne
+        pin_dia = values["pin_diameter"] / 1000
+        bow_dia = values["bow_diameter"] / 1000
+        bow_length_inside = values["inside_length"] / 1000
+        bow_circle_inside = values["inside_width"] / 1000
 
         cogz = 0.5 * pin_dia + bow_length_inside / 3  # estimated
 
@@ -918,8 +910,8 @@ class Shackle(RigidBodyContainer):
         )
         self.inside.radius = bow_circle_inside / 2
 
-        self.visual_node.path = values['visual']
-        scale = values['scale']
+        self.visual_node.path = values["visual"]
+        scale = values["scale"]
         self.visual_node.scale = [scale, scale, scale]
 
         self._scene.current_manager = remember
@@ -934,17 +926,17 @@ class Shackle(RigidBodyContainer):
     @property
     def MBL(self) -> float:
         """MBL [t]"""
-        return self.shackle_data_dict['MBL']
+        return self.shackle_data_dict["MBL"]
 
     @property
-    def load(self)-> float:
+    def load(self) -> float:
         """The force traveling through this shackle [kN]
 
         Calculated as the maximum absolute value of all nodes attached to the shackle as well as the connection force. May be incorrect
         for situations where more than two nodes connect to different locations on the shackle.
         """
         s = self._scene  # alias
-        F = 0            # initial value
+        F = 0  # initial value
 
         child_nodes = s.nodes_with_parent(self, recursive=False)
 
@@ -959,7 +951,6 @@ class Shackle(RigidBodyContainer):
 
         return F
 
-
     def give_python_code(self):
         code = f"# Exporting {self.name}"
 
@@ -969,8 +960,12 @@ class Shackle(RigidBodyContainer):
         if self.parent_for_export:
             code += f"\ns['{self.name}'].parent = s['{self.parent_for_export.name}']"
 
-        code += "\ns['{}'].position = ({:.6g},{:.6g},{:.6g})".format(self.name, *self.position)
-        code += "\ns['{}'].rotation = ({:.6g},{:.6g},{:.6g})".format(self.name, *self.rotation)
+        code += "\ns['{}'].position = ({:.6g},{:.6g},{:.6g})".format(
+            self.name, *self.position
+        )
+        code += "\ns['{}'].rotation = ({:.6g},{:.6g},{:.6g})".format(
+            self.name, *self.rotation
+        )
         if not np.all(self.fixed):
             code += "\ns['{}'].fixed = ({},{},{},{},{},{})".format(
                 self.name, *self.fixed
@@ -979,20 +974,18 @@ class Shackle(RigidBodyContainer):
         return code
 
 
-
 class Component(Frame, HasSubScene):
     """Components are frame-nodes containing a scene. The imported scene is referenced by a file-name. All impored nodes
     are placed in the components frame.
     """
 
     def __init__(self, scene, name):
-        super().__init__(scene = scene, name=name)
+        super().__init__(scene=scene, name=name)
 
         self._path = ""
 
         self._exposed = []
         """List of tuples containing the exposed properties (if any)"""
-
 
     def _import_scene_func(self, other_scene):
         self._scene.import_scene(
@@ -1009,7 +1002,6 @@ class Component(Frame, HasSubScene):
         self.__class__ = Frame
 
     def give_python_code(self):
-
         code = []
         code.append("# code for {}".format(self.name))
         code.append("c = s.new_component(name='{}',".format(self.name))
@@ -1030,7 +1022,9 @@ class Component(Frame, HasSubScene):
         if self.fixed[2] or not self._scene._export_code_with_solved_function:
             code.append("                     {:.6g}),".format(self.position[2]))
         else:
-            code.append("                     solved({:.6g})),".format(self.position[2]))
+            code.append(
+                "                     solved({:.6g})),".format(self.position[2])
+            )
 
         # rotation
 
@@ -1045,7 +1039,9 @@ class Component(Frame, HasSubScene):
         if self.fixed[5] or not self._scene._export_code_with_solved_function:
             code.append("                     {:.6g}),".format(self.rotation[2]))
         else:
-            code.append("                     solved({:.6g})),".format(self.rotation[2]))
+            code.append(
+                "                     solved({:.6g})),".format(self.rotation[2])
+            )
 
         # fixeties
         code.append("           fixed =({}, {}, {}, {}, {}, {}) )".format(*self.fixed))
@@ -1056,6 +1052,4 @@ class Component(Frame, HasSubScene):
         for ep in self.exposed_properties:
             code.append(f"c.set_exposed('{ep}', {self.get_exposed(ep)})")
 
-        return '\n'.join(code)
-
-
+        return "\n".join(code)

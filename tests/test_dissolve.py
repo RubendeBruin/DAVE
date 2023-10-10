@@ -403,10 +403,19 @@ def test_testscene_dissolves():
 
 def test_testscene_flatten():
     s = gimme()
+
+    sling = s['Sling']
+
     s.flatten()
 
     assert len(s._nodes) == 25
     assert not isinstance(s['Component'], Component) # should be a frame now
+
+def test_dissolve_sling():
+    s = gimme()
+    sling = s["Sling"]
+    s.dissolve(sling)
+
 
 def test_testscene_flatten_with_component_position_changed():
     s = gimme()

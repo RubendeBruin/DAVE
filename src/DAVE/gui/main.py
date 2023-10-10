@@ -741,16 +741,17 @@ class Gui:
             # Client mode
             self.guiWidgets = dict()
 
+            try:
+                from DAVE_timeline import gui
+            except:
+                pass
+
             self.ui.frameAni.setVisible(False)
             self.ui.dockWidget_2.setVisible(False)
 
-            self.scene.new_component("all", path="res: client_scene.dave")
-
             self.show_guiWidget("Watches")
+            self.show_guiWidget("TimeLine")
             self._active_workspace = "Client"
-
-            self.guiSelectNode("all")
-            self.show_guiWidget("Properties")
 
             self.guiEmitEvent(guiEventType.FULL_UPDATE)
 
@@ -760,7 +761,6 @@ class Gui:
         self.MainWindow.setMinimumWidth(1400)
 
         #
-
 
         open_autosave = self.autosave_startup()
 
@@ -800,7 +800,9 @@ class Gui:
             else:
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Warning)
-                msg.setText(f"Do you want to open the autosave folder (for example to manually delete the file if you do no longer need it)?")
+                msg.setText(
+                    f"Do you want to open the autosave folder (for example to manually delete the file if you do no longer need it)?"
+                )
                 msg.setWindowTitle("Open autosave folder?")
                 msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
                 retval = msg.exec_()
@@ -1363,10 +1365,9 @@ class Gui:
     # =================================================== end of animation functions ==================
 
     def _autosave_write(self):
-
         try:
-            code = '# DAVE autosave file\n'
-            code += f'# for: {self.modelfilename}\n#\n'
+            code = "# DAVE autosave file\n"
+            code += f"# for: {self.modelfilename}\n#\n"
 
             curdir = self.scene.current_directory
             if curdir is not None:
@@ -1377,7 +1378,6 @@ class Gui:
             self.give_feedback("Autosaved to {}".format(self._autosave.autosave_file))
         except Exception as e:
             self.show_exception(f"Could not save autosave file because {e}")
-
 
     # ==== undo functions ====
 
@@ -1484,7 +1484,7 @@ class Gui:
 
         self.visual.shutdown_qt()
 
-        print('removing autosave files')
+        print("removing autosave files")
         self._autosave.cleanup()
 
         print(
