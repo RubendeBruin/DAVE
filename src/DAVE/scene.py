@@ -2616,10 +2616,10 @@ class Scene:
         pois.append(endB)
 
         # default options
-        if length < 0:
-            raise ValueError("Length should be >= 0")
-
         if length is not None:
+            if length < 0:
+                raise ValueError("Length should be >= 0")
+
             if length < 1e-9:
                 if EA > 0:
                     raise ValueError("Length should be more than 0 (if EA>0)")
@@ -2678,6 +2678,9 @@ class Scene:
         try:
             if length is not None:
                 new_node.length = length
+            else:
+                new_node.length = 1e-8  # set dummy length
+
             new_node.EA = EA
 
             new_node.diameter = diameter
@@ -2694,9 +2697,7 @@ class Scene:
             # self._nodes.append(new_node)
 
             if length is None:
-                new_node.length = 1e-8
                 self._vfc.state_update()
-
                 new_length = new_node.stretch + 1e-8
 
                 if new_length > 0:
