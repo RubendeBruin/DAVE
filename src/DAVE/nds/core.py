@@ -1514,9 +1514,12 @@ class Cable(NodeCoreConnected):
     @node_setter_observable
     def length(self, val):
         if val < 1e-9:
-            raise Exception(
-                "Length shall be more than 0 (otherwise stiffness EA/L becomes infinite)"
-            )
+            if self.EA > 0:
+                raise ValueError(
+                    "Length shall be more than 0 if EA>0 (otherwise stiffness EA/L becomes infinite)"
+                )
+        if val < 0:
+            raise ValueError("Length shall be more than 0")
         self._vfNode.Length = val
 
     @property
@@ -1529,6 +1532,12 @@ class Cable(NodeCoreConnected):
     @node_setter_observable
     def EA(self, ea):
         self._vfNode.EA = ea
+
+        try:
+            self.length = self.length
+        except ValueError as E:
+            self.EA = 0
+            raise E
 
     @property
     def diameter(self) -> float:

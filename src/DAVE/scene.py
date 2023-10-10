@@ -2616,12 +2616,16 @@ class Scene:
         pois.append(endB)
 
         # default options
+        if length < 0:
+            raise ValueError("Length should be >= 0")
+
         if length is not None:
             if length < 1e-9:
-                raise Exception("Length should be more than 0")
+                if EA > 0:
+                    raise ValueError("Length should be more than 0 (if EA>0)")
 
         if EA < 0:
-            raise Exception("EA should be more than 0")
+            raise ValueError(f"EA should be >= 0, not {EA}")
 
         assert1f(diameter, "Diameter should be a number >= 0")
 

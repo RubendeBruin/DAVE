@@ -1484,7 +1484,7 @@ class EditCable(NodeEditor):
         self.set_colors()
 
     def set_colors(self):
-        if self.ui.doubleSpinBox_2.value() == 0:
+        if self.ui.doubleSpinBox_2.value() == 0 and self.ui.doubleSpinBox_1.value() > 0:
             self.ui.doubleSpinBox_2.setStyleSheet("background: orange")
         else:
             self.ui.doubleSpinBox_2.setStyleSheet("background: white")
@@ -1495,13 +1495,13 @@ class EditCable(NodeEditor):
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
-        new_length = self.ui.doubleSpinBox_1.value()
         new_EA = self.ui.doubleSpinBox_2.value()
+        new_length = self.ui.doubleSpinBox_1.value()
         new_diameter = self.ui.doubleSpinBox.value()
         new_mass_per_length = self.ui.doubleSpinBox_3.value()
 
+        code += code_if_changed_d(self.node, new_EA, "EA")  # ea before length
         code += code_if_changed_d(self.node, new_length, "length")
-        code += code_if_changed_d(self.node, new_EA, "EA")
         code += code_if_changed_d(self.node, new_diameter, "diameter")
         code += code_if_changed_d(self.node, new_mass_per_length, "mass_per_length")
         code += code_if_changed_d(self.node, self.ui.doubleSpinBox_4.value(), "mass")
