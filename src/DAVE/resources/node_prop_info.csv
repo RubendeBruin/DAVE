@@ -59,9 +59,11 @@ Cable,reversed,tuple,Diameter of the cable. Used when a cable runs over a circle
 Cable,solve_segment_lengths,bool,If True then lengths of the segment are solved for a continuous tension distribution including weight. If false then the segment lengths are determined only on the geometry ,[bool],,True,True,False,"If True then lengths of the segment are solved for a continuous tension distribution including weight. If false then the segment lengths are determined only on the geometry [bool]
         Note that the solution is typically not unique!"
 Cable,friction,tuple,Friction factors at the connections ,[-],,True,False,False,Friction factors at the connections [-]
+Cable,angles_at_connections,tuple,Change in cable direction at each of the connections ,[deg],,False,False,False,Change in cable direction at each of the connections [deg]
 Cable,max_winding_angles,tuple,Maximum winding angles at the connections ,[deg],,True,False,False,Maximum winding angles at the connections [deg]
 Cable,friction_forces,tuple,Forces at the connections due to friction ,[kN],,False,False,False,Forces at the connections due to friction [kN]
 Cable,calculated_friction_factor,float,"The friction factor that was left for DAVE to calculate , only applicable to loops",[-],,False,False,True,"The friction factor that was left for DAVE to calculate [-], only applicable to loops"
+Cable,friction_factors_as_calculated,tuple,"The friction factors as calculated by DAVE , only applicable to loops",[-],,False,False,False,"The friction factors as calculated by DAVE [-], only applicable to loops"
 Cable,segment_end_tensions,tuple,Tensions at the ends of each of the cable segments ,"[kN, kN]",,False,False,False,"Tensions at the ends of each of the cable segments [kN, kN]
         These are identical if the cable weight is zero.
         "
@@ -83,8 +85,7 @@ Circle,global_position,tuple,Global position of the center of the sheave ,"[m,m,
 
         Note: this is the same as the global position of the parent point.
         "
-Circle,global_axis,tuple,Global axis direction ,"[m,m,m]",,True,False,False,"Global axis direction [m,m,m]
-        "
+Circle,global_axis,tuple,Global axis direction ,"[m,m,m]",,True,False,False,"Global axis direction [m,m,m]"
 Circle,position,tuple,Local position of the center of the sheave  (parent axis).,"[m,m,m]",,False,False,False,"Local position of the center of the sheave [m,m,m] (parent axis).
 
         Note: this is the same as the local position of the parent point.
@@ -138,6 +139,9 @@ Force,moment,tuple,Moment  (global).,"[kNm,kNm,kNm]",,True,False,False,"Moment [
 Force,mx,float,The global x-component of the moment   ,[kNm],global axis,True,True,True,The global x-component of the moment [kNm]  (global axis)
 Force,my,float,The global y-component of the moment   ,[kNm],global axis,True,True,True,The global y-component of the moment [kNm]  (global axis)
 Force,mz,float,The global z-component of the moment   ,[kNm],global axis,True,True,True,The global z-component of the moment [kNm]  (global axis)
+Force,is_global,bool,"True if the force and moment are expressed in the global axis system. False if they are expressed in the local axis system, aka followers ",[-],,True,True,False,"True if the force and moment are expressed in the global axis system. False if they are expressed in the local axis system, aka followers [-]"
+Force,global_force,tuple,The force in the global axis system ,"[kN,kN,kN]",,False,False,False,"The force in the global axis system [kN,kN,kN]"
+Force,global_moment,tuple,The moment in the global axis system ,"[kNm,kNm,kNm]",,False,False,False,"The moment in the global axis system [kNm,kNm,kNm]"
 Frame,inertia,float,The linear inertia or 'mass' of the axis ,[mT],,True,True,True,"The linear inertia or 'mass' of the axis [mT]
         - used only for dynamics"
 Frame,inertia_position,tuple,"The position of the center of inertia. Aka: ""cog""  ","[m,m,m]",local axis,True,False,False,"The position of the center of inertia. Aka: ""cog"" [m,m,m] (local axis)
@@ -174,13 +178,15 @@ Frame,y,float,The y-component of the position vector  ,[m],parent axis,True,True
 Frame,z,float,The z-component of the position vector  ,[m],parent axis,True,True,True,The z-component of the position vector (parent axis) [m]
 Frame,position,tuple,Position of the axis  ,"[m,m,m]",parent axis,True,False,False,"Position of the axis (parent axis) [m,m,m]
 
-        These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)"
+        These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)
+        "
 Frame,rx,float,The x-component of the rotation vector  ,[degrees],parent axis,True,True,True,The x-component of the rotation vector [degrees] (parent axis)
 Frame,ry,float,The y-component of the rotation vector  ,[degrees],parent axis,True,True,True,The y-component of the rotation vector [degrees] (parent axis)
 Frame,rz,float,"The z-component of the rotation vector , ",[degrees],parent axis,True,True,True,"The z-component of the rotation vector [degrees], (parent axis)"
 Frame,rotation,tuple,"Rotation of the frame about its origin as rotation-vector (rx,ry,rz) .",[degrees],,True,False,False,"Rotation of the frame about its origin as rotation-vector (rx,ry,rz) [degrees].
         Defined as a rotation about an axis where the direction of the axis is (rx,ry,rz) and the angle of rotation is |(rx,ry,rz| degrees.
-        These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)"
+        These are the expressed on the coordinate system of the parent (if any) or the global axis system (if no parent)
+        "
 Frame,parent,Frame,Determines the parent of the axis. Should either be another axis or 'None',,,True,True,False,"Determines the parent of the axis. Should either be another axis or 'None'
 
         Other axis may be refered to by reference or by name (str). So the following are identical
@@ -395,8 +401,7 @@ Shackle,load,float,The force traveling through this shackle ,[kN],,False,False,T
         for situations where more than two nodes connect to different locations on the shackle.
         "
 Sling,k_total,float,Total stiffness of the sling ,[kN/m],,True,True,True,Total stiffness of the sling [kN/m]
-Sling,connections,tuple,List or Tuple of nodes (Points or Circles) that this sling is connected to. Nodes may be passed by name (string) or by reference.,,,True,False,False,"List or Tuple of nodes (Points or Circles) that this sling is connected to. Nodes may be passed by name (string) or by reference.
-        "
+Sling,connections,tuple,List or Tuple of nodes (Points or Circles) that this sling is connected to. Nodes may be passed by name (string) or by reference.,,,True,False,False,List or Tuple of nodes (Points or Circles) that this sling is connected to. Nodes may be passed by name (string) or by reference.
 Sling,reversed,tuple,The directions over which the sling runs over any intermediate connection circles,,,True,False,False,The directions over which the sling runs over any intermediate connection circles
 Sling,tension,float,Tension in (main part of) the sling ,[kN],,False,False,True,Tension in (main part of) the sling [kN]
 Sling,length,float,Total length measured between the INSIDE of the eyes of the sling is pulled straight. ,[m],,True,True,True,Total length measured between the INSIDE of the eyes of the sling is pulled straight. [m]

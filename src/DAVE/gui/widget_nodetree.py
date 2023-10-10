@@ -361,9 +361,13 @@ class WidgetNodeTree(guiDockWidget):
                             print('name changed')
                             break
                     else:
-                        # no new nodes, check if the parents and managers are the same
+                        # no new nodes, check if the
+                        #   parents and
+                        #   managers and
+                        #   type
+                        #   are the same
                         for node in self.guiScene._nodes:
-                            if self._current_tree[node.name] != (getattr(node,'parent',None), node.manager):
+                            if self._current_tree[node.name] != (getattr(node,'parent',None), node.manager, type(node)):
                                 print('structure changed')
                                 break
                         else:
@@ -375,7 +379,7 @@ class WidgetNodeTree(guiDockWidget):
 
         self._current_tree = dict()
         for node in self.guiScene._nodes:
-            self._current_tree[node.name] = (getattr(node, 'parent',None), node.manager)
+            self._current_tree[node.name] = (getattr(node, 'parent',None), node.manager, type(node))
 
         # start the update
 

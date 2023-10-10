@@ -315,23 +315,23 @@ class Force(NodeCoreConnected, HasParentCore):
         self.moment = (a[0], a[1], var)
 
     @property
-    def is_global(self):
+    def is_global(self) -> bool:
         """True if the force and moment are expressed in the global axis system. False if they are expressed in the local axis system, aka followers [-]"""
         return self._vfNode.is_global
 
     @is_global.setter
-    def is_global(self, value):
+    def is_global(self, value : bool):
         assertBool(value, "is_global")
         self._vfNode.is_global = value
 
     @property
-    def global_force(self):
+    def global_force(self) -> tuple[float, float, float]:
         """The force in the global axis system [kN,kN,kN]"""
         self._vfNode.update()
         return self._vfNode.global_force
 
     @property
-    def global_moment(self):
+    def global_moment(self) -> tuple[float, float, float]:
         """The moment in the global axis system [kNm,kNm,kNm]"""
         self._vfNode.update()
         return self._vfNode.global_moment
@@ -1643,7 +1643,7 @@ class Cable(NodeCoreConnected):
         self._update_pois()
 
     @property
-    def angles_at_connections(self):
+    def angles_at_connections(self) -> tuple[float]:
         """Change in cable direction at each of the connections [deg]"""
         return tuple(np.rad2deg(self._vfNode.angles_at_connections))
 
@@ -1696,7 +1696,7 @@ class Cable(NodeCoreConnected):
             return None
 
     @property
-    def friction_factors_as_calculated(self):
+    def friction_factors_as_calculated(self) -> tuple[float]:
         """The friction factors as calculated by DAVE [-], only applicable to loops"""
         if self._isloop:
             fr = list(self.friction)
