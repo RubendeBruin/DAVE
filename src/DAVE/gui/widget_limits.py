@@ -2,7 +2,7 @@
 This is the limits dock-widget
 """
 from PySide6.QtCore import QObject, QEvent, Qt
-from PySide6.QtGui import QColor, QKeyEvent
+from PySide6.QtGui import QColor, QKeyEvent, QBrush
 from PySide6.QtWidgets import QTableWidgetItem, QHeaderView
 
 from DAVE.settings_visuals import UC_CMAP
@@ -280,16 +280,18 @@ class WidgetLimits(guiDockWidget):
                     uc_paint = UC_CMAP(round(100*uc))
 
                 uc_item = QTableWidgetItem(f'{uc:.2f}')
-                uc_item.setBackgroundColor(QColor(255*uc_paint[0],
+
+                uc_item.setBackground(QBrush(QColor(255*uc_paint[0],
                                                   255 * uc_paint[1],
                                                   255 * uc_paint[2],
                                                   254
-                                                  ))
+                                                  )))
+
 
                 if uc > 0.2 and uc < 0.7:
-                    uc_item.setForeground(0,QBrush(QColor(0,0,0,255)))
+                    uc_item.setForeground(QBrush(QColor(0,0,0,255)))
                 else:
-                    uc_item.setForeground(0,QBrush(QColor(255, 255, 255, 255)))
+                    uc_item.setForeground(QBrush(QColor(255, 255, 255, 255)))
                 table.setItem(irow, 4, uc_item)
 
                 irow += 1

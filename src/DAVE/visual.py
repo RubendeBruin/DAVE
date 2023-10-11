@@ -435,12 +435,10 @@ class VisualActor:
         # Override paint settings if node is selected or sub-selected
 
         if isinstance(self.node, dn.Cable):
-            # apply colors to cable
-            # apply_colors_to_cable_node_actor(self.node, self.actors["main"])
             actor = self.actors["main"]
             mapper = actor.GetMapper()
 
-            if self.node.do_color_by_tension:
+            if self.node.do_color_by_tension and not settings.paint_uc:
                 mapper.SetScalarModeToUsePointFieldData()
                 mapper.ScalarVisibilityOn()
                 mapper.SelectColorArray("TubeColors")
