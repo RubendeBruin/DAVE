@@ -955,21 +955,19 @@ class Shackle(RigidBodyContainer):
         code = f"# Exporting {self.name}"
 
         code += "\n# Create Shackle"
-        code += f'\ns.new_shackle("{self.name}", kind = "{self.kind}")'  # , elastic={self.elastic})'
+        code += f'\nsh = s.new_shackle("{self.name}", kind = "{self.kind}")'  # , elastic={self.elastic})'
 
         if self.parent_for_export:
-            code += f"\ns['{self.name}'].parent = s['{self.parent_for_export.name}']"
+            code += f"\nsh.parent = s['{self.parent_for_export.name}']"
 
-        code += "\ns['{}'].position = ({:.6g},{:.6g},{:.6g})".format(
-            self.name, *self.position
-        )
-        code += "\ns['{}'].rotation = ({:.6g},{:.6g},{:.6g})".format(
-            self.name, *self.rotation
-        )
+        code += "\nsh.position = ({:.6g},{:.6g},{:.6g})".format(*self.position)
+        code += "\nsh.rotation = ({:.6g},{:.6g},{:.6g})".format(*self.rotation)
         if not np.all(self.fixed):
-            code += "\ns['{}'].fixed = ({},{},{},{},{},{})".format(
-                self.name, *self.fixed
-            )
+            code += "\nsh.fixed = ({},{},{},{},{},{})".format(*self.fixed)
+
+        poslist = getattr(self, "_poslist", None)
+        if poslist:
+            code += '\nsh._poslist = "{}"'.format(poslist)
 
         return code
 
