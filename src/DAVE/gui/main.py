@@ -102,6 +102,7 @@ from PySide6.QtWidgets import (
 
 from DAVE.scene import Scene
 import DAVE.settings as vfc
+import DAVE.gui.node_icons
 
 from DAVE.gui.forms.main_form import Ui_MainWindow
 from DAVE.visual import Viewport, ActorType, DelayRenderingTillDone
@@ -110,7 +111,7 @@ import DAVE.gui.standard_assets
 from DAVE.gui.forms.dlg_solver import Ui_Dialog
 from DAVE.gui.forms.dlg_settingsr import Ui_frmSettings
 import DAVE.settings
-from DAVE.settings_visuals import PAINTERS
+from DAVE.settings_visuals import PAINTERS, ICONS
 
 # from DAVE.gui.helpers.highlighter import PythonHighlighter
 from DAVE.gui.helpers.ctrl_enter import ShiftEnterKeyPressFilter
@@ -489,10 +490,12 @@ class Gui:
             self.ui.actionShow_force_applying_element.triggered.connect(
                 self.toggle_show_force_applying_elements
             )
-            # --- label size
 
             # cog size
             self.ui.menuView.addSeparator()
+
+            # --- label size
+            self.ui.actionShow_labels.setChecked(self.visual.settings.label_scale > 0)
 
             self.ui.sliderLabelSize = MenuSlider("Label size")
             self.ui.sliderLabelSize.setMin(0)
@@ -501,7 +504,7 @@ class Gui:
 
             def set_label_size(value):
                 self.run_code(
-                    f"self.visual.settings.label_scale = {value / 20}",
+                    f"self.visual.settings.label_scale = {value / 10}",
                     guiEventType.VIEWER_SETTINGS_UPDATE,
                 )
                 self.visual.refresh_embeded_view()
@@ -1502,6 +1505,10 @@ class Gui:
         self.give_feedback(e, style=1)
 
     def give_feedback(self, what, style=0):
+        """Shows feedback in the feedback window and statusbar
+        style 0 : normal
+        style 1 : error
+        """
         self.ui.teFeedback.setText(str(what))
         if style == 0:
             self.ui.teFeedback.setStyleSheet("background-color: white;")
@@ -1896,7 +1903,7 @@ class Gui:
         self.visual.refresh_embeded_view()
 
     def clear(self):
-        self.run_code("s.clear()", guiEventType.FULL_UPDATE)
+        self.run_code("s.clear()", guiEventType.FULL_UPDATE, store_undo=False)
         self._model_has_changed = False
         self.modelfilename = None
         self.MainWindow.setWindowTitle(f"DAVE [unnamed scene]")
@@ -2268,9 +2275,12 @@ class Gui:
         menu.addAction(wa)
 
         for plugin in self.plugins_context:
-            plugin(menu, node_name, self)
+            try:
+                plugin(menu, node_name, self)
+            except Exception as E:
+                warnings.warn("Context menu plugin errored: {}".format(E))
 
-        menu.exec_(globLoc)
+        menu.exec(globLoc)
 
     def new_frame(self):
         self.new_something(new_node_dialog.add_frame)
@@ -2417,52 +2427,67 @@ class Gui:
         i = 0
         for _ in range(len(nodes)):
             if nodes[i].manager is not None:
-                nodes.append(nodes.pop(i))
+                nodes.append(nodes.pop(i))  # move to end
             else:
                 i += 1
 
-        menu = QtWidgets.QMenu()
-
-        for node in nodes:
-            if node.manager is None:
-                text = f"{node.name}\t[{node.class_name}]"
-            else:
-                text = (
-                    f"{node.name}\t[{node.class_name}]\t managed by {node.manager.name}"
-                )
-
-            # action = menu.addAction(
-            #     text, lambda n=node, *args: self._user_clicked_node(n)
-            # )
-
-            action = QDraggableNodeActionWidget(text, mime_text=node.name)
-            action.clicked.connect(
-                lambda n=node, *args: self._user_clicked_node(n, args)
-            )
-
-            menu.addAction(action)
-
-            if node.manager is None:
-                action.setBold(True)
-            else:
-                if (
-                    getattr(node, "_editor_widget_types_when_managed", None) is not None
-                ):  # for partially managed nodes
-                    action.setBold(True)
+        # group by node class
 
         # See if there are multiple nodes with the same class
         # if so, offer a menu option to select all of them
+        # maintain order as in nodes
 
-        class_names = [node.class_name for node in nodes]
-        class_names = list(set(class_names))  # make unique
+        class_names = []
+        for node in nodes:
+            if node.class_name not in class_names:
+                class_names.append(node.class_name)
+
+        menu = QtWidgets.QMenu()
+        actions = []  # keep alive
 
         for class_name in class_names:
-            nodes_with_class = [node for node in nodes if node.class_name == class_name]
+            print(f"{class_name}")
+            nodes_with_class = tuple(
+                [node for node in nodes if node.class_name == class_name]
+            )
+
+            icon = ICONS[type(nodes_with_class[0])]
+
             if len(nodes_with_class) > 1:
-                menu.addAction(
-                    f"Select all {class_name}s",
+                action = menu.addAction(
+                    f"------ {class_name}s ------",
                     lambda nodes=nodes_with_class, *args: self.guiSelectNodes(nodes),
                 )
+                action.setIcon(icon)
+
+            for node in nodes_with_class:
+                text = node.name
+
+                if node.manager is None:
+                    right_text = ""
+                else:
+                    right_text = f"{node.manager.name}"
+
+                action = QDraggableNodeActionWidget(
+                    text, mime_text=node.name, right_text=right_text, icon=icon
+                )
+                action.clicked.connect(
+                    lambda n=node, *args: self._user_clicked_node(n, args)
+                )
+
+                actions.append(action)
+
+                print(f"adding {text}")
+                menu.addAction(action)
+
+                if node.manager is None:
+                    action.setBold(True)
+                else:
+                    if (
+                        getattr(node, "_editor_widget_types_when_managed", None)
+                        is not None
+                    ):  # for partially managed nodes
+                        action.setBold(True)
 
         menu.exec_(QCursor.pos())
 

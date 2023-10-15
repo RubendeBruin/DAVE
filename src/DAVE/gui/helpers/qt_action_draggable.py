@@ -8,17 +8,23 @@ The menu will be closed only if the shift or control key is NOT down.
 
 """
 from PySide6.QtGui import QDrag
-from PySide6.QtWidgets import QApplication, QMenu, QWidgetAction, QPushButton, QHBoxLayout, QWidget, QLabel
+from PySide6.QtWidgets import (
+    QApplication,
+    QMenu,
+    QWidgetAction,
+    QPushButton,
+    QHBoxLayout,
+    QWidget,
+    QLabel,
+)
 from PySide6.QtCore import Qt, QMimeData, Signal
 
 
 # Class wrapping a menu item
 
+
 class QDraggableNodeActionWidget(QWidgetAction):
-
-
-    def __init__(self, text = "", mime_text = None):
-
+    def __init__(self, text="", mime_text=None, right_text=None, icon = None):
         self.startPos = None
 
         QWidgetAction.__init__(self, None)
@@ -29,14 +35,32 @@ class QDraggableNodeActionWidget(QWidgetAction):
 
         self.mime_text = mime_text
 
+        self.widget = QWidget()
+        self.layout = QHBoxLayout()
+        self.layout.setContentsMargins(9, 3, 3, 9)
+
+        if icon:
+            self.icon = QLabel()
+            self.icon.setPixmap(icon.pixmap(12,12))
+            self.layout.addWidget(self.icon)
+            self.icon.setFixedWidth(16)
+
         self.label = QLabel()
         self.label.setText(self.text)
+        # self.label.setAlignment(Qt.AlignRight)
 
         self.label.mouseMoveEvent = self.mouseMoveEvent
         self.label.mousePressEvent = self.mousePressEvent
         self.label.mouseReleaseEvent = self.mouseReleaseEvent
 
-        self.setDefaultWidget(self.label)
+        self.widget.setLayout(self.layout)
+        self.layout.addWidget(self.label)
+        if right_text is not None:
+            self.right_label = QLabel()
+            self.right_label.setText(right_text)
+            self.right_label.setAlignment(Qt.AlignRight)
+            self.layout.addWidget(self.right_label)
+        self.setDefaultWidget(self.widget)
 
     @Signal
     def clicked(self):
@@ -46,7 +70,10 @@ class QDraggableNodeActionWidget(QWidgetAction):
         self.clicked.emit()
 
         # if the shift or control key is NOT down, close the menu
-        if not (event.modifiers() & Qt.ShiftModifier or event.modifiers() & Qt.ControlModifier):
+        if not (
+            event.modifiers() & Qt.ShiftModifier
+            or event.modifiers() & Qt.ControlModifier
+        ):
             self.triggered.emit()  # close the menu
 
     def mousePressEvent(self, event):
@@ -57,7 +84,9 @@ class QDraggableNodeActionWidget(QWidgetAction):
             return
         if event.buttons() != Qt.LeftButton:
             return
-        if (event.position() - self.startPos).manhattanLength() < QApplication.startDragDistance():
+        if (
+            event.position() - self.startPos
+        ).manhattanLength() < QApplication.startDragDistance():
             return
         drag = QDrag(self)
         data = QMimeData()
@@ -68,20 +97,18 @@ class QDraggableNodeActionWidget(QWidgetAction):
 
     def setBold(self, bold):
         if bold:
-            self.label.setStyleSheet('font-weight: bold')
+            self.label.setStyleSheet("font-weight: bold")
         else:
-            self.label.setStyleSheet('font-weight: normal')
+            self.label.setStyleSheet("font-weight: normal")
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     app = QApplication()
     menu = QMenu()
     demo = QDraggableNodeActionWidget("Drag me or click me", "mime_text")
-    demo.clicked.connect(lambda: print('clicked'))
+    demo.clicked.connect(lambda: print("clicked"))
 
     a = menu.addAction("Other action")
-
 
     menu.addAction(demo)
     menu.exec()

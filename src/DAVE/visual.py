@@ -357,13 +357,21 @@ class VisualActor:
 
         cap = la.GetTextActor().GetTextProperty()
 
-        la.GetTextActor().SetTextScaleModeToViewport()
+        la.GetTextActor().SetTextScaleModeToNone()
         la.GetTextActor().SetPickable(True)
+
+        tp = la.GetCaptionTextProperty()
+        tp.SetBackgroundOpacity(1.0)
+        tp.SetBackgroundColor(1.0, 1.0, 1.0)
+        tp.FrameOn()
+        tp.SetFrameColor(0, 0, 0)
+        tp.SetFrameWidth(1)
 
         cap.SetColor(0, 0, 0)
         la.SetBorder(False)
         cap.SetBold(False)
         cap.SetItalic(False)
+
         cap.SetFontFamilyToArial()
 
         la.no_outline = True
@@ -371,6 +379,13 @@ class VisualActor:
         self.label_actor = la
 
     def labelUpdate(self, txt):
+        if txt == "":
+            if self.label_actor is not None:
+                self.label_actor.SetVisibility(False)
+                if self.label_actor.GetCaption() != txt:
+                    self.label_actor.SetCaption(txt)
+            return
+
         if self.label_actor is None:
             self.labelCreate(txt)
         else:
@@ -454,8 +469,6 @@ class VisualActor:
                 v.lineColor = COLOR_SELECT_255
                 new_painter_settings[k] = v
 
-            new_painter_settings["main"].labelShow = True
-
             node_painter_settings = new_painter_settings
 
         if self._is_sub_selected:
@@ -468,7 +481,7 @@ class VisualActor:
             node_painter_settings = new_painter_settings
 
         # label
-        if settings.label_scale > 0:
+        if settings.label_scale > 0 and self.label_actor.GetCaption() != "":
             if (
                 self.label_actor.GetVisibility()
                 != node_painter_settings["main"].labelShow
@@ -476,6 +489,7 @@ class VisualActor:
                 self.label_actor.SetVisibility(node_painter_settings["main"].labelShow)
 
             ta = self.label_actor.GetTextActor()
+
             txtprop = ta.GetTextProperty()
 
             if txtprop.GetFontSize() != int(settings.label_scale * 10):
@@ -595,8 +609,10 @@ class VisualActor:
         This includes moving as well as changing meshes and volumes"""
 
         # update label name if needed
+        label_text = getattr(self.node, viewport.settings.label_property, "")
+
         self.labelUpdate(
-            self.node.name
+            label_text
         )  # does not do anything if the label-name is unchanged
 
         # the following ifs all end with Return, so only a single one is executed
@@ -1395,8 +1411,7 @@ class Viewport:
         )
         self.Style.callbackAnyKey = self.keyPressFunction
 
-    @staticmethod
-    def show_as_qt_app(s, painters=None, sea=False, boundary_edges=False):
+    def show_as_qt_app(self, painters=None):
         from PySide6.QtWidgets import QWidget, QApplication
 
         app = QApplication.instance() or QApplication()
@@ -1408,18 +1423,14 @@ class Viewport:
 
             painters = PAINTERS["Construction"]
 
-        v = Viewport(scene=s)
+        v = self
 
         v.settings.painter_settings = painters
-
-        v.settings.show_sea = sea
-        v.settings.show_origin = not sea
 
         v.show_embedded(widget)
         v.quick_updates_only = False
 
         v.create_node_visuals()
-        # v.add_new_node_actors_to_screen()
 
         v.position_visuals()
         v.add_new_node_actors_to_screen()  # position visuals may create new actors
@@ -2628,9 +2639,6 @@ class Viewport:
                     continue  # no need to update paint on invisible actor
 
             v.update_paint(self.settings)
-
-            if v._is_selected:
-                v.labelUpdate(v.node.name)
 
         self.update_global_visibility()
         self.update_outlines()

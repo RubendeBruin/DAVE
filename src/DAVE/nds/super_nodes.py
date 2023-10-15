@@ -918,6 +918,10 @@ class Shackle(RigidBodyContainer):
 
         self._kind = kind
 
+        rigging_string_item = getattr(self, "_rigging_string_item", None)
+        if rigging_string_item:
+            rigging_string_item.kind = kind
+
     @property
     def shackle_data_dict(self) -> dict:
         """Returns the shackle data for the actual shackle kind"""

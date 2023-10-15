@@ -9,10 +9,13 @@ PAINTERS["paintset_name"]["NodeClass:status"] = ActorSettings
 
 from dataclasses import dataclass
 from copy import copy, deepcopy
+
+from PySide6.QtGui import QIcon
 from matplotlib.cm import get_cmap
 import DAVE.settings as ds
 
 ICONS = dict()  # [class] = QIcon
+
 
 PAINTERS = dict()  # this is the dictionary with sets of paint, it will be filled later
 
@@ -28,9 +31,8 @@ ALPHA_SEA = 0.8
 
 RESOLUTION_SPHERE = 12
 RESOLUTION_ARROW = 12
-RESOLUTION_CABLE_OVER_CIRCLE = 36 # NUMBER OF POINTS IN A FULL CIRCLE
+RESOLUTION_CABLE_OVER_CIRCLE = 36  # NUMBER OF POINTS IN A FULL CIRCLE
 RESOLUTION_CABLE_SAG = 30  # NUMBER OF POINTS IN A CATENARY
-
 
 
 # ============ visuals :: colors ===========
@@ -132,7 +134,7 @@ class ActorSettings:
     outlineColor = (0, 0, 0)
 
     # label
-    labelShow = False
+    labelShow = True
 
 
 @dataclass
@@ -170,7 +172,8 @@ class ViewportSettings:
     )
 
     # labels
-    label_scale: float = 0.5  # scale for the labels, set 0 to turn labels off
+    label_property: str or None = "name"  # property to use for labels; by default Name
+    label_scale: float = 0  # scale for the labels, set 0 to turn labels off
 
     painter_settings: dict = None
 
