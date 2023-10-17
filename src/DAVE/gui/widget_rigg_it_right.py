@@ -383,7 +383,7 @@ class WidgetQuickActions(guiDockWidget):
             self.fill()
 
     def guiDefaultLocation(self):
-        return QtCore.Qt.DockWidgetArea.BottomDockWidgetArea # QtCore.Qt.DockWidgetArea.RightDockWidgetArea
+        return QtAds.DockWidgetArea.BottomDockWidgetArea # QtAds.DockWidgetArea.RightDockWidgetArea
 
     # ======
 

@@ -63,30 +63,6 @@
 import subprocess
 from copy import deepcopy
 import logging
-
-from DAVE.gui.autosave import DaveAutoSave
-from DAVE.gui.dialog_blender import ExportToBlenderDialog
-from DAVE.gui.dialog_export_package import ExportAsPackageDialog
-from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter, EscKeyPressFilter
-from DAVE.gui.helpers.qt_action_draggable import QDraggableNodeActionWidget
-from DAVE.gui.widget_watches import WidgetWatches
-from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import DragInfo
-from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
-from DAVE.gui.widget_footprints import WidgetFootprints
-from DAVE.gui.widget_limits import WidgetLimits
-from DAVE.gui.widget_painter import WidgetPainters
-from DAVE.gui.widget_tags import WidgetTags
-
-"""
-  This Source Code Form is subject to the terms of the Mozilla Public
-  License, v. 2.0. If a copy of the MPL was not distributed with this
-  file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-  Ruben de Bruin - 2019
-"""
-
-import DAVE.auto_download
-
 from PySide6.QtCore import Qt, QMimeData, QTimer
 from PySide6.QtCore import QSettings
 from PySide6.QtGui import QIcon, QPixmap, QFont, QFontMetricsF, QCursor, QAction
@@ -98,6 +74,36 @@ from PySide6.QtWidgets import (
     QWidgetAction,
     QStatusBar,
 )
+
+import PySide6QtAds as QtAds
+
+from DAVE.gui.autosave import DaveAutoSave
+from DAVE.gui.dialog_blender import ExportToBlenderDialog
+from DAVE.gui.dialog_export_package import ExportAsPackageDialog
+from DAVE.gui.helpers.my_qt_helpers import (
+    DeleteEventFilter,
+    EscKeyPressFilter,
+    remove_from_stylesheet,
+)
+from DAVE.gui.helpers.qt_action_draggable import QDraggableNodeActionWidget
+from DAVE.gui.widget_watches import WidgetWatches
+from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import DragInfo
+from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
+from DAVE.gui.widget_footprints import WidgetFootprints
+from DAVE.gui.widget_limits import WidgetLimits
+from DAVE.gui.widget_painter import WidgetPainters
+from DAVE.gui.widget_tags import WidgetTags
+
+
+"""
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+  Ruben de Bruin - 2019
+"""
+
+import DAVE.auto_download
 
 
 from DAVE.scene import Scene
@@ -289,6 +295,50 @@ class Gui:
         self.ui.setupUi(self.MainWindow)
         self.MainWindow.closeEvent = self.closeEvent
 
+        self.dock_manager = QtAds.CDockManager(self.MainWindow)
+        self.central_dock_widget = QtAds.CDockWidget("CentralWidget")
+
+
+        self.main_widget = QtWidgets.QWidget()
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.ui.widget_3)
+        layout.addWidget(self.ui.frame3d)
+        self.main_widget.setLayout(layout)
+
+
+        self.central_dock_widget.setWidget(self.main_widget)
+        self.central_dock_area = self.dock_manager.setCentralWidget(
+            self.central_dock_widget
+        )
+        self.central_dock_widget.setFeature(
+            QtAds.CDockWidget.DockWidgetClosable, False
+        )
+
+
+        self.central_dock_area.setAllowedAreas(QtAds.DockWidgetArea.OuterDockAreas)
+
+        self.dock_manager.setConfigFlag(
+            QtAds.CDockManager.ActiveTabHasCloseButton, False
+        )
+        ss = self.dock_manager.styleSheet()
+        ss = remove_from_stylesheet(ss, "ads--CDockSplitter::handle")
+        self.dock_manager.setStyleSheet(ss)
+
+        # # add dock for the controls
+        # controls_dock_widget = QtAds.CDockWidget("Controls")
+        # controls_dock_widget.setWidget(self.ui.widget_3)
+        # controls_dock_widget.setFeature(QtAds.CDockWidget.DockWidgetClosable, False)
+        # controls_dock_widget.setFeature(QtAds.CDockWidget.DockWidgetMovable, False)
+        # controls_dock_widget.setFeature(QtAds.CDockWidget.DockWidgetFloatable, False)
+        # controls_dock_widget.setFeature(QtAds.CDockWidget.NoTab, True)
+
+
+        # controls = self.dock_manager.addDockWidget(
+        #     QtAds.DockWidgetArea.TopDockWidgetArea, controls_dock_widget
+        # )
+
         self.statusbar = QStatusBar()
         self.MainWindow.setStatusBar(self.statusbar)
         self.statusbar.mousePressEvent = self.show_python_console
@@ -358,12 +408,12 @@ class Gui:
 
         self.update_resources_paths()
 
-        # ======================== Modify dock layout options ============
-
-        self.MainWindow.setCorner(Qt.TopRightCorner, Qt.RightDockWidgetArea)
-        self.MainWindow.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
-        self.MainWindow.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
-        self.MainWindow.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
+        # # ======================== Modify dock layout options ============
+        #
+        # self.MainWindow.setCorner(Qt.TopRightCorner, Qt.RightDockWidgetArea)
+        # self.MainWindow.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
+        # self.MainWindow.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
+        # self.MainWindow.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
 
         # ======================== Create 3D viewport ====================
         self.visual = Viewport(scene)
@@ -761,7 +811,7 @@ class Gui:
         # ======================== Finalize ========================
         self.MainWindow.show()
 
-        self.MainWindow.setMinimumWidth(1400)
+        # self.central_dock_widget.setWidget(self.ui.centralwidget)
 
         #
 
@@ -2665,13 +2715,15 @@ class Gui:
         else:
             print("Creating {}".format(name))
 
-            d = widgetClass(self.MainWindow)
-            d.setWindowTitle(name)
+            d = widgetClass(self.MainWindow, name=name)
+            # d.setWindowTitle(name)
             location = d.guiDefaultLocation()
+
+            self.dock_manager.addDockWidget(location, d)
+
             if location is None:
-                d.setFloating(True)
-            else:
-                self.MainWindow.addDockWidget(d.guiDefaultLocation(), d)
+                d.setFloating()
+
             self.guiWidgets[name] = d
 
             d.guiScene = self.scene
@@ -2682,8 +2734,8 @@ class Gui:
             d.guiPressSolveButton = self.solve_statics
             d.gui = self
 
-            if widgetClass == WidgetQuickActions:
-                self.MainWindow.resizeDocks([d], [6], Qt.Horizontal)
+            # if widgetClass == WidgetQuickActions:
+            #     self.MainWindow.resizeDocks([d], [6], Qt.Horizontal)
 
         d.show()
         d._active = True

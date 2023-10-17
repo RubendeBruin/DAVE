@@ -78,7 +78,7 @@ class WidgetModeShapes(guiDockWidget):
             # self.autocalc()
 
     def guiDefaultLocation(self):
-        return QtCore.Qt.DockWidgetArea.TopDockWidgetArea
+        return QtAds.DockWidgetArea.TopDockWidgetArea
 
     # ======
 

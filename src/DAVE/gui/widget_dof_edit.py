@@ -59,7 +59,7 @@ class WidgetDOFEditor(guiDockWidget):
             self.fill()
 
     def guiDefaultLocation(self):
-        return None # QtCore.Qt.DockWidgetArea.RightDockWidgetArea
+        return None # QtAds.DockWidgetArea.RightDockWidgetArea
 
     # ======
 

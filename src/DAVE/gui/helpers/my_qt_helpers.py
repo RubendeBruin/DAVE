@@ -27,6 +27,22 @@ class BlockSigs():
     def __exit__(self, *args, **kwargs):
         self.widget.blockSignals(self.remember)
 
+def remove_from_stylesheet(stylesheet : str, identifier : str) -> str:
+    lines = stylesheet.split('\n')
+    new_lines = list()
+    active = True
+    for line in lines:
+        if identifier in line:
+            active = False
+
+        if active:
+            new_lines.append(line)
+
+        if '}' in line:
+            active = True
+
+    return '\n'.join(new_lines)
+
 
 def set_text_no_signal(widget, text):
     widget.blockSignals(True)

@@ -52,7 +52,7 @@ class WidgetExplore(guiDockWidget):
 
 
     def guiDefaultLocation(self):
-        return QtCore.Qt.DockWidgetArea.LeftDockWidgetArea
+        return QtAds.DockWidgetArea.LeftDockWidgetArea
 
     # ======
 

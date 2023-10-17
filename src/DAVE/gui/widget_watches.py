@@ -83,7 +83,7 @@ class WidgetWatches(guiDockWidget):
                 self.btnNew.setEnabled(False)
 
     def guiDefaultLocation(self):
-        return QtCore.Qt.DockWidgetArea.RightDockWidgetArea
+        return QtAds.DockWidgetArea.RightDockWidgetArea
 
     def fill(self):
 

@@ -53,7 +53,7 @@ class WidgetDisplacedStability(guiDockWidget):
             self.fill()
 
     def guiDefaultLocation(self):
-        return QtCore.Qt.DockWidgetArea.RightDockWidgetArea
+        return QtAds.DockWidgetArea.RightDockWidgetArea
 
     # ======
 

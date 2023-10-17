@@ -54,7 +54,7 @@ class WidgetTankOrder(guiDockWidget):
             self.fill()
 
     def guiDefaultLocation(self):
-        # return QtCore.Qt.DockWidgetArea.LeftDockWidgetArea
+        # return QtAds.DockWidgetArea.LeftDockWidgetArea
         return None # does not fit in left area anymore
 
     def run_action(self, action):

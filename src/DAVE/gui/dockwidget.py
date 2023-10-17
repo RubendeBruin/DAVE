@@ -5,6 +5,8 @@ from PySide6.QtCore import QPoint
 from PySide6.QtGui import QCursor
 from PySide6.QtWidgets import QApplication
 
+import PySide6QtAds as QtAds
+
 from DAVE.scene import *
 
 
@@ -26,10 +28,10 @@ class guiEventType(Enum):
                                  #    - model state changed
                                  #    - environment changed
 
-class guiDockWidget(QtWidgets.QDockWidget):
+class guiDockWidget(QtAds.CDockWidget):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *args,  name, **kwargs):
+        super().__init__(name) # no args *args, **kwargs)
         self.contents = QtWidgets.QWidget(self)
         self.setWidget(self.contents)
         self._active = False
@@ -74,11 +76,11 @@ class guiDockWidget(QtWidgets.QDockWidget):
         if self._active:
             self.guiProcessEvent(event)
 
-    # ------- these should be overridden in the derived class -----------
-
     def guiDefaultLocation(self):
         """Return the default location, or None for floating"""
-        return QtCore.Qt.DockWidgetArea.LeftDockWidgetArea
+        return QtAds.DockWidgetArea.LeftDockWidgetArea
+
+    # ------- these should be overridden in the derived class -----------
 
     def guiProcessEvent(self, event):
         """Is fired when the widget is visible

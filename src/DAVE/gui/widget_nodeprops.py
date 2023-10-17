@@ -2701,33 +2701,33 @@ class EditVisualOutline(NodeEditor):
 
 class WidgetNodeProps(guiDockWidget):
     def guiDefaultLocation(self):
-        return QtCore.Qt.DockWidgetArea.RightDockWidgetArea
+        return QtAds.DockWidgetArea.RightDockWidgetArea
 
     def guiCreate(self):
         self.node_picker = None
 
         self.setMinimumWidth(442)
         self.setVisible(False)
-        self.setAllowedAreas(
-            QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea
-        )
+        # self.setAllowedAreas(
+        #     QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea
+        # )
 
         self._open_edit_widgets = list()
         self._node_editors = list()
 
-        self.scroll_area = QtWidgets.QScrollArea()
-        scroll_area_layout = QtWidgets.QVBoxLayout()
-        scroll_area_layout.setSpacing(0)
-        scroll_area_layout.setContentsMargins(0, 0, 0, 0)
-        self.scroll_area.setLayout(scroll_area_layout)
+        # self.scroll_area = QtWidgets.QWidget()
+        # scroll_area_layout = QtWidgets.QVBoxLayout()
+        # scroll_area_layout.setSpacing(0)
+        # scroll_area_layout.setContentsMargins(0, 0, 0, 0)
+        # self.scroll_area.setLayout(scroll_area_layout)
 
-        self.scroll_area.setWidget(self.contents)
-        scroll_area_layout.addWidget(self.contents)
-        self.setWidget(self.scroll_area)
+        # self.scroll_area.setWidget(self.contents)
+        # scroll_area_layout.addWidget(self.contents)
+        self.setWidget(self.contents)
 
         # self.scroll_area.setStyleSheet('background-color: rgb(255, 255, 0);')
 
-        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         # contents (main layout)
         #   manager_widget ( manager_layout )
