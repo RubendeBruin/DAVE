@@ -2571,8 +2571,7 @@ class EditShackle(NodeEditor):
         self.ui.comboBox.setCurrentText(self.node.kind)
         self.ui.comboBox.blockSignals(False)
 
-        data = self.node.shackle_kind_properties(self.node.kind)
-        self.ui.lbInfo.setText(data["description"])
+        self.ui.lbInfo.setText(self.node.item_description)
 
     def generate_code(self):
         kind = self.ui.comboBox.currentText()
@@ -2903,7 +2902,7 @@ class WidgetNodeProps(guiDockWidget):
         self._name_widget.setEnabled(
             True
         )  # default, disabled for partially managed nodes
-        if node._manager and not isinstance(node, vfs.Shackle):
+        if node._manager:
             self.managed_label.setText(
                 f"This node is controlled by node '{node._manager.name}' and can not be changed directly. Select the manager to make changes indirectly."
             )
@@ -3062,7 +3061,7 @@ class WidgetNodeProps(guiDockWidget):
                 else:
                     self._node_editors.append(value.Instance())
 
-        print("Node editor created!", flush=True)
+        # print("Node editor created!", flush=True)
 
         # Remove suppressed editors
         if manager_workaround:
