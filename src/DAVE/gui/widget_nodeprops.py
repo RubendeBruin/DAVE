@@ -30,6 +30,7 @@ import DAVE.gui.forms.widget_area
 import DAVE.gui.forms.widget_component
 import DAVE.gui.forms.widget_spmt
 import DAVE.gui.forms.widget_connections
+from DAVE.gui.helpers.ads_helpers import dock_hide
 from DAVE.gui.helpers.nodelist_drag_drop_move import (
     call_from_drop_Event,
     call_from_dragEnter_or_Move_Event,
@@ -2896,8 +2897,11 @@ class WidgetNodeProps(guiDockWidget):
         to_be_removed = self._open_edit_widgets.copy()
 
         if node is None:
-            self.setVisible(False)
+            self.setEnabled(False)
+            dock_hide(self.gui.dock_manager, self)
             return
+
+        self.setEnabled(True)
 
         manager_workaround = None
         self._name_widget.setEnabled(

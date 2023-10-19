@@ -80,6 +80,12 @@ import PySide6QtAds as QtAds
 from DAVE.gui.autosave import DaveAutoSave
 from DAVE.gui.dialog_blender import ExportToBlenderDialog
 from DAVE.gui.dialog_export_package import ExportAsPackageDialog
+from DAVE.gui.helpers.ads_helpers import (
+    create_dock_manager,
+    dock_remove_from_gui,
+    dock_add_to_gui,
+    dock_ensure_visible,
+)
 from DAVE.gui.helpers.my_qt_helpers import (
     DeleteEventFilter,
     EscKeyPressFilter,
@@ -180,6 +186,24 @@ DAVE_GUI_PLUGINS_INIT = []
 DAVE_GUI_PLUGINS_WORKSPACE = []
 DAVE_GUI_PLUGINS_CONTEXT = []
 DAVE_GUI_PLUGINS_EDITOR = []
+
+DAVE_GUI_DOCKS["Node Tree"] = WidgetNodeTree
+DAVE_GUI_DOCKS["Properties"] = WidgetNodeProps
+DAVE_GUI_DOCKS["Quick actions"] = WidgetQuickActions
+DAVE_GUI_DOCKS["Derived Properties"] = WidgetDerivedProperties
+DAVE_GUI_DOCKS["Properties - dynamic"] = WidgetDynamicProperties
+DAVE_GUI_DOCKS["Mode-shapes"] = WidgetModeShapes
+DAVE_GUI_DOCKS["Environment"] = WidgetEnvironment
+DAVE_GUI_DOCKS["Stability"] = WidgetDisplacedStability
+DAVE_GUI_DOCKS["Limits and UCs"] = WidgetLimits
+DAVE_GUI_DOCKS["Tags"] = WidgetTags
+DAVE_GUI_DOCKS["Airy waves"] = WidgetAiry
+DAVE_GUI_DOCKS["Footprints"] = WidgetFootprints
+DAVE_GUI_DOCKS["Graph"] = WidgetBendingMoment
+DAVE_GUI_DOCKS["vanGogh"] = WidgetPainters
+DAVE_GUI_DOCKS["DOF editor"] = WidgetDOFEditor
+DAVE_GUI_DOCKS["Explore 1-to-1"] = WidgetExplore
+
 
 # ====================================================
 
@@ -295,9 +319,10 @@ class Gui:
         self.ui.setupUi(self.MainWindow)
         self.MainWindow.closeEvent = self.closeEvent
 
-        self.dock_manager = QtAds.CDockManager(self.MainWindow)
-        self.central_dock_widget = QtAds.CDockWidget("CentralWidget")
+        # setup the docking system
 
+        self.dock_manager = create_dock_manager(self.MainWindow)
+        self.central_dock_widget = QtAds.CDockWidget("CentralWidget")
 
         self.main_widget = QtWidgets.QWidget()
 
@@ -307,37 +332,12 @@ class Gui:
         layout.addWidget(self.ui.frame3d)
         self.main_widget.setLayout(layout)
 
-
         self.central_dock_widget.setWidget(self.main_widget)
         self.central_dock_area = self.dock_manager.setCentralWidget(
             self.central_dock_widget
         )
-        self.central_dock_widget.setFeature(
-            QtAds.CDockWidget.DockWidgetClosable, False
-        )
-
-
+        self.central_dock_widget.setFeature(QtAds.CDockWidget.DockWidgetClosable, False)
         self.central_dock_area.setAllowedAreas(QtAds.DockWidgetArea.OuterDockAreas)
-
-        self.dock_manager.setConfigFlag(
-            QtAds.CDockManager.ActiveTabHasCloseButton, False
-        )
-        ss = self.dock_manager.styleSheet()
-        ss = remove_from_stylesheet(ss, "ads--CDockSplitter::handle")
-        self.dock_manager.setStyleSheet(ss)
-
-        # # add dock for the controls
-        # controls_dock_widget = QtAds.CDockWidget("Controls")
-        # controls_dock_widget.setWidget(self.ui.widget_3)
-        # controls_dock_widget.setFeature(QtAds.CDockWidget.DockWidgetClosable, False)
-        # controls_dock_widget.setFeature(QtAds.CDockWidget.DockWidgetMovable, False)
-        # controls_dock_widget.setFeature(QtAds.CDockWidget.DockWidgetFloatable, False)
-        # controls_dock_widget.setFeature(QtAds.CDockWidget.NoTab, True)
-
-
-        # controls = self.dock_manager.addDockWidget(
-        #     QtAds.DockWidgetArea.TopDockWidgetArea, controls_dock_widget
-        # )
 
         self.statusbar = QStatusBar()
         self.MainWindow.setStatusBar(self.statusbar)
@@ -1057,9 +1057,9 @@ class Gui:
     def select_none(self):
         if self.selected_nodes:
             self.selected_nodes.clear()
-            if "Properties" in self.guiWidgets:
-                if self.guiWidgets["Properties"].node_picker is None:
-                    self.guiWidgets["Properties"].setVisible(False)
+            # if "Properties" in self.guiWidgets:
+            #     if self.guiWidgets["Properties"].node_picker is None:
+            #         self.guiWidgets["Properties"].setVisible(False)
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
 
     def focus_on_selected_object(self):
@@ -1086,7 +1086,7 @@ class Gui:
 
     def close_all_open_docks(self):
         for g in self.guiWidgets.values():
-            g.close()
+            dock_remove_from_gui(self.dock_manager, g)
 
     def activate_workspace(self, name):
         self._active_workspace = name
@@ -1095,15 +1095,15 @@ class Gui:
         self.savepoint_restore()
 
         if name == "PAINTERS":
-            self.show_guiWidget("vanGogh", WidgetPainters)
+            self.show_guiWidget("vanGogh")
 
         if name == "CONSTRUCT":
             keep_watches = "Watches" in self.guiWidgets.keys()
 
             self.close_all_open_docks()
-            self.show_guiWidget("Node Tree", WidgetNodeTree)
-            self.show_guiWidget("Properties", WidgetNodeProps)
-            self.show_guiWidget("Quick actions", WidgetQuickActions)
+            self.show_guiWidget("Node Tree")
+            self.show_guiWidget("Properties")
+            self.show_guiWidget("Quick actions")
 
             if keep_watches:
                 self.show_guiWidget("Watches")
@@ -1113,15 +1113,15 @@ class Gui:
 
         if name == "EXPLORE":
             self.close_all_open_docks()
-            self.show_guiWidget("Node Tree", WidgetNodeTree)
-            self.show_guiWidget("Derived Properties", WidgetDerivedProperties)
-            self.show_guiWidget("Explore 1-to-1", WidgetExplore)
+            self.show_guiWidget("Node Tree")
+            self.show_guiWidget("Derived Properties")
+            self.show_guiWidget("Explore 1-to-1")
             self.show_guiWidget("Watches")
 
         if name == "DYNAMICS":
             self.close_all_open_docks()
-            self.show_guiWidget("Properties - dynamic", WidgetDynamicProperties)
-            self.show_guiWidget("Mode-shapes", WidgetModeShapes)
+            self.show_guiWidget("Properties - dynamic")
+            self.show_guiWidget("Mode-shapes")
 
         if name == "BALLAST":
             self.close_all_open_docks()
@@ -1134,25 +1134,25 @@ class Gui:
             self.activate_paintset("Ballast")
 
         if name == "ENVIRONMENT":
-            self.show_guiWidget("Environment", WidgetEnvironment)
+            self.show_guiWidget("Environment")
 
         if name == "STABILITY":
             self.close_all_open_docks()
-            self.show_guiWidget("Stability", WidgetDisplacedStability)
+            self.show_guiWidget("Stability")
 
         if name == "LIMITS":
             self.close_all_open_docks()
-            self.show_guiWidget("Limits and UCs", WidgetLimits)
+            self.show_guiWidget("Limits and UCs")
             if not self.visual.settings.paint_uc:
                 self.toggle_show_UC()
 
         if name == "TAGS":
-            self.show_guiWidget("Tags", WidgetTags)
+            self.show_guiWidget("Tags")
 
         if name == "MOMENTS":
             self.close_all_open_docks()
-            self.show_guiWidget("Footprints", WidgetFootprints)
-            self.show_guiWidget("Graph", WidgetBendingMoment)
+            self.show_guiWidget("Footprints")
+            self.show_guiWidget("Graph")
             self.activate_paintset("Footprints")
 
         if name == "AIRY":
@@ -1160,7 +1160,7 @@ class Gui:
             self.close_all_open_docks()
             code = "from DAVE.frequency_domain import prepare_for_fd\nprepare_for_fd(s)"
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
-            self.show_guiWidget("Airy waves", WidgetAiry)
+            self.show_guiWidget("Airy waves")
 
         for plugin in self.plugins_workspace:
             plugin(self, name)
@@ -2596,7 +2596,7 @@ class Gui:
         ):  # temporary freezes rendering and calls update afterwards
             for widget in self.guiWidgets.values():
                 if not (widget is sender):
-                    if widget.isVisible():
+                    if not widget.isClosed():
                         widget.guiEvent(event)
 
             # update the visual as well
@@ -2679,11 +2679,10 @@ class Gui:
         if self.selected_nodes:
             if self._active_workspace in ["CONSTRUCT", "TimeLine"]:
                 if "Properties" in self.guiWidgets:
-                    if not self.guiWidgets["Properties"].isVisible():
-                        self.guiWidgets["Properties"].setVisible(True)
-                        self.guiEmitEvent(
-                            guiEventType.SELECTION_CHANGED
-                        )  # force update
+                    dock_ensure_visible(
+                        self.dock_manager, self.guiWidgets["Properties"]
+                    )
+                    self.guiEmitEvent(guiEventType.SELECTION_CHANGED)  # force update
 
         # Get the screen position of the just selected visual
         #
@@ -2698,28 +2697,29 @@ class Gui:
         for w in self.guiWidgets.values():
             w.move_away_from_cursor()
 
-    def show_guiWidget(self, name, widgetClass=None):
-        if widgetClass is None:
-            if name not in DAVE_GUI_DOCKS:
-                print(DAVE_GUI_DOCKS.keys())
-                raise ValueError(
-                    f"Can not activate dock with name {name}, available names are {DAVE_GUI_DOCKS.keys()}"
-                )
+    def show_guiWidget(self, name):
+        if name not in DAVE_GUI_DOCKS:
+            print(DAVE_GUI_DOCKS.keys())
+            raise ValueError(
+                f"Can not activate dock with name {name}, available names are {DAVE_GUI_DOCKS.keys()}"
+            )
 
-            widgetClass = DAVE_GUI_DOCKS[
-                name
-            ]  # TODO, make this the default and remove the widgetClass argument
+        widgetClass = DAVE_GUI_DOCKS[name]
 
         if name in self.guiWidgets:
             d = self.guiWidgets[name]
+            dock_add_to_gui(self.dock_manager, d)
+
         else:
             print("Creating {}".format(name))
 
             d = widgetClass(self.MainWindow, name=name)
-            # d.setWindowTitle(name)
             location = d.guiDefaultLocation()
 
             self.dock_manager.addDockWidget(location, d)
+
+            if name == "Properties":
+                d.setAutoHide(True)
 
             if location is None:
                 d.setFloating()

@@ -12,6 +12,8 @@ from DAVE.scene import *
 
 DAVE_GUI_DOCKS = dict()
 
+
+
 class guiEventType(Enum):
     NOTHING = -1                 # no changes, for example model saved
     FULL_UPDATE = 0              # unknown, better update everything
