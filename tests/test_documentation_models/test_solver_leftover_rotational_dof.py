@@ -73,4 +73,4 @@ def test_model_documentation_circle_geometry():
     mt = s.new_cable(name='measuring_tape',EA=0, length=0, connections = ['Pnt','points7','points6'])
     angles = mt.angles_at_connections
 
-    gui(s)
+    # gui(s)
