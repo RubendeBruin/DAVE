@@ -83,8 +83,7 @@ from DAVE.gui.dialog_export_package import ExportAsPackageDialog
 from DAVE.gui.helpers.ads_helpers import (
     create_dock_manager,
     dock_remove_from_gui,
-    dock_add_to_gui,
-    dock_ensure_visible,
+    dock_show,
 )
 from DAVE.gui.helpers.my_qt_helpers import (
     DeleteEventFilter,
@@ -2679,7 +2678,7 @@ class Gui:
         if self.selected_nodes:
             if self._active_workspace in ["CONSTRUCT", "TimeLine"]:
                 if "Properties" in self.guiWidgets:
-                    dock_ensure_visible(
+                    dock_show(
                         self.dock_manager, self.guiWidgets["Properties"]
                     )
                     self.guiEmitEvent(guiEventType.SELECTION_CHANGED)  # force update
@@ -2707,8 +2706,10 @@ class Gui:
         widgetClass = DAVE_GUI_DOCKS[name]
 
         if name in self.guiWidgets:
+
+            # dock already exists, make it visible
             d = self.guiWidgets[name]
-            dock_add_to_gui(self.dock_manager, d)
+            dock_show(self.dock_manager, d)
 
         else:
             print("Creating {}".format(name))
