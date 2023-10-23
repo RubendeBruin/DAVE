@@ -1,20 +1,21 @@
 from DAVE.gui.dock_system.dockwidget import *
 import PySide6
-from PySide6.QtGui import QStandardItemModel, QIcon, QColor
+from PySide6.QtGui import QStandardItemModel, QIcon, QColor, QBrush
 from PySide6.QtCore import QMimeData, Qt, QPoint
 from PySide6.QtWidgets import (
     QTreeWidgetItem,
     QCheckBox,
-    QApplication, QMenu, QMainWindow,
+    QApplication,
+    QMenu,
+    QMainWindow,
 )
 import DAVE.scene as ds
 
 
 class EnterKeyPressFilter(PySide6.QtCore.QObject):
-
     def eventFilter(self, obj, event):
         if isinstance(event, PySide6.QtGui.QKeyEvent):
-            if (event.key() == Qt.Key_Return):
+            if event.key() == Qt.Key_Return:
                 self.callback(obj, event)
                 event.setAccepted(True)
                 return True
@@ -24,7 +25,6 @@ class EnterKeyPressFilter(PySide6.QtCore.QObject):
 
 class WidgetTags(guiDockWidget):
     def guiCreate(self):
-
         self.treeView = QtWidgets.QTreeWidget(self.contents)
         self.treeView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.treeView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
@@ -35,7 +35,6 @@ class WidgetTags(guiDockWidget):
         header = self.treeView.header()
         header.setSectionsClickable(True)
         header.sectionClicked.connect(self.header_clicked)
-
 
         self.treeView.setAlternatingRowColors(True)
 
@@ -49,7 +48,7 @@ class WidgetTags(guiDockWidget):
         layout.addWidget(self.checkbox)
         self.contents.setLayout(layout)
 
-        self.resize(800,800)
+        self.resize(800, 800)
 
     def guiDefaultLocation(self):
         return None
@@ -61,7 +60,6 @@ class WidgetTags(guiDockWidget):
         ]:
             self.update_node_data_and_tree()
 
-
     def checkbox_toggeled(self):
         """Update the tags for the selected node"""
         item = self.treeView.selectedItems()[0]
@@ -70,8 +68,8 @@ class WidgetTags(guiDockWidget):
         tags = self.guiScene.tags
 
         code = None
-        for i,tag in enumerate(tags):
-            cb = self.treeView.itemWidget(item, i+2)
+        for i, tag in enumerate(tags):
+            cb = self.treeView.itemWidget(item, i + 2)
             has = node.has_tag(tag)
             need = cb.isChecked()
 
@@ -83,15 +81,13 @@ class WidgetTags(guiDockWidget):
                 break
 
         if code is None:
-            raise ValueError('Event called but nothing to update')
+            raise ValueError("Event called but nothing to update")
 
         self.guiRunCodeCallback(code, guiEventType.TAGS_CHANGED)
 
         # change the columns if last tag is removed
         if len(tags) != len(self.guiScene.tags):
             self.update_node_data_and_tree()
-
-
 
     def update_node_data_and_tree(self):
         """
@@ -121,19 +117,16 @@ class WidgetTags(guiDockWidget):
         # store the current scroll position
         vertical_position = self.treeView.verticalScrollBar().sliderPosition()
 
-
         self.treeView.clear()
 
-
         tags = self.guiScene.tags
-        self.treeView.setColumnCount(len(tags)+1)
-        self.treeView.setHeaderLabels(['Node','Add tag ', *tags])
+        self.treeView.setColumnCount(len(tags) + 1)
+        self.treeView.setHeaderLabels(["Node", "Add tag ", *tags])
         self.treeView.header().setVisible(True)
 
         show_managed_nodes = self.checkbox.isChecked()
 
         for node in self.guiScene._nodes:
-
             # create a tree item
             text = node.name
             item = QTreeWidgetItem()
@@ -186,8 +179,6 @@ class WidgetTags(guiDockWidget):
             elif isinstance(node, ds.CurrentArea):
                 item.setIcon(0, QIcon(":/icons/current.png"))
 
-
-
             try:
                 parent = node.parent
             except:
@@ -211,22 +202,17 @@ class WidgetTags(guiDockWidget):
                     show_managed_node = True
 
             if node._manager:
-
                 # are we showing managed nodes?
                 if show_managed_node:
-
                     # item.setTextColor(0, Qt.gray)
-                    item.setForeground(0,QBrush(QColor(0, 150, 0)))
+                    item.setForeground(0, QBrush(QColor(0, 150, 0)))
 
                     # if the item does not have a parent, then show it under the manager
-                    if parent is None:
-                        parent = node._manager
-
-                    if parent.name not in self.items:
-                        parent = node._manager
-
-                    self.items[node.name] = item
-                    self.items[parent.name].addChild(item)
+                    for parent in reversed(node.parents):
+                        if parent is None:
+                            self.items[node.name] = item
+                            self.items[node._manager.name].addChild(item)
+                            break
 
             else:
                 self.items[node.name] = item
@@ -239,27 +225,31 @@ class WidgetTags(guiDockWidget):
                     else:  # if the parent is not there, then it must be a managed node
                         self.items[parent._manager.name].addChild(item)
 
-            for i,tag in enumerate(tags):
+            for i, tag in enumerate(tags):
                 cbx = QtWidgets.QCheckBox()
                 cbx.setChecked(node.has_tag(tag))
                 cbx.toggled.connect(self.checkbox_toggeled)
-                self.treeView.setItemWidget(item, 2+i, cbx)
+                self.treeView.setItemWidget(item, 2 + i, cbx)
 
             # add new-tag textbox
             edb = QtWidgets.QLineEdit()
             edb.setFrame(False)
             edb.setFixedWidth(110)
-            edb.setToolTip('Press enter to accept')
-            edb.setPlaceholderText('new tag')
-            edb.returnPressed.connect(lambda sender = edb, node_name = node.name : self.tag_added(sender, node_name))
+            edb.setToolTip("Press enter to accept")
+            edb.setPlaceholderText("new tag")
+            edb.returnPressed.connect(
+                lambda sender=edb, node_name=node.name: self.tag_added(
+                    sender, node_name
+                )
+            )
             self.treeView.setItemWidget(item, 1, edb)
 
         header = self.treeView.header()
 
         for i in range(len(tags)):
-            header.setSectionResizeMode(i+1, QtWidgets.QHeaderView.ResizeToContents) # https://doc.qt.io/qt-5/qheaderview.html#details
-
-
+            header.setSectionResizeMode(
+                i + 1, QtWidgets.QHeaderView.ResizeToContents
+            )  # https://doc.qt.io/qt-5/qheaderview.html#details
 
         self.treeView.expandAll()
 
@@ -279,17 +269,19 @@ class WidgetTags(guiDockWidget):
 
     def tag_added(self, sender, node_name):
         tag = sender.text()
-        self.guiRunCodeCallback(f"s['{node_name}'].add_tag('{tag}')", guiEventType.NOTHING)
+        self.guiRunCodeCallback(
+            f"s['{node_name}'].add_tag('{tag}')", guiEventType.NOTHING
+        )
         self.update_node_data_and_tree()
 
     def header_clicked(self, col):
         header = self.treeView.header()
         x = header.sectionPosition(col)
 
-        if col<2:
+        if col < 2:
             return
 
-        tag = self.guiScene.tags[col-2]
+        tag = self.guiScene.tags[col - 2]
 
         pos = self.treeView.mapToGlobal(QPoint(x, 5))
 
@@ -298,21 +290,21 @@ class WidgetTags(guiDockWidget):
             self.update_node_data_and_tree()
 
         menu = QMenu()
-        menu.addAction(f'Delete {tag} tag', delete)
-        menu.addAction('Cancel')
+        menu.addAction(f"Delete {tag} tag", delete)
+        menu.addAction("Cancel")
         menu.exec_(pos)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app = QApplication()
 
     m = QMainWindow()
 
-
     s = Scene()
     p = s.new_point("point")
-    a = s.new_frame('Frame')
+    a = s.new_frame("Frame")
     p = s.new_point("point2", parent=a)
-    p.add_tags(('demo','tag2'))
+    p.add_tags(("demo", "tag2"))
 
     widget = WidgetTags()
 
@@ -329,6 +321,6 @@ if __name__ == '__main__':
 
     m.show()
 
-    print('showing')
+    print("showing")
 
     app.exec_()

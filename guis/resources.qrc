@@ -46,9 +46,23 @@
     <file>axis.png</file>
   </qresource>
   <qresource prefix="v2">
-    <file>icons/lift.svg</file>
+    <file>icons/glasses.svg</file>
+    <file>icons/tag90.svg</file>
+    <file>icons/magnifier90.svg</file>
+    <file>icons/glasses90.svg</file>
+    <file>icons/environment90.svg</file>
+    <file>icons/design.svg</file>
     <file>icons/empty_box.svg</file>
+    <file>icons/environment.svg</file>
+    <file>icons/explore.svg</file>
     <file>icons/footprint.svg</file>
     <file>icons/footprint90.svg</file>
+    <file>icons/lift.svg</file>
+    <file>icons/pencil.svg</file>
+    <file>icons/pencil90.svg</file>
+    <file>icons/tag.svg</file>
+    <file>icons/timeline.svg</file>
+    <file>icons/tree.svg</file>
+    <file>icons/lift.svg</file>
   </qresource>
 </RCC>

@@ -93,8 +93,14 @@ def create_dock_manager(main_window):
         PySide6QtAds.CDockManager.DockAreaCloseButtonClosesTab, True
     )
 
+    # auto-hide icons
+
     PySide6QtAds.CDockManager.setAutoHideConfigFlag(
         PySide6QtAds.CDockManager.DefaultAutoHideConfig
+    )
+
+    PySide6QtAds.CDockManager.setAutoHideConfigFlag(
+        PySide6QtAds.CDockManager.AutoHideSideBarsIconOnly, True
     )
 
     dock_manager = PySide6QtAds.CDockManager(main_window)
@@ -113,12 +119,8 @@ def set_as_central_widget(
     central_dock_widget = PySide6QtAds.CDockWidget("CentralWidget")
 
     central_dock_widget.setWidget(widget)
-    central_dock_area = dock_manager.setCentralWidget(
-        central_dock_widget
-    )
-    central_dock_widget.setFeature(
-        PySide6QtAds.CDockWidget.DockWidgetClosable, False
-    )
+    central_dock_area = dock_manager.setCentralWidget(central_dock_widget)
+    central_dock_widget.setFeature(PySide6QtAds.CDockWidget.DockWidgetClosable, False)
     central_dock_area.setAllowedAreas(PySide6QtAds.DockWidgetArea.OuterDockAreas)
     return central_dock_widget
 
@@ -142,7 +144,6 @@ def dock_remove_from_gui(
         return  # already hidden
 
     d.toggleViewAction().trigger()
-
 
 
 def dock_show(manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget):
@@ -175,26 +176,31 @@ def _dock_return_to_hidden_state(d: PySide6QtAds.CDockWidget):
     )  # Ref: https://github.com/mborgerson/pyside6_PySide6QtAds/issues/23
 
 
-def add_global_dock(manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget, icon = ":v2/icons/empty_box.svg"):
+def add_global_dock(
+    manager: PySide6QtAds.CDockManager,
+    d: PySide6QtAds.CDockWidget,
+    icon=":v2/icons/empty_box.svg",
+):
     """Adds a dock to the manager and make it a 'global' dock.
     Global docks are docks that can not be closed and are hidden on the top right by default.
     """
     assert isinstance(d, PySide6QtAds.CDockWidget)
-
-    manager.addAutoHideDockWidget(
-        PySide6QtAds._ads.SideBarLocation.SideBarRight, d
-    )  # Ref: https://github.com/mborgerson/pyside6_PySide6QtAds/issues/23
-
-    d.setFeature(PySide6QtAds.CDockWidget.DockWidgetFeature.CustomCloseHandling, True)
-    d.closeRequested.connect(lambda dock=d: _dock_return_to_hidden_state(dock))
 
     if icon is not None:
         if isinstance(icon, str):
             icon = QIcon(icon)
         d.setIcon(icon)
 
-    return d
+    container = manager.addAutoHideDockWidget(
+        PySide6QtAds._ads.SideBarLocation.SideBarRight, d
+    )  # Ref: https://github.com/mborgerson/pyside6_PySide6QtAds/issues/23
 
+    d.setFeature(PySide6QtAds.CDockWidget.DockWidgetFeature.CustomCloseHandling, True)
+    d.closeRequested.connect(lambda dock=d: _dock_return_to_hidden_state(dock))
+
+    container.setSize(350)
+
+    return d
 
 
 if __name__ == "__main__":
@@ -207,6 +213,7 @@ if __name__ == "__main__":
         QLabel,
         QToolBar,
     )
+
     from PySide6 import QtGui, QtCore
 
     app = QApplication()

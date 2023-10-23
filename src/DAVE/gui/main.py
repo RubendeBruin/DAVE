@@ -654,7 +654,7 @@ class Gui:
 
             # dof editor
             self.ui.actionDegrees_of_Freedom_editor.triggered.connect(
-                lambda: self.show_guiWidget("DOF Editor")                   # TODO, fix this
+                lambda: self.show_guiWidget("DOF Editor")  # TODO, fix this
             )
 
             self.ui.actionVersion.setText(f"Version {DAVE.__version__}")
@@ -778,11 +778,25 @@ class Gui:
 
         # Add the global docks
 
-        add_global_dock(self.dock_manager, self.get_dock("Properties"))
-        add_global_dock(self.dock_manager, self.get_dock("Derived Properties"))
-        add_global_dock(self.dock_manager, self.get_dock("Watches"))
-        add_global_dock(self.dock_manager, self.get_dock("Tags"))
-        add_global_dock(self.dock_manager, self.get_dock("Environment"))
+        add_global_dock(
+            self.dock_manager,
+            self.get_dock("Environment"),
+            icon=":/v2/icons/environment.svg",
+        )
+        add_global_dock(
+            self.dock_manager, self.get_dock("Properties"), icon=":/v2/icons/pencil.svg"
+        )
+        add_global_dock(
+            self.dock_manager,
+            self.get_dock("Derived Properties"),
+            icon=":/v2/icons/magnifier90.svg",
+        )
+        add_global_dock(
+            self.dock_manager, self.get_dock("Watches"), icon=":/v2/icons/glasses.svg"
+        )
+        add_global_dock(
+            self.dock_manager, self.get_dock("Tags"), icon=":/v2/icons/tag.svg"
+        )
 
         # ------ Add the permanent docks -------
         self.docks_permanent = [self.central_dock_widget]
@@ -795,6 +809,18 @@ class Gui:
         )
         self.docks_permanent.append(self.dock_permanent_tree)
 
+        # --- timeline - if any
+
+        try:
+            self.dock_timeline = self.get_dock("TimeLine")
+            self.dock_manager.addDockWidget(
+                PySide6QtAds.DockWidgetArea.TopDockWidgetArea, self.dock_timeline
+            )
+            self.docks_permanent.append(self.dock_timeline)
+
+        except:
+            self.dock_timeline = None
+
         # Toolbar (top)
         self.toolbar_top = QToolBar("Top Toolbar")
         self.MainWindow.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolbar_top)
@@ -804,8 +830,18 @@ class Gui:
 
         # Add actions for permanent docks
         action = self.dock_permanent_tree.toggleViewAction()
-        action.setIcon(QIcon(":v2/icons/empty_box.svg"))
+        action.setIcon(QIcon(":v2/icons/tree.svg"))
         self.toolbar_top.addAction(action)
+
+        if self.dock_timeline is not None:
+            action = self.dock_timeline.toggleViewAction()
+            action.setIcon(QIcon(":v2/icons/timeline.svg"))
+            self.toolbar_top.addAction(action)
+
+        self.top_bar_group_label = QtWidgets.QLabel(self.MainWindow)
+        self.top_bar_group_label.setText("DAVE")
+        self.top_bar_group_label.setStyleSheet("font-size: 14px; font-weight: bold; color: palette(Midlight);")
+        self.toolbar_top.addWidget(self.top_bar_group_label)
 
         # Toolbar (left)
         self.toolbar_left = QToolBar("Left Toolbar")
@@ -820,10 +856,14 @@ class Gui:
 
         self.toolbar_top.setMovable(False)
         self.toolbar_left.setMovable(False)
-        self.toolbar_top.setStyleSheet("QToolBar { background : palette(mid); border: none; }\n"
-                                       "QToolButton:checked{ background-color : palette(mid); }")
-        self.toolbar_left.setStyleSheet("QToolBar { background : palette(mid); border: none; }\n"
-                                       "QToolButton:checked{ background-color : palette(mid); border-width : 2px}")
+        self.toolbar_top.setStyleSheet(
+            "QToolBar { background : palette(mid); border: none; }\n"
+            "QToolButton:checked{ background-color : palette(mid); }"
+        )
+        self.toolbar_left.setStyleSheet(
+            "QToolBar { background : palette(mid); border: none; }\n"
+            "QToolButton:checked{ background-color : palette(mid); border-width : 2px}"
+        )
         top_left_widget.setStyleSheet("background : palette(mid); border: none")
         top_left_widget.setFixedWidth(self.toolbar_left.sizeHint().width())
 
@@ -831,7 +871,7 @@ class Gui:
 
         self.statusbar = QStatusBar()
         self.MainWindow.setStatusBar(self.statusbar)
-        self.statusbar.mousePressEvent = self.show_python_console
+        # self.statusbar.mousePressEvent = self.show_python_console
 
         # ======================== Finalize ========================
 
@@ -1150,6 +1190,8 @@ class Gui:
         group = DOCK_GROUPS[names.index(name)]
         self._active_dockgroup = group
 
+        self.top_bar_group_label.setText(group.description)
+
         self.animation_terminate()
         # self.savepoint_restore()
 
@@ -1177,7 +1219,6 @@ class Gui:
 
             if dock not in all_active_docks:
                 dock.guiEvent(guiEventType.FULL_UPDATE)
-
 
         # for plugin in self.plugins_workspace:
         #     plugin(self, name)
@@ -2606,7 +2647,6 @@ class Gui:
     # ================= guiWidget codes
 
     def guiEmitEvent(self, event, sender=None):
-
         if event == guiEventType.SELECTION_CHANGED:
             if self._active_dockgroup.show_edit:
                 dock_show(self.dock_manager, self.guiWidgets["Properties"])
@@ -2656,8 +2696,6 @@ class Gui:
             self.visual.add_new_node_actors_to_screen()
             self.visual.position_visuals()
             self.visual_update_selection()
-
-
 
     def guiSelectNodes(self, nodes):
         """Replace or extend the current selection with the given nodes (depending on keyboard-modifiers). Nodes may be passed as strings or nodes, but must be an tuple or list."""
@@ -2754,7 +2792,9 @@ class Gui:
             )
             d.setFloating()
         else:
-            assert isinstance(location, PySide6QtAds.DockWidgetArea)
+            assert isinstance(
+                location, PySide6QtAds.DockWidgetArea
+            ), f"Wrong type of position returned by dock {name}"
             self.dock_manager.addDockWidget(location, d)
 
         d.guiProcessEvent(guiEventType.FULL_UPDATE)
