@@ -654,7 +654,7 @@ class Gui:
 
             # dof editor
             self.ui.actionDegrees_of_Freedom_editor.triggered.connect(
-                lambda: self.show_guiWidget("DOF Editor")
+                lambda: self.show_guiWidget("DOF Editor")                   # TODO, fix this
             )
 
             self.ui.actionVersion.setText(f"Version {DAVE.__version__}")
@@ -1151,7 +1151,7 @@ class Gui:
         self._active_dockgroup = group
 
         self.animation_terminate()
-        self.savepoint_restore()
+        # self.savepoint_restore()
 
         wanted_docks = [self.get_dock(name) for name in group.dock_widgets]
         all_active_docks = get_all_active_docks(self.dock_manager)
@@ -1174,6 +1174,10 @@ class Gui:
         for dock in wanted_docks:
             action = dock.toggleViewAction()
             self.toolbar_top.addAction(action)
+
+            if dock not in all_active_docks:
+                dock.guiEvent(guiEventType.FULL_UPDATE)
+
 
         # for plugin in self.plugins_workspace:
         #     plugin(self, name)
@@ -2188,13 +2192,13 @@ class Gui:
                         "Properties", WidgetNodeProps
                     )  # people often close this one
 
-                menu.addAction("Edit {}".format(node_name), edit)
-                menu.addAction(
-                    "Derived Properties",
-                    lambda *args: self.show_guiWidget(
-                        "Derived Properties", WidgetDerivedProperties
-                    ),
-                )
+                # menu.addAction("Edit {}".format(node_name), edit)
+                # menu.addAction(
+                #     "Derived Properties",
+                #     lambda *args: self.show_guiWidget(
+                #         "Derived Properties", WidgetDerivedProperties
+                #     ),
+                # )
 
                 showhide = menu.addAction("Visible")
                 showhide.setCheckable(True)
@@ -2753,16 +2757,18 @@ class Gui:
             assert isinstance(location, PySide6QtAds.DockWidgetArea)
             self.dock_manager.addDockWidget(location, d)
 
+        d.guiProcessEvent(guiEventType.FULL_UPDATE)
+
         return d
 
-    def show_guiWidget(self, name):
-        # if widgetClass == WidgetQuickActions:
-        #     self.MainWindow.resizeDocks([d], [6], Qt.Horizontal)
-        d = self.get_dock(name)
-
-        d.show()
-        d._active = True
-        d.guiEvent(guiEventType.FULL_UPDATE)
+    # def show_guiWidget(self, name):
+    #     # if widgetClass == WidgetQuickActions:
+    #     #     self.MainWindow.resizeDocks([d], [6], Qt.Horizontal)
+    #     d = self.get_dock(name)
+    #
+    #     d.show()
+    #     d._active = True
+    #     d.guiEvent(guiEventType.FULL_UPDATE)
 
     # =============================
 
