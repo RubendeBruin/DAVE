@@ -68,7 +68,7 @@ explore = DaveDockGroup(
     description="Explore",
     icon=":v2/icons/empty_box.svg",
     dock_widgets=["Explore 1-to-1", "Derived Properties"],
-    show_edit=True,
+    show_edit=None,
     show_tree=True,
     show_timeline=None)
 

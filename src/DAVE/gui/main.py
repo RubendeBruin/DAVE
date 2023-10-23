@@ -63,7 +63,7 @@
 import subprocess
 from PySide6.QtCore import Qt, QTimer, QSize
 from PySide6.QtCore import QSettings
-from PySide6.QtGui import QIcon, QFont, QFontMetricsF, QAction
+from PySide6.QtGui import QIcon, QFont, QFontMetricsF, QAction, QActionGroup
 from PySide6.QtWidgets import (
     QDialog,
     QFileDialog,
@@ -784,7 +784,6 @@ class Gui:
         add_global_dock(self.dock_manager, self.get_dock("Tags"))
         add_global_dock(self.dock_manager, self.get_dock("Environment"))
 
-
         # ------ Add the permanent docks -------
         self.docks_permanent = [self.central_dock_widget]
 
@@ -821,10 +820,10 @@ class Gui:
 
         self.toolbar_top.setMovable(False)
         self.toolbar_left.setMovable(False)
-        self.toolbar_top.setStyleSheet(
-            "background : palette(light); border: none; padding-left: 0"
-        )
-        self.toolbar_left.setStyleSheet("background : palette(mid); border: none;")
+        self.toolbar_top.setStyleSheet("QToolBar { background : palette(mid); border: none; }\n"
+                                       "QToolButton:checked{ background-color : palette(mid); }")
+        self.toolbar_left.setStyleSheet("QToolBar { background : palette(mid); border: none; }\n"
+                                       "QToolButton:checked{ background-color : palette(mid); border-width : 2px}")
         top_left_widget.setStyleSheet("background : palette(mid); border: none")
         top_left_widget.setFixedWidth(self.toolbar_left.sizeHint().width())
 
@@ -844,9 +843,6 @@ class Gui:
             self.activate_dockgroup(workspace)
 
         self.MainWindow.show()
-
-        # self.central_dock_widget.setWidget(self.ui.centralwidget)
-
         #
 
         open_autosave = self.autosave_startup()
@@ -1124,10 +1120,15 @@ class Gui:
 
     def create_dockgroups(self):
         """Creates the dockgroups for each workspace"""
-        self._action_dockgroups = list()  # keep save from the garbage collector
+        tasks = QActionGroup(self.MainWindow)
+        tasks.setExclusive(True)
+
         for d in DOCK_GROUPS:
-            action = QAction()
+            action = QAction(d.description, self.MainWindow)
+            tasks.addAction(action)
+
             action.setText(d.description)
+            action.setCheckable(True)
             icon = d.icon
             if isinstance(icon, str):
                 icon = QIcon(icon)
@@ -1135,7 +1136,7 @@ class Gui:
             action.triggered.connect(
                 lambda *args, name=d.ID: self.activate_dockgroup(name)
             )
-            self._action_dockgroups.append(action)
+            # self._action_dockgroups.append(action)
             self.toolbar_left.addAction(action)
 
     def activate_dockgroup(self, name):
@@ -2601,6 +2602,11 @@ class Gui:
     # ================= guiWidget codes
 
     def guiEmitEvent(self, event, sender=None):
+
+        if event == guiEventType.SELECTION_CHANGED:
+            if self._active_dockgroup.show_edit:
+                dock_show(self.dock_manager, self.guiWidgets["Properties"])
+
         with DelayRenderingTillDone(
             self.visual
         ):  # temporary freezes rendering and calls update afterwards
@@ -2646,6 +2652,8 @@ class Gui:
             self.visual.add_new_node_actors_to_screen()
             self.visual.position_visuals()
             self.visual_update_selection()
+
+
 
     def guiSelectNodes(self, nodes):
         """Replace or extend the current selection with the given nodes (depending on keyboard-modifiers). Nodes may be passed as strings or nodes, but must be an tuple or list."""

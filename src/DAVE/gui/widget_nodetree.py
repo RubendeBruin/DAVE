@@ -80,6 +80,7 @@ class WidgetNodeTree(guiDockWidget):
     def guiCreate(self):
 
         self._current_tree = None
+        self.items = dict()
 
         self.contents.setContentsMargins(0,0,0,0)
 
