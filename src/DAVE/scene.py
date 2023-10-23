@@ -28,6 +28,9 @@ from DAVE.settings import (
     NodePropertyInfo,
     MANAGED_NODE_IDENTIFIER,
 )
+
+from DAVE import settings
+
 from .helpers.string_functions import increment_string_end
 from .nds.mixins import Manager
 
@@ -1804,7 +1807,12 @@ class Scene:
         else:
             return False
 
-    def solve_statics(self, silent=False, timeout=None, terminate_after_s=30):
+    def solve_statics(
+        self,
+        silent=False,
+        timeout=None,
+        terminate_after_s=None,
+    ):
         """Solves statics
 
         If a timeout is provided then each pass will take at most 'timeout' seconds. This means you may need to call
@@ -1833,6 +1841,10 @@ class Scene:
             bool: True if successful, False otherwise.
 
         """
+
+        if terminate_after_s is None:
+            terminate_after_s = settings.SOLVER_DEFAULT_TERMINATE_AFTER_S
+
         if timeout is None:
             timeout = -1
 
