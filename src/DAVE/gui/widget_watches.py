@@ -5,8 +5,6 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QCompleter
 
-from DAVE.gui.helpers.flow_layout import FlowLayout
-
 """
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,10 +13,8 @@ from DAVE.gui.helpers.flow_layout import FlowLayout
   Ruben de Bruin - 2019
 """
 
-from DAVE.gui.dockwidget import *
-from PySide6 import QtGui, QtCore, QtWidgets
-import DAVE.scene as nodes
-import DAVE.settings as ds
+from DAVE.gui.dock_system.dockwidget import *
+from PySide6 import QtWidgets
 from DAVE.gui.forms.dialog_edit_watch import Ui_DialigEditWatch
 
 class WidgetWatches(guiDockWidget):

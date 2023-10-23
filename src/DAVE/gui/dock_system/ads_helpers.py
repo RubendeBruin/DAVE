@@ -38,9 +38,11 @@ How to close and remove a dock from the gui completely:
 
 """
 
+from PySide6 import QtWidgets
+
 import PySide6QtAds
 from PySide6.QtCore import QSize
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, Qt
 
 
 # from DAVE.gui.helpers.my_qt_helpers import remove_from_stylesheet
@@ -56,7 +58,7 @@ def customize_stylesheet(stylesheet: str, identifier: str) -> str:
 
     if old_size not in stylesheet:
         raise ValueError("Old icon size not found")
-    stylesheet = stylesheet.replace(old_size,new_size)
+    stylesheet = stylesheet.replace(old_size, new_size)
 
     lines = stylesheet.split("\n")
     new_lines = list()
@@ -114,6 +116,7 @@ def get_all_active_docks(manager: PySide6QtAds.CDockManager):
 
     return all_active_widgets
 
+
 def dock_remove_from_gui(
     manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget
 ):
@@ -129,9 +132,7 @@ def dock_hide(manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget):
     dock_remove_from_gui(manager, d)
 
 
-def dock_show(
-    manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget
-):
+def dock_show(manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget):
     """Makes sure a dock is visible"""
     print("showing {d}")
     if d.isVisible():
@@ -161,7 +162,6 @@ def _dock_return_to_hidden_state(d: PySide6QtAds.CDockWidget):
     )  # Ref: https://github.com/mborgerson/pyside6_PySide6QtAds/issues/23
 
 
-
 def add_global_dock(manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget):
     """Adds a dock to the manager and make it a 'global' dock.
     Global docks are docks that can not be closed and are hidden on the top right by default.
@@ -184,7 +184,9 @@ if __name__ == "__main__":
         QPushButton,
         QMainWindow,
         QLabel,
+        QToolBar,
     )
+    from PySide6 import QtGui, QtCore
 
     app = QApplication()
     mw = QMainWindow()
@@ -206,7 +208,8 @@ if __name__ == "__main__":
     global_dock1 = PySide6QtAds.CDockWidget("Global Dock 1", mw)
     global_dock1.setWidget(global_widget1)
 
-    add_global_dock(dock_manager, global_dock1)
+    d = add_global_dock(dock_manager, global_dock1)
+    d.setIcon(QIcon(r"/guis/icons/footprint90.svg"))
 
     global_widget2 = QLabel("Global widget 2")
     global_widget2.setStyleSheet("background-color: green;")
@@ -214,12 +217,74 @@ if __name__ == "__main__":
     global_dock2.setWidget(global_widget2)
     d = add_global_dock(dock_manager, global_dock2)
 
-    d.setIcon(QIcon(r"C:\data\DAVE\public\DAVE\guis\icons\footprint.svg"))
+    icon = QIcon(r"/guis/icons/footprint90.svg")
 
-    d.tabWidget().setIconSize(QSize(42, 42))
+    d.setIcon(icon)
+
+    # ==== Setup the normal docks
+    #
+    # Connect them to a button group on the main toolbar
+
+    top_toolbar = QToolBar("Top Toolbar")
+    mw.addToolBar(Qt.ToolBarArea.TopToolBarArea, top_toolbar)
+
+    top_left_widget = QWidget()
+    top_toolbar.addWidget(top_left_widget)
+
+    docks = list()
+    actions = list()
+    for i in range(4):
+        d = PySide6QtAds.CDockWidget(f"Dock {i}", mw)
+        lbl = QLabel(f"Widget {i}")
+        r = 120 + 20 * i
+        g = 100 + 20 * i
+        b = 100 + 20 * i
+        lbl.setStyleSheet(f"background-color: rgb({r},{g},{b});")
+        d.setWidget(lbl)
+        docks.append(d)
+        dock_manager.addDockWidget(PySide6QtAds.DockWidgetArea.LeftDockWidgetArea, d)
+
+        action = d.toggleViewAction()
+        action.setIcon(QIcon(r"/guis/icons/footprint.svg"))
+        top_toolbar.addAction(action)
+        actions.append(action)
+
+    # add a horizontal spacer to the top toolbar
+    spacer = QWidget()
+    spacer.setSizePolicy(
+        QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+    )
+    top_toolbar.addWidget(spacer)
+
+    # add a button to close all docks
+    close_all_docks = QPushButton("Button on the right")
+    top_toolbar.addWidget(close_all_docks)
+    top_toolbar.setMovable(False)
+
+    # Vertical toolbar on left side
+    left_toolbar = QToolBar("Left Toolbar")
+    mw.addToolBar(Qt.ToolBarArea.LeftToolBarArea, left_toolbar)
+    left_toolbar.setOrientation(Qt.Vertical)
+    left_toolbar.setIconSize(QSize(32, 32))
+    left_toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+    left_toolbar.addAction(actions[0])
+    left_toolbar.addAction(actions[1])
+    left_toolbar.addAction(actions[2])
+    left_toolbar.addAction(actions[3])
+
+    left_toolbar.setMovable(False)
+
+    mw.setStyleSheet(mw.styleSheet() + "\nQToolBar {border: none;}")
+
+    top_left_widget.setFixedWidth(left_toolbar.sizeHint().width())
+
+    # remove the window title bar but keep the frame
+    # mw.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+
+
 
     mw.show()
 
-    d.setFloating()
+    top_toolbar.removeAction(actions[2])
 
     app.exec()

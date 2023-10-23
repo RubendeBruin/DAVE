@@ -1,10 +1,9 @@
-from abc import ABC, abstractmethod
 import vedo as vp
 from PySide6.QtGui import QColor, QGuiApplication
 
 from DAVE import Point
 from DAVE.gui.dialog_advanced_cable_settings import AdvancedCableSettings
-from DAVE.gui.dockwidget import *
+from DAVE.gui.dock_system.dockwidget import *
 from PySide6.QtCore import Qt, QSize
 import DAVE.scene as vfs
 
@@ -30,7 +29,7 @@ import DAVE.gui.forms.widget_area
 import DAVE.gui.forms.widget_component
 import DAVE.gui.forms.widget_spmt
 import DAVE.gui.forms.widget_connections
-from DAVE.gui.helpers.ads_helpers import dock_hide
+from DAVE.gui.dock_system.ads_helpers import dock_hide
 from DAVE.gui.helpers.nodelist_drag_drop_move import (
     call_from_drop_Event,
     call_from_dragEnter_or_Move_Event,
@@ -39,7 +38,6 @@ from DAVE.gui.helpers.property_editor import PropertyEditorDialog
 
 from DAVE.visual import transform_from_node
 from DAVE.gui.helpers.my_qt_helpers import (
-    BlockSigs,
     update_combobox_items_with_completer,
     EnterKeyPressFilter,
     RightClickEventFilter,
@@ -51,7 +49,6 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QDoubleSpinBox,
     QColorDialog,
-    QPushButton,
     QSizePolicy,
     QCheckBox,
 )
@@ -2702,7 +2699,7 @@ class EditVisualOutline(NodeEditor):
 
 class WidgetNodeProps(guiDockWidget):
     def guiDefaultLocation(self):
-        return QtAds.DockWidgetArea.RightDockWidgetArea
+        return PySide6QtAds.DockWidgetArea.RightDockWidgetArea
 
     def guiCreate(self):
         self.node_picker = None

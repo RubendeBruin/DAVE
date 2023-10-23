@@ -20,17 +20,12 @@ The list may be empty.
 
 """
 from DAVE.nodes import *
-from DAVE.gui.dockwidget import *
-from PySide6 import QtGui, QtCore, QtWidgets
+from DAVE.gui.dock_system.dockwidget import *
 from PySide6.QtWidgets import QPushButton
-from PySide6.QtCore import QPoint
 import DAVE.scene as nodes
-import DAVE.settings as ds
-from DAVE.gui.forms.widget_selection_actions import Ui_SelectionActions
 from DAVE.gui.helpers.flow_layout import FlowLayout
-from DAVE.gui.helpers.popup_textbox import get_text
 
-from DAVE.settings import QUICK_ACTION_REGISTER
+from DAVE.gui.settings import QUICK_ACTION_REGISTER
 
 def nodes_of_type(node_list, types):
     return [node for node in node_list if isinstance(node, types)]
@@ -383,7 +378,7 @@ class WidgetQuickActions(guiDockWidget):
             self.fill()
 
     def guiDefaultLocation(self):
-        return QtAds.DockWidgetArea.BottomDockWidgetArea # QtAds.DockWidgetArea.RightDockWidgetArea
+        return PySide6QtAds.DockWidgetArea.BottomDockWidgetArea # QtAds.DockWidgetArea.RightDockWidgetArea
 
     # ======
 

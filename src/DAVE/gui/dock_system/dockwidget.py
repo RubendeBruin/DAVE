@@ -5,12 +5,10 @@ from PySide6.QtCore import QPoint
 from PySide6.QtGui import QCursor
 from PySide6.QtWidgets import QApplication
 
-import PySide6QtAds as QtAds
+import PySide6QtAds
 
 from DAVE.scene import *
 
-
-DAVE_GUI_DOCKS = dict()
 
 
 
@@ -30,7 +28,7 @@ class guiEventType(Enum):
                                  #    - model state changed
                                  #    - environment changed
 
-class guiDockWidget(QtAds.CDockWidget):
+class guiDockWidget(PySide6QtAds.CDockWidget):
 
     def __init__(self, *args,  name, **kwargs):
         super().__init__(name) # no args *args, **kwargs)
@@ -80,7 +78,7 @@ class guiDockWidget(QtAds.CDockWidget):
 
     def guiDefaultLocation(self):
         """Return the default location, or None for floating"""
-        return QtAds.DockWidgetArea.LeftDockWidgetArea
+        return PySide6QtAds.DockWidgetArea.LeftDockWidgetArea
 
     # ------- these should be overridden in the derived class -----------
 

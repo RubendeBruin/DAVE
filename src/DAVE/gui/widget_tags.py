@@ -1,15 +1,14 @@
-from DAVE.gui.dockwidget import *
+from DAVE.gui.dock_system.dockwidget import *
 import PySide6
-from PySide6.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag, QColor
-from PySide6.QtCore import QMimeData, Qt, QItemSelectionModel, QPoint
+from PySide6.QtGui import QStandardItemModel, QIcon, QColor
+from PySide6.QtCore import QMimeData, Qt, QPoint
 from PySide6.QtWidgets import (
     QTreeWidgetItem,
     QCheckBox,
-    QListWidget,
-    QAbstractScrollArea, QApplication, QMenu, QMainWindow,
+    QApplication, QMenu, QMainWindow,
 )
 import DAVE.scene as ds
-from DAVE.gui.helpers.my_qt_helpers import EnterKeyPressFilter
+
 
 class EnterKeyPressFilter(PySide6.QtCore.QObject):
 

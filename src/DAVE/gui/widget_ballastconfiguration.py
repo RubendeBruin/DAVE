@@ -10,22 +10,19 @@ WidgetBallastConfiguration
   Ruben de Bruin - 2019
 """
 
-from DAVE.gui.dockwidget import *
+from DAVE.gui.dock_system.dockwidget import *
 from DAVE.gui.forms.widgetUI_ballastconfiguration import Ui_widget_ballastsystem
-from PySide6 import QtGui, QtCore, QtWidgets
+from PySide6 import QtCore, QtWidgets
 from PySide6.QtGui import QBrush, QColor
 import DAVE.scene as nodes
-import DAVE.settings as ds
-import numpy as np
 
 from DAVE.settings_visuals import (
     COLOR_WATER_TANK_5MIN,
     COLOR_WATER_TANK_SLACK,
     COLOR_WATER_TANK_95PLUS,
-    COLOR_WATER_TANK_FREEFLOODING,
-    COLOR_SELECT, COLOR_WATER_TANK_FULL
+    COLOR_WATER_TANK_FULL
 )
-from DAVE.marine import ballast_to_even_keel
+
 
 class WidgetBallastConfiguration(guiDockWidget):
     def guiCreate(self):

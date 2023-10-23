@@ -10,10 +10,9 @@ This is an example/template of how to setup a new dockwidget
   Ruben de Bruin - 2019
 """
 
-from DAVE.gui.dockwidget import *
-from PySide6 import QtGui, QtCore, QtWidgets
-import DAVE.scene as nodes
-import DAVE.settings as ds
+from DAVE.gui.dock_system.dockwidget import *
+from PySide6 import QtWidgets
+
 
 class WidgetExample(guiDockWidget):
 

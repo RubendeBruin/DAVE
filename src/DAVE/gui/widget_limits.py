@@ -1,8 +1,7 @@
 """
 This is the limits dock-widget
 """
-from PySide6.QtCore import QObject, QEvent, Qt
-from PySide6.QtGui import QColor, QKeyEvent, QBrush
+from PySide6.QtGui import QColor, QBrush
 from PySide6.QtWidgets import QTableWidgetItem, QHeaderView
 
 from DAVE.settings_visuals import UC_CMAP
@@ -16,10 +15,7 @@ from DAVE.gui.helpers.my_qt_helpers import combobox_update_items, DeleteEventFil
   Ruben de Bruin - 2019
 """
 
-from DAVE.gui.dockwidget import *
-from PySide6 import QtGui, QtCore, QtWidgets
-import DAVE.scene as nodes
-import DAVE.settings as ds
+from DAVE.gui.dock_system.dockwidget import *
 from DAVE.gui.forms.widget_limits import Ui_DockLimits
 
 # from DAVE.settings import DAVE_REPORT_PROPS

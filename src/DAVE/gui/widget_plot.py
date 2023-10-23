@@ -10,13 +10,10 @@ This is an example/template of how to setup a new dockwidget
   Ruben de Bruin - 2019
 """
 
-from DAVE.gui.dockwidget import *
-from PySide6 import QtGui, QtCore, QtWidgets
+from DAVE.gui.dock_system.dockwidget import *
+from PySide6 import QtWidgets
 from PySide6.QtWidgets import QApplication, QVBoxLayout, QWidget
-import DAVE.scene as nodes
-import DAVE.settings as ds
 
-import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure

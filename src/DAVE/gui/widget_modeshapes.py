@@ -19,13 +19,13 @@ If button pressed:
   Ruben de Bruin - 2019
 """
 
-from DAVE.gui.dockwidget import *
-from PySide6 import QtCore, QtWidgets
+from DAVE.gui.dock_system.dockwidget import *
+from PySide6 import QtWidgets
 from PySide6.QtGui import QBrush, QColor
 from DAVE.gui.forms.widgetUI_modeshapes import Ui_ModeShapesWidget
 import DAVE.frequency_domain
 import numpy as np
-from DAVE.io.simplify import tanks_to_bodies
+
 
 class WidgetModeShapes(guiDockWidget):
 

@@ -1,10 +1,8 @@
-from DAVE.gui.dockwidget import *
-from PySide6.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag, QBrush
-from PySide6.QtCore import QMimeData, Qt, QItemSelectionModel
+from DAVE.gui.dock_system.dockwidget import *
+from PySide6.QtGui import QDrag, QBrush
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QTreeWidgetItem, QLabel, QLineEdit
-import DAVE.scene as nodes
-import DAVE.settings as ds
+from PySide6.QtWidgets import QLabel, QLineEdit
 
 from DAVE.tools import fancy_format
 

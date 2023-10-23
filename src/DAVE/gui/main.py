@@ -61,37 +61,25 @@
 
 """
 import subprocess
-from copy import deepcopy
-import logging
-from PySide6.QtCore import Qt, QMimeData, QTimer
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtCore import QSettings
-from PySide6.QtGui import QIcon, QPixmap, QFont, QFontMetricsF, QCursor, QAction
+from PySide6.QtGui import QIcon, QFont, QFontMetricsF, QAction
 from PySide6.QtWidgets import (
     QDialog,
     QFileDialog,
     QMessageBox,
-    QMenu,
-    QWidgetAction,
     QStatusBar,
 )
-
-import PySide6QtAds as QtAds
 
 from DAVE.gui.autosave import DaveAutoSave
 from DAVE.gui.dialog_blender import ExportToBlenderDialog
 from DAVE.gui.dialog_export_package import ExportAsPackageDialog
-from DAVE.gui.helpers.ads_helpers import (
+from DAVE.gui.dock_system.ads_helpers import (
     create_dock_manager,
     dock_remove_from_gui,
     dock_show,
 )
-from DAVE.gui.helpers.my_qt_helpers import (
-    DeleteEventFilter,
-    EscKeyPressFilter,
-    remove_from_stylesheet,
-)
 from DAVE.gui.helpers.qt_action_draggable import QDraggableNodeActionWidget
-from DAVE.gui.widget_watches import WidgetWatches
 from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import DragInfo
 from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
 from DAVE.gui.widget_footprints import WidgetFootprints
@@ -108,15 +96,16 @@ from DAVE.gui.widget_tags import WidgetTags
   Ruben de Bruin - 2019
 """
 
+import PySide6QtAds
 import DAVE.auto_download
 
-
-from DAVE.scene import Scene
 import DAVE.settings as vfc
 import DAVE.gui.node_icons
 
+
+
 from DAVE.gui.forms.main_form import Ui_MainWindow
-from DAVE.visual import Viewport, ActorType, DelayRenderingTillDone
+from DAVE.visual import Viewport, DelayRenderingTillDone
 from DAVE.gui import new_node_dialog
 import DAVE.gui.standard_assets
 from DAVE.gui.forms.dlg_solver import Ui_Dialog
@@ -130,30 +119,24 @@ from DAVE.gui.helpers.qmenu import MenuSlider
 from DAVE.gui.forms.menu_nodetypes import Ui_MenuNodes
 
 from IPython.utils.capture import capture_output
-import datetime
 import time
 import scipy.interpolate
 
 # All guiDockWidgets
-from DAVE.gui.dockwidget import *
+from DAVE.gui.dock_system.dockwidget import *
 from DAVE.gui.widget_nodetree import WidgetNodeTree
 from DAVE.gui.widget_derivedproperties import WidgetDerivedProperties
 from DAVE.gui.widget_nodeprops import WidgetNodeProps
 from DAVE.gui.widget_dynamic_properties import WidgetDynamicProperties
 from DAVE.gui.widget_modeshapes import WidgetModeShapes
-from DAVE.gui.widget_ballastconfiguration import WidgetBallastConfiguration
-from DAVE.gui.widget_ballastsolver import WidgetBallastSolver
-from DAVE.gui.widget_ballastsystemselect import WidgetBallastSystemSelect
 from DAVE.gui.widget_airy import WidgetAiry
 from DAVE.gui.widget_stability_disp import WidgetDisplacedStability
 from DAVE.gui.widget_explore import WidgetExplore
-from DAVE.gui.widget_tank_order import WidgetTankOrder
 from DAVE.gui.widget_rigg_it_right import WidgetQuickActions
 from DAVE.gui.widget_environment import WidgetEnvironment
 from DAVE.gui.widget_dof_edit import WidgetDOFEditor
 from DAVE.gui.forms.dlg_solver_threaded import Ui_SolverDialogThreaded
 
-import numpy as np
 import DAVEcore
 
 # resources
@@ -321,7 +304,7 @@ class Gui:
         # setup the docking system
 
         self.dock_manager = create_dock_manager(self.MainWindow)
-        self.central_dock_widget = QtAds.CDockWidget("CentralWidget")
+        self.central_dock_widget = PySide6QtAds.CDockWidget("CentralWidget")
 
         self.main_widget = QtWidgets.QWidget()
 
@@ -335,8 +318,8 @@ class Gui:
         self.central_dock_area = self.dock_manager.setCentralWidget(
             self.central_dock_widget
         )
-        self.central_dock_widget.setFeature(QtAds.CDockWidget.DockWidgetClosable, False)
-        self.central_dock_area.setAllowedAreas(QtAds.DockWidgetArea.OuterDockAreas)
+        self.central_dock_widget.setFeature(PySide6QtAds.CDockWidget.DockWidgetClosable, False)
+        self.central_dock_area.setAllowedAreas(PySide6QtAds.DockWidgetArea.OuterDockAreas)
 
         self.statusbar = QStatusBar()
         self.MainWindow.setStatusBar(self.statusbar)
@@ -867,7 +850,7 @@ class Gui:
         self._autosave = DaveAutoSave()
         self._autosavetimer = QTimer()
         self._autosavetimer.timeout.connect(self._autosave_write)
-        self._autosavetimer.start(1000 * vfc.AUTOSAVE_INTERVAL_S)
+        self._autosavetimer.start(1000 * DAVE.gui.settings.AUTOSAVE_INTERVAL_S)
 
         return filename
 
@@ -1891,7 +1874,6 @@ class Gui:
         self.animation_start(t, dofs, is_loop=False, show_animation_bar=False)
 
     def to_blender(self):
-        from DAVE.io.blender import create_blend_and_open
 
         if self.animation_running():
             dofs = []

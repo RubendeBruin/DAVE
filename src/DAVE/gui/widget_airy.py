@@ -6,9 +6,8 @@
   Ruben de Bruin - 2019
 """
 
-from DAVE.gui.dockwidget import *
+from DAVE.gui.dock_system.dockwidget import *
 import DAVE.gui.forms.widgetUI_airy
-from PySide6 import QtCore
 import DAVE.frequency_domain as fd
 import numpy as np
 from mafredo.helpers import wavelength

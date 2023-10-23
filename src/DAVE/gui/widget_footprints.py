@@ -1,7 +1,6 @@
 """
 This is an example/template of how to setup a new dockwidget
 """
-import subprocess
 
 from PySide6.QtGui import QIcon
 
@@ -13,13 +12,12 @@ from PySide6.QtGui import QIcon
   Ruben de Bruin - 2019
 """
 
-from DAVE.gui.dockwidget import *
-from PySide6 import QtGui, QtCore, QtWidgets
+from DAVE.gui.dock_system.dockwidget import *
+from PySide6 import QtWidgets
 import DAVE.scene as ds
 from DAVE.gui.forms.widget_footprints import Ui_FootprintForm
-from PySide6.QtWidgets import QTreeWidgetItem, QMessageBox
+from PySide6.QtWidgets import QTreeWidgetItem
 from DAVE.gui.helpers.gridedit import GridEdit
-from DAVE import settings
 
 
 class WidgetFootprints(guiDockWidget):

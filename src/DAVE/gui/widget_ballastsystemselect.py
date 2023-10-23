@@ -10,12 +10,10 @@ WidgetBallastSystemSelect
   Ruben de Bruin - 2019
 """
 
-from DAVE.gui.dockwidget import *
-from PySide6 import QtGui, QtCore, QtWidgets
-from DAVE.gui.forms.widgetUI_ballastsolver import Ui_BallastSolver
+from DAVE.gui.dock_system.dockwidget import *
+from PySide6 import QtCore, QtWidgets
 import DAVE.scene as nodes
-import DAVE.settings as ds
-from DAVE.solvers.ballast import force_vessel_to_evenkeel_and_draft, BallastSystemSolver
+
 
 class WidgetBallastSystemSelect(guiDockWidget):
 

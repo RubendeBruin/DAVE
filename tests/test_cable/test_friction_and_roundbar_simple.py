@@ -1,5 +1,5 @@
 from DAVE import *
-from DAVE.gui.dockwidget import guiEventType
+from DAVE.gui.dock_system.dockwidget import guiEventType
 
 
 def scene_1():

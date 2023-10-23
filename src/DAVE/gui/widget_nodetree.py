@@ -1,11 +1,10 @@
-from DAVE.gui.dockwidget import *
-from PySide6.QtGui import QStandardItemModel, QStandardItem, QIcon, QDrag, QColor, QBrush
-from PySide6.QtCore import QMimeData, Qt, QItemSelectionModel
+from DAVE.gui.dock_system.dockwidget import *
+from PySide6.QtGui import QIcon, QDrag, QColor, QBrush
+from PySide6.QtCore import QMimeData, Qt
 from PySide6.QtWidgets import (
     QTreeWidgetItem,
     QCheckBox,
     QListWidget,
-    QAbstractScrollArea, QApplication,
 )
 import DAVE.scene as ds
 from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter, update_combobox_items_with_completer

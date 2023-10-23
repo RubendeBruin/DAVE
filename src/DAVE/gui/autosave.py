@@ -7,7 +7,7 @@ Creates an autosave file for the current project.
 import os
 import datetime
 from DAVEcore import isProcessRunning
-from DAVE.settings import autosave_dir
+from DAVE.gui.settings import autosave_dir
 
 class DaveAutoSave:
     def __init__(self):

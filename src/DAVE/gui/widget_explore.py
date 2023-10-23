@@ -10,11 +10,9 @@ Explore widget
   Ruben de Bruin - 2019
 """
 
-from DAVE.gui.dockwidget import *
-from PySide6 import QtGui, QtCore, QtWidgets
+from DAVE.gui.dock_system.dockwidget import *
+from PySide6 import QtWidgets
 from DAVE.gui.forms.widgetUI_explore import Ui_widgetExplore11
-import DAVE.scene as nodes
-import DAVE.settings as ds
 from DAVE.gui.helpers.flow_layout import FlowLayout
 
 class WidgetExplore(guiDockWidget):

@@ -33,21 +33,7 @@ Example
 DAVE_ADDITIONAL_RUNTIME_MODULES['MyNode'] = MyNode
 """
 
-QUICK_ACTION_REGISTER = []
-"""Functions in this list are called by the Quick Action widget in the gui and can be used to add buttons to the
-quick-action widget. 
 
-QUICK_ACTION_REGISTER demo:
-
-def qa_demo(scene, selection, *args):
-    if any([isinstance(node, Point) for node in selection]):
-        btn = QPushButton('Good point!')
-        btn.setIcon(QIcon(":/icons/circle.png"))
-        return [(btn,"print('Told ya')")]
-    return []
-
-QUICK_ACTION_REGISTER.append(qa_demo)
-"""
 
 
 from os.path import expanduser
@@ -64,7 +50,7 @@ BEAUFORT_SCALE = (0, 1.5, 3.4, 5.4, 7.9, 10.7, 13.8, 17.1, 20.7, 24.4, 28.4, 32.
 # ======== Frequency domain ======
 
 # Minimum damping for frequency domain analysis, as fraction of critical damping based on diagonal terms.
-FD_GLOBAL_MIN_DAMPING_FRACTION = 0.005
+FD_GLOBAL_MIN_DAMPING_FRACTION = 0.005  # 0.5% of critical damping
 
 # ======== Folders ===========
 
@@ -77,11 +63,7 @@ default_user_dir = home / "DAVE_models"
 if not default_user_dir.exists():
     mkdir(default_user_dir)
 
-autosave_dir = default_user_dir / ".autosave"
-if not autosave_dir.exists():
-    mkdir(autosave_dir)
 
-AUTOSAVE_INTERVAL_S = 60  # save every 60 seconds
 
 
 # get the package directory
@@ -133,15 +115,7 @@ DAVE_DEFAULT_SOLVER_DO_LINEAR_FIRST = True
 PATH_TEMP = Path(default_user_dir / "temp")  # stored in the user dir by default
 if not PATH_TEMP.exists():
     mkdir(PATH_TEMP)
-PATH_TEMP_SCREENSHOT = PATH_TEMP / "screenshot.png"
 
-
-"""
-Debugging/logging
-
-By default a file "log.txt" is saved in the users temporary folder
-"""
-LOGFILE = PATH_TEMP / "log.txt"
 
 """
 Node-name settings
@@ -150,14 +124,6 @@ Node-name settings
 VF_NAME_SPLIT = "-->"  # used for node-names, eg:    Body23-->Cog
 
 MANAGED_NODE_IDENTIFIER = "/"  # used for managed nodes, eg: SlingSL1242>>>eyeA
-
-"""
- =========== Visuals ==================
- 
- This section defines color and geometry options for visualization in VTK
- 
-"""
-# Moved settings_visuals
 
 
 """
@@ -257,11 +223,7 @@ def register_nodeprop(
     DAVE_NODEPROP_INFO[node_class][property_name] = new_type
 
 
-# ======= Animate after solving =========
 
-GUI_DO_ANIMATE = True
-GUI_SOLVER_ANIMATION_DURATION = 0.5  # S
-GUI_ANIMATION_FPS = 60
 
 # ========== BLENDER ==============
 
