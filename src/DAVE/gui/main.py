@@ -61,7 +61,7 @@
 
 """
 import subprocess
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QTimer, QSize
 from PySide6.QtCore import QSettings
 from PySide6.QtGui import QIcon, QFont, QFontMetricsF, QAction
 from PySide6.QtWidgets import (
@@ -69,6 +69,8 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QMessageBox,
     QStatusBar,
+    QToolBar,
+    QWidget,
 )
 
 from DAVE.gui.autosave import DaveAutoSave
@@ -78,8 +80,12 @@ from DAVE.gui.dock_system.ads_helpers import (
     create_dock_manager,
     dock_remove_from_gui,
     dock_show,
+    set_as_central_widget,
+    add_global_dock,
+    get_all_active_docks,
 )
 from DAVE.gui.helpers.qt_action_draggable import QDraggableNodeActionWidget
+from DAVE.gui.widget_watches import WidgetWatches
 from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import DragInfo
 from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
 from DAVE.gui.widget_footprints import WidgetFootprints
@@ -101,7 +107,6 @@ import DAVE.auto_download
 
 import DAVE.settings as vfc
 import DAVE.gui.node_icons
-
 
 
 from DAVE.gui.forms.main_form import Ui_MainWindow
@@ -136,38 +141,14 @@ from DAVE.gui.widget_rigg_it_right import WidgetQuickActions
 from DAVE.gui.widget_environment import WidgetEnvironment
 from DAVE.gui.widget_dof_edit import WidgetDOFEditor
 from DAVE.gui.forms.dlg_solver_threaded import Ui_SolverDialogThreaded
+from DAVE.gui.widget_watches import WidgetWatches
 
 import DAVEcore
 
 # resources
 import DAVE.gui.forms.resources_rc
 
-# ========================================================
-#   Settings for customization of the GUI
-# ========================================================
-#
-# List with of tupple with (Button text, WORKSPACE_ID)
-#
-# These buttons are created in the tool-bar.
-# Clicking a button will call activate_workspace with WORKSPACE_ID
-DAVE_GUI_WORKSPACE_BUTTONS = [
-    ("Construct", "CONSTRUCT"),
-    ("Watches", "WATCHES"),
-    ("Explore", "EXPLORE"),
-    ("Ballast", "BALLAST"),
-    ("Shear and Bending", "MOMENTS"),
-    ("Environment", "ENVIRONMENT"),
-    ("Stability", "STABILITY"),
-    ("Limits", "LIMITS"),
-    ("Tags", "TAGS"),
-    ("Mode shapes [beta]", "DYNAMICS"),
-    ("Airy [beta]", "AIRY"),
-]
-
-DAVE_GUI_PLUGINS_INIT = []
-DAVE_GUI_PLUGINS_WORKSPACE = []
-DAVE_GUI_PLUGINS_CONTEXT = []
-DAVE_GUI_PLUGINS_EDITOR = []
+from DAVE.gui.settings import DAVE_GUI_DOCKS, DOCK_GROUPS
 
 DAVE_GUI_DOCKS["Node Tree"] = WidgetNodeTree
 DAVE_GUI_DOCKS["Properties"] = WidgetNodeProps
@@ -186,6 +167,32 @@ DAVE_GUI_DOCKS["vanGogh"] = WidgetPainters
 DAVE_GUI_DOCKS["DOF editor"] = WidgetDOFEditor
 DAVE_GUI_DOCKS["Explore 1-to-1"] = WidgetExplore
 
+# ========================================================
+#   Settings for customization of the GUI
+# ========================================================
+#
+# List with of tupple with (Button text, WORKSPACE_ID)
+#
+# These buttons are created in the tool-bar.
+# Clicking a button will call activate_workspace with WORKSPACE_ID
+# DAVE_GUI_WORKSPACE_BUTTONS = [
+#     ("Construct", "CONSTRUCT"),
+#     ("Watches", "WATCHES"),
+#     ("Explore", "EXPLORE"),
+#     ("Ballast", "BALLAST"),
+#     ("Shear and Bending", "MOMENTS"),
+#     ("Environment", "ENVIRONMENT"),
+#     ("Stability", "STABILITY"),
+#     ("Limits", "LIMITS"),
+#     ("Tags", "TAGS"),
+#     ("Mode shapes [beta]", "DYNAMICS"),
+#     ("Airy [beta]", "AIRY"),
+# ]
+
+DAVE_GUI_PLUGINS_INIT = []
+DAVE_GUI_PLUGINS_WORKSPACE = []
+DAVE_GUI_PLUGINS_CONTEXT = []
+DAVE_GUI_PLUGINS_EDITOR = []
 
 # ====================================================
 
@@ -194,16 +201,6 @@ class UndoType(Enum):
     CLEAR_AND_RUN_CODE = 1
     RUN_CODE = 2
     SET_DOFS = 3
-
-
-class SolverDialog(QDialog, Ui_Dialog):
-    def __init__(self, parent=None):
-        super(SolverDialog, self).__init__()
-        Ui_Dialog.__init__(self)
-        self.setupUi(self)
-        self.setWindowFlag(Qt.WindowCloseButtonHint, False)
-        self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
-        self.setWindowIcon(QIcon(":/icons/cube.png"))
 
 
 class SolverDialog_threaded(QDialog, Ui_SolverDialogThreaded):
@@ -300,30 +297,6 @@ class Gui:
 
         self.ui.setupUi(self.MainWindow)
         self.MainWindow.closeEvent = self.closeEvent
-
-        # setup the docking system
-
-        self.dock_manager = create_dock_manager(self.MainWindow)
-        self.central_dock_widget = PySide6QtAds.CDockWidget("CentralWidget")
-
-        self.main_widget = QtWidgets.QWidget()
-
-        layout = QtWidgets.QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.ui.widget_3)
-        layout.addWidget(self.ui.frame3d)
-        self.main_widget.setLayout(layout)
-
-        self.central_dock_widget.setWidget(self.main_widget)
-        self.central_dock_area = self.dock_manager.setCentralWidget(
-            self.central_dock_widget
-        )
-        self.central_dock_widget.setFeature(PySide6QtAds.CDockWidget.DockWidgetClosable, False)
-        self.central_dock_area.setAllowedAreas(PySide6QtAds.DockWidgetArea.OuterDockAreas)
-
-        self.statusbar = QStatusBar()
-        self.MainWindow.setStatusBar(self.statusbar)
-        self.statusbar.mousePressEvent = self.show_python_console
 
         # ============== private properties ================
         self._codelog = []
@@ -715,82 +688,161 @@ class Gui:
             #     pb.setAutoExclusive(True)
             #     pb.setStyleSheet("text-decoration: underline;")
             #     self.ui.toolBar.addWidget(pb)
-
-            # Workspace buttons
-            btnConstruct = QtWidgets.QPushButton()
-            btnConstruct.setText("&0. Library")
-            btnConstruct.clicked.connect(self.import_browser)
-            btnConstruct.setFlat(True)
-            self.ui.toolBar.addWidget(btnConstruct)
-
-            for i, button in enumerate(DAVE_GUI_WORKSPACE_BUTTONS):
-                name = button[0]
-                workspace_id = button[1]
-
-                btn = QtWidgets.QPushButton()
-                if i < 9:
-                    btn.setText(f"&{i+1} {name}")
-                else:
-                    btn.setText(f"{i + 1} {name}")
-                btn.pressed.connect(
-                    lambda *args, wsid=workspace_id: self.activate_workspace(wsid)
-                )
-
-                # btn.setFlat(True)
-                btn.setCheckable(True)
-                btn.setAutoExclusive(True)
-                # btn.setStyleSheet("text-decoration: underline;")
-                self.ui.toolBar.addWidget(btn)
-                self.ui.toolBar.setMinimumHeight(btn.minimumSizeHint().height())
-
-            # self.ui.toolBar.layout().setContentsMargins(-2, 0, 0, 0)
-            self.ui.toolBar.setStyleSheet("QToolBar{spacing:0px;}")
-            # self.ui.toolBar
-
-            space = QtWidgets.QWidget()
-            space.setSizePolicy(
-                QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
-            )
-            self.ui.toolBar.addWidget(space)
-
-            self._active_workspace = None
+            #
+            # # Workspace buttons
+            # btnConstruct = QtWidgets.QPushButton()
+            # btnConstruct.setText("&0. Library")
+            # btnConstruct.clicked.connect(self.import_browser)
+            # btnConstruct.setFlat(True)
+            # self.ui.toolBar.addWidget(btnConstruct)
+            #
+            # for i, button in enumerate(DAVE_GUI_WORKSPACE_BUTTONS):
+            #     name = button[0]
+            #     workspace_id = button[1]
+            #
+            #     btn = QtWidgets.QPushButton()
+            #     if i < 9:
+            #         btn.setText(f"&{i+1} {name}")
+            #     else:
+            #         btn.setText(f"{i + 1} {name}")
+            #     btn.pressed.connect(
+            #         lambda *args, wsid=workspace_id: self.activate_workspace(wsid)
+            #     )
+            #
+            #     # btn.setFlat(True)
+            #     btn.setCheckable(True)
+            #     btn.setAutoExclusive(True)
+            #     # btn.setStyleSheet("text-decoration: underline;")
+            #     self.ui.toolBar.addWidget(btn)
+            #     self.ui.toolBar.setMinimumHeight(btn.minimumSizeHint().height())
+            #
+            # # self.ui.toolBar.layout().setContentsMargins(-2, 0, 0, 0)
+            # self.ui.toolBar.setStyleSheet("QToolBar{spacing:0px;}")
+            # # self.ui.toolBar
+            #
+            # space = QtWidgets.QWidget()
+            # space.setSizePolicy(
+            #     QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
+            # )
+            # self.ui.toolBar.addWidget(space)
+            #
+            # self._active_workspace = None
 
             # call plugin(s)
 
             for plugin_init in DAVE_GUI_PLUGINS_INIT:
                 plugin_init(self)
 
-            # ---------- activate workspace (if any)
-
-            if workspace is None:
-                self.activate_workspace("CONSTRUCT")
-            else:
-                self.activate_workspace(workspace)
-
             # ========== undo log =======
 
             self.ui.actionUndo.triggered.connect(self.undo)
             self.ui.actionRedo.triggered.connect(self.redo)
 
-        else:
-            # Client mode
-            self.guiWidgets = dict()
+            # else:
+            #     # Client mode
+            #     self.guiWidgets = dict()
+            #
+            #     try:
+            #         from DAVE_timeline import gui
+            #     except:
+            #         pass
+            #
+            #     self.ui.frameAni.setVisible(False)
+            #     self.ui.dockWidget_2.setVisible(False)
+            #
+            #     self.show_guiWidget("Watches")
+            #     self.show_guiWidget("TimeLine")
+            #     self._active_workspace = "Client"
+            #
+            #     self.guiEmitEvent(guiEventType.FULL_UPDATE)
 
-            try:
-                from DAVE_timeline import gui
-            except:
-                pass
+            # setup the docks
 
-            self.ui.frameAni.setVisible(False)
-            self.ui.dockWidget_2.setVisible(False)
+        # setup the docking system
 
-            self.show_guiWidget("Watches")
-            self.show_guiWidget("TimeLine")
-            self._active_workspace = "Client"
+        self.dock_manager = create_dock_manager(self.MainWindow)
 
-            self.guiEmitEvent(guiEventType.FULL_UPDATE)
+        # Set the main widget
+
+        self.main_widget = QtWidgets.QWidget()
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.ui.widget_3)
+        layout.addWidget(self.ui.frame3d)
+        self.main_widget.setLayout(layout)
+
+        self.central_dock_widget = set_as_central_widget(
+            self.dock_manager, self.main_widget
+        )
+
+        # Add the global docks
+
+        add_global_dock(self.dock_manager, self.get_dock("Properties"))
+        add_global_dock(self.dock_manager, self.get_dock("Derived Properties"))
+        add_global_dock(self.dock_manager, self.get_dock("Watches"))
+        add_global_dock(self.dock_manager, self.get_dock("Tags"))
+        add_global_dock(self.dock_manager, self.get_dock("Environment"))
+
+
+        # ------ Add the permanent docks -------
+        self.docks_permanent = [self.central_dock_widget]
+
+        # -- tree
+        self.dock_permanent_tree = self.get_dock("Node Tree")
+        # assert isinstance(self.dock_tree, PySide6QtAds.ads.CDockWidget)
+        self.dock_manager.addDockWidget(
+            PySide6QtAds.DockWidgetArea.LeftDockWidgetArea, self.dock_permanent_tree
+        )
+        self.docks_permanent.append(self.dock_permanent_tree)
+
+        # Toolbar (top)
+        self.toolbar_top = QToolBar("Top Toolbar")
+        self.MainWindow.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolbar_top)
+
+        top_left_widget = QWidget()
+        self.toolbar_top.addWidget(top_left_widget)
+
+        # Add actions for permanent docks
+        action = self.dock_permanent_tree.toggleViewAction()
+        action.setIcon(QIcon(":v2/icons/empty_box.svg"))
+        self.toolbar_top.addAction(action)
+
+        # Toolbar (left)
+        self.toolbar_left = QToolBar("Left Toolbar")
+        self.MainWindow.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.toolbar_left)
+        self.toolbar_left.setOrientation(Qt.Vertical)
+        self.toolbar_left.setIconSize(QSize(32, 32))
+        self.toolbar_left.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+
+        self.create_dockgroups()
+
+        # Makup
+
+        self.toolbar_top.setMovable(False)
+        self.toolbar_left.setMovable(False)
+        self.toolbar_top.setStyleSheet(
+            "background : palette(light); border: none; padding-left: 0"
+        )
+        self.toolbar_left.setStyleSheet("background : palette(mid); border: none;")
+        top_left_widget.setStyleSheet("background : palette(mid); border: none")
+        top_left_widget.setFixedWidth(self.toolbar_left.sizeHint().width())
+
+        # Status-bar
+
+        self.statusbar = QStatusBar()
+        self.MainWindow.setStatusBar(self.statusbar)
+        self.statusbar.mousePressEvent = self.show_python_console
 
         # ======================== Finalize ========================
+
+        # ---------- activate workspace (if any)
+
+        if workspace is None:
+            self.activate_dockgroup("Build")
+        else:
+            self.activate_dockgroup(workspace)
+
         self.MainWindow.show()
 
         # self.central_dock_widget.setWidget(self.ui.centralwidget)
@@ -1070,82 +1122,60 @@ class Gui:
         for g in self.guiWidgets.values():
             dock_remove_from_gui(self.dock_manager, g)
 
-    def activate_workspace(self, name):
-        self._active_workspace = name
+    def create_dockgroups(self):
+        """Creates the dockgroups for each workspace"""
+        self._action_dockgroups = list()  # keep save from the garbage collector
+        for d in DOCK_GROUPS:
+            action = QAction()
+            action.setText(d.description)
+            icon = d.icon
+            if isinstance(icon, str):
+                icon = QIcon(icon)
+            action.setIcon(icon)
+            action.triggered.connect(
+                lambda *args, name=d.ID: self.activate_dockgroup(name)
+            )
+            self._action_dockgroups.append(action)
+            self.toolbar_left.addAction(action)
+
+    def activate_dockgroup(self, name):
+        names = [d.ID for d in DOCK_GROUPS]
+
+        if name not in names:
+            raise ValueError(
+                f"Unknown dockgroup {name}, available dockgroups are {list(DOCK_GROUPS.keys())}"
+            )
+
+        group = DOCK_GROUPS[names.index(name)]
+        self._active_dockgroup = group
 
         self.animation_terminate()
         self.savepoint_restore()
 
-        if name == "PAINTERS":
-            self.show_guiWidget("vanGogh")
+        wanted_docks = [self.get_dock(name) for name in group.dock_widgets]
+        all_active_docks = get_all_active_docks(self.dock_manager)
 
-        if name == "CONSTRUCT":
-            keep_watches = "Watches" in self.guiWidgets.keys()
+        # Remove all non-needed
+        for dock in all_active_docks:
+            if dock in self.docks_permanent:
+                continue
 
-            self.close_all_open_docks()
-            self.show_guiWidget("Node Tree")
-            self.show_guiWidget("Properties")
-            self.show_guiWidget("Quick actions")
+            if dock not in wanted_docks:
+                dock_remove_from_gui(self.dock_manager, dock)
+                self.toolbar_top.removeAction(dock.toggleViewAction())
 
-            if keep_watches:
-                self.show_guiWidget("Watches")
+        # Create all needed
+        for dock in wanted_docks:
+            if dock not in all_active_docks:
+                dock_show(self.dock_manager, dock)
 
-        if name == "WATCHES":
-            self.show_guiWidget("Watches")
+        # Add actions to the top-bar
+        for dock in wanted_docks:
+            action = dock.toggleViewAction()
+            self.toolbar_top.addAction(action)
 
-        if name == "EXPLORE":
-            self.close_all_open_docks()
-            self.show_guiWidget("Node Tree")
-            self.show_guiWidget("Derived Properties")
-            self.show_guiWidget("Explore 1-to-1")
-            self.show_guiWidget("Watches")
-
-        if name == "DYNAMICS":
-            self.close_all_open_docks()
-            self.show_guiWidget("Properties - dynamic")
-            self.show_guiWidget("Mode-shapes")
-
-        if name == "BALLAST":
-            self.close_all_open_docks()
-            self.show_guiWidget("BallastSystemSelect")
-            self.show_guiWidget("Tanks")
-            self.show_guiWidget("Ballast Solver")
-            self.show_guiWidget("TankReOrder")
-            if self.visual.settings.label_scale == 0:
-                self.labels_show_hide()
-            self.activate_paintset("Ballast")
-
-        if name == "ENVIRONMENT":
-            self.show_guiWidget("Environment")
-
-        if name == "STABILITY":
-            self.close_all_open_docks()
-            self.show_guiWidget("Stability")
-
-        if name == "LIMITS":
-            self.close_all_open_docks()
-            self.show_guiWidget("Limits and UCs")
-            if not self.visual.settings.paint_uc:
-                self.toggle_show_UC()
-
-        if name == "TAGS":
-            self.show_guiWidget("Tags")
-
-        if name == "MOMENTS":
-            self.close_all_open_docks()
-            self.show_guiWidget("Footprints")
-            self.show_guiWidget("Graph")
-            self.activate_paintset("Footprints")
-
-        if name == "AIRY":
-            self.scene.savepoint_make()
-            self.close_all_open_docks()
-            code = "from DAVE.frequency_domain import prepare_for_fd\nprepare_for_fd(s)"
-            self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
-            self.show_guiWidget("Airy waves")
-
-        for plugin in self.plugins_workspace:
-            plugin(self, name)
+        # for plugin in self.plugins_workspace:
+        #     plugin(self, name)
 
         self.visual.update_visibility()
 
@@ -1162,7 +1192,7 @@ class Gui:
             )
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
-            self.activate_workspace("CONSTRUCT")
+            self.activate_dockgroup("CONSTRUCT")
 
     # ============== File open / recent / drag-drop functions ===========
 
@@ -1874,7 +1904,6 @@ class Gui:
         self.animation_start(t, dofs, is_loop=False, show_animation_bar=False)
 
     def to_blender(self):
-
         if self.animation_running():
             dofs = []
 
@@ -2658,11 +2687,9 @@ class Gui:
                 self.selected_nodes.append(node)
 
         if self.selected_nodes:
-            if self._active_workspace in ["CONSTRUCT", "TimeLine"]:
+            if self._active_dockgroup in ["CONSTRUCT", "TimeLine"]:
                 if "Properties" in self.guiWidgets:
-                    dock_show(
-                        self.dock_manager, self.guiWidgets["Properties"]
-                    )
+                    dock_show(self.dock_manager, self.guiWidgets["Properties"])
                     self.guiEmitEvent(guiEventType.SELECTION_CHANGED)  # force update
 
         # Get the screen position of the just selected visual
@@ -2678,7 +2705,10 @@ class Gui:
         for w in self.guiWidgets.values():
             w.move_away_from_cursor()
 
-    def show_guiWidget(self, name):
+    def get_dock(self, name):
+        """Returns a reference to a dock instance,
+        creates the instance if needed"""
+
         if name not in DAVE_GUI_DOCKS:
             print(DAVE_GUI_DOCKS.keys())
             raise ValueError(
@@ -2688,37 +2718,39 @@ class Gui:
         widgetClass = DAVE_GUI_DOCKS[name]
 
         if name in self.guiWidgets:
+            # dock already exists
+            return self.guiWidgets[name]
 
-            # dock already exists, make it visible
-            d = self.guiWidgets[name]
-            dock_show(self.dock_manager, d)
+        print("Creating {}".format(name))
 
+        d = widgetClass(self.MainWindow, name=name)
+        d.guiScene = self.scene
+        d.guiEmitEvent = self.guiEmitEvent
+        d.guiRunCodeCallback = self.run_code
+        d.guiSelectNode = self.guiSelectNode
+        d.guiSelection = self.selected_nodes
+        d.guiPressSolveButton = self.solve_statics
+        d.gui = self
+
+        self.guiWidgets[name] = d
+
+        location = d.guiDefaultLocation()
+
+        if location is None:
+            self.dock_manager.addDockWidget(
+                PySide6QtAds.DockWidgetArea.LeftDockWidgetArea, d
+            )
+            d.setFloating()
         else:
-            print("Creating {}".format(name))
-
-            d = widgetClass(self.MainWindow, name=name)
-            location = d.guiDefaultLocation()
-
+            assert isinstance(location, PySide6QtAds.DockWidgetArea)
             self.dock_manager.addDockWidget(location, d)
 
-            if name == "Properties":
-                d.setAutoHide(True)
+        return d
 
-            if location is None:
-                d.setFloating()
-
-            self.guiWidgets[name] = d
-
-            d.guiScene = self.scene
-            d.guiEmitEvent = self.guiEmitEvent
-            d.guiRunCodeCallback = self.run_code
-            d.guiSelectNode = self.guiSelectNode
-            d.guiSelection = self.selected_nodes
-            d.guiPressSolveButton = self.solve_statics
-            d.gui = self
-
-            # if widgetClass == WidgetQuickActions:
-            #     self.MainWindow.resizeDocks([d], [6], Qt.Horizontal)
+    def show_guiWidget(self, name):
+        # if widgetClass == WidgetQuickActions:
+        #     self.MainWindow.resizeDocks([d], [6], Qt.Horizontal)
+        d = self.get_dock(name)
 
         d.show()
         d._active = True

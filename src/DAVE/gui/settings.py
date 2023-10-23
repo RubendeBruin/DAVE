@@ -35,10 +35,15 @@ QUICK_ACTION_REGISTER.append(qa_demo)
 """
 
 # ======= Dock system =========
-from dock_system.gui_dock_groups import DaveDockGroup
 
 
 DAVE_GUI_DOCKS = dict()
+
+
+
+from dock_system.gui_dock_groups import DaveDockGroup
+
+
 """This dictionary contains all dock widgets that are available in the gui. The key is the ID of the dock widget, the value is the class of the dock widget.
 
 from DAVE.gui.dock_system.gui_dock_groups import DockGroup
@@ -48,5 +53,28 @@ DOCK_GROUPS = []
 
 # Construct the basic dock groups
 construct = DaveDockGroup(
+    ID="Build",
     description="Build",
-    icon=QIcon(":/icons/build.png"),
+    icon=":v2/icons/lift.svg",
+    dock_widgets=["Quick actions"],
+    show_edit=True,
+    show_tree=True,
+    show_timeline=None)
+
+DOCK_GROUPS.append(construct)
+
+explore = DaveDockGroup(
+    ID="Explore",
+    description="Explore",
+    icon=":v2/icons/empty_box.svg",
+    dock_widgets=["Explore 1-to-1", "Derived Properties"],
+    show_edit=True,
+    show_tree=True,
+    show_timeline=None)
+
+DOCK_GROUPS.append(explore)
+
+
+
+
+

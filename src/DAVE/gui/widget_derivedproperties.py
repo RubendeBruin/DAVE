@@ -78,7 +78,7 @@ class WidgetDerivedProperties(guiDockWidget):
             self.display_node_properties()
 
     def guiDefaultLocation(self):
-        return QtAds.DockWidgetArea.RightDockWidgetArea
+        return PySide6QtAds.DockWidgetArea.RightDockWidgetArea
 
 
     # ======= custom

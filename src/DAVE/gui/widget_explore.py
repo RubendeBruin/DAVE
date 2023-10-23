@@ -50,7 +50,7 @@ class WidgetExplore(guiDockWidget):
 
 
     def guiDefaultLocation(self):
-        return QtAds.DockWidgetArea.LeftDockWidgetArea
+        return PySide6QtAds.DockWidgetArea.LeftDockWidgetArea
 
     # ======
 

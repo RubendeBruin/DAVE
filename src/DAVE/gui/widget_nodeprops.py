@@ -29,7 +29,7 @@ import DAVE.gui.forms.widget_area
 import DAVE.gui.forms.widget_component
 import DAVE.gui.forms.widget_spmt
 import DAVE.gui.forms.widget_connections
-from DAVE.gui.dock_system.ads_helpers import dock_hide
+from DAVE.gui.dock_system.ads_helpers import dock_remove_from_gui
 from DAVE.gui.helpers.nodelist_drag_drop_move import (
     call_from_drop_Event,
     call_from_dragEnter_or_Move_Event,
@@ -2895,7 +2895,7 @@ class WidgetNodeProps(guiDockWidget):
 
         if node is None:
             self.setEnabled(False)
-            dock_hide(self.gui.dock_manager, self)
+            dock_remove_from_gui(self.gui.dock_manager, self)
             return
 
         self.setEnabled(True)
@@ -3172,5 +3172,7 @@ class WidgetNodeProps(guiDockWidget):
 
         print("Function done", flush=True)
 
+
+from DAVE.gui.settings import DAVE_GUI_DOCKS
 
 DAVE_GUI_DOCKS["Properties"] = WidgetNodeProps

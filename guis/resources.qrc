@@ -45,4 +45,10 @@
     <file>redball.png</file>
     <file>axis.png</file>
   </qresource>
+  <qresource prefix="v2">
+    <file>icons/lift.svg</file>
+    <file>icons/empty_box.svg</file>
+    <file>icons/footprint.svg</file>
+    <file>icons/footprint90.svg</file>
+  </qresource>
 </RCC>

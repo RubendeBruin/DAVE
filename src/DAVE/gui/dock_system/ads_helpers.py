@@ -107,6 +107,22 @@ def create_dock_manager(main_window):
     return dock_manager
 
 
+def set_as_central_widget(
+    dock_manager: PySide6QtAds.CDockManager, widget: QtWidgets.QWidget
+):
+    central_dock_widget = PySide6QtAds.CDockWidget("CentralWidget")
+
+    central_dock_widget.setWidget(widget)
+    central_dock_area = dock_manager.setCentralWidget(
+        central_dock_widget
+    )
+    central_dock_widget.setFeature(
+        PySide6QtAds.CDockWidget.DockWidgetClosable, False
+    )
+    central_dock_area.setAllowedAreas(PySide6QtAds.DockWidgetArea.OuterDockAreas)
+    return central_dock_widget
+
+
 def get_all_active_docks(manager: PySide6QtAds.CDockManager):
     """Returns a list of all active dock-widgets"""
     all_active_widgets = manager.dockWidgets()
@@ -128,13 +144,10 @@ def dock_remove_from_gui(
     d.toggleViewAction().trigger()
 
 
-def dock_hide(manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget):
-    dock_remove_from_gui(manager, d)
-
 
 def dock_show(manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget):
     """Makes sure a dock is visible"""
-    print("showing {d}")
+    print(f"showing {d}")
     if d.isVisible():
         return  # already visible
 
@@ -162,10 +175,12 @@ def _dock_return_to_hidden_state(d: PySide6QtAds.CDockWidget):
     )  # Ref: https://github.com/mborgerson/pyside6_PySide6QtAds/issues/23
 
 
-def add_global_dock(manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget):
+def add_global_dock(manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget, icon = ":v2/icons/empty_box.svg"):
     """Adds a dock to the manager and make it a 'global' dock.
     Global docks are docks that can not be closed and are hidden on the top right by default.
     """
+    assert isinstance(d, PySide6QtAds.CDockWidget)
+
     manager.addAutoHideDockWidget(
         PySide6QtAds._ads.SideBarLocation.SideBarRight, d
     )  # Ref: https://github.com/mborgerson/pyside6_PySide6QtAds/issues/23
@@ -173,7 +188,13 @@ def add_global_dock(manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWid
     d.setFeature(PySide6QtAds.CDockWidget.DockWidgetFeature.CustomCloseHandling, True)
     d.closeRequested.connect(lambda dock=d: _dock_return_to_hidden_state(dock))
 
+    if icon is not None:
+        if isinstance(icon, str):
+            icon = QIcon(icon)
+        d.setIcon(icon)
+
     return d
+
 
 
 if __name__ == "__main__":
@@ -280,8 +301,6 @@ if __name__ == "__main__":
 
     # remove the window title bar but keep the frame
     # mw.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-
-
 
     mw.show()
 

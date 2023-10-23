@@ -144,5 +144,5 @@ class WidgetDOFEditor(guiDockWidget):
                 self.guiSelectNode(dof['node'])
 
 
-
+from DAVE.gui.settings import DAVE_GUI_DOCKS
 DAVE_GUI_DOCKS['DOF Editor'] = WidgetDOFEditor

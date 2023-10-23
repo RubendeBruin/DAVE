@@ -79,7 +79,7 @@ class WidgetWatches(guiDockWidget):
                 self.btnNew.setEnabled(False)
 
     def guiDefaultLocation(self):
-        return QtAds.DockWidgetArea.RightDockWidgetArea
+        return PySide6QtAds.DockWidgetArea.RightDockWidgetArea
 
     def fill(self):
 
@@ -260,5 +260,5 @@ class WidgetWatches(guiDockWidget):
             menu.exec_(event.globalPos())
 
 # REGISTER
-
+from DAVE.gui.settings import  DAVE_GUI_DOCKS
 DAVE_GUI_DOCKS['Watches'] = WidgetWatches

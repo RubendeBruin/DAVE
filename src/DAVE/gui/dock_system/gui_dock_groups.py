@@ -17,6 +17,8 @@ from DAVE.gui.dock_system.ads_helpers import *
 @dataclass
 class DaveDockGroup:
 
+    ID : str # unique ID
+
     # General settings
     description: str
     icon: QIcon or str
