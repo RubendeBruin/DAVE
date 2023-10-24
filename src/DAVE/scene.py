@@ -127,6 +127,9 @@ class Scene:
                 if rp not in self.resources_paths:
                     self.resources_paths.append(rp)
 
+        self._resource_logger = None
+        """Logger injection point for resource capturing"""
+
         self._savepoint = None
         """Python code to re-create the scene, see savepoint_make()"""
 
@@ -546,44 +549,45 @@ class Scene:
             if url.startswith("cd:"):
                 filename = url[3:].strip()
                 file = Path(self.current_directory) / filename
-                if isfile(file):
-                    return file
-
-                raise FileExistsError(
-                    f'Resource "{filename}" not found in current directory "{str(self.current_directory)}"'
-                )
+                if not isfile(file):
+                    raise FileExistsError(
+                        f'Resource "{filename}" not found in current directory "{str(self.current_directory)}"'
+                    )
 
             elif url.startswith("res:"):
                 # we have a string starting with 'res:'
                 filename = url[4:].strip()
+
+                file = None
 
                 for res in self.resources_paths:
                     p = Path(res)
 
                     file = p / filename
                     if isfile(file):
-                        return file
+                        break
 
-                # prepare feedback for error
-                ext = str(url).split(".")[-1]  # everything after the last .
+                if file is None:
+                    # prepare feedback for error
+                    ext = str(url).split(".")[-1]  # everything after the last .
 
-                print("Resource folders:")
-                for res in self.resources_paths:
-                    print(str(res))
+                    print("Resource folders:")
+                    for res in self.resources_paths:
+                        print(str(res))
 
-                print(
-                    "The following resources with extension {} are available with ".format(
-                        ext
+                    print(
+                        "The following resources with extension {} are available with ".format(
+                            ext
+                        )
                     )
-                )
-                available = self.get_resource_list(ext)
-                for a in available:
-                    print(a)
-                raise FileExistsError(
-                    'Resource "{}" not found in resource paths. A list with available resources with this extension is printed above this error'.format(
-                        url
+                    available = self.get_resource_list(ext)
+                    for a in available:
+                        print(a)
+                    raise FileExistsError(
+                        'Resource "{}" not found in resource paths. A list with available resources with this extension is printed above this error'.format(
+                            url
+                        )
                     )
-                )
             else:
                 file = Path(url)
 
@@ -593,6 +597,9 @@ class Scene:
             )
 
         if file.exists():
+
+            if self._resource_logger is not None:
+                self._resource_logger(url,file)
             return file
 
         raise FileExistsError(
@@ -600,6 +607,20 @@ class Scene:
                 url
             )
         )
+
+    def get_used_resources(self):
+        """Returns a list of all resources used in the scene"""
+
+        s2 = Scene()
+        resources = []
+        def log(url, path):
+            resources.append((url, path))
+
+        s2._resource_logger = log
+        s2.import_scene(self)
+
+        return resources
+
 
     def get_resource_list(
         self, extension, include_subdirs=False, include_current_dir=True
