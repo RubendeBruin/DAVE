@@ -711,17 +711,8 @@ class Gui:
 
         # setup the docking system
 
-        self.dock_manager = create_dock_manager(self.MainWindow) # , self.settings)
+        self.dock_manager = create_dock_manager(self.MainWindow , self.settings)
 
-        # def remove_all_perspectives():
-        #     for p in self.dock_manager.perspectiveNames():
-        #         self.dock_manager.removePerspective(p)
-        #     self.dock_manager.savePerspectives(self.settings)
-        #
-        # # remove_all_perspectives()
-
-        # self._right_dock_area = None
-        # self._left_dock_area = None
 
         # Set the main widget
 
@@ -1188,18 +1179,14 @@ class Gui:
 
     def save_perspective(self):
         """Saves the current perspective (dock layout)"""
-
-        self.give_feedback("Sorry, this feature is currently disabled")
-
-        #
-        # if self._active_dockgroup is not None:
-        #     perspective_name = self._active_dockgroup.ID
-        #     self.dock_manager.addPerspective(perspective_name)
-        #     self.dock_manager.savePerspectives(self.settings)
-        #     print("Perspective saved")
-        #     self.save_perspective_action.setIcon(
-        #         QIcon(":/v2/icons/heart_full_small.svg")
-        #     )
+        if self._active_dockgroup is not None:
+            perspective_name = self._active_dockgroup.ID
+            self.dock_manager.addPerspective(perspective_name)
+            self.dock_manager.savePerspectives(self.settings)
+            print("Perspective saved")
+            self.save_perspective_action.setIcon(
+                QIcon(":/v2/icons/heart_full_small.svg")
+            )
 
     def activate_dockgroup(self, name):
         if self._active_dockgroup is not None:
@@ -1249,16 +1236,15 @@ class Gui:
             if dock not in all_active_docks:
                 dock.guiEvent(guiEventType.FULL_UPDATE)
 
-        # # Set the active perspective
-        # try:
-        #     print("Loading perspective", group.ID)
-        #     print(self.dock_manager.perspectiveNames())
-        #     self.dock_manager.openPerspective(name)
-        #     self.save_perspective_action.setIcon(QIcon(":/v2/icons/heart_full_small.svg"))
-        # except:
-        #     self.save_perspective_action.setIcon(QIcon(":/v2/icons/heart_empty_small.svg"))
-        #
-        # self.visual.update_visibility()
+        # Set the active perspective
+        if group.ID in self.dock_manager.perspectiveNames():
+            print("Loading perspective", group.ID)
+            self.dock_manager.openPerspective(name)
+            self.save_perspective_action.setIcon(QIcon(":/v2/icons/heart_full_small.svg"))
+        else:
+            self.save_perspective_action.setIcon(QIcon(":/v2/icons/heart_empty_small.svg"))
+
+        self.visual.update_visibility()
 
     def import_browser(self):
         G = DAVE.gui.standard_assets.Gui()
