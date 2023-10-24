@@ -55,7 +55,7 @@ class WidgetBallastSolver(guiDockWidget):
 
 
     def guiDefaultLocation(self):
-        return QtAds.DockWidgetArea.LeftDockWidgetArea
+        return PySide6QtAds.DockWidgetArea.LeftDockWidgetArea
 
     # ======
 
@@ -112,4 +112,5 @@ class WidgetBallastSolver(guiDockWidget):
         self.determineRequiredBallast()
         self.solveBallast()
 
+from DAVE.gui.settings import DAVE_GUI_DOCKS
 DAVE_GUI_DOCKS['Ballast Solver'] = WidgetBallastSolver

@@ -77,6 +77,11 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
 
 
 class WidgetNodeTree(guiDockWidget):
+
+    DO_RECENT_ITEMS = False
+
+    def guiCanShareLocation(self):
+        return False  # Want all the space I can have
     def guiCreate(self):
 
         self._current_tree = None
@@ -85,8 +90,9 @@ class WidgetNodeTree(guiDockWidget):
         self.contents.setContentsMargins(0,0,0,0)
 
         self.tbFilter = QtWidgets.QComboBox(self.contents)
-        self.tbFilter.setPlaceholderText("Filter")
         self.tbFilter.setEditable(True)
+        self.tbFilter.lineEdit().setPlaceholderText("Filter")
+        self.tbFilter.lineEdit().setClearButtonEnabled(True)
 
         filter_options = []
         for key in DAVE_NODEPROP_INFO.keys():
@@ -119,25 +125,29 @@ class WidgetNodeTree(guiDockWidget):
         self.checkbox.setChecked(False)
         self.checkbox.toggled.connect(self.update_node_data_and_tree)
 
-        self.listbox = QListWidget(self.contents)
-        self.listbox.addItem("test")
-        itemheight = self.listbox.sizeHintForRow(0)
-        self.listbox.clear()
-        self.listbox.setFixedHeight(4 * itemheight)
-        self.listbox.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.listbox.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.listbox.setEditTriggers(QListWidget.NoEditTriggers)
-        self.listbox.setDragEnabled(True)
-        self.listbox.startDrag = self.listview_startDrag
+        if self.DO_RECENT_ITEMS:
+            self.listbox = QListWidget(self.contents)
+            self.listbox.addItem("test")
+            itemheight = self.listbox.sizeHintForRow(0)
+            self.listbox.clear()
+            self.listbox.setFixedHeight(4 * itemheight)
+            self.listbox.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            self.listbox.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            self.listbox.setEditTriggers(QListWidget.NoEditTriggers)
+            self.listbox.setDragEnabled(True)
+            self.listbox.startDrag = self.listview_startDrag
 
-        self.treeView.others.append(self.listbox)
+            self.treeView.others.append(self.listbox)
         self.treeView.others.append(self)
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.tbFilter)
         layout.addWidget(self.treeView)
         layout.addWidget(self.checkbox)
-        layout.addWidget(self.listbox)
+
+        if self.DO_RECENT_ITEMS:
+            layout.addWidget(self.listbox)  # No recent items for now, don't think anybody uses it
+
         self.contents.setLayout(layout)
 
         layout.setContentsMargins(4,0,0,0)
@@ -267,8 +277,9 @@ class WidgetNodeTree(guiDockWidget):
         self.recent_items = new_recent
 
     def update_listview(self):
-        self.listbox.clear()
-        self.listbox.addItems([node.name for node in self.recent_items])
+        if self.DO_RECENT_ITEMS:
+            self.listbox.clear()
+            self.listbox.addItems([node.name for node in self.recent_items])
 
     def filter_changed(self, *args):
         self.update_node_visibility()
@@ -468,53 +479,7 @@ class WidgetNodeTree(guiDockWidget):
             if type(node) in ICONS:
                 item.setIcon(0,ICONS[type(node)])
             else:
-
                 item.setIcon(0, QIcon(":/icons/redball.png"))
-                #
-                # if isinstance(node, ds.Component):
-                #     item.setIcon(0, QIcon(":/icons/component.png"))
-                # elif isinstance(node, ds.RigidBody):
-                #     item.setIcon(0, QIcon(":/icons/cube.png"))
-                # elif isinstance(node, ds.Frame):
-                #     item.setIcon(0, QIcon(":/icons/axis_blue.png"))
-                # elif isinstance(node, ds.Point):
-                #     item.setIcon(0, QIcon(":/icons/point_blue.png"))
-                # elif isinstance(node, ds.Cable):
-                #     item.setIcon(0, QIcon(":/icons/cable.png"))
-                # elif isinstance(node, ds.Visual):
-                #     item.setIcon(0, QIcon(":/icons/visual.png"))
-                # elif isinstance(node, ds.LC6d):
-                #     item.setIcon(0, QIcon(":/icons/lincon6.png"))
-                # elif isinstance(node, ds.Connector2d):
-                #     item.setIcon(0, QIcon(":/icons/con2d.png"))
-                # elif isinstance(node, ds.Beam):
-                #     item.setIcon(0, QIcon(":/icons/beam.png"))
-                # elif isinstance(node, ds.HydSpring):
-                #     item.setIcon(0, QIcon(":/icons/linhyd.png"))
-                # elif isinstance(node, ds.Force):
-                #     item.setIcon(0, QIcon(":/icons/force.png"))
-                # elif isinstance(node, ds.Circle):
-                #     item.setIcon(0, QIcon(":/icons/circle_blue.png"))
-                # elif isinstance(node, ds.Buoyancy):
-                #     item.setIcon(0, QIcon(":/icons/trimesh.png"))
-                # elif isinstance(node, ds.WaveInteraction1):
-                #     item.setIcon(0, QIcon(":/icons/waveinteraction.png"))
-                # elif isinstance(node, ds.ContactBall):
-                #     item.setIcon(0, QIcon(":/icons/contactball.png"))
-                # elif isinstance(node, ds.ContactMesh):
-                #     item.setIcon(0, QIcon(":/icons/contactmesh.png"))
-                # elif isinstance(node, ds.GeometricContact):
-                #     item.setIcon(0, QIcon(":/icons/pin_hole.png"))
-                # elif isinstance(node, ds.Sling):
-                #     item.setIcon(0, QIcon(":/icons/sling.png"))
-                # elif isinstance(node, ds.Tank):
-                #     item.setIcon(0, QIcon(":/icons/tank.png"))
-                # elif isinstance(node, ds.WindArea):
-                #     item.setIcon(0, QIcon(":/icons/wind.png"))
-                # elif isinstance(node, ds.CurrentArea):
-                #     item.setIcon(0, QIcon(":/icons/current.png"))
-                # elif isinstance(node, ds.SPMT):
-                #     item.setIcon(0, QIcon(":/icons/spmt.png"))
 
 
             try:

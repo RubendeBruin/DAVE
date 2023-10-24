@@ -52,7 +52,7 @@ class WidgetTankOrder(guiDockWidget):
             self.fill()
 
     def guiDefaultLocation(self):
-        # return QtAds.DockWidgetArea.LeftDockWidgetArea
+        # return PySide6QtAds.DockWidgetArea.LeftDockWidgetArea
         return None # does not fit in left area anymore
 
     def run_action(self, action):
@@ -77,5 +77,5 @@ class WidgetTankOrder(guiDockWidget):
                 self._bs = node
 
 
-
+from DAVE.gui.settings import DAVE_GUI_DOCKS
 DAVE_GUI_DOCKS['TankReOrder'] = WidgetTankOrder

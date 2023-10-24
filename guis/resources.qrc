@@ -46,6 +46,15 @@
     <file>axis.png</file>
   </qresource>
   <qresource prefix="v2">
+    <file>icons/pause.svg</file>
+    <file>icons/play.svg</file>
+    <file>icons/save.svg</file>
+    <file>icons/DAVE.svg</file>
+    <file>icons/motion.svg</file>
+    <file>icons/ballast.svg</file>
+    <file>icons/shearandbending.svg</file>
+    <file>icons/limits.svg</file>
+    <file>icons/report.svg</file>
     <file>icons/glasses.svg</file>
     <file>icons/tag90.svg</file>
     <file>icons/magnifier90.svg</file>
@@ -63,6 +72,5 @@
     <file>icons/tag.svg</file>
     <file>icons/timeline.svg</file>
     <file>icons/tree.svg</file>
-    <file>icons/lift.svg</file>
   </qresource>
 </RCC>

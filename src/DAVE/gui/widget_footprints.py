@@ -76,7 +76,7 @@ class WidgetFootprints(guiDockWidget):
             self.element_selected()
 
     def guiDefaultLocation(self):
-        return QtAds.DockWidgetArea.RightDockWidgetArea
+        return PySide6QtAds.DockWidgetArea.RightDockWidgetArea
 
     # ======
 

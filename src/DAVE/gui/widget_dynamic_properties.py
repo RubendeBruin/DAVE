@@ -23,7 +23,7 @@ class WidgetDynamicProperties(guiDockWidget):
             self.fill_nodes_table()
 
     def guiDefaultLocation(self):
-        return QtAds.DockWidgetArea.RightDockWidgetArea
+        return PySide6QtAds.DockWidgetArea.RightDockWidgetArea
 
 
     def fill_nodes_table(self):

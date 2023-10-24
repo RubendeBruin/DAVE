@@ -2727,6 +2727,11 @@ class WidgetNodeProps(guiDockWidget):
 
         # self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
+        self.no_node_layout = QtWidgets.QVBoxLayout()
+        self.no_node_message = QtWidgets.QLabel()
+        self.no_node_message.setText("Select a node to edit its properties")
+        self.no_node_layout.addWidget(self.no_node_message)
+
         # contents (main layout)
         #   manager_widget ( manager_layout )
         #   props_widget ( layout )
@@ -2894,11 +2899,17 @@ class WidgetNodeProps(guiDockWidget):
         to_be_removed = self._open_edit_widgets.copy()
 
         if node is None:
-            self.setEnabled(False)
-            dock_remove_from_gui(self.gui.dock_manager, self)
+            # remove all widgets and add a message
+            # self.contents.setLayout(self.no_node_layout)
+
+            # dock_remove_from_gui(self.gui.dock_manager, self)
+            # self.contents.update()
+            self.contents.setVisible(False)
+            self.setUpdatesEnabled(True)
             return
 
-        self.setEnabled(True)
+        self.contents.setVisible(True)
+        # self.contents.setLayout(self.main_layout)  # default
 
         manager_workaround = None
         self._name_widget.setEnabled(

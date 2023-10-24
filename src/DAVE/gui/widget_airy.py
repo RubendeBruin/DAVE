@@ -48,7 +48,7 @@ class WidgetAiry(guiDockWidget):
                 self.d0 = None
 
     def guiDefaultLocation(self):
-        return QtAds.DockWidgetArea.LeftDockWidgetArea
+        return PySide6QtAds.DockWidgetArea.LeftDockWidgetArea
 
     # ======
 

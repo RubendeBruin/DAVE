@@ -80,6 +80,10 @@ class guiDockWidget(PySide6QtAds.CDockWidget):
         """Return the default location, or None for floating"""
         return PySide6QtAds.DockWidgetArea.LeftDockWidgetArea
 
+    def guiCanShareLocation(self):
+        """Return True if this widget can share a location with other widgets on the same side"""
+        return True
+
     # ------- these should be overridden in the derived class -----------
 
     def guiProcessEvent(self, event):

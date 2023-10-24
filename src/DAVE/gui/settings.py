@@ -50,27 +50,6 @@ from DAVE.gui.dock_system.gui_dock_groups import DockGroup
 
 DOCK_GROUPS = []
 
-# Construct the basic dock groups
-construct = DaveDockGroup(
-    ID="Build",
-    description="Build",
-    icon=":v2/icons/design.svg",
-    dock_widgets=["Quick actions"],
-    show_edit=True,
-    show_tree=True,
-    show_timeline=None,
-)
 
-DOCK_GROUPS.append(construct)
 
-explore = DaveDockGroup(
-    ID="Explore",
-    description="Explore",
-    icon=":v2/icons/explore.svg",
-    dock_widgets=["Explore 1-to-1", "Derived Properties"],
-    show_edit=None,
-    show_tree=True,
-    show_timeline=None,
-)
 
-DOCK_GROUPS.append(explore)

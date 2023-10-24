@@ -77,7 +77,7 @@ class WidgetBallastConfiguration(guiDockWidget):
             self.select_row_for_tank()
 
     def guiDefaultLocation(self):
-        return QtAds.DockWidgetArea.RightDockWidgetArea
+        return PySide6QtAds.DockWidgetArea.RightDockWidgetArea
 
     def select_row_for_tank(self, *args):
         if self.guiSelection:
@@ -300,5 +300,5 @@ class WidgetBallastConfiguration(guiDockWidget):
 
 
 
-
+from DAVE.gui.settings import DAVE_GUI_DOCKS
 DAVE_GUI_DOCKS['Tanks'] = WidgetBallastConfiguration

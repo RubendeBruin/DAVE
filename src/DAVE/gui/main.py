@@ -71,6 +71,8 @@ from PySide6.QtWidgets import (
     QStatusBar,
     QToolBar,
     QWidget,
+    QSizePolicy,
+    QSpacerItem,
 )
 
 from DAVE.gui.autosave import DaveAutoSave
@@ -140,15 +142,29 @@ from DAVE.gui.widget_explore import WidgetExplore
 from DAVE.gui.widget_rigg_it_right import WidgetQuickActions
 from DAVE.gui.widget_environment import WidgetEnvironment
 from DAVE.gui.widget_dof_edit import WidgetDOFEditor
-from DAVE.gui.forms.dlg_solver_threaded import Ui_SolverDialogThreaded
 from DAVE.gui.widget_watches import WidgetWatches
+import DAVE.gui.widget_ballastsolver
+import DAVE.gui.widget_ballastconfiguration
+import DAVE.gui.widget_tank_order
+import DAVE.gui.widget_ballastsystemselect
+
+
+from DAVE.gui.forms.dlg_solver_threaded import Ui_SolverDialogThreaded
+
+import DAVE.gui.dock_system.default_dock_groups
 
 import DAVEcore
 
 # resources
 import DAVE.gui.forms.resources_rc
 
-from DAVE.gui.settings import DAVE_GUI_DOCKS, DOCK_GROUPS
+from DAVE.gui.settings import (
+    DAVE_GUI_DOCKS,
+    DOCK_GROUPS,
+    GUI_DO_ANIMATE,
+    GUI_SOLVER_ANIMATION_DURATION,
+    GUI_ANIMATION_FPS,
+)
 
 DAVE_GUI_DOCKS["Node Tree"] = WidgetNodeTree
 DAVE_GUI_DOCKS["Properties"] = WidgetNodeProps
@@ -353,6 +369,9 @@ class Gui:
         self._undo_index = 0
         """Undo log and history"""
 
+        self._active_dockgroup = None
+        """Dock-groups"""
+
         settings = QSettings("rdbr", "DAVE")
         paths_str = settings.value(f"additional_paths")
         if paths_str:
@@ -431,7 +450,7 @@ class Gui:
             self.ui.pbUpdate.clicked.connect(
                 lambda: self.guiEmitEvent(guiEventType.FULL_UPDATE)
             )
-            self.ui.btnSolveStatics.clicked.connect(self.solve_statics)
+            # self.ui.btnSolveStatics.clicked.connect(self.solve_statics)
             # self.ui.btnUndoStatics.clicked.connect(self.undo_solve_statics)
 
             # bottom
@@ -682,54 +701,6 @@ class Gui:
             self.guiWidgets = dict()
             """Dictionary of all created guiWidgets (dock-widgets)"""
 
-            # def set_pb_style(pb):
-            #     pb.setFlat(True)
-            #     pb.setCheckable(True)
-            #     pb.setAutoExclusive(True)
-            #     pb.setStyleSheet("text-decoration: underline;")
-            #     self.ui.toolBar.addWidget(pb)
-            #
-            # # Workspace buttons
-            # btnConstruct = QtWidgets.QPushButton()
-            # btnConstruct.setText("&0. Library")
-            # btnConstruct.clicked.connect(self.import_browser)
-            # btnConstruct.setFlat(True)
-            # self.ui.toolBar.addWidget(btnConstruct)
-            #
-            # for i, button in enumerate(DAVE_GUI_WORKSPACE_BUTTONS):
-            #     name = button[0]
-            #     workspace_id = button[1]
-            #
-            #     btn = QtWidgets.QPushButton()
-            #     if i < 9:
-            #         btn.setText(f"&{i+1} {name}")
-            #     else:
-            #         btn.setText(f"{i + 1} {name}")
-            #     btn.pressed.connect(
-            #         lambda *args, wsid=workspace_id: self.activate_workspace(wsid)
-            #     )
-            #
-            #     # btn.setFlat(True)
-            #     btn.setCheckable(True)
-            #     btn.setAutoExclusive(True)
-            #     # btn.setStyleSheet("text-decoration: underline;")
-            #     self.ui.toolBar.addWidget(btn)
-            #     self.ui.toolBar.setMinimumHeight(btn.minimumSizeHint().height())
-            #
-            # # self.ui.toolBar.layout().setContentsMargins(-2, 0, 0, 0)
-            # self.ui.toolBar.setStyleSheet("QToolBar{spacing:0px;}")
-            # # self.ui.toolBar
-            #
-            # space = QtWidgets.QWidget()
-            # space.setSizePolicy(
-            #     QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
-            # )
-            # self.ui.toolBar.addWidget(space)
-            #
-            # self._active_workspace = None
-
-            # call plugin(s)
-
             for plugin_init in DAVE_GUI_PLUGINS_INIT:
                 plugin_init(self)
 
@@ -738,29 +709,11 @@ class Gui:
             self.ui.actionUndo.triggered.connect(self.undo)
             self.ui.actionRedo.triggered.connect(self.redo)
 
-            # else:
-            #     # Client mode
-            #     self.guiWidgets = dict()
-            #
-            #     try:
-            #         from DAVE_timeline import gui
-            #     except:
-            #         pass
-            #
-            #     self.ui.frameAni.setVisible(False)
-            #     self.ui.dockWidget_2.setVisible(False)
-            #
-            #     self.show_guiWidget("Watches")
-            #     self.show_guiWidget("TimeLine")
-            #     self._active_workspace = "Client"
-            #
-            #     self.guiEmitEvent(guiEventType.FULL_UPDATE)
-
-            # setup the docks
-
         # setup the docking system
 
         self.dock_manager = create_dock_manager(self.MainWindow)
+        self._right_dock_area = None
+        self._left_dock_area = None
 
         # Set the main widget
 
@@ -770,6 +723,7 @@ class Gui:
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.ui.widget_3)
         layout.addWidget(self.ui.frame3d)
+        layout.addWidget(self.ui.frameAni)
         self.main_widget.setLayout(layout)
 
         self.central_dock_widget = set_as_central_widget(
@@ -825,7 +779,7 @@ class Gui:
         self.toolbar_top = QToolBar("Top Toolbar")
         self.MainWindow.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolbar_top)
 
-        top_left_widget = QWidget()
+        top_left_widget = QWidget(self.MainWindow)
         self.toolbar_top.addWidget(top_left_widget)
 
         # Add actions for permanent docks
@@ -840,8 +794,27 @@ class Gui:
 
         self.top_bar_group_label = QtWidgets.QLabel(self.MainWindow)
         self.top_bar_group_label.setText("DAVE")
-        self.top_bar_group_label.setStyleSheet("font-size: 14px; font-weight: bold; color: palette(Midlight);")
+        self.top_bar_group_label.setStyleSheet(
+            "font-size: 14px; font-weight: bold; color: palette(Midlight);"
+        )
         self.toolbar_top.addWidget(self.top_bar_group_label)
+
+        self.toolbar_top_right = QToolBar("Top Toolbar Right")
+        self.MainWindow.addToolBar(
+            Qt.ToolBarArea.TopToolBarArea, self.toolbar_top_right
+        )
+
+        self.toolbar_top_right.setMovable(False)
+        spacer_widget = QtWidgets.QWidget(self.MainWindow)
+        spacer_widget.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
+        )
+        self.toolbar_top_right.addWidget(spacer_widget)
+        self.solveAction = QAction("Solve", self.MainWindow)
+        self.solveAction.triggered.connect(self.solve_statics)
+        self.solveAction.setIcon(QIcon(":/v2/icons/DAVE.svg"))
+        self.solveAction.setShortcut("Alt+S")
+        self.toolbar_top_right.addAction(self.solveAction)
 
         # Toolbar (left)
         self.toolbar_left = QToolBar("Left Toolbar")
@@ -928,7 +901,7 @@ class Gui:
                 )
                 msg.setWindowTitle("Open autosave folder?")
                 msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-                retval = msg.exec_()
+                retval = msg.exec()
                 if retval == QMessageBox.Yes:
                     DaveAutoSave.open_folder()
 
@@ -1176,15 +1149,19 @@ class Gui:
             action.triggered.connect(
                 lambda *args, name=d.ID: self.activate_dockgroup(name)
             )
-            # self._action_dockgroups.append(action)
             self.toolbar_left.addAction(action)
 
     def activate_dockgroup(self, name):
+        if self._active_dockgroup is not None:
+            if self._active_dockgroup.ID == name:
+                print("Dockgroup already active")
+                return
+
         names = [d.ID for d in DOCK_GROUPS]
 
         if name not in names:
             raise ValueError(
-                f"Unknown dockgroup {name}, available dockgroups are {list(DOCK_GROUPS.keys())}"
+                f"Unknown dockgroup {name}, available dockgroups are {names}"
             )
 
         group = DOCK_GROUPS[names.index(name)]
@@ -1209,8 +1186,9 @@ class Gui:
 
         # Create all needed
         for dock in wanted_docks:
-            if dock not in all_active_docks:
-                dock_show(self.dock_manager, dock)
+            dock_show(
+                self.dock_manager, dock
+            )  # does not do anything if dock is already visible, so safe to call
 
         # Add actions to the top-bar
         for dock in wanted_docks:
@@ -1416,7 +1394,7 @@ class Gui:
             iren = self.visual.renwin.GetInteractor()
             if self._timerid is None:
                 self._timerid = iren.CreateRepeatingTimer(
-                    round(1000 / DAVE.settings.GUI_ANIMATION_FPS)
+                    round(1000 / GUI_ANIMATION_FPS)
                 )
 
             else:
@@ -1444,17 +1422,20 @@ class Gui:
             if self._timerid is None:
                 iren = self.visual.renwin.GetInteractor()
                 self._timerid = iren.CreateRepeatingTimer(
-                    round(1000 / DAVE.settings.GUI_ANIMATION_FPS)
+                    round(1000 / GUI_ANIMATION_FPS)
                 )
 
         self._animation_paused = False
 
     def animation_pause_or_continue_click(self):
         """Pauses or continues the animation"""
-        if not self.ui.btnPauseAnimation.isChecked():
+
+        if self._animation_paused:
+            self.ui.btnPauseAnimation.setIcon(QIcon(":/v2/icons/pause.svg"))
             self.animation_continue()
         else:
             self.animation_pause()
+            self.ui.btnPauseAnimation.setIcon(QIcon(":/v2/icons/play.svg"))
             remember = self.visual.quick_updates_only
             self.visual.quick_updates_only = False
             self.animation_activate_time(self.ui.aniSlider.value() / 1000)
@@ -1916,7 +1897,7 @@ class Gui:
         time_diff = datetime.datetime.now() - start_time
         secs = time_diff.total_seconds()
         if secs < 0.5:
-            if DAVE.settings.GUI_DO_ANIMATE and called_by_user:
+            if GUI_DO_ANIMATE and called_by_user:
                 new_dofs = scene_to_solve._vfc.get_dofs()
                 self.animate_change(D0, new_dofs, 10)
 
@@ -1932,7 +1913,7 @@ class Gui:
         if len(old_dof) != len(new_dof):
             return
 
-        dt = DAVE.settings.GUI_SOLVER_ANIMATION_DURATION / n_steps
+        dt = GUI_SOLVER_ANIMATION_DURATION / n_steps
 
         t = []
         dofs = []
@@ -2595,7 +2576,7 @@ class Gui:
                     ):  # for partially managed nodes
                         action.setBold(True)
 
-        menu.exec_(QCursor.pos())
+        menu.exec(QCursor.pos())
 
     def _user_clicked_node(self, node, event=None):
         if node is None:  # sea or something
@@ -2784,33 +2765,67 @@ class Gui:
 
         self.guiWidgets[name] = d
 
-        location = d.guiDefaultLocation()
+        d.guiProcessEvent(guiEventType.FULL_UPDATE)
 
+        location = d.guiDefaultLocation()
+        can_share_location = d.guiCanShareLocation()
+
+        # Add floating
         if location is None:
             self.dock_manager.addDockWidget(
                 PySide6QtAds.DockWidgetArea.LeftDockWidgetArea, d
             )
             d.setFloating()
-        else:
-            assert isinstance(
-                location, PySide6QtAds.DockWidgetArea
-            ), f"Wrong type of position returned by dock {name}"
-            self.dock_manager.addDockWidget(location, d)
+            return d
 
-        d.guiProcessEvent(guiEventType.FULL_UPDATE)
+        # Add docked
+        #
+
+        assert isinstance(
+            location, PySide6QtAds.DockWidgetArea
+        ), f"Wrong type of position returned by dock {name}"
+
+        # Docks can be added to the left, right, top or bottom
+        # but also to already existing docks.
+        #
+        # If a dock is wanted at the left, then there are two options:
+        #  - above/below an already existing dock on the left
+        #  - next to an already existing dock on the left
+        #
+        # Same for right
+
+        if can_share_location:
+            # For top or bottom, share with the central widget
+            if location in (
+                PySide6QtAds.DockWidgetArea.BottomDockWidgetArea,
+                PySide6QtAds.DockWidgetArea.TopDockWidgetArea,
+            ):
+                self.dock_manager.addDockWidget(
+                    location,
+                    d,
+                    self.dock_manager.centralWidget().dockAreaWidget(),
+                )
+                return d
+
+            # see if there is already a dock in the same location
+            # if so, add to that one
+            for dock in self.dock_manager.dockWidgets():
+                if not isinstance(dock, guiDockWidget):
+                    continue
+
+                if dock.guiDefaultLocation() == location and dock.guiCanShareLocation():
+                    self.dock_manager.addDockWidget(
+                        PySide6QtAds.DockWidgetArea.BottomDockWidgetArea,
+                        d,
+                        dock.dockAreaWidget(),
+                    )
+
+                    return d
+
+        # if we get here, then we need to create a new dock area
+        self.dock_manager.addDockWidget(location, d)
 
         return d
-
-    # def show_guiWidget(self, name):
-    #     # if widgetClass == WidgetQuickActions:
-    #     #     self.MainWindow.resizeDocks([d], [6], Qt.Horizontal)
-    #     d = self.get_dock(name)
-    #
-    #     d.show()
-    #     d._active = True
-    #     d.guiEvent(guiEventType.FULL_UPDATE)
-
-    # =============================
 
     def refresh_3dview(self):
         self.visual.refresh_embeded_view()
@@ -2867,4 +2882,15 @@ if __name__ == "__main__":
     from DAVE import *
 
     s = Scene()
+
+    s.new_rigidbody(name="Body")
+
+    s["Body"].fixed = (True, True, True, False, False, False)
+    s.new_point(name="Point", parent="Body")
+    s.new_force("Force", parent="Point")
+
+    s["Point"].position = (5.0, 0.0, 0.0)
+
+    s["Force"].force = (0.0, 5.0, 0.0)
+
     Gui(s)

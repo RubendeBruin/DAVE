@@ -28,7 +28,6 @@ import numpy as np
 
 
 class WidgetModeShapes(guiDockWidget):
-
     def guiCreate(self):
         """
         Add gui components to self.contents
@@ -44,7 +43,7 @@ class WidgetModeShapes(guiDockWidget):
         self.ui.btnCalc.clicked.connect(self.calc_modeshapes)
         self.ui.horizontalSlider.actionTriggered.connect(self.activate_modeshape)
         self.ui.sliderSize.actionTriggered.connect(self.activate_modeshape)
-        self.ui.lblError.setText('')
+        self.ui.lblError.setText("")
         self.ui.pushButton_2.clicked.connect(self.quickfix)
         self._shapes_calculated = False
 
@@ -59,12 +58,12 @@ class WidgetModeShapes(guiDockWidget):
         if self.gui.animation_running() and event == guiEventType.MODEL_STATE_CHANGED:
             pass
 
-
-        if event in [guiEventType.FULL_UPDATE,
-                     guiEventType.MODEL_STRUCTURE_CHANGED,
-                     guiEventType.MODEL_STEP_ACTIVATED,
-                     guiEventType.SELECTED_NODE_MODIFIED]:
-
+        if event in [
+            guiEventType.FULL_UPDATE,
+            guiEventType.MODEL_STRUCTURE_CHANGED,
+            guiEventType.MODEL_STEP_ACTIVATED,
+            guiEventType.SELECTED_NODE_MODIFIED,
+        ]:
             self.gui.animation_terminate()
             if self.guiScene.verify_equilibrium():
                 self.d0 = self.guiScene._vfc.get_dofs()
@@ -75,23 +74,16 @@ class WidgetModeShapes(guiDockWidget):
             self.ui.btnCalc.setStyleSheet("background-color: lightgreen;")
             self.ui.lblError.setText("")
 
-            # self.autocalc()
-
     def guiDefaultLocation(self):
-        return QtAds.DockWidgetArea.TopDockWidgetArea
+        return PySide6QtAds.DockWidgetArea.TopDockWidgetArea
 
     # ======
 
-    # def autocalc(self):
-    #     if self.ui.btnCalc.isChecked():
-    #         self.calc_modeshapes()
-
     def calc_modeshapes(self):
-
         self.gui.animation_terminate()
 
         if self.guiScene._vfc.n_dofs() == 0:
-            self.ui.lblError.setText('No degrees of freedom')
+            self.ui.lblError.setText("No degrees of freedom")
             return
 
         if self.d0 is None:
@@ -102,28 +94,25 @@ class WidgetModeShapes(guiDockWidget):
         try:
             V, D = DAVE.frequency_domain.mode_shapes(self.guiScene)
         except ArithmeticError as me:
-            print('Could not calculate mode-shapes because:')
+            print("Could not calculate mode-shapes because:")
             print(me)
             self.ui.lblError.setText(str(me))
             return
-
 
         if V is not None:
             self.n_shapes = len(V)
         else:
             self.n_shapes = 0
 
-        warnings = ''
-
+        warnings = ""
 
         if np.any(np.iscomplex(V)):
-            warnings += 'MASSLESS '
+            warnings += "MASSLESS "
         else:
             V = np.real(V)
 
         if np.any(np.isnan(V)):
-            warnings += ' UNCONTRAINED'
-
+            warnings += " UNCONTRAINED"
 
         self.ui.lblError.setText(warnings)
         self.ui.btnCalc.setStyleSheet("")
@@ -141,7 +130,6 @@ class WidgetModeShapes(guiDockWidget):
         self.fill_results_table_with(summary)  # do this after emitting the event
 
     def activate_modeshape(self):
-
         if not self._shapes_calculated:
             return
 
@@ -151,22 +139,25 @@ class WidgetModeShapes(guiDockWidget):
         # print('Activating mode-shape {} with scale {}'.format(i, scale))
 
         omega = self.omega[i]
-        self.ui.lblPeriod.setText('{:.2f} s'.format(2 * np.pi / omega))
-        self.ui.lblRads.setText('{:.2f} rad/s'.format(omega))
+        self.ui.lblPeriod.setText("{:.2f} s".format(2 * np.pi / omega))
+        self.ui.lblRads.setText("{:.2f} rad/s".format(omega))
 
-        shape = self.shapes[:,i]
+        shape = self.shapes[:, i]
 
         n_frames = 100
         t_modeshape = 5
 
-        dofs = DAVE.frequency_domain.generate_modeshape_dofs(self.d0,shape,scale,n_frames,scene=self.guiScene)
-        t = np.linspace(0,t_modeshape, n_frames)
-        self.gui.animation_start(t,dofs,True, self.d0, do_not_reset_time=True)
-
+        dofs = DAVE.frequency_domain.generate_modeshape_dofs(
+            self.d0, shape, scale, n_frames, scene=self.guiScene
+        )
+        t = np.linspace(0, t_modeshape, n_frames)
+        self.gui.animation_start(t, dofs, True, self.d0, do_not_reset_time=True)
 
         # update exitation row in table
         for i, d in enumerate(shape):
-            self.ui.tableWidget.setItem(i, 0, QtWidgets.QTableWidgetItem('{:.2f}'.format(d)))
+            self.ui.tableWidget.setItem(
+                i, 0, QtWidgets.QTableWidgetItem("{:.2f}".format(d))
+            )
             cell = self.ui.tableWidget.item(i, 0)
             if cell is None:
                 continue
@@ -177,9 +168,6 @@ class WidgetModeShapes(guiDockWidget):
                 factor = 0
             color = QColor.fromRgb(255 - 100 * factor, 255 - 100 * factor, 255)
             cell.setBackground(QBrush(color))
-
-
-
 
     def fill_result_table(self):
         self.gui.animation_terminate()
@@ -192,30 +180,44 @@ class WidgetModeShapes(guiDockWidget):
         color = QColor.fromRgb(255 - 100 * factor, 255 - 100 * factor, 255)
 
         for b in summary:
-            mode = b['mode']
-            name = b['node'] + ' mode:' + str(mode)
+            mode = b["mode"]
+            name = b["node"] + " mode:" + str(mode)
             try:
-                node = self.guiScene[b['node']]
+                node = self.guiScene[b["node"]]
             except:
                 continue
 
             rows += 1
-            self.ui.tableWidget.setRowCount(rows+1)
-            self.ui.tableWidget.setVerticalHeaderItem(rows, QtWidgets.QTableWidgetItem(name))
-            self.ui.tableWidget.setItem(rows, 1, QtWidgets.QTableWidgetItem('{:e}'.format(node.inertia)))
+            self.ui.tableWidget.setRowCount(rows + 1)
+            self.ui.tableWidget.setVerticalHeaderItem(
+                rows, QtWidgets.QTableWidgetItem(name)
+            )
+            self.ui.tableWidget.setItem(
+                rows, 1, QtWidgets.QTableWidgetItem("{:e}".format(node.inertia))
+            )
 
-            if mode>2:
-                self.ui.tableWidget.setItem(rows, 2, QtWidgets.QTableWidgetItem('{:e}'.format(node.inertia_radii[mode-3])))
+            if mode > 2:
+                self.ui.tableWidget.setItem(
+                    rows,
+                    2,
+                    QtWidgets.QTableWidgetItem(
+                        "{:e}".format(node.inertia_radii[mode - 3])
+                    ),
+                )
                 self.ui.tableWidget.item(rows, 2).setBackground(QBrush(color))
             else:
                 self.ui.tableWidget.item(rows, 1).setBackground(QBrush(color))
-                self.ui.tableWidget.setItem(rows, 2,
-                                            QtWidgets.QTableWidgetItem('n/a'))
+                self.ui.tableWidget.setItem(rows, 2, QtWidgets.QTableWidgetItem("n/a"))
 
-            self.ui.tableWidget.setItem(rows, 3, QtWidgets.QTableWidgetItem('{:.3e}'.format(b['total_inertia'])))
-            self.ui.tableWidget.setItem(rows, 4, QtWidgets.QTableWidgetItem('{:.3e}'.format(b['stiffness'])))
-            self.ui.tableWidget.setItem(rows, 5, QtWidgets.QTableWidgetItem(b['unconstrained']))
-            self.ui.tableWidget.setItem(rows, 6, QtWidgets.QTableWidgetItem(b['noinertia']))
-
-
-
+            self.ui.tableWidget.setItem(
+                rows, 3, QtWidgets.QTableWidgetItem("{:.3e}".format(b["total_inertia"]))
+            )
+            self.ui.tableWidget.setItem(
+                rows, 4, QtWidgets.QTableWidgetItem("{:.3e}".format(b["stiffness"]))
+            )
+            self.ui.tableWidget.setItem(
+                rows, 5, QtWidgets.QTableWidgetItem(b["unconstrained"])
+            )
+            self.ui.tableWidget.setItem(
+                rows, 6, QtWidgets.QTableWidgetItem(b["noinertia"])
+            )

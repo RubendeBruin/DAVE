@@ -81,7 +81,7 @@ class WidgetBallastSystemSelect(guiDockWidget):
 
 
     def guiDefaultLocation(self):
-        return QtAds.DockWidgetArea.LeftDockWidgetArea
+        return PySide6QtAds.DockWidgetArea.LeftDockWidgetArea
 
     # ======
 
@@ -141,6 +141,6 @@ class WidgetBallastSystemSelect(guiDockWidget):
         self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
 
 
-
+from DAVE.gui.settings import DAVE_GUI_DOCKS
 DAVE_GUI_DOCKS['BallastSystemSelect'] = WidgetBallastSystemSelect
 

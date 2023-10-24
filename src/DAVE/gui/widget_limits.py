@@ -84,7 +84,7 @@ class WidgetLimits(guiDockWidget):
 
 
     def guiDefaultLocation(self):
-        return QtAds.DockWidgetArea.RightDockWidgetArea
+        return PySide6QtAds.DockWidgetArea.RightDockWidgetArea
 
     # ======
 

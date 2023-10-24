@@ -190,24 +190,49 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_2.addWidget(self.pbUpdate)
 
-        self.btnSolveStatics = QPushButton(self.widget_3)
-        self.btnSolveStatics.setObjectName(u"btnSolveStatics")
-        self.btnSolveStatics.setIcon(icon)
+        self.cbPainerSelect = QComboBox(self.widget_3)
+        self.cbPainerSelect.setObjectName(u"cbPainerSelect")
+        self.cbPainerSelect.setStyleSheet(u"")
+        self.cbPainerSelect.setFrame(True)
 
-        self.horizontalLayout_2.addWidget(self.btnSolveStatics)
+        self.horizontalLayout_2.addWidget(self.cbPainerSelect)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_2.addItem(self.horizontalSpacer)
-
-        self.pbCopyViewCode = QPushButton(self.widget_3)
-        self.pbCopyViewCode.setObjectName(u"pbCopyViewCode")
+        self.pbSide = QPushButton(self.widget_3)
+        self.pbSide.setObjectName(u"pbSide")
         icon2 = QIcon()
-        icon2.addFile(u":/icons/icon_copy.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbCopyViewCode.setIcon(icon2)
-        self.pbCopyViewCode.setFlat(True)
+        icon2.addFile(u":/icons/side.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbSide.setIcon(icon2)
+        self.pbSide.setFlat(True)
 
-        self.horizontalLayout_2.addWidget(self.pbCopyViewCode)
+        self.horizontalLayout_2.addWidget(self.pbSide)
+
+        self.pbFront = QPushButton(self.widget_3)
+        self.pbFront.setObjectName(u"pbFront")
+        icon3 = QIcon()
+        icon3.addFile(u":/icons/front.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbFront.setIcon(icon3)
+        self.pbFront.setFlat(True)
+
+        self.horizontalLayout_2.addWidget(self.pbFront)
+
+        self.pbTop = QPushButton(self.widget_3)
+        self.pbTop.setObjectName(u"pbTop")
+        icon4 = QIcon()
+        icon4.addFile(u":/icons/top.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbTop.setIcon(icon4)
+        self.pbTop.setCheckable(False)
+        self.pbTop.setFlat(True)
+
+        self.horizontalLayout_2.addWidget(self.pbTop)
+
+        self.btnZoomFit = QPushButton(self.widget_3)
+        self.btnZoomFit.setObjectName(u"btnZoomFit")
+        icon5 = QIcon()
+        icon5.addFile(u":/icons/cube_open.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.btnZoomFit.setIcon(icon5)
+        self.btnZoomFit.setFlat(True)
+
+        self.horizontalLayout_2.addWidget(self.btnZoomFit)
 
         self.pb3D = QPushButton(self.widget_3)
         self.pb3D.setObjectName(u"pb3D")
@@ -217,49 +242,14 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_2.addWidget(self.pb3D)
 
-        self.pbSide = QPushButton(self.widget_3)
-        self.pbSide.setObjectName(u"pbSide")
-        icon3 = QIcon()
-        icon3.addFile(u":/icons/side.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbSide.setIcon(icon3)
-        self.pbSide.setFlat(True)
-
-        self.horizontalLayout_2.addWidget(self.pbSide)
-
-        self.pbFront = QPushButton(self.widget_3)
-        self.pbFront.setObjectName(u"pbFront")
-        icon4 = QIcon()
-        icon4.addFile(u":/icons/front.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbFront.setIcon(icon4)
-        self.pbFront.setFlat(True)
-
-        self.horizontalLayout_2.addWidget(self.pbFront)
-
-        self.pbTop = QPushButton(self.widget_3)
-        self.pbTop.setObjectName(u"pbTop")
-        icon5 = QIcon()
-        icon5.addFile(u":/icons/top.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbTop.setIcon(icon5)
-        self.pbTop.setCheckable(False)
-        self.pbTop.setFlat(True)
-
-        self.horizontalLayout_2.addWidget(self.pbTop)
-
-        self.btnZoomFit = QPushButton(self.widget_3)
-        self.btnZoomFit.setObjectName(u"btnZoomFit")
+        self.pbCopyViewCode = QPushButton(self.widget_3)
+        self.pbCopyViewCode.setObjectName(u"pbCopyViewCode")
         icon6 = QIcon()
-        icon6.addFile(u":/icons/cube_open.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.btnZoomFit.setIcon(icon6)
-        self.btnZoomFit.setFlat(True)
+        icon6.addFile(u":/icons/icon_copy.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbCopyViewCode.setIcon(icon6)
+        self.pbCopyViewCode.setFlat(True)
 
-        self.horizontalLayout_2.addWidget(self.btnZoomFit)
-
-        self.cbPainerSelect = QComboBox(self.widget_3)
-        self.cbPainerSelect.setObjectName(u"cbPainerSelect")
-        self.cbPainerSelect.setStyleSheet(u"")
-        self.cbPainerSelect.setFrame(True)
-
-        self.horizontalLayout_2.addWidget(self.cbPainerSelect)
+        self.horizontalLayout_2.addWidget(self.pbCopyViewCode)
 
         self.pbUC = QPushButton(self.widget_3)
         self.pbUC.setObjectName(u"pbUC")
@@ -314,6 +304,10 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_2.addWidget(self.btnBlender)
 
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_2.addItem(self.horizontalSpacer)
+
 
         self.verticalLayout_3.addWidget(self.widget_3)
 
@@ -345,7 +339,10 @@ class Ui_MainWindow(object):
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.btnPauseAnimation = QToolButton(self.widget_2)
         self.btnPauseAnimation.setObjectName(u"btnPauseAnimation")
-        self.btnPauseAnimation.setCheckable(True)
+        icon12 = QIcon()
+        icon12.addFile(u":/v2/icons/pause.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.btnPauseAnimation.setIcon(icon12)
+        self.btnPauseAnimation.setCheckable(False)
 
         self.gridLayout.addWidget(self.btnPauseAnimation, 0, 1, 1, 1)
 
@@ -419,18 +416,18 @@ class Ui_MainWindow(object):
 
         self.pbClearCode = QToolButton(self.widget_6)
         self.pbClearCode.setObjectName(u"pbClearCode")
-        icon12 = QIcon()
-        icon12.addFile(u":/icons/file_new.png", QSize(), QIcon.Normal, QIcon.On)
-        self.pbClearCode.setIcon(icon12)
+        icon13 = QIcon()
+        icon13.addFile(u":/icons/file_new.png", QSize(), QIcon.Normal, QIcon.On)
+        self.pbClearCode.setIcon(icon13)
         self.pbClearCode.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         self.horizontalLayout_3.addWidget(self.pbClearCode)
 
         self.pbExecute = QToolButton(self.widget_6)
         self.pbExecute.setObjectName(u"pbExecute")
-        icon13 = QIcon()
-        icon13.addFile(u":/icons/python logo klein.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbExecute.setIcon(icon13)
+        icon14 = QIcon()
+        icon14.addFile(u":/icons/python logo klein.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbExecute.setIcon(icon14)
         self.pbExecute.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         self.horizontalLayout_3.addWidget(self.pbExecute)
@@ -466,18 +463,18 @@ class Ui_MainWindow(object):
 
         self.pbGenerateSceneCode = QToolButton(self.widget_7)
         self.pbGenerateSceneCode.setObjectName(u"pbGenerateSceneCode")
-        icon14 = QIcon()
-        icon14.addFile(u":/icons/cube.png", QSize(), QIcon.Normal, QIcon.On)
-        self.pbGenerateSceneCode.setIcon(icon14)
+        icon15 = QIcon()
+        icon15.addFile(u":/icons/cube.png", QSize(), QIcon.Normal, QIcon.On)
+        self.pbGenerateSceneCode.setIcon(icon15)
         self.pbGenerateSceneCode.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         self.horizontalLayout_5.addWidget(self.pbGenerateSceneCode)
 
         self.pbCopyOutput = QToolButton(self.widget_7)
         self.pbCopyOutput.setObjectName(u"pbCopyOutput")
-        icon15 = QIcon()
-        icon15.addFile(u":/icons/icon_copy.png", QSize(), QIcon.Normal, QIcon.On)
-        self.pbCopyOutput.setIcon(icon15)
+        icon16 = QIcon()
+        icon16.addFile(u":/icons/icon_copy.png", QSize(), QIcon.Normal, QIcon.On)
+        self.pbCopyOutput.setIcon(icon16)
 
         self.horizontalLayout_5.addWidget(self.pbCopyOutput)
 
@@ -517,7 +514,7 @@ class Ui_MainWindow(object):
 
         self.pbCopyHistory = QToolButton(self.widget)
         self.pbCopyHistory.setObjectName(u"pbCopyHistory")
-        self.pbCopyHistory.setIcon(icon15)
+        self.pbCopyHistory.setIcon(icon16)
 
         self.horizontalLayout_6.addWidget(self.pbCopyHistory)
 
@@ -534,15 +531,11 @@ class Ui_MainWindow(object):
 
         self.dockWidget_2.setWidget(self.dockWidgetContents_2)
         MainWindow.addDockWidget(Qt.BottomDockWidgetArea, self.dockWidget_2)
-        QWidget.setTabOrder(self.aniSlider, self.btnSolveStatics)
-        QWidget.setTabOrder(self.btnSolveStatics, self.pbCopyViewCode)
-        QWidget.setTabOrder(self.pbCopyViewCode, self.pb3D)
-        QWidget.setTabOrder(self.pb3D, self.pbSide)
+        QWidget.setTabOrder(self.aniSlider, self.pbSide)
         QWidget.setTabOrder(self.pbSide, self.pbFront)
         QWidget.setTabOrder(self.pbFront, self.pbTop)
         QWidget.setTabOrder(self.pbTop, self.btnZoomFit)
-        QWidget.setTabOrder(self.btnZoomFit, self.cbPainerSelect)
-        QWidget.setTabOrder(self.cbPainerSelect, self.pbUpdate)
+        QWidget.setTabOrder(self.btnZoomFit, self.pbUpdate)
         QWidget.setTabOrder(self.pbUpdate, self.pbUC)
         QWidget.setTabOrder(self.pbUC, self.pbOrigin)
         QWidget.setTabOrder(self.pbOrigin, self.btnWater)
@@ -708,22 +701,21 @@ class Ui_MainWindow(object):
         self.actionSelf_contained_DAVE_package.setText(QCoreApplication.translate("MainWindow", u"Self-contained DAVE package", None))
         self.actionShow_origin.setText(QCoreApplication.translate("MainWindow", u"Show origin", None))
         self.pbUpdate.setText(QCoreApplication.translate("MainWindow", u"Update", None))
-        self.btnSolveStatics.setText(QCoreApplication.translate("MainWindow", u"Solve &statics", None))
-#if QT_CONFIG(tooltip)
-        self.pbCopyViewCode.setToolTip(QCoreApplication.translate("MainWindow", u"Copy screenshot code", None))
-#endif // QT_CONFIG(tooltip)
-        self.pbCopyViewCode.setText("")
-        self.pb3D.setText(QCoreApplication.translate("MainWindow", u"2D", None))
         self.pbSide.setText("")
         self.pbFront.setText("")
         self.pbTop.setText("")
         self.btnZoomFit.setText("")
+        self.pb3D.setText(QCoreApplication.translate("MainWindow", u"2D", None))
+#if QT_CONFIG(tooltip)
+        self.pbCopyViewCode.setToolTip(QCoreApplication.translate("MainWindow", u"Copy screenshot code", None))
+#endif // QT_CONFIG(tooltip)
+        self.pbCopyViewCode.setText("")
         self.pbUC.setText("")
         self.pbOrigin.setText("")
         self.btnWater.setText("")
         self.btnSSAO.setText("")
         self.btnBlender.setText("")
-        self.btnPauseAnimation.setText(QCoreApplication.translate("MainWindow", u"||", None))
+        self.btnPauseAnimation.setText("")
         self.btnStopAnimation.setText(QCoreApplication.translate("MainWindow", u"X", None))
 #if QT_CONFIG(tooltip)
         self.sbPlaybackspeed.setToolTip("")

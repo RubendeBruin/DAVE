@@ -84,7 +84,7 @@ def create_dock_manager(main_window):
         PySide6QtAds.CDockManager.XmlCompressionEnabled, False
     )
     PySide6QtAds.CDockManager.setConfigFlag(
-        PySide6QtAds.CDockManager.FocusHighlighting, True
+        PySide6QtAds.CDockManager.FocusHighlighting, False
     )
     PySide6QtAds.CDockManager.setConfigFlag(
         PySide6QtAds.CDockManager.ActiveTabHasCloseButton, False
@@ -139,11 +139,15 @@ def dock_remove_from_gui(
     manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget
 ):
     """Makes sure a dock is hidden"""
-    print("hiding {d}")
+    print(f"hiding {d}")
     if d not in get_all_active_docks(manager):
         return  # already hidden
 
-    d.toggleViewAction().trigger()
+    if d.isClosed():
+        return
+
+    if d.isVisible() or d.isHidden():
+        d.toggleViewAction().trigger()
 
 
 def dock_show(manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget):
@@ -261,6 +265,7 @@ if __name__ == "__main__":
 
     docks = list()
     actions = list()
+    left = None
     for i in range(4):
         d = PySide6QtAds.CDockWidget(f"Dock {i}", mw)
         lbl = QLabel(f"Widget {i}")
@@ -270,7 +275,20 @@ if __name__ == "__main__":
         lbl.setStyleSheet(f"background-color: rgb({r},{g},{b});")
         d.setWidget(lbl)
         docks.append(d)
-        dock_manager.addDockWidget(PySide6QtAds.DockWidgetArea.LeftDockWidgetArea, d)
+
+        d.is_left = True
+
+        if i > 0:
+
+            if docks[0].is_left:
+
+                dock_manager.addDockWidget(
+                    PySide6QtAds.DockWidgetArea.BottomDockWidgetArea, d, docks[0].dockAreaWidget()
+                )
+        else:
+            dock_manager.addDockWidget(
+                PySide6QtAds.DockWidgetArea.LeftDockWidgetArea, d
+            )
 
         action = d.toggleViewAction()
         action.setIcon(QIcon(r"/guis/icons/footprint.svg"))
