@@ -94,6 +94,8 @@ ENVIRONMENT_PROPERTIES = (
 
 # ============== SOLVER ===========
 
+SOLVER_DEFAULT_TERMINATE_AFTER_S = 30
+
 DAVE_DEFAULT_SOLVER_MOBILITY = 60
 """Mobility of the solver"""
 

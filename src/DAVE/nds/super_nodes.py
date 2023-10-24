@@ -11,6 +11,7 @@ import csv
 from .abstracts import *
 from .core import *
 from .base import RigidBodyContainer
+from .geometric_contact import GeometricContact
 from .mixins import *
 
 
@@ -866,6 +867,12 @@ class Shackle(RigidBodyContainer):
             node._manager = self
 
     @property
+    def item_description(self) -> str:
+        """Technical description of the item [str]"""
+        data = self.shackle_kind_properties(self.kind)
+        return data["description"]
+
+    @property
     def kind(self) -> str:
         """Type of shackle, for example GP800 [text]"""
         return self._kind
@@ -954,6 +961,38 @@ class Shackle(RigidBodyContainer):
                 F = max(F, np.linalg.norm(node.applied_force[:3]))
 
         return F
+
+    """The following property is responsible for overriding the managed gui behaviour when
+    managed by a rigging string AND that rigging string itself is not managed"""
+
+    def _managed_by_None_or_unmanaged_RiggingString(self):
+        if self.manager is None:
+            return True
+
+        # do not do an ininstance because the RiggingString class may not be available (if running without DAVE_rigging)
+        if self.manager.manager is None:
+            if "RiggingString" in self.manager.__class__.__name__:
+                return True
+
+        return False
+
+    @property
+    def _editor_widget_types_when_managed(self):
+        if self._managed_by_None_or_unmanaged_RiggingString():
+            from DAVE.gui.widget_nodeprops import EditShackle
+
+            return (EditShackle,)
+
+        if isinstance(self.manager, GeometricContact):
+            from DAVE.gui.widget_nodeprops import EditShackle
+
+            if (
+                self.manager.manager is None
+                or "RiggingString" in self.manager.manager.__class__.__name__
+            ):
+                return (EditShackle,)
+
+        return None
 
     def give_python_code(self):
         code = f"# Exporting {self.name}"
