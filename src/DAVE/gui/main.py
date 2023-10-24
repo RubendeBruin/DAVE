@@ -372,8 +372,8 @@ class Gui:
         self._active_dockgroup = None
         """Dock-groups"""
 
-        settings = QSettings("rdbr", "DAVE")
-        paths_str = settings.value(f"additional_paths")
+        self.settings = QSettings("rdbr", "DAVE")
+        paths_str = self.settings.value(f"additional_paths")
         if paths_str:
             for p in paths_str.split(";"):
                 if p:
@@ -711,9 +711,17 @@ class Gui:
 
         # setup the docking system
 
-        self.dock_manager = create_dock_manager(self.MainWindow)
-        self._right_dock_area = None
-        self._left_dock_area = None
+        self.dock_manager = create_dock_manager(self.MainWindow) # , self.settings)
+
+        # def remove_all_perspectives():
+        #     for p in self.dock_manager.perspectiveNames():
+        #         self.dock_manager.removePerspective(p)
+        #     self.dock_manager.savePerspectives(self.settings)
+        #
+        # # remove_all_perspectives()
+
+        # self._right_dock_area = None
+        # self._left_dock_area = None
 
         # Set the main widget
 
@@ -805,10 +813,22 @@ class Gui:
         )
 
         self.toolbar_top_right.setMovable(False)
+
+        # Left part of right toolbar
+
+        self.save_perspective_action = QAction("Save perspective", self.MainWindow)
+        self.save_perspective_action.triggered.connect(self.save_perspective)
+        self.save_perspective_action.setIcon(QIcon(":/v2/icons/heart_empty_small.svg"))
+        self.toolbar_top_right.addAction(self.save_perspective_action)
+
+        # spacer
         spacer_widget = QtWidgets.QWidget(self.MainWindow)
         spacer_widget.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
         )
+
+        # right part of right toolbar
+
         self.toolbar_top_right.addWidget(spacer_widget)
         self.solveAction = QAction("Solve", self.MainWindow)
         self.solveAction.triggered.connect(self.solve_statics)
@@ -824,6 +844,9 @@ class Gui:
         self.toolbar_left.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
 
         self.create_dockgroups()
+
+        # create all docks
+        # self.pre_create_docks()
 
         # Makup
 
@@ -1131,6 +1154,18 @@ class Gui:
         for g in self.guiWidgets.values():
             dock_remove_from_gui(self.dock_manager, g)
 
+    def pre_create_docks(self):
+        """Create all docks, then close them again"""
+        for k in DAVE_GUI_DOCKS.keys():
+
+            if k in self.guiWidgets:
+                continue
+
+            d = self.get_dock(k)
+            d.toggleViewAction().trigger()
+
+
+
     def create_dockgroups(self):
         """Creates the dockgroups for each workspace"""
         tasks = QActionGroup(self.MainWindow)
@@ -1150,6 +1185,21 @@ class Gui:
                 lambda *args, name=d.ID: self.activate_dockgroup(name)
             )
             self.toolbar_left.addAction(action)
+
+    def save_perspective(self):
+        """Saves the current perspective (dock layout)"""
+
+        self.give_feedback("Sorry, this feature is currently disabled")
+
+        #
+        # if self._active_dockgroup is not None:
+        #     perspective_name = self._active_dockgroup.ID
+        #     self.dock_manager.addPerspective(perspective_name)
+        #     self.dock_manager.savePerspectives(self.settings)
+        #     print("Perspective saved")
+        #     self.save_perspective_action.setIcon(
+        #         QIcon(":/v2/icons/heart_full_small.svg")
+        #     )
 
     def activate_dockgroup(self, name):
         if self._active_dockgroup is not None:
@@ -1175,6 +1225,7 @@ class Gui:
         wanted_docks = [self.get_dock(name) for name in group.dock_widgets]
         all_active_docks = get_all_active_docks(self.dock_manager)
 
+
         # Remove all non-needed
         for dock in all_active_docks:
             if dock in self.docks_permanent:
@@ -1198,10 +1249,16 @@ class Gui:
             if dock not in all_active_docks:
                 dock.guiEvent(guiEventType.FULL_UPDATE)
 
-        # for plugin in self.plugins_workspace:
-        #     plugin(self, name)
-
-        self.visual.update_visibility()
+        # # Set the active perspective
+        # try:
+        #     print("Loading perspective", group.ID)
+        #     print(self.dock_manager.perspectiveNames())
+        #     self.dock_manager.openPerspective(name)
+        #     self.save_perspective_action.setIcon(QIcon(":/v2/icons/heart_full_small.svg"))
+        # except:
+        #     self.save_perspective_action.setIcon(QIcon(":/v2/icons/heart_empty_small.svg"))
+        #
+        # self.visual.update_visibility()
 
     def import_browser(self):
         G = DAVE.gui.standard_assets.Gui()
@@ -2754,7 +2811,7 @@ class Gui:
 
         print("Creating {}".format(name))
 
-        d = widgetClass(self.MainWindow, name=name)
+        d = widgetClass(name=name, parent=self.MainWindow)
         d.guiScene = self.scene
         d.guiEmitEvent = self.guiEmitEvent
         d.guiRunCodeCallback = self.run_code

@@ -76,7 +76,7 @@ def customize_stylesheet(stylesheet: str, identifier: str) -> str:
     return "\n".join(new_lines)
 
 
-def create_dock_manager(main_window):
+def create_dock_manager(main_window, settings = None):
     PySide6QtAds.CDockManager.setConfigFlag(
         PySide6QtAds.CDockManager.OpaqueSplitterResize, True
     )
@@ -110,6 +110,13 @@ def create_dock_manager(main_window):
     ss = customize_stylesheet(ss, "ads--CDockSplitter::handle")
     dock_manager.setStyleSheet(ss)
 
+    if settings is not None:
+        try:
+            dock_manager.loadPerspectives(settings)
+        except:
+            import warnings
+            warnings.warn("Dockmanager: can not open perspectives from settings, continuing without")
+
     return dock_manager
 
 
@@ -140,7 +147,9 @@ def dock_remove_from_gui(
 ):
     """Makes sure a dock is hidden"""
     print(f"hiding {d}")
-    if d not in get_all_active_docks(manager):
+    all_widgets = get_all_active_docks(manager)
+
+    if d not in all_widgets:
         return  # already hidden
 
     if d.isClosed():

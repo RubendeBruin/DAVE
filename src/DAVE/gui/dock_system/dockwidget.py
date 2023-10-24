@@ -30,8 +30,8 @@ class guiEventType(Enum):
 
 class guiDockWidget(PySide6QtAds.CDockWidget):
 
-    def __init__(self, *args,  name, **kwargs):
-        super().__init__(name) # no args *args, **kwargs)
+    def __init__(self, *args,  name, parent,  **kwargs):
+        super().__init__(name, parent) # no args *args, **kwargs)
         self.contents = QtWidgets.QWidget(self)
         self.setWidget(self.contents)
         self._active = False
