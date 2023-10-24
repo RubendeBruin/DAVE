@@ -62,3 +62,15 @@ def test_get_resource():
 def test_get_resources():
     s = Scene("cheetah.dave")
     print(s.get_used_resources())
+
+def test_nested_resources():
+    s = Scene()
+    path = Path(__file__).parent / 'files'
+    s.add_resources_paths(path)
+    s.new_component('outer_component', 'res: outer_component.dave')
+
+    resource_list = s.get_used_resources()
+
+    for r,p in resource_list:
+        print(r, p)
+

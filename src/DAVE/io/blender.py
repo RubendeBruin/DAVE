@@ -636,7 +636,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
         try:
             name = visual.path.split('.')[0]
-            filename = scene.get_resource_path(name + '.blend')  # raises exception if file is not found
+            filename = scene.get_resource_path(name + '.blend', no_gui=True)  # raises exception if file is not found
         except:
             filename = scene.get_resource_path(visual.path)  # fall-back to .obj
 

@@ -417,9 +417,9 @@ class HasSubScene(HasContainer):
         # first see if we can load
         filename = self._scene.get_resource_path(value)
         t = Scene(
-            filename,
-            resource_paths=self._scene.resources_paths.copy(),
-            current_directory=self._scene.current_directory,
+            filename = filename,
+            resource_provider=self._scene.resource_provider,
+
         )
 
         # then remove all existing nodes

@@ -9,6 +9,7 @@ import graphlib
 import itertools
 import weakref
 import datetime
+from copy import deepcopy
 from graphlib import TopologicalSorter
 from os.path import isdir, isfile
 from os import mkdir
@@ -31,6 +32,7 @@ from DAVE.settings import (
 
 from DAVE import settings
 
+from .resource_provider import DaveResourceProvider
 from .helpers.string_functions import increment_string_end
 from .nds.mixins import Manager
 
@@ -75,8 +77,7 @@ class Scene:
         filename=None,
         copy_from=None,
         code=None,
-        resource_paths=None,
-        current_directory=None,
+        resource_provider: DaveResourceProvider or None = None,
     ):
         """Creates a new Scene
 
@@ -115,17 +116,8 @@ class Scene:
         self.solver_mobility = DAVE_DEFAULT_SOLVER_MOBILITY
         """Mobility setting for the solver"""
 
-        self.resources_paths = []
-        """A list of paths where to look for resources such as .obj files. Priority is given to paths earlier in the list."""
-        self.resources_paths.extend(RESOURCE_PATH)
-
-        self.current_directory = current_directory or Path().absolute()
-        """the current working directory"""
-
-        if resource_paths is not None:
-            for rp in resource_paths:
-                if rp not in self.resources_paths:
-                    self.resources_paths.append(rp)
+        self.resource_provider = resource_provider or DaveResourceProvider()
+        """Resource provider for this scene, will be passed as ref to all implicitly created scenes (components etc)"""
 
         self._resource_logger = None
         """Logger injection point for resource capturing"""
@@ -155,9 +147,6 @@ class Scene:
         self.solve_activity_desc = "Solving static equilibrium"
         """This string may be used for feedback to user - read by Gui"""
 
-        if current_directory is None and filename is not None:
-            self.current_directory = Path(filename).parent
-
         if filename is not None:
             self.load_scene(filename)
 
@@ -166,6 +155,19 @@ class Scene:
 
         if code is not None:
             self.run_code(code)
+
+    @property
+    def resources_paths(self):
+        raise NotImplementedError("Use resource_provider.resources_paths instead")
+
+    @resources_paths.setter
+    def resources_paths(self, value):
+        raise NotImplementedError("Use resource_provider.resources_paths instead")
+
+    def add_resources_paths(self, path : Path or str):
+        if isinstance(path, str):
+            path = Path(path)
+        self.resource_provider.addPath(path)
 
     def clear(self):
         """Deletes all nodes - leaves settings and reports in place"""
@@ -503,17 +505,17 @@ class Scene:
 
     # ======== resources =========
 
-    def get_resource_path(self, url) -> Path:
+    def get_resource_path(self, url : str, no_gui = False) -> Path:
         """Resolves the path on disk for resource url.
         Urls statring with res: result in a file from the resources system.
         Urls statring with cd: result in a file from the current directory.
 
-        Looks for a file with "name" in the specified resource-paths and returns the full path to the the first one
+        Looks for a file with "name" in the specified resource-paths of the resource provider and returns the full path to the the first one
         that is found.
         If name is a full path to an existing file, then that is returned.
 
-        See Also:
-            resource_paths
+        If the file is not found, but a Qt Application is present, then a dialog will be shown asking the user to locate the file. Except if no_gui is True, then a FileNotFoundError is raised.
+
 
         Returns:
             Full Path to resource : Path
@@ -522,105 +524,20 @@ class Scene:
             FileExistsError if resource is not found
 
         """
-
-        # warning and work-around for backwards compatibility
-        # filenames without a path get res: in front of it
-        try:
-            if isinstance(url, Path):
-                test = str(url)
-            else:
-                test = url
-
-            if not test.startswith("res:") and not test.startswith("cd:"):
-                test = Path(test)
-                if str(test.parent) == ".":
-                    # from warnings import warn
-                    #
-                    # warn(
-                    #     f'Resources should start with res: --> fixing "{url}" to "res: {url}"'
-                    # )
-                    url = "res: " + str(test)
-        except:
-            pass
-
         if isinstance(url, Path):
-            file = url
-        elif isinstance(url, str):
-            if url.startswith("cd:"):
-                filename = url[3:].strip()
-                file = Path(self.current_directory) / filename
-                if not isfile(file):
-                    raise FileExistsError(
-                        f'Resource "{filename}" not found in current directory "{str(self.current_directory)}"'
-                    )
+            url = str(url)
 
-            elif url.startswith("res:"):
-                # we have a string starting with 'res:'
-                filename = url[4:].strip()
+        return self.resource_provider.get_resource_path(url, no_gui=no_gui)
 
-                file = None
-
-                for res in self.resources_paths:
-                    p = Path(res)
-
-                    file = p / filename
-                    if isfile(file):
-                        break
-
-                if file is None:
-                    # prepare feedback for error
-                    ext = str(url).split(".")[-1]  # everything after the last .
-
-                    print("Resource folders:")
-                    for res in self.resources_paths:
-                        print(str(res))
-
-                    print(
-                        "The following resources with extension {} are available with ".format(
-                            ext
-                        )
-                    )
-                    available = self.get_resource_list(ext)
-                    for a in available:
-                        print(a)
-                    raise FileExistsError(
-                        'Resource "{}" not found in resource paths. A list with available resources with this extension is printed above this error'.format(
-                            url
-                        )
-                    )
-            else:
-                file = Path(url)
-
-        else:  # not a Path or a string
-            raise ValueError(
-                f"Provided url shall be a Path or a string, not a {type(url)}"
-            )
-
-        if file.exists():
-
-            if self._resource_logger is not None:
-                self._resource_logger(url,file)
-            return file
-
-        raise FileExistsError(
-            'File "{}" not found.\nHint: To obtain a resource put res: or in front of the name.'.format(
-                url
-            )
-        )
 
     def get_used_resources(self):
         """Returns a list of all resources used in the scene"""
 
-        s2 = Scene()
-        resources = []
-        def log(url, path):
-            resources.append((url, path))
-
-        s2._resource_logger = log
+        copy_of_resource_provider = deepcopy(self.resource_provider)
+        copy_of_resource_provider.clearLog()
+        s2 = Scene(resource_provider=copy_of_resource_provider)
         s2.import_scene(self)
-
-        return resources
-
+        return s2.resource_provider.getLog()
 
     def get_resource_list(
         self, extension, include_subdirs=False, include_current_dir=True
@@ -632,35 +549,11 @@ class Scene:
         include_current_dir : return 'cd:' based resources as well
 
         """
-        r = []  # results
+        return self.resource_provider.get_resource_list(
+            extension, include_subdirs, include_current_dir
+        )
 
-        for dir in self.resources_paths:
-            try:
-                files = get_all_files_with_extension(
-                    root_dir=dir, extension=extension, include_subdirs=include_subdirs
-                )
 
-                for file in files:
-                    file = "res: " + file.replace("\\", "/")
-                    if file not in r:
-                        r.append(file)
-
-            except FileNotFoundError:
-                pass
-
-        if include_current_dir:
-            files = get_all_files_with_extension(
-                root_dir=self.current_directory,
-                extension=extension,
-                include_subdirs=include_subdirs,
-            )
-
-            for file in files:
-                file = "cd: " + file.replace("\\", "/")
-                if file not in r:
-                    r.append(file)
-
-        return r
 
     # ======== element functions =========
 
@@ -903,39 +796,6 @@ class Scene:
             )
 
         self._nodes = list(ts.static_order())
-
-        #
-        #
-        # while to_be_exported:
-        #
-        #     counter += 1
-        #     if counter > len(self._nodes):
-        #         raise Exception(
-        #             "Could not sort nodes by dependency, circular references exist?"
-        #         )
-        #
-        #     can_be_exported = []
-        #
-        #     for node in to_be_exported:
-        #
-        #         if hasattr(node, "parent"):
-        #             parent = node.parent
-        #             if parent is not None and parent not in exported:
-        #                 continue
-        #
-        #         if node.manager is not None and node.manager not in exported:
-        #             continue
-        #
-        #         # otherwise the node can be exported
-        #         can_be_exported.append(node)
-        #
-        #     # remove exported nodes from
-        #     for n in can_be_exported:
-        #         to_be_exported.remove(n)
-        #
-        #     exported.extend(can_be_exported)
-        #
-        # self._nodes = exported
 
     def get_created_by_dict(self) -> dict:
         """Returns a dictionary containing the nodes created by each manager.
@@ -2174,9 +2034,8 @@ class Scene:
             )
         try:
             t = Scene(
-                filename,
-                current_directory=self.current_directory,
-                resource_paths=self.resources_paths,
+                filename = filename,
+                resource_provider=self.resource_provider,
             )
         except Exception as E:
             raise ValueError(
@@ -3990,9 +3849,8 @@ class Scene:
 
         if isinstance(other, str):
             other = Scene(
-                other,
-                resource_paths=self.resources_paths,
-                current_directory=self.current_directory,
+                filename = other,
+                resource_provider=self.resource_provider,
             )
 
         if not isinstance(other, Scene):
@@ -4061,10 +3919,10 @@ class Scene:
             c.new_frame('only in c')
 
         """
+        copy_resource_provider = deepcopy(self.resource_provider)
 
         c = Scene(
-            resource_paths=self.resources_paths,
-            current_directory=self.current_directory,
+            resource_provider=copy_resource_provider,
         )
 
         c.import_scene(self, containerize=False, nodes=nodes, quick=quick)
@@ -4222,106 +4080,8 @@ class Scene:
                         meshes[i] = new_names[mesh]
                 node.meshes_names = meshes
 
-            # connectors
 
-    # =================== Conversions ===============
 
-    # TODO: Enable this section
-    # def to_cable(self, sling_node : Sling, zero_weight=False):
-    #     """Converts a sling to an equivalent cable"""
-    #     name = self.available_name_like(sling_node.name)
-    #
-    #     # calculate the new length
-    #     length_lossA = 0
-    #     if isinstance(sling_node.endA, Circle):
-    #         r = sling_node.endA.radius + sling_node.diameter/2
-    #         length_lossA = np.pi * r
-    #
-    #     length_lossB = 0
-    #     if isinstance(sling_node.endB, Circle):
-    #         r = sling_node.endB.radius + sling_node.diameter / 2
-    #         length_lossB = np.pi * r
-    #
-    #     # If both ends are the same circle then the cable would become a grommet.
-    #     # to avoid that, connect endA to the Point instead
-    #     original_endA_parent = None
-    #     if isinstance(sling_node.endB, Circle) and (sling_node.endA == sling_node.endB):
-    #         original_endA_parent = sling_node.endA
-    #         sling_node.endA = sling_node.endA.parent
-    #
-    #
-    #
-    #
-    #     length = sling_node.length - length_lossA - length_lossB
-    #
-    #     # calcualte EA from total stiffness of the sling and the new length
-    #     # such that the total stiffness is identical
-    #     EA = sling_node.k_total * length
-    #
-    #     if zero_weight:
-    #         mass_per_length = 0
-    #     else:
-    #         mass_per_length = sling_node.mass/length
-    #
-    #     cable = self.new_cable(name, endA = sling_node.endA, endB=sling_node.endB, sheaves=sling_node.sheaves,
-    #                    length=length, mass_per_length=mass_per_length, EA=EA,diameter=sling_node.diameter)
-    #
-    #     name = sling_node.name
-    #     self.delete(sling_node)
-    #
-    #     if original_endA_parent is not None:
-    #         cable.original_endA_parent = weakref.ref(original_endA_parent)
-    #
-    #     cable.name = name
-    #
-    #     return cable
-    #
-    # def to_sling(self, cable_node : Cable, mass=-1):
-    #     """Converts a sling to an equivalent cable
-    #
-    #     if mass < 0 (default) then the mass of the cable is used. Else the given mass is used.
-    #     """
-    #     name = self.available_name_like(cable_node.name)
-    #
-    #     endA = cable_node.connections[0]
-    #
-    #     original_endA_parent = getattr(cable_node, 'original_endA_parent', None)
-    #     if original_endA_parent is not None:
-    #         if valid_node_weakref(original_endA_parent):
-    #             endA = original_endA_parent()
-    #
-    #     endB = cable_node.connections[-1]
-    #
-    #     # calculate the new length
-    #     length_lossA = 0
-    #     if isinstance(endA, Circle):
-    #         r = endA.radius + cable_node.diameter / 2
-    #         length_lossA = np.pi * r
-    #
-    #     length_lossB = 0
-    #     if isinstance(endB, Circle):
-    #         r = endB.radius + cable_node.diameter / 2
-    #         length_lossB = np.pi * r
-    #
-    #     length = cable_node.length + length_lossA + length_lossB
-    #
-    #     # calculate EA from total stiffness of the sling and the new length
-    #     # such that the total stiffness is identical
-    #     EAL = cable_node.EA / cable_node.length
-    #
-    #     if mass<0:
-    #         mass = cable_node.mass
-    #
-    #     sling = self.new_sling(name, endA = endA, endB=endB, sheaves=cable_node.connections[1:-1],
-    #                            length=length, mass=mass, k_total = EAL, diameter=cable_node.diameter)
-    #
-    #     name = cable_node.name
-    #     self.delete(cable_node)
-    #
-    #     sling.name = name
-    #
-    #     return sling
-    #
     def to_frame(self, body: RigidBody):
         """Converts the body to a frame"""
         name = self.available_name_like("temp")
