@@ -378,7 +378,7 @@ class Gui:
             for p in paths_str.split(";"):
                 if p:
                     self.additional_user_resource_paths.append(Path(p))
-                    self.scene.resources_paths.append(Path(p))
+                    self.scene.add_resources_paths(p)
 
         self.update_resources_paths()
 
@@ -975,7 +975,7 @@ class Gui:
         for p in self.additional_user_resource_paths:
             if p not in DAVE.settings.RESOURCE_PATH:
                 DAVE.settings.RESOURCE_PATH.append(p)
-                self.scene.resources_paths.append(p)
+                self.scene.add_resources_paths(p)
 
     def labels_show_hide(self):
         if self.visual.settings.label_scale > 0:

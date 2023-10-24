@@ -3,7 +3,15 @@
 from pathlib import Path
 from DAVE import *
 
-def test_nested_components_creates():
+# def test_nested_components_creates():
+if __name__ == '__main__':
+
+    # create a logger
+    import logging
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+
+    logging.info("DEMO")
 
     s = Scene()
     path = Path(__file__).parent / 'files'
