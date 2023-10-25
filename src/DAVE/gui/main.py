@@ -711,8 +711,7 @@ class Gui:
 
         # setup the docking system
 
-        self.dock_manager = create_dock_manager(self.MainWindow , self.settings)
-
+        self.dock_manager = create_dock_manager(self.MainWindow, self.settings)
 
         # Set the main widget
 
@@ -1148,14 +1147,11 @@ class Gui:
     def pre_create_docks(self):
         """Create all docks, then close them again"""
         for k in DAVE_GUI_DOCKS.keys():
-
             if k in self.guiWidgets:
                 continue
 
             d = self.get_dock(k)
             d.toggleViewAction().trigger()
-
-
 
     def create_dockgroups(self):
         """Creates the dockgroups for each workspace"""
@@ -1212,7 +1208,6 @@ class Gui:
         wanted_docks = [self.get_dock(name) for name in group.dock_widgets]
         all_active_docks = get_all_active_docks(self.dock_manager)
 
-
         # Remove all non-needed
         for dock in all_active_docks:
             if dock in self.docks_permanent:
@@ -1240,9 +1235,13 @@ class Gui:
         if group.ID in self.dock_manager.perspectiveNames():
             print("Loading perspective", group.ID)
             self.dock_manager.openPerspective(name)
-            self.save_perspective_action.setIcon(QIcon(":/v2/icons/heart_full_small.svg"))
+            self.save_perspective_action.setIcon(
+                QIcon(":/v2/icons/heart_full_small.svg")
+            )
         else:
-            self.save_perspective_action.setIcon(QIcon(":/v2/icons/heart_empty_small.svg"))
+            self.save_perspective_action.setIcon(
+                QIcon(":/v2/icons/heart_empty_small.svg")
+            )
 
         self.visual.update_visibility()
 
@@ -2581,7 +2580,10 @@ class Gui:
                 [node for node in nodes if node.class_name == class_name]
             )
 
-            icon = ICONS[type(nodes_with_class[0])]
+            try:
+                icon = ICONS[type(nodes_with_class[0])]
+            except KeyError:
+                icon = QIcon(":/icons/redball.png")
 
             if len(nodes_with_class) > 1:
                 action = menu.addAction(
