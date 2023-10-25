@@ -7,13 +7,188 @@ from PySide6.QtWidgets import (
     QListWidget,
 )
 import DAVE.scene as ds
-from DAVE.gui.helpers.my_qt_helpers import DeleteEventFilter, update_combobox_items_with_completer
+from DAVE.gui.helpers.my_qt_helpers import (
+    DeleteEventFilter,
+    update_combobox_items_with_completer,
+)
+from DAVE.helpers.node_trees import give_parent_item
 
 from DAVE.settings_visuals import ICONS
 
 
-class NodeTreeWidget(QtWidgets.QTreeWidget):
+class HasNodeTreeMixin:
+    """Mixin used by both WidgetNodeTree and WidgetTags"""
 
+    def init(self):
+        self._current_tree = None
+        self.items = dict()
+
+        self.show_managed_nodes = False
+
+    def make_tree_item(self, node):
+        print("Shall return a QTreeWidgetItem for the given node")
+        raise NotImplementedError
+
+    def update_node_data_and_tree(self):
+        """
+        Updates the tree and assembles the node-data
+
+        This data is obtained from scene.nodes and assumes that
+        each of the nodes has a visual assigned to it.
+
+        """
+
+        # lets first see if anything has changed
+        # to quickly check that, we compare the current parents and managers with the ones from the last update
+        # Node --> Parent node, manager node
+
+        if self.show_managed_nodes == self.checkbox.isChecked():
+            if self._current_tree is not None:
+                # check additional nodes
+                if len(self._current_tree) == len(self.guiScene._nodes):
+                    for node in self.guiScene._nodes:
+                        if node.name not in self._current_tree.keys():
+                            print("name changed")
+                            break
+                    else:
+                        # no new nodes, check if the
+                        #   parents and
+                        #   managers and
+                        #   type
+                        #   are the same
+                        for node in self.guiScene._nodes:
+                            if self._current_tree[node.name] != (
+                                getattr(node, "parent", None),
+                                node.manager,
+                                type(node),
+                            ):
+                                print("structure changed")
+                                break
+                        else:
+                            # nothing changed, so we can skip the update
+                            return
+
+        # store new tree
+
+        self._current_tree = dict()
+        for node in self.guiScene._nodes:
+            self._current_tree[node.name] = (
+                getattr(node, "parent", None),
+                node.manager,
+                type(node),
+            )
+
+        # start the update
+
+        self.guiScene.sort_nodes_by_parent()
+
+        self.items = dict()
+
+        # # store the open/closed state of the current tree - based on Name
+        closed_items = []
+
+        def walk_node(item, store_here):
+            for i in range(item.childCount()):
+                child = item.child(i)
+                if child.childCount() > 0:
+                    if not child.isExpanded():
+                        store_here.append(child.toolTip(0))
+                    walk_node(child, store_here)
+
+        walk_node(self.treeView.invisibleRootItem(), closed_items)
+
+        # store the current scroll position
+        vertical_position = self.treeView.verticalScrollBar().sliderPosition()
+
+        self.treeView.clear()
+        self.treeView.guiScene = self.guiScene
+
+        self.show_managed_nodes = self.checkbox.isChecked()
+
+        def give_parent_tree_item(node):
+            """Determines where to place the given item in the tree.
+            Returns the parent node, which may be the invisible root node, to which the item of this node
+            shall be a child
+            """
+
+            item = give_parent_item(node, self.items)
+            if item is None:
+                return self.treeView.invisibleRootItem()
+            else:
+                return item
+
+        for node in self.guiScene._nodes:
+            # create a tree item
+
+            item = self.make_tree_item(node)
+
+            # if we have a parent, then put the items under the parent,
+            # else put it under the root
+
+            if type(node) in ICONS:
+                item.setIcon(0, ICONS[type(node)])
+            else:
+                item.setIcon(0, QIcon(":/icons/redball.png"))
+
+            try:
+                parent = node.parent
+            except:
+                parent = None
+
+            # node is managed by a manager
+            show_managed_node = self.show_managed_nodes
+
+            # custom work-around for showing the "out-frame" for managed geometric connectors
+            if isinstance(node._manager, GeometricContact):
+                if node == node._manager._child_circle_parent_parent:
+                    if (
+                        node._manager.manager is None
+                    ):  # but only if the manager itself is not also managed (and thus hidden)
+                        show_managed_node = True
+
+            if not show_managed_node:  # another override
+                if hasattr(node, "_always_show_in_tree"):
+                    show_managed_node = node._always_show_in_tree
+
+            # custom work-around for showing the "circles" for managed shackles
+            if isinstance(node._manager, Shackle):
+                if (
+                    node == node._manager.pin
+                    or node == node._manager.bow
+                    or node == node._manager.inside
+                ):
+                    if (
+                        node._manager.manager is None
+                    ):  # but only if the manager itself is not also managed (and thus hidden)
+                        show_managed_node = True
+
+            if node.manager and show_managed_node:  # are we showing managed nodes?
+                item.setForeground(0, QBrush(QColor(0, 150, 0)))
+                self.items[node.name] = item
+                give_parent_tree_item(node).addChild(item)
+
+            elif node.manager is None:
+                self.items[node.name] = item
+                give_parent_tree_item(node).addChild(item)
+
+        self.treeView.expandAll()
+
+        # restore closed nodes state
+        def close_nodes(item, closed):
+            for i in range(item.childCount()):
+                child = item.child(i)
+                if child.toolTip(0) in closed_items:
+                    child.setExpanded(False)
+                if child.childCount() > 0:
+                    close_nodes(child, closed)
+
+        close_nodes(self.treeView.invisibleRootItem(), closed_items)
+
+        # restore vertical position
+        self.treeView.verticalScrollBar().setSliderPosition(vertical_position)
+
+
+class NodeTreeWidget(QtWidgets.QTreeWidget):
     others = []
 
     def dragEnterEvent(self, event):
@@ -55,7 +230,6 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
         self.parentcallback(dragged_name, drop_onto_name, event)
 
     def startDrag(self, supportedActions):
-
         dragged = self.selectedItems()[0]
 
         node_name = dragged.toolTip(0)
@@ -73,21 +247,19 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
         drag = QDrag(self)
         drag.setMimeData(mimeData)
 
-        drag.exec_(supportedActions=supportedActions) # , defaultAction=Qt.MoveAction)
+        drag.exec_(supportedActions=supportedActions)  # , defaultAction=Qt.MoveAction)
 
 
-class WidgetNodeTree(guiDockWidget):
-
+class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
     DO_RECENT_ITEMS = False
 
     def guiCanShareLocation(self):
         return False  # Want all the space I can have
+
     def guiCreate(self):
+        HasNodeTreeMixin.init(self)
 
-        self._current_tree = None
-        self.items = dict()
-
-        self.contents.setContentsMargins(0,0,0,0)
+        self.contents.setContentsMargins(0, 0, 0, 0)
 
         self.tbFilter = QtWidgets.QComboBox(self.contents)
         self.tbFilter.setEditable(True)
@@ -120,7 +292,8 @@ class WidgetNodeTree(guiDockWidget):
 
         self.treeView.parentcallback = self.dragDropCallback
 
-        self.treeView.setStyleSheet("""
+        self.treeView.setStyleSheet(
+            """
                                     QTreeView::branch:has-siblings:!adjoins-item {
                                         border-image: url(:tree/tree/vline.svg) 0;
                                     }
@@ -147,7 +320,8 @@ class WidgetNodeTree(guiDockWidget):
                                     
                                     QTreeView::branch:has-children:!has-siblings:open {
                                             image: url(:tree/tree/L_open.svg);
-                                    }""")
+                                    }"""
+        )
 
         self.checkbox = QCheckBox(self.contents)
         self.checkbox.setText("show all managed nodes")
@@ -175,11 +349,13 @@ class WidgetNodeTree(guiDockWidget):
         layout.addWidget(self.checkbox)
 
         if self.DO_RECENT_ITEMS:
-            layout.addWidget(self.listbox)  # No recent items for now, don't think anybody uses it
+            layout.addWidget(
+                self.listbox
+            )  # No recent items for now, don't think anybody uses it
 
         self.contents.setLayout(layout)
 
-        layout.setContentsMargins(4,0,0,0)
+        layout.setContentsMargins(4, 0, 0, 0)
 
         self.recent_items = list()
 
@@ -188,8 +364,6 @@ class WidgetNodeTree(guiDockWidget):
         self.installEventFilter(self.delete_eventFilter)
 
         self.tbFilter.editTextChanged.connect(self.filter_changed)
-
-        self.show_managed_nodes = False
 
     def guiProcessEvent(self, event):
         if event in [
@@ -209,14 +383,23 @@ class WidgetNodeTree(guiDockWidget):
         if event in [guiEventType.SELECTION_CHANGED]:
             self.update_selection()
 
+    def make_tree_item(self, node):
+        text = node.name
+        item = QTreeWidgetItem()
+        item.setToolTip(0, text)  # store the name in the tool-tip
+
+        # shorten the name if it contains /-es
+
+        item.setText(0, text.split("/")[-1])
+        return item
+
     # ======= custom
 
     def delete_key(self):
         self.gui.delete_key()
 
     def dragDropCallback(self, drop, onto, event):
-
-        keep_local_position = (event.keyboardModifiers() == Qt.ControlModifier)
+        keep_local_position = event.keyboardModifiers() == Qt.ControlModifier
 
         if onto is None:
             if keep_local_position:
@@ -226,7 +409,6 @@ class WidgetNodeTree(guiDockWidget):
             self.guiRunCodeCallback(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
         else:
-
             node_drop = self.guiScene[drop]
             node_onto = self.guiScene[onto]
 
@@ -273,10 +455,8 @@ class WidgetNodeTree(guiDockWidget):
         self.gui.openContextMenyAt(node_name, globLoc)
 
     def update_selection(self):
-
         selected_names = [node.name for node in self.guiSelection]
         for name in self.items.keys():
-
             if name in selected_names:
                 self.items[name].setSelected(True)
                 self.treeView.scrollToItem(self.items[name])
@@ -330,19 +510,17 @@ class WidgetNodeTree(guiDockWidget):
             else:
                 filter_name = part.lower()
 
-
         for name, item in self.items.items():
-
             # item not visible? then mark gray
             node = self.guiScene[name]
             #
             # process node visibility from node settings itself
             if not node.visible:
-                item.setForeground(0,QBrush(QColor(124, 124, 124)))
+                item.setForeground(0, QBrush(QColor(124, 124, 124)))
             elif node.manager is not None:
-                item.setForeground(0,QBrush(QColor(0, 150, 0)))
+                item.setForeground(0, QBrush(QColor(0, 150, 0)))
             else:
-                item.setForeground(0,QBrush(QColor(0,0,0)))
+                item.setForeground(0, QBrush(QColor(0, 0, 0)))
 
             # process node visibility from filter
             # only set doHide to True if node should be hidden
@@ -356,7 +534,6 @@ class WidgetNodeTree(guiDockWidget):
                     hide = True
 
             item.doHide = hide
-
 
         def has_visible_children(item):
             for i in range(item.childCount()):
@@ -377,197 +554,7 @@ class WidgetNodeTree(guiDockWidget):
             else:
                 item.setHidden(False)
 
-
-    def update_node_data_and_tree(self):
-        """
-        Updates the tree and assembles the node-data
-
-        This data is obtained from scene.nodes and assumes that
-        each of the nodes has a visual assigned to it.
-
-        """
-
-
-        # lets first see if anything has changed
-        # to quickly check that, we comparent the current parents and managers with the ones from the last update
-        # Node --> Parent node, manager node
-
-        if self.show_managed_nodes == self.checkbox.isChecked():
-            if self._current_tree is not None:
-                # check additional nodes
-                if len(self._current_tree) == len(self.guiScene._nodes):
-                    for node in self.guiScene._nodes:
-                        if node.name not in self._current_tree.keys():
-                            print('name changed')
-                            break
-                    else:
-                        # no new nodes, check if the
-                        #   parents and
-                        #   managers and
-                        #   type
-                        #   are the same
-                        for node in self.guiScene._nodes:
-                            if self._current_tree[node.name] != (getattr(node,'parent',None), node.manager, type(node)):
-                                print('structure changed')
-                                break
-                        else:
-                            # nothing changed, so we can skip the update
-                            return
-
-
-        # store new tree
-
-        self._current_tree = dict()
-        for node in self.guiScene._nodes:
-            self._current_tree[node.name] = (getattr(node, 'parent',None), node.manager, type(node))
-
-        # start the update
-
-        self.guiScene.sort_nodes_by_parent()
-
-        self.items = dict()
-
-        # # store the open/closed state of the current tree - based on Name
-        closed_items = []
-
-        def walk_node(item, store_here):
-            for i in range(item.childCount()):
-                child = item.child(i)
-                if child.childCount() > 0:
-                    if not child.isExpanded():
-                        store_here.append(child.toolTip(0))
-                    walk_node(child, store_here)
-
-        walk_node(self.treeView.invisibleRootItem(), closed_items)
-
-
-        # store the current scroll position
-        vertical_position = self.treeView.verticalScrollBar().sliderPosition()
-
-
-        self.treeView.clear()
-        self.treeView.guiScene = self.guiScene
-
-        self.show_managed_nodes = self.checkbox.isChecked()
-
-
-        def give_parent_item(node):
-            """Determines where to place the given item in the tree.
-            Returns the parent node, which may be the invisible root node, to which the item of this node
-            shall be a child
-            """
-            parent = getattr(node,'parent',None)
-
-            # if node does not have a parent, then use the manager (if any)
-            if parent is None:
-                parent = node.manager
-
-            # no manager and no parent --> in root
-            if parent is None:
-                return self.treeView.invisibleRootItem()
-
-            # there is a parent or manager to add to,
-            # but the parent may not be in the tree.
-
-            hidden_nodes_between = False
-
-            while True:
-                if parent.name in self.items:
-                    return self.items[parent.name]
-
-                hidden_nodes_between = True
-
-                parents_parent = getattr(parent, 'parent', None)
-                if parents_parent is None:
-                    parents_parent = parent.manager
-
-                # no parent and no manager:
-                if parents_parent is None:
-                    return self.treeView.invisibleRootItem()
-
-                parent = parents_parent # next iteration with parent
-
-
-
-
-        for node in self.guiScene._nodes:
-
-            # create a tree item
-            text = node.name
-            item = QTreeWidgetItem()
-
-            item.setToolTip(0, text) # store the name in the tool-tip
-
-            # shorten the name if it contains /-es
-
-            item.setText(0, text.split('/')[-1])
-
-            # if we have a parent, then put the items under the parent,
-            # else put it under the root
-
-            if type(node) in ICONS:
-                item.setIcon(0,ICONS[type(node)])
-            else:
-                item.setIcon(0, QIcon(":/icons/redball.png"))
-
-
-            try:
-                parent = node.parent
-            except:
-                parent = None
-
-            # node is managed by a manager
-            show_managed_node = self.show_managed_nodes
-
-            # custom work-around for showing the "out-frame" for managed geometric connectors
-            if isinstance(node._manager, GeometricContact):
-                if node == node._manager._child_circle_parent_parent:
-                    if node._manager.manager is None: # but only if the manager itself is not also managed (and thus hidden)
-                        show_managed_node = True
-
-            if not show_managed_node: # another override
-                if hasattr(node, '_always_show_in_tree'):
-                    show_managed_node = node._always_show_in_tree
-
-            # custom work-around for showing the "circles" for managed shackles
-            if isinstance(node._manager, Shackle):
-                if (
-                    node == node._manager.pin
-                    or node == node._manager.bow
-                    or node == node._manager.inside
-                ):
-                    if node._manager.manager is None: # but only if the manager itself is not also managed (and thus hidden)
-                        show_managed_node = True
-
-            if node.manager and show_managed_node:          # are we showing managed nodes?
-
-                item.setForeground(0,QBrush(QColor(0, 150, 0)))
-                self.items[node.name] = item
-                give_parent_item(node).addChild(item)
-
-            elif node.manager is None:
-                self.items[node.name] = item
-                give_parent_item(node).addChild(item)
-
-
-        self.treeView.expandAll()
-
-        # restore closed nodes state
-        def close_nodes(item, closed):
-            for i in range(item.childCount()):
-                child = item.child(i)
-                if child.toolTip(0) in closed_items:
-                    child.setExpanded(False)
-                if child.childCount() > 0:
-                    close_nodes(child, closed)
-
-        close_nodes(self.treeView.invisibleRootItem(), closed_items)
-
-        # restore vertical position
-        self.treeView.verticalScrollBar().setSliderPosition(vertical_position)
-
     def listview_startDrag(self, supportedActions):
-
         dragged = self.listbox.selectedItems()[0]
 
         node_name = dragged.text()

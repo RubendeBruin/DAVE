@@ -10,6 +10,8 @@ from PySide6.QtWidgets import (
     QMainWindow,
 )
 import DAVE.scene as ds
+from DAVE.gui.widget_nodetree import HasNodeTreeMixin
+from DAVE.settings_visuals import ICONS
 
 
 class EnterKeyPressFilter(PySide6.QtCore.QObject):
@@ -23,8 +25,10 @@ class EnterKeyPressFilter(PySide6.QtCore.QObject):
         return False
 
 
-class WidgetTags(guiDockWidget):
+class WidgetTags(guiDockWidget, HasNodeTreeMixin):
     def guiCreate(self):
+        HasNodeTreeMixin.init(self)
+
         self.treeView = QtWidgets.QTreeWidget(self.contents)
         self.treeView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.treeView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
@@ -89,6 +93,12 @@ class WidgetTags(guiDockWidget):
         if len(tags) != len(self.guiScene.tags):
             self.update_node_data_and_tree()
 
+    def make_tree_item(self, node):
+        text = node.name
+        item = QTreeWidgetItem()
+        item.setText(0, text)
+        return item
+
     def update_node_data_and_tree(self):
         """
         Updates the tree and assembles the node-data
@@ -97,134 +107,15 @@ class WidgetTags(guiDockWidget):
 
         """
 
-        self.items = dict()
-
-        # # store the open/closed state of the current tree - based on Name
-        closed_items = []
-
-        def walk_node(item, store_here):
-            for i in range(item.childCount()):
-                child = item.child(i)
-                if child.childCount() > 0:
-                    if not child.isExpanded():
-                        store_here.append(child.text(0))
-                    walk_node(child, store_here)
-
-        walk_node(self.treeView.invisibleRootItem(), closed_items)
-
-        self.guiScene.sort_nodes_by_parent()
-
-        # store the current scroll position
-        vertical_position = self.treeView.verticalScrollBar().sliderPosition()
-
-        self.treeView.clear()
+        HasNodeTreeMixin.update_node_data_and_tree(self)
 
         tags = self.guiScene.tags
         self.treeView.setColumnCount(len(tags) + 1)
         self.treeView.setHeaderLabels(["Node", "Add tag ", *tags])
         self.treeView.header().setVisible(True)
 
-        show_managed_nodes = self.checkbox.isChecked()
-
-        for node in self.guiScene._nodes:
-            # create a tree item
-            text = node.name
-            item = QTreeWidgetItem()
-            item.setText(0, text)
-
-            # if we have a parent, then put the items under the parent,
-            # else put it under the root
-
-            item.setIcon(0, QIcon(":/icons/redball.png"))
-            if isinstance(node, ds.Component):
-                item.setIcon(0, QIcon(":/icons/component.png"))
-            elif isinstance(node, ds.RigidBody):
-                item.setIcon(0, QIcon(":/icons/cube.png"))
-            elif isinstance(node, ds.Frame):
-                item.setIcon(0, QIcon(":/icons/axis_blue.png"))
-            elif isinstance(node, ds.Point):
-                item.setIcon(0, QIcon(":/icons/point_blue.png"))
-            elif isinstance(node, ds.Cable):
-                item.setIcon(0, QIcon(":/icons/cable.png"))
-            elif isinstance(node, ds.Visual):
-                item.setIcon(0, QIcon(":/icons/visual.png"))
-            elif isinstance(node, ds.LC6d):
-                item.setIcon(0, QIcon(":/icons/lincon6.png"))
-            elif isinstance(node, ds.Connector2d):
-                item.setIcon(0, QIcon(":/icons/con2d.png"))
-            elif isinstance(node, ds.Beam):
-                item.setIcon(0, QIcon(":/icons/beam.png"))
-            elif isinstance(node, ds.HydSpring):
-                item.setIcon(0, QIcon(":/icons/linhyd.png"))
-            elif isinstance(node, ds.Force):
-                item.setIcon(0, QIcon(":/icons/force.png"))
-            elif isinstance(node, ds.Circle):
-                item.setIcon(0, QIcon(":/icons/circle_blue.png"))
-            elif isinstance(node, ds.Buoyancy):
-                item.setIcon(0, QIcon(":/icons/trimesh.png"))
-            elif isinstance(node, ds.WaveInteraction1):
-                item.setIcon(0, QIcon(":/icons/waveinteraction.png"))
-            elif isinstance(node, ds.ContactBall):
-                item.setIcon(0, QIcon(":/icons/contactball.png"))
-            elif isinstance(node, ds.ContactMesh):
-                item.setIcon(0, QIcon(":/icons/contactmesh.png"))
-            elif isinstance(node, ds.GeometricContact):
-                item.setIcon(0, QIcon(":/icons/pin_hole.png"))
-            elif isinstance(node, ds.Sling):
-                item.setIcon(0, QIcon(":/icons/sling.png"))
-            elif isinstance(node, ds.Tank):
-                item.setIcon(0, QIcon(":/icons/tank.png"))
-            elif isinstance(node, ds.WindArea):
-                item.setIcon(0, QIcon(":/icons/wind.png"))
-            elif isinstance(node, ds.CurrentArea):
-                item.setIcon(0, QIcon(":/icons/current.png"))
-
-            try:
-                parent = node.parent
-            except:
-                parent = None
-
-            # node is managed by a manager
-            show_managed_node = show_managed_nodes
-
-            # custom work-around for showing the "out-frame" for managed geometric connectors
-            if isinstance(node._manager, GeometricContact):
-                if node == node._manager._child_circle_parent_parent:
-                    show_managed_node = True
-
-            # custom work-around for showing the "circles" for managed shackles
-            if isinstance(node._manager, Shackle):
-                if (
-                    node == node._manager.pin
-                    or node == node._manager.bow
-                    or node == node._manager.inside
-                ):
-                    show_managed_node = True
-
-            if node._manager:
-                # are we showing managed nodes?
-                if show_managed_node:
-                    # item.setTextColor(0, Qt.gray)
-                    item.setForeground(0, QBrush(QColor(0, 150, 0)))
-
-                    # if the item does not have a parent, then show it under the manager
-                    for parent in reversed(node.parents):
-                        if parent is None:
-                            self.items[node.name] = item
-                            self.items[node._manager.name].addChild(item)
-                            break
-
-            else:
-                self.items[node.name] = item
-
-                if parent is None:
-                    self.treeView.invisibleRootItem().addChild(item)
-                else:
-                    if parent.name in self.items:
-                        self.items[parent.name].addChild(item)
-                    else:  # if the parent is not there, then it must be a managed node
-                        self.items[parent._manager.name].addChild(item)
-
+        for name, item in self.items.items():
+            node = self.guiScene[name]
             for i, tag in enumerate(tags):
                 cbx = QtWidgets.QCheckBox()
                 cbx.setChecked(node.has_tag(tag))
@@ -250,22 +141,6 @@ class WidgetTags(guiDockWidget):
             header.setSectionResizeMode(
                 i + 1, QtWidgets.QHeaderView.ResizeToContents
             )  # https://doc.qt.io/qt-5/qheaderview.html#details
-
-        self.treeView.expandAll()
-
-        # restore closed nodes state
-        def close_nodes(item, closed):
-            for i in range(item.childCount()):
-                child = item.child(i)
-                if child.text(0) in closed_items:
-                    child.setExpanded(False)
-                if child.childCount() > 0:
-                    close_nodes(child, closed)
-
-        close_nodes(self.treeView.invisibleRootItem(), closed_items)
-
-        # restore vertical position
-        self.treeView.verticalScrollBar().setSliderPosition(vertical_position)
 
     def tag_added(self, sender, node_name):
         tag = sender.text()

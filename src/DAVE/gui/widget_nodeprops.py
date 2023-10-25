@@ -85,6 +85,20 @@ def svinf(spinbox: QDoubleSpinBox, value: float, do_block=True):
         spinbox.setValue(value)
 
 
+def tvinf(edit_text, value: str, do_block=True):
+    """Updates the value in the spinbox IF it does not have focus. Blocks signals during change if do_block is true (default)"""
+    if edit_text.hasFocus():
+        return
+
+    if do_block:
+        remember = edit_text.signalsBlocked()
+        edit_text.blockSignals(True)
+        edit_text.setText(value)
+        edit_text.blockSignals(remember)
+    else:
+        edit_text.setText(value)
+
+
 def cvinf(combobox: QtWidgets.QComboBox, value: str):
     """Updates the value in the combobox IF it does not have focus"""
     if combobox.hasFocus():
