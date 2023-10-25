@@ -45,6 +45,17 @@
     <file>redball.png</file>
     <file>axis.png</file>
   </qresource>
+  <qresource prefix="tree">
+    <file>tree/closed.svg</file>
+    <file>tree/L_closed.svg</file>
+    <file>tree/L_open.svg</file>
+    <file>tree/Lline.svg</file>
+    <file>tree/open.svg</file>
+    <file>tree/T_closed.svg</file>
+    <file>tree/T_open.svg</file>
+    <file>tree/Tline.svg</file>
+    <file>tree/vline.svg</file>
+  </qresource>
   <qresource prefix="v2">
     <file>icons/heart_empty_small.svg</file>
     <file>icons/heart_full_small.svg</file>

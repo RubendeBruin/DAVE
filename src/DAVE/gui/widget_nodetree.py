@@ -120,6 +120,35 @@ class WidgetNodeTree(guiDockWidget):
 
         self.treeView.parentcallback = self.dragDropCallback
 
+        self.treeView.setStyleSheet("""
+                                    QTreeView::branch:has-siblings:!adjoins-item {
+                                        border-image: url(:tree/tree/vline.svg) 0;
+                                    }
+                                    
+                                    QTreeView::branch:has-siblings:adjoins-item {
+                                        border-image: url(:tree/tree/Tline.svg) 0;
+                                    }
+                                    
+                                    QTreeView::branch:!has-children:!has-siblings:adjoins-item {
+                                        border-image: url(:tree/tree/Lline.svg) 0;
+                                    }
+                                    
+                                    QTreeView::branch:has-children:has-siblings:closed {
+                                            image: url(:tree/tree/T_closed.svg);
+                                    }
+                                    
+                                    QTreeView::branch:has-children:!has-siblings:closed {
+                                            image: url(:tree/tree/L_closed.svg);
+                                    }
+                                    
+                                    QTreeView::branch:has-children:has-siblings:open {
+                                            image: url(:tree/tree/T_open.svg);
+                                    }
+                                    
+                                    QTreeView::branch:has-children:!has-siblings:open {
+                                            image: url(:tree/tree/L_open.svg);
+                                    }""")
+
         self.checkbox = QCheckBox(self.contents)
         self.checkbox.setText("show all managed nodes")
         self.checkbox.setChecked(False)

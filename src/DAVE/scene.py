@@ -164,7 +164,7 @@ class Scene:
     def resources_paths(self, value):
         raise NotImplementedError("Use resource_provider.resources_paths instead")
 
-    def add_resources_paths(self, path : Path or str):
+    def add_resources_paths(self, path: Path or str):
         if isinstance(path, str):
             path = Path(path)
         self.resource_provider.addPath(path)
@@ -505,7 +505,7 @@ class Scene:
 
     # ======== resources =========
 
-    def get_resource_path(self, url : str, no_gui = False) -> Path:
+    def get_resource_path(self, url: str, no_gui=False) -> Path:
         """Resolves the path on disk for resource url.
         Urls statring with res: result in a file from the resources system.
         Urls statring with cd: result in a file from the current directory.
@@ -529,7 +529,6 @@ class Scene:
 
         return self.resource_provider.get_resource_path(url, no_gui=no_gui)
 
-
     def get_used_resources(self):
         """Returns a list of all resources used in the scene"""
 
@@ -552,8 +551,6 @@ class Scene:
         return self.resource_provider.get_resource_list(
             extension, include_subdirs, include_current_dir
         )
-
-
 
     # ======== element functions =========
 
@@ -2034,7 +2031,7 @@ class Scene:
             )
         try:
             t = Scene(
-                filename = filename,
+                filename=filename,
                 resource_provider=self.resource_provider,
             )
         except Exception as E:
@@ -3849,7 +3846,7 @@ class Scene:
 
         if isinstance(other, str):
             other = Scene(
-                filename = other,
+                filename=other,
                 resource_provider=self.resource_provider,
             )
 
@@ -4079,8 +4076,6 @@ class Scene:
                     if mesh in new_names:
                         meshes[i] = new_names[mesh]
                 node.meshes_names = meshes
-
-
 
     def to_frame(self, body: RigidBody):
         """Converts the body to a frame"""
