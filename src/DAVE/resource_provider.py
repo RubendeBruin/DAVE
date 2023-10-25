@@ -42,6 +42,7 @@ class DaveResourceProvider:
         if cd is not None:
             self.cd = Path(cd)
 
+
         self.resources_paths: list[Path] = [Path(a) for a in RESOURCE_PATH + list(args)]
 
         self._no_gui = False  # if True, do not show any GUI elements even if a QApplication is running
@@ -236,20 +237,19 @@ class DaveResourceProvider:
                 pass
 
         if include_current_dir:
-            if self.cd is None:
-                raise FileNotFoundError(
-                    f"get_resource_list: Could not find resource for in current directory: No current directory set"
+            if self.cd is not None:
+
+                files = get_all_files_with_extension(
+                    root_dir=self.cd,
+                    extension=extension,
+                    include_subdirs=include_subdirs,
                 )
 
-            files = get_all_files_with_extension(
-                root_dir=self.cd,
-                extension=extension,
-                include_subdirs=include_subdirs,
-            )
-
-            for file in files:
-                file = "cd: " + file.replace("\\", "/")
-                if file not in r:
-                    r.append(file)
+                for file in files:
+                    file = "cd: " + file.replace("\\", "/")
+                    if file not in r:
+                        r.append(file)
+            else:
+                warnings.warn("No current directory set - not returning any 'cd:' resources")
 
         return r

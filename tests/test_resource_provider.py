@@ -67,12 +67,12 @@ def test_get_all_resources_of_type():
     assert "res: cheetah/tanks/c8.stl" in lst
 
 
-def test_get_all_resources_of_type_error_no_cd():
+def test_get_all_resources_of_type_no_error_no_cd():
     s = DaveResourceProvider()
-    with pytest.raises(Exception):
-        lst = s.get_resource_list(
-            ".dave", include_subdirs=True, include_current_dir=True
-        )
+
+    lst = s.get_resource_list(
+        ".dave", include_subdirs=True, include_current_dir=True
+    )
 
 
 def test_copy():
