@@ -169,6 +169,16 @@ class Scene:
             path = Path(path)
         self.resource_provider.addPath(path)
 
+    @property
+    def current_directory(self):
+        return self.resource_provider.cd
+
+    @current_directory.setter
+    def current_directory(self, value : str or Path):
+        if isinstance(value, str):
+            value = Path(value)
+        self.resource_provider.cd = value
+
     def clear(self):
         """Deletes all nodes - leaves settings and reports in place"""
 
