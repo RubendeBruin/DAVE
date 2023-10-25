@@ -48,7 +48,7 @@ class Gui:
         self.ui.setupUi(self.MainWindow)
 
         txt = "Resources from:\n"
-        for p in self.scene.resources_paths:
+        for p in self.scene.resource_provider.resources_paths:
             txt += "\n" + str(p)
         self.ui.lblInfo.setText(txt)
 

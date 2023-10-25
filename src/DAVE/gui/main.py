@@ -1258,7 +1258,7 @@ class Gui:
             )
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
-            self.activate_dockgroup("CONSTRUCT")
+
 
     # ============== File open / recent / drag-drop functions ===========
 
