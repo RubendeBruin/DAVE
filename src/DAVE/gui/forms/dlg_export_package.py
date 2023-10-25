@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'dlg_export_package.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.1
+## Created by: Qt User Interface Compiler version 6.5.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -68,30 +68,25 @@ class Ui_ExportPackage(object):
         self.widget_2.setObjectName(u"widget_2")
         self.gridLayout = QGridLayout(self.widget_2)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.pbBrowse = QPushButton(self.widget_2)
-        self.pbBrowse.setObjectName(u"pbBrowse")
-
-        self.gridLayout.addWidget(self.pbBrowse, 0, 3, 1, 1)
-
-        self.tbFolder = QLineEdit(self.widget_2)
-        self.tbFolder.setObjectName(u"tbFolder")
-
-        self.gridLayout.addWidget(self.tbFolder, 0, 2, 1, 1)
-
-        self.label_6 = QLabel(self.widget_2)
-        self.label_6.setObjectName(u"label_6")
-
-        self.gridLayout.addWidget(self.label_6, 1, 0, 1, 1)
-
         self.label_5 = QLabel(self.widget_2)
         self.label_5.setObjectName(u"label_5")
 
         self.gridLayout.addWidget(self.label_5, 0, 0, 1, 1)
 
-        self.tbName = QLineEdit(self.widget_2)
-        self.tbName.setObjectName(u"tbName")
+        self.pbBrowse = QPushButton(self.widget_2)
+        self.pbBrowse.setObjectName(u"pbBrowse")
 
-        self.gridLayout.addWidget(self.tbName, 1, 2, 1, 1)
+        self.gridLayout.addWidget(self.pbBrowse, 0, 3, 1, 1)
+
+        self.tbFile = QLineEdit(self.widget_2)
+        self.tbFile.setObjectName(u"tbFile")
+
+        self.gridLayout.addWidget(self.tbFile, 0, 2, 1, 1)
+
+        self.pbExport = QPushButton(self.widget_2)
+        self.pbExport.setObjectName(u"pbExport")
+
+        self.gridLayout.addWidget(self.pbExport, 1, 2, 1, 1)
 
 
         self.verticalLayout_2.addWidget(self.widget_2)
@@ -101,29 +96,12 @@ class Ui_ExportPackage(object):
 
         self.verticalLayout_2.addWidget(self.lblInfo)
 
-        self.cbZip = QCheckBox(self.widget)
-        self.cbZip.setObjectName(u"cbZip")
-        self.cbZip.setChecked(True)
-
-        self.verticalLayout_2.addWidget(self.cbZip)
-
-        self.label_7 = QLabel(self.widget)
-        self.label_7.setObjectName(u"label_7")
-        self.label_7.setWordWrap(True)
-
-        self.verticalLayout_2.addWidget(self.label_7)
-
         self.teLog = QPlainTextEdit(self.widget)
         self.teLog.setObjectName(u"teLog")
         self.teLog.setAutoFillBackground(True)
         self.teLog.setStyleSheet(u"")
 
         self.verticalLayout_2.addWidget(self.teLog)
-
-        self.pbExport = QPushButton(self.widget)
-        self.pbExport.setObjectName(u"pbExport")
-
-        self.verticalLayout_2.addWidget(self.pbExport)
 
 
         self.verticalLayout.addWidget(self.widget)
@@ -142,13 +120,10 @@ class Ui_ExportPackage(object):
         self.cbFlatten.setText(QCoreApplication.translate("ExportPackage", u"Flatten", None))
         self.label_4.setText(QCoreApplication.translate("ExportPackage", u"<html><head/><body><p>Flatten will recursively dissolve all nodes to bring the model to its most basic state. Doing so makes it more likely that a basic version of DAVE can open the file.</p></body></html>", None))
         self.label_2.setText(QCoreApplication.translate("ExportPackage", u"Export location (folder)", None))
+        self.label_5.setText(QCoreApplication.translate("ExportPackage", u"Save as:", None))
         self.pbBrowse.setText(QCoreApplication.translate("ExportPackage", u"...", None))
-        self.label_6.setText(QCoreApplication.translate("ExportPackage", u"Name", None))
-        self.label_5.setText(QCoreApplication.translate("ExportPackage", u"Location", None))
-        self.lblInfo.setText(QCoreApplication.translate("ExportPackage", u"TextLabel", None))
-        self.cbZip.setText(QCoreApplication.translate("ExportPackage", u"Create .zip file", None))
-        self.label_7.setText(QCoreApplication.translate("ExportPackage", u"<html><head/><body><p>Checking this option will zip the contents of the created folder into an archive.</p></body></html>", None))
+        self.pbExport.setText(QCoreApplication.translate("ExportPackage", u"EXPORT", None))
+        self.lblInfo.setText(QCoreApplication.translate("ExportPackage", u"Log:", None))
         self.teLog.setPlainText(QCoreApplication.translate("ExportPackage", u"Click EXPORT to start export", None))
-        self.pbExport.setText(QCoreApplication.translate("ExportPackage", u"Export", None))
     # retranslateUi
 

@@ -13,8 +13,10 @@ from copy import deepcopy
 from graphlib import TopologicalSorter
 from os.path import isdir, isfile
 from os import mkdir
-from shutil import copy
+from pathlib import Path
+from shutil import copy, copyfile
 import re
+import tempfile
 
 from time import sleep
 from typing import Tuple, List
@@ -174,7 +176,7 @@ class Scene:
         return self.resource_provider.cd
 
     @current_directory.setter
-    def current_directory(self, value : str or Path):
+    def current_directory(self, value: str or Path):
         if isinstance(value, str):
             value = Path(value)
         self.resource_provider.cd = value
@@ -1407,126 +1409,112 @@ class Scene:
             return False
 
     def create_standalone_copy(
-        self, target_dir, filename, include_visuals=True, flatten=False, zip=True
-    ):
-        """Creates a stand-alone copy
-        returns a log of actions"""
+        self, target_dir, filename, include_visuals=True, flatten=False ):
+        """Creates a stand-alone copy in .zip format
+        Returns:
+        filename, log of actions"""
 
         log = []
-
-        from .nodes import Component, Visual
+        success = False
 
         # create target dir
         if not isdir(target_dir):
             mkdir(target_dir)
+            log.append("Created {}".format(target_dir))
 
-        s = self.copy(quick=True)
+        # Use a temporary directory to collect the resources
+        with tempfile.TemporaryDirectory() as tmp_dir:
 
-        if flatten:
-            s.flatten(exclude_known_types=True)
+            used_resources = self.get_used_resources()
 
-        if not include_visuals:
-            s._unmanage_and_delete(s.nodes_of_type(Visual))
+            s = self.copy(quick=True)
+            if flatten:
+                s.flatten(exclude_known_types=True)
+                log.append("Flattened")
 
-        def update_path(path):
-            path = self.get_resource_path(path)
-            return "cd: " + str(path.name)
+            # cube.obj is sometimes used as default visual, so copy it
+            # same for default_component
 
-        # Loop all nodes and copy the resources to the target dir
-        for node in tuple(s.unmanged_nodes):
-            if isinstance(node, Component):
-                # export component contents recursively
+            additional_files = (
+                "shackle_gp800.obj",
+                "cube.obj",
+                "default_component.dave",
+            )
 
-                name = self.get_resource_path(node.path)
-                c = Scene(
-                    node.path,
-                    resource_paths=self.resources_paths,
-                    current_directory=self.current_directory,
+            # create a mapping of used resources to
+            counter = 0
+            mapping = dict()
+            for url, file in used_resources:
+                if url in mapping:
+                    continue
+
+                if not include_visuals:
+                    # Map all .obj files to the default cube
+                    if Path(file).suffix == ".obj":
+                        file = self.get_resource_path("res: cube.obj")
+
+                # make a target name
+                target_name = f"res_{counter}" + Path(file).suffix
+                target_file = Path(tmp_dir) / target_name
+
+                # copy
+                copyfile(file, target_file)
+                log.append(f"Copied {url} as  {target_file}")
+
+                mapping[url] = target_name
+
+                counter += 1
+
+            for file in additional_files:
+                copyfile(
+                    self.get_resource_path(f"res: {file}"), str(Path(tmp_dir) / file)
                 )
 
-                c.create_standalone_copy(
-                    target_dir=target_dir,
-                    include_visuals=include_visuals,
-                    flatten=flatten,
-                    filename=Path(name).name,
-                )
+            # create export code for mapping
+            code = "## This is a DAVE PACKAGE file - set package_folder to the folder containing this file before executing this code\n\n"
+            code += f"mapping = {mapping}"
+            code += "\ns.resource_provider.install_mapping(package_folder, mapping)"
+            code += s.give_python_code()
 
-                #
-                node._path = update_path(node.path)
 
-            elif hasattr(
-                node, "make_standalone"
-            ):  # Use duck-typing for DAVEbaseextensions
-                log.extend(node.make_standalone(target_dir=target_dir))
+            exported_DAVE_file = Path(tmp_dir) / (filename + '.dave')
+            with open(exported_DAVE_file, "w") as f:
+                f.write(code)
 
-            else:
-                # visuals and hyd
-                trimesh = getattr(node, "trimesh", None)
-                if trimesh:
-                    path = trimesh._path
-                else:
-                    path = getattr(node, "path", None)
+            log.append(f"Created DAVE file {exported_DAVE_file}")
 
-                if path:
-                    log.append(f"Path found: {path} --> {update_path(path)}")
+            # Perform a self-check
+            try:
+                log.append("Self-check")
+                t = Scene()
+                t.load_package(exported_DAVE_file)
+                log.append("Self-check completed without errors")
+                success = True
+            except Exception as E:
+                log.append(f"Self check FAILED with error {str(E)}")
 
-                    # simply copy the resource
-                    source = self.get_resource_path(path)
-                    target = Path(target_dir) / Path(source).name
-                    copy(source, target)
-
-                    # and update the node
-                    new_path = update_path(path)
-                    if trimesh:
-                        trimesh._path = new_path
-                    else:
-                        if hasattr(node, "_path"):
-                            node._path = new_path
-                        else:
-                            node.path = new_path
-
-        s.save_scene(Path(target_dir) / filename)
-
-        # cube.obj is sometimes used as default visual, so copy it
-        # same for default_component
-        required_files = ("shackle_gp800.obj", "cube.obj", "default_component.dave")
-        for rf in required_files:
-            copy(self.get_resource_path(f"res: {rf}"), Path(target_dir) / rf)
-
-        # Perform a self-check
-        log.append("Perfoming self-check of exported models")
-
-        try:
-            t = Scene()
-
-            t.resources_paths.clear()
-            t.resources_paths.append(
-                target_dir
-            )  # for res:cube and res:default_component
-            t.current_directory = target_dir
-            exported_scene = str(Path(target_dir) / filename)
-            t.load_scene(exported_scene)
-
-            log.append("Self-check completed without errors")
-        except Exception as E:
-            log.append(f"Self check FAILED with error {str(E)}")
-
-        if zip:
             try:
                 log.append("Creating zip-file")
-                zip_filename = Path(target_dir).parent / (
-                    str(Path(target_dir).parts[-1])
-                )
+                zip_filename = Path(target_dir) / filename
+
 
                 from shutil import make_archive
 
-                make_archive(zip_filename, format="zip", root_dir=target_dir)
+                make_archive(zip_filename, format="zip", root_dir=tmp_dir)
 
                 log.append(f"Created zipfile {zip_filename}.zip")
             except Exception as E:
                 log.append(f"Creating zipfile FAILED with error {str(E)}")
+            #
+        return Path(str(zip_filename) + '.zip'), log
 
-        return log
+    def load_package(self, filename: str or Path):
+        """Loads a DAVE self-contained package file"""
+        filename = Path(filename)
+        path = filename.parent
+        package_folder = str(path)
+        code = filename.read_text()
+        self.run_code(code, package_folder=package_folder)
 
     # ========= Limits ===========
 
@@ -3774,13 +3762,16 @@ class Scene:
             #     print("stop")
             print_deps(node, "")
 
-    def run_code(self, code):
+    def run_code(self, code, package_folder=None):
         """Runs the provided code with 's' as self"""
 
         import DAVE
 
         locals = DAVE.__dict__
         locals["s"] = self
+
+        if package_folder is not None:
+            locals["package_folder"] = package_folder
 
         locals.update(ds.DAVE_ADDITIONAL_RUNTIME_MODULES)
 

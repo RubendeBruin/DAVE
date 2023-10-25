@@ -23,6 +23,16 @@ The order of the list is important.
 The list is considered to be ordered from most-official to least-official. So, for the default list,
 a resource in the `resources` subfolder of the DAVE installation is considered of higher rank than a
 resource with the same name in the users DAVE_assets folder.
+
+
+Mappings
+--------
+
+The resource system also supports "mappings". A mapping is a way to map a filename to a different filename.
+These take the form of a dictionary with the URL as key and the new filename as value.
+
+Install using `DaveResourceProvider.install_mapping()`, remove with remove_mapping()
+
 """
 import warnings
 from pathlib import Path
@@ -50,6 +60,18 @@ class DaveResourceProvider:
         # logging
         self._log = []  # list of tuples (filename, path)
 
+        # mapping
+        self.mapping = dict()
+        self.mapping_root = None
+
+    def install_mapping(self, root : Path, mapping : dict):
+        self.mapping = mapping
+        self.mapping_root = Path(root)
+
+    def remove_mapping(self):
+        self.mapping = dict()
+        self.mapping_root = None
+
     def addPath(self, path: Path):
         """Add a path to the resource list"""
         self.resources_paths.append(path)
@@ -72,6 +94,12 @@ class DaveResourceProvider:
         filename can be a full path, or a path relative to one of the resource folders
         """
         file = None
+
+        if filename in self.mapping:
+            file = self.mapping_root / self.mapping[filename]
+            if not file.exists():
+                raise FileNotFoundError(f"Could not find MAPPED resource for: {filename}")
+            return file
 
         try:
             if filename.startswith("cd:"):

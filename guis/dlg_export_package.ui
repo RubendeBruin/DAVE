@@ -74,6 +74,13 @@
       <item>
        <widget class="QWidget" name="widget_2" native="true">
         <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Save as:</string>
+           </property>
+          </widget>
+         </item>
          <item row="0" column="3">
           <widget class="QPushButton" name="pbBrowse">
            <property name="text">
@@ -82,24 +89,14 @@
           </widget>
          </item>
          <item row="0" column="2">
-          <widget class="QLineEdit" name="tbFolder"/>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_6">
-           <property name="text">
-            <string>Name</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_5">
-           <property name="text">
-            <string>Location</string>
-           </property>
-          </widget>
+          <widget class="QLineEdit" name="tbFile"/>
          </item>
          <item row="1" column="2">
-          <widget class="QLineEdit" name="tbName"/>
+          <widget class="QPushButton" name="pbExport">
+           <property name="text">
+            <string>EXPORT</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -107,27 +104,7 @@
       <item>
        <widget class="QLabel" name="lblInfo">
         <property name="text">
-         <string>TextLabel</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="cbZip">
-        <property name="text">
-         <string>Create .zip file</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_7">
-        <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Checking this option will zip the contents of the created folder into an archive.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
+         <string>Log:</string>
         </property>
        </widget>
       </item>
@@ -141,13 +118,6 @@
         </property>
         <property name="plainText">
          <string>Click EXPORT to start export</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pbExport">
-        <property name="text">
-         <string>Export</string>
         </property>
        </widget>
       </item>

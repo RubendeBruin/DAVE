@@ -24,69 +24,41 @@ class ExportAsPackageDialog():
         self.ui.pbExport.clicked.connect(self.export)
         self.ui.pbBrowse.clicked.connect(self.browse)
 
-        self.ui.tbFolder.textChanged.connect(self.folder_changed)
-        self.ui.tbName.textChanged.connect(self.folder_changed)
-
-    def folder_changed(self, *args):
-        folder = self.ui.tbFolder.text()
-
-        self.ui.lblInfo.setStyleSheet('')
-
-        try:
-            folder = Path(folder)
-            if not folder.parent.exists():
-                raise ValueError('parent folder does not exist')
-            self.ui.tbFolder.setStyleSheet('')
-
-
-            folder = Path(self.ui.tbFolder.text()) / self.ui.tbName.text()
-            if folder.exists():
-                self.ui.tbName.setStyleSheet('background: pink')
-                self.ui.pbExport.setEnabled(False)
-                self.ui.lblInfo.setText(f"{folder} already exists, please choose another name or folder")
-                self.ui.lblInfo.setStyleSheet('background: pink')
-                raise ValueError('folder already exists')
-            else:
-                self.ui.tbName.setStyleSheet('')
-
-            self.ui.pbExport.setEnabled(True)
-            self.ui.lblInfo.setText(f"Export to {folder}")
-
-        except:
-            self.ui.tbFolder.setStyleSheet('background: pink')
-            self.ui.pbExport.setEnabled(False)
-
-            self.ui.tbName.setStyleSheet('background: pink')
-            self.ui.pbExport.setEnabled(False)
-
-
-
 
     def browse(self, *args):
-        folder = QFileDialog.getExistingDirectory(dir = self.ui.tbFolder.text())
-        if folder:
-            self.ui.tbFolder.setText(folder)
+
+        # open a file save-as dialog to get a .zip file
+        # and set the text of the line edit to the selected file
+        # if the user cancels, do nothing
+        fileName = QFileDialog.getSaveFileName(None, "Save File",
+                                                     "",
+                                                     "DAVE package (*.zip)")
+
+        if fileName[0]:
+            self.ui.tbFile.setText(fileName[0])
+
 
 
     def export(self, *args):
 
+        if self.ui.tbFile.text() == '':
+            self.browse()
+            if self.ui.tbFile.text() == '':
+                self.ui.teLog.setPlainText('No file selected')
+                return
+
         log = ["Exporting package..."]
-        name = self.ui.tbName.text()
+        name = self.ui.tbFile.text()
 
-        # create folder
-        try:
-            folder = Path(self.ui.tbFolder.text()) / name
-            folder.mkdir(exist_ok=False)
+        parts = Path(name)
+        folder = parts.parent
+        name = parts.stem
 
-            log.append(f"Created folder {folder}")
-
-            log.extend(self.scene.create_standalone_copy(target_dir=folder,
+        filename, log = self.scene.create_standalone_copy(target_dir=folder,
                              filename = f"{name}.dave",
                              include_visuals=not self.ui.cbStripVisuals.isChecked(),
-                             zip=self.ui.cbZip.isChecked(),
-                             flatten=self.ui.cbFlatten.isChecked()))
-        except Exception as e:
-            log.extend([f'FAILED with {e}'])
+                             flatten=self.ui.cbFlatten.isChecked())
+
 
         text = '\n'.join(log)
 
@@ -100,7 +72,7 @@ class ExportAsPackageDialog():
             import platform
             if platform.system() == "Windows":
                 import os
-                os.startfile(self.ui.tbFolder.text())
+                os.startfile(folder)
 
 
         self.ui.teLog.verticalScrollBar().setValue(
@@ -110,17 +82,13 @@ class ExportAsPackageDialog():
 
     def show(self, scene, folder=None):
         self.scene = scene
-        if folder is None:
-            folder = r'c:\data'
-        self.ui.tbFolder.setText(folder)
-        self.ui.tbName.setText("demo")
         self.ui.teLog.clear()
         self.dialog.exec()
 
 
 if __name__ == '__main__':
 
-    app = QtWidgets.QApplication()
+    # app = QtWidgets.QApplication()
     etb = ExportAsPackageDialog()
 
     class dummy:
