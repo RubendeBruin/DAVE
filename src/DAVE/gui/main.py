@@ -2249,20 +2249,6 @@ class Gui:
 
             if node._manager is None:
 
-                def edit():
-                    self.selected_nodes.clear()
-                    self.guiSelectNode(node_name)
-                    self.show_guiWidget(
-                        "Properties", WidgetNodeProps
-                    )  # people often close this one
-
-                # menu.addAction("Edit {}".format(node_name), edit)
-                # menu.addAction(
-                #     "Derived Properties",
-                #     lambda *args: self.show_guiWidget(
-                #         "Derived Properties", WidgetDerivedProperties
-                #     ),
-                # )
 
                 showhide = menu.addAction("Visible")
                 showhide.setCheckable(True)
@@ -2323,23 +2309,23 @@ class Gui:
                     if self.scene.nodes_with_parent(node):
                         menu.addAction("Duplicate", duplicate_branch)
 
-                if isinstance(node, Cable):
-                    menu.addAction(
-                        "Convert Cable --> Sling",
-                        lambda *args: self.run_code(
-                            f"s.to_sling(s['{node.name}'])",
-                            guiEventType.MODEL_STRUCTURE_CHANGED,
-                        ),
-                    )
+                # if isinstance(node, Cable):
+                #     menu.addAction(
+                #         "Convert Cable --> Sling",
+                #         lambda *args: self.run_code(
+                #             f"s.to_sling(s['{node.name}'])",
+                #             guiEventType.MODEL_STRUCTURE_CHANGED,
+                #         ),
+                #     )
 
-                if isinstance(node, Sling):
-                    menu.addAction(
-                        "Convert Sling --> Cable",
-                        lambda *args: self.run_code(
-                            f"s.to_cable(s['{node.name}'])",
-                            guiEventType.MODEL_STRUCTURE_CHANGED,
-                        ),
-                    )
+                # if isinstance(node, Sling):
+                #     menu.addAction(
+                #         "Convert Sling --> Cable",
+                #         lambda *args: self.run_code(
+                #             f"s.to_cable(s['{node.name}'])",
+                #             guiEventType.MODEL_STRUCTURE_CHANGED,
+                #         ),
+                #     )
 
                 if type(node) == RigidBody:
                     menu.addAction(
@@ -2362,9 +2348,8 @@ class Gui:
                 menu.addAction("Duplicate node", duplicate)
 
                 menu.addSeparator()
-                menu.addSeparator()
 
-        wa = QtWidgets.QWidgetAction(None)
+        wa = QtWidgets.QWidgetAction(menu)
 
         ui = Ui_MenuNodes()
         widget = QtWidgets.QWidget()
@@ -2763,7 +2748,7 @@ class Gui:
                 self.selected_nodes.append(node)
 
         if self.selected_nodes:
-            if self._active_dockgroup in ["CONSTRUCT", "TimeLine"]:
+            if self._active_dockgroup.show_edit == True:
                 if "Properties" in self.guiWidgets:
                     dock_show(self.dock_manager, self.guiWidgets["Properties"])
                     self.guiEmitEvent(guiEventType.SELECTION_CHANGED)  # force update
@@ -2899,7 +2884,16 @@ class Gui:
             if isinstance(node, (Frame, Point)):
                 self._dragged_node = node
                 logging.info(f"Starting drag on {node.name}")
-                self.visual.initialize_node_drag(nodes)
+
+                # Find all nodes that are rigidly connected to this node
+                # and add them to the drag list
+
+
+                for n in self.scene.nodes_with_parent(node, recursive=True):
+                    if n not in nodes:
+                        nodes.append(n)
+
+                self.visual.initialize_node_drag(nodes, text_info = f"Moving node {node.name}")
                 break
 
             parent = getattr(node, "parent", None)
@@ -2937,5 +2931,7 @@ if __name__ == "__main__":
     s["Point"].position = (5.0, 0.0, 0.0)
 
     s["Force"].force = (0.0, 5.0, 0.0)
+
+    s.new_visual("Visual", parent="Body", path="res: cube.obj")
 
     Gui(s)

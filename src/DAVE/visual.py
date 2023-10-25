@@ -453,7 +453,11 @@ class VisualActor:
             actor = self.actors["main"]
             mapper = actor.GetMapper()
 
-            if self.node.do_color_by_tension and not settings.paint_uc:
+            if (
+                self.node.do_color_by_tension
+                and not settings.paint_uc
+                and self.node.color is None
+            ):
                 mapper.SetScalarModeToUsePointFieldData()
                 mapper.ScalarVisibilityOn()
                 mapper.SelectColorArray("TubeColors")
@@ -1445,23 +1449,25 @@ class Viewport:
         if not QEventLoop().isRunning():
             app.exec_()
 
-    def initialize_node_drag(self, nodes):
+    def initialize_node_drag(self, nodes, text_info=None):
         # Initialize dragging on selected node
 
         actors = []
         outlines = []
 
         for node in nodes:
-            actors.extend([*self.actor_from_node(node).actors.values()])
-            outlines.extend(
-                [
-                    ol.outline_actor
-                    for ol in self.node_outlines
-                    if ol.parent_vp_actor in actors
-                ]
-            )
+            node_actor = self.actor_from_node(node)
+            if node_actor is not None:
+                actors.extend([*node_actor.actors.values()])
+                outlines.extend(
+                    [
+                        ol.outline_actor
+                        for ol in self.node_outlines
+                        if ol.parent_vp_actor in actors
+                    ]
+                )
 
-        self.Style.StartDragOnProps([*actors, *outlines])
+        self.Style.StartDragOnProps([*actors, *outlines], info_text=text_info)
 
     def add_temporary_actor(self, actor: vtk.vtkActor):
         self.temporary_actors.append(actor)

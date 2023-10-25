@@ -102,24 +102,24 @@ callbackCameraDirectionChanged : executed when camera has rotated but before re-
 
 """
 
+
 @dataclass
 class DragInfo:
     """Data structure containing the data required to execute dragging a node"""
 
     # Scene related
-    dragged_node = None            # Node
+    dragged_node = None  # Node
 
     # VTK related
     actors_dragging: list
-    dragged_actors_original_positions: list # original VTK positions
-    start_position_3d = np.array((0,0,0))  # start position of the cursor
+    dragged_actors_original_positions: list  # original VTK positions
+    start_position_3d = np.array((0, 0, 0))  # start position of the cursor
 
-    delta = np.array((0,0,0))
+    delta = np.array((0, 0, 0))
 
     def __init__(self):
         self.actors_dragging = []
         self.dragged_actors_original_positions = []
-
 
 
 class BlenderStyle(vtkInteractorStyleUser):
@@ -154,7 +154,6 @@ class BlenderStyle(vtkInteractorStyleUser):
         self.MoveMouseWheel(1)
 
     def MouseMove(self, obj, event):
-
         interactor = self.GetInteractor()
 
         # Find the renderer that is active below the current mouse position
@@ -162,8 +161,6 @@ class BlenderStyle(vtkInteractorStyleUser):
         self.FindPokedRenderer(
             x, y
         )  # sets the current renderer [this->SetCurrentRenderer(this->Interactor->FindPokedRenderer(x, y));]
-
-
 
         Shift = interactor.GetShiftKey()
         Ctrl = interactor.GetControlKey()
@@ -227,9 +224,7 @@ class BlenderStyle(vtkInteractorStyleUser):
         xp = size[0] / 2
         yp = size[1] / 2
 
-        self.ComputeDisplayToWorld(
-            CurrentRenderer, xp, yp, focalDepth, oldPickPoint
-        )
+        self.ComputeDisplayToWorld(CurrentRenderer, xp, yp, focalDepth, oldPickPoint)
         #
         #   // Camera motion is reversed
         #
@@ -259,9 +254,7 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         # the Zooming
         factor = self.MOUSE_MOTION_FACTOR * self.MOUSE_WHEEL_MOTION_FACTOR
-        self.ZoomByStep(direction*factor)
-
-
+        self.ZoomByStep(direction * factor)
 
     def ZoomByStep(self, step):
         CurrentRenderer = self.GetCurrentRenderer()
@@ -271,9 +264,7 @@ class BlenderStyle(vtkInteractorStyleUser):
             self.Dolly(pow(1.1, step))
             self.EndDolly()
 
-
     def LeftButtonPress(self, obj, event):
-
         if self._is_box_zooming:
             return
         if self.draginfo:
@@ -297,7 +288,6 @@ class BlenderStyle(vtkInteractorStyleUser):
         self.InitializeScreenDrawing()
 
     def LeftButtonRelease(self, obj, event):
-
         if self._is_box_zooming:
             self._is_box_zooming = False
             self.ZoomBox(self.start_x, self.start_y, self.end_x, self.end_y)
@@ -316,7 +306,7 @@ class BlenderStyle(vtkInteractorStyleUser):
         Alt = interactor.GetAltKey()
 
         if Ctrl and Shift:
-            pass # we were drawing the measurement
+            pass  # we were drawing the measurement
 
         else:
             if self.callbackSelect:
@@ -330,7 +320,6 @@ class BlenderStyle(vtkInteractorStyleUser):
         self.DoRender()
 
     def KeyPress(self, obj, event):
-
         key = obj.GetKeySym()
         KEY = key.upper()
 
@@ -338,7 +327,6 @@ class BlenderStyle(vtkInteractorStyleUser):
         if self.callbackAnyKey:
             if self.callbackAnyKey(key):
                 return
-
 
         if KEY == "M":
             self.middle_mouse_lock = not self.middle_mouse_lock
@@ -350,16 +338,16 @@ class BlenderStyle(vtkInteractorStyleUser):
                 if self.callbackStartDrag:
                     self.callbackStartDrag()
                 else:
-                    self.StartDrag() # internally calls end-drag if drag is already active
-        elif KEY=="ESCAPE":
+                    self.StartDrag()  # internally calls end-drag if drag is already active
+        elif KEY == "ESCAPE":
             if self.callbackEscapeKey:
                 self.callbackEscapeKey()
             if self.draginfo is not None:
                 self.CancelDrag()
-        elif KEY=="DELETE":
+        elif KEY == "DELETE":
             if self.callbackDeleteKey:
                 self.callbackDeleteKey()
-        elif KEY=="RETURN":
+        elif KEY == "RETURN":
             if self.draginfo:
                 self.FinishDrag()
         elif KEY == "SPACE":
@@ -389,9 +377,9 @@ class BlenderStyle(vtkInteractorStyleUser):
         elif KEY == "RIGHT":
             self.RotateDiscreteStep(-1)
         elif KEY == "UP":
-            self.RotateTurtableBy(0,10)
+            self.RotateTurtableBy(0, 10)
         elif KEY == "DOWN":
-            self.RotateTurtableBy(0,-10)
+            self.RotateTurtableBy(0, -10)
         elif KEY == "PLUS":
             self.ZoomByStep(2)
         elif KEY == "MINUS":
@@ -403,7 +391,6 @@ class BlenderStyle(vtkInteractorStyleUser):
         self.InvokeEvent(vtkCommand.InteractionEvent, None)
 
     def KeyRelease(self, obj, event):
-
         key = obj.GetKeySym()
         KEY = key.upper()
 
@@ -447,7 +434,6 @@ class BlenderStyle(vtkInteractorStyleUser):
             self.SetCameraDirection(direction)
 
         else:  # Top or bottom like view - rotate camera "up" direction
-
             up = np.array(camera.GetViewUp())
 
             angle = np.arctan2(up[1], up[0])
@@ -463,12 +449,10 @@ class BlenderStyle(vtkInteractorStyleUser):
             up[0] = np.cos(angle) * dist
             up[1] = np.sin(angle) * dist
 
-
             camera.SetViewUp(up)
             camera.OrthogonalizeViewUp()
 
             self.DoRender()
-
 
     def ToggleParallelProjection(self):
         renderer = self.GetCurrentRenderer()
@@ -535,7 +519,7 @@ class BlenderStyle(vtkInteractorStyleUser):
         if abs(direction[2]) < 0.9:
             camera.SetViewUp(0, 0, 1)
         elif direction[2] > 0.9:
-            camera.SetViewUp(0,-1,0)
+            camera.SetViewUp(0, -1, 0)
         else:
             camera.SetViewUp(0, 1, 0)
 
@@ -555,9 +539,8 @@ class BlenderStyle(vtkInteractorStyleUser):
         if self.GetAutoAdjustCameraClippingRange():
             self.GetCurrentRenderer().ResetCameraClippingRange()
             camera = self.GetCurrentRenderer().GetActiveCamera()
-            near,far = camera.GetClippingRange()
+            near, far = camera.GetClippingRange()
             camera.SetClippingRange(self.CLIPPING_PLANE_NEAR_FRACTION_OF_FAR * far, far)
-
 
     def PerformPickingOnSelection(self):
         """Preforms prop3d picking on the current dragged selection
@@ -613,7 +596,6 @@ class BlenderStyle(vtkInteractorStyleUser):
         else:
             return []
 
-
     # ----------- actor dragging ------------
 
     def StartDrag(self):
@@ -625,25 +607,38 @@ class BlenderStyle(vtkInteractorStyleUser):
             if self.picked_props:
                 self.StartDragOnProps(self.picked_props)
             else:
-                logging.info('Can not start drag, nothing selected and callbackStartDrag not assigned')
+                logging.info(
+                    "Can not start drag, nothing selected and callbackStartDrag not assigned"
+                )
 
     def FinishDrag(self):
-        logging.info('Finished drag')
+        logging.info("Finished drag")
+
+        self.HideInfoText()
+
         if self.callbackEndDrag:
             # reset actor positions as actors positions will be controlled by called functions
-            for pos0, actor in zip(self.draginfo.dragged_actors_original_positions, self.draginfo.actors_dragging):
+            for pos0, actor in zip(
+                self.draginfo.dragged_actors_original_positions,
+                self.draginfo.actors_dragging,
+            ):
                 actor.SetPosition(pos0)
             self.callbackEndDrag(self.draginfo)
 
         self.draginfo = None
 
-    def StartDragOnProps(self, props):
+    def StartDragOnProps(self, props, info_text = None):
         """Starts drag on the provided props (actors) by filling self.draginfo"""
         if self.draginfo is not None:
             self.FinishDrag()
             return
 
-        logging.info('Starting drag')
+        logging.info("Starting drag")
+
+        if info_text is not None:
+            self.SetInfoText(info_text)
+        else:
+            self.SetInfoText("Moving selected object")
 
         # create and fill drag-info
         draginfo = DragInfo()
@@ -655,10 +650,12 @@ class BlenderStyle(vtkInteractorStyleUser):
         # actors = [*self.actor_from_node(node).actors.values()]
         # outlines = [ol.outline_actor for ol in self.node_outlines if ol.parent_vp_actor in actors]
 
-        draginfo.actors_dragging = props # [*actors, *outlines]
+        draginfo.actors_dragging = props  # [*actors, *outlines]
 
         for a in draginfo.actors_dragging:
-            draginfo.dragged_actors_original_positions.append(a.GetPosition())  # numpy ndarray
+            draginfo.dragged_actors_original_positions.append(
+                a.GetPosition()
+            )  # numpy ndarray
 
         # Get the start position of the drag in 3d
 
@@ -681,14 +678,11 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         draginfo.start_position_3d = mouse_pos_3d
 
-
         self.draginfo = draginfo
 
     def ExecuteDrag(self):
-
-        rwi =  self.GetInteractor()
+        rwi = self.GetInteractor()
         CurrentRenderer = self.GetCurrentRenderer()
-
 
         camera = CurrentRenderer.GetActiveCamera()
         viewFocus = camera.GetFocalPoint()
@@ -710,22 +704,27 @@ class BlenderStyle(vtkInteractorStyleUser):
         # compute the delta and execute
 
         delta = np.array(mouse_pos_3d) - self.draginfo.start_position_3d
-        logging.info(f'Delta = {delta}')
-        view_normal = np.array(self.GetCurrentRenderer().GetActiveCamera().GetViewPlaneNormal())
+        logging.info(f"Delta = {delta}")
+        view_normal = np.array(
+            self.GetCurrentRenderer().GetActiveCamera().GetViewPlaneNormal()
+        )
 
         delta_inplane = delta - view_normal * np.dot(delta, view_normal)
-        logging.info(f'delta_inplane = {delta_inplane}')
+        logging.info(f"delta_inplane = {delta_inplane}")
 
-        for pos0, actor in zip(self.draginfo.dragged_actors_original_positions, self.draginfo.actors_dragging):
+        for pos0, actor in zip(
+            self.draginfo.dragged_actors_original_positions,
+            self.draginfo.actors_dragging,
+        ):
             m = actor.GetUserMatrix()
             if m:
-                warnings.warn('UserMatrices/transforms not supported')
+                warnings.warn("UserMatrices/transforms not supported")
                 # m.Invert() #inplace
                 # rotated = m.MultiplyFloatPoint([*delta_inplane, 1])
                 # actor.SetPosition(pos0 + np.array(rotated[:3]))
             actor.SetPosition(pos0 + delta_inplane)
 
-        logging.info(f'Set position to {pos0 + delta_inplane}')
+        logging.info(f"Set position to {pos0 + delta_inplane}")
 
         self.draginfo.delta = delta_inplane  # store the current delta
 
@@ -734,7 +733,10 @@ class BlenderStyle(vtkInteractorStyleUser):
 
     def CancelDrag(self):
         """Cancels the drag and restored the original positions of all dragged actors"""
-        for pos0, actor in zip(self.draginfo.dragged_actors_original_positions, self.draginfo.actors_dragging):
+        for pos0, actor in zip(
+            self.draginfo.dragged_actors_original_positions,
+            self.draginfo.actors_dragging,
+        ):
             actor.SetPosition(pos0)
         self.draginfo = None
         self.DoRender()
@@ -750,11 +752,9 @@ class BlenderStyle(vtkInteractorStyleUser):
         self.MoveMouseWheel(direction / 10)
 
     def Pan(self):
-
         CurrentRenderer = self.GetCurrentRenderer()
 
         if CurrentRenderer:
-
             rwi = self.GetInteractor()
 
             #   // Calculate the focal depth since we'll be using it a lot
@@ -811,11 +811,9 @@ class BlenderStyle(vtkInteractorStyleUser):
             self.DoRender()
 
     def Rotate(self):
-
         CurrentRenderer = self.GetCurrentRenderer()
 
         if CurrentRenderer:
-
             rwi = self.GetInteractor()
             dx = rwi.GetEventPosition()[0] - rwi.GetLastEventPosition()[0]
             dy = rwi.GetEventPosition()[1] - rwi.GetLastEventPosition()[1]
@@ -830,7 +828,6 @@ class BlenderStyle(vtkInteractorStyleUser):
             self.RotateTurtableBy(rxf, ryf)
 
     def RotateTurtableBy(self, rxf, ryf):
-
         CurrentRenderer = self.GetCurrentRenderer()
         rwi = self.GetInteractor()
 
@@ -841,15 +838,15 @@ class BlenderStyle(vtkInteractorStyleUser):
         campos = np.array(camera.GetPosition())
         focal = np.array(camera.GetFocalPoint())
         up = camera.GetViewUp()
-        upside_down_factor = -1 if up[2]<0 else 1
+        upside_down_factor = -1 if up[2] < 0 else 1
 
         # rotate about focal point
 
         P = campos - focal  # camera position
 
         # Rotate left/right about the global Z axis
-        H = np.linalg.norm(P[:2])     # horizontal distance of camera to focal point
-        elev = np.arctan2(P[2], H)    # elevation
+        H = np.linalg.norm(P[:2])  # horizontal distance of camera to focal point
+        elev = np.arctan2(P[2], H)  # elevation
 
         # if the camera is near the poles, then derive the azimuth from the up-vector
         sin_elev = np.sin(elev)
@@ -857,11 +854,13 @@ class BlenderStyle(vtkInteractorStyleUser):
             azi = np.arctan2(P[1], P[0])  # azimuth from camera position
         else:
             if sin_elev < -0.8:
-                azi = np.arctan2(upside_down_factor*up[1], upside_down_factor*up[0])
+                azi = np.arctan2(upside_down_factor * up[1], upside_down_factor * up[0])
             else:
-                azi = np.arctan2(-upside_down_factor*up[1], -upside_down_factor*up[0])
+                azi = np.arctan2(
+                    -upside_down_factor * up[1], -upside_down_factor * up[0]
+                )
 
-        D = np.linalg.norm(P)         # distance from focal point to camera
+        D = np.linalg.norm(P)  # distance from focal point to camera
 
         # apply the change in azimuth and elevation
         azi_new = azi + rxf / 60
@@ -869,28 +868,24 @@ class BlenderStyle(vtkInteractorStyleUser):
         elev_new = elev + upside_down_factor * ryf / 60
 
         # the changed elevation changes H (D stays the same)
-        Hnew = D*np.cos(elev_new)
-
+        Hnew = D * np.cos(elev_new)
 
         # calculate new camera position relative to focal point
-        Pnew = np.array((Hnew*np.cos(azi_new),
-                         Hnew*np.sin(azi_new),
-                         D*np.sin(elev_new)))
-
-
+        Pnew = np.array(
+            (Hnew * np.cos(azi_new), Hnew * np.sin(azi_new), D * np.sin(elev_new))
+        )
 
         # calculate the up-direction of the camera
-        up_z = upside_down_factor * np.cos(elev_new)  # z follows directly from elevation
+        up_z = upside_down_factor * np.cos(
+            elev_new
+        )  # z follows directly from elevation
         up_h = upside_down_factor * np.sin(elev_new)  # horizontal component
         #
         # if upside_down:
         #     up_z = -up_z
         #     up_h = -up_h
 
-
-        up = (-up_h * np.cos(azi_new),
-              -up_h * np.sin(azi_new),
-              up_z)
+        up = (-up_h * np.cos(azi_new), -up_h * np.sin(azi_new), up_z)
 
         new_pos = focal + Pnew
 
@@ -910,7 +905,6 @@ class BlenderStyle(vtkInteractorStyleUser):
             self.callbackCameraDirectionChanged()
 
         self.DoRender()
-
 
     def ZoomBox(self, x1, y1, x2, y2):
         """Zooms to a box"""
@@ -1091,7 +1085,6 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         # draw top and bottom
         for i in range(width):
-
             # c = round((10*i % 254)/254) * 254  # find some alternating color
             c = 0
 
@@ -1139,18 +1132,16 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         return x, y
 
-
     def DrawLine(self, x1, x2, y1, y2):
         rwi = self.GetInteractor()
         rwin = rwi.GetRenderWindow()
 
         size = rwin.GetSize()
 
-        x1 = min(max(x1,0), size[0])
-        x2 = min(max(x2,0), size[0])
-        y1 = min(max(y1,0), size[1])
-        y2 = min(max(y2,0), size[1])
-
+        x1 = min(max(x1, 0), size[0])
+        x2 = min(max(x2, 0), size[0])
+        y1 = min(max(y1, 0), size[1])
+        y2 = min(max(y2, 0), size[1])
 
         tempPA = vtkUnsignedCharArray()
         tempPA.DeepCopy(self._pixel_array)
@@ -1174,39 +1165,23 @@ class BlenderStyle(vtkInteractorStyleUser):
         half_height = size[1] / 2
         # half_height [px] = scale [world-coordinates]
 
-        length = ((x2-x1)**2 + (y2-y1)**2)**0.5
+        length = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
         meters_per_pixel = scale / half_height
         meters = length * meters_per_pixel
 
         if camera.GetParallelProjection():
-            print(f'Line length = {length} px = {meters} m')
+            print(f"Line length = {length} px = {meters} m")
         else:
-            print('Need to be in non-perspective mode to measure. Press 2 or 3 to get there')
+            print(
+                "Need to be in non-perspective mode to measure. Press 2 or 3 to get there"
+            )
 
         if self.callbackMeasure:
             self.callbackMeasure(meters)
 
-        #
-        # # can we add something to the window here?
-        # freeType = vtk.vtkFreeTypeTools.GetInstance()
-        # textProperty = vtk.vtkTextProperty()
-        # textProperty.SetJustificationToLeft()
-        # textProperty.SetFontSize(24)
-        # textProperty.SetOrientation(25)
-        #
-        # textImage = vtk.vtkImageData()
-        # freeType.RenderString(textProperty, "a somewhat longer text", 72, textImage) # this does not give an error, assume it works
-        # #
-        # textImage.GetDimensions()
-        # textImage.GetExtent()
-        #
-        # # # Now put the textImage in the RenderWindow
-        # rwin.SetRGBACharPixelData(0, 0, size[0] - 1, size[1] - 1, textImage, 0)
-
         rwin.Frame()
 
     def UpdateMiddleMouseButtonLockActor(self):
-
         if self.middle_mouse_lock_actor is None:
             # create the actor
             # Create a text on the top-rightcenter
@@ -1220,7 +1195,7 @@ class BlenderStyle(vtkInteractorStyleUser):
             textProp.ShadowOff()
             textProp.SetVerticalJustificationToTop()
             textProp.SetJustificationToCentered()
-            textProp.SetColor((0,0,0))
+            textProp.SetColor((0, 0, 0))
 
             self.middle_mouse_lock_actor = vtkActor2D()
             self.middle_mouse_lock_actor.SetMapper(textMapper)
@@ -1235,9 +1210,39 @@ class BlenderStyle(vtkInteractorStyleUser):
     def DoRender(self):
         self.GetInteractor().Render()
 
+    def SetInfoText(self, text):
+        if self.text_info_actor is None:
+            # create the actor
+            # Create a text on the top-rightcenter
+            textMapper = vtkTextMapper()
+            textMapper.SetInput("Info will be here")
+            textProp = textMapper.GetTextProperty()
+            textProp.SetFontSize(12)
+            textProp.SetFontFamilyToTimes()
+            textProp.BoldOff()
+            textProp.ItalicOff()
+            textProp.ShadowOff()
+            textProp.SetVerticalJustificationToTop()
+            textProp.SetJustificationToCentered()
+            textProp.SetColor((0, 0, 0))
+
+            self.text_info_actor = vtkActor2D()
+            self.text_info_actor.SetMapper(textMapper)
+            self.text_info_actor.GetPositionCoordinate().SetCoordinateSystemToNormalizedDisplay()
+            self.text_info_actor.GetPositionCoordinate().SetValue(0.3, 0.98)
+
+            self.GetCurrentRenderer().AddActor(self.text_info_actor)
+
+        self.text_info_actor.GetMapper().SetInput(text)
+        self.text_info_actor.SetVisibility(True)
+        self.DoRender()
+
+    def HideInfoText(self):
+        if self.text_info_actor:
+            self.text_info_actor.SetVisibility(False)
+            self.DoRender()
 
     def __init__(self):
-
         # Callbacks
         #
         # Callback can be assigned to functions
@@ -1257,14 +1262,16 @@ class BlenderStyle(vtkInteractorStyleUser):
         self.callbackCameraDirectionChanged = None
 
         # active drag
-        self.draginfo: DragInfo or None = None  # assigned to a DragInfo object when dragging is active
+        self.draginfo: DragInfo or None = (
+            None  # assigned to a DragInfo object when dragging is active
+        )
 
         # picking
-        self.picked_props = [] # will be filled by latest pick
+        self.picked_props = []  # will be filled by latest pick
 
         # settings
 
-        self.CLIPPING_PLANE_NEAR_FRACTION_OF_FAR = (1/100)
+        self.CLIPPING_PLANE_NEAR_FRACTION_OF_FAR = 1 / 100
         self.MOUSE_MOTION_FACTOR = 20
         self.MOUSE_WHEEL_MOTION_FACTOR = 0.1
         self.ZOOM_MOTION_FACTOR = 0.25
@@ -1278,6 +1285,8 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         self.middle_mouse_lock = False
         self.middle_mouse_lock_actor = None  # will be created when required
+
+        self.text_info_actor = None  # will be created when required
 
         # Special Modes
         self._is_box_zooming = False
@@ -1309,7 +1318,6 @@ class BlenderStyle(vtkInteractorStyleUser):
 
 
 if __name__ == "__main__":
-
     from vtkmodules.vtkCommonColor import vtkNamedColors
     from vtkmodules.vtkFiltersSources import vtkCubeSource, vtkLineSource, vtkConeSource
     from vtkmodules.vtkRenderingCore import (
@@ -1334,7 +1342,6 @@ if __name__ == "__main__":
     # Create some cubes.
     for i in range(10):
         for j in range(10):
-
             cube = vtkCubeSource()
             cube.Update()
 
@@ -1352,7 +1359,6 @@ if __name__ == "__main__":
             # Assign actor to the renderer.
             ren.AddActor(cubeActor)
 
-
     # And create some lines
     for i in range(10):
         for j in range(10):
@@ -1368,8 +1374,6 @@ if __name__ == "__main__":
             actor.GetProperty().SetLineWidth(2)
             actor.GetProperty().SetColor(colors.GetColor3d("Silver"))
             ren.AddActor(actor)
-
-
 
     coneSource = vtkConeSource()
     coneSource.SetHeight(5)
@@ -1405,36 +1409,30 @@ if __name__ == "__main__":
 
     # - actor dragging
     def onStartDrag():
-        print('Starting drag')
+        print("Starting drag")
         # here style.StartDragOnProps can be called to assing other props to drag
         style.StartDragOnProps(style.picked_props)
 
-    def onDragEnd(info : DragInfo):
-        print('Accepted drag')
+    def onDragEnd(info: DragInfo):
+        print("Accepted drag")
         print(info)
 
     style.callbackStartDrag = onStartDrag
     style.callbackEndDrag = onDragEnd
 
     # - other keys
-    style.callbackEscapeKey = lambda : print('ESCAPE KEY PRESSED')
-    style.callbackFocusKey = lambda : print('FOCUS KEY PRESSED')
+    style.callbackEscapeKey = lambda: print("ESCAPE KEY PRESSED")
+    style.callbackFocusKey = lambda: print("FOCUS KEY PRESSED")
 
     # any key callback (fires on modifier keys as well)
     # style.callbackAnyKey = lambda x : print(f'Key {x} pressed - return True to prevent further processing')
 
-    style.callbackMeasure = lambda x : print(f"Measure distance = {x} m")
-
+    style.callbackMeasure = lambda x: print(f"Measure distance = {x} m")
 
     iren.SetInteractorStyle(style)
-
-
 
     renWin.Render()
 
     logging.basicConfig(level=logging.DEBUG)
 
-
-
     iren.Start()
-
