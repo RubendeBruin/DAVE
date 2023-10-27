@@ -239,7 +239,7 @@ class SettingsDialog(QDialog, Ui_frmSettings):
 
         paths_str = [
             "- " + str(p)
-            for p in scene.resources_paths
+            for p in scene.resource_provider.resources_paths
             if p not in gui.additional_user_resource_paths
         ]
         self.label_4.setText("\n".join(paths_str))
@@ -2098,7 +2098,7 @@ class Gui:
         if self.modelfilename is not None:
             dir = str(Path(self.modelfilename).parent)
         else:
-            dir = str(self.scene.resources_paths[-2])  # most typical work-path
+            dir = str(self.scene.resource_provider.resources_paths[-2])  # most typical work-path
 
         filename, _ = QFileDialog.getSaveFileName(
             filter="*.dave",
@@ -2144,7 +2144,7 @@ class Gui:
         filename, _ = QFileDialog.getSaveFileName(
             filter="*.yml",
             caption="Orcaflex .yml file",
-            directory=self.scene.resources_paths[0],
+            dir=str(self.scene.resource_provider.resources_paths[0]),
         )
         if filename:
             code = 'from DAVE.io.orcaflex import export_ofx_yml\nexport_ofx_yml(s,r"{}")'.format(
@@ -2156,7 +2156,7 @@ class Gui:
         filename, _ = QFileDialog.getSaveFileName(
             filter="*.py",
             caption="Python files",
-            directory=self.scene.resources_paths[0],
+            dir=str(self.scene.resource_provider.resources_paths[0]),
         )
         if filename:
             python_file = filename
@@ -2193,7 +2193,7 @@ class Gui:
         filename, _ = QFileDialog.getSaveFileName(
             filter="*.dave",
             caption="Scene files",
-            directory=self.scene.resources_paths[0],
+            dir=str(self.scene.resource_provider.resources_paths[0]),
         )
         if filename:
             prev_line = ""
