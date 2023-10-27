@@ -765,10 +765,11 @@ class Gui:
 
         try:
             self.dock_timeline = self.get_dock("TimeLine")
-            self.dock_manager.addDockWidget(
-                PySide6QtAds.DockWidgetArea.TopDockWidgetArea, self.dock_timeline
+            area = self.dock_manager.addDockWidget(
+                PySide6QtAds.DockWidgetArea.RightDockWidgetArea, self.dock_timeline
             )
             self.docks_permanent.append(self.dock_timeline)
+            self.dock_timeline.toggleViewAction().trigger()  # closed by default
 
         except:
             self.dock_timeline = None
@@ -820,7 +821,9 @@ class Gui:
         # right part of right toolbar
 
         self.toolbar_top_right.addWidget(spacer_widget)
+        self.toolbar_top_right.addWidget(QtWidgets.QLabel("Solve:  "))
         self.solveAction = QAction("Solve", self.MainWindow)
+        self.solveAction.setToolTip("Solve statics [Alt+S]")
         self.solveAction.triggered.connect(self.solve_statics)
         self.solveAction.setIcon(QIcon(":/v2/icons/DAVE.svg"))
         self.solveAction.setShortcut("Alt+S")
@@ -1257,8 +1260,6 @@ class Gui:
                 file, container, prefix
             )
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
-
-
 
     # ============== File open / recent / drag-drop functions ===========
 
@@ -2248,8 +2249,6 @@ class Gui:
             node = self.scene[node_name]
 
             if node._manager is None:
-
-
                 showhide = menu.addAction("Visible")
                 showhide.setCheckable(True)
 
@@ -2813,7 +2812,7 @@ class Gui:
 
         assert isinstance(
             location, PySide6QtAds.DockWidgetArea
-        ), f"Wrong type of position returned by dock {name}"
+        ), f"Wrong type of position returned by dock {name} - should be something like PySide6QtAds.DockWidgetArea.LeftDockWidgetArea"
 
         # Docks can be added to the left, right, top or bottom
         # but also to already existing docks.
@@ -2888,12 +2887,13 @@ class Gui:
                 # Find all nodes that are rigidly connected to this node
                 # and add them to the drag list
 
-
                 for n in self.scene.nodes_with_parent(node, recursive=True):
                     if n not in nodes:
                         nodes.append(n)
 
-                self.visual.initialize_node_drag(nodes, text_info = f"Moving node {node.name}")
+                self.visual.initialize_node_drag(
+                    nodes, text_info=f"Moving node {node.name}"
+                )
                 break
 
             parent = getattr(node, "parent", None)
