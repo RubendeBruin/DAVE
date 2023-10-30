@@ -26,9 +26,9 @@ import matplotlib.pyplot as plt
 from warnings import warn
 
 
-
-
-def linearize_buoyancy(scene : Scene, node : Buoyancy = None, delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
+def linearize_buoyancy(
+    scene: Scene, node: Buoyancy = None, delta_draft=1e-3, delta_roll=1, delta_pitch=0.3
+):
     """Replaces the given Buoyancy node with a HydSpring node using even-keel (rotation = (0,0,0) ) as reference.
 
     Args:
@@ -47,35 +47,43 @@ def linearize_buoyancy(scene : Scene, node : Buoyancy = None, delta_draft=1e-3, 
     if node is None:
         r = None
         for node in scene.nodes_of_type(Buoyancy):
-            r = linearize_buoyancy(scene, node, delta_draft,delta_roll,delta_pitch)
+            r = linearize_buoyancy(scene, node, delta_draft, delta_roll, delta_pitch)
         return r
 
-
-
-    props = calculate_linearized_buoyancy_props(scene, node,
-                                                delta_draft=delta_draft, delta_roll = delta_roll, delta_pitch = delta_pitch)
+    props = calculate_linearized_buoyancy_props(
+        scene,
+        node,
+        delta_draft=delta_draft,
+        delta_roll=delta_roll,
+        delta_pitch=delta_pitch,
+    )
 
     parent = node.parent
     name = node.name
 
     scene.delete(node)  # remove buoyancy node
 
-    return scene.new_hydspring(name = name,
-                        parent = parent,
-                        cob = props['cob'],
-                        BMT = props['BMT'],
-                        BML = props['BML'],
-                        COFX = props['COFX'] - props['cob'][0],  # relative to CoB!
-                        COFY = props['COFY'] - props['cob'][1],
-                        kHeave=props['kHeave'],
-                        waterline=props['waterline'],
-                        displacement_kN=props['displacement_kN'])
+    return scene.new_hydspring(
+        name=name,
+        parent=parent,
+        cob=props["cob"],
+        BMT=props["BMT"],
+        BML=props["BML"],
+        COFX=props["COFX"] - props["cob"][0],  # relative to CoB!
+        COFY=props["COFY"] - props["cob"][1],
+        kHeave=props["kHeave"],
+        waterline=props["waterline"],
+        displacement_kN=props["displacement_kN"],
+    )
 
 
-
-
-
-def calculate_linearized_buoyancy_props(scene : Scene, nodes : Buoyancy or list[Buoyancy], delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
+def calculate_linearized_buoyancy_props(
+    scene: Scene,
+    nodes: Buoyancy or list[Buoyancy],
+    delta_draft=1e-3,
+    delta_roll=1,
+    delta_pitch=0.3,
+):
     """Obtains the linearized buoyancy properties of a buoyant shape. The properties are derived for the current
     vertical position of the parent body (draft at origin) and even-keel.
 
@@ -100,14 +108,15 @@ def calculate_linearized_buoyancy_props(scene : Scene, nodes : Buoyancy or list[
 
     for node in nodes:
         if not isinstance(node, Buoyancy):
-            raise ValueError(f"Node {node.name} should be a 'buoyancy' type of node but is a {type(node)}.")
+            raise ValueError(
+                f"Node {node.name} should be a 'buoyancy' type of node but is a {type(node)}."
+            )
 
-
-    s = Scene(resource_paths=scene.resources_paths, current_directory=scene.current_directory)
+    s = Scene()
+    s.resource_provider = scene.resource_provider
 
     # Note that parent is created at 0,0,0 and under zero rotations
     # that means that the global axis system is the local axis system at target draft and even keel
-
 
     a = s.new_frame(nodes[0].parent.name, fixed=True)
     a.z = nodes[0].parent.global_position[2]
@@ -115,18 +124,22 @@ def calculate_linearized_buoyancy_props(scene : Scene, nodes : Buoyancy or list[
     for node in nodes:
         exec(node.give_python_code())  # place a copy of the buoyancy node in scene "s"
 
-
-
     # get buoyancy
     s.update()
 
-    n2 = [s[node.name] for node in nodes] # nodes in new scene
+    n2 = [s[node.name] for node in nodes]  # nodes in new scene
 
-    del nodes # to make sure it is not used again
+    del nodes  # to make sure it is not used again
 
     displacement_m3 = np.sum([node.displacement for node in n2])
-    cob_local = np.sum([np.array(node.cob_local) * node.displacement for node in n2], axis=0) / displacement_m3
-    cob_global = np.sum([np.array(node.cob) * node.displacement for node in n2], axis=0) / displacement_m3
+    cob_local = (
+        np.sum([np.array(node.cob_local) * node.displacement for node in n2], axis=0)
+        / displacement_m3
+    )
+    cob_global = (
+        np.sum([np.array(node.cob) * node.displacement for node in n2], axis=0)
+        / displacement_m3
+    )
 
     # increase draft
     old_z = a.z
@@ -134,13 +147,12 @@ def calculate_linearized_buoyancy_props(scene : Scene, nodes : Buoyancy or list[
     a.z = a.z - delta_draft
     s.update()
 
-    new_disp =  np.sum([node.displacement for node in n2])
+    new_disp = np.sum([node.displacement for node in n2])
     delta_disp = new_disp - displacement_m3
 
     if abs(delta_disp) < 1e-6:
-        warn(f'Zero displacement change detected for vertical position of {a.z}m')
+        warn(f"Zero displacement change detected for vertical position of {a.z}m")
         return None
-
 
     Awl = delta_disp / delta_draft
     kHeave = Awl * scene.g * scene.rho_water
@@ -148,29 +160,36 @@ def calculate_linearized_buoyancy_props(scene : Scene, nodes : Buoyancy or list[
     # calcualte cofx and cofy from change of cob position
     # x_old * x_disp + cofx * dis_change = x_new * dis_new
 
-    new_cob_local = np.sum([np.array(node.cob_local) * node.displacement for node in n2], axis=0) / new_disp
+    new_cob_local = (
+        np.sum([np.array(node.cob_local) * node.displacement for node in n2], axis=0)
+        / new_disp
+    )
 
     COFX = (new_cob_local[0] * new_disp - cob_local[0] * displacement_m3) / delta_disp
     COFY = (new_cob_local[1] * new_disp - cob_local[1] * displacement_m3) / delta_disp
 
-    a.z = old_z # restore draft
+    a.z = old_z  # restore draft
 
     # calculate BMT and BML by rotating about cob
 
-    rot = s.new_frame('rot', position = cob_global)
+    rot = s.new_frame("rot", position=cob_global)
     a.change_parent_to(rot)
 
-    rot.rotation = (delta_roll, 0,0) # impose heel
+    rot.rotation = (delta_roll, 0, 0)  # impose heel
     s.update()
-    new_cob_global = np.sum([np.array(node.cob) * node.displacement for node in n2], axis=0) / np.sum(
-        [node.displacement for node in n2])
+    new_cob_global = np.sum(
+        [np.array(node.cob) * node.displacement for node in n2], axis=0
+    ) / np.sum([node.displacement for node in n2])
 
-    delta_MT = new_cob_global[1] - cob_global[1]  # Note that we're working in a copy where the parent axis is under zero heading
+    delta_MT = (
+        new_cob_global[1] - cob_global[1]
+    )  # Note that we're working in a copy where the parent axis is under zero heading
 
     rot.rotation = (0, delta_pitch, 0)  # impose trim
     s.update()
-    new_cob_global = np.sum([np.array(node.cob) * node.displacement for node in n2], axis=0) / np.sum(
-        [node.displacement for node in n2])
+    new_cob_global = np.sum(
+        [np.array(node.cob) * node.displacement for node in n2], axis=0
+    ) / np.sum([node.displacement for node in n2])
 
     delta_ML = new_cob_global[0] - cob_global[0]
 
@@ -178,25 +197,32 @@ def calculate_linearized_buoyancy_props(scene : Scene, nodes : Buoyancy or list[
     BML = delta_ML / np.sin(np.deg2rad(delta_pitch))
 
     # assemble resuls in a dict
-    results = {'cob': cob_local,
-               'BMT': BMT,
-               'BML': BML,
-               'COFX' : COFX,
-               'COFY' : COFY,
-               'kHeave': kHeave,
-               'Awl': Awl,
-               'displacement_kN': displacement_m3 * scene.g * scene.rho_water,
-               'displacement' : displacement_m3 ,
-               'waterline': -cob_global[2]}
+    results = {
+        "cob": cob_local,
+        "BMT": BMT,
+        "BML": BML,
+        "COFX": COFX,
+        "COFY": COFY,
+        "kHeave": kHeave,
+        "Awl": Awl,
+        "displacement_kN": displacement_m3 * scene.g * scene.rho_water,
+        "displacement": displacement_m3,
+        "waterline": -cob_global[2],
+    }
 
     del s
 
     return results
 
-def carene_table(scene, buoyancy_nodes,
-                 stepsize=0.25,
-                 delta_draft=1e-3, delta_roll = 1, delta_pitch = 0.3):
 
+def carene_table(
+    scene,
+    buoyancy_nodes,
+    stepsize=0.25,
+    delta_draft=1e-3,
+    delta_roll=1,
+    delta_pitch=0.3,
+):
     """Creates a carene table for buoyancy node.
 
     DRAFT refers the origin the buoyancy node. That is (0,0,0) the same as the origin of its parent.
@@ -225,14 +251,11 @@ def carene_table(scene, buoyancy_nodes,
     if isinstance(buoyancy_nodes, Buoyancy):
         buoyancy_nodes = [buoyancy_nodes]
 
-
-
-
-
-    not_included_bns = [] # childeren that are not included because they are not direct children
+    not_included_bns = (
+        []
+    )  # childeren that are not included because they are not direct children
 
     if isinstance(buoyancy_nodes, Frame):
-
         scene = scene.copy()
         frame = scene[buoyancy_nodes.name]
 
@@ -247,33 +270,39 @@ def carene_table(scene, buoyancy_nodes,
             node.change_parent_to(frame)
 
         if not bns:
-            raise ValueError(f"There are no Buoyancy Shapes with parent {buoyancy_nodes.name}")
+            raise ValueError(
+                f"There are no Buoyancy Shapes with parent {buoyancy_nodes.name}"
+            )
 
         buoyancy_nodes = bns
-
 
     # Create a new scene with only this buoyancy node and a frame that it is on
     for buoyancy_node in buoyancy_nodes:
         if isinstance(buoyancy_node, Frame):
-            raise ValueError("carene_table: If a Frame is provided then it should not be in a list")
+            raise ValueError(
+                "carene_table: If a Frame is provided then it should not be in a list"
+            )
         if not isinstance(buoyancy_node, Buoyancy):
-            raise ValueError(f"Node {buoyancy_node.name} should be a 'buoyancy' type of node but is a {type(buoyancy_node)}.")
+            raise ValueError(
+                f"Node {buoyancy_node.name} should be a 'buoyancy' type of node but is a {type(buoyancy_node)}."
+            )
 
     # Check that all have the same parent
     parent = buoyancy_nodes[0].parent
     for bn in buoyancy_nodes:
         assert bn.parent == parent, "All nodes need to have the same parent"
 
-    s = Scene(resource_paths = scene.resources_paths, current_directory=scene.current_directory)
+    s = Scene()
+    s.resource_provider = scene.resource_provider
     parent_node = s.new_frame(buoyancy_nodes[0].parent.name, fixed=True)
 
-
     for buoyancy_node in buoyancy_nodes:
-        s.run_code(buoyancy_node.give_python_code())  # place a copy of the buoyancy node in scene "s"
+        s.run_code(
+            buoyancy_node.give_python_code()
+        )  # place a copy of the buoyancy node in scene "s"
 
     zn = 1e10
     zp = -1e10
-
 
     for bn in buoyancy_nodes:
         node = s[bn.name]
@@ -288,9 +317,8 @@ def carene_table(scene, buoyancy_nodes,
         zn = min(zn, zzn)
         zp = max(zp, zzp)
 
-
-    deepest_draft = -zp # negative of the highest vertex
-    shallowest_draft = -zn # negative of the lowest vertex
+    deepest_draft = -zp  # negative of the highest vertex
+    shallowest_draft = -zn  # negative of the lowest vertex
 
     # make logical steps of stepsize
     maxf = deepest_draft / stepsize
@@ -311,55 +339,72 @@ def carene_table(scene, buoyancy_nodes,
     drafts = [*drafts]
     drafts.append(shallowest_draft)
 
-
-
     import pandas as pd
 
-    nodes = [s[node.name] for node in buoyancy_nodes] # nodes in copy of s
+    nodes = [s[node.name] for node in buoyancy_nodes]  # nodes in copy of s
 
     a = []
     for z in reversed(drafts):
         print(z)
 
         parent_node.z = z
-        r = calculate_linearized_buoyancy_props(s, nodes, delta_roll=delta_roll, delta_pitch=delta_pitch, delta_draft=delta_draft)
+        r = calculate_linearized_buoyancy_props(
+            s,
+            nodes,
+            delta_roll=delta_roll,
+            delta_pitch=delta_pitch,
+            delta_draft=delta_draft,
+        )
 
         if r is None:
             continue
 
-        r['CoB x [m]'] = r['cob'][0]
-        r['CoB y [m]'] = r['cob'][1]
-        r['CoB z [m]'] = r['cob'][2]
-        del r['cob']
-        r['draft'] = z
+        r["CoB x [m]"] = r["cob"][0]
+        r["CoB y [m]"] = r["cob"][1]
+        r["CoB z [m]"] = r["cob"][2]
+        del r["cob"]
+        r["draft"] = z
         a.append(r)
 
     df = pd.DataFrame(a)
 
-    df = df.rename(columns={'draft':'Draft [m]',
-                            'BMT': 'BM T [m]',
-                            'BML': 'BM L [m]',
-                            'COFX': 'CoF x [m]',
-                            'COFY': 'CoF y [m]',
-                            'displacement': 'Displacement [m3]',
-                            'Awl': 'Awl [m2]'})
+    df = df.rename(
+        columns={
+            "draft": "Draft [m]",
+            "BMT": "BM T [m]",
+            "BML": "BM L [m]",
+            "COFX": "CoF x [m]",
+            "COFY": "CoF y [m]",
+            "displacement": "Displacement [m3]",
+            "Awl": "Awl [m2]",
+        }
+    )
 
-    df = df.set_index('Draft [m]')
-    df.attrs['shape_node_names'] = [node.name for node in nodes]
+    df = df.set_index("Draft [m]")
+    df.attrs["shape_node_names"] = [node.name for node in nodes]
 
-    return df.drop(columns=['waterline', 'displacement_kN','kHeave'])
-
-
+    return df.drop(columns=["waterline", "displacement_kN", "kHeave"])
 
 
-def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_kN=None, minimum_heel= 0, maximum_heel=90, steps=180,
-                               teardown=True, wind_velocity = 0,
-                               allow_surge=False, allow_sway=False, allow_yaw=False, allow_trim=True,
-                               noplot = False, noshow = False,
-                               fig = None,
-                               feedback = None,
-                               check_terminate = None
-                               ):
+def GZcurve_DisplacementDriven(
+    scene: Scene,
+    vessel_node: Frame,
+    displacement_kN=None,
+    minimum_heel=0,
+    maximum_heel=90,
+    steps=180,
+    teardown=True,
+    wind_velocity=0,
+    allow_surge=False,
+    allow_sway=False,
+    allow_yaw=False,
+    allow_trim=True,
+    noplot=False,
+    noshow=False,
+    fig=None,
+    feedback=None,
+    check_terminate=None,
+):
     """This works for vessels without a parent.
 
     The vessels slaved to an axis system and its heel angle is fixed and enforced. After solving statics the GZ
@@ -416,22 +461,27 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
 
     # --------- verify input -----------
 
-    s = scene # alias
+    s = scene  # alias
     doflog = []
 
     if minimum_heel > maximum_heel:
-        raise ValueError('Minimum heel should be smaller than maximum heel')
+        raise ValueError("Minimum heel should be smaller than maximum heel")
 
     # vessel_node should not have a parent
     vessel = s._node_from_node_or_str(vessel_node)
     if vessel.parent is not None:
-        give_feedback('Error: "Vessel should not have a parent. Got {} as vessel which has parent {}.".format(vessel.name, vessel.parent.name)')
-        raise ValueError("Vessel should not have a parent. Got {} as vessel which has parent {}.".format(vessel.name, vessel.parent.name))
-
+        give_feedback(
+            'Error: "Vessel should not have a parent. Got {} as vessel which has parent {}.".format(vessel.name, vessel.parent.name)'
+        )
+        raise ValueError(
+            "Vessel should not have a parent. Got {} as vessel which has parent {}.".format(
+                vessel.name, vessel.parent.name
+            )
+        )
 
     # ---- record actual wind settings ----
 
-    do_wind = (wind_velocity > 0)
+    do_wind = wind_velocity > 0
 
     old_wind_velocity = s.wind_velocity
     old_wind_direction = s.wind_direction
@@ -447,19 +497,20 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
         y = vessel.uy
         s.wind_direction = np.degrees(np.arctan2(y[1], y[0])) - 180
 
-
     initial_heel = vessel.heel
     initial_trim = vessel.trim
 
     no_displacement = False
-    if displacement_kN is None: # default value
+    if displacement_kN is None:  # default value
         displacement_kN = 1
 
     if displacement_kN == 1:
         no_displacement = True
 
-    if minimum_heel == maximum_heel and steps>1:
-        raise ValueError("Can not take multiple steps of min and max value are identical")
+    if minimum_heel == maximum_heel and steps > 1:
+        raise ValueError(
+            "Can not take multiple steps of min and max value are identical"
+        )
 
     # --------------- store current state -------
 
@@ -474,23 +525,35 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
 
     # construct axis system at vessel origin
     name = s.available_name_like(vessel.name + "_global_motion")
-    global_motion = s.new_frame(name, parent=vessel) # construct at vessel origin and orientation, then even-keel
+    global_motion = s.new_frame(
+        name, parent=vessel
+    )  # construct at vessel origin and orientation, then even-keel
     global_motion.change_parent_to(None)
-    global_motion.fixed = (not allow_surge,
-                           not allow_sway,
-                           False,               # heave allowed
-                           True,
-                           True,
-                           not allow_yaw)
+    global_motion.fixed = (
+        not allow_surge,
+        not allow_sway,
+        False,  # heave allowed
+        True,
+        True,
+        not allow_yaw,
+    )
     # set even keel
     global_motion.set_even_keel()  # <-- we need this so that the YAW axis is vertical. If the yaw axis is not vertical then
     # free yawing of the vessel may introduce high heeling loads
 
-    trim_motion = s.new_frame(s.available_name_like(vessel.name + "_trim_motion"), parent=global_motion)
+    trim_motion = s.new_frame(
+        s.available_name_like(vessel.name + "_trim_motion"), parent=global_motion
+    )
 
     if allow_trim:
-        trim_motion.fixed = (True,True,True,
-                             True,False,True) # allow for trim (rotation about y)
+        trim_motion.fixed = (
+            True,
+            True,
+            True,
+            True,
+            False,
+            True,
+        )  # allow for trim (rotation about y)
     else:
         trim_motion.set_fixed()
 
@@ -501,46 +564,50 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
     vessel.change_parent_to(heel_node)
     vessel.set_fixed()
 
-
     # record dofs
     s._vfc.state_update()
     D0 = s._vfc.get_dofs()
 
     # ----------------- do the calcs ---------------
 
-    heel = np.linspace(minimum_heel,maximum_heel,num=steps)
+    heel = np.linspace(minimum_heel, maximum_heel, num=steps)
     moment = list()
     moment_wind = list()
     trim = list()
 
     for x in heel:
-
-        give_feedback(f'Setting heel angle {x} deg')
+        give_feedback(f"Setting heel angle {x} deg")
 
         s._vfc.set_dofs(D0)
         heel_node.rx = x
 
-        give_feedback(f'Solving without wind')
-        s._solve_statics_with_optional_control(feedback_func=feedback, do_terminate_func=check_terminate)
+        give_feedback(f"Solving without wind")
+        s._solve_statics_with_optional_control(
+            feedback_func=feedback, do_terminate_func=check_terminate
+        )
 
         if should_terminate():
             return None
 
         # moment.append(-heel_node.applied_force[3])  # No, applied force is in global axis system
-        moment.append(-vessel.connection_moment_x) # this is the connection moment in the axis system of the heel node
+        moment.append(
+            -vessel.connection_moment_x
+        )  # this is the connection moment in the axis system of the heel node
 
         trim.append(trim_motion.ry)
 
         # activate wind
         if do_wind:
             s.wind_velocity = wind_velocity
-            give_feedback(f'Solving with wind')
+            give_feedback(f"Solving with wind")
 
             # We need to solve, suspended cargo may change position. But fix the vessel such that is does not change position due to wind
             old_fixes = global_motion.fixed
             global_motion.fixed = True
 
-            s._solve_statics_with_optional_control(feedback_func=feedback, do_terminate_func=check_terminate)
+            s._solve_statics_with_optional_control(
+                feedback_func=feedback, do_terminate_func=check_terminate
+            )
 
             # print(global_motion.rotation)
 
@@ -554,7 +621,7 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
                 return None
 
         # for movie replay (temporary add of dof to heel)
-        heel_node.fixed = (True,True,True,False,True,True)
+        heel_node.fixed = (True, True, True, False, True, True)
         s._vfc.state_update()
         dofs = s._vfc.get_dofs()
         doflog.append(dofs)
@@ -562,37 +629,37 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
 
     # --------- collect return values --------
     r = dict()
-    r['heel'] = heel
-    r['moment'] = moment
+    r["heel"] = heel
+    r["moment"] = moment
 
     if allow_trim:
-        r['trim'] = trim
+        r["trim"] = trim
 
     if do_wind:
         wind_moment = np.array(moment_wind) - np.array(moment)
-        r['wind_moment'] = wind_moment.tolist()
+        r["wind_moment"] = wind_moment.tolist()
 
     if no_displacement:
         GM = np.nan
 
     else:
         GZ = np.array(moment, dtype=float) / displacement_kN
-        r['GZ'] = GZ
+        r["GZ"] = GZ
 
         if do_wind:
             wind_heeling_arm = -wind_moment / displacement_kN
-            r['wind_heeling_arm'] = wind_heeling_arm.tolist()
+            r["wind_heeling_arm"] = wind_heeling_arm.tolist()
 
         # calculate GM, but only if zero is part of the heel curve and at least two points
-        if (np.max(heel)>=0 and np.min(heel)<=0 and len(heel)>1):
+        if np.max(heel) >= 0 and np.min(heel) <= 0 and len(heel) > 1:
             GMs = np.diff(GZ) / np.diff(np.deg2rad(heel))
-            heels = 0.5*(heel[:-1] + heel[1:])
-            GM = np.interp(0,heels, GMs)
+            heels = 0.5 * (heel[:-1] + heel[1:])
+            GM = np.interp(0, heels, GMs)
 
         else:
             GM = np.nan
 
-        r['GM'] = GM
+        r["GM"] = GM
 
         # restore dofs
         s._vfc.set_dofs(D0)
@@ -600,7 +667,6 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
     # ----------- plot the results -----------
 
     if not noplot:
-
         give_feedback("creating figures")
 
         if fig is None:
@@ -609,44 +675,69 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
             fig.clear()
 
         if allow_trim:
-
-            ax_gz = fig.add_subplot(2,1,1,label='gz')
-            ax_trim = fig.add_subplot(2,1,2,label='trim')
+            ax_gz = fig.add_subplot(2, 1, 1, label="gz")
+            ax_trim = fig.add_subplot(2, 1, 2, label="trim")
         else:
-            ax_gz = fig.add_subplot(1,1,1, label='gz')
-
+            ax_gz = fig.add_subplot(1, 1, 1, label="gz")
 
         if allow_trim:
-            ax_trim.plot(heel + initial_heel, trim + initial_trim, color='black', marker='+')
-            ax_trim.set_xlabel('Heel angle [deg]')
-            ax_trim.set_ylabel('Solved trim angle [deg]\n(including initial trim of {:.2f} [deg])'.format(initial_trim))
-            ax_trim.set_title('Trim resulting from imposed heel')
+            ax_trim.plot(
+                heel + initial_heel, trim + initial_trim, color="black", marker="+"
+            )
+            ax_trim.set_xlabel("Heel angle [deg]")
+            ax_trim.set_ylabel(
+                "Solved trim angle [deg]\n(including initial trim of {:.2f} [deg])".format(
+                    initial_trim
+                )
+            )
+            ax_trim.set_title("Trim resulting from imposed heel")
             ax_trim.grid()
 
-        ax_gz.set_xlabel('Heel angle [deg] including initial heel of {:.2f} deg'.format(initial_heel))
+        ax_gz.set_xlabel(
+            "Heel angle [deg] including initial heel of {:.2f} deg".format(initial_heel)
+        )
 
-        what = 'moment'
+        what = "moment"
         if no_displacement:
-            ax_gz.plot(heel + initial_heel, moment, color='black', marker='+', label = "Restoring")
+            ax_gz.plot(
+                heel + initial_heel,
+                moment,
+                color="black",
+                marker="+",
+                label="Restoring",
+            )
 
             if do_wind:
-                ax_gz.plot(heel + initial_heel, -wind_moment, color='gray', marker='.', label="Wind")
-                ax_gz.set_ylabel('Moment [kN.m]')
+                ax_gz.plot(
+                    heel + initial_heel,
+                    -wind_moment,
+                    color="gray",
+                    marker=".",
+                    label="Wind",
+                )
+                ax_gz.set_ylabel("Moment [kN.m]")
                 ax_gz.legend()
 
             else:
-                ax_gz.set_ylabel('Restoring moment [kN*m]')
+                ax_gz.set_ylabel("Restoring moment [kN*m]")
         else:
-            ax_gz.plot(heel + initial_heel, GZ, color='black', marker='+', label = "Restoring")
+            ax_gz.plot(
+                heel + initial_heel, GZ, color="black", marker="+", label="Restoring"
+            )
 
             if do_wind:
-                ax_gz.plot(heel + initial_heel, wind_heeling_arm, color='gray', marker='.', label = "Wind")
+                ax_gz.plot(
+                    heel + initial_heel,
+                    wind_heeling_arm,
+                    color="gray",
+                    marker=".",
+                    label="Wind",
+                )
                 ax_gz.legend()
-                ax_gz.set_ylabel('Lever arm [m]')
+                ax_gz.set_ylabel("Lever arm [m]")
             else:
-                ax_gz.set_ylabel('GZ [m]')
-            what = 'arm'
-
+                ax_gz.set_ylabel("GZ [m]")
+            what = "arm"
 
             # plot the GM line
             yy = ax_gz.get_ylim()
@@ -656,15 +747,24 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
             xmin = np.max([xmin, np.min(heel)])
             xmax = np.min([xmax, np.max(heel)])
 
+            ax_gz.plot(
+                [xmin + initial_heel, xmax + initial_heel],
+                [np.deg2rad(xmin) * GM, np.deg2rad(xmax) * GM],
+            )
+            box_props = dict(boxstyle="round", facecolor="gold", alpha=1)
+            ax_gz.text(
+                xmax,
+                np.deg2rad(xmax) * GM,
+                "GM = {:.2f}".format(GM),
+                horizontalalignment="left",
+                bbox=box_props,
+            )
 
-            ax_gz.plot([xmin + initial_heel, xmax+ initial_heel], [np.deg2rad(xmin)*GM, np.deg2rad(xmax)*GM])
-            box_props = dict(boxstyle='round', facecolor='gold', alpha=1)
-            ax_gz.text(xmax,np.deg2rad(xmax)*GM,'GM = {:.2f}'.format(GM),horizontalalignment='left',bbox=box_props)
+        ax_gz.set_title(
+            f"Restoring {what} curve for {vessel.name};\n Displacement = {displacement_kN:.2f} [kN]"
+        )
 
-        ax_gz.set_title(f'Restoring {what} curve for {vessel.name};\n Displacement = {displacement_kN:.2f} [kN]')
-
-
-        ax_gz.grid('on')
+        ax_gz.grid("on")
 
         if not noshow:
             plt.show()
@@ -689,11 +789,12 @@ def GZcurve_DisplacementDriven(scene : Scene, vessel_node : Frame, displacement_
 
     s.verbose = _verbose
 
-
     return r
 
 
-def ballast_to_even_keel(bs: BallastSystem, delta_fill = 1, tolerance=0.01, passive_only = False, deballast = False):
+def ballast_to_even_keel(
+    bs: BallastSystem, delta_fill=1, tolerance=0.01, passive_only=False, deballast=False
+):
     """Adds `delta_fill` fill to the tank at the highest projected elevation until parent
     of ballast-system is within heel and trim tolerance.
 
@@ -705,7 +806,6 @@ def ballast_to_even_keel(bs: BallastSystem, delta_fill = 1, tolerance=0.01, pass
 
     s.solve_statics()
 
-
     log = []
 
     while True:
@@ -716,34 +816,34 @@ def ballast_to_even_keel(bs: BallastSystem, delta_fill = 1, tolerance=0.01, pass
         lowest_tank = None
 
         for tank in bs.tanks:
-
             if bs.is_frozen(tank.name):
                 continue
 
             if not passive_only or (tank.level_global < 0):  # only passive filling
-                if tank.fill_pct <= 100 - (delta_fill+1e-6):
+                if tank.fill_pct <= 100 - (delta_fill + 1e-6):
                     gz = f.to_glob_position((*tank.cog_when_full[:2], 0))[
-                        2]  # vertical position of tank if it was as zero local elevation
+                        2
+                    ]  # vertical position of tank if it was as zero local elevation
 
                     if gz > highest:
                         highest_tank = tank
                         highest = gz
 
             if not passive_only or (tank.level_global > 0):  # only passive emptying
-                if tank.fill_pct >= (delta_fill+1e-6):
+                if tank.fill_pct >= (delta_fill + 1e-6):
                     gz = f.to_glob_position((*tank.cog_when_full[:2], 0))[
-                        2]  # vertical position of tank if it was as zero local elevation
+                        2
+                    ]  # vertical position of tank if it was as zero local elevation
 
                     if gz < lowest:
                         lowest_tank = tank
                         lowest = gz
 
-
         if not deballast and highest_tank is None:
-            raise ValueError('No fillable tanks found')
+            raise ValueError("No fillable tanks found")
 
         if deballast and lowest_tank is None:
-            raise ValueError('No drainable tanks found')
+            raise ValueError("No drainable tanks found")
 
         if deballast:
             lowest_tank.fill_pct -= delta_fill
@@ -755,33 +855,41 @@ def ballast_to_even_keel(bs: BallastSystem, delta_fill = 1, tolerance=0.01, pass
 
         s.solve_statics(silent=True)
 
-        if (f.heel * old_heel) < 0 and (f.trim*old_trim < 0): # overshoot!
+        if (f.heel * old_heel) < 0 and (f.trim * old_trim < 0):  # overshoot!
             # undo and lower fill_pct
 
             if deballast:
                 lowest_tank.fill_pct += delta_fill
                 delta_fill *= 0.8
-                log.append(f'Draining water from tank {lowest_tank.name} overshoots, reducing fill delta to {delta_fill}%')
+                log.append(
+                    f"Draining water from tank {lowest_tank.name} overshoots, reducing fill delta to {delta_fill}%"
+                )
                 continue
             else:
                 highest_tank.fill_pct -= delta_fill
                 delta_fill *= 0.8
-                log.append(f'Adding water to tank {highest_tank.name} overshoots, reducing fill delta to {delta_fill}%')
+                log.append(
+                    f"Adding water to tank {highest_tank.name} overshoots, reducing fill delta to {delta_fill}%"
+                )
                 continue
 
         else:
             if deballast:
-                log.append(f'Draining water from tank {lowest_tank.name} with {lowest_tank.fill_pct}%')
+                log.append(
+                    f"Draining water from tank {lowest_tank.name} with {lowest_tank.fill_pct}%"
+                )
             else:
-                log.append(f'Adding water to tank {highest_tank.name} with {highest_tank.fill_pct}%')
-
+                log.append(
+                    f"Adding water to tank {highest_tank.name} with {highest_tank.fill_pct}%"
+                )
 
         if abs(f.heel) < tolerance:
             if abs(f.trim) < tolerance:
                 break
 
         if abs(f.heel) > abs(old_heel) and abs(f.trim) > abs(old_trim):
-
-            raise ValueError("Action did increase total absolute heel AND trim, stopping - use different tanks or change method?")
+            raise ValueError(
+                "Action did increase total absolute heel AND trim, stopping - use different tanks or change method?"
+            )
 
     return log
