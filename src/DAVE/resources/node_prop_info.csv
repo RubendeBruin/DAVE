@@ -209,34 +209,34 @@ Frame,global_position,tuple,The global position of the origin of the axis system
 Frame,grx,float,The x-component of the global rotation vector  ,[degrees],global axis,True,True,True,The x-component of the global rotation vector [degrees] (global axis)
 Frame,gry,float,The y-component of the global rotation vector  ,[degrees],global axis,True,True,True,The y-component of the global rotation vector [degrees] (global axis)
 Frame,grz,float,The z-component of the global rotation vector  ,[degrees],global axis,True,True,True,The z-component of the global rotation vector [degrees] (global axis)
-Frame,tilt_x,float,Tilt percentage about local x-axis ,[%],,False,False,True,"Tilt percentage about local x-axis [%]
-        This is the z-component of the unit y vector.
+Frame,tilt_x,float,Tilt about local x-axis ,[deg],,False,False,True,"Tilt about local x-axis [deg]
+        This is the arc-sin of the z-component of the unit y vector.
 
         See Also: heel, tilt_y
         "
-Frame,tilt_x_opposite,float,Tilt percentage about local NEGATIVE x-axis ,[%],,False,False,True,"Tilt percentage about local NEGATIVE x-axis [%]
+Frame,tilt_x_opposite,float,Tilt about local NEGATIVE x-axis ,[deg],,False,False,True,"Tilt about local NEGATIVE x-axis [deg]
 
         See Also: heel, tilt_y, tilt_x
         "
-Frame,tilt_y_opposite,float,Tilt percentage about local NEGATIVE y-axis ,[%],,False,False,True,"Tilt percentage about local NEGATIVE y-axis [%]
+Frame,tilt_y_opposite,float,Tilt about local NEGATIVE y-axis ,[deg],,False,False,True,"Tilt about local NEGATIVE y-axis [deg]
 
         See Also: heel, tilt_y, tilt_x
         "
 Frame,heel,float,Heel in degrees. SB down is positive ,[deg],,False,False,True,"Heel in degrees. SB down is positive [deg]
-        This is the inverse sin of the unit y vector(This is the arcsin of the tiltx)
+        This is the inverse sin of the unit y vector(= tiltx)
 
         See also: tilt_x
         "
-Frame,tilt_y,float,Tilt percentage about local y-axis ,[%],,False,False,True,"Tilt percentage about local y-axis [%]
+Frame,tilt_y,float,Tilt about local y-axis ,[deg],,False,False,True,"Tilt about local y-axis [deg]
 
-        This is the z-component of the unit -x vector.
+        This is arc-sin of the z-component of the unit -x vector.
         So a positive rotation about the y axis results in a positive tilt_y.
 
         See Also: trim
         "
 Frame,trim,float,Trim in degrees. Bow-down is positive ,[deg],,False,False,True,"Trim in degrees. Bow-down is positive [deg]
 
-        This is the inverse sin of the unit -x vector(This is the arcsin of the tilt_y)
+        This is the inverse sin of the unit -x vector(= tilt_y)
 
         See also: tilt_y
         "
@@ -392,6 +392,7 @@ SPMT,axles,tuple,Axles is a list axle positions  ,"[m,m,m]",parent axis,True,Fal
         Example:
             [(-10,0,0),(-5,0,0),(0,0,0)] for three axles
         "
+Shackle,item_description,str,Technical description of the item ,[str],,False,False,False,Technical description of the item [str]
 Shackle,kind,str,"Type of shackle, for example GP800 ",[text],,True,False,False,"Type of shackle, for example GP800 [text]"
 Shackle,shackle_data_dict,dict,Returns the shackle data for the actual shackle kind,,,False,False,False,Returns the shackle data for the actual shackle kind
 Shackle,MBL,float,MBL ,[t],,False,False,True,MBL [t]
@@ -451,6 +452,7 @@ Tank,sounding,float,Sounding of the tank ,[m],,False,False,True,"Sounding of the
         It is possible that this definition results in a sounding larger than the physical tank depth. In that case the physical depth of
         the tank is returned instead.
         "
+Visual,path,str,Resource path or url to the visual ,,str,True,False,False,Resource path or url to the visual (str)
 WindOrCurrentArea,force,tuple,"The x,y and z components of the force  ","[kN,kN,kN]",global axis,False,False,False,"The x,y and z components of the force [kN,kN,kN] (global axis)"
 WindOrCurrentArea,fx,float,The global x-component of the force  ,[kN],global axis,False,False,True,The global x-component of the force [kN] (global axis)
 WindOrCurrentArea,fy,float,The global y-component of the force   ,[kN],global axis,False,False,True,The global y-component of the force [kN]  (global axis)

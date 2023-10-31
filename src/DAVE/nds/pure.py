@@ -55,7 +55,7 @@ class Visual(NodePurePython, HasParentPure):
         return self._scene.get_resource_path(self._path)
 
     @property
-    def path(self):
+    def path(self) -> str or Path:
         """Resource path or url to the visual (str)"""
         return self._path
 

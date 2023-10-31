@@ -519,18 +519,18 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
 
     @property
     def tilt_x(self) -> float:
-        """Tilt percentage about local x-axis [%]
-        This is the z-component of the unit y vector.
+        """Tilt about local x-axis [deg]
+        This is the arc-sin of the z-component of the unit y vector.
 
         See Also: heel, tilt_y
         """
         y = (0, 1, 0)
         uy = self.to_glob_direction(y)
-        return float(100 * uy[2])
+        return np.rad2deg(np.arcsin(uy[2]))
 
     @property
     def tilt_x_opposite(self) -> float:
-        """Tilt percentage about local NEGATIVE x-axis [%]
+        """Tilt about local NEGATIVE x-axis [deg]
 
         See Also: heel, tilt_y, tilt_x
         """
@@ -538,7 +538,7 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
 
     @property
     def tilt_y_opposite(self) -> float:
-        """Tilt percentage about local NEGATIVE y-axis [%]
+        """Tilt about local NEGATIVE y-axis [deg]
 
         See Also: heel, tilt_y, tilt_x
         """
@@ -547,11 +547,11 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
     @property
     def heel(self) -> float:
         """Heel in degrees. SB down is positive [deg]
-        This is the inverse sin of the unit y vector(This is the arcsin of the tiltx)
+        This is the inverse sin of the unit y vector(= tiltx)
 
         See also: tilt_x
         """
-        angle = np.rad2deg(np.arcsin(self.tilt_x / 100))
+        angle = self.tilt_x
 
         if self.uz[2] < 0:  # rotation beyond 90 or -90 degrees
             if angle < 0:
@@ -563,26 +563,26 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
 
     @property
     def tilt_y(self) -> float:
-        """Tilt percentage about local y-axis [%]
+        """Tilt about local y-axis [deg]
 
-        This is the z-component of the unit -x vector.
+        This is arc-sin of the z-component of the unit -x vector.
         So a positive rotation about the y axis results in a positive tilt_y.
 
         See Also: trim
         """
         x = (-1, 0, 0)
         ux = self.to_glob_direction(x)
-        return float(100 * ux[2])
+        return np.rad2deg(np.arcsin(ux[2]))
 
     @property
     def trim(self) -> float:
         """Trim in degrees. Bow-down is positive [deg]
 
-        This is the inverse sin of the unit -x vector(This is the arcsin of the tilt_y)
+        This is the inverse sin of the unit -x vector(= tilt_y)
 
         See also: tilt_y
         """
-        return np.rad2deg(np.arcsin(self.tilt_y / 100))
+        return self.tilt_y
 
     @property
     def heading(self) -> float:
