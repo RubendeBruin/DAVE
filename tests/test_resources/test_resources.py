@@ -65,7 +65,7 @@ def test_get_resources():
 
 def test_nested_resources():
     s = Scene()
-    path = Path(__file__).parent / 'files'
+    path = Path(__file__).parent.parent / 'files'
     s.add_resources_paths(path)
     s.new_component('outer_component', 'res: outer_component.dave')
 

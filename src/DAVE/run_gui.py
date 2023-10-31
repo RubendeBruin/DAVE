@@ -131,6 +131,6 @@ if __name__ == '__main__':
         filename = None
 
     s = DAVE.Scene()
-    g = Gui(s,splash=splash, app = app, client_mode=False, filename=filename)
+    g = Gui(s, splash=splash, app = app, read_only_mode=False, filename=filename)
 
 

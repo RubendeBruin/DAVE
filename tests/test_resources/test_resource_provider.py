@@ -21,7 +21,7 @@ def test_get_resource_res_subdir():
 
 
 def test_get_resource_cd():
-    path = Path(__file__).parent / "files"
+    path = Path(__file__).parent.parent / "files"
     s = DaveResourceProvider(cd=path)
 
     res = s.get_resource_path("cd: inner_component.dave")
@@ -29,7 +29,7 @@ def test_get_resource_cd():
 
 
 def test_get_resource_gui():
-    # assert False, "Disabled due to GUI use"
+    assert False, "Disabled due to GUI use"
 
     s = DaveResourceProvider()
 

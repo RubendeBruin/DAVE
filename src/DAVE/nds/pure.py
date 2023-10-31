@@ -28,8 +28,7 @@ class Visual(NodePurePython, HasParentPure):
 
     """
 
-    def __init__(self, scene, name : str):
-
+    def __init__(self, scene, name: str):
         super().__init__(scene=scene, name=name)
 
         self.offset = [0, 0, 0]
@@ -40,7 +39,7 @@ class Visual(NodePurePython, HasParentPure):
         self.scale = [1, 1, 1]
         """Scaling of the visual. Scaling is applied before offset."""
 
-        self.path = ""
+        self._path = ""
         """Filename of the visual"""
 
         self.parent = None
@@ -53,7 +52,17 @@ class Visual(NodePurePython, HasParentPure):
     def file_path(self) -> Path:
         """Resolved path of the visual [Path]
         #NOGUI"""
-        return self._scene.get_resource_path(self.path)
+        return self._scene.get_resource_path(self._path)
+
+    @property
+    def path(self):
+        """Resource path or url to the visual (str)"""
+        return self._path
+
+    @path.setter
+    def path(self, value):
+        assert self._scene.get_resource_path(value, no_gui=True), "File not found"
+        self._path = value
 
     def depends_on(self):
         if self.parent is None:
@@ -69,7 +78,9 @@ class Visual(NodePurePython, HasParentPure):
             code += "\n            parent='{}',".format(self.parent.name)
         code += "\n            path=r'{}',".format(self.path)
         code += "\n            offset=({:.6g}, {:.6g}, {:.6g}), ".format(*self.offset)
-        code += "\n            rotation=({:.6g}, {:.6g}, {:.6g}), ".format(*self.rotation)
+        code += "\n            rotation=({:.6g}, {:.6g}, {:.6g}), ".format(
+            *self.rotation
+        )
         code += "\n            scale=({:.6g}, {:.6g}, {:.6g}) )".format(*self.scale)
         if self.visual_outline != VisualOutlineType.FEATURE_AND_SILHOUETTE:
             code += f"\ns['{self.name}'].visual_outline = {self.visual_outline}"
@@ -78,8 +89,7 @@ class Visual(NodePurePython, HasParentPure):
 
     @node_setter_manageable
     def change_parent_to(self, new_parent):
-
-        from.core import Frame
+        from .core import Frame
 
         if not (isinstance(new_parent, Frame) or new_parent is None):
             raise ValueError(
@@ -153,7 +163,6 @@ class BallastSystem(NodePurePython, HasParentPure):
 
     @target_elevation.setter
     def target_elevation(self, value):
-
         assert1f(value, "target elevation")
 
         # empty all connected tanks
@@ -162,7 +171,6 @@ class BallastSystem(NodePurePython, HasParentPure):
             tank.fill_pct = 0
 
         try:
-
             from DAVE.solvers.ballast import force_vessel_to_evenkeel_and_draft
 
             (F, x, y) = force_vessel_to_evenkeel_and_draft(
@@ -203,7 +211,9 @@ class BallastSystem(NodePurePython, HasParentPure):
             start_empty=not use_current_fill,
             method=method,
         ):
-            raise ValueError('Could not obtain tank fillings to satisfy required condition - requesting a different draft may help')
+            raise ValueError(
+                "Could not obtain tank fillings to satisfy required condition - requesting a different draft may help"
+            )
 
     def new_tank(
         self, name, position, capacity_kN, rho=1.025, frozen=False, actual_fill=0
@@ -339,7 +349,6 @@ class BallastSystem(NodePurePython, HasParentPure):
         return [tank.name for tank in self.tanks]
 
     def fill_tank(self, name, fill):
-
         assert1f(fill, "tank fill")
 
         for tank in self.tanks:
@@ -402,7 +411,6 @@ class BallastSystem(NodePurePython, HasParentPure):
             self.tanks[i].fill_pct = pct
 
     def tank(self, name):
-
         for t in self.tanks:
             if t.name == name:
                 return t
@@ -412,28 +420,28 @@ class BallastSystem(NodePurePython, HasParentPure):
         return self.tank(item)
 
     @property
-    def cogx(self)->float:
+    def cogx(self) -> float:
         """X position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]"""
         return self.cog[0]
 
     @property
-    def cogy(self)->float:
+    def cogy(self) -> float:
         """Y position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]"""
         return self.cog[1]
 
     @property
-    def cogz(self)->float:
+    def cogz(self) -> float:
         """Z position of combined CoG of all tank contents in the ballast-system. (global coordinate) [m]"""
         return self.cog[2]
 
     @property
-    def cog(self)->tuple[float,float,float]:
+    def cog(self) -> tuple[float, float, float]:
         """Combined CoG of all tank contents in the ballast-system. (global coordinate) [m,m,m]"""
         cog, wt = self.xyzw()
         return (cog[0], cog[1], cog[2])
 
     @property
-    def weight(self)->float:
+    def weight(self) -> float:
         """Total weight of all tank fillings in the ballast system [kN]"""
         cog, wt = self.xyzw()
         return wt * 9.81
@@ -467,8 +475,7 @@ class WaveInteraction1(NodePurePython, HasParentPure):
 
     """
 
-    def __init__(self, scene, name : str):
-
+    def __init__(self, scene, name: str):
         super().__init__(scene=scene, name=name)
 
         self.offset = [0, 0, 0]
@@ -478,7 +485,7 @@ class WaveInteraction1(NodePurePython, HasParentPure):
         """Filename of a file that can be read by a Hyddb1 object"""
 
     @property
-    def file_path(self)->str:
+    def file_path(self) -> str:
         """Resolved path of the visual (str)
         #NOGUI"""
         return self._scene.get_resource_path(self.path)
@@ -498,7 +505,6 @@ class WaveInteraction1(NodePurePython, HasParentPure):
 
     @node_setter_manageable
     def change_parent_to(self, new_parent):
-
         if not (isinstance(new_parent, Frame)):
             raise ValueError(
                 "Hydrodynamic databases can only be attached to an axis (or derived)"
@@ -512,4 +518,3 @@ class WaveInteraction1(NodePurePython, HasParentPure):
 
         self.parent = new_parent
         self.offset = new_parent.to_loc_position(cur_position)
-
