@@ -13,7 +13,7 @@ Among which:
 ALL PROGRAM WIDE VARIABLES ARE DEFINED IN UPPERCASE
 
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 
 """
   This Source Code Form is subject to the terms of the Mozilla Public
@@ -32,8 +32,6 @@ Node types via plugins.
 Example
 DAVE_ADDITIONAL_RUNTIME_MODULES['MyNode'] = MyNode
 """
-
-
 
 
 from os.path import expanduser
@@ -64,8 +62,6 @@ if not default_user_dir.exists():
     mkdir(default_user_dir)
 
 
-
-
 # get the package directory
 cdir = Path(dirname(__file__))
 
@@ -94,21 +90,19 @@ ENVIRONMENT_PROPERTIES = (
 
 # ============== SOLVER ===========
 
-SOLVER_DEFAULT_TERMINATE_AFTER_S = 30
-
-DAVE_DEFAULT_SOLVER_MOBILITY = 60
-"""Mobility of the solver"""
-
-DAVE_DEFAULT_SOLVER_TOLERANCE = 1e-4
-"""Tolerance"""
-
-DAVE_DEFAULT_SOLVER_DO_LINEAR_FIRST = True
-"""Solver linear before full solve"""
+# OPEN_GUI_ON_SOLVER_TIMEOUT = False  # debugging feature, set to True to open GUI on solver timeout
 
 
-# print('default resource folders:')
-# for a in RESOURCE_PATH:
-#     print(a)
+@dataclass
+class SolverSettings:
+    timeout_s: float = 30  # solver timeout in seconds, set negative for no timeout
+    mobility: float = 60  # solver mobility
+    tolerance: float = 1e-4  # solver tolerance
+    do_linear_first: bool = True  # solver linear before full solve
+
+    def non_default_props(self):
+        return [f.name for f in fields(self) if getattr(self, f.name) != f.default]
+
 
 # temporary files:
 #
@@ -223,8 +217,6 @@ def register_nodeprop(
         DAVE_NODEPROP_INFO[node_class] = dict()
 
     DAVE_NODEPROP_INFO[node_class][property_name] = new_type
-
-
 
 
 # ========== BLENDER ==============

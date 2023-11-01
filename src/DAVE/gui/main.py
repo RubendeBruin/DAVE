@@ -349,12 +349,8 @@ class Gui:
         self.scene = scene
         """Reference to a scene"""
 
-        self._solver_mobility = (
-            vfc.DAVE_DEFAULT_SOLVER_MOBILITY
-        )  # default mobility for the solver
-        self._solver_do_solve_linear_first = vfc.DAVE_DEFAULT_SOLVER_DO_LINEAR_FIRST
-
         self.scene.gui_solve_func = self.solve_statics_using_gui_on_scene
+        """Claim control of the solver for the gui"""
 
         self.modelfilename = None
         """Open file"""
@@ -1840,9 +1836,9 @@ class Gui:
         D0 = self.scene._vfc.get_dofs()
 
         self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
-        self.__BackgroundSolver.mobility = self._solver_mobility
+        self.__BackgroundSolver.mobility = self.scene.solver_settings.mobility
         self.__BackgroundSolver.do_solve_linear_first = (
-            self._solver_do_solve_linear_first
+            self.scene.solver_settings.do_linear_first
         )
         running = self.__BackgroundSolver.Start()
         if not running:
@@ -1874,9 +1870,9 @@ class Gui:
             self.scene._vfc.set_dofs(D0)
             self.__BackgroundSolver.Stop()
             self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
-            self.__BackgroundSolver.mobility = self._solver_mobility
+            self.__BackgroundSolver.mobility = self.scene.solver_settings.mobility
             self.__BackgroundSolver.do_solve_linear_first = (
-                self._solver_do_solve_linear_first
+                self.scene.solver_settings.do_linear_first
             )
             self.__BackgroundSolver.Start()
 
@@ -1891,16 +1887,16 @@ class Gui:
 
         def change_mobility(position, *args):
             self.__BackgroundSolver.mobility = position
-            self._solver_mobility = position
+            self.scene.solver_settings.mobility = position
             dialog.lbMobility.setText(f"{position}%")
 
         dialog.mobilitySlider.valueChanged.connect(change_mobility)
-        dialog.mobilitySlider.setSliderPosition(self._solver_mobility)
+        dialog.mobilitySlider.setSliderPosition(self.scene.solver_settings.mobility)
 
         def change_do_linear_first(*args):
-            self._solver_do_solve_linear_first = dialog.cbLinearFirst.isChecked()
+            self.scene.solver_settings.do_linear_first = dialog.cbLinearFirst.isChecked()
 
-        dialog.cbLinearFirst.setChecked(self._solver_do_solve_linear_first)
+        dialog.cbLinearFirst.setChecked(self.scene.solver_settings.do_linear_first)
         dialog.cbLinearFirst.toggled.connect(change_do_linear_first)
 
         self.MainWindow.setEnabled(False)

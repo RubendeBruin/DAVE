@@ -25,8 +25,7 @@ import functools
 import DAVEcore as DC
 
 from DAVE.settings import (
-    DAVE_DEFAULT_SOLVER_MOBILITY,
-    DAVE_DEFAULT_SOLVER_TOLERANCE,
+    SolverSettings,
     RESOURCE_PATH,
     NodePropertyInfo,
     MANAGED_NODE_IDENTIFIER,
@@ -112,12 +111,6 @@ class Scene:
         self._node_dict = {}
         """Temporary dict of nodes and names - for internal use only"""
 
-        self.static_tolerance = DAVE_DEFAULT_SOLVER_TOLERANCE
-        """Desired tolerance when solving statics"""
-
-        self.solver_mobility = DAVE_DEFAULT_SOLVER_MOBILITY
-        """Mobility setting for the solver"""
-
         self.resource_provider = resource_provider or DaveResourceProvider()
         """Resource provider for this scene, will be passed as ref to all implicitly created scenes (components etc)"""
 
@@ -148,6 +141,9 @@ class Scene:
 
         self.solve_activity_desc = "Solving static equilibrium"
         """This string may be used for feedback to user - read by Gui"""
+
+        self.solver_settings = SolverSettings()
+        """Settings for the solver"""
 
         if filename is not None:
             self.load_scene(filename)
@@ -1409,7 +1405,8 @@ class Scene:
             return False
 
     def create_standalone_copy(
-        self, target_dir, filename, include_visuals=True, flatten=False ):
+        self, target_dir, filename, include_visuals=True, flatten=False
+    ):
         """Creates a stand-alone copy in .zip format
         Returns:
         filename, log of actions"""
@@ -1424,7 +1421,6 @@ class Scene:
 
         # Use a temporary directory to collect the resources
         with tempfile.TemporaryDirectory() as tmp_dir:
-
             used_resources = self.get_used_resources()
 
             s = self.copy(quick=True)
@@ -1476,8 +1472,7 @@ class Scene:
             code += "\ns.resource_provider.install_mapping(package_folder, mapping)"
             code += s.give_python_code()
 
-
-            exported_DAVE_file = Path(tmp_dir) / (filename + '.dave')
+            exported_DAVE_file = Path(tmp_dir) / (filename + ".dave")
             with open(exported_DAVE_file, "w") as f:
                 f.write(code)
 
@@ -1497,7 +1492,6 @@ class Scene:
                 log.append("Creating zip-file")
                 zip_filename = Path(target_dir) / filename
 
-
                 from shutil import make_archive
 
                 make_archive(zip_filename, format="zip", root_dir=tmp_dir)
@@ -1506,7 +1500,7 @@ class Scene:
             except Exception as E:
                 log.append(f"Creating zipfile FAILED with error {str(E)}")
             #
-        return Path(str(zip_filename) + '.zip'), log
+        return Path(str(zip_filename) + ".zip"), log
 
     def load_package(self, filename: str or Path):
         """Loads a DAVE self-contained package file"""
@@ -1576,8 +1570,6 @@ class Scene:
         self,
         feedback_func=None,
         do_terminate_func=None,
-        timeout_s=1,
-        terminate_after_s=30,
     ):
         """Solves statics with a time-out and feedback/terminate functions.
 
@@ -1601,11 +1593,9 @@ class Scene:
         do_terminate_func : func() -> bool
         """
 
-        # # fallback to normal solve if feedback and control arguments are not provided
-        # if feedback_func is None or do_terminate_func is None:
-        #     return self.solve_statics()
         self.update()
-        # self._vfc.state_update()
+
+        self.save_scene(r"c:\data\debug.dave")
 
         if self._vfc.n_dofs() == 0:  # check for the trivial case
             self.update()
@@ -1622,35 +1612,27 @@ class Scene:
             else:
                 return False
 
-        if timeout_s is None:
-            timeout_s = -1
-
         # construct a background solver
         # start it
         # wait till it completes or it is cancelled
 
         start_time = datetime.datetime.now()
 
-        if timeout_s < 0:
-            timeout_s = 0.1
-
         BackgroundSolver = DC.BackgroundSolver(self._vfc)
-        BackgroundSolver.tolerance = self.static_tolerance
-        BackgroundSolver.mobility = self.solver_mobility
+        BackgroundSolver.tolerance = self.solver_settings.tolerance
+        BackgroundSolver.mobility = self.solver_settings.mobility
         started = BackgroundSolver.Start()
-
-        if started is None:  # todo: WORKAROUND, remove this
-            started = True
+        terminated = False
 
         if not started:
             print(BackgroundSolver.log)
             return True
 
         while BackgroundSolver.Running:
-            for i in range(int(100 * timeout_s)):
+            for i in range(100):
                 if should_terminate():
                     BackgroundSolver.Stop()
-                    return False
+
                 sleep(0.01)
                 if BackgroundSolver.Converged:
                     break
@@ -1660,10 +1642,25 @@ class Scene:
 
             time_diff = datetime.datetime.now() - start_time
             secs = time_diff.total_seconds()
-            if secs > terminate_after_s:
+            if (
+                self.solver_settings.timeout_s >= 0
+                and secs > self.solver_settings.timeout_s
+            ):
                 BackgroundSolver.Stop()
+                #
+                # # open the gui to show the model in its current state
+                # if settings.OPEN_GUI_ON_SOLVER_TIMEOUT:
+                #     from DAVE.gui import Gui
+                #
+                #     Gui(self)
+                #
+                #     if self.verify_equilibrium():
+                #         return True
+                #     else:
+                #         return False
+
                 raise ValueError(
-                    f"Solver maximum time of {terminate_after_s} exceeded - set terminate_after_s to change the allowed time for the solver."
+                    f"Solver maximum time of {self.solver_settings.timeout_s} exceeded - set terminate_after_s to change the allowed time for the solver."
                 )
 
         info = f"Converged within tolerance of {BackgroundSolver.tolerance} with E : {BackgroundSolver.Enorm:.6e}(norm) / {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
@@ -1683,53 +1680,19 @@ class Scene:
         else:
             return False
 
-    def solve_statics(
-        self,
-        silent=False,
-        timeout=None,
-        terminate_after_s=None,
-    ):
+    def solve_statics(self):
         """Solves statics
 
-        If a timeout is provided then each pass will take at most 'timeout' seconds. This means you may need to call
-        this function repeatedly to reach an equilibrium.
-
-        This function takes the following steps:
-
-        Phase 1:
-        1. Reduce degrees of freedom: Freezes all vessels at their current heel and trim
-        2. Solve statics
-
-        Phase 2:
-        3. Restore original degrees of freedom
-        4. Solve statics
-
-        Phase 3:
-        5. Check geometric contacts
-            if ok: Done
-            if not ok: Correct and go back to step 4
-
-
-        Args:
-            silent: Do not print if successfully solved
 
         Returns:
             bool: True if successful, False otherwise.
 
         """
 
-        if terminate_after_s is None:
-            terminate_after_s = settings.SOLVER_DEFAULT_TERMINATE_AFTER_S
-
-        if timeout is None:
-            timeout = -1
-
         if self.gui_solve_func is not None:
             return self.gui_solve_func(self, called_by_user=False)
         else:
-            return self._solve_statics_with_optional_control(
-                timeout_s=timeout, terminate_after_s=terminate_after_s
-            )
+            return self._solve_statics_with_optional_control()
 
     def verify_equilibrium(self, tol=None):
         """Checks if the current state is an equilibrium
@@ -1739,7 +1702,7 @@ class Scene:
 
         """
         if tol is None:
-            tol = self.static_tolerance
+            tol = self.solver_settings.tolerance
 
         self.update()
         return self._vfc.Emaxabs < tol
@@ -3506,6 +3469,14 @@ class Scene:
 
             for prop in ds.ENVIRONMENT_PROPERTIES:
                 code.append(f"s.{prop} = {getattr(self, prop)}")
+
+        non_default_solver_settings = self.solver_settings.non_default_props()
+        if non_default_solver_settings:
+            code.append("\n# Solver settings (non-default values)")
+            for prop in non_default_solver_settings:
+                code.append(
+                    f"s.solver_settings.{prop} = {getattr(self.solver_settings, prop)}"
+                )
 
         code.append("\n")
 
