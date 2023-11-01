@@ -226,7 +226,10 @@ class SolverDialog_threaded(QDialog, Ui_SolverDialogThreaded):
         self.setupUi(self)
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
-        self.setWindowIcon(QIcon(":/icons/cube.png"))
+        self.setWindowIcon(QIcon(":/v2/icons/DAVE.svg"))
+
+        # make stay-on-top
+        self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
 
 
 class SettingsDialog(QDialog, Ui_frmSettings):
@@ -301,6 +304,8 @@ class Gui:
                 self.app = QtWidgets.QApplication()
         else:
             self.app = app
+
+        # self.app.setStyle("Fusion")
 
         self.app.aboutToQuit.connect(self.onCloseApplication)
 
@@ -631,24 +636,16 @@ class Gui:
         self.ui.menuView.addAction(self.ui.sliderCoGSize)
 
         self.ui.action2D_mode.triggered.connect(self.toggle_2D)
-        self.ui.actionX.triggered.connect(
-            lambda: self.camera_set_direction((1, 0, 0))
-        )
+        self.ui.actionX.triggered.connect(lambda: self.camera_set_direction((1, 0, 0)))
         self.ui.action_x.triggered.connect(
             lambda: self.camera_set_direction((-1, 0, 0))
         )
-        self.ui.actionY.triggered.connect(
-            lambda: self.camera_set_direction((0, 1, 0))
-        )
+        self.ui.actionY.triggered.connect(lambda: self.camera_set_direction((0, 1, 0)))
         self.ui.action_Y.triggered.connect(
             lambda: self.camera_set_direction((0, -1, 0))
         )
-        self.ui.actionZ.triggered.connect(
-            lambda: self.camera_set_direction((0, 0, -1))
-        )
-        self.ui.action_Z.triggered.connect(
-            lambda: self.camera_set_direction((0, 0, 1))
-        )
+        self.ui.actionZ.triggered.connect(lambda: self.camera_set_direction((0, 0, -1)))
+        self.ui.action_Z.triggered.connect(lambda: self.camera_set_direction((0, 0, 1)))
         self.ui.actionCamera_reset.triggered.connect(self.camera_reset)
         #
         self.ui.actionSet_input_focus_to_viewport.triggered.connect(
@@ -838,15 +835,22 @@ class Gui:
 
         self.toolbar_top.setMovable(False)
         self.toolbar_left.setMovable(False)
+
+        backgroundcolor_str = "palette(mid)"
+
         self.toolbar_top.setStyleSheet(
-            "QToolBar { background : palette(mid); border: none; }\n"
-            "QToolButton:checked{ background-color : palette(mid); }"
+            "QToolBar { background : " + backgroundcolor_str + "; border: none; }\n"
+            "QToolButton:checked{ background-color : " + backgroundcolor_str + "; }"
         )
         self.toolbar_left.setStyleSheet(
-            "QToolBar { background : palette(mid); border: none; }\n"
-            "QToolButton:checked{ background-color : palette(mid); border-width : 2px}"
+            "QToolBar { background : " + backgroundcolor_str + "; border: none; }\n"
+            "QToolButton:checked{ background-color : "
+            + backgroundcolor_str
+            + "; border-width : 2px}"
         )
-        top_left_widget.setStyleSheet("background : palette(mid); border: none")
+        top_left_widget.setStyleSheet(
+            "background : " + backgroundcolor_str + "; border: none"
+        )
         top_left_widget.setFixedWidth(self.toolbar_left.sizeHint().width())
 
         # Status-bar
@@ -870,8 +874,6 @@ class Gui:
             self.ui.menuScene.setEnabled(False)
             self.ui.menuEdit.setEnabled(False)
 
-
-
         self.MainWindow.show()
         #
 
@@ -885,7 +887,6 @@ class Gui:
             elif isinstance(filename, str):
                 self.open_file(filename)
 
-
         if splash:
             splash.finish(self.MainWindow)
 
@@ -895,8 +896,6 @@ class Gui:
             self.ui.pbUpdate.setVisible(False)
             self.ui.pbCopyViewCode.setVisible(False)
             self.app.exec()
-
-
 
     def autosave_startup(self) -> str:
         # check for autosave files
@@ -1846,7 +1845,7 @@ class Gui:
                 True  # system already converged, nothing started so nothing to wait for
             )
 
-        dialog = SolverDialog_threaded()
+        dialog = SolverDialog_threaded(parent=self.MainWindow)
         dialog.pbAccept.setEnabled(False)
         dialog.frame.setVisible(False)
 
@@ -1894,7 +1893,9 @@ class Gui:
         dialog.mobilitySlider.setSliderPosition(self.scene.solver_settings.mobility)
 
         def change_do_linear_first(*args):
-            self.scene.solver_settings.do_linear_first = dialog.cbLinearFirst.isChecked()
+            self.scene.solver_settings.do_linear_first = (
+                dialog.cbLinearFirst.isChecked()
+            )
 
         dialog.cbLinearFirst.setChecked(self.scene.solver_settings.do_linear_first)
         dialog.cbLinearFirst.toggled.connect(change_do_linear_first)
@@ -2106,7 +2107,9 @@ class Gui:
         if self.modelfilename is not None:
             dir = str(Path(self.modelfilename).parent)
         else:
-            dir = str(self.scene.resource_provider.resources_paths[-2])  # most typical work-path
+            dir = str(
+                self.scene.resource_provider.resources_paths[-2]
+            )  # most typical work-path
 
         filename, _ = QFileDialog.getSaveFileName(
             filter="*.dave",

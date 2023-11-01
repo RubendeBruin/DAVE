@@ -29,6 +29,9 @@ def test_get_res_spaces():
 
 
 def test_probably_an_error():
+
+    assert False, "Disabled"
+
     s = Scene()
     with pytest.raises(Exception):
         f = s.get_resource_path("res: unlikely to exist.obj")

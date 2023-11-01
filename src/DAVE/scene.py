@@ -1595,8 +1595,6 @@ class Scene:
 
         self.update()
 
-        self.save_scene(r"c:\data\debug.dave")
-
         if self._vfc.n_dofs() == 0:  # check for the trivial case
             self.update()
             return True
@@ -1622,7 +1620,6 @@ class Scene:
         BackgroundSolver.tolerance = self.solver_settings.tolerance
         BackgroundSolver.mobility = self.solver_settings.mobility
         started = BackgroundSolver.Start()
-        terminated = False
 
         if not started:
             print(BackgroundSolver.log)
@@ -1632,6 +1629,10 @@ class Scene:
             for i in range(100):
                 if should_terminate():
                     BackgroundSolver.Stop()
+
+                    settings.SOLVER_TERMINATED_SCENE = self
+
+                    return False
 
                 sleep(0.01)
                 if BackgroundSolver.Converged:
@@ -3422,6 +3423,8 @@ class Scene:
         export_environment_settings=True,
         _no_sort_nodes=False,
         state_only=False,
+        no_reports=False,
+        no_timeline=False,
     ):
         """Generates the python code that rebuilds the scene and elements in its current state.
 
@@ -3605,7 +3608,7 @@ class Scene:
                 code.append("")
 
             # Optional Reports
-            if self.reports:
+            if self.reports and not no_reports:
                 code.append("\n# Reports")
                 for r in self.reports:
                     yml = r.to_yml()
@@ -3614,7 +3617,7 @@ class Scene:
                     code.append("s.reports.append(Report(s,yml=report_contents))")
 
             # Optional Timelines
-            if self.t:
+            if self.t and not no_timeline:
                 code.extend(self.t.give_python_code())
 
         # Exposed properties of components
@@ -3627,7 +3630,7 @@ class Scene:
 
         return "\n".join(code)
 
-    def save_scene(self, filename):
+    def save_scene(self, filename, no_reports=False, no_timeline=False):
         """Saves the scene to a file
 
         This saves the scene in its current state to a file.
@@ -3648,7 +3651,7 @@ class Scene:
 
         """
 
-        code = self.give_python_code()
+        code = self.give_python_code(no_reports=no_reports, no_timeline=no_timeline)
 
         filename = Path(filename)
 

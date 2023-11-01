@@ -11,6 +11,6 @@ def test_viewport_with_custom_labels():
     v = Viewport(s)
     v.settings.label_scale=4
     v.settings.label_property = '_custom_property'
-    v.show_as_qt_app()
+    # v.show_as_qt_app()
 
 

@@ -13,6 +13,7 @@ Among which:
 ALL PROGRAM WIDE VARIABLES ARE DEFINED IN UPPERCASE
 
 """
+import tempfile
 from dataclasses import dataclass, fields
 
 """
@@ -106,11 +107,14 @@ class SolverSettings:
 
 # temporary files:
 #
-# Save temporary files in the default user dir
 
-PATH_TEMP = Path(default_user_dir / "temp")  # stored in the user dir by default
-if not PATH_TEMP.exists():
-    mkdir(PATH_TEMP)
+_temp_path_context = tempfile.TemporaryDirectory()
+PATH_TEMP = Path(_temp_path_context.name)
+print(f"Temporary files are stored in {PATH_TEMP} - will be deleted on exit")
+
+# For report/gui use
+
+SOLVER_TERMINATED_SCENE = None  # will be set to the scene when solver is terminated by user - this is a reference, not a copy!
 
 
 """
