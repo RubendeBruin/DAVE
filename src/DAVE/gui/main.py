@@ -107,6 +107,8 @@ from DAVE.gui.widget_tags import WidgetTags
 import PySide6QtAds
 import DAVE.auto_download
 
+from DAVE import ModelInvalidException
+
 import DAVE.settings as vfc
 import DAVE.gui.node_icons
 
@@ -306,6 +308,11 @@ class Gui:
             self.app = app
 
         # self.app.setStyle("Fusion")
+
+        # pre-load icons
+        for key, icon in ICONS.items():
+            if isinstance(icon, str):
+                ICONS[key] = QIcon(icon)
 
         self.app.aboutToQuit.connect(self.onCloseApplication)
 
@@ -1558,35 +1565,42 @@ class Gui:
 
         if undo_type == UndoType.CLEAR_AND_RUN_CODE or undo_type == UndoType.RUN_CODE:
             # capture selected node names before deleting the scene
-            selected_names = [node.name for node in self.selected_nodes]
-
-            if undo_type == UndoType.CLEAR_AND_RUN_CODE:
-                self.scene.clear()
-
-            self.scene.run_code(undo_contents)
 
             try:
-                nodes = [
-                    self.scene[node] for node in selected_names
-                ]  # selected nodes may not exist anymore
-            except:
-                nodes = []
+                selected_names = [node.name for node in self.selected_nodes]
 
-            self.selected_nodes.clear()  # do not re-assign, docks keep a reference to this list
-            self.selected_nodes.extend(nodes)
+                if undo_type == UndoType.CLEAR_AND_RUN_CODE:
+                    self.scene.clear()
+
+                self.scene.run_code(undo_contents)
+
+                try:
+                    nodes = [
+                        self.scene[node] for node in selected_names
+                    ]  # selected nodes may not exist anymore
+                except:
+                    nodes = []
+
+                self.selected_nodes.clear()  # do not re-assign, docks keep a reference to this list
+                self.selected_nodes.extend(nodes)
+                self.give_feedback(
+                    f"Activating undo index {index} of {len(self._undo_log)-1}"
+                )
+            except:
+                self.show_exception(
+                    f"Could not activate undo index {index} of {len(self._undo_log)-1}"
+                )
 
             self.guiEmitEvent(guiEventType.FULL_UPDATE)
-            self.give_feedback(
-                f"Activating undo index {index} of {len(self._undo_log)-1}"
-            )
 
         elif undo_type == UndoType.SET_DOFS:
             if undo_contents is not None:
                 self.scene._vfc.set_dofs(undo_contents)  # UNDO SOLVE STATICS"
-                self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
                 self.give_feedback(
                     f"Activating undo index {index} of {len(self._undo_log)} - Solve-statics reverted"
                 )
+
+                self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
 
     def add_undo_point(self, undo_type=UndoType.CLEAR_AND_RUN_CODE, code=""):
         logging.info(f"Creating undo point with type {undo_type}")
@@ -1766,6 +1780,31 @@ class Gui:
                 if to_be_removed and not emitted:
                     self.guiEmitEvent(
                         guiEventType.SELECTED_NODE_MODIFIED, sender=sender
+                    )
+
+            except ModelInvalidException as e:
+                self.show_exception(
+                    "Can not perform the requested action because: " + str(e)
+                )
+                if store_undo:
+                    QMessageBox.information(
+                        self.ui.widget,
+                        "Model invalid",
+                        "The model state has become invalid due to an unrecoverable error. We will use the undo log to restore the model to the previous state.",
+                        QMessageBox.Ok,
+                    )
+                    self.undo()
+                else:
+                    # show an error box with error
+
+                    # terminate the autosave, we do not want to be saving any invalid models
+                    self._autosave = None  # no cleanup!
+
+                    QMessageBox.warning(
+                        self.ui.widget,
+                        "terminal error",
+                        "The model state has become invalid due to an unrecoverable error. DO NOT SAVE. Advised to restart DAVE and contiune with the lastest auto-save file.",
+                        QMessageBox.Ok,
                     )
 
             except Exception as E:

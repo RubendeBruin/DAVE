@@ -18,6 +18,12 @@ finally:
 from . import auto_download
 from .scene import *
 from .nodes import *
+from .exceptions import ModelInvalidException
+
+__all__ = list(DAVE_ADDITIONAL_RUNTIME_MODULES.keys()) + [
+    "ModelInvalidException",
+    "Scene",
+]
 
 
 # convenience function for showing the gui

@@ -853,7 +853,7 @@ def ballast_to_even_keel(
         old_heel = f.heel
         old_trim = f.trim
 
-        s.solve_statics(silent=True)
+        s.solve_statics()
 
         if (f.heel * old_heel) < 0 and (f.trim * old_trim < 0):  # overshoot!
             # undo and lower fill_pct

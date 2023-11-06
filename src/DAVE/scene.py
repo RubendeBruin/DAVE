@@ -1772,7 +1772,7 @@ class Scene:
                         f"Error when running [{code}]. The error was:\n {str(E)}"
                     )
 
-            self.solve_statics(silent=True)
+            self.solve_statics()
             result = eval(evaluate)
             self._print("setting {} results in {}".format(x, result))
             return result - target
@@ -1844,7 +1844,7 @@ class Scene:
 
         def set_and_get(x):
             setattr(change_node, change_property, x)
-            self.solve_statics(silent=True)
+            self.solve_statics()
             s = self
             result = eval(evaluate)
             self._print("setting {} results in {}".format(x, result))

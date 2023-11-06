@@ -3142,6 +3142,9 @@ class WidgetNodeProps(guiDockWidget):
         ht = sum([w.sizeHint().height() for w in widgets])
         wt = max([w.sizeHint().width() for w in widgets])
 
+        for w in widgets:
+            print(f"Minimum size for {type(w)} = {w.sizeHint().width()}")
+
         self.contents.setMinimumSize(
             QtCore.QSize(wt, ht - 5)
         )  # minus 5 to avoid scrollbar to show
@@ -3190,11 +3193,13 @@ class WidgetNodeProps(guiDockWidget):
                 wt = wt + 5  # for scrollbar
             self.setMinimumWidth(wt)
 
-        print("Setting updates enabled", flush=True)
+        # print("Setting updates enabled", flush=True)
 
         self.setUpdatesEnabled(True)
+        self.contents.update()
+        self.update()
 
-        print("Function done", flush=True)
+        # print("Function done", flush=True)
 
 
 from DAVE.gui.settings import DAVE_GUI_DOCKS
