@@ -285,8 +285,8 @@ class NodeEditor(ABC):
         gui_solve_func,
         node_picker_register_func,
     ):
-        self.node = node
-        self.scene = scene
+        self.node: Node = node
+        self.scene: Scene = scene
         self._run_code = run_code
         self.guiEmitEvent = guiEmitEvent
         self.gui_solve_func = gui_solve_func
@@ -732,12 +732,16 @@ class EditVisual(AbstractNodeEditorWithParent):
         svinf(self.ui.doubleSpinBox_9, self.node.scale[2])
 
         cvinf(self.ui.comboBox, str(self.node.path))
-        # self.ui.comboBox.setCurrentText(str(self.node.path))
 
         for widget in widgets:
             widget.blockSignals(False)
 
     def generate_code(self):
+        if self.scene.is_valid_resource_path(self.ui.comboBox.currentText()):
+            self.ui.comboBox.setStyleSheet("")
+        else:
+            self.ui.comboBox.setStyleSheet("background: orange")
+
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
@@ -766,8 +770,9 @@ class EditVisual(AbstractNodeEditorWithParent):
         new_path = self.ui.comboBox.currentText()
 
         if not new_path == self.node.path:
-            code += element + ".path = r'{}'".format(new_path)
-
+            # check if path is valid
+            if self.scene.is_valid_resource_path(new_path):
+                code += element + ".path = r'{}'".format(new_path)
         if not np.all(new_position == self.node.offset):
             code += element + ".offset = ({}, {}, {})".format(*new_position)
 
@@ -839,6 +844,11 @@ class EditWaveInteraction(AbstractNodeEditorWithParent):
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
+        if self.scene.is_valid_resource_path(self.ui.comboBox.currentText()):
+            self.ui.comboBox.setStyleSheet("")
+        else:
+            self.ui.comboBox.setStyleSheet("background: orange")
+
         new_position = np.array(
             (
                 self.ui.doubleSpinBox_1.value(),
@@ -849,7 +859,8 @@ class EditWaveInteraction(AbstractNodeEditorWithParent):
         new_path = self.ui.comboBox.currentText()
 
         if not new_path == self.node.path:
-            code += element + ".path = r'{}'".format(new_path)
+            if self.scene.is_valid_resource_path(new_path):
+                code += element + ".path = r'{}'".format(new_path)
 
         if not np.all(new_position == self.node.offset):
             code += element + ".offset = ({}, {}, {})".format(*new_position)
@@ -934,13 +945,18 @@ class EditComponent(NodeEditor):
         """Generate code to update the node, then run it"""
 
         code = ""
-        code += code_if_changed_path(self.node, self.ui.cbPath.currentText(), "path")
+
+        if self.scene.is_valid_resource_path(self.ui.cbPath.currentText()):
+            self.ui.cbPath.setStyleSheet("")
+            code += code_if_changed_path(
+                self.node, self.ui.cbPath.currentText(), "path"
+            )
+        else:
+            self.ui.cbPath.setStyleSheet("background: orange")
 
         # only fire if resource is valid
-        resource = self.ui.cbPath.currentText()
-        if self.scene.get_resource_path(resource):
-            if code:
-                self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+        if code:
+            self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
 
 # ======================================
@@ -1116,11 +1132,14 @@ class EditBuoyancyOrContactMesh(AbstractNodeEditorWithParent):
     def generate_code(self):
         # check if resource is valid, if not then do not reload
         # only fire if resource is valid
-        resource = self.ui.comboBox.currentText()
-        try:
-            self.scene.get_resource_path(resource)
-        except:
+
+        if self.scene.is_valid_resource_path(self.ui.comboBox.currentText()):
+            self.ui.comboBox.setStyleSheet("")
+        else:
+            self.ui.comboBox.setStyleSheet("background: orange")
             return
+
+        resource = self.ui.comboBox.currentText()
 
         code = ""
         element = "\ns['{}']".format(self.node.name)

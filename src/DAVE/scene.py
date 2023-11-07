@@ -513,6 +513,14 @@ class Scene:
 
     # ======== resources =========
 
+    def is_valid_resource_path(self, url) -> bool:
+        """Returns True if url is a valid resource path"""
+        try:
+            self.get_resource_path(url, no_gui=True)
+            return True
+        except FileNotFoundError:
+            return False
+
     def get_resource_path(self, url: str, no_gui=False) -> Path:
         """Resolves the path on disk for resource url.
         Urls statring with res: result in a file from the resources system.
