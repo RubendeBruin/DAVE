@@ -414,7 +414,7 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
 
             # Sheave --> Sheave : create geometric contact
             if isinstance(node_drop, ds.Circle) and isinstance(node_onto, ds.Circle):
-                code = f"s.new_geometriccontact('Geometric_connection of :{drop} on {onto}','{drop}','{onto}')"
+                code = f"s.new_geometriccontact('Geometric_connection of {drop} on {onto}','{drop}','{onto}')"
 
             # Sheave --> GeometricContact : set child of geometric contact
             elif isinstance(node_drop, ds.Circle) and isinstance(

@@ -485,31 +485,26 @@ class Scene:
 
         self._godmode = remember_godmode
 
-    def _check_and_fix_geometric_contact_orientations(self) -> Tuple[bool, str]:
+    def _check_and_fix_geometric_contact_orientations(self) -> Tuple[bool, list]:
         """A Geometric pin on pin contact may end up with tension in the contact. Fix that by moving the child pin to the other side of the parent pin
 
         Returns:
             True if anything was changed; False otherwise
         """
 
-        remember = self._godmode
-        self._godmode = True
-
         changed = False
-        message = ""
+        messages = []
         for n in self.nodes_of_type(GeometricContact):
             if not n.inside:
                 # connection force of the child is the
                 # force applied on the connecting rod
                 # in the axis system of the rod
                 if n._axis_on_child.connection_force_x > 0:
-                    message += f"Changing side of pin-pin connection {n.name} due to tension in connection\n"
+                    messages.append(f"Changing side of pin-pin connection {n.name} due to tension in connection")
                     n.change_side()
                     changed = True
 
-        self._godmode = remember
-
-        return (changed, message)
+        return (changed, messages)
 
     # ======== resources =========
 

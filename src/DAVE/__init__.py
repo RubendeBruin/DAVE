@@ -16,7 +16,7 @@ finally:
     del version, PackageNotFoundError
 
 from . import auto_download
-from .scene import *
+from .scene import Scene
 from .nodes import *
 from .exceptions import ModelInvalidException
 
