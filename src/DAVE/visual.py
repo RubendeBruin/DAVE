@@ -419,6 +419,10 @@ class VisualActor:
         if self.node is None:
             node_class = "global"
         else:
+            # check is node is still valid (not deleted). If not then return
+            if not self.node.is_valid:
+                return
+
             if isinstance(self.node, dn.ContactBall):
                 node_class = f"ContactBall:{self.paint_state}"
             elif isinstance(self.node, dn.Tank):
