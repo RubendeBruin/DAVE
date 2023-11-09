@@ -1,3 +1,5 @@
+from numpy.testing import assert_allclose
+
 from DAVE import *
 
 
@@ -95,6 +97,23 @@ def test_unsolvable_model_raises_correct_error():
         raise AssertionError("Should have raised an ValueError")
     except ValueError as e:
         assert "geometric contacts" in str(e)
+
+def test_shackles():
+    s = model_shackles()
+    s.solve_statics()
+    assert_allclose(s['Shackle2'].gz,-0.718)
+
+def test_shackles_managed():
+    s = model_shackles()
+
+    gc = s['Geometric_connection of Shackle2/bow on Shackle/pin']
+
+    point = s.new_point("dummy")
+    gc.manager = point
+
+    s.solve_statics()
+    assert_allclose(s['Shackle2'].gz,-0.718)
+
 
 
 if __name__ == "__main__":

@@ -503,24 +503,28 @@ class Scene:
                 # the tension in the rod can be obtained from the connection force of the child of the rod the axis_in_child
                 # the x-component of this force should be positive
 
-
                 if n._axis_on_child.connection_force_x < 0:
-                    messages.append(f"Changing side of inside connection {n.name} because it is on the wrong side") #  due to compression in connection")
+                    messages.append(
+                        f"Changing side of inside connection {n.name} because it is on the wrong side"
+                    )  #  due to compression in connection")
                     n.change_side()
                     changed = True
 
                 if n._parent_circle.radius < n._child_circle.radius:
-                    warnings.warn("Parent circle is smaller than child circle, this is allowed but may lead to unexpected results if this is not what you intended to do")
+                    warnings.warn(
+                        "Parent circle is smaller than child circle, this is allowed but may lead to unexpected results if this is not what you intended to do"
+                    )
 
             else:  # outside contact
                 # connection force of the child is the
                 # force applied on the connecting rod
                 # in the axis system of the rod
                 if n._axis_on_child.connection_force_x > 0:
-                    messages.append(f"Changing side of outside connection {n.name} because it is on the wrong side") # due to tension in connection")
+                    messages.append(
+                        f"Changing side of outside connection {n.name} because it is on the wrong side"
+                    )  # due to tension in connection")
                     n.change_side()
                     changed = True
-
 
         return (changed, messages)
 
@@ -1638,7 +1642,6 @@ class Scene:
         start_time = datetime.datetime.now()
 
         while True:  # only stop when we are completely happy or when the user cancels
-
             BackgroundSolver = DC.BackgroundSolver(self._vfc)
             BackgroundSolver.tolerance = self.solver_settings.tolerance
             BackgroundSolver.mobility = self.solver_settings.mobility
@@ -1646,7 +1649,6 @@ class Scene:
 
             if not started:
                 print(BackgroundSolver.log)
-
 
             else:
                 while BackgroundSolver.Running:
@@ -1672,7 +1674,6 @@ class Scene:
                         and secs > self.solver_settings.timeout_s
                     ):
                         BackgroundSolver.Stop()
-
 
                         raise ValueError(
                             f"Solver maximum time of {self.solver_settings.timeout_s} exceeded - set terminate_after_s to change the allowed time for the solver."
@@ -1702,22 +1703,23 @@ class Scene:
             time_diff = datetime.datetime.now() - start_time
             secs = time_diff.total_seconds()
             if (
-                    self.solver_settings.timeout_s >= 0
-                    and secs > self.solver_settings.timeout_s
+                self.solver_settings.timeout_s >= 0
+                and secs > self.solver_settings.timeout_s
             ):
                 raise ValueError(
                     f"Solver maximum time of {self.solver_settings.timeout_s}s exceeded, solver converged but geometric contacts not satisfied - set terminate_after_s to change the allowed time for the solver."
                 )
 
-            give_feedback("Geometric contacts not satisfied, correcting and trying again")
-            logging.info("Geometric contacts not satisfied, correcting and trying again")
+            give_feedback(
+                "Geometric contacts not satisfied, correcting and trying again"
+            )
+            logging.info(
+                "Geometric contacts not satisfied, correcting and trying again"
+            )
 
             for m in messages:
                 give_feedback(m)
                 logging.info(m)
-
-
-
 
     def solve_statics(self):
         """Solves statics
@@ -2188,7 +2190,6 @@ class Scene:
         new_node.child_fixed = child_fixed
         new_node.swivel_fixed = swivel_fixed
 
-        # self._nodes.append(new_node)
         return new_node
 
     def new_waveinteraction(

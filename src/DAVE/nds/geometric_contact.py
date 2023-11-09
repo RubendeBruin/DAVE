@@ -16,7 +16,9 @@ from .geometry import *
 from .abstracts import *
 
 
-class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not derive from Container because managed nodes is not equal to created nodes
+class GeometricContact(
+    NodePurePython, Manager, HasParent
+):  # Note: can not derive from Container because managed nodes is not equal to created nodes
     """
     GeometricContact
 
@@ -80,7 +82,6 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
 
         self._name_prefix = self.name + "/"
 
-
         self._parent_circle = parent_circle
         self._parent_circle_parent = parent_circle.parent  # point
 
@@ -91,7 +92,7 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
         self._flipped = False
         self._inside_connection = inside
 
-        name_prefix = self._name_prefix # alias
+        name_prefix = self._name_prefix  # alias
 
         self._axis_on_parent = self._scene.new_frame(
             scene.available_name_like(name_prefix + "_axis_on_parent")
@@ -135,7 +136,6 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
         """Unmanages all created nodes and then deletes itself"""
 
         with ClaimManagement(self._scene, self):
-
             for node in self._scene.nodes_managed_by(self):
                 node.manager = self.manager
 
@@ -146,7 +146,6 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
             self._child_circle_parent.observers.remove(self)
 
             self._child_circle_parent_parent._parent_for_code_export = True
-
 
         self.__class__ = NodePurePython
         self._scene.delete(self)
@@ -168,7 +167,7 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
             )
 
     @property
-    def child(self)->Circle:
+    def child(self) -> Circle:
         """The Circle that is connected to the GeometricContact [Node]
 
         See Also: parent
@@ -220,7 +219,7 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
         self._update_connection()
 
     @property
-    def parent(self)->Circle:
+    def parent(self) -> Circle:
         """The Circle that the GeometricConnection is connected to [Node]
 
         See Also: child
@@ -264,7 +263,6 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
         self.parent = new_parent
 
     def delete(self):
-
         # release management
         for node in self.managed_nodes():
             node._manager = None
@@ -294,7 +292,6 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
         c_child_fixed = self.child_fixed
 
         with ClaimManagement(self._scene, self):
-
             child_circle = self._child_circle  # nodeB
             parent_circle = self._parent_circle  # nodeA
 
@@ -309,12 +306,14 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
                 self._axis_on_parent.parent = parent_circle.parent.parent
                 z = parent_circle.parent.parent.uz
             else:
-                z = (0,0,1)
+                z = (0, 0, 1)
             self._axis_on_parent.position = parent_circle.parent.position
             self._axis_on_parent.fixed = (True, True, True, True, True, True)
 
             # self._axis_on_parent.global_rotation = rotvec_from_y_and_z_axis_direction(parent_circle.global_axis, z)  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
-            self._axis_on_parent.rotation = rotvec_from_y_and_z_axis_direction(parent_circle.axis, (0,0,1))  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
+            self._axis_on_parent.rotation = rotvec_from_y_and_z_axis_direction(
+                parent_circle.axis, (0, 0, 1)
+            )  # this rotation is not unique. It would be nice to have the Z-axis pointing "upwards" as much as possible; especially for the creation of shackles.
 
             # a1 = self._axis_on_parent.uy
             # a2 = parent_circle.global_axis
@@ -338,12 +337,18 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
 
             # the child frame needs to be rotated by the inverse of the circle rotation
             #
-            rotation = rotvec_from_y_and_z_axis_direction(y = child_circle.axis, z = (0,0,1)) # local rotation
+            rotation = rotvec_from_y_and_z_axis_direction(
+                y=child_circle.axis, z=(0, 0, 1)
+            )  # local rotation
             child_frame.rotation = rotvec_inverse(rotation)
 
-            parent_to_point = child_frame.to_glob_direction(child_circle.parent.position)
+            parent_to_point = child_frame.to_glob_direction(
+                child_circle.parent.position
+            )
 
-            child_frame.position = -np.array(self._axis_on_child.to_loc_direction(parent_to_point))
+            child_frame.position = -np.array(
+                self._axis_on_child.to_loc_direction(parent_to_point)
+            )
 
             child_frame.fixed = True
 
@@ -352,15 +357,21 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
             self._axis_on_child.fixed = (True, True, True, True, False, True)
 
             if self._inside_connection:
-
                 # Place the pin in the hole
                 self._connection_axial_rotation.rotation = (0, 0, 0)
-                self._axis_on_child.position = (parent_circle.radius - child_circle.radius, 0, 0)
+                self._axis_on_child.position = (
+                    parent_circle.radius - child_circle.radius,
+                    0,
+                    0,
+                )
 
             else:
-
                 # pin-pin connection
-                self._axis_on_child.position = (child_circle.radius + parent_circle.radius, 0, 0)
+                self._axis_on_child.position = (
+                    child_circle.radius + parent_circle.radius,
+                    0,
+                    0,
+                )
                 self._connection_axial_rotation.rotation = (90, 0, 0)
 
         # restore settings
@@ -371,8 +382,6 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
             self.fixed_to_parent = c_fixed_to_parent
             self.child_rotation = c_child_rotation
             self.child_fixed = c_child_fixed
-
-
 
     def set_pin_pin_connection(self):
         """Sets the connection to be of type pin-pin"""
@@ -434,13 +443,13 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
         """Changes the swivel angle by 180 degrees"""
         self.swivel = np.mod(self.swivel + 180, 360)
 
-    @node_setter_manageable
+    # @node_setter_manageable
     def change_side(self):
         self.rotation_on_parent = np.mod(self.rotation_on_parent + 180, 360)
         self.child_rotation = np.mod(self.child_rotation + 180, 360)
 
     @property
-    def swivel(self)->float:
+    def swivel(self) -> float:
         """Swivel angle between parent and child objects [degrees]"""
         return self._connection_axial_rotation.rotation[0]
 
@@ -454,7 +463,7 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
         self._scene.current_manager = remember  # restore old manager
 
     @property
-    def swivel_fixed(self)->bool:
+    def swivel_fixed(self) -> bool:
         """Allow parent and child to swivel relative to eachother [boolean]"""
         return self._connection_axial_rotation.fixed[3]
 
@@ -468,21 +477,26 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
         self._scene.current_manager = remember  # restore old manager
 
     @property
-    def rotation_on_parent(self)->float:
+    def rotation_on_parent(self) -> float:
         """Angle between the line connecting the centers of the circles and the axis system of the parent node [degrees]"""
         return self._pin_hole_connection.ry
 
     @rotation_on_parent.setter
-    @node_setter_manageable
+    # @node_setter_manageable  (only if dof fixed)
     @node_setter_observable
     def rotation_on_parent(self, value):
         remember = self._scene.current_manager  # claim management
         self._scene.current_manager = self
+
+        if self.fixed_to_parent:
+            self._verify_change_allowed()
+
         self._pin_hole_connection.ry = value
+
         self._scene.current_manager = remember  # restore old manager
 
     @property
-    def fixed_to_parent(self)->bool:
+    def fixed_to_parent(self) -> bool:
         """Allow rotation around parent [boolean]
 
         see also: rotation_on_parent"""
@@ -498,21 +512,25 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
         self._scene.current_manager = remember  # restore old manager
 
     @property
-    def child_rotation(self)->float:
+    def child_rotation(self) -> float:
         """Angle between the line connecting the centers of the circles and the axis system of the child node [degrees]"""
         return self._axis_on_child.ry
 
     @child_rotation.setter
-    @node_setter_manageable
+    # @node_setter_manageable ; only if child_fixed
     @node_setter_observable
     def child_rotation(self, value):
         remember = self._scene.current_manager  # claim management
         self._scene.current_manager = self
+
+        if self.child_fixed:
+            self._verify_change_allowed()
+
         self._axis_on_child.ry = value
         self._scene.current_manager = remember  # restore old manager
 
     @property
-    def child_fixed(self)->bool:
+    def child_fixed(self) -> bool:
         """Allow rotation of child relative to connection, see also: child_rotation [boolean]"""
         return self._axis_on_child.fixed[4]
 
@@ -526,7 +544,7 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
         self._scene.current_manager = remember  # restore old manager
 
     @property
-    def inside(self)->bool:
+    def inside(self) -> bool:
         """Type of connection: True means child circle is inside parent circle, False means the child circle is outside but the circumferences contact [boolean]"""
         return self._inside_connection
 
@@ -550,7 +568,6 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
             return True
 
     def give_python_code(self):
-
         old_manger = self._scene.current_manager
         self._scene.current_manager = self
 
@@ -622,4 +639,3 @@ class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not der
         self._scene.current_manager = old_manger
 
         return "\n".join(code)
-
