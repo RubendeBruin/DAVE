@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'menu_nodetypes.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.0
+## Created by: Qt User Interface Compiler version 6.5.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -23,7 +23,7 @@ class Ui_MenuNodes(object):
     def setupUi(self, MenuNodes):
         if not MenuNodes.objectName():
             MenuNodes.setObjectName(u"MenuNodes")
-        MenuNodes.resize(446, 266)
+        MenuNodes.resize(532, 374)
         self.gridLayout = QGridLayout(MenuNodes)
         self.gridLayout.setObjectName(u"gridLayout")
         self.widget_2 = QWidget(MenuNodes)
@@ -124,7 +124,7 @@ class Ui_MenuNodes(object):
         self.pbGeometricContact = QPushButton(self.widget)
         self.pbGeometricContact.setObjectName(u"pbGeometricContact")
         icon7 = QIcon()
-        icon7.addFile(u":/icons/pin_hole.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon7.addFile(u":/v2/icons/gc.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.pbGeometricContact.setIcon(icon7)
         self.pbGeometricContact.setFlat(True)
 
@@ -276,7 +276,7 @@ class Ui_MenuNodes(object):
         self.pbShackle = QPushButton(self.widget_3)
         self.pbShackle.setObjectName(u"pbShackle")
         icon18 = QIcon()
-        icon18.addFile(u":/icons/circle.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon18.addFile(u":/v2/icons/shackle.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.pbShackle.setIcon(icon18)
         self.pbShackle.setFlat(True)
 
@@ -365,7 +365,7 @@ class Ui_MenuNodes(object):
         self.pbVisual.setObjectName(u"pbVisual")
         self.pbVisual.setStyleSheet(u"text-align:left")
         icon22 = QIcon()
-        icon22.addFile(u":/icons/visual.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon22.addFile(u":/v2/icons/visual.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.pbVisual.setIcon(icon22)
         self.pbVisual.setFlat(True)
 

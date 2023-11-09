@@ -3,6 +3,7 @@ There was a twist in the grommet that should not be there. The axes of the circl
 
 We test this for cable with and without weight.
 """
+import math
 from numpy.testing import assert_allclose
 
 from DAVE import *

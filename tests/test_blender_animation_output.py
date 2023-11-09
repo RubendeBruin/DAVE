@@ -1,4 +1,5 @@
 from DAVE import *
+import numpy as np
 
 def test_blender_animation_output():
 

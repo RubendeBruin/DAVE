@@ -87,5 +87,9 @@
     <file>icons/tag.svg</file>
     <file>icons/timeline.svg</file>
     <file>icons/tree.svg</file>
+    <file>icons/shackle.svg</file>
+    <file>icons/missing.svg</file>
+    <file>icons/gc.svg</file>
+    <file>icons/visual.svg</file>
   </qresource>
 </RCC>

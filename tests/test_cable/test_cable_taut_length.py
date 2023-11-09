@@ -1,5 +1,7 @@
 from numpy.testing import assert_allclose
 from DAVE import *
+import math
+import numpy as np
 
 def test_cable_length_points():
     """Tests the taut length of a grommet"""

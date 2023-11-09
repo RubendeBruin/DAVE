@@ -22,6 +22,7 @@ import pytest
 from numpy.testing import assert_almost_equal
 
 from DAVE import *
+from DAVE.nodes import HasContainer
 
 def test_swap():
     s = Scene()

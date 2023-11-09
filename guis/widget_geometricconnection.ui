@@ -129,6 +129,16 @@
     </widget>
    </item>
    <item>
+    <widget class="QLabel" name="lbWarningInsideLagerThanOutside">
+     <property name="styleSheet">
+      <string notr="true">background:orange</string>
+     </property>
+     <property name="text">
+      <string>Warning: The inside circle is larger than the outside circle.</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="lblInfo_2">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">

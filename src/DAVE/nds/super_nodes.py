@@ -853,6 +853,10 @@ class Shackle(RigidBodyContainer):
         self.bow_point._visible = False
         self.pin_point._visible = False
 
+        self.inside._always_show_in_tree = True
+        self.bow._always_show_in_tree = True
+        self.pin._always_show_in_tree = True
+
         self._nodes = [
             self.pin_point,
             self.pin,

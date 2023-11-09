@@ -1873,16 +1873,7 @@ class Gui:
 
         D0 = self.scene._vfc.get_dofs()
 
-        self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
-        self.__BackgroundSolver.mobility = self.scene.solver_settings.mobility
-        self.__BackgroundSolver.do_solve_linear_first = (
-            self.scene.solver_settings.do_linear_first
-        )
-        running = self.__BackgroundSolver.Start()
-        if not running:
-            return (
-                True  # system already converged, nothing started so nothing to wait for
-            )
+        # Create the dialog and connect signals
 
         dialog = SolverDialog_threaded(parent=self.MainWindow)
         dialog.pbAccept.setEnabled(False)
@@ -1893,16 +1884,17 @@ class Gui:
 
         dialog.pbShowControls.clicked.connect(show_settings)
 
+        self.__solver_gui_do_terminate = False
+
         def terminate(*args):
+            self.__solver_gui_do_terminate = True
             self.__BackgroundSolver.Stop()
 
             # restore original state
             self.scene._vfc.set_dofs(D0)
             self.visual.position_visuals()
             self.visual.refresh_embeded_view()
-            result = False
 
-        dialog.pbTerminate.clicked.connect(terminate)
 
         def reset(*args):
             self.scene._vfc.set_dofs(D0)
@@ -1914,70 +1906,129 @@ class Gui:
             )
             self.__BackgroundSolver.Start()
 
-        dialog.pbReset.clicked.connect(reset)
-
         def accept(*args):
             dofs = self.__BackgroundSolver.DOFs
+            self.__solver_gui_do_terminate = True
             self.__BackgroundSolver.Stop()
             self.scene._vfc.set_dofs(dofs)
-
-        dialog.pbAccept.clicked.connect(accept)
 
         def change_mobility(position, *args):
             self.__BackgroundSolver.mobility = position
             self.scene.solver_settings.mobility = position
             dialog.lbMobility.setText(f"{position}%")
 
-        dialog.mobilitySlider.valueChanged.connect(change_mobility)
-        dialog.mobilitySlider.setSliderPosition(self.scene.solver_settings.mobility)
-
         def change_do_linear_first(*args):
             self.scene.solver_settings.do_linear_first = (
                 dialog.cbLinearFirst.isChecked()
             )
 
-        dialog.cbLinearFirst.setChecked(self.scene.solver_settings.do_linear_first)
-        dialog.cbLinearFirst.toggled.connect(change_do_linear_first)
-
+        # disable main window and prepare to start solving
         self.MainWindow.setEnabled(False)
         dialog_open = False
 
-        while self.__BackgroundSolver.Running:
-            time_diff = datetime.datetime.now() - start_time
-            secs = time_diff.total_seconds()
+        # Start the solving sequence, continue until user cancels or we are done
+        feedback_text_prefix = ""
 
-            dofs = self.__BackgroundSolver.DOFs
-            if dofs:
-                dialog.pbAccept.setEnabled(True)
-
-                text = ""
-                if self.__BackgroundSolver.RunningLinear:
-                    text = "Working on linear degrees of freedom only\n"
-                text += f"Error norm = {self.__BackgroundSolver.Enorm:.6e}\nError max-abs {self.__BackgroundSolver.Emaxabs:.6e}\nMaximum error at {self.__BackgroundSolver.Emaxabs_where}"
-                dialog.lbInfo.setText(text)
-
-                if secs > 0.5:  # else use animation
-                    self.scene._vfc.set_dofs(dofs)
-                    self.visual.position_visuals()
-                    self.visual.refresh_embeded_view()
-
-            dialog.setWindowOpacity(min(secs - 0.1, 1))  # fade in the window slowly
-
-            if secs > 0.1:  # and open only after 0.1 seconds
-                if not dialog_open:
-                    dialog.show()
-                    dialog_open = True
-
-            self.app.processEvents()
-
-        if self.__BackgroundSolver.Converged:
-            dofs = self.__BackgroundSolver.DOFs
-            self.scene._vfc.set_dofs(dofs)
-            self.scene.update()
-            self.give_feedback(
-                f"Converged with Error norm = {self.__BackgroundSolver.Enorm} | max-abs {self.__BackgroundSolver.Emaxabs} in {self.__BackgroundSolver.Emaxabs_where}"
+        while True:
+            self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
+            self.__BackgroundSolver.mobility = self.scene.solver_settings.mobility
+            self.__BackgroundSolver.do_solve_linear_first = (
+                self.scene.solver_settings.do_linear_first
             )
-            result = True
+            running = self.__BackgroundSolver.Start()
+
+            if running:
+                while self.__BackgroundSolver.Running:
+                    time_diff = datetime.datetime.now() - start_time
+                    secs = time_diff.total_seconds()
+
+                    dofs = self.__BackgroundSolver.DOFs
+                    if dofs:
+                        dialog.pbAccept.setEnabled(True)
+
+                        text = feedback_text_prefix
+                        if self.__BackgroundSolver.RunningLinear:
+                            text = "Working on linear degrees of freedom only\n"
+                        text += f"Error norm = {self.__BackgroundSolver.Enorm:.6e}\nError max-abs {self.__BackgroundSolver.Emaxabs:.6e}\nMaximum error at {self.__BackgroundSolver.Emaxabs_where}"
+                        dialog.lbInfo.setText(text)
+
+                        if secs > 0.5:  # else use animation
+                            self.scene._vfc.set_dofs(dofs)
+                            self.visual.position_visuals()
+                            self.visual.refresh_embeded_view()
+
+                    dialog.setWindowOpacity(
+                        min(secs - 0.1, 1)
+                    )  # fade in the window slowly
+
+                    if secs > 0.1:  # and open only after 0.1 seconds
+                        if not dialog_open:
+
+                            # Connect signals/slots and show dialog
+
+                            dialog.cbLinearFirst.setChecked(
+                                self.scene.solver_settings.do_linear_first
+                            )
+                            dialog.cbLinearFirst.toggled.connect(change_do_linear_first)
+
+                            dialog.mobilitySlider.valueChanged.connect(change_mobility)
+                            dialog.mobilitySlider.setSliderPosition(
+                                self.scene.solver_settings.mobility
+                            )
+
+                            dialog.pbReset.clicked.connect(reset)
+                            dialog.pbAccept.clicked.connect(accept)
+
+                            dialog.pbTerminate.clicked.connect(terminate)
+
+                            dialog.show()
+                            dialog_open = True
+
+                    self.app.processEvents()
+
+                if self.__BackgroundSolver.Converged:
+                    dofs = self.__BackgroundSolver.DOFs
+                    self.scene._vfc.set_dofs(dofs)
+                    self.scene.update()
+                    self.give_feedback(
+                        f"Converged with Error norm = {self.__BackgroundSolver.Enorm} | max-abs {self.__BackgroundSolver.Emaxabs} in {self.__BackgroundSolver.Emaxabs_where}"
+                    )
+
+            if self.__solver_gui_do_terminate:
+                result = False
+                break           # <--- user exit
+
+            # Check orientations
+            (
+                work_done,
+                messages,
+            ) = self.scene._check_and_fix_geometric_contact_orientations()
+
+            if work_done:
+                self.give_feedback(
+                    f"Fixed {len(messages)} geometric contact orientations"
+                )
+
+                time_diff = datetime.datetime.now() - start_time
+                secs = time_diff.total_seconds()
+
+                # show in the dialog as well:
+                if len(messages) > 3:
+                    feedback_text_prefix = f"Fixed {len(messages)} geometric contact orientations at T = {secs:.1f}s\n"
+                else:
+                    temp = "\n".join(messages)
+                    feedback_text_prefix = f"{temp}\n  at T = {secs:.1f}s\n"
+
+                dialog.setWindowOpacity(min(secs - 0.1, 1))  # fade in the window slowly
+
+                if secs > 0.1:  # and open only after 0.1 seconds
+                    if not dialog_open:
+                        dialog.show()
+                        dialog_open = True
+
+            else:
+                result = True  # <-- took the proper exit
+                break
 
         if dialog_open:
             dialog.close()

@@ -1,5 +1,5 @@
 from numpy.testing import assert_allclose
-
+import numpy as np
 from DAVE import *
 
 

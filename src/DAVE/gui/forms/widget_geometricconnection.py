@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'widget_geometricconnection.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.0
+## Created by: Qt User Interface Compiler version 6.5.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -94,6 +94,12 @@ class Ui_GeometricConnection(object):
         self.rbPinPin.setObjectName(u"rbPinPin")
 
         self.verticalLayout.addWidget(self.rbPinPin)
+
+        self.lbWarningInsideLagerThanOutside = QLabel(GeometricConnection)
+        self.lbWarningInsideLagerThanOutside.setObjectName(u"lbWarningInsideLagerThanOutside")
+        self.lbWarningInsideLagerThanOutside.setStyleSheet(u"background:orange")
+
+        self.verticalLayout.addWidget(self.lbWarningInsideLagerThanOutside)
 
         self.lblInfo_2 = QLabel(GeometricConnection)
         self.lblInfo_2.setObjectName(u"lblInfo_2")
@@ -204,6 +210,7 @@ class Ui_GeometricConnection(object):
         self.lblInfo.setText(QCoreApplication.translate("GeometricConnection", u"<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Connection type</span></p><p><br/></p></body></html>", None))
         self.rbPinHole.setText(QCoreApplication.translate("GeometricConnection", u"Inside contact (Child circle in parent circle)", None))
         self.rbPinPin.setText(QCoreApplication.translate("GeometricConnection", u"Outside contact (Child circle outside parent circle)", None))
+        self.lbWarningInsideLagerThanOutside.setText(QCoreApplication.translate("GeometricConnection", u"Warning: The inside circle is larger than the outside circle.", None))
         self.lblInfo_2.setText(QCoreApplication.translate("GeometricConnection", u"<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Connection particulars</span><br/></p></body></html>", None))
         self.label.setText(QCoreApplication.translate("GeometricConnection", u"Parent rotation", None))
         self.cbSFix.setText(QCoreApplication.translate("GeometricConnection", u"Fixed", None))

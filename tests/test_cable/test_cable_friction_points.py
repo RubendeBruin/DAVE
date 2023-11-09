@@ -1,5 +1,6 @@
 from numpy.testing import assert_allclose
-
+import math
+import numpy as np
 from DAVE import *
 
 def test_friction_over_one_point():

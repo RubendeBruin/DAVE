@@ -2,6 +2,7 @@ import numpy as np
 from numpy.testing import assert_allclose
 
 from DAVE import *
+import math
 
 def basemodel(radius = 1.2):
     s = Scene()

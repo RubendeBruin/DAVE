@@ -16,7 +16,7 @@ from .geometry import *
 from .abstracts import *
 
 
-class GeometricContact(NodePurePython, Manager):  # Note: can not derive from Container because managed nodes is not equal to created nodes
+class GeometricContact(NodePurePython, Manager, HasParent):  # Note: can not derive from Container because managed nodes is not equal to created nodes
     """
     GeometricContact
 
@@ -541,6 +541,13 @@ class GeometricContact(NodePurePython, Manager):  # Note: can not derive from Co
             self.set_pin_in_hole_connection()
         else:
             self.set_pin_pin_connection()
+
+    def inside_child_is_smaller_than_parent(self):
+        """Returns True if this is the case, False otherwise. Only valid if connection type is inside"""
+        if self.inside and self._child_circle.radius > self._parent_circle.radius:
+            return False
+        else:
+            return True
 
     def give_python_code(self):
 

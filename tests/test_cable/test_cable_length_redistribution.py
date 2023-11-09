@@ -31,8 +31,9 @@ def do_test_cable_segment_length_redistribution(loop=True):
     assert s.verify_equilibrium()
 
     p1.gz = 2
-    
-    s.solve_statics(terminate_after_s=5)
+
+    s.solver_settings.timeout_s = 5
+    s.solve_statics()
 
     assert len(s._vfc.get_dofs()) == 2
 
@@ -179,7 +180,8 @@ def test_three_parts():
     s['Body'].fixed = True
 
     try:
-        s.solve_statics(terminate_after_s=5) # <-- will not converge; but should at least not crash
+        s.solver_settings.timeout_s = 5
+        s.solve_statics() # <-- will not converge; but should at least not crash
     except ValueError as M:
         assert "Solver maximum time of 5" in str(M)
         pass # <-- will not converge; but should at least not crash

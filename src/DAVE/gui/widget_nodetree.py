@@ -150,17 +150,6 @@ class HasNodeTreeMixin:
                 if hasattr(node, "_always_show_in_tree"):
                     show_managed_node = node._always_show_in_tree
 
-            # custom work-around for showing the "circles" for managed shackles
-            if isinstance(node._manager, Shackle):
-                if (
-                    node == node._manager.pin
-                    or node == node._manager.bow
-                    or node == node._manager.inside
-                ):
-                    if (
-                        node._manager.manager is None
-                    ):  # but only if the manager itself is not also managed (and thus hidden)
-                        show_managed_node = True
 
             if node.manager and show_managed_node:  # are we showing managed nodes?
                 item.setForeground(0, QBrush(QColor(0, 150, 0)))

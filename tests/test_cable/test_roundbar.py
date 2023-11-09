@@ -1,3 +1,4 @@
+import math
 from numpy.testing import assert_allclose
 
 from DAVE import *

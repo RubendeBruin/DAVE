@@ -1,3 +1,4 @@
+from DAVE import GeometricContact
 
 
 def give_parent_item(node, items):
@@ -9,7 +10,19 @@ def give_parent_item(node, items):
     The possible parents are given in the items dictionary, which maps the name of the node to the
     node
     """
+
     parent = getattr(node, "parent", None)
+
+    # custom code for nodes connected to the out-frame of a geometric contact
+    # following the chain of parents it would end up below the parent of the geometric contact
+    # but we want it to be below the geometric contact itself
+
+    if parent is not None:
+        if isinstance(parent.manager, GeometricContact):
+            gc = parent.manager
+            if not gc.creates(node):
+                if gc.name in items:
+                    return items[gc.name]
 
     # if node does not have a parent, then use the manager (if any)
     if parent is None:
