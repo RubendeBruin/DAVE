@@ -1,7 +1,7 @@
-
 """This is a container for a DC.MomentDiagram object providing plot methods"""
 
 import numpy as np
+
 
 class LoadShearMomentDiagram:
     def __init__(self, datasource):
@@ -30,7 +30,6 @@ class LoadShearMomentDiagram:
         point_loads = []
         distributed_loads = []
         for i in range(n):
-
             load = list(m.load_origin(i))
             effect = m.load(i)
 
@@ -39,15 +38,14 @@ class LoadShearMomentDiagram:
             is_distributed = len(plotx) > 2
 
             if is_distributed:
-                load[0] += ' *' #(add a * to the name))
+                load[0] += " *"  # (add a * to the name))
 
             if (
-                    np.linalg.norm(load[2]) > 1e-6 or np.linalg.norm(load[3]) > 1e-6
+                np.linalg.norm(load[2]) > 1e-6 or np.linalg.norm(load[3]) > 1e-6
             ):  # only forces that actually do something
                 point_loads.append(load)
 
             if is_distributed:
-
                 name = effect[-1]  # name without the *
                 P = load[1]
                 F = load[2]
@@ -56,7 +54,7 @@ class LoadShearMomentDiagram:
                 Fz = F[2]
                 My = M[1]
 
-                if abs(Fz)> 1e-10:
+                if abs(Fz) > 1e-10:
                     dx = -My / Fz
                     x = P[0] + dx
                 else:
@@ -107,6 +105,80 @@ class LoadShearMomentDiagram:
 
         return fig
 
+    def _plot_component(self, ax, i: int, grid_n: int = 1000):
+        m = self.datasource  # alias
+        x = m.grid(grid_n)
+        linewidth = 2
+
+        if i == 0:
+            data = m.Vx
+            title = "Axial"
+            ylabel = "[kN]"
+        elif i == 1:
+            data = m.Vy
+            title = "Shear in Y direction"
+            ylabel = "[kN]"
+        elif i == 2:
+            data = m.Vz
+            title = "Shear in Z direction"
+            ylabel = "[kN]"
+        elif i == 3:
+            data = m.Mx
+            title = "Torsion around X"
+            ylabel = "[kNm]"
+        elif i == 4:
+            data = m.My
+            title = "Bending in XZ"
+            ylabel = "[kNm]"
+        elif i == 5:
+            data = m.Mz
+            title = "Bending in XY"
+            ylabel = "[kNm]"
+
+        dx = (np.max(x) - np.min(x)) / 20  # plot scale
+        ax.plot(x, data, "k-", linewidth=linewidth)
+
+        i = np.argmax(data)
+        ax.plot((x[i] - dx, x[i] + dx), (data[i], data[i]), "k-", linewidth=0.5)
+        ax.text(x[i], data[i], f"{data[i]:.2f}", va="bottom", ha="center")
+
+        i = np.argmin(data)
+        ax.plot((x[i] - dx, x[i] + dx), (data[i], data[i]), "k-", linewidth=0.5)
+        ax.text(x[i], data[i], f"{data[i]:.2f}", va="top", ha="center")
+
+        ax.grid()
+        ax.set_title(title)
+        ax.set_ylabel(ylabel)
+
+    def plot_components(self, grid_n: int = 1000):
+        """Plots the shear and bending moments. Returns figure"""
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots(3, 2, figsize=(8.27, 11.69), dpi=100)
+        for i in range(6):
+            axx = ax[i // 2, i % 2]
+            self._plot_component(axx, i, grid_n)
+
+            if i == 4 or i == 5:
+                axx.set_xlabel("X position [m]")
+
+            try:
+                from DAVE_reporting.helpers.format_mpl_plot import format_axes
+
+                format_axes(axx)
+
+            except ImportError:
+                pass
+
+        try:
+            from DAVE_reporting.helpers.format_mpl_plot import apply_font
+
+            apply_font(fig)
+        except:
+            pass
+
+        return fig
+
     def plot(self, grid_n=100, merge_adjacent_loads=True, filename=None, do_show=False):
         """Plots the load, shear and bending moments. Returns figure"""
         m = self.datasource  # alias
@@ -136,7 +208,6 @@ class LoadShearMomentDiagram:
         # merge loads with same source and matching endpoints
 
         if merge_adjacent_loads:
-
             to_be_plotted = [loads[0]]
 
             for load in loads[1:]:
@@ -150,7 +221,6 @@ class LoadShearMomentDiagram:
                 if len(prev_load[0]) != 2:  # not a point-load
                     if len(load[0]) != 2:  # not a point-load
                         if prev_load[2] == load[2]:  # same name
-
                             # merge the two
                             # remove the last (zero) entry of the previous lds
                             # as well as the first entry of these
@@ -183,7 +253,6 @@ class LoadShearMomentDiagram:
         ax0_second = ax0.twinx()
 
         for icol, ld in enumerate(to_be_plotted):
-
             xx = ld[0]
             yy = ld[1]
             name = ld[2]
@@ -324,10 +393,17 @@ class LoadShearMomentDiagram:
         ax2.set_title("Moment")
         ax2.set_ylabel("[kN*m]")
 
+        try:
+            from DAVE_reporting.helpers.format_mpl_plot import format_axes
+
+            format_axes(ax1)
+            format_axes(ax2)
+        except ImportError:
+            pass
+
         if do_show:
             plt.show()
         if filename is not None:
             fig.savefig(filename)
 
         return fig
-
