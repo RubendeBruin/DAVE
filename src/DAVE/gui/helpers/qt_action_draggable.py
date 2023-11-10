@@ -45,6 +45,10 @@ class QDraggableNodeActionWidget(QWidgetAction):
             self.layout.addWidget(self.icon)
             self.icon.setFixedWidth(16)
 
+            self.icon.mouseMoveEvent = self.mouseMoveEvent
+            self.icon.mousePressEvent = self.mousePressEvent
+            self.icon.mouseReleaseEvent = self.mouseReleaseEvent
+
         self.label = QLabel()
         self.label.setText(self.text)
         # self.label.setAlignment(Qt.AlignRight)
@@ -53,9 +57,6 @@ class QDraggableNodeActionWidget(QWidgetAction):
         self.label.mousePressEvent = self.mousePressEvent
         self.label.mouseReleaseEvent = self.mouseReleaseEvent
 
-        self.icon.mouseMoveEvent = self.mouseMoveEvent
-        self.icon.mousePressEvent = self.mousePressEvent
-        self.icon.mouseReleaseEvent = self.mouseReleaseEvent
 
         self.widget.setLayout(self.layout)
         self.layout.addWidget(self.label)
