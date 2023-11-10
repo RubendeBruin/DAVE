@@ -15,8 +15,8 @@ from PySide6 import QtWidgets
 from DAVE.gui.forms.widgetUI_explore import Ui_widgetExplore11
 from DAVE.gui.helpers.flow_layout import FlowLayout
 
-class WidgetExplore(guiDockWidget):
 
+class WidgetExplore(guiDockWidget):
     def guiCreate(self):
         """
         Add gui components to self.contents
@@ -39,7 +39,6 @@ class WidgetExplore(guiDockWidget):
         self.flow_layout = FlowLayout()
         self.ui.wigetHistory.setLayout(self.flow_layout)
 
-
     def guiProcessEvent(self, event):
         """
         Add processing that needs to be done.
@@ -47,7 +46,6 @@ class WidgetExplore(guiDockWidget):
         After creation of the widget this event is called with guiEventType.FULL_UPDATE
         """
         pass
-
 
     def guiDefaultLocation(self):
         return PySide6QtAds.DockWidgetArea.LeftDockWidgetArea
@@ -63,14 +61,17 @@ class WidgetExplore(guiDockWidget):
             try:
                 f = float(r)
             except:
-                raise Exception("Expression evaluates to: \n\n{} \n\nBut we need a (floating-point) number".format(r))
+                raise Exception(
+                    "Expression evaluates to: \n\n{} \n\nBut we need a (floating-point) number".format(
+                        r
+                    )
+                )
 
             self.ui.editResult.setPlainText(str(f) + "\n\nWell done :-)")
             self.ui.editResult.setStyleSheet("background-color: white;")
         except Exception as E:
             self.ui.editResult.setPlainText(str(E))
             self.ui.editResult.setStyleSheet("background-color: pink;")
-
 
     # ==== Goal-seek
 
@@ -85,28 +86,37 @@ class WidgetExplore(guiDockWidget):
 
         change = self.ui.editSet.text()
 
-        if "," not in change: # to be treated as a string
+        if "," not in change:  # to be treated as a string
             change = f'"{change}"'
 
-
         code = f's.goal_seek(evaluate="{self.ui.editEvaluate.toPlainText()}",\n    target={self.ui.editTarget.value()},\n    change={change})'.format(
-            self.ui.editEvaluate.toPlainText(),
-            self.ui.editTarget.value(),
-            change)
+            self.ui.editEvaluate.toPlainText(), self.ui.editTarget.value(), change
+        )
 
         self.guiRunCodeCallback(code, guiEventType.MODEL_STATE_CHANGED)
 
         # add a button to the history
         btn = QtWidgets.QPushButton()
-        btn.setText("Goal-seek: {} to {}".format(self.ui.editEvaluate.toPlainText().split('.')[-1], self.ui.editTarget.value()))
-        btn.pressed.connect(lambda c = code, *args: self.guiRunCodeCallback(c, guiEventType.MODEL_STATE_CHANGED))
+        btn.setText(
+            "Goal-seek: {} to {}".format(
+                self.ui.editEvaluate.toPlainText().split(".")[-1],
+                self.ui.editTarget.value(),
+            )
+        )
+        btn.pressed.connect(
+            lambda c=code, *args: self.guiRunCodeCallback(
+                c, guiEventType.MODEL_STATE_CHANGED
+            )
+        )
         self.flow_layout.addWidget(btn)
 
-
     def plot(self):
+        import matplotlib
+
+        matplotlib.use("qtagg")
 
         set = self.ui.editSet.text()
-        set = set.split('.')
+        set = set.split(".")
         node = set[0][3:-2]
         property = set[1]
 
@@ -114,9 +124,12 @@ class WidgetExplore(guiDockWidget):
             self.ui.editEvaluate.toPlainText(),
             property,
             node,
-            self.ui.editFrom.value(), self.ui.editTo.value(), self.ui.editSteps.value())
+            self.ui.editFrom.value(),
+            self.ui.editTo.value(),
+            self.ui.editSteps.value(),
+        )
 
-        code += '\nimport matplotlib.pyplot as plt'
-        code += '\nplt.show()'
+        code += "\nimport matplotlib.pyplot as plt"
+        code += "\nplt.show()"
 
         self.guiRunCodeCallback(code, guiEventType.NOTHING)
