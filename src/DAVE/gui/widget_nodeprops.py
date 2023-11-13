@@ -2338,10 +2338,13 @@ class EditGeometricContact(NodeEditor):
         for widget in widgets:
             widget.blockSignals(False)
 
-        self.ui.lbWarningInsideLagerThanOutside.setVisible(not self.node.inside_child_is_smaller_than_parent())
+        self.ui.lbWarningInsideLagerThanOutside.setVisible(
+            not self.node.inside_child_is_smaller_than_parent()
+        )
 
         warnings.warn(
-            "Parent circle is smaller than child circle, this is allowed but may lead to unexpected results if this is not what you intended to do")
+            "Parent circle is smaller than child circle, this is allowed but may lead to unexpected results if this is not what you intended to do"
+        )
 
     def flip(self):
         code = "\ns['{}'].flip()".format(self.node.name)
@@ -2354,7 +2357,6 @@ class EditGeometricContact(NodeEditor):
         self.run_code(code)
 
         self.post_update_event()  # no need, done automatically by run_code
-
 
     def change_type(self):
         new_inside = self.ui.rbPinHole.isChecked()

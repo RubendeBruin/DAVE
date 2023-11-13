@@ -10,32 +10,38 @@ import PySide6QtAds
 from DAVE.scene import *
 
 
-
-
 class guiEventType(Enum):
-    NOTHING = -1                 # no changes, for example model saved
-    FULL_UPDATE = 0              # unknown, better update everything
-    SELECTED_NODE_MODIFIED = 1   # properties of the currently selected node changed
-    MODEL_STRUCTURE_CHANGED = 2  # changes in global model structure, for example nodes added or removed
-    MODEL_STATE_CHANGED = 3      # only change in dofs
-    SELECTION_CHANGED = 4        # a different node is selected
-    VIEWER_SETTINGS_UPDATE = 5   # the display settings for the viewer changed
-    ENVIRONMENT_CHANGED = 6      # one of the scene environment values changed (eg: g, wind_direction, ... )
-    TAGS_CHANGED = 7             # whenever a tag is added or removed
-    MODEL_STEP_ACTIVATED = 8     # a change in time-step MAY mean
-                                 #    - that the select node is modified,
-                                 #    - model structure is changed
-                                 #    - model state changed
-                                 #    - environment changed
+    NOTHING = -1  # no changes, for example model saved
+    FULL_UPDATE = 0  # unknown, better update everything
+    SELECTED_NODE_MODIFIED = 1  # properties of the currently selected node changed
+    MODEL_STRUCTURE_CHANGED = (
+        2  # changes in global model structure, for example nodes added or removed
+    )
+    MODEL_STATE_CHANGED = 3  # only change in dofs
+    SELECTION_CHANGED = 4  # a different node is selected
+    VIEWER_SETTINGS_UPDATE = 5  # the display settings for the viewer changed
+    ENVIRONMENT_CHANGED = (
+        6  # one of the scene environment values changed (eg: g, wind_direction, ... )
+    )
+    TAGS_CHANGED = 7  # whenever a tag is added or removed
+    MODEL_STEP_ACTIVATED = 8  # a change in time-step MAY mean
+    #    - that the select node is modified,
+    #    - model structure is changed
+    #    - model state changed
+    #    - environment changed
+
 
 class guiDockWidget(PySide6QtAds.CDockWidget):
-
-    def __init__(self, *args,  name, parent,  **kwargs):
-        super().__init__(name, parent) # no args *args, **kwargs)
+    def __init__(self, *args, name, parent, **kwargs):
+        super().__init__(name, parent)  # no args *args, **kwargs)
         self.contents = QtWidgets.QWidget(self)
         self.setWidget(self.contents)
         self._active = False
         self.guiCreate()
+
+        self.setFeature(
+            PySide6QtAds.CDockWidget.DockWidgetFeature.DeleteContentOnClose, False
+        )
 
         # These widgets are created by the main gui -> show_guiWidget. This function sets the following references
 
@@ -46,7 +52,7 @@ class guiDockWidget(PySide6QtAds.CDockWidget):
         """will be set to a function that runs python code with signature func(code, eventype).
         Func returns True if succes, false otherwise"""
 
-        self.guiScene : Scene = None
+        self.guiScene: Scene = None
         """will point to the singleton Scene object"""
 
         self.guiSelection = list()
@@ -61,9 +67,8 @@ class guiDockWidget(PySide6QtAds.CDockWidget):
         self.guiPressSolveButton = None
         """function reference to the 'solve' button in the gui - call this to solve the current scene while giving the user the option to cancel and some eye-candy"""
 
-
     def closeEvent(self, event):  # overrides default
-        super().closeEvent(event) # parent call
+        super().closeEvent(event)  # parent call
         self._active = False
         # self.contents.deleteLater()
 
@@ -91,7 +96,7 @@ class guiDockWidget(PySide6QtAds.CDockWidget):
 
         :param event:  guiEventType
         """
-        print('{} event on {}'.format(event, self.__class__))
+        print("{} event on {}".format(event, self.__class__))
 
     def guiCreate(self):
         """Is fired when created
@@ -120,24 +125,28 @@ class guiDockWidget(PySide6QtAds.CDockWidget):
             width = self.width()
 
             left = pos.x()
-            right = left +width
+            right = left + width
             top = pos.y()
 
             cursor_pos = QCursor.pos()
 
             x = cursor_pos.x()
 
-            if x>left and x < right:
+            if x > left and x < right:
                 # we're blocking the cursor position
                 size = QApplication.instance().screens()[0].size()
 
-                room_left = left - width  # free space with widget right edge is at cursor
-                room_right = size.width() - right # free space if left edge is at cursor
+                room_left = (
+                    left - width
+                )  # free space with widget right edge is at cursor
+                room_right = (
+                    size.width() - right
+                )  # free space if left edge is at cursor
 
                 if room_left > room_right:
                     space = min(max_spacing, room_left)
                     left = x - width - space
-                    self.move(QPoint(left,top))
+                    self.move(QPoint(left, top))
                     return
 
                 else:

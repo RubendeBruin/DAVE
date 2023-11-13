@@ -76,7 +76,7 @@ def customize_stylesheet(stylesheet: str, identifier: str) -> str:
     return "\n".join(new_lines)
 
 
-def create_dock_manager(main_window, settings = None):
+def create_dock_manager(main_window, settings=None):
     PySide6QtAds.CDockManager.setConfigFlag(
         PySide6QtAds.CDockManager.OpaqueSplitterResize, True
     )
@@ -115,7 +115,10 @@ def create_dock_manager(main_window, settings = None):
             dock_manager.loadPerspectives(settings)
         except:
             import warnings
-            warnings.warn("Dockmanager: can not open perspectives from settings, continuing without")
+
+            warnings.warn(
+                "Dockmanager: can not open perspectives from settings, continuing without"
+            )
 
     return dock_manager
 
@@ -161,7 +164,11 @@ def dock_remove_from_gui(
 
 def dock_show(manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget):
     """Makes sure a dock is visible"""
-    print(f"showing {d}")
+    try:
+        print(f"showing {d}")
+    except RuntimeError:
+        print("Can not show dock because it was already deleted")
+
     if d.isVisible():
         return  # already visible
 
@@ -288,11 +295,11 @@ if __name__ == "__main__":
         d.is_left = True
 
         if i > 0:
-
             if docks[0].is_left:
-
                 dock_manager.addDockWidget(
-                    PySide6QtAds.DockWidgetArea.BottomDockWidgetArea, d, docks[0].dockAreaWidget()
+                    PySide6QtAds.DockWidgetArea.BottomDockWidgetArea,
+                    d,
+                    docks[0].dockAreaWidget(),
                 )
         else:
             dock_manager.addDockWidget(

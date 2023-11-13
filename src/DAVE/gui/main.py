@@ -868,12 +868,7 @@ class Gui:
 
         # ======================== Finalize ========================
 
-        # ---------- activate workspace (if any)
-
-        if workspace is None:
-            self.activate_dockgroup("Build")
-        else:
-            self.activate_dockgroup(workspace)
+        self._requested_workspace = workspace
 
         if self._read_only_mode:
             self.ui.menuFile.setTitle("Read only mode")
@@ -882,7 +877,6 @@ class Gui:
             self.ui.menuEdit.setEnabled(False)
 
         self.MainWindow.show()
-        #
 
         if self._read_only_mode:
             self._autosave = None
@@ -897,12 +891,29 @@ class Gui:
         if splash:
             splash.finish(self.MainWindow)
 
-        self.visual.zoom_all()
 
         if block:
             self.ui.pbUpdate.setVisible(False)
             self.ui.pbCopyViewCode.setVisible(False)
+
+            # create a time to trigger after-startup events
+            sst = QtCore.QTimer()
+            sst.setSingleShot(True)
+            sst.singleShot(0, self.after_startup) # <-- 0 ms delay
+
             self.app.exec()
+
+    def after_startup(self):
+        """Executed after the gui has started up"""
+        self.visual.zoom_all()
+        self.visual.refresh_embeded_view()
+
+        if self._requested_workspace is None:
+            self.activate_dockgroup("Build")
+        else:
+            self.activate_dockgroup(self._requested_workspace)
+
+
 
     def autosave_startup(self) -> str:
         # check for autosave files
@@ -1250,10 +1261,17 @@ class Gui:
         # Set the active perspective
         if group.ID in self.dock_manager.perspectiveNames():
             print("Loading perspective", group.ID)
+
+            #
             self.dock_manager.openPerspective(name)
             self.save_perspective_action.setIcon(
                 QIcon(":/v2/icons/heart_full_small.svg")
             )
+
+            # check if all docks are still ok
+            for name, dock in self.guiWidgets.items():
+                assert dock == self.dock_manager.dockWidgetsMap()[name]
+
         else:
             self.save_perspective_action.setIcon(
                 QIcon(":/v2/icons/heart_empty_small.svg")
