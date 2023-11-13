@@ -2737,7 +2737,7 @@ class WidgetNodeProps(guiDockWidget):
     def guiCreate(self):
         self.node_picker = None
 
-        self.setMinimumWidth(442)
+        # self.setMinimumWidth(442)
         self.setVisible(False)
         # self.setAllowedAreas(
         #     QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea
@@ -2763,6 +2763,7 @@ class WidgetNodeProps(guiDockWidget):
         self.no_node_layout = QtWidgets.QVBoxLayout()
         self.no_node_message = QtWidgets.QLabel()
         self.no_node_message.setText("Select a node to edit its properties")
+        self.no_node_message.setAlignment(QtCore.Qt.AlignCenter)
         self.no_node_layout.addWidget(self.no_node_message)
 
         # contents (main layout)
@@ -2928,21 +2929,19 @@ class WidgetNodeProps(guiDockWidget):
 
     def select_node(self, node):
         self.setUpdatesEnabled(False)
-
         to_be_removed = self._open_edit_widgets.copy()
 
         if node is None:
             # remove all widgets and add a message
-            # self.contents.setLayout(self.no_node_layout)
-
-            # dock_remove_from_gui(self.gui.dock_manager, self)
-            # self.contents.update()
-            self.contents.setVisible(False)
+            self.setWidget(self.no_node_message)
+            self.update()
             self.setUpdatesEnabled(True)
             return
 
+        self.setWidget(self.contents)
+
         self.contents.setVisible(True)
-        # self.contents.setLayout(self.main_layout)  # default
+        self.contents.setLayout(self.main_layout)  # default
 
         manager_workaround = None
         self._name_widget.setEnabled(
@@ -3134,8 +3133,7 @@ class WidgetNodeProps(guiDockWidget):
             ), f"Editor {editor} returned None when connecting to node {node}"
             to_be_added.append(widget)
 
-        # for item in to_be_added:
-        #    print('to be added: ' + str(type(item)))
+            print(f"Editor {editor} {widget.sizeHint()}")
 
         for widget in to_be_removed:
             if widget in to_be_added:
@@ -3155,20 +3153,6 @@ class WidgetNodeProps(guiDockWidget):
         self.node = node
         self.check_for_warnings()
 
-        # self.layout.sizeHint()
-
-        widgets = [*self._open_edit_widgets, self.manager_widget, self._name_widget]
-
-        ht = sum([w.sizeHint().height() for w in widgets])
-        wt = max([w.sizeHint().width() for w in widgets])
-
-        for w in widgets:
-            print(f"Minimum size for {type(w)} = {w.sizeHint().width()}")
-
-        self.contents.setMinimumSize(
-            QtCore.QSize(wt, ht - 5)
-        )  # minus 5 to avoid scrollbar to show
-
         # check if one of the widgets is "expanding"
         # if not, then add a spacer
         expanding = False
@@ -3185,41 +3169,9 @@ class WidgetNodeProps(guiDockWidget):
         if not expanding:
             self.layout.addSpacerItem(self._Vspacer)  # add a spacer at the bottom
 
-        # Geometry, resizing and fitting on screen
-
-        if self.isFloating():
-            target_height = ht
-
-            geo = QGuiApplication.primaryScreen().availableGeometry()
-
-            if target_height > geo.height():
-                target_height = geo.height()
-                wt = wt + 20  # for scrollbar
-
-            self.resize(
-                QtCore.QSize(wt, target_height)
-            )  # set the size of the floating dock widget to its minimum size
-
-            top = self.pos().y()
-
-            if top + target_height > geo.height():
-                top = geo.height() - target_height
-                if top <= 0:
-                    top = 5
-                self.setGeometry(self.pos().x(), top, wt, target_height)
-
-        else:  # docked
-            if self.height() < ht:
-                wt = wt + 5  # for scrollbar
-            self.setMinimumWidth(wt)
-
-        # print("Setting updates enabled", flush=True)
-
         self.setUpdatesEnabled(True)
-        self.contents.update()
         self.update()
 
-        # print("Function done", flush=True)
 
 
 from DAVE.gui.settings import DAVE_GUI_DOCKS

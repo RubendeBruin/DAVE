@@ -39,8 +39,8 @@ class guiDockWidget(PySide6QtAds.CDockWidget):
         self._active = False
         self.guiCreate()
 
-        self.setFeature(
-            PySide6QtAds.CDockWidget.DockWidgetFeature.DeleteContentOnClose, False
+        self.setMinimumSizeHintMode(
+            PySide6QtAds.CDockWidget.MinimumSizeHintFromDockWidget
         )
 
         # These widgets are created by the main gui -> show_guiWidget. This function sets the following references

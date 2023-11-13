@@ -899,7 +899,7 @@ class Gui:
             # create a time to trigger after-startup events
             sst = QtCore.QTimer()
             sst.setSingleShot(True)
-            sst.singleShot(0, self.after_startup) # <-- 0 ms delay
+            sst.singleShot(0, self.after_startup) # <-- 0 ms delay is ok
 
             self.app.exec()
 
