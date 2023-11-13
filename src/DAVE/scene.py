@@ -495,6 +495,9 @@ class Scene:
         changed = False
         messages = []
         for n in self.nodes_of_type(GeometricContact):
+            if n.fixed_to_parent or n.child_fixed:  # can not change side if fixed
+                continue
+
             if n.inside:
                 # inside contact
                 # the rod connecting the two pins needs to be under tension if the child circle is smaller than the parent circle (the usual case)

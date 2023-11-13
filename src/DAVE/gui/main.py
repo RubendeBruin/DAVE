@@ -1764,12 +1764,12 @@ class Gui:
 
                         self.selected_nodes.clear()
 
-                        if node.manager is not None:
-                            self.guiSelectNode(node.manager)
-                            select_node_name_edit_field = True
-                        else:
-                            self.guiSelectNode(node)
-                            select_node_name_edit_field = True
+                        node_to_be_selected = node
+                        while node_to_be_selected.manager is not None:
+                            node_to_be_selected = node_to_be_selected.manager
+
+                        self.guiSelectNode(node_to_be_selected)
+                        select_node_name_edit_field = True
 
                         emitted = True
                         break
@@ -1895,7 +1895,6 @@ class Gui:
             self.visual.position_visuals()
             self.visual.refresh_embeded_view()
 
-
         def reset(*args):
             self.scene._vfc.set_dofs(D0)
             self.__BackgroundSolver.Stop()
@@ -1963,7 +1962,6 @@ class Gui:
 
                     if secs > 0.1:  # and open only after 0.1 seconds
                         if not dialog_open:
-
                             # Connect signals/slots and show dialog
 
                             dialog.cbLinearFirst.setChecked(
@@ -1996,7 +1994,7 @@ class Gui:
 
             if self.__solver_gui_do_terminate:
                 result = False
-                break           # <--- user exit
+                break  # <--- user exit
 
             # Check orientations
             (
