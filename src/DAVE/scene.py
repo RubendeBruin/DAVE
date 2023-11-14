@@ -751,7 +751,7 @@ class Scene:
                     from PySide6.QtWidgets import QMessageBox
 
                     msg = QMessageBox()
-                    msg.setIcon(QMessageBox.Critical)
+                    msg.setIcon(QMessageBox.Question)
                     msg.setText(
                         f'Node with name "{node_name}" not found. Did you mean: "{suggestion}"?'
                     )
