@@ -742,6 +742,27 @@ class Scene:
         choices = [node.name for node in self._nodes]
         suggestion = MostLikelyMatch(node_name, choices)
 
+        # do we have a gui?
+        if not silent:
+            try:
+                from PySide6.QtWidgets import QApplication
+
+                if QApplication.instance() is not None:
+                    from PySide6.QtWidgets import QMessageBox
+
+                    msg = QMessageBox()
+                    msg.setIcon(QMessageBox.Critical)
+                    msg.setText(
+                        f'Node with name "{node_name}" not found. Did you mean: "{suggestion}"?'
+                    )
+                    msg.setWindowTitle("DAVE")
+                    msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                    if msg.exec() == QMessageBox.Yes:
+                        return self.node_by_name(suggestion)
+
+            except ImportError:
+                pass
+
         raise ValueError(
             'No node with name "{}". Did you mean: "{}"? \nAvailable names printed above.'.format(
                 node_name, suggestion
