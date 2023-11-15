@@ -5,6 +5,14 @@
 
   Ruben de Bruin - 2019
 """
+import csv
+import numpy as np
+from pathlib import Path
+
+from .nds.mixins import Manager, HasFootprint, HasTrimesh, HasParent, HasSubScene
+from .nds.results import LoadShearMomentDiagram
+from .nds.super_nodes import Component, Shackle, Sling
+from .nds.trimesh import TriMeshSource
 
 """
 
@@ -84,17 +92,17 @@ Mixin:
 
 
 """
-from .nds.abstracts import *
-from .nds.enums import *
-from .nds.helpers import *
-from .nds.mixins import *
-from .nds.base import *
-from .nds.pure import *
-from .nds.core import *
-from .nds.results import *
+from .nds.abstracts import Node, NodeCoreConnected, NodePurePython, DAVENodeBase
+from .nds.enums import AreaKind, VisualOutlineType
+from .nds.helpers import ClaimManagement, Watch
+
+from .nds.core import Buoyancy, Beam, Cable, Connector2d, ContactBall, ContactMesh, CurrentArea, Force, HydSpring, LC6d, \
+    RigidBody, SPMT, Tank, WindArea, WindOrCurrentArea
+from .nds.pure import BallastSystem, Visual, WaveInteraction1
+
 from .nds.geometry import Frame, Point, Circle
-from .nds.geometric_contact import *
-from .nds.super_nodes import *
+from .nds.geometric_contact import GeometricContact
+
 
 
 from DAVE.settings import DAVE_ADDITIONAL_RUNTIME_MODULES, RESOURCE_PATH
@@ -150,7 +158,7 @@ DAVE_ADDITIONAL_RUNTIME_MODULES["VisualOutlineType"] = VisualOutlineType
 
 # Register the documentation
 #
-cdir = Path(dirname(__file__))
+cdir = Path(__file__).parent
 filename = cdir / "./resources/node_prop_info.csv"
 from DAVE.settings import DAVE_NODEPROP_INFO, NodePropertyInfo
 

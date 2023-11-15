@@ -21,10 +21,7 @@ from DAVE.gui.forms.widget_limits import Ui_DockLimits
 # from DAVE.settings import DAVE_REPORT_PROPS
 
 
-
-
 class WidgetLimits(guiDockWidget):
-
     def guiCreate(self):
         """
         Add gui components to self.contents
@@ -46,7 +43,9 @@ class WidgetLimits(guiDockWidget):
         self.ui.pbRemove.setEnabled(False)
 
         self.ui.table.setColumnCount(5)
-        self.ui.table.setHorizontalHeaderLabels(('Node','Property','Value','Limit','UC'))
+        self.ui.table.setHorizontalHeaderLabels(
+            ("Node", "Property", "Value", "Limit", "UC")
+        )
         self.ui.table.verticalHeader().setVisible(False)
 
         self.ui.lineEdit.textChanged.connect(self.limit_value_changed)
@@ -69,27 +68,26 @@ class WidgetLimits(guiDockWidget):
         After creation of the widget this event is called with guiEventType.FULL_UPDATE
         """
 
-        if event in [guiEventType.FULL_UPDATE,
-                     guiEventType.MODEL_STATE_CHANGED,
-                     guiEventType.SELECTED_NODE_MODIFIED,
-                     guiEventType.MODEL_STEP_ACTIVATED, ]:
+        if event in [
+            guiEventType.FULL_UPDATE,
+            guiEventType.MODEL_STATE_CHANGED,
+            guiEventType.SELECTED_NODE_MODIFIED,
+            guiEventType.MODEL_STEP_ACTIVATED,
+        ]:
             self.fill_table()
 
-        if event in [guiEventType.FULL_UPDATE,
-                     guiEventType.SELECTION_CHANGED,
-                     guiEventType.MODEL_STRUCTURE_CHANGED,
-                     guiEventType.MODEL_STEP_ACTIVATED,
-                     ]:
+        if event in [
+            guiEventType.FULL_UPDATE,
+            guiEventType.SELECTION_CHANGED,
+            guiEventType.MODEL_STRUCTURE_CHANGED,
+            guiEventType.MODEL_STEP_ACTIVATED,
+        ]:
             self.fill_edit_section()
-
 
     def guiDefaultLocation(self):
         return PySide6QtAds.DockWidgetArea.RightDockWidgetArea
 
     # ======
-
-
-
 
     def node_selected_in_cb(self):
         try:
@@ -98,7 +96,6 @@ class WidgetLimits(guiDockWidget):
             return
 
         self.guiSelectNode(node)  # this triggers the fill_edit_section
-
 
     def fill_edit_section(self):
         self.ui.widget.blockSignals(True)
@@ -113,10 +110,12 @@ class WidgetLimits(guiDockWidget):
             node = self.guiSelection[0]
             cbN.setCurrentText(node.name)
             if node.manager is None:
-                self.ui.lbNodeClass.setText(f'Node type: {node.class_name}')
+                self.ui.lbNodeClass.setText(f"Node type: {node.class_name}")
                 self.ui.lblError.setVisible(False)
             else:
-                self.ui.lblError.setText(f'{node.name} is managed by {node.manager.name} - limits defined by manager can be changed but can not be deleted')
+                self.ui.lblError.setText(
+                    f"{node.name} is managed by {node.manager.name} - limits defined by manager can be changed but can not be deleted"
+                )
                 self.ui.lblError.setVisible(True)
 
         cbN.blockSignals(False)
@@ -129,7 +128,21 @@ class WidgetLimits(guiDockWidget):
             node = self.guiScene[cbN.currentText()]
             props = self.guiScene.give_properties_for_node(node)
 
-            exclude = ('name','UC','UC_governing_details','manager','parent_for_export','visible','class_name','parent','footprint','fixed','intertia','inertia_position','inertia_radii')
+            exclude = (
+                "name",
+                "UC",
+                "UC_governing_details",
+                "manager",
+                "parent_for_export",
+                "visible",
+                "class_name",
+                "parent",
+                "footprint",
+                "fixed",
+                "intertia",
+                "inertia_position",
+                "inertia_radii",
+            )
 
             props_without_name_and_UC = [p for p in props if p not in exclude]
             combobox_update_items(cbP, props_without_name_and_UC)
@@ -141,7 +154,6 @@ class WidgetLimits(guiDockWidget):
             #                                                 # managed nodes are not in the drop-down box
             #     self.ui.lbNodeClass.setText(f'This node is managed by {node.manager.name}')
 
-
         else:
             cbP.clear()
 
@@ -152,7 +164,6 @@ class WidgetLimits(guiDockWidget):
         self.node_property_updated()
 
     def node_property_updated(self):
-
         try:
             node = self.guiScene[self.ui.cbNode.currentText()]
         except:
@@ -160,13 +171,12 @@ class WidgetLimits(guiDockWidget):
 
         prop_name = self.ui.cbProperty.currentText()
 
-        if prop_name == '':
+        if prop_name == "":
             # no properties available
             self.ui.pbRemove.setEnabled(False)
             self.ui.pbApply.setEnabled(False)
-            self.ui.lbPropHelp.setText('')
+            self.ui.lbPropHelp.setText("")
             return
-
 
         # get the property documentation
         # step1 = DAVE_REPORT_PROPS[DAVE_REPORT_PROPS['class'] == node.class_name]
@@ -183,8 +193,8 @@ class WidgetLimits(guiDockWidget):
         # get the actual value of the property
         actual_value = getattr(node, prop_name)
         if isinstance(actual_value, float):
-            actual_value = f'{actual_value:.3f}'
-        doc += f'\nActual value = {actual_value}'
+            actual_value = f"{actual_value:.3f}"
+        doc += f"\nActual value = {actual_value}"
 
         self.ui.lbPropHelp.setText(doc)
 
@@ -195,11 +205,10 @@ class WidgetLimits(guiDockWidget):
             self.ui.lineEdit.setText(str(node.limits[prop_name]))
             self.ui.pbRemove.setEnabled(True)
         else:
-            self.ui.lineEdit.setText('')
+            self.ui.lineEdit.setText("")
             self.ui.pbRemove.setEnabled(False)
 
     def limit_value_changed(self):
-
         try:
             node = self.guiScene[self.ui.cbNode.currentText()]
         except:
@@ -208,8 +217,8 @@ class WidgetLimits(guiDockWidget):
         prop_name = self.ui.cbProperty.currentText()
         limit_value = self.ui.lineEdit.text()
 
-        if limit_value == '':
-            message = f'use:\n- 123.456 to define a max-abs limit\n- (start, stop) to define a range'
+        if limit_value == "":
+            message = f"use:\n- 123.456 to define a max-abs limit\n- (start, stop) to define a range"
             self.ui.lbResult.setText(message)
             self.ui.pbApply.setEnabled(False)
             return
@@ -227,36 +236,35 @@ class WidgetLimits(guiDockWidget):
             uc = node.give_UC(prop_name)
         except Exception as E:
             del node.limits[prop_name]
-            message = f'Invalid limit, use:\n- 123.456 to define a max-abs limit\n- (start, stop) to define a range\n\nError message:\n{str(E)}'
+            message = f"Invalid limit, use:\n- 123.456 to define a max-abs limit\n- (start, stop) to define a range\n\nError message:\n{str(E)}"
             self.ui.lbResult.setText(message)
             self.ui.pbApply.setEnabled(False)
 
         if uc is not None:
-            self.ui.lbResult.setText(f'UC = {uc:.2f}')
+            self.ui.lbResult.setText(f"UC = {uc:.2f}")
             self.ui.pbApply.setEnabled(True)
 
-
-
     def fill_table(self):
-
-        table = self.ui.table # alias
+        table = self.ui.table  # alias
         table.blockSignals(True)
 
-        unmanged_nodes_with_limit = [node for node in self.guiScene.unmanged_nodes if node.limits is not None]
-        managed_nodes_with_limit = [node for node in self.guiScene.manged_nodes if node.limits is not None]
+        unmanged_nodes_with_limit = [
+            node for node in self.guiScene.unmanaged_nodes if node.limits is not None
+        ]
+        managed_nodes_with_limit = [
+            node for node in self.guiScene.managed_nodes if node.limits is not None
+        ]
 
         irow = 0
         table.setRowCount(0)
 
         for node in (*unmanged_nodes_with_limit, *managed_nodes_with_limit):
-
             for key, value in node.limits.items():
-
                 if isinstance(value, float):  # do not list unset limits (limit < 0)
                     if value < 0:
                         continue
 
-                table.setRowCount(irow+1)
+                table.setRowCount(irow + 1)
 
                 # ('Node','Property','Value','Limit','UC')
                 table.setItem(irow, 0, QTableWidgetItem(node.name))
@@ -264,7 +272,7 @@ class WidgetLimits(guiDockWidget):
 
                 prop_value = getattr(node, key)
                 if isinstance(prop_value, float):  # round floats to 3 decimals
-                    prop_value = f'{prop_value:.3f}'
+                    prop_value = f"{prop_value:.3f}"
                 table.setItem(irow, 2, QTableWidgetItem(str(prop_value)))
 
                 table.setItem(irow, 3, QTableWidgetItem(str(value)))
@@ -273,25 +281,25 @@ class WidgetLimits(guiDockWidget):
                 if uc > 1:
                     uc_paint = (1, 0, 1)  # ugly pink
                 else:
-                    uc_paint = UC_CMAP(round(100*uc))
+                    uc_paint = UC_CMAP(round(100 * uc))
 
-                uc_item = QTableWidgetItem(f'{uc:.2f}')
+                uc_item = QTableWidgetItem(f"{uc:.2f}")
 
-                uc_item.setBackground(QBrush(QColor(255*uc_paint[0],
-                                                  255 * uc_paint[1],
-                                                  255 * uc_paint[2],
-                                                  254
-                                                  )))
-
+                uc_item.setBackground(
+                    QBrush(
+                        QColor(
+                            255 * uc_paint[0], 255 * uc_paint[1], 255 * uc_paint[2], 254
+                        )
+                    )
+                )
 
                 if uc > 0.2 and uc < 0.7:
-                    uc_item.setForeground(QBrush(QColor(0,0,0,255)))
+                    uc_item.setForeground(QBrush(QColor(0, 0, 0, 255)))
                 else:
                     uc_item.setForeground(QBrush(QColor(255, 255, 255, 255)))
                 table.setItem(irow, 4, uc_item)
 
                 irow += 1
-
 
         table.resizeColumnsToContents()
         table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -300,7 +308,7 @@ class WidgetLimits(guiDockWidget):
     def selection_changed(self, cur_row, cur_col, prev_row, prev_col):
         """Select the node via the gui, then select the property"""
 
-        node = self.ui.table.item(cur_row,0).text()
+        node = self.ui.table.item(cur_row, 0).text()
         prop = self.ui.table.item(cur_row, 1).text()
 
         self.guiSelectNode(self.guiScene[node])
@@ -308,7 +316,7 @@ class WidgetLimits(guiDockWidget):
         self.ui.cbProperty.setCurrentText(prop)
 
     def apply_limit(self):
-        print('apply')
+        print("apply")
 
         if self.ui.pbApply.isEnabled():  # event is called by pressing enter as well
             node_name = self.ui.cbNode.currentText()
@@ -323,7 +331,6 @@ class WidgetLimits(guiDockWidget):
             prop_name = self.ui.cbProperty.currentText()
             code = f"del s['{node_name}'].limits['{prop_name}']"
             self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
-
 
     # def action(self):
     #

@@ -61,6 +61,7 @@
 
 """
 import subprocess
+import logging
 from PySide6.QtCore import Qt, QTimer, QSize
 from PySide6.QtCore import QSettings
 from PySide6.QtGui import QIcon, QFont, QFontMetricsF, QAction, QActionGroup
@@ -2781,6 +2782,17 @@ class Gui:
         with DelayRenderingTillDone(
             self.visual
         ):  # temporary freezes rendering and calls update afterwards
+
+            # update the model if needed - before updating the docks - so that the docks can use the updated model
+            if event in (guiEventType.MODEL_STATE_CHANGED,
+                         guiEventType.FULL_UPDATE,
+                         guiEventType.MODEL_STRUCTURE_CHANGED,
+                         guiEventType.MODEL_STEP_ACTIVATED,
+                         guiEventType.SELECTED_NODE_MODIFIED,    # weight or shape has change
+                         guiEventType.ENVIRONMENT_CHANGED):
+                self.scene.update()
+
+
             for widget in self.guiWidgets.values():
                 if not (widget is sender):
                     if not widget.isClosed():
@@ -3024,9 +3036,14 @@ class Gui:
     def node_dragged(self, info: DragInfo):  # callback from self.visual.Style
         """Apply the translation of the dragged node"""
 
-        node = self._dragged_node
-        old_position = np.array(node.global_position)
-        new_position = old_position + info.delta
+        try:
+
+            node = self._dragged_node
+            old_position = np.array(node.global_position)
+            new_position = old_position + info.delta
+        except:
+            self.show_exception("error during move - sorry")
+            return
 
         code = f"s['{node.name}'].global_position = ({new_position[0]:.3f},{new_position[1]:.3f},{new_position[2]:.3f})"
         self.run_code(code, guiEventType.MODEL_STATE_CHANGED, store_undo=True)

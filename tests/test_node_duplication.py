@@ -46,7 +46,7 @@ def test_copy():
 
     nodes.append(s['f1'])
 
-    more_nodes = s.nodes_with_dependancies_in_and_satifsfied_by(nodes)
+    more_nodes = s.nodes_with_dependencies_in_and_satifsfied_by(nodes)
     assert len(more_nodes) == 6
 
     # all nodes except f3
@@ -65,7 +65,7 @@ def test_branch_of_f2():
     nodes = s.nodes_with_parent(s['f2'], recursive=True)
     nodes.append(s['f2'])
 
-    more_nodes = s.nodes_with_dependancies_in_and_satifsfied_by(nodes)
+    more_nodes = s.nodes_with_dependencies_in_and_satifsfied_by(nodes)
 
     assert s['p1'] not in more_nodes
 

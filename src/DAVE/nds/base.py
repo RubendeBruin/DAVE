@@ -1,11 +1,7 @@
 """Fully implemented base classes"""
 
-from .abstracts import *
 from .core import RigidBody
-from .geometry import Frame, Point, Circle
-from .enums import *
-from .mixins import NodeCoreConnected, HasParentCore, HasContainer, Manager
-from ..tools import *
+from .mixins import HasContainer
 
 
 

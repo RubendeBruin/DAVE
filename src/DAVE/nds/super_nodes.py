@@ -4,13 +4,13 @@ Sling
 Shackle
 
 """
-from pathlib import Path
-from os.path import dirname
+
 import csv
 
-from .abstracts import *
-from .core import *
+from os.path import dirname
 from .base import RigidBodyContainer
+from .geometry import Frame, Point, Circle
+from .core import RigidBody
 from .geometric_contact import GeometricContact
 from .mixins import *
 

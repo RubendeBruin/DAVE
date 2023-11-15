@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+
 import vedo as vp
 from PySide6.QtGui import QColor, QGuiApplication
 

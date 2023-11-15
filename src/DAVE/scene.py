@@ -7,6 +7,7 @@
 """
 import graphlib
 import itertools
+import logging
 import weakref
 import datetime
 from copy import deepcopy
@@ -257,6 +258,8 @@ class Scene:
     @waterlevel.setter
     def waterlevel(self, value):
         assert1f(value)
+        if value != self._vfc.waterlevel:
+            raise ValueError("Waterlevels other than 0 are not supported yet")
         self._vfc.waterlevel = value
 
     @property
@@ -591,13 +594,13 @@ class Scene:
     # ======== element functions =========
 
     @property
-    def unmanged_nodes(self):
+    def unmanaged_nodes(self):
         """Returns a tuple containing references to all nodes that do not have a manager"""
         nodes = [node for node in self._nodes if node.manager is None]
         return tuple(nodes)
 
     @property
-    def manged_nodes(self):
+    def managed_nodes(self):
         """Returns a tuple containing references to all nodes that do have a manager"""
         nodes = [node for node in self._nodes if node.manager is not None]
         return tuple(nodes)
@@ -930,7 +933,7 @@ class Scene:
         while to_be_exported:
             counter += 1
             if counter > len(self._nodes):
-                print("Error when exporting, could not resolve dependancies:")
+                print("Error when exporting, could not resolve dependencies:")
 
                 for node in to_be_exported:
                     print(f"Node : {node.name}")
@@ -1032,11 +1035,11 @@ class Scene:
 
         if not isinstance(A, NodeCoreConnected):
             raise ValueError(
-                f"{A.name} is not connected to a core node. Dependancies can not be traced using this function"
+                f"{A.name} is not connected to a core node. Dependencies can not be traced using this function"
             )
         if not isinstance(B, NodeCoreConnected):
             raise ValueError(
-                f"{B.name} is not connected to a core node. Dependancies can not be traced using this function"
+                f"{B.name} is not connected to a core node. Dependencies can not be traced using this function"
             )
 
         return self._vfc.element_A_depends_on_B(A._vfNode.name, B._vfNode.name)
@@ -1104,7 +1107,7 @@ class Scene:
                 nodes = n.depends_on()
             except Exception as E:
                 raise Exception(
-                    f"Error when checking dependancies of node {n.name} of type {type(n)}"
+                    f"Error when checking dependencies of node {n.name} of type {type(n)}"
                     + ":"
                     + str(E)
                 )
@@ -1116,21 +1119,33 @@ class Scene:
 
         return r
 
-    def node_is_fully_fixed_to_world(self, node) -> bool:
-        """Returns true if this node will never move"""
-        if node is None:
+    def node_is_fully_fixed_to(self, node, other_node) -> bool:
+        """Returns true if this node will never move relative to other_node.
+        Raises a ValueError if node is not connected to other_node"""
+
+        if node == other_node:
             return True
 
+        if node is None:
+            raise ValueError(f"Node {node} is not connected to {other_node.name}")
+
         if not hasattr(node, "parent"):
-            return True
+            raise ValueError(
+                f"Node {node} is not connected to anything (no parent property)"
+            )
 
         if isinstance(node, Frame):
             if not all(node.fixed):
                 return False
 
-        return self.node_is_fully_fixed_to_world(
-            node.parent
+        return self.node_is_fully_fixed_to(
+            node.parent,
+            other_node,
         )  # recursive call on parent. Parent None returns True
+
+    def node_is_fully_fixed_to_world(self, node) -> bool:
+        """Returns true if this node will never move"""
+        return self.node_is_fully_fixed_to(node, None)
 
     def common_ancestor_of_nodes(
         self, nodes: List[Node], required_type=None
@@ -1221,8 +1236,8 @@ class Scene:
 
         return r
 
-    def nodes_with_dependancies_in_and_satifsfied_by(self, nodes):
-        """Returns a list of all nodes that have dependancies and whose dependancies that are all within 'nodes'
+    def nodes_with_dependencies_in_and_satifsfied_by(self, nodes):
+        """Returns a list of all nodes that have dependencies and whose dependencies that are all within 'nodes'
 
         Often used in combination with nodes_with_parent, for example to find cables that fall within a branch of the
         node-tree.
@@ -1233,7 +1248,7 @@ class Scene:
         for node in self._nodes:
             deps = node.depends_on()
             if not deps:
-                continue  # skip nodes without dependancies
+                continue  # skip nodes without dependencies
 
             satisfied = True
             for dep in node.depends_on():
@@ -1372,7 +1387,7 @@ class Scene:
         node.dissolve()
 
     def delete_empty_frames_and_bodies(self):
-        """Deletes all empty frames and rigid bodies"""
+        """Deletes all empty frames and rigid bodies with zero mass"""
 
         for node in self._nodes:
             if isinstance(node, RigidBody):
@@ -1439,19 +1454,21 @@ class Scene:
 
         return dissolved_node_names
 
-    def savepoint_make(self):
-        """Makes a safepoint if non is present"""
-        if self._savepoint is None:
-            self._savepoint = self.give_python_code()
-
-    def savepoint_restore(self):
-        if self._savepoint is not None:
-            self.clear()
-            self.run_code(self._savepoint)
-            self._savepoint = None
-            return True
-        else:
-            return False
+    # # TODO: can be deleted?
+    # def savepoint_make(self):
+    #     """Makes a safepoint if non is present"""
+    #     if self._savepoint is None:
+    #         self._savepoint = self.give_python_code()
+    #
+    # # TODO: can be deleted?
+    # def savepoint_restore(self):
+    #     if self._savepoint is not None:
+    #         self.clear()
+    #         self.run_code(self._savepoint)
+    #         self._savepoint = None
+    #         return True
+    #     else:
+    #         return False
 
     def create_standalone_copy(
         self, target_dir, filename, include_visuals=True, flatten=False
@@ -3624,10 +3641,11 @@ class Scene:
                                     code.append(
                                         f"s['{n.name}'].watches['{key}'] = {value}  # watch overridden"
                                     )
+                                else:
+                                    pass # watch set by manager, so do not export
                     else:
-                        warnings.warn(
-                            f"Managed node {n.name} does not have _watches_by_manager set"
-                        )
+                        logging.info(f"Managed node {n.name} does not have _watches_by_manager set")
+
 
             code.append("\n# Tags")
 
@@ -4063,7 +4081,7 @@ class Scene:
             root_node = self[root_node]
 
         nodes = self.nodes_with_parent(root_node, recursive=True)
-        more_nodes = self.nodes_with_dependancies_in_and_satifsfied_by(nodes)
+        more_nodes = self.nodes_with_dependencies_in_and_satifsfied_by(nodes)
         branch = list({*nodes, *more_nodes})  # unique nodes (use set)
 
         to_be_copied = [
