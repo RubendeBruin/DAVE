@@ -7,7 +7,7 @@ DAVE
 DAVE is a software package designed to make engineering more fun. DAVE will take care of calculations and book-keeping so that you can focus on designing the best solution.
 
 See https://open-ocean.org/dave
-Documentation: https://davedocs.online
+Documentation: https://usedave.nl
 
 Download the compiled GUI
 ==========================
