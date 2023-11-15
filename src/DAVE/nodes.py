@@ -9,7 +9,7 @@ import csv
 import numpy as np
 from pathlib import Path
 
-from .nds.mixins import Manager, HasFootprint, HasTrimesh, HasParent, HasSubScene
+from .nds.mixins import Manager, HasFootprint, HasTrimesh, HasParent, HasSubScene, HasContainer
 from .nds.results import LoadShearMomentDiagram
 from .nds.super_nodes import Component, Shackle, Sling
 from .nds.trimesh import TriMeshSource
@@ -148,6 +148,7 @@ DAVE_ADDITIONAL_RUNTIME_MODULES["HasFootprint"] = HasFootprint
 DAVE_ADDITIONAL_RUNTIME_MODULES["HasTrimesh"] = HasTrimesh
 DAVE_ADDITIONAL_RUNTIME_MODULES["HasParent"] = HasParent
 DAVE_ADDITIONAL_RUNTIME_MODULES["HasSubScene"] = HasSubScene
+DAVE_ADDITIONAL_RUNTIME_MODULES["HasContainer"] = HasContainer
 
 
 # Helpers

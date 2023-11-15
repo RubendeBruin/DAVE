@@ -1,8 +1,7 @@
 """Fully implemented base classes"""
 
 from .core import RigidBody
-from .mixins import HasContainer
-
+from .mixins import HasContainer, Manager
 
 
 class RigidBodyContainer(RigidBody, HasContainer):

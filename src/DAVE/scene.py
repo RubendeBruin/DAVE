@@ -8,6 +8,7 @@
 import graphlib
 import itertools
 import logging
+import warnings
 import weakref
 import datetime
 from copy import deepcopy
