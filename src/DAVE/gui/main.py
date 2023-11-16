@@ -62,6 +62,8 @@
 """
 import subprocess
 import logging
+import zipfile
+
 from PySide6.QtCore import Qt, QTimer, QSize
 from PySide6.QtCore import QSettings
 from PySide6.QtGui import QIcon, QFont, QFontMetricsF, QAction, QActionGroup
@@ -483,6 +485,9 @@ class Gui:
         self.ui.actionNew.triggered.connect(self.clear)
         self.ui.actionReload_components.triggered.connect(self.refresh_model)
         self.ui.actionOpen.triggered.connect(self.open)
+        self.ui.actionImport_package.triggered.connect(
+            self.open_self_contained_DAVE_package
+        )
         self.ui.actionSave.triggered.connect(self.menu_save_model)
         self.ui.actionSave_scene.triggered.connect(self.menu_save_model_as)
         self.ui.actionSettings.triggered.connect(self.show_settings)
@@ -2155,6 +2160,9 @@ class Gui:
         current_directory = Path(filename).parent
         code = f's.clear()\ns.current_directory = r"{current_directory}"\ns.load_scene(r"{filename}")'
 
+        store = gui_globals.do_ask_user_for_unavailable_nodenames
+        gui_globals.do_ask_user_for_unavailable_nodenames = True
+
         try:
             self.run_code(code, guiEventType.FULL_UPDATE)
         except:
@@ -2163,18 +2171,26 @@ class Gui:
             self.MainWindow.setWindowTitle(
                 f"DAVE - Error during load ; partially loaded model"
             )
-            return
 
-        self.modelfilename = filename
+            self.show_exception(
+                "DAVE - Error during load ; partially loaded model - continue at own risk. Advised to undo or do file -> new"
+            )
+            self.guiEmitEvent(guiEventType.FULL_UPDATE)
+        else:
+            self.modelfilename = filename
 
-        name_and_ext = str(Path(filename).name)
+            name_and_ext = str(Path(filename).name)
 
-        self._model_has_changed = False
-        self.MainWindow.setWindowTitle(
-            f"DAVE [{str(self.scene.current_directory)}] - {name_and_ext} "
-        )
-        self.add_to_recent_file_menu(filename)
-        self.visual.zoom_all()
+            self._model_has_changed = False
+            self.MainWindow.setWindowTitle(
+                f"DAVE [{str(self.scene.current_directory)}] - {name_and_ext} "
+            )
+            self.add_to_recent_file_menu(filename)
+
+            self.visual.zoom_all()
+
+        finally:
+            gui_globals.do_ask_user_for_unavailable_nodenames = store
 
     def _get_filename_using_dialog(self):
         folder = self.scene.current_directory
@@ -2183,6 +2199,46 @@ class Gui:
         )
 
         return filename
+
+    def open_self_contained_DAVE_package(self):
+        folder = self.scene.current_directory
+        filename, _ = QFileDialog.getOpenFileName(
+            filter="*.zip", caption="DAVE model package", dir=str(folder)
+        )
+
+        if filename:
+            store = gui_globals.do_ask_user_for_unavailable_nodenames
+            try:
+                gui_globals.do_ask_user_for_unavailable_nodenames = True
+
+                # extract the zip file (filename) to a temporary folder
+                temp_folder = tempfile.mkdtemp()
+                with zipfile.ZipFile(filename, "r") as zip_ref:
+                    zip_ref.extractall(temp_folder)
+
+                name = Path(filename).stem
+
+                model_file = Path(temp_folder) / (name + ".dave")
+                self.scene.load_package(model_file)
+
+            except Exception as e:
+                self.show_exception(
+                    f"Could not load DAVE package because {e} - partial model load, continue at own risk"
+                )
+
+            else:
+                self._model_has_changed = False
+                self.MainWindow.setWindowTitle(
+                    f"DAVE [{str(self.scene.current_directory)}] - {filename} "
+                )
+                self.add_to_recent_file_menu(filename)
+
+                self.guiEmitEvent(guiEventType.FULL_UPDATE)
+
+                self.visual.zoom_all()
+                return True
+            finally:
+                gui_globals.do_ask_user_for_unavailable_nodenames = store
 
     def open(self):
         filename = self._get_filename_using_dialog()

@@ -471,6 +471,7 @@
     <addaction name="actionOpen"/>
     <addaction name="actionImport_sub_scene"/>
     <addaction name="actionImport_browser"/>
+    <addaction name="actionImport_package"/>
     <addaction name="separator"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_scene"/>
@@ -1079,6 +1080,9 @@ li.checked::marker { content: &quot;\2612&quot;; }
    <property name="text">
     <string>Python console</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
   </action>
   <action name="actionVersion">
    <property name="text">
@@ -1167,6 +1171,11 @@ li.checked::marker { content: &quot;\2612&quot;; }
    </property>
    <property name="text">
     <string>Show origin</string>
+   </property>
+  </action>
+  <action name="actionImport_package">
+   <property name="text">
+    <string>Import DAVE package (read-only)</string>
    </property>
   </action>
  </widget>

@@ -34,6 +34,7 @@ from DAVE.settings import (
 )
 
 from DAVE import settings
+from DAVE import gui_globals
 
 from .resource_provider import DaveResourceProvider
 from .helpers.string_functions import increment_string_end
@@ -746,8 +747,8 @@ class Scene:
         choices = [node.name for node in self._nodes]
         suggestion = MostLikelyMatch(node_name, choices)
 
-        # do we have a gui?
-        if not silent:
+        # do we have a gui and does it allow for us to ask?
+        if gui_globals.do_ask_user_for_unavailable_nodenames:
             try:
                 from PySide6.QtWidgets import QApplication
 
