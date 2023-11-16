@@ -56,4 +56,4 @@ def test_node_invalidation_and_lookup():
 
     for dname in to_be_deleted:
         with pytest.raises(ValueError):
-            assert s[dname]
+            assert s.node_by_name(dname, silent=True)

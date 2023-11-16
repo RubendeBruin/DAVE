@@ -35,5 +35,4 @@ def test_tank_to_body_empty():
     tanks_to_bodies(s)
 
     # empty tank should have been deleted
-    with pytest.raises(ValueError):
-        s['tank']
+    s.assert_name_available('tank')

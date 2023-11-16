@@ -892,7 +892,6 @@ class Gui:
         if splash:
             splash.finish(self.MainWindow)
 
-
         if block:
             self.ui.pbUpdate.setVisible(False)
             self.ui.pbCopyViewCode.setVisible(False)
@@ -900,7 +899,7 @@ class Gui:
             # create a time to trigger after-startup events
             sst = QtCore.QTimer()
             sst.setSingleShot(True)
-            sst.singleShot(0, self.after_startup) # <-- 0 ms delay is ok
+            sst.singleShot(0, self.after_startup)  # <-- 0 ms delay is ok
 
             self.app.exec()
 
@@ -913,8 +912,6 @@ class Gui:
             self.activate_dockgroup("Build")
         else:
             self.activate_dockgroup(self._requested_workspace)
-
-
 
     def autosave_startup(self) -> str:
         # check for autosave files
@@ -2776,22 +2773,23 @@ class Gui:
 
     def guiEmitEvent(self, event, sender=None):
         if event == guiEventType.SELECTION_CHANGED:
-            if self._active_dockgroup.show_edit:
-                dock_show(self.dock_manager, self.guiWidgets["Properties"])
+            if self._active_dockgroup is not None:
+                if self._active_dockgroup.show_edit:
+                    dock_show(self.dock_manager, self.guiWidgets["Properties"])
 
         with DelayRenderingTillDone(
             self.visual
         ):  # temporary freezes rendering and calls update afterwards
-
             # update the model if needed - before updating the docks - so that the docks can use the updated model
-            if event in (guiEventType.MODEL_STATE_CHANGED,
-                         guiEventType.FULL_UPDATE,
-                         guiEventType.MODEL_STRUCTURE_CHANGED,
-                         guiEventType.MODEL_STEP_ACTIVATED,
-                         guiEventType.SELECTED_NODE_MODIFIED,    # weight or shape has change
-                         guiEventType.ENVIRONMENT_CHANGED):
+            if event in (
+                guiEventType.MODEL_STATE_CHANGED,
+                guiEventType.FULL_UPDATE,
+                guiEventType.MODEL_STRUCTURE_CHANGED,
+                guiEventType.MODEL_STEP_ACTIVATED,
+                guiEventType.SELECTED_NODE_MODIFIED,  # weight or shape has change
+                guiEventType.ENVIRONMENT_CHANGED,
+            ):
                 self.scene.update()
-
 
             for widget in self.guiWidgets.values():
                 if not (widget is sender):
@@ -2876,10 +2874,13 @@ class Gui:
                 self.selected_nodes.append(node)
 
         if self.selected_nodes:
-            if self._active_dockgroup.show_edit == True:
-                if "Properties" in self.guiWidgets:
-                    dock_show(self.dock_manager, self.guiWidgets["Properties"])
-                    self.guiEmitEvent(guiEventType.SELECTION_CHANGED)  # force update
+            if self._active_dockgroup is not None:
+                if self._active_dockgroup.show_edit == True:
+                    if "Properties" in self.guiWidgets:
+                        dock_show(self.dock_manager, self.guiWidgets["Properties"])
+                        self.guiEmitEvent(
+                            guiEventType.SELECTION_CHANGED
+                        )  # force update
 
         # Get the screen position of the just selected visual
         #
@@ -3037,7 +3038,6 @@ class Gui:
         """Apply the translation of the dragged node"""
 
         try:
-
             node = self._dragged_node
             old_position = np.array(node.global_position)
             new_position = old_position + info.delta
