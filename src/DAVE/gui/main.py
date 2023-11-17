@@ -317,7 +317,7 @@ class Gui:
             if isinstance(icon, str):
                 ICONS[key] = QIcon(icon)
 
-        self.app.aboutToQuit.connect(self.onCloseApplication)
+        # self.app.aboutToQuit.connect(self.onCloseApplication)
 
         if scene is None:
             scene = Scene()
@@ -1652,23 +1652,24 @@ class Gui:
         """This is the on-close for the main window"""
         if self.maybeSave():
             event.accept()
+
+            self.dock_manager.deleteLater()
+            self.visual.shutdown_qt()
+
+            print("removing autosave files")
+            if self._autosave is not None:
+                self._autosave.cleanup()
+
+            print(
+                "-- closing the gui : these were the actions you performed while the gui was open --"
+            )
+            print(self.give_clean_history())
         else:
             event.ignore()
 
-    def onCloseApplication(self):
-        """This is the on-close for the Application"""
+    # def onCloseApplication(self):
+    #     """This is the on-close for the Application"""
 
-        self.visual.shutdown_qt()
-
-        print("removing autosave files")
-        if self._autosave is not None:
-            self._autosave.cleanup()
-
-        print(
-            "-- closing the gui : these were the actions you performed while the gui was open --"
-        )
-
-        print(self.give_clean_history())
 
     def measured_in_viewport(self, distance):
         self.give_feedback(
