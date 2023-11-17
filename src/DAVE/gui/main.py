@@ -2828,6 +2828,8 @@ class Gui:
     # ================= guiWidget codes
 
     def guiEmitEvent(self, event, sender=None):
+        # are we in an animation?
+
         if event == guiEventType.SELECTION_CHANGED:
             if self._active_dockgroup is not None:
                 if self._active_dockgroup.show_edit:
@@ -2846,6 +2848,11 @@ class Gui:
                 guiEventType.ENVIRONMENT_CHANGED,
             ):
                 self.scene.update()
+
+            if self.animation_running():
+                self.visual.position_visuals()
+
+                return  # do not update the widgets when an animation is running
 
             for widget in self.guiWidgets.values():
                 if not (widget is sender):

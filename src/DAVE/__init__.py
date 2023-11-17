@@ -1,17 +1,11 @@
-import sys
-
-if sys.version_info[:2] >= (3, 8):
-    # TODO: Import directly (no need for conditional) when `python_requires = >= 3.8`
-    from importlib.metadata import PackageNotFoundError, version  # pragma: no cover
-else:
-    from importlib_metadata import PackageNotFoundError, version  # pragma: no cover
+from importlib.metadata import PackageNotFoundError, version  # pragma: no cover
 
 try:
     # Change here if project is renamed and does not equal the package name
     dist_name = "useDAVE"
     __version__ = version(dist_name)
 except PackageNotFoundError:  # pragma: no cover
-    __version__ = "unknown"
+    __version__ = "2.1"
 finally:
     del version, PackageNotFoundError
 
@@ -20,15 +14,103 @@ from .scene import Scene
 from .nodes import *
 from .exceptions import ModelInvalidException
 
-__all__ = list(DAVE_ADDITIONAL_RUNTIME_MODULES.keys()) + [
+# Convenience helper to set __all__
+# generate = list(DAVE_ADDITIONAL_RUNTIME_MODULES.keys()) + [
+#     "ModelInvalidException",
+#     "Scene",
+# ]
+# print(generate)
+
+__all__ = [
+    "Watch",
+    "AreaKind",
+    "BallastSystem",
+    "Beam",
+    "Buoyancy",
+    "Cable",
+    "Circle",
+    "Component",
+    "Connector2d",
+    "ContactBall",
+    "ContactMesh",
+    "CurrentArea",
+    "Force",
+    "Frame",
+    "GeometricContact",
+    "HydSpring",
+    "LC6d",
+    "LoadShearMomentDiagram",
+    "Point",
+    "RigidBody",
+    "Shackle",
+    "Sling",
+    "SPMT",
+    "Tank",
+    "TriMeshSource",
+    "Visual",
+    "WaveInteraction1",
+    "WindArea",
+    "WindOrCurrentArea",
+    "DAVENodeBase",
+    "NodeCoreConnected",
+    "NodePurePython",
+    "Manager",
+    "Node",
+    "HasFootprint",
+    "HasTrimesh",
+    "HasParent",
+    "HasSubScene",
+    "HasContainer",
+    "RigidBodyContainer",
+    "ClaimManagement",
+    "VisualOutlineType",
     "ModelInvalidException",
     "Scene",
+    "DG",
 ]
 
 
 # convenience function for showing the gui
-def gui(scene=None):
+def DG(scene=None, bare=False, block=True):
     print("loading gui")
     from .gui import Gui
 
-    Gui(scene)
+    # try to load all optional packages
+    if not bare:
+        try:
+            import DAVE_timeline.gui
+        except:
+            pass
+
+        try:
+            import DAVE_reporting.gui
+        except:
+            pass
+
+        try:
+            import DAVE_BaseExtensions.gui
+        except:
+            pass
+
+        try:
+            import DAVE_rigging.gui
+        except:
+            pass
+
+        try:
+            import DAVE_vessels.gui
+        except:
+            pass
+
+        try:
+            import DAVE_dynamics.gui
+        except:
+            pass
+
+        try:
+            from HD import HEBO_CraneVessel
+            import HD.gui
+        except:
+            pass
+
+    return Gui(scene, block=block)

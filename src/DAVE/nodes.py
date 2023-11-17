@@ -9,7 +9,15 @@ import csv
 import numpy as np
 from pathlib import Path
 
-from .nds.mixins import Manager, HasFootprint, HasTrimesh, HasParent, HasSubScene, HasContainer
+from .nds.base import RigidBodyContainer
+from .nds.mixins import (
+    Manager,
+    HasFootprint,
+    HasTrimesh,
+    HasParent,
+    HasSubScene,
+    HasContainer,
+)
 from .nds.results import LoadShearMomentDiagram
 from .nds.super_nodes import Component, Shackle, Sling
 from .nds.trimesh import TriMeshSource
@@ -96,16 +104,29 @@ from .nds.abstracts import Node, NodeCoreConnected, NodePurePython, DAVENodeBase
 from .nds.enums import AreaKind, VisualOutlineType
 from .nds.helpers import ClaimManagement, Watch
 
-from .nds.core import Buoyancy, Beam, Cable, Connector2d, ContactBall, ContactMesh, CurrentArea, Force, HydSpring, LC6d, \
-    RigidBody, SPMT, Tank, WindArea, WindOrCurrentArea
+from .nds.core import (
+    Buoyancy,
+    Beam,
+    Cable,
+    Connector2d,
+    ContactBall,
+    ContactMesh,
+    CurrentArea,
+    Force,
+    HydSpring,
+    LC6d,
+    RigidBody,
+    SPMT,
+    Tank,
+    WindArea,
+    WindOrCurrentArea,
+)
 from .nds.pure import BallastSystem, Visual, WaveInteraction1
 
 from .nds.geometry import Frame, Point, Circle
 from .nds.geometric_contact import GeometricContact
 
-
-
-from DAVE.settings import DAVE_ADDITIONAL_RUNTIME_MODULES, RESOURCE_PATH
+from DAVE.settings import DAVE_ADDITIONAL_RUNTIME_MODULES
 
 DAVE_ADDITIONAL_RUNTIME_MODULES["Watch"] = Watch
 DAVE_ADDITIONAL_RUNTIME_MODULES["AreaKind"] = AreaKind
@@ -149,6 +170,8 @@ DAVE_ADDITIONAL_RUNTIME_MODULES["HasTrimesh"] = HasTrimesh
 DAVE_ADDITIONAL_RUNTIME_MODULES["HasParent"] = HasParent
 DAVE_ADDITIONAL_RUNTIME_MODULES["HasSubScene"] = HasSubScene
 DAVE_ADDITIONAL_RUNTIME_MODULES["HasContainer"] = HasContainer
+
+DAVE_ADDITIONAL_RUNTIME_MODULES["RigidBodyContainer"] = RigidBodyContainer
 
 
 # Helpers

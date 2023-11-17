@@ -20,8 +20,11 @@ class RigidBodyContainer(RigidBody, HasContainer):
         del self._nodes
         self.__class__ = RigidBody
 
-
     def dissolve_some(self) -> tuple[bool, str]:
         """First try to dissolve the container, then see if we can dissolve the rigidbody as well"""
 
         return super().dissolve_some()
+
+
+# register
+RigidBodyContainer

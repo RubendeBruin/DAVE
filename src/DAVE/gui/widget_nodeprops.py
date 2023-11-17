@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import vedo as vp
 from PySide6.QtGui import QColor, QGuiApplication
 
-from DAVE import Point
+from DAVE import Point, Circle
 from DAVE.gui.dialog_advanced_cable_settings import AdvancedCableSettings
 from DAVE.gui.dock_system.dockwidget import *
 from PySide6.QtCore import Qt, QSize
@@ -1416,6 +1416,7 @@ class EditConnections(NodeEditor):
         self.ui.lbDirection.setVisible(labelVisible)
         self.ui.list.blockSignals(False)
         self.ui.pbSetShortestRoute.setVisible(not isinstance(self.node, (Cable, Sling)))
+        self.ui.list.setStyleSheet("")
 
     def dropEvent(self, event):
         call_from_drop_Event(self.ui.list, event)
@@ -1473,7 +1474,20 @@ class EditConnections(NodeEditor):
         if reversed != self.node.reversed:
             code += f"{element}.reversed = {reversed}"
 
-        self.run_code(code)
+        self.run_code(
+            code, guiEventType.SELECTED_NODE_MODIFIED, sender=self
+        )  # we will not receive the event
+
+        # check if the connections are valid
+        reversed_ok = reversed == self.node.reversed
+        names_ok = new_names == [node.name for node in self.node.connections]
+
+        if reversed_ok and names_ok:
+            self.ui.list.setStyleSheet("")
+        else:
+            self.ui.list.setStyleSheet(
+                "background-color: rgb(251, 220, 255)"
+            )  # echt heel lelijk
 
     def set_shortest_route(self, *args):
         self.run_code(
@@ -3173,7 +3187,6 @@ class WidgetNodeProps(guiDockWidget):
 
         self.setUpdatesEnabled(True)
         self.update()
-
 
 
 from DAVE.gui.settings import DAVE_GUI_DOCKS
