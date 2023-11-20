@@ -23,7 +23,6 @@ from DAVE.gui.dock_system.dockwidget import *
 from PySide6 import QtWidgets
 from PySide6.QtGui import QBrush, QColor
 from DAVE.gui.forms.widgetUI_modeshapes import Ui_ModeShapesWidget
-import DAVE.frequency_domain
 import numpy as np
 
 

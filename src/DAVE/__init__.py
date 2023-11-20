@@ -103,6 +103,11 @@ def DG(scene=None, bare=False, block=True):
             pass
 
         try:
+            import netCDF4
+        except:
+            pass
+
+        try:
             import DAVE_dynamics.gui
         except:
             pass
