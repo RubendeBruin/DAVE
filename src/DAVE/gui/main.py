@@ -61,7 +61,6 @@
 
 """
 import subprocess
-import logging
 import zipfile
 
 from PySide6.QtCore import Qt, QTimer, QSize
@@ -74,9 +73,7 @@ from PySide6.QtWidgets import (
     QStatusBar,
     QToolBar,
     QWidget,
-    QSizePolicy,
-    QSpacerItem,
-)
+    )
 
 from DAVE.gui.autosave import DaveAutoSave
 from DAVE.gui.dialog_blender import ExportToBlenderDialog
@@ -107,7 +104,6 @@ from DAVE.gui.widget_tags import WidgetTags
   Ruben de Bruin - 2019
 """
 
-import PySide6QtAds
 import DAVE.auto_download
 
 from DAVE import ModelInvalidException
@@ -141,13 +137,11 @@ from DAVE.gui.widget_derivedproperties import WidgetDerivedProperties
 from DAVE.gui.widget_nodeprops import WidgetNodeProps
 from DAVE.gui.widget_dynamic_properties import WidgetDynamicProperties
 from DAVE.gui.widget_modeshapes import WidgetModeShapes
-from DAVE.gui.widget_airy import WidgetAiry
 from DAVE.gui.widget_stability_disp import WidgetDisplacedStability
 from DAVE.gui.widget_explore import WidgetExplore
 from DAVE.gui.widget_rigg_it_right import WidgetQuickActions
 from DAVE.gui.widget_environment import WidgetEnvironment
 from DAVE.gui.widget_dof_edit import WidgetDOFEditor
-from DAVE.gui.widget_watches import WidgetWatches
 import DAVE.gui.widget_ballastsolver
 import DAVE.gui.widget_ballastconfiguration
 import DAVE.gui.widget_tank_order
@@ -181,7 +175,6 @@ DAVE_GUI_DOCKS["Environment"] = WidgetEnvironment
 DAVE_GUI_DOCKS["Stability"] = WidgetDisplacedStability
 DAVE_GUI_DOCKS["Limits and UCs"] = WidgetLimits
 DAVE_GUI_DOCKS["Tags"] = WidgetTags
-DAVE_GUI_DOCKS["Airy waves"] = WidgetAiry
 DAVE_GUI_DOCKS["Footprints"] = WidgetFootprints
 DAVE_GUI_DOCKS["Graph"] = WidgetBendingMoment
 DAVE_GUI_DOCKS["vanGogh"] = WidgetPainters
