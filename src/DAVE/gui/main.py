@@ -1783,7 +1783,7 @@ class Gui:
                         while node_to_be_selected.manager is not None:
                             node_to_be_selected = node_to_be_selected.manager
 
-                        self.guiSelectNode(node_to_be_selected)
+                        self.guiSelectNode(node_to_be_selected, new=True)
                         select_node_name_edit_field = True
 
                         emitted = True
@@ -2822,12 +2822,13 @@ class Gui:
     # ================= guiWidget codes
 
     def guiEmitEvent(self, event, sender=None):
-        # are we in an animation?
 
-        if event == guiEventType.SELECTION_CHANGED:
-            if self._active_dockgroup is not None:
-                if self._active_dockgroup.show_edit:
-                    dock_show(self.dock_manager, self.guiWidgets["Properties"])
+        # Bring the properties editor to front if needed
+        if event in (guiEventType.SELECTION_CHANGED, guiEventType.NEW_NODE_ADDED):
+            if self.selected_nodes:
+                if self._active_dockgroup is not None:
+                    if self._active_dockgroup.show_edit:
+                        dock_show(self.dock_manager, self.guiWidgets["Properties"], force_bring_to_front=(event == guiEventType.NEW_NODE_ADDED))
 
         with DelayRenderingTillDone(
             self.visual
@@ -2840,6 +2841,7 @@ class Gui:
                 guiEventType.MODEL_STEP_ACTIVATED,
                 guiEventType.SELECTED_NODE_MODIFIED,  # weight or shape has change
                 guiEventType.ENVIRONMENT_CHANGED,
+                guiEventType.NEW_NODE_ADDED,
             ):
                 self.scene.update()
 
@@ -2854,7 +2856,7 @@ class Gui:
                         widget.guiEvent(event)
 
             # update the visual as well
-            if event == guiEventType.SELECTION_CHANGED:
+            if event in (guiEventType.SELECTION_CHANGED, guiEventType.NEW_NODE_ADDED):
                 self.visual_update_selection()
                 return
 
@@ -2910,7 +2912,7 @@ class Gui:
         self.selected_nodes.extend(first_nodes)
         self.guiSelectNode(last_node, extend=True)
 
-    def guiSelectNode(self, node_name, extend=False):
+    def guiSelectNode(self, node_name, extend=False, new = False):
         # Select a node with name, pass None to deselect all
 
         old_selection = self.selected_nodes.copy()
@@ -2930,27 +2932,13 @@ class Gui:
             if node not in self.selected_nodes:
                 self.selected_nodes.append(node)
 
-        if self.selected_nodes:
-            if self._active_dockgroup is not None:
-                if self._active_dockgroup.show_edit == True:
-                    if "Properties" in self.guiWidgets:
-                        dock_show(self.dock_manager, self.guiWidgets["Properties"])
-                        self.guiEmitEvent(
-                            guiEventType.SELECTION_CHANGED
-                        )  # force update
-
-        # Get the screen position of the just selected visual
-        #
-        if node is not None:
-            if self.visual.vtkWidget.hasFocus():
-                self.move_floating_widgets_away_from_cursor()
+        if new:
+            self.guiEmitEvent(guiEventType.NEW_NODE_ADDED)
 
         if old_selection != self.selected_nodes:
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
 
-    def move_floating_widgets_away_from_cursor(self):
-        for w in self.guiWidgets.values():
-            w.move_away_from_cursor()
+
 
     def get_dock(self, name):
         """Returns a reference to a dock instance,
@@ -3104,25 +3092,3 @@ class Gui:
 
         code = f"s['{node.name}'].global_position = ({new_position[0]:.3f},{new_position[1]:.3f},{new_position[2]:.3f})"
         self.run_code(code, guiEventType.MODEL_STATE_CHANGED, store_undo=True)
-
-
-# ======================================
-
-if __name__ == "__main__":
-    from DAVE import *
-
-    s = Scene()
-
-    s.new_rigidbody(name="Body")
-
-    s["Body"].fixed = (True, True, True, False, False, False)
-    s.new_point(name="Point", parent="Body")
-    s.new_force("Force", parent="Point")
-
-    s["Point"].position = (5.0, 0.0, 0.0)
-
-    s["Force"].force = (0.0, 5.0, 0.0)
-
-    s.new_visual("Visual", parent="Body", path="res: cube.obj")
-
-    Gui(s)

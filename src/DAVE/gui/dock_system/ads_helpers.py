@@ -162,8 +162,11 @@ def dock_remove_from_gui(
         d.toggleViewAction().trigger()
 
 
-def dock_show(manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget):
-    """Makes sure a dock is visible"""
+def dock_show(manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget, force_bring_to_front=False):
+    """Makes sure a dock is present in the gui
+
+    if force_bring_to_front is True, the dock will be brought to the front as well (which can be annoying)
+    """
     try:
         print(f"showing {d}")
     except RuntimeError:
@@ -171,6 +174,11 @@ def dock_show(manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget):
 
     if d.isVisible():
         return  # already visible
+
+    if d.isHidden():
+        if force_bring_to_front:
+            d.setAsCurrentTab()
+        return
 
     if d not in get_all_active_docks(manager):
         d.toggleViewAction().trigger()

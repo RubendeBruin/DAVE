@@ -29,6 +29,7 @@ class guiEventType(Enum):
     #    - model structure is changed
     #    - model state changed
     #    - environment changed
+    NEW_NODE_ADDED = 9  # a new node is added to the model -- a selection changed event will typically be sumbitted as well
 
 
 class guiDockWidget(PySide6QtAds.CDockWidget):
