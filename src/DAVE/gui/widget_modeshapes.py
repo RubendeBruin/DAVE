@@ -24,6 +24,7 @@ from PySide6 import QtWidgets
 from PySide6.QtGui import QBrush, QColor
 from DAVE.gui.forms.widgetUI_modeshapes import Ui_ModeShapesWidget
 import numpy as np
+import DAVE.mode_shapes
 
 
 class WidgetModeShapes(guiDockWidget):
@@ -91,7 +92,7 @@ class WidgetModeShapes(guiDockWidget):
             self.d0 = self.guiScene._vfc.get_dofs()
 
         try:
-            V, D = DAVE.frequency_domain.mode_shapes(self.guiScene)
+            V, D = DAVE.mode_shapes.mode_shapes(self.guiScene)
         except ArithmeticError as me:
             print("Could not calculate mode-shapes because:")
             print(me)
@@ -124,7 +125,7 @@ class WidgetModeShapes(guiDockWidget):
 
     def quickfix(self):
         self.gui.animation_terminate()
-        summary = DAVE.frequency_domain.dynamics_quickfix(self.guiScene)
+        summary = DAVE.mode_shapes.dynamics_quickfix(self.guiScene)
         self.guiEmitEvent(guiEventType.MODEL_STRUCTURE_CHANGED)
         self.fill_results_table_with(summary)  # do this after emitting the event
 
@@ -146,7 +147,7 @@ class WidgetModeShapes(guiDockWidget):
         n_frames = 100
         t_modeshape = 5
 
-        dofs = DAVE.frequency_domain.generate_modeshape_dofs(
+        dofs = DAVE.mode_shapes.generate_modeshape_dofs(
             self.d0, shape, scale, n_frames, scene=self.guiScene
         )
         t = np.linspace(0, t_modeshape, n_frames)
@@ -170,7 +171,7 @@ class WidgetModeShapes(guiDockWidget):
 
     def fill_result_table(self):
         self.gui.animation_terminate()
-        summary = DAVE.frequency_domain.dynamics_summary_data(self.guiScene)
+        summary = DAVE.mode_shapes.dynamics_summary_data(self.guiScene)
         self.fill_results_table_with(summary)
 
     def fill_results_table_with(self, summary):
