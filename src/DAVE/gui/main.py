@@ -73,7 +73,7 @@ from PySide6.QtWidgets import (
     QStatusBar,
     QToolBar,
     QWidget,
-    )
+)
 
 from DAVE.gui.autosave import DaveAutoSave
 from DAVE.gui.dialog_blender import ExportToBlenderDialog
@@ -1663,7 +1663,6 @@ class Gui:
     # def onCloseApplication(self):
     #     """This is the on-close for the Application"""
 
-
     def measured_in_viewport(self, distance):
         self.give_feedback(
             f"View-plane distance = {distance:.3f}m\n (does not measure depth)"
@@ -2211,8 +2210,17 @@ class Gui:
                     zip_ref.extractall(temp_folder)
 
                 name = Path(filename).stem
+                name = str(name) + ".dave"
 
-                model_file = Path(temp_folder) / (name + ".dave")
+                model_file = Path(temp_folder) / name
+
+                # check if the file exists
+                if not model_file.exists():
+                    self.show_exception(
+                        f"The DAVE zip package is expected to contain a file \n\n{name}\n\n (= the name of the .zip file without zip)\nHowever a file with this name not found.\n\nPlease check the contents of the zip and rename the package file if needed."
+                    )
+                    return
+
                 self.scene.load_package(model_file)
 
             except Exception as e:
@@ -2822,13 +2830,16 @@ class Gui:
     # ================= guiWidget codes
 
     def guiEmitEvent(self, event, sender=None):
-
         # Bring the properties editor to front if needed
         if event in (guiEventType.SELECTION_CHANGED, guiEventType.NEW_NODE_ADDED):
             if self.selected_nodes:
                 if self._active_dockgroup is not None:
                     if self._active_dockgroup.show_edit:
-                        dock_show(self.dock_manager, self.guiWidgets["Properties"], force_bring_to_front=(event == guiEventType.NEW_NODE_ADDED))
+                        dock_show(
+                            self.dock_manager,
+                            self.guiWidgets["Properties"],
+                            force_bring_to_front=(event == guiEventType.NEW_NODE_ADDED),
+                        )
 
         with DelayRenderingTillDone(
             self.visual
@@ -2912,7 +2923,7 @@ class Gui:
         self.selected_nodes.extend(first_nodes)
         self.guiSelectNode(last_node, extend=True)
 
-    def guiSelectNode(self, node_name, extend=False, new = False):
+    def guiSelectNode(self, node_name, extend=False, new=False):
         # Select a node with name, pass None to deselect all
 
         old_selection = self.selected_nodes.copy()
@@ -2937,8 +2948,6 @@ class Gui:
 
         if old_selection != self.selected_nodes:
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
-
-
 
     def get_dock(self, name):
         """Returns a reference to a dock instance,

@@ -91,5 +91,8 @@
     <file>icons/missing.svg</file>
     <file>icons/gc.svg</file>
     <file>icons/visual.svg</file>
+    <file>icons/circle.svg</file>
+    <file>icons/bar.svg</file>
+    <file>icons/windcurrent.svg</file>
   </qresource>
 </RCC>
