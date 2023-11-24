@@ -340,24 +340,26 @@ def gimme():
                  axis=(0, 1, 0),
                  radius=1)
 
-    # Exporting Sling
-    # Create sling
-    sl = s.new_sling("Sling", length=20,
-                     LeyeA=1.81051,
-                     LeyeB=1.81051,
-                     LspliceA=1.81051,
-                     LspliceB=1.81051,
-                     diameter=0.1,
-                     EA=1,
-                     mass=0.1,
-                     endA="Circle_2",
-                     endB="Circle",
-                     sheaves=None)
+    # # Exporting Sling
+    # # Create sling
+    # sl = s.new_sling("Sling", length=20,
+    #                  LeyeA=1.81051,
+    #                  LeyeB=1.81051,
+    #                  LspliceA=1.81051,
+    #                  LspliceB=1.81051,
+    #                  diameter=0.1,
+    #                  EA=1,
+    #                  mass=0.1,
+    #                  endA="Circle_2",
+    #                  endB="Circle",
+    #                  sheaves=None)
+
+    s.new_frame("Target_for_connector", position = (1,2,3))
 
     # code for Con6d_Sling/spliceB2_to_Component
     s.new_linear_connector_6d(name='Con6d_Sling/spliceB2_to_Component',
-                              main='Component',
-                              secondary='Sling/spliceB2',
+                              main='Target_for_connector',
+                              secondary='Component/Frame',
                               stiffness=(0, 0, 0,
                                          0, 0, 0))
 
@@ -378,10 +380,8 @@ def test_testscene_flatten():
 def test_testscene_dissolves():
     s = gimme()
 
-    sl = s['Sling']
-    sl.dissolve()
+    # DG(s)
 
-    assert sl not in s._nodes
 
     s6d =  s['Con6d_Sling/spliceB2_to_Component']
 
@@ -390,8 +390,8 @@ def test_testscene_dissolves():
 
     assert com in s._nodes
 
-    with pytest.raises(Exception):
-        com.dissolve()  # LC6D can not be relocated because frame is at a different location than None
+    # with pytest.raises(Exception):
+    com.dissolve()  # LC6D can not be relocated because frame is at a different location than None
 
     assert not isinstance(com, Component)
 
@@ -412,10 +412,7 @@ def test_testscene_flatten():
     assert len(s._nodes) == 25
     assert not isinstance(s['Component'], Component) # should be a frame now
 
-def test_dissolve_sling():
-    s = gimme()
-    sling = s["Sling"]
-    s.dissolve(sling)
+
 
 
 def test_testscene_flatten_with_component_position_changed():

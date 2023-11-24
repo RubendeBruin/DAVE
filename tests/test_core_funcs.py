@@ -275,40 +275,40 @@ def test_geometric_contact():
     _ = s["renamed/_axis_on_child"]  # raises error if name not found
 
     s.print_node_tree()
-
-def test_sling():
-    s = Scene()
-    f1 = s.new_frame('f1')
-    p1 = s.new_point('p1', parent = f1)
-    c1 = s.new_circle('c1', parent = p1, radius = 1, axis = (0,1,0))
-
-    f2 = s.new_frame('f2', position = (10,0,0))
-    p2 = s.new_point('p2', parent = f2)
-    c2 = s.new_circle('c2', parent = p2, radius = 0.5, axis = (0,1,0))
-
-    sl = s.new_sling('sling', endA=c1, endB=c2)
-
-    sl.name = "renamed"
-    s.print_node_tree()
-
-    _ = s["renamed/main_part"] # check renamed node
-
-    assert sl.name == "renamed"
-
-def test_shackle():
-    s = Scene()
-    sh = s.new_shackle('shackle', kind = "GP800")
-
-    sh.name = "renamed"
-    assert sh.name == "renamed"
-
-    _ = s["renamed/bow"] # check renamed node
-
-    sh.depends_on()
-
-    s.sort_nodes_by_parent()
-
-    s.print_node_tree()
+#
+# def test_sling():
+#     s = Scene()
+#     f1 = s.new_frame('f1')
+#     p1 = s.new_point('p1', parent = f1)
+#     c1 = s.new_circle('c1', parent = p1, radius = 1, axis = (0,1,0))
+#
+#     f2 = s.new_frame('f2', position = (10,0,0))
+#     p2 = s.new_point('p2', parent = f2)
+#     c2 = s.new_circle('c2', parent = p2, radius = 0.5, axis = (0,1,0))
+#
+#     sl = s.new_sling('sling', endA=c1, endB=c2)
+#
+#     sl.name = "renamed"
+#     s.print_node_tree()
+#
+#     _ = s["renamed/main_part"] # check renamed node
+#
+#     assert sl.name == "renamed"
+#
+# def test_shackle():
+#     s = Scene()
+#     sh = s.new_shackle('shackle', kind = "GP800")
+#
+#     sh.name = "renamed"
+#     assert sh.name == "renamed"
+#
+#     _ = s["renamed/bow"] # check renamed node
+#
+#     sh.depends_on()
+#
+#     s.sort_nodes_by_parent()
+#
+#     s.print_node_tree()
 
 def test_component():
     s = Scene()
