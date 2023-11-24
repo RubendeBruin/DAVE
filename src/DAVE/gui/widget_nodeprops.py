@@ -24,7 +24,7 @@ import DAVE.gui.forms.widget_sheave
 import DAVE.gui.forms.widget_waveinteraction
 import DAVE.gui.forms.widget_contactball
 import DAVE.gui.forms.widget_geometricconnection
-import DAVE.gui.forms.widget_sling
+# import DAVE.gui.forms.widget_sling
 import DAVE.gui.forms.widget_tank
 import DAVE.gui.forms.widget_area
 import DAVE.gui.forms.widget_component
@@ -1413,7 +1413,7 @@ class EditConnections(NodeEditor):
 
         self.ui.lbDirection.setVisible(labelVisible)
         self.ui.list.blockSignals(False)
-        self.ui.pbSetShortestRoute.setVisible(not isinstance(self.node, (Cable, Sling)))
+        self.ui.pbSetShortestRoute.setVisible(not isinstance(self.node, (Cable)))
         self.ui.list.setStyleSheet("")
 
     def dropEvent(self, event):
@@ -2513,88 +2513,88 @@ class EditContactBall(AbstractNodeEditorWithParent):
         self.run_code(code)
 
 
-@Singleton
-class EditSling(NodeEditor):
-    def __init__(self):
-        widget = QtWidgets.QWidget()
-        ui = DAVE.gui.forms.widget_sling.Ui_Form()
-        ui.setupUi(widget)
-
-        self.ui = ui
-        self._widget = widget
-        # Set events
-
-        ui.sbLength.valueChanged.connect(self.generate_code)
-        ui.sbEA.valueChanged.connect(self.generate_code)
-        ui.sbDiameter.valueChanged.connect(self.generate_code)
-        ui.sbMass.valueChanged.connect(self.generate_code)
-        ui.sbLEyeA.valueChanged.connect(self.generate_code)
-        ui.sbLEyeB.valueChanged.connect(self.generate_code)
-        ui.sbLSpliceA.valueChanged.connect(self.generate_code)
-        ui.sbLSpliceB.valueChanged.connect(self.generate_code)
-        ui.sbK.valueChanged.connect(self.generate_code)
-
-    def post_update_event(self):
-        widgets = [
-            self.ui.sbLength,
-            self.ui.sbEA,
-            self.ui.sbDiameter,
-            self.ui.sbMass,
-            self.ui.sbLEyeA,
-            self.ui.sbLEyeB,
-            self.ui.sbLSpliceA,
-            self.ui.sbLSpliceB,
-            self.ui.sbK,
-        ]
-
-        for widget in widgets:
-            widget.blockSignals(True)
-
-        svinf(self.ui.sbLength, self.node.length)
-        svinf(self.ui.sbEA, self.node.EA)
-        svinf(self.ui.sbDiameter, self.node.diameter)
-        svinf(self.ui.sbMass, self.node.mass)
-        svinf(self.ui.sbLEyeA, self.node.LeyeA)
-        svinf(self.ui.sbLEyeB, self.node.LeyeB)
-        svinf(self.ui.sbLSpliceA, self.node.LspliceA)
-        svinf(self.ui.sbLSpliceB, self.node.LspliceB)
-        svinf(self.ui.sbK, self.node.k_total)
-
-        for widget in widgets:
-            widget.blockSignals(False)
-
-    def generate_code(self):
-        code = ""
-        element = "\ns['{}']".format(self.node.name)
-
-        node = self.node
-
-        new_length = self.ui.sbLength.value()
-        new_EA = self.ui.sbEA.value()
-        new_diameter = self.ui.sbDiameter.value()
-        new_mass = self.ui.sbMass.value()
-        new_LeyeA = self.ui.sbLEyeA.value()
-        new_LeyeB = self.ui.sbLEyeB.value()
-        new_LspliceA = self.ui.sbLSpliceA.value()
-        new_LspliceB = self.ui.sbLSpliceB.value()
-        new_k = self.ui.sbK.value()
-
-        code += code_if_changed_d(
-            node, new_length, "length", 3
-        )  # Need to change the length before changing the length of
-        # the components beause the length of the components is checked against the total length
-
-        code += code_if_changed_d(node, new_k, "k_total", 1)
-        code += code_if_changed_d(node, new_EA, "EA", 1)
-        code += code_if_changed_d(node, new_diameter, "diameter", 1)
-
-        code += code_if_changed_d(node, new_mass, "mass", 1)
-        code += code_if_changed_d(node, new_LeyeA, "LeyeA", 3)
-        code += code_if_changed_d(node, new_LeyeB, "LeyeB", 3)
-        code += code_if_changed_d(node, new_LspliceA, "LspliceA", 3)
-        code += code_if_changed_d(node, new_LspliceB, "LspliceB", 3)
-
-        self.run_code(code)
+# @Singleton
+# class EditSling(NodeEditor):
+#     def __init__(self):
+#         widget = QtWidgets.QWidget()
+#         ui = DAVE.gui.forms.widget_sling.Ui_Form()
+#         ui.setupUi(widget)
+#
+#         self.ui = ui
+#         self._widget = widget
+#         # Set events
+#
+#         ui.sbLength.valueChanged.connect(self.generate_code)
+#         ui.sbEA.valueChanged.connect(self.generate_code)
+#         ui.sbDiameter.valueChanged.connect(self.generate_code)
+#         ui.sbMass.valueChanged.connect(self.generate_code)
+#         ui.sbLEyeA.valueChanged.connect(self.generate_code)
+#         ui.sbLEyeB.valueChanged.connect(self.generate_code)
+#         ui.sbLSpliceA.valueChanged.connect(self.generate_code)
+#         ui.sbLSpliceB.valueChanged.connect(self.generate_code)
+#         ui.sbK.valueChanged.connect(self.generate_code)
+#
+#     def post_update_event(self):
+#         widgets = [
+#             self.ui.sbLength,
+#             self.ui.sbEA,
+#             self.ui.sbDiameter,
+#             self.ui.sbMass,
+#             self.ui.sbLEyeA,
+#             self.ui.sbLEyeB,
+#             self.ui.sbLSpliceA,
+#             self.ui.sbLSpliceB,
+#             self.ui.sbK,
+#         ]
+#
+#         for widget in widgets:
+#             widget.blockSignals(True)
+#
+#         svinf(self.ui.sbLength, self.node.length)
+#         svinf(self.ui.sbEA, self.node.EA)
+#         svinf(self.ui.sbDiameter, self.node.diameter)
+#         svinf(self.ui.sbMass, self.node.mass)
+#         svinf(self.ui.sbLEyeA, self.node.LeyeA)
+#         svinf(self.ui.sbLEyeB, self.node.LeyeB)
+#         svinf(self.ui.sbLSpliceA, self.node.LspliceA)
+#         svinf(self.ui.sbLSpliceB, self.node.LspliceB)
+#         svinf(self.ui.sbK, self.node.k_total)
+#
+#         for widget in widgets:
+#             widget.blockSignals(False)
+#
+#     def generate_code(self):
+#         code = ""
+#         element = "\ns['{}']".format(self.node.name)
+#
+#         node = self.node
+#
+#         new_length = self.ui.sbLength.value()
+#         new_EA = self.ui.sbEA.value()
+#         new_diameter = self.ui.sbDiameter.value()
+#         new_mass = self.ui.sbMass.value()
+#         new_LeyeA = self.ui.sbLEyeA.value()
+#         new_LeyeB = self.ui.sbLEyeB.value()
+#         new_LspliceA = self.ui.sbLSpliceA.value()
+#         new_LspliceB = self.ui.sbLSpliceB.value()
+#         new_k = self.ui.sbK.value()
+#
+#         code += code_if_changed_d(
+#             node, new_length, "length", 3
+#         )  # Need to change the length before changing the length of
+#         # the components beause the length of the components is checked against the total length
+#
+#         code += code_if_changed_d(node, new_k, "k_total", 1)
+#         code += code_if_changed_d(node, new_EA, "EA", 1)
+#         code += code_if_changed_d(node, new_diameter, "diameter", 1)
+#
+#         code += code_if_changed_d(node, new_mass, "mass", 1)
+#         code += code_if_changed_d(node, new_LeyeA, "LeyeA", 3)
+#         code += code_if_changed_d(node, new_LeyeB, "LeyeB", 3)
+#         code += code_if_changed_d(node, new_LspliceA, "LspliceA", 3)
+#         code += code_if_changed_d(node, new_LspliceB, "LspliceB", 3)
+#
+#         self.run_code(code)
 
 
 @Singleton
@@ -3041,9 +3041,9 @@ class WidgetNodeProps(guiDockWidget):
         ):
             self._node_editors.append(EditGeometricContact.Instance())
 
-        if isinstance(node, vfs.Sling) and (vfs.Sling not in suppressed_editors):
-            self._node_editors.append(EditSling.Instance())
-            self._node_editors.append(EditConnections.Instance())
+        # if isinstance(node, vfs.Sling) and (vfs.Sling not in suppressed_editors):
+        #     self._node_editors.append(EditSling.Instance())
+        #     self._node_editors.append(EditConnections.Instance())
 
         if isinstance(node, vfs.SPMT) and (vfs.SPMT not in suppressed_editors):
             self._node_editors.append(EditSPMT.Instance())

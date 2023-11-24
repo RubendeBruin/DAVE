@@ -172,7 +172,7 @@
         </property>
         <property name="icon">
          <iconset resource="resources.qrc">
-          <normaloff>:/icons/circle_blue.png</normaloff>:/icons/circle_blue.png</iconset>
+          <normaloff>:/v2/icons/circle.svg</normaloff>:/v2/icons/circle.svg</iconset>
         </property>
         <property name="flat">
          <bool>true</bool>
@@ -471,23 +471,6 @@
         <property name="icon">
          <iconset resource="resources.qrc">
           <normaloff>:/icons/beam.png</normaloff>:/icons/beam.png</iconset>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pbSling">
-        <property name="styleSheet">
-         <string>text-align:left</string>
-        </property>
-        <property name="text">
-         <string>Sling</string>
-        </property>
-        <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/icons/sling.png</normaloff>:/icons/sling.png</iconset>
         </property>
         <property name="flat">
          <bool>true</bool>

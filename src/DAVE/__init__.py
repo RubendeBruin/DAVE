@@ -42,7 +42,7 @@ __all__ = [
     "LoadShearMomentDiagram",
     "Point",
     "RigidBody",
-    "Sling",
+    # "SimpleSling",
     "SPMT",
     "Tank",
     "TriMeshSource",

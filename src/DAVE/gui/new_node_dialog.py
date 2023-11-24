@@ -592,26 +592,26 @@ def add_shackle(scene, selection=None):
         return None
 
 
-def add_sling(scene, selection=None):
-
-    ui, AddNode = add_node(scene,selection)
-
-    ui.frmPoints.setVisible(True)
-    ui.btnOk.setIcon(QIcon(":/icons/sling.png"))
-
-    def ok():
-        AddNode.accept()
-
-    ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Sling'))
-
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
-        endA = ui.cbPoiA.currentText()
-        endB = ui.cbPoiB.currentText()
-        name = ui.tbName.text()
-
-        return "new_sling('{}', endA = '{}', endB= '{}')".format(name, endA, endB)
-
-    else:
-        return None
+# def add_sling(scene, selection=None):
+#
+#     ui, AddNode = add_node(scene,selection)
+#
+#     ui.frmPoints.setVisible(True)
+#     ui.btnOk.setIcon(QIcon(":/icons/sling.png"))
+#
+#     def ok():
+#         AddNode.accept()
+#
+#     ui.btnOk.clicked.connect(ok)
+#     ui.tbName.setText(scene.available_name_like('Sling'))
+#
+#     if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+#         endA = ui.cbPoiA.currentText()
+#         endB = ui.cbPoiB.currentText()
+#         name = ui.tbName.text()
+#
+#         return "new_sling('{}', endA = '{}', endB= '{}')".format(name, endA, endB)
+#
+#     else:
+#         return None
 

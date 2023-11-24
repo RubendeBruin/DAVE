@@ -2551,7 +2551,7 @@ class Gui:
         ui.pbWaveInteraction.clicked.connect(self.new_waveinteraction)
 
         ui.pbCable.clicked.connect(self.new_cable)
-        ui.pbSling.clicked.connect(self.new_sling)
+        # ui.pbSling.clicked.connect(self.new_sling)
         ui.pbShackle.clicked.connect(self.new_shackle)
         ui.pbBeam.clicked.connect(self.new_beam)
 
@@ -2628,8 +2628,8 @@ class Gui:
     def new_shackle(self):
         self.new_something(new_node_dialog.add_shackle)
 
-    def new_sling(self):
-        self.new_something(new_node_dialog.add_sling)
+    # def new_sling(self):
+    #     self.new_something(new_node_dialog.add_sling)
 
     def new_spmt(self):
         self.new_something(new_node_dialog.add_spmt)

@@ -208,21 +208,21 @@ def cables_slings_and_grommets(scene, selection, *args):
 
             actions.append((button, cable_code))
 
-        # Sling
-        if len(poi_and_sheave) > 1:
-            button = QPushButton('+ &Sling')
-            button.setIcon(QIcon(':/icons/sling.png'))
-
-            if len(poi_and_sheave) > 2:
-                names = ''.join([f'"{e.name}",' for e in poi_and_sheave[1:-1]])
-                sheaves = f', sheaves = [{names[:-1]}]'
-            else:
-                sheaves = ''
-
-            name = scene.available_name_like("Sling")
-            cable_code = f's.new_sling("{name}", endA="{poi_and_sheave[0].name}", endB = "{poi_and_sheave[-1].name}"{sheaves}{length_code})'
-
-            actions.append((button, cable_code))
+        # # Sling
+        # if len(poi_and_sheave) > 1:
+        #     button = QPushButton('+ &Sling')
+        #     button.setIcon(QIcon(':/icons/sling.png'))
+        #
+        #     if len(poi_and_sheave) > 2:
+        #         names = ''.join([f'"{e.name}",' for e in poi_and_sheave[1:-1]])
+        #         sheaves = f', sheaves = [{names[:-1]}]'
+        #     else:
+        #         sheaves = ''
+        #
+        #     name = scene.available_name_like("Sling")
+        #     cable_code = f's.new_sling("{name}", endA="{poi_and_sheave[0].name}", endB = "{poi_and_sheave[-1].name}"{sheaves}{length_code})'
+        #
+        #     actions.append((button, cable_code))
     return actions
 
 QUICK_ACTION_REGISTER.append(cables_slings_and_grommets)

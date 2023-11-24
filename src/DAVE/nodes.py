@@ -19,7 +19,7 @@ from .nds.mixins import (
     HasContainer,
 )
 from .nds.results import LoadShearMomentDiagram
-from .nds.super_nodes import Component, Sling
+from .nds.super_nodes import Component #, SimpleSling
 from .nds.trimesh import TriMeshSource
 
 """
@@ -149,7 +149,7 @@ DAVE_ADDITIONAL_RUNTIME_MODULES["LoadShearMomentDiagram"] = LoadShearMomentDiagr
 DAVE_ADDITIONAL_RUNTIME_MODULES["Point"] = Point
 DAVE_ADDITIONAL_RUNTIME_MODULES["RigidBody"] = RigidBody
 
-DAVE_ADDITIONAL_RUNTIME_MODULES["Sling"] = Sling
+# DAVE_ADDITIONAL_RUNTIME_MODULES["SimpleSling"] = SimpleSling
 DAVE_ADDITIONAL_RUNTIME_MODULES["SPMT"] = SPMT
 DAVE_ADDITIONAL_RUNTIME_MODULES["Tank"] = Tank
 DAVE_ADDITIONAL_RUNTIME_MODULES["TriMeshSource"] = TriMeshSource

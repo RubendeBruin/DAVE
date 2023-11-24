@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'menu_nodetypes.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.2
+## Created by: Qt User Interface Compiler version 6.6.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -106,7 +106,7 @@ class Ui_MenuNodes(object):
         self.pbCircle = QPushButton(self.widget)
         self.pbCircle.setObjectName(u"pbCircle")
         icon5 = QIcon()
-        icon5.addFile(u":/icons/circle_blue.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon5.addFile(u":/v2/icons/circle.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.pbCircle.setIcon(icon5)
         self.pbCircle.setFlat(True)
 
@@ -264,20 +264,11 @@ class Ui_MenuNodes(object):
 
         self.verticalLayout_3.addWidget(self.pbBeam)
 
-        self.pbSling = QPushButton(self.widget_3)
-        self.pbSling.setObjectName(u"pbSling")
-        icon17 = QIcon()
-        icon17.addFile(u":/icons/sling.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbSling.setIcon(icon17)
-        self.pbSling.setFlat(True)
-
-        self.verticalLayout_3.addWidget(self.pbSling)
-
         self.pbShackle = QPushButton(self.widget_3)
         self.pbShackle.setObjectName(u"pbShackle")
-        icon18 = QIcon()
-        icon18.addFile(u":/v2/icons/shackle.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbShackle.setIcon(icon18)
+        icon17 = QIcon()
+        icon17.addFile(u":/v2/icons/shackle.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbShackle.setIcon(icon17)
         self.pbShackle.setFlat(True)
 
         self.verticalLayout_3.addWidget(self.pbShackle)
@@ -302,18 +293,18 @@ class Ui_MenuNodes(object):
         self.pbSpring2D = QPushButton(self.widget_6)
         self.pbSpring2D.setObjectName(u"pbSpring2D")
         self.pbSpring2D.setStyleSheet(u"text-align:left")
-        icon19 = QIcon()
-        icon19.addFile(u":/icons/con2d.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbSpring2D.setIcon(icon19)
+        icon18 = QIcon()
+        icon18.addFile(u":/icons/con2d.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbSpring2D.setIcon(icon18)
         self.pbSpring2D.setFlat(True)
 
         self.verticalLayout_6.addWidget(self.pbSpring2D)
 
         self.pbSpring6D = QPushButton(self.widget_6)
         self.pbSpring6D.setObjectName(u"pbSpring6D")
-        icon20 = QIcon()
-        icon20.addFile(u":/icons/lincon6.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbSpring6D.setIcon(icon20)
+        icon19 = QIcon()
+        icon19.addFile(u":/icons/lincon6.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbSpring6D.setIcon(icon19)
         self.pbSpring6D.setFlat(True)
 
         self.verticalLayout_6.addWidget(self.pbSpring6D)
@@ -337,9 +328,9 @@ class Ui_MenuNodes(object):
 
         self.pbComponent = QPushButton(self.widget_8)
         self.pbComponent.setObjectName(u"pbComponent")
-        icon21 = QIcon()
-        icon21.addFile(u":/icons/component.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbComponent.setIcon(icon21)
+        icon20 = QIcon()
+        icon20.addFile(u":/icons/component.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbComponent.setIcon(icon20)
         self.pbComponent.setFlat(True)
 
         self.verticalLayout_8.addWidget(self.pbComponent)
@@ -364,9 +355,9 @@ class Ui_MenuNodes(object):
         self.pbVisual = QPushButton(self.widget_7)
         self.pbVisual.setObjectName(u"pbVisual")
         self.pbVisual.setStyleSheet(u"text-align:left")
-        icon22 = QIcon()
-        icon22.addFile(u":/v2/icons/visual.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbVisual.setIcon(icon22)
+        icon21 = QIcon()
+        icon21.addFile(u":/v2/icons/visual.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbVisual.setIcon(icon21)
         self.pbVisual.setFlat(True)
 
         self.verticalLayout_7.addWidget(self.pbVisual)
@@ -433,8 +424,6 @@ class Ui_MenuNodes(object):
         self.pbCable.setText(QCoreApplication.translate("MenuNodes", u"Cable", None))
         self.pbBeam.setStyleSheet(QCoreApplication.translate("MenuNodes", u"text-align:left", None))
         self.pbBeam.setText(QCoreApplication.translate("MenuNodes", u"Beam", None))
-        self.pbSling.setStyleSheet(QCoreApplication.translate("MenuNodes", u"text-align:left", None))
-        self.pbSling.setText(QCoreApplication.translate("MenuNodes", u"Sling", None))
         self.pbShackle.setStyleSheet(QCoreApplication.translate("MenuNodes", u"text-align:left", None))
         self.pbShackle.setText(QCoreApplication.translate("MenuNodes", u"Shackle", None))
         self.widget_6.setStyleSheet(QCoreApplication.translate("MenuNodes", u"text-align:left", None))
