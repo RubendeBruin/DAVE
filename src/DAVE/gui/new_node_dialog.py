@@ -13,7 +13,6 @@
 """
 
 
-
 import DAVE.gui.forms.addnode_form
 
 import DAVE.scene as vfs
@@ -61,9 +60,7 @@ def fill_dropdown_boxes(ui, scene, selection=None):
                 ui.cbParentAxis.setCurrentText(node.name)
 
 
-
-
-def add_node(scene, selection = None):
+def add_node(scene, selection=None):
     AddNode = QtWidgets.QDialog()
     ui = DAVE.gui.forms.addnode_form.Ui_Dialog()
     ui.setupUi(AddNode)
@@ -86,11 +83,15 @@ def add_node(scene, selection = None):
                 ui.errPois.setVisible(True)
             else:
                 ui.errPois.setVisible(False)
-        ui.btnOk.setEnabled((not ui.errPois.isVisible()) and (not ui.errUniqueName.isVisible()))
+        ui.btnOk.setEnabled(
+            (not ui.errPois.isVisible()) and (not ui.errUniqueName.isVisible())
+        )
 
     def ok_name():
         ui.errUniqueName.setVisible(not scene.name_available(ui.tbName.text()))
-        ui.btnOk.setEnabled((not ui.errPois.isVisible()) and (not ui.errUniqueName.isVisible()))
+        ui.btnOk.setEnabled(
+            (not ui.errPois.isVisible()) and (not ui.errUniqueName.isVisible())
+        )
 
     ui.cbPoiA.currentTextChanged.connect(ok)
     ui.cbPoiB.currentTextChanged.connect(ok)
@@ -105,20 +106,18 @@ def add_node(scene, selection = None):
 
 
 def add_frame(scene, selection=None):
-
     ui, AddNode = add_node(scene, selection)
 
     ui.frmParent.setVisible(True)
     ui.btnOk.setIcon(QIcon(":/icons/axis.png"))
 
-
     def ok():
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Frame'))
+    ui.tbName.setText(scene.available_name_like("Frame"))
 
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()
         if parent:
@@ -128,9 +127,9 @@ def add_frame(scene, selection=None):
     else:
         return None
 
-def add_body(scene, selection=None):
 
-    ui, AddNode = add_node(scene,selection)
+def add_body(scene, selection=None):
+    ui, AddNode = add_node(scene, selection)
 
     ui.frmParent.setVisible(True)
     ui.btnOk.setIcon(QIcon(":/icons/rigidbody.png"))
@@ -139,9 +138,9 @@ def add_body(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Body'))
+    ui.tbName.setText(scene.available_name_like("Body"))
 
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()
         if parent:
@@ -151,8 +150,8 @@ def add_body(scene, selection=None):
     else:
         return None
 
-def add_poi(scene, selection=None):
 
+def add_poi(scene, selection=None):
     ui, AddNode = add_node(scene, selection)
 
     ui.frmParent.setVisible(True)
@@ -162,9 +161,9 @@ def add_poi(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Point'))
+    ui.tbName.setText(scene.available_name_like("Point"))
 
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()
         if parent:
@@ -174,8 +173,8 @@ def add_poi(scene, selection=None):
     else:
         return None
 
-def add_spmt(scene, selection=None):
 
+def add_spmt(scene, selection=None):
     ui, AddNode = add_node(scene, selection)
 
     ui.frmParent.setVisible(True)
@@ -185,9 +184,9 @@ def add_spmt(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('SPMTwheels'))
+    ui.tbName.setText(scene.available_name_like("SPMTwheels"))
 
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()
 
@@ -198,8 +197,7 @@ def add_spmt(scene, selection=None):
 
 
 def add_cable(scene, selection=None):
-
-    ui, AddNode = add_node(scene,selection)
+    ui, AddNode = add_node(scene, selection)
 
     ui.frmPoints.setVisible(True)
     ui.btnOk.setIcon(QIcon(":/icons/cable.png"))
@@ -208,9 +206,9 @@ def add_cable(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Cable'))
+    ui.tbName.setText(scene.available_name_like("Cable"))
 
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         endA = ui.cbPoiA.currentText()
         endB = ui.cbPoiB.currentText()
         name = ui.tbName.text()
@@ -220,9 +218,9 @@ def add_cable(scene, selection=None):
     else:
         return None
 
-def add_force(scene, selection=None):
 
-    ui, AddNode = add_node(scene,selection)
+def add_force(scene, selection=None):
+    ui, AddNode = add_node(scene, selection)
 
     ui.frmParentPoi.setVisible(True)
     ui.btnOk.setIcon(QIcon(":/icons/force.png"))
@@ -231,9 +229,9 @@ def add_force(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Force'))
+    ui.tbName.setText(scene.available_name_like("Force"))
 
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         poi = ui.cbParentPoi.currentText()
         name = ui.tbName.text()
 
@@ -242,9 +240,9 @@ def add_force(scene, selection=None):
     else:
         return None
 
-def add_windarea(scene, selection=None):
 
-    ui, AddNode = add_node(scene,selection)
+def add_windarea(scene, selection=None):
+    ui, AddNode = add_node(scene, selection)
 
     ui.frmParentPoi.setVisible(True)
     ui.btnOk.setIcon(QIcon(":/icons/wind.png"))
@@ -253,9 +251,9 @@ def add_windarea(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('WindArea'))
+    ui.tbName.setText(scene.available_name_like("WindArea"))
 
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         poi = ui.cbParentPoi.currentText()
         name = ui.tbName.text()
 
@@ -264,9 +262,9 @@ def add_windarea(scene, selection=None):
     else:
         return None
 
-def add_currentarea(scene, selection=None):
 
-    ui, AddNode = add_node(scene,selection)
+def add_currentarea(scene, selection=None):
+    ui, AddNode = add_node(scene, selection)
 
     ui.frmParentPoi.setVisible(True)
     ui.btnOk.setIcon(QIcon(":/icons/current.png"))
@@ -275,9 +273,9 @@ def add_currentarea(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('CurrentArea'))
+    ui.tbName.setText(scene.available_name_like("CurrentArea"))
 
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         poi = ui.cbParentPoi.currentText()
         name = ui.tbName.text()
 
@@ -288,8 +286,7 @@ def add_currentarea(scene, selection=None):
 
 
 def add_contactball(scene, selection=None):
-
-    ui, AddNode = add_node(scene,selection)
+    ui, AddNode = add_node(scene, selection)
 
     ui.frmParentPoi.setVisible(True)
     ui.btnOk.setIcon(QIcon(":/icons/contactball.png"))
@@ -298,9 +295,9 @@ def add_contactball(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Contactball'))
+    ui.tbName.setText(scene.available_name_like("Contactball"))
 
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         poi = ui.cbParentPoi.currentText()
         name = ui.tbName.text()
 
@@ -310,10 +307,8 @@ def add_contactball(scene, selection=None):
         return None
 
 
-
 def add_sheave(scene, selection=None):
-
-    ui, AddNode = add_node(scene,selection)
+    ui, AddNode = add_node(scene, selection)
 
     ui.frmParentPoi.setVisible(True)
     ui.btnOk.setIcon(QIcon(":/icons/sheave.png"))
@@ -322,9 +317,9 @@ def add_sheave(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Circle'))
+    ui.tbName.setText(scene.available_name_like("Circle"))
 
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         poi = ui.cbParentPoi.currentText()
         name = ui.tbName.text()
 
@@ -333,8 +328,8 @@ def add_sheave(scene, selection=None):
     else:
         return None
 
-def add_linear_connector(scene, selection=None):
 
+def add_linear_connector(scene, selection=None):
     ui, AddNode = add_node(scene, selection)
 
     ui.frmMasterSlave.setVisible(True)
@@ -344,23 +339,23 @@ def add_linear_connector(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('LinCon6d'))
+    ui.tbName.setText(scene.available_name_like("LinCon6d"))
 
-
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         master = ui.cbMasterAxis.currentText()
         slave = ui.cbSlaveAxis.currentText()
         name = ui.tbName.text()
 
-        return "new_linear_connector_6d('{}', main = '{}', secondary = '{}')".format(name, slave, master)
+        return "new_linear_connector_6d('{}', main = '{}', secondary = '{}')".format(
+            name, slave, master
+        )
 
     else:
         return None
 
 
 def add_connector2d(scene, selection=None):
-
-    ui, AddNode = add_node(scene,selection)
+    ui, AddNode = add_node(scene, selection)
 
     ui.frmMasterSlave.setVisible(True)
     ui.btnOk.setIcon(QIcon(":/icons/con2d.png"))
@@ -369,21 +364,23 @@ def add_connector2d(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Connector2d'))
+    ui.tbName.setText(scene.available_name_like("Connector2d"))
 
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         master = ui.cbMasterAxis.currentText()
         slave = ui.cbSlaveAxis.currentText()
         name = ui.tbName.text()
 
-        return "new_connector2d('{}', nodeB = '{}', nodeA = '{}')".format(name, slave, master)
+        return "new_connector2d('{}', nodeB = '{}', nodeA = '{}')".format(
+            name, slave, master
+        )
 
     else:
         return None
 
-def add_beam_connector(scene, selection=None):
 
-    ui, AddNode = add_node(scene,selection)
+def add_beam_connector(scene, selection=None):
+    ui, AddNode = add_node(scene, selection)
 
     ui.frmMasterSlave.setVisible(True)
     ui.btnOk.setIcon(QIcon(":/icons/beam.png"))
@@ -392,10 +389,9 @@ def add_beam_connector(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Beam'))
+    ui.tbName.setText(scene.available_name_like("Beam"))
 
-
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         master = ui.cbMasterAxis.currentText()
         slave = ui.cbSlaveAxis.currentText()
         name = ui.tbName.text()
@@ -407,8 +403,7 @@ def add_beam_connector(scene, selection=None):
 
 
 def add_linear_hydrostatics(scene, selection=None):
-
-    ui, AddNode = add_node(scene,selection)
+    ui, AddNode = add_node(scene, selection)
 
     ui.frmParent.setVisible(True)
     ui.btnOk.setIcon(QIcon(":/icons/linhyd.png"))
@@ -417,19 +412,22 @@ def add_linear_hydrostatics(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Hydrostatics'))
+    ui.tbName.setText(scene.available_name_like("Hydrostatics"))
 
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()
 
-        return "new_hydspring('{}', parent = '{}', cob = (0,0,0), BMT=0, BML=0, COFX=0, COFY=0, kHeave=0, waterline=0, displacement_kN=0)".format(name, parent)
+        return "new_hydspring('{}', parent = '{}', cob = (0,0,0), BMT=0, BML=0, COFX=0, COFY=0, kHeave=0, waterline=0, displacement_kN=0)".format(
+            name, parent
+        )
 
     else:
         return None
 
+
 def add_visual(scene, selection=None):
-    ui, AddNode = add_node(scene,selection)
+    ui, AddNode = add_node(scene, selection)
 
     ui.frmParent.setVisible(True)
     ui.btnOk.setIcon(QIcon(":/icons/visual.png"))
@@ -438,46 +436,47 @@ def add_visual(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Visual'))
+    ui.tbName.setText(scene.available_name_like("Visual"))
 
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()
 
         return "new_visual('{}', parent = '{}', path = r'wirecube.obj')".format(
-            name, parent)
+            name, parent
+        )
 
     else:
         return None
 
+
 def add_component(scene, selection=None):
-    ui, AddNode = add_node(scene,selection)
+    ui, AddNode = add_node(scene, selection)
 
     ui.frmParent.setVisible(True)
-    ui.btnOk.setIcon(QIcon(":/icons/component.png"))
+    ui.btnOk.setIcon(QIcon(":/v2/icons/component.svg"))
 
     def ok():
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Component'))
+    ui.tbName.setText(scene.available_name_like("Component"))
 
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()
 
         if parent:
-            return "new_component('{}', parent = '{}')".format(
-                name, parent)
+            return "new_component('{}', parent = '{}')".format(name, parent)
         else:
-            return "new_component('{}')".format(
-                name)
+            return "new_component('{}')".format(name)
 
     else:
         return None
 
+
 def add_buoyancy(scene, selection=None):
-    ui, AddNode = add_node(scene,selection)
+    ui, AddNode = add_node(scene, selection)
 
     ui.frmParent.setVisible(True)
     ui.btnOk.setIcon(QIcon(":/icons/buoy_mesh.png"))
@@ -486,11 +485,9 @@ def add_buoyancy(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Buoyancy mesh'))
+    ui.tbName.setText(scene.available_name_like("Buoyancy mesh"))
 
-
-
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()
 
@@ -499,8 +496,9 @@ def add_buoyancy(scene, selection=None):
     else:
         return None
 
+
 def add_tank(scene, selection=None):
-    ui, AddNode = add_node(scene,selection)
+    ui, AddNode = add_node(scene, selection)
 
     ui.frmParent.setVisible(True)
     ui.btnOk.setIcon(QIcon(":/icons/tank.png"))
@@ -509,9 +507,9 @@ def add_tank(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Tank'))
+    ui.tbName.setText(scene.available_name_like("Tank"))
 
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()
 
@@ -522,7 +520,7 @@ def add_tank(scene, selection=None):
 
 
 def add_contactmesh(scene, selection=None):
-    ui, AddNode = add_node(scene,selection)
+    ui, AddNode = add_node(scene, selection)
 
     ui.frmParent.setVisible(True)
     ui.btnOk.setIcon(QIcon(":/icons/contact_mesh.png"))
@@ -531,11 +529,9 @@ def add_contactmesh(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Contactmesh'))
+    ui.tbName.setText(scene.available_name_like("Contactmesh"))
 
-
-
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()
 
@@ -544,13 +540,12 @@ def add_contactmesh(scene, selection=None):
         else:
             return "new_contactmesh('{}')".format(name)
 
-
     else:
         return None
 
 
 def add_waveinteraction(scene, selection=None):
-    ui, AddNode = add_node(scene,selection)
+    ui, AddNode = add_node(scene, selection)
 
     ui.frmParent.setVisible(True)
     ui.btnOk.setIcon(QIcon(":/icons/waveinteraction.png"))
@@ -559,32 +554,34 @@ def add_waveinteraction(scene, selection=None):
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('WaveInteraction'))
+    ui.tbName.setText(scene.available_name_like("WaveInteraction"))
 
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         parent = ui.cbParentAxis.currentText()
         name = ui.tbName.text()
 
         # get the first available wave-interaction resource
-        resource = scene.get_resource_list('.dhyd')[0]
+        resource = scene.get_resource_list(".dhyd")[0]
 
         return "new_waveinteraction('{}', parent = '{}', path = '{}')".format(
-            name, parent, resource)
+            name, parent, resource
+        )
 
     else:
         return None
 
+
 def add_shackle(scene, selection=None):
-    ui, AddNode = add_node(scene,selection)
+    ui, AddNode = add_node(scene, selection)
     ui.btnOk.setIcon(QIcon(":/icons/shackle.png"))
 
     def ok():
         AddNode.accept()
 
     ui.btnOk.clicked.connect(ok)
-    ui.tbName.setText(scene.available_name_like('Shackle'))
+    ui.tbName.setText(scene.available_name_like("Shackle"))
 
-    if (AddNode.exec() == QtWidgets.QDialog.Accepted):
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
         name = ui.tbName.text()
         return f"new_shackle('{name}')"
 
@@ -614,4 +611,3 @@ def add_shackle(scene, selection=None):
 #
 #     else:
 #         return None
-

@@ -611,7 +611,7 @@
         </property>
         <property name="icon">
          <iconset resource="resources.qrc">
-          <normaloff>:/icons/component.png</normaloff>:/icons/component.png</iconset>
+          <normaloff>:/v2/icons/component.svg</normaloff>:/v2/icons/component.svg</iconset>
         </property>
         <property name="flat">
          <bool>true</bool>

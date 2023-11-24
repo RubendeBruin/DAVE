@@ -8,7 +8,7 @@ import DAVE.gui.forms.resources_rc
 if QApplication.instance() is None:
     app = QApplication()
 
-ICONS[dn.Component] = QIcon(":/icons/component.png")
+ICONS[dn.Component] = QIcon(":/v2/icons/component.svg")
 ICONS[dn.RigidBody] = QIcon(":/icons/cube.png")
 ICONS[dn.Frame] = QIcon(":/icons/axis_blue.png")
 ICONS[dn.Point] = QIcon(":/icons/point_blue.png")
