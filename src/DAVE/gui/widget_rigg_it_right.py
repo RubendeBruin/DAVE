@@ -128,10 +128,10 @@ def actions_on_circles(scene, selection, *args):
         p0 = p2[0]
         p1 = p2[1]
 
-        # Grommet
-        button = QPushButton('+ &Grommet')
+        # Grommet (Cable loop)
+        button = QPushButton('+ Cable &Loop')
         button.setIcon(QIcon(":/icons/circle.png"))
-        name = scene.available_name_like("Grommet")
+        name = scene.available_name_like("Loop")
         code = f's.new_cable("{name}", endA="{p0.name}", endB = "{p0.name}", sheaves = ["{p1.name}"])'
 
         actions.append((button, code))
