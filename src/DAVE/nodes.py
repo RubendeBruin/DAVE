@@ -19,7 +19,7 @@ from .nds.mixins import (
     HasContainer,
 )
 from .nds.results import LoadShearMomentDiagram
-from .nds.super_nodes import Component, Shackle, Sling
+from .nds.super_nodes import Component, Sling
 from .nds.trimesh import TriMeshSource
 
 """
@@ -148,7 +148,7 @@ DAVE_ADDITIONAL_RUNTIME_MODULES["LC6d"] = LC6d
 DAVE_ADDITIONAL_RUNTIME_MODULES["LoadShearMomentDiagram"] = LoadShearMomentDiagram
 DAVE_ADDITIONAL_RUNTIME_MODULES["Point"] = Point
 DAVE_ADDITIONAL_RUNTIME_MODULES["RigidBody"] = RigidBody
-DAVE_ADDITIONAL_RUNTIME_MODULES["Shackle"] = Shackle
+
 DAVE_ADDITIONAL_RUNTIME_MODULES["Sling"] = Sling
 DAVE_ADDITIONAL_RUNTIME_MODULES["SPMT"] = SPMT
 DAVE_ADDITIONAL_RUNTIME_MODULES["Tank"] = Tank
@@ -179,55 +179,61 @@ DAVE_ADDITIONAL_RUNTIME_MODULES["AreaKind"] = AreaKind
 DAVE_ADDITIONAL_RUNTIME_MODULES["ClaimManagement"] = ClaimManagement
 DAVE_ADDITIONAL_RUNTIME_MODULES["VisualOutlineType"] = VisualOutlineType
 
+from .nds import auto_generated_node_documentation  # noqa: F401
 
-# Register the documentation
 #
-cdir = Path(__file__).parent
-filename = cdir / "./resources/node_prop_info.csv"
-from DAVE.settings import DAVE_NODEPROP_INFO, NodePropertyInfo
-
-if filename.exists():
-    types = DAVE_ADDITIONAL_RUNTIME_MODULES.copy()
-    types["tuple"] = tuple
-    types["int"] = int
-    types["float"] = float
-    types["bool"] = bool
-    types["str"] = str
-    types["dict"] = type(dict)
-    types["array"] = type(np.array)
-
-    btypes = dict()
-    btypes["True"] = True
-    btypes["False"] = False
-    btypes["true"] = True
-    btypes["false"] = False
-
-    with open(filename, newline="") as csvfile:
-        prop_reader = csv.reader(csvfile)
-        header = prop_reader.__next__()  # skip the header
-        for row in prop_reader:
-            cls_name = row[0]
-            cls = DAVE_ADDITIONAL_RUNTIME_MODULES[cls_name]
-
-            prop_name = row[1]
-            val_type = types[row[2]]
-
-            info = NodePropertyInfo(
-                node_class=cls,
-                property_name=row[1],
-                property_type=val_type,
-                doc_short=row[3],
-                units=row[4],
-                remarks=row[5],
-                is_settable=btypes[row[6]],
-                is_single_settable=btypes[row[7]],
-                is_single_numeric=btypes[row[8]],
-                doc_long=row[9],
-            )
-
-            if cls not in DAVE_NODEPROP_INFO:
-                DAVE_NODEPROP_INFO[cls] = dict()
-            DAVE_NODEPROP_INFO[cls][prop_name] = info
-
-else:
-    print(f"Could not register node property info because {filename} does not exist")
+# # Register the documentation
+# #
+# cdir = Path(__file__).parent
+# filename = cdir / "./resources/node_prop_info.csv"
+# from DAVE.settings import DAVE_NODEPROP_INFO, NodePropertyInfo
+#
+# if filename.exists():
+#     types = DAVE_ADDITIONAL_RUNTIME_MODULES.copy()
+#     types["tuple"] = tuple
+#     types["int"] = int
+#     types["float"] = float
+#     types["bool"] = bool
+#     types["str"] = str
+#     types["dict"] = type(dict)
+#     types["array"] = type(np.array)
+#
+#     btypes = dict()
+#     btypes["True"] = True
+#     btypes["False"] = False
+#     btypes["true"] = True
+#     btypes["false"] = False
+#
+#     with open(filename, newline="") as csvfile:
+#         prop_reader = csv.reader(csvfile)
+#         header = prop_reader.__next__()  # skip the header
+#         for row in prop_reader:
+#             cls_name = row[0]
+#
+#             if cls_name == "Shackle":
+#                 continue
+#
+#             cls = DAVE_ADDITIONAL_RUNTIME_MODULES[cls_name]
+#
+#             prop_name = row[1]
+#             val_type = types[row[2]]
+#
+#             info = NodePropertyInfo(
+#                 node_class=cls,
+#                 property_name=row[1],
+#                 property_type=val_type,
+#                 doc_short=row[3],
+#                 units=row[4],
+#                 remarks=row[5],
+#                 is_settable=btypes[row[6]],
+#                 is_single_settable=btypes[row[7]],
+#                 is_single_numeric=btypes[row[8]],
+#                 doc_long=row[9],
+#             )
+#
+#             if cls not in DAVE_NODEPROP_INFO:
+#                 DAVE_NODEPROP_INFO[cls] = dict()
+#             DAVE_NODEPROP_INFO[cls][prop_name] = info
+#
+# else:
+#     print(f"Could not register node property info because {filename} does not exist")

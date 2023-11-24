@@ -427,8 +427,6 @@ class VisualActor:
                 node_class = f"ContactBall:{self.paint_state}"
             elif isinstance(self.node, dn.Tank):
                 node_class = f"Tank:{self.paint_state}"
-            elif isinstance(self.node, dn.Shackle):
-                node_class = "RigidBody"
             else:
                 node_class = self.node.class_name
 

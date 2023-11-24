@@ -31,6 +31,7 @@ from DAVE.settings import (
     RESOURCE_PATH,
     NodePropertyInfo,
     MANAGED_NODE_IDENTIFIER,
+    DAVE_NODEPROP_INFO
 )
 
 from DAVE import settings
@@ -3453,7 +3454,7 @@ class Scene:
 
         return node
 
-    def new_shackle(self, name, kind="GP500") -> Shackle:
+    def new_shackle(self, name, kind="GP500"):
         """
         Creates a new shackle, adds it to the scene and returns a reference to the newly created object.
 
@@ -3485,6 +3486,15 @@ class Scene:
         ]
         for pf in postfixes:
             self._verify_name_available(name_prefix + pf)
+
+        try:
+            from DAVE_rigging import Shackle
+        except ImportError:
+            raise ImportError(
+                "DAVE_rigging extension not found. This extension is needed to create a shackle."
+            )
+
+        warnings.warn("Using depricated function new_shackle. Use Shackle instead")
 
         # then make element
         node = Shackle(scene=self, name=name, kind=kind)
@@ -3644,10 +3654,11 @@ class Scene:
                                         f"s['{n.name}'].watches['{key}'] = {value}  # watch overridden"
                                     )
                                 else:
-                                    pass # watch set by manager, so do not export
+                                    pass  # watch set by manager, so do not export
                     else:
-                        logging.info(f"Managed node {n.name} does not have _watches_by_manager set")
-
+                        logging.info(
+                            f"Managed node {n.name} does not have _watches_by_manager set"
+                        )
 
             code.append("\n# Tags")
 

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 import vedo as vp
-from PySide6.QtGui import QColor, QGuiApplication
+from PySide6.QtGui import QColor
 
 from DAVE import Point, Circle
 from DAVE.gui.dialog_advanced_cable_settings import AdvancedCableSettings
@@ -26,12 +26,10 @@ import DAVE.gui.forms.widget_contactball
 import DAVE.gui.forms.widget_geometricconnection
 import DAVE.gui.forms.widget_sling
 import DAVE.gui.forms.widget_tank
-import DAVE.gui.forms.widget_shackle
 import DAVE.gui.forms.widget_area
 import DAVE.gui.forms.widget_component
 import DAVE.gui.forms.widget_spmt
 import DAVE.gui.forms.widget_connections
-from DAVE.gui.dock_system.ads_helpers import dock_remove_from_gui
 from DAVE.gui.helpers.nodelist_drag_drop_move import (
     call_from_drop_Event,
     call_from_dragEnter_or_Move_Event,
@@ -2600,37 +2598,6 @@ class EditSling(NodeEditor):
 
 
 @Singleton
-class EditShackle(NodeEditor):
-    def __init__(self):
-        widget = QtWidgets.QWidget()
-        ui = DAVE.gui.forms.widget_shackle.Ui_widgetShackle()
-        ui.setupUi(widget)
-        self.ui = ui
-        self._widget = widget
-
-        self.ui.comboBox.currentTextChanged.connect(self.generate_code)
-
-    def post_update_event(self):
-        self.ui.comboBox.blockSignals(True)
-
-        self.ui.comboBox.clear()
-        self.ui.comboBox.addItems(self.node.defined_kinds())
-
-        self.ui.comboBox.setCurrentText(self.node.kind)
-        self.ui.comboBox.blockSignals(False)
-
-        self.ui.lbInfo.setText(self.node.item_description)
-
-    def generate_code(self):
-        kind = self.ui.comboBox.currentText()
-        if kind != self.node.kind:
-            if kind in Shackle.data:
-                element = "\ns['{}']".format(self.node.name)
-                code = element + f".kind = '{kind}'"
-                self.run_code(code)
-
-
-@Singleton
 class EditSPMT(AbstractNodeEditorWithParent):
     nodetypes_for_parent = DAVE.nodes.Frame
     NoneAllowedAsParent = False
@@ -2931,8 +2898,6 @@ class WidgetNodeProps(guiDockWidget):
                     self.gui.visual.add_temporary_actor(actor)
 
     def select_node(self, node):
-
-
         if self.node == node:
             return
 
@@ -3103,16 +3068,15 @@ class WidgetNodeProps(guiDockWidget):
         if isinstance(node, vfs.Tank) and (vfs.Tank not in suppressed_editors):
             self._node_editors.append(EditTank.Instance())
 
-        if isinstance(node, vfs.Shackle) and (vfs.Shackle not in suppressed_editors):
-            self._node_editors.append(EditShackle.Instance())
-
         for key, value in DAVE_GUI_NODE_EDITORS.items():
             if isinstance(node, key):
                 if isinstance(value, (list, tuple)):
                     for v in value:
-                        self._node_editors.append(v.Instance())
+                        if v not in suppressed_editors:
+                            self._node_editors.append(v.Instance())
                 else:
-                    self._node_editors.append(value.Instance())
+                    if value not in suppressed_editors:
+                        self._node_editors.append(value.Instance())
 
         # print("Node editor created!", flush=True)
 

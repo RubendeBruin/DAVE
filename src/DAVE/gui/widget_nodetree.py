@@ -12,6 +12,7 @@ from DAVE.gui.helpers.my_qt_helpers import (
     update_combobox_items_with_completer,
 )
 from DAVE.helpers.node_trees import give_parent_item
+from DAVE.settings import DAVE_NODEPROP_INFO
 
 from DAVE.settings_visuals import ICONS
 
@@ -256,6 +257,7 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
         self.tbFilter.lineEdit().setClearButtonEnabled(True)
 
         filter_options = []
+
         for key in DAVE_NODEPROP_INFO.keys():
             filter_options.append(f"type:{key.__name__}")
 

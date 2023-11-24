@@ -9,8 +9,6 @@ PAINTERS["paintset_name"]["NodeClass:status"] = ActorSettings
 
 from dataclasses import dataclass
 from copy import copy, deepcopy
-
-from PySide6.QtGui import QIcon
 from matplotlib.cm import get_cmap
 import DAVE.settings as ds
 

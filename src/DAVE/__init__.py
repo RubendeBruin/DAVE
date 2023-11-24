@@ -42,7 +42,6 @@ __all__ = [
     "LoadShearMomentDiagram",
     "Point",
     "RigidBody",
-    "Shackle",
     "Sling",
     "SPMT",
     "Tank",
