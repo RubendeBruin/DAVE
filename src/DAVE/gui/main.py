@@ -865,6 +865,10 @@ class Gui:
         self.MainWindow.setStatusBar(self.statusbar)
         # self.statusbar.mousePressEvent = self.show_python_console
 
+        # copy-paste
+        self.ui.actionCopy.triggered.connect(self.clipboard_copy)
+        self.ui.actionPaste.triggered.connect(self.clipboard_paste)
+
         # ======================== Finalize ========================
 
         self._requested_workspace = workspace
@@ -950,6 +954,53 @@ class Gui:
         self._autosavetimer.start(1000 * DAVE.gui.settings.AUTOSAVE_INTERVAL_S)
 
         return filename
+
+    def clipboard_copy(self):
+
+        # get the selected nodes
+        if self.selected_nodes:
+            node = self.selected_nodes[0]
+
+            code = vfc.DAVE_CLIPBOARD_HEADER + f's.duplicate_branch("{node.name}")'
+            self.app.clipboard().setText(code)
+            self.give_feedback(f"Duplicate node {node.name} copied to clipboard")
+
+
+    def clipboard_paste(self):
+        try:
+            text = self.app.clipboard().text()
+        except:
+            self.give_feedback("Nothing to paste")
+            return
+
+        if text.strip():
+
+            if text.startswith(vfc.DAVE_CLIPBOARD_HEADER):
+                text = text[len(vfc.DAVE_CLIPBOARD_HEADER):]
+            else:
+
+                # ask user if ok to run the code from the clipboard
+
+                short_code = text
+                if len(short_code) > 200:
+                    short_code = short_code[:100] + "\n...\n" + short_code[-100:]
+
+
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Warning)
+                msg.setText(
+                    f"Do you want to run the following code?\n\n" + short_code
+                )
+
+                msg.setWindowTitle("Run code from clipboard?")
+                msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                retval = msg.exec()
+                if retval == QMessageBox.No:
+                    return
+
+            self.run_code(text, guiEventType.MODEL_STRUCTURE_CHANGED)
+        else:
+            self.give_feedback("Nothing to paste")
 
     def menu_export_DAVE_package(self, *args):
         d = ExportAsPackageDialog()

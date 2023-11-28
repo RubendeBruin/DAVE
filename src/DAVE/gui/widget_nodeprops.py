@@ -24,6 +24,7 @@ import DAVE.gui.forms.widget_sheave
 import DAVE.gui.forms.widget_waveinteraction
 import DAVE.gui.forms.widget_contactball
 import DAVE.gui.forms.widget_geometricconnection
+
 # import DAVE.gui.forms.widget_sling
 import DAVE.gui.forms.widget_tank
 import DAVE.gui.forms.widget_area
@@ -386,9 +387,10 @@ class EditNode(NodeEditor):
         ui.cbVisible.toggled.connect(self.visible_changed)
         ui.lbColor.mousePressEvent = self.color_clicked
 
-        self.eventFilter = EnterKeyPressFilter()
-        self.eventFilter.callback = self.nameChangedEnter
-        self.ui.tbName.installEventFilter(self.eventFilter)
+        # self.eventFilter = EnterKeyPressFilter()
+        # self.eventFilter.callback = self.nameChangedEnter
+        # self.ui.tbName.installEventFilter(self.eventFilter)
+        self.ui.tbName.editingFinished.connect(self.nameChangedEnter)
 
         self.rightclickfilter = RightClickEventFilter()
         self.rightclickfilter.callback = self.mouse_event_on_tbName

@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'widget_name.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.0
+## Created by: Qt User Interface Compiler version 6.6.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -22,7 +22,7 @@ class Ui_NameWidget(object):
     def setupUi(self, NameWidget):
         if not NameWidget.objectName():
             NameWidget.setObjectName(u"NameWidget")
-        NameWidget.resize(254, 61)
+        NameWidget.resize(275, 87)
         NameWidget.setMinimumSize(QSize(0, 0))
         self.gridLayout = QGridLayout(NameWidget)
         self.gridLayout.setObjectName(u"gridLayout")
@@ -56,7 +56,7 @@ class Ui_NameWidget(object):
 
         self.lblInfo = QLabel(NameWidget)
         self.lblInfo.setObjectName(u"lblInfo")
-        self.lblInfo.setStyleSheet(u"color: rgb(200, 100, 0)")
+        self.lblInfo.setStyleSheet(u"color: darkgreen")
 
         self.gridLayout.addWidget(self.lblInfo, 1, 1, 1, 3)
 

@@ -116,6 +116,7 @@ print(f"Temporary files are stored in {PATH_TEMP} - will be deleted on exit")
 
 SOLVER_TERMINATED_SCENE = None  # will be set to the scene when solver is terminated by user - this is a reference, not a copy!
 
+DAVE_CLIPBOARD_HEADER = "#DAVESCRIPT_RUN"
 
 """
 Node-name settings
