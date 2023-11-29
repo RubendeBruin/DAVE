@@ -2856,7 +2856,10 @@ class WidgetNodeProps(guiDockWidget):
             self.select_node(None)
             return
 
-        if event in [guiEventType.SELECTED_NODE_MODIFIED]:
+        if event in [
+            guiEventType.SELECTED_NODE_MODIFIED,
+            guiEventType.MODEL_STRUCTURE_CHANGED,
+        ]:  # reloaded component emit model structure changed instead of selected node modified
             for w in self._node_editors:
                 w.post_update_event()
 
