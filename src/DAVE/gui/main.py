@@ -1342,8 +1342,12 @@ class Gui:
     # ============== File open / recent / drag-drop functions ===========
 
     def drag_enter(self, event):
-        if event.mimeData().hasText():
+
+        if event.mimeData().hasUrls():
             event.accept()
+        #
+        # if event.mimeData().hasText():
+        #     event.accept()
 
     def drop(self, event):
         filename = event.mimeData().text()
