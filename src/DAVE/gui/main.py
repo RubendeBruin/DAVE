@@ -1597,9 +1597,9 @@ class Gui:
 
             code += self.scene.give_python_code()
             self._autosave.write(code)
-            self.give_feedback("Autosaved to {}".format(self._autosave.autosave_file))
+            # self.give_feedback("Autosaved to {}".format(self._autosave.autosave_file))
         except Exception as e:
-            self.show_exception(f"Could not save autosave file because {e}")
+            self.show_exception(f"Could not save autosave file because {e} \n\n Advised to use the UNDO function to restore the model to a previous state, then save and restart")
 
     # ==== undo functions ====
 

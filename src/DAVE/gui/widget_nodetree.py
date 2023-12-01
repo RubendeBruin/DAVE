@@ -236,8 +236,8 @@ class NodeTreeWidget(QtWidgets.QTreeWidget):
 
         drag = QDrag(self)
         drag.setMimeData(mimeData)
-
-        drag.exec_(supportedActions=supportedActions)  # , defaultAction=Qt.MoveAction)
+        drag.setPixmap(dragged.icon(0).pixmap(16))
+        drag.exec(supportedActions=supportedActions)  # , defaultAction=Qt.MoveAction)
 
 
 class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):

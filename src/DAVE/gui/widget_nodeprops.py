@@ -1421,6 +1421,7 @@ class EditConnections(NodeEditor):
     def dropEvent(self, event):
         call_from_drop_Event(self.ui.list, event)
         self.generate_code()
+        event.accept()
 
     def dragEnterEvent(self, event):
         call_from_dragEnter_or_Move_Event(

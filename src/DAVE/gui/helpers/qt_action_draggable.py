@@ -97,8 +97,12 @@ class QDraggableNodeActionWidget(QWidgetAction):
         data = QMimeData()
         data.setText(self.mime_text)
         drag.setMimeData(data)
-        # drag.setPixmap(self.label.pixmap())
-        drag.exec()
+        pixmap = self.icon.pixmap()
+        drag.setPixmap(pixmap)
+        result = drag.exec()
+
+        if result != Qt.IgnoreAction:
+            self.triggered.emit() # close the menu
 
     def setBold(self, bold):
         if bold:
