@@ -1355,13 +1355,22 @@ class Gui:
         filename = filename[1:]
         p = Path(filename)
 
-        if p.exists():
-            try:
-                self.open_file(p)
-            except:
+        # show a messagebox asking if the user wants to open the file
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Question)
+        msg.setText(f"Do you want to open the file {p.name}?")
+        msg.setWindowTitle("Open file?")
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        retval = msg.exec()
+
+        if retval == QMessageBox.Yes:
+            if p.exists():
+                try:
+                    self.open_file(p)
+                except:
+                    raise ValueError(f"Could not open file {filename}")
+            else:
                 raise ValueError(f"Could not open file {filename}")
-        else:
-            raise ValueError(f"Could not open file {filename}")
 
     def get_recent(self):
         settings = QSettings("rdbr", "DAVE")
@@ -1918,6 +1927,7 @@ class Gui:
                 f"Solved statics - remaining error = {self.scene._vfc.Emaxabs} kN or kNm"
             )
 
+
     def solve_statics_using_gui_on_scene(
         self, scene_to_solve, timeout_s=0.5, called_by_user=True
     ):
@@ -1932,7 +1942,6 @@ class Gui:
             return True
 
         self._dialog = None
-        result = False  # default
 
         start_time = datetime.datetime.now()
 

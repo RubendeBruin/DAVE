@@ -97,7 +97,7 @@ class QDraggableNodeActionWidget(QWidgetAction):
         data = QMimeData()
         data.setText(self.mime_text)
         drag.setMimeData(data)
-        drag.setPixmap(self.label.pixmap())
+        # drag.setPixmap(self.label.pixmap())
         drag.exec()
 
     def setBold(self, bold):
