@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>593</width>
-    <height>1102</height>
+    <height>576</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;Explore or solve 1-to-1 relations&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Set any settable scalar property in the scene, for example s['cable'].length&lt;/p&gt;&lt;p&gt;Solve statics&lt;/p&gt;&lt;p&gt;Evaluate another property of the scene (scalar) or python expression&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Plotting or goal-seek&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -33,28 +33,28 @@
       <item row="2" column="0">
        <widget class="QLabel" name="label_8">
         <property name="text">
-         <string>Evaluation result</string>
+         <string>Current value</string>
         </property>
        </widget>
       </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Set</string>
+         <string>Adjust:</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
        <widget class="QLineEdit" name="editSet">
         <property name="placeholderText">
-         <string> (Hint, drag and drop this from the &quot;derived properties&quot; widget).</string>
+         <string>(Hint, drag from &quot;derived properties (the looking glass) and drop here.</string>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Evaluate</string>
+         <string>Find:</string>
         </property>
        </widget>
       </item>
@@ -64,7 +64,7 @@
          <enum>QPlainTextEdit::WidgetWidth</enum>
         </property>
         <property name="placeholderText">
-         <string>(Hint, drag and drop this from the &quot;derived properties&quot; widget).</string>
+         <string>(Hint, drag from &quot;derived properties (the looking glass) and drop here.</string>
         </property>
        </widget>
       </item>
@@ -86,7 +86,7 @@
          <bool>true</bool>
         </property>
         <property name="placeholderText">
-         <string>The result of the evaluation will appear here</string>
+         <string>The result of &quot;Find&quot; will appear here</string>
         </property>
        </widget>
       </item>
@@ -115,7 +115,7 @@
       <item row="0" column="0">
        <widget class="QPushButton" name="btnGoalSeek">
         <property name="text">
-         <string>Goal-seek to</string>
+         <string>Goal-seek (find) to</string>
         </property>
        </widget>
       </item>

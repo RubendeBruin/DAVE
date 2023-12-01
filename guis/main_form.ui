@@ -517,6 +517,7 @@
     </property>
     <addaction name="actionVersion"/>
     <addaction name="actionOnline_help"/>
+    <addaction name="actionSend_bug_report"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -1195,6 +1196,11 @@ li.checked::marker { content: &quot;\2612&quot;; }
    </property>
    <property name="shortcut">
     <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="actionSend_bug_report">
+   <property name="text">
+    <string>Send bug report</string>
    </property>
   </action>
  </widget>

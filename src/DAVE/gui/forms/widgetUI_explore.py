@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'widget_explore.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.0
+## Created by: Qt User Interface Compiler version 6.6.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -23,7 +23,7 @@ class Ui_widgetExplore11(object):
     def setupUi(self, widgetExplore11):
         if not widgetExplore11.objectName():
             widgetExplore11.setObjectName(u"widgetExplore11")
-        widgetExplore11.resize(593, 1102)
+        widgetExplore11.resize(593, 576)
         widgetExplore11.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
         self.verticalLayout = QVBoxLayout(widgetExplore11)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -71,6 +71,7 @@ class Ui_widgetExplore11(object):
         sizePolicy.setHeightForWidth(self.editResult.sizePolicy().hasHeightForWidth())
         self.editResult.setSizePolicy(sizePolicy)
         self.editResult.setMaximumSize(QSize(16777215, 40))
+        self.editResult.setReadOnly(True)
 
         self.gridLayout.addWidget(self.editResult, 2, 1, 1, 1)
 
@@ -163,15 +164,15 @@ class Ui_widgetExplore11(object):
 
     def retranslateUi(self, widgetExplore11):
         widgetExplore11.setWindowTitle(QCoreApplication.translate("widgetExplore11", u"Form", None))
-        self.label.setText(QCoreApplication.translate("widgetExplore11", u"<html><head/><body><p><span style=\" text-decoration: underline;\">Explore or solve 1-to-1 relations</span></p><p>Set any settable scalar property in the scene, for example s['cable'].length</p><p>Solve statics</p><p>Evaluate another property of the scene (scalar) or python expression</p></body></html>", None))
-        self.label_8.setText(QCoreApplication.translate("widgetExplore11", u"Evaluation result", None))
-        self.label_2.setText(QCoreApplication.translate("widgetExplore11", u"Set", None))
-        self.editSet.setPlaceholderText(QCoreApplication.translate("widgetExplore11", u" (Hint, drag and drop this from the \"derived properties\" widget).", None))
-        self.label_3.setText(QCoreApplication.translate("widgetExplore11", u"Evaluate", None))
-        self.editEvaluate.setPlaceholderText(QCoreApplication.translate("widgetExplore11", u"(Hint, drag and drop this from the \"derived properties\" widget).", None))
-        self.editResult.setPlaceholderText(QCoreApplication.translate("widgetExplore11", u"The result of the evaluation will appear here", None))
+        self.label.setText(QCoreApplication.translate("widgetExplore11", u"<html><head/><body><p>Plotting or goal-seek</p></body></html>", None))
+        self.label_8.setText(QCoreApplication.translate("widgetExplore11", u"Current value", None))
+        self.label_2.setText(QCoreApplication.translate("widgetExplore11", u"Adjust:", None))
+        self.editSet.setPlaceholderText(QCoreApplication.translate("widgetExplore11", u"(Hint, drag from \"derived properties (the looking glass) and drop here.", None))
+        self.label_3.setText(QCoreApplication.translate("widgetExplore11", u"Find:", None))
+        self.editEvaluate.setPlaceholderText(QCoreApplication.translate("widgetExplore11", u"(Hint, drag from \"derived properties (the looking glass) and drop here.", None))
+        self.editResult.setPlaceholderText(QCoreApplication.translate("widgetExplore11", u"The result of \"Find\" will appear here", None))
         self.groupBox.setTitle(QCoreApplication.translate("widgetExplore11", u"Goal-seek", None))
-        self.btnGoalSeek.setText(QCoreApplication.translate("widgetExplore11", u"Goal-seek to", None))
+        self.btnGoalSeek.setText(QCoreApplication.translate("widgetExplore11", u"Goal-seek (find) to", None))
         self.groupBox_2.setTitle(QCoreApplication.translate("widgetExplore11", u"Graph", None))
         self.label_4.setText(QCoreApplication.translate("widgetExplore11", u"From value", None))
         self.label_5.setText(QCoreApplication.translate("widgetExplore11", u"To value", None))
