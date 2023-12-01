@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import vedo as vp
 from PySide6.QtGui import QColor
 
-from DAVE import Point, Circle
+from DAVE import Point, Circle, Buoyancy
 from DAVE.gui.dialog_advanced_cable_settings import AdvancedCableSettings
 from DAVE.gui.dock_system.dockwidget import *
 from PySide6.QtCore import Qt, QSize
@@ -2806,6 +2806,7 @@ class WidgetNodeProps(guiDockWidget):
 
         self.positioned = False
         self.node = "This will be a node"
+        self.node_type = "This will be the type of the node at the time that is was assigned"
 
     def node_picker_register(self, node_picker):
         self.node_picker = node_picker
@@ -2907,7 +2908,11 @@ class WidgetNodeProps(guiDockWidget):
 
     def select_node(self, node):
         if self.node == node:
-            return
+            if type(node) == self.node_type: # node can have changed type if it was dissolved
+                return
+
+        self.node = node
+        self.node_type = type(self.node)
 
         self.setUpdatesEnabled(False)
         to_be_removed = self._open_edit_widgets.copy()
@@ -3130,7 +3135,7 @@ class WidgetNodeProps(guiDockWidget):
 
         # Check for warnings
 
-        self.node = node
+
         self.check_for_warnings()
 
         # check if one of the widgets is "expanding"

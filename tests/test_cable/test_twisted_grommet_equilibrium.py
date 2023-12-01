@@ -68,7 +68,6 @@ def test_nomass():
 
 def test_with_mass():
 
-
     s = Scene()
 
     # code for GrommetProtector/point2

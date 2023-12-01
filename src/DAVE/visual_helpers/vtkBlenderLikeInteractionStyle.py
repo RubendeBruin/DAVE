@@ -1169,6 +1169,8 @@ class BlenderStyle(vtkInteractorStyleUser):
         meters_per_pixel = scale / half_height
         meters = length * meters_per_pixel
 
+        degrees = np.rad2deg(np.arctan2(y2 - y1, x2 - x1))
+
         if camera.GetParallelProjection():
             print(f"Line length = {length} px = {meters} m")
         else:
@@ -1177,7 +1179,7 @@ class BlenderStyle(vtkInteractorStyleUser):
             )
 
         if self.callbackMeasure:
-            self.callbackMeasure(meters)
+            self.callbackMeasure(meters, degrees)
 
         rwin.Frame()
 
@@ -1257,7 +1259,7 @@ class BlenderStyle(vtkInteractorStyleUser):
         self.callbackDeleteKey = None
         self.callbackFocusKey = None
         self.callbackAnyKey = None
-        self.callbackMeasure = None  # callback with argument float (meters)
+        self.callbackMeasure = None  # callback with argument float (meters) and angle(degrees)
 
         self.callbackCameraDirectionChanged = None
 
@@ -1427,7 +1429,7 @@ if __name__ == "__main__":
     # any key callback (fires on modifier keys as well)
     # style.callbackAnyKey = lambda x : print(f'Key {x} pressed - return True to prevent further processing')
 
-    style.callbackMeasure = lambda x: print(f"Measure distance = {x} m")
+    style.callbackMeasure = lambda x,y: print(f"Measure distance = {x} m and {y} degrees")
 
     iren.SetInteractorStyle(style)
 

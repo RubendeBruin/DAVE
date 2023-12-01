@@ -54,7 +54,7 @@ def test_blender_animation_output():
 
 
     s.solve_statics()
-    from DAVE.frequency_domain import prepare_for_fd, generate_unitwave_response, RAO_1d
+    from DAVE_dynamics.frequency_domain import prepare_for_fd, generate_unitwave_response, RAO_1d
 
     prepare_for_fd(s)
     s.solve_statics()

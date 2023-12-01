@@ -1819,10 +1819,10 @@ class Gui:
     # def onCloseApplication(self):
     #     """This is the on-close for the Application"""
 
-    def measured_in_viewport(self, distance):
+    def measured_in_viewport(self, distance, angle):
         """Executed when a distance is measured in the viewport"""
         self.give_feedback(
-            f"View-plane distance = {distance:.3f}m\n (does not measure depth)"
+            f"View-plane distance = {distance:.3f}m\n (does not measure depth), angle = {angle:.1f}deg"
         )
 
     def show_exception(self, e):
@@ -1902,64 +1902,21 @@ class Gui:
 
         select_node_name_edit_field = False
 
+        DAVE_GUI_LOGGER.log_code(code)
+
+        executed = False
         with capture_output() as c:
+
             try:
                 glob_vars = globals()
                 glob_vars.update(DAVE.settings.DAVE_ADDITIONAL_RUNTIME_MODULES)
                 glob_vars["s"] = self.scene
                 glob_vars["self"] = self
 
-                DAVE_GUI_LOGGER.log_code(code)
+
                 exec(code, glob_vars)
-
-                if c.stdout:
-                    self.give_feedback(c.stdout, style=0)
-                else:
-                    self.give_feedback(code, style=0)
-
-                self._codelog.append(code)
-                self.ui.teHistory.append(code)
-                self.tidy_history()
-
-                self.ui.teHistory.verticalScrollBar().setValue(
-                    self.ui.teHistory.verticalScrollBar().maximum()
-                )  # scroll down all the way
-
-                # See if selected nodes are still valid and identical to the ones
-                to_be_removed = []
-                for node in self.selected_nodes:
-                    if node not in self.scene._nodes:
-                        to_be_removed.append(node)
-
-                for node in to_be_removed:
-                    self.selected_nodes.remove(node)
-
-                # if we created something new, then select it (or its manager)
-                emitted = False
-                for node in self.scene._nodes:
-                    if node not in before:
-                        DAVE_GUI_LOGGER.log(f"New node detected: {node.name}")
-                        logging.info(f"New node detected: {node.name}")
-
-                        self.selected_nodes.clear()
-
-                        node_to_be_selected = node
-                        while node_to_be_selected.manager is not None:
-                            node_to_be_selected = node_to_be_selected.manager
-
-                        self.guiSelectNode(node_to_be_selected, new=True)
-                        select_node_name_edit_field = True
-
-                        emitted = True
-                        break
-
-                if event is not None:
-                    self.guiEmitEvent(event, sender=sender)
-
-                if to_be_removed and not emitted:
-                    self.guiEmitEvent(
-                        guiEventType.SELECTED_NODE_MODIFIED, sender=sender
-                    )
+                DAVE_GUI_LOGGER.log("Code executed successfully")
+                executed = True
 
             except ModelInvalidException as e:
                 DAVE_GUI_LOGGER.log(f"Model invalid exception: {e}")
@@ -1970,7 +1927,8 @@ class Gui:
                     QMessageBox.information(
                         self.ui.widget,
                         "Model invalid",
-                        "The model state has become invalid due to an unrecoverable error. We will use the undo log to restore the model to the previous state.",
+                        "The model state has become invalid due to an unrecoverable error. The error was:\n" + str(e) +
+                        "\nWe will use the undo log to restore the model to the previous state.",
                         QMessageBox.Ok,
                     )
                     self.undo()
@@ -1985,14 +1943,15 @@ class Gui:
                     QMessageBox.warning(
                         self.ui.widget,
                         "terminal error",
-                        "The model state has become invalid due to an unrecoverable error. DO NOT SAVE. Advised to restart DAVE and contiune with the lastest auto-save file.",
+                        "The model state has become invalid due to an unrecoverable error. The error was:\n" + str(e) +
+                        "DO NOT SAVE. Advised to restart DAVE and contiune with the lastest auto-save file.",
                         QMessageBox.Ok,
                     )
 
             except Exception as E:
 
-                DAVE_GUI_LOGGER.log(f"Exception occured: {E}")
-                DAVE_GUI_LOGGER.log_code("# Exception occured: " + str(E))
+                DAVE_GUI_LOGGER.log(f"Exception occurred: {E}")
+                DAVE_GUI_LOGGER.log_code("# Exception occurred: " + str(E))
 
                 self.ui.teCode.clear()
                 self.ui.teCode.append(code)
@@ -2000,15 +1959,71 @@ class Gui:
                 self.ui.teCode.update()
                 self.ui.teCode.repaint()
 
-                message = c.stdout + "\n" + str(E) + "\n\nWhen running: \n\n" + code
+                message = str(E) + "\n\nWhen running: \n\n" + code
                 self.show_exception(message)
 
-            self.ui.pbExecute.setStyleSheet("")
-            self.ui.pbExecute.update()
+            if executed: # code ran as expected
 
-            self.ui.teFeedback.verticalScrollBar().setValue(
-                self.ui.teFeedback.verticalScrollBar().maximum()
-            )  # scroll down all the way
+                # Code was executed, so we can use the provided event and sender to
+                # update the GUI
+
+                if c.stdout:
+                    self.give_feedback(c.stdout, style=0)
+                else:
+                    self.give_feedback(code, style=0)
+
+                self._codelog.append(code)
+                self.ui.teHistory.append(code)
+                self.tidy_history()
+
+                self.ui.teHistory.verticalScrollBar().setValue(
+                    self.ui.teHistory.verticalScrollBar().maximum()
+                )  # scroll down all the way
+
+                self.ui.pbExecute.setStyleSheet("")
+                self.ui.pbExecute.update()
+
+                self.ui.teFeedback.verticalScrollBar().setValue(
+                    self.ui.teFeedback.verticalScrollBar().maximum()
+                )  # scroll down all the way
+
+            # update selection
+
+            # See if selected nodes are still valid and identical to the ones
+            to_be_removed_from_selection = []
+            for node in self.selected_nodes:
+                if node not in self.scene._nodes:
+                    to_be_removed_from_selection.append(node)
+
+            for node in to_be_removed_from_selection:
+                self.selected_nodes.remove(node)
+
+            # if we created something new, then select it (or its manager)
+            emitted = False
+            for node in self.scene._nodes:
+                if node not in before:
+                    DAVE_GUI_LOGGER.log(f"New node detected: {node.name}")
+                    logging.info(f"New node detected: {node.name}")
+
+                    self.selected_nodes.clear()
+
+                    node_to_be_selected = node
+                    while node_to_be_selected.manager is not None:
+                        node_to_be_selected = node_to_be_selected.manager
+
+                    self.guiSelectNode(node_to_be_selected, new=True)
+                    select_node_name_edit_field = True
+
+                    emitted = True
+                    break
+
+            if event is not None:
+                self.guiEmitEvent(event, sender=sender)
+
+            if to_be_removed_from_selection and not emitted:
+                self.guiEmitEvent(
+                    guiEventType.SELECTION_CHANGED, sender=sender
+                )
 
             if select_node_name_edit_field:
                 self.place_input_focus_on_name_of_node()

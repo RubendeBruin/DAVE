@@ -27,17 +27,17 @@ def test_get_resource_cd():
     res = s.get_resource_path("cd: inner_component.dave")
     assert res.name == "inner_component.dave"
 
-
-def test_get_resource_gui():
-    assert False, "Disabled due to GUI use"
-
-    s = DaveResourceProvider()
-
-    from PySide6.QtWidgets import QApplication
-
-    app = QApplication()
-
-    res = s.get_resource_path("res: cube.stl")
+#
+# def test_get_resource_gui():
+#     assert False, "Disabled due to GUI use"
+#
+#     s = DaveResourceProvider()
+#
+#     from PySide6.QtWidgets import QApplication
+#
+#     app = QApplication()
+#
+#     res = s.get_resource_path("res: cube.stl")
 
 
 def test_constructor():

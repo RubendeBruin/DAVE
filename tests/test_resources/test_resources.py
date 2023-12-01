@@ -30,7 +30,8 @@ def test_get_res_spaces():
 
 def test_probably_an_error():
 
-    assert False, "Disabled"
+    """Note: fails when a gui is open
+    Run independently of the rest of the tests"""
 
     s = Scene()
     with pytest.raises(Exception):

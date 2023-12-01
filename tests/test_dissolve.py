@@ -19,7 +19,7 @@ For frames, points, etc try-swap simply calls change_parent_to on the node. So i
 
 """
 import pytest
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_allclose
 
 from DAVE import *
 from DAVE.nodes import HasContainer
@@ -405,12 +405,24 @@ def test_testscene_dissolves():
 def test_testscene_flatten():
     s = gimme()
 
-    sling = s['Sling']
+    f = s['Frame']
+    refpos = f.global_position
+    refrot = f.global_rotation
+
+    assert 'Component' in s.node_names
 
     s.flatten()
 
-    assert len(s._nodes) == 25
-    assert not isinstance(s['Component'], Component) # should be a frame now
+    assert len(s._nodes) == 12
+
+    assert 'Component' not in s.node_names
+
+
+    # assert not isinstance(s['Component'], Component) # should be a frame now
+
+    assert_allclose(s['Frame'].global_position, refpos)
+    assert_allclose(s['Frame'].global_rotation, refrot)
+
 
 
 
@@ -418,6 +430,7 @@ def test_testscene_flatten():
 def test_testscene_flatten_with_component_position_changed():
     s = gimme()
     s['Component'].position = (0,0,0)
+    s['Component'].fixed_x = False
 
     s.flatten()
     assert not isinstance(s['Component'], Component) # should be a frame now and should still be here

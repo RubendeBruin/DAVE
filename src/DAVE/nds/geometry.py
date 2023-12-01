@@ -1323,6 +1323,13 @@ class Circle(NodeCoreConnected, HasParentCore):
 
     @is_roundbar.setter
     def is_roundbar(self, value):
+        # See issue 144
+        # we should prohibit changing the type of a circle when it is in use.
+        deps = self._scene.nodes_depending_on(self)
+        if deps:
+            raise ValueError(
+                f"Can not change the type of a circle when it is in use. The following nodes depend on this circle: {deps}"
+            )
         self._vfNode.is_roundbar = value
 
     def give_python_code(self):
