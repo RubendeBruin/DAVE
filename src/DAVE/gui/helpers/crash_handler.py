@@ -23,10 +23,10 @@ def show_exception_box(log_msg):
     """
 
     DAVE_GUI_LOGGER.log("Starting exception handling")
+    DAVE_GUI_LOGGER.log(log_msg)
 
     if QtWidgets.QApplication.instance() is not None:
 
-            print(DAVE_GUI_LOGGER.get_log())
 
             errorbox = QtWidgets.QMessageBox()
 

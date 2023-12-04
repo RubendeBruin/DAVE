@@ -9,9 +9,10 @@ from DAVE.gui.helpers.gui_logger import DAVE_GUI_LOGGER
 
 def create_draft_with_attachment(filename, subject, body, to, file_path):
     msg = MIMEMultipart()
-    msg['From'] = 'your-email@example.com'
+    # msg['From'] = 'your-email@example.com'
     msg['To'] = to
     msg['Subject'] = subject
+    msg['X-Unsent'] = '1'
 
     msg.attach(MIMEText(body, 'plain'))
 
@@ -44,7 +45,7 @@ def compile_and_mail():
     # create the draft
     to = "bugreports@rdbr.nl"
 
-    body = f'If you do not have a "send" button, then use forward to edit the email and send it to {to}'
+    body = f'If you do not have a "send" button, then use forward to edit the email and send it to {to}\n\n'
 
     body += """    
 Dear DAVE developers,
