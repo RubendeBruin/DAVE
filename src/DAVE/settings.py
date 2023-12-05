@@ -108,6 +108,14 @@ class SolverSettings:
     def non_default_props(self):
         return [f.name for f in fields(self) if getattr(self, f.name) != f.default]
 
+    def apply(self, BS):
+        """Apply the current settings on the given BackgroundSolver"""
+        BS.mobility = self.mobility
+
+        BS.do_solve_linear_first = self.do_linear_first
+        BS.linear_phase_tolerance = self.tolerance_during_linear_phase
+        BS.tolerance = self.tolerance
+
 
 # temporary files:
 #

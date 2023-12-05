@@ -1688,8 +1688,9 @@ class Scene:
 
         while True:  # only stop when we are completely happy or when the user cancels
             BackgroundSolver = DC.BackgroundSolver(self._vfc)
-            BackgroundSolver.tolerance = self.solver_settings.tolerance
-            BackgroundSolver.mobility = self.solver_settings.mobility
+
+            self.solver_settings.apply(BackgroundSolver)
+
             started = BackgroundSolver.Start()
 
             if not started:
@@ -3757,7 +3758,7 @@ class Scene:
         # add path if not provided
         if not filename.is_absolute():
             try:
-                filename = Path(self.resources_paths[-1]) / filename
+                filename = Path(self.resource_provider.resources_paths[-1]) / filename
             except:
                 pass  # save in current folder
 

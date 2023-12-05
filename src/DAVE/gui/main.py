@@ -2090,7 +2090,6 @@ class Gui:
 
         self.solve_statics_using_gui_on_scene(
             scene_to_solve=self.scene,
-            timeout_s=timeout_s,
             called_by_user=called_by_user,
         )
 
@@ -2103,7 +2102,7 @@ class Gui:
 
 
     def solve_statics_using_gui_on_scene(
-        self, scene_to_solve, timeout_s=0.5, called_by_user=True
+        self, scene_to_solve, called_by_user=True
     ):
         scene_to_solve.update()
         DAVE_GUI_LOGGER.log('Solve statics using gui on scene')
@@ -2148,10 +2147,7 @@ class Gui:
             self.scene._vfc.set_dofs(D0)
             self.__BackgroundSolver.Stop()
             self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
-            self.__BackgroundSolver.mobility = self.scene.solver_settings.mobility
-            self.__BackgroundSolver.do_solve_linear_first = (
-                self.scene.solver_settings.do_linear_first
-            )
+            self.scene.solver_settings.apply(self.__BackgroundSolver)
             self.__BackgroundSolver.Start()
 
         def accept(*args):
@@ -2177,12 +2173,12 @@ class Gui:
         # Start the solving sequence, continue until user cancels or we are done
         feedback_text_prefix = ""
 
-        while True:
+        while True:  # keep trying after fixing orientations and such
+
             self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
-            self.__BackgroundSolver.mobility = self.scene.solver_settings.mobility
-            self.__BackgroundSolver.do_solve_linear_first = (
-                self.scene.solver_settings.do_linear_first
-            )
+
+            self.scene.solver_settings.apply(self.__BackgroundSolver)
+
             running = self.__BackgroundSolver.Start()
 
             if running:

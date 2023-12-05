@@ -894,7 +894,7 @@ class EditComponent(NodeEditor):
         text = (
             f"Rescan completed for files ending with {self.fileextension} in folders:"
         )
-        for p in self.scene.resources_paths:
+        for p in self.scene.resource_provider.resources_paths:
             text += f"\n - {str(p)}"
         text += "\n\nlist updated"
 
