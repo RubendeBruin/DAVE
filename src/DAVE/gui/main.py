@@ -87,6 +87,7 @@ from DAVE.gui.dock_system.ads_helpers import (
     add_global_dock,
     get_all_active_docks,
 )
+from DAVE.gui.dock_system.gui_dock_groups import DaveDockGroup
 from DAVE.gui.helpers.gui_logger import DAVE_GUI_LOGGER
 from DAVE.gui.helpers.qt_action_draggable import QDraggableNodeActionWidget
 from DAVE.gui.widget_watches import WidgetWatches
@@ -909,6 +910,8 @@ class Gui:
         if splash:
             splash.finish(self.MainWindow)
 
+
+
         if block:
             self.ui.pbUpdate.setVisible(False)
             self.ui.pbCopyViewCode.setVisible(False)
@@ -919,6 +922,8 @@ class Gui:
             sst.singleShot(0, self.after_startup)  # <-- 0 ms delay is ok
 
             self.app.exec()
+        else:
+            self.after_startup() # execute directly
 
     def after_startup(self):
         """Executed after the gui has started up"""
@@ -926,9 +931,9 @@ class Gui:
         self.visual.refresh_embeded_view()
 
         if self._requested_workspace is None:
-            self.activate_dockgroup("Build")
+            self.activate_dockgroup("Build", this_is_a_new_window=True)
         else:
-            self.activate_dockgroup(self._requested_workspace)
+            self.activate_dockgroup(self._requested_workspace, this_is_a_new_window=True)
 
     def bug_report(self):
         """Creates a bug report email"""
@@ -1316,7 +1321,7 @@ class Gui:
                 QIcon(":/v2/icons/heart_full_small.svg")
             )
 
-    def activate_dockgroup(self, name):
+    def activate_dockgroup(self, name, this_is_a_new_window = False):
 
         DAVE_GUI_LOGGER.log(f'Activate dockgroup: {name}')
 
@@ -1332,7 +1337,34 @@ class Gui:
                 f"Unknown dockgroup {name}, available dockgroups are {names}"
             )
 
-        group = DOCK_GROUPS[names.index(name)]
+        group : DaveDockGroup = DOCK_GROUPS[names.index(name)]
+
+        if not this_is_a_new_window:
+
+            if group.new_window:
+                s = self.scene
+                if group.new_window_copy:
+                    s = s.copy()
+
+                if group.init_actions:
+                    try:
+                        s.run_code(group.init_actions)
+                    except Exception as E:
+
+                        if not group.new_window_copy:
+                            raise ModelInvalidException("Error when performing init actions for new window" + str(E))
+                        else:
+                            raise E
+
+                g = Gui(s, block=False, read_only_mode=group.new_window_read_only, workspace=name)
+
+                if group.new_window_no_workspaces:
+                    g.toolbar_left.setVisible(False)
+
+                return
+
+
+
         self._active_dockgroup = group
 
         self.top_bar_group_label.setText(group.description)
@@ -1803,6 +1835,8 @@ class Gui:
         """This is the on-close for the main window"""
 
         DAVE_GUI_LOGGER.log('Close event')
+
+        self.animation_terminate()
 
         if self.maybeSave():
             event.accept()
@@ -3098,6 +3132,10 @@ class Gui:
 
     def guiEmitEvent(self, event, sender=None):
 
+        # Log the event except for animations
+        # if self._animation_available and event in guiEventType.MODEL_STATE_CHANGED:
+        #     pass
+        # else:
         DAVE_GUI_LOGGER.log(f'Gui emit event {event} from {sender}')
 
         # Bring the properties editor to front if needed

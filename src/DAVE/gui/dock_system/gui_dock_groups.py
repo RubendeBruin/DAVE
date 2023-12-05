@@ -33,4 +33,11 @@ class DaveDockGroup:
     show_tree : bool or None = None
     show_timeline : bool or None = None
 
+    # open in new window
+    new_window : bool = False
+    new_window_copy = True          # as copy
+    new_window_no_workspaces = True # do not show workspaces
+    new_window_read_only = True
+    init_actions : str = ""         # run this code (on the copy)
+
 

@@ -14,7 +14,14 @@ class DaveGuiLogger():
 
     def log(self, msg):
         """Append a message to the log."""
-        print(msg)
+
+        # treat repeated messages differently
+        if self._log:
+            if self._log[-1].startswith(msg): # repeated message
+                if self._log[-1].endswith('(repeated)'):
+                    return
+                else:
+                    msg += ' (repeated)'
         self._log.append(msg)
 
     def log_code(self, code):
