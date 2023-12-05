@@ -3945,7 +3945,10 @@ class Scene:
         )
         other._export_code_with_solved_function = store_export_code_with_solved_function
 
-        self.run_code(code)
+        try:
+            self.run_code(code)
+        except Exception as M:
+            raise ModelInvalidException(M)
 
         # Move all imported elements without a parent into a newly created or supplied frame (container)
         if containerize:
