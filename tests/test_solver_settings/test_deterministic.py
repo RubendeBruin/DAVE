@@ -1061,6 +1061,15 @@ if __name__ == '__main__':
     s.solver_settings.tolerance_during_linear_phase = 1
     s.solver_settings.do_linear_first = True
 
+    s.solver_settings.do_local_descent = True
+    s.solver_settings.do_newton = True
+    s.solver_settings.do_global_descent = True
+    s.solver_settings.do_deterministic = False
+
+    s.solver_settings.deterministic_global_steps = 250
+    s.solver_settings.deterministic_local_steps = 50
+    s.solver_settings.max_newton_iterations = 20
+
     DG(s, bare=True)
     # s.solve_statics()
 

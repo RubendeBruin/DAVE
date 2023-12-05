@@ -100,10 +100,21 @@ class SolverSettings:
     mobility: float = 60  # solver mobility
     tolerance: float = 1e-4  # solver tolerance
 
+    max_newton_iterations = 20  # solver max newton iterations, when running deterministic the local and global descent
+                                # steps are per newton step (with this maximum number of iterations)
+
     do_linear_first: bool = True  # solver linear before full solve
     tolerance_during_linear_phase = (
         1  # solver tolerance during linear phase (always followed by full phase)
     )
+
+    do_local_descent = True  # solver local descent
+    do_newton = True         # solver newton
+    do_global_descent = True         # solver global
+
+    do_deterministic = False  # solver deterministic
+    deterministic_global_steps = 800 # solver deterministic global steps per outer iteration
+    deterministic_local_steps = 100  # solver deterministic local-descent steps per outer iteration
 
     def non_default_props(self):
         return [f.name for f in fields(self) if getattr(self, f.name) != f.default]
@@ -115,6 +126,15 @@ class SolverSettings:
         BS.do_solve_linear_first = self.do_linear_first
         BS.linear_phase_tolerance = self.tolerance_during_linear_phase
         BS.tolerance = self.tolerance
+
+        BS.do_robust = self.do_local_descent
+        BS.do_local = self.do_newton
+        BS.do_global = self.do_global_descent
+
+        BS.do_deterministic = self.do_deterministic
+        BS.deterministic_global_steps = self.deterministic_global_steps
+        BS.deterministic_robust_steps = self.deterministic_local_steps
+        BS.maxiter_for_newton = self.max_newton_iterations
 
 
 # temporary files:
