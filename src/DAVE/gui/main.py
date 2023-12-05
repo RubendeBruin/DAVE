@@ -252,6 +252,7 @@ class SettingsDialog(QDialog, Ui_frmSettings):
 
 
 class Gui:
+
     def __init__(
         self,
         scene=None,
@@ -264,6 +265,7 @@ class Gui:
         painters=None,
         read_only_mode=False,
         filename=None,
+
     ):
         """
         Starts the Gui on scene "scene".
@@ -303,8 +305,10 @@ class Gui:
         if app is None:
             if QtWidgets.QApplication.instance() is not None:
                 self.app = QtWidgets.QApplication.instance()
+                self._owns_the_application = False
             else:
                 self.app = QtWidgets.QApplication()
+                self._owns_the_application = True
         else:
             self.app = app
 
@@ -327,6 +331,9 @@ class Gui:
 
         self.ui.setupUi(self.MainWindow)
         self.MainWindow.closeEvent = self.closeEvent
+
+        if not self._read_only_mode:
+            self.ui.infobar.close()
 
         # ============== private properties ================
         self._codelog = []
@@ -1800,8 +1807,10 @@ class Gui:
         if self.maybeSave():
             event.accept()
 
-            DAVE_GUI_LOGGER.log('Closing dock manager')
-            self.dock_manager.deleteLater()
+            if self._owns_the_application:
+                DAVE_GUI_LOGGER.log('Closing dock manager')
+                self.dock_manager.deleteLater()
+
             DAVE_GUI_LOGGER.log('Shutting down vtk interactor')
             self.visual.shutdown_qt()
 

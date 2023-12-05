@@ -5,7 +5,7 @@ try:
     dist_name = "useDAVE"
     __version__ = version(dist_name)
 except PackageNotFoundError:  # pragma: no cover
-    __version__ = "2.2.3 (build 231204)"
+    __version__ = "2.2.3 (build 231205)"
 finally:
     del version, PackageNotFoundError
 

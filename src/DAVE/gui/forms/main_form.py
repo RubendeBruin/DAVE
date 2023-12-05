@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDockWidget, QDoubleSpin
     QMainWindow, QMenu, QMenuBar, QPushButton,
     QSizePolicy, QSlider, QSpacerItem, QTextEdit,
     QToolButton, QVBoxLayout, QWidget)
+
 import DAVE.gui.forms.resources_rc
 
 class Ui_MainWindow(object):
@@ -539,6 +540,21 @@ class Ui_MainWindow(object):
 
         self.dockWidget_2.setWidget(self.dockWidgetContents_2)
         MainWindow.addDockWidget(Qt.BottomDockWidgetArea, self.dockWidget_2)
+        self.infobar = QDockWidget(MainWindow)
+        self.infobar.setObjectName(u"infobar")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.infobar.sizePolicy().hasHeightForWidth())
+        self.infobar.setSizePolicy(sizePolicy1)
+        self.infobar.setMinimumSize(QSize(60, 0))
+        self.infobar.setStyleSheet(u"background: rgb(255,201,14)")
+        self.infobar.setFeatures(QDockWidget.DockWidgetClosable)
+        self.infobar.setAllowedAreas(Qt.TopDockWidgetArea)
+        self.dockWidgetContents = QWidget()
+        self.dockWidgetContents.setObjectName(u"dockWidgetContents")
+        self.infobar.setWidget(self.dockWidgetContents)
+        MainWindow.addDockWidget(Qt.TopDockWidgetArea, self.infobar)
         QWidget.setTabOrder(self.aniSlider, self.pbSide)
         QWidget.setTabOrder(self.pbSide, self.pbFront)
         QWidget.setTabOrder(self.pbFront, self.pbTop)
@@ -786,5 +802,6 @@ class Ui_MainWindow(object):
         self.pbCopyHistory.setToolTip(QCoreApplication.translate("MainWindow", u"Copy text below", None))
 #endif // QT_CONFIG(tooltip)
         self.pbCopyHistory.setText(QCoreApplication.translate("MainWindow", u"Copy", None))
+        self.infobar.setWindowTitle(QCoreApplication.translate("MainWindow", u"THIS IS A READ-ONLY VIEW", None))
     # retranslateUi
 
