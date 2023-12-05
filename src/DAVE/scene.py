@@ -34,6 +34,7 @@ from DAVE.settings import (
     DAVE_NODEPROP_INFO
 )
 
+from .exceptions import ModelInvalidException
 from DAVE import settings
 from DAVE import gui_globals
 
@@ -3876,7 +3877,10 @@ class Scene:
         for line in f:
             code += line + "\n"
 
-        self.run_code(code)
+        try:
+            self.run_code(code)
+        except Exception as M:
+            raise ModelInvalidException(M)
 
     def import_scene(
         self,

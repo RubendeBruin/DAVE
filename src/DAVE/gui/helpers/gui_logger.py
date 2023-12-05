@@ -33,6 +33,4 @@ class DaveGuiLogger():
             log += '\n' + str(M)
         return log
 
-
-
 DAVE_GUI_LOGGER = DaveGuiLogger()

@@ -292,6 +292,7 @@ class Gui:
 
         """
         DAVE_GUI_LOGGER.log('Starting GUI')
+        DAVE_GUI_LOGGER.log(f"Version {DAVE.__version__}")
 
         self._read_only_mode = read_only_mode
 

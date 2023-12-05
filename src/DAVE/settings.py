@@ -99,7 +99,11 @@ class SolverSettings:
     timeout_s: float = 30  # solver timeout in seconds, set negative for no timeout
     mobility: float = 60  # solver mobility
     tolerance: float = 1e-4  # solver tolerance
+
     do_linear_first: bool = True  # solver linear before full solve
+    tolerance_during_linear_phase = (
+        1  # solver tolerance during linear phase (always followed by full phase)
+    )
 
     def non_default_props(self):
         return [f.name for f in fields(self) if getattr(self, f.name) != f.default]
