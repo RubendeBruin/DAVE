@@ -42,7 +42,7 @@ def show_exception_box(log_msg):
             if ret == QtWidgets.QMessageBox.Yes:
                 # compile the log
                 from DAVE.gui.helpers.crash_mailer import compile_and_mail
-                compile_and_mail()
+                compile_and_mail(info = log_msg)
 
     else:
         log.debug("No QApplication instance available.")

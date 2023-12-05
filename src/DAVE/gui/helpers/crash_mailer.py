@@ -31,7 +31,7 @@ def create_draft_with_attachment(filename, subject, body, to, file_path):
 # Example: create_draft_with_attachment("Subject", "Body", "receiver-email@example.com", "c:/data/test.dave")
 
 
-def compile_and_mail():
+def compile_and_mail(info = None):
     """Compiles the log and sends it to the DAVE developers"""
 
     # get the temp directory
@@ -44,16 +44,14 @@ def compile_and_mail():
 
     # create the draft
     to = "bugreports@rdbr.nl"
-
-    body = f'If you do not have a "send" button, then use forward to edit the email and send it to {to}\n\n'
-
-    body += """    
+    body = """    
 Dear DAVE developers,
 
 I have encountered a problem with DAVE. I have attached the log file to this email.
 The log-file contains information about the problem and the actions I took before the problem occurred.
 It also contains the Python code that was executed in the GUI and the model in its current state.
 
+""" + ("\nThe error is:\n\n-------------------------\n\n" + info + "\n\n----------------------------\n" if info is not None else "") + """
 [X] Please treat this confidentially.
 [ ] Contact me if you have any questions.
 [ ] Contact me when the problem is fixed.
