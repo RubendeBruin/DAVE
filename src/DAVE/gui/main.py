@@ -302,10 +302,10 @@ class Gui:
         self.plugins_context = DAVE_GUI_PLUGINS_CONTEXT
         self.plugins_editor = DAVE_GUI_PLUGINS_EDITOR
 
+        self._owns_the_application = False
         if app is None:
             if QtWidgets.QApplication.instance() is not None:
                 self.app = QtWidgets.QApplication.instance()
-                self._owns_the_application = False
             else:
                 self.app = QtWidgets.QApplication()
                 self._owns_the_application = True
