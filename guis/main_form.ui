@@ -528,6 +528,8 @@
     <addaction name="separator"/>
     <addaction name="actionCopy"/>
     <addaction name="actionPaste"/>
+    <addaction name="separator"/>
+    <addaction name="actionSolver_settings"/>
    </widget>
    <widget class="QMenu" name="menuScene">
     <property name="title">
@@ -818,7 +820,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
    <property name="minimumSize">
     <size>
      <width>60</width>
-     <height>0</height>
+     <height>40</height>
     </size>
    </property>
    <property name="styleSheet">
@@ -1150,6 +1152,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
    </property>
   </action>
   <action name="actionSave">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/v2/icons/save.svg</normaloff>:/v2/icons/save.svg</iconset>
+   </property>
    <property name="text">
     <string>Save</string>
    </property>
@@ -1174,6 +1180,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
    </property>
   </action>
   <action name="actionSettings">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/v2/icons/gears.svg</normaloff>:/v2/icons/gears.svg</iconset>
+   </property>
    <property name="text">
     <string>Settings</string>
    </property>
@@ -1231,6 +1241,15 @@ li.checked::marker { content: &quot;\2612&quot;; }
   <action name="actionSend_bug_report">
    <property name="text">
     <string>Send bug report</string>
+   </property>
+  </action>
+  <action name="actionSolver_settings">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/v2/icons/gears.svg</normaloff>:/v2/icons/gears.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Solver settings</string>
    </property>
   </action>
  </widget>

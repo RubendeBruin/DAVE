@@ -96,5 +96,6 @@
     <file>icons/windcurrent.svg</file>
     <file>icons/painting.svg</file>
     <file>icons/component.svg</file>
+    <file>icons/gears.svg</file>
   </qresource>
 </RCC>

@@ -21,7 +21,6 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDockWidget, QDoubleSpin
     QMainWindow, QMenu, QMenuBar, QPushButton,
     QSizePolicy, QSlider, QSpacerItem, QTextEdit,
     QToolButton, QVBoxLayout, QWidget)
-
 import DAVE.gui.forms.resources_rc
 
 class Ui_MainWindow(object):
@@ -146,6 +145,9 @@ class Ui_MainWindow(object):
         self.actionRedo.setObjectName(u"actionRedo")
         self.actionSave = QAction(MainWindow)
         self.actionSave.setObjectName(u"actionSave")
+        icon1 = QIcon()
+        icon1.addFile(u":/v2/icons/save.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.actionSave.setIcon(icon1)
         self.actionClear = QAction(MainWindow)
         self.actionClear.setObjectName(u"actionClear")
         self.actionShow_labels = QAction(MainWindow)
@@ -154,6 +156,9 @@ class Ui_MainWindow(object):
         self.actionShow_labels.setChecked(True)
         self.actionSettings = QAction(MainWindow)
         self.actionSettings.setObjectName(u"actionSettings")
+        icon2 = QIcon()
+        icon2.addFile(u":/v2/icons/gears.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.actionSettings.setIcon(icon2)
         self.actionDegrees_of_Freedom_editor = QAction(MainWindow)
         self.actionDegrees_of_Freedom_editor.setObjectName(u"actionDegrees_of_Freedom_editor")
         self.actionSet_input_focus_to_viewport = QAction(MainWindow)
@@ -172,6 +177,9 @@ class Ui_MainWindow(object):
         self.actionPaste.setObjectName(u"actionPaste")
         self.actionSend_bug_report = QAction(MainWindow)
         self.actionSend_bug_report.setObjectName(u"actionSend_bug_report")
+        self.actionSolver_settings = QAction(MainWindow)
+        self.actionSolver_settings.setObjectName(u"actionSolver_settings")
+        self.actionSolver_settings.setIcon(icon2)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout_3 = QVBoxLayout(self.centralwidget)
@@ -193,9 +201,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.pbUpdate = QPushButton(self.widget_3)
         self.pbUpdate.setObjectName(u"pbUpdate")
-        icon1 = QIcon()
-        icon1.addFile(u":/icons/import.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbUpdate.setIcon(icon1)
+        icon3 = QIcon()
+        icon3.addFile(u":/icons/import.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbUpdate.setIcon(icon3)
 
         self.horizontalLayout_2.addWidget(self.pbUpdate)
 
@@ -208,27 +216,27 @@ class Ui_MainWindow(object):
 
         self.pbSide = QPushButton(self.widget_3)
         self.pbSide.setObjectName(u"pbSide")
-        icon2 = QIcon()
-        icon2.addFile(u":/icons/side.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbSide.setIcon(icon2)
+        icon4 = QIcon()
+        icon4.addFile(u":/icons/side.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbSide.setIcon(icon4)
         self.pbSide.setFlat(True)
 
         self.horizontalLayout_2.addWidget(self.pbSide)
 
         self.pbFront = QPushButton(self.widget_3)
         self.pbFront.setObjectName(u"pbFront")
-        icon3 = QIcon()
-        icon3.addFile(u":/icons/front.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbFront.setIcon(icon3)
+        icon5 = QIcon()
+        icon5.addFile(u":/icons/front.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbFront.setIcon(icon5)
         self.pbFront.setFlat(True)
 
         self.horizontalLayout_2.addWidget(self.pbFront)
 
         self.pbTop = QPushButton(self.widget_3)
         self.pbTop.setObjectName(u"pbTop")
-        icon4 = QIcon()
-        icon4.addFile(u":/icons/top.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbTop.setIcon(icon4)
+        icon6 = QIcon()
+        icon6.addFile(u":/icons/top.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbTop.setIcon(icon6)
         self.pbTop.setCheckable(False)
         self.pbTop.setFlat(True)
 
@@ -236,9 +244,9 @@ class Ui_MainWindow(object):
 
         self.btnZoomFit = QPushButton(self.widget_3)
         self.btnZoomFit.setObjectName(u"btnZoomFit")
-        icon5 = QIcon()
-        icon5.addFile(u":/icons/cube_open.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.btnZoomFit.setIcon(icon5)
+        icon7 = QIcon()
+        icon7.addFile(u":/icons/cube_open.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.btnZoomFit.setIcon(icon7)
         self.btnZoomFit.setFlat(True)
 
         self.horizontalLayout_2.addWidget(self.btnZoomFit)
@@ -253,18 +261,18 @@ class Ui_MainWindow(object):
 
         self.pbCopyViewCode = QPushButton(self.widget_3)
         self.pbCopyViewCode.setObjectName(u"pbCopyViewCode")
-        icon6 = QIcon()
-        icon6.addFile(u":/icons/icon_copy.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbCopyViewCode.setIcon(icon6)
+        icon8 = QIcon()
+        icon8.addFile(u":/icons/icon_copy.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbCopyViewCode.setIcon(icon8)
         self.pbCopyViewCode.setFlat(True)
 
         self.horizontalLayout_2.addWidget(self.pbCopyViewCode)
 
         self.pbUC = QPushButton(self.widget_3)
         self.pbUC.setObjectName(u"pbUC")
-        icon7 = QIcon()
-        icon7.addFile(u":/icons/UC_icon.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbUC.setIcon(icon7)
+        icon9 = QIcon()
+        icon9.addFile(u":/icons/UC_icon.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbUC.setIcon(icon9)
         self.pbUC.setCheckable(True)
         self.pbUC.setFlat(True)
 
@@ -272,9 +280,9 @@ class Ui_MainWindow(object):
 
         self.pbOrigin = QPushButton(self.widget_3)
         self.pbOrigin.setObjectName(u"pbOrigin")
-        icon8 = QIcon()
-        icon8.addFile(u":/icons/axis.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbOrigin.setIcon(icon8)
+        icon10 = QIcon()
+        icon10.addFile(u":/icons/axis.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbOrigin.setIcon(icon10)
         self.pbOrigin.setCheckable(True)
         self.pbOrigin.setChecked(True)
         self.pbOrigin.setFlat(True)
@@ -284,9 +292,9 @@ class Ui_MainWindow(object):
         self.btnWater = QPushButton(self.widget_3)
         self.btnWater.setObjectName(u"btnWater")
         self.btnWater.setBaseSize(QSize(0, 0))
-        icon9 = QIcon()
-        icon9.addFile(u":/icons/fish.png", QSize(), QIcon.Normal, QIcon.On)
-        self.btnWater.setIcon(icon9)
+        icon11 = QIcon()
+        icon11.addFile(u":/icons/fish.png", QSize(), QIcon.Normal, QIcon.On)
+        self.btnWater.setIcon(icon11)
         self.btnWater.setCheckable(True)
         self.btnWater.setFlat(True)
 
@@ -294,9 +302,9 @@ class Ui_MainWindow(object):
 
         self.btnSSAO = QPushButton(self.widget_3)
         self.btnSSAO.setObjectName(u"btnSSAO")
-        icon10 = QIcon()
-        icon10.addFile(u":/icons/cube_shaded.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.btnSSAO.setIcon(icon10)
+        icon12 = QIcon()
+        icon12.addFile(u":/icons/cube_shaded.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.btnSSAO.setIcon(icon12)
         self.btnSSAO.setCheckable(True)
         self.btnSSAO.setChecked(False)
         self.btnSSAO.setFlat(True)
@@ -306,9 +314,9 @@ class Ui_MainWindow(object):
         self.btnBlender = QPushButton(self.widget_3)
         self.btnBlender.setObjectName(u"btnBlender")
         self.btnBlender.setMaximumSize(QSize(100, 16777215))
-        icon11 = QIcon()
-        icon11.addFile(u":/icons/blender_icon_64x64.png", QSize(), QIcon.Normal, QIcon.On)
-        self.btnBlender.setIcon(icon11)
+        icon13 = QIcon()
+        icon13.addFile(u":/icons/blender_icon_64x64.png", QSize(), QIcon.Normal, QIcon.On)
+        self.btnBlender.setIcon(icon13)
         self.btnBlender.setFlat(True)
 
         self.horizontalLayout_2.addWidget(self.btnBlender)
@@ -348,9 +356,9 @@ class Ui_MainWindow(object):
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.btnPauseAnimation = QToolButton(self.widget_2)
         self.btnPauseAnimation.setObjectName(u"btnPauseAnimation")
-        icon12 = QIcon()
-        icon12.addFile(u":/v2/icons/pause.svg", QSize(), QIcon.Normal, QIcon.Off)
-        self.btnPauseAnimation.setIcon(icon12)
+        icon14 = QIcon()
+        icon14.addFile(u":/v2/icons/pause.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self.btnPauseAnimation.setIcon(icon14)
         self.btnPauseAnimation.setCheckable(False)
 
         self.gridLayout.addWidget(self.btnPauseAnimation, 0, 1, 1, 1)
@@ -425,18 +433,18 @@ class Ui_MainWindow(object):
 
         self.pbClearCode = QToolButton(self.widget_6)
         self.pbClearCode.setObjectName(u"pbClearCode")
-        icon13 = QIcon()
-        icon13.addFile(u":/icons/file_new.png", QSize(), QIcon.Normal, QIcon.On)
-        self.pbClearCode.setIcon(icon13)
+        icon15 = QIcon()
+        icon15.addFile(u":/icons/file_new.png", QSize(), QIcon.Normal, QIcon.On)
+        self.pbClearCode.setIcon(icon15)
         self.pbClearCode.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         self.horizontalLayout_3.addWidget(self.pbClearCode)
 
         self.pbExecute = QToolButton(self.widget_6)
         self.pbExecute.setObjectName(u"pbExecute")
-        icon14 = QIcon()
-        icon14.addFile(u":/icons/python logo klein.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pbExecute.setIcon(icon14)
+        icon16 = QIcon()
+        icon16.addFile(u":/icons/python logo klein.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pbExecute.setIcon(icon16)
         self.pbExecute.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         self.horizontalLayout_3.addWidget(self.pbExecute)
@@ -472,18 +480,18 @@ class Ui_MainWindow(object):
 
         self.pbGenerateSceneCode = QToolButton(self.widget_7)
         self.pbGenerateSceneCode.setObjectName(u"pbGenerateSceneCode")
-        icon15 = QIcon()
-        icon15.addFile(u":/icons/cube.png", QSize(), QIcon.Normal, QIcon.On)
-        self.pbGenerateSceneCode.setIcon(icon15)
+        icon17 = QIcon()
+        icon17.addFile(u":/icons/cube.png", QSize(), QIcon.Normal, QIcon.On)
+        self.pbGenerateSceneCode.setIcon(icon17)
         self.pbGenerateSceneCode.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         self.horizontalLayout_5.addWidget(self.pbGenerateSceneCode)
 
         self.pbCopyOutput = QToolButton(self.widget_7)
         self.pbCopyOutput.setObjectName(u"pbCopyOutput")
-        icon16 = QIcon()
-        icon16.addFile(u":/icons/icon_copy.png", QSize(), QIcon.Normal, QIcon.On)
-        self.pbCopyOutput.setIcon(icon16)
+        icon18 = QIcon()
+        icon18.addFile(u":/icons/icon_copy.png", QSize(), QIcon.Normal, QIcon.On)
+        self.pbCopyOutput.setIcon(icon18)
 
         self.horizontalLayout_5.addWidget(self.pbCopyOutput)
 
@@ -523,7 +531,7 @@ class Ui_MainWindow(object):
 
         self.pbCopyHistory = QToolButton(self.widget)
         self.pbCopyHistory.setObjectName(u"pbCopyHistory")
-        self.pbCopyHistory.setIcon(icon16)
+        self.pbCopyHistory.setIcon(icon18)
 
         self.horizontalLayout_6.addWidget(self.pbCopyHistory)
 
@@ -547,7 +555,7 @@ class Ui_MainWindow(object):
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.infobar.sizePolicy().hasHeightForWidth())
         self.infobar.setSizePolicy(sizePolicy1)
-        self.infobar.setMinimumSize(QSize(60, 0))
+        self.infobar.setMinimumSize(QSize(60, 40))
         self.infobar.setStyleSheet(u"background: rgb(255,201,14)")
         self.infobar.setFeatures(QDockWidget.DockWidgetClosable)
         self.infobar.setAllowedAreas(Qt.TopDockWidgetArea)
@@ -629,6 +637,8 @@ class Ui_MainWindow(object):
         self.menuEdit.addSeparator()
         self.menuEdit.addAction(self.actionCopy)
         self.menuEdit.addAction(self.actionPaste)
+        self.menuEdit.addSeparator()
+        self.menuEdit.addAction(self.actionSolver_settings)
         self.menuScene.addSeparator()
         self.menuScene.addAction(self.actionReload_components)
 
@@ -742,6 +752,7 @@ class Ui_MainWindow(object):
         self.actionPaste.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+V", None))
 #endif // QT_CONFIG(shortcut)
         self.actionSend_bug_report.setText(QCoreApplication.translate("MainWindow", u"Send bug report", None))
+        self.actionSolver_settings.setText(QCoreApplication.translate("MainWindow", u"Solver settings", None))
         self.pbUpdate.setText(QCoreApplication.translate("MainWindow", u"Update", None))
         self.pbSide.setText("")
         self.pbFront.setText("")

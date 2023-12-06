@@ -79,6 +79,7 @@ from PySide6.QtWidgets import (
 from DAVE.gui.autosave import DaveAutoSave
 from DAVE.gui.dialog_blender import ExportToBlenderDialog
 from DAVE.gui.dialog_export_package import ExportAsPackageDialog
+from DAVE.gui.dock_solver_settings import WidgetSolverSettings
 from DAVE.gui.dock_system.ads_helpers import (
     create_dock_manager,
     dock_remove_from_gui,
@@ -183,6 +184,7 @@ DAVE_GUI_DOCKS["Graph"] = WidgetBendingMoment
 DAVE_GUI_DOCKS["vanGogh"] = WidgetPainters
 DAVE_GUI_DOCKS["DOF editor"] = WidgetDOFEditor
 DAVE_GUI_DOCKS["Explore 1-to-1"] = WidgetExplore
+DAVE_GUI_DOCKS["Solver Settings"] = WidgetSolverSettings
 
 # ========================================================
 #   Settings for customization of the GUI
@@ -685,7 +687,12 @@ class Gui:
 
         # dof editor
         self.ui.actionDegrees_of_Freedom_editor.triggered.connect(
-            lambda: self.show_guiWidget("DOF Editor")  # TODO, fix this
+            lambda: self.show_dock("DOF Editor")
+        )
+
+        # solver settings
+        self.ui.actionSolver_settings.triggered.connect(
+            lambda: self.show_dock("Solver Settings")
         )
 
         self.ui.actionVersion.setText(f"Version {DAVE.__version__}")
@@ -741,15 +748,16 @@ class Gui:
         )
 
         # Add the global docks
+        add_global_dock(
+            self.dock_manager, self.get_dock("Properties"), icon=":/v2/icons/pencil.svg"
+        )
 
         add_global_dock(
             self.dock_manager,
             self.get_dock("Environment"),
             icon=":/v2/icons/environment.svg",
         )
-        add_global_dock(
-            self.dock_manager, self.get_dock("Properties"), icon=":/v2/icons/pencil.svg"
-        )
+
         add_global_dock(
             self.dock_manager,
             self.get_dock("Derived Properties"),
@@ -761,6 +769,9 @@ class Gui:
         add_global_dock(
             self.dock_manager, self.get_dock("Tags"), icon=":/v2/icons/tag.svg"
         )
+
+
+
 
         # ------ Add the permanent docks -------
         self.docks_permanent = [self.central_dock_widget]
@@ -853,6 +864,8 @@ class Gui:
         # create all docks
         # self.pre_create_docks()
 
+
+
         # Makup
 
         self.toolbar_top.setMovable(False)
@@ -940,6 +953,12 @@ class Gui:
         DAVE_GUI_LOGGER.log("creating bug report")
         from DAVE.gui.helpers.crash_mailer import compile_and_mail
         compile_and_mail()
+
+    def show_dock(self, name):
+        """Shows a dock by name"""
+        dock = self.get_dock(name)
+        dock_show(self.dock_manager, dock, True)
+
 
 
     def autosave_startup(self) -> str:
@@ -1255,16 +1274,6 @@ class Gui:
 
                 self.refresh_3dview()
 
-    # def savepoint_restore(self):
-    #
-    #     DAVE_GUI_LOGGER.log('Restore savepoint')
-    #
-    #     if self.scene._savepoint is not None:
-    #         self.animation_terminate(keep_current_dofs=True)
-    #
-    #     if self.scene.savepoint_restore():
-    #         self.select_none()
-    #         self.guiEmitEvent(guiEventType.MODEL_STRUCTURE_CHANGED)
 
     def close_all_open_docks(self):
         """Closes all open docks"""

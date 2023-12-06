@@ -31,8 +31,8 @@ from collections.abc import Callable
 
 from PySide6.QtWidgets import *
 
-class PropertyEditorDialog(QDialog):
 
+class PropertyEditorWidget(QWidget):
     def __init__(self, prop_names : tuple or list, prop_types : tuple or list, getter_callback , setter_callback , info = None, parent=None):
 
         # checks
@@ -42,8 +42,6 @@ class PropertyEditorDialog(QDialog):
 
         #
         super().__init__(parent=parent)
-
-        self.setWindowTitle("Edit")
 
         self.setter_callback = setter_callback
         self.getter_callback = getter_callback
@@ -56,8 +54,8 @@ class PropertyEditorDialog(QDialog):
 
         self.editors = []
 
-
         row = 0
+
         for prop, kind in zip(prop_names, self.prop_types):
 
             # label
@@ -83,12 +81,6 @@ class PropertyEditorDialog(QDialog):
 
             row += 1
 
-        # _ = layout.columnCount()
-
-        button = QPushButton('Ok')     # Add some space and then a button
-        layout.setRowMinimumHeight(row, 20)
-        layout.addWidget(button, row+1, 1)
-        button.pressed.connect(self.close)
 
         self.prop_names = tuple(prop_names)
         self.load_data()
@@ -163,26 +155,59 @@ class PropertyEditorDialog(QDialog):
 
 
 
-class PropertyEditorWidget(PropertyEditorDialog):
 
-    def __init__(self, dataobject, prop_names : tuple or list, callback_func, info = None, parent=None):
+class PropertyEditorDialog(QDialog):
+
+    def __init__(self, prop_names : tuple or list, prop_types : tuple or list, getter_callback , setter_callback , info = None, parent=None):
+
+        # checks
+
+        assert len(prop_types) == len(prop_names)
+
+        #
+        super().__init__(parent=parent)
+
+        self.setWindowTitle("Edit")
+
+
+        self.editor_widget = PropertyEditorWidget(prop_names=prop_names, prop_types=prop_types, getter_callback=getter_callback, setter_callback=setter_callback, info=info, parent=parent)
+
+        # build Gui
+
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        layout.addWidget(self.editor_widget)
+
+
+        button = QPushButton('Ok')     # Add some space and then a button
+        layout.addWidget(button)
+        button.pressed.connect(self.close)
+
+
+
+
+class PropertyEditorPopup(PropertyEditorDialog):
+
+    def __init__(self, dataobject, prop_names : tuple or list, callback_func, info = None, parent=None, prop_types = None):
 
         self.callback_func = callback_func
         self.data_object = dataobject
 
-        prop_types = []
-        for prop in prop_names:
-            test = getattr(dataobject, prop)
-            if isinstance(test, str):
-                prop_types.append(str)
-            elif isinstance(test, bool):  # isinstance(0, bool) --> false
-                prop_types.append(bool)
-            elif isinstance(test, (float, int)): # can not differentiate between int and float
-                prop_types.append(float)
-            elif isinstance(test, (tuple, list)):
-                prop_types.append(tuple)
-            else:
-                raise ValueError(f'Unsupported type for property name {prop} with value {test}')
+        if prop_types is None:
+            prop_types = []
+            for prop in prop_names:
+                test = getattr(dataobject, prop)
+                if isinstance(test, str):
+                    prop_types.append(str)
+                elif isinstance(test, bool):  # isinstance(0, bool) --> false
+                    prop_types.append(bool)
+                elif isinstance(test, (float, int)): # can not differentiate between int and float
+                    prop_types.append(float)
+                elif isinstance(test, (tuple, list)):
+                    prop_types.append(tuple)
+                else:
+                    raise ValueError(f'Unsupported type for property name {prop} with value {test}')
 
         PropertyEditorDialog.__init__(self, prop_names=prop_names,
                                       prop_types=prop_types,
@@ -203,7 +228,7 @@ class PropertyEditorWidget(PropertyEditorDialog):
 if __name__ == '__main__':
     app = QApplication()
 
-    use_dataobject = False
+    use_dataobject = True
 
     #
     if not use_dataobject:
@@ -251,7 +276,7 @@ if __name__ == '__main__':
         prop_names = ('name', 'x', 'y','fixed_x')
         info =       ('','','[m]','-')
 
-        widget = PropertyEditorWidget(dataobject=node, prop_names=prop_names, info=info, callback_func = callback)
+        widget = PropertyEditorPopup(dataobject=node, prop_names=prop_names, info=info, callback_func = callback)
 
     # -------- Example without dataobject
 
