@@ -1302,8 +1302,12 @@ class Gui:
         tasks.setExclusive(True)
 
         for d in DOCK_GROUPS:
+            d : DaveDockGroup
+
             action = QAction(d.description, self.MainWindow)
             tasks.addAction(action)
+
+            d._action = action
 
             action.setText(d.description)
             action.setCheckable(True)
@@ -1334,10 +1338,6 @@ class Gui:
 
         DAVE_GUI_LOGGER.log(f'Activate dockgroup: {name}')
 
-        if self._active_dockgroup is not None:
-            if self._active_dockgroup.ID == name:
-                print("Dockgroup already active")
-                return
 
         names = [d.ID for d in DOCK_GROUPS]
 
@@ -1347,6 +1347,11 @@ class Gui:
             )
 
         group : DaveDockGroup = DOCK_GROUPS[names.index(name)]
+
+        # Make sure the action is checked even when not activated by user
+        action = getattr(group, '_action',None)
+        if action is not None:
+            action.setChecked(True)
 
         if not this_is_a_new_window:
 
@@ -1372,6 +1377,24 @@ class Gui:
 
                 return
 
+        do_load_perspectives = True
+
+        if self._active_dockgroup is not None:
+            if self._active_dockgroup.ID == name:
+                print("Dockgroup already active")
+
+                # show a messagebox asking if the user wants to re-open the dockgroup (this will reset the dock layout)
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Question)
+                msg.setText(f"Do you want to re-open the dockgroup {name} without applying the saved positions (if any) ?")
+                msg.setWindowTitle("Re-open dockgroup?")
+                msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                retval = msg.exec()
+
+                if retval == QMessageBox.Yes:
+                    do_load_perspectives = False
+                else:
+                    return
 
 
         self._active_dockgroup = group
@@ -1408,7 +1431,7 @@ class Gui:
                 dock.guiEvent(guiEventType.FULL_UPDATE)
 
         # Set the active perspective
-        if group.ID in self.dock_manager.perspectiveNames():
+        if group.ID in self.dock_manager.perspectiveNames() and do_load_perspectives:
             print("Loading perspective", group.ID)
 
             #
