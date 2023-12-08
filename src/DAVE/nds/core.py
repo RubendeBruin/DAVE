@@ -22,6 +22,9 @@ from ..settings_visuals import RESOLUTION_CABLE_OVER_CIRCLE, RESOLUTION_CABLE_SA
 from ..tools import *
 
 
+DEFAULT_WINDING_ANGLE = 999  # for cables
+
+
 class RigidBody(Frame):
     """A Rigid body, internally composed of an axis, a point (cog) and a force (gravity)"""
 
@@ -320,7 +323,7 @@ class Force(NodeCoreConnected, HasParentCore):
         return self._vfNode.is_global
 
     @is_global.setter
-    def is_global(self, value : bool):
+    def is_global(self, value: bool):
         assertBool(value, "is_global")
         self._vfNode.is_global = value
 
@@ -1862,7 +1865,7 @@ class Cable(NodeCoreConnected):
         return points
 
     def _add_connection_to_core(
-        self, connection, reversed=False, friction=0, max_winding=999
+        self, connection, reversed=False, friction=0, max_winding=DEFAULT_WINDING_ANGLE
     ):
         if isinstance(connection, Point):
             self._vfNode.add_connection_poi(connection._vfNode, friction)
@@ -1890,7 +1893,7 @@ class Cable(NodeCoreConnected):
 
         # sync length of maximum winding angles
         while len(self._max_winding_angle) < len(self._pois):
-            self._max_winding_angle.append(999)
+            self._max_winding_angle.append(DEFAULT_WINDING_ANGLE)
         self._max_winding_angle = self._max_winding_angle[0 : len(self._pois)]
 
         for point, reversed, max_winding in zip(
@@ -1983,7 +1986,7 @@ class Cable(NodeCoreConnected):
         # if self.friction_factor >0:
         #     code.append(f"s['{self.name}'].friction_factor = {self.friction_factor}")
 
-        if np.any([_ != 999 for _ in self._max_winding_angle]):
+        if np.any([_ != DEFAULT_WINDING_ANGLE for _ in self._max_winding_angle]):
             code.append(
                 f"s['{self.name}'].max_winding_angles = {self._max_winding_angle}"
             )
