@@ -8,6 +8,7 @@
 import graphlib
 import itertools
 import logging
+import string
 import warnings
 import weakref
 import datetime
@@ -16,6 +17,7 @@ from graphlib import TopologicalSorter
 from os.path import isdir, isfile
 from os import mkdir
 from pathlib import Path
+from random import choice
 from shutil import copy, copyfile
 import re
 import tempfile
@@ -31,7 +33,7 @@ from DAVE.settings import (
     RESOURCE_PATH,
     NodePropertyInfo,
     MANAGED_NODE_IDENTIFIER,
-    DAVE_NODEPROP_INFO
+    DAVE_NODEPROP_INFO,
 )
 
 from .exceptions import ModelInvalidException
@@ -1690,6 +1692,7 @@ class Scene:
             BackgroundSolver = DC.BackgroundSolver(self._vfc)
 
             self.solver_settings.apply(BackgroundSolver)
+            print(self.solver_settings)
 
             started = BackgroundSolver.Start()
 
@@ -1793,6 +1796,20 @@ class Scene:
 
         self.update()
         return self._vfc.Emaxabs < tol
+
+    def obfuscate_names(self):
+        """Will rename all nodes to random names"""
+
+        nnames = list(self.node_names)
+        for node in self._nodes:
+            letters = string.ascii_letters
+            while True:
+                random_string = "".join(choice(letters) for i in range(10))
+                if random_string not in nnames:
+                    break
+
+            node.name = random_string
+            nnames.append(random_string)
 
     # ====== goal seek ========
 
