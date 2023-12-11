@@ -1960,7 +1960,7 @@ class Gui:
 
         before = self.scene._nodes.copy()
 
-        s = self.scene
+
 
         self.ui.pbExecute.setStyleSheet("background-color: yellow;")
         if not self.ui.teCode.hasFocus():
@@ -1988,7 +1988,6 @@ class Gui:
                 glob_vars.update(DAVE.settings.DAVE_ADDITIONAL_RUNTIME_MODULES)
                 glob_vars["s"] = self.scene
                 glob_vars["self"] = self
-
 
                 exec(code, glob_vars)
                 DAVE_GUI_LOGGER.log("Code executed successfully")
