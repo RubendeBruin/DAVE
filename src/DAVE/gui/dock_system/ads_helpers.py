@@ -178,7 +178,6 @@ def dock_show(manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget, f
     if d.isHidden():
         if force_bring_to_front:
             d.setAsCurrentTab()
-        return
 
     if d not in get_all_active_docks(manager):
         d.toggleViewAction().trigger()

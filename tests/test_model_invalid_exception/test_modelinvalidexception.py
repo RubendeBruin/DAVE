@@ -17,9 +17,6 @@ def test_modelinvalidexception():
         msg = traceback.format_exc()
 
         print(msg)
-
-
-
         asserted = True
 
     assert asserted
