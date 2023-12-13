@@ -61,6 +61,8 @@
 
 """
 import subprocess
+import sys
+import traceback
 import zipfile
 import logging
 
@@ -92,6 +94,7 @@ from DAVE.gui.dock_system.gui_dock_groups import DaveDockGroup
 from DAVE.gui.helpers.gui_logger import DAVE_GUI_LOGGER
 from DAVE.gui.helpers.qt_action_draggable import QDraggableNodeActionWidget
 from DAVE.gui.widget_watches import WidgetWatches
+from DAVE.helpers.code_error_extract import get_code_error
 from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import DragInfo
 from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
 from DAVE.gui.widget_footprints import WidgetFootprints
@@ -255,7 +258,6 @@ class SettingsDialog(QDialog, Ui_frmSettings):
 
 
 class Gui:
-
     def __init__(
         self,
         scene=None,
@@ -268,7 +270,6 @@ class Gui:
         painters=None,
         read_only_mode=False,
         filename=None,
-
     ):
         """
         Starts the Gui on scene "scene".
@@ -296,7 +297,7 @@ class Gui:
             painters: [None] (str) painters to activate
 
         """
-        DAVE_GUI_LOGGER.log('Starting GUI')
+        DAVE_GUI_LOGGER.log("Starting GUI")
         DAVE_GUI_LOGGER.log(f"Version {DAVE.__version__}")
 
         self._read_only_mode = read_only_mode
@@ -325,7 +326,7 @@ class Gui:
         if scene is None:
             scene = Scene()
 
-        DAVE_GUI_LOGGER.log('Assigned Scene to logger')
+        DAVE_GUI_LOGGER.log("Assigned Scene to logger")
         DAVE_GUI_LOGGER.scene = scene
 
         # Main Window
@@ -770,9 +771,6 @@ class Gui:
             self.dock_manager, self.get_dock("Tags"), icon=":/v2/icons/tag.svg"
         )
 
-
-
-
         # ------ Add the permanent docks -------
         self.docks_permanent = [self.central_dock_widget]
 
@@ -864,8 +862,6 @@ class Gui:
         # create all docks
         # self.pre_create_docks()
 
-
-
         # Makup
 
         self.toolbar_top.setMovable(False)
@@ -923,8 +919,6 @@ class Gui:
         if splash:
             splash.finish(self.MainWindow)
 
-
-
         if block:
             self.ui.pbUpdate.setVisible(False)
             self.ui.pbCopyViewCode.setVisible(False)
@@ -936,7 +930,7 @@ class Gui:
 
             self.app.exec()
         else:
-            self.after_startup() # execute directly
+            self.after_startup()  # execute directly
 
     def after_startup(self):
         """Executed after the gui has started up"""
@@ -946,20 +940,29 @@ class Gui:
         if self._requested_workspace is None:
             self.activate_dockgroup("Build", this_is_a_new_window=True)
         else:
-            self.activate_dockgroup(self._requested_workspace, this_is_a_new_window=True)
+            self.activate_dockgroup(
+                self._requested_workspace, this_is_a_new_window=True
+            )
+
+        # window = self.MainWindow
+        # window.setWindowState(
+        #     window.windowState() & ~Qt.WindowState.WindowMinimized
+        #     | Qt.WindowState.WindowActive
+        # )
+        #
+        # self.MainWindow.activateWindow()
 
     def bug_report(self):
         """Creates a bug report email"""
         DAVE_GUI_LOGGER.log("creating bug report")
         from DAVE.gui.helpers.crash_mailer import compile_and_mail
+
         compile_and_mail()
 
     def show_dock(self, name):
         """Shows a dock by name"""
         dock = self.get_dock(name)
         dock_show(self.dock_manager, dock, True)
-
-
 
     def autosave_startup(self) -> str:
         # check for autosave files
@@ -1002,7 +1005,6 @@ class Gui:
         return filename
 
     def clipboard_copy(self):
-
         # get the selected nodes
         if self.selected_nodes:
             node = self.selected_nodes[0]
@@ -1011,8 +1013,7 @@ class Gui:
             self.app.clipboard().setText(code)
             self.give_feedback(f"Duplicate node {node.name} copied to clipboard")
 
-            DAVE_GUI_LOGGER.log('To Clipboard: ' + code)
-
+            DAVE_GUI_LOGGER.log("To Clipboard: " + code)
 
     def clipboard_paste(self):
         try:
@@ -1022,23 +1023,18 @@ class Gui:
             return
 
         if text.strip():
-
             if text.startswith(vfc.DAVE_CLIPBOARD_HEADER):
-                text = text[len(vfc.DAVE_CLIPBOARD_HEADER):]
+                text = text[len(vfc.DAVE_CLIPBOARD_HEADER) :]
             else:
-
                 # ask user if ok to run the code from the clipboard
 
                 short_code = text
                 if len(short_code) > 200:
                     short_code = short_code[:100] + "\n...\n" + short_code[-100:]
 
-
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Warning)
-                msg.setText(
-                    f"Do you want to run the following code?\n\n" + short_code
-                )
+                msg.setText(f"Do you want to run the following code?\n\n" + short_code)
 
                 msg.setWindowTitle("Run code from clipboard?")
                 msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
@@ -1046,7 +1042,7 @@ class Gui:
                 if retval == QMessageBox.No:
                     return
 
-            DAVE_GUI_LOGGER.log('Executing code from clipboard')
+            DAVE_GUI_LOGGER.log("Executing code from clipboard")
             self.run_code(text, guiEventType.MODEL_STRUCTURE_CHANGED)
         else:
             self.give_feedback("Nothing to paste")
@@ -1067,7 +1063,7 @@ class Gui:
         self.ui.dockWidget_2.show()
 
     def new_scene(self):
-        DAVE_GUI_LOGGER.log('New scene')
+        DAVE_GUI_LOGGER.log("New scene")
         self.scene.clear()
         self.guiEmitEvent(guiEventType.FULL_UPDATE)
 
@@ -1095,7 +1091,7 @@ class Gui:
 
         Note: removing paths requires a program restart
         """
-        DAVE_GUI_LOGGER.log('Update resource paths')
+        DAVE_GUI_LOGGER.log("Update resource paths")
 
         for p in self.additional_user_resource_paths:
             if p not in DAVE.settings.RESOURCE_PATH:
@@ -1103,7 +1099,7 @@ class Gui:
                 self.scene.add_resources_paths(p)
 
     def labels_show_hide(self):
-        DAVE_GUI_LOGGER.log('Toggle labels')
+        DAVE_GUI_LOGGER.log("Toggle labels")
 
         if self.visual.settings.label_scale > 0:
             self.visual.settings.label_scale = 0
@@ -1121,7 +1117,7 @@ class Gui:
 
     def refresh_model(self):
         """Full model refresh to reload components"""
-        DAVE_GUI_LOGGER.log('Refresh model')
+        DAVE_GUI_LOGGER.log("Refresh model")
         code = self.scene.give_python_code()
         self.scene.clear()
         self.scene.run_code(code)
@@ -1129,7 +1125,7 @@ class Gui:
 
     def delete_key(self):
         """Delete key pressed in either main-form or viewport"""
-        DAVE_GUI_LOGGER.log('Delete key pressed')
+        DAVE_GUI_LOGGER.log("Delete key pressed")
         names = [node.name for node in self.selected_nodes]
 
         need_refresh = False
@@ -1147,7 +1143,7 @@ class Gui:
 
     def change_paintset(self):
         """Updates the paintset of the viewport to the value of cbPainterSelect"""
-        DAVE_GUI_LOGGER.log('Change paintset')
+        DAVE_GUI_LOGGER.log("Change paintset")
 
         with DelayRenderingTillDone(self.visual):
             # Clear selection to make sure that the paint is updated for all actors
@@ -1168,7 +1164,7 @@ class Gui:
 
         This action is not executed if the currently active paint-set name contains "custom"
         """
-        DAVE_GUI_LOGGER.log('Activate paintset')
+        DAVE_GUI_LOGGER.log("Activate paintset")
 
         cb = self.ui.cbPainerSelect  # alias
 
@@ -1185,8 +1181,7 @@ class Gui:
                 )
 
     def copy_screenshot_code(self):
-
-        DAVE_GUI_LOGGER.log('Copy screenshot code')
+        DAVE_GUI_LOGGER.log("Copy screenshot code")
 
         sea = self.visual.settings.show_sea
 
@@ -1241,15 +1236,13 @@ class Gui:
         self.app.clipboard().setText(code)
 
     def escPressed(self):
-
-        DAVE_GUI_LOGGER.log('Escape pressed')
+        DAVE_GUI_LOGGER.log("Escape pressed")
 
         self.animation_terminate()  # terminate any running animations
         self.select_none()
 
     def select_none(self):
-
-        DAVE_GUI_LOGGER.log('Select none')
+        DAVE_GUI_LOGGER.log("Select none")
 
         if self.selected_nodes:
             self.selected_nodes.clear()
@@ -1261,7 +1254,7 @@ class Gui:
     def focus_on_selected_object(self):
         """Moves the viewport view to the selected object"""
 
-        DAVE_GUI_LOGGER.log('Focus on selected object')
+        DAVE_GUI_LOGGER.log("Focus on selected object")
 
         if self.selected_nodes:
             node = self.selected_nodes[0]
@@ -1274,17 +1267,16 @@ class Gui:
 
                 self.refresh_3dview()
 
-
     def close_all_open_docks(self):
         """Closes all open docks"""
-        DAVE_GUI_LOGGER.log('Close all open docks')
+        DAVE_GUI_LOGGER.log("Close all open docks")
         for g in self.guiWidgets.values():
             dock_remove_from_gui(self.dock_manager, g)
 
     def pre_create_docks(self):
         """Create all docks, then close them again"""
 
-        DAVE_GUI_LOGGER.log('Pre-create docks')
+        DAVE_GUI_LOGGER.log("Pre-create docks")
 
         for k in DAVE_GUI_DOCKS.keys():
             if k in self.guiWidgets:
@@ -1296,13 +1288,13 @@ class Gui:
     def create_dockgroups(self):
         """Creates the dockgroups for each workspace"""
 
-        DAVE_GUI_LOGGER.log('Create dockgroups')
+        DAVE_GUI_LOGGER.log("Create dockgroups")
 
         tasks = QActionGroup(self.MainWindow)
         tasks.setExclusive(True)
 
         for d in DOCK_GROUPS:
-            d : DaveDockGroup
+            d: DaveDockGroup
 
             action = QAction(d.description, self.MainWindow)
             tasks.addAction(action)
@@ -1323,7 +1315,7 @@ class Gui:
     def save_perspective(self):
         """Saves the current perspective (dock layout)"""
 
-        DAVE_GUI_LOGGER.log('Save perspective')
+        DAVE_GUI_LOGGER.log("Save perspective")
 
         if self._active_dockgroup is not None:
             perspective_name = self._active_dockgroup.ID
@@ -1334,10 +1326,8 @@ class Gui:
                 QIcon(":/v2/icons/heart_full_small.svg")
             )
 
-    def activate_dockgroup(self, name, this_is_a_new_window = False):
-
-        DAVE_GUI_LOGGER.log(f'Activate dockgroup: {name}')
-
+    def activate_dockgroup(self, name, this_is_a_new_window=False):
+        DAVE_GUI_LOGGER.log(f"Activate dockgroup: {name}")
 
         names = [d.ID for d in DOCK_GROUPS]
 
@@ -1346,15 +1336,14 @@ class Gui:
                 f"Unknown dockgroup {name}, available dockgroups are {names}"
             )
 
-        group : DaveDockGroup = DOCK_GROUPS[names.index(name)]
+        group: DaveDockGroup = DOCK_GROUPS[names.index(name)]
 
         # Make sure the action is checked even when not activated by user
-        action = getattr(group, '_action',None)
+        action = getattr(group, "_action", None)
         if action is not None:
             action.setChecked(True)
 
         if not this_is_a_new_window:
-
             if group.new_window:
                 s = self.scene
                 if group.new_window_copy:
@@ -1364,13 +1353,20 @@ class Gui:
                     try:
                         s.run_code(group.init_actions)
                     except Exception as E:
-
                         if not group.new_window_copy:
-                            raise ModelInvalidException("Error when performing init actions for new window" + str(E))
+                            raise ModelInvalidException(
+                                "Error when performing init actions for new window"
+                                + str(E)
+                            )
                         else:
                             raise E
 
-                g = Gui(s, block=False, read_only_mode=group.new_window_read_only, workspace=name)
+                g = Gui(
+                    s,
+                    block=False,
+                    read_only_mode=group.new_window_read_only,
+                    workspace=name,
+                )
 
                 if group.new_window_no_workspaces:
                     g.toolbar_left.setVisible(False)
@@ -1386,7 +1382,9 @@ class Gui:
                 # show a messagebox asking if the user wants to re-open the dockgroup (this will reset the dock layout)
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Question)
-                msg.setText(f"Do you want to re-open the dockgroup {name} without applying the saved positions (if any) ?")
+                msg.setText(
+                    f"Do you want to re-open the dockgroup {name} without applying the saved positions (if any) ?"
+                )
                 msg.setWindowTitle("Re-open dockgroup?")
                 msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
                 retval = msg.exec()
@@ -1395,7 +1393,6 @@ class Gui:
                     do_load_perspectives = False
                 else:
                     return
-
 
         self._active_dockgroup = group
 
@@ -1452,8 +1449,7 @@ class Gui:
         self.visual.update_visibility()
 
     def import_browser(self):
-
-        DAVE_GUI_LOGGER.log('Import browser')
+        DAVE_GUI_LOGGER.log("Import browser")
 
         G = DAVE.gui.standard_assets.Gui()
         r = G.showModal()
@@ -1470,13 +1466,11 @@ class Gui:
     # ============== File open / recent / drag-drop functions ===========
 
     def drag_enter(self, event):
-
         if event.mimeData().hasUrls():
             event.accept()
 
     def drop(self, event):
-
-        DAVE_GUI_LOGGER.log('Drop event: ')
+        DAVE_GUI_LOGGER.log("Drop event: ")
 
         filename = event.mimeData().text()
 
@@ -1507,7 +1501,7 @@ class Gui:
                 raise ValueError(f"Could not open file {filename}")
 
     def get_recent(self):
-        DAVE_GUI_LOGGER.log('Get recent files')
+        DAVE_GUI_LOGGER.log("Get recent files")
         settings = QSettings("rdbr", "DAVE")
         files = []
         for i in range(8):
@@ -1515,7 +1509,7 @@ class Gui:
         return files
 
     def add_to_recent_file_menu(self, filename):
-        DAVE_GUI_LOGGER.log(f'Add to recent file menu: {filename}')
+        DAVE_GUI_LOGGER.log(f"Add to recent file menu: {filename}")
         settings = QSettings("rdbr", "DAVE")
 
         files = self.get_recent()
@@ -1530,7 +1524,7 @@ class Gui:
         self.update_recent_file_menu()
 
     def update_recent_file_menu(self):
-        DAVE_GUI_LOGGER.log('Update recent file menu')
+        DAVE_GUI_LOGGER.log("Update recent file menu")
         files = self.get_recent()
         for i in range(8):
             if files[i]:
@@ -1539,7 +1533,7 @@ class Gui:
                 self.recent_files[i].setText("recent files will appear here")
 
     def open_recent(self, i):
-        DAVE_GUI_LOGGER.log(f'Open recent file: {i}')
+        DAVE_GUI_LOGGER.log(f"Open recent file: {i}")
         filename = self.recent_files[i].text()
         if filename == "recent files will appear here":
             return
@@ -1575,7 +1569,7 @@ class Gui:
         self.ui.aniSlider.setValue(t * 1000)
 
     def animation_speed_change(self):
-        DAVE_GUI_LOGGER.log('Animation speed change')
+        DAVE_GUI_LOGGER.log("Animation speed change")
         self._animation_speed = self.ui.sbPlaybackspeed.value()
 
     def animation_activate_time(self, t):
@@ -1586,8 +1580,9 @@ class Gui:
         self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
 
     def animation_terminate(self, keep_current_dofs=False):
-
-        DAVE_GUI_LOGGER.log(f'Terminate animation, keep_current_dofs = {keep_current_dofs}')
+        DAVE_GUI_LOGGER.log(
+            f"Terminate animation, keep_current_dofs = {keep_current_dofs}"
+        )
 
         # if not self.animation_running():
         #    return # nothing to destroy
@@ -1633,9 +1628,8 @@ class Gui:
 
 
         """
-        DAVE_GUI_LOGGER.log('Start animation...')
+        DAVE_GUI_LOGGER.log("Start animation...")
         self.animation_terminate(keep_current_dofs=False)  # end old animation, if any
-
 
         DAVE_GUI_LOGGER.log("Creating animation objects")
 
@@ -1661,7 +1655,7 @@ class Gui:
         self.ui.frameAni.setVisible(show_animation_bar)
 
         self._animation_available = True
-        DAVE_GUI_LOGGER.log('Animation available = True')
+        DAVE_GUI_LOGGER.log("Animation available = True")
 
         if not show_animation_bar:  # override pause for short animations
             self.ui.btnPauseAnimation.setChecked(False)
@@ -1680,7 +1674,7 @@ class Gui:
     def animation_pause(self):
         """Pauses a running animation"""
 
-        DAVE_GUI_LOGGER.log('Pause animation')
+        DAVE_GUI_LOGGER.log("Pause animation")
 
         if self._animation_paused:
             return
@@ -1694,8 +1688,7 @@ class Gui:
         self._animation_paused = True
 
     def animation_continue(self):
-
-        DAVE_GUI_LOGGER.log('Continue animation')
+        DAVE_GUI_LOGGER.log("Continue animation")
 
         if not self._animation_paused:
             return
@@ -1712,7 +1705,7 @@ class Gui:
     def animation_pause_or_continue_click(self):
         """Pauses or continues the animation"""
 
-        DAVE_GUI_LOGGER.log('Pause or continue animation')
+        DAVE_GUI_LOGGER.log("Pause or continue animation")
 
         if self._animation_paused:
             self.ui.btnPauseAnimation.setIcon(QIcon(":/v2/icons/pause.svg"))
@@ -1742,7 +1735,7 @@ class Gui:
 
     def _autosave_write(self):
         """Writes the autosave file"""
-        DAVE_GUI_LOGGER.log('Autosave write')
+        DAVE_GUI_LOGGER.log("Autosave write")
         try:
             code = "# DAVE autosave file\n"
             code += f"# for: {self.modelfilename}\n#\n"
@@ -1756,12 +1749,14 @@ class Gui:
 
             DAVE_GUI_LOGGER.log("Autosaved to {}".format(self._autosave.autosave_file))
         except Exception as e:
-            self.show_exception(f"Could not save autosave file because {e} \n\n Advised to use the UNDO function to restore the model to a previous state, then save and restart")
+            self.show_exception(
+                f"Could not save autosave file because {e} \n\n Advised to use the UNDO function to restore the model to a previous state, then save and restart"
+            )
 
     # ==== undo functions ====
 
     def undo(self):
-        DAVE_GUI_LOGGER.log('Undo')
+        DAVE_GUI_LOGGER.log("Undo")
         self._undo_index -= 1
         if self._undo_index < 0:
             QMessageBox.information(
@@ -1780,7 +1775,7 @@ class Gui:
         self.activate_undo_index(self._undo_index)
 
     def redo(self):
-        DAVE_GUI_LOGGER.log('Redo')
+        DAVE_GUI_LOGGER.log("Redo")
         self._undo_index += 1
         if self._undo_index > len(self._undo_log) - 1:
             QMessageBox.information(
@@ -1793,7 +1788,7 @@ class Gui:
 
     def activate_undo_index(self, index):
         """Activates the undo index"""
-        DAVE_GUI_LOGGER.log(f'Activate undo index: {index}')
+        DAVE_GUI_LOGGER.log(f"Activate undo index: {index}")
         print(f"Activating undo index {index} of {len(self._undo_log)-1}")
 
         undo_type, undo_contents = self._undo_log[index]  # unpack
@@ -1839,7 +1834,7 @@ class Gui:
 
     def add_undo_point(self, undo_type=UndoType.CLEAR_AND_RUN_CODE, code=""):
         logging.info(f"Creating undo point with type {undo_type}")
-        DAVE_GUI_LOGGER.log(f'Add undo point, type = {undo_type}')
+        DAVE_GUI_LOGGER.log(f"Add undo point, type = {undo_type}")
 
         if undo_type == UndoType.CLEAR_AND_RUN_CODE:
             """Adds the current model to the undo-list"""
@@ -1866,7 +1861,7 @@ class Gui:
     def closeEvent(self, event):
         """This is the on-close for the main window"""
 
-        DAVE_GUI_LOGGER.log('Close event')
+        DAVE_GUI_LOGGER.log("Close event")
 
         self.animation_terminate()
 
@@ -1874,14 +1869,14 @@ class Gui:
             event.accept()
 
             if self._owns_the_application:
-                DAVE_GUI_LOGGER.log('Closing dock manager')
+                DAVE_GUI_LOGGER.log("Closing dock manager")
                 self.dock_manager.deleteLater()
 
-            DAVE_GUI_LOGGER.log('Shutting down vtk interactor')
+            DAVE_GUI_LOGGER.log("Shutting down vtk interactor")
             self.visual.shutdown_qt()
 
             print("removing autosave files")
-            DAVE_GUI_LOGGER.log('removing autosave files')
+            DAVE_GUI_LOGGER.log("removing autosave files")
             if self._autosave is not None:
                 self._autosave.cleanup()
 
@@ -1909,8 +1904,6 @@ class Gui:
         style 0 : normal
         style 1 : error
         """
-
-
 
         self.ui.teFeedback.setText(str(what))
         if style == 0:
@@ -1954,13 +1947,11 @@ class Gui:
         if isinstance(code, (list, tuple)):
             code = "\n".join(code)
 
-        DAVE_GUI_LOGGER.log(f'Run code: {code}')
+        DAVE_GUI_LOGGER.log(f"Run code: {code}")
 
         self._model_has_changed = True
 
         before = self.scene._nodes.copy()
-
-
 
         self.ui.pbExecute.setStyleSheet("background-color: yellow;")
         if not self.ui.teCode.hasFocus():
@@ -1982,7 +1973,6 @@ class Gui:
 
         executed = False
         with capture_output() as c:
-
             try:
                 glob_vars = globals()
                 glob_vars.update(DAVE.settings.DAVE_ADDITIONAL_RUNTIME_MODULES)
@@ -1993,52 +1983,70 @@ class Gui:
                 DAVE_GUI_LOGGER.log("Code executed successfully")
                 executed = True
 
-            except ModelInvalidException as e:
-                DAVE_GUI_LOGGER.log(f"Model invalid exception: {e}")
-                self.show_exception(
-                    "Can not perform the requested action because: " + str(e)
-                )
-                if store_undo:
-                    QMessageBox.information(
-                        self.ui.widget,
-                        "Model invalid",
-                        "The model state has become invalid due to an unrecoverable error. The error was:\n" + str(e) +
-                        "\nWe will use the undo log to restore the model to the previous state.",
-                        QMessageBox.Ok,
-                    )
-                    self.undo()
-                else:
-                    # show an error box with error
-
-                    # terminate the autosave, we do not want to be saving any invalid models
-
-                    DAVE_GUI_LOGGER.log("Disabling autosave")
-                    self._autosave = None  # no cleanup!
-
-                    QMessageBox.warning(
-                        self.ui.widget,
-                        "terminal error",
-                        "The model state has become invalid due to an unrecoverable error. The error was:\n" + str(e) +
-                        "DO NOT SAVE. Advised to restart DAVE and contiune with the lastest auto-save file.",
-                        QMessageBox.Ok,
-                    )
 
             except Exception as E:
 
-                DAVE_GUI_LOGGER.log(f"Exception occurred: {E}")
-                DAVE_GUI_LOGGER.log_code("# Exception occurred: " + str(E))
+                original_exception = E
+                if isinstance(E, ModelInvalidException):
+                    original_exception = E.args[0]
 
-                self.ui.teCode.clear()
-                self.ui.teCode.append(code)
+                if isinstance(original_exception, SyntaxError):
+                    code_error = f"line {original_exception.lineno}: {original_exception.text}"
 
-                self.ui.teCode.update()
-                self.ui.teCode.repaint()
+                else:
 
-                message = str(E) + "\n\nWhen running: \n\n" + code
-                self.show_exception(message)
+                    code_error = get_code_error(code)
 
-            if executed: # code ran as expected
+                notes = getattr(original_exception, "__notes__", [])
+                message = str(original_exception) + '\n'.join(notes)
+                if not message:
+                    message = "Unknown error, traceback:\n" + traceback.format_exc()
 
+                DAVE_GUI_LOGGER.log_exception(original_exception)
+
+                DAVE_GUI_LOGGER.log_code("# Exception occurred: " + code_error)
+
+
+                message = message + "\n\n" + code_error
+
+                if isinstance(E, ModelInvalidException):  # It is serious
+
+                    if store_undo:
+                        QMessageBox.information(
+                            self.ui.widget,
+                            "Model invalid",
+                            "The model state has become invalid due to an unrecoverable error. The error was:\n"
+                            + message
+                            + "\nWe will use the undo log to restore the model to the previous state.",
+                            QMessageBox.Ok,
+                        )
+                        self.undo()
+                    else:
+                        # show an error box with error
+
+                        # terminate the autosave, we do not want to be saving any invalid models
+
+                        DAVE_GUI_LOGGER.log("Disabling autosave")
+                        self._autosave = None  # no cleanup!
+
+                        QMessageBox.warning(
+                            self.ui.widget,
+                            "terminal error",
+                            "The model state has become invalid due to an unrecoverable error. The error was:\n"
+                            + message
+                            + "DO NOT SAVE. Advised to restart DAVE and continue with the latest auto-save file.",
+                            QMessageBox.Ok,
+                        )
+
+                else: # not so serious
+                    self.show_exception(message)
+
+
+            finally:
+                self.ui.pbExecute.setStyleSheet("")
+                self.ui.pbExecute.update()
+
+            if executed:  # code ran as expected
                 # Code was executed, so we can use the provided event and sender to
                 # update the GUI
 
@@ -2054,9 +2062,6 @@ class Gui:
                 self.ui.teHistory.verticalScrollBar().setValue(
                     self.ui.teHistory.verticalScrollBar().maximum()
                 )  # scroll down all the way
-
-                self.ui.pbExecute.setStyleSheet("")
-                self.ui.pbExecute.update()
 
                 self.ui.teFeedback.verticalScrollBar().setValue(
                     self.ui.teFeedback.verticalScrollBar().maximum()
@@ -2096,9 +2101,7 @@ class Gui:
                 self.guiEmitEvent(event, sender=sender)
 
             if to_be_removed_from_selection and not emitted:
-                self.guiEmitEvent(
-                    guiEventType.SELECTION_CHANGED, sender=sender
-                )
+                self.guiEmitEvent(guiEventType.SELECTION_CHANGED, sender=sender)
 
             if select_node_name_edit_field:
                 self.place_input_focus_on_name_of_node()
@@ -2106,17 +2109,16 @@ class Gui:
     def place_input_focus_on_name_of_node(self):
         """Places the input focus on the name of the node such that the user can directly change it if needed"""
 
-        DAVE_GUI_LOGGER.log('Place input focus on name of node')
+        DAVE_GUI_LOGGER.log("Place input focus on name of node")
 
         if "Properties" in self.guiWidgets:
             props = self.guiWidgets["Properties"]
             props._node_name_editor.ui.tbName.setFocus()
             props._node_name_editor.ui.tbName.selectAll()
 
-
     def solve_statics(self, timeout_s=0.5, called_by_user=True):
         """Solves statics using the current scene"""
-        DAVE_GUI_LOGGER.log('Solve statics')
+        DAVE_GUI_LOGGER.log("Solve statics")
         self.scene.solve_activity_desc = "Solving static equilibrium"
 
         self.solve_statics_using_gui_on_scene(
@@ -2131,12 +2133,9 @@ class Gui:
                 f"Solved statics - remaining error = {self.scene._vfc.Emaxabs} kN or kNm"
             )
 
-
-    def solve_statics_using_gui_on_scene(
-        self, scene_to_solve, called_by_user=True
-    ):
+    def solve_statics_using_gui_on_scene(self, scene_to_solve, called_by_user=True):
         scene_to_solve.update()
-        DAVE_GUI_LOGGER.log('Solve statics using gui on scene')
+        DAVE_GUI_LOGGER.log("Solve statics using gui on scene")
 
         if called_by_user:
             self.add_undo_point(undo_type=UndoType.SET_DOFS)
@@ -2205,7 +2204,6 @@ class Gui:
         feedback_text_prefix = ""
 
         while True:  # keep trying after fixing orientations and such
-
             self.__BackgroundSolver = DAVEcore.BackgroundSolver(self.scene._vfc)
 
             self.scene.solver_settings.apply(self.__BackgroundSolver)
@@ -2326,7 +2324,7 @@ class Gui:
     def animate_change(self, old_dof, new_dof, n_steps):
         """Animates from old_dof to new_dofs in n_steps"""
 
-        DAVE_GUI_LOGGER.log('Animate change')
+        DAVE_GUI_LOGGER.log("Animate change")
 
         if len(old_dof) != len(new_dof):
             return
@@ -2350,7 +2348,7 @@ class Gui:
 
     def to_blender(self):
         """Exports the current model to blender"""
-        DAVE_GUI_LOGGER.log('To blender')
+        DAVE_GUI_LOGGER.log("To blender")
         if self.animation_running():
             dofs = []
 
@@ -2373,7 +2371,7 @@ class Gui:
 
     def toggle_show_sea(self):
         """Toggles the visibility of the sea-plane"""
-        DAVE_GUI_LOGGER.log('Toggle show sea')
+        DAVE_GUI_LOGGER.log("Toggle show sea")
         self.visual.settings.show_sea = not self.visual.settings.show_sea
         self.ui.actionShow_water_plane.setChecked(self.visual.settings.show_sea)
         self.ui.btnWater.setChecked(self.visual.settings.show_sea)
@@ -2381,7 +2379,7 @@ class Gui:
 
     def toggle_show_origin(self):
         """Toggles the visibility of the origin"""
-        DAVE_GUI_LOGGER.log('Toggle show origin')
+        DAVE_GUI_LOGGER.log("Toggle show origin")
         self.visual.settings.show_origin = not self.visual.settings.show_origin
         self.ui.actionShow_origin.setChecked(self.visual.settings.show_origin)
         self.ui.pbOrigin.setChecked(self.visual.settings.show_origin)
@@ -2389,7 +2387,7 @@ class Gui:
 
     def toggle_show_UC(self):
         """Toggles the visibility of the UC colors"""
-        DAVE_GUI_LOGGER.log('Toggle show UC')
+        DAVE_GUI_LOGGER.log("Toggle show UC")
         self.visual.settings.paint_uc = not self.visual.settings.paint_uc
 
         self.ui.pbUC.setChecked(self.visual.settings.paint_uc)
@@ -2397,26 +2395,26 @@ class Gui:
 
     def toggle_show_force_applying_elements(self):
         """Toggles the visibility of the force applying elements"""
-        DAVE_GUI_LOGGER.log('Toggle show force applying elements')
+        DAVE_GUI_LOGGER.log("Toggle show force applying elements")
         self.visual.show_meshes = self.ui.actionShow_force_applying_element.isChecked()
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def camera_set_direction(self, vector):
         """Sets the camera direction"""
-        DAVE_GUI_LOGGER.log(f'Camera set direction {vector}')
+        DAVE_GUI_LOGGER.log(f"Camera set direction {vector}")
         self.visual.Style.SetCameraPlaneDirection(vector)
         self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
 
     def camera_reset(self):
         """Resets the camera"""
-        DAVE_GUI_LOGGER.log('Camera reset')
+        DAVE_GUI_LOGGER.log("Camera reset")
         self.visual.zoom_all()  # this function takes care of ignoring the sea-plane
         # self.visual.Style.ZoomFit()
         # self.visual.refresh_embeded_view()
 
     def toggle_SSAO(self):
         """Toggles SSAO"""
-        DAVE_GUI_LOGGER.log('Toggle SSAO')
+        DAVE_GUI_LOGGER.log("Toggle SSAO")
         if self.ui.btnSSAO.isChecked():
             self.visual.EnableSSAO()
         else:
@@ -2425,7 +2423,7 @@ class Gui:
 
     def clear(self):
         """Clears the scene"""
-        DAVE_GUI_LOGGER.log('Clear')
+        DAVE_GUI_LOGGER.log("Clear")
         self.run_code("s.clear()", guiEventType.FULL_UPDATE, store_undo=False)
         self._model_has_changed = False
         self.modelfilename = None
@@ -2433,7 +2431,7 @@ class Gui:
 
     def open_file(self, filename):
         """Opens the provided file"""
-        DAVE_GUI_LOGGER.log(f'Open file {filename}')
+        DAVE_GUI_LOGGER.log(f"Open file {filename}")
         current_directory = Path(filename).parent
         code = f's.clear()\ns.current_directory = r"{current_directory}"\ns.load_scene(r"{filename}")'
 
@@ -2479,7 +2477,7 @@ class Gui:
 
     def open_self_contained_DAVE_package(self):
         """Opens a self-contained DAVE package"""
-        DAVE_GUI_LOGGER.log('Open self contained DAVE package')
+        DAVE_GUI_LOGGER.log("Open self contained DAVE package")
         folder = self.scene.current_directory
         filename, _ = QFileDialog.getOpenFileName(
             filter="*.zip", caption="DAVE model package", dir=str(folder)
@@ -2530,14 +2528,14 @@ class Gui:
 
     def open(self):
         """Opens a file"""
-        DAVE_GUI_LOGGER.log('Open')
+        DAVE_GUI_LOGGER.log("Open")
         filename = self._get_filename_using_dialog()
         if filename:
             self.open_file(filename)
 
     def menu_import(self):
         """Imports a file"""
-        DAVE_GUI_LOGGER.log('Menu import')
+        DAVE_GUI_LOGGER.log("Menu import")
         filename = self._get_filename_using_dialog()
 
         if filename:
@@ -2547,7 +2545,7 @@ class Gui:
 
     def menu_save_model(self):
         """Saves the model"""
-        DAVE_GUI_LOGGER.log('Menu save model')
+        DAVE_GUI_LOGGER.log("Menu save model")
         if self.modelfilename is None:
             self.menu_save_model_as()
             return
@@ -2559,7 +2557,7 @@ class Gui:
 
     def menu_save_model_as(self):
         """Saves the model as"""
-        DAVE_GUI_LOGGER.log('Menu save model as')
+        DAVE_GUI_LOGGER.log("Menu save model as")
         if self.modelfilename is not None:
             dir = str(Path(self.modelfilename).parent)
         else:
@@ -2584,7 +2582,7 @@ class Gui:
 
     def maybeSave(self):
         """Asks the user if he wants to save the model"""
-        DAVE_GUI_LOGGER.log('Maybe save')
+        DAVE_GUI_LOGGER.log("Maybe save")
         if not self._model_has_changed:
             return True
 
@@ -2611,7 +2609,7 @@ class Gui:
 
     def menu_export_orcaflex_yml(self):
         """Exports the model to an orcaflex .yml file"""
-        DAVE_GUI_LOGGER.log('Menu export orcaflex yml')
+        DAVE_GUI_LOGGER.log("Menu export orcaflex yml")
         filename, _ = QFileDialog.getSaveFileName(
             filter="*.yml",
             caption="Orcaflex .yml file",
@@ -2625,7 +2623,7 @@ class Gui:
 
     def menu_export_orcaflex_package(self):
         """Exports the model to an orcaflex package"""
-        DAVE_GUI_LOGGER.log('Menu export orcaflex package')
+        DAVE_GUI_LOGGER.log("Menu export orcaflex package")
         filename, _ = QFileDialog.getSaveFileName(
             filter="*.py",
             caption="Python files",
@@ -2644,12 +2642,12 @@ class Gui:
 
     def tidy_history(self):
         """Tidies the history"""
-        DAVE_GUI_LOGGER.log('Tidy history')
+        DAVE_GUI_LOGGER.log("Tidy history")
         self.ui.teHistory.setText(self.give_clean_history())
 
     def give_clean_history(self):
         """Returns a clean history"""
-        DAVE_GUI_LOGGER.log('Give clean history')
+        DAVE_GUI_LOGGER.log("Give clean history")
         prev_line = ""
 
         f = []
@@ -2668,7 +2666,7 @@ class Gui:
 
     def menu_save_actions(self):
         """Saves the actions"""
-        DAVE_GUI_LOGGER.log('Menu save actions')
+        DAVE_GUI_LOGGER.log("Menu save actions")
         filename, _ = QFileDialog.getSaveFileName(
             filter="*.dave",
             caption="Scene files",
@@ -2692,34 +2690,34 @@ class Gui:
 
     def feedback_copy(self):
         """Copies feedback to clipboard"""
-        DAVE_GUI_LOGGER.log('Feedback copy')
+        DAVE_GUI_LOGGER.log("Feedback copy")
         self.app.clipboard().setText(self.ui.teFeedback.toPlainText())
 
     def history_copy(self):
         """Copies history to clipboard"""
-        DAVE_GUI_LOGGER.log('History copy')
+        DAVE_GUI_LOGGER.log("History copy")
         self.app.clipboard().setText(self.ui.teHistory.toPlainText())
 
     def clear_code(self):
         """Clears the code"""
-        DAVE_GUI_LOGGER.log('Clear code and set-focus')
+        DAVE_GUI_LOGGER.log("Clear code and set-focus")
         self.ui.teCode.clear()
         self.ui.teCode.setFocus()
 
     def generate_scene_code(self):
         """Generates the scene code"""
-        DAVE_GUI_LOGGER.log('Generate scene code')
+        DAVE_GUI_LOGGER.log("Generate scene code")
         self.ui.teFeedback.setText(self.scene.give_python_code())
 
     def run_code_in_teCode(self):
         """Runs the code in the teCode"""
-        DAVE_GUI_LOGGER.log('Run code in teCode')
+        DAVE_GUI_LOGGER.log("Run code in teCode")
         code = self.ui.teCode.toPlainText()
         self.run_code(code, guiEventType.FULL_UPDATE)
 
     def rightClickViewport(self, point):
         """Executed when the viewport is right-clicked"""
-        DAVE_GUI_LOGGER.log('Right click viewport')
+        DAVE_GUI_LOGGER.log("Right click viewport")
         globLoc = self.ui.frame3d.mapToGlobal(point)
         name = None
         try:
@@ -2735,7 +2733,7 @@ class Gui:
 
     def openContextMenyAt(self, node_name, globLoc):
         """Opens the context menu at the provided location"""
-        DAVE_GUI_LOGGER.log(f'Open context menu at {node_name} {globLoc}')
+        DAVE_GUI_LOGGER.log(f"Open context menu at {node_name} {globLoc}")
         menu = QtWidgets.QMenu()
 
         if node_name is not None:
@@ -2948,7 +2946,6 @@ class Gui:
     def new_shackle(self):
         self.new_something(new_node_dialog.add_shackle)
 
-
     def new_spmt(self):
         self.new_something(new_node_dialog.add_spmt)
 
@@ -2962,7 +2959,7 @@ class Gui:
 
     def new_something(self, what):
         """Creates something new"""
-        DAVE_GUI_LOGGER.log(f'New something {what}')
+        DAVE_GUI_LOGGER.log(f"New something {what}")
         r = what(self.scene, self.selected_nodes)
         if r:
             self.run_code("s." + r, guiEventType.MODEL_STRUCTURE_CHANGED)
@@ -2978,7 +2975,7 @@ class Gui:
         #
         # we need to find the corresponding node
 
-        DAVE_GUI_LOGGER.log(f'View3d select element')
+        DAVE_GUI_LOGGER.log(f"View3d select element")
 
         if self._read_only_mode:
             return
@@ -3062,7 +3059,9 @@ class Gui:
             try:
                 icon = ICONS[type(nodes_with_class[0])]
             except KeyError:
-                DAVE_GUI_LOGGER.log("ERROR: No icon found for {}".format(type(nodes_with_class[0])))
+                DAVE_GUI_LOGGER.log(
+                    "ERROR: No icon found for {}".format(type(nodes_with_class[0]))
+                )
                 icon = QIcon(":/icons/redball.png")
 
             if len(nodes_with_class) > 1:
@@ -3104,8 +3103,7 @@ class Gui:
         menu.exec(QCursor.pos())
 
     def _user_clicked_node(self, node, event=None):
-
-        DAVE_GUI_LOGGER.log(f'User clicked node {node}')
+        DAVE_GUI_LOGGER.log(f"User clicked node {node}")
 
         if node is None:  # sea or something
             self.selected_nodes.clear()
@@ -3119,7 +3117,7 @@ class Gui:
     def visual_update_selection(self):
         """Updates the _is_selected and _is_sub_selected properties of the visuals, then re-applies paint"""
 
-        DAVE_GUI_LOGGER.log('Visual update selection')
+        DAVE_GUI_LOGGER.log("Visual update selection")
 
         visually_selected_nodes = self.selected_nodes.copy()
 
@@ -3158,12 +3156,11 @@ class Gui:
     # ================= guiWidget codes
 
     def guiEmitEvent(self, event, sender=None):
-
         # Log the event except for animations
         # if self._animation_available and event in guiEventType.MODEL_STATE_CHANGED:
         #     pass
         # else:
-        DAVE_GUI_LOGGER.log(f'Gui emit event {event} from {sender}')
+        DAVE_GUI_LOGGER.log(f"Gui emit event {event} from {sender}")
 
         # Bring the properties editor to front if needed
         if event in (guiEventType.SELECTION_CHANGED, guiEventType.NEW_NODE_ADDED):
@@ -3242,7 +3239,7 @@ class Gui:
     def guiSelectNodes(self, nodes):
         """Replace or extend the current selection with the given nodes (depending on keyboard-modifiers). Nodes may be passed as strings or nodes, but must be an tuple or list."""
 
-        DAVE_GUI_LOGGER.log(f'Gui select nodes {nodes}')
+        DAVE_GUI_LOGGER.log(f"Gui select nodes {nodes}")
 
         assert isinstance(
             nodes, (tuple, list)
@@ -3263,7 +3260,7 @@ class Gui:
     def guiSelectNode(self, node_name, extend=False, new=False):
         # Select a node with name, pass None to deselect all
 
-        DAVE_GUI_LOGGER.log(f'Gui select node {node_name} extend {extend} new {new}')
+        DAVE_GUI_LOGGER.log(f"Gui select node {node_name} extend {extend} new {new}")
 
         old_selection = self.selected_nodes.copy()
 
@@ -3292,7 +3289,7 @@ class Gui:
         """Returns a reference to a dock instance,
         creates the instance if needed"""
 
-        DAVE_GUI_LOGGER.log(f'Get dock {name}')
+        DAVE_GUI_LOGGER.log(f"Get dock {name}")
 
         if name not in DAVE_GUI_DOCKS:
             print(DAVE_GUI_DOCKS.keys())
@@ -3383,7 +3380,7 @@ class Gui:
 
     def refresh_3dview(self):
         """Refreshes the 3d view"""
-        DAVE_GUI_LOGGER.log('Refresh 3d view')
+        DAVE_GUI_LOGGER.log("Refresh 3d view")
         self.visual.refresh_embeded_view()
 
     # --- dragging actors ---
@@ -3394,7 +3391,7 @@ class Gui:
         That single node shall be movable (extends Frame, Point, Visual)
         """
 
-        DAVE_GUI_LOGGER.log('Start node drag (grab)')
+        DAVE_GUI_LOGGER.log("Start node drag (grab)")
 
         # only works on one node
         if len(self.selected_nodes) != 1:
@@ -3436,7 +3433,7 @@ class Gui:
     def node_dragged(self, info: DragInfo):  # callback from self.visual.Style
         """Apply the translation of the dragged node"""
 
-        DAVE_GUI_LOGGER.log(f'Node dragged {info}')
+        DAVE_GUI_LOGGER.log(f"Node dragged {info}")
 
         try:
             node = self._dragged_node

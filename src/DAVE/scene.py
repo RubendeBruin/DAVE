@@ -39,6 +39,7 @@ from DAVE.settings import (
 from .exceptions import ModelInvalidException
 from DAVE import settings
 from DAVE import gui_globals
+from .helpers.code_error_extract import get_code_error
 
 from .resource_provider import DaveResourceProvider
 from .helpers.string_functions import increment_string_end
@@ -3865,8 +3866,14 @@ class Scene:
         try:
             exec(code, {}, locals)
         except Exception as M:
-            for i, line in enumerate(code.split("\n")):
-                print(f"{i} {line}")
+
+            message = get_code_error(code)
+
+            try:
+                M.add_note(message)  # new in python 3.11
+            except:
+                 print(message) # fallback for older python versions
+
             raise M
 
     def load_scene(self, filename=None):

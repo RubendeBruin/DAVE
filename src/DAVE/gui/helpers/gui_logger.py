@@ -5,12 +5,23 @@ The logger stores the messaged in memory only. They can be saved to a file if re
 A global logger DAVE_GUI_LOGGER is created and used by the GUI.
 
 """
+import traceback
+
 
 class DaveGuiLogger():
     def __init__(self, scene = None):
         self._log = []
         self._logged_code = []
         self.scene = scene
+
+    def log_exception(self, exception):
+        """Append an exception to the log."""
+
+        self.log(str(exception))
+        notes = getattr(exception, '__notes__', [])
+        for note in notes:
+            self.log(note)
+        self.log(traceback.format_exc())
 
     def log(self, msg):
         """Append a message to the log."""
