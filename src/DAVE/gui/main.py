@@ -60,6 +60,7 @@
 
 
 """
+import os
 import subprocess
 import sys
 import traceback
@@ -906,8 +907,12 @@ class Gui:
 
         self.MainWindow.show()
 
-        if self._read_only_mode:
+        # start autosave, but only if we are not running in read-only mode
+        # or as part of a unit-test
+
+        if "PYTEST_CURRENT_TEST" in os.environ or self._read_only_mode:
             self._autosave = None
+
         else:
             open_autosave = self.autosave_startup()
 
@@ -1983,22 +1988,21 @@ class Gui:
                 DAVE_GUI_LOGGER.log("Code executed successfully")
                 executed = True
 
-
             except Exception as E:
-
                 original_exception = E
                 if isinstance(E, ModelInvalidException):
                     original_exception = E.args[0]
 
                 if isinstance(original_exception, SyntaxError):
-                    code_error = f"line {original_exception.lineno}: {original_exception.text}"
+                    code_error = (
+                        f"line {original_exception.lineno}: {original_exception.text}"
+                    )
 
                 else:
-
                     code_error = get_code_error(code)
 
                 notes = getattr(original_exception, "__notes__", [])
-                message = str(original_exception) + '\n'.join(notes)
+                message = str(original_exception) + "\n".join(notes)
                 if not message:
                     message = "Unknown error, traceback:\n" + traceback.format_exc()
 
@@ -2006,11 +2010,9 @@ class Gui:
 
                 DAVE_GUI_LOGGER.log_code("# Exception occurred: " + code_error)
 
-
                 message = message + "\n\n" + code_error
 
                 if isinstance(E, ModelInvalidException):  # It is serious
-
                     if store_undo:
                         QMessageBox.information(
                             self.ui.widget,
@@ -2038,9 +2040,8 @@ class Gui:
                             QMessageBox.Ok,
                         )
 
-                else: # not so serious
+                else:  # not so serious
                     self.show_exception(message)
-
 
             finally:
                 self.ui.pbExecute.setStyleSheet("")

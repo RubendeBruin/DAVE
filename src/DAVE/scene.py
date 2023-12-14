@@ -1814,7 +1814,9 @@ class Scene:
 
     # ====== goal seek ========
 
-    def goal_seek(self, evaluate, target, change, bracket=None, tol=1e-3, tol_out=0.1):
+    def goal_seek(
+        self, evaluate, target, change, bracket=None, tol=1e-3, tol_out=0.1, delta=0.001
+    ):
         """goal_seek
 
         Goal seek is the classic goal-seek. It changes a single property of a single node in order to get
@@ -1826,6 +1828,7 @@ class Scene:
             change (string, tuple) value to be adjused. If string this is executed as change = number. If tuple then this is
                                    is done for each string in the tuple
             range(optional)  : specify the possible search-interval
+            delta(optional)  : initial step-size on input
 
             tol : tolerance on changed variable
             tol_out : tolerance on evaluated variable
@@ -1878,13 +1881,13 @@ class Scene:
 
             self.solve_statics()
             result = eval(evaluate)
-            self._print("setting {} results in {}".format(x, result))
+            print("setting {} results in {}".format(x, result))
             return result - target
 
         from scipy.optimize import root_scalar
 
         x0 = initial
-        x1 = initial + 0.0001
+        x1 = initial + delta
 
         if bracket is not None:
             res = root_scalar(set_and_get, x0=x0, x1=x1, bracket=bracket, xtol=tol)
@@ -3866,13 +3869,12 @@ class Scene:
         try:
             exec(code, {}, locals)
         except Exception as M:
-
             message = get_code_error(code)
 
             try:
                 M.add_note(message)  # new in python 3.11
             except:
-                 print(message) # fallback for older python versions
+                print(message)  # fallback for older python versions
 
             raise M
 
