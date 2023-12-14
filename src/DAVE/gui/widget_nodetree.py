@@ -151,7 +151,6 @@ class HasNodeTreeMixin:
                 if hasattr(node, "_always_show_in_tree"):
                     show_managed_node = node._always_show_in_tree
 
-
             if node.manager and show_managed_node:  # are we showing managed nodes?
                 item.setForeground(0, QBrush(QColor(0, 150, 0)))
                 self.items[node.name] = item
@@ -379,9 +378,8 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
         item = QTreeWidgetItem()
         item.setToolTip(0, text)  # store the name in the tool-tip
 
-        # shorten the name if it contains /-es
+        item.setText(0, node.label)
 
-        item.setText(0, text.split("/")[-1])
         return item
 
     # ======= custom

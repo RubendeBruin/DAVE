@@ -102,6 +102,14 @@ class Node(DAVENodeBase, ABC):
     def name(self, val):
         self._on_name_changed()
 
+    @property
+    def label(self) -> str:
+        """Label of the node, used for display purposes [str]"""
+        if "/" in self.name:
+            return self.name.split("/")[-1]
+        else:
+            return self.name
+
     def __repr__(self):
         if self.is_valid:
             return f"{self.name} <{self.__class__.__name__}>"
