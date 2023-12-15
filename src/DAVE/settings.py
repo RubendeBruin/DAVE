@@ -100,28 +100,34 @@ class SolverSettings:
     mobility: float = 60  # solver mobility
     tolerance: float = 1e-4  # solver tolerance
 
-    max_newton_iterations : int = 20  # [20] solver max newton iterations, when running deterministic the local and global descent
-                                # steps are per newton step (with this maximum number of iterations)
+    max_newton_iterations: int = 20  # [20] solver max newton iterations, when running deterministic the local and global descent
+    # steps are per newton step (with this maximum number of iterations)
 
     do_linear_first: bool = True  # solver linear before full solve
-    tolerance_during_linear_phase : float = (
+    tolerance_during_linear_phase: float = (
         1  # solver tolerance during linear phase (always followed by full phase)
     )
 
-    do_local_descent : bool = True  # solver local descent
-    do_newton : bool = True         # solver newton
-    do_global_descent : bool = True         # solver global
+    do_local_descent: bool = True  # solver local descent
+    do_newton: bool = True  # solver newton
+    do_global_descent: bool = True  # solver global
 
-    do_deterministic : bool = False  # solver deterministic
-    deterministic_global_steps : int = 250 # [250] solver deterministic global steps per outer iteration
-    deterministic_local_steps : int = 50  # [50] solver deterministic local-descent steps per outer iteration
+    up_is_up_factor: float = -1.0  # [-1.0] solver up-is-up factor, <= 0 means disabled
+
+    do_deterministic: bool = False  # solver deterministic
+    deterministic_global_steps: int = (
+        250  # [250] solver deterministic global steps per outer iteration
+    )
+    deterministic_local_steps: int = (
+        50  # [50] solver deterministic local-descent steps per outer iteration
+    )
 
     def non_default_props(self):
         return [f.name for f in fields(self) if getattr(self, f.name) != f.default]
 
     def apply(self, BS):
         """Apply the current settings on the given BackgroundSolver"""
-        BS.mobility = self.mobility
+        BS.mobility = int(self.mobility)
 
         BS.do_solve_linear_first = self.do_linear_first
         BS.linear_phase_tolerance = self.tolerance_during_linear_phase
@@ -135,6 +141,8 @@ class SolverSettings:
         BS.deterministic_global_steps = self.deterministic_global_steps
         BS.deterministic_robust_steps = self.deterministic_local_steps
         BS.maxiter_for_newton = self.max_newton_iterations
+
+        BS.up_is_up_factor = self.up_is_up_factor
 
 
 # temporary files:

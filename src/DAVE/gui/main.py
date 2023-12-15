@@ -2136,6 +2136,12 @@ class Gui:
 
     def solve_statics_using_gui_on_scene(self, scene_to_solve, called_by_user=True):
         scene_to_solve.update()
+        if scene_to_solve.verify_equilibrium():
+            DAVE_GUI_LOGGER.log("Solve statics using gui on scene - not solving, scene already converged")
+            if called_by_user:
+                self.give_feedback(f"Scene already converged with max(|E|) = {scene_to_solve._vfc.Emaxabs} kN or kNm")
+            return
+
         DAVE_GUI_LOGGER.log("Solve statics using gui on scene")
 
         if called_by_user:
