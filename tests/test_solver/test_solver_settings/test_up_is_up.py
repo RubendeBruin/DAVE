@@ -103,6 +103,15 @@ def test_no_flip_with_up_is_up():
     glob_up = s['Body'].to_glob_direction((0,0,1))
     assert glob_up[2] > 0
 
+def test_no_flip_with_up_is_up_extreme():
+    s = model()
+    s.solver_settings.up_is_up_factor = 10
+
+    s.solve_statics()
+
+    glob_up = s['Body'].to_glob_direction((0,0,1))
+    assert glob_up[2] > 0
+
 
 def test_flip_without_up_is_up():
     s = model()

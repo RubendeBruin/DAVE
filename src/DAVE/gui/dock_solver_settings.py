@@ -50,6 +50,35 @@ class WidgetSolverSettings(guiDockWidget):
         types = [k.type for k in fields(SolverSettings)]
         info = names
 
+        assert names  == ['timeout_s',
+                 'mobility',
+                 'tolerance',
+                 'max_newton_iterations',
+                 'do_linear_first',
+                 'tolerance_during_linear_phase',
+                 'do_local_descent',
+                 'do_newton',
+                 'do_global_descent',
+                 'up_is_up_factor',
+                 'do_deterministic',
+                 'deterministic_global_steps',
+                 'deterministic_local_steps'], "SolverSettings has changed, please update dock_solver_settings.py"
+
+        info = ['maximum time in seconds to run solver',
+                 '0..100, higher is faster, but less stable',
+                 'tolerance',
+                 'maximum number of newton iterations (local solver)',
+                 'solve translations DOFs before rotations',
+                 'tolerance during translations phase',
+                 'use local descent solver',
+                 'use local (newton) solver',
+                 'use global descent solver'
+                 '0...1, attempt to restrict flipping over, <0 for no restriction',
+                 'use fixed relative cycle counts for solvers (instead of first available)',
+                 'fixed cycle counts for global descent solver',
+                 'fixed cycle counts for local descent solver']
+
+
         self.editor_widget = PropertyEditorWidget(
             prop_names=names,
             prop_types=types,
