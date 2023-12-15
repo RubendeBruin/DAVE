@@ -410,6 +410,16 @@ class HasSubScene(HasContainer):
         self.load_subscene(value)
         self._path = value
 
+    @property
+    def imported_nodes(self) -> tuple:
+        """Returns a tuple of all nodes that were imported from the subscene, including recursively imported nodes from subscenes of subscenes"""
+        nodes = []
+        for node in self._nodes:
+            nodes.append(node)
+            if isinstance(node, HasSubScene):
+                nodes.extend(node.imported_nodes)
+        return tuple(nodes)
+
     def load_subscene(self, value):
         """Load the subscene into self._nodes"""
         from ..scene import Scene
@@ -417,9 +427,8 @@ class HasSubScene(HasContainer):
         # first see if we can load
         filename = self._scene.get_resource_path(value)
         t = Scene(
-            filename = filename,
+            filename=filename,
             resource_provider=self._scene.resource_provider,
-
         )
 
         # then remove all existing nodes
