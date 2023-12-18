@@ -52,7 +52,6 @@ class DaveResourceProvider:
         if cd is not None:
             self.cd = Path(cd)
 
-
         self.resources_paths: list[Path] = [Path(a) for a in RESOURCE_PATH + list(args)]
 
         self._no_gui = False  # if True, do not show any GUI elements even if a QApplication is running
@@ -64,7 +63,7 @@ class DaveResourceProvider:
         self.mapping = dict()
         self.mapping_root = None
 
-    def install_mapping(self, root : Path, mapping : dict):
+    def install_mapping(self, root: Path, mapping: dict):
         self.mapping = mapping
         self.mapping_root = Path(root)
 
@@ -74,6 +73,7 @@ class DaveResourceProvider:
 
     def addPath(self, path: Path):
         """Add a path to the resource list"""
+        assert isinstance(path, Path), "path must be a Path object"
         self.resources_paths.append(path)
 
     def log(self, filename: str, path: Path):
@@ -88,17 +88,20 @@ class DaveResourceProvider:
         """Get the log"""
         return self._log.copy()
 
-    def get_resource_path(self, filename: str, no_gui = False) -> Path:
+    def get_resource_path(self, filename: str, no_gui=False) -> Path:
         """Get a resource path
 
         filename can be a full path, or a path relative to one of the resource folders
         """
         file = None
+        filename = filename.strip()
 
         if filename in self.mapping:
             file = self.mapping_root / self.mapping[filename]
             if not file.exists():
-                raise FileNotFoundError(f"Could not find MAPPED resource for: {filename}")
+                raise FileNotFoundError(
+                    f"Could not find MAPPED resource for: {filename}"
+                )
             return file
 
         try:
@@ -118,14 +121,19 @@ class DaveResourceProvider:
                     if not filename.startswith("res:"):
                         try:
                             file = self._get_resource_path(filename)
-                            warnings.warn("Missing 'res:' in resource path, assuming you wanted to use 'res:'")
+                            warnings.warn(
+                                "Missing 'res:' in resource path, assuming you wanted to use 'res:'"
+                            )
                         except FileNotFoundError:
-                            raise FileNotFoundError(f"Could not find resource for: {filename}")
+                            raise FileNotFoundError(
+                                f"Could not find resource for: {filename}"
+                            )
                     else:
-                        raise FileNotFoundError(f"Could not find resource for: {filename}")
+                        raise FileNotFoundError(
+                            f"Could not find resource for: {filename}"
+                        )
 
         except FileNotFoundError as MSG:
-
             if no_gui or self._no_gui:
                 raise MSG
 
@@ -241,7 +249,7 @@ class DaveResourceProvider:
     def get_resource_list(
         self, extension, include_subdirs=False, include_current_dir=True
     ):
-        """Returns a list of all resources (strings) with given extension in any of the resource-paths
+        """Returns a list of all UNIQUE resources (strings) with given extension in any of the resource-paths
 
         extension: (str) extension to look for, for example 'dave' or '.dave'
         include_subdirs : do a recursive search
@@ -266,7 +274,6 @@ class DaveResourceProvider:
 
         if include_current_dir:
             if self.cd is not None:
-
                 files = get_all_files_with_extension(
                     root_dir=self.cd,
                     extension=extension,
@@ -278,6 +285,8 @@ class DaveResourceProvider:
                     if file not in r:
                         r.append(file)
             else:
-                warnings.warn("No current directory set - not returning any 'cd:' resources")
+                warnings.warn(
+                    "No current directory set - not returning any 'cd:' resources"
+                )
 
         return r
