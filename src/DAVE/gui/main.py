@@ -513,6 +513,7 @@ class Gui:
         self.ui.actionSelf_contained_DAVE_package.triggered.connect(
             self.menu_export_DAVE_package
         )
+        self.ui.action3D_points_to_csv.triggered.connect(self.to_csv)
 
         self.ui.actionSend_bug_report.triggered.connect(self.bug_report)
 
@@ -2137,9 +2138,13 @@ class Gui:
     def solve_statics_using_gui_on_scene(self, scene_to_solve, called_by_user=True):
         scene_to_solve.update()
         if scene_to_solve.verify_equilibrium():
-            DAVE_GUI_LOGGER.log("Solve statics using gui on scene - not solving, scene already converged")
+            DAVE_GUI_LOGGER.log(
+                "Solve statics using gui on scene - not solving, scene already converged"
+            )
             if called_by_user:
-                self.give_feedback(f"Scene already converged with max(|E|) = {scene_to_solve._vfc.Emaxabs} kN or kNm")
+                self.give_feedback(
+                    f"Scene already converged with max(|E|) = {scene_to_solve._vfc.Emaxabs} kN or kNm"
+                )
             return
 
         DAVE_GUI_LOGGER.log("Solve statics using gui on scene")
@@ -2353,6 +2358,33 @@ class Gui:
 
         self.animation_start(t, dofs, is_loop=False, show_animation_bar=False)
 
+    def get_folder_for_dialogs(self) -> Path:
+        """Returns a logical dir to save to, used as starting point for the dialogs"""
+        if self.scene.current_directory is not None:
+            return self.scene.current_directory
+
+        if self.modelfilename is not None:
+            return Path(self.modelfilename).parent
+
+        try:
+            if self.scene.resource_provider.resources_paths[-1]:
+                return Path(self.scene.resource_provider.resources_paths[-1])
+        except:
+            pass
+
+        return Path.cwd()
+
+    def to_csv(self):
+        """Exports the current model to csv"""
+        DAVE_GUI_LOGGER.log("To csv")
+        filename, _ = QFileDialog.getSaveFileName(
+            filter="*.csv",
+            caption="Export points to csv",
+            dir=str(self.get_folder_for_dialogs()),
+        )
+        if filename:
+            self.scene.export_points_to_csv(filename)
+
     def to_blender(self):
         """Exports the current model to blender"""
         DAVE_GUI_LOGGER.log("To blender")
@@ -2475,7 +2507,7 @@ class Gui:
             gui_globals.do_ask_user_for_unavailable_nodenames = store
 
     def _get_filename_using_dialog(self):
-        folder = self.scene.current_directory
+        folder = self.get_folder_for_dialogs()
         filename, _ = QFileDialog.getOpenFileName(
             filter="*.dave", caption="DAVE models", dir=str(folder)
         )
@@ -2485,7 +2517,7 @@ class Gui:
     def open_self_contained_DAVE_package(self):
         """Opens a self-contained DAVE package"""
         DAVE_GUI_LOGGER.log("Open self contained DAVE package")
-        folder = self.scene.current_directory
+        folder = self.get_folder_for_dialogs()
         filename, _ = QFileDialog.getOpenFileName(
             filter="*.zip", caption="DAVE model package", dir=str(folder)
         )
@@ -2565,12 +2597,8 @@ class Gui:
     def menu_save_model_as(self):
         """Saves the model as"""
         DAVE_GUI_LOGGER.log("Menu save model as")
-        if self.modelfilename is not None:
-            dir = str(Path(self.modelfilename).parent)
-        else:
-            dir = str(
-                self.scene.resource_provider.resources_paths[-2]
-            )  # most typical work-path
+
+        dir = self.get_folder_for_dialogs()
 
         filename, _ = QFileDialog.getSaveFileName(
             filter="*.dave",
@@ -2617,10 +2645,11 @@ class Gui:
     def menu_export_orcaflex_yml(self):
         """Exports the model to an orcaflex .yml file"""
         DAVE_GUI_LOGGER.log("Menu export orcaflex yml")
+
         filename, _ = QFileDialog.getSaveFileName(
             filter="*.yml",
             caption="Orcaflex .yml file",
-            dir=str(self.scene.resource_provider.resources_paths[0]),
+            dir=str(self.get_folder_for_dialogs()),
         )
         if filename:
             code = 'from DAVE.io.orcaflex import export_ofx_yml\nexport_ofx_yml(s,r"{}")'.format(
@@ -2634,7 +2663,7 @@ class Gui:
         filename, _ = QFileDialog.getSaveFileName(
             filter="*.py",
             caption="Python files",
-            dir=str(self.scene.resource_provider.resources_paths[0]),
+            dir=str(self.get_folder_for_dialogs()),
         )
         if filename:
             python_file = filename
@@ -2677,7 +2706,7 @@ class Gui:
         filename, _ = QFileDialog.getSaveFileName(
             filter="*.dave",
             caption="Scene files",
-            dir=str(self.scene.resource_provider.resources_paths[0]),
+            dir=str(self.get_folder_for_dialogs()),
         )
         if filename:
             prev_line = ""

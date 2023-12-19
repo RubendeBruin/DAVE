@@ -554,6 +554,9 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         renderer = self.GetCurrentRenderer()
 
+        if renderer is None:
+            return
+
         assemblyPath = renderer.PickProp(
             self.start_x, self.start_y, self.end_x, self.end_y
         )
@@ -627,7 +630,7 @@ class BlenderStyle(vtkInteractorStyleUser):
 
         self.draginfo = None
 
-    def StartDragOnProps(self, props, info_text = None):
+    def StartDragOnProps(self, props, info_text=None):
         """Starts drag on the provided props (actors) by filling self.draginfo"""
         if self.draginfo is not None:
             self.FinishDrag()
@@ -1259,7 +1262,9 @@ class BlenderStyle(vtkInteractorStyleUser):
         self.callbackDeleteKey = None
         self.callbackFocusKey = None
         self.callbackAnyKey = None
-        self.callbackMeasure = None  # callback with argument float (meters) and angle(degrees)
+        self.callbackMeasure = (
+            None  # callback with argument float (meters) and angle(degrees)
+        )
 
         self.callbackCameraDirectionChanged = None
 
@@ -1429,7 +1434,9 @@ if __name__ == "__main__":
     # any key callback (fires on modifier keys as well)
     # style.callbackAnyKey = lambda x : print(f'Key {x} pressed - return True to prevent further processing')
 
-    style.callbackMeasure = lambda x,y: print(f"Measure distance = {x} m and {y} degrees")
+    style.callbackMeasure = lambda x, y: print(
+        f"Measure distance = {x} m and {y} degrees"
+    )
 
     iren.SetInteractorStyle(style)
 

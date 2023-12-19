@@ -1812,6 +1812,14 @@ class Scene:
             node.name = random_string
             nnames.append(random_string)
 
+    def export_points_to_csv(self, filename):
+        """Writes a list of points and their 3d locations to a csv file"""
+        with open(filename, "w") as f:
+            f.write("name,x,y,z\n")
+            for node in self.nodes_of_type(Point):
+                f.write(f"{node.name},{node.gx},{node.gy},{node.gz}\n")
+        print(f"Exported points to {filename}")
+
     # ====== goal seek ========
 
     def goal_seek(

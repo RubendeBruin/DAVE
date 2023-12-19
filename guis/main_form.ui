@@ -465,6 +465,7 @@
      <addaction name="actionOrcaflex"/>
      <addaction name="actionOrcaflex_package"/>
      <addaction name="actionSelf_contained_DAVE_package"/>
+     <addaction name="action3D_points_to_csv"/>
     </widget>
     <addaction name="actionNew"/>
     <addaction name="separator"/>
@@ -1250,6 +1251,11 @@ li.checked::marker { content: &quot;\2612&quot;; }
    </property>
    <property name="text">
     <string>Solver settings</string>
+   </property>
+  </action>
+  <action name="action3D_points_to_csv">
+   <property name="text">
+    <string>3D points to .csv</string>
    </property>
   </action>
  </widget>
