@@ -2598,7 +2598,7 @@ class Gui:
         """Saves the model as"""
         DAVE_GUI_LOGGER.log("Menu save model as")
 
-        dir = self.get_folder_for_dialogs()
+        dir = str(self.get_folder_for_dialogs())
 
         filename, _ = QFileDialog.getSaveFileName(
             filter="*.dave",
