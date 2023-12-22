@@ -175,8 +175,10 @@ def code_if_changed_d(node, value, ref, dec=3):
         return ""
 
 
-def code_if_changed_path(node, value, ref):
+def code_if_changed_path(node, value, ref, accept_empty=False) -> str:
     """Returns code to change value of property "ref" to "value" - applicable for paths (r'')
+
+    Does not accept empty paths
 
     Args:
         node: node
@@ -187,6 +189,9 @@ def code_if_changed_path(node, value, ref):
         str
 
     """
+    if not value and not accept_empty:
+        return ""
+
     current = getattr(node, ref)
 
     if value != current:
@@ -2806,7 +2811,9 @@ class WidgetNodeProps(guiDockWidget):
 
         self.positioned = False
         self.node = "This will be a node"
-        self.node_type = "This will be the type of the node at the time that is was assigned"
+        self.node_type = (
+            "This will be the type of the node at the time that is was assigned"
+        )
 
     def node_picker_register(self, node_picker):
         self.node_picker = node_picker
@@ -2862,7 +2869,7 @@ class WidgetNodeProps(guiDockWidget):
             guiEventType.SELECTED_NODE_MODIFIED,
             guiEventType.MODEL_STRUCTURE_CHANGED,
             guiEventType.MODEL_STATE_CHANGED,
-            guiEventType.MODEL_STEP_ACTIVATED
+            guiEventType.MODEL_STEP_ACTIVATED,
         ]:  # reloaded component emit model structure changed instead of selected node modified
             for w in self._node_editors:
                 w.post_update_event()
@@ -2908,7 +2915,9 @@ class WidgetNodeProps(guiDockWidget):
 
     def select_node(self, node):
         if self.node == node:
-            if type(node) == self.node_type: # node can have changed type if it was dissolved
+            if (
+                type(node) == self.node_type
+            ):  # node can have changed type if it was dissolved
                 return
 
         self.node = node
@@ -3134,7 +3143,6 @@ class WidgetNodeProps(guiDockWidget):
             widget.setVisible(True)
 
         # Check for warnings
-
 
         self.check_for_warnings()
 
