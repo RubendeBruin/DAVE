@@ -30,6 +30,36 @@ class HasNodeTreeMixin:
         print("Shall return a QTreeWidgetItem for the given node")
         raise NotImplementedError
 
+    def _update_needed(self):
+        """Determines if an update is needed"""
+        # lets first see if anything has changed
+        # to quickly check that, we compare the current parents and managers with the ones from the last update
+        # Node --> Parent node, manager node
+
+        if self.show_managed_nodes != self.checkbox.isChecked():
+            return True
+
+        if self._current_tree is None:
+            return True
+
+        if len(self._current_tree) != len(self.guiScene._nodes):
+            return True
+
+        for node in self.guiScene._nodes:
+            if node.name not in self._current_tree.keys():
+                return True
+
+        for node in self.guiScene._nodes:
+            if self._current_tree[node.name] != (
+                getattr(node, "parent", None),
+                node.manager,
+                type(node),
+            ):
+                print("structure changed")
+                return True
+
+        return False
+
     def update_node_data_and_tree(self):
         """
         Updates the tree and assembles the node-data
@@ -39,35 +69,18 @@ class HasNodeTreeMixin:
 
         """
 
-        # lets first see if anything has changed
-        # to quickly check that, we compare the current parents and managers with the ones from the last update
-        # Node --> Parent node, manager node
+        structure_changed = self._update_needed()
 
-        if self.show_managed_nodes == self.checkbox.isChecked():
-            if self._current_tree is not None:
-                # check additional nodes
-                if len(self._current_tree) == len(self.guiScene._nodes):
-                    for node in self.guiScene._nodes:
-                        if node.name not in self._current_tree.keys():
-                            print("name changed")
-                            break
-                    else:
-                        # no new nodes, check if the
-                        #   parents and
-                        #   managers and
-                        #   type
-                        #   are the same
-                        for node in self.guiScene._nodes:
-                            if self._current_tree[node.name] != (
-                                getattr(node, "parent", None),
-                                node.manager,
-                                type(node),
-                            ):
-                                print("structure changed")
-                                break
-                        else:
-                            # nothing changed, so we can skip the update
-                            return
+        if not structure_changed:
+            # we may still need to update the labels
+            for node in self.guiScene._nodes:
+                if (
+                    node.name in self.items
+                ):  # check if visible; twice as fast as try-except
+                    item = self.items[node.name]
+                    if item.text(0) != node.label:
+                        item.setText(0, node.label)
+            return  # no further updates needed
 
         # store new tree
 

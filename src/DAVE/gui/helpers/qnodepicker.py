@@ -1,5 +1,6 @@
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QComboBox, QHBoxLayout, QToolButton
+from PySide6.QtWidgets import QWidget, QComboBox, QHBoxLayout, QToolButton, QGridLayout, QLabel
 
 from DAVE.gui.helpers.my_qt_helpers import update_combobox_items_with_completer
 
@@ -27,7 +28,7 @@ class QNodePicker(QWidget):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
-        self.layout = QHBoxLayout()
+        self.layout = QGridLayout()
         self.dropdown = QComboBox()
         self.dropdown.setEditable(True)
         self.button = QToolButton()
@@ -35,8 +36,15 @@ class QNodePicker(QWidget):
         self.button.setAutoRaise(True)
         self.button.setCheckable(True)
 
-        self.layout.addWidget(self.dropdown)
-        self.layout.addWidget(self.button)
+        self.layout.addWidget(self.dropdown,0,0)
+        self.layout.addWidget(self.button,0,1)
+
+        self.label = QLabel("Select node in tree or view to continue")
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setStyleSheet("QLabel { background : orange; }")
+        self.layout.addWidget(self.label,1,0,1,2)
+        self.label.setVisible(False)
+
         self.setLayout(self.layout)
 
         self.dropdown.currentTextChanged.connect(self.valueChanged)
@@ -44,6 +52,8 @@ class QNodePicker(QWidget):
 
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0,0,0,0)
+
+        self.picking = False
 
     def initialize(self, scene, nodetypes, callback, register_func, NoneAllowed, node):
         """Convenience function for setting all required properties"""
@@ -102,8 +112,14 @@ class QNodePicker(QWidget):
                     self.callback()
 
     def pick_clicked(self):
-        self.register_func(self)
-        self.button.setChecked(True)
+
+        if self.picking:
+            self.unregister()
+        else:
+            self.picking = True
+            self.register_func(self)
+            self.button.setChecked(True)
+            self.label.setVisible(True)
 
     def nodesSelected(self, nodes):
         for node in nodes:
@@ -117,6 +133,8 @@ class QNodePicker(QWidget):
 
     def unregister(self):
         self.button.setChecked(False)
+        self.picking = False
+        self.label.setVisible(False)
 
 
 
