@@ -103,7 +103,7 @@ class SolverSettings:
     max_newton_iterations: int = 20  # [20] solver max newton iterations, when running deterministic the local and global descent
     # steps are per newton step (with this maximum number of iterations)
 
-    do_linear_first: bool = True  # solver linear before full solve
+    do_linear_first: bool = False  # solver linear before full solve
     tolerance_during_linear_phase: float = (
         1  # solver tolerance during linear phase (always followed by full phase)
     )
