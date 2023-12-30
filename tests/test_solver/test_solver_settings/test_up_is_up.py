@@ -89,6 +89,7 @@ def model():
                 EA=1e+07)
 
     s.solver_settings.do_deterministic = True
+    s.solver_settings.do_linear_first = True
     s.solver_settings.tolerance_during_linear_phase = 1e-4
     s.solver_settings.mobility = 20
 
@@ -96,6 +97,7 @@ def model():
 
 def test_no_flip_with_up_is_up():
     s = model()
+
     s.solver_settings.up_is_up_factor = 1.0
 
     s.solve_statics()

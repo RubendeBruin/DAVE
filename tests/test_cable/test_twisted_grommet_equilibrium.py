@@ -64,6 +64,12 @@ def test_nomass():
 
     s.solve_statics()
     a = 0.5 * math.sqrt(2)
+
+    # DG(s)
+
+    # Scene is not solved when initial condition is an equilibrium
+    # even when that equilibrium is unstable and not the one we want.
+
     assert_allclose(blk.uy, (-a, -a, 0.0), atol=1e-2)
 
 def test_with_mass():
@@ -121,6 +127,7 @@ def test_with_mass():
     assert_allclose(blk.uy, (0,1,0))
 
     blk.fixed = False
+
 
     s.solve_statics()
 

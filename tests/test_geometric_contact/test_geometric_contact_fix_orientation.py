@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from numpy.testing import assert_allclose
 
 from DAVE import *
@@ -37,6 +39,9 @@ def model():
 
 def model_shackles():
     s = Scene()
+
+    p = Path(__file__).parent.parent.parent.parent.parent / 'modules' / 'DAVE_rigging' / 'src' / 'DAVE_rigging' / 'resources'
+    s.resource_provider.addPath(p)
 
     # Exporting Shackle
     # Create Shackle
@@ -100,7 +105,12 @@ def test_unsolvable_model_raises_correct_error():
 
 def test_shackles():
     s = model_shackles()
+
+    s.solver_settings.do_linear_first = True
+    s.solver_settings.up_is_up_factor = 1.0
+
     s.solve_statics()
+
     assert_allclose(s['Shackle2'].gz,-0.718)
 
 def test_shackles_managed():
@@ -110,6 +120,9 @@ def test_shackles_managed():
 
     point = s.new_point("dummy")
     gc.manager = point
+
+    s.solver_settings.do_linear_first = True
+    s.solver_settings.up_is_up_factor = 1.0
 
     s.solve_statics()
     assert_allclose(s['Shackle2'].gz,-0.718)

@@ -199,13 +199,16 @@ class Scene:
 
         # clear reports
         self._validate_reports()
-        # for report in self.reports:
-        #     report.clear()
+
         self.reports.clear()
 
         self.t = None  # reset timelines (if any)
 
         self._vfc = DC.Scene()
+
+        # reset solver settings to default values
+        self.solver_settings = SolverSettings()
+
 
     # =========== settings =============
 
@@ -1646,19 +1649,8 @@ class Scene:
     ):
         """Solves statics with a time-out and feedback/terminate functions.
 
-        Specifying a time-out means that feedback / termination is evaluated every timeout_s seconds. This does not mean
-        that the function terminates after timeout_s. In fact the function will keep trying indefinitely (no maximum
-        number of iterations)
-
-        1. Reduce degrees of freedom: Freezes all vessels at their current heel and trim
-        2. Solve statics
-
-        3. Restore original degrees of freedom
-        4. Solve statics
-
-        5. Check geometric contacts
-            if ok: Done
-            if not ok: Correct and go back to 4
+        Solver settings are taken from self.solver_settings
+        If user terminates then settings.SOLVER_TERMINATED_SCENE is set to this scene
 
         Options for feedback to user and termination control during solving:
 
@@ -1666,10 +1658,9 @@ class Scene:
         do_terminate_func : func() -> bool
         """
 
-        self.update()
+        self.update()  # <-- needed to get the correct initial state including number of DOFs
 
         if self._vfc.n_dofs() == 0:  # check for the trivial case
-            self.update()
             return True
 
         # Two quick helper functions for running in controlled mode
@@ -1683,65 +1674,69 @@ class Scene:
             else:
                 return False
 
-        # construct a background solver
-        # start it
-        # wait till it completes or it is cancelled
+
 
         start_time = datetime.datetime.now()
 
         while True:  # only stop when we are completely happy or when the user cancels
-            BackgroundSolver = DC.BackgroundSolver(self._vfc)
 
-            self.solver_settings.apply(BackgroundSolver)
-            print(self.solver_settings)
+            if not self.verify_equilibrium():  # does update
 
-            started = BackgroundSolver.Start()
+                # Scene is not in equilibrium
+                # construct a background solver
+                # start it
+                # wait till it completes or it is cancelled
 
-            if not started:
-                print(BackgroundSolver.log)
+                BackgroundSolver = DC.BackgroundSolver(self._vfc)
 
-            else:
-                while BackgroundSolver.Running:
-                    for i in range(100):
+                self.solver_settings.apply(BackgroundSolver)
+                print(self.solver_settings)
+
+                started = BackgroundSolver.Start()
+
+                sleep_time = 0.001  # start with a millisecond
+
+                if started:
+                    while BackgroundSolver.Running:
                         if should_terminate():
                             BackgroundSolver.Stop()
-
                             settings.SOLVER_TERMINATED_SCENE = self
-
                             return False
 
-                        sleep(0.01)
-                        if BackgroundSolver.Converged:
-                            break
+                        # check if time has passed
+                        time_diff = datetime.datetime.now() - start_time
+                        secs = time_diff.total_seconds()
+                        if (
+                            self.solver_settings.timeout_s >= 0
+                            and secs > self.solver_settings.timeout_s
+                        ):
+                            BackgroundSolver.Stop()
 
-                    if BackgroundSolver.Converged:
-                        break
+                            raise ValueError(
+                                f"Solver maximum time of {self.solver_settings.timeout_s} exceeded - set terminate_after_s to change the allowed time for the solver."
+                            )
 
-                    time_diff = datetime.datetime.now() - start_time
-                    secs = time_diff.total_seconds()
-                    if (
-                        self.solver_settings.timeout_s >= 0
-                        and secs > self.solver_settings.timeout_s
-                    ):
-                        BackgroundSolver.Stop()
+                        sleep(sleep_time)  # sleep for a millisecond
+                        sleep_time *= 1.1  # increase sleep time
+                        sleep_time = min(sleep_time, 0.1)  # but not more than 100ms
 
-                        raise ValueError(
-                            f"Solver maximum time of {self.solver_settings.timeout_s} exceeded - set terminate_after_s to change the allowed time for the solver."
-                        )
+                    # Background solver is done and
+                    info = f"Converged within tolerance of {BackgroundSolver.tolerance} with E : {BackgroundSolver.Enorm:.6e}(norm) / {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
 
-                # Background solver is done and
-                info = f"Converged within tolerance of {BackgroundSolver.tolerance} with E : {BackgroundSolver.Enorm:.6e}(norm) / {BackgroundSolver.Emaxabs:.6e}(max-abs) in {BackgroundSolver.Emaxabs_where}"
-                give_feedback(info)
-                logging.info(info)
+                    give_feedback(info)
+                    logging.info(info)
 
-                if BackgroundSolver.Converged:
-                    BackgroundSolver.CopyStateTo(self._vfc)
+                BackgroundSolver.CopyStateTo(self._vfc)
 
-                    self.update()
+                self.update()
 
-                    assert (
-                        self.verify_equilibrium()
-                    ), "Solver self-check failed: Equilibrium not reached after solving"
+                assert (
+                    self.verify_equilibrium()
+                ), "Solver self-check failed: Equilibrium not reached after solving"
+
+
+            else:
+                pass # already in equilibrium
 
             # check is geometric contacts are satisfied
             work_done, messages = self._check_and_fix_geometric_contact_orientations()

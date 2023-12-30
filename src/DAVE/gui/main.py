@@ -2303,12 +2303,40 @@ class Gui:
                     temp = "\n".join(messages)
                     feedback_text_prefix = f"{temp}\n  at T = {secs:.1f}s\n"
 
+                dialog.lbInfo.setText(feedback_text_prefix)
+
                 dialog.setWindowOpacity(min(secs - 0.1, 1))  # fade in the window slowly
 
                 if secs > 0.1:  # and open only after 0.1 seconds
                     if not dialog_open:
                         dialog.show()
                         dialog_open = True
+
+                self.visual.position_visuals()
+                self.visual.refresh_embeded_view()
+                self.app.processEvents()
+
+
+                if not dialog_open:
+                    # Connect signals/slots and show dialog
+
+                    dialog.cbLinearFirst.setChecked(
+                        self.scene.solver_settings.do_linear_first
+                    )
+                    dialog.cbLinearFirst.toggled.connect(change_do_linear_first)
+
+                    dialog.mobilitySlider.valueChanged.connect(change_mobility)
+                    dialog.mobilitySlider.setSliderPosition(
+                        self.scene.solver_settings.mobility
+                    )
+
+                    dialog.pbReset.clicked.connect(reset)
+                    dialog.pbAccept.clicked.connect(accept)
+
+                    dialog.pbTerminate.clicked.connect(terminate)
+
+                    dialog.show()
+                    dialog_open = True
 
             else:
                 result = True  # <-- took the proper exit
