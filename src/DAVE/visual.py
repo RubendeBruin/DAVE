@@ -22,7 +22,7 @@ import vtkmodules.qt
 
 vtkmodules.qt.PyQtImpl = "PySide6"
 
-import vedo as vp  # ref: https://github.com/marcomusy/vedo
+import vedo as vp
 import vtk
 
 import vedo.settings
@@ -1450,6 +1450,29 @@ class Viewport:
 
         if not QEventLoop().isRunning():
             app.exec_()
+
+    def save_to_gtlf(self, filename):
+        """Exports the current scene to a gltf file"""
+        from vtkmodules.vtkIOExport import vtkGLTFExporter
+
+        self.quick_updates_only = True
+        self.update_visibility()
+
+
+        exporter = vtkGLTFExporter()
+        exporter.SetFileName(filename)  # Set the output file name
+        exporter.SetRenderWindow(self.screen.window)  # Set the render window to export
+        exporter.SetInlineData(True)  # Export data instead of external files
+        exporter.Write()  # Write the render window to the file
+
+    def save_to_obj(self, filename):
+        """Exports the current scene to a obj file"""
+        from vtkmodules.vtkIOExport import vtkOBJExporter
+
+        exporter = vtkOBJExporter()
+        exporter.SetFilePrefix(filename)  # Set the output prefix file name
+        exporter.SetRenderWindow(self.screen.window)  # Set the render window to export
+        exporter.Write()
 
     def initialize_node_drag(self, nodes, text_info=None):
         # Initialize dragging on selected node
