@@ -1,4 +1,12 @@
-from PySide6.QtWidgets import QApplication, QMenu, QWidgetAction, QLineEdit, QWidget,QHBoxLayout, QPushButton
+from PySide6.QtWidgets import (
+    QApplication,
+    QMenu,
+    QWidgetAction,
+    QLineEdit,
+    QWidget,
+    QHBoxLayout,
+    QPushButton,
+)
 from PySide6.QtCore import Qt, QPoint
 import PySide6
 import PySide6.QtGui
@@ -6,13 +14,8 @@ import PySide6.QtGui
 from DAVE.gui.helpers.my_qt_helpers import EnterKeyPressFilter
 
 
-
-
-
-class TextInput():
-
-    def __init__(self, suggestion='', input_valid_callback = None):
-
+class TextInput:
+    def __init__(self, suggestion="", input_valid_callback=None):
         self.input_valid_callback = input_valid_callback
 
         self.menu = QMenu()
@@ -58,28 +61,25 @@ class TextInput():
         if self.input_valid_callback is not None:
             result = self.input_valid_callback(self.le.text())
             if result:
-                self.le.setStyleSheet('')
+                self.le.setStyleSheet("")
             else:
-                self.le.setStyleSheet('background: pink')
-
-
+                self.le.setStyleSheet("background: pink")
 
         return None
 
-def get_text(suggestion = '', pos = QPoint(100,100), input_valid_callback = None):
+
+def get_text(suggestion="", pos=QPoint(100, 100), input_valid_callback=None):
     a = TextInput(suggestion=suggestion, input_valid_callback=input_valid_callback)
     return a.show(pos)
 
 
-
 if __name__ == "__main__":
-
-    app = QApplication()
+    app = QApplication.instance() or QApplication()
 
     def valid(text):
-        if text=='no':
+        if text == "no":
             return False
         else:
             return True
 
-    print(get_text(input_valid_callback=valid, suggestion = 'type name here'))
+    print(get_text(input_valid_callback=valid, suggestion="type name here"))

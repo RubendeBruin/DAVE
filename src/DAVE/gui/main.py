@@ -794,7 +794,7 @@ class Gui:
             self.docks_permanent.append(self.dock_timeline)
             self.dock_timeline.toggleViewAction().trigger()  # closed by default
 
-        except:
+        except Exception as M:
             self.dock_timeline = None
 
         # Toolbar (top)
@@ -2315,7 +2315,6 @@ class Gui:
                 self.visual.position_visuals()
                 self.visual.refresh_embeded_view()
                 self.app.processEvents()
-
 
                 if not dialog_open:
                     # Connect signals/slots and show dialog

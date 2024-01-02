@@ -74,7 +74,7 @@ class Node(DAVENodeBase, ABC):
         """Holds the RGB (int) colors for the node or None for default color"""
 
         self.limits = dict()
-        """Defines the limits of the nodes properties for calculating a UC"""
+        """Defines the limits of the nodes properties for calculating a UC, key is the property name, value is the limit."""
 
         self.watches: dict[str, Watch] = dict()
         """Defines the watches of the node, there are of type Watch"""
@@ -105,10 +105,13 @@ class Node(DAVENodeBase, ABC):
     @property
     def label(self) -> str:
         """Label of the node, used for display purposes [str]"""
-        if "/" in self.name:
-            return self.name.split("/")[-1]
+        if self._valid:
+            if "/" in self.name:
+                return self.name.split("/")[-1]
+            else:
+                return self.name
         else:
-            return self.name
+            return "THIS NODE HAS BEEN DELETED"
 
     def __repr__(self):
         if self.is_valid:
