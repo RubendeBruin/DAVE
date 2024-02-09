@@ -209,7 +209,6 @@ class Scene:
         # reset solver settings to default values
         self.solver_settings = SolverSettings()
 
-
     # =========== settings =============
 
     @property
@@ -281,6 +280,16 @@ class Scene:
     def nFootprintSlices(self, value):
         assert isinstance(value, int), "needs to be integer"
         self._vfc.nFootprintSlices = value
+
+    @property
+    def roundbar_entry_ease_in_distance_m(self):
+        """Distance over which the roundbar entry is eased in"""
+        return self._vfc.roundbar_entry_ease_in_distance_m
+
+    @roundbar_entry_ease_in_distance_m.setter
+    def roundbar_entry_ease_in_distance_m(self, value):
+        assert1f_positive_or_zero(value)
+        self._vfc.roundbar_entry_ease_in_distance_m = value
 
     @property
     def wind_direction(self):
@@ -1634,6 +1643,26 @@ class Scene:
 
     # ========= The most important functions ========
 
+    @property
+    def warnings(self) -> list[tuple[Node, str]]:
+        """Returns a list of nodes that have an invalid or questionable state in the current state"""
+
+        ers = []
+        for node in self._nodes:
+            for msg in node.warnings:
+                ers.append((node, msg))
+        return ers
+
+    @property
+    def node_errors(self) -> list[tuple[Node, str]]:
+        """Returns a list of nodes with an error in the current model"""
+        ers = []
+        for node in self._nodes:
+            for msg in node.node_errors:
+                ers.append((node, msg))
+
+        return ers
+
     def update(self):
         """Updates the interface between the nodes and the core. This includes the re-calculation of all forces,
         buoyancy positions, ballast-system cogs etc.
@@ -1674,14 +1703,10 @@ class Scene:
             else:
                 return False
 
-
-
         start_time = datetime.datetime.now()
 
         while True:  # only stop when we are completely happy or when the user cancels
-
             if not self.verify_equilibrium():  # does update
-
                 # Scene is not in equilibrium
                 # construct a background solver
                 # start it
@@ -1734,9 +1759,8 @@ class Scene:
                     self.verify_equilibrium()
                 ), "Solver self-check failed: Equilibrium not reached after solving"
 
-
             else:
-                pass # already in equilibrium
+                pass  # already in equilibrium
 
             # check is geometric contacts are satisfied
             work_done, messages = self._check_and_fix_geometric_contact_orientations()

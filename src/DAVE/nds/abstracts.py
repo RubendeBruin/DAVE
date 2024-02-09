@@ -103,6 +103,11 @@ class Node(DAVENodeBase, ABC):
         self._on_name_changed()
 
     @property
+    def warnings(self) -> list[str]:
+        """Returns a list of warnings for this node, defaults to empty list"""
+        return []
+
+    @property
     def label(self) -> str:
         """Label of the node, used for display purposes [str]"""
         if self._valid:
@@ -326,6 +331,13 @@ class Node(DAVENodeBase, ABC):
         """
         return self._valid
 
+    @property
+    def node_errors(self) -> list[str]:
+        """Returns a list of models structure errors that are relevant for this node
+        #NOGUI"""
+
+        return []
+
     def add_tag(self, value: str):
         """Adds the provided tag to the tags"""
         assert isinstance(
@@ -423,6 +435,11 @@ class NodeCoreConnected(Node):
         if self._vfNode is None:  # node has been deleted
             return None
         return self._vfNode.name
+
+    @property
+    def warnings(self) -> list[str]:
+        """Returns a list of warnings for this node, if any"""
+        return self._vfNode.warnings
 
     @name.setter
     @node_setter_manageable

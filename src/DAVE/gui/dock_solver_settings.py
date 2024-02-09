@@ -72,7 +72,7 @@ class WidgetSolverSettings(guiDockWidget):
                  'tolerance during translations phase',
                  'use local descent solver',
                  'use local (newton) solver',
-                 'use global descent solver'
+                 'use global descent solver',
                  '0...1, attempt to restrict flipping over, <0 for no restriction',
                  'use fixed relative cycle counts for solvers (instead of first available)',
                  'fixed cycle counts for global descent solver',

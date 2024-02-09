@@ -89,6 +89,7 @@ ENVIRONMENT_PROPERTIES = (
 )
 """A list of all environment setting properties as available in Scene"""
 
+
 # ============== SOLVER ===========
 
 # OPEN_GUI_ON_SOLVER_TIMEOUT = False  # debugging feature, set to True to open GUI on solver timeout
