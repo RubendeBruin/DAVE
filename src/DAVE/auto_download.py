@@ -105,6 +105,11 @@ except ImportError as err:
 
         # for local debugging
 
+        # open webpage in browser
+        welcome_url = "https://davecore.nl/download_completed.html"
+        import webbrowser
+        webbrowser.open(welcome_url)
+
         dlg.close()
 
     def reject():
