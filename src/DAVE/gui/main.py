@@ -3160,6 +3160,7 @@ class Gui:
                     if (
                         getattr(node, "_editor_widget_types_when_managed", None)
                         is not None
+                        or getattr(node, "_always_show_in_tree", None) is not None
                     ):  # for partially managed nodes
                         action.setBold(True)
 
