@@ -97,5 +97,17 @@
     <file>icons/painting.svg</file>
     <file>icons/component.svg</file>
     <file>icons/gears.svg</file>
+    <file>icons/warning.svg</file>
+    <file>icons/minus.svg</file>
+    <file>icons/plus.svg</file>
+    <file>icons/box.svg</file>
+    <file>icons/add_before.svg</file>
+    <file>icons/to_global.svg</file>
+    <file>icons/axis.svg</file>
+    <file>icons/copy.svg</file>
+    <file>icons/copy_branch.svg</file>
+    <file>icons/delete.svg</file>
+    <file>icons/explode.svg</file>
+    <file>icons/python_code.svg</file>
   </qresource>
 </RCC>

@@ -4255,6 +4255,28 @@ class Scene:
 
         return new_body
 
+    def insert_frame_before(self, frame: Frame):
+        """Inserts a new frame between this frame and its parent. Then re-parents
+        the current frame to the newly created frame"""
+
+        this_name = frame.name
+        if frame.parent is None:
+            name = "before_" + this_name
+        else:
+            name = "bewteen_" + frame.parent.name + "_and_" + this_name
+
+        new_frame = self.new_frame(name=self.available_name_like(name),
+                                   parent=frame.parent, position=frame.position,
+                                   rotation=frame.rotation,
+                                   fixed = True)
+        frame.parent = new_frame
+        frame.rotation = (0,0,0)
+        frame.position = (0,0,0)
+
+        return new_frame
+
+
+
     # =================== DYNAMICS ==================
 
     def dynamics_M(self, delta=1e-6):

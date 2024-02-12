@@ -519,24 +519,40 @@ class EditAxis(AbstractNodeEditorWithParent):
         self.ui.doubleSpinBox_5.valueChanged.connect(self.generate_code)
         self.ui.doubleSpinBox_6.valueChanged.connect(self.generate_code)
 
-        self.ui.pbToggleAllFixes.clicked.connect(self.toggle_fixes)
+        # self.ui.pbToggleAllFixes.clicked.connect(self.toggle_fixes)
+        self.ui.setFree.clicked.connect(self.set_free)
+        self.ui.setFixed.clicked.connect(self.set_fixed)
+        self.ui.setFixedPosition.clicked.connect(self.set_fixed_position)
+        self.ui.setFixedOrientation.clicked.connect(self.set_fixed_orientation)
 
         self._widget = widget
 
-    def toggle_fixes(self):
-        for cb in (
+    def toggle_fixes(self, states):
+        for cb, state in zip([
             self.ui.checkBox_1,
             self.ui.checkBox_2,
             self.ui.checkBox_3,
             self.ui.checkBox_4,
             self.ui.checkBox_5,
-            self.ui.checkBox_6,
+            self.ui.checkBox_6], states
         ):
             cb.blockSignals(True)
-            cb.setChecked(not cb.isChecked())
+            cb.setChecked(state)
             cb.blockSignals(False)
-        self.check_fixities()
+
         self.generate_code()
+
+    def set_free(self):
+        self.toggle_fixes([False, False, False, False, False, False])
+
+    def set_fixed(self):
+        self.toggle_fixes([True, True, True, True, True, True])
+
+    def set_fixed_position(self):
+        self.toggle_fixes([True, True, True, False, False, False])
+
+    def set_fixed_orientation(self):
+        self.toggle_fixes([False, False, False, True, True, True])
 
     def post_update_event(self):
         self.ui.widgetParent.fill()

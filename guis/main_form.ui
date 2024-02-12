@@ -825,7 +825,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </size>
    </property>
    <property name="styleSheet">
-    <string notr="true">background: rgb(255,201,14)</string>
+    <string notr="true">background-color: rgb(200, 255, 100);</string>
    </property>
    <property name="features">
     <set>QDockWidget::DockWidgetClosable</set>

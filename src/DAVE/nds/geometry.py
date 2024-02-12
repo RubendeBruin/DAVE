@@ -76,6 +76,19 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         super()._delete_vfc()
 
     @property
+    def warnings(self) -> list[str]:
+        """Returns a list of warnings that are present on this node"""
+        ws = list(self._vfNode.warnings)
+
+        # check for unsupported dofs
+        # if two of the rotational dofs are free and the third is fixed then we have strange rotations
+        if len([i for i in self.fixed[3:] if i == False]) == 2:
+            ws.append("Frame:100 2 out of 3 rotational dofs are free. This is not recommended")
+
+        return ws
+
+
+    @property
     def inertia(self) -> float:
         """The linear inertia or 'mass' of the axis [mT]
         - used only for dynamics"""

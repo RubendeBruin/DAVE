@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>427</width>
-    <height>637</height>
+    <width>331</width>
+    <height>497</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,119 @@
   <property name="locale">
    <locale language="English" country="UnitedStates"/>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="8" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_9">
+     <property name="text">
+      <string>These rotations and positions are defined relative to the parent. If parent is empty then the global axis system is used.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLabel" name="label_8">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Parent</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QNodePicker" name="widgetParent" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QWidget" name="widget_2" native="true">
+     <property name="styleSheet">
+      <string notr="true">background-color: palette(midlight);</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Presets:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="setFixed">
+        <property name="text">
+         <string>Fixed</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="setFree">
+        <property name="text">
+         <string>Free</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="setFixedOrientation">
+        <property name="text">
+         <string>Move only</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="setFixedPosition">
+        <property name="text">
+         <string>Rotate only</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="0">
     <widget class="QLabel" name="label_7">
      <property name="text">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; text-decoration: underline;&quot;&gt;Set position and rotation.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Modes that are &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;fixed&lt;/span&gt;&amp;quot; will not move when solving statics&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -27,7 +138,7 @@
      </property>
     </widget>
    </item>
-   <item>
+   <item row="1" column="0">
     <widget class="QFrame" name="frame">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -42,8 +153,15 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="2" colspan="2">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Z-rotation [deg]</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" colspan="2">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_1">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -68,8 +186,36 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QCheckBox" name="checkBox_3">
+      <item row="5" column="1">
+       <widget class="QCheckBox" name="checkBox_4">
+        <property name="text">
+         <string>Fixed</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>X - translation [m]</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QCheckBox" name="checkBox_6">
+        <property name="text">
+         <string>Fixed</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Y-rotation [deg]</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QCheckBox" name="checkBox_5">
         <property name="text">
          <string>Fixed</string>
         </property>
@@ -94,22 +240,15 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
-       <widget class="QLabel" name="label_6">
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Z-rotation [deg]</string>
+         <string>Y - translation [m]</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Z - translation [m]</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="2" colspan="2">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
+      <item row="1" column="2" colspan="2">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -124,16 +263,6 @@
         </property>
         <property name="maximum">
          <double>99999999999999.000000000000000</double>
-        </property>
-        <property name="singleStep">
-         <double>5.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="1">
-       <widget class="QPushButton" name="pbToggleAllFixes">
-        <property name="text">
-         <string>toggle all</string>
         </property>
        </widget>
       </item>
@@ -169,29 +298,22 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
-       <widget class="QCheckBox" name="checkBox_4">
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="checkBox_3">
         <property name="text">
          <string>Fixed</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
-       <widget class="QCheckBox" name="checkBox_5">
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="checkBox_2">
         <property name="text">
          <string>Fixed</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
-       <widget class="QCheckBox" name="checkBox_6">
-        <property name="text">
-         <string>Fixed</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2" colspan="2">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_1">
+      <item row="5" column="2" colspan="2">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -207,42 +329,8 @@
         <property name="maximum">
          <double>99999999999999.000000000000000</double>
         </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Y - translation [m]</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="2" colspan="2">
-       <widget class="QToolButton" name="toolButton">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Definition:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Rotation is defined as a rotation about a single axis.&lt;/p&gt;&lt;p&gt;- The axis of rotation is defined by the X,Y and Z components of the rotation.&lt;/p&gt;&lt;p&gt;- The angle or rotation is defined by the length of the rotation vector.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&lt;br/&gt;Examples:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;x=0, y=0, z=90 ---&amp;gt; 90 degees Rotation about Z-axis&lt;/p&gt;&lt;p&gt;x=10, y= 10, z= 0 --&amp;gt; Axis of rotation is (1,1,0) and rotation angle |(10,10,0)| = sqrt(200)&lt;/p&gt;&lt;p&gt;x=Free, y =0, z= 0 --&amp;gt; Axis system is free to rotate about the x-axis&lt;/p&gt;&lt;p&gt;x=Free, y = Free, z=0 --&amp;gt; Axis system is free to rotate about any axis with z=0. The effect of this is hard to visualize.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Tips:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;To define subsequent rotations about different axis it is often more convenient to stack axis-nodes on top of eachother. For example to model a rotation of 20 degrees about the z-axis (yaw) and rotation of 5 degrees about the y-axis (pitch) simply consider the following:&lt;/p&gt;&lt;p&gt;1. Create an axis system for the yaw. Set the rotation to (0,0,20)&lt;/p&gt;&lt;p&gt;2. Create a second axis system and place it under yaw. Set the rotation of this axis system to (0,5,0).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="layoutDirection">
-         <enum>Qt::RightToLeft</enum>
-        </property>
-        <property name="text">
-         <string>help on rotations </string>
-        </property>
-        <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonTextOnly</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QCheckBox" name="checkBox_1">
-        <property name="text">
-         <string>Fixed</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Y-rotation [deg]</string>
+        <property name="singleStep">
+         <double>5.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -268,21 +356,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>X - translation [m]</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="checkBox_2">
-        <property name="text">
-         <string>Fixed</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" colspan="4">
+      <item row="8" column="0" colspan="4">
        <widget class="QLabel" name="lblRotationsWarning">
         <property name="styleSheet">
          <string notr="true">background-color: rgb(255, 238, 220);</string>
@@ -300,7 +374,7 @@
          <number>3</number>
         </property>
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;WARNING&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This combination of rotations is not recommended. &lt;a href=&quot;https://usedave.nl/rotations_in_3d.html&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Click here for more information.&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;WARNING&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This combination of rotations is not recommended. &lt;a href=&quot;https://usedave.nl/scene/conventions_and_units.html#rotations&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Click here for more information.&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
@@ -310,60 +384,22 @@
         </property>
        </widget>
       </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="label_9">
-     <property name="text">
-      <string>These rotations and positions are defined relative to the parent. If parent is empty then the global axis system is used.</string>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QWidget" name="widget" native="true">
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QLabel" name="label_8">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Parent</string>
+         <string>Z - translation [m]</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QNodePicker" name="widgetParent" native="true">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="checkBox_1">
+        <property name="text">
+         <string>Fixed</string>
         </property>
        </widget>
       </item>
      </layout>
     </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>
@@ -376,19 +412,22 @@
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>checkBox_1</tabstop>
   <tabstop>doubleSpinBox_1</tabstop>
-  <tabstop>checkBox_2</tabstop>
   <tabstop>doubleSpinBox_2</tabstop>
-  <tabstop>checkBox_3</tabstop>
   <tabstop>doubleSpinBox_3</tabstop>
-  <tabstop>checkBox_4</tabstop>
   <tabstop>doubleSpinBox_4</tabstop>
-  <tabstop>checkBox_5</tabstop>
   <tabstop>doubleSpinBox_5</tabstop>
-  <tabstop>checkBox_6</tabstop>
   <tabstop>doubleSpinBox_6</tabstop>
-  <tabstop>pbToggleAllFixes</tabstop>
+  <tabstop>checkBox_1</tabstop>
+  <tabstop>checkBox_2</tabstop>
+  <tabstop>checkBox_3</tabstop>
+  <tabstop>checkBox_4</tabstop>
+  <tabstop>checkBox_5</tabstop>
+  <tabstop>checkBox_6</tabstop>
+  <tabstop>setFixed</tabstop>
+  <tabstop>setFree</tabstop>
+  <tabstop>setFixedOrientation</tabstop>
+  <tabstop>setFixedPosition</tabstop>
  </tabstops>
  <resources/>
  <connections/>

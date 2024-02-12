@@ -64,6 +64,7 @@ import os
 import subprocess
 import sys
 import traceback
+import webbrowser
 import zipfile
 import logging
 
@@ -76,7 +77,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QStatusBar,
     QToolBar,
-    QWidget,
+    QWidget, QDialogButtonBox,
 )
 
 from DAVE.gui.autosave import DaveAutoSave
@@ -817,7 +818,7 @@ class Gui:
         self.top_bar_group_label = QtWidgets.QLabel(self.MainWindow)
         self.top_bar_group_label.setText("DAVE")
         self.top_bar_group_label.setStyleSheet(
-            "font-size: 14px; font-weight: bold; color: palette(Midlight);"
+            "font-size: 14px; font-weight: bold; color: palette(midlight);"
         )
         self.toolbar_top.addWidget(self.top_bar_group_label)
 
@@ -840,10 +841,28 @@ class Gui:
         spacer_widget.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
         )
+        self.toolbar_top_right.addWidget(spacer_widget)
+
+
+        # middle part of the top toolbar
+        self.warnings_label = QAction(self.MainWindow)
+        self.warnings_label.setText("Warnings")
+        self.warnings_label.triggered.connect(self.show_warnings)
+        self.warnings_label.setIcon(QIcon(":/v2/icons/warning.svg"))
+        self.toolbar_top_right.addAction(self.warnings_label)
+
+
+        # spacer
+        spacer_widget = QtWidgets.QWidget(self.MainWindow)
+        spacer_widget.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
+        )
+        self.toolbar_top_right.addWidget(spacer_widget)
+
+
 
         # right part of right toolbar
 
-        self.toolbar_top_right.addWidget(spacer_widget)
         self.toolbar_top_right.addWidget(QtWidgets.QLabel("Solve:  "))
         self.solveAction = QAction("Solve", self.MainWindow)
         self.solveAction.setToolTip("Solve statics [Alt+S]")
@@ -859,17 +878,21 @@ class Gui:
         self.toolbar_left.setIconSize(QSize(32, 32))
         self.toolbar_left.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
 
+
         self.create_dockgroups()
 
         # create all docks
         # self.pre_create_docks()
 
         # Makup
+        self.toolbar_left.setContextMenuPolicy(Qt.CustomContextMenu)  # disable the default context menu
+        self.toolbar_top.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.toolbar_top_right.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.toolbar_top.setMovable(False)
         self.toolbar_left.setMovable(False)
 
-        backgroundcolor_str = "palette(mid)"
+        backgroundcolor_str = "palette(midlight)"
 
         self.toolbar_top.setStyleSheet(
             "QToolBar { background : " + backgroundcolor_str + "; border: none; }\n"
@@ -901,10 +924,11 @@ class Gui:
         self._requested_workspace = workspace
 
         if self._read_only_mode:
-            self.ui.menuFile.setTitle("Read only mode")
-            self.ui.menuFile.setEnabled(False)
-            self.ui.menuScene.setEnabled(False)
-            self.ui.menuEdit.setEnabled(False)
+            self.ui.infobar.setWindowTitle("This is a COPY of the model intended to view the results of an analysis. It may be re-organized, cleaned up or adapted otherwise.")
+        #     self.ui.menuFile.setTitle("Read only mode")
+        #     self.ui.menuFile.setEnabled(False)
+        #     self.ui.menuScene.setEnabled(False)
+        #     self.ui.menuEdit.setEnabled(False)
 
         self.MainWindow.show()
 
@@ -950,13 +974,66 @@ class Gui:
                 self._requested_workspace, this_is_a_new_window=True
             )
 
-        # window = self.MainWindow
-        # window.setWindowState(
-        #     window.windowState() & ~Qt.WindowState.WindowMinimized
-        #     | Qt.WindowState.WindowActive
-        # )
-        #
-        # self.MainWindow.activateWindow()
+
+
+    def update_warnings(self):
+        """Updates the warnings label"""
+        warnings = self.scene.warnings
+
+        if warnings:
+            self.warnings_label.setVisible(True)
+            # self.warnings_label.setEnabled(True)
+            self.warnings_label.setText(f"Warnings: {len(warnings)}")
+        else:
+            self.warnings_label.setVisible(False)
+            # self.warnings_label.setEnabled(False)
+            self.warnings_label.setText("")
+
+    def show_warnings_help(self):
+        webbrowser.open("https://usedave.nl/scene/model_and_state_errors.html")
+
+    def show_warnings(self):
+        """Shows the warnings"""
+        warnings = self.scene.warnings
+
+        # create a dialog with a table
+        dlg = QDialog()
+        dlg.setWindowTitle("Warnings")
+        dlg.setWindowIcon(QIcon(":/v2/icons/warning.svg"))
+        dlg.setWindowFlag(Qt.WindowContextHelpButtonHint, True)
+
+        layout = QtWidgets.QVBoxLayout()
+        dlg.setLayout(layout)
+
+        table = QtWidgets.QTableWidget()
+        table.setColumnCount(3)
+        table.setHorizontalHeaderLabels(["Node", "Code", "Message"])
+        table.setRowCount(len(warnings))
+
+        for i, (node, message) in enumerate(warnings):
+            table.setItem(i, 0, QtWidgets.QTableWidgetItem(node.name))
+            code = message.split(' ')[0]
+            message = ' '.join(message.split(' ')[1:])
+            table.setItem(i, 1, QtWidgets.QTableWidgetItem(code))
+            table.setItem(i, 2, QtWidgets.QTableWidgetItem(message))
+
+        layout.addWidget(table)
+
+        # make the table stretch
+        table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+
+        # set the initial size of the dialog, but the user must still be able to resize it
+        # to a smaller size
+        dlg.resize(800, 400)
+
+        # Add two buttons: ok and help
+        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Help)
+        buttonbox.accepted.connect(dlg.accept)
+        buttonbox.helpRequested.connect(self.show_warnings_help)
+
+        layout.addWidget(buttonbox)
+
+        dlg.exec()
 
     def bug_report(self):
         """Creates a bug report email"""
@@ -2797,7 +2874,9 @@ class Gui:
     def openContextMenyAt(self, node_name, globLoc):
         """Opens the context menu at the provided location"""
         DAVE_GUI_LOGGER.log(f"Open context menu at {node_name} {globLoc}")
-        menu = QtWidgets.QMenu()
+        main_window = self.MainWindow
+        menu = QtWidgets.QMenu(main_window)
+
 
         if node_name is not None:
             node = self.scene[node_name]
@@ -2835,8 +2914,15 @@ class Gui:
                         guiEventType.MODEL_STRUCTURE_CHANGED,
                     )
 
-                menu.addAction("Delete {}".format(node_name), delete)
-                menu.addAction("Dissolve (Evaporate) {}".format(node_name), dissolve)
+                action = QAction("Delete {}".format(node_name), menu)
+                action.triggered.connect(delete)
+                action.setIcon(QIcon(":/v2/icons/delete.svg"))
+                menu.addAction(action)
+
+                action = QAction("Dissolve (Evaporate) {}".format(node_name), menu)
+                action.triggered.connect(dissolve)
+                action.setIcon(QIcon(":/v2/icons/explode.svg"))
+                menu.addAction(action)
 
                 menu.addSeparator()
 
@@ -2845,7 +2931,10 @@ class Gui:
                     print(code)
                     self.app.clipboard().setText(code)
 
-                menu.addAction("Copy python code", copy_python_code)
+                action = QAction("Copy python code", menu)
+                action.triggered.connect(copy_python_code)
+                action.setIcon(QIcon(":/v2/icons/python_code.svg"))
+                menu.addAction(action)
                 menu.addSeparator()
 
                 def duplicate():
@@ -2856,49 +2945,59 @@ class Gui:
                     code = f"s.duplicate_branch('{node_name}')"
                     self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
-                    # self.guiSelectNode(name_of_duplicate)
+                action = QAction("Duplicate node", menu)
+                action.triggered.connect(duplicate)
+                action.setIcon(QIcon(":/v2/icons/copy.svg"))
+                menu.addAction(action)
 
                 if isinstance(node, (Frame, Point)):
                     if self.scene.nodes_with_parent(node):
-                        menu.addAction("Duplicate", duplicate_branch)
-
-                # if isinstance(node, Cable):
-                #     menu.addAction(
-                #         "Convert Cable --> Sling",
-                #         lambda *args: self.run_code(
-                #             f"s.to_sling(s['{node.name}'])",
-                #             guiEventType.MODEL_STRUCTURE_CHANGED,
-                #         ),
-                #     )
-
-                # if isinstance(node, Sling):
-                #     menu.addAction(
-                #         "Convert Sling --> Cable",
-                #         lambda *args: self.run_code(
-                #             f"s.to_cable(s['{node.name}'])",
-                #             guiEventType.MODEL_STRUCTURE_CHANGED,
-                #         ),
-                #     )
+                        action = QAction("Duplicate branch", menu)
+                        action.triggered.connect(duplicate_branch)
+                        action.setIcon(QIcon(":/v2/icons/copy_branch.svg"))
+                        menu.addAction(action)
 
                 if type(node) == RigidBody:
-                    menu.addAction(
-                        "Downgrade Body --> Frame",
+                    action = QAction("Downgrade Body --> Frame", menu)
+                    action.triggered.connect(
                         lambda *args: self.run_code(
                             f"s.to_frame(s['{node.name}'])",
                             guiEventType.MODEL_STRUCTURE_CHANGED,
                         ),
                     )
+                    action.setIcon(QIcon(":/v2/icons/axis.svg"))
+                    menu.addAction(action)
 
                 if type(node) == Frame:
-                    menu.addAction(
-                        "Upgrade Frame --> Body",
-                        lambda *args: self.run_code(
+                    actionUpgrade = QAction("Upgrade Frame --> Body", menu)
+                    actionUpgrade.triggered.connect(lambda *args: self.run_code(
                             f"s.to_rigidbody(s['{node.name}'])",
                             guiEventType.MODEL_STRUCTURE_CHANGED,
-                        ),
-                    )
+                        ))
+                    menu.addAction(actionUpgrade)
+                    actionUpgrade.setIcon(QIcon(":/v2/icons/box.svg"))
 
-                menu.addAction("Duplicate node", duplicate)
+                if isinstance(node, Frame):
+
+                    action = QAction("Insert Frame before", menu)
+                    action.triggered.connect(lambda *args: self.run_code(
+                            f"s.insert_frame_before(s['{node.name}'])",
+                            guiEventType.MODEL_STRUCTURE_CHANGED))
+                    action.setIcon(QIcon(":/v2/icons/add_before.svg"))
+                    menu.addAction(action)
+
+                if isinstance(node, (Frame, Point)):
+
+                    if node.parent is not None:
+
+                        actionMakeGlobal = QAction("Make global (no parent)", menu)
+                        actionMakeGlobal.triggered.connect(lambda *args: self.run_code(
+                            f"s['{node.name}'].change_parent_to(None)",
+                            guiEventType.MODEL_STRUCTURE_CHANGED,
+                        ))
+                        actionMakeGlobal.setIcon(QIcon(":/v2/icons/to_global.svg"))
+                        menu.addAction(actionMakeGlobal)
+
 
                 menu.addSeparator()
 
@@ -3040,8 +3139,8 @@ class Gui:
 
         DAVE_GUI_LOGGER.log(f"View3d select element")
 
-        if self._read_only_mode:
-            return
+        # if self._read_only_mode:
+        #     return
 
         nodes = [self.visual.node_from_vtk_actor(prop) for prop in props]
         nodes = [
@@ -3237,6 +3336,15 @@ class Gui:
                             force_bring_to_front=(event == guiEventType.NEW_NODE_ADDED),
                         )
 
+        # update warnings if needed
+        if event in (guiEventType.FULL_UPDATE,
+                     guiEventType.MODEL_STRUCTURE_CHANGED,
+                     guiEventType.MODEL_STEP_ACTIVATED,
+                     guiEventType.NEW_NODE_ADDED,
+                     guiEventType.MODEL_STATE_CHANGED,
+                     guiEventType.SELECTED_NODE_MODIFIED):
+            self.update_warnings()
+
         with DelayRenderingTillDone(
             self.visual
         ):  # temporary freezes rendering and calls update afterwards
@@ -3299,6 +3407,8 @@ class Gui:
             self.visual.add_new_node_actors_to_screen()
             self.visual.position_visuals()
             self.visual_update_selection()
+
+
 
     def guiSelectNodes(self, nodes):
         """Replace or extend the current selection with the given nodes (depending on keyboard-modifiers). Nodes may be passed as strings or nodes, but must be an tuple or list."""

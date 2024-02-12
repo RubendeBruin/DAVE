@@ -1,3 +1,4 @@
+from DAVE import ContactMesh
 from DAVE.gui.dock_system.dockwidget import *
 from PySide6.QtGui import QIcon, QDrag, QColor, QBrush
 from PySide6.QtCore import QMimeData, Qt
