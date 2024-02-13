@@ -67,7 +67,7 @@ class WidgetTags(guiDockWidget, HasNodeTreeMixin):
     def checkbox_toggeled(self):
         """Update the tags for the selected node"""
         item = self.treeView.selectedItems()[0]
-        node = self.guiScene[item.text(0)]
+        node = self.guiScene[item.toolTip(0)]  # name stored in tooltip
         # walk the columns
         tags = self.guiScene.tags
 
@@ -97,6 +97,7 @@ class WidgetTags(guiDockWidget, HasNodeTreeMixin):
         text = node.name
         item = QTreeWidgetItem()
         item.setText(0, text)
+        item.setToolTip(0, node.name)  # set tooltip to node name
         return item
 
     def update_node_data_and_tree(self):

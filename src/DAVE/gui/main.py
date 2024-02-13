@@ -841,13 +841,6 @@ class Gui:
         self.save_perspective_action.setIcon(QIcon(":/v2/icons/heart_empty_small.svg"))
         self.toolbar_top_right.addAction(self.save_perspective_action)
 
-        # spacer
-        spacer_widget = QtWidgets.QWidget(self.MainWindow)
-        spacer_widget.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
-        )
-        self.toolbar_top_right.addWidget(spacer_widget)
-
         # middle part of the top toolbar
         self.warnings_label = QAction(self.MainWindow)
         self.warnings_label.setText("Warnings")
@@ -858,6 +851,7 @@ class Gui:
          # format the produced toolbutton
         button = self.toolbar_top_right.widgetForAction(self.warnings_label)
         button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.update_warnings()
 
 
         # spacer
@@ -2248,6 +2242,7 @@ class Gui:
                 f"Solved statics - remaining error = {self.scene._vfc.Emaxabs} kN or kNm"
             )
 
+
     def solve_statics_using_gui_on_scene(self, scene_to_solve, called_by_user=True):
         scene_to_solve.update()
         if scene_to_solve.verify_equilibrium():
@@ -2611,6 +2606,11 @@ class Gui:
     def open_file(self, filename):
         """Opens the provided file"""
         DAVE_GUI_LOGGER.log(f"Open file {filename}")
+
+        if filename.endswith(".zip"):
+            if self.open_self_contained_DAVE_package(filename=filename):
+                return
+
         current_directory = Path(filename).parent
         code = f's.clear()\ns.current_directory = r"{current_directory}"\ns.load_scene(r"{filename}")'
 
@@ -2654,13 +2654,16 @@ class Gui:
 
         return filename
 
-    def open_self_contained_DAVE_package(self):
+    def open_self_contained_DAVE_package(self, filename = None):
         """Opens a self-contained DAVE package"""
         DAVE_GUI_LOGGER.log("Open self contained DAVE package")
-        folder = self.get_folder_for_dialogs()
-        filename, _ = QFileDialog.getOpenFileName(
-            filter="*.zip", caption="DAVE model package", dir=str(folder)
-        )
+
+
+        if filename is None:
+            folder = self.get_folder_for_dialogs()
+            filename, _ = QFileDialog.getOpenFileName(
+                filter="*.zip", caption="DAVE model package", dir=str(folder)
+            )
 
         if filename:
             store = gui_globals.do_ask_user_for_unavailable_nodenames
