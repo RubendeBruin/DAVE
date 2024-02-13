@@ -286,6 +286,7 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
         self.treeView.header().setVisible(False)
         self.treeView.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
 
+
         self.treeView.activated.connect(
             self.tree_select_node
         )  # fires when a user presses [enter]
@@ -298,6 +299,8 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
 
         self.treeView.setStyleSheet(
             """
+                                    QWidget {border: None}
+                                    
                                     QTreeView::branch:has-siblings:!adjoins-item {
                                         border-image: url(:tree/tree/vline.svg) 0;
                                     }
@@ -368,6 +371,7 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
         self.installEventFilter(self.delete_eventFilter)
 
         self.tbFilter.editTextChanged.connect(self.filter_changed)
+
 
     def guiProcessEvent(self, event):
         if event in [

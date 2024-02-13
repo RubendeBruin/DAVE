@@ -76,6 +76,9 @@ class guiDockWidget(PySide6QtAds.CDockWidget):
     def showEvent(self, event):
         super().showEvent(event)  # parent call
         self._active = True
+
+        self.guiEvent(guiEventType.FULL_UPDATE)
+
         # self.contents.deleteLater()
 
     def guiEvent(self, event):

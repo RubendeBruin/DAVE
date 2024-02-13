@@ -40,7 +40,7 @@ explore = DaveDockGroup(
     icon=":v2/icons/explore.svg",
     dock_widgets=["Explore 1-to-1"],
     show_edit=None,
-    show_tree=True,
+    show_tree=False,
     show_timeline=None,
 )
 

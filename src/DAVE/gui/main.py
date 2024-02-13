@@ -63,6 +63,7 @@
 import os
 import subprocess
 import sys
+import textwrap
 import traceback
 import webbrowser
 import zipfile
@@ -77,7 +78,8 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QStatusBar,
     QToolBar,
-    QWidget, QDialogButtonBox,
+    QWidget,
+    QDialogButtonBox,
 )
 
 from DAVE.gui.autosave import DaveAutoSave
@@ -779,11 +781,14 @@ class Gui:
 
         # -- tree
         self.dock_permanent_tree = self.get_dock("Node Tree")
-        # assert isinstance(self.dock_tree, PySide6QtAds.ads.CDockWidget)
         self.dock_manager.addDockWidget(
             PySide6QtAds.DockWidgetArea.LeftDockWidgetArea, self.dock_permanent_tree
         )
         self.docks_permanent.append(self.dock_permanent_tree)
+
+
+
+        # self.dock_manager
 
         # --- timeline - if any
 
@@ -843,13 +848,16 @@ class Gui:
         )
         self.toolbar_top_right.addWidget(spacer_widget)
 
-
         # middle part of the top toolbar
         self.warnings_label = QAction(self.MainWindow)
         self.warnings_label.setText("Warnings")
         self.warnings_label.triggered.connect(self.show_warnings)
         self.warnings_label.setIcon(QIcon(":/v2/icons/warning.svg"))
         self.toolbar_top_right.addAction(self.warnings_label)
+
+         # format the produced toolbutton
+        button = self.toolbar_top_right.widgetForAction(self.warnings_label)
+        button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
 
         # spacer
@@ -858,8 +866,6 @@ class Gui:
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
         )
         self.toolbar_top_right.addWidget(spacer_widget)
-
-
 
         # right part of right toolbar
 
@@ -878,14 +884,15 @@ class Gui:
         self.toolbar_left.setIconSize(QSize(32, 32))
         self.toolbar_left.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
 
-
         self.create_dockgroups()
 
         # create all docks
         # self.pre_create_docks()
 
         # Makup
-        self.toolbar_left.setContextMenuPolicy(Qt.CustomContextMenu)  # disable the default context menu
+        self.toolbar_left.setContextMenuPolicy(
+            Qt.CustomContextMenu
+        )  # disable the default context menu
         self.toolbar_top.setContextMenuPolicy(Qt.CustomContextMenu)
         self.toolbar_top_right.setContextMenuPolicy(Qt.CustomContextMenu)
 
@@ -924,7 +931,9 @@ class Gui:
         self._requested_workspace = workspace
 
         if self._read_only_mode:
-            self.ui.infobar.setWindowTitle("This is a COPY of the model intended to view the results of an analysis. It may be re-organized, cleaned up or adapted otherwise.")
+            self.ui.infobar.setWindowTitle(
+                "This is a COPY of the model intended to view the results of an analysis. It may be re-organized, cleaned up or adapted otherwise."
+            )
         #     self.ui.menuFile.setTitle("Read only mode")
         #     self.ui.menuFile.setEnabled(False)
         #     self.ui.menuScene.setEnabled(False)
@@ -1012,15 +1021,17 @@ class Gui:
 
         for i, (node, message) in enumerate(warnings):
             table.setItem(i, 0, QtWidgets.QTableWidgetItem(node.name))
-            code = message.split(' ')[0]
-            message = ' '.join(message.split(' ')[1:])
+            code = message.split(" ")[0]
+            message = " ".join(message.split(" ")[1:])
             table.setItem(i, 1, QtWidgets.QTableWidgetItem(code))
             table.setItem(i, 2, QtWidgets.QTableWidgetItem(message))
 
         layout.addWidget(table)
 
         # make the table stretch
-        table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        table.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.ResizeMode.ResizeToContents
+        )
 
         # set the initial size of the dialog, but the user must still be able to resize it
         # to a smaller size
@@ -1379,12 +1390,17 @@ class Gui:
         for d in DOCK_GROUPS:
             d: DaveDockGroup
 
-            action = QAction(d.description, self.MainWindow)
+            # manual word-wrap on the description
+            word_wrapped_description = "\n".join(
+                textwrap.wrap(d.description, width=10, break_long_words=False)
+            )
+
+            action = QAction(word_wrapped_description, self.MainWindow)  #
             tasks.addAction(action)
 
             d._action = action
 
-            action.setText(d.description)
+            # action.setText(d.description)
             action.setCheckable(True)
             icon = d.icon
             if isinstance(icon, str):
@@ -1484,7 +1500,9 @@ class Gui:
         self.animation_terminate()
         # self.savepoint_restore()
 
-        wanted_docks = [self.get_dock(name) for name in group.dock_widgets]
+        wanted_docks = [
+            self.get_dock(name, send_full_update=False) for name in group.dock_widgets
+        ]
         all_active_docks = get_all_active_docks(self.dock_manager)
 
         # Remove all non-needed
@@ -1510,8 +1528,26 @@ class Gui:
             if dock not in all_active_docks:
                 dock.guiEvent(guiEventType.FULL_UPDATE)
 
+        # (de)active the default docks
+        def set_visible(dock, visible):
+            if visible is not None:
+                if (
+                    visible
+                    and not dock.isVisible()
+                    or visible is False
+                    and dock.isVisible()
+                ):
+                    dock.toggleViewAction().trigger()
+
+        set_visible(self.dock_permanent_tree, group.show_tree)
+        if self.dock_timeline is not None:
+            set_visible(self.dock_timeline, group.show_timeline)
+
         # Set the active perspective
-        if group.ID in self.dock_manager.perspectiveNames() and do_load_perspectives:
+        if (
+            group.ID in self.dock_manager.perspectiveNames()
+            and do_load_perspectives
+        ):
             print("Loading perspective", group.ID)
 
             #
@@ -2877,7 +2913,6 @@ class Gui:
         main_window = self.MainWindow
         menu = QtWidgets.QMenu(main_window)
 
-
         if node_name is not None:
             node = self.scene[node_name]
 
@@ -2970,34 +3005,37 @@ class Gui:
 
                 if type(node) == Frame:
                     actionUpgrade = QAction("Upgrade Frame --> Body", menu)
-                    actionUpgrade.triggered.connect(lambda *args: self.run_code(
+                    actionUpgrade.triggered.connect(
+                        lambda *args: self.run_code(
                             f"s.to_rigidbody(s['{node.name}'])",
                             guiEventType.MODEL_STRUCTURE_CHANGED,
-                        ))
+                        )
+                    )
                     menu.addAction(actionUpgrade)
                     actionUpgrade.setIcon(QIcon(":/v2/icons/box.svg"))
 
                 if isinstance(node, Frame):
-
                     action = QAction("Insert Frame before", menu)
-                    action.triggered.connect(lambda *args: self.run_code(
+                    action.triggered.connect(
+                        lambda *args: self.run_code(
                             f"s.insert_frame_before(s['{node.name}'])",
-                            guiEventType.MODEL_STRUCTURE_CHANGED))
+                            guiEventType.MODEL_STRUCTURE_CHANGED,
+                        )
+                    )
                     action.setIcon(QIcon(":/v2/icons/add_before.svg"))
                     menu.addAction(action)
 
                 if isinstance(node, (Frame, Point)):
-
                     if node.parent is not None:
-
                         actionMakeGlobal = QAction("Make global (no parent)", menu)
-                        actionMakeGlobal.triggered.connect(lambda *args: self.run_code(
-                            f"s['{node.name}'].change_parent_to(None)",
-                            guiEventType.MODEL_STRUCTURE_CHANGED,
-                        ))
+                        actionMakeGlobal.triggered.connect(
+                            lambda *args: self.run_code(
+                                f"s['{node.name}'].change_parent_to(None)",
+                                guiEventType.MODEL_STRUCTURE_CHANGED,
+                            )
+                        )
                         actionMakeGlobal.setIcon(QIcon(":/v2/icons/to_global.svg"))
                         menu.addAction(actionMakeGlobal)
-
 
                 menu.addSeparator()
 
@@ -3337,12 +3375,14 @@ class Gui:
                         )
 
         # update warnings if needed
-        if event in (guiEventType.FULL_UPDATE,
-                     guiEventType.MODEL_STRUCTURE_CHANGED,
-                     guiEventType.MODEL_STEP_ACTIVATED,
-                     guiEventType.NEW_NODE_ADDED,
-                     guiEventType.MODEL_STATE_CHANGED,
-                     guiEventType.SELECTED_NODE_MODIFIED):
+        if event in (
+            guiEventType.FULL_UPDATE,
+            guiEventType.MODEL_STRUCTURE_CHANGED,
+            guiEventType.MODEL_STEP_ACTIVATED,
+            guiEventType.NEW_NODE_ADDED,
+            guiEventType.MODEL_STATE_CHANGED,
+            guiEventType.SELECTED_NODE_MODIFIED,
+        ):
             self.update_warnings()
 
         with DelayRenderingTillDone(
@@ -3408,8 +3448,6 @@ class Gui:
             self.visual.position_visuals()
             self.visual_update_selection()
 
-
-
     def guiSelectNodes(self, nodes):
         """Replace or extend the current selection with the given nodes (depending on keyboard-modifiers). Nodes may be passed as strings or nodes, but must be an tuple or list."""
 
@@ -3459,7 +3497,7 @@ class Gui:
         if old_selection != self.selected_nodes:
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
 
-    def get_dock(self, name):
+    def get_dock(self, name, send_full_update=True):
         """Returns a reference to a dock instance,
         creates the instance if needed"""
 
@@ -3490,7 +3528,8 @@ class Gui:
 
         self.guiWidgets[name] = d
 
-        d.guiProcessEvent(guiEventType.FULL_UPDATE)
+        if send_full_update:
+            d.guiProcessEvent(guiEventType.FULL_UPDATE)
 
         location = d.guiDefaultLocation()
         can_share_location = d.guiCanShareLocation()
