@@ -500,7 +500,7 @@ class Gui:
         self.ui.actionReload_components.triggered.connect(self.refresh_model)
         self.ui.actionOpen.triggered.connect(self.open)
         self.ui.actionImport_package.triggered.connect(
-            self.open_self_contained_DAVE_package
+            self.open_self_contained_DAVE_package_gui
         )
         self.ui.actionSave.triggered.connect(self.menu_save_model)
         self.ui.actionSave_scene.triggered.connect(self.menu_save_model_as)
@@ -2654,59 +2654,64 @@ class Gui:
 
         return filename
 
+    def open_self_contained_DAVE_package_gui(self, *args):
+        """Opens a self-contained DAVE package"""
+
+        folder = self.get_folder_for_dialogs()
+        filename, _ = QFileDialog.getOpenFileName(
+            filter="*.zip", caption="DAVE model package", dir=str(folder)
+        )
+
+        if filename:
+            self.open_self_contained_DAVE_package(filename)
+
+
+
     def open_self_contained_DAVE_package(self, filename = None):
         """Opens a self-contained DAVE package"""
         DAVE_GUI_LOGGER.log("Open self contained DAVE package")
 
+        store = gui_globals.do_ask_user_for_unavailable_nodenames
+        try:
+            gui_globals.do_ask_user_for_unavailable_nodenames = True
 
-        if filename is None:
-            folder = self.get_folder_for_dialogs()
-            filename, _ = QFileDialog.getOpenFileName(
-                filter="*.zip", caption="DAVE model package", dir=str(folder)
+            # extract the zip file (filename) to a temporary folder
+            temp_folder = tempfile.mkdtemp()
+            with zipfile.ZipFile(filename, "r") as zip_ref:
+                zip_ref.extractall(temp_folder)
+
+            name = Path(filename).stem
+            name = str(name) + ".dave"
+
+            model_file = Path(temp_folder) / name
+
+            # check if the file exists
+            if not model_file.exists():
+                self.show_exception(
+                    f"The DAVE zip package is expected to contain a file \n\n{name}\n\n (= the name of the .zip file without zip)\nHowever a file with this name not found.\n\nPlease check the contents of the zip and rename the package file if needed."
+                )
+                return
+
+            self.scene.load_package(model_file)
+
+        except Exception as e:
+            self.show_exception(
+                f"Could not load DAVE package because {e} - partial model load, continue at own risk"
             )
 
-        if filename:
-            store = gui_globals.do_ask_user_for_unavailable_nodenames
-            try:
-                gui_globals.do_ask_user_for_unavailable_nodenames = True
+        else:
+            self._model_has_changed = False
+            self.MainWindow.setWindowTitle(
+                f"DAVE [{str(self.scene.current_directory)}] - {filename} "
+            )
+            self.add_to_recent_file_menu(filename)
 
-                # extract the zip file (filename) to a temporary folder
-                temp_folder = tempfile.mkdtemp()
-                with zipfile.ZipFile(filename, "r") as zip_ref:
-                    zip_ref.extractall(temp_folder)
+            self.guiEmitEvent(guiEventType.FULL_UPDATE)
 
-                name = Path(filename).stem
-                name = str(name) + ".dave"
-
-                model_file = Path(temp_folder) / name
-
-                # check if the file exists
-                if not model_file.exists():
-                    self.show_exception(
-                        f"The DAVE zip package is expected to contain a file \n\n{name}\n\n (= the name of the .zip file without zip)\nHowever a file with this name not found.\n\nPlease check the contents of the zip and rename the package file if needed."
-                    )
-                    return
-
-                self.scene.load_package(model_file)
-
-            except Exception as e:
-                self.show_exception(
-                    f"Could not load DAVE package because {e} - partial model load, continue at own risk"
-                )
-
-            else:
-                self._model_has_changed = False
-                self.MainWindow.setWindowTitle(
-                    f"DAVE [{str(self.scene.current_directory)}] - {filename} "
-                )
-                self.add_to_recent_file_menu(filename)
-
-                self.guiEmitEvent(guiEventType.FULL_UPDATE)
-
-                self.visual.zoom_all()
-                return True
-            finally:
-                gui_globals.do_ask_user_for_unavailable_nodenames = store
+            self.visual.zoom_all()
+            return True
+        finally:
+            gui_globals.do_ask_user_for_unavailable_nodenames = store
 
     def open(self):
         """Opens a file"""
