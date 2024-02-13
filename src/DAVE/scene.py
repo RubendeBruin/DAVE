@@ -2703,6 +2703,11 @@ class Scene:
             self.delete(new_node.name)
             raise E
 
+        # set contact parameters
+        new_node._vfNode.contact_distance = 1e-6
+        new_node._vfNode.contact_k1 = 10
+        new_node._vfNode.contact_k2 = 0
+
         return new_node
 
     def new_force(
@@ -3713,9 +3718,8 @@ class Scene:
             code.append("\n# Tags")
 
             for n in nodes_to_be_exported:
-                if n.manager is None:
-                    if n.tags:
-                        code.append(f"s['{n.name}'].add_tags({n.tags})")
+                if n.tags:
+                    code.append(f"s['{n.name}'].add_tags({n.tags})")
 
             code.append("\n# Colors")
 
@@ -4265,17 +4269,18 @@ class Scene:
         else:
             name = "bewteen_" + frame.parent.name + "_and_" + this_name
 
-        new_frame = self.new_frame(name=self.available_name_like(name),
-                                   parent=frame.parent, position=frame.position,
-                                   rotation=frame.rotation,
-                                   fixed = True)
+        new_frame = self.new_frame(
+            name=self.available_name_like(name),
+            parent=frame.parent,
+            position=frame.position,
+            rotation=frame.rotation,
+            fixed=True,
+        )
         frame.parent = new_frame
-        frame.rotation = (0,0,0)
-        frame.position = (0,0,0)
+        frame.rotation = (0, 0, 0)
+        frame.position = (0, 0, 0)
 
         return new_frame
-
-
 
     # =================== DYNAMICS ==================
 

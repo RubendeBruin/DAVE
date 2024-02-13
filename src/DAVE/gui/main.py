@@ -786,8 +786,6 @@ class Gui:
         )
         self.docks_permanent.append(self.dock_permanent_tree)
 
-
-
         # self.dock_manager
 
         # --- timeline - if any
@@ -848,11 +846,10 @@ class Gui:
         self.warnings_label.setIcon(QIcon(":/v2/icons/warning.svg"))
         self.toolbar_top_right.addAction(self.warnings_label)
 
-         # format the produced toolbutton
+        # format the produced toolbutton
         button = self.toolbar_top_right.widgetForAction(self.warnings_label)
         button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         self.update_warnings()
-
 
         # spacer
         spacer_widget = QtWidgets.QWidget(self.MainWindow)
@@ -976,8 +973,6 @@ class Gui:
             self.activate_dockgroup(
                 self._requested_workspace, this_is_a_new_window=True
             )
-
-
 
     def update_warnings(self):
         """Updates the warnings label"""
@@ -1538,10 +1533,7 @@ class Gui:
             set_visible(self.dock_timeline, group.show_timeline)
 
         # Set the active perspective
-        if (
-            group.ID in self.dock_manager.perspectiveNames()
-            and do_load_perspectives
-        ):
+        if group.ID in self.dock_manager.perspectiveNames() and do_load_perspectives:
             print("Loading perspective", group.ID)
 
             #
@@ -2242,7 +2234,6 @@ class Gui:
                 f"Solved statics - remaining error = {self.scene._vfc.Emaxabs} kN or kNm"
             )
 
-
     def solve_statics_using_gui_on_scene(self, scene_to_solve, called_by_user=True):
         scene_to_solve.update()
         if scene_to_solve.verify_equilibrium():
@@ -2603,11 +2594,11 @@ class Gui:
         self.modelfilename = None
         self.MainWindow.setWindowTitle(f"DAVE [unnamed scene]")
 
-    def open_file(self, filename):
+    def open_file(self, filename: str or Path):
         """Opens the provided file"""
         DAVE_GUI_LOGGER.log(f"Open file {filename}")
 
-        if filename.endswith(".zip"):
+        if str(filename).endswith(".zip"):
             if self.open_self_contained_DAVE_package(filename=filename):
                 return
 
@@ -2665,9 +2656,7 @@ class Gui:
         if filename:
             self.open_self_contained_DAVE_package(filename)
 
-
-
-    def open_self_contained_DAVE_package(self, filename = None):
+    def open_self_contained_DAVE_package(self, filename=None):
         """Opens a self-contained DAVE package"""
         DAVE_GUI_LOGGER.log("Open self contained DAVE package")
 
