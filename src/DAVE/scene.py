@@ -2704,9 +2704,13 @@ class Scene:
             raise E
 
         # set contact parameters
-        new_node._vfNode.contact_distance = 1e-6
-        new_node._vfNode.contact_k1 = 10
-        new_node._vfNode.contact_k2 = 0
+        try:
+            new_node._vfNode.contact_distance  # only available if the core supports it
+            new_node._vfNode.contact_distance = 0
+            new_node._vfNode.contact_k1 = 1000
+            new_node._vfNode.contact_k2 = 0
+        except:
+            pass
 
         return new_node
 
