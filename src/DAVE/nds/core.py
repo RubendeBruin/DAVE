@@ -1484,7 +1484,7 @@ class Cable(NodeCoreConnected):
         self._reversed: List[bool] = list()
         self._friction: List[float] = list()
         self._max_winding_angle: List[float] = list()
-        self._offset: List[float] = list()
+        self._offsets: List[float] = list()
 
         self._render_as_tube = True
         self.do_color_by_tension = True
@@ -1680,14 +1680,14 @@ class Cable(NodeCoreConnected):
         self._update_pois()
 
     @property
-    def offset(self) -> tuple[float, ...]:
+    def offsets(self) -> tuple[float, ...]:
         """Offset of the cable at each of the connections [m]"""
-        return tuple(self._offset)
+        return tuple(self._offsets)
 
-    @offset.setter
+    @offsets.setter
     @node_setter_manageable
     @node_setter_observable
-    def offset(self, offset):
+    def offsets(self, offset):
         if isinstance(offset, (float, int)):
             offset = [offset]
 
@@ -1695,9 +1695,9 @@ class Cable(NodeCoreConnected):
         req_len = len(self._pois)
         assert (
             len(offset) == req_len
-        ), f"offset should be defined for all {req_len} connections"
+        ), f"offsets should be defined for all {req_len} connections"
 
-        self._offset = list(offset)
+        self._offsets = list(offset)
         self._update_pois()
 
     def _get_advanced_settings_dialog_settings(self):
@@ -1888,13 +1888,22 @@ class Cable(NodeCoreConnected):
         return points
 
     def _add_connection_to_core(
-        self, connection, reversed=False, friction=0, max_winding=DEFAULT_WINDING_ANGLE, offset=0
+        self,
+        connection,
+        reversed=False,
+        friction=0,
+        max_winding=DEFAULT_WINDING_ANGLE,
+        offset=0,
     ):
         if isinstance(connection, Point):
             self._vfNode.add_connection_poi(connection._vfNode, friction)
         if isinstance(connection, Circle):
             self._vfNode.add_connection_sheave(
-                connection._vfNode, reversed, friction, np.deg2rad(max_winding), offset,
+                connection._vfNode,
+                reversed,
+                friction,
+                np.deg2rad(max_winding),
+                offset,
             )
 
     def _update_pois(self):
@@ -1920,12 +1929,12 @@ class Cable(NodeCoreConnected):
         self._max_winding_angle = self._max_winding_angle[0 : len(self._pois)]
 
         # sync length of offsets
-        while len(self._offset) < len(self._pois):
-            self._offset.append(0)
-        self._offset = self._offset[0 : len(self._pois)]
+        while len(self._offsets) < len(self._pois):
+            self._offsets.append(0)
+        self._offsets = self._offsets[0 : len(self._pois)]
 
         for point, reversed, max_winding, offset in zip(
-            self._pois, self._reversed, self._max_winding_angle, self._offset
+            self._pois, self._reversed, self._max_winding_angle, self._offsets
         ):
             self._add_connection_to_core(
                 point, reversed, 0, max_winding, offset
@@ -2019,10 +2028,8 @@ class Cable(NodeCoreConnected):
                 f"s['{self.name}'].max_winding_angles = {self._max_winding_angle}"
             )
 
-        if np.any([_ != 0 for _ in self._offset]):
-            code.append(
-                f"s['{self.name}'].offset = {self._offset}"
-            )
+        if np.any([_ != 0 for _ in self._offsets]):
+            code.append(f"s['{self.name}'].offsets = {self._offsets}")
 
         if np.any(self._friction):
             code.append(f"s['{self.name}'].friction = {self._friction}")

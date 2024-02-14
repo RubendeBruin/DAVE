@@ -2517,6 +2517,7 @@ class Scene:
         reversed=None,
         mass_per_length=None,
         friction=None,
+        offsets=None,
     ) -> Cable:
         """Creates a new *cable* node and adds it to the scene.
 
@@ -2532,6 +2533,7 @@ class Scene:
             connections [optional] : Alternative to [EndA, sheaves, EndB]
             reversed [optional] : Reversed property for each of the connections
             friction : [optional] A list of friction coefficients for each connection. aligned with connection
+            offsets : [optional] A list of offsets for each connection. aligned with connection
 
             connections: May be used instead of endA, endB and sheaves. If connections is provided then endA = connections[0], endB = connections[-1] and sheaves = connections[1:-1]
 
@@ -2654,6 +2656,15 @@ class Scene:
             for _ in reversed:
                 assert isinstance(_, bool), "reversed should be a list with booleans"
 
+        if offsets is not None:
+            assert len(offsets) == len(
+                pois
+            ), "offsets should be a list with the same length as the number of connections"
+            for _ in offsets:
+                assert isinstance(
+                    _, (float, int)
+                ), "offsets should be a list with floats"
+
         # then create
 
         new_node = Cable(self, name)
@@ -2675,6 +2686,9 @@ class Scene:
 
             if reversed is not None:
                 new_node.reversed = reversed
+
+            if offsets is not None:
+                new_node.offsets = offsets
 
             # and add to the scene
             # self._nodes.append(new_node)
