@@ -1624,12 +1624,12 @@ class Cable(NodeCoreConnected):
             req_len += 1
         assert (
             len(friction) == req_len
-        ), f"Friction should be defined for {req_len} connections"
+        ), f"Friction should be defined for {req_len} connections, got {len(friction)}."
 
         if self._isloop:
             assert (
                 list(friction).count(None) == 1
-            ), "When defining friction for a loop, exactly of the frictions should be 'None'. The friction at that last connection is calculated from the other frictions."
+            ), f"When defining friction for a loop, exactly of the frictions should be 'None'. The friction at that last connection is calculated from the other frictions. Received: {friction}"
 
             # the None friction shall not be on a roundbar
             index = friction.index(None)
