@@ -1668,7 +1668,7 @@ class Cable(NodeCoreConnected):
         req_len = len(self._pois)
         assert (
             len(max_winding_angles) == req_len
-        ), f"max_winding_angles should be defined for all {req_len} connections"
+        ), f"max_winding_angles should be defined for all {req_len} connections, got {len(max_winding_angles)} values."
 
         for _ in max_winding_angles:
             if _ > 0:
