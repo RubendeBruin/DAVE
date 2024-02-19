@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'widget_connections.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.1
+## Created by: Qt User Interface Compiler version 6.6.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QLabel,
-    QListWidget, QListWidgetItem, QPushButton, QSizePolicy,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QFrame, QGridLayout,
+    QHeaderView, QLabel, QPushButton, QSizePolicy,
+    QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
 
 from DAVE.gui.helpers.qnodepicker import QNodePicker
 
@@ -41,66 +41,63 @@ class Ui_ConnectionForm(object):
         self.frame.setFrameShadow(QFrame.Raised)
         self.gridLayout = QGridLayout(self.frame)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.pbRemoveSelected = QPushButton(self.frame)
-        self.pbRemoveSelected.setObjectName(u"pbRemoveSelected")
-
-        self.gridLayout.addWidget(self.pbRemoveSelected, 4, 3, 1, 1)
-
-        self.pushButton = QPushButton(self.frame)
-        self.pushButton.setObjectName(u"pushButton")
-
-        self.gridLayout.addWidget(self.pushButton, 8, 1, 1, 1)
-
-        self.list = QListWidget(self.frame)
-        self.list.setObjectName(u"list")
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.list.sizePolicy().hasHeightForWidth())
-        self.list.setSizePolicy(sizePolicy)
-        self.list.setMinimumSize(QSize(0, 50))
-
-        self.gridLayout.addWidget(self.list, 6, 1, 1, 3)
-
-        self.pbSetShortestRoute = QPushButton(self.frame)
-        self.pbSetShortestRoute.setObjectName(u"pbSetShortestRoute")
-
-        self.gridLayout.addWidget(self.pbSetShortestRoute, 5, 3, 1, 1)
-
         self.label_8 = QLabel(self.frame)
         self.label_8.setObjectName(u"label_8")
         self.label_8.setWordWrap(True)
 
         self.gridLayout.addWidget(self.label_8, 4, 1, 1, 2)
 
+        self.pushButton = QPushButton(self.frame)
+        self.pushButton.setObjectName(u"pushButton")
+
+        self.gridLayout.addWidget(self.pushButton, 10, 1, 1, 1)
+
+        self.tree = QTreeWidget(self.frame)
+        __qtreewidgetitem = QTreeWidgetItem()
+        __qtreewidgetitem.setText(0, u"1");
+        self.tree.setHeaderItem(__qtreewidgetitem)
+        self.tree.setObjectName(u"tree")
+
+        self.gridLayout.addWidget(self.tree, 8, 1, 1, 3)
+
         self.lbDirection = QLabel(self.frame)
         self.lbDirection.setObjectName(u"lbDirection")
         self.lbDirection.setWordWrap(True)
 
-        self.gridLayout.addWidget(self.lbDirection, 5, 1, 1, 2)
+        self.gridLayout.addWidget(self.lbDirection, 5, 1, 2, 2)
+
+        self.pbRemoveSelected = QPushButton(self.frame)
+        self.pbRemoveSelected.setObjectName(u"pbRemoveSelected")
+
+        self.gridLayout.addWidget(self.pbRemoveSelected, 4, 3, 1, 1)
+
+        self.pbSetShortestRoute = QPushButton(self.frame)
+        self.pbSetShortestRoute.setObjectName(u"pbSetShortestRoute")
+
+        self.gridLayout.addWidget(self.pbSetShortestRoute, 5, 3, 1, 1)
 
         self.widgetPicker = QNodePicker(self.frame)
         self.widgetPicker.setObjectName(u"widgetPicker")
 
-        self.gridLayout.addWidget(self.widgetPicker, 8, 2, 1, 2)
+        self.gridLayout.addWidget(self.widgetPicker, 10, 2, 1, 2)
+
+        self.checkBox = QCheckBox(self.frame)
+        self.checkBox.setObjectName(u"checkBox")
+
+        self.gridLayout.addWidget(self.checkBox, 6, 3, 1, 1)
+
+        self.lblError = QLabel(self.frame)
+        self.lblError.setObjectName(u"lblError")
+        self.lblError.setStyleSheet(u"background-color: rgb(255, 215, 251);")
+        self.lblError.setWordWrap(True)
+
+        self.gridLayout.addWidget(self.lblError, 9, 1, 1, 3)
 
 
         self.verticalLayout.addWidget(self.frame)
 
-        self.label = QLabel(ConnectionForm)
-        self.label.setObjectName(u"label")
-
-        self.verticalLayout.addWidget(self.label)
-
-        self.pbAdvancedSettings = QPushButton(ConnectionForm)
-        self.pbAdvancedSettings.setObjectName(u"pbAdvancedSettings")
-
-        self.verticalLayout.addWidget(self.pbAdvancedSettings)
-
         QWidget.setTabOrder(self.pbRemoveSelected, self.pbSetShortestRoute)
-        QWidget.setTabOrder(self.pbSetShortestRoute, self.list)
-        QWidget.setTabOrder(self.list, self.pushButton)
-        QWidget.setTabOrder(self.pushButton, self.pbAdvancedSettings)
+        QWidget.setTabOrder(self.pbSetShortestRoute, self.pushButton)
 
         self.retranslateUi(ConnectionForm)
 
@@ -110,12 +107,12 @@ class Ui_ConnectionForm(object):
     def retranslateUi(self, ConnectionForm):
         ConnectionForm.setWindowTitle(QCoreApplication.translate("ConnectionForm", u"Form", None))
         self.label_3.setText(QCoreApplication.translate("ConnectionForm", u"<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Connections (Points/Circles)</span></p></body></html>", None))
-        self.pbRemoveSelected.setText(QCoreApplication.translate("ConnectionForm", u"Remove selected point", None))
-        self.pushButton.setText(QCoreApplication.translate("ConnectionForm", u"Add", None))
-        self.pbSetShortestRoute.setText(QCoreApplication.translate("ConnectionForm", u"Determine shortest route", None))
         self.label_8.setText(QCoreApplication.translate("ConnectionForm", u"Drag/drop items to change order, add or remove.", None))
+        self.pushButton.setText(QCoreApplication.translate("ConnectionForm", u"Add", None))
         self.lbDirection.setText(QCoreApplication.translate("ConnectionForm", u"For circles the direction in which the cable runs over it is defined by the axis of the circle. Check the box to run over the circle in opposite direction.", None))
-        self.label.setText(QCoreApplication.translate("ConnectionForm", u"<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Friction and maximum winding angles</span></p></body></html>", None))
-        self.pbAdvancedSettings.setText(QCoreApplication.translate("ConnectionForm", u"Open advanced settings", None))
+        self.pbRemoveSelected.setText(QCoreApplication.translate("ConnectionForm", u"Remove selected point", None))
+        self.pbSetShortestRoute.setText(QCoreApplication.translate("ConnectionForm", u"Determine shortest route", None))
+        self.checkBox.setText(QCoreApplication.translate("ConnectionForm", u"Show advanced options", None))
+        self.lblError.setText(QCoreApplication.translate("ConnectionForm", u"Error if any", None))
     # retranslateUi
 

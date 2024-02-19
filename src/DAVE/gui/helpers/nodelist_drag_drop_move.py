@@ -42,8 +42,6 @@ def call_from_drop_Event(list_widget, event):
     else:
         list.addItem(name)
 
-    print('event')
-
 
 def call_from_dragEnter_or_Move_Event(list_widget, scene, allowed_nodetypes, event):
     if not isinstance(list_widget, (tuple, list)):

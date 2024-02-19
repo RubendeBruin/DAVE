@@ -6,7 +6,7 @@ from PySide6.QtGui import QColor
 from DAVE import Point, Circle, Buoyancy
 from DAVE.gui.dialog_advanced_cable_settings import AdvancedCableSettings
 from DAVE.gui.dock_system.dockwidget import *
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt, QSize, QModelIndex
 import DAVE.scene as vfs
 
 import DAVE.gui.forms.widget_axis
@@ -52,6 +52,7 @@ from PySide6.QtWidgets import (
     QColorDialog,
     QSizePolicy,
     QCheckBox,
+    QTreeWidgetItem,
 )
 from PySide6 import QtWidgets
 
@@ -528,13 +529,16 @@ class EditAxis(AbstractNodeEditorWithParent):
         self._widget = widget
 
     def toggle_fixes(self, states):
-        for cb, state in zip([
-            self.ui.checkBox_1,
-            self.ui.checkBox_2,
-            self.ui.checkBox_3,
-            self.ui.checkBox_4,
-            self.ui.checkBox_5,
-            self.ui.checkBox_6], states
+        for cb, state in zip(
+            [
+                self.ui.checkBox_1,
+                self.ui.checkBox_2,
+                self.ui.checkBox_3,
+                self.ui.checkBox_4,
+                self.ui.checkBox_5,
+                self.ui.checkBox_6,
+            ],
+            states,
         ):
             cb.blockSignals(True)
             cb.setChecked(state)
@@ -1339,31 +1343,37 @@ class EditConnections(NodeEditor):
         self._widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.additional_pois = list()
 
-        self.ui.list.sizeHint = lambda: QSize(0, 0)  # disable the size-hint
+        self.ui.tree.sizeHint = lambda: QSize(0, 0)  # disable the size-hint
+
+        self.ui.tree.setHeaderLabels(
+            ["⭮/⭯", "Connection", "Offset", "Friction", "Max winding"]
+        )
 
         # Set events
         ui.pbRemoveSelected.clicked.connect(self.delete_selected)
         self.ui.pushButton.clicked.connect(self.add_item)
         ui.pbSetShortestRoute.clicked.connect(self.set_shortest_route)
 
-        ui.list.keyPressEvent = self.listKeyPressEvent
+        ui.tree.keyPressEvent = self.listKeyPressEvent
 
         # ------- setup the drag-and-drop code ---------
 
-        ui.list.dropEvent = self.dropEvent
-        ui.list.dragEnterEvent = self.dragEnterEvent
-        ui.list.dragMoveEvent = self.dragEnterEvent
+        ui.tree.dropEvent = self.dropEvent
+        ui.tree.dragEnterEvent = self.dragEnterEvent
+        ui.tree.dragMoveEvent = self.dragEnterEvent
 
         ui.pbRemoveSelected.dragEnterEvent = self.dragOntoDeleteButtonEvent
         ui.pbRemoveSelected.dropEvent = self.dropOnDeleteButtonEvent
 
-        ui.list.itemChanged.connect(self.itemChanged)
+        ui.tree.itemChanged.connect(self.itemChanged)
 
         ui.pbRemoveSelected.setAcceptDrops(True)
-        ui.list.setDragEnabled(True)
-        ui.list.setAcceptDrops(True)
+        ui.tree.setDragEnabled(True)
+        ui.tree.setAcceptDrops(True)
 
-        ui.pbAdvancedSettings.clicked.connect(self.show_advanced_settings)
+        ui.checkBox.toggled.connect(self.post_update_event)
+
+        # ui.tree.editItem = self.editItem
 
     def connect(
         self,
@@ -1398,9 +1408,9 @@ class EditConnections(NodeEditor):
         name = self.ui.widgetPicker.value
         if self.scene.node_exists(name):
             # get a selected node
-            index = self.ui.list.count()
+            index = self.ui.tree.count()
             for i in range(index):
-                if self.ui.list.item(i).isSelected():
+                if self.ui.tree.item(i).isSelected():
                     index = i
                     break
 
@@ -1419,50 +1429,168 @@ class EditConnections(NodeEditor):
         # update the combobox with points and circles
         self.ui.widgetPicker.fill("keep")
 
-        self.ui.list.blockSignals(True)  # update the list
-        self.ui.list.clear()
+        self.ui.tree.blockSignals(True)  # update the list
+        self.ui.tree.clear()
         labelVisible = False
 
-        for connection, reversed in zip(self.node.connections, self.node.reversed):
-            item = QtWidgets.QListWidgetItem(connection.name)
+        # make strings of all properties
+        # and align with connections
+
+        (
+            endAFr,
+            endAMaxWind,
+            endBFr,
+            endBMaxWind,
+            is_grommet_in_line_mode,
+        ) = self.node._get_advanced_settings_dialog_settings()
+
+        # frictions
+        frictions = []
+        if not endAFr:  # friction at endA not definable
+            frictions.append("-")  # first item
+        for friction in self.node.friction:
+            if friction is not None:
+                frictions.append(str(friction))
+            else:
+                frictions.append("?")  # NONE
+
+        if not endBFr:
+            frictions.append("-")  # last item
+
+        # maximum winding angles
+        mas = [str(ma) for ma in self.node.max_winding_angles]
+
+        # offsets
+        offsets = [str(offset) for offset in self.node.offsets]
+
+        N = len(self.node.connections)
+
+        for i, (connection, reversed, friction_s, maxa_s, offs) in enumerate(
+            zip(self.node.connections, self.node.reversed, frictions, mas, offsets)
+        ):
+            item = QTreeWidgetItem(
+                [
+                    " ",  # reversed
+                    connection.label,  # name
+                    offs,  # offset
+                    friction_s,  # friction
+                    maxa_s,  # max winding angle
+                ],
+            )
 
             if isinstance(connection, Circle):
+                item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
                 item.setCheckState(
-                    Qt.CheckState.Checked if reversed else Qt.CheckState.Unchecked
+                    0,
+                    Qt.CheckState.Checked if reversed else Qt.CheckState.Unchecked,
                 )
                 labelVisible = True
 
-            self.ui.list.addItem(item)
+            item.setFlags(item.flags() | Qt.ItemIsEditable)
 
+            self.ui.tree.addTopLevelItem(item)
+
+        self.ui.tree.blockSignals(False)
         self.ui.lbDirection.setVisible(labelVisible)
-        self.ui.list.blockSignals(False)
+
+        # before this
+        self.ui.lblError.setVisible(False)
         self.ui.pbSetShortestRoute.setVisible(not isinstance(self.node, (Cable)))
-        self.ui.list.setStyleSheet("")
+        self.ui.tree.setStyleSheet("")
+
+        self.ui.tree.header().setSectionResizeMode(
+            QtWidgets.QHeaderView.ResizeToContents
+        )
+
+        # hide the friction and max winding angle columns if not applicable
+        basic = not self.ui.checkBox.isChecked()
+        self.ui.tree.setColumnHidden(2, basic)
+        self.ui.tree.setColumnHidden(3, basic)
+        self.ui.tree.setColumnHidden(4, basic)
+
+    def which_row(self, item):
+        for i in range(self.ui.tree.topLevelItemCount()):
+            if self.ui.tree.topLevelItem(i) == item:
+                return i
+        return -1
 
     def dropEvent(self, event):
-        call_from_drop_Event(self.ui.list, event)
-        self.generate_code()
-        event.accept()
+        tree = self.ui.tree  # alias
+
+        try:
+            connections = list(self.node.connections)
+
+            # what item are we dropping or moving
+
+            if event.source() == tree:
+                moved_item = tree.selectedItems()[0].text(1)
+            else:
+                if event.mimeData().hasText():
+                    moved_item = event.mimeData().text()
+                else:
+                    event.accept()  # do nothing
+                    return
+
+            # Where to place?
+            to_item = self.ui.tree.itemAt(event.pos())
+
+            if to_item:
+                row_to = self.which_row(to_item)
+            else:
+                row_to = -1
+
+            if row_to >= 0:
+                connections.insert(row_to, moved_item)
+            else:
+                connections.append(moved_item)
+
+            # anything to remove?
+            if event.source() == tree:  # moving, remove old item
+                delrow = self.which_row(tree.selectedItems()[0])
+                if delrow > row_to and row_to > -1:
+                    connections.pop(delrow + 1)
+                else:
+                    connections.pop(delrow)
+
+            # update the connections
+            code = f"s['{self.node.name}'].connections = ("
+            for name in connections:
+                code += "'{}',".format(name)
+            code = code[:-1] + ")"
+            self.run_code(code, event=guiEventType.SELECTED_NODE_MODIFIED, sender=self)
+            self.post_update_event()
+
+        finally:
+            event.accept()
 
     def dragEnterEvent(self, event):
         call_from_dragEnter_or_Move_Event(
-            self.ui.list, self.scene, (Circle, Point), event
+            self.ui.tree, self.scene, (Circle, Point), event
         )
 
     def dropOnDeleteButtonEvent(self, event):
-        if event.source() == self.ui.list:
+        if event.source() == self.ui.tree:
             self.ui.pbRemoveSelected.click()
             event.accept()
 
     def dragOntoDeleteButtonEvent(self, event):
-        if event.source() == self.ui.list:
+        if event.source() == self.ui.tree:
             event.accept()
 
     def delete_selected(self):
-        row = self.ui.list.currentRow()
-        if row > -1:
-            self.ui.list.takeItem(row)
-        self.generate_code()
+        if not self.ui.tree.selectedItems():
+            return
+
+        item = self.ui.tree.selectedItems()[0]
+        row = self.which_row(item)
+        connections = list(self.node.connections)
+        connections.pop(row)
+        code = f"s['{self.node.name}'].connections = ("
+        for name in connections:
+            code += "'{}',".format(name)
+        code = code[:-1] + ")"
+        self.run_code(code, event=guiEventType.SELECTED_NODE_MODIFIED, sender=self)
+        self.post_update_event()
 
     def listKeyPressEvent(self, event):
         if event.key() == Qt.Key_Delete:
@@ -1472,42 +1600,92 @@ class EditConnections(NodeEditor):
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
-        # connection names
-        new_names = []
-        for i in range(self.ui.list.count()):
-            new_names.append(self.ui.list.item(i).text())
+        N = self.ui.tree.invisibleRootItem().childCount()
 
-        old_names = [node.name for node in self.node.connections]
+        a_connections = []
+        a_reversed = []
+        a_offsets = []
+        a_friction = []
+        a_maw = []
 
-        if not (new_names == old_names):
-            code += element + ".connections = ("
-            for name in new_names:
-                code += "'{}',".format(name)
-            code = code[:-1] + ")"
+        try:  # catch value errors in float / str conversions
+            for i in range(N):
+                item = self.ui.tree.invisibleRootItem().child(i)
 
-        # reversed
-        reversed = tuple(
-            [
-                self.ui.list.item(irow).checkState() == Qt.CheckState.Checked
-                for irow in range(self.ui.list.count())
-            ]
-        )
+                reversed = item.checkState(0) == Qt.CheckState.Checked
+                connection = item.text(1)
+                offset = item.text(2)
+                friction = item.text(3)
+                max_winding = item.text(4)
 
-        if reversed != self.node.reversed:
-            code += f"{element}.reversed = {reversed}"
+                a_connections.append(connection)
+                a_reversed.append(reversed)
+                a_offsets.append(float(offset))
+
+                if friction == "-":
+                    pass
+                elif friction.strip() == "?":
+                    a_friction.append(None)
+                else:
+                    a_friction.append(float(friction))
+                a_maw.append(float(max_winding))
+        except ValueError:
+            self.ui.tree.setStyleSheet("background-color: rgb(251, 220, 255)")
+            return
+
+        # check for differences
+
+        # dry-run to see if what we want is valid,
+        # if not then do not execute the code to give the user the
+        # opportunity to fix the errors
+
+        try:
+            if a_connections != [node.name for node in self.node.connections]:
+                code += f"{element}.connections = ("
+                for name in a_connections:
+                    code += "'{}',".format(name)
+                code = code[:-1] + ")"
+
+                self.node.connections = a_connections
+
+            if a_reversed != self.node.reversed:
+                code += f"{element}.reversed = {a_reversed}"
+
+                self.node.reversed = a_reversed
+
+            if a_offsets != self.node.offsets:
+                code += f"{element}.offsets = {a_offsets}"
+
+                self.node.offsets = a_offsets
+
+            if a_friction != self.node.friction:
+                code += f"{element}.friction = {a_friction}"
+
+                self.node.friction = a_friction
+
+            if a_maw != self.node.max_winding_angles:
+                code += f"{element}.max_winding_angles = {a_maw}"
+
+                self.node.max_winding_angles = a_maw
+
+        except Exception as e:
+            self.ui.tree.setStyleSheet("background-color: rgb(251, 220, 255)")
+            self.ui.lblError.setText(str(e))
+            self.ui.lblError.setVisible(True)
+            return
 
         self.run_code(
             code, guiEventType.SELECTED_NODE_MODIFIED, sender=self
         )  # we will not receive the event
 
-        # check if the connections are valid
-        reversed_ok = reversed == self.node.reversed
-        names_ok = new_names == [node.name for node in self.node.connections]
+        # check if the connections are valid to see if the code did run correctly
+        reversed_ok = a_reversed == list(self.node.reversed)
+        names_ok = a_connections == [node.name for node in self.node.connections]
 
         if reversed_ok and names_ok:
-            self.ui.list.setStyleSheet("")
+            self.ui.tree.setStyleSheet("")
         else:
-            self.ui.list.setStyleSheet(
+            self.ui.tree.setStyleSheet(
                 "background-color: rgb(251, 220, 255)"
             )  # echt heel lelijk
 
@@ -2886,6 +3064,7 @@ class WidgetNodeProps(guiDockWidget):
             guiEventType.MODEL_STRUCTURE_CHANGED,
             guiEventType.MODEL_STATE_CHANGED,
             guiEventType.MODEL_STEP_ACTIVATED,
+            guiEventType.FULL_UPDATE,
         ]:  # reloaded component emit model structure changed instead of selected node modified
             for w in self._node_editors:
                 w.post_update_event()

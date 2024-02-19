@@ -36,43 +36,6 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="4" column="3">
-       <widget class="QPushButton" name="pbRemoveSelected">
-        <property name="text">
-         <string>Remove selected point</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="1">
-       <widget class="QPushButton" name="pushButton">
-        <property name="text">
-         <string>Add</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="1" colspan="3">
-       <widget class="QListWidget" name="list">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>50</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="3">
-       <widget class="QPushButton" name="pbSetShortestRoute">
-        <property name="text">
-         <string>Determine shortest route</string>
-        </property>
-       </widget>
-      </item>
       <item row="4" column="1" colspan="2">
        <widget class="QLabel" name="label_8">
         <property name="text">
@@ -83,7 +46,23 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="1" colspan="2">
+      <item row="10" column="1">
+       <widget class="QPushButton" name="pushButton">
+        <property name="text">
+         <string>Add</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1" colspan="3">
+       <widget class="QTreeWidget" name="tree">
+        <column>
+         <property name="text">
+          <string notr="true">1</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+      <item row="5" column="1" rowspan="2" colspan="2">
        <widget class="QLabel" name="lbDirection">
         <property name="text">
          <string>For circles the direction in which the cable runs over it is defined by the axis of the circle. Check the box to run over the circle in opposite direction.</string>
@@ -93,24 +72,44 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="2" colspan="2">
+      <item row="4" column="3">
+       <widget class="QPushButton" name="pbRemoveSelected">
+        <property name="text">
+         <string>Remove selected point</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="3">
+       <widget class="QPushButton" name="pbSetShortestRoute">
+        <property name="text">
+         <string>Determine shortest route</string>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="2" colspan="2">
        <widget class="QNodePicker" name="widgetPicker" native="true"/>
       </item>
+      <item row="6" column="3">
+       <widget class="QCheckBox" name="checkBox">
+        <property name="text">
+         <string>Show advanced options</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="1" colspan="3">
+       <widget class="QLabel" name="lblError">
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(255, 215, 251);</string>
+        </property>
+        <property name="text">
+         <string>Error if any</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
      </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; text-decoration: underline;&quot;&gt;Friction and maximum winding angles&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPushButton" name="pbAdvancedSettings">
-     <property name="text">
-      <string>Open advanced settings</string>
-     </property>
     </widget>
    </item>
   </layout>
@@ -126,9 +125,7 @@
  <tabstops>
   <tabstop>pbRemoveSelected</tabstop>
   <tabstop>pbSetShortestRoute</tabstop>
-  <tabstop>list</tabstop>
   <tabstop>pushButton</tabstop>
-  <tabstop>pbAdvancedSettings</tabstop>
  </tabstops>
  <resources/>
  <connections/>

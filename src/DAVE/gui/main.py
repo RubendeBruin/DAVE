@@ -974,6 +974,16 @@ class Gui:
                 self._requested_workspace, this_is_a_new_window=True
             )
 
+    def logcode(self, code):
+        self._codelog.append(code)
+        self.ui.teHistory.append(code)
+
+        self.tidy_history()
+
+        self.ui.teHistory.verticalScrollBar().setValue(
+            self.ui.teHistory.verticalScrollBar().maximum()
+        )  # scroll down all the way
+
     def update_warnings(self):
         """Updates the warnings label"""
         warnings = self.scene.warnings
@@ -2156,13 +2166,7 @@ class Gui:
                 else:
                     self.give_feedback(code, style=0)
 
-                self._codelog.append(code)
-                self.ui.teHistory.append(code)
-                self.tidy_history()
-
-                self.ui.teHistory.verticalScrollBar().setValue(
-                    self.ui.teHistory.verticalScrollBar().maximum()
-                )  # scroll down all the way
+                self.logcode(code)
 
                 self.ui.teFeedback.verticalScrollBar().setValue(
                     self.ui.teFeedback.verticalScrollBar().maximum()
