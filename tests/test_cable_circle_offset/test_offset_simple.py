@@ -78,7 +78,7 @@ def model():
                 diameter=0.5,
                 EA=100.0,
                 sheaves=['Circle'])
-    s['Cable_offsets'].offset = [0, 1, 0]
+    s['Cable_offsets'].offsets = [0, 1, 0]
 
     # code for Cable_original
     s.new_cable(name='Cable_original',
@@ -111,3 +111,22 @@ def test_same_results():
 
     assert_allclose(c1.get_points_for_visual(), c2.get_points_for_visual())
 
+
+def test_same_results_copy():
+
+    s = model()
+    s = s.copy()
+
+    c1 = s['Cable_offsets']
+    c2 = s['Cable_original']
+
+    # both cables should effectively be the same
+    s.update()
+
+    assert_allclose(c1.length, c2.length)
+    assert_allclose(c1.diameter, c2.diameter)
+    assert_allclose(c1.EA, c2.EA)
+    assert_allclose(c1.tension, c2.tension)
+    assert_allclose(c1.stretch, c2.stretch)
+
+    assert_allclose(c1.get_points_for_visual(), c2.get_points_for_visual())
