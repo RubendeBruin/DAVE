@@ -60,12 +60,6 @@ class Ui_ConnectionForm(object):
 
         self.gridLayout.addWidget(self.tree, 8, 1, 1, 3)
 
-        self.lbDirection = QLabel(self.frame)
-        self.lbDirection.setObjectName(u"lbDirection")
-        self.lbDirection.setWordWrap(True)
-
-        self.gridLayout.addWidget(self.lbDirection, 5, 1, 2, 2)
-
         self.pbRemoveSelected = QPushButton(self.frame)
         self.pbRemoveSelected.setObjectName(u"pbRemoveSelected")
 
@@ -93,6 +87,12 @@ class Ui_ConnectionForm(object):
 
         self.gridLayout.addWidget(self.lblError, 9, 1, 1, 3)
 
+        self.lbDirection = QLabel(self.frame)
+        self.lbDirection.setObjectName(u"lbDirection")
+        self.lbDirection.setWordWrap(True)
+
+        self.gridLayout.addWidget(self.lbDirection, 5, 1, 1, 2)
+
 
         self.verticalLayout.addWidget(self.frame)
 
@@ -109,10 +109,10 @@ class Ui_ConnectionForm(object):
         self.label_3.setText(QCoreApplication.translate("ConnectionForm", u"<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Connections (Points/Circles)</span></p></body></html>", None))
         self.label_8.setText(QCoreApplication.translate("ConnectionForm", u"Drag/drop items to change order, add or remove.", None))
         self.pushButton.setText(QCoreApplication.translate("ConnectionForm", u"Add", None))
-        self.lbDirection.setText(QCoreApplication.translate("ConnectionForm", u"For circles the direction in which the cable runs over it is defined by the axis of the circle. Check the box to run over the circle in opposite direction.", None))
-        self.pbRemoveSelected.setText(QCoreApplication.translate("ConnectionForm", u"Remove selected point", None))
-        self.pbSetShortestRoute.setText(QCoreApplication.translate("ConnectionForm", u"Determine shortest route", None))
+        self.pbRemoveSelected.setText(QCoreApplication.translate("ConnectionForm", u"Remove selected connection", None))
+        self.pbSetShortestRoute.setText(QCoreApplication.translate("ConnectionForm", u"Auto route", None))
         self.checkBox.setText(QCoreApplication.translate("ConnectionForm", u"Show advanced options", None))
         self.lblError.setText(QCoreApplication.translate("ConnectionForm", u"Error if any", None))
+        self.lbDirection.setText(QCoreApplication.translate("ConnectionForm", u"For circles the direction in which the cable runs over it is defined by the axis of the circle. Check the box to run over the circle in opposite direction.", None))
     # retranslateUi
 

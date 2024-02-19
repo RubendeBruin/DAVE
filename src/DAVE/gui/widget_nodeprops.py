@@ -1333,6 +1333,8 @@ class EditPoi(AbstractNodeEditorWithParent):
 @Singleton
 class EditConnections(NodeEditor):
     def __init__(self):
+        self.node: Cable  # type hint only
+
         widget = QtWidgets.QWidget()
         ui = DAVE.gui.forms.widget_connections.Ui_ConnectionForm()
         ui.setupUi(widget)
@@ -1342,8 +1344,6 @@ class EditConnections(NodeEditor):
 
         self._widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.additional_pois = list()
-
-        self._filling_tree = True
 
         self.ui.tree.sizeHint = lambda: QSize(0, 0)  # disable the size-hint
 
@@ -1404,8 +1404,6 @@ class EditConnections(NodeEditor):
         )
 
     def itemChanged(self, *args):
-        if self._filling_tree:
-            return
         self.generate_code()
 
     def add_item(self):
@@ -1467,26 +1465,23 @@ class EditConnections(NodeEditor):
 
         N = len(self.node.connections)
 
-        if not hasattr(self, "not_again"):
-            self.not_again = True
+        if True:
+            # self.not_again = True
 
             self.ui.tree.blockSignals(True)  # update the list
-            self._filling_tree = True  # This does not seem to work for the checkbox...? So we use a flag as well
-
             self.ui.tree.clear()
 
             for i, (connection, reversed, friction_s, maxa_s, offs) in enumerate(
                 zip(self.node.connections, self.node.reversed, frictions, mas, offsets)
             ):
-                item = QTreeWidgetItem(
-                    [
-                        " ",  # reversed
-                        connection.name,  # name
-                        offs,  # offset
-                        friction_s,  # friction
-                        maxa_s,  # max winding angle
-                    ],
-                )
+                item = QTreeWidgetItem(self.ui.tree)
+                item.setText(0, " ")
+                item.setText(1, connection.name)
+                item.setText(2, offs)
+                item.setText(3, friction_s)
+                item.setText(4, maxa_s)
+
+                self.ui.tree.addTopLevelItem(item)
 
                 if isinstance(connection, Circle):
                     item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
@@ -1498,10 +1493,7 @@ class EditConnections(NodeEditor):
 
                 item.setFlags(item.flags() | Qt.ItemIsEditable)
 
-                self.ui.tree.addTopLevelItem(item)
-
         self.ui.tree.blockSignals(False)
-        self._filling_tree = False
         self.ui.lbDirection.setVisible(labelVisible)
 
         # before this
@@ -1518,6 +1510,16 @@ class EditConnections(NodeEditor):
         self.ui.tree.setColumnHidden(2, basic)
         self.ui.tree.setColumnHidden(3, basic)
         self.ui.tree.setColumnHidden(4, basic)
+        if not basic:
+            self.ui.tree.setToolTip(
+                "Friction:"
+                "\n`-` indicates that friction can not be prescribed for that connection\n"
+                "`?` indicates that the friction is auto determined for that connection\n"
+            )
+        else:
+            self.ui.tree.setToolTip(
+                "Check the `advanced setttings` box for more options"
+            )
 
     def which_row(self, item):
         for i in range(self.ui.tree.topLevelItemCount()):

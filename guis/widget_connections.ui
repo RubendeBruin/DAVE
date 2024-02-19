@@ -62,27 +62,17 @@
         </column>
        </widget>
       </item>
-      <item row="5" column="1" rowspan="2" colspan="2">
-       <widget class="QLabel" name="lbDirection">
-        <property name="text">
-         <string>For circles the direction in which the cable runs over it is defined by the axis of the circle. Check the box to run over the circle in opposite direction.</string>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
       <item row="4" column="3">
        <widget class="QPushButton" name="pbRemoveSelected">
         <property name="text">
-         <string>Remove selected point</string>
+         <string>Remove selected connection</string>
         </property>
        </widget>
       </item>
       <item row="5" column="3">
        <widget class="QPushButton" name="pbSetShortestRoute">
         <property name="text">
-         <string>Determine shortest route</string>
+         <string>Auto route</string>
         </property>
        </widget>
       </item>
@@ -103,6 +93,16 @@
         </property>
         <property name="text">
          <string>Error if any</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1" colspan="2">
+       <widget class="QLabel" name="lbDirection">
+        <property name="text">
+         <string>For circles the direction in which the cable runs over it is defined by the axis of the circle. Check the box to run over the circle in opposite direction.</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>

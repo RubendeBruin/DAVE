@@ -1,9 +1,12 @@
+from PySide6 import QtWidgets, QtCore
+
 from DAVE import *
 from DAVE.gui import Gui
 from DAVE.gui.dock_system.dockwidget import guiEventType
 
 
-def test_cable_connections_hard_crash():
+if __name__ == '__main__':
+
     s = Scene()
 
     # auto generated python code
@@ -76,39 +79,15 @@ def test_cable_connections_hard_crash():
 
     g = Gui(scene=s, block=False)
     app = g.app
-    g.guiSelectNode("Cable")
-    app.exec()
+    g.guiSelectNode("Cable", execute_now=False)
 
-    for i in range(20):
-        app.processEvents()
-        g.run_code("s['Cable'].reversed = [True, True, False, True]", guiEventType.FULL_UPDATE)
-        app.processEvents()
-        g.run_code("s['Cable'].reversed = [False, False, False, True]", guiEventType.FULL_UPDATE)
-        g.run_code("s['Cable'].reversed = [True, False, False, True]", guiEventType.FULL_UPDATE)
-        app.processEvents()
-        g.run_code("s['Cable'].reversed = [False, False, False, True]", guiEventType.FULL_UPDATE)
-        app.processEvents()
-        g.run_code("s['Cable'].reversed = [True, True, False, True]", guiEventType.FULL_UPDATE)
-        app.processEvents()
-        g.run_code("s['Cable'].reversed = [True, False, False, True]", guiEventType.FULL_UPDATE)
-        app.processEvents()
-        g.run_code("s['Cable'].reversed = [False, False, False, True]", guiEventType.FULL_UPDATE)
-        app.processEvents()
-        g.run_code("s['Cable'].reversed = [True, True, False, True]", guiEventType.FULL_UPDATE)
-        app.processEvents()
-        g.run_code("s['Cable'].reversed = [True, False, False, True]", guiEventType.FULL_UPDATE)
-        app.processEvents()
-        g.run_code("s['Cable'].reversed = [False, False, False, True]", guiEventType.FULL_UPDATE)
-        app.processEvents()
-        g.run_code("s['Cable'].reversed = [True, True, False, True]", guiEventType.FULL_UPDATE)
-        app.processEvents()
-        g.run_code("s['Cable'].reversed = [True, False, False, True]", guiEventType.FULL_UPDATE)
-        app.processEvents()
-        g.run_code("s['Cable'].reversed = [False, False, False, True]", guiEventType.FULL_UPDATE)
-        app.processEvents()
-        g.run_code("s['Cable'].reversed = [True, True, False, True]", guiEventType.FULL_UPDATE)
-        # app.sleep(0.1)
 
-    app.exec()
+    for i in range(200):
 
+        g.run_code("s['Cable'].reversed = [True, True, False, True]", guiEventType.FULL_UPDATE)
+        g.app.processEvents()
+        g.run_code("s['Cable'].reversed = [False, False, False, True]", guiEventType.FULL_UPDATE)
+        g.app.processEvents()
+
+    g.app.exec()
 

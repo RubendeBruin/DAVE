@@ -3357,11 +3357,26 @@ class Gui:
 
     # ================= guiWidget codes
 
-    def guiEmitEvent(self, event, sender=None):
-        # Log the event except for animations
-        # if self._animation_available and event in guiEventType.MODEL_STATE_CHANGED:
-        #     pass
-        # else:
+    def guiEmitEvent(self, event: guiEventType, sender=None, execute_now: bool = False):
+        """Emits the given event to all widgets and the visual, and updates the visual as well.
+
+        If sender is provided, then the event is not send to the sender.
+
+        By default this is not executed directly but placed at the end of the event que.
+        This prevents update from removing gui widgets that are still in use.
+        (the nasty bug with the "reversed" checkboxes in the ConnectionsEditor widget)
+        To execute directly, set execute_now to True.
+
+
+        """
+        if not execute_now:
+            # make a single-shot timer to emit the event
+            DAVE_GUI_LOGGER.log(f"Gui emit event {event} from {sender} placed in que")
+            QTimer.singleShot(
+                0, lambda: self.guiEmitEvent(event, sender, execute_now=True)
+            )
+            return
+
         DAVE_GUI_LOGGER.log(f"Gui emit event {event} from {sender}")
 
         # Bring the properties editor to front if needed
@@ -3470,7 +3485,7 @@ class Gui:
         self.selected_nodes.extend(first_nodes)
         self.guiSelectNode(last_node, extend=True)
 
-    def guiSelectNode(self, node_name, extend=False, new=False):
+    def guiSelectNode(self, node_name, extend=False, new=False, execute_now=False):
         # Select a node with name, pass None to deselect all
 
         DAVE_GUI_LOGGER.log(f"Gui select node {node_name} extend {extend} new {new}")
@@ -3493,10 +3508,10 @@ class Gui:
                 self.selected_nodes.append(node)
 
         if new:
-            self.guiEmitEvent(guiEventType.NEW_NODE_ADDED)
+            self.guiEmitEvent(guiEventType.NEW_NODE_ADDED, execute_now=execute_now)
 
         if old_selection != self.selected_nodes:
-            self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
+            self.guiEmitEvent(guiEventType.SELECTION_CHANGED, execute_now=execute_now)
 
     def get_dock(self, name, send_full_update=True):
         """Returns a reference to a dock instance,

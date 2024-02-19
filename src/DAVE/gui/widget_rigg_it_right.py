@@ -21,7 +21,7 @@ The list may be empty.
 """
 from DAVE.nodes import *
 from DAVE.gui.dock_system.dockwidget import *
-from PySide6.QtWidgets import QPushButton
+from PySide6.QtWidgets import QPushButton, QVBoxLayout, QHBoxLayout
 import DAVE.scene as nodes
 from DAVE.gui.helpers.flow_layout import FlowLayout
 
@@ -222,53 +222,10 @@ def cables_slings_and_grommets(scene, selection, *args):
 
             actions.append((button, cable_code))
 
-        # # Sling
-        # if len(poi_and_sheave) > 1:
-        #     button = QPushButton('+ &Sling')
-        #     button.setIcon(QIcon(':/icons/sling.png'))
-        #
-        #     if len(poi_and_sheave) > 2:
-        #         names = ''.join([f'"{e.name}",' for e in poi_and_sheave[1:-1]])
-        #         sheaves = f', sheaves = [{names[:-1]}]'
-        #     else:
-        #         sheaves = ''
-        #
-        #     name = scene.available_name_like("Sling")
-        #     cable_code = f's.new_sling("{name}", endA="{poi_and_sheave[0].name}", endB = "{poi_and_sheave[-1].name}"{sheaves}{length_code})'
-        #
-        #     actions.append((button, cable_code))
     return actions
 
 
 QUICK_ACTION_REGISTER.append(cables_slings_and_grommets)
-
-
-def shackles(scene, selection, *args):
-    circles = nodes_of_type(selection, Circle)
-    actions = []
-
-    # a single circle is selected
-    if circles:
-        sheave = circles[0]
-
-        name = scene.available_name_like("Shackle")
-        code = f"shackle = s.new_shackle(name = '{name}')"
-        code += f'\ns.new_geometriccontact("{name}" + "_connection", "{name}_pin", "{sheave.name}", inside=True)'
-        btn = QPushButton("Insert Shackle")
-        btn.setIcon(QIcon(":/icons/shackle.png"))
-        actions.append((btn, code))
-
-    else:
-        name = scene.available_name_like("Shackle")
-        code = f"s.new_shackle(name = '{name}')"
-        btn = QPushButton("+ Shackle")
-        btn.setIcon(QIcon(":/icons/shackle.png"))
-        actions.append((btn, code))
-
-    return actions
-
-
-QUICK_ACTION_REGISTER.append(shackles)
 
 
 def con6d(scene, selection, *args):
@@ -376,9 +333,9 @@ class WidgetQuickActions(guiDockWidget):
         upon creation and guiScene etc are not yet available.
 
         """
-        self.flow_layout = FlowLayout()
+
+        self.flow_layout = FlowLayout(parent=self.contents)
         self.contents.setLayout(self.flow_layout)
-        self.buttons = []
 
     def guiProcessEvent(self, event):
         """
@@ -428,29 +385,34 @@ class WidgetQuickActions(guiDockWidget):
         # Remove everything
         self.contents.setUpdatesEnabled(False)
 
-        for button in self.buttons:
-            self.flow_layout.removeWidget(button)
-            button.deleteLater()
+        while self.flow_layout.count():
+            item = self.flow_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
 
-        self.buttons.clear()
 
         # Scan for new buttons
-
         for qa in QUICK_ACTION_REGISTER:
             actions = qa(self.guiScene, self.guiSelection)
             for action in actions:
                 btn = action[0]
                 code = action[1]
-                self.buttons.append(btn)
+
+                if not isinstance(btn, QPushButton):
+                    raise ValueError("Quick action must return a QPushButton")
+
+                # self.buttons.append(btn)
                 btn.pressed.connect(
                     lambda c=code, *args: self.guiRunCodeCallback(
                         c, guiEventType.MODEL_STRUCTURE_CHANGED
                     )
                 )
 
-        # add all buttons to the layout
+                self.flow_layout.addWidget(btn)
 
-        for button in self.buttons:
-            self.flow_layout.addWidget(button)
+        # # add all buttons to the layout
+        # for button in self.buttons:
+        #     self.flow_layout.addWidget(button)
 
         self.contents.setUpdatesEnabled(True)
