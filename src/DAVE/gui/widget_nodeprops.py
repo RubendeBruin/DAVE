@@ -1343,6 +1343,8 @@ class EditConnections(NodeEditor):
         self._widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.additional_pois = list()
 
+        self._filling_tree = True
+
         self.ui.tree.sizeHint = lambda: QSize(0, 0)  # disable the size-hint
 
         self.ui.tree.setHeaderLabels(
@@ -1402,6 +1404,8 @@ class EditConnections(NodeEditor):
         )
 
     def itemChanged(self, *args):
+        if self._filling_tree:
+            return
         self.generate_code()
 
     def add_item(self):
@@ -1429,8 +1433,6 @@ class EditConnections(NodeEditor):
         # update the combobox with points and circles
         self.ui.widgetPicker.fill("keep")
 
-        self.ui.tree.blockSignals(True)  # update the list
-        self.ui.tree.clear()
         labelVisible = False
 
         # make strings of all properties
@@ -1465,32 +1467,41 @@ class EditConnections(NodeEditor):
 
         N = len(self.node.connections)
 
-        for i, (connection, reversed, friction_s, maxa_s, offs) in enumerate(
-            zip(self.node.connections, self.node.reversed, frictions, mas, offsets)
-        ):
-            item = QTreeWidgetItem(
-                [
-                    " ",  # reversed
-                    connection.label,  # name
-                    offs,  # offset
-                    friction_s,  # friction
-                    maxa_s,  # max winding angle
-                ],
-            )
+        if not hasattr(self, "not_again"):
+            self.not_again = True
 
-            if isinstance(connection, Circle):
-                item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-                item.setCheckState(
-                    0,
-                    Qt.CheckState.Checked if reversed else Qt.CheckState.Unchecked,
+            self.ui.tree.blockSignals(True)  # update the list
+            self._filling_tree = True  # This does not seem to work for the checkbox...? So we use a flag as well
+
+            self.ui.tree.clear()
+
+            for i, (connection, reversed, friction_s, maxa_s, offs) in enumerate(
+                zip(self.node.connections, self.node.reversed, frictions, mas, offsets)
+            ):
+                item = QTreeWidgetItem(
+                    [
+                        " ",  # reversed
+                        connection.name,  # name
+                        offs,  # offset
+                        friction_s,  # friction
+                        maxa_s,  # max winding angle
+                    ],
                 )
-                labelVisible = True
 
-            item.setFlags(item.flags() | Qt.ItemIsEditable)
+                if isinstance(connection, Circle):
+                    item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+                    item.setCheckState(
+                        0,
+                        Qt.CheckState.Checked if reversed else Qt.CheckState.Unchecked,
+                    )
+                    labelVisible = True
 
-            self.ui.tree.addTopLevelItem(item)
+                item.setFlags(item.flags() | Qt.ItemIsEditable)
+
+                self.ui.tree.addTopLevelItem(item)
 
         self.ui.tree.blockSignals(False)
+        self._filling_tree = False
         self.ui.lbDirection.setVisible(labelVisible)
 
         # before this
