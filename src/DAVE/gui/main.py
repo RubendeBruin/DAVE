@@ -2299,7 +2299,8 @@ class Gui:
             dofs = self.__BackgroundSolver.DOFs
             self.__solver_gui_do_terminate = True
             self.__BackgroundSolver.Stop()
-            self.scene._vfc.set_dofs(dofs)
+            if dofs:
+                self.scene._vfc.set_dofs(dofs)
 
         def change_mobility(position, *args):
             self.__BackgroundSolver.mobility = position
