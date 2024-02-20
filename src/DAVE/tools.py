@@ -453,5 +453,5 @@ def debug_yml_dump(d):
             safe_dump(value)
         except:
             raise ValueError(
-                f"Failed to dump {key, value} to YML. Type of value is {type(value)}"
+                f"Failed to dump key '{key}' with value {value} to YML. Type of value is {type(value)}"
             )
