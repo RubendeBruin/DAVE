@@ -1550,7 +1550,7 @@ class Gui:
                 QIcon(":/v2/icons/heart_full_small.svg")
             )
 
-            # open perspective using a single shot timer
+            # open perspective using a single shot timer, fixes hard crashes
             QTimer.singleShot(0, lambda: self.dock_manager.openPerspective(name))
 
             # check if all docks are still ok
