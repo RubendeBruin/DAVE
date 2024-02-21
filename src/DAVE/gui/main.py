@@ -1546,15 +1546,16 @@ class Gui:
         if group.ID in self.dock_manager.perspectiveNames() and do_load_perspectives:
             print("Loading perspective", group.ID)
 
-            #
-            self.dock_manager.openPerspective(name)
             self.save_perspective_action.setIcon(
                 QIcon(":/v2/icons/heart_full_small.svg")
             )
 
+            # open perspective using a single shot timer
+            QTimer.singleShot(0, lambda: self.dock_manager.openPerspective(name))
+
             # check if all docks are still ok
-            for name, dock in self.guiWidgets.items():
-                assert dock == self.dock_manager.dockWidgetsMap()[name]
+            # for name, dock in self.guiWidgets.items():
+            #    assert dock == self.dock_manager.dockWidgetsMap()[name]
 
         else:
             self.save_perspective_action.setIcon(
