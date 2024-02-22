@@ -1867,6 +1867,11 @@ class Cable(NodeCoreConnected):
 
     def get_points_for_visual(self):
         """A list of 3D locations which can be used for visualization"""
+
+        if getattr(self, "_get_drawing_data_override", None):
+            points, tensions = self._get_drawing_data_override()
+            return points
+
         points, tensions = self._vfNode.get_drawing_data(
             RESOLUTION_CABLE_SAG, RESOLUTION_CABLE_OVER_CIRCLE, False
         )
@@ -1874,6 +1879,10 @@ class Cable(NodeCoreConnected):
 
     def get_points_and_tensions_for_visual(self):
         """A list of 3D locations which can be used for visualization"""
+
+        if getattr(self, "_get_drawing_data_override", None):
+            return self._get_drawing_data_override()
+
         points, tensions = self._vfNode.get_drawing_data(
             RESOLUTION_CABLE_SAG, RESOLUTION_CABLE_OVER_CIRCLE, False
         )
