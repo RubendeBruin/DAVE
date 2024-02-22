@@ -1869,7 +1869,9 @@ class Cable(NodeCoreConnected):
         """A list of 3D locations which can be used for visualization"""
 
         if getattr(self, "_get_drawing_data_override", None):
-            points, tensions = self._get_drawing_data_override()
+            points, tensions = self._get_drawing_data_override(
+                RESOLUTION_CABLE_SAG, RESOLUTION_CABLE_OVER_CIRCLE
+            )
             return points
 
         points, tensions = self._vfNode.get_drawing_data(
@@ -1881,7 +1883,9 @@ class Cable(NodeCoreConnected):
         """A list of 3D locations which can be used for visualization"""
 
         if getattr(self, "_get_drawing_data_override", None):
-            return self._get_drawing_data_override()
+            return self._get_drawing_data_override(
+                RESOLUTION_CABLE_SAG, RESOLUTION_CABLE_OVER_CIRCLE
+            )
 
         points, tensions = self._vfNode.get_drawing_data(
             RESOLUTION_CABLE_SAG, RESOLUTION_CABLE_OVER_CIRCLE, False
@@ -1891,9 +1895,17 @@ class Cable(NodeCoreConnected):
     def get_points_for_visual_blender(self):
         """A list of 3D locations which can be used for visualization"""
         constant_point_count = True
-        points, tensions = self._vfNode.get_drawing_data(
-            RENDER_CATENARY_RESOLUTION, RENDER_CURVE_RESOLUTION, constant_point_count
-        )
+
+        if getattr(self, "_get_drawing_data_override", None):
+            points, tensions = self._get_drawing_data_override(
+                RENDER_CATENARY_RESOLUTION, RENDER_CURVE_RESOLUTION
+            )
+        else:
+            points, tensions = self._vfNode.get_drawing_data(
+                RENDER_CATENARY_RESOLUTION,
+                RENDER_CURVE_RESOLUTION,
+                constant_point_count,
+            )
         return points
 
     def _add_connection_to_core(

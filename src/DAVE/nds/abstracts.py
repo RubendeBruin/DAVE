@@ -64,7 +64,7 @@ class Node(DAVENodeBase, ABC):
         self._manager: Node or None = None
         """Reference to a node that controls this node"""
 
-        self.observers = list()
+        self.observers: list[Node] = list()
         """List of nodes observing this node."""
 
         self._visible: bool = True
