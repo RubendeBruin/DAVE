@@ -93,5 +93,3 @@ def test_belly_warning_3cLoop_warn():
     s.update()
 
     assert not haswarning(cab)
-
-    DG(s)

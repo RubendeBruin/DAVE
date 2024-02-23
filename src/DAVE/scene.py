@@ -3776,6 +3776,7 @@ class Scene:
                 code.append("]")
                 code.append("for dof in solved_dofs:")
                 code.append("    try:")
+                code.append("       assert s.node_exists(dof[0])")
                 code.append("       setattr(s[dof[0]],dof[1],dof[2])")
                 code.append("    except:")
                 code.append("       pass")
