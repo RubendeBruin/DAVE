@@ -107,6 +107,10 @@ class Node(DAVENodeBase, ABC):
         """Returns a list of warnings for this node, defaults to empty list"""
         return []
 
+    def has_warning(self, txt):
+        """Returns true if the list with warnings contains a warning containing the provided text, case insensitive."""
+        return any([txt.lower() in w.lower() for w in self.warnings])
+
     @property
     def label(self) -> str:
         """Label of the node, used for display purposes [str]"""
