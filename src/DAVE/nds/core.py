@@ -1607,6 +1607,14 @@ class Cable(NodeCoreConnected):
         self._vfNode.solve_section_lengths = value
 
     @property
+    def segment_lengths(self) -> tuple[float]:
+        """Length of material in each of the segments [m,...]
+        This includes the sections on connections. The first entry is the length _on_ the first connection.
+        Sections on a Point have length 0.
+        A non-zero first entry means that the cable is a loop starting/ending with a circle, the value then represents the length of cable on the circle."""
+        return tuple(self._vfNode.material_lengths)
+
+    @property
     def friction(self) -> tuple[float]:
         """Friction factors at the connections [-]"""
         return tuple(self._friction)

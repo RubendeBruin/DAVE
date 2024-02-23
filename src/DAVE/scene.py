@@ -1359,7 +1359,15 @@ class Scene:
                 node.delete()  # deletes all created nodes, releases management
 
         depending_nodes = self.nodes_depending_on(node)
-        depending_nodes.extend([n.name for n in node.observers])
+
+        # check that all the depending nodes are still valid, if not then that is an error
+
+        for observer in node.observers:
+            if not observer.is_valid:
+                raise ValueError(
+                    f"Can not delete node {node.name} because it is observed by {observer.name} which is not a valid node.\nProbably node '{observer.name}' was deleted earlier but forgot to remove its observations"
+                )
+            depending_nodes.append(observer.name)
 
         # Referenced nodes
         # Some node-types can reference to a node (so depend on it) but do not have a hard-dependancy.
