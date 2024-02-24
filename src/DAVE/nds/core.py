@@ -1591,9 +1591,27 @@ class Cable(NodeCoreConnected):
 
     @property
     def _isloop(self):
+        """True if the cable is a loop"""
         if len(self.connections) < 2:
             return False
-        return self.connections[0] == self.connections[-1]
+        return (
+            self.connections[0] == self.connections[-1]
+            and not self._vfNode.explicit_cable_no_loop
+        )
+
+    def _set_no_loop(self):
+        """Set the cable to be a non-loop explicitly - this overrules the normal behaviour"""
+        cable_was_loop = self._isloop
+        self._vfNode.explicit_cable_no_loop = True
+
+        if cable_was_loop:
+            # update friction
+            self.friction = [f for f in self._friction if f is not None]
+            self._update_pois()
+
+    def _unset_no_loop(self):
+        """Remove the flag that sets the cable to be a loop explicitly - returning to normal behaviour"""
+        self._vfNode.explicit_cable_no_loop = False
 
     @property
     def solve_segment_lengths(self) -> bool:
@@ -1611,7 +1629,8 @@ class Cable(NodeCoreConnected):
         """Length of material in each of the segments [m,...]
         This includes the sections on connections. The first entry is the length _on_ the first connection.
         Sections on a Point have length 0.
-        A non-zero first entry means that the cable is a loop starting/ending with a circle, the value then represents the length of cable on the circle."""
+        A non-zero first entry means that the cable is a loop starting/ending with a circle, the value then represents the length of cable on the circle.
+        """
         return tuple(self._vfNode.material_lengths)
 
     @property
@@ -2062,6 +2081,9 @@ class Cable(NodeCoreConnected):
 
         if np.any(self._friction):
             code.append(f"s['{self.name}'].friction = {self._friction}")
+
+        if self._vfNode.explicit_cable_no_loop:
+            code.append(f"s['{self.name}']._set_no_loop()")
 
         return "\n".join(code)
 
