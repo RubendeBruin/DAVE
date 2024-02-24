@@ -2188,7 +2188,7 @@ class Gui:
             emitted = False
             for node in self.scene._nodes:
                 if node not in before:
-                    DAVE_GUI_LOGGER.log(f"New node detected: {node.name}")
+                    DAVE_GUI_LOGGER.log(f"New unmanaged node detected: {node.name}")
                     logging.info(f"New node detected: {node.name}")
 
                     self.selected_nodes.clear()
