@@ -300,7 +300,7 @@ class GridEdit(QWidget):
                     if self.grid.item(irow, icol) is not None:
                         self.grid.item(irow, icol).setBackground(ColorError)
                 else: # valid
-                    if self.grid.item(irow, icol).backgroundColor() == QColor():
+                    if self.grid.item(irow, icol).background().color() == QColor():
                         pass
                     else:
                         self.grid.item(irow, icol).setData(QtCore.Qt.BackgroundRole, None)
@@ -447,7 +447,7 @@ class GridEdit(QWidget):
                 if item is not None:
                     item.setBackground(ColorError)
             else:
-                if item.backgroundColor() == QColor():
+                if item.background().color() == QColor():
                     pass
                 else:
                     item.setData(QtCore.Qt.BackgroundRole, None)
