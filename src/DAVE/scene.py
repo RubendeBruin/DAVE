@@ -1610,6 +1610,10 @@ class Scene:
 
         Optional argument tags limits the evaluated nodes to nodes with the given tag(s)
         """
+
+        if not tags:
+            tags = None
+
         gov = 0
 
         for node in self.nodes_tagged(tags):  # None --> all nodes
