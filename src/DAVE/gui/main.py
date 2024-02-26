@@ -426,6 +426,9 @@ class Gui:
         self.ui.cbPainerSelect.addItems([str(k) for k in PAINTERS.keys()])
         self.ui.cbPainerSelect.currentIndexChanged.connect(self.change_paintset)
 
+        self.visual.cycle_next_painterset = self.next_paintset
+        self.visual.cycle_previous_painterset = self.previous_paintset
+
         if cog_scale >= 0:
             self.visual.cog_scale = cog_scale
 
@@ -983,6 +986,18 @@ class Gui:
         self.ui.teHistory.verticalScrollBar().setValue(
             self.ui.teHistory.verticalScrollBar().maximum()
         )  # scroll down all the way
+
+    def next_paintset(self):
+        self.paintset_move(1)
+
+    def previous_paintset(self):
+        self.paintset_move(-1)
+
+    def paintset_move(self, direction):
+        current_index = self.ui.cbPainerSelect.currentIndex()
+        new_index = (current_index + direction) % self.ui.cbPainerSelect.count()
+        self.ui.cbPainerSelect.setCurrentIndex(new_index)
+        # self.change_paintset()
 
     def update_warnings(self):
         """Updates the warnings label"""

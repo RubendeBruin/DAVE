@@ -134,6 +134,11 @@ class ActorSettings:
     # label
     labelShow = True
 
+    def set_invisible(self):
+        self.surfaceShow = False
+        self.lineWidth = 0
+        self.labelShow = False
+
 
 @dataclass
 class ViewportSettings:
@@ -626,11 +631,6 @@ animation_painters["Beam"] = copy(PAINTERS["Construction"]["Beam"])
 animation_painters["SPMT"] = copy(PAINTERS["Construction"]["SPMT"])
 
 PAINTERS["Visual"] = animation_painters
-
-# Rigging
-PAINTERS["Rigging"] = deepcopy(animation_painters)
-PAINTERS["Rigging"]["Circle"] = deepcopy(PAINTERS["Construction"]["Circle"])
-PAINTERS["Rigging"]["Cable"]["main"].labelShow = True
 
 
 # Xray

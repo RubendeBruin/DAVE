@@ -1411,6 +1411,9 @@ class Viewport:
         self.colorbar_actor = image
         """The colorbar for UCs is a static image"""
 
+        self.cycle_next_painterset = None
+        self.cycle_previous_painterset = None
+
         self.Style = BlenderStyle()
         self.Style.callbackCameraDirectionChanged = (
             self._rotate_actors_due_to_camera_movement
@@ -1457,7 +1460,6 @@ class Viewport:
 
         self.quick_updates_only = True
         self.update_visibility()
-
 
         exporter = vtkGLTFExporter()
         exporter.SetFileName(filename)  # Set the output file name
@@ -2648,6 +2650,16 @@ class Viewport:
             self.zoom_all()
             self.refresh_embeded_view()
             return True
+
+        if KEY == "BRACKETLEFT":
+            if self.cycle_next_painterset is not None:
+                self.cycle_next_painterset()
+                return True
+
+        if KEY == "BRACKETRIGHT":
+            if self.cycle_previous_painterset is not None:
+                self.cycle_previous_painterset()
+                return True
 
     def refresh_embeded_view(self):
         if self.vtkWidget is not None:
