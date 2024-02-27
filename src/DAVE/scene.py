@@ -1595,6 +1595,28 @@ class Scene:
             #
         return Path(str(zip_filename) + ".zip"), log
 
+    def load(self, filename: str or Path):
+        """Loads a DAVE file or .zip file containing a DAVE file. The file is unzipped and the DAVE file is loaded."""
+        filename = Path(filename)
+
+        # check the extension
+        if filename.suffix.lower() == ".dave":
+            self.load_package(filename)
+
+        elif filename.suffix.lower() == ".zip":
+            # Unzip the file
+            import zipfile
+            with zipfile.ZipFile(filename, "r") as zip_ref:
+                # Create a temporary directory
+                with tempfile.TemporaryDirectory() as tmp_dir:
+                    zip_ref.extractall(tmp_dir)
+                    # Find the DAVE file
+                    dave_file = Path(tmp_dir) / (filename.name[:-4] + '.dave')  # without the .zip
+                    self.load_package(dave_file)
+
+        else:
+            raise ValueError(f"Unsupported file type: {filename.suffix}")
+
     def load_package(self, filename: str or Path):
         """Loads a DAVE self-contained package file"""
         filename = Path(filename)

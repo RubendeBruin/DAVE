@@ -519,6 +519,8 @@
     <addaction name="actionVersion"/>
     <addaction name="actionOnline_help"/>
     <addaction name="actionSend_bug_report"/>
+    <addaction name="separator"/>
+    <addaction name="actionRun_automated_tests"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -1256,6 +1258,11 @@ li.checked::marker { content: &quot;\2612&quot;; }
   <action name="action3D_points_to_csv">
    <property name="text">
     <string>3D points to .csv</string>
+   </property>
+  </action>
+  <action name="actionRun_automated_tests">
+   <property name="text">
+    <string>Run automated tests</string>
    </property>
   </action>
  </widget>

@@ -523,6 +523,10 @@ class Gui:
 
         self.ui.actionSend_bug_report.triggered.connect(self.bug_report)
 
+        # -== tests
+
+        self.ui.actionRun_automated_tests.triggered.connect(self.run_tests)
+
         # --- recent files ---
 
         self.recent_files = []
@@ -976,6 +980,18 @@ class Gui:
             self.activate_dockgroup(
                 self._requested_workspace, this_is_a_new_window=True
             )
+
+    def run_tests(self):
+        """Run the automated tests"""
+        from DAVE.tester.runner import run_tests
+
+        # select a root dictionary
+        # using a Qt dialog
+        root = QFileDialog.getExistingDirectory(
+            self.MainWindow, "Select root directory for tests"
+        )
+        if root:
+            run_tests(Path(root))
 
     def logcode(self, code):
         self._codelog.append(code)
