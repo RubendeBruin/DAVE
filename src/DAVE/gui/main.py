@@ -2788,6 +2788,8 @@ class Gui:
             code = 's.save_scene(r"{}")'.format(filename)
             self.run_code(code, guiEventType.NOTHING)
 
+            self.scene.current_directory = Path(filename).parent
+
             self._model_has_changed = False
             self.modelfilename = filename
             self.MainWindow.setWindowTitle(f"DAVE [{self.modelfilename}]")

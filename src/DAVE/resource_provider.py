@@ -111,10 +111,10 @@ class DaveResourceProvider:
             elif filename.startswith("res:"):
                 file = self._get_resource_path(filename[4:].strip())
 
-            # check if the filename is a full path
+            # check if the filename is a full path to a file
             else:
                 f = Path(filename)
-                if f.exists():
+                if f.is_file():
                     file = f
                 else:
                     # gracefully handle the error if use forgot to add 'res:'
@@ -176,7 +176,7 @@ class DaveResourceProvider:
         # check if the filename is a relative path
         for p in self.resources_paths:
             f = p / filename
-            if f.exists():
+            if f.is_file():
                 return f
 
         # if we get here, the file does not exist

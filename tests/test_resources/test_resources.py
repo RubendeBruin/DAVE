@@ -78,3 +78,12 @@ def test_nested_resources():
     for r,p in resource_list:
         print(r, p)
 
+def test_empty_is_not_a_valid_resource():
+    """Empty string is not a valid resource path."""
+    s = Scene()
+    assert not s.is_valid_resource_path('')
+
+def test_dot_is_not_a_valid_resource():
+    """Empty string is not a valid resource path."""
+    s = Scene()
+    assert not s.is_valid_resource_path('.')
