@@ -307,14 +307,14 @@ class NodeEditor(ABC):
     def widget(self) -> QtWidgets.QWidget:
         return self._widget
 
-    def run_code(self, code, event=None, sender=None):
+    def run_code(self, code, event=None, sender=None, store_undo=True):
         if code == "":
             return
 
         if event is None:
-            self._run_code(code, sender=sender)
+            return self._run_code(code, sender=sender, store_undo=store_undo)
         else:
-            self._run_code(code, event, sender=sender)
+            return self._run_code(code, event, sender=sender, store_undo=store_undo)
 
     @abstractmethod
     def post_update_event(self):
@@ -3082,13 +3082,19 @@ class WidgetNodeProps(guiDockWidget):
             for w in self._node_editors:
                 w.post_update_event()
 
-    def run_code(self, code, event=None, sender=None):
+    def run_code(self, code, event=None, sender=None, store_undo=True):
         if event is None:
-            self.guiRunCodeCallback(
-                code, guiEventType.SELECTED_NODE_MODIFIED, sender=sender
+            return self.guiRunCodeCallback(
+                code,
+                guiEventType.SELECTED_NODE_MODIFIED,
+                sender=sender,
+                store_undo=store_undo,
             )
         else:
-            self.guiRunCodeCallback(code, event, sender=sender)
+            return self.guiRunCodeCallback(
+                code, event, sender=sender, store_undo=store_undo
+            )
+
         self.check_for_warnings()
 
     def check_for_warnings(self):

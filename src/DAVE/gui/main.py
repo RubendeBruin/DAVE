@@ -2064,7 +2064,7 @@ class Gui:
             else:
                 QMessageBox.warning(self.ui.widget, "error", what, QMessageBox.Ok)
 
-    def run_code(self, code, event, store_undo=True, sender=None):
+    def run_code(self, code, event, store_undo=True, sender=None) -> bool:
         """Runs the provided code
 
         If successful, add code to history and create an undo point
@@ -2074,7 +2074,10 @@ class Gui:
             - event : the event to send after running the code
             - store_undo : store undo information AFTER running code
 
+        Returns True if code was executed without errors. False otherwise
+
         """
+
         if isinstance(code, (list, tuple)):
             code = "\n".join(code)
 
@@ -2226,6 +2229,8 @@ class Gui:
 
             if select_node_name_edit_field:
                 self.place_input_focus_on_name_of_node()
+
+        return executed
 
     def place_input_focus_on_name_of_node(self):
         """Places the input focus on the name of the node such that the user can directly change it if needed"""
