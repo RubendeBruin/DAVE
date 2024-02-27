@@ -286,7 +286,6 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
         self.treeView.header().setVisible(False)
         self.treeView.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
 
-
         self.treeView.activated.connect(
             self.tree_select_node
         )  # fires when a user presses [enter]
@@ -372,7 +371,6 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
 
         self.tbFilter.editTextChanged.connect(self.filter_changed)
 
-
     def guiProcessEvent(self, event):
         if event in [
             guiEventType.MODEL_STRUCTURE_CHANGED,
@@ -446,7 +444,7 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
 
     def tree_select_node(self, index):
         if index.column() == 0:
-            node_name = index.data()
+            node_name = index.data(Qt.ToolTipRole)  # get from the tool-tip instead
             self.guiSelectNode(node_name)
 
     def item_clicked(self, data):
