@@ -511,6 +511,8 @@
     <addaction name="actionDegrees_of_Freedom_editor"/>
     <addaction name="separator"/>
     <addaction name="actionSet_input_focus_to_viewport"/>
+    <addaction name="separator"/>
+    <addaction name="actionRestore_right_side_docks"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -1263,6 +1265,11 @@ li.checked::marker { content: &quot;\2612&quot;; }
   <action name="actionRun_automated_tests">
    <property name="text">
     <string>Run automated tests</string>
+   </property>
+  </action>
+  <action name="actionRestore_right_side_docks">
+   <property name="text">
+    <string>Restore right side docks --&gt;</string>
    </property>
   </action>
  </widget>

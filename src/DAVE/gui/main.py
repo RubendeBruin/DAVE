@@ -689,6 +689,10 @@ class Gui:
             self.focus_on_viewport
         )
 
+        self.ui.actionRestore_right_side_docks.triggered.connect(
+            self.restore_right_side_docks
+        )
+
         self.ui.pbTop.clicked.connect(self.visual.Style.SetViewZ)
         self.ui.pbFront.clicked.connect(self.visual.Style.SetViewY)
         self.ui.pbSide.clicked.connect(self.visual.Style.SetViewX)
@@ -761,27 +765,33 @@ class Gui:
         )
 
         # Add the global docks
-        add_global_dock(
-            self.dock_manager, self.get_dock("Properties"), icon=":/v2/icons/pencil.svg"
-        )
 
-        add_global_dock(
+        self._global_docks = []
+
+
+        self._global_docks.append(add_global_dock(
+            self.dock_manager, self.get_dock("Properties"), icon=":/v2/icons/pencil.svg"
+        ))
+
+        self._global_docks.append(add_global_dock(
             self.dock_manager,
             self.get_dock("Environment"),
             icon=":/v2/icons/environment.svg",
-        )
+        ))
 
-        add_global_dock(
+        self._global_docks.append(add_global_dock(
             self.dock_manager,
             self.get_dock("Derived Properties"),
             icon=":/v2/icons/magnifier90.svg",
-        )
-        add_global_dock(
+        ))
+
+        self._global_docks.append(add_global_dock(
             self.dock_manager, self.get_dock("Watches"), icon=":/v2/icons/glasses.svg"
-        )
-        add_global_dock(
+        ))
+
+        self._global_docks.append(add_global_dock(
             self.dock_manager, self.get_dock("Tags"), icon=":/v2/icons/tag.svg"
-        )
+        ))
 
         # ------ Add the permanent docks -------
         self.docks_permanent = [self.central_dock_widget]
@@ -867,7 +877,7 @@ class Gui:
 
         # right part of right toolbar
 
-        self.toolbar_top_right.addWidget(QtWidgets.QLabel("Solve:  "))
+        self.toolbar_top_right.addWidget(QtWidgets.QLabel("Solve [alt+s]: "))
         self.solveAction = QAction("Solve", self.MainWindow)
         self.solveAction.setToolTip("Solve statics [Alt+S]")
         self.solveAction.triggered.connect(self.solve_statics)
@@ -980,6 +990,13 @@ class Gui:
             self.activate_dockgroup(
                 self._requested_workspace, this_is_a_new_window=True
             )
+
+    def restore_right_side_docks(self):
+        """Restores the right side docks to their default state"""
+        # This is a work-around
+
+        for dock in self._global_docks:
+            dock_show(self.dock_manager, dock, True)
 
     def run_tests(self):
         """Run the automated tests"""
