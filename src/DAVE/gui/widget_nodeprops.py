@@ -1375,6 +1375,7 @@ class EditConnections(NodeEditor):
 
         ui.checkBox.toggled.connect(self.post_update_event)
 
+
         # ui.tree.editItem = self.editItem
 
     def connect(
@@ -1409,15 +1410,18 @@ class EditConnections(NodeEditor):
     def add_item(self):
         name = self.ui.widgetPicker.value
         if self.scene.node_exists(name):
-            # get a selected node
-            index = self.ui.tree.count()
-            for i in range(index):
-                if self.ui.tree.item(i).isSelected():
-                    index = i
-                    break
 
             node_names = [node.name for node in self.node.connections]
-            node_names.insert(index, name)
+
+            # See if any of the items in the tree is selected,
+            # if so, insert the new item before the selected item
+            selected = self.ui.tree.selectedItems()
+            if selected:
+                index = self.ui.tree.indexOfTopLevelItem(selected[0])
+                node_names.insert(index, name)
+            else:
+                node_names.append(name)
+
 
             code = f"s['{self.node.name}'].connections = ("
             for name in node_names:
@@ -1465,34 +1469,38 @@ class EditConnections(NodeEditor):
 
         N = len(self.node.connections)
 
-        if True:
-            # self.not_again = True
 
-            self.ui.tree.blockSignals(True)  # update the list
-            self.ui.tree.clear()
+        self.ui.tree.blockSignals(True)  # update the list
+        self.ui.tree.clear()
 
-            for i, (connection, reversed, friction_s, maxa_s, offs) in enumerate(
-                zip(self.node.connections, self.node.reversed, frictions, mas, offsets)
-            ):
-                item = QTreeWidgetItem(self.ui.tree)
-                item.setText(0, " ")
-                item.setText(1, connection.name)
-                item.setText(2, offs)
-                item.setText(3, friction_s)
-                item.setText(4, maxa_s)
+        for i, (connection, reversed, friction_s, maxa_s, offs) in enumerate(
+            zip(self.node.connections, self.node.reversed, frictions, mas, offsets)
+        ):
+            item = QTreeWidgetItem(self.ui.tree)
+            item.setText(0, " ")
+            item.setText(1, connection.name)
+            item.setText(2, offs)
+            item.setText(3, friction_s)
+            item.setText(4, maxa_s)
 
-                self.ui.tree.addTopLevelItem(item)
+            self.ui.tree.addTopLevelItem(item)
 
-                if isinstance(connection, Circle):
-                    item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-                    item.setCheckState(
-                        0,
-                        Qt.CheckState.Checked if reversed else Qt.CheckState.Unchecked,
-                    )
-                    labelVisible = True
+            if isinstance(connection, Circle):
+                item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+                item.setCheckState(
+                    0,
+                    Qt.CheckState.Checked if reversed else Qt.CheckState.Unchecked,
+                )
+                labelVisible = True
 
-                item.setFlags(item.flags() | Qt.ItemIsEditable)
+            item.setFlags(item.flags() | Qt.ItemIsEditable)
 
+        # get the model-index of the first item
+        index = self.ui.tree.indexFromItem(self.ui.tree.topLevelItem(0))
+        rowheight = self.ui.tree.rowHeight(index)
+
+        n_rows = max(6, N+3)
+        self.ui.tree.setMinimumHeight(n_rows * rowheight)
         self.ui.tree.blockSignals(False)
         self.ui.lbDirection.setVisible(labelVisible)
 
