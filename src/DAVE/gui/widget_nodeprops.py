@@ -1770,7 +1770,7 @@ class EditCable(NodeEditor):
 
         code += code_if_changed_d(self.node, new_EA, "EA")  # ea before length
         code += code_if_changed_d(self.node, new_length, "length")
-        code += code_if_changed_d(self.node, new_diameter, "diameter")
+        code += code_if_changed_d(self.node, new_diameter, "diameter", dec=6)
         code += code_if_changed_d(self.node, new_mass_per_length, "mass_per_length")
         code += code_if_changed_d(self.node, self.ui.doubleSpinBox_4.value(), "mass")
         code += code_if_changed_b(

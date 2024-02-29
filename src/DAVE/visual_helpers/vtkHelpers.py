@@ -328,8 +328,10 @@ def create_tube_data(new_points, diameter, colors = None):
     tuf.SetNumberOfSides(12)
     tuf.SetInputData(polyln)
 
-    dia = max(diameter, 0.1)
-    tuf.SetRadius(dia / 2)
+    if diameter < 1e-3:
+        diameter = 0.1
+
+    tuf.SetRadius(diameter / 2)
 
     tuf.Update()
 
