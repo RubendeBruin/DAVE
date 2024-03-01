@@ -82,7 +82,7 @@ class QNodePicker(QWidget):
         if property_name == 'keep':
             self.setValue(old_value)
         else:
-            prop_node = getattr(self.node, property_name)
+            prop_node = getattr(self.node, property_name, None)
 
             if prop_node is None:
                 self.setValue('')
