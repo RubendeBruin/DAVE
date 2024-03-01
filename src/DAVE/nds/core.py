@@ -441,8 +441,8 @@ class WindOrCurrentArea(NodeCoreConnected, HasParentCore):
 
     @property
     def direction(self) -> tuple[float, float, float]:
-        """Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is
-        the direction of the axis and for 'sphere' this is not used [m,m,m]"""
+        """Direction [m,m,m], Interpretation depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is
+        the direction of the axis and for 'sphere' this is not used."""
         return self._vfNode.direction
 
     @direction.setter
@@ -454,7 +454,7 @@ class WindOrCurrentArea(NodeCoreConnected, HasParentCore):
 
     @property
     def areakind(self) -> AreaKind:
-        """Defines how to interpret the area.
+        """Defines how to interpret the area [kind].
         See also: `direction`"""
         return AreaKind(self._vfNode.type)
 

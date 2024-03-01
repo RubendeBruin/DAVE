@@ -442,7 +442,8 @@ class NodeCoreConnected(Node):
 
     @property
     def warnings(self) -> list[str]:
-        """Returns a list of warnings for this node, if any"""
+        """Returns a list of warnings for this node, if any
+        #NOGUI"""
         return self._vfNode.warnings
 
     @name.setter

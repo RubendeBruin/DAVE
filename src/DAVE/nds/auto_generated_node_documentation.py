@@ -576,6 +576,25 @@ info = NodePropertyInfo(node_class=cls,
 DAVE_NODEPROP_INFO[cls]["solve_segment_lengths"] = info
 
 
+# Property: segment_lengths
+info = NodePropertyInfo(node_class=cls,
+                        property_name="segment_lengths",
+                        property_type=tuple,
+                        doc_short="""Length of material in each of the segments """,
+                        doc_long = """Length of material in each of the segments [m,...]
+        This includes the sections on connections. The first entry is the length _on_ the first connection.
+        Sections on a Point have length 0.
+        A non-zero first entry means that the cable is a loop starting/ending with a circle, the value then represents the length of cable on the circle.
+        """,
+                        units = """[m,...]""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["segment_lengths"] = info
+
+
 # Property: friction
 info = NodePropertyInfo(node_class=cls,
                         property_name="friction",
@@ -619,6 +638,21 @@ info = NodePropertyInfo(node_class=cls,
                         is_single_numeric = False
                         )
 DAVE_NODEPROP_INFO[cls]["max_winding_angles"] = info
+
+
+# Property: offsets
+info = NodePropertyInfo(node_class=cls,
+                        property_name="offsets",
+                        property_type=tuple,
+                        doc_short="""Offset of the cable at each of the connections """,
+                        doc_long = """Offset of the cable at each of the connections [m]""",
+                        units = """[m]""",
+                        remarks="""""",
+                        is_settable=True,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["offsets"] = info
 
 
 # Property: friction_forces
@@ -2270,6 +2304,21 @@ info = NodePropertyInfo(node_class=cls,
 DAVE_NODEPROP_INFO[cls]["path"] = info
 
 
+# Property: imported_nodes
+info = NodePropertyInfo(node_class=cls,
+                        property_name="imported_nodes",
+                        property_type=tuple,
+                        doc_short="""Returns a tuple of all nodes that were imported from the subscene, including recursively imported nodes from subscenes of subscenes""",
+                        doc_long = """Returns a tuple of all nodes that were imported from the subscene, including recursively imported nodes from subscenes of subscenes""",
+                        units = """""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["imported_nodes"] = info
+
+
 # Property: exposed_properties
 info = NodePropertyInfo(node_class=cls,
                         property_name="exposed_properties",
@@ -2568,6 +2617,36 @@ info = NodePropertyInfo(node_class=cls,
                         is_single_numeric = False
                         )
 DAVE_NODEPROP_INFO[cls]["name"] = info
+
+
+# Property: warnings
+info = NodePropertyInfo(node_class=cls,
+                        property_name="warnings",
+                        property_type=list,
+                        doc_short="""Returns a list of warnings for this node, defaults to empty list""",
+                        doc_long = """Returns a list of warnings for this node, defaults to empty list""",
+                        units = """""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["warnings"] = info
+
+
+# Property: label
+info = NodePropertyInfo(node_class=cls,
+                        property_name="label",
+                        property_type=str,
+                        doc_short="""Label of the node, used for display purposes """,
+                        doc_long = """Label of the node, used for display purposes [str]""",
+                        units = """[str]""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["label"] = info
 
 
 # Property: visible
@@ -2902,6 +2981,96 @@ info = NodePropertyInfo(node_class=cls,
                         is_single_numeric = False
                         )
 DAVE_NODEPROP_INFO[cls]["applied_force_and_moment_global"] = info
+
+
+# Property: fgx
+info = NodePropertyInfo(node_class=cls,
+                        property_name="fgx",
+                        property_type=float,
+                        doc_short="""x component of applied force  """,
+                        doc_long = """x component of applied force [kN] (global axis)""",
+                        units = """[kN]""",
+                        remarks="""global axis""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["fgx"] = info
+
+
+# Property: fgy
+info = NodePropertyInfo(node_class=cls,
+                        property_name="fgy",
+                        property_type=float,
+                        doc_short="""y component of applied force  """,
+                        doc_long = """y component of applied force [kN] (global axis)""",
+                        units = """[kN]""",
+                        remarks="""global axis""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["fgy"] = info
+
+
+# Property: fgz
+info = NodePropertyInfo(node_class=cls,
+                        property_name="fgz",
+                        property_type=float,
+                        doc_short="""z component of applied force  """,
+                        doc_long = """z component of applied force [kN] (global axis)""",
+                        units = """[kN]""",
+                        remarks="""global axis""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["fgz"] = info
+
+
+# Property: mgx
+info = NodePropertyInfo(node_class=cls,
+                        property_name="mgx",
+                        property_type=float,
+                        doc_short="""x component of applied moment  """,
+                        doc_long = """x component of applied moment [kNm] (global axis)""",
+                        units = """[kNm]""",
+                        remarks="""global axis""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["mgx"] = info
+
+
+# Property: mgy
+info = NodePropertyInfo(node_class=cls,
+                        property_name="mgy",
+                        property_type=float,
+                        doc_short="""y component of applied moment  """,
+                        doc_long = """y component of applied moment [kNm] (global axis)""",
+                        units = """[kNm]""",
+                        remarks="""global axis""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["mgy"] = info
+
+
+# Property: mgz
+info = NodePropertyInfo(node_class=cls,
+                        property_name="mgz",
+                        property_type=float,
+                        doc_short="""z component of applied moment  """,
+                        doc_long = """z component of applied moment [kNm] (global axis)""",
+                        units = """[kNm]""",
+                        remarks="""global axis""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["mgz"] = info
 
 
 # Property: gx
@@ -3765,10 +3934,10 @@ DAVE_NODEPROP_INFO[cls]["Cd"] = info
 info = NodePropertyInfo(node_class=cls,
                         property_name="direction",
                         property_type=tuple,
-                        doc_short="""Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is""",
-                        doc_long = """Depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is
-        the direction of the axis and for 'sphere' this is not used [m,m,m]""",
-                        units = """""",
+                        doc_short="""Direction , Interpretation depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is""",
+                        doc_long = """Direction [m,m,m], Interpretation depends on 'areakind'. For 'plane' this is the direction of the normal of the plane, for 'cylindrical' this is
+        the direction of the axis and for 'sphere' this is not used.""",
+                        units = """[m,m,m]""",
                         remarks="""""",
                         is_settable=True,
                         is_single_settable = False,
@@ -3781,10 +3950,10 @@ DAVE_NODEPROP_INFO[cls]["direction"] = info
 info = NodePropertyInfo(node_class=cls,
                         property_name="areakind",
                         property_type=DAVE_ADDITIONAL_RUNTIME_MODULES["AreaKind"],
-                        doc_short="""Defines how to interpret the area.""",
-                        doc_long = """Defines how to interpret the area.
+                        doc_short="""Defines how to interpret the area .""",
+                        doc_long = """Defines how to interpret the area [kind].
         See also: `direction`""",
-                        units = """""",
+                        units = """[kind]""",
                         remarks="""""",
                         is_settable=True,
                         is_single_settable = True,

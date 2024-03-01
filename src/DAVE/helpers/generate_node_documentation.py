@@ -70,6 +70,8 @@ def generate_python_code(cls, imports=True):
                     is_single = True
                 elif isinstance(property_type, type(dict)):
                     is_single = False
+                elif str(property_type).startswith("list"):
+                    is_single = False
                 else:
                     raise ValueError(
                         f"Could not determine what to do with this type: {property_type}"

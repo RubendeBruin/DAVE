@@ -77,16 +77,19 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
 
     @property
     def warnings(self) -> list[str]:
-        """Returns a list of warnings that are present on this node"""
+        """Returns a list of warnings that are present on this node
+        #NOGUI
+        """
         ws = list(self._vfNode.warnings)
 
         # check for unsupported dofs
         # if two of the rotational dofs are free and the third is fixed then we have strange rotations
         if len([i for i in self.fixed[3:] if i == False]) == 2:
-            ws.append("Frame:100 2 out of 3 rotational dofs are free. This is not recommended")
+            ws.append(
+                "Frame:100 2 out of 3 rotational dofs are free. This is not recommended"
+            )
 
         return ws
-
 
     @property
     def inertia(self) -> float:
@@ -1200,6 +1203,36 @@ class Point(NodeCoreConnected, HasParentCore, HasFootprint):
     ) -> tuple[float, float, float, float, float, float]:
         """Applied force and moment on this point [kN, kN, kN, kNm, kNm, kNm] (Global axis)"""
         return self._vfNode.applied_force
+
+    @property
+    def fgx(self) -> float:
+        """x component of applied force [kN] (global axis)"""
+        return self.applied_force_and_moment_global[0]
+
+    @property
+    def fgy(self) -> float:
+        """y component of applied force [kN] (global axis)"""
+        return self.applied_force_and_moment_global[1]
+
+    @property
+    def fgz(self) -> float:
+        """z component of applied force [kN] (global axis)"""
+        return self.applied_force_and_moment_global[2]
+
+    @property
+    def mgx(self) -> float:
+        """x component of applied moment [kNm] (global axis)"""
+        return self.applied_force_and_moment_global[3]
+
+    @property
+    def mgy(self) -> float:
+        """y component of applied moment [kNm] (global axis)"""
+        return self.applied_force_and_moment_global[4]
+
+    @property
+    def mgz(self) -> float:
+        """z component of applied moment [kNm] (global axis)"""
+        return self.applied_force_and_moment_global[5]
 
     @property
     def gx(self) -> float:
