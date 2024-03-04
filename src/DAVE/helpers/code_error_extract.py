@@ -9,7 +9,6 @@ def get_code_error(code):
     # get the type of the last exception
     # if it is a SyntaxError, we can extract the line number
 
-
     # get traceback to code
     exc_type, exc_value, exc_traceback = sys.exc_info()
     traceback_details = traceback.extract_tb(exc_traceback)
@@ -18,7 +17,12 @@ def get_code_error(code):
         # code_error = f"Syntax error on line {exc_value.lineno}: {exc_value.text}"
         line_number = exc_value.lineno
     else:
-        filename, line_number, func_name, text = traceback_details[1]  # get the last frame
+        if len(traceback_details) > 1:
+            filename, line_number, func_name, text = traceback_details[1]   # get the last frame
+        else:
+            filename, line_number, func_name, text = traceback_details[
+                0
+            ]  # fallback
 
     code_error = f"An error occurred on line {line_number}: "
 
@@ -29,4 +33,3 @@ def get_code_error(code):
         code_error += f"\n{i + 1}:      {lines[i]}"
 
     return code_error
-

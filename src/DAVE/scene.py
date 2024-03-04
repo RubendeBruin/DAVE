@@ -1606,12 +1606,15 @@ class Scene:
         elif filename.suffix.lower() == ".zip":
             # Unzip the file
             import zipfile
+
             with zipfile.ZipFile(filename, "r") as zip_ref:
                 # Create a temporary directory
                 with tempfile.TemporaryDirectory() as tmp_dir:
                     zip_ref.extractall(tmp_dir)
                     # Find the DAVE file
-                    dave_file = Path(tmp_dir) / (filename.name[:-4] + '.dave')  # without the .zip
+                    dave_file = Path(tmp_dir) / (
+                        filename.name[:-4] + ".dave"
+                    )  # without the .zip
                     self.load_package(dave_file)
 
         else:
@@ -3943,6 +3946,12 @@ class Scene:
         import DAVE
 
         locals = DAVE.__dict__
+
+        stored = False
+        if "s" in locals:
+            stored = True
+            store_s = locals["s"]
+
         locals["s"] = self
 
         if package_folder is not None:
@@ -3952,6 +3961,12 @@ class Scene:
 
         try:
             exec(code, {}, locals)
+
+            # self-check (pun intended)
+            if self is not locals["s"]:
+                raise Exception(
+                    "The scene has been re-assigned. This is not allowed in the run_code function"
+                )
         except Exception as M:
             message = get_code_error(code)
 
@@ -3961,6 +3976,10 @@ class Scene:
                 print(message)  # fallback for older python versions
 
             raise M
+
+        finally:
+            if stored:
+                locals["s"] = store_s  # restore the original s
 
     def load_scene(self, filename=None):
         """Loads the contents of filename into the current scene.
