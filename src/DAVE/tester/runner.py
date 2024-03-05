@@ -111,12 +111,12 @@ def parse_assertions(code):
 
         token = line.split('=')[0].strip()
 
-        if token.lower() == 'value':
-            assertions[-1].value = line.split('=')[1].strip()
-        elif token.lower() == 'expect':
-            assertions[-1].expect = line.split('=')[1].strip()
-        elif token.lower() == 'tol':
-            assertions[-1].tolerance = float(line.split('=')[1].strip())
+        if token.lower() == "value":
+            assertions[-1].value = line.split("=")[1].strip()
+        elif token.lower() == "expected":
+            assertions[-1].expect = line.split("=")[1].strip()
+        elif token.lower() == "tol":
+            assertions[-1].tolerance = float(line.split("=")[1].strip())
         else:
             if assertions[-1].description == "":
                 assertions[-1].description = line.strip()

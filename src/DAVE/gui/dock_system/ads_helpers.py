@@ -44,8 +44,7 @@ import PySide6QtAds
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QIcon, Qt
 
-
-# from DAVE.gui.helpers.my_qt_helpers import remove_from_stylesheet
+VERSION = "4.1.0.3"  # "4.2.1"
 
 
 def customize_stylesheet(stylesheet: str, identifier: str) -> str:
@@ -95,13 +94,19 @@ def create_dock_manager(main_window, settings=None):
 
     # auto-hide icons
 
-    PySide6QtAds.CDockManager.setAutoHideConfigFlag(
-        PySide6QtAds.CDockManager.DefaultAutoHideConfig
-    )
+    if VERSION == "4.2.1":
+        # 4.2.1
+        PySide6QtAds.CDockManager.setAutoHideConfigFlags(
+            PySide6QtAds.ads.CDockManager.eAutoHideFlag.AutoHideSideBarsIconOnly
+        )
+    else:
+        PySide6QtAds.CDockManager.setAutoHideConfigFlag(
+            PySide6QtAds.CDockManager.DefaultAutoHideConfig
+        )
 
-    PySide6QtAds.CDockManager.setAutoHideConfigFlag(
-        PySide6QtAds.CDockManager.AutoHideSideBarsIconOnly, True
-    )
+        PySide6QtAds.CDockManager.setAutoHideConfigFlag(
+            PySide6QtAds.CDockManager.AutoHideSideBarsIconOnly, True
+        )
 
     dock_manager = PySide6QtAds.CDockManager(main_window)
 
@@ -158,8 +163,17 @@ def dock_remove_from_gui(
     if d.isClosed():
         return
 
+
     if d.isVisible() or d.isHidden():
-        d.toggleViewAction().trigger()
+
+        # if a custom close action is present then use that,
+        # otherwise use the default close action
+
+        # if d.getFeature(PySide6QtAds.CDockWidget.DockWidgetFeature.CustomCloseHandling):
+        if PySide6QtAds.CDockWidget.DockWidgetFeature.CustomCloseHandling in d.features():
+            d.closeRequested.emit()
+        else:
+            d.toggleViewAction().trigger()
 
 
 def dock_show(manager: PySide6QtAds.CDockManager, d: PySide6QtAds.CDockWidget, force_bring_to_front=False):
@@ -198,9 +212,13 @@ def _dock_return_to_hidden_state(d: PySide6QtAds.CDockWidget):
 
     d.toggleViewAction().trigger()  # removes the dock from the gui
 
-    manager.addAutoHideDockWidget(
-        PySide6QtAds._ads.SideBarLocation.SideBarRight, d
-    )  # Ref: https://github.com/mborgerson/pyside6_PySide6QtAds/issues/23
+    if VERSION == "4.2.1":
+        manager.addAutoHideDockWidget(PySide6QtAds.ads.SideBarLocation.SideBarRight, d)
+
+    else:
+        manager.addAutoHideDockWidget(
+            PySide6QtAds._ads.SideBarLocation.SideBarRight, d
+        )  # Ref: https://github.com/mborgerson/pyside6_PySide6QtAds/issues/23
 
 
 def add_global_dock(
