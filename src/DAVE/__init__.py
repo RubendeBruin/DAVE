@@ -70,7 +70,9 @@ __all__ = [
 
 
 # convenience function for showing the gui
-def DG(scene=None, bare=False, block=True):
+def DG(
+    scene: object = None, bare: object = False, block: object = True, autosave=True
+) -> object:
     print("loading gui")
     from .gui import Gui
 
@@ -117,4 +119,4 @@ def DG(scene=None, bare=False, block=True):
         except:
             pass
 
-    return Gui(scene, block=block)
+    return Gui(scene, block=block, autosave_enabled=autosave)

@@ -13,6 +13,7 @@ import warnings
 import weakref
 import datetime
 from copy import deepcopy
+from fnmatch import fnmatch
 from graphlib import TopologicalSorter
 from os.path import isdir, isfile
 from os import mkdir
@@ -77,8 +78,6 @@ class Scene:
 
         a = Scene() # another world
         a.new_point('a point')
-
-
     """
 
     def __init__(
@@ -1313,6 +1312,73 @@ class Scene:
                 tgs.add(tag)
         return tuple(tgs)
 
+    def nodes_where(
+        self,
+        name: str or None = None,
+        kind: type or None = None,
+        tag: str or None = None,
+        managed: bool or None = None,
+        family_of: Node or None = None,
+        on: Node or None = None,
+        core_connected_to: Node or None = None,
+        fixed_to: Node or str or None = None,
+    ):
+        """Returns a list of nodes that satisfy the given criteria
+        See documentation"""
+
+        r = []
+
+        if on is not None:
+            all_parents = self.nodes_with_parent(on, recursive=True)
+        else:
+            all_parents = None
+
+        # loop over all nodes
+        for node in self._nodes:
+            if name is not None:
+                # match name to node.name using wildcards
+                if not fnmatch(node.name, name):
+                    continue
+
+            if kind is not None:
+                if not isinstance(node, kind):
+                    continue
+
+            if tag is not None:
+                if not node.has_tag(tag):
+                    continue
+
+            if managed is not None:
+                if (node.manager is None) != managed:
+                    continue
+
+            if family_of is not None:
+                if not self.common_ancestor_of_nodes(family_of, node):
+                    continue
+
+            if on is not None:
+                if node.parent != all_parents:
+                    continue
+
+            if core_connected_to is not None:
+                if not self.node_A_core_depends_on_B_core(node, core_connected_to):
+                    continue
+            if fixed_to is not None:
+                if node == fixed_to:
+                    continue  # explicitly exclude the node itself
+
+                fixed = False
+                try:
+                    fixed = self.node_is_fully_fixed_to(node, fixed_to)
+                except ValueError:
+                    pass
+
+                if not fixed:
+                    continue
+            r.append(node)
+
+        return r
+
     def _unmanage_and_delete(self, nodes):
         """Un-manages as collection of nodes and then deletes them"""
         for node in nodes:
@@ -1480,22 +1546,6 @@ class Scene:
                 pass
 
         return dissolved_node_names
-
-    # # TODO: can be deleted?
-    # def savepoint_make(self):
-    #     """Makes a safepoint if non is present"""
-    #     if self._savepoint is None:
-    #         self._savepoint = self.give_python_code()
-    #
-    # # TODO: can be deleted?
-    # def savepoint_restore(self):
-    #     if self._savepoint is not None:
-    #         self.clear()
-    #         self.run_code(self._savepoint)
-    #         self._savepoint = None
-    #         return True
-    #     else:
-    #         return False
 
     def create_standalone_copy(
         self, target_dir, filename, include_visuals=True, flatten=False
@@ -3423,146 +3473,6 @@ class Scene:
         r.parent = parent
 
         return r
-
-    # def new_sling(
-    #     self,
-    #     name,
-    #     length: float = -1,
-    #     EA=None,
-    #     mass=0.1,
-    #     endA=None,
-    #     endB=None,
-    #     LeyeA=None,
-    #     LeyeB=None,
-    #     LspliceA=None,
-    #     LspliceB=None,
-    #     diameter=0.1,
-    #     sheaves=None,
-    #     k_total=None,
-    # ) -> Sling:
-    #     """
-    #     Creates a new sling, adds it to the scene and returns a reference to the newly created object.
-    #
-    #     See Also:
-    #         Sling
-    #
-    #     Args:
-    #         name:    name
-    #         length:  length of the sling [m], defaults to distance between endpoints
-    #         EA:      stiffness in kN, default: 1.0 (note: equilibrium will fail if mass >0 and EA=0)
-    #         k_total: stiffness in kN/m, default: None
-    #         mass:    mass in mT, default  0.1
-    #         endA:    element to connect end A to [poi, circle]
-    #         endB:    element to connect end B to [poi, circle]
-    #         LeyeA:   inside eye on side A length [m], defaults to 1/6th of length
-    #         LeyeB:   inside eye on side B length [m], defaults to 1/6th of length
-    #         LspliceA: splice length on side A [m] (the part where the cable is connected to itself)
-    #         LspliceB: splice length on side B [m] (the part where the cable is connected to itself)
-    #         diameter: cable diameter in m, defaul to 0.1
-    #         sheaves:  optional: list of sheaves/pois that the sling runs over
-    #
-    #     Returns:
-    #         a reference to the newly created Sling object.
-    #
-    #     """
-    #
-    #     # first check
-    #     assertValidName(name)
-    #     self._verify_name_available(name)
-    #
-    #     name_prefix = name + MANAGED_NODE_IDENTIFIER
-    #     postfixes = [
-    #         "_spliceA",
-    #         "_spliceA",
-    #         "_spliceA2",
-    #         "_spliceAM",
-    #         "_spliceA_visual",
-    #         "spliceB",
-    #         "_spliceB1",
-    #         "_spliceB2",
-    #         "_spliceBM",
-    #         "_spliceB_visual",
-    #         "_main_part",
-    #         "_eyeA",
-    #         "_eyeB",
-    #     ]
-    #
-    #     for pf in postfixes:
-    #         self._verify_name_available(name_prefix + pf)
-    #
-    #     endA = self._poi_or_sheave_from_node(endA)
-    #     endB = self._poi_or_sheave_from_node(endB)
-    #
-    #     if length == -1:  # default
-    #         if endA is None or endB is None:
-    #             raise ValueError(
-    #                 "Length for cable is not provided, so defaults to distance between endpoints; but at least one of the endpoints is None."
-    #             )
-    #
-    #         length = np.linalg.norm(
-    #             np.array(endA.global_position) - np.array(endB.global_position)
-    #         )
-    #
-    #     if LeyeA is None:  # default
-    #         LeyeA = length / 6
-    #     if LeyeB is None:  # default
-    #         LeyeB = length / 6
-    #     if LspliceA is None:  # default
-    #         LspliceA = length / 6
-    #     if LspliceB is None:  # default
-    #         LspliceB = length / 6
-    #
-    #     if sheaves is None:
-    #         sheaves = []
-    #
-    #     if EA is not None and k_total is not None:
-    #         warnings.warn(
-    #             "Value for EA is given by will not be used as k_total is defined as well. Value for EA will be derived from k_total"
-    #         )
-    #
-    #     if EA is None:
-    #         EA = 1  # possibly overwritten by k_total
-    #
-    #     assert1f_positive_or_zero(diameter, "Diameter")
-    #     assert1f_positive_or_zero(mass, "mass")
-    #
-    #     assert1f_positive(length, "Length")
-    #     assert1f_positive(LeyeA, "length of eye A")
-    #     assert1f_positive(LeyeB, "length of eye B")
-    #     assert1f_positive(LspliceA, "length of splice A")
-    #     assert1f_positive(LspliceB, "length of splice B")
-    #
-    #     if k_total is not None:
-    #         assert1f_positive_or_zero(k_total, "Total stiffness (k_total)")
-    #
-    #     for s in sheaves:
-    #         _ = self._poi_or_sheave_from_node(s)
-    #
-    #     # then make element
-    #     # __init__(self, scene, name, Ltotal, LeyeA, LeyeB, LspliceA, LspliceB, diameter, EA, mass, endA = None, endB=None, sheaves=None):
-    #
-    #     node = Sling(
-    #         scene=self,
-    #         name=name,
-    #         length=length,
-    #         LeyeA=LeyeA,
-    #         LeyeB=LeyeB,
-    #         LspliceA=LspliceA,
-    #         LspliceB=LspliceB,
-    #         diameter=diameter,
-    #         EA=EA,
-    #         mass=mass,
-    #         endA=endA,
-    #         endB=endB,
-    #         sheaves=sheaves,
-    #     )
-    #
-    #     if k_total is not None:
-    #         node.k_total = k_total
-    #
-    #     # self._nodes.append(node)
-    #
-    #     return node
 
     def new_shackle(self, name, kind="GP500"):
         """

@@ -769,30 +769,43 @@ class Gui:
 
         self._global_docks = []
 
+        self._global_docks.append(
+            add_global_dock(
+                self.dock_manager,
+                self.get_dock("Properties"),
+                icon=":/v2/icons/pencil.svg",
+            )
+        )
 
-        self._global_docks.append(add_global_dock(
-            self.dock_manager, self.get_dock("Properties"), icon=":/v2/icons/pencil.svg"
-        ))
+        self._global_docks.append(
+            add_global_dock(
+                self.dock_manager,
+                self.get_dock("Environment"),
+                icon=":/v2/icons/environment.svg",
+            )
+        )
 
-        self._global_docks.append(add_global_dock(
-            self.dock_manager,
-            self.get_dock("Environment"),
-            icon=":/v2/icons/environment.svg",
-        ))
+        self._global_docks.append(
+            add_global_dock(
+                self.dock_manager,
+                self.get_dock("Derived Properties"),
+                icon=":/v2/icons/magnifier90.svg",
+            )
+        )
 
-        self._global_docks.append(add_global_dock(
-            self.dock_manager,
-            self.get_dock("Derived Properties"),
-            icon=":/v2/icons/magnifier90.svg",
-        ))
+        self._global_docks.append(
+            add_global_dock(
+                self.dock_manager,
+                self.get_dock("Watches"),
+                icon=":/v2/icons/glasses.svg",
+            )
+        )
 
-        self._global_docks.append(add_global_dock(
-            self.dock_manager, self.get_dock("Watches"), icon=":/v2/icons/glasses.svg"
-        ))
-
-        self._global_docks.append(add_global_dock(
-            self.dock_manager, self.get_dock("Tags"), icon=":/v2/icons/tag.svg"
-        ))
+        self._global_docks.append(
+            add_global_dock(
+                self.dock_manager, self.get_dock("Tags"), icon=":/v2/icons/tag.svg"
+            )
+        )
 
         # ------ Add the permanent docks -------
         self.docks_permanent = [self.central_dock_widget]
@@ -1602,7 +1615,7 @@ class Gui:
             # TODO: shomehow running this code before opening the perspective solves the hard crashes... ???
             # check if all docks are still ok
             for name, dock in self.guiWidgets.items():
-               assert dock == self.dock_manager.dockWidgetsMap()[name]
+                assert dock == self.dock_manager.dockWidgetsMap()[name]
 
             # self.dock_manager.openPerspective(name)
             # open perspective using a single shot timer, fixes hard crashes
@@ -3699,7 +3712,7 @@ class Gui:
                 self._dragged_node = node
                 logging.info(f"Starting drag on {node.name}")
 
-                # Find all nodes that are rigidly connected to this node
+                # Find all nodes that are below this node
                 # and add them to the drag list
 
                 for n in self.scene.nodes_with_parent(node, recursive=True):
