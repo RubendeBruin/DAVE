@@ -65,8 +65,53 @@ __all__ = [
     "VisualOutlineType",
     "ModelInvalidException",
     "Scene",
+    "DAVE_load_extensions",
     "DG",
 ]
+
+
+def DAVE_load_extensions():
+    """Attempts to load all optional packages."""
+    try:
+        import DAVE_timeline.gui
+    except:
+        pass
+
+    try:
+        import DAVE_reporting.gui
+    except:
+        pass
+
+    try:
+        import DAVE_BaseExtensions.gui
+    except:
+        pass
+
+    try:
+        import DAVE_rigging.gui
+    except:
+        pass
+
+    try:
+        import DAVE_vessels.gui
+    except:
+        pass
+
+    try:
+        import netCDF4
+    except:
+        pass
+
+    try:
+        import DAVE_dynamics.gui
+    except:
+        pass
+
+    try:
+        from HD import HEBO_CraneVessel
+        import HD.gui
+    except:
+        pass
 
 
 # convenience function for showing the gui
@@ -78,45 +123,6 @@ def DG(
 
     # try to load all optional packages
     if not bare:
-        try:
-            import DAVE_timeline.gui
-        except:
-            pass
-
-        try:
-            import DAVE_reporting.gui
-        except:
-            pass
-
-        try:
-            import DAVE_BaseExtensions.gui
-        except:
-            pass
-
-        try:
-            import DAVE_rigging.gui
-        except:
-            pass
-
-        try:
-            import DAVE_vessels.gui
-        except:
-            pass
-
-        try:
-            import netCDF4
-        except:
-            pass
-
-        try:
-            import DAVE_dynamics.gui
-        except:
-            pass
-
-        try:
-            from HD import HEBO_CraneVessel
-            import HD.gui
-        except:
-            pass
+        DAVE_load_extensions()
 
     return Gui(scene, block=block, autosave_enabled=autosave)

@@ -7,6 +7,7 @@ import vedo as vp
 from vtk.util.numpy_support import vtk_to_numpy
 
 import DAVE.nodes as dn
+from DAVE.settings_visuals import CABLE_DIA_WHEN_DIA_IS_ZERO
 
 
 class DelayRenderingTillDone:
@@ -76,11 +77,9 @@ def vtkMatricesAlmostEqual(mat0, mat1, tol=1e-6):
 
 
 def SetMatrixIfDifferent(actor: vtk.vtkProp3D, mat1, tol=1e-6):
-
     mat0 = actor.GetMatrix()
 
     if not vtkMatricesAlmostEqual(mat0, mat1, tol):  # only change if not almost equal
-
         m0 = mat1.GetElement(0, 0)
         m1 = mat1.GetElement(0, 1)
         m2 = mat1.GetElement(0, 2)
@@ -109,33 +108,31 @@ def SetMatrixIfDifferent(actor: vtk.vtkProp3D, mat1, tol=1e-6):
         # scale back  (this is a work-around for a work-around for a work-around :-( )
         # orientation can not be determined accurately if scale difference is too large
 
-
-
-        if abs(scale1)>0:
-            mat1.SetElement(0,0, m0 / scale1)
+        if abs(scale1) > 0:
+            mat1.SetElement(0, 0, m0 / scale1)
             mat1.SetElement(1, 0, m4 / scale1)
             mat1.SetElement(2, 0, m8 / scale1)
 
-        if abs(scale2)>0:
-            mat1.SetElement(0,1, m1 / scale2)
+        if abs(scale2) > 0:
+            mat1.SetElement(0, 1, m1 / scale2)
             mat1.SetElement(1, 1, m5 / scale2)
             mat1.SetElement(2, 1, m9 / scale2)
 
-        if abs(scale3)>0:
-            mat1.SetElement(0,2, m2 / scale3)
+        if abs(scale3) > 0:
+            mat1.SetElement(0, 2, m2 / scale3)
             mat1.SetElement(1, 2, m6 / scale3)
             mat1.SetElement(2, 2, m10 / scale3)
 
         vtk.vtkTransform.GetOrientation(out, mat1)
 
         # and restore
-        mat1.SetElement(0,0, m0)
+        mat1.SetElement(0, 0, m0)
         mat1.SetElement(1, 0, m4)
         mat1.SetElement(2, 0, m8)
-        mat1.SetElement(0,1, m1)
+        mat1.SetElement(0, 1, m1)
         mat1.SetElement(1, 1, m5)
         mat1.SetElement(2, 1, m9)
-        mat1.SetElement(0,2, m2)
+        mat1.SetElement(0, 2, m2)
         mat1.SetElement(1, 2, m6)
         mat1.SetElement(2, 2, m10)
 
@@ -221,7 +218,7 @@ def transform_from_node(node):
     return t
 
 
-def transform_from_direction(axis, position=(0, 0, 0), right=None, scale = 1):
+def transform_from_direction(axis, position=(0, 0, 0), right=None, scale=1):
     """
     Creates a transform that rotates the X-axis to the given direction
     Args:
@@ -252,15 +249,15 @@ def transform_from_direction(axis, position=(0, 0, 0), right=None, scale = 1):
 
     mat4x4 = vtk.vtkMatrix4x4()
 
-    mat4x4.SetElement(0, 0, right[0]*scale)
-    mat4x4.SetElement(1, 0, right[1]*scale)
-    mat4x4.SetElement(2, 0, right[2]*scale)
-    mat4x4.SetElement(0, 1, up[0]*scale)
-    mat4x4.SetElement(1, 1, up[1]*scale)
-    mat4x4.SetElement(2, 1, up[2]*scale)
-    mat4x4.SetElement(0, 2, viewDir[0]*scale)
-    mat4x4.SetElement(1, 2, viewDir[1]*scale)
-    mat4x4.SetElement(2, 2, viewDir[2]*scale)
+    mat4x4.SetElement(0, 0, right[0] * scale)
+    mat4x4.SetElement(1, 0, right[1] * scale)
+    mat4x4.SetElement(2, 0, right[2] * scale)
+    mat4x4.SetElement(0, 1, up[0] * scale)
+    mat4x4.SetElement(1, 1, up[1] * scale)
+    mat4x4.SetElement(2, 1, up[2] * scale)
+    mat4x4.SetElement(0, 2, viewDir[0] * scale)
+    mat4x4.SetElement(1, 2, viewDir[1] * scale)
+    mat4x4.SetElement(2, 2, viewDir[2] * scale)
 
     mat4x4.SetElement(0, 3, position[0])
     mat4x4.SetElement(1, 3, position[1])
@@ -283,7 +280,6 @@ def update_line_to_points(line_actor, points):
         line_actor.points(points)
         return
     else:
-
         _points = vtk.vtkPoints()
         _points.SetNumberOfPoints(npt)
         for i, pt in enumerate(points):
@@ -299,7 +295,7 @@ def update_line_to_points(line_actor, points):
         source.Modified()
 
 
-def create_tube_data(new_points, diameter, colors = None):
+def create_tube_data(new_points, diameter, colors=None):
     """Updates the points of a line-actor"""
 
     points = vtk.vtkPoints()
@@ -328,8 +324,8 @@ def create_tube_data(new_points, diameter, colors = None):
     tuf.SetNumberOfSides(12)
     tuf.SetInputData(polyln)
 
-    if diameter < 1e-3:
-        diameter = 0.1
+    if diameter < 1e-6:
+        diameter = CABLE_DIA_WHEN_DIA_IS_ZERO
 
     tuf.SetRadius(diameter / 2)
 
@@ -337,15 +333,16 @@ def create_tube_data(new_points, diameter, colors = None):
 
     return tuf.GetOutput()
 
+
 def get_color_array(c):
     cc = vtk.vtkUnsignedCharArray()
     cc.SetName("TubeColors")
     cc.SetNumberOfComponents(3)
     cc.SetNumberOfTuples(len(c))
 
-    colors = vp.color_map(c, 'turbo', vmin=min(c) * 0.95, vmax=max(c) * 1.05)
+    colors = vp.color_map(c, "turbo", vmin=min(c) * 0.95, vmax=max(c) * 1.05)
 
-    for i, (r,g,b) in enumerate(colors):
+    for i, (r, g, b) in enumerate(colors):
         cc.InsertTuple3(i, int(255 * r), int(255 * g), int(255 * b))
     return cc
 
@@ -606,12 +603,8 @@ def VisualToSlice(
 
     return x, y
 
-def vtkArrowActor(
-        startPoint=(0,0,0),
-        endPoint=(1,0,0),
-        res = 8
-    ):
 
+def vtkArrowActor(startPoint=(0, 0, 0), endPoint=(1, 0, 0), res=8):
     """Creates a vtkActor representing an arrow from startpoint to endpoint.
     All transforms are on the mesh itself.
 
@@ -619,11 +612,10 @@ def vtkArrowActor(
 
     """
 
-
     axis = np.asarray(endPoint) - np.asarray(startPoint)
     length = np.linalg.norm(axis)
 
-    if length==0:
+    if length == 0:
         phi = 0
         theta = 0
     else:
@@ -662,12 +654,12 @@ def vtkArrowActor(
 
     return actor
 
-def vtkArrowHeadActor(
-        startPoint=(0,0,0),
-        endPoint=(1,0,0),
-        res = 12,
-    ):
 
+def vtkArrowHeadActor(
+    startPoint=(0, 0, 0),
+    endPoint=(1, 0, 0),
+    res=12,
+):
     """Creates a vtkActor representing an arrow HEAD (aka Cone) from startpoint to endpoint.
     All transforms are on the mesh itself.
 
@@ -677,7 +669,7 @@ def vtkArrowHeadActor(
     startPoint = np.asarray(startPoint)
     endPoint = np.asarray(endPoint)
 
-    axis = endPoint-startPoint
+    axis = endPoint - startPoint
     length = np.linalg.norm(axis)
 
     if length == 0:
@@ -696,7 +688,7 @@ def vtkArrowHeadActor(
     arr.Update()
 
     t = vtk.vtkTransform()
-    t.Translate(startPoint + 0.5*(endPoint-startPoint))
+    t.Translate(startPoint + 0.5 * (endPoint - startPoint))
     t.RotateZ(np.rad2deg(phi))
     t.RotateY(np.rad2deg(theta))
     t.RotateY(-90)  # put it along Z

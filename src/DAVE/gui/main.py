@@ -1306,8 +1306,7 @@ class Gui:
             self.select_none()
 
             current_set = self.ui.cbPainerSelect.currentText()
-            self.visual.settings.painter_settings = PAINTERS[current_set]
-            self.visual.update_visibility()
+            self.visual.set_painters(PAINTERS[current_set])
 
             # and restore the selection afterwards
             if selected_node_names:

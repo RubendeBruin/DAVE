@@ -702,9 +702,16 @@ class VisualActor:
 
             points, tensions = self.node.get_points_and_tensions_for_visual()
 
+            # get cable scale from painter settings
+            ps = viewport.settings.painter_settings
+            min_dia = ps["Cable"]["main"].optionalScale
+
+            diameter = self.node.diameter
+            diameter = max(diameter, min_dia)
+
             if self.node._render_as_tube:
                 self.info["mapper"].SetInputData(
-                    create_tube_data(points, self.node.diameter, colors=tensions)
+                    create_tube_data(points, diameter, colors=tensions)
                 )
                 self.info["mapper"].Modified()
 
@@ -1419,6 +1426,11 @@ class Viewport:
             self._rotate_actors_due_to_camera_movement
         )
         self.Style.callbackAnyKey = self.keyPressFunction
+
+    def set_painters(self, painters):
+        self.settings.painter_settings = painters
+        self.position_visuals()
+        self.update_visibility()
 
     def show_as_qt_app(self, painters=None):
         from PySide6.QtWidgets import QWidget, QApplication
