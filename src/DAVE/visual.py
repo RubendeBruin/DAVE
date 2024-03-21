@@ -1372,6 +1372,12 @@ class Viewport:
 
     def __init__(self, scene):
         self.scene = scene
+        self.renderer: vtk.vtkRenderer or None = None
+
+        """SSAO effect"""
+        self._ssao_on = False
+        self.SSAO_fxaaP: vtk.vtkOpenGLFXAAPass or None = None
+        self.SSAO_pass: vtk.vtkSSAOPass or None = None
 
         """These are the visuals for the nodes"""
         self.node_visuals: List[VisualActor] = list()
@@ -1422,9 +1428,8 @@ class Viewport:
         self.cycle_previous_painterset = None
 
         self.Style = BlenderStyle()
-        self.Style.callbackCameraDirectionChanged = (
-            self._rotate_actors_due_to_camera_movement
-        )
+        self.Style.callbackCameraDirectionChanged = self._camera_direction_changed
+        self.Style.callbackCameraMoved = self._camera_moved
         self.Style.callbackAnyKey = self.keyPressFunction
 
     def set_painters(self, painters):
@@ -2222,7 +2227,7 @@ class Viewport:
         if acs:
             self.screen.remove(acs)
 
-        self._rotate_actors_due_to_camera_movement()
+        self._camera_direction_changed()
 
         self.update_outlines()
 
@@ -2447,34 +2452,8 @@ class Viewport:
         textureFile.Update()
         texture = vtk.vtkTexture()
         texture.SetInputDataObject(textureFile.GetOutput())
-        #
-        # for i in range(6):
-        #     cubemap.SetInputDataObject(i, textureFile.GetOutput())
-        #
 
-        # self.screen.show(camera=camera)
-
-        # texture = vtk.vtkTexture()
-        # input = vtk.vtkPNGReader()
-        # input.SetFileName(str(LIGHT_TEXTURE_SKYBOX))
-        # input.Modified()
-        # texture.SetInputDataObject(input.GetOutput())
-
-        # # Add SSAO
-        # # see: https://blog.kitware.com/ssao/
-        basicPasses = vtk.vtkRenderStepsPass()
-        self.ssao = vtk.vtkSSAOPass()
-
-        # Radius 10, Kernel 500 gives nice result - but slow
-        # Kernel size 50 less accurate bus faster
-        self.ssao.SetRadius(5)
-        self.ssao.SetDelegatePass(basicPasses)
-        self.ssao.SetKernelSize(50)
-        self.ssao.SetBlur(True)
-
-        # light = vtk.vtkLight()
-        # light.SetLightTypeToCameraLight()
-        # light.SetIntensity(10)
+        self._create_SSAO_pass()
 
         for r in self.screen.renderers:
             r.ResetCamera()
@@ -2547,21 +2526,69 @@ class Viewport:
 
             return screen
 
+    def _create_SSAO_pass(self):
+        """Creates self.ssao and self.SSAO_fxaaP"""
+
+        passes = vtk.vtkRenderPassCollection()
+        passes.AddItem(vtk.vtkRenderStepsPass())
+
+        seq = vtk.vtkSequencePass()
+        seq.SetPasses(passes)
+
+        self.ssao = vtk.vtkSSAOPass()
+        self.ssao.SetDelegatePass(seq)
+        self.ssao.SetBlur(True)
+        self.SSAO_fxaaP = vtk.vtkOpenGLFXAAPass()  # include Anti-Aliasing
+
+        # options = vtk.vtkFXAAOptions()
+        # options.SetSubpixelBlendLimit(0.1)
+        # self.SSAO_fxaaP.SetFXAAOptions(options)
+
+        self.SSAO_fxaaP.SetDelegatePass(self.ssao)
+
+        self._update_SSAO_settings()
+
+    def _update_SSAO_settings(self, radius=0.005, bias=0.2, kernel_size=64):
+        if self.renderer is None:
+            return
+
+        bounds = np.asarray(self.renderer.ComputeVisiblePropBounds())
+
+        b_r = np.linalg.norm(
+            [bounds[1] - bounds[0], bounds[3] - bounds[2], bounds[5] - bounds[4]]
+        )
+
+        occlusion_radius = b_r * radius
+        occlusion_bias = bias
+
+        self.ssao.SetRadius(occlusion_radius)
+        self.ssao.SetBias(occlusion_bias)
+        self.ssao.SetKernelSize(kernel_size)
+
     def EnableSSAO(self):
         # from documentation:
         # virtual void 	UseSSAOOn ()
         # virtual void 	UseSSAOOff ()
         #
         # but does not work
+        if self._ssao_on:
+            return
 
         for r in self.screen.renderers:
-            r.SetPass(self.ssao)
+            r.SetPass(self.SSAO_fxaaP)
             r.Modified()
 
+        self._ssao_on = True
+
     def DisableSSAO(self):
+        if self._ssao_on == False:
+            return
+
         for r in self.screen.renderers:
             r.SetPass(None)
             r.Modified()
+
+        self._ssao_on = False
 
     def zoom_all(self):
         """Set camera to view the whole scene (ignoring the sea)"""
@@ -2709,7 +2736,7 @@ class Viewport:
 
         self.colorbar_actor.SetVisibility(self.settings.paint_uc)
 
-    def _rotate_actors_due_to_camera_movement(self):
+    def _camera_direction_changed(self):
         """Gets called when the camera has moved"""
 
         for V in self.node_visuals:
@@ -2753,6 +2780,10 @@ class Viewport:
                 SetMatrixIfDifferent(actor, transform)
                 if hasattr(actor, "_outline"):
                     actor._outline.update()
+
+    def _camera_moved(self):
+        if self._ssao_on:
+            self._update_SSAO_settings()
 
 
 class WaveField:

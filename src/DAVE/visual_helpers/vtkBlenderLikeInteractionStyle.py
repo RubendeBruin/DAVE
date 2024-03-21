@@ -95,6 +95,7 @@ Responding to other events
 ---------------------------
 
 callbackCameraDirectionChanged : executed when camera has rotated but before re-rendering
+callbackCameraMoved : executed when camera has moved but before re-rendering
 
 
 
@@ -263,6 +264,9 @@ class BlenderStyle(vtkInteractorStyleUser):
             self.StartDolly()
             self.Dolly(pow(1.1, step))
             self.EndDolly()
+
+            if self.callbackCameraMoved:
+                self.callbackCameraMoved()
 
     def LeftButtonPress(self, obj, event):
         if self._is_box_zooming:
@@ -452,6 +456,12 @@ class BlenderStyle(vtkInteractorStyleUser):
             camera.SetViewUp(up)
             camera.OrthogonalizeViewUp()
 
+            if self.callbackCameraDirectionChanged:
+                self.callbackCameraDirectionChanged()
+
+            if self.callbackCameraMoved:
+                self.callbackCameraMoved()
+
             self.DoRender()
 
     def ToggleParallelProjection(self):
@@ -459,6 +469,7 @@ class BlenderStyle(vtkInteractorStyleUser):
         camera = renderer.GetActiveCamera()
         camera.SetParallelProjection(not bool(camera.GetParallelProjection()))
         # self.GetInteractor().Render()
+
         self.DoRender()
 
     def SetViewX(self):
@@ -472,6 +483,10 @@ class BlenderStyle(vtkInteractorStyleUser):
 
     def ZoomFit(self):
         self.GetCurrentRenderer().ResetCamera()
+
+        if self.callbackCameraMoved:
+            self.callbackCameraMoved()
+
         self.DoRender()
 
     def SetCameraPlaneDirection(self, direction):
@@ -533,6 +548,9 @@ class BlenderStyle(vtkInteractorStyleUser):
         if self.callbackCameraDirectionChanged:
             self.callbackCameraDirectionChanged()
 
+        if self.callbackCameraMoved:
+            self.callbackCameraMoved()
+
         self.DoRender()
 
     def UpdateClippingRange(self):
@@ -557,6 +575,10 @@ class BlenderStyle(vtkInteractorStyleUser):
         if renderer is None:
             return
 
+        # disable any passes
+        store = renderer.GetPass()
+        renderer.SetPass(None)
+
         assemblyPath = renderer.PickProp(
             self.start_x, self.start_y, self.end_x, self.end_y
         )
@@ -573,6 +595,10 @@ class BlenderStyle(vtkInteractorStyleUser):
             assemblyPath = renderer.PickProp(
                 self.start_x, self.start_y, self.end_x, self.end_y
             )
+
+        # re-enable passes
+        if store is not None:
+            renderer.SetPass(store)
 
         # The nearest prop (by Z-value)
         if assemblyPath:
@@ -810,6 +836,9 @@ class BlenderStyle(vtkInteractorStyleUser):
             if rwi.GetLightFollowCamera():
                 CurrentRenderer.UpdateLightsGeometryToFollowCamera()
 
+            if self.callbackCameraMoved:
+                self.callbackCameraMoved()
+
             # rwi.Render()
             self.DoRender()
 
@@ -907,6 +936,9 @@ class BlenderStyle(vtkInteractorStyleUser):
         if self.callbackCameraDirectionChanged:
             self.callbackCameraDirectionChanged()
 
+        if self.callbackCameraMoved:
+            self.callbackCameraMoved()
+
         self.DoRender()
 
     def ZoomBox(self, x1, y1, x2, y2):
@@ -978,6 +1010,9 @@ class BlenderStyle(vtkInteractorStyleUser):
             camera.Zoom(size[1] / height)
 
         # self.GetInteractor().Render()
+        if self.callbackCameraMoved:
+            self.callbackCameraMoved()
+
         self.DoRender()
 
     def FocusOn(self, prop3D):
@@ -1005,6 +1040,9 @@ class BlenderStyle(vtkInteractorStyleUser):
         rwi = self.GetInteractor()
         if rwi.GetLightFollowCamera():
             CurrentRenderer.UpdateLightsGeometryToFollowCamera()
+
+        if self.callbackCameraMoved:
+            self.callbackCameraMoved()
 
         self.DoRender()
 
@@ -1267,6 +1305,7 @@ class BlenderStyle(vtkInteractorStyleUser):
         )
 
         self.callbackCameraDirectionChanged = None
+        self.callbackCameraMoved = None
 
         # active drag
         self.draginfo: DragInfo or None = (

@@ -35,7 +35,7 @@ def show(
     show_force: bool = True,  # show forces
     show_meshes: bool = True,  # show meshes and connectors
     show_sea: bool = False,
-    show_origin = True,
+    show_origin=True,
     show_cog: bool = True,
     cog_do_normalize: bool = False,
     cog_scale: float = 1.0,
@@ -88,8 +88,8 @@ def show(
         height=height,
         show_force=show_force,  # show forces
         show_meshes=show_meshes,  # show meshes and connectors
-        show_sea = show_sea,
-        show_origin = show_origin,
+        show_sea=show_sea,
+        show_origin=show_origin,
         show_cog=show_cog,
         cog_do_normalize=cog_do_normalize,
         cog_scale=cog_scale,
@@ -119,7 +119,7 @@ def pil_image(
     height=600,
     show_force: bool = True,  # show forces
     show_meshes: bool = True,  # show meshes and connectors
-    show_origin : bool = True,
+    show_origin: bool = True,
     show_sea: bool = False,
     show_cog: bool = False,
     cog_do_normalize: bool = False,
@@ -281,7 +281,7 @@ def pil_image(
             plotter += label_actor
 
     # rotate actors to camera orientation (WindArea)
-    vp._rotate_actors_due_to_camera_movement()
+    vp._camera_direction_changed()
 
     # zoom-fit
     if zoom_fit:
@@ -316,7 +316,7 @@ def pil_image(
                 continue
 
             vp.position_visuals()
-            vp._rotate_actors_due_to_camera_movement()
+            vp._camera_direction_changed()
             vp.update_visibility()  # UC paint
 
             if use_step0_as_background and len(images) > 1:
