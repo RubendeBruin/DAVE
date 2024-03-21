@@ -953,7 +953,11 @@ class Gui:
         # start autosave, but only if we are not running in read-only mode
         # or as part of a unit-test
 
-        if "PYTEST_CURRENT_TEST" in os.environ or self._read_only_mode:
+        if (
+            "PYTEST_CURRENT_TEST" in os.environ
+            or self._read_only_mode
+            or autosave_enabled is False
+        ):
             self._autosave = None
 
         else:
@@ -2381,9 +2385,9 @@ class Gui:
 
             self.scene.solver_settings.apply(self.__BackgroundSolver)
 
-            running = self.__BackgroundSolver.Start()
+            started = self.__BackgroundSolver.Start()
 
-            if running:
+            if started:
                 while self.__BackgroundSolver.Running:
                     time_diff = datetime.datetime.now() - start_time
                     secs = time_diff.total_seconds()
@@ -2429,7 +2433,7 @@ class Gui:
                             dialog.show()
                             dialog_open = True
 
-                    self.app.processEvents()
+                        self.app.processEvents()  # only after 0.1 seconds have passed, to allow for quick exit
 
                 if self.__BackgroundSolver.Converged:
                     dofs = self.__BackgroundSolver.DOFs
@@ -2438,6 +2442,9 @@ class Gui:
                     self.give_feedback(
                         f"Converged with Error norm = {self.__BackgroundSolver.Enorm} | max-abs {self.__BackgroundSolver.Emaxabs} in {self.__BackgroundSolver.Emaxabs_where}"
                     )
+
+            else:
+                print("Background Solver did not start")
 
             if self.__solver_gui_do_terminate:
                 result = False
