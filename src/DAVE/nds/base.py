@@ -26,5 +26,7 @@ class RigidBodyContainer(RigidBody, HasContainer):
         return super().dissolve_some()
 
 
-# register
-RigidBodyContainer
+# register -- can not register in because of circular imports
+# from .. import DAVE_ADDITIONAL_RUNTIME_MODULES
+#
+# DAVE_ADDITIONAL_RUNTIME_MODULES["RigidBodyContainer"] = RigidBodyContainer

@@ -1,0 +1,44 @@
+### Cylcer
+# Dark Blue =  #394c5a
+# Blue Green =  #067450
+# Light Blue =  #cbe0ef
+# Red =  #90211e
+# Purple =  #57007f
+# Blue =  #0c6a92
+# Dark Yellow =  #806c00
+# Orange =  #c85021
+
+# Dark Gray =  #2d2d30
+# Dark Green =  #006e0a
+# Black =  #000000
+# Brown =  #bb8629
+# Green =  #007f0e
+# Yellow =  #ffd800
+
+# White =  #ffffff
+# Pink =  #f711e4
+# Light Gray =  #c8c8c8
+# Medium Gray =  #919191
+# Dark Gray =  #5a5a5a
+
+
+axes.prop_cycle: cycler('color',['0c6a92','5a5a5a',  '90211e', '067450','c85021',  '57007f', 'ffd800', 'c85021', '000000'])
+
+
+axes.titlesize : 12
+axes.labelsize : 10
+lines.linewidth : 0.8
+xtick.labelsize : 10
+ytick.labelsize : 10
+
+### Fonts
+mathtext.fontset : stix
+font.family: sans-serif
+font.sans-serif: arial, sans-serif
+font.weight: light
+
+### Grid
+axes.grid: True
+axes.edgecolor: 5a5a5a
+grid.linestyle: --
+grid.linewidth: 0.5

@@ -32,6 +32,8 @@ RESOLUTION_ARROW = 12
 RESOLUTION_CABLE_OVER_CIRCLE = 36  # NUMBER OF POINTS IN A FULL CIRCLE
 RESOLUTION_CABLE_SAG = 30  # NUMBER OF POINTS IN A CATENARY
 
+CABLE_DIA_WHEN_DIA_IS_ZERO = 0.1  # diameter of the cable when the diameter is zero
+
 
 # ============ visuals :: colors ===========
 
@@ -134,6 +136,13 @@ class ActorSettings:
     # label
     labelShow = True
 
+    # "scale" property
+    #  interpreted as follows:
+    #   Cables : minimum diameter
+    #
+    # triggers re-creation of actors when changed
+    optionalScale = 0
+
     def set_invisible(self):
         self.surfaceShow = False
         self.lineWidth = 0
@@ -213,6 +222,11 @@ invisible = ActorSettings()
 invisible.xray = False
 invisible.surfaceShow = False
 invisible.lineWidth = 0
+
+
+def make_node_invisible(node):
+    for key, value in node.items():
+        value.set_invisible()
 
 
 # ======== Define the default palette =======
@@ -642,6 +656,38 @@ PAINTERS["X-ray"]["SPMT"]["main"].surfaceShow = False
 PAINTERS["X-ray"]["SPMT"]["wheel"].xray = True
 PAINTERS["X-ray"]["SPMT"]["wheel"].surfaceShow = False
 PAINTERS["X-ray"]["SPMT"]["line"] = copy(invisible)
+
+# Mooring
+PAINTERS["Mooring"] = deepcopy(PAINTERS["Visual"])
+
+pm = PAINTERS["Mooring"]  # alias
+
+pm["Point"]["main"].surfaceColor = _GREEN_DARK
+
+make_node_invisible(pm["Buoyancy"])
+make_node_invisible(pm["Tank:freeflooding"])
+make_node_invisible(pm["Tank:empty"])
+make_node_invisible(pm["Tank:partial"])
+make_node_invisible(pm["Tank:full"])
+pm["Frame"]["footprint"] = copy(invisible)
+pm["Cable"]["main"].optionalScale = 0.3
+
+
+# make points visible
+# make circles visible
+# make fenders visible
+# make contact meshes visible
+make_visible = (
+    "Point",
+    "Beam",
+    "ContactMesh",
+    "ContactBall:free",
+    "ContactBall:contact",
+    "Circle",
+)
+
+for node in make_visible:
+    pm[node] = deepcopy(PAINTERS["Construction"][node])
 
 # No-mesh settings
 #
