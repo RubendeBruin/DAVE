@@ -2576,6 +2576,7 @@ class Viewport:
 
         for r in self.screen.renderers:
             r.SetPass(self.SSAO_fxaaP)
+            self._update_SSAO_settings()
             r.Modified()
 
         self._ssao_on = True

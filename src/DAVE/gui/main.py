@@ -1618,11 +1618,12 @@ class Gui:
             # TODO: shomehow running this code before opening the perspective solves the hard crashes... ???
             # check if all docks are still ok
             for name, dock in self.guiWidgets.items():
-                assert dock == self.dock_manager.dockWidgetsMap()[name]
+                assert dock == self.dock_manager.dockWidgetsMap()[name], ValueError(f'Dock mismatch for {name}')
 
             # self.dock_manager.openPerspective(name)
             # open perspective using a single shot timer, fixes hard crashes
-            QTimer.singleShot(0, lambda: self.dock_manager.openPerspective(name))
+
+            QTimer.singleShot(0, lambda : self.dock_manager.openPerspective(self._active_dockgroup.ID))
 
         else:
             self.save_perspective_action.setIcon(
@@ -1630,6 +1631,7 @@ class Gui:
             )
 
         self.visual.update_visibility()
+
 
     def import_browser(self):
         DAVE_GUI_LOGGER.log("Import browser")
