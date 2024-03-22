@@ -1,5 +1,27 @@
 import pytest
 
+from DAVE import Scene
+
+
+@pytest.fixture
+def root_folder(request):
+    """Defines the root folder for the tests"""
+    return request.config.rootdir
+
+@pytest.fixture
+def resource_path(root_folder):
+    """Returns the path to a resource file"""
+    return root_folder / "src" / "DAVE" / "resources"
+
+@pytest.fixture
+def test_files(root_folder):
+    """Returns the path to a resource file"""
+    return root_folder / "tests" / "files"
+
+@pytest.fixture
+def model_basic_nodes(test_files):
+    return Scene(test_files / "basic_nodes.dave")
+
 
 @pytest.fixture
 def angles():

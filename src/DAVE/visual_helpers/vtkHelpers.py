@@ -1,13 +1,93 @@
-import logging
+"""Utilities for working with vtk actors in DAVE
 
-import vtk
-import numpy as np
+
+vtkShow : debug function for quickly showing an actor
+ApplyTexture : applies a texture to a vtk actor
+DelayRenderingTillDone : context manager to pause rendering and refresh
+
+SetTransformIfDifferent : sets the transform if different
+SetMatrixIfDifferent : sets the matrix if different
+SetScaleIfDifferent : sets the scale if different
+
+tranform_almost_equal : returns True if the two transforms are almost equal
+transform_to_mat4x4 : converts a vtkTransform to a vtkMatrix4x4
+mat4x4_from_point_on_frame : creates a mat4x4 from a point on a frame
+transform_from_point : creates a transform from a point
+transform_from_node : creates a transform from a node
+transform_from_direction : creates a transform from a direction
+
+update_line_to_points : updates the points of a line-actor
+create_tube_data : creates tube data
+get_color_array : gets the color array
+apply_parent_translation_on_transform : applies the DAVE global-transform of "parent" on vtkTransform t
+_create_moment_or_shear_line : creates a moment or shear line
+create_momentline_actors : creates a momentline actor
+create_shearline_actors : creates a shearline actor
+
+VisualToSlice : slices the visual-node at global position 'slice_position' and normal 'slice_normal'
+
+
+
+"""
+from pathlib import Path
 
 import vedo as vp
-from vtk.util.numpy_support import vtk_to_numpy
+from vtkmodules.util.numpy_support import vtk_to_numpy
+
+from vtkmodules.vtkIOImage import vtkImageReader2Factory
+from vtkmodules.vtkRenderingCore import vtkTexture
+
+from .vtkActorMakers import *
 
 import DAVE.nodes as dn
 from DAVE.settings_visuals import CABLE_DIA_WHEN_DIA_IS_ZERO
+
+
+def vtkShow(actor):
+    """Shows a vtk actor in a vedo plotter window"""
+    import vtk
+
+    # Create a rendering window and renderer
+    renderer = vtk.vtkRenderer()
+    renderWindow = vtk.vtkRenderWindow()
+    renderWindow.AddRenderer(renderer)
+
+    # Create a renderwindowinteractor
+    interactor = vtk.vtkRenderWindowInteractor()
+    interactor.SetRenderWindow(renderWindow)
+
+    # Assign actor to the renderer
+    renderer.AddActor(actor)
+
+    # Render
+    renderWindow.Render()
+
+    # Enable user interface interactor
+    interactor.Start()
+
+
+def ApplyTexture(actor: vtkActor, filename: str, repeat=False, edge_clamp=True, interpolate=True):
+    """Applies a texture to a vtkActor"""
+
+    filename = str(filename)
+    assert Path(filename).exists(), f"Texture file {filename} does not exist"
+
+    readerFactory = vtkImageReader2Factory()
+    textureFile = readerFactory.CreateImageReader2(filename)
+    textureFile.SetFileName(filename)
+    textureFile.Update()
+
+    out_img = textureFile.GetOutput()
+
+    # read the texture file
+    tu = vtkTexture()
+    tu.SetInputData(out_img)
+    tu.SetInterpolate(interpolate)
+    tu.SetRepeat(repeat)
+    tu.SetEdgeClamp(edge_clamp)
+    actor.GetProperty().SetColor(1, 1, 1)
+
+    actor.SetTexture(tu)
 
 
 class DelayRenderingTillDone:
@@ -31,22 +111,22 @@ class DelayRenderingTillDone:
             if self.viewport._DelayRenderingTillDone_lock:
                 self.inactive = True
                 return
-        except:
+        except AttributeError:
             pass
 
         self.viewport._DelayRenderingTillDone_lock = (
             True  # keep others from gaining control
         )
-        self.viewport.screen.interactor.EnableRenderOff()
-        for r in self.viewport.screen.renderers:
+        self.viewport.interactor.EnableRenderOff()
+        for r in self.viewport.renderers:
             r.DrawOff()
 
     def __exit__(self, *args, **kwargs):
         if self.inactive:
             return
-        self.viewport.screen.interactor.EnableRenderOn()
+        self.viewport.interactor.EnableRenderOn()
         self.viewport.refresh_embeded_view()
-        for r in self.viewport.screen.renderers:
+        for r in self.viewport.renderers:
             r.DrawOn()
         self.viewport._DelayRenderingTillDone_lock = False  # release lock
 
@@ -58,7 +138,7 @@ def print_vtkMatrix44(mat):
 
 
 def SetTransformIfDifferent(
-    actor: vtk.vtkProp3D, transform: vtk.vtkTransform, tol=1e-6
+        actor: vtk.vtkProp3D, transform: vtk.vtkTransform, tol=1e-6
 ):
     """Does not really set the user-transform, instead just sets the real transform"""
 
@@ -151,7 +231,7 @@ def SetScaleIfDifferent(actor: vtk.vtkProp3D, scale: float, tol=1e-6):
 
 
 def tranform_almost_equal(
-    transform1: vtk.vtkTransform, transform2: vtk.vtkTransform, tol=1e-6
+        transform1: vtk.vtkTransform, transform2: vtk.vtkTransform, tol=1e-6
 ):
     """Returns True if the two transforms are almost equal. Testing is done on the absolute difference of the components of the matrix
 
@@ -218,15 +298,14 @@ def transform_from_node(node):
     return t
 
 
-def transform_from_direction(axis, position=(0, 0, 0), right=None, scale=1):
+def transform_from_direction(axis,position,  scale=1, right=None):
     """
     Creates a transform that rotates the X-axis to the given direction
     Args:
         axis: requested direction, needs to be a unit vector
-        position : optional, (0,0,0)
+        scale: scale factor
+        position: position of the transform
         right: optional: vector to right. Needs to be a unit vector
-
-        optional: scale [1]
 
     Returns:
         vtk.vtkMatrix4x4
@@ -275,24 +354,21 @@ def update_line_to_points(line_actor, points):
 
     npt = len(points)
 
-    # check for number of points
-    if pts.GetNumberOfPoints() == npt:
-        line_actor.points(points)
-        return
-    else:
-        _points = vtk.vtkPoints()
-        _points.SetNumberOfPoints(npt)
-        for i, pt in enumerate(points):
-            _points.SetPoint(i, pt)
+    _points = vtk.vtkPoints()
+    _points.SetNumberOfPoints(npt)
+    for i, pt in enumerate(points):
+        _points.SetPoint(i, pt)
+    source.SetPoints(_points)
 
+    # Only need to update the lines if the number of points has changed
+    if pts.GetNumberOfPoints() != npt:
         _lines = vtk.vtkCellArray()
         _lines.InsertNextCell(npt)
         for i in range(npt):
             _lines.InsertCellPoint(i)
         source.SetLines(_lines)
-        source.SetPoints(_points)
 
-        source.Modified()
+    source.Modified()
 
 
 def create_tube_data(new_points, diameter, colors=None):
@@ -364,85 +440,6 @@ def apply_parent_translation_on_transform(parent, t: vtk.vtkTransform):
     t.Concatenate(mat4x4)
 
 
-def actor_from_trimesh(trimesh):
-    """Creates a vedo.Mesh from a DAVEcore.TriMesh"""
-
-    if trimesh.nFaces == 0:
-        return vp.Cube(side=0.00001)
-
-    vertices = [trimesh.GetVertex(i) for i in range(trimesh.nVertices)]
-    # are the vertices unique?
-
-    faces = [trimesh.GetFace(i) for i in range(trimesh.nFaces)]
-
-    return actor_from_vertices_and_faces(vertices, faces)
-
-
-def actor_from_vertices_and_faces(vertices, faces):
-    """Creates a mesh based on the given vertices and faces. Cleans up
-    the structure before creating by removing duplicate vertices"""
-
-    vertices = np.array(vertices, dtype=float)
-    if vertices.ndim > 1:
-        unique_vertices = np.unique(vertices, axis=0)
-    else:
-        unique_vertices = vertices
-
-    if len(unique_vertices) != len(vertices):  # reconstruct faces and vertices
-        unique_vertices, indices = np.unique(vertices, axis=0, return_inverse=True)
-        f = np.array(faces)
-        better_faces = indices[f]
-        actor = vp.Mesh([unique_vertices, better_faces])
-    else:
-        actor = vp.Mesh([vertices, faces])
-
-    return actor
-
-
-def vp_actor_from_file(filename):
-    # load the data
-    filename = str(filename)
-
-    source = None
-    if filename.endswith("obj"):
-        source = vtk.vtkOBJReader()
-    elif filename.endswith("stl"):
-        source = vtk.vtkSTLReader()
-
-    if source is None:
-        raise NotImplementedError(f"No reader implemented for reading file {filename}")
-
-    source.SetFileName(filename)
-
-    # # clean the data
-    # con = vtk.vtkCleanPolyData()
-    # con.SetInputConnection(source.GetOutputPort())
-    # con.Update()
-    # #
-    #
-    # # data = normals.GetOutput()
-    # # for i in range(data.GetNumberOfPoints()):
-    # #     point = data.GetPoint(i)
-    # #     print(point)
-    #
-    # normals = vtk.vtkPolyDataNormals()
-    # normals.SetInputConnection(con.GetOutputPort())
-    # normals.ConsistencyOn()
-    # normals.AutoOrientNormalsOn()
-
-    mapper = vtk.vtkPolyDataMapper()
-    mapper.SetInputConnection(source.GetOutputPort())
-    mapper.Update()
-    #
-    # # We are not importing textures and materials.
-    # # Set color to 'w' to enforce an uniform color
-    vpa = vp.Mesh(mapper.GetInputAsDataSet(), c="w")  # need to set color here
-
-    # vpa = vp.Mesh(filename, c="w")
-
-    return vpa
-
-
 def _create_moment_or_shear_line(what, frame: dn.Frame, scale_to=2, at=None):
     """see create_momentline_actors, create_shearline_actors"""
 
@@ -479,7 +476,7 @@ def _create_moment_or_shear_line(what, frame: dn.Frame, scale_to=2, at=None):
     actor_axis = vp.Line((start, end)).c("black").lw(3)
     actor_graph = vp.Line(line).c(color).lw(3)
 
-    return (actor_axis, actor_graph)
+    return actor_axis, actor_graph
 
 
 def create_momentline_actors(frame: dn.Frame, scale_to=2, at=None):
@@ -505,14 +502,14 @@ def create_shearline_actors(frame: dn.Frame, scale_to=2, at=None):
 
 
 def VisualToSlice(
-    visual_node: "Visual",
-    slice_position=(0, 0, 0),
-    slice_normal=(0, 0, 1),
-    projection_x=(1, 0, 0),
-    projection_y=(0, 1, 0),
-    relative_to_slice_position=False,
-    ax=None,
-    **kwargs,
+        visual_node: "Visual",
+        slice_position=(0, 0, 0),
+        slice_normal=(0, 0, 1),
+        projection_x=(1, 0, 0),
+        projection_y=(0, 1, 0),
+        relative_to_slice_position=False,
+        ax=None,
+        **kwargs,
 ):
     """Slices the visual-node at global position 'slice_position' and normal 'slice_normal'. This results in a slice
     in the global 3D space. This is then projected onto a plane defined by the two global vectors 'projection_x' and
@@ -546,7 +543,7 @@ def VisualToSlice(
 
     # calculate wxys from node.rotation
     r = visual_node.rotation
-    angle = (r[0] ** 2 + r[1] ** 2 + r[2] ** 2) ** (0.5)
+    angle = (r[0] ** 2 + r[1] ** 2 + r[2] ** 2) ** 0.5
     if angle > 0:
         t.RotateWXYZ(angle, r[0] / angle, r[1] / angle, r[2] / angle)
 
@@ -602,113 +599,3 @@ def VisualToSlice(
             ax.plot(x, y, "k-", linewidth=0.5)
 
     return x, y
-
-
-def vtkArrowActor(startPoint=(0, 0, 0), endPoint=(1, 0, 0), res=8):
-    """Creates a vtkActor representing an arrow from startpoint to endpoint.
-    All transforms are on the mesh itself.
-
-    So placing the actor at 0,0,0 will show the arrow starting at startPoint
-
-    """
-
-    axis = np.asarray(endPoint) - np.asarray(startPoint)
-    length = np.linalg.norm(axis)
-
-    if length == 0:
-        phi = 0
-        theta = 0
-    else:
-        axis = axis / length
-        phi = np.arctan2(axis[1], axis[0])
-        theta = np.arccos(axis[2])
-
-    arr = vtk.vtkArrowSource()
-    arr.SetShaftResolution(res)
-    arr.SetTipResolution(res)
-    arr.Update()
-
-    t = vtk.vtkTransform()
-    t.Translate(startPoint)
-    t.RotateZ(np.rad2deg(phi))
-    t.RotateY(np.rad2deg(theta))
-    t.RotateY(-90)  # put it along Z
-    t.Scale(length, length, length)
-
-    t.Update()
-
-    tf = vtk.vtkTransformPolyDataFilter()
-    tf.SetInputData(arr.GetOutput())
-    tf.SetTransform(t)
-    tf.Update()
-
-    # # mapper
-    # mapper = vtk.vtkPolyDataMapper()
-    # mapper.SetInputData(tf.GetOutput())
-    #
-    # # Actor.
-    # actor = vtk.vtkActor()
-    # actor.SetMapper(mapper)
-
-    actor = vp.Mesh(tf.GetOutput())
-
-    return actor
-
-
-def vtkArrowHeadActor(
-    startPoint=(0, 0, 0),
-    endPoint=(1, 0, 0),
-    res=12,
-):
-    """Creates a vtkActor representing an arrow HEAD (aka Cone) from startpoint to endpoint.
-    All transforms are on the mesh itself.
-
-    So placing the actor at 0,0,0 will show the arrow starting at startPoint
-
-    """
-    startPoint = np.asarray(startPoint)
-    endPoint = np.asarray(endPoint)
-
-    axis = endPoint - startPoint
-    length = np.linalg.norm(axis)
-
-    if length == 0:
-        phi = 0
-        theta = 0
-    else:
-        axis = axis / length
-
-        phi = np.arctan2(axis[1], axis[0])
-        theta = np.arccos(axis[2])
-
-    arr = vtk.vtkConeSource()
-    arr.SetResolution(res)
-    arr.SetRadius(0.25)
-
-    arr.Update()
-
-    t = vtk.vtkTransform()
-    t.Translate(startPoint + 0.5 * (endPoint - startPoint))
-    t.RotateZ(np.rad2deg(phi))
-    t.RotateY(np.rad2deg(theta))
-    t.RotateY(-90)  # put it along Z
-    t.Scale(length, length, length)
-
-    t.Update()
-
-    tf = vtk.vtkTransformPolyDataFilter()
-    tf.SetInputData(arr.GetOutput())
-    tf.SetTransform(t)
-    tf.Update()
-
-    # # mapper
-    # mapper = vtk.vtkPolyDataMapper()
-    # mapper.SetInputData(tf.GetOutput())
-    #
-    # # Actor.
-    # actor = vtk.vtkActor()
-    # actor.SetMapper(mapper)
-
-    actor = vp.Mesh(tf.GetOutput())
-
-    return actor

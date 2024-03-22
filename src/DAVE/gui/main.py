@@ -1615,13 +1615,9 @@ class Gui:
                 QIcon(":/v2/icons/heart_full_small.svg")
             )
 
-            # TODO: shomehow running this code before opening the perspective solves the hard crashes... ???
             # check if all docks are still ok
             for name, dock in self.guiWidgets.items():
                 assert dock == self.dock_manager.dockWidgetsMap()[name], ValueError(f'Dock mismatch for {name}')
-
-            # self.dock_manager.openPerspective(name)
-            # open perspective using a single shot timer, fixes hard crashes
 
             QTimer.singleShot(0, lambda : self.dock_manager.openPerspective(self._active_dockgroup.ID))
 

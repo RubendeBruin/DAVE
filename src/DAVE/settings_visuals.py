@@ -9,107 +9,13 @@ PAINTERS["paintset_name"]["NodeClass:status"] = ActorSettings
 
 from dataclasses import dataclass
 from copy import copy, deepcopy
-from matplotlib.cm import get_cmap
-import DAVE.settings as ds
+
+from DAVE.visual_helpers.constants import *
+
 
 ICONS = dict()  # [class] = QIcon
-
-
 PAINTERS = dict()  # this is the dictionary with sets of paint, it will be filled later
 
-# ============ visuals :: sea ===========
-
-VISUAL_BUOYANCY_PLANE_EXTEND = 5
-TEXTURE_SEA = str(ds.RESOURCE_PATH[0] / "virtualSea.jpg")
-TEXTURE_WAVEPLANE = str(ds.RESOURCE_PATH[0] / "waveplane.jpg")
-LIGHT_TEXTURE_SKYBOX = ds.RESOURCE_PATH[0] / "white.png"
-ALPHA_SEA = 0.8
-
-# ============ visuals :: geometry and cables =========
-
-RESOLUTION_SPHERE = 12
-RESOLUTION_ARROW = 12
-RESOLUTION_CABLE_OVER_CIRCLE = 36  # NUMBER OF POINTS IN A FULL CIRCLE
-RESOLUTION_CABLE_SAG = 30  # NUMBER OF POINTS IN A CATENARY
-
-CABLE_DIA_WHEN_DIA_IS_ZERO = 0.1  # diameter of the cable when the diameter is zero
-
-
-# ============ visuals :: colors ===========
-
-_BLACK = [0, 0, 0]
-_RED = [144, 33, 30]
-_ORANGE = [200, 80, 33]
-_BROWN = [187, 134, 41]
-_GREEN = [0, 127, 14]
-_GREEN_DARK = [0, 110, 10]
-_YELLOW = [255, 216, 0]
-_YELLOW_DARK = [128, 108, 0]
-_PURPLE = [87, 0, 127]
-_WHITE = [255, 255, 255]
-_BLUE = [12, 106, 146]
-_BLUE_GREEN = [6, (127 + 106) / 2, (146 + 14) / 2]  # _BLUE + _GREEN / 2
-_BLUE_LIGHT = [203, 224, 239]
-_BLUE_DARK = [57, 76, 90]
-_PINK = [247, 17, 228]
-_DARK_GRAY = [45, 45, 48]
-_LIGHT_GRAY = [200, 200, 200]
-_MEDIUM_GRAY = [145, 145, 145]
-
-PALETTE = (
-    _BLUE,
-    _ORANGE,
-    _GREEN,
-    _YELLOW_DARK,
-    _PURPLE,
-    _MEDIUM_GRAY,
-    _BLUE_LIGHT,
-    _RED,
-    _BROWN,
-    _DARK_GRAY,
-    _LIGHT_GRAY,
-    _BLUE_DARK,
-)
-
-
-def rgb(col):
-    return (col[0] / 255, col[1] / 255, col[2] / 255)
-
-
-COLOR_WATER_TANK_5MIN = _BROWN
-COLOR_WATER_TANK_SLACK = _ORANGE
-COLOR_WATER_TANK_95PLUS = _BLUE
-COLOR_WATER_TANK_FULL = _BLUE_DARK
-COLOR_WATER_TANK_FREEFLOODING = _RED
-COLOR_SELECT = rgb(_YELLOW)
-COLOR_SELECT_255 = _YELLOW
-
-COLOR_CIRCLE = _BLUE_GREEN
-
-OUTLINE_WIDTH = 1.5
-
-COLOR_BG2 = rgb(_WHITE)
-COLOR_BG1 = rgb(_WHITE)
-
-COLOR_BG1_GUI = rgb((247, 247, 247))
-COLOR_BG2_GUI = rgb((247, 247, 247))
-
-COLOR_OUTLINE = rgb(_BLACK)
-
-COLOR_WATER = rgb(_BLUE_DARK)
-
-# ------------ colormap for unity-checks
-
-UC_CMAP = get_cmap("turbo", lut=100)
-
-# import matplotlib.pyplot as plt
-# import math
-# for i in range(1000):
-#     plt.plot(i/1000,0,marker='o', color = UC_CMAP(i))
-#     plt.plot(1.1, 0, marker='o', color=(1,0,1,1))
-# plt.show()
-
-# ------------
 
 
 @dataclass
@@ -206,7 +112,7 @@ surf.surfaceShow = True
 mesh = ActorSettings()
 mesh.lineWidth = 1
 mesh.surfaceShow = False
-mesh.lineColor = _DARK_GRAY
+mesh.lineColor = DARK_GRAY
 
 trans = ActorSettings()
 trans.lineWidth = 0
@@ -237,7 +143,7 @@ def make_node_invisible(node):
 
 
 painters = dict()
-surf.surfaceColor = _LIGHT_GRAY
+surf.surfaceColor = LIGHT_GRAY
 painters["Point"] = {"main": copy(surf)}
 painters["Point"]["footprint"] = copy(invisible)
 
@@ -245,11 +151,11 @@ painters["Point"]["footprint"] = copy(invisible)
 
 painters["Frame"] = dict()
 
-surf.surfaceColor = _RED
+surf.surfaceColor = RED
 painters["Frame"]["main"] = copy(surf)
-surf.surfaceColor = _GREEN
+surf.surfaceColor = GREEN
 painters["Frame"]["y"] = copy(surf)
-surf.surfaceColor = _BLUE
+surf.surfaceColor = BLUE
 painters["Frame"]["z"] = copy(surf)
 
 painters["Frame"]["footprint"] = copy(invisible)
@@ -257,13 +163,13 @@ painters["Frame"]["footprint"] = copy(invisible)
 # ---- body
 painters["RigidBody"] = dict()
 
-surf.surfaceColor = _RED
+surf.surfaceColor = RED
 painters["RigidBody"]["x"] = copy(surf)
-surf.surfaceColor = _GREEN
+surf.surfaceColor = GREEN
 painters["RigidBody"]["y"] = copy(surf)
-surf.surfaceColor = _BLUE
+surf.surfaceColor = BLUE
 painters["RigidBody"]["z"] = copy(surf)
-surf.surfaceColor = _PURPLE
+surf.surfaceColor = PURPLE
 painters["RigidBody"]["main"] = copy(surf)
 painters["RigidBody"]["footprint"] = copy(invisible)
 
@@ -273,43 +179,43 @@ surf.surfaceColor = COLOR_CIRCLE
 painters["Circle"] = {"main": copy(surf)}
 
 # ---- visual
-surf.surfaceColor = _BLUE_LIGHT
+surf.surfaceColor = BLUE_LIGHT
 painters["Visual"] = {"main": copy(surf)}
 
 # ---- force
 
-surf.surfaceColor = _ORANGE
+surf.surfaceColor = ORANGE
 painters["Force"] = {"main": copy(surf), "moment1": copy(surf), "moment2": copy(surf)}
 
 
 # --- cable
 # mesh.lineWidth = 3
-# mesh.lineColor = _BLACK
-surf.surfaceColor = _BLACK
+# mesh.lineColor = BLACK
+surf.surfaceColor = BLACK
 painters["Cable"] = {"main": copy(surf)}
 painters["Cable"]["main"].labelShow = False
 
 # --- beam
 mesh.lineWidth = 5
-mesh.lineColor = _BLACK
+mesh.lineColor = BLACK
 painters["Beam"] = {"main": copy(mesh)}
 painters["Beam"]["main"].labelShow = False
 
 # lincon2d
 
-mesh.lineColor = _RED
+mesh.lineColor = RED
 painters["Connector2d"] = {"main": copy(mesh)}
 
 # LC6D
 
-mesh.lineColor = _RED
+mesh.lineColor = RED
 painters["LC6d"] = {"main": copy(mesh)}
 
 
 # SPMT
 
-surf.surfaceColor = _LIGHT_GRAY
-mesh.lineColor = _BLACK
+surf.surfaceColor = LIGHT_GRAY
+mesh.lineColor = BLACK
 painters["SPMT"] = {"main": copy(surf), "wheel": copy(surf), "line": copy(mesh)}
 
 
@@ -317,16 +223,16 @@ painters["SPMT"] = {"main": copy(surf), "wheel": copy(surf), "line": copy(mesh)}
 
 cm = ActorSettings()
 cm.lineWidth = 1
-cm.surfaceColor = _GREEN
-cm.lineColor = _GREEN_DARK
+cm.surfaceColor = GREEN
+cm.lineColor = GREEN_DARK
 cm.surfaceShow = True
 
 painters["ContactMesh"] = {"main": cm}
 
 # ----- contact ball
 
-surf.surfaceColor = _GREEN_DARK
-mesh.lineColor = _ORANGE
+surf.surfaceColor = GREEN_DARK
+mesh.lineColor = ORANGE
 mesh.lineWidth = 1
 painters["ContactBall:free"] = {"main": copy(surf), "contact": copy(mesh)}
 mesh.lineWidth = 2
@@ -334,24 +240,24 @@ painters["ContactBall:contact"] = {"main": copy(mesh), "contact": copy(mesh)}
 
 
 # ---- buoyancy
-mesh.lineColor = _BLACK
+mesh.lineColor = BLACK
 mesh.lineWidth = 1
-trans.surfaceColor = _YELLOW
+trans.surfaceColor = YELLOW
 painters["Buoyancy"] = {"main": copy(mesh)}
 
-surf.surfaceColor = _BLUE_DARK
+surf.surfaceColor = BLUE_DARK
 painters["Buoyancy"]["cob"] = copy(surf)
 
-trans.surfaceColor = _BLUE_LIGHT
+trans.surfaceColor = BLUE_LIGHT
 painters["Buoyancy"]["waterplane"] = copy(trans)
 
-trans.surfaceColor = _YELLOW_DARK
+trans.surfaceColor = YELLOW_DARK
 painters["Buoyancy"]["submerged_mesh"] = copy(trans)
 
 # ---------- Tanks
 mesh.lineWidth = 1
-mesh.lineColor = _BLACK
-surf.surfaceColor = _RED
+mesh.lineColor = BLACK
+surf.surfaceColor = RED
 
 painters["Tank:freeflooding"] = {
     "main": copy(mesh),
@@ -359,25 +265,25 @@ painters["Tank:freeflooding"] = {
     "fluid": copy(surf),
 }
 
-surf.surfaceColor = _BROWN
+surf.surfaceColor = BROWN
 painters["Tank:empty"] = {"main": copy(mesh), "cog": copy(surf), "fluid": copy(surf)}
 
-surf.surfaceColor = _ORANGE
+surf.surfaceColor = ORANGE
 painters["Tank:partial"] = {"main": copy(mesh), "cog": copy(surf), "fluid": copy(surf)}
 
-surf.surfaceColor = _BLUE_DARK
+surf.surfaceColor = BLUE_DARK
 painters["Tank:full"] = {"main": copy(mesh), "cog": copy(surf), "fluid": copy(surf)}
 
 # WaveInteraction1
 
-surf.surfaceColor = _PURPLE
+surf.surfaceColor = PURPLE
 painters["WaveInteraction1"] = {"main": copy(surf)}
 
-surf.surfaceColor = _WHITE
+surf.surfaceColor = WHITE
 surf.labelShow = False
 painters["WindArea"] = {"main": copy(surf)}
 
-surf.surfaceColor = _BLUE
+surf.surfaceColor = BLUE
 surf.labelShow = False
 painters["CurrentArea"] = {"main": copy(surf)}
 
@@ -423,13 +329,13 @@ ballast_painters["Circle"]["main"] = copy(invisible)
 
 # Visuals: Xray
 ballast_painters["Visual"]["main"] = copy(xray)
-ballast_painters["Visual"]["main"].outlineColor = _MEDIUM_GRAY
+ballast_painters["Visual"]["main"].outlineColor = MEDIUM_GRAY
 
 # Forces: unchanged
 
 # Cables: thin gray lines
 ballast_painters["Cable"]["main"].lineWidth = 1
-ballast_painters["Cable"]["main"].lineColor = _MEDIUM_GRAY
+ballast_painters["Cable"]["main"].lineColor = MEDIUM_GRAY
 
 #
 ballast_painters["Connector2d"]["main"] = copy(invisible)
@@ -638,7 +544,7 @@ for outer_key, visual in animation_painters.items():
     for inner_key in visual.keys():
         animation_painters[outer_key][inner_key] = copy(invisible)
 
-surf.surfaceColor = _LIGHT_GRAY
+surf.surfaceColor = LIGHT_GRAY
 animation_painters["Visual"]["main"] = copy(surf)
 animation_painters["Cable"] = copy(PAINTERS["Construction"]["Cable"])
 animation_painters["Beam"] = copy(PAINTERS["Construction"]["Beam"])
@@ -662,7 +568,7 @@ PAINTERS["Mooring"] = deepcopy(PAINTERS["Visual"])
 
 pm = PAINTERS["Mooring"]  # alias
 
-pm["Point"]["main"].surfaceColor = _GREEN_DARK
+pm["Point"]["main"].surfaceColor = GREEN_DARK
 
 make_node_invisible(pm["Buoyancy"])
 make_node_invisible(pm["Tank:freeflooding"])
@@ -726,8 +632,8 @@ foot_painters = deepcopy(PAINTERS["X-ray, no mesh"])
 
 footprint_paint = copy(surf)
 footprint_paint.lineWidth = 3
-footprint_paint.lineColor = _PURPLE
-footprint_paint.surfaceColor = _PURPLE
+footprint_paint.lineColor = PURPLE
+footprint_paint.surfaceColor = PURPLE
 
 foot_painters["Point"]["footprint"] = copy(footprint_paint)
 foot_painters["Frame"]["footprint"] = copy(footprint_paint)
