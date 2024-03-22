@@ -14,13 +14,17 @@ class ActorType(Enum):
     MESH_OR_CONNECTOR = 8
     COG = 9
 
+# ================== visuals :: general =============
+
+ACTOR_METALIC = 1.0
+ACTOR_ROUGHESS = 0.1
+ACTOR_COLOR = [0.7, 0.74, 0.74]  # a little on the cool side
 
 # ============ visuals :: sea ===========
 
 VISUAL_BUOYANCY_PLANE_EXTEND = 5
 TEXTURE_SEA = str(ds.RESOURCE_PATH[0] / "virtualSea.jpg")
 TEXTURE_WAVEPLANE = str(ds.RESOURCE_PATH[0] / "waveplane.jpg")
-LIGHT_TEXTURE_SKYBOX = ds.RESOURCE_PATH[0] / "white.png"
 ALPHA_SEA = 0.8
 
 # ============ visuals :: geometry and cables =========

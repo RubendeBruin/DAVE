@@ -10,7 +10,9 @@ Helpers:
 
 Actor creators:
 
-- vtkActorFromPolyData
+- vtkActorFromPolyData  # <--- this is always used to create an actor
+
+
 - Mesh
 - vp_actor_from_file
 
@@ -36,6 +38,25 @@ from vtkmodules.vtkFiltersSources import vtkSphereSource, vtkPlaneSource, vtkReg
 from vtkmodules.vtkIOGeometry import vtkOBJReader, vtkSTLReader
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper
 
+from DAVE.visual_helpers.constants import ACTOR_COLOR, ACTOR_ROUGHESS, ACTOR_METALIC
+
+
+def vtkActorFromPolyData(poly_data):
+    """Creates a vtkActor from a vtkPolyData object"""
+    mapper = vtkPolyDataMapper()
+    mapper.SetInputData(poly_data)
+
+    actor = vtkActor()
+    actor.SetMapper(mapper)
+
+    prop = actor.GetProperty()
+
+    prop.SetInterpolationToPBR()
+    prop.SetColor(ACTOR_COLOR)
+    prop.SetMetallic(ACTOR_METALIC)
+    prop.SetRoughness(ACTOR_ROUGHESS)
+
+    return actor
 
 def polyDataFromVerticesAndFaces(vertices, faces):
     """Creates a vtkPolyData object from vertices and faces"""
@@ -67,15 +88,6 @@ def polyDataFromVerticesAndFaces(vertices, faces):
     return poly
 
 
-def vtkActorFromPolyData(poly_data):
-    """Creates a vtkActor from a vtkPolyData object"""
-    mapper = vtkPolyDataMapper()
-    mapper.SetInputData(poly_data)
-
-    actor = vtkActor()
-    actor.SetMapper(mapper)
-
-    return actor
 
 
 # ========== ACTOR MAKERS ==========
@@ -208,12 +220,7 @@ def vp_actor_from_file(filename):
     # con = vtk.vtkCleanPolyData()
     # con.SetInputConnection(source.GetOutputPort())
     # con.Update()
-    # #
     #
-    # # data = normals.GetOutput()
-    # # for i in range(data.GetNumberOfPoints()):
-    # #     point = data.GetPoint(i)
-    # #     print(point)
     #
     # normals = vtk.vtkPolyDataNormals()
     # normals.SetInputConnection(con.GetOutputPort())
@@ -223,6 +230,7 @@ def vp_actor_from_file(filename):
     mapper = vtkPolyDataMapper()
     mapper.SetInputConnection(source.GetOutputPort())
     mapper.Update()
+
     #
     # # We are not importing textures and materials.
     # # Set color to 'w' to enforce an uniform color
@@ -230,7 +238,9 @@ def vp_actor_from_file(filename):
 
     # vpa = vp.Mesh(filename, c="w")
 
-    return vtkActorFromPolyData(mapper.GetInputAsDataSet())
+    actor = vtkActorFromPolyData(mapper.GetInputAsDataSet())
+
+    return actor
 
 
 def Arrow(startPoint=(0, 0, 0), endPoint=(1, 0, 0), res=8):

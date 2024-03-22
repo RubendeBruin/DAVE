@@ -3,22 +3,25 @@ node is a reference to the node it represents. If node is None then this is the 
 a VisualActor can contain a number of vtk actors or vedo-actors. These are stored in a dictionary
 An visualActor may have a label_actor. This is a 2D annotation
 The appearance of a visual may change when it is selected. This is handled by select and deselect
-
 """
+
 from copy import copy
+import logging
 
 import numpy as np
+from scipy.spatial import ConvexHull
+
 from vtkmodules.vtkCommonTransforms import vtkTransform
-from vtkmodules.vtkRenderingAnnotation import vtkCaptionActor2D
 from vtkmodules.vtkRenderingCore import vtkActor
 
 import DAVE.nodes as dn
 from DAVE.visual_helpers.constants import *
 
 from DAVE.settings_visuals import ViewportSettings, COLOR_SELECT_255
-from DAVE.visual_helpers.vtkActorMakers import Cylinder
+from DAVE.visual_helpers.vtkActorMakers import Cylinder, Sphere, Arrow, ArrowHead, actor_from_trimesh, Mesh
 from DAVE.visual_helpers.vtkHelpers import apply_parent_translation_on_transform, SetTransformIfDifferent, \
-    create_tube_data, update_line_to_points, SetMatrixIfDifferent, mat4x4_from_point_on_frame
+    create_tube_data, update_line_to_points, SetMatrixIfDifferent, mat4x4_from_point_on_frame, SetScaleIfDifferent, \
+    transform_to_mat4x4, transform_from_point
 
 
 class VisualActor:
@@ -32,12 +35,12 @@ class VisualActor:
 
         for k, v in actors.items():
             if not isinstance(v, vtkActor):
-                raise ValueError(f"Actor {k} is not a vtk.vtkActor, but {type(v)}")
+                raise ValueError(f"Actor {k} is not a vtkActor, but {type(v)}")
 
 
-        self.actors = actors  # dict of vedo actors. There shall be one called 'main'
+        self.actors = actors  # dict vtk actors. There shall be one called 'main'
         self.node = node  # Node
-        self.label_actor = None
+        # self.label_actor = None
 
         self.paint_state = ""  # some nodes change paint depending on their state
 
@@ -66,66 +69,66 @@ class VisualActor:
     @property
     def visible(self):
         return self.actors["main"].GetVisibility()
-
-    def setLabelPosition(self, position):
-        if len(position) != 3:
-            raise ValueError("Position should have length 3")
-
-        if self.label_actor is not None:
-            self.label_actor.SetAttachmentPoint(*position)
-
-    def labelCreate(self, txt):
-        la = vtkCaptionActor2D()
-        la.SetCaption(txt)
-
-        position = self.center_position
-
-        # print(f'{txt} : at {position}')
-        la.GetProperty().SetColor(0, 0, 0)
-        la.SetAttachmentPoint(*position)
-
-        la.SetPickable(True)
-
-        cap = la.GetTextActor().GetTextProperty()
-
-        la.GetTextActor().SetTextScaleModeToNone()
-        la.GetTextActor().SetPickable(True)
-
-        tp = la.GetCaptionTextProperty()
-        tp.SetBackgroundOpacity(1.0)
-        tp.SetBackgroundColor(1.0, 1.0, 1.0)
-        tp.FrameOn()
-        tp.SetFrameColor(0, 0, 0)
-        tp.SetFrameWidth(1)
-
-        cap.SetColor(0, 0, 0)
-        la.SetBorder(False)
-        cap.SetBold(False)
-        cap.SetItalic(False)
-
-        cap.SetFontFamilyToArial()
-
-        la.no_outline = True
-
-        self.label_actor = la
-
-    def labelUpdate(self, txt):
-        if txt == "":
-            if self.label_actor is not None:
-                self.label_actor.SetVisibility(False)
-                if self.label_actor.GetCaption() != txt:
-                    self.label_actor.SetCaption(txt)
-            return
-
-        if self.label_actor is None:
-            self.labelCreate(txt)
-        else:
-            if self.label_actor.GetCaption() != txt:
-                self.label_actor.SetCaption(txt)
-
-            self.label_actor.SetAttachmentPoint(*self.center_position)
-
-        return self.label_actor
+    #
+    # def setLabelPosition(self, position):
+    #     if len(position) != 3:
+    #         raise ValueError("Position should have length 3")
+    #
+    #     if self.label_actor is not None:
+    #         self.label_actor.SetAttachmentPoint(*position)
+    #
+    # def labelCreate(self, txt):
+    #     la = vtkCaptionActor2D()
+    #     la.SetCaption(txt)
+    #
+    #     position = self.center_position
+    #
+    #     # print(f'{txt} : at {position}')
+    #     la.GetProperty().SetColor(0, 0, 0)
+    #     la.SetAttachmentPoint(*position)
+    #
+    #     la.SetPickable(True)
+    #
+    #     cap = la.GetTextActor().GetTextProperty()
+    #
+    #     la.GetTextActor().SetTextScaleModeToNone()
+    #     la.GetTextActor().SetPickable(True)
+    #
+    #     tp = la.GetCaptionTextProperty()
+    #     tp.SetBackgroundOpacity(1.0)
+    #     tp.SetBackgroundColor(1.0, 1.0, 1.0)
+    #     tp.FrameOn()
+    #     tp.SetFrameColor(0, 0, 0)
+    #     tp.SetFrameWidth(1)
+    #
+    #     cap.SetColor(0, 0, 0)
+    #     la.SetBorder(False)
+    #     cap.SetBold(False)
+    #     cap.SetItalic(False)
+    #
+    #     cap.SetFontFamilyToArial()
+    #
+    #     la.no_outline = True
+    #
+    #     self.label_actor = la
+    #
+    # def labelUpdate(self, txt):
+    #     if txt == "":
+    #         if self.label_actor is not None:
+    #             self.label_actor.SetVisibility(False)
+    #             if self.label_actor.GetCaption() != txt:
+    #                 self.label_actor.SetCaption(txt)
+    #         return
+    #
+    #     if self.label_actor is None:
+    #         self.labelCreate(txt)
+    #     else:
+    #         if self.label_actor.GetCaption() != txt:
+    #             self.label_actor.SetCaption(txt)
+    #
+    #         self.label_actor.SetAttachmentPoint(*self.center_position)
+    #
+    #     return self.label_actor
 
     def update_paint(self, settings: ViewportSettings):
         """Updates the painting for this visual
@@ -217,22 +220,22 @@ class VisualActor:
                 new_painter_settings[k] = v
             node_painter_settings = new_painter_settings
 
-        # label
-        if settings.label_scale > 0 and self.label_actor.GetCaption() != "":
-            if (
-                self.label_actor.GetVisibility()
-                != node_painter_settings["main"].labelShow
-            ):
-                self.label_actor.SetVisibility(node_painter_settings["main"].labelShow)
-
-            ta = self.label_actor.GetTextActor()
-
-            txtprop = ta.GetTextProperty()
-
-            if txtprop.GetFontSize() != int(settings.label_scale * 10):
-                txtprop.SetFontSize(int(settings.label_scale * 10))
-        else:
-            self.label_actor.SetVisibility(False)
+        # # label
+        # if settings.label_scale > 0 and self.label_actor.GetCaption() != "":
+        #     if (
+        #         self.label_actor.GetVisibility()
+        #         != node_painter_settings["main"].labelShow
+        #     ):
+        #         self.label_actor.SetVisibility(node_painter_settings["main"].labelShow)
+        #
+        #     ta = self.label_actor.GetTextActor()
+        #
+        #     txtprop = ta.GetTextProperty()
+        #
+        #     if txtprop.GetFontSize() != int(settings.label_scale * 10):
+        #         txtprop.SetFontSize(int(settings.label_scale * 10))
+        # else:
+        #     self.label_actor.SetVisibility(False)
 
         # check for UCs, create uc_paint accordingly
         uc_paint = None
@@ -286,7 +289,7 @@ class VisualActor:
                 continue
 
             if actor_settings.surfaceShow:
-                props.SetInterpolationToPBR()
+                # props.SetInterpolationToPBR()
                 props.SetRepresentationToSurface()
 
                 if uc_paint is None:
@@ -302,12 +305,12 @@ class VisualActor:
 
                 if self._is_selected:
                     props.SetOpacity(actor_settings.alpha)
-                    props.SetMetallic(1.0)
-                    props.SetRoughness(0.3)
+                    # props.SetMetallic(1.0)
+                    # props.SetRoughness(0.3)
                 else:
                     props.SetOpacity(actor_settings.alpha)
-                    props.SetMetallic(actor_settings.metallic)
-                    props.SetRoughness(actor_settings.roughness)
+                    # props.SetMetallic(actor_settings.metallic)
+                    # props.SetRoughness(actor_settings.roughness)
 
             else:
                 props.SetRepresentationToWireframe()
@@ -345,12 +348,12 @@ class VisualActor:
         """Updates the geometry of the actors to the current state of the node.
         This includes moving as well as changing meshes and volumes"""
 
-        # update label name if needed
-        label_text = getattr(self.node, viewport.settings.label_property, "")
+        # # update label name if needed
+        # label_text = getattr(self.node, viewport.settings.label_property, "")
 
-        self.labelUpdate(
-            label_text
-        )  # does not do anything if the label-name is unchanged
+        # self.labelUpdate(
+        #     label_text
+        # )  # does not do anything if the label-name is unchanged
 
         # the following ifs all end with Return, so only a single one is executed
 
@@ -399,7 +402,7 @@ class VisualActor:
             t.Scale(self.node.radius, self.node.radius, thickness)
 
             # rotate z-axis (length axis of cylinder) is direction of axis
-            axis = self.node.axis / np.linalg.norm(self.node.axis)
+            axis = np.asarray(self.node.axis) / np.linalg.norm(self.node.axis)
             z = (0, 0, 1)
             rot_axis = np.cross(z, axis)
             rot_dot = np.dot(z, axis)
@@ -452,7 +455,7 @@ class VisualActor:
 
                 update_line_to_points(A, points)
 
-            self.setLabelPosition(np.mean(points, axis=0))
+            # self.setLabelPosition(np.mean(points, axis=0))
 
             return
 
@@ -534,7 +537,7 @@ class VisualActor:
             A = self.actors["main"]
             update_line_to_points(A, points)
 
-            self.setLabelPosition(np.mean(points, axis=0))
+            # self.setLabelPosition(np.mean(points, axis=0))
 
             return
 
@@ -598,8 +601,8 @@ class VisualActor:
                     self.actors["footprint"]._vertices_changed = True
                 else:
                     # create a new actor
-                    new_actor = actor_from_vertices_and_faces(
-                        vertices=fp, faces=[range(n_points)]
+                    new_actor = Mesh(
+                        vertices=fp, faces=[range(n_points)], do_clean=True,
                     )
 
                     # print("number of points changed, creating new")
@@ -619,7 +622,7 @@ class VisualActor:
             SetTransformIfDifferent(self.actors["main"], t)
             SetScaleIfDifferent(self.actors["main"], viewport.settings.geometry_scale)
 
-            self.setLabelPosition(self.node.global_position)
+            # self.setLabelPosition(self.node.global_position)
             return
 
         if isinstance(self.node, dn.ContactBall):
@@ -909,7 +912,7 @@ class VisualActor:
 
             # Points are the vertices in global axis system (transforms applied)
             points = self.actors["main"].points(transformed=True)
-            self.setLabelPosition(np.mean(points, axis=0).flatten())
+            # self.setLabelPosition(np.mean(points, axis=0).flatten())
 
             # Update the CoG
             # move the CoG to the new (global!) position
@@ -1035,7 +1038,7 @@ class VisualActor:
                 if need_new:
                     # print(f'Creating new actor for for {V.node.name}')
 
-                    vis = actor_from_vertices_and_faces(vertices, faces)
+                    vis = Mesh(vertices, faces)
 
                     vis.actor_type = ActorType.MESH_OR_CONNECTOR
 
@@ -1047,7 +1050,7 @@ class VisualActor:
                         viewport.screen.add(vis)
 
                 if not self.node.visible:
-                    vis.off()
+                    vis.SetVisibility(False)
 
             self._visual_volume = self.node.volume
 

@@ -10,4 +10,6 @@ def test_render_basic_nodes(model_basic_nodes):
         if not isinstance(node, Visual):
             s.delete(node)
 
-    DG(model_basic_nodes)
+    from DAVE.visual_helpers.simple_scene_renderer import SimpleSceneRenderer
+    renderer = SimpleSceneRenderer(s)
+    renderer.show()

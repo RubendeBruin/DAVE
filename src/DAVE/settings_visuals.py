@@ -29,8 +29,8 @@ class ActorSettings:
     # surface
     surfaceShow: bool = True
     surfaceColor: tuple = (247, 17, 228)  # Pink
-    metallic: float = 0.4
-    roughness: float = 0.9
+    metallic: float = 0.5
+    roughness: float = 0.5
 
     # lines , set lineWidth to 0 for no line
     lineWidth = 1

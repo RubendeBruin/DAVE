@@ -124,7 +124,9 @@ import DAVE.gui.node_icons
 
 
 from DAVE.gui.forms.main_form import Ui_MainWindow
-from DAVE.visual import Viewport, DelayRenderingTillDone
+from DAVE.visual_helpers.vtkHelpers import DelayRenderingTillDone
+from DAVE.visual_helpers.qt_embedded_renderer import QtEmbeddedSceneRenderer
+
 from DAVE.gui import new_node_dialog
 import DAVE.gui.standard_assets
 from DAVE.gui.forms.dlg_solver import Ui_Dialog
@@ -416,7 +418,7 @@ class Gui:
         # self.MainWindow.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
 
         # ======================== Create 3D viewport ====================
-        self.visual = Viewport(scene)
+        self.visual = QtEmbeddedSceneRenderer(scene, self.ui.frame3d)
         """Reference to a viewport"""
 
         if painters is None:
@@ -436,12 +438,12 @@ class Gui:
         if geometry_scale >= 0:
             self.visual.geometry_scale = geometry_scale
 
-        self.visual.create_node_visuals(recreate=True)
-        self.visual.show_embedded(self.ui.frame3d)
-
-        self.visual.position_visuals()
-        self.visual.update_visibility()  # apply paint
-        self.visual.add_new_node_actors_to_screen()
+        # self.visual.create_node_visuals(recreate=True)
+        #
+        #
+        # self.visual.position_visuals()
+        # self.visual.update_visibility()  # apply paint
+        # self.visual.add_new_node_actors_to_screen()
 
         self.visual.Style.callbackSelect = self.view3d_select_element
         self.visual.focus_on_selected_object = self.focus_on_selected_object
@@ -451,8 +453,8 @@ class Gui:
         self.ui.frame3d.customContextMenuRequested.connect(self.rightClickViewport)
 
         self._timerid = None
-        iren = self.visual.renwin.GetInteractor()
-        iren.AddObserver("TimerEvent", self.timerEvent)
+        # iren = self.visual.renwin.GetInteractor()
+        self.visual.interactor.AddObserver("TimerEvent", self.timerEvent)
 
         # ------ key-presses -----
 
