@@ -37,7 +37,6 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
         # privates
         self._ssao_on = False
         self._wavefield = None
-        self._skybox = None
         self._create_SSAO_pass()
 
         #
@@ -346,6 +345,8 @@ if __name__ == '__main__':
     viewer.update_visibility()
 
     viewer.load_hdr(r"C:\Users\MS12H\Downloads\kloppenheim_05_puresky_2k.hdr")
+
+    viewer.background_color([1,1,1])
 
     widget.show()
 

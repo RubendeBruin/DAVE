@@ -1,7 +1,6 @@
 import logging
 import warnings
 
-import vtk
 import numpy as np
 from dataclasses import dataclass
 

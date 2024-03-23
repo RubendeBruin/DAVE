@@ -9,6 +9,8 @@
 
 # enforce PySide6 on vtk
 import vtkmodules.qt
+from vtkmodules.vtkIOImage import vtkPNGReader
+
 vtkmodules.qt.PyQtImpl = "PySide6"
 
 import logging
@@ -20,7 +22,8 @@ from DAVE.visual_helpers.actors import VisualActor
 from DAVE.visual_helpers.constants import ActorType
 
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-from vtkmodules.vtkRenderingCore import vtkActor2D, vtkRenderer, vtkCamera, vtkRenderWindowInteractor, vtkRenderWindow
+from vtkmodules.vtkRenderingCore import vtkActor2D, vtkRenderer, vtkCamera, vtkRenderWindowInteractor, vtkRenderWindow, \
+    vtkImageMapper
 from vtkmodules.vtkRenderingOpenGL2 import vtkOpenGLFXAAPass, vtkSSAOPass
 
 from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import BlenderStyle
@@ -69,13 +72,13 @@ class EmbeddedViewport(AbstractSceneRenderer):
         self._create_SSAO_pass()
 
         # colorbar image
-        png = vtk.vtkPNGReader()
+        png = vtkPNGReader()
         png.SetFileName(
             str(Path(__file__).parent / "resources" / "uc_colorbar_smaller.png")
         )
         png.Update()
 
-        imagemapper = vtk.vtkImageMapper()
+        imagemapper = vtkImageMapper()
         imagemapper.SetInputData(png.GetOutput())
         imagemapper.SetColorWindow(255)
         imagemapper.SetColorLevel(127.5)

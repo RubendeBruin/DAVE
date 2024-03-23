@@ -15,7 +15,7 @@ from vtkmodules.vtkIOImage import vtkImageReader2Factory, vtkHDRReader
 from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderWindow, vtkProperty2D, vtkActor2D, vtkRenderer, vtkCamera, \
     vtkPolyDataMapper, vtkProperty, vtkTexture, vtkSkybox
 
-from DAVE.settings_visuals import ViewportSettings
+from DAVE.settings_visuals import ViewportSettings, PAINTERS
 from DAVE.visual_helpers.actors import VisualActor
 from DAVE.visual_helpers.constants import *
 from DAVE.visual_helpers.outlines import VisualOutline
@@ -67,8 +67,12 @@ class AbstractSceneRenderer:
         self.sea_visuals = dict()
         self.origin_visuals = dict()
 
+        """background and environment"""
+        self._skybox = None
+
         if settings is None:
             self.settings = ViewportSettings()
+            self.settings.painter_settings = PAINTERS['Construction']
 
         """If true, only quick updates are performed"""
         self.quick_updates_only = False
@@ -856,10 +860,29 @@ class AbstractSceneRenderer:
             skybox.SetFloorPlane(0, 0, 1, 0)
             skybox.SetFloorRight(1, 0, 0)
             ren.AddActor(skybox)
+            self._skybox = skybox
         else:
             skybox = self._skybox
 
         skybox.SetTexture(texture)
+
+    def background_color(self, color):
+        """Sets the background color"""
+
+        ren = self.renderer # alias
+
+        ren.SetBackground(color)
+        ren.UseImageBasedLightingOn()
+        ren.UseSphericalHarmonicsOff()
+
+        ren.SetEnvironmentTexture(None, False)
+
+        if self._skybox is not None:
+            self.renderer.RemoveActor(self._skybox)
+            self._skybox = None
+
+
+
 
 
 
@@ -872,9 +895,6 @@ class AbstractSceneRenderer:
 
         irradiance = ren.GetEnvMapIrradiance()
         irradiance.SetIrradianceStep(0.3)
-
-        # ren.UseImageBasedLightingOn()
-        # ren.UseSphericalHarmonicsOn()
 
         ren.SetEnvironmentUp(0,0,1)
         ren.SetEnvironmentRight(1,0,0)

@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
-import vedo as vp
 from PySide6.QtGui import QColor
 
 from DAVE import Point, Circle, Buoyancy
+from DAVE.visual_helpers.vtkActorMakers import Line
 from DAVE.gui.dialog_advanced_cable_settings import AdvancedCableSettings
 from DAVE.gui.dock_system.dockwidget import *
 from PySide6.QtCore import Qt, QSize, QModelIndex
@@ -3127,11 +3127,11 @@ class WidgetNodeProps(guiDockWidget):
                 self.gui.visual.remove_temporary_actors()
 
                 if node.trimesh.boundary_edges:
-                    actor = vp.Lines(node.trimesh.boundary_edges, lw=5, c=(1, 0, 0))
+                    actor = Line(node.trimesh.boundary_edges, lw=5, c=(1, 0, 0))
                     actor.SetUserTransform(transform_from_node(node.parent))
                     self.gui.visual.add_temporary_actor(actor)
                 if node.trimesh.non_manifold_edges:
-                    actor = vp.Lines(node.trimesh.non_manifold_edges, lw=5, c=(1, 0, 1))
+                    actor = Line(node.trimesh.non_manifold_edges, lw=5, c=(1, 0, 1))
                     actor.SetUserTransform(transform_from_node(node.parent))
                     self.gui.visual.add_temporary_actor(actor)
 

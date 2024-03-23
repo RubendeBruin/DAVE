@@ -18,10 +18,9 @@
 #     os.environ['DISPLAY'] = ':99'
 import warnings
 
-from ..visual import Viewport
+# from ..visual import Viewport
 
 import PIL
-import vtk
 from vtkmodules.util.numpy_support import vtk_to_numpy
 import numpy as np
 

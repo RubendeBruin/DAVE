@@ -4,6 +4,12 @@ It receives a reference to the scene,
 TODO: would be more logical to have a reference to the node that is belongs to instead.
 """
 import numpy as np
+from vtkmodules.vtkCommonDataModel import vtkLine, vtkVertex
+from vtkmodules.vtkCommonTransforms import vtkTransform
+from vtkmodules.vtkFiltersCore import vtkTriangleFilter, vtkCleanPolyData
+from vtkmodules.vtkFiltersGeneral import vtkTransformPolyDataFilter
+from vtkmodules.vtkIOGeometry import vtkOBJReader, vtkSTLReader
+
 
 class TriMeshSource():  # not an instance of Node
     """
@@ -96,18 +102,16 @@ class TriMeshSource():  # not an instance of Node
         self, polydata, offset=None, rotation=None, scale=None, invert_normals=False
     ):
 
-        import vtk
-
-        tri = vtk.vtkTriangleFilter()
+        tri = vtkTriangleFilter()
 
         tri.SetInputConnection(polydata)
 
-        scaleFilter = vtk.vtkTransformPolyDataFilter()
-        rotationFilter = vtk.vtkTransformPolyDataFilter()
+        scaleFilter = vtkTransformPolyDataFilter()
+        rotationFilter = vtkTransformPolyDataFilter()
 
-        s = vtk.vtkTransform()
+        s = vtkTransform()
         s.Identity()
-        r = vtk.vtkTransform()
+        r = vtkTransform()
         r.Identity()
 
         scaleFilter.SetInputConnection(tri.GetOutputPort())
@@ -128,7 +132,7 @@ class TriMeshSource():  # not an instance of Node
         scaleFilter.SetTransform(s)
         rotationFilter.SetTransform(r)
 
-        clean = vtk.vtkCleanPolyData()
+        clean = vtkCleanPolyData()
         clean.SetInputConnection(rotationFilter.GetOutputPort())
 
         clean.ConvertLinesToPointsOff()
@@ -152,11 +156,11 @@ class TriMeshSource():  # not an instance of Node
         for i in range(data.GetNumberOfCells()):
             cell = data.GetCell(i)
 
-            if isinstance(cell, vtk.vtkLine):
+            if isinstance(cell, vtkLine):
                 print("Cell nr {} is a line, not adding to mesh".format(i))
                 continue
 
-            if isinstance(cell, vtk.vtkVertex):
+            if isinstance(cell, vtkVertex):
                 print("Cell nr {} is a vertex, not adding to mesh".format(i))
                 continue
 
@@ -269,7 +273,7 @@ class TriMeshSource():  # not an instance of Node
         The vtk TriangleFilter is used to triangulate the source
 
         Examples:
-            cube = vtk.vtkCubeSource()
+            cube = vtkCubeSource()
             cube.SetXLength(122)
             cube.SetYLength(38)
             cube.SetZLength(10)
@@ -306,14 +310,12 @@ class TriMeshSource():  # not an instance of Node
 
         filename = str(self._scene.get_resource_path(url))
 
-        import vtk
-
         ext = filename.lower()[-3:]
         if ext == "obj":
-            obj = vtk.vtkOBJReader()
+            obj = vtkOBJReader()
             obj.SetFileName(filename)
         elif ext == "stl":
-            obj = vtk.vtkSTLReader()
+            obj = vtkSTLReader()
             obj.SetFileName(filename)
         else:
             raise ValueError(
@@ -321,7 +323,7 @@ class TriMeshSource():  # not an instance of Node
             )
 
         # Add cleaning
-        cln = vtk.vtkCleanPolyData()
+        cln = vtkCleanPolyData()
         cln.SetInputConnection(obj.GetOutputPort())
 
         self._fromVTKpolydata(

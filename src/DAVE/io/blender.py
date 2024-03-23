@@ -36,6 +36,7 @@
 
 
 """
+from vtkmodules.vtkCommonDataModel import vtkLine
 
 """
   This Source Code Form is subject to the terms of the Mozilla Public
@@ -57,7 +58,7 @@ import numpy as np
 
 import subprocess
 
-import vtk
+# import vtk
 
 
 # utility functions for our python scripts are hard-coded here
@@ -409,7 +410,7 @@ vertex_index = np.array(["""
     for i in range(data.GetNumberOfCells()):
         cell = data.GetCell(i)
 
-        if isinstance(cell, vtk.vtkLine):
+        if isinstance(cell, vtkLine):
             print("Cell nr {} is a line, not adding to mesh".format(i))
             continue
 

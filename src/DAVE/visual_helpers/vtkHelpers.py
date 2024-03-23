@@ -30,13 +30,16 @@ VisualToSlice : slices the visual-node at global position 'slice_position' and n
 
 """
 from pathlib import Path
-
-import vedo as vp
 from vtkmodules.util.numpy_support import vtk_to_numpy
+from vtkmodules.vtkCommonCore import vtkUnsignedCharArray
+from vtkmodules.vtkCommonDataModel import vtkPlane, vtkPolyLine
+from vtkmodules.vtkCommonMath import vtkMatrix4x4
+from vtkmodules.vtkFiltersCore import vtkCutter, vtkTubeFilter
 
 from vtkmodules.vtkIOImage import vtkImageReader2Factory
-from vtkmodules.vtkRenderingCore import vtkTexture
+from vtkmodules.vtkRenderingCore import vtkTexture, vtkProp3D
 
+from .constants import CABLE_COLORMAP
 from .vtkActorMakers import *
 
 import DAVE.nodes as dn
@@ -45,15 +48,17 @@ from DAVE.settings_visuals import CABLE_DIA_WHEN_DIA_IS_ZERO
 
 def vtkShow(actor):
     """Shows a vtk actor in a vedo plotter window"""
-    import vtk
+
+    from vtkmodules.vtkRenderingCore import vtkRenderer, vtkRenderWindow, vtkRenderWindowInteractor
+
 
     # Create a rendering window and renderer
-    renderer = vtk.vtkRenderer()
-    renderWindow = vtk.vtkRenderWindow()
+    renderer = vtkRenderer()
+    renderWindow = vtkRenderWindow()
     renderWindow.AddRenderer(renderer)
 
     # Create a renderwindowinteractor
-    interactor = vtk.vtkRenderWindowInteractor()
+    interactor = vtkRenderWindowInteractor()
     interactor.SetRenderWindow(renderWindow)
 
     # Assign actor to the renderer
@@ -138,7 +143,7 @@ def print_vtkMatrix44(mat):
 
 
 def SetTransformIfDifferent(
-        actor: vtk.vtkProp3D, transform: vtk.vtkTransform, tol=1e-6
+        actor: vtkProp3D, transform: vtkTransform, tol=1e-6
 ):
     """Does not really set the user-transform, instead just sets the real transform"""
 
@@ -156,7 +161,7 @@ def vtkMatricesAlmostEqual(mat0, mat1, tol=1e-6):
     return True
 
 
-def SetMatrixIfDifferent(actor: vtk.vtkProp3D, mat1, tol=1e-6):
+def SetMatrixIfDifferent(actor: vtkProp3D, mat1, tol=1e-6):
     mat0 = actor.GetMatrix()
 
     if not vtkMatricesAlmostEqual(mat0, mat1, tol):  # only change if not almost equal
@@ -203,7 +208,7 @@ def SetMatrixIfDifferent(actor: vtk.vtkProp3D, mat1, tol=1e-6):
             mat1.SetElement(1, 2, m6 / scale3)
             mat1.SetElement(2, 2, m10 / scale3)
 
-        vtk.vtkTransform.GetOrientation(out, mat1)
+        vtkTransform.GetOrientation(out, mat1)
 
         # and restore
         mat1.SetElement(0, 0, m0)
@@ -224,14 +229,14 @@ def SetMatrixIfDifferent(actor: vtk.vtkProp3D, mat1, tol=1e-6):
         actor.SetOrientation(*out)
 
 
-def SetScaleIfDifferent(actor: vtk.vtkProp3D, scale: float, tol=1e-6):
+def SetScaleIfDifferent(actor: vtkProp3D, scale: float, tol=1e-6):
     current_scale = actor.GetScale()[0]  # assume all components are identical
     if abs(current_scale - scale) > tol:
         actor.SetScale(scale)
 
 
 def tranform_almost_equal(
-        transform1: vtk.vtkTransform, transform2: vtk.vtkTransform, tol=1e-6
+        transform1: vtkTransform, transform2: vtkTransform, tol=1e-6
 ):
     """Returns True if the two transforms are almost equal. Testing is done on the absolute difference of the components of the matrix
 
@@ -249,7 +254,7 @@ def tranform_almost_equal(
 
 
 def transform_to_mat4x4(transform):
-    mat4x4 = vtk.vtkMatrix4x4()
+    mat4x4 = vtkMatrix4x4()
     for i in range(4):
         for j in range(4):
             mat4x4.SetElement(i, j, transform[j * 4 + i])
@@ -270,7 +275,7 @@ def mat4x4_from_point_on_frame(frame: dn.Frame, local_position: tuple):
 
 
 def transform_from_point(x, y, z):
-    mat4x4 = vtk.vtkMatrix4x4()
+    mat4x4 = vtkMatrix4x4()
     mat4x4.SetElement(0, 3, x)
     mat4x4.SetElement(1, 3, y)
     mat4x4.SetElement(2, 3, z)
@@ -283,11 +288,11 @@ def transform_from_node(node):
 
     Actor.SetUserTransform(....)
     """
-    t = vtk.vtkTransform()
+    t = vtkTransform()
     t.Identity()
     tr = node.global_transform
 
-    mat4x4 = vtk.vtkMatrix4x4()
+    mat4x4 = vtkMatrix4x4()
     for i in range(4):
         for j in range(4):
             mat4x4.SetElement(i, j, tr[j * 4 + i])
@@ -308,7 +313,7 @@ def transform_from_direction(axis,position,  scale=1, right=None):
         right: optional: vector to right. Needs to be a unit vector
 
     Returns:
-        vtk.vtkMatrix4x4
+        vtkMatrix4x4
     """
 
     # copied from vtk / MatrixHelpers::ViewMatrix
@@ -326,7 +331,7 @@ def transform_from_direction(axis,position,  scale=1, right=None):
 
     up = np.cross(right, viewDir)
 
-    mat4x4 = vtk.vtkMatrix4x4()
+    mat4x4 = vtkMatrix4x4()
 
     mat4x4.SetElement(0, 0, right[0] * scale)
     mat4x4.SetElement(1, 0, right[1] * scale)
@@ -354,7 +359,7 @@ def update_line_to_points(line_actor, points):
 
     npt = len(points)
 
-    _points = vtk.vtkPoints()
+    _points = vtkPoints()
     _points.SetNumberOfPoints(npt)
     for i, pt in enumerate(points):
         _points.SetPoint(i, pt)
@@ -362,7 +367,7 @@ def update_line_to_points(line_actor, points):
 
     # Only need to update the lines if the number of points has changed
     if pts.GetNumberOfPoints() != npt:
-        _lines = vtk.vtkCellArray()
+        _lines = vtkCellArray()
         _lines.InsertNextCell(npt)
         for i in range(npt):
             _lines.InsertCellPoint(i)
@@ -374,19 +379,19 @@ def update_line_to_points(line_actor, points):
 def create_tube_data(new_points, diameter, colors=None):
     """Updates the points of a line-actor"""
 
-    points = vtk.vtkPoints()
+    points = vtkPoints()
     for p in new_points:
         points.InsertNextPoint(p)
 
-    line = vtk.vtkPolyLine()
+    line = vtkPolyLine()
     line.GetPointIds().SetNumberOfIds(len(new_points))
     for i in range(len(new_points)):
         line.GetPointIds().SetId(i, i)
 
-    lines = vtk.vtkCellArray()
+    lines = vtkCellArray()
     lines.InsertNextCell(line)
 
-    polyln = vtk.vtkPolyData()
+    polyln = vtkPolyData()
     polyln.SetPoints(points)
     polyln.SetLines(lines)
 
@@ -395,7 +400,7 @@ def create_tube_data(new_points, diameter, colors=None):
         cc.SetName("TubeColors")
         polyln.GetPointData().SetScalars(cc)
 
-    tuf = vtk.vtkTubeFilter()
+    tuf = vtkTubeFilter()
     tuf.SetCapping(False)
     tuf.SetNumberOfSides(12)
     tuf.SetInputData(polyln)
@@ -411,19 +416,29 @@ def create_tube_data(new_points, diameter, colors=None):
 
 
 def get_color_array(c):
-    cc = vtk.vtkUnsignedCharArray()
+    """Returns a vtkUnsignedCharArray with the colors in c as RGB-255 values stored in CABLE_COLORMAP
+
+    c is a list of floats for which the corrsponding colors should be returned
+
+    """
+
+    cc = vtkUnsignedCharArray()
     cc.SetName("TubeColors")
     cc.SetNumberOfComponents(3)
     cc.SetNumberOfTuples(len(c))
 
-    colors = vp.color_map(c, "turbo", vmin=min(c) * 0.95, vmax=max(c) * 1.05)
+    vmin = min(c) * 0.95
+    vmax = max(c) * 1.05
 
-    for i, (r, g, b) in enumerate(colors):
+    # scale the colors to the range 0-1 using vmin and vmax
+    colors = [CABLE_COLORMAP((col - vmin) / (vmax - vmin)) for col in c]
+
+    for i, (r, g, b, _) in enumerate(colors):
         cc.InsertTuple3(i, int(255 * r), int(255 * g), int(255 * b))
     return cc
 
 
-def apply_parent_translation_on_transform(parent, t: vtk.vtkTransform):
+def apply_parent_translation_on_transform(parent, t: vtkTransform):
     """Applies the DAVE global-transform of "parent" on vtkTransform t"""
 
     if parent is None:
@@ -431,7 +446,7 @@ def apply_parent_translation_on_transform(parent, t: vtk.vtkTransform):
 
     tr = parent.global_transform
 
-    mat4x4 = vtk.vtkMatrix4x4()
+    mat4x4 = vtkMatrix4x4()
     for i in range(4):
         for j in range(4):
             mat4x4.SetElement(i, j, tr[j * 4 + i])
@@ -473,8 +488,12 @@ def _create_moment_or_shear_line(what, frame: dn.Frame, scale_to=2, at=None):
         scale = scale / np.max(np.abs(value))
     line = [report_axis.to_glob_position((x[i], 0, scale * value[i])) for i in range(n)]
 
-    actor_axis = vp.Line((start, end)).c("black").lw(3)
-    actor_graph = vp.Line(line).c(color).lw(3)
+    actor_axis = Line([start, end])
+    actor_axis.SetColor([0,0,0])
+    actor_axis.SetLineWidth(3)
+    actor_graph = Line(line)
+    actor_graph.SetColor(color)
+    actor_graph.SetLineWidth(3)
 
     return actor_axis, actor_graph
 
@@ -536,7 +555,7 @@ def VisualToSlice(
     A = vp_actor_from_file(file)
 
     # get the local (user set) transform
-    t = vtk.vtkTransform()
+    t = vtkTransform()
     t.Identity()
     t.Translate(visual_node.offset)
     t.Scale(visual_node.scale)
@@ -554,11 +573,11 @@ def VisualToSlice(
     A.SetUserTransform(t)
 
     # do the slice
-    plane = vtk.vtkPlane()
+    plane = vtkPlane()
     plane.SetOrigin(*slice_position)
     plane.SetNormal(*slice_normal)
 
-    cutter = vtk.vtkCutter()
+    cutter = vtkCutter()
     cutter.SetCutFunction(plane)
     cutter.SetInputData(A.polydata())
     cutter.Update()

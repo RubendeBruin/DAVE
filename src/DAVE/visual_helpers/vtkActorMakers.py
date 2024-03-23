@@ -29,12 +29,14 @@ Actor creators:
 
 """
 import numpy as np
-import vtk
 from vedo import numpy2vtk
 from vtkmodules.util.numpy_support import numpy_to_vtkIdTypeArray
 from vtkmodules.vtkCommonCore import vtkPoints, vtkIdTypeArray
 from vtkmodules.vtkCommonDataModel import vtkPolyData, vtkCellArray
-from vtkmodules.vtkFiltersSources import vtkSphereSource, vtkPlaneSource, vtkRegularPolygonSource, vtkCylinderSource
+from vtkmodules.vtkCommonTransforms import vtkTransform
+from vtkmodules.vtkFiltersGeneral import vtkTransformPolyDataFilter
+from vtkmodules.vtkFiltersSources import vtkSphereSource, vtkPlaneSource, vtkRegularPolygonSource, vtkCylinderSource, \
+    vtkConeSource, vtkArrowSource
 from vtkmodules.vtkIOGeometry import vtkOBJReader, vtkSTLReader
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper
 
@@ -262,12 +264,12 @@ def Arrow(startPoint=(0, 0, 0), endPoint=(1, 0, 0), res=8):
         phi = np.arctan2(axis[1], axis[0])
         theta = np.arccos(axis[2])
 
-    arr = vtk.vtkArrowSource()
+    arr = vtkArrowSource()
     arr.SetShaftResolution(res)
     arr.SetTipResolution(res)
     arr.Update()
 
-    t = vtk.vtkTransform()
+    t = vtkTransform()
     t.Translate(startPoint)
     t.RotateZ(np.rad2deg(phi))
     t.RotateY(np.rad2deg(theta))
@@ -276,7 +278,7 @@ def Arrow(startPoint=(0, 0, 0), endPoint=(1, 0, 0), res=8):
 
     t.Update()
 
-    tf = vtk.vtkTransformPolyDataFilter()
+    tf = vtkTransformPolyDataFilter()
     tf.SetInputData(arr.GetOutput())
     tf.SetTransform(t)
     tf.Update()
@@ -310,13 +312,13 @@ def ArrowHead(
         phi = np.arctan2(axis[1], axis[0])
         theta = np.arccos(axis[2])
 
-    arr = vtk.vtkConeSource()
+    arr = vtkConeSource()
     arr.SetResolution(res)
     arr.SetRadius(0.25)
 
     arr.Update()
 
-    t = vtk.vtkTransform()
+    t = vtkTransform()
     t.Translate(startPoint + 0.5 * (endPoint - startPoint))
     t.RotateZ(np.rad2deg(phi))
     t.RotateY(np.rad2deg(theta))
@@ -325,7 +327,7 @@ def ArrowHead(
 
     t.Update()
 
-    tf = vtk.vtkTransformPolyDataFilter()
+    tf = vtkTransformPolyDataFilter()
     tf.SetInputData(arr.GetOutput())
     tf.SetTransform(t)
     tf.Update()

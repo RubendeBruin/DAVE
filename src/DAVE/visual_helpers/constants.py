@@ -1,5 +1,5 @@
 from enum import Enum
-from matplotlib.cm import get_cmap
+from matplotlib import colormaps
 import DAVE.settings as ds
 
 
@@ -102,12 +102,16 @@ COLOR_WATER = rgb(BLUE_DARK)
 
 # ------------ colormap for unity-checks
 
+UC_CMAP = colormaps["turbo"]
+CABLE_COLORMAP = colormaps["turbo"]
 
-UC_CMAP = get_cmap("turbo", lut=100)
 
-# import matplotlib.pyplot as plt
-# import math
-# for i in range(1000):
-#     plt.plot(i/1000,0,marker='o', color = UC_CMAP(i))
-#     plt.plot(1.1, 0, marker='o', color=(1,0,1,1))
-# plt.show()
+if __name__ == '__main__':
+
+    import matplotlib.pyplot as plt
+    n = 100
+    for i in range(n):
+        f = i/n
+        plt.plot(f,0,marker='o', color = CABLE_COLORMAP(f))
+    plt.plot(1.1, 0, marker='o', color=(1,0,1,1))
+    plt.show()
