@@ -12,6 +12,8 @@ from vtkmodules.vtkFiltersGeneral import vtkTransformPolyDataFilter
 from vtkmodules.vtkFiltersHybrid import vtkPolyDataSilhouette
 from vtkmodules.vtkFiltersSources import vtkSphereSource
 from vtkmodules.vtkIOImage import vtkImageReader2Factory, vtkHDRReader
+from vtkmodules.vtkInteractionWidgets import vtkOrientationMarkerWidget
+from vtkmodules.vtkRenderingAnnotation import vtkAxesActor
 from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderWindow, vtkProperty2D, vtkActor2D, vtkRenderer, vtkCamera, \
     vtkPolyDataMapper, vtkProperty, vtkTexture, vtkSkybox
 
@@ -880,7 +882,6 @@ class AbstractSceneRenderer:
         if self._skybox is not None:
             self.renderer.RemoveActor(self._skybox)
             self._skybox = None
-
 
 
 

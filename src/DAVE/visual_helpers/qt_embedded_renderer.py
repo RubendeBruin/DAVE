@@ -2,6 +2,8 @@ import numpy as np
 
 # enforce PySide6 on vtk
 import vtkmodules.qt
+from vtkmodules.vtkInteractionWidgets import vtkOrientationMarkerWidget, vtkCameraOrientationWidget
+from vtkmodules.vtkRenderingAnnotation import vtkAxesActor
 
 vtkmodules.qt.PyQtImpl = "PySide6"
 
@@ -10,7 +12,7 @@ from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import BlenderStyle
 
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
-from vtkmodules.vtkRenderingCore import vtkRenderer, vtkRenderWindow, vtkCamera
+from vtkmodules.vtkRenderingCore import vtkRenderer, vtkRenderWindow, vtkCamera, vtkPropCollection
 from vtkmodules.vtkRenderingOpenGL2 import vtkOpenGLRenderer, vtkOpenGLFXAAPass, vtkSSAOPass, vtkSequencePass, \
     vtkRenderStepsPass, vtkRenderPassCollection
 
@@ -32,6 +34,8 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
         self.Style = BlenderStyle()
 
         super().__init__(scene)
+
+        self.add_axis_widget()
         self.interactor.Initialize()  # do this after the style is set and the renderers are added
 
         # privates
@@ -303,6 +307,52 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
         self.window.Finalize()
         self.interactor.TerminateApp()
 
+    def add_axis_widget(self):
+        """Adds an axis widget to the view"""
+
+        axes = vtkAxesActor()
+
+        # makeup
+        axes.SetShaftTypeToCylinder()
+        axes.SetAxisLabels(False)
+
+        widget = vtkOrientationMarkerWidget()
+        widget.SetOrientationMarker(axes)
+
+        widget.SetInteractor(self.interactor)
+        widget.SetViewport(0,0,0.2,0.2)
+        widget.SetEnabled(True)
+        widget.SetInteractive(False)
+
+        self.__axis_widget = widget # keep from being destructed,
+
+    def add_orientation_widget(self):
+        """Adds the orientation widget (interactive).
+
+        - The colors are different from the rest and can not be changed
+        - The Rotation works differently than the rest of DAVE, this widget does not keep the
+          z axis vertical or the manipulation is inconsistent
+        """
+
+        iom = vtkCameraOrientationWidget()
+        iom.SetParentRenderer(self.renderer)
+        iom.On()
+
+
+        rep = iom.GetRepresentation()
+
+        # Attempt to change the colors
+        # not working; not all the actors seem to show up
+        # props = vtkPropCollection()
+        # rep.GetActors(props)
+        #
+        # # for a in actors:
+        # for prop in props:
+        #     print(prop.GetProperty().GetVertexColor())
+        # # actors.GetProperty().SetColor([1, 0, 1])
+
+
+        self._orientationwidget = iom  # needed to keep it away from the garbage collector
 
 if __name__ == '__main__':
 
@@ -344,11 +394,16 @@ if __name__ == '__main__':
 
     viewer.update_visibility()
 
-    viewer.load_hdr(r"C:\Users\MS12H\Downloads\kloppenheim_05_puresky_2k.hdr")
+    # viewer.load_hdr(r"C:\Users\MS12H\Downloads\kloppenheim_05_puresky_2k.hdr")
 
     viewer.background_color([1,1,1])
 
+    viewer.interactor.Initialize()
+    # viewer.add_axis_widget()
+
+
     widget.show()
+    viewer.interactor.Start()
 
     app.exec()
 

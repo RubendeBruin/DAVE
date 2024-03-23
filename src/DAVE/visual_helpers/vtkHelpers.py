@@ -37,10 +37,12 @@ from vtkmodules.vtkCommonMath import vtkMatrix4x4
 from vtkmodules.vtkFiltersCore import vtkCutter, vtkTubeFilter
 
 from vtkmodules.vtkIOImage import vtkImageReader2Factory
+from vtkmodules.vtkInteractionWidgets import vtkOrientationMarkerWidget
+from vtkmodules.vtkRenderingAnnotation import vtkAxesActor
 from vtkmodules.vtkRenderingCore import vtkTexture, vtkProp3D
 
-from .constants import CABLE_COLORMAP
-from .vtkActorMakers import *
+from DAVE.visual_helpers.constants import CABLE_COLORMAP
+from DAVE.visual_helpers.vtkActorMakers import *
 
 import DAVE.nodes as dn
 from DAVE.settings_visuals import CABLE_DIA_WHEN_DIA_IS_ZERO
@@ -68,6 +70,7 @@ def vtkShow(actor):
     renderWindow.Render()
 
     # Enable user interface interactor
+    interactor.Initialize()
     interactor.Start()
 
 
@@ -618,3 +621,9 @@ def VisualToSlice(
             ax.plot(x, y, "k-", linewidth=0.5)
 
     return x, y
+
+if __name__ == '__main__':
+    from DAVE.visual_helpers.vtkActorMakers import Cube
+
+    c = Cube()
+    vtkShow(c)
