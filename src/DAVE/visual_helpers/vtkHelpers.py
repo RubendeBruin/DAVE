@@ -164,7 +164,10 @@ def vtkMatricesAlmostEqual(mat0, mat1, tol=1e-6):
     return True
 
 
-def SetMatrixIfDifferent(actor: vtkProp3D, mat1, tol=1e-6):
+def SetMatrixIfDifferent(actor: vtkProp3D, target_matrix, tol=1e-6):
+
+    mat1 = vtkMatrix4x4()
+    mat1.DeepCopy(target_matrix)
     mat0 = actor.GetMatrix()
 
     if not vtkMatricesAlmostEqual(mat0, mat1, tol):  # only change if not almost equal
