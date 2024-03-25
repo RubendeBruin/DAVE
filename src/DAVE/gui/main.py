@@ -453,7 +453,6 @@ class Gui:
         self.ui.frame3d.customContextMenuRequested.connect(self.rightClickViewport)
 
         self._timerid = None
-        # iren = self.visual.renwin.GetInteractor()
         self.visual.interactor.AddObserver("TimerEvent", self.timerEvent)
 
         # ------ key-presses -----
@@ -1619,9 +1618,13 @@ class Gui:
 
             # check if all docks are still ok
             for name, dock in self.guiWidgets.items():
-                assert dock == self.dock_manager.dockWidgetsMap()[name], ValueError(f'Dock mismatch for {name}')
+                assert dock == self.dock_manager.dockWidgetsMap()[name], ValueError(
+                    f"Dock mismatch for {name}"
+                )
 
-            QTimer.singleShot(0, lambda : self.dock_manager.openPerspective(self._active_dockgroup.ID))
+            QTimer.singleShot(
+                0, lambda: self.dock_manager.openPerspective(self._active_dockgroup.ID)
+            )
 
         else:
             self.save_perspective_action.setIcon(
@@ -1629,7 +1632,6 @@ class Gui:
             )
 
         self.visual.update_visibility()
-
 
     def import_browser(self):
         DAVE_GUI_LOGGER.log("Import browser")
@@ -1778,7 +1780,7 @@ class Gui:
         if self._timerid is not None:
             to_be_destroyed = self._timerid
             self._timerid = None
-            iren = self.visual.renwin.GetInteractor()
+            iren = self.visual.interactor
             iren.DestroyTimer(to_be_destroyed)
 
         self._animation_available = False
@@ -1845,7 +1847,7 @@ class Gui:
             self._animation_paused = False
 
         if not self._animation_paused:
-            iren = self.visual.renwin.GetInteractor()
+            iren = self.visual.interactor
             if self._timerid is None:
                 self._timerid = iren.CreateRepeatingTimer(
                     round(1000 / GUI_ANIMATION_FPS)
@@ -1865,7 +1867,7 @@ class Gui:
         if self._timerid is not None:
             to_be_destroyed = self._timerid
             self._timerid = None
-            iren = self.visual.renwin.GetInteractor()
+            iren = self.visual.interactor
             iren.DestroyTimer(to_be_destroyed)
 
         self._animation_paused = True
@@ -1878,7 +1880,7 @@ class Gui:
 
         if self._animation_available:
             if self._timerid is None:
-                iren = self.visual.renwin.GetInteractor()
+                iren = self.visual.interactor
                 self._timerid = iren.CreateRepeatingTimer(
                     round(1000 / GUI_ANIMATION_FPS)
                 )

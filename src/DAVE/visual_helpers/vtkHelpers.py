@@ -166,9 +166,7 @@ def print_vtkMatrix44(mat):
         print(row)
 
 
-def SetTransformIfDifferent(
-        actor: vtkProp3D, transform: vtkTransform, tol=1e-6
-):
+def SetTransformIfDifferent(actor: vtkProp3D, transform: vtkTransform, tol=1e-6):
     """Does not really set the user-transform, instead just sets the real transform"""
 
     mat1 = transform.GetMatrix()
@@ -186,7 +184,6 @@ def vtkMatricesAlmostEqual(mat0, mat1, tol=1e-6):
 
 
 def SetMatrixIfDifferent(actor: vtkProp3D, target_matrix, tol=1e-6):
-
     mat1 = vtkMatrix4x4()
     mat1.DeepCopy(target_matrix)
     mat0 = actor.GetMatrix()
@@ -248,9 +245,7 @@ def SetScaleIfDifferent(actor: vtkProp3D, scale: float, tol=1e-6):
         actor.SetScale(scale)
 
 
-def tranform_almost_equal(
-        transform1: vtkTransform, transform2: vtkTransform, tol=1e-6
-):
+def tranform_almost_equal(transform1: vtkTransform, transform2: vtkTransform, tol=1e-6):
     """Returns True if the two transforms are almost equal. Testing is done on the absolute difference of the components of the matrix
 
     Note: the values of the matrix contains both the rotation and the offset. The order of magnitude of these can be different
@@ -316,7 +311,7 @@ def transform_from_node(node):
     return t
 
 
-def transform_from_direction(axis,position,  scale=1, right=None):
+def transform_from_direction(axis, position, scale=1, right=None):
     """
     Creates a transform that rotates the X-axis to the given direction
     Args:
@@ -438,10 +433,12 @@ def update_mesh(mesh_actor, vertices, faces):
     polydata = polyDataFromVerticesAndFaces(vertices=vertices, faces=faces)
     mesh_actor.GetMapper().SetInputData(polydata)
 
+
 def update_mesh_to_empty(actor):
     """Updates the mesh of an actor to an empty mesh"""
     polydata = vtkPolyData()
     actor.GetMapper().SetInputData(polydata)
+
 
 def create_tube_data(new_points, diameter, colors=None):
     """Updates the points of a line-actor"""
@@ -497,8 +494,12 @@ def get_color_array(c):
     vmin = min(c) * 0.95
     vmax = max(c) * 1.05
 
+    if vmin == vmax:
+        colors = [CABLE_COLORMAP(0.5) for col in c]
+
     # scale the colors to the range 0-1 using vmin and vmax
-    colors = [CABLE_COLORMAP((col - vmin) / (vmax - vmin)) for col in c]
+    else:
+        colors = [CABLE_COLORMAP((col - vmin) / (vmax - vmin)) for col in c]
 
     for i, (r, g, b, _) in enumerate(colors):
         cc.InsertTuple3(i, int(255 * r), int(255 * g), int(255 * b))
@@ -542,10 +543,10 @@ def _create_moment_or_shear_line(what, frame: dn.Frame, scale_to=2, at=None):
 
     if what == "Moment":
         value = My
-        color = "green"
+        color = [0, 0.8, 0]
     elif what == "Shear":
         value = Fz
-        color = "blue"
+        color = [0, 0, 1]
     else:
         raise ValueError(f"What should be Moment or Shear, not {what}")
 
@@ -555,12 +556,8 @@ def _create_moment_or_shear_line(what, frame: dn.Frame, scale_to=2, at=None):
         scale = scale / np.max(np.abs(value))
     line = [report_axis.to_glob_position((x[i], 0, scale * value[i])) for i in range(n)]
 
-    actor_axis = Line([start, end])
-    actor_axis.SetColor([0, 0, 0])
-    actor_axis.SetLineWidth(3)
-    actor_graph = Line(line)
-    actor_graph.SetColor(color)
-    actor_graph.SetLineWidth(3)
+    actor_axis = Line([start, end], color=[0, 0, 0], lw=3)
+    actor_graph = Line(line, color=color, lw=3)
 
     return actor_axis, actor_graph
 
