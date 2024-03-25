@@ -874,19 +874,24 @@ class AbstractSceneRenderer:
         ren = self.renderer # alias
 
         ren.SetBackground(color)
-        ren.UseImageBasedLightingOn()
-        ren.UseSphericalHarmonicsOff()
+
+        # ren.UseSphericalHarmonicsOff()
+
+        # create a HDR texture
+        texture = ren.GetEnvironmentTexture()
+
+        image = texture.GetInpu()
+
+
 
         ren.SetEnvironmentTexture(None, False)
+
+        ren.SetEnvironmentalBG([1,0,0])  # ray-tracing only
+        ren.UseImageBasedLightingOn()
 
         if self._skybox is not None:
             self.renderer.RemoveActor(self._skybox)
             self._skybox = None
-
-
-
-
-
 
 
     def setup_lighting_and_rendering(self):

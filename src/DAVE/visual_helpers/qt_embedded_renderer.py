@@ -394,9 +394,11 @@ if __name__ == '__main__':
 
     viewer.update_visibility()
 
-    # viewer.load_hdr(r"C:\Users\MS12H\Downloads\kloppenheim_05_puresky_2k.hdr")
+    # viewer.EnableSSAO()
 
-    viewer.background_color([1,1,1])
+    viewer.load_hdr(r"C:\Users\MS12H\Downloads\kloppenheim_05_puresky_2k.hdr")
+
+    viewer.background_color([0.8,1,0.8])
 
     viewer.interactor.Initialize()
     # viewer.add_axis_widget()
