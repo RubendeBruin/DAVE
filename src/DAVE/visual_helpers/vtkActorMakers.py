@@ -29,8 +29,8 @@ Actor creators:
 
 """
 import numpy as np
-from vedo import numpy2vtk
-from vtkmodules.util.numpy_support import numpy_to_vtkIdTypeArray
+
+from vtkmodules.util.numpy_support import numpy_to_vtkIdTypeArray, numpy_to_vtk
 from vtkmodules.vtkCommonCore import vtkPoints, vtkIdTypeArray
 from vtkmodules.vtkCommonDataModel import vtkPolyData, vtkCellArray
 from vtkmodules.vtkCommonTransforms import vtkTransform
@@ -41,6 +41,32 @@ from vtkmodules.vtkIOGeometry import vtkOBJReader, vtkSTLReader
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper
 
 from DAVE.visual_helpers.constants import ACTOR_COLOR, ACTOR_ROUGHESS, ACTOR_METALIC
+
+# VEDO:
+def numpy2vtk(arr, dtype=None, deep=True, name=""):
+    """
+    Convert a numpy array into a `vtkDataArray`.
+    Use `dtype='id'` for `vtkIdTypeArray` objects.
+    """
+    # https://github.com/Kitware/VTK/blob/master/Wrapping/Python/vtkmodules/util/numpy_support.py
+    if arr is None:
+        return None
+
+    arr = np.ascontiguousarray(arr)
+
+    if dtype == "id":
+        varr = numpy_to_vtkIdTypeArray(arr.astype(np.int64), deep=deep)
+    elif dtype:
+        varr = numpy_to_vtk(arr.astype(dtype), deep=deep)
+    else:
+        # let numpy_to_vtk() decide what is best type based on arr type
+        if arr.dtype == np.bool_:
+            arr = arr.astype(np.uint8)
+        varr = numpy_to_vtk(arr, deep=deep)
+
+    if name:
+        varr.SetName(name)
+    return varr
 
 
 def vtkActorFromPolyData(poly_data) -> vtkActor:
