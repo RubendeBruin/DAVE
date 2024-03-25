@@ -35,10 +35,6 @@ def test_tank_fluid_change_number_of_vertices():
         g.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
         g.app.processEvents()
 
-    g.app.exec()
-
-
-
 def test_fill_tank():
 
     s,f,t = model()
@@ -50,25 +46,23 @@ def test_fill_tank():
         g.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
         g.app.processEvents()
 
-    g.app.exec()
-
-if __name__ == '__main__':
-    s, f, t = model()
-
-    f.fill_pct = 10
-
-    g = DG(s, block=False)
-
-    f.rx = 90
-    g.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
-    g.app.processEvents()
-
-    f.rx = 100
-    g.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
-    g.app.processEvents()
-
-    f.rx = 110
-    g.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
-    g.app.processEvents()
-
-
+# if __name__ == '__main__':
+#     s, f, t = model()
+#
+#     f.fill_pct = 10
+#
+#     g = DG(s, block=False)
+#
+#     f.rx = 90
+#     g.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
+#     g.app.processEvents()
+#
+#     f.rx = 100
+#     g.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
+#     g.app.processEvents()
+#
+#     f.rx = 110
+#     g.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
+#     g.app.processEvents()
+#
+#

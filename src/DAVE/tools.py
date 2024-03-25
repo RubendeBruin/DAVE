@@ -17,6 +17,18 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 from glob import glob
 
+def running_in_gui():
+    """Returns True if running in a GUI environment, False otherwise"""
+    try:
+        from PySide6.QtWidgets import QApplication
+
+        if QApplication.instance() is not None:
+           return True
+
+    except ImportError:
+        pass
+
+    return False
 
 def MostLikelyMatch(search_for, choices) -> str:
     """Uses rapidfuzz to get a best match"""

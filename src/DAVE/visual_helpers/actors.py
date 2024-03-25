@@ -917,7 +917,6 @@ class VisualActor:
             return
 
         if isinstance(self.node, dn.Tank):
-            return
             ## Tank has multiple actors
             #
             # main : source-mesh

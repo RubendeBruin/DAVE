@@ -38,6 +38,8 @@
 """
 from vtkmodules.vtkCommonDataModel import vtkLine
 
+from DAVE.tools import running_in_gui
+
 """
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -122,7 +124,7 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), or
 
 
     elif filepath.endswith('.obj'):
-        obj = bpy.ops.import_scene.obj(filepath=filepath)
+        obj = bpy.ops.wm.obj_import(filepath=filepath)
         objects = []
         for obj in bpy.context.selected_objects:
             obj.rotation_euler[0] = 0
@@ -562,7 +564,12 @@ def create_blend_and_open(scene, blender_result_file = None, blender_base_file=N
     # subprocess.call(command, creationflags=subprocess.DETACHED_PROCESS)
 
 def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None ,animation_dofs=None, wavefield=None, frames_per_step=1):
+
+    # Can not use real temp files as those may be deleted before Blender can open them
     tempfile = Path(consts.PATH_TEMP) / 'blender.py'
+    tempfile = r"c:\data\blender.py"
+
+    blender_result_file = r"c:\data\result.blend"
 
     if blender_base_file is None:
         blender_base_file = consts.BLENDER_BASE_SCENE
@@ -581,11 +588,38 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
 
     command = command_run + ' && ' + command_open
 
-    pid = subprocess.Popen(command, shell=True)
+    # command = '"{}" --python --debug-depsgraph "{}"'.format(blender_exe_path, tempfile)
+
+    if running_in_gui():
+
+        command_run = [blender_exe_path,"-b" , "--python", tempfile]
+        command_open = [blender_exe_path, blender_result_file]
+
+        from DAVE.gui.helpers.background_runner import BackgroundRunnerGui
+        BackgroundRunnerGui([command_run, command_open])
 
 
+    else:
+        print("Producing Blender file using:")
+        print(command_run)
+        result = subprocess.run(command_run)
+        if result.returncode == 0:
+            print('done, opening the file')
+            assert Path(blender_result_file).exists(), 'Blender file not created :-('
+            subprocess.Popen(command_open)
+        else:
+            print('Blender file creation failed')
+            return
+    print(command)
+    print('----- running in background -------')
 
-    # pid.wait()
+
+    #
+    #
+    # pid = subprocess.Popen(command, shell=True)
+    #
+    # print(pid)
+
     #
     # command = '"{}" "{}"'.format(blender_exe_path,blender_result_file)
     # subprocess.Popen(command)

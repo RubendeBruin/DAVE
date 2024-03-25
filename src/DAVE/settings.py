@@ -62,6 +62,8 @@ default_user_dir = home / "DAVE_models"
 if not default_user_dir.exists():
     mkdir(default_user_dir)
 
+# add blender
+
 
 # get the package directory
 cdir = Path(dirname(__file__))
@@ -151,7 +153,7 @@ class SolverSettings:
 
 _temp_path_context = tempfile.TemporaryDirectory()
 PATH_TEMP = Path(_temp_path_context.name)
-print(f"Temporary files are stored in {PATH_TEMP} - will be deleted on exit")
+print(f"Temporary files are stored in {PATH_TEMP} - will be deleted when DAVE exits")
 
 # For report/gui use
 

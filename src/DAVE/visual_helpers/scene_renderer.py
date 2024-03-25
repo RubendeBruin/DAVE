@@ -878,8 +878,10 @@ class AbstractSceneRenderer:
 
         ren.SetEnvironmentTexture(texture, False)
 
-        irradiance = ren.GetEnvMapIrradiance()
-        irradiance.SetIrradianceStep(0.3)
+        # irradiance = ren.GetEnvMapIrradiance()
+        # irradiance.SetIrradianceStep(0.3)
+        if self._skybox is not None:
+            self._skybox.SetTexture(texture)
 
     def _create_skybox_actor(self):
         if self._skybox is None:
