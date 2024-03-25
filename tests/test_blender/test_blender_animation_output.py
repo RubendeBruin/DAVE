@@ -1,3 +1,5 @@
+from PySide6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout
+
 from DAVE import *
 import numpy as np
 
@@ -13,6 +15,7 @@ def test_blender_animation_output():
     from PySide6.QtCore import QSettings
 
     # Get blender template and executable
+    app = QApplication([])
     settings = QSettings("rdbr", "DAVE")
 
     blender_executable = settings.value(f"blender_executable")
@@ -91,9 +94,17 @@ def test_blender_animation_output():
                         nt=n_frames,
                         nx=nx, ny=ny, dx=250, dy=100)
 
+    widget = QWidget()
+    layout = QVBoxLayout()
+    widget.setLayout(layout)
+    label = QLabel("Main application")
+    layout.addWidget(label)
+    widget.show()
 
     create_blend_and_open(
                 s, animation_dofs=animation_dofs, wavefield=wf,
                 blender_base_file=blender_template, blender_exe_path=blender_executable,
                 frames_per_step=5
             )
+
+    app.exec()  # needed to keep application running for blender to complete...?

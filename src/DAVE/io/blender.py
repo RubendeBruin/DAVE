@@ -567,9 +567,6 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
 
     # Can not use real temp files as those may be deleted before Blender can open them
     tempfile = Path(consts.PATH_TEMP) / 'blender.py'
-    tempfile = r"c:\data\blender.py"
-
-    blender_result_file = r"c:\data\result.blend"
 
     if blender_base_file is None:
         blender_base_file = consts.BLENDER_BASE_SCENE
@@ -583,12 +580,11 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
     if blender_exe_path is None:
         raise ValueError('Path of Blender executable needs to be specified (in create_blend)')
 
-    command_run = '"{}" -b --python "{}"'.format(blender_exe_path, tempfile)
-    command_open = '"{}" "{}"'.format(blender_exe_path,blender_result_file)
+    command_run = [blender_exe_path, "-b", "--python", tempfile]
+    command_open = [blender_exe_path, blender_result_file]
 
-    command = command_run + ' && ' + command_open
-
-    # command = '"{}" --python --debug-depsgraph "{}"'.format(blender_exe_path, tempfile)
+    assert Path(blender_base_file).exists(), f'Blender base file {blender_base_file} not found'
+    assert not Path(blender_result_file).exists(), 'Blender result file already exists'
 
     if running_in_gui():
 
@@ -597,7 +593,6 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
 
         from DAVE.gui.helpers.background_runner import BackgroundRunnerGui
         BackgroundRunnerGui([command_run, command_open])
-
 
     else:
         print("Producing Blender file using:")
@@ -610,19 +605,7 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
         else:
             print('Blender file creation failed')
             return
-    print(command)
-    print('----- running in background -------')
 
-
-    #
-    #
-    # pid = subprocess.Popen(command, shell=True)
-    #
-    # print(pid)
-
-    #
-    # command = '"{}" "{}"'.format(blender_exe_path,blender_result_file)
-    # subprocess.Popen(command)
 
 
 def blender_py_file(scene, python_file, blender_base_file, blender_result_file, camera=None, animation_dofs=None,

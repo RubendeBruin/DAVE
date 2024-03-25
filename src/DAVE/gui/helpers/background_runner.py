@@ -79,11 +79,10 @@ class BackgroundRunnerGui:
         dialog.show()
 
     def run_commands(self):
-
-
         for command in self.commands:
 
             self.feedback.action.emit(f"Running command: {command}")
+            print(f"Running command: {command}")
 
             try:
                 process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -110,17 +109,15 @@ class BackgroundRunnerGui:
 
             print("Done running command")
 
-
         self.feedback.action.emit(f"Finished!")
-        self.on_done.action.emit("None")
-
+        self.on_done.action.emit("")
 
 
 if __name__ == '__main__':
 
     app = QApplication([])
-    commands = [["ping", "8.8.8.8", "-n","4"],
-                ["ping", "1.2.3.4", "-n", "4"],
+    commands = [["ping", "8.8.8.8", "-n","4"],   # hello google
+                ["ping", "1.2.3.4", "-n", "4"],  # this one times out
                 ]
     BackgroundRunnerGui(commands)
     app.exec()
