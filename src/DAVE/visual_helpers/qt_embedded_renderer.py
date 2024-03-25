@@ -2,7 +2,10 @@ import numpy as np
 
 # enforce PySide6 on vtk
 import vtkmodules.qt
-from vtkmodules.vtkInteractionWidgets import vtkOrientationMarkerWidget, vtkCameraOrientationWidget
+from vtkmodules.vtkInteractionWidgets import (
+    vtkOrientationMarkerWidget,
+    vtkCameraOrientationWidget,
+)
 from vtkmodules.vtkRenderingAnnotation import vtkAxesActor
 
 vtkmodules.qt.PyQtImpl = "PySide6"
@@ -12,18 +15,27 @@ from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import BlenderStyle
 
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
-from vtkmodules.vtkRenderingCore import vtkRenderer, vtkRenderWindow, vtkCamera, vtkPropCollection
-from vtkmodules.vtkRenderingOpenGL2 import vtkOpenGLRenderer, vtkOpenGLFXAAPass, vtkSSAOPass, vtkSequencePass, \
-    vtkRenderStepsPass, vtkRenderPassCollection
+from vtkmodules.vtkRenderingCore import (
+    vtkRenderer,
+    vtkRenderWindow,
+    vtkCamera,
+    vtkPropCollection,
+)
+from vtkmodules.vtkRenderingOpenGL2 import (
+    vtkOpenGLRenderer,
+    vtkOpenGLFXAAPass,
+    vtkSSAOPass,
+    vtkSequencePass,
+    vtkRenderStepsPass,
+    vtkRenderPassCollection,
+)
 
 from DAVE.visual_helpers.constants import COLOR_BG1, ActorType, COLOR_BG1_GUI
 from DAVE.visual_helpers.scene_renderer import AbstractSceneRenderer
 
 
 class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
-
     def __init__(self, scene, target_widget: QWidget):
-
         # these can be assigned
         self.cycle_next_painterset = None
         self.cycle_previous_painterset = None
@@ -45,15 +57,17 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
 
         #
 
-
-    def create_rendering_pipeline(self) -> tuple[vtkRenderer, list[vtkRenderer], vtkCamera, vtkRenderWindow]:
+    def create_rendering_pipeline(
+        self,
+    ) -> tuple[vtkRenderer, list[vtkRenderer], vtkCamera, vtkRenderWindow]:
         """Creates the rendering pipeline for the viewport"""
 
         vl = QVBoxLayout()
         self.target_widget.setLayout(vl)
 
-        vl.setContentsMargins(1, 1, 1,
-                              1)  # leave a small border such that we can see the outline when we have the focus
+        vl.setContentsMargins(
+            1, 1, 1, 1
+        )  # leave a small border such that we can see the outline when we have the focus
 
         renderer = vtkOpenGLRenderer()
 
@@ -320,11 +334,11 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
         widget.SetOrientationMarker(axes)
 
         widget.SetInteractor(self.interactor)
-        widget.SetViewport(0,0,0.2,0.2)
+        widget.SetViewport(0, 0, 0.2, 0.2)
         widget.SetEnabled(True)
         widget.SetInteractive(False)
 
-        self.__axis_widget = widget # keep from being destructed,
+        self.__axis_widget = widget  # keep from being destructed,
 
     def add_orientation_widget(self):
         """Adds the orientation widget (interactive).
@@ -338,7 +352,6 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
         iom.SetParentRenderer(self.renderer)
         iom.On()
 
-
         rep = iom.GetRepresentation()
 
         # Attempt to change the colors
@@ -351,61 +364,81 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
         #     print(prop.GetProperty().GetVertexColor())
         # # actors.GetProperty().SetColor([1, 0, 1])
 
+        self._orientationwidget = (
+            iom  # needed to keep it away from the garbage collector
+        )
 
-        self._orientationwidget = iom  # needed to keep it away from the garbage collector
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     from DAVE import Scene
+
     s = Scene()
 
     # code for Point
-    s.new_point(name='Point',
-                position=(10,
-                          0,
-                          0))
+    s.new_point(name="Point", position=(10, 0, 0))
 
     # code for Frame
-    s.new_frame(name='Frame',
-                position=(0,
-                          0,
-                          0),
-                rotation=(0,
-                          0,
-                          0),
-                fixed=(True, True, True, True, True, True),
-                )
+    s.new_frame(
+        name="Frame",
+        position=(0, 0, 0),
+        rotation=(0, 0, 0),
+        fixed=(True, True, True, True, True, True),
+    )
 
     # code for Visual
-    s.new_visual(name='Visual',
-                 parent='Frame',
-                 path=r'res: cube_with_bevel.obj',
-                 offset=(0, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(1, 1, 1))
+    s.new_visual(
+        name="Visual",
+        parent="Frame",
+        path=r"res: cube_with_bevel.obj",
+        offset=(0, 0, 0),
+        rotation=(0, 0, 0),
+        scale=(1, 1, 1),
+    )
+    s.new_visual(
+        name="Visual2",
+        parent="Frame",
+        path=r"res: cube_with_bevel.obj",
+        offset=(1, 1, 0),
+        rotation=(0, 0, 0),
+        scale=(1, 1, 1),
+    )
+
+    # code for Visual2
+    s.new_visual(
+        name="Visual3",
+        parent="Frame",
+        path=r"res: cheetah/visual vessel cheetah.obj",
+        offset=(0, 0, 0),
+        rotation=(0, 0, 0),
+        scale=(1, 1, 1),
+    )
 
     app = QApplication([])
 
     widget = QWidget()
 
     viewer = QtEmbeddedSceneRenderer(s, widget)
-    viewer.settings.show_sea = False
-    viewer.renderer.SetBackground(COLOR_BG1_GUI)
+    viewer.settings.show_sea = True
+    # viewer.renderer.SetBackground(COLOR_BG1_GUI)
 
     viewer.update_visibility()
 
     # viewer.EnableSSAO()
-
+    #
     viewer.load_hdr(r"C:\Users\MS12H\Downloads\kloppenheim_05_puresky_2k.hdr")
-
-    viewer.background_color([0.8,1,0.8])
+    # viewer.load_hdr(r"C:\data\DAVE\public\DAVE\src\DAVE\resources\gimp.hdr") # needs to be a 32bit (integer) hdr
+    # #
+    # viewer.background_color([0.8,1,0.8])
 
     viewer.interactor.Initialize()
     # viewer.add_axis_widget()
 
-
     widget.show()
     viewer.interactor.Start()
+
+    viewer.zoom_all()
+
+    # viewer.SkyBoxOn()
 
     app.exec()
 

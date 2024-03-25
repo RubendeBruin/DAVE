@@ -16,15 +16,18 @@ class ActorType(Enum):
 
 # ================== visuals :: general =============
 
-ACTOR_METALIC = 1.0
-ACTOR_ROUGHESS = 0.1
+ACTOR_METALIC = 0.1
+ACTOR_ROUGHESS = .9
 ACTOR_COLOR = [0.7, 0.74, 0.74]  # a little on the cool side
+
+DEFAULT_HDR = str(ds.RESOURCE_PATH[0] / "default.hdr")
 
 # ============ visuals :: sea ===========
 
 VISUAL_BUOYANCY_PLANE_EXTEND = 5
 TEXTURE_SEA = str(ds.RESOURCE_PATH[0] / "virtualSea.jpg")
 TEXTURE_WAVEPLANE = str(ds.RESOURCE_PATH[0] / "waveplane.jpg")
+
 ALPHA_SEA = 0.8
 
 # ============ visuals :: geometry and cables =========

@@ -9,7 +9,6 @@ from copy import copy
 import logging
 
 import numpy as np
-from scipy.spatial import ConvexHull
 
 from vtkmodules.vtkCommonTransforms import vtkTransform
 from vtkmodules.vtkRenderingCore import vtkActor
@@ -18,14 +17,32 @@ import DAVE.nodes as dn
 from DAVE.visual_helpers.constants import *
 
 from DAVE.settings_visuals import ViewportSettings, COLOR_SELECT_255
-from DAVE.visual_helpers.vtkActorMakers import Cylinder, Sphere, Arrow, ArrowHead, actor_from_trimesh, Mesh
-from DAVE.visual_helpers.vtkHelpers import apply_parent_translation_on_transform, SetTransformIfDifferent, \
-    create_tube_data, update_line_to_points, SetMatrixIfDifferent, mat4x4_from_point_on_frame, SetScaleIfDifferent, \
-    transform_to_mat4x4, transform_from_point
+from DAVE.visual_helpers.vtkActorMakers import (
+    Cylinder,
+    Sphere,
+    Arrow,
+    ArrowHead,
+    actor_from_trimesh,
+    Mesh,
+)
+from DAVE.visual_helpers.vtkHelpers import (
+    apply_parent_translation_on_transform,
+    SetTransformIfDifferent,
+    create_tube_data,
+    update_line_to_points,
+    SetMatrixIfDifferent,
+    mat4x4_from_point_on_frame,
+    SetScaleIfDifferent,
+    transform_to_mat4x4,
+    transform_from_point,
+    update_vertices,
+    update_mesh_from,
+    add_lid_to_open_mesh,
+    update_mesh, update_mesh_to_empty,
+)
 
 
 class VisualActor:
-
     def __init__(self, actors: dict, node):
         # check if 'main' is available
         if "main" not in actors:
@@ -36,7 +53,6 @@ class VisualActor:
         for k, v in actors.items():
             if not isinstance(v, vtkActor):
                 raise ValueError(f"Actor {k} is not a vtkActor, but {type(v)}")
-
 
         self.actors = actors  # dict vtk actors. There shall be one called 'main'
         self.node = node  # Node
@@ -60,15 +76,16 @@ class VisualActor:
 
     def on(self):
         for a in self.actors.values():
-            a.on()
+            a.SetVisibility(True)
 
     def off(self):
         for a in self.actors.values():
-            a.off()
+            a.SetVisibility(False)
 
     @property
     def visible(self):
         return self.actors["main"].GetVisibility()
+
     #
     # def setLabelPosition(self, position):
     #     if len(position) != 3:
@@ -274,7 +291,7 @@ class VisualActor:
             if settings.show_sea:
                 if node_class == "Buoyancy":
                     if key == "waterplane":
-                        actor.off()
+                        actor.SetVisibility(False)
                         continue
 
             # set the "xray" property of the actor
@@ -548,7 +565,8 @@ class VisualActor:
             points.append(self.node.nodeA.to_glob_position((0, 0, 0)))
             points.append(self.node.nodeB.to_glob_position((0, 0, 0)))
 
-            A.points(points)
+            # A.points(points)
+            update_vertices(self.actors["main"], points)
 
             return
 
@@ -559,7 +577,8 @@ class VisualActor:
             points.append(self.node.main.to_glob_position((0, 0, 0)))
             points.append(self.node.secondary.to_glob_position((0, 0, 0)))
 
-            A.points(points)
+            # A.points(points)
+            update_vertices(self.actors["main"], points)
 
             return
 
@@ -597,12 +616,17 @@ class VisualActor:
                     )
 
                 if n_points == current_n_points:
-                    self.actors["footprint"].points(fp)
-                    self.actors["footprint"]._vertices_changed = True
+                    # self.actors["footprint"].points(fp)
+                    actor = self.actors["footprint"]
+                    update_vertices(actor, fp)
+                    actor._vertices_changed = True
+
                 else:
                     # create a new actor
                     new_actor = Mesh(
-                        vertices=fp, faces=[range(n_points)], do_clean=True,
+                        vertices=fp,
+                        faces=[range(n_points)],
+                        do_clean=True,
                     )
 
                     # print("number of points changed, creating new")
@@ -634,9 +658,15 @@ class VisualActor:
 
             # check radius
             if self.actors["main"]._r != self.node.radius:
-                temp = Sphere(r=self.node.radius, res=RESOLUTION_SPHERE
-                )
-                self.actors["main"].points(temp.points())
+                # Update radius
+                temp = Sphere(r=self.node.radius, res=RESOLUTION_SPHERE)
+
+                # by changing the vertices from a copy
+                # update_vertices(self.actors["main"], temp.points())
+                # self.actors["main"].points(temp.points())
+
+                self.actors["main"].SetMapper(temp.GetMapper())
+
                 self.actors["main"]._r = self.node.radius
 
             SetTransformIfDifferent(self.actors["main"], t)
@@ -680,9 +710,7 @@ class VisualActor:
 
                 endpoint = viewport._scaled_force_vector(self.node.global_force)
 
-                p = Arrow(
-                    startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
-                )
+                p = Arrow(startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW)
                 p.pickable(True)()
                 p.actor_type = ActorType.FORCE
                 p._force = endpoint
@@ -699,9 +727,7 @@ class VisualActor:
                 viewport.screen.remove(self.actors["moment2"])
 
                 endpoint = viewport._scaled_force_vector(self.node.global_moment)
-                p = Arrow(
-                    startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
-                )
+                p = Arrow(startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW)
                 p.pickable(True)()
                 p.actor_type = ActorType.FORCE
                 p._moment = endpoint
@@ -790,7 +816,9 @@ class VisualActor:
 
             if self.node.parent is not None:
                 mat4x4 = transform_to_mat4x4(self.node.parent.global_transform)
-                current_transform = self.actors["main"].GetMatrix()  # current transform matrix
+                current_transform = self.actors[
+                    "main"
+                ].GetMatrix()  # current transform matrix
 
                 # if the current transform is identical to the new one,
                 # then we do not need to change anything (creating the mesh is slow)
@@ -833,7 +861,7 @@ class VisualActor:
 
             if viewport.quick_updates_only:
                 for a in self.actors.values():
-                    a.off()
+                    a.SetVisibility(False)
                 return
 
             # Update the CoB
@@ -858,7 +886,9 @@ class VisualActor:
                 (p3[0], p3[1], 0),
                 (p4[0], p4[1], 0),
             ]
-            self.actors["waterplane"].points(corners)
+            # self.actors["waterplane"].points(corners)
+            update_vertices(self.actors["waterplane"], corners)
+
             self.actors["waterplane"]._vertices_changed = True
 
             # Instead of updating, remove the old actor and create a new one
@@ -887,6 +917,7 @@ class VisualActor:
             return
 
         if isinstance(self.node, dn.Tank):
+            return
             ## Tank has multiple actors
             #
             # main : source-mesh
@@ -900,19 +931,15 @@ class VisualActor:
 
             if viewport.quick_updates_only:
                 for a in self.actors.values():
-                    a.off()
+                    a.SetVisibility(False)
                 return
             else:
                 if self.node.visible:
                     for a in self.actors.values():
-                        a.on()
+                        a.SetVisibility(True)
 
             # Update the actors
             self.node.update()
-
-            # Points are the vertices in global axis system (transforms applied)
-            points = self.actors["main"].points(transformed=True)
-            # self.setLabelPosition(np.mean(points, axis=0).flatten())
 
             # Update the CoG
             # move the CoG to the new (global!) position
@@ -921,67 +948,9 @@ class VisualActor:
             )
 
             if self.node.volume <= 1:  # the "cog node" has a volume of
-                self.actors["cog"].off()
+                self.actors["cog"].SetVisibility(False)
             else:
-                self.actors["cog"].on()
-
-            # Fluid in tank
-
-            # Construct a visual:
-            #   - vertices
-            #   - faces
-
-            # If tank is full, then simply copy the mesh from the tank itself
-
-            if self.node.fill_pct > 99.99 and not self.node.free_flooding:
-                # tank is full
-                vertices = points
-                faces = self.actors["main"].faces()
-
-            else:
-                mesh = self.node._vfNode.current_mesh
-
-                if mesh.nVertices > 0:  # only add when available
-                    vertices = []
-                    for i in range(mesh.nVertices):
-                        vertices.append(mesh.GetVertex(i))
-
-                    faces = []
-                    for i in range(mesh.nFaces):
-                        faces.append(mesh.GetFace(i))
-
-                    # create the lid using a convex hull
-                    thickness_tolerance = 1e-4  # for numerical accuracy
-
-                    verts = np.array(vertices)
-                    z = verts[:, 2]
-                    maxz = np.max(z)
-                    top_plane_verts = verts[z >= maxz - thickness_tolerance]
-
-                    # make convex hull
-                    d2 = top_plane_verts[:, 0:2]
-
-                    try:
-                        hull = ConvexHull(d2)
-
-                        points = top_plane_verts[
-                            hull.vertices, :
-                        ]  # for 2-D the vertices are guaranteed to be in counterclockwise order
-
-                        nVerts = len(vertices)
-
-                        for point in points:
-                            vertices.append([*point])
-
-                        # construct faces
-                        for i in range(len(points) - 2):
-                            faces.append([nVerts, nVerts + i + 2, nVerts + i + 1])
-                    except:
-                        pass
-
-                else:
-                    vertices = []
-                # -------------------
+                self.actors["cog"].SetVisibility(True)
 
             # paint settings
             if self.node.free_flooding:
@@ -994,63 +963,45 @@ class VisualActor:
                 else:
                     self.paint_state = "partial"
 
-            # we now have vertices and points and faces
+            # Fluid in tank
 
-            # do we already have an actor?
-            need_new = False
-            if "fluid" in self.actors:
-                # print(f'Already have an actor for {V.node.name}')
+            # Construct a visual:
+            #   - vertices
+            #   - faces
 
-                self._visualized_fill_percentage = (
-                    self.node.fill_pct
-                )  # store for "need_update" check
+            # There are the following options:
+            # - tank is empty : no fluid
+            # - tank is full  : use mesh from tank as input for fluid mesh
+            # - in between
 
-                vis = self.actors["fluid"]
-                pts = vis.GetMapper().GetInput().GetPoints()
-                npt = len(vertices)
+            fill_pct = self.node.fill_pct  # this also accounts for free-flooding
 
-                # Update the existing actor if the number of vertices stay the same
-                # If not then delete the actor
-
-                # check for number of points
-                actual_npts = -1
-                if pts is not None:
-                    actual_npts = pts.GetNumberOfPoints()
-
-                if actual_npts == npt:
-                    # print(f'setting points for {V.node.name}')
-                    vis.points(vertices)
-
-                    logging.info(
-                        f"Updated global vertex postions for fluid visuals {self.node.name}"
-                    )
-                    vis._vertices_changed = True
-
-                else:
-                    if viewport.screen is not None:
-                        viewport.screen.remove(self.actors["fluid"])
-                        del self.actors["fluid"]
-                    need_new = True
+            if fill_pct <= 0:
+                # self.actors["fluid"].SetVisibility(False)  # overridden elsewhere
+                update_mesh_to_empty(self.actors["fluid"])
+            elif fill_pct > 99.99:  # full
+                update_mesh_from(self.actors["fluid"], self.actors["main"], apply_soure_transform=True)
             else:
-                need_new = True
+                # get the mesh and vertices from the node, and update actor accordingly
 
-            if len(vertices) > 0:  # if we have an actor
-                if need_new:
-                    # print(f'Creating new actor for for {V.node.name}')
+                mesh = self.node._vfNode.current_mesh
 
-                    vis = Mesh(vertices, faces)
+                if mesh.nVertices == 0:
+                    raise ValueError(f"No mesh returned for fluid in {self.node.name}")
 
-                    vis.actor_type = ActorType.MESH_OR_CONNECTOR
+                vertices = []
+                for i in range(mesh.nVertices):
+                    vertices.append(mesh.GetVertex(i))
 
-                    self.actors["fluid"] = vis
+                faces = []
+                for i in range(mesh.nFaces):
+                    faces.append(mesh.GetFace(i))
 
-                    logging.info(f"Creating new fluid actor for {self.node.name}")
+                add_lid_to_open_mesh(
+                    vertices=vertices, faces=faces
+                )  # results stored in-place
 
-                    if viewport.screen is not None:
-                        viewport.screen.add(vis)
-
-                if not self.node.visible:
-                    vis.SetVisibility(False)
+                update_mesh(self.actors["fluid"], vertices, faces)
 
             self._visual_volume = self.node.volume
 
@@ -1080,15 +1031,3 @@ class VisualActor:
 
         # --- default ---
 
-        try:
-            tr = self.node.global_transform
-        except AttributeError:
-            try:
-                tr = self.node.parent.global_transform
-            except AttributeError:
-                return
-
-        mat4x4 = transform_to_mat4x4(tr)
-
-        for A in self.actors.values():
-            SetMatrixIfDifferent(A, mat4x4)

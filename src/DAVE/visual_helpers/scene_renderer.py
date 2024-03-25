@@ -14,21 +14,48 @@ from vtkmodules.vtkFiltersSources import vtkSphereSource
 from vtkmodules.vtkIOImage import vtkImageReader2Factory, vtkHDRReader
 from vtkmodules.vtkInteractionWidgets import vtkOrientationMarkerWidget
 from vtkmodules.vtkRenderingAnnotation import vtkAxesActor
-from vtkmodules.vtkRenderingCore import vtkActor, vtkRenderWindow, vtkProperty2D, vtkActor2D, vtkRenderer, vtkCamera, \
-    vtkPolyDataMapper, vtkProperty, vtkTexture, vtkSkybox
+from vtkmodules.vtkRenderingCore import (
+    vtkActor,
+    vtkRenderWindow,
+    vtkProperty2D,
+    vtkActor2D,
+    vtkRenderer,
+    vtkCamera,
+    vtkPolyDataMapper,
+    vtkProperty,
+    vtkTexture,
+    vtkSkybox,
+)
 
 from DAVE.settings_visuals import ViewportSettings, PAINTERS
 from DAVE.visual_helpers.actors import VisualActor
 from DAVE.visual_helpers.constants import *
 from DAVE.visual_helpers.outlines import VisualOutline
 
-from DAVE.visual_helpers.vtkActorMakers import Mesh, Dummy, Cube, Sphere, vp_actor_from_file, Line, Arrow, ArrowHead, \
-    PlaneXY, actor_from_trimesh, Cylinder, Circle
-from DAVE.visual_helpers.vtkHelpers import ApplyTexture, transform_to_mat4x4, SetMatrixIfDifferent, create_tube_data, \
-    SetTransformIfDifferent
+from DAVE.visual_helpers.vtkActorMakers import (
+    Mesh,
+    Dummy,
+    Cube,
+    Sphere,
+    vp_actor_from_file,
+    Line,
+    Arrow,
+    ArrowHead,
+    PlaneXY,
+    actor_from_trimesh,
+    Cylinder,
+    Circle,
+)
+from DAVE.visual_helpers.vtkHelpers import (
+    transform_from_direction,
+    ApplyTexture,
+    transform_to_mat4x4,
+    SetMatrixIfDifferent,
+    create_tube_data,
+    SetTransformIfDifferent,
+)
 
 import DAVE.nodes as dn
-
 
 
 class AbstractSceneRenderer:
@@ -53,8 +80,7 @@ class AbstractSceneRenderer:
 
     """
 
-    def __init__(self, scene, settings : ViewportSettings = None):
-
+    def __init__(self, scene, settings: ViewportSettings = None):
         # set properties
         self.scene = scene
 
@@ -63,24 +89,29 @@ class AbstractSceneRenderer:
         self.node_visuals: list[VisualActor] = list()
         self.node_outlines: list[VisualOutline] = list()
 
-        self.temporary_actors : list[vtkActor] = list()
+        self.temporary_actors: list[vtkActor] = list()
 
         """These are all non-node-bound visuals , visuals for the global environment"""
         self.sea_visuals = dict()
         self.origin_visuals = dict()
 
         """background and environment"""
-        self._skybox = None
+        self._skybox: vtkSkybox or None = None
 
         if settings is None:
             self.settings = ViewportSettings()
-            self.settings.painter_settings = PAINTERS['Construction']
+            self.settings.painter_settings = PAINTERS["Construction"]
 
         """If true, only quick updates are performed"""
         self.quick_updates_only = False
 
         # set up the rendering pipeline
-        self.renderer, self.renderers, self.camera, self.window = self.create_rendering_pipeline()
+        (
+            self.renderer,
+            self.renderers,
+            self.camera,
+            self.window,
+        ) = self.create_rendering_pipeline()
 
         # set the default camera position
         self.set_startup_camera_position()
@@ -92,8 +123,9 @@ class AbstractSceneRenderer:
         self.add_new_node_actors_to_screen()
         self.position_visuals()
 
-    def create_rendering_pipeline(self) -> tuple[vtkRenderer, list[vtkRenderer], vtkCamera, vtkRenderWindow]:
-
+    def create_rendering_pipeline(
+        self,
+    ) -> tuple[vtkRenderer, list[vtkRenderer], vtkCamera, vtkRenderWindow]:
         """Creates the rendering pipeline"""
 
         raise NotImplementedError("This method must be implemented in a subclass")
@@ -107,7 +139,7 @@ class AbstractSceneRenderer:
     @property
     def node_actors(self):
         """Returns all actors that are bound to nodes"""
-        r =[]
+        r = []
         for a in self.node_visuals:
             r.extend(a.actors.values())
         return r
@@ -116,7 +148,7 @@ class AbstractSceneRenderer:
         """Add an actor to the viewport"""
         self.renderer.AddActor(actor)
 
-    def remove(self, actor : vtkActor or list[vtkActor]):
+    def remove(self, actor: vtkActor or list[vtkActor]):
         """Remove an actor from the viewport"""
         if isinstance(actor, vtkActor):
             self.renderer.RemoveActor(actor)
@@ -172,7 +204,6 @@ class AbstractSceneRenderer:
         self.position_visuals()
         self.update_visibility()
 
-
     def update_outlines(self):
         """Updates the outlines of all actors in the viewport
 
@@ -217,7 +248,6 @@ class AbstractSceneRenderer:
         # such that they can be re-created
 
         for ol in tuple(self.node_outlines):
-
             remove = False
             if getattr(ol.outlined_actor, "_vertices_changed", False):
                 logging.info(
@@ -228,7 +258,9 @@ class AbstractSceneRenderer:
             if ol.outlined_actor not in self.actors:
                 remove = True
             elif getattr(ol.outlined_actor, "do_silhouette", True) != ol.is_silhouette:
-                logging.info("Force-recreating outline due to silhouette/feature egde change")
+                logging.info(
+                    "Force-recreating outline due to silhouette/feature egde change"
+                )
                 remove = True
 
             if remove:
@@ -236,7 +268,6 @@ class AbstractSceneRenderer:
                 self.remove(ol.outline_actor)
                 _outlines.remove(ol.outlined_actor)
                 ol.outlined_actor._vertices_changed = False
-
 
         # loop over actors, add outlines if needed
         for actor in self.node_actors:
@@ -255,9 +286,10 @@ class AbstractSceneRenderer:
         # Update transforms for outlines
         for outline in self.node_outlines:
             # is the parent actor still present?
-            assert outline.outlined_actor in self.actors, "Parent actor not present in actors list"
+            assert (
+                outline.outlined_actor in self.actors
+            ), "Parent actor not present in actors list"
             outline.update()
-
 
     def save_to_gtlf(self, filename):
         """Exports the current scene to a gltf file"""
@@ -281,19 +313,17 @@ class AbstractSceneRenderer:
         exporter.SetRenderWindow(self.window)  # Set the render window to export
         exporter.Write()
 
-
     def create_world_actors(self):
         """Creates the sea and global axes"""
 
         if "sea" in self.sea_visuals:
             raise ValueError("Global visuals already created - can not create again")
 
-        plane = PlaneXY(size=1000) # .c(COLOR_WATER)
+        plane = PlaneXY(size=1000)  # .c(COLOR_WATER)
         ApplyTexture(plane, TEXTURE_SEA)
-        plane.GetProperty().SetAmbient(1.0)
-        plane.GetProperty().SetDiffuse(0.0)
-        plane.GetProperty().SetSpecular(0.0)
-        plane.GetProperty().SetSpecularPower(1e-7)
+        plane.SetPickable(False)
+        plane.GetProperty().SetOpacity(ALPHA_SEA)
+        plane.GetProperty().SetRoughness(0)
 
         self.sea_visuals["sea"] = plane
         self.sea_visuals["sea"].actor_type = ActorType.GLOBAL
@@ -302,13 +332,13 @@ class AbstractSceneRenderer:
         ].no_outline = False  # If outlines are used, then they need to be disabled
         # when performing a zoom-fit (see zoom-all)
 
-        self.origin_visuals["main"] = Line([(0, 0, 0), (10, 0, 0)], color=(1,0,0))
+        self.origin_visuals["main"] = Line([(0, 0, 0), (10, 0, 0)], color=(1, 0, 0))
         self.origin_visuals["main"].actor_type = ActorType.GEOMETRY
 
-        self.origin_visuals["y"] = Line([(0, 0, 0), (0, 10, 0)], color = (0,1,0))
+        self.origin_visuals["y"] = Line([(0, 0, 0), (0, 10, 0)], color=(0, 1, 0))
         self.origin_visuals["y"].actor_type = ActorType.GEOMETRY
 
-        self.origin_visuals["z"] = Line([(0, 0, 0), (0, 0, 10)], color = (0,0,1))
+        self.origin_visuals["z"] = Line([(0, 0, 0), (0, 0, 10)], color=(0, 0, 1))
         self.origin_visuals["z"].actor_type = ActorType.GEOMETRY
 
         for actor in self.sea_visuals.values():
@@ -316,25 +346,21 @@ class AbstractSceneRenderer:
         for actor in self.origin_visuals.values():
             self.renderer.AddActor(actor)
 
-        wind_actor = Line([ (-0.5, 1, 0),
-                            (0, 0, 0),
-                            (10, 0, 0)],
-                          color = [c/255 for c in DARK_GRAY])
+        wind_actor = Line(
+            [(-0.5, 1, 0), (0, 0, 0), (10, 0, 0)], color=[c / 255 for c in DARK_GRAY]
+        )
 
         points = [(3 + 4 * i / 36, 0.4 * np.cos(i / 4), 0) for i in range(36)]
 
-        current_actor = Line([*points[:-1],
-                                 (10, 0, 0),
-                                 (9, 0.3, 0),
-                                 (10, 0, 0),
-                                 (9, -0.3, 0)],
-                                 color = [c/255 for c in BLUE_DARK])
+        current_actor = Line(
+            [*points[:-1], (10, 0, 0), (9, 0.3, 0), (10, 0, 0), (9, -0.3, 0)],
+            color=[c / 255 for c in BLUE_DARK],
+        )
 
         self.current_actor = current_actor
         self.wind_actor = wind_actor
 
         # self.renderer.AddActor(self.colorbar_actor)
-
 
     def create_node_visuals(self, recreate=False):
         """Creates actors for nodes in the scene that do not yet have one
@@ -418,6 +444,11 @@ class AbstractSceneRenderer:
                 c = Sphere(r=0.1, res=RESOLUTION_SPHERE)
                 c.actor_type = ActorType.MESH_OR_CONNECTOR
                 actors["cog"] = c
+
+                # fluid
+                actors["fluid"] = Dummy()
+                actors["fluid"].SetVisibility(False)
+                actors["fluid"].no_outline = True
 
             if isinstance(N, dn.ContactMesh):
                 # 0 : source-mesh
@@ -523,9 +554,7 @@ class AbstractSceneRenderer:
 
             if isinstance(N, dn.Force):
                 endpoint = self._scaled_force_vector(N.global_force)
-                p = Arrow(
-                    startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
-                )
+                p = Arrow(startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW)
                 p.pickable(True)()
                 p.actor_type = ActorType.FORCE
                 p._force = endpoint
@@ -533,9 +562,7 @@ class AbstractSceneRenderer:
                 actors["main"] = p
 
                 endpoint = self._scaled_force_vector(N.global_moment)
-                p = Arrow(
-                    startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW
-                )
+                p = Arrow(startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW)
                 p.pickable(True)()
                 p.actor_type = ActorType.FORCE
                 p._moment = endpoint
@@ -657,7 +684,6 @@ class AbstractSceneRenderer:
             except ValueError as M:
                 raise ValueError(f"Error creating visual for node {N.name} : {M}")
 
-
             va.info = info
 
             # va.labelUpdate(N.name)
@@ -690,7 +716,7 @@ class AbstractSceneRenderer:
         Updates the geometry for visuals where needed (meshes)
         Updates the "paint_state" property for tanks and contact nodes (see paint)"""
 
-        self.remove_visuals_for_deleted_nodes() # TODO: remove
+        self.remove_visuals_for_deleted_nodes()  # TODO: remove
 
         for V in self.node_visuals:
             V.update_geometry(viewport=self)
@@ -716,7 +742,6 @@ class AbstractSceneRenderer:
         pass
 
     def update_wind_and_current_actors(self):
-
         # update wind and current actors
         transform = vtkTransform()
         transform.Identity()
@@ -826,7 +851,7 @@ class AbstractSceneRenderer:
                                 print("Trimesh without a parent")
 
                             if not va.node.visible:
-                                va.actors["main"].off()
+                                va.actors["main"].SetVisibility(False)
 
                             self.add(va.actors["main"])  # add after positioning
 
@@ -856,57 +881,63 @@ class AbstractSceneRenderer:
         irradiance = ren.GetEnvMapIrradiance()
         irradiance.SetIrradianceStep(0.3)
 
+    def _create_skybox_actor(self):
         if self._skybox is None:
             skybox = vtkSkybox()
             skybox.SetProjection(vtkSkybox.Sphere)
             skybox.SetFloorPlane(0, 0, 1, 0)
             skybox.SetFloorRight(1, 0, 0)
-            ren.AddActor(skybox)
+
             self._skybox = skybox
         else:
-            skybox = self._skybox
+            raise ValueError("Skybox already exists")
 
-        skybox.SetTexture(texture)
+    def SkyBoxOn(self):
+        """Turns on the skybox"""
+        if self._skybox is not None:
+            raise ValueError("Skybox already on")
+
+        self._create_skybox_actor()
+
+        texture = self.renderer.GetEnvironmentTexture()
+
+        if texture is None:
+            raise ValueError(
+                "No background texture on renderer, load a background texture before turning on the skybox"
+            )
+
+        self._skybox.SetTexture(texture)
+        self.renderer.AddActor(self._skybox)
+
+    def SkyBoxOff(self):
+        """Turns off the skybox"""
+        if self._skybox is None:
+            raise ValueError("Skybox already off")
+
+        self.renderer.RemoveActor(self._skybox)
+        self._skybox = None
 
     def background_color(self, color):
         """Sets the background color"""
 
-        ren = self.renderer # alias
-
-        ren.SetBackground(color)
-
-        # ren.UseSphericalHarmonicsOff()
-
-        # create a HDR texture
-        texture = ren.GetEnvironmentTexture()
-
-        image = texture.GetInpu()
-
-
-
-        ren.SetEnvironmentTexture(None, False)
-
-        ren.SetEnvironmentalBG([1,0,0])  # ray-tracing only
-        ren.UseImageBasedLightingOn()
+        ren = self.renderer  # alias
 
         if self._skybox is not None:
-            self.renderer.RemoveActor(self._skybox)
-            self._skybox = None
-
+            self.SkyBoxOff()
+        ren.SetBackground(color)
 
     def setup_lighting_and_rendering(self):
-
-        ren = self.renderer # alias
+        ren = self.renderer  # alias
         ren.SetAutomaticLightCreation(False)
 
-        irradiance = ren.GetEnvMapIrradiance()
-        irradiance.SetIrradianceStep(0.3)
+        self.load_hdr(DEFAULT_HDR)
 
-        ren.SetEnvironmentUp(0,0,1)
-        ren.SetEnvironmentRight(1,0,0)
+        ren.SetEnvironmentUp(0, 0, 1)
+        ren.SetEnvironmentRight(1, 0, 0)
 
         ren.UseDepthPeelingOn()
 
+        self.background_color(COLOR_BG1)
 
     def _camera_direction_changed(self):
         """Gets called when the camera has moved"""

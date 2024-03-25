@@ -43,7 +43,7 @@ from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper
 from DAVE.visual_helpers.constants import ACTOR_COLOR, ACTOR_ROUGHESS, ACTOR_METALIC
 
 
-def vtkActorFromPolyData(poly_data):
+def vtkActorFromPolyData(poly_data) -> vtkActor:
     """Creates a vtkActor from a vtkPolyData object"""
     mapper = vtkPolyDataMapper()
     mapper.SetInputData(poly_data)
@@ -106,10 +106,8 @@ def Mesh(vertices, faces, do_clean=False):
 
 def Dummy():
     """Creates a tiny actor that does nothing"""
-    vertices = [[0, 0, 0], [1e-3, 0, 0], [0, 1e-3, 0]]
-    faces = [[0, 1, 2]]
-    return Mesh(vertices, faces)
-
+    return Mesh([[0, 0, 0]], [], do_clean=False)
+    # return vtkActorFromPolyData(almost_empty)
 
 def Cube(side=1):
     """Creates a cube actor with a side length of side"""
