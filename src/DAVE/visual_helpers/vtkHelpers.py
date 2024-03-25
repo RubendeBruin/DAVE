@@ -17,10 +17,6 @@ transform_from_node : creates a transform from a node
 transform_from_direction : creates a transform from a direction
 
 update_line_to_points : updates the points of a line-actor
-update_vertices : updates the vertices of a mesh-actor
-update_mesh     : updates the mesh of an actor from vertices and faces
-update_mesh_from : updates the mesh of actor from other_actor
-
 create_tube_data : creates tube data
 get_color_array : gets the color array
 apply_parent_translation_on_transform : applies the DAVE global-transform of "parent" on vtkTransform t
@@ -29,8 +25,6 @@ create_momentline_actors : creates a momentline actor
 create_shearline_actors : creates a shearline actor
 
 VisualToSlice : slices the visual-node at global position 'slice_position' and normal 'slice_normal'
-
-add_lid_to_open_mesh : adds a lid to an open mesh
 
 
 
@@ -41,14 +35,11 @@ from vtkmodules.vtkCommonCore import vtkUnsignedCharArray
 from vtkmodules.vtkCommonDataModel import vtkPlane, vtkPolyLine
 from vtkmodules.vtkCommonMath import vtkMatrix4x4
 from vtkmodules.vtkFiltersCore import vtkCutter, vtkTubeFilter
-from vtkmodules.vtkFiltersTexture import vtkImplicitTextureCoords
 
 from vtkmodules.vtkIOImage import vtkImageReader2Factory
 from vtkmodules.vtkInteractionWidgets import vtkOrientationMarkerWidget
 from vtkmodules.vtkRenderingAnnotation import vtkAxesActor
 from vtkmodules.vtkRenderingCore import vtkTexture, vtkProp3D
-
-from scipy.spatial import ConvexHull
 
 from DAVE.visual_helpers.constants import CABLE_COLORMAP
 from DAVE.visual_helpers.vtkActorMakers import *
@@ -60,11 +51,8 @@ from DAVE.settings_visuals import CABLE_DIA_WHEN_DIA_IS_ZERO
 def vtkShow(actor):
     """Shows a vtk actor in a vedo plotter window"""
 
-    from vtkmodules.vtkRenderingCore import (
-        vtkRenderer,
-        vtkRenderWindow,
-        vtkRenderWindowInteractor,
-    )
+    from vtkmodules.vtkRenderingCore import vtkRenderer, vtkRenderWindow, vtkRenderWindowInteractor
+
 
     # Create a rendering window and renderer
     renderer = vtkRenderer()
@@ -86,9 +74,7 @@ def vtkShow(actor):
     interactor.Start()
 
 
-def ApplyTexture(
-    actor: vtkActor, filename: str, repeat=False, edge_clamp=True, interpolate=True
-):
+def ApplyTexture(actor: vtkActor, filename: str, repeat=False, edge_clamp=True, interpolate=True):
     """Applies a texture to a vtkActor"""
 
     filename = str(filename)
@@ -107,16 +93,9 @@ def ApplyTexture(
     tu.SetInterpolate(interpolate)
     tu.SetRepeat(repeat)
     tu.SetEdgeClamp(edge_clamp)
+    actor.GetProperty().SetColor(1, 1, 1)
 
-    # get property
-    prop = actor.GetProperty()
-
-    if prop.GetInterpolation() == 3:  # Physically based
-        tu.UseSRGBColorSpaceOn()
-        prop.SetBaseColorTexture(tu)  # for PBR
-        prop.SetColor(1, 1, 1)  # reset color to white
-    else:
-        actor.SetTexture(tu)  # for classic
+    actor.SetTexture(tu)
 
 
 class DelayRenderingTillDone:
@@ -166,11 +145,12 @@ def print_vtkMatrix44(mat):
         print(row)
 
 
-def SetTransformIfDifferent(actor: vtkProp3D, transform: vtkTransform, tol=1e-6):
+def SetTransformIfDifferent(
+        actor: vtkProp3D, transform: vtkTransform, tol=1e-6
+):
     """Does not really set the user-transform, instead just sets the real transform"""
 
     mat1 = transform.GetMatrix()
-
     SetMatrixIfDifferent(actor, mat1, tol)
 
 
@@ -185,10 +165,10 @@ def vtkMatricesAlmostEqual(mat0, mat1, tol=1e-6):
 
 
 def SetMatrixIfDifferent(actor: vtkProp3D, target_matrix, tol=1e-6):
-    mat0 = actor.GetMatrix()
 
     mat1 = vtkMatrix4x4()
     mat1.DeepCopy(target_matrix)
+    mat0 = actor.GetMatrix()
 
     if not vtkMatricesAlmostEqual(mat0, mat1, tol):  # only change if not almost equal
         m0 = mat1.GetElement(0, 0)
@@ -236,7 +216,21 @@ def SetMatrixIfDifferent(actor: vtkProp3D, target_matrix, tol=1e-6):
 
         vtkTransform.GetOrientation(out, mat1)
 
-        # no longer restore, we're working on a copy
+        # and restore
+        mat1.SetElement(0, 0, m0)
+        mat1.SetElement(1, 0, m4)
+        mat1.SetElement(2, 0, m8)
+        mat1.SetElement(0, 1, m1)
+        mat1.SetElement(1, 1, m5)
+        mat1.SetElement(2, 1, m9)
+        mat1.SetElement(0, 2, m2)
+        mat1.SetElement(1, 2, m6)
+        mat1.SetElement(2, 2, m10)
+
+        # print("=======================================================")
+        #
+        # print(mat1)  # Debug info for "getOrientation bug"
+        # print(out)
 
         actor.SetOrientation(*out)
 
@@ -247,7 +241,9 @@ def SetScaleIfDifferent(actor: vtkProp3D, scale: float, tol=1e-6):
         actor.SetScale(scale)
 
 
-def tranform_almost_equal(transform1: vtkTransform, transform2: vtkTransform, tol=1e-6):
+def tranform_almost_equal(
+        transform1: vtkTransform, transform2: vtkTransform, tol=1e-6
+):
     """Returns True if the two transforms are almost equal. Testing is done on the absolute difference of the components of the matrix
 
     Note: the values of the matrix contains both the rotation and the offset. The order of magnitude of these can be different
@@ -313,7 +309,7 @@ def transform_from_node(node):
     return t
 
 
-def transform_from_direction(axis, position, scale=1, right=None):
+def transform_from_direction(axis,position,  scale=1, right=None):
     """
     Creates a transform that rotates the X-axis to the given direction
     Args:
@@ -385,60 +381,6 @@ def update_line_to_points(line_actor, points):
 
     source.Modified()
 
-
-def update_mesh_from(actor, other_actor, apply_soure_transform=True):
-    """Updates the mesh of actor from other_actor"""
-
-    source = other_actor.GetMapper().GetInput()
-
-    target = vtkPolyData()
-    if apply_soure_transform:
-        # get source transform
-        # apply on target
-
-        tr = vtkTransformPolyDataFilter()
-        tr.SetInputData(source)
-
-        t = vtkTransform()
-        t.SetMatrix(other_actor.GetMatrix())
-
-        tr.SetTransform(t)
-        tr.Update()
-        target.DeepCopy(tr.GetOutput())  # copy to targe
-
-    else:
-        target.DeepCopy(source)  # copy to target
-
-    actor.GetMapper().SetInputData(target)
-    actor.GetMapper().Modified()
-
-
-def update_vertices(mesh_actor, vertices):
-    """Updates the vertices of a mesh-actor,"""
-
-    source = mesh_actor.GetMapper().GetInput()
-
-    npt = len(vertices)
-
-    _points = vtkPoints()
-    _points.SetNumberOfPoints(npt)
-    for i, pt in enumerate(vertices):
-        _points.SetPoint(i, pt)
-    source.SetPoints(_points)
-
-    source.Modified()
-
-
-def update_mesh(mesh_actor, vertices, faces):
-    """Updates the mesh of an actor from vertices and faces"""
-
-    polydata = polyDataFromVerticesAndFaces(vertices=vertices, faces=faces)
-    mesh_actor.GetMapper().SetInputData(polydata)
-
-def update_mesh_to_empty(actor):
-    """Updates the mesh of an actor to an empty mesh"""
-    polydata = vtkPolyData()
-    actor.GetMapper().SetInputData(polydata)
 
 def create_tube_data(new_points, diameter, colors=None):
     """Updates the points of a line-actor"""
@@ -553,7 +495,7 @@ def _create_moment_or_shear_line(what, frame: dn.Frame, scale_to=2, at=None):
     line = [report_axis.to_glob_position((x[i], 0, scale * value[i])) for i in range(n)]
 
     actor_axis = Line([start, end])
-    actor_axis.SetColor([0, 0, 0])
+    actor_axis.SetColor([0,0,0])
     actor_axis.SetLineWidth(3)
     actor_graph = Line(line)
     actor_graph.SetColor(color)
@@ -585,14 +527,14 @@ def create_shearline_actors(frame: dn.Frame, scale_to=2, at=None):
 
 
 def VisualToSlice(
-    visual_node: "Visual",
-    slice_position=(0, 0, 0),
-    slice_normal=(0, 0, 1),
-    projection_x=(1, 0, 0),
-    projection_y=(0, 1, 0),
-    relative_to_slice_position=False,
-    ax=None,
-    **kwargs,
+        visual_node: "Visual",
+        slice_position=(0, 0, 0),
+        slice_normal=(0, 0, 1),
+        projection_x=(1, 0, 0),
+        projection_y=(0, 1, 0),
+        relative_to_slice_position=False,
+        ax=None,
+        **kwargs,
 ):
     """Slices the visual-node at global position 'slice_position' and normal 'slice_normal'. This results in a slice
     in the global 3D space. This is then projected onto a plane defined by the two global vectors 'projection_x' and
@@ -683,49 +625,7 @@ def VisualToSlice(
 
     return x, y
 
-
-def add_lid_to_open_mesh(vertices: list, faces: list):
-    # create the lid using a convex hull
-    #
-    #
-
-    assert isinstance(
-        vertices, list
-    ), "Vertices should be a list - update is preformed in-place"
-    assert isinstance(
-        faces, list
-    ), "Faces should be a list - update is preformed in-place"
-
-    thickness_tolerance = 1e-4  # for numerical accuracy
-
-    verts = np.array(vertices)
-    z = verts[:, 2]
-    maxz = np.max(z)
-    top_plane_verts = verts[z >= maxz - thickness_tolerance]
-
-    # make convex hull
-    d2 = top_plane_verts[:, 0:2]
-
-    try:
-        hull = ConvexHull(d2)
-
-        points = top_plane_verts[
-            hull.vertices, :
-        ]  # for 2-D the vertices are guaranteed to be in counterclockwise order
-
-        nVerts = len(vertices)
-
-        for point in points:
-            vertices.append([*point])
-
-        # construct faces
-        for i in range(len(points) - 2):
-            faces.append([nVerts, nVerts + i + 2, nVerts + i + 1])
-    except:
-        pass
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     from DAVE.visual_helpers.vtkActorMakers import Cube
 
     c = Cube()
