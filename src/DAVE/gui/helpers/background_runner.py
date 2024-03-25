@@ -19,7 +19,7 @@ class BackgroundRunnerGui:
     """Runs tasks in the background and displays a dialog while running them.
     """
 
-    def __init__(self, commands: list[list[str]]):
+    def __init__(self, commands: list[list[str]], title = "Running external commands..."):
         """Constructor"""
         assert QApplication.instance() is not None, "QApplication must be created before creating a BackgroundRunner"
         application = QApplication.instance()
@@ -29,7 +29,7 @@ class BackgroundRunnerGui:
         self.commands = commands
 
         dialog = QtWidgets.QDialog()
-        dialog.setWindowTitle("Writing report")
+        dialog.setWindowTitle(title)
         dialog.setWindowIcon(QIcon(":/icons/Dave_icon.png"))
 
         layout = QtWidgets.QVBoxLayout()
@@ -104,8 +104,12 @@ class BackgroundRunnerGui:
                     return
 
                 if self.do_terminate:
+                    self.feedback.action.emit(f"Terminating")
                     process.terminate()
                     break
+
+            if self.do_terminate:
+                break
 
             print("Done running command")
 

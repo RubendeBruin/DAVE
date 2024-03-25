@@ -588,8 +588,8 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
 
     if running_in_gui():
 
-        command_run = [blender_exe_path,"-b" , "--python", tempfile]
-        command_open = [blender_exe_path, blender_result_file]
+        command_run = [blender_exe_path,"-b" , "--python", str(tempfile)]
+        command_open = [blender_exe_path, str(blender_result_file)]
 
         from DAVE.gui.helpers.background_runner import BackgroundRunnerGui
         BackgroundRunnerGui([command_run, command_open])

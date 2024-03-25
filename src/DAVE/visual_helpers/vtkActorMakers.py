@@ -396,11 +396,11 @@ def Cylinder(pos=(0,0,0), r=1, height=2.0, axis=(0,0,1), res=24):
     # the rotation angle is the angle between the Y-axis and the given axis
     rot_angle = np.arccos(np.dot([0, 1, 0], axis_n))
     # create a transform
-    t = vtk.vtkTransform()
+    t = vtkTransform()
     t.RotateWXYZ(np.rad2deg(rot_angle), *rot_axis)
     t.Update()
     # apply the transform to the cylinder
-    tf = vtk.vtkTransformPolyDataFilter()
+    tf = vtkTransformPolyDataFilter()
     tf.SetInputData(source.GetOutput())
     tf.SetTransform(t)
     tf.Update()

@@ -511,7 +511,7 @@ class VisualActor:
             if n_wheel_actors > n_wheels:  # remove actors
                 for i in range(n_wheel_actors - n_wheels):
                     name = f"wheel#{n_wheels + i}"
-                    viewport.screen.remove(self.actors[name])
+                    viewport.remove(self.actors[name])
                     del self.actors[name]
             if n_wheel_actors < n_wheels:  # add actors
                 for i in range(n_wheels - n_wheel_actors):
@@ -523,7 +523,7 @@ class VisualActor:
                         res=24,
                     )
                     self.actors[f"wheel#{n_wheel_actors+i}"] = actor
-                    viewport.screen.add(actor)
+                    viewport.add(actor)
 
             # position the wheels
             axle_positions = N.axles
@@ -658,14 +658,9 @@ class VisualActor:
 
             # check radius
             if self.actors["main"]._r != self.node.radius:
-                # Update radius
+                # Update radius by re-creating the polydata
                 temp = Sphere(r=self.node.radius, res=RESOLUTION_SPHERE)
-
-                # by changing the vertices from a copy
-                # update_vertices(self.actors["main"], temp.points())
-                # self.actors["main"].points(temp.points())
-
-                self.actors["main"].SetMapper(temp.GetMapper())
+                update_mesh_from(self.actors["main"], temp)
 
                 self.actors["main"]._r = self.node.radius
 
@@ -706,29 +701,29 @@ class VisualActor:
                 self.actors["main"]._force
                 == viewport._scaled_force_vector(self.node.global_force)
             ):
-                viewport.screen.remove(self.actors["main"])
+                viewport.remove(self.actors["main"])
 
                 endpoint = viewport._scaled_force_vector(self.node.global_force)
 
                 p = Arrow(startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW)
-                p.pickable(True)()
+                p.SetPickable(True)
                 p.actor_type = ActorType.FORCE
                 p._force = endpoint
 
                 self.actors["main"] = p
-                viewport.screen.add(self.actors["main"])
+                viewport.add(self.actors["main"])
 
             # check is the arrows are still what they should be
             if not np.all(
                 np.array(self.actors["moment1"]._moment)
                 == viewport._scaled_force_vector(self.node.global_moment)
             ):
-                viewport.screen.remove(self.actors["moment1"])
-                viewport.screen.remove(self.actors["moment2"])
+                viewport.remove(self.actors["moment1"])
+                viewport.remove(self.actors["moment2"])
 
                 endpoint = viewport._scaled_force_vector(self.node.global_moment)
                 p = Arrow(startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW)
-                p.pickable(True)()
+                p.SetPickable(True)
                 p.actor_type = ActorType.FORCE
                 p._moment = endpoint
                 self.actors["moment1"] = p
@@ -738,16 +733,16 @@ class VisualActor:
                     endPoint=1.36 * endpoint,
                     res=RESOLUTION_ARROW,
                 )
-                p.pickable(True)()
+                p.SetPickable(True)
                 p.actor_type = ActorType.FORCE
 
                 p.actor_type = ActorType.FORCE
                 self.actors["moment2"] = p
 
-                viewport.screen.add(self.actors["moment1"])
-                viewport.screen.add(self.actors["moment2"])
+                viewport.add(self.actors["moment1"])
+                viewport.add(self.actors["moment2"])
 
-            t = self.actors["main"].get_transform()
+            t = vtkTransform()
             t.Identity()
             t.Translate(self.node.parent.global_position)
             for a in self.actors.values():
@@ -895,9 +890,8 @@ class VisualActor:
 
             # remove already existing submerged mesh (if any)
             if "submerged_mesh" in self.actors:
-                if viewport.screen is not None:
-                    viewport.screen.remove(self.actors["submerged_mesh"])
-                    del self.actors["submerged_mesh"]
+                viewport.remove(self.actors["submerged_mesh"])
+                del self.actors["submerged_mesh"]
 
             mesh = self.node._vfNode.current_mesh
 
@@ -908,8 +902,7 @@ class VisualActor:
                 self.actors["submerged_mesh"] = vis
                 self.update_paint(viewport.settings)
 
-                if viewport.screen is not None:
-                    viewport.screen.add(vis)
+                viewport.add(vis)
 
             return
 

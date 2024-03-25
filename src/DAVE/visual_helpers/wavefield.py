@@ -10,10 +10,12 @@ from DAVE.visual_helpers.constants import TEXTURE_WAVEPLANE
 
 
 class WaveField:
-    def __init__(self, texture=None):
+    def __init__(self, texture=None, do_pbr = False):
         self.actor = None
         self.pts = None
         self.elevation = None
+
+        self.do_pbr = do_pbr
 
         self.texture = vtkTexture()
         input = vtkJPEGReader()
@@ -205,12 +207,24 @@ class WaveField:
         actor.SetMapper(mapper)
         #
         #
-        # actor.GetProperty().SetColor(0.0, 0.5, 0.5)
-        actor.GetProperty().SetOpacity(0.8)
-        actor.GetProperty().SetAmbient(1.0)
-        actor.GetProperty().SetDiffuse(0.0)
-        actor.GetProperty().SetSpecular(0.0)
-        actor.SetTexture(self.texture)
+        ap = actor.GetProperty()
+
+        if self.do_pbr:
+            ap.SetInterpolationToPBR()
+            ap.SetMetallic(0.5)
+            ap.SetRoughness(0)
+            self.texture.UseSRGBColorSpaceOn()
+            ap.SetBaseColorTexture(self.texture)  # for PBR
+
+
+        else:
+
+            # actor.GetProperty().SetColor(0.0, 0.5, 0.5)
+            ap.SetOpacity(0.8)
+            ap.SetAmbient(1.0)
+            ap.SetDiffuse(0.0)
+            ap.SetSpecular(0.0)
+            actor.SetTexture(self.texture)
 
         self.actor = actor
         self.pts = pts

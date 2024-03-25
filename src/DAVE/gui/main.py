@@ -674,6 +674,18 @@ class Gui:
         self.ui.sliderCoGSize.connectvalueChanged(set_cog_size)
         self.ui.menuView.addAction(self.ui.sliderCoGSize)
 
+        # hdr background
+        hdrs = self.ui.menuView.addMenu("HDR backgrounds")
+
+        def set_hrd(filename):
+            self.run_code("self.visual.SkyBoxOn()", guiEventType.VIEWER_SETTINGS_UPDATE)
+            self.run_code(f"self.visual.load_hdr(r'{str(filename)}')", guiEventType.VIEWER_SETTINGS_UPDATE)
+
+        hrds = self.scene.resource_provider.get_resource_list("hdr")
+        for h in hrds:
+            filename = str(self.scene.resource_provider.get_resource_path(h))
+            hdrs.addAction(f"{h}", lambda fn=filename: set_hrd(fn))
+
         self.ui.action2D_mode.triggered.connect(self.toggle_2D)
         self.ui.actionX.triggered.connect(lambda: self.camera_set_direction((1, 0, 0)))
         self.ui.action_x.triggered.connect(

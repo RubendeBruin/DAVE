@@ -423,7 +423,7 @@ class AbstractSceneRenderer:
                 ]
                 faces = [(0, 1, 2, 3)]
 
-                p = Mesh([vertices, faces])  # waterplane, ok to create like this
+                p = Mesh(vertices = vertices, faces = faces)  # waterplane, ok to create like this
 
                 p.actor_type = ActorType.NOT_GLOBAL
                 actors["waterplane"] = p
@@ -555,7 +555,7 @@ class AbstractSceneRenderer:
             if isinstance(N, dn.Force):
                 endpoint = self._scaled_force_vector(N.global_force)
                 p = Arrow(startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW)
-                p.pickable(True)()
+                p.SetPickable(True)
                 p.actor_type = ActorType.FORCE
                 p._force = endpoint
 
@@ -563,7 +563,7 @@ class AbstractSceneRenderer:
 
                 endpoint = self._scaled_force_vector(N.global_moment)
                 p = Arrow(startPoint=(0, 0, 0), endPoint=endpoint, res=RESOLUTION_ARROW)
-                p.pickable(True)()
+                p.SetPickable(True)
                 p.actor_type = ActorType.FORCE
                 p._moment = endpoint
                 actors["moment1"] = p
@@ -573,7 +573,7 @@ class AbstractSceneRenderer:
                     endPoint=1.36 * endpoint,
                     res=RESOLUTION_ARROW,
                 )
-                p.pickable(True)()
+                p.SetPickable(True)
                 p.actor_type = ActorType.FORCE
                 actors["moment2"] = p
 
@@ -897,7 +897,7 @@ class AbstractSceneRenderer:
     def SkyBoxOn(self):
         """Turns on the skybox"""
         if self._skybox is not None:
-            raise ValueError("Skybox already on")
+            return
 
         self._create_skybox_actor()
 
@@ -914,7 +914,7 @@ class AbstractSceneRenderer:
     def SkyBoxOff(self):
         """Turns off the skybox"""
         if self._skybox is None:
-            raise ValueError("Skybox already off")
+            return
 
         self.renderer.RemoveActor(self._skybox)
         self._skybox = None

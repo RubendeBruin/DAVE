@@ -18,6 +18,7 @@ import DAVE.gui.forms.frm_standard_assets
 from PySide6 import QtWidgets
 
 from DAVE.settings_visuals import PAINTERS
+from DAVE.visual_helpers.qt_embedded_renderer import QtEmbeddedSceneRenderer
 
 
 class DialogWithCloseEvent(QtWidgets.QDialog):
@@ -29,23 +30,26 @@ class DialogWithCloseEvent(QtWidgets.QDialog):
 class Gui:
     def __init__(self):
         self.scene = ds.Scene()
-        """Reference to a scene"""
-        self.visual = dv.Viewport(self.scene)
 
-        """Reference to a viewport"""
 
-        self.visual.settings.show_sea = False
-        self.visual.settings.painter_settings = PAINTERS["Visual"]
+
 
         self.ui = DAVE.gui.forms.frm_standard_assets.Ui_MainWindow()
-        """Reference to the ui"""
-        self.ui.visual = self.visual  # pass a reference
 
         self._selected = None
         self._result = None
 
         self.MainWindow = DialogWithCloseEvent()  # QtWidgets.QDialog()
         self.ui.setupUi(self.MainWindow)
+
+        """Reference to a scene"""
+        self.visual = QtEmbeddedSceneRenderer(self.scene, self.ui.frame3d)
+        self.visual.settings.show_sea = False
+        self.visual.settings.painter_settings = PAINTERS["Visual"]
+
+        """Reference to the ui"""
+        self.ui.visual = self.visual  # pass a reference
+
 
         txt = "Resources from:\n"
         for p in self.scene.resource_provider.resources_paths:
@@ -59,7 +63,6 @@ class Gui:
 
         self.ui.listWidget.itemSelectionChanged.connect(self.changed)
         self.ui.listWidget.itemDoubleClicked.connect(self.dblclick)
-        self.visual.show_embedded(self.ui.frame3d)
         self.ui.btnImport.clicked.connect(self.clickImport)
 
         self.MainWindow.visual = self.visual  # pass reference of onCloseApplication
@@ -127,6 +130,10 @@ class Gui:
 # ====== nodeA code ======
 
 if __name__ == "__main__":
-    app = QtWidgets.QApplication()
+
+    app = QtWidgets.QApplication.instance()
+    if app is None:
+        app = QtWidgets.QApplication([])
+
     G = Gui()
     G.showModal()
