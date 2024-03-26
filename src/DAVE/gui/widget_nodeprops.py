@@ -308,6 +308,9 @@ class NodeEditor(ABC):
         return self._widget
 
     def run_code(self, code, event=None, sender=None, store_undo=True):
+
+        assert self.node.is_valid, f"Nodeprop attempted to run code while node is not valid. Code was {code}"
+        
         if code == "":
             return
 
@@ -393,9 +396,6 @@ class EditNode(NodeEditor):
         ui.cbVisible.toggled.connect(self.visible_changed)
         ui.lbColor.mousePressEvent = self.color_clicked
 
-        # self.eventFilter = EnterKeyPressFilter()
-        # self.eventFilter.callback = self.nameChangedEnter
-        # self.ui.tbName.installEventFilter(self.eventFilter)
         self.ui.tbName.editingFinished.connect(self.nameChangedEnter)
 
         self.rightclickfilter = RightClickEventFilter()

@@ -95,8 +95,6 @@ class BackgroundRunnerGui:
 
                 retcode = process.poll()
 
-                print(retcode)
-
                 if retcode is not None:
                     if retcode == 0:
                         break
