@@ -8,6 +8,8 @@ from vtkmodules.vtkInteractionWidgets import (
 )
 from vtkmodules.vtkRenderingAnnotation import vtkAxesActor
 
+from DAVE.settings_visuals import ViewportSettings
+
 vtkmodules.qt.PyQtImpl = "PySide6"
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QApplication
@@ -35,7 +37,9 @@ from DAVE.visual_helpers.scene_renderer import AbstractSceneRenderer
 
 
 class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
-    def __init__(self, scene, target_widget: QWidget):
+    def __init__(
+        self, scene, target_widget: QWidget, settings: ViewportSettings or None = None
+    ):
         # these can be assigned
         self.cycle_next_painterset = None
         self.cycle_previous_painterset = None
@@ -45,7 +49,7 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
 
         self.Style = BlenderStyle()
 
-        super().__init__(scene)
+        super().__init__(scene, settings=settings)
 
         self.add_axis_widget()
         self.interactor.Initialize()  # do this after the style is set and the renderers are added
