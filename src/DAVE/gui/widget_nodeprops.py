@@ -432,16 +432,17 @@ class EditNode(NodeEditor):
             self.ui.lblInfo.setVisible(False)
 
     def nameChangedEnter(self):
-        node = self.node
-        element = "\ns['{}']".format(node.name)
+        if self.node.is_valid:
+            node = self.node
+            element = "\ns['{}']".format(node.name)
 
-        new_name = self.ui.tbName.text()
+            new_name = self.ui.tbName.text()
 
-        if new_name:
-            if not new_name == node.name:
-                code = element + ".name = '{}'".format(new_name)
-                self.run_code(code, guiEventType.SELECTED_NODE_MODIFIED)
-                self.ui.lblInfo.setVisible(False)
+            if new_name:
+                if not new_name == node.name:
+                    code = element + ".name = '{}'".format(new_name)
+                    self.run_code(code, guiEventType.SELECTED_NODE_MODIFIED)
+                    self.ui.lblInfo.setVisible(False)
 
     def visible_changed(self):
         node = self.node

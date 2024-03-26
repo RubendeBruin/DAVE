@@ -683,8 +683,8 @@ class Gui:
 
         hrds = self.scene.resource_provider.get_resource_list("hdr")
         for h in hrds:
-            filename = str(self.scene.resource_provider.get_resource_path(h))
-            hdrs.addAction(f"{h}", lambda fn=filename: set_hrd(fn))
+            fnmne = str(self.scene.resource_provider.get_resource_path(h))
+            hdrs.addAction(f"{h}", lambda fn=fnmne: set_hrd(fn))
 
         self.ui.action2D_mode.triggered.connect(self.toggle_2D)
         self.ui.actionX.triggered.connect(lambda: self.camera_set_direction((1, 0, 0)))
@@ -2130,7 +2130,7 @@ class Gui:
             else:
                 QMessageBox.warning(self.ui.widget, "error", what, QMessageBox.Ok)
 
-    def run_code(self, code, event, store_undo=True, sender=None) -> bool:
+    def run_code(self, code : str, event : guiEventType, store_undo=True, sender=None) -> bool:
         """Runs the provided code
 
         If successful, add code to history and create an undo point
