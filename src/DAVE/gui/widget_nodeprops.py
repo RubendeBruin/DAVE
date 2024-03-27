@@ -37,7 +37,7 @@ from DAVE.gui.helpers.nodelist_drag_drop_move import (
 )
 from DAVE.gui.helpers.property_editor import PropertyEditorDialog
 
-from DAVE.visual import transform_from_node
+from DAVE.visual_helpers.vtkHelpers import transform_from_node
 from DAVE.gui.helpers.my_qt_helpers import (
     update_combobox_items_with_completer,
     EnterKeyPressFilter,
@@ -308,9 +308,10 @@ class NodeEditor(ABC):
         return self._widget
 
     def run_code(self, code, event=None, sender=None, store_undo=True):
+        assert (
+            self.node.is_valid
+        ), f"Nodeprop attempted to run code while node is not valid. Code was {code}"
 
-        assert self.node.is_valid, f"Nodeprop attempted to run code while node is not valid. Code was {code}"
-        
         if code == "":
             return
 
@@ -1376,7 +1377,6 @@ class EditConnections(NodeEditor):
 
         ui.checkBox.toggled.connect(self.post_update_event)
 
-
         # ui.tree.editItem = self.editItem
 
     def connect(
@@ -1411,7 +1411,6 @@ class EditConnections(NodeEditor):
     def add_item(self):
         name = self.ui.widgetPicker.value
         if self.scene.node_exists(name):
-
             node_names = [node.name for node in self.node.connections]
 
             # See if any of the items in the tree is selected,
@@ -1422,7 +1421,6 @@ class EditConnections(NodeEditor):
                 node_names.insert(index, name)
             else:
                 node_names.append(name)
-
 
             code = f"s['{self.node.name}'].connections = ("
             for name in node_names:
@@ -1470,7 +1468,6 @@ class EditConnections(NodeEditor):
 
         N = len(self.node.connections)
 
-
         self.ui.tree.blockSignals(True)  # update the list
         self.ui.tree.clear()
 
@@ -1500,7 +1497,7 @@ class EditConnections(NodeEditor):
         index = self.ui.tree.indexFromItem(self.ui.tree.topLevelItem(0))
         rowheight = self.ui.tree.rowHeight(index)
 
-        n_rows = max(6, N+3)
+        n_rows = max(6, N + 3)
         self.ui.tree.setMinimumHeight(n_rows * rowheight)
         self.ui.tree.blockSignals(False)
         self.ui.lbDirection.setVisible(labelVisible)

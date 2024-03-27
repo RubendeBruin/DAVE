@@ -11,7 +11,7 @@ from vtkmodules.vtkFiltersGeneral import vtkTransformPolyDataFilter
 from vtkmodules.vtkIOGeometry import vtkOBJReader, vtkSTLReader
 
 
-class TriMeshSource():  # not an instance of Node
+class TriMeshSource:  # not an instance of Node
     """
     TriMesh
 
@@ -22,7 +22,6 @@ class TriMeshSource():  # not an instance of Node
     """
 
     def __init__(self, scene, source):
-
         # name = scene.available_name_like("Names of trimesh-sources are not used")
         # super().__init__(scene, name=name, _do_not_add_to_scene=True)
 
@@ -101,7 +100,6 @@ class TriMeshSource():  # not an instance of Node
     def _fromVTKpolydata(
         self, polydata, offset=None, rotation=None, scale=None, invert_normals=False
     ):
-
         tri = vtkTriangleFilter()
 
         tri.SetInputConnection(polydata)
@@ -157,11 +155,11 @@ class TriMeshSource():  # not an instance of Node
             cell = data.GetCell(i)
 
             if isinstance(cell, vtkLine):
-                print("Cell nr {} is a line, not adding to mesh".format(i))
+                # print("Cell nr {} is a line, not adding to mesh".format(i))
                 continue
 
             if isinstance(cell, vtkVertex):
-                print("Cell nr {} is a vertex, not adding to mesh".format(i))
+                # print("Cell nr {} is a vertex, not adding to mesh".format(i))
                 continue
 
             id0 = cell.GetPointId(0)
@@ -359,4 +357,3 @@ class TriMeshSource():  # not an instance of Node
     def give_python_code(self):
         code = "# No code generated for TriMeshSource"
         return code
-

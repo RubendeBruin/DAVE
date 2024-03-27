@@ -14,10 +14,11 @@ class ActorType(Enum):
     MESH_OR_CONNECTOR = 8
     COG = 9
 
+
 # ================== visuals :: general =============
 
 ACTOR_METALIC = 0.1
-ACTOR_ROUGHESS = .9
+ACTOR_ROUGHESS = 0.9
 ACTOR_COLOR = [0.7, 0.74, 0.74]  # a little on the cool side
 
 DEFAULT_HDR = str(ds.RESOURCE_PATH[0] / "default.hdr")
@@ -60,6 +61,7 @@ PINK = [247, 17, 228]
 DARK_GRAY = [45, 45, 48]
 LIGHT_GRAY = [200, 200, 200]
 MEDIUM_GRAY = [145, 145, 145]
+DAVE_YELLOW = [255, 201, 14]
 
 PALETTE = (
     BLUE,
@@ -103,18 +105,20 @@ COLOR_OUTLINE = rgb(BLACK)
 
 COLOR_WATER = rgb(BLUE_DARK)
 
+COLOR_DAVE = rgb(DAVE_YELLOW)
+
 # ------------ colormap for unity-checks
 
 UC_CMAP = colormaps["turbo"]
 CABLE_COLORMAP = colormaps["turbo"]
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     import matplotlib.pyplot as plt
+
     n = 100
     for i in range(n):
-        f = i/n
-        plt.plot(f,0,marker='o', color = CABLE_COLORMAP(f))
-    plt.plot(1.1, 0, marker='o', color=(1,0,1,1))
+        f = i / n
+        plt.plot(f, 0, marker="o", color=CABLE_COLORMAP(f))
+    plt.plot(1.1, 0, marker="o", color=(1, 0, 1, 1))
     plt.show()

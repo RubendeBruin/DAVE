@@ -13,6 +13,7 @@ import warnings
 import weakref
 import datetime
 from copy import deepcopy
+from dataclasses import dataclass
 from fnmatch import fnmatch
 from graphlib import TopologicalSorter
 from os.path import isdir, isfile
@@ -60,6 +61,24 @@ from .nodes import *
 # notes and choices:
 # - properties are returned as tuple to make sure they are not editable.
 #    --> node.position[2] = 5 is not allowed
+
+
+@dataclass
+class UCResult:
+    uc: float
+    node_name: str
+    property_name: str
+    limits: Tuple[float, float] or float
+    value: float
+
+    def __str__(self):
+        if isinstance(self.limits, tuple):
+            return f"UC: {self.uc:.3f} in {self.node_name}.{self.property_name} = {self.value:.3f} [{self.limits[0]:.3f}, {self.limits[1]:.3f}]"
+        else:
+            return f"UC: {self.uc:.3f} in {self.node_name}.{self.property_name} = {self.value:.3f} [{self.limits:.3f}]"
+
+    def __repr__(self):
+        return self.__str__()
 
 
 class Scene:
@@ -1697,13 +1716,14 @@ class Scene:
                 gov = max(gov, uc)
         return gov
 
-    def UC_governing_details(self, tags=None):
-        """Returns tuple with:
+    def UC_governing_details(self, tags=None) -> UCResult or None:
+        """Returns UCResult dataclass with:
         0: governing UC,
         1: node-name in which this UC occurs
         2: property name
         3: limits
         4: value
+        Or None if no UC is found
 
         Optional argument tags limits the evaluated nodes to nodes with the given tag(s)
         """
@@ -1726,7 +1746,13 @@ class Scene:
         if gov_node is None:
             return None, None, None, None
         else:
-            return gov, gov_node, gov_prop, gov_limits, gov_value
+            return UCResult(
+                uc=gov,
+                node_name=gov_node,
+                property_name=gov_prop,
+                limits=gov_limits,
+                value=gov_value,
+            )
 
     # ========= The most important functions ========
 
@@ -1802,7 +1828,6 @@ class Scene:
                 BackgroundSolver = DC.BackgroundSolver(self._vfc)
 
                 self.solver_settings.apply(BackgroundSolver)
-                print(self.solver_settings)
 
                 started = BackgroundSolver.Start()
 

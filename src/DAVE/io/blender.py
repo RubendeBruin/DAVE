@@ -1,4 +1,3 @@
-
 """
     Using this module a scene can be exported to Blender.
 
@@ -53,6 +52,7 @@ import DAVE.scene as dc
 import DAVE.settings as consts
 from scipy.spatial.transform import Rotation  # for conversion from axis-angle to euler
 from os.path import splitext, basename
+
 # from os import system
 from numpy import deg2rad
 from pathlib import Path
@@ -365,16 +365,18 @@ def add_beam(points, diameter, name=None, ani_points = None, frames_per_entry=1,
 
 """
 
+
 def _to_euler(rotation):
     r = Rotation.from_rotvec(deg2rad(rotation))
-    return r.as_euler('zyx' ,degrees=False)
+    return r.as_euler("zyx", degrees=False)
+
 
 def _to_quaternion(rotation):
     r = Rotation.from_rotvec(deg2rad(rotation))
     return r.as_quat()
 
 
-def _wavefield_to_blender(wavefield, frames_per_step=1,export_only_1_in_x_frames=1):
+def _wavefield_to_blender(wavefield, frames_per_step=1, export_only_1_in_x_frames=1):
     """Returns blender python code to generate the wavefield in Blender
 
     Args:
@@ -389,12 +391,12 @@ def _wavefield_to_blender(wavefield, frames_per_step=1,export_only_1_in_x_frames
     wavefield.actor.GetMapper().Update()
     data = wavefield.actor.GetMapper().GetInputAsDataSet()
 
-    code = '\n'
-    code += '\nvertices = np.array(['
+    code = "\n"
+    code += "\nvertices = np.array(["
 
     for i in range(data.GetNumberOfPoints()):
         point = data.GetPoint(i)
-        code += '\n    {}, {}, {},'.format(*point)
+        code += "\n    {}, {}, {},".format(*point)
 
     code = code[:-1]  # remove the last ,
 
@@ -413,13 +415,13 @@ vertex_index = np.array(["""
         cell = data.GetCell(i)
 
         if isinstance(cell, vtkLine):
-            print("Cell nr {} is a line, not adding to mesh".format(i))
+            # print("Cell nr {} is a line, not adding to mesh".format(i))
             continue
 
-        code += '\n    '
+        code += "\n    "
 
         for ip in range(cell.GetNumberOfPoints()):
-            code += '{},'.format(cell.GetPointId(ip))
+            code += "{},".format(cell.GetPointId(ip))
 
         poly_length.append(cell.GetNumberOfPoints())
         poly_start.append(counter)
@@ -434,7 +436,7 @@ loop_start = np.array([
         """
 
     for p in poly_start:
-        code += '{}, '.format(p)
+        code += "{}, ".format(p)
 
     code = code[:-1]  # remove the last ,
 
@@ -445,7 +447,7 @@ loop_total = np.array([
         """
 
     for p in poly_length:
-        code += '{}, '.format(p)
+        code += "{}, ".format(p)
 
     code = code[:-1]  # remove the last ,
 
@@ -471,15 +473,13 @@ mesh.polygons.foreach_set("loop_total", loop_total)
 """
 
     for i_source_frame in range(wavefield.nt):
-
-
-
-
         # skip some of the frames, but not the fist or last
-        if i_source_frame != wavefield.nt -1 and \
-            i_source_frame != 0 and \
-            i_source_frame % export_only_1_in_x_frames != 0:
-                    continue                   # skip this frame
+        if (
+            i_source_frame != wavefield.nt - 1
+            and i_source_frame != 0
+            and i_source_frame % export_only_1_in_x_frames != 0
+        ):
+            continue  # skip this frame
 
         # print('exporting wave-frame {} of {}'.format(i_frame ,wavefield.nt))
 
@@ -491,7 +491,7 @@ mesh.polygons.foreach_set("loop_total", loop_total)
         wavefield.update(t)
         wavefield.actor.GetMapper().Update()
 
-        filename = consts.PATH_TEMP / 'waves_frame{}.npy'.format(i_frame)
+        filename = consts.PATH_TEMP / "waves_frame{}.npy".format(i_frame)
         # data = v.actor.GetMapper().GetInputAsDataSet()
 
         # pre-allocate data
@@ -500,9 +500,9 @@ mesh.polygons.foreach_set("loop_total", loop_total)
 
         for i in range(n_points):
             point = data.GetPoint(i)
-            points[i ,:] = point
+            points[i, :] = point
 
-        np.save(filename ,np.ravel(points))
+        np.save(filename, np.ravel(points))
 
         code += '\nprint("Importing wave-frame {} / {}")'.format(i_frame, wavefield.nt)
 
@@ -532,6 +532,7 @@ scene.collection.objects.link(obj)"""
 
     return code
 
+
 def nearest_rotation_vector(v0, v1):
     """Rotation vectors are not unique. This function determines the rotation vector
     describing rotation v1 (in degrees) nearest to rotation vector v0 and return that
@@ -539,10 +540,10 @@ def nearest_rotation_vector(v0, v1):
     """
     v1 = np.array(v1)
 
-    if np.linalg.norm(v1)<1e-6:
+    if np.linalg.norm(v1) < 1e-6:
         if np.linalg.norm(v0) < 1e-6:
             # two zero rotations
-            return (0,0,0)
+            return (0, 0, 0)
         else:
             n = v0 / np.linalg.norm(v0)  # change-vector in v0 direction
 
@@ -551,22 +552,49 @@ def nearest_rotation_vector(v0, v1):
 
     v0_proj = np.dot(v0, n) * n
 
-    d = np.dot(v1 - v0_proj, n) # signed distance in direction of n
+    d = np.dot(v1 - v0_proj, n)  # signed distance in direction of n
 
     i = round(d / 360)  # integer number of 360*n lengths that v1 is past v0_proj
 
-    return v1 - 360*i*n
+    return v1 - 360 * i * n
 
-def create_blend_and_open(scene, blender_result_file = None, blender_base_file=None, blender_exe_path=None, camera=None, animation_dofs=None, wavefield=None, frames_per_step=1):
 
-    create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=blender_exe_path ,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield, frames_per_step=frames_per_step)
+def create_blend_and_open(
+    scene,
+    blender_result_file=None,
+    blender_base_file=None,
+    blender_exe_path=None,
+    camera=None,
+    animation_dofs=None,
+    wavefield=None,
+    frames_per_step=1,
+):
+    create_blend(
+        scene,
+        blender_base_file,
+        blender_result_file,
+        blender_exe_path=blender_exe_path,
+        camera=camera,
+        animation_dofs=animation_dofs,
+        wavefield=wavefield,
+        frames_per_step=frames_per_step,
+    )
     # command = 'explorer "{}"'.format(str(blender_result_file))
     # subprocess.call(command, creationflags=subprocess.DETACHED_PROCESS)
 
-def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path=None, camera=None ,animation_dofs=None, wavefield=None, frames_per_step=1):
 
+def create_blend(
+    scene,
+    blender_base_file,
+    blender_result_file,
+    blender_exe_path=None,
+    camera=None,
+    animation_dofs=None,
+    wavefield=None,
+    frames_per_step=1,
+):
     # Can not use real temp files as those may be deleted before Blender can open them
-    tempfile = Path(consts.PATH_TEMP) / 'blender.py'
+    tempfile = Path(consts.PATH_TEMP) / "blender.py"
 
     if blender_base_file is None:
         blender_base_file = consts.BLENDER_BASE_SCENE
@@ -574,24 +602,36 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
     if blender_result_file is None:
         blender_result_file = consts.BLENDER_DEFAULT_OUTFILE
 
-    blender_py_file(scene, tempfile, blender_base_file = blender_base_file , blender_result_file = blender_result_file
-                    ,camera=camera, animation_dofs=animation_dofs, wavefield=wavefield, frames_per_step=frames_per_step)
+    blender_py_file(
+        scene,
+        tempfile,
+        blender_base_file=blender_base_file,
+        blender_result_file=blender_result_file,
+        camera=camera,
+        animation_dofs=animation_dofs,
+        wavefield=wavefield,
+        frames_per_step=frames_per_step,
+    )
 
     if blender_exe_path is None:
-        raise ValueError('Path of Blender executable needs to be specified (in create_blend)')
+        raise ValueError(
+            "Path of Blender executable needs to be specified (in create_blend)"
+        )
 
     command_run = [blender_exe_path, "-b", "--python", tempfile]
     command_open = [blender_exe_path, blender_result_file]
 
-    assert Path(blender_base_file).exists(), f'Blender base file {blender_base_file} not found'
-    assert not Path(blender_result_file).exists(), 'Blender result file already exists'
+    assert Path(
+        blender_base_file
+    ).exists(), f"Blender base file {blender_base_file} not found"
+    assert not Path(blender_result_file).exists(), "Blender result file already exists"
 
     if running_in_gui():
-
-        command_run = [blender_exe_path,"-b" , "--python", str(tempfile)]
+        command_run = [blender_exe_path, "-b", "--python", str(tempfile)]
         command_open = [blender_exe_path, str(blender_result_file)]
 
         from DAVE.gui.helpers.background_runner import BackgroundRunnerGui
+
         BackgroundRunnerGui([command_run, command_open])
 
     else:
@@ -599,38 +639,43 @@ def create_blend(scene, blender_base_file, blender_result_file, blender_exe_path
         print(command_run)
         result = subprocess.run(command_run)
         if result.returncode == 0:
-            print('done, opening the file')
-            assert Path(blender_result_file).exists(), 'Blender file not created :-('
+            print("done, opening the file")
+            assert Path(blender_result_file).exists(), "Blender file not created :-("
             subprocess.Popen(command_open)
         else:
-            print('Blender file creation failed')
+            print("Blender file creation failed")
             return
 
 
-
-def blender_py_file(scene, python_file, blender_base_file, blender_result_file, camera=None, animation_dofs=None,
-                    wavefield=None,frames_per_step=24):
-
+def blender_py_file(
+    scene,
+    python_file,
+    blender_base_file,
+    blender_result_file,
+    camera=None,
+    animation_dofs=None,
+    wavefield=None,
+    frames_per_step=24,
+):
     # If animation dofs are not provided, and the scene has a timeline with a non-zero range, then use that
     timeline = None
     if animation_dofs is None:
-        t  = getattr(scene, 't', None)
+        t = getattr(scene, "t", None)
         if t:
             if t.range() is not None:
                 timeline = t
 
-
     code = '# Auto-generated python file for blender\n# Execute using blender.exe -b --python "{}"\n\n'.format(
-        python_file)
-    code += 'import bpy\n'
+        python_file
+    )
+    code += "import bpy\n"
     code += 'bpy.ops.wm.open_mainfile(filepath=r"{}")\n'.format(blender_base_file)
-    code += '\n'
+    code += "\n"
     code += BFUNC
-    code += '\n# Set 3d cursor to origin'
-    code += '\nbpy.context.scene.cursor.location = (0.0, 0.0, 0.0)'
+    code += "\n# Set 3d cursor to origin"
+    code += "\nbpy.context.scene.cursor.location = (0.0, 0.0, 0.0)"
 
     for visual in scene.nodes_of_type(dc.Visual):
-
         """
         A Visual node contains a 3d visual, typically obtained from a .obj file.
         A visual node can be placed on an axis-type node.
@@ -647,14 +692,16 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
             parent is an axis type and has .global_position and .global_rotation
         """
 
-        code += '\n# Exporting {}'.format(visual.name)
+        code += "\n# Exporting {}".format(visual.name)
 
         # look for the file
         # try to find a .blend file
 
         try:
-            name = visual.path.split('.')[0]
-            filename = scene.get_resource_path(name + '.blend', no_gui=True)  # raises exception if file is not found
+            name = visual.path.split(".")[0]
+            filename = scene.get_resource_path(
+                name + ".blend", no_gui=True
+            )  # raises exception if file is not found
         except:
             filename = scene.get_resource_path(visual.path)  # fall-back to .obj
 
@@ -670,20 +717,22 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
         # rotated_offset = rot.apply(visual.offset)
 
         if animation_dofs and has_parent:
-            code += '\npositions = []'
-            code += '\norientations = []'
+            code += "\npositions = []"
+            code += "\norientations = []"
             for dof in animation_dofs:
                 scene._vfc.set_dofs(dof)
                 scene.update()
 
-                code += '\norientations.append([{},{},{},{}])'.format(*_to_quaternion(visual.parent.global_rotation))
+                code += "\norientations.append([{},{},{},{}])".format(
+                    *_to_quaternion(visual.parent.global_rotation)
+                )
 
                 position = visual.parent.global_position
                 # global_offset = visual.parent.to_glob_direction(visual.offset)
 
                 glob_position = np.array(position)  # + np.array(global_offset)
 
-                code += '\npositions.append([{},{},{}])'.format(*glob_position)
+                code += "\npositions.append([{},{},{}])".format(*glob_position)
 
             code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations, color={},frames_per_dof={})'.format(
                 filename,
@@ -697,21 +746,19 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
             )
 
         elif timeline and has_parent:
-            code += '\npositions = []'
-            code += '\norientations = []'
+            code += "\npositions = []"
+            code += "\norientations = []"
 
             time_start, time_end = timeline.range()
 
-            past_rotvec = (0,0,0)
+            past_rotvec = (0, 0, 0)
 
-            for i_time in range(time_end-time_start+1):
-
-
+            for i_time in range(time_end - time_start + 1):
                 timeline.activate_time(i_time + time_start)
                 scene.update()
 
                 # get the rotation vector nearest to the pervious one (unwinding)
-                rotvec = visual.parent.global_rotation # (degrees)
+                rotvec = visual.parent.global_rotation  # (degrees)
 
                 # the rotvec can be changed in length by any multiple of 360
                 # it should be as close to the past_rotvec as possible
@@ -721,7 +768,9 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
                 rotvec = nearest_rotation_vector(past_rotvec, rotvec)
 
-                code += '\norientations.append([{},{},{},{}])'.format(*_to_quaternion(rotvec))
+                code += "\norientations.append([{},{},{},{}])".format(
+                    *_to_quaternion(rotvec)
+                )
                 past_rotvec = rotvec
 
                 position = visual.parent.global_position
@@ -729,7 +778,7 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
                 glob_position = np.array(position)  # + np.array(global_offset)
 
-                code += '\npositions.append([{},{},{}])'.format(*glob_position)
+                code += "\npositions.append([{},{},{}])".format(*glob_position)
 
             code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), positions=positions, orientations=orientations, color={}, frames_per_dof={})'.format(
                 filename,
@@ -742,15 +791,13 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 frames_per_step,
             )
 
-
         else:
-
             if has_parent:
                 parent_global_position = visual.parent.global_position
                 parent_global_rotation = visual.parent.global_rotation
             else:
-                parent_global_position = (0,0,0)
-                parent_global_rotation = (0,0,0)
+                parent_global_position = (0, 0, 0)
+                parent_global_rotation = (0, 0, 0)
 
             code += '\ninsert_objects(filepath=r"{}", scale=({},{},{}), rotation=({},{},{},{}), offset=({},{},{}), orientation=({},{},{},{}), position=({},{},{}), color={})'.format(
                 filename,
@@ -759,108 +806,113 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
                 *visual.offset,
                 *_to_quaternion(parent_global_rotation),
                 *parent_global_position,
-                visual.color)
+                visual.color,
+            )
 
     for cable in scene.nodes_of_type(dc.Cable):
-
         points = cable.get_points_for_visual_blender()
         dia = cable.diameter
 
         if dia < consts.BLENDER_CABLE_DIA:
             dia = consts.BLENDER_CABLE_DIA
 
-        code += '\npoints=['
+        code += "\npoints=["
         for p in points:
-            code += '({},{},{},1.0),'.format(*p)
+            code += "({},{},{},1.0),".format(*p)
         code = code[:-1]
-        code += ']'
+        code += "]"
 
         if animation_dofs:
-            code += '\nani_points = []'
+            code += "\nani_points = []"
             for dof in animation_dofs:
                 scene._vfc.set_dofs(dof)
                 scene.update()
                 points = cable.get_points_for_visual_blender()
-                code += '\nframe_points=['
+                code += "\nframe_points=["
                 for p in points:
-                    code += '({},{},{},1.0),'.format(*p)
+                    code += "({},{},{},1.0),".format(*p)
                 code = code[:-1]
-                code += ']'
-                code += '\nani_points.append(frame_points)'
+                code += "]"
+                code += "\nani_points.append(frame_points)"
 
-            code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points, color = {},frames_per_entry = {})'.format(dia, cable.name, cable.color,frames_per_step)
+            code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points, color = {},frames_per_entry = {})'.format(
+                dia, cable.name, cable.color, frames_per_step
+            )
 
         elif timeline:
-
-            code += '\nani_points = []'
+            code += "\nani_points = []"
             time_start, time_end = timeline.range()
 
             for i_time in range(time_end - time_start + 1):
-
                 timeline.activate_time(i_time + time_start)
                 scene.update()
                 points = cable.get_points_for_visual_blender()
-                code += '\nframe_points=['
+                code += "\nframe_points=["
                 for p in points:
-                    code += '({},{},{},1.0),'.format(*p)
+                    code += "({},{},{},1.0),".format(*p)
                 code = code[:-1]
-                code += ']'
-                code += '\nani_points.append(frame_points)'
+                code += "]"
+                code += "\nani_points.append(frame_points)"
 
-            code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points, color = {}, frames_per_entry = {})'.format(dia, cable.name, cable.color, frames_per_step)
-
+            code += '\nadd_line(points, diameter={}, name = "{}", ani_points = ani_points, color = {}, frames_per_entry = {})'.format(
+                dia, cable.name, cable.color, frames_per_step
+            )
 
         else:
-
-            code += '\nadd_line(points, diameter={}, name = "{}", color = {})'.format(dia, cable.name, cable.color)
+            code += '\nadd_line(points, diameter={}, name = "{}", color = {})'.format(
+                dia, cable.name, cable.color
+            )
 
     for beam in scene.nodes_of_type(dc.Beam):
-
         points = beam.global_positions
 
         dia = consts.BLENDER_BEAM_DIA
 
-        code += '\npoints=['
+        code += "\npoints=["
         for p in points:
-            code += '({},{},{},1.0),'.format(*p)
+            code += "({},{},{},1.0),".format(*p)
         code = code[:-1]
-        code += ']'
+        code += "]"
 
         if animation_dofs:
-            code += '\nani_points = []'
+            code += "\nani_points = []"
             for dof in animation_dofs:
                 scene._vfc.set_dofs(dof)
                 scene.update()
                 points = beam.global_positions
-                code += '\nframe_points=['
+                code += "\nframe_points=["
                 for p in points:
-                    code += '({},{},{},1.0),'.format(*p)
+                    code += "({},{},{},1.0),".format(*p)
                 code = code[:-1]
-                code += ']'
-                code += '\nani_points.append(frame_points)'
+                code += "]"
+                code += "\nani_points.append(frame_points)"
 
-            code += '\nadd_beam(points, diameter={}, name = "{}", ani_points = ani_points, color = {})'.format(dia, beam.name,beam.color)
+            code += '\nadd_beam(points, diameter={}, name = "{}", ani_points = ani_points, color = {})'.format(
+                dia, beam.name, beam.color
+            )
 
         elif timeline:
-
-            code += '\nani_points = []'
+            code += "\nani_points = []"
             time_start, time_end = timeline.range()
             for i_time in range(time_end - time_start + 1):
                 timeline.activate_time(i_time + time_start)
                 scene.update()
                 points = beam.global_positions
-                code += '\nframe_points=['
+                code += "\nframe_points=["
                 for p in points:
-                    code += '({},{},{},1.0),'.format(*p)
+                    code += "({},{},{},1.0),".format(*p)
                 code = code[:-1]
-                code += ']'
-                code += '\nani_points.append(frame_points)'
+                code += "]"
+                code += "\nani_points.append(frame_points)"
 
-            code += '\nadd_beam(points, diameter={}, name = "{}", ani_points = ani_points, color = {}, frames_per_entry = {})'.format(dia, beam.name, beam.color,frames_per_step)
+            code += '\nadd_beam(points, diameter={}, name = "{}", ani_points = ani_points, color = {}, frames_per_entry = {})'.format(
+                dia, beam.name, beam.color, frames_per_step
+            )
 
         else:
-
-            code += '\nadd_beam(points, diameter={}, name = "{}", color = {})'.format(dia, beam.name, beam.color)
+            code += '\nadd_beam(points, diameter={}, name = "{}", color = {})'.format(
+                dia, beam.name, beam.color
+            )
 
     # for beam in scene.nodes_of_type(dc.LinearBeam):
     #     pa = beam.nodeA.global_position
@@ -904,22 +956,23 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
     #         code += '\nadd_beam(points, directions, diameter={}, name = "{}")'.format(dia, beam.name)
 
     for contactball in scene.nodes_of_type(dc.ContactBall):
-        code += '\nbpy.ops.mesh.primitive_uv_sphere_add(radius={}, enter_editmode=False, location=({}, {}, {}))'.format(
-            contactball.radius, *contactball.parent.global_position)
+        code += "\nbpy.ops.mesh.primitive_uv_sphere_add(radius={}, enter_editmode=False, location=({}, {}, {}))".format(
+            contactball.radius, *contactball.parent.global_position
+        )
 
     if camera is not None:
-        pos = camera['position']
-        dir = camera['direction']
+        pos = camera["position"]
+        dir = camera["direction"]
 
-        code += '\n\n# Set the active camera'
-        code += '\nobj_camera = bpy.context.scene.camera'
-        code += '\nobj_camera.location = ({},{},{})'.format(*pos)
-        code += '\ndir = Vector(({},{},{}))\n'.format(*dir)
+        code += "\n\n# Set the active camera"
+        code += "\nobj_camera = bpy.context.scene.camera"
+        code += "\nobj_camera.location = ({},{},{})".format(*pos)
+        code += "\ndir = Vector(({},{},{}))\n".format(*dir)
         code += "\nq = dir.to_track_quat('-Z','Y')\nobj_camera.rotation_euler = q.to_euler()"
 
     # Add the wave-plane
     if wavefield is not None:
-        code += '\n# wavefield'
+        code += "\n# wavefield"
         code += _wavefield_to_blender(wavefield, frames_per_step=frames_per_step)
 
     code += '\nbpy.ops.wm.save_mainfile(filepath=r"{}")'.format(blender_result_file)
@@ -927,14 +980,15 @@ def blender_py_file(scene, python_file, blender_base_file, blender_result_file, 
 
     print(code)
 
-    file = open(python_file, 'w+')
+    file = open(python_file, "w+")
     file.write(code)
     file.close()
 
-if __name__ == '__main__':
-    from DAVE import *
-    s = Scene()
 
+if __name__ == "__main__":
+    from DAVE import *
+
+    s = Scene()
 
     # auto generated python code
     # By beneden
@@ -947,7 +1001,6 @@ if __name__ == '__main__':
     def solved(number):
         return number
 
-
     # Environment settings
     s.g = 9.80665
     s.waterlevel = 0.0
@@ -959,63 +1012,66 @@ if __name__ == '__main__':
     s.current_velocity = 0.0
 
     # code for Frame
-    s.new_frame(name='Frame',
-                position=(0.0,
-                          0.0,
-                          4.0),
-                rotation=(0.0,
-                          0.0,
-                          0.0),
-                fixed=(True, True, True, True, True, True))
+    s.new_frame(
+        name="Frame",
+        position=(0.0, 0.0, 4.0),
+        rotation=(0.0, 0.0, 0.0),
+        fixed=(True, True, True, True, True, True),
+    )
 
     # code for Frame_1
-    s.new_frame(name='Frame_1',
-                parent='Frame',
-                position=(15.0,
-                          0.0,
-                          -6.0),
-                rotation=(0.0,
-                          0.0,
-                          0.0),
-                fixed=(True, True, True, True, True, True))
+    s.new_frame(
+        name="Frame_1",
+        parent="Frame",
+        position=(15.0, 0.0, -6.0),
+        rotation=(0.0, 0.0, 0.0),
+        fixed=(True, True, True, True, True, True),
+    )
 
     # code for Visual
-    s.new_visual(name='Visual',
-                 parent='Frame',
-                 path=r'wirecube.obj',
-                 offset=(0, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(1, 1, 1))
-    s.new_visual(name='Visual2',
-                 parent='Frame',
-                 path=r'wirecube.obj',
-                 offset=(10, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(1, 1, 1))
+    s.new_visual(
+        name="Visual",
+        parent="Frame",
+        path=r"wirecube.obj",
+        offset=(0, 0, 0),
+        rotation=(0, 0, 0),
+        scale=(1, 1, 1),
+    )
+    s.new_visual(
+        name="Visual2",
+        parent="Frame",
+        path=r"wirecube.obj",
+        offset=(10, 0, 0),
+        rotation=(0, 0, 0),
+        scale=(1, 1, 1),
+    )
 
     # code for beam Beam
-    s.new_beam(name='Beam',
-               nodeA='Frame_1',
-               nodeB='Frame',
-               n_segments=6.0,
-               tension_only=False,
-               EIy=0.0,
-               EIz=0.0,
-               GIp=0.0,
-               EA=1000.0,
-               mass=0.7,
-               L=19.0)  # L can possibly be omitted
+    s.new_beam(
+        name="Beam",
+        nodeA="Frame_1",
+        nodeB="Frame",
+        n_segments=6.0,
+        tension_only=False,
+        EIy=0.0,
+        EIz=0.0,
+        GIp=0.0,
+        EA=1000.0,
+        mass=0.7,
+        L=19.0,
+    )  # L can possibly be omitted
 
     # Limits of un-managed nodes
 
     # Tags
 
     # Colors
-    s['Visual'].color = (23, 255, 23)
-    s['Visual2'].color = (254, 0, 0)
-    s['Beam'].color = (0,100,254)
+    s["Visual"].color = (23, 255, 23)
+    s["Visual2"].color = (254, 0, 0)
+    s["Beam"].color = (0, 100, 254)
 
     from DAVE.gui.dialog_blender import try_get_blender_executable
+
     blender_executable = try_get_blender_executable()
 
     create_blend_and_open(s, blender_exe_path=blender_executable)

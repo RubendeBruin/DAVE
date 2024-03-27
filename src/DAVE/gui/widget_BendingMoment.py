@@ -14,11 +14,14 @@ import subprocess
 from DAVE.gui.dock_system.dockwidget import *
 from DAVE.gui.forms.widget_bendingmomentpreview import Ui_WidgetBendingMomentPreview
 import DAVE.scene as nodes
-from DAVE.visual import create_momentline_actors, create_shearline_actors
+from DAVE.visual_helpers.vtkHelpers import (
+    create_momentline_actors,
+    create_shearline_actors,
+)
 from DAVE import settings
 
-class WidgetBendingMoment(guiDockWidget):
 
+class WidgetBendingMoment(guiDockWidget):
     def guiCreate(self):
         """
         Add gui components to self.contents
@@ -35,8 +38,8 @@ class WidgetBendingMoment(guiDockWidget):
 
         self.ui.pbReport.clicked.connect(self.write_report)
 
-        self.ui.pbBending.clicked.connect(lambda : self._action(True))
-        self.ui.pbShear.clicked.connect(lambda : self._action(False))
+        self.ui.pbBending.clicked.connect(lambda: self._action(True))
+        self.ui.pbShear.clicked.connect(lambda: self._action(False))
 
     def guiProcessEvent(self, event):
         """
@@ -45,11 +48,12 @@ class WidgetBendingMoment(guiDockWidget):
         After creation of the widget this event is called with guiEventType.FULL_UPDATE
         """
 
-        if event in [guiEventType.FULL_UPDATE,
-                     guiEventType.MODEL_STRUCTURE_CHANGED,
-                     guiEventType.MODEL_STEP_ACTIVATED]:
+        if event in [
+            guiEventType.FULL_UPDATE,
+            guiEventType.MODEL_STRUCTURE_CHANGED,
+            guiEventType.MODEL_STEP_ACTIVATED,
+        ]:
             self.fill()
-
 
     def guiDefaultLocation(self):
         return PySide6QtAds.DockWidgetArea.RightDockWidgetArea
@@ -57,8 +61,9 @@ class WidgetBendingMoment(guiDockWidget):
     # ======
 
     def fill(self):
-
-        axes = [n.name for n in self.guiScene.nodes_of_type((nodes.Frame, nodes.RigidBody))]
+        axes = [
+            n.name for n in self.guiScene.nodes_of_type((nodes.Frame, nodes.RigidBody))
+        ]
 
         self.ui.cbAxis.blockSignals(True)
         self.ui.cbOrientation.blockSignals(True)
@@ -69,7 +74,7 @@ class WidgetBendingMoment(guiDockWidget):
         self.ui.cbAxis.clear()
         self.ui.cbAxis.addItems(axes)
         self.ui.cbOrientation.clear()
-        self.ui.cbOrientation.addItems(['Same as reported', *axes])
+        self.ui.cbOrientation.addItems(["Same as reported", *axes])
 
         if _axis:
             self.ui.cbAxis.setCurrentText(_axis)
@@ -80,13 +85,12 @@ class WidgetBendingMoment(guiDockWidget):
         self.ui.cbOrientation.blockSignals(False)
 
     def _action(self, bending):
-
         self.gui.visual.remove_temporary_actors()
 
         target = self.ui.cbAxis.currentText()
         orientation = self.ui.cbOrientation.currentText()
 
-        if orientation == 'Same as reported':
+        if orientation == "Same as reported":
             orientation = target
 
         target = self.guiScene[target]
@@ -97,9 +101,13 @@ class WidgetBendingMoment(guiDockWidget):
         scale = self.ui.sbScale.value()
 
         if bending:
-            actor_axis, actor_graph = create_momentline_actors(target, scale_to=scale, at=orientation)
+            actor_axis, actor_graph = create_momentline_actors(
+                target, scale_to=scale, at=orientation
+            )
         else:
-            actor_axis, actor_graph = create_shearline_actors(target, scale_to=scale, at=orientation)
+            actor_axis, actor_graph = create_shearline_actors(
+                target, scale_to=scale, at=orientation
+            )
 
         self.gui.visual.add_temporary_actor(actor_axis)
         self.gui.visual.add_temporary_actor(actor_graph)
@@ -107,11 +115,10 @@ class WidgetBendingMoment(guiDockWidget):
         self.gui.visual.refresh_embeded_view()
 
     def write_report(self):
-
         element = self.ui.cbAxis.currentText()
         orientation = self.ui.cbOrientation.currentText()
 
-        if orientation == 'Same as reported':
+        if orientation == "Same as reported":
             target = ""
         else:
             target = f'axis_system = s["{orientation}"]'
@@ -123,6 +130,3 @@ class WidgetBendingMoment(guiDockWidget):
 
         command = 'explorer "{}"'.format(filename)
         subprocess.Popen(command)
-
-
-
