@@ -118,7 +118,9 @@ class AbstractSceneRenderer:
 
         self.setup_lighting_and_rendering()  # do this before creating the actors
 
-        self.create_node_visuals()
+        self.create_node_visuals(
+            recreate=True
+        )  # create actors for nodes, also if they already exist (in another viewport)
         self.create_world_actors()
         self.add_new_node_actors_to_screen()
         self.position_visuals()
@@ -362,7 +364,7 @@ class AbstractSceneRenderer:
 
         # self.renderer.AddActor(self.colorbar_actor)
 
-    def create_node_visuals(self, recreate=False):
+    def create_node_visuals(self, recreate=True):
         """Creates actors for nodes in the scene that do not yet have one
 
         Visuals are created in their parent axis system
@@ -373,8 +375,9 @@ class AbstractSceneRenderer:
         """
 
         for N in self.scene._nodes:
+            #
             if not recreate:
-                try:  # if we already have a visual, then no need to create another one
+                try:  # if we already have a visual, then no need to create another one (
                     N._visualObject
                     if N._visualObject is not None:
                         continue
@@ -423,7 +426,9 @@ class AbstractSceneRenderer:
                 ]
                 faces = [(0, 1, 2, 3)]
 
-                p = Mesh(vertices = vertices, faces = faces)  # waterplane, ok to create like this
+                p = Mesh(
+                    vertices=vertices, faces=faces
+                )  # waterplane, ok to create like this
 
                 p.actor_type = ActorType.NOT_GLOBAL
                 actors["waterplane"] = p

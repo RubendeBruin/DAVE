@@ -679,7 +679,10 @@ class Gui:
 
         def set_hrd(filename):
             self.run_code("self.visual.SkyBoxOn()", guiEventType.VIEWER_SETTINGS_UPDATE)
-            self.run_code(f"self.visual.load_hdr(r'{str(filename)}')", guiEventType.VIEWER_SETTINGS_UPDATE)
+            self.run_code(
+                f"self.visual.load_hdr(r'{str(filename)}')",
+                guiEventType.VIEWER_SETTINGS_UPDATE,
+            )
 
         hrds = self.scene.resource_provider.get_resource_list("hdr")
         for h in hrds:
@@ -2130,7 +2133,9 @@ class Gui:
             else:
                 QMessageBox.warning(self.ui.widget, "error", what, QMessageBox.Ok)
 
-    def run_code(self, code : str, event : guiEventType, store_undo=True, sender=None) -> bool:
+    def run_code(
+        self, code: str, event: guiEventType, store_undo=True, sender=None
+    ) -> bool:
         """Runs the provided code
 
         If successful, add code to history and create an undo point
@@ -3552,7 +3557,7 @@ class Gui:
                 self.visual.position_visuals()
                 return
 
-            self.visual.create_node_visuals()
+            self.visual.create_node_visuals(recreate=False)
             self.visual.add_new_node_actors_to_screen()
             self.visual.position_visuals()
             self.visual_update_selection()

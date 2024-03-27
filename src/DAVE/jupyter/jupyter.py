@@ -296,10 +296,14 @@ def pil_image(
     timeline = getattr(scene, "t")
 
     win = vp.window
-
     win.SetSize(int(width), int(height))
 
-    if timeline is not None and do_timeline:
+    if timeline is None or not do_timeline:
+        # render a single image
+        return vp.produce_pil_image(width=width, height=height, transparent=transparent)
+
+    else:
+        # render a sequence of images
         times = [tt for tt in timeline.times()]
 
         images = list()
@@ -327,52 +331,36 @@ def pil_image(
 
                 win.Frame()
 
-            win.Render()
-
-            nx, ny = win.GetSize()
-            arr = vtkUnsignedCharArray()
-            win.GetRGBACharPixelData(0, 0, nx - 1, ny - 1, 0, arr)
-
             if use_step0_as_background and len(images) == 1:
                 _transparent = True
-                vp.renderer.SetLayer(1)
-                win.SetNumberOfLayers(2)
 
-            if _transparent:
-                narr = vtk_to_numpy(arr).T[:4].T.reshape([ny, nx, 4])
-            else:
-                narr = vtk_to_numpy(arr).T[:3].T.reshape([ny, nx, 3])
-
-            narr = np.flip(narr, axis=0)
-
-            pil_img = PIL.Image.fromarray(narr)
+            pil_img = vp.produce_pil_image(
+                width=width, height=height, transparent=_transparent
+            )
+            #
+            # nx, ny = win.GetSize()
+            # arr = vtkUnsignedCharArray()
+            # win.GetRGBACharPixelData(0, 0, nx - 1, ny - 1, 0, arr)
+            #
+            # if use_step0_as_background and len(images) == 1:
+            #     _transparent = True
+            #     vp.renderer.SetLayer(1)
+            #     win.SetNumberOfLayers(2)
+            #
+            # if _transparent:
+            #     narr = vtk_to_numpy(arr).T[:4].T.reshape([ny, nx, 4])
+            # else:
+            #     narr = vtk_to_numpy(arr).T[:3].T.reshape([ny, nx, 3])
+            #
+            # narr = np.flip(narr, axis=0)
+            #
+            # pil_img = PIL.Image.fromarray(narr)
 
             pil_img.DAVE_caption = caption
 
             images.append(pil_img)
 
         return images
-
-    if transparent:
-        vp.renderer.SetLayer(1)
-        win.SetNumberOfLayers(2)
-
-    win.Render()
-
-    nx, ny = win.GetSize()
-    arr = vtkUnsignedCharArray()
-    win.GetRGBACharPixelData(0, 0, nx - 1, ny - 1, 0, arr)
-
-    if transparent:
-        narr = vtk_to_numpy(arr).T[:4].T.reshape([ny, nx, 4])
-    else:
-        narr = vtk_to_numpy(arr).T[:3].T.reshape([ny, nx, 3])
-
-    narr = np.flip(narr, axis=0)
-
-    pil_img = PIL.Image.fromarray(narr)
-
-    return pil_img
 
 
 if __name__ == "__main__":
