@@ -16,7 +16,6 @@ cable has a diameter
 """
 
 from DAVE import *
-from DAVE_timeline import *
 
 def test_smooth_taut_entry_points_test1():
     s = Scene()
@@ -86,7 +85,7 @@ def test_smooth_taut_entry_points_test1():
 
     assert_almost_equal(maxabsdiff, 0.0111714590881462071, 3)
 
-def test_smooth_taut_entry_points_test1():
+def test_smooth_taut_entry_points_test2():
     s = Scene()
 
     # code for Point

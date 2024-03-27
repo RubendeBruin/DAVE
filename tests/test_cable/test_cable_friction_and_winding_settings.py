@@ -141,13 +141,8 @@ def test_resuls_loop():
     for _ in c.segment_end_tensions:
         assert len(_) == 2
 
-    import vedo
-
     points, tensions = c.get_points_and_tensions_for_visual()
-    #
-    # colors = vedo.color_map(tensions, 'viridis', vmin = min(tensions), vmax = max(tensions))
-    # t = vedo.Tube(points, c=colors)
-    # t.show()
+
 
 if __name__ == '__main__':
 
