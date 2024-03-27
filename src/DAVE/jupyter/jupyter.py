@@ -271,7 +271,6 @@ def pil_image(
             "Both scale and zoom_fit have been defined. Scale will be ignored"
         )
 
-
     # for visual in vp.node_visuals:
     #     label_actor = visual.label_actor
     #     if label_actor.GetVisibility():
@@ -298,7 +297,7 @@ def pil_image(
 
     win = vp.window
 
-    win.SetSize(width, height)
+    win.SetSize(int(width), int(height))
 
     if timeline is not None and do_timeline:
         times = [tt for tt in timeline.times()]
@@ -376,36 +375,32 @@ def pil_image(
     return pil_img
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from DAVE import Scene
 
     s = Scene()
 
     # code for Point
-    s.new_point(name='Point',
-                position=(10,
-                          0,
-                          0))
+    s.new_point(name="Point", position=(10, 0, 0))
 
     # code for Frame
-    s.new_frame(name='Frame',
-                position=(0,
-                          0,
-                          0),
-                rotation=(0,
-                          0,
-                          0),
-                fixed=(True, True, True, True, True, True),
-                )
+    s.new_frame(
+        name="Frame",
+        position=(0, 0, 0),
+        rotation=(0, 0, 0),
+        fixed=(True, True, True, True, True, True),
+    )
 
     # code for Visual
-    s.new_visual(name='Visual',
-                 parent='Frame',
-                 path=r'res: cube_with_bevel.obj',
-                 offset=(0, 0, 0),
-                 rotation=(0, 0, 0),
-                 scale=(1, 1, 1))
+    s.new_visual(
+        name="Visual",
+        parent="Frame",
+        path=r"res: cube_with_bevel.obj",
+        offset=(0, 0, 0),
+        rotation=(0, 0, 0),
+        scale=(1, 1, 1),
+    )
 
-    image = show(s)
+    image = show(s, width=800.1, height=400)
 
     image.show()
