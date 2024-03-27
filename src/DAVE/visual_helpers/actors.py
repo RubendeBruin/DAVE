@@ -38,7 +38,9 @@ from DAVE.visual_helpers.vtkHelpers import (
     update_vertices,
     update_mesh_from,
     add_lid_to_open_mesh,
-    update_mesh, update_mesh_to_empty,
+    update_mesh,
+    update_mesh_to_empty,
+    update_mesh_polydata,
 )
 
 
@@ -460,12 +462,27 @@ class VisualActor:
             diameter = self.node.diameter
             diameter = max(diameter, min_dia)
 
-            if self.node._render_as_tube:
-                self.info["mapper"].SetInputData(
-                    create_tube_data(points, diameter, colors=tensions)
-                )
-                self.info["mapper"].Modified()
+            # check if anything has changed before updating
+            old_points = getattr(A, "_actual_points", None)
+            old_diameter = getattr(A, "_actual_diameter", None)
+            old_tensions = getattr(A, "_actual_tensions", None)
 
+            if old_points is not None:
+                if len(old_points) == len(points):
+                    if np.allclose(old_points, points):
+                        if old_diameter == diameter:
+                            if old_tensions is not None:
+                                if np.allclose(old_tensions, tensions):
+                                    print("Not updating cable visual")
+                                    return
+
+            A._actual_points = points
+            A._actual_diameter = diameter
+            A._actual_tensions = tensions
+
+            if self.node._render_as_tube:
+                new_data = create_tube_data(points, diameter, colors=tensions)
+                update_mesh_polydata(A, new_data)
             else:
                 if len(points) == 0:  # not yet created
                     return
@@ -972,7 +989,11 @@ class VisualActor:
                 # self.actors["fluid"].SetVisibility(False)  # overridden elsewhere
                 update_mesh_to_empty(self.actors["fluid"])
             elif fill_pct > 99.99:  # full
-                update_mesh_from(self.actors["fluid"], self.actors["main"], apply_soure_transform=True)
+                update_mesh_from(
+                    self.actors["fluid"],
+                    self.actors["main"],
+                    apply_soure_transform=True,
+                )
             else:
                 # get the mesh and vertices from the node, and update actor accordingly
 
@@ -1022,4 +1043,3 @@ class VisualActor:
             return
 
         # --- default ---
-

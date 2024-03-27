@@ -6,7 +6,8 @@ from vtkmodules.vtkFiltersHybrid import vtkPolyDataSilhouette
 from vtkmodules.vtkRenderingCore import vtkActor, vtkProperty2D, vtkPolyDataMapper, vtkCamera
 
 from DAVE.visual_helpers.constants import COLOR_OUTLINE, OUTLINE_WIDTH
-from DAVE.visual_helpers.vtkHelpers import SetTransformIfDifferent, vtkMatricesAlmostEqual, SetMatrixIfDifferent
+from DAVE.visual_helpers.vtkHelpers import SetTransformIfDifferent, vtkMatricesAlmostEqual, SetMatrixIfDifferent, \
+    SetIdentityTransform
 
 
 class VisualOutline:
@@ -123,6 +124,7 @@ class VisualOutline:
         # update transform
 
         if self.is_silhouette:
+
             SetTransformIfDifferent(
                 self.outline_actor, self.I
             )  # outline actor shall have identity
@@ -134,8 +136,9 @@ class VisualOutline:
                 self.outline_transform.GetTransform().SetMatrix(new_matrix)
 
         else:
+
             if not vtkMatricesAlmostEqual(
-                self.I.GetMatrix(), self.outline_transform.GetTransform().GetMatrix()
+                self.I.GetMatrix(), self.outline_transform.GetTransform().GetMatrix()  # setting is quicker than checking
             ):
                 self.outline_transform.SetTransform(self.I)
 

@@ -374,62 +374,29 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
 
 
 if __name__ == "__main__":
-    from DAVE import Scene
+    from DAVE import Scene, Cable
 
     s = Scene()
-
-    # code for Point
-    s.new_point(name="Point", position=(10, 0, 0))
-
-    # code for Frame
-    s.new_frame(
-        name="Frame",
-        position=(0, 0, 0),
-        rotation=(0, 0, 0),
-        fixed=(True, True, True, True, True, True),
-    )
-
-    # code for Visual
-    s.new_visual(
-        name="Visual",
-        parent="Frame",
-        path=r"res: cube_with_bevel.obj",
-        offset=(0, 0, 0),
-        rotation=(0, 0, 0),
-        scale=(1, 1, 1),
-    )
-    s.new_visual(
-        name="Visual2",
-        parent="Frame",
-        path=r"res: cube_with_bevel.obj",
-        offset=(1, 1, 0),
-        rotation=(0, 0, 0),
-        scale=(1, 1, 1),
-    )
-
-    # code for Visual2
-    s.new_visual(
-        name="Visual3",
-        parent="Frame",
-        path=r"res: cheetah/visual vessel cheetah.obj",
-        offset=(0, 0, 0),
-        rotation=(0, 0, 0),
-        scale=(1, 1, 1),
-    )
+    s.load_scene("res: grid10.dave")
 
     app = QApplication([])
 
     widget = QWidget()
 
-    viewer = QtEmbeddedSceneRenderer(s, widget)
-    viewer.settings.show_sea = True
-    # viewer.renderer.SetBackground(COLOR_BG1_GUI)
+    from cProfile import Profile
+    from pstats import SortKey, Stats
 
+    viewer = QtEmbeddedSceneRenderer(s, widget)
+
+    viewer.settings.show_sea = False
+    # viewer.renderer.SetBackground(COLOR_BG1_GUI)
     viewer.update_visibility()
+
+    viewer.update_outlines()
 
     # viewer.EnableSSAO()
     #
-    viewer.load_hdr(r"C:\Users\MS12H\Downloads\kloppenheim_05_puresky_2k.hdr")
+    # viewer.load_hdr(r"C:\Users\MS12H\Downloads\kloppenheim_05_puresky_2k.hdr")
     # viewer.load_hdr(r"C:\data\DAVE\public\DAVE\src\DAVE\resources\gimp.hdr") # needs to be a 32bit (integer) hdr
     # #
     # viewer.background_color([0.8,1,0.8])

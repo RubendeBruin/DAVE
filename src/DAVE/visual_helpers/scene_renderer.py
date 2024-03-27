@@ -249,6 +249,8 @@ class AbstractSceneRenderer:
         # - the outlined actor has been removed
         # such that they can be re-created
 
+        buffered_actors = self.actors
+
         for ol in tuple(self.node_outlines):
             remove = False
             if getattr(ol.outlined_actor, "_vertices_changed", False):
@@ -257,7 +259,7 @@ class AbstractSceneRenderer:
                 )
                 remove = True
 
-            if ol.outlined_actor not in self.actors:
+            if ol.outlined_actor not in buffered_actors:
                 remove = True
             elif getattr(ol.outlined_actor, "do_silhouette", True) != ol.is_silhouette:
                 logging.info(
@@ -289,7 +291,7 @@ class AbstractSceneRenderer:
         for outline in self.node_outlines:
             # is the parent actor still present?
             assert (
-                outline.outlined_actor in self.actors
+                outline.outlined_actor in buffered_actors
             ), "Parent actor not present in actors list"
             outline.update()
 
@@ -377,12 +379,8 @@ class AbstractSceneRenderer:
         for N in self.scene._nodes:
             #
             if not recreate:
-                try:  # if we already have a visual, then no need to create another one (
-                    N._visualObject
-                    if N._visualObject is not None:
-                        continue
-                except:
-                    pass
+                if getattr(N, "_visualObject", None) is not None:
+                    continue
 
             actors = dict()
             info = None
@@ -591,21 +589,23 @@ class AbstractSceneRenderer:
                 actors["main"] = p
 
             if isinstance(N, dn.Cable):
-                if N._vfNode.global_points:
+                cable_gpoints = N.get_points_for_visual()
+                if cable_gpoints:
                     if N._render_as_tube:
                         # Ref: vedo / shapes.py :: Tube
-                        gp = N._vfNode.global_points  # alias
-
-                        mapper = vtkPolyDataMapper()
-                        mapper.SetInputData(create_tube_data(gp, N._vfNode.diameter))
-
-                        a = vtkActor()
-                        a.SetMapper(mapper)
-
-                        info = {"mapper": mapper}
+                        # mapper = vtkPolyDataMapper()
+                        # mapper.SetInputData(
+                        #     create_tube_data(cable_gpoints, N._vfNode.diameter)
+                        # )
+                        #
+                        # a = vtkActor()
+                        # a.SetMapper(mapper)
+                        #
+                        # info = {"mapper": mapper}
+                        a = Dummy()
 
                     else:
-                        a = Line(N._vfNode.global_points)
+                        a = Line(cable_gpoints)
                 else:
                     a = Line([(0, 0, 0), (0, 0, 0.1), (0, 0, 0)])
 

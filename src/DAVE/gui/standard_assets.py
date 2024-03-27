@@ -47,10 +47,6 @@ class Gui:
         self.visual.settings.show_sea = False
         self.visual.settings.painter_settings = PAINTERS["Visual"]
 
-        """Reference to the ui"""
-        self.ui.visual = self.visual  # pass a reference
-
-
         txt = "Resources from:\n"
         for p in self.scene.resource_provider.resources_paths:
             txt += "\n" + str(p)
@@ -127,7 +123,6 @@ class Gui:
             item.setHidden(not look_for in item.text())
 
 
-# ====== nodeA code ======
 
 if __name__ == "__main__":
 

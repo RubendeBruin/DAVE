@@ -182,6 +182,11 @@ def vtkMatricesAlmostEqual(mat0, mat1, tol=1e-6):
                 return False
     return True
 
+def SetIdentityTransform(actor : vtkProp3D):
+    """Sets the transform of the actor to identity"""
+    actor.SetPosition(0, 0, 0)
+    actor.SetOrigin(0, 0, 0)
+    actor.SetOrientation(0, 0, 0)
 
 def SetMatrixIfDifferent(actor: vtkProp3D, target_matrix, tol=1e-6):
     mat1 = vtkMatrix4x4()
@@ -431,6 +436,11 @@ def update_mesh(mesh_actor, vertices, faces):
     """Updates the mesh of an actor from vertices and faces"""
 
     polydata = polyDataFromVerticesAndFaces(vertices=vertices, faces=faces)
+    update_mesh_polydata(mesh_actor, polydata)
+
+
+def update_mesh_polydata(mesh_actor, polydata):
+    """Updates the mesh of an actor from a polydata"""
     mesh_actor.GetMapper().SetInputData(polydata)
 
 
@@ -495,7 +505,8 @@ def get_color_array(c):
     vmax = max(c) * 1.05
 
     if vmin == vmax:
-        colors = [CABLE_COLORMAP(0.5) for col in c]
+        CONST_VALUE = CABLE_COLORMAP(0.5)
+        colors = [CONST_VALUE for col in c]
 
     # scale the colors to the range 0-1 using vmin and vmax
     else:
