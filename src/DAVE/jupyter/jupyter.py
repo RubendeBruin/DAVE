@@ -23,6 +23,7 @@ import warnings
 import PIL
 from vtkmodules.util.numpy_support import vtk_to_numpy
 import numpy as np
+from vtkmodules.vtkCommonCore import vtkUnsignedCharArray
 
 
 def show(
@@ -173,7 +174,9 @@ def pil_image(
     if camera_pos is None:
         camera_pos = (50, -25, 10)
 
-    vp = Viewport(scene)
+    from DAVE.visual_helpers.image_screen_renderer import ImageRenderer
+
+    vp = ImageRenderer(scene)
 
     if painters is None:
         from DAVE.settings_visuals import PAINTERS
@@ -208,21 +211,19 @@ def pil_image(
 
     vp.settings.geometry_scale = geometry_scale
 
-    # Create screen and add visuals
+    # # Create screen and add visuals
+    #
+    # vp.create_node_visuals(recreate=True)
+    # vp.create_world_actors()
+    #
+    # vp.position_visuals()
+    #
+    # for a in additional_actors:
+    #     vp.add_temporary_actor(actor=a)
+    #
+    # # Set-up the camera
 
-    vp.setup_screen(offscreen=True, size=(width, height))
-
-    vp.create_node_visuals(recreate=True)
-    vp.create_world_actors()
-
-    vp.position_visuals()
-
-    for a in additional_actors:
-        vp.add_temporary_actor(actor=a)
-
-    # Set-up the camera
-
-    c = vp.screen.camera
+    c = vp.camera
 
     if isinstance(lookat, str):  # go to 2d mode
         c.SetPosition(*camera_pos)
@@ -270,35 +271,34 @@ def pil_image(
             "Both scale and zoom_fit have been defined. Scale will be ignored"
         )
 
-    # vp.add_wind_and_current_actors() <-- this crashes - the axis triad of vedo is also not supported
-    plotter = vp.screen  # vedo plotter
-    vp.show()
 
-    for visual in vp.node_visuals:
-        label_actor = visual.label_actor
-        if label_actor.GetVisibility():
-            plotter += label_actor
+    # for visual in vp.node_visuals:
+    #     label_actor = visual.label_actor
+    #     if label_actor.GetVisibility():
+    #         plotter += label_actor
 
     # rotate actors to camera orientation (WindArea)
     vp._camera_direction_changed()
 
     # zoom-fit
     if zoom_fit:
-        plotter.renderer.ResetCamera()
+        vp.zoom_all()
 
     # Now we finally have everything setup the way we want
     # time to render to an image
     #
     # This can be done by Vedo, but just as easy (and robust) to do directly
 
-    plotter.renderer.ResetCameraClippingRange()
+    vp.renderer.ResetCameraClippingRange()
     near, far = c.GetClippingRange()
     c.SetClippingRange((1 / 100) * far, far)
 
     do_timeline = do_sequence
     timeline = getattr(scene, "t")
 
-    win = plotter.window
+    win = vp.window
+
+    win.SetSize(width, height)
 
     if timeline is not None and do_timeline:
         times = [tt for tt in timeline.times()]
@@ -321,7 +321,7 @@ def pil_image(
             if use_step0_as_background and len(images) > 1:
                 # we need to clean the background as the previous image is still there
                 nx, ny = win.GetSize()
-                arr = vtk.vtkUnsignedCharArray()
+                arr = vtkUnsignedCharArray()
                 win.GetRGBACharPixelData(0, 0, nx - 1, ny - 1, 0, arr)
                 arr.Fill(0)
                 win.SetRGBACharPixelData(0, 0, nx - 1, ny - 1, arr, 0)
@@ -331,12 +331,12 @@ def pil_image(
             win.Render()
 
             nx, ny = win.GetSize()
-            arr = vtk.vtkUnsignedCharArray()
+            arr = vtkUnsignedCharArray()
             win.GetRGBACharPixelData(0, 0, nx - 1, ny - 1, 0, arr)
 
             if use_step0_as_background and len(images) == 1:
                 _transparent = True
-                plotter.renderer.SetLayer(1)
+                vp.renderer.SetLayer(1)
                 win.SetNumberOfLayers(2)
 
             if _transparent:
@@ -355,13 +355,13 @@ def pil_image(
         return images
 
     if transparent:
-        plotter.renderer.SetLayer(1)
+        vp.renderer.SetLayer(1)
         win.SetNumberOfLayers(2)
 
     win.Render()
 
     nx, ny = win.GetSize()
-    arr = vtk.vtkUnsignedCharArray()
+    arr = vtkUnsignedCharArray()
     win.GetRGBACharPixelData(0, 0, nx - 1, ny - 1, 0, arr)
 
     if transparent:
@@ -374,3 +374,38 @@ def pil_image(
     pil_img = PIL.Image.fromarray(narr)
 
     return pil_img
+
+
+if __name__ == '__main__':
+    from DAVE import Scene
+
+    s = Scene()
+
+    # code for Point
+    s.new_point(name='Point',
+                position=(10,
+                          0,
+                          0))
+
+    # code for Frame
+    s.new_frame(name='Frame',
+                position=(0,
+                          0,
+                          0),
+                rotation=(0,
+                          0,
+                          0),
+                fixed=(True, True, True, True, True, True),
+                )
+
+    # code for Visual
+    s.new_visual(name='Visual',
+                 parent='Frame',
+                 path=r'res: cube_with_bevel.obj',
+                 offset=(0, 0, 0),
+                 rotation=(0, 0, 0),
+                 scale=(1, 1, 1))
+
+    image = show(s)
+
+    image.show()
