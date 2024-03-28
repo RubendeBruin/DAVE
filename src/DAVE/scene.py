@@ -81,6 +81,18 @@ class UCResult:
         return self.__str__()
 
 
+@dataclass
+class NodeSelector:
+    name: str or None = None
+    kind: type or None = None
+    tag: str or None = None
+    managed: bool or None = None
+    family_of: Node or None = None
+    on: Node or None = None
+    core_connected_to: Node or None = None
+    fixed_to: Node or str or None = None
+
+
 class Scene:
     """
     A Scene is the main component of DAVE.
@@ -1330,6 +1342,11 @@ class Scene:
             for tag in node.tags:
                 tgs.add(tag)
         return tuple(tgs)
+
+    def nodes(self, selector: NodeSelector):
+        """Returns a list of nodes that satisfy the given criteria
+        See documentation"""
+        return self.nodes_where(**selector.__dict__)
 
     def nodes_where(
         self,

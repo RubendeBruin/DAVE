@@ -545,6 +545,8 @@ class ContactBall(NodeCoreConnected, HasParentCore):
 
         See Also: contact_force_magnitude
         """
+        if not self.can_contact:
+            return (0, 0, 0)
         return self._vfNode.force
 
     @property
@@ -555,11 +557,15 @@ class ContactBall(NodeCoreConnected, HasParentCore):
 
         See Also: contact_force
         """
+        if not self.can_contact:
+            return 0
         return np.linalg.norm(self._vfNode.force)
 
     @property
     def compression(self) -> float:
         """Returns the absolute compression of the ball, if any [m]"""
+        if not self.can_contact:
+            return 0
         return self._vfNode.force
 
     @property
