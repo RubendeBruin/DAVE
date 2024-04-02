@@ -76,6 +76,7 @@ def vtkShow(actor):
 
     # Assign actor to the renderer
     renderer.AddActor(actor)
+    renderer.SetBackground(0.1, 0.2, 0.4)
 
     # Render
     renderWindow.Render()
@@ -182,11 +183,13 @@ def vtkMatricesAlmostEqual(mat0, mat1, tol=1e-6):
                 return False
     return True
 
-def SetIdentityTransform(actor : vtkProp3D):
+
+def SetIdentityTransform(actor: vtkProp3D):
     """Sets the transform of the actor to identity"""
     actor.SetPosition(0, 0, 0)
     actor.SetOrigin(0, 0, 0)
     actor.SetOrientation(0, 0, 0)
+
 
 def SetMatrixIfDifferent(actor: vtkProp3D, target_matrix, tol=1e-6):
     mat1 = vtkMatrix4x4()
@@ -596,7 +599,7 @@ def create_shearline_actors(frame: dn.Frame, scale_to=2, at=None):
 
 
 def VisualToSlice(
-    visual_node: "Visual",
+    visual_node: dn.Visual,
     slice_position=(0, 0, 0),
     slice_normal=(0, 0, 1),
     projection_x=(1, 0, 0),
@@ -627,7 +630,9 @@ def VisualToSlice(
     scene = visual_node._scene
 
     file = scene.get_resource_path(visual_node.path)
-    A = vp_actor_from_file(file)
+
+    # create poly-data from file
+    source = polydata_from_file(file)
 
     # get the local (user set) transform
     t = vtkTransform()
@@ -645,7 +650,11 @@ def VisualToSlice(
     if visual_node.parent is not None:
         apply_parent_translation_on_transform(visual_node.parent, t)
 
-    A.SetUserTransform(t)
+    # apply the transform
+    tf = vtkTransformPolyDataFilter()
+    tf.SetInputData(source.GetOutput())
+    tf.SetTransform(t)
+    tf.Update()
 
     # do the slice
     plane = vtkPlane()
@@ -654,7 +663,9 @@ def VisualToSlice(
 
     cutter = vtkCutter()
     cutter.SetCutFunction(plane)
-    cutter.SetInputData(A.polydata())
+
+    cutter.SetInputData(tf.GetOutput())
+
     cutter.Update()
 
     data = cutter.GetOutput()

@@ -35,12 +35,19 @@ from vtkmodules.vtkCommonCore import vtkPoints, vtkIdTypeArray
 from vtkmodules.vtkCommonDataModel import vtkPolyData, vtkCellArray
 from vtkmodules.vtkCommonTransforms import vtkTransform
 from vtkmodules.vtkFiltersGeneral import vtkTransformPolyDataFilter
-from vtkmodules.vtkFiltersSources import vtkSphereSource, vtkPlaneSource, vtkRegularPolygonSource, vtkCylinderSource, \
-    vtkConeSource, vtkArrowSource
+from vtkmodules.vtkFiltersSources import (
+    vtkSphereSource,
+    vtkPlaneSource,
+    vtkRegularPolygonSource,
+    vtkCylinderSource,
+    vtkConeSource,
+    vtkArrowSource,
+)
 from vtkmodules.vtkIOGeometry import vtkOBJReader, vtkSTLReader
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper
 
 from DAVE.visual_helpers.constants import ACTOR_COLOR, ACTOR_ROUGHESS, ACTOR_METALIC
+
 
 # VEDO:
 def numpy2vtk(arr, dtype=None, deep=True, name=""):
@@ -86,6 +93,7 @@ def vtkActorFromPolyData(poly_data) -> vtkActor:
 
     return actor
 
+
 def polyDataFromVerticesAndFaces(vertices, faces):
     """Creates a vtkPolyData object from vertices and faces"""
     poly = vtkPolyData()
@@ -116,9 +124,8 @@ def polyDataFromVerticesAndFaces(vertices, faces):
     return poly
 
 
-
-
 # ========== ACTOR MAKERS ==========
+
 
 def Mesh(vertices, faces, do_clean=False):
     """creates a vtk Actor from vertices and faces"""
@@ -134,6 +141,7 @@ def Dummy():
     """Creates a tiny actor that does nothing"""
     return Mesh([[0, 0, 0]], [], do_clean=False)
     # return vtkActorFromPolyData(almost_empty)
+
 
 def Cube(side=1):
     """Creates a cube actor with a side length of side"""
@@ -193,6 +201,7 @@ def actor_from_trimesh(trimesh):
 
     return Mesh(vertices, faces)
 
+
 def RemoveDuplicateVertices(vertices, faces):
     """Cleans up the structure by removing duplicate vertices"""
 
@@ -202,17 +211,14 @@ def RemoveDuplicateVertices(vertices, faces):
     else:
         unique_vertices = np.unique(vertices)
 
-
     if len(unique_vertices) != len(vertices):  # reconstruct faces and vertices
         unique_vertices, indices = np.unique(vertices, axis=0, return_inverse=True)
         f = np.array(faces)
         better_faces = indices[f]
-        return  unique_vertices, better_faces
+        return unique_vertices, better_faces
     else:
-
         # no work done
         return vertices, faces
-
 
 
 def actor_from_vertices_and_faces(vertices, faces):
@@ -224,8 +230,8 @@ def actor_from_vertices_and_faces(vertices, faces):
     return Mesh(vertices, faces, do_clean=True)
 
 
-
-def vp_actor_from_file(filename):
+def polydata_from_file(filename):
+    """Creates a vtkPolyData object from a file"""
     # load the data
     filename = str(filename)
 
@@ -238,9 +244,17 @@ def vp_actor_from_file(filename):
 
     if source is None:
         raise NotImplementedError(
-            f"No reader implemented for reading file {filename}. Only .stl and .obj are supported.")
+            f"No reader implemented for reading file {filename}. Only .stl and .obj are supported."
+        )
 
     source.SetFileName(filename)
+    source.Update()
+
+    return source
+
+
+def vp_actor_from_file(filename):
+    source = polydata_from_file(filename)
 
     # # clean the data
     # con = vtk.vtkCleanPolyData()
@@ -311,9 +325,9 @@ def Arrow(startPoint=(0, 0, 0), endPoint=(1, 0, 0), res=8):
 
 
 def ArrowHead(
-        startPoint=(0, 0, 0),
-        endPoint=(1, 0, 0),
-        res=12,
+    startPoint=(0, 0, 0),
+    endPoint=(1, 0, 0),
+    res=12,
 ):
     """Creates a vtkActor representing an arrow HEAD (aka Cone) from startpoint to endpoint.
     All transforms are on the mesh itself.
@@ -359,7 +373,7 @@ def ArrowHead(
     return vtkActorFromPolyData(tf.GetOutput())
 
 
-def Line(points, color=(1,1,1), lw=1):
+def Line(points, color=(1, 1, 1), lw=1):
     """Creates a line actor from a list of points"""
     poly = vtkPolyData()
     poly.SetPoints(vtkPoints())
@@ -378,7 +392,8 @@ def Line(points, color=(1,1,1), lw=1):
 
     return actor
 
-def Cylinder(pos=(0,0,0), r=1, height=2.0, axis=(0,0,1), res=24):
+
+def Cylinder(pos=(0, 0, 0), r=1, height=2.0, axis=(0, 0, 1), res=24):
     """Creates a cylinder actor with a position, radius, height, axis and resolution"""
     source = vtkCylinderSource()
     source.SetRadius(r)
@@ -405,8 +420,8 @@ def Cylinder(pos=(0,0,0), r=1, height=2.0, axis=(0,0,1), res=24):
     tf.SetTransform(t)
     tf.Update()
 
-
     return vtkActorFromPolyData(tf.GetOutput())
+
 
 def Circle(r, res=36):
     source = vtkRegularPolygonSource()

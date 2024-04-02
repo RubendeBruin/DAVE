@@ -167,7 +167,7 @@ class Scene:
         self._export_code_with_solved_function = True
         """Wrap solved values in 'solved' function when exporting python code"""
 
-        self.reports = []
+        self.reports: list["DAVE_reporting.report.report"] = []
         """List of reports"""
 
         self.t: "TimeLine" or None = None

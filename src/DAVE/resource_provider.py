@@ -37,7 +37,7 @@ Install using `DaveResourceProvider.install_mapping()`, remove with remove_mappi
 import warnings
 from pathlib import Path
 
-from DAVE.tools import get_all_files_with_extension
+from DAVE.tools import get_all_files_with_extension, MostLikelyMatch
 from DAVE.settings import RESOURCE_PATH
 
 
@@ -180,7 +180,16 @@ class DaveResourceProvider:
                 return f
 
         # if we get here, the file does not exist
-        raise FileNotFoundError(f"Could not find resource for RES: {filename}")
+        #
+        # Give some useful feedback
+        options = self.get_resource_list(
+            extension=filename.split(".")[-1], include_subdirs=True
+        )
+        guess = MostLikelyMatch(filename, options)
+
+        raise FileNotFoundError(
+            f"Could not find resource for RES: {filename}, did you mean: {guess} ?"
+        )
 
     def handle_file_not_found(self, filename: str) -> Path or None:
         """Handle a file not found error
