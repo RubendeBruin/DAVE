@@ -28,5 +28,5 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "usedave.nl"
+Homepage = "https://usedave.nl"
 Issues = "https://github.com/RubendeBruin/DAVE"
