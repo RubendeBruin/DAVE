@@ -1,8 +1,31 @@
 [build-system]
-# AVOID CHANGING REQUIRES: IT WILL BE UPDATED BY PYSCAFFOLD!
-requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.setuptools_scm]
-# See configuration details in https://github.com/pypa/setuptools_scm
-version_scheme = "no-guess-dev"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src/DAVE/resources/**/*",
+]
+
+
+
+
+[project]
+name = "DAVE"
+version = "24.4"
+authors = [
+  { name="Ruben de Bruin", email="info@rdbr.nl" },
+]
+description = "Design Analysis Visualization Engineering (or Difficult Analysis Very Easy)!"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "usedave.nl"
+Issues = "https://github.com/RubendeBruin/DAVE"
