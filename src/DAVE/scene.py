@@ -4233,7 +4233,7 @@ class Scene:
                 for i, mesh in enumerate(meshes):
                     if mesh in new_names:
                         meshes[i] = new_names[mesh]
-                node.meshes_names = meshes
+                node.meshes = meshes
 
     def to_frame(self, body: RigidBody):
         """Converts the body to a frame"""

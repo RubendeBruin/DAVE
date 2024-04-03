@@ -248,6 +248,8 @@ def polydata_from_file(filename):
         )
 
     source.SetFileName(filename)
+
+    print("reading file", filename)
     source.Update()
 
     return source
