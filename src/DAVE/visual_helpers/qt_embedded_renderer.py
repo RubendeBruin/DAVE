@@ -32,7 +32,7 @@ from vtkmodules.vtkRenderingOpenGL2 import (
     vtkRenderPassCollection,
 )
 
-from DAVE.visual_helpers.constants import COLOR_BG1, ActorType, COLOR_BG1_GUI
+from DAVE.visual_helpers.constants import ActorType, COLOR_BG1_GUI
 from DAVE.visual_helpers.scene_renderer import AbstractSceneRenderer
 
 
@@ -69,8 +69,9 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
         vl = QVBoxLayout()
         self.target_widget.setLayout(vl)
 
+        margin = 1
         vl.setContentsMargins(
-            1, 1, 1, 1
+           margin, margin, margin, margin
         )  # leave a small border such that we can see the outline when we have the focus
 
         renderer = vtkOpenGLRenderer()
@@ -79,6 +80,10 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
 
         self.vtkWidget = QVTKRenderWindowInteractor()
         vl.addWidget(self.vtkWidget)
+
+        # change the color of the parent widget when the interactor gets/looses focus
+        self.vtkWidget.focusInEvent = self.get_focus
+        self.vtkWidget.focusOutEvent = self.focus_lost
 
         renwin = self.vtkWidget.GetRenderWindow()
         renwin.AddRenderer(renderer)
@@ -99,19 +104,18 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
 
         return renderer, [renderer], camera, renwin
 
+    def get_focus(self, *args):
+        self.target_widget.setStyleSheet("border: 1px solid palette(dark);")
+
+    def focus_lost(self, *args):
+        self.target_widget.setStyleSheet("border: 1px solid palette(light); ")
+
     def _camera_moved(self):
         if self._ssao_on:
             self._update_SSAO_settings()
 
     def show(self):
         self.interactor.Start()
-
-    def get_focus(self, *args):
-        self.target_widget.setStyleSheet("background-color: gray")
-
-    def focus_lost(self, *args):
-        # print('loosing focus')
-        self.target_widget.setStyleSheet("")
 
     def focus_on(self, position):
         """Places the camera focus on position"""
@@ -338,7 +342,7 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
         widget.SetOrientationMarker(axes)
 
         widget.SetInteractor(self.interactor)
-        widget.SetViewport(0, 0, 0.2, 0.2)
+        widget.SetViewport(0, 0, 0.15, 0.15)
         widget.SetEnabled(True)
         widget.SetInteractive(False)
 
@@ -356,8 +360,8 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
         iom.SetParentRenderer(self.renderer)
         iom.On()
 
-        rep = iom.GetRepresentation()
-
+        # rep = iom.GetRepresentation()
+        #
         # Attempt to change the colors
         # not working; not all the actors seem to show up
         # props = vtkPropCollection()

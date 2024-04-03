@@ -8,11 +8,12 @@ include = [
   "/src/DAVE/resources/**/*",
 ]
 
-
+[tool.hatch.build.targets.wheel]
+packages = ["src/DAVE"]
 
 
 [project]
-name = "DAVE"
+name = "useDAVE"
 version = "24.4"
 authors = [
   { name="Ruben de Bruin", email="info@rdbr.nl" },
