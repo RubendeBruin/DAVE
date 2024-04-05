@@ -8,17 +8,19 @@ A global logger DAVE_GUI_LOGGER is created and used by the GUI.
 import traceback
 
 
-class DaveGuiLogger():
-    def __init__(self, scene = None):
+class DaveGuiLogger:
+    def __init__(self, scene=None):
         self._log = []
         self._logged_code = []
         self.scene = scene
+
+        self.do_print = True
 
     def log_exception(self, exception):
         """Append an exception to the log."""
 
         self.log(str(exception))
-        notes = getattr(exception, '__notes__', [])
+        notes = getattr(exception, "__notes__", [])
         for note in notes:
             self.log(note)
         self.log(traceback.format_exc())
@@ -28,12 +30,15 @@ class DaveGuiLogger():
 
         # treat repeated messages differently
         if self._log:
-            if self._log[-1].startswith(msg): # repeated message
-                if self._log[-1].endswith('(repeated)'):
+            if self._log[-1].startswith(msg):  # repeated message
+                if self._log[-1].endswith("(repeated)"):
                     return
                 else:
-                    msg += ' (repeated)'
+                    msg += " (repeated)"
         self._log.append(msg)
+
+        if self.do_print:
+            print(msg)
 
     def log_code(self, code):
         """Append a code to the log."""
@@ -41,14 +46,15 @@ class DaveGuiLogger():
 
     def get_log(self):
         """Return the log as a string."""
-        log = '\n'.join(self._log)
-        log += '\n\n\n--ACTIONS--\n'
-        log += '\n'.join(self._logged_code)
-        log += '\n\n\n--SCENE--\n'
+        log = "\n".join(self._log)
+        log += "\n\n\n--ACTIONS--\n"
+        log += "\n".join(self._logged_code)
+        log += "\n\n\n--SCENE--\n"
         try:
-            log += '\n' + str(self.scene.give_python_code())
+            log += "\n" + str(self.scene.give_python_code())
         except Exception as M:
-            log += '\n' + str(M)
+            log += "\n" + str(M)
         return log
+
 
 DAVE_GUI_LOGGER = DaveGuiLogger()

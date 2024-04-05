@@ -117,7 +117,7 @@ def DAVE_load_extensions():
 # convenience function for showing the gui
 def DG(
     scene: object = None, bare: object = False, block: object = True, autosave=True
-) -> object:
+) -> "DAVE.gui.Gui":
     print("loading gui")
     from .gui import Gui
 
