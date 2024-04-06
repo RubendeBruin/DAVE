@@ -1855,6 +1855,7 @@ class Scene:
                         if should_terminate():
                             BackgroundSolver.Stop()
                             settings.SOLVER_TERMINATED_SCENE = self
+                            print("Terminating solver")
                             return False
 
                         # check if time has passed
@@ -1880,7 +1881,17 @@ class Scene:
                     give_feedback(info)
                     logging.info(info)
 
-                BackgroundSolver.CopyStateTo(self._vfc)
+                # check again - maybe we terminated during the sleep time
+                if should_terminate():
+                    print("Terminating after all")
+                    settings.SOLVER_TERMINATED_SCENE = self
+                    return False
+
+                copy_ok = BackgroundSolver.CopyStateTo(self._vfc)
+                if not copy_ok:
+                    raise ValueError(
+                        "Solver self-check failed: Could not copy state from background solver - was the source-scene modified during solving?"
+                    )
 
                 self.update()
 
