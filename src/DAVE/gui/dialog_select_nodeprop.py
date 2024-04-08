@@ -1,15 +1,51 @@
 from PySide6.QtGui import Qt
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QListWidget, QApplication, QDialogButtonBox
+from PySide6.QtWidgets import (
+    QDialog,
+    QVBoxLayout,
+    QLabel,
+    QListWidget,
+    QApplication,
+    QDialogButtonBox,
+)
 from DAVE.gui.forms.dlg_node_prop_select import Ui_Dialog
 
 from DAVE.scene import Scene
 
+
 class SelectNodePropDialog(QDialog):
-    def __init__(self, parent, scene : Scene, node : str = "",
-                 prop : str = "",
-                 settable = None,
-                 single_settable = None,
-                 single_numeric = True):
+    @staticmethod
+    def get_node_prop(
+        scene: Scene,
+        node: str = "",
+        prop: str = "",
+        settable=None,
+        single_settable=None,
+        single_numeric=True,
+    ):
+        ex = SelectNodePropDialog(
+            None,
+            scene,
+            node=node,
+            prop=prop,
+            settable=settable,
+            single_settable=single_settable,
+            single_numeric=single_numeric,
+        )
+        result = ex.exec()
+        if result:
+            return ex.node.name, ex.prop
+        return None, None
+
+    def __init__(
+        self,
+        parent,
+        scene: Scene,
+        node: str = "",
+        prop: str = "",
+        settable=None,
+        single_settable=None,
+        single_numeric=True,
+    ):
         QDialog.__init__(self, parent)
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
@@ -22,7 +58,6 @@ class SelectNodePropDialog(QDialog):
         self.scene = scene
         self.node_class = None
 
-
         self.settable = settable
         self.single_settable = single_settable
         self.single_numeric = single_numeric
@@ -31,7 +66,6 @@ class SelectNodePropDialog(QDialog):
         self.ui.lwNodes.addItems(self.scene.node_names)
         self.ui.lwNodes.itemSelectionChanged.connect(self.node_selected)
         self.ui.lwProperties.itemSelectionChanged.connect(self.prop_selected)
-
 
         if node:
             # get list
@@ -62,8 +96,12 @@ class SelectNodePropDialog(QDialog):
 
         if node_class != self.node_class:
             # re-fill
-            props = self.scene.give_properties_for_node(self.node,
-                                                settable=self.settable, single_settable=self.single_settable, single_numeric=self.single_numeric)
+            props = self.scene.give_properties_for_node(
+                self.node,
+                settable=self.settable,
+                single_settable=self.single_settable,
+                single_numeric=self.single_numeric,
+            )
 
             self.node_class = node_class
 
@@ -80,31 +118,28 @@ class SelectNodePropDialog(QDialog):
         self.new_selection()
 
     def new_selection(self):
-
         self.ui.lbSelectedProperty.setText(self.prop)
         doc = self.scene.give_documentation(self.node, self.prop)
         self.ui.ptDoc.setPlainText(doc.doc_long)
 
-        value = getattr(self.node, self.prop, '')
+        value = getattr(self.node, self.prop, "")
         self.ui.lbValue.setText(str(value))
 
         # enable OK button
         self.ui.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
 
 
-
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     from DAVE import *
 
     app = QApplication.instance()
     s = Scene()
     s.import_scene("res: cheetah.DAVE")
-    ex = SelectNodePropDialog(None, s, node="Cheetah", prop="tilt_x")
-    result = ex.exec()
 
-    if result:
-        print(ex.node.name, ex.prop)
-
+    result = SelectNodePropDialog.get_node_prop(s, node="Cheetah", prop="tilt_x")
+    # result = ex.exec()
+    #
+    # if result:
+    #     print(ex.node.name, ex.prop)
 
     print(result)
