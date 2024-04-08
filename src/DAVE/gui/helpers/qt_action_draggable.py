@@ -7,7 +7,7 @@ The menu will be closed only if the shift or control key is NOT down.
 
 
 """
-from PySide6.QtGui import QDrag
+from PySide6.QtGui import QDrag, QPalette
 from PySide6.QtWidgets import (
     QApplication,
     QMenu,
@@ -39,6 +39,14 @@ class QDraggableNodeActionWidget(QWidgetAction):
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(9, 3, 3, 9)
 
+        self.widget.mouseMoveEvent = self.mouseMoveEvent
+        self.widget.mousePressEvent = self.mousePressEvent
+        self.widget.mouseReleaseEvent = self.mouseReleaseEvent
+
+        self.widget.setMouseTracking(True)
+        self.widget.enterEvent = self.do_highlight
+        self.widget.leaveEvent = self.do_unhighlight
+
         if icon:
             self.icon = QLabel()
             self.icon.setPixmap(icon.pixmap(12,12))
@@ -66,6 +74,13 @@ class QDraggableNodeActionWidget(QWidgetAction):
             self.right_label.setAlignment(Qt.AlignRight)
             self.layout.addWidget(self.right_label)
         self.setDefaultWidget(self.widget)
+
+    def do_highlight(self, *args):
+        # self.widget.setStyleSheet("background-color: palette(highlight)")  # too dark
+        self.widget.setStyleSheet("background-color:  rgb(144, 200, 246)")
+
+    def do_unhighlight(self, *args):
+        self.widget.setStyleSheet("")
 
     @Signal
     def clicked(self):
