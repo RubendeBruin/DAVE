@@ -44,6 +44,8 @@ class guiDockWidget(PySide6QtAds.CDockWidget):
             PySide6QtAds.CDockWidget.MinimumSizeHintFromDockWidget
         )
 
+        self.ui : QtWidgets.QWidget  # type hinting
+
         # These widgets are created by the main gui -> show_guiWidget. This function sets the following references
 
         self.gui = None

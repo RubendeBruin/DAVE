@@ -21,6 +21,7 @@ from DAVE.gui.forms.widget_limits import Ui_DockLimits
 # from DAVE.settings import DAVE_REPORT_PROPS
 
 
+# noinspection PyAttributeOutsideInit
 class WidgetLimits(guiDockWidget):
     def guiCreate(self):
         """
