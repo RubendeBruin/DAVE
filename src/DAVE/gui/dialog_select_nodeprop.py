@@ -9,13 +9,11 @@ from PySide6.QtWidgets import (
 )
 from DAVE.gui.forms.dlg_node_prop_select import Ui_Dialog
 
-from DAVE.scene import Scene
-
 
 class SelectNodePropDialog(QDialog):
     @staticmethod
     def get_node_prop(
-        scene: Scene,
+        scene: "Scene",
         node: str = "",
         prop: str = "",
         settable=None,
@@ -39,7 +37,7 @@ class SelectNodePropDialog(QDialog):
     def __init__(
         self,
         parent,
-        scene: Scene,
+        scene: "Scene",
         node: str = "",
         prop: str = "",
         settable=None,
