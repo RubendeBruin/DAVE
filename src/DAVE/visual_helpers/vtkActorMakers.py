@@ -31,7 +31,7 @@ Actor creators:
 import numpy as np
 
 from vtkmodules.util.numpy_support import numpy_to_vtkIdTypeArray, numpy_to_vtk
-from vtkmodules.vtkCommonCore import vtkPoints, vtkIdTypeArray
+from vtkmodules.vtkCommonCore import vtkPoints, vtkIdTypeArray, vtkLogger
 from vtkmodules.vtkCommonDataModel import vtkPolyData, vtkCellArray
 from vtkmodules.vtkCommonTransforms import vtkTransform
 from vtkmodules.vtkFiltersGeneral import vtkTransformPolyDataFilter
@@ -250,6 +250,8 @@ def polydata_from_file(filename):
     source.SetFileName(filename)
 
     print("reading file", filename)
+
+    source.SetGlobalWarningDisplay(False)
     source.Update()
 
     return source
