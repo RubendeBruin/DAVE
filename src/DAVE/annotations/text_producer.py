@@ -57,3 +57,34 @@ class TextProducer_NodeProperty(TextProducer):
             return self.format.format(value)
 
         return str(value)
+
+class TextProducer_Eval(TextProducer):
+    """TextProducer_Eval class.
+
+    Evaluates a string as python code to get the text of an annotation.
+    The string is evaluated with "node" as self.node.
+
+    eg:     TextProducer_Eval(node, "Tension = {node.tension:.3f}")
+
+    """
+
+    def __init__(self, node: Node, code_to_eval: str):
+        """
+        Evaluates a string as python code to get the text of an annotation.
+        The string is evaluated with "node" as self.node.
+
+        eg:     TextProducer_Eval(node, 'f"Tension = {node.tension:.3f}"')
+
+        """
+        super().__init__()
+
+        self.node = node
+        self.code_to_eval = code_to_eval
+
+    def get_text(self) -> str:
+        try:
+            value = eval(self.code_to_eval, {"node": self.node})
+        except Exception as e:
+            value = str(e)
+
+        return value

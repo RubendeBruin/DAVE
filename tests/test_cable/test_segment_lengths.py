@@ -1,6 +1,56 @@
+import numpy as np
 from numpy.testing import assert_allclose
 
 from DAVE import *
+
+def test_pp():
+    s = Scene()
+    s.new_point(name='p1', position=(-10, 0, 0))
+    s.new_point(name='p2', position=(10, 0, 0))
+
+    c = s.new_cable(connections=['p1', 'p2'], name='cable', EA=1e6, length=20)
+    s.update()
+    print(c.segment_lengths)
+
+    expected = (0,20.0)
+    assert_allclose(c.segment_lengths, expected, rtol=1e-6)
+
+def test_pp_cat():
+    s = Scene()
+    s.new_point(name='p1', position=(-10, 0, 0))
+    s.new_point(name='p2', position=(10, 0, 0))
+
+    c = s.new_cable(connections=['p1', 'p2'], name='cable', EA=1e6, length=30)
+    s.update()
+    print(c.segment_lengths)
+
+    expected = (0,30.0)
+    assert_allclose(c.segment_lengths, expected, rtol=1e-6)
+
+def test_ppp_cat():
+    s = Scene()
+    s.new_point(name='p1', position=(-10, 0, 0))
+    s.new_point(name='p2', position=(0, 0, 0))
+    s.new_point(name='p3', position=(10, 0, 0))
+
+    c = s.new_cable(connections=['p1', 'p2','p3'], name='cable', EA=1e6, length=30)
+    s.update()
+    print(c.segment_lengths)
+
+    expected = (0,15.0, 15.0)
+    assert_allclose(c.segment_lengths, expected, rtol=1e-6)
+
+def test_pp_EA0():
+    s = Scene()
+    p1 = s.new_point("p1", position=(0, 0, 0))
+    p2 = s.new_point("p2", position=(1, 0, 10))
+    c = s.new_cable("cable", p1, p2, EA=0, length=7)
+
+    s.update()
+
+    expected = (0, np.sqrt(101.0))
+    assert_allclose(c.segment_lengths, expected, rtol=1e-6)
+
 
 
 def test_pbp():

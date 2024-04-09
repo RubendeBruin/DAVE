@@ -1,15 +1,20 @@
-from DAVE.annotations.layer import NodeLabelLayer
+from DAVE.annotations import AnnotationLayer, Annotation
+from DAVE.annotations.custom_layers import NodeLabelLayer
+from DAVE.visual_helpers.image_screen_renderer import ImageRenderer
+from DAVE.visual_helpers.simple_scene_renderer import SimpleSceneRenderer
 
 
 def test_labels(model):
     s= model
-    a = NodeLabelLayer(s)
+    v = SimpleSceneRenderer(s)
+    a = NodeLabelLayer(s,v)
     assert len(a.annotations) == len(s._nodes)
 
 
 def test_labels_positions_and_labels(model):
     s= model
-    L = NodeLabelLayer(s)
+    v = SimpleSceneRenderer(s)
+    L = NodeLabelLayer(s,v)
 
     node_labels = [node.label for node in s.nodes()]
 
@@ -21,7 +26,8 @@ def test_labels_positions_and_labels(model):
 
 def test_labels_remove(model):
     s = model
-    L = NodeLabelLayer(s)
+    v = SimpleSceneRenderer(s)
+    L = NodeLabelLayer(s,v)
 
     s.clear()
     L.update()
@@ -31,7 +37,8 @@ def test_labels_remove(model):
 
 def test_labels_add(model):
     s = model
-    L = NodeLabelLayer(s)
+    v = SimpleSceneRenderer(s)
+    L = NodeLabelLayer(s,v)
 
     s.new_point("new_point", position=(0, 0, 0))
 
@@ -44,3 +51,23 @@ def test_labels_add(model):
 
     assert len(L.annotations) == 0
 
+def test_multiline_annotation(cable):
+    s = cable
+    cable = s["cable"]
+
+    v = ImageRenderer(s)
+    v.zoom_all()
+
+    L = AnnotationLayer(name = "test", scene_renderer=v)
+    v.layers.append(L)
+
+    # add an annotation to the cable
+    a = Annotation.create_eval_annotation(node = cable, code_to_eval='"Multi_line<br>annotation<br>test"')
+    # a.anchor.position_1f = 0.8
+
+    a.get_anchor_3d(v)
+
+    L.add_annotation(a)
+    L.update()
+    #
+    v.show()

@@ -16,3 +16,4 @@ from .layer import AnnotationLayer
 from .text_producer import TextProducer, TextProducer_NodeProperty
 from .annotation import Annotation
 from .anchor import Anchor
+from .custom_layers import NodeLabelLayer

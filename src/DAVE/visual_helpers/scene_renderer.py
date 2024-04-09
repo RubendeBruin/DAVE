@@ -24,7 +24,8 @@ from vtkmodules.vtkRenderingCore import (
     vtkPolyDataMapper,
     vtkProperty,
     vtkTexture,
-    vtkSkybox, vtkCoordinate,
+    vtkSkybox,
+    vtkCoordinate,
 )
 
 
@@ -59,9 +60,6 @@ from DAVE.visual_helpers.vtkHelpers import (
 import DAVE.nodes as dn
 
 
-
-
-
 class AbstractSceneRenderer:
     """Scene renderer
 
@@ -88,7 +86,7 @@ class AbstractSceneRenderer:
         # set properties
         self.scene = scene
 
-        self.layers : list["AnnotationLayer"] = []  # list of layers
+        self.layers: list["AnnotationLayer"] = []  # list of layers
 
         # define attributes
         """These are the visuals for the nodes"""
@@ -208,7 +206,7 @@ class AbstractSceneRenderer:
 
         return None
 
-    def actor_from_node(self, node, guess = None) -> VisualActor or None:
+    def actor_from_node(self, node, guess=None) -> VisualActor or None:
         """Finds the VisualActor belonging to node"""
 
         if guess is not None:
@@ -753,6 +751,9 @@ class AbstractSceneRenderer:
             V.update_geometry(viewport=self)
 
         self.update_outlines()
+
+        for L in self.layers:
+            L.update()
 
     def add_temporary_actor(self, actor: vtkActor):
         self.temporary_actors.append(actor)

@@ -83,33 +83,10 @@ class VisualActor:
         if isinstance(self.node, dn.Point):
             return self.node.global_position
 
-        if isinstance(self.node,dn.Cable):
-            points = self.node.get_points_for_visual()
-            # calculate the length along the cable
-            points = np.asarray(points)
-            dxyz = np.diff(points, axis=0)
-            lengths = np.linalg.norm(dxyz, axis=1)
-            length = np.sum(lengths)
+        if isinstance(self.node, dn.Cable):
+            return self.node.get_point_along_cable(pos1f)
 
-            if pos1f is not None:
-                pos = pos1f * length
-            else:
-                # Set the position to the center of the first segment
-                SL = self.node.segment_lengths
-                pos = SL[1]/2  # the first free segment is nr 1
-
-            # add 0 to the start of lengths
-            lengths = np.insert(lengths, 0, 0)
-
-            # interpolate the position
-            x = np.interp(pos, lengths, points[:,0])
-            y = np.interp(pos, lengths, points[:,1])
-            z = np.interp(pos, lengths, points[:,2])
-
-            return (x,y,z)
-
-
-        return self.center_position # todo: implement
+        return self.center_position  # todo: implement
 
     def select(self):
         self._is_selected = True
