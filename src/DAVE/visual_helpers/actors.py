@@ -73,6 +73,9 @@ class VisualActor:
     def center_position(self):
         return self.actors["main"].GetCenter()
 
+    def get_annotation_position(self, pos3d, pos1f):
+        return self.center_position # todo: implement
+
     def select(self):
         self._is_selected = True
 

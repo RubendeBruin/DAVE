@@ -24,6 +24,8 @@ class ImageRenderer(AbstractSceneRenderer):
     def __init__(self, scene):
         super().__init__(scene)
 
+
+
     def create_rendering_pipeline(
         self,
     ) -> tuple[vtkRenderer, list[vtkRenderer], vtkCamera, vtkRenderWindow]:
@@ -61,12 +63,17 @@ class ImageRenderer(AbstractSceneRenderer):
 
         png.Write()
 
+    def show(self, width=800, height=600):
+        self.produce_pil_image(width=width, height=height).show()
+
     def produce_pil_image(self, width=800, height=600, transparent: bool = False):
         self._set_size(width, height)
 
         nx, ny = self.window.GetSize()
 
         self.window.Render()
+
+        self.render_layers()
 
         arr = vtkUnsignedCharArray()
         self.window.GetRGBACharPixelData(0, 0, nx - 1, ny - 1, 0, arr)

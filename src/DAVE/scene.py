@@ -434,7 +434,7 @@ class Scene:
                 )
             )
 
-        raise Exception("This is not an acceptable input argument {}".format(node))
+        raise Exception("This is not an acceptable input argument when looking for a node {}".format(node))
 
     def _parent_from_node(self, node):
         """Returns None if node is None
@@ -1343,10 +1343,15 @@ class Scene:
                 tgs.add(tag)
         return tuple(tgs)
 
-    def nodes(self, selector: NodeSelector):
-        """Returns a list of nodes that satisfy the given criteria
+
+    def nodes(self, selector: NodeSelector or None = None):
+        """Returns a list of nodes that satisfy the given criteria or all nodes
         See documentation"""
-        return self.nodes_where(**selector.__dict__)
+
+        if selector is None:
+            return tuple(self._nodes)
+        else:
+            return self.nodes_where(**selector.__dict__)
 
     def nodes_where(
         self,

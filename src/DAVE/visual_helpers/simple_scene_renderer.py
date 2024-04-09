@@ -28,6 +28,8 @@ class SimpleSceneRenderer(AbstractSceneRenderer):
         style = vtkInteractorStyleTrackballCamera()
         self.interactor.SetInteractorStyle(style)
 
+        renderer.AddObserver('EndEvent', self.render_layers)
+
         camera = renderer.GetActiveCamera()
 
         return renderer, [renderer], camera, renwin

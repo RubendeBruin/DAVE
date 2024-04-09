@@ -27,6 +27,7 @@ from vtkmodules.vtkRenderingCore import (
     vtkSkybox,
 )
 
+
 from DAVE.settings_visuals import ViewportSettings, PAINTERS
 from DAVE.visual_helpers.actors import VisualActor
 from DAVE.visual_helpers.constants import *
@@ -58,6 +59,9 @@ from DAVE.visual_helpers.vtkHelpers import (
 import DAVE.nodes as dn
 
 
+
+
+
 class AbstractSceneRenderer:
     """Scene renderer
 
@@ -83,6 +87,8 @@ class AbstractSceneRenderer:
     def __init__(self, scene, settings: ViewportSettings = None):
         # set properties
         self.scene = scene
+
+        self.layers : list["AnnotationLayer"] = []  # list of layers
 
         # define attributes
         """These are the visuals for the nodes"""
@@ -131,6 +137,11 @@ class AbstractSceneRenderer:
         """Creates the rendering pipeline"""
 
         raise NotImplementedError("This method must be implemented in a subclass")
+
+    def render_layers(self, *args):
+        """Renders all layers"""
+        for layer in self.layers:
+            layer.render_on(self)
 
     def set_startup_camera_position(self):
         """Sets the camera position at startup"""
@@ -187,8 +198,13 @@ class AbstractSceneRenderer:
 
         return None
 
-    def actor_from_node(self, node) -> VisualActor or None:
+    def actor_from_node(self, node, guess = None) -> VisualActor or None:
         """Finds the VisualActor belonging to node"""
+
+        if guess is not None:
+            if guess.node == node:
+                return guess
+
         for v in self.node_visuals:
             if v.node is node:
                 return v
