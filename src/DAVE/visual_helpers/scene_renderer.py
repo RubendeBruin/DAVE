@@ -24,7 +24,7 @@ from vtkmodules.vtkRenderingCore import (
     vtkPolyDataMapper,
     vtkProperty,
     vtkTexture,
-    vtkSkybox,
+    vtkSkybox, vtkCoordinate,
 )
 
 
@@ -141,7 +141,17 @@ class AbstractSceneRenderer:
     def render_layers(self, *args):
         """Renders all layers"""
         for layer in self.layers:
-            layer.render_on(self)
+            layer.render()
+
+    def to_screenspace(self, pos3d):
+        """Converts a 3d position to screen space [0..1 , 0..1]"""
+
+        coo = vtkCoordinate()
+        coo.SetCoordinateSystemToWorld()
+        coo.SetValue(pos3d[0], pos3d[1], pos3d[2])
+        display_point = coo.GetComputedViewportValue(self.renderer)
+
+        return display_point[0], display_point[1]
 
     def set_startup_camera_position(self):
         """Sets the camera position at startup"""

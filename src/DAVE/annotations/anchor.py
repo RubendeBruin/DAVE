@@ -36,27 +36,19 @@ class Anchor(HasNodeReference):
 
         return self.node.is_valid
 
-    def get_anchor(self, viewport : AbstractSceneRenderer) -> tuple[float, float]:
-
-
+    def get_anchor_3d(self, viewport) -> tuple[float, float, float]:
+        """Gets the 3d anchor position in world coordinates"""
         # try to get the visual from the node
         if self.node is not None:
-            self._visual = viewport.actor_from_node(self.node, guess = self._visual)
+            self._visual = viewport.actor_from_node(self.node, guess=self._visual)
         else:
             self._visual = None
 
         if self._visual is None:
-            return self.screenspace_offset
+            return self.position_3d
 
-        pos3d = self._visual.get_annotation_position(self.position_3d, self.position_1f)
+        return self._visual.get_annotation_position(self.position_3d, self.position_1f)
 
-        # convert 3d position to 2d screen space
-        coo = vtkCoordinate()
-        coo.SetCoordinateSystemToWorld()
-        coo.SetValue(pos3d[0], pos3d[1], pos3d[2])
-        display_point = coo.GetComputedViewportValue(viewport.renderer)
 
-        # then apply offset
-        return display_point[0] + self.screenspace_offset[0], display_point[1] + self.screenspace_offset[1]
 
 

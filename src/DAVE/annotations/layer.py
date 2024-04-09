@@ -15,7 +15,7 @@ class AnnotationLayer(HasNodeReference):
         name: A string with the name of the layer.
     """
 
-    def __init__(self, name):
+    def __init__(self, name, scene_renderer: AbstractSceneRenderer):
         """Initializes the annotation layer.
 
         Args:
@@ -25,6 +25,8 @@ class AnnotationLayer(HasNodeReference):
         self.name = name
 
         self.font = ImageFont.truetype("arial.ttf", 16)
+        
+        self.scene_renderer = scene_renderer
 
     def add_annotation(self, annotation):
         """Adds an annotation to the layer.
@@ -45,31 +47,56 @@ class AnnotationLayer(HasNodeReference):
     def update(self):
         """Updates the layer.
 
-        This method should be called whenever the visual is updated.
+        This method should be called whenever the model is updated.
         """
         for annotation in self.annotations:
             annotation.update()
 
         self.annotations = [annotation for annotation in self.annotations if annotation.is_valid]
 
+        self._update_buffered_properties()
+
+    def _update_buffered_properties(self):
+        """Prepares buffered properties of the annotations such that they can be rendered.
+
+        This method should be called after the annotations have been updated and before calling render_on
+        """
+
+        # create Overlay actors
+        for annotation in self.annotations:
+            if not hasattr(annotation, '_overlay_actor'):
+                annotation._overlay_actor = OverlayActor()
+
+
+        # Update the text of the annotations
+        for a in self.annotations:
+            text = getattr(a, '_text', None)
+            if text == a.get_text():
+                continue
+
+            a._text = a.get_text()
+            a._overlay_actor.set_text(text = a._text, font=self.font)
+
+        # Update the position of the annotations
+        for a in self.annotations:
+            a._p3 = a.get_anchor_3d(self.scene_renderer)
+
+
     @property
     def is_valid(self):
         return True
 
-    def render_on(self, viewport : AbstractSceneRenderer):
-        """Renders the annotations on a render window.
 
-        Args:
-            render_window: A vtkRenderWindow object.
+    def render(self):
+        """Renders the annotations on a render window.
         """
 
-        # create overlay actors
         for annotation in self.annotations:
-            actor = OverlayActor()
-            actor.set_text(text = annotation.get_text(), font=self.font)
+            p3 = annotation._p3  # all private properties used here are created by _update_buffered_properties
+            p2 = self.scene_renderer.to_screenspace(p3)
+            offset = annotation.anchor.screenspace_offset
 
-            anchor = annotation.get_anchor(viewport)
-            actor.render_at(render_window=viewport.window, x=anchor[0], y=anchor[1])
+            annotation._overlay_actor.render_at(render_window=self.scene_renderer.window, x=p2[0] + offset[0], y=p2[1] + offset[1])
 
 
 
@@ -77,10 +104,12 @@ class NodeLabelLayer(AnnotationLayer):
     """Annotation layer for node labels for all nodes of a certain type.
     """
 
-    def __init__(self, scene : Scene, selector : NodeSelector or None = None):
+    def __init__(self, scene : Scene,
+                 scene_renderer: AbstractSceneRenderer,
+                 selector : NodeSelector or None = None):
         """Initializes the annotation layer.
         """
-        super().__init__("Labels")
+        super().__init__(scene_renderer=scene_renderer, name="Node Labels")
 
         if selector is None:
             selector = NodeSelector()
@@ -95,8 +124,6 @@ class NodeLabelLayer(AnnotationLayer):
         """Updates the layer.
         """
 
-        super().update()  # removes invalid annotations
-
         # get all nodes of the specified types from scene
         nodes = self._scene.nodes(self.selector)
 
@@ -109,3 +136,4 @@ class NodeLabelLayer(AnnotationLayer):
             annotation = Annotation.create_node_label_annotation(node)
             self.add_annotation(annotation)
 
+        super().update()  # removes invalid annotations

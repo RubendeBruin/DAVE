@@ -11,7 +11,7 @@ def test_annotation_positions_image(model):
     v.layers.append(L)
 
     for a in L.annotations:
-        anchor = a.get_anchor(v)
+        anchor = a.get_anchor_3d(v)
         print(anchor)
 
     v.show()
@@ -19,13 +19,9 @@ def test_annotation_positions_image(model):
 
 def test_annotation_positions_interactive(model):
     s= model
-    L = NodeLabelLayer(s)
-
     v = SimpleSceneRenderer(s)
-    v.layers.append(L)
+    L = NodeLabelLayer(scene=s,scene_renderer = v)
 
-    for a in L.annotations:
-        anchor = a.get_anchor(v)
-        print(anchor)
+    v.layers.append(L)
 
     v.show()
