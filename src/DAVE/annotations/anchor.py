@@ -14,7 +14,7 @@ class Anchor(HasNodeReference):
         self.node : Node or None = node
 
         """1D position of the anchor (f), passed to node-visual"""
-        self.position_1f : float = 0.0
+        self.position_1f : float or None = None
 
         """3D position of the anchor (x, y, z), passed to node-visual"""
         self.position_3d : tuple[float,float,float] = (0.0, 0.0, 0.0)
