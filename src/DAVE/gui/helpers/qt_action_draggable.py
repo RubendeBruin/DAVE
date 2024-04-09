@@ -36,6 +36,7 @@ class QDraggableNodeActionWidget(QWidgetAction):
         self.mime_text = mime_text
 
         self.widget = QWidget()
+
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(9, 3, 3, 9)
 
@@ -43,9 +44,11 @@ class QDraggableNodeActionWidget(QWidgetAction):
         self.widget.mousePressEvent = self.mousePressEvent
         self.widget.mouseReleaseEvent = self.mouseReleaseEvent
 
-        self.widget.setMouseTracking(True)
-        self.widget.enterEvent = self.do_highlight
-        self.widget.leaveEvent = self.do_unhighlight
+        # Does not work as expected (fails to clear the highlight) #TODO: fix?
+        # self.widget.setMouseTracking(True)
+        # self.widget.enterEvent = self.do_highlight
+        # self.widget.leaveEvent = self.do_unhighlight
+
 
         if icon:
             self.icon = QLabel()
@@ -75,12 +78,12 @@ class QDraggableNodeActionWidget(QWidgetAction):
             self.layout.addWidget(self.right_label)
         self.setDefaultWidget(self.widget)
 
-    def do_highlight(self, *args):
-        # self.widget.setStyleSheet("background-color: palette(highlight)")  # too dark
-        self.widget.setStyleSheet("background-color:  rgb(144, 200, 246)")
-
-    def do_unhighlight(self, *args):
-        self.widget.setStyleSheet("")
+    # def do_highlight(self, *args):
+    #     # self.widget.setStyleSheet("background-color: palette(highlight)")  # too dark
+    #     self.widget.setStyleSheet("background-color:  rgb(144, 200, 246)")
+    #
+    # def do_unhighlight(self, *args):
+    #     self.widget.setStyleSheet("")
 
     @Signal
     def clicked(self):

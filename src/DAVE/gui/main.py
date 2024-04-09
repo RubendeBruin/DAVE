@@ -3387,7 +3387,6 @@ class Gui:
 
                 actions.append(action)
 
-                print(f"adding {text}")
                 menu.addAction(action)
 
                 if node.manager is None:
