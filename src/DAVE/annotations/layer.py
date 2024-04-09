@@ -75,7 +75,13 @@ class AnnotationLayer(HasNodeReference):
                 continue
 
             a._text = a.get_text()
-            a._overlay_actor.set_text(text = a._text, font=self.font)
+
+            a._overlay_actor.set_text(text = a._text,
+                                      font=self.font,
+                                      background=(255, 255, 255, 200),
+                                      padding = (2,4,2,4),
+                                      border = 1,
+                                      border_color=(128,128,128,255))
 
         # Update the position of the annotations
         for a in self.annotations:

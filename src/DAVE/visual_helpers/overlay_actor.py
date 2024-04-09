@@ -15,13 +15,38 @@ class OverlayActor:
         self._height = 0
 
 
-    def set_text(self, text:str, font : ImageFont):
-        """Set the overlay actor to the provided text."""
+    def set_text(self, text:str, font : ImageFont,
+                 background = None,
+                 padding = (0,0,0,0),
+                 border = 0,
+                 border_color = (0,0,0,255)):
+        """Set the overlay actor to the provided text.
+
+        text: text to be rendered
+        font: PIL ImageFont object to be used, this contains the font-size
+        background: background color of the text in (r,g,b,a) [0..255], if None, the background is transparent
+        padding: top | right | bottom | left in pixels
+        border: width of the border in pixels
+        border_color: color of the border in (r,g,b,a) [0..255]
+        """
         _,_,w,h = font.getbbox(text)
 
-        image = Image.new('RGBA', (w, h), (255, 255, 255, 0))  # background is transparent
+        if background is None:
+            rgba = (255, 255, 255, 0)  # transparent
+        else:
+            rgba = background
+
+        w += padding[1] + padding[3] + 2*border
+        h += padding[0] + padding[2] + 2*border
+
+
+        image = Image.new('RGBA', (w, h), rgba)  # background is transparent
         bitmap = ImageDraw.Draw(image)
-        bitmap.text((0, 0), text, (0, 0, 0), font=font)
+        bitmap.text((padding[3] + border, padding[0] + border), text, (0, 0, 0), font=font)
+
+        # draw border
+        if border > 0:
+            bitmap.rectangle(((0,0),(w-1,h-1)), fill = None, outline = border_color, width = border)
 
         np_img = np.array(image)
 

@@ -102,6 +102,8 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
 
         camera = renderer.GetActiveCamera()
 
+        renderer.AddObserver('EndEvent', self.render_layers)
+
         return renderer, [renderer], camera, renwin
 
     def get_focus(self, *args):
@@ -114,8 +116,9 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
         if self._ssao_on:
             self._update_SSAO_settings()
 
-    def show(self):
-        self.interactor.Start()
+    # def show(self):
+    #     self.renderer.AddObserver('EndEvent', self.render_layers)
+    #     self.interactor.Start()
 
     def focus_on(self, position):
         """Places the camera focus on position"""
