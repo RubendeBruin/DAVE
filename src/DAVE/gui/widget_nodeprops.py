@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from PySide6.QtGui import QColor
 
 from DAVE import Point, Circle, Buoyancy
-from DAVE.visual_helpers.vtkActorMakers import Line
+from DAVE.visual_helpers.vtkActorMakers import Line, Lines
 from DAVE.gui.dialog_advanced_cable_settings import AdvancedCableSettings
 from DAVE.gui.dock_system.dockwidget import *
 from PySide6.QtCore import Qt, QSize, QModelIndex
@@ -3087,6 +3087,7 @@ class WidgetNodeProps(guiDockWidget):
         ]:  # reloaded component emit model structure changed instead of selected node modified
             for w in self._node_editors:
                 w.post_update_event()
+            self.check_for_warnings()
 
     def run_code(self, code, event=None, sender=None, store_undo=True):
         if event is None:
@@ -3125,11 +3126,13 @@ class WidgetNodeProps(guiDockWidget):
                 self.gui.visual.remove_temporary_actors()
 
                 if node.trimesh.boundary_edges:
-                    actor = Line(node.trimesh.boundary_edges, lw=5, c=(1, 0, 0))
+                    actor = Lines(node.trimesh.boundary_edges, lw=5, color=(1, 0, 0))
                     actor.SetUserTransform(transform_from_node(node.parent))
                     self.gui.visual.add_temporary_actor(actor)
                 if node.trimesh.non_manifold_edges:
-                    actor = Line(node.trimesh.non_manifold_edges, lw=5, c=(1, 0, 1))
+                    actor = Lines(
+                        node.trimesh.non_manifold_edges, lw=5, color=(1, 0, 1)
+                    )
                     actor.SetUserTransform(transform_from_node(node.parent))
                     self.gui.visual.add_temporary_actor(actor)
 

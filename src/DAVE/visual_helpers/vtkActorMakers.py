@@ -7,6 +7,7 @@
 Helpers:
 
 - polyDataFromVerticesAndFaces - creates a vtkPolyData object from vertices and faces
+- polyDataLineFromPoints - creates a vtkPolyData object from a list of points
 
 Actor creators:
 
@@ -34,6 +35,7 @@ from vtkmodules.util.numpy_support import numpy_to_vtkIdTypeArray, numpy_to_vtk
 from vtkmodules.vtkCommonCore import vtkPoints, vtkIdTypeArray, vtkLogger
 from vtkmodules.vtkCommonDataModel import vtkPolyData, vtkCellArray
 from vtkmodules.vtkCommonTransforms import vtkTransform
+from vtkmodules.vtkFiltersCore import vtkAppendPolyData
 from vtkmodules.vtkFiltersGeneral import vtkTransformPolyDataFilter
 from vtkmodules.vtkFiltersSources import (
     vtkSphereSource,
@@ -124,6 +126,20 @@ def polyDataFromVerticesAndFaces(vertices, faces):
     return poly
 
 
+def PolyDataLineFromPoints(points):
+    poly = vtkPolyData()
+    poly.SetPoints(vtkPoints())
+    poly.GetPoints().SetData(numpy2vtk(points, dtype=np.float32))
+
+    lines = vtkCellArray()
+    lines.InsertNextCell(len(points))
+    for i in range(len(points)):
+        lines.InsertCellPoint(i)
+    poly.SetLines(lines)
+
+    return poly
+
+
 # ========== ACTOR MAKERS ==========
 
 
@@ -192,7 +208,7 @@ def actor_from_trimesh(trimesh):
     """Creates a vedo.Mesh from a DAVEcore.TriMesh"""
 
     if trimesh.nFaces == 0:
-        return Dummy
+        return Dummy()
 
     vertices = [trimesh.GetVertex(i) for i in range(trimesh.nVertices)]
     # are the vertices unique?
@@ -379,17 +395,33 @@ def ArrowHead(
 
 def Line(points, color=(1, 1, 1), lw=1):
     """Creates a line actor from a list of points"""
-    poly = vtkPolyData()
-    poly.SetPoints(vtkPoints())
-    poly.GetPoints().SetData(numpy2vtk(points, dtype=np.float32))
-
-    lines = vtkCellArray()
-    lines.InsertNextCell(len(points))
-    for i in range(len(points)):
-        lines.InsertCellPoint(i)
-    poly.SetLines(lines)
+    poly = PolyDataLineFromPoints(points)
 
     actor = vtkActorFromPolyData(poly)
+    actor.GetProperty().SetColor(color)
+
+    actor.GetProperty().SetLineWidth(lw)
+
+    return actor
+
+
+def Lines(lines, color=(1, 1, 1), lw=1):
+    """Creates a line actor from a list of lines, eg.
+    line1 = [(0, 0, 0), (1, 0, 0)]
+    line2 = [(0, 2, 0), (0, 1, 0)]
+
+    lines = [line1, line2]
+    """
+
+    # convert to np array
+    append_filter = vtkAppendPolyData()
+
+    for line in lines:
+        poly = PolyDataLineFromPoints(line)
+        append_filter.AddInputData(poly)
+
+    append_filter.Update()
+    actor = vtkActorFromPolyData(append_filter.GetOutput())
     actor.GetProperty().SetColor(color)
 
     actor.GetProperty().SetLineWidth(lw)

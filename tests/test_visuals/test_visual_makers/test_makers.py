@@ -74,3 +74,13 @@ def test_plane_with_texture():
 def test_arrow():
     actor = make.Arrow()
 
+def test_lines():
+    line1 = [(0, 0, 0), (1, 0, 0)]
+    line2 = [(0, 2, 0), (0, 1, 0)]
+    line3 = [(1, 1, 1), (0, 1, 0),(0,4,7)]
+
+    lines = [line1, line2, line3]
+
+    actor = make.Lines(lines)
+
+    # vtkShow(actor)
