@@ -6,7 +6,12 @@ from DAVE import Scene
 @pytest.fixture
 def root_folder(request):
     """Defines the root folder for the tests"""
-    return request.config.rootdir
+
+    import DAVE as dv
+    import pathlib
+    root = pathlib.Path(dv.__file__).parent.parent.parent
+
+    return root
 
 @pytest.fixture
 def resource_path(root_folder):

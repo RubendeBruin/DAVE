@@ -4153,7 +4153,18 @@ class Scene:
         return state
 
     @state.setter
-    def state(self, value):
+    def state(self, value, accept_partial=False):
+
+        if not accept_partial:
+            # check that all dofs are present
+            full_state = self.state
+            required = set([(a,b) for a,b,c in full_state])
+            given = set([(a,b) for a,b,c in value])
+
+            if required != given:
+                raise ValueError(f"Partial state provided. All dofs must be present and none extra, but missing:\n {required-given}\n and extra\n {given-required}")
+
+
         for name, prop, val in value:
             setattr(self[name], prop, val)
 
