@@ -3734,17 +3734,17 @@ class Scene:
                         )
 
             code.append("\n# Tags")
+            code.append("\n# - tags are added with 'try_add_tags' because the node may not exist anymore (eg changed components) wh")
 
             for n in nodes_to_be_exported:
                 if n.tags:
-                    code.append(f"s['{n.name}'].add_tags({n.tags})")
+                    code.append(f"s._try_add_tags('{n.name}',{n.tags})")
 
             code.append("\n# Colors")
 
             for n in nodes_to_be_exported:
-                if n.manager is None:
-                    if n.color is not None:
-                        code.append(f"s['{n.name}'].color = {n.color}")
+                if n.color is not None:
+                    code.append(f"s._try_add_color('{n.name}',{n.color})")
 
             # Solved state of managed DOFs nodes
 
@@ -3796,6 +3796,20 @@ class Scene:
             code.append("s.exposed = exposed")
 
         return "\n".join(code)
+
+    def _try_add_color(self, node_name, color):
+        """used during import"""
+        try:
+            self[node_name].color = color
+        except:
+            pass
+
+    def _try_add_tags(self, node_name, tags):
+        """used during import"""
+        try:
+            self[node_name].add_tags(tags)
+        except:
+            pass
 
     def save_scene(self, filename, no_reports=False, no_timeline=False):
         """Saves the scene to a file
