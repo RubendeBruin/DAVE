@@ -17,7 +17,13 @@ import sys
 GridEdit is a table editor for Qt based on the item-view table widget.
 
 Its purpose is to edit uniform data in table format where each row represents an entity of something. Each column
-can have a fixed type: int, float, string or bool. 
+can have a fixed type: 
+
+- int, 
+- float, 
+- string,
+- bool, 
+- color
 
 It implements some convenience functions such at copy-paste, value checking and adding/removing columns.
 
@@ -428,7 +434,9 @@ class GridEdit(QWidget):
             return None
 
 
-    def onCellEdited(self):
+    def onCellEdited(self, *args):
+
+        print(args)
 
         self.grid.blockSignals(True)
 
@@ -531,126 +539,113 @@ class GridEdit(QWidget):
 """
 
 
+class DemoElement:
+    def __init__(self):
+        self.name = "Name"
+        self.value = 41
+        self.cando = True
 
+
+from dataclasses import dataclass
+
+
+@dataclass
+class DemoElement2:
+    name = 'name'
+    value1 = 1
+    value2 = 2
+
+def example_with_raw_data(ge):
+
+    ge = GridEdit(None)
+
+    # # Example with raw data
+    ge.addColumn("col", "color")
+    ge.addColumn("x", float)
+    ge.addColumn("y", float)
+    ge.addColumn("z", float)
+
+    ge.activateColumns()
+
+    ge.setData(
+        [[(0, 0, 0), 1, 2, 3], [(254, 0, 0), 4, 5, 6.789]],
+        allow_add_or_remove_rows=True,
+    )
+
+    def change(*x):
+        print(ge.getData())
+
+    ge.onChanged = change
+
+
+def example_with_model(ge):
+    # Example with elements - These names correspond to properties of the objects
+    ge.addColumn("name", str)
+    ge.addColumn("value", int)
+    ge.addColumn("cando", bool)
+
+    e1 = DemoElement()
+    e2 = DemoElement()
+    e2.name = "Element2"
+    e3 = DemoElement()
+
+    collection = [e1, e2, e3]
+
+    ge.activateColumns()
+
+    def add(_):
+        collection.append(DemoElement())
+        ge.setDataSource(collection)
+
+    ge.onAddRow = add
+    ge.setDataSource(collection, ["These", "Are", "Objects"])
+
+    def do_something(*varargin):
+        print(varargin)
+
+    ge.onEditCallback = do_something
+
+def example_with_elements():
+    # Example with elements - These names correspond to properties of the objects
+    ge.addColumn("name", str)
+    ge.addColumn("value1", float)
+    ge.addColumn("value2", float)
+
+    e1 = DemoElement2()
+    e2 = DemoElement2()
+    e2.name = "Element2"
+    e3 = DemoElement2()
+    e3.name = "Element3"
+
+    collection = [e1, e2, e3]
+
+    ge.activateColumns()
+
+    def add(_):
+        collection.append(DemoElement2())
+        ge.setDataSource(collection)
+
+    ge.onAddRow = add
+    ge.setDataSource(collection)
+
+    def do_something(*varargin):
+        print('Value changed' + str(varargin))
+
+    ge.onEditCallback = do_something
 
 
 if __name__ == "__main__":
 
-    class DemoElement:
-        def __init__(self):
-            self.name = "Name"
-            self.value = 41
-            self.cando = True
+    app = QApplication(sys.argv)
+    ge = GridEdit(None)
 
-    from dataclasses import dataclass
+    # example_with_raw_data(ge)
+    # example_with_model(ge)
+    example_with_elements()
 
-    @dataclass
-    class DemoElement2:
-        name = 'name'
-        value1 = 1
-        value2 = 2
+    ge.show()
+    code = app.exec()
 
-
-    qApp = QApplication(sys.argv)
-
-    if False:  # Example with raw data
-
-        ge = GridEdit(None)
-
-        # # Example with raw data
-        ge.addColumn("col", "color")
-        ge.addColumn("x", float)
-        ge.addColumn("y", float)
-        ge.addColumn("z", float)
-
-        ge.activateColumns()
-
-        ge.setData(
-            [[(0, 0, 0), 1, 2, 3], [(254, 0, 0), 4, 5, 6.789]],
-            allow_add_or_remove_rows=True,
-        )
-
-        def change(*x):
-            print(ge.getData())
-
-        ge.onChanged = change
-
-        ge.show()
-        code = qApp.exec_()
-
-        print(ge.getData())
-
-    elif False:  # example with model data
-
-        ge = GridEdit(None)
-
-        # Example with elements - These names correspond to properties of the objects
-        ge.addColumn("name", str)
-        ge.addColumn("value", int)
-        ge.addColumn("cando", bool)
-
-        e1 = DemoElement()
-        e2 = DemoElement()
-        e2.name = "Element2"
-        e3 = DemoElement()
-
-        collection = [e1, e2, e3]
-
-        ge.activateColumns()
-
-        def add(_):
-            collection.append(DemoElement())
-            ge.setDataSource(collection)
-
-        ge.onAddRow = add
-        ge.setDataSource(collection, ["These", "Are", "Objects"])
-
-        def do_something(*varargin):
-            print(varargin)
-
-        ge.onEditCallback = do_something
-
-        ge.show()
-        code = qApp.exec_()
-
-        print(collection)
-
-    else:
-
-        ge = GridEdit(None)
-
-        # Example with elements - These names correspond to properties of the objects
-        ge.addColumn("name", str)
-        ge.addColumn("value1", float)
-        ge.addColumn("value2", float)
-
-        e1 = DemoElement2()
-        e2 = DemoElement2()
-        e2.name = "Element2"
-        e3 = DemoElement2()
-        e3.name = "Element3"
-
-        collection = [e1, e2, e3]
-
-        ge.activateColumns()
-
-        def add(_):
-            collection.append(DemoElement2())
-            ge.setDataSource(collection)
-
-
-        ge.onAddRow = add
-        ge.setDataSource(collection)
-
-        def do_something(*varargin):
-
-            print('Value changed' + str(varargin))
-
-        ge.onEditCallback = do_something
-
-        ge.show()
-        code = qApp.exec_()
-
-        print(collection)
+    print(ge.getData())
 
     sys.exit(code)

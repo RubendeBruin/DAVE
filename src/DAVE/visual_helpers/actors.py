@@ -304,12 +304,19 @@ class VisualActor:
                 print(f"No paint for actor {node_class} {key}")
                 continue
 
-            # ****** Some very-custom code ********
-            if settings.show_sea:
-                if node_class == "Buoyancy":
-                    if key == "waterplane":
+            # ****** Some very-custom code for Buoyancy ********
+
+            if node_class == "Buoyancy":
+                if key == "waterplane":
+                    if settings.show_sea or self.node.displacement <= 1e-6:
                         actor.SetVisibility(False)
                         continue
+                if key == "cob":
+                    # check if we have displacement
+                    if self.node.displacement <= 1e-6:
+                        actor.SetVisibility(False)
+                        continue
+
 
             # set the "xray" property of the actor
             actor.xray = actor_settings.xray
@@ -896,6 +903,7 @@ class VisualActor:
             cob = self.node.cob
             SetMatrixIfDifferent(self.actors["cob"], transform_from_point(*cob))
 
+
             # update water-plane
             x1, x2, y1, y2, _, _ = self.node.trimesh.get_extends()
             x1 -= VISUAL_BUOYANCY_PLANE_EXTEND
@@ -932,9 +940,11 @@ class VisualActor:
 
                 vis.actor_type = ActorType.MESH_OR_CONNECTOR
                 self.actors["submerged_mesh"] = vis
-                self.update_paint(viewport.settings)
+
 
                 viewport.add(vis)
+
+            self.update_paint(viewport.settings)  # needed to make the CoB and WaterPlane actors visible / invisible
 
             return
 

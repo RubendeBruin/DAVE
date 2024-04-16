@@ -2625,15 +2625,39 @@ class Beam(NodeCoreConnected):
         self._vfNode.shapeDofs = value
 
     # read-only
+
+    @property
+    def internal_forces(self) -> tuple[tuple[float,float,float]]:
+        """Returns the internal forces in the beam as applied on the A-side (local axis system) [kN, kN, kN]"""
+        return self._vfNode.internal_forces
+
+    @property
+    def internal_moments(self) -> tuple[tuple[float,float,float]]:
+        """Returns the internal forces in the beam as applied on the A-side (local axis system) [kN, kN, kN]"""
+        return self._vfNode.internal_moments
+
+
     @property
     def moment_A(self) -> tuple[float, float, float]:
-        """Moment on beam at node A [kNm, kNm, kNm] (axis system of node A)"""
-        return self._vfNode.moment_on_master
+        """Moment on beam at node A [kNm, kNm, kNm] (global axis system)"""
+        return self._vfNode.mA
 
     @property
     def moment_B(self) -> tuple[float, float, float]:
-        """Moment on beam at node B [kNm, kNm, kNm] (axis system of node B)"""
-        return self._vfNode.moment_on_slave
+        """Moment on beam at node B [kNm, kNm, kNm] (global axis system)"""
+        return   self._vfNode.mB
+
+
+    @property
+    def force_A(self) -> tuple[float, float, float]:
+        """Force that the beam applies onto node A [kN, kN, kN] (global axis system)"""
+        return self._vfNode.fA
+
+    @property
+    def force_B(self) -> tuple[float, float, float]:
+        """Force that the beam applies onto node B [kN, kN, kN] (global axis system)"""
+        return self._vfNode.fB
+
 
     @property
     def tension(self) -> float:
