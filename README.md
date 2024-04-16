@@ -1,21 +1,18 @@
-.. image:: docs/images/promo1.jpg
+![](docs/images/promo1.jpg)
 
-============
-DAVE
-============
+# DAVE
+
 
 DAVE is a software package designed to make engineering more fun. DAVE will take care of calculations and book-keeping so that you can focus on designing the best solution.
 
 See https://open-ocean.org/dave
 Documentation: https://usedave.nl
 
-Download the compiled GUI
-==========================
+## Download the compiled GUI
 
 A compiled version of the graphical user interface can be downloaded here: https://www.open-ocean.org/dave-gui-standalone-portable/
 
-Description
-===========
+## Description
 
 DAVE is a python package for bookkeeping and visualization of floating, suspended and/or mechanical systems. It provides a general coordinates based geometry module and a graphical user interface.
 
@@ -29,59 +26,19 @@ The static equilibrium conditions allows for stability checks, static load distr
 Exporting to other software packages is possible. By default an export routine to Blender (3d visualization and animation) is included.
 The design of DAVE is such that export to software such as dynamic simulation packages, simulation software or game engines can easily be added.
 
+## Documentation
 
-.. image:: docs/images/twinlift.jpg
+See https://usedave.nl
 
-TUTORIAL
-=========
+## Installation
 
-A first video tutorial is available at: https://youtu.be/f-dQaaepsrk
-
-.. raw:: html
-
-   <iframe width="560" height="315" src="https://www.youtube.com/embed/f-dQaaepsrk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-
-Installation
-============
+At the moment DAVE only work under Windows. Linux can be made available on request. OSX only if you sponsor me a mac with more that 8Gb ram :-p
 
 Quick instuctions:
 
-    conda install -c conda-forge DAVE
-
-or (in its own environment)
-
-    conda create -n DAVE DAVE -c conda-forge
-
-To run the Gui:
-
-    python -m DAVE.run_gui
-
-elaborate instructions:
-
-https://www.open-ocean.org/dave-installation/
+    pip install useDAVE
 
 
-enjoy!
-
-
-Future developments
-===================
-
-https://www.open-ocean.org/roadmap/
-
-References and credits
-======================
-
-DAVE hates re-inventing the wheel. Therefore DAVE uses the following already available software:
-
-- Python, QT, numpy, scipy, matplotlib
-- Blender <http://www.blender.org>
-- vtkplotter <https://github.com/marcomusy/vtkplotter>
-- vtk <http://www.vtk.org>
-
-
-Note
-====
+## Note
 
 This project relies on EquilibriumCore for geometry and force calculations. This compiled module is downloaded when starting the gui for the first time.
