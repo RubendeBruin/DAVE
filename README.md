@@ -41,4 +41,4 @@ Quick instuctions:
 
 ## Note
 
-This project relies on EquilibriumCore for geometry and force calculations. This compiled module is downloaded when starting the gui for the first time.
+This project relies on DAVEcore for geometry and force calculations. This compiled module is downloaded when starting the gui for the first time.
