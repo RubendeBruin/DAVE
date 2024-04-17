@@ -80,11 +80,22 @@ class VisualActor:
         pos1f is the 1D position of the annotation, None if not provided
         """
 
+        print(self.node.__class__)
+
+        if hasattr(self.node, "get_annotation_position"):
+            return self.node.get_annotation_position(pos3d, pos1f)
+
         if isinstance(self.node, dn.Point):
             return self.node.global_position
 
         if isinstance(self.node, dn.Cable):
             return self.node.get_point_along_cable(pos1f)
+
+        if isinstance(self.node, dn.Beam):
+            return self.node.get_point_along_beam(pos1f)
+
+        if isinstance(self.node, dn.Frame):
+            return self.node.to_glob_position(pos3d)
 
         return self.center_position  # todo: implement
 
@@ -316,7 +327,6 @@ class VisualActor:
                     if self.node.displacement <= 1e-6:
                         actor.SetVisibility(False)
                         continue
-
 
             # set the "xray" property of the actor
             actor.xray = actor_settings.xray
@@ -903,7 +913,6 @@ class VisualActor:
             cob = self.node.cob
             SetMatrixIfDifferent(self.actors["cob"], transform_from_point(*cob))
 
-
             # update water-plane
             x1, x2, y1, y2, _, _ = self.node.trimesh.get_extends()
             x1 -= VISUAL_BUOYANCY_PLANE_EXTEND
@@ -941,10 +950,11 @@ class VisualActor:
                 vis.actor_type = ActorType.MESH_OR_CONNECTOR
                 self.actors["submerged_mesh"] = vis
 
-
                 viewport.add(vis)
 
-            self.update_paint(viewport.settings)  # needed to make the CoB and WaterPlane actors visible / invisible
+            self.update_paint(
+                viewport.settings
+            )  # needed to make the CoB and WaterPlane actors visible / invisible
 
             return
 

@@ -101,6 +101,20 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="pbLayers">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/v2/icons/layer.svg</normaloff>:/v2/icons/layer.svg</iconset>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="pbSide">
          <property name="text">
           <string/>

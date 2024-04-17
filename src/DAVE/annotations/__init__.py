@@ -13,7 +13,7 @@ This is handled by the update() method and is_valid property. Both are defined i
 """
 
 from .layer import AnnotationLayer
-from .text_producer import TextProducer, TextProducer_NodeProperty
+from .text_producer import TextProducer, ProduceTextAlgorithm
 from .annotation import Annotation
 from .anchor import Anchor
 from .custom_layers import NodeLabelLayer

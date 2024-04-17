@@ -1,4 +1,4 @@
-from DAVE.annotations.layer import NodeLabelLayer
+from DAVE.annotations.custom_layers import NodeLabelLayer
 from DAVE.visual_helpers.image_screen_renderer import ImageRenderer
 from DAVE.visual_helpers.qt_embedded_renderer import QtEmbeddedSceneRenderer
 from DAVE.visual_helpers.simple_scene_renderer import SimpleSceneRenderer

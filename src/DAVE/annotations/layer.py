@@ -1,8 +1,9 @@
+import dataclasses
 from abc import abstractmethod
 
 from PIL import ImageFont
 
-from DAVE import Scene, NodeSelector
+from DAVE import Scene, NodeSelector, Node
 from DAVE.annotations.annotation import Annotation
 from DAVE.annotations.has_node_reference import HasNodeReference
 from DAVE.visual_helpers.overlay_actor import OverlayActor
@@ -23,13 +24,47 @@ class AnnotationLayer(HasNodeReference):
         Args:
             name: A string with the name of the layer.
         """
+        self.scene_renderer = scene_renderer
+
         self.annotations = []
         self.name = name
 
         # https://en.wikipedia.org/wiki/List_of_typefaces_included_with_Microsoft_Windows
         self.font = ImageFont.truetype("bahnschrift.ttf", 16)
+        self.background_rgba = (255, 255, 255, 200)
+        self.padding = (2, 4, 2, 4)
+        self.border_width = 1
+        self.border_rgba = (128, 128, 128, 255)
 
-        self.scene_renderer = scene_renderer
+    def as_dict(self):
+        return {
+            "name": self.name,
+            "annotations": [a.as_dict() for a in self.annotations],
+            "font_file": self.font.path,
+            "font_size": self.font.size,
+            "background_rgba": self.background_rgba,
+            "padding": self.padding,
+            "border_width": self.border_width,
+            "border_rgba": self.border_rgba,
+        }
+
+    @classmethod
+    def from_dict(cls, d, scene, scene_renderer: AbstractSceneRenderer):
+        layer = AnnotationLayer(d["name"], scene_renderer)
+        layer.font = ImageFont.truetype(d["font_file"], d["font_size"])
+        layer.background_rgba = d["background_rgba"]
+        layer.padding = d["padding"]
+        layer.border_width = d["border_width"]
+        layer.border_rgba = d["border_rgba"]
+
+        for a in d["annotations"]:
+            layer.add_annotation(Annotation.from_dict(a, scene))
+
+        return layer
+
+    def enforce_rerender_actors(self):
+        for a in self.annotations:
+            a._text = "RECREATE ME"
 
     def add_annotation(self, annotation):
         """Adds an annotation to the layer.
@@ -83,10 +118,10 @@ class AnnotationLayer(HasNodeReference):
             a._overlay_actor.set_text(
                 text=a._text,
                 font=self.font,
-                background=(255, 255, 255, 200),
-                padding=(2, 4, 2, 4),
-                border=1,
-                border_color=(128, 128, 128, 255),
+                background=self.background_rgba,
+                padding=self.padding,
+                border=self.border_width,
+                border_color=self.border_rgba,
             )
 
         # Update the position of the annotations
@@ -107,30 +142,30 @@ class AnnotationLayer(HasNodeReference):
             p2 = self.scene_renderer.to_screenspace(p3)
             offset = annotation.anchor.screenspace_offset
 
-            annotation._overlay_actor.render_at(
-                render_window=self.scene_renderer.window,
-                x=p2[0] + offset[0],
-                y=p2[1] + offset[1],
-            )
+            if (
+                annotation._text.strip() != ""
+            ):  # only render annotation that are not empty
+                annotation._overlay_actor.render_at(
+                    render_window=self.scene_renderer.window,
+                    x=p2[0] + offset[0],
+                    y=p2[1] + offset[1],
+                )
 
 
 class CustomNodeLayer(AnnotationLayer):
+    default_selector = NodeSelector()
+
     def __init__(
         self,
         scene: Scene,
         scene_renderer: AbstractSceneRenderer,
-        selector: NodeSelector or None = None,
         do_not_update_yet=False,
     ):
         """Initializes the annotation layer."""
         super().__init__(scene_renderer=scene_renderer, name="Custom Node Layer")
 
-        if selector is None:
-            selector = NodeSelector()
-
-        self.selector = selector
-
         self._scene = scene
+        self.selector = dataclasses.replace(self.default_selector)  # copy
 
         if not do_not_update_yet:
             self.update()
@@ -148,10 +183,11 @@ class CustomNodeLayer(AnnotationLayer):
 
         for node in missing_nodes:
             annotation = self.provide_annotation_for_node(node)
-            self.add_annotation(annotation)
+            if annotation is not None:
+                self.add_annotation(annotation)
 
         super().update()  # removes invalid annotations
 
     @abstractmethod
-    def provide_annotation_for_node(self, node) -> Annotation:
+    def provide_annotation_for_node(self, node: Node) -> Annotation:
         pass

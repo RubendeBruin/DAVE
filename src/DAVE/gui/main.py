@@ -80,6 +80,7 @@ from PySide6.QtWidgets import (
     QToolBar,
     QWidget,
     QDialogButtonBox,
+    QMenu,
 )
 
 from DAVE.gui.autosave import DaveAutoSave
@@ -97,6 +98,7 @@ from DAVE.gui.dock_system.ads_helpers import (
 from DAVE.gui.dock_system.gui_dock_groups import DaveDockGroup
 from DAVE.gui.helpers.gui_logger import DAVE_GUI_LOGGER
 from DAVE.gui.helpers.qt_action_draggable import QDraggableNodeActionWidget
+from DAVE.gui.widget_layers import LayersWidget
 from DAVE.gui.widget_watches import WidgetWatches
 from DAVE.helpers.code_error_extract import get_code_error
 from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import DragInfo
@@ -710,6 +712,8 @@ class Gui:
             self.restore_right_side_docks
         )
 
+        self.ui.pbLayers.clicked.connect(self.edit_viewport_layers)
+
         self.ui.pbTop.clicked.connect(self.visual.Style.SetViewZ)
         self.ui.pbFront.clicked.connect(self.visual.Style.SetViewY)
         self.ui.pbSide.clicked.connect(self.visual.Style.SetViewX)
@@ -1031,6 +1035,14 @@ class Gui:
 
         for dock in self._global_docks:
             dock_show(self.dock_manager, dock, True)
+
+    def edit_viewport_layers(self):
+        """Opens the layer editor"""
+        menu = QMenu(self.MainWindow)
+        widget = QtWidgets.QWidgetAction(menu)
+        widget.setDefaultWidget(LayersWidget(self.visual))
+        menu.addAction(widget)
+        menu.exec(QCursor.pos())
 
     def run_tests(self):
         """Run the automated tests"""

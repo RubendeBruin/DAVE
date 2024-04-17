@@ -1,15 +1,27 @@
 from DAVE import Node
 from DAVE.annotations.anchor import Anchor
-from DAVE.annotations.text_producer import TextProducer, TextProducer_NodeProperty, TextProducer_Eval
+from DAVE.annotations.text_producer import TextProducer, ProduceTextAlgorithm
 from DAVE.annotations.has_node_reference import HasNodeReference
 from DAVE.visual_helpers.scene_renderer import AbstractSceneRenderer
 
 
 class Annotation(HasNodeReference):
-
     def __init__(self, text_producer: TextProducer, anchor: Anchor):
         self.text_producer: TextProducer = text_producer
         self.anchor: Anchor = anchor
+
+    def as_dict(self):
+        return {
+            "text_producer": self.text_producer.as_dict(),
+            "anchor": self.anchor.as_dict(),
+        }
+
+    @staticmethod
+    def from_dict(d, scene):
+        return Annotation(
+            TextProducer.from_dict(d["text_producer"], scene),
+            Anchor.from_dict(d["anchor"], scene),
+        )
 
     def update(self):
         self.text_producer.update()
@@ -30,12 +42,38 @@ class Annotation(HasNodeReference):
 
     @staticmethod
     def create_node_label_annotation(node: Node):
-        text_producer = TextProducer_NodeProperty(node=node, property="label")
+        text_producer = TextProducer(
+            node=node, text="label", how=ProduceTextAlgorithm.PROPERTY_RAW
+        )
         anchor = Anchor(node=node)
         return Annotation(text_producer, anchor)
 
     @staticmethod
     def create_eval_annotation(node: Node, code_to_eval: str):
-        text_producer = TextProducer_Eval(node=node, code_to_eval=code_to_eval)
+        text_producer = TextProducer(
+            node=node, text=code_to_eval, how=ProduceTextAlgorithm.EVAL
+        )
         anchor = Anchor(node=node)
+        return Annotation(text_producer, anchor)
+
+    @staticmethod
+    def create_node_property_annotation(
+        node: Node, property: str, anchor: Anchor or None = None
+    ):
+        if anchor is None:
+            anchor = Anchor(node=node)
+        text_producer = TextProducer(
+            node=node, text=property, how=ProduceTextAlgorithm.PROPERTY
+        )
+        return Annotation(text_producer, anchor)
+
+    @staticmethod
+    def create_node_property_raw_annotation(
+        node: Node, property: str, anchor: Anchor or None = None
+    ):
+        if anchor is None:
+            anchor = Anchor(node=node)
+        text_producer = TextProducer(
+            node=node, text=property, how=ProduceTextAlgorithm.PROPERTY_RAW
+        )
         return Annotation(text_producer, anchor)

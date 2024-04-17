@@ -3,7 +3,7 @@
 """These are the core-connected classes for DAVE nodes"""
 
 import logging
-from math import floor
+from math import floor, ceil
 from typing import Tuple
 
 from .helpers import *
@@ -2698,6 +2698,33 @@ class Beam(NodeCoreConnected):
         """Global-orientations of the end nodes and internal nodes [deg,deg,deg]
         #NOGUI"""
         return np.rad2deg(self._vfNode.global_orientation, dtype=float)
+
+    def get_point_along_beam(self, fraction : float) -> tuple[float,float,float]:
+        """Returns the 3D location of a position along the beam as fraction of the undeformed length."""
+
+        fraction = max(0, min(1, fraction)) # clamp to [0,1]
+
+        # All segments have the same length
+        f_segment = fraction*self.n_segments
+        i_left = floor(f_segment)
+        i_right = ceil(f_segment)
+
+        if i_left == i_right:
+            v = self.global_positions[i_left]
+
+        else:
+            f_left = f_segment - i_right
+            f_right = i_left - f_segment
+
+            v_left = self.global_positions[i_left]
+            v_right = self.global_positions[i_right]
+
+            v = f_left*v_left + f_right*v_right
+
+        return (v[0], v[1], v[2])
+
+
+
 
     @property
     def bending(self) -> np.array:

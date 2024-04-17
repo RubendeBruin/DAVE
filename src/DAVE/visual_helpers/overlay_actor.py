@@ -55,7 +55,7 @@ class OverlayActor:
         w += padding[1] + padding[3] + 2 * border
         h += padding[0] + padding[2] + 2 * border
 
-        image = Image.new("RGBA", (w, h), rgba)  # background is transparent
+        image = Image.new("RGBA", (w, h), rgba)
         bitmap = ImageDraw.Draw(image)
 
         hc = 0

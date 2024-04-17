@@ -85,6 +85,7 @@ class UCResult:
 class NodeSelector:
     name: str or None = None
     kind: type or None = None
+    kind_not: type or None = None
     tag: str or None = None
     managed: bool or None = None
     family_of: Node or None = None
@@ -434,7 +435,11 @@ class Scene:
                 )
             )
 
-        raise Exception("This is not an acceptable input argument when looking for a node {}".format(node))
+        raise Exception(
+            "This is not an acceptable input argument when looking for a node {}".format(
+                node
+            )
+        )
 
     def _parent_from_node(self, node):
         """Returns None if node is None
@@ -703,7 +708,7 @@ class Scene:
         return tuple(props)
 
     def give_documentation(self, node: "Node", property_name: str) -> NodePropertyInfo:
-        """Returns info about property_name of node node. Returns None if no documentation is found"""
+        """Returns info about property_name of node 'node'. Returns None if no documentation is found"""
 
         # get docs for type of Node and all classes it inherits from
         anchestors = type(node).mro()
@@ -1343,7 +1348,6 @@ class Scene:
                 tgs.add(tag)
         return tuple(tgs)
 
-
     def nodes(self, selector: NodeSelector or None = None):
         """Returns a list of nodes that satisfy the given criteria or all nodes
         See documentation"""
@@ -1357,6 +1361,7 @@ class Scene:
         self,
         name: str or None = None,
         kind: type or None = None,
+        kind_not: type or None = None,
         tag: str or None = None,
         managed: bool or None = None,
         family_of: Node or None = None,
@@ -1383,6 +1388,10 @@ class Scene:
 
             if kind is not None:
                 if not isinstance(node, kind):
+                    continue
+
+            if kind_not is not None:
+                if isinstance(node, kind_not):
                     continue
 
             if tag is not None:
@@ -3739,7 +3748,9 @@ class Scene:
                         )
 
             code.append("\n# Tags")
-            code.append("\n# - tags are added with 'try_add_tags' because the node may not exist anymore (eg changed components) wh")
+            code.append(
+                "\n# - tags are added with 'try_add_tags' because the node may not exist anymore (eg changed components) wh"
+            )
 
             for n in nodes_to_be_exported:
                 if n.tags:
@@ -4173,16 +4184,16 @@ class Scene:
 
     @state.setter
     def state(self, value, accept_partial=False):
-
         if not accept_partial:
             # check that all dofs are present
             full_state = self.state
-            required = set([(a,b) for a,b,c in full_state])
-            given = set([(a,b) for a,b,c in value])
+            required = set([(a, b) for a, b, c in full_state])
+            given = set([(a, b) for a, b, c in value])
 
             if required != given:
-                raise ValueError(f"Partial state provided. All dofs must be present and none extra, but missing:\n {required-given}\n and extra\n {given-required}")
-
+                raise ValueError(
+                    f"Partial state provided. All dofs must be present and none extra, but missing:\n {required-given}\n and extra\n {given-required}"
+                )
 
         for name, prop, val in value:
             setattr(self[name], prop, val)
