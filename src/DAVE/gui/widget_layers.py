@@ -86,6 +86,12 @@ class LayersWidget(QWidget):
         self.ui.pbBackgroundColor.clicked.connect(self.get_background_color)
         self.ui.pbBorderColor.clicked.connect(self.get_border_color)
 
+        rh = self.ui.layerList.sizeHintForRow(0)
+        ht = min(rh * (1 + self.ui.layerList.count()), 800)
+        self.ui.layerList.setFixedHeight(ht)
+
+
+
     def get_background_color(self):
         color = get_color()
         if color:
