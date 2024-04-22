@@ -5,10 +5,8 @@ from vtkmodules.vtkCommonCore import vtkLogger
 from DAVE import *
 from DAVE.visual_helpers.vtkHelpers import *
 
-if __name__ == '__main__':
+def test_slice():
     s = Scene()
-
-
 
     # print(s.get_resource_list('.obj'))
 

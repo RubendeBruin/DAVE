@@ -36,11 +36,13 @@ add_lid_to_open_mesh : adds a lid to an open mesh
 
 """
 from pathlib import Path
+
+import numpy as np
 from vtkmodules.util.numpy_support import vtk_to_numpy
 from vtkmodules.vtkCommonCore import vtkUnsignedCharArray
 from vtkmodules.vtkCommonDataModel import vtkPlane, vtkPolyLine
 from vtkmodules.vtkCommonMath import vtkMatrix4x4
-from vtkmodules.vtkFiltersCore import vtkCutter, vtkTubeFilter
+from vtkmodules.vtkFiltersCore import vtkCutter, vtkTubeFilter, vtkCleanPolyData
 
 from vtkmodules.vtkIOImage import vtkImageReader2Factory
 from vtkmodules.vtkInteractionWidgets import vtkOrientationMarkerWidget
@@ -598,6 +600,56 @@ def create_shearline_actors(frame: dn.Frame, scale_to=2, at=None):
     return _create_moment_or_shear_line("Shear", frame, scale_to, at)
 
 
+def TrimeshToSlice(
+    trimesh,
+    slice_position=(0, 0, 0),
+    slice_normal=(0, 0, 1),
+    projection_x=(1, 0, 0),
+    projection_y=(0, 1, 0),
+    relative_to_slice_position=False,
+    parent=None,
+    ax=None,
+    do_convex_hull=False,
+    **kwargs,
+):
+    source = polydata_from_trimesh(trimesh)
+    #
+    # # use vtk to clean the polydata
+    # cleaner = vtkCleanPolyData()
+    # cleaner.SetInputData(source)
+    # cleaner.Update()
+    # cleaned_poly_data = cleaner.GetOutput()
+
+    x, y = PolyDataToSlice(
+        source=source,
+        parent=parent,
+        slice_position=slice_position,
+        slice_normal=slice_normal,
+        projection_x=projection_x,
+        projection_y=projection_y,
+        relative_to_slice_position=relative_to_slice_position,
+        ax=ax,
+        **kwargs,
+    )
+
+    if do_convex_hull and len(x) > 0:
+        x = x.flatten()
+        y = y.flatten()
+
+        from scipy.spatial import ConvexHull
+
+        points = np.stack([x, y])
+        points = points.transpose()
+
+        hull = ConvexHull(points)
+        vertices = hull.points[hull.vertices]
+
+        return vertices[:, 0], vertices[:, 1]
+
+    else:
+        return x, y
+
+
 def VisualToSlice(
     visual_node: dn.Visual,
     slice_position=(0, 0, 0),
@@ -633,26 +685,62 @@ def VisualToSlice(
 
     # create poly-data from file
     source = polydata_from_file(file)
+    rotation = visual_node.rotation
+    offset = visual_node.offset
+    scale = visual_node.scale
+    parent = visual_node.parent
+
+    return PolyDataToSlice(
+        source=source.GetOutput(),
+        offset=offset,
+        scale=scale,
+        rotation=rotation,
+        parent=parent,
+        slice_position=slice_position,
+        slice_normal=slice_normal,
+        projection_x=projection_x,
+        projection_y=projection_y,
+        relative_to_slice_position=relative_to_slice_position,
+        ax=ax,
+        **kwargs,
+    )
+
+
+def PolyDataToSlice(
+    source: vtkPolyData,
+    offset: tuple = (0, 0, 0),
+    scale: tuple = (1, 1, 1),
+    rotation: tuple = (0, 0, 0),
+    parent: dn.Frame or None = None,
+    slice_position: tuple = (0, 0, 0),
+    slice_normal: tuple = (0, 0, 1),
+    projection_x: tuple = (1, 0, 0),
+    projection_y: tuple = (0, 1, 0),
+    relative_to_slice_position: bool = False,
+    ax=None,
+    **kwargs,
+):
+    """See VisualToSlice or TrimeshToSlice for more information. This function is a helper function for those functions"""
 
     # get the local (user set) transform
     t = vtkTransform()
     t.Identity()
-    t.Translate(visual_node.offset)
-    t.Scale(visual_node.scale)
+    t.Translate(offset)
+    t.Scale(scale)
 
     # calculate wxys from node.rotation
-    r = visual_node.rotation
+    r = rotation
     angle = (r[0] ** 2 + r[1] ** 2 + r[2] ** 2) ** 0.5
     if angle > 0:
         t.RotateWXYZ(angle, r[0] / angle, r[1] / angle, r[2] / angle)
 
     # Get the parent matrix if any
-    if visual_node.parent is not None:
-        apply_parent_translation_on_transform(visual_node.parent, t)
+    if parent is not None:
+        apply_parent_translation_on_transform(parent, t)
 
     # apply the transform
     tf = vtkTransformPolyDataFilter()
-    tf.SetInputData(source.GetOutput())
+    tf.SetInputData(source)
     tf.SetTransform(t)
     tf.Update()
 
@@ -669,6 +757,10 @@ def VisualToSlice(
     cutter.Update()
 
     data = cutter.GetOutput()
+
+    if data.GetPoints() is None:
+        return [], []
+
     arr1d = vtk_to_numpy(data.GetLines().GetData())
     points3d = np.array(vtk_to_numpy(data.GetPoints().GetData()))
 

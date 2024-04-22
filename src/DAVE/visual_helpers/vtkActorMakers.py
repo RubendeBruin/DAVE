@@ -218,6 +218,21 @@ def actor_from_trimesh(trimesh):
     return Mesh(vertices, faces)
 
 
+def polydata_from_trimesh(trimesh):
+    """Creates a vtkPolyData object from a DAVEcore.TriMesh"""
+
+    if trimesh.nFaces == 0:
+        return Dummy()
+
+    vertices = [trimesh.GetVertex(i) for i in range(trimesh.nVertices)]
+    # are the vertices unique?
+    faces = [trimesh.GetFace(i) for i in range(trimesh.nFaces)]
+
+    vertices, faces = RemoveDuplicateVertices(vertices, faces)
+
+    return polyDataFromVerticesAndFaces(vertices, faces)
+
+
 def RemoveDuplicateVertices(vertices, faces):
     """Cleans up the structure by removing duplicate vertices"""
 
