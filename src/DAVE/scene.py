@@ -2006,7 +2006,7 @@ class Scene:
         Args:
             evaluate : code to be evaluated to yield the value that is solved for. Eg: s['poi'].fx Scene is abbiviated as "s"
             target (number):       target value for that property
-            change (string, tuple) value to be adjused. If string this is executed as change = number. If tuple then this is
+            change (string, tuple) value to be adjused. If string this is executed as change = number. If tuple then this
                                    is done for each string in the tuple
             range(optional)  : specify the possible search-interval
             delta(optional)  : initial step-size on input

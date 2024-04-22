@@ -148,7 +148,14 @@ class WidgetBallastConfiguration(guiDockWidget):
         if self._bs is None:
             return
 
+        if not self._bs.is_valid:
+            self.ui.tableWidget.setRowCount(0)
+            self.ui.tableWidget.clear()
+            self.ui.tableWidget.setEnabled(False)
+            return
+
         tw = self.ui.tableWidget
+        self.ui.tableWidget.setEnabled(True)
 
         # remember current cell
         current_row = self.ui.tableWidget.currentRow()
