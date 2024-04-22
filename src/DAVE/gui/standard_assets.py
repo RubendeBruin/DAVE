@@ -10,7 +10,6 @@
 
 """
 
-import DAVE.visual as dv
 import DAVE.scene as ds
 
 import DAVE.gui.forms.frm_standard_assets

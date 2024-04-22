@@ -3,7 +3,7 @@
 """These are the core-connected classes for DAVE nodes"""
 
 import logging
-from math import floor
+from math import floor, ceil
 from typing import Tuple
 
 from .helpers import *
@@ -1632,7 +1632,8 @@ class Cable(NodeCoreConnected):
 
     @property
     def segment_lengths(self) -> tuple[float]:
-        """Length of material in each of the segments [m,...]
+        """If EA>0: Length of material in each of the segments [m,...]
+        If EA==0: Stretched lengths of the cable between each of the connections [m,...]
         This includes the sections on connections. The first entry is the length _on_ the first connection.
         Sections on a Point have length 0.
         A non-zero first entry means that the cable is a loop starting/ending with a circle, the value then represents the length of cable on the circle.
@@ -1940,6 +1941,34 @@ class Cable(NodeCoreConnected):
                 constant_point_count,
             )
         return points
+
+    def get_point_along_cable(self, pos1f=None) -> tuple[float, float, float]:
+        """Returns the 3D location of the cable at a certain position along the cable.
+        Defaults to the center of the first segment."""
+
+        points = self.get_points_for_visual()
+        # calculate the length along the cable
+        points = np.asarray(points)
+        dxyz = np.diff(points, axis=0)
+        lengths = np.linalg.norm(dxyz, axis=1)
+        length = np.sum(lengths)
+
+        distance_along_line = np.cumsum(lengths)
+        distance_along_line = np.insert(distance_along_line, 0, 0)
+
+        if pos1f is not None:
+            pos = pos1f * length
+        else:
+            # Set the position to the center of the first segment
+            SL = self.segment_lengths
+            pos = SL[1] / 2  # the first free segment is nr 1
+
+        # interpolate the position
+        x = np.interp(pos, distance_along_line, points[:, 0])
+        y = np.interp(pos, distance_along_line, points[:, 1])
+        z = np.interp(pos, distance_along_line, points[:, 2])
+
+        return (x, y, z)
 
     def _add_connection_to_core(
         self,
@@ -2669,6 +2698,33 @@ class Beam(NodeCoreConnected):
         """Global-orientations of the end nodes and internal nodes [deg,deg,deg]
         #NOGUI"""
         return np.rad2deg(self._vfNode.global_orientation, dtype=float)
+
+    def get_point_along_beam(self, fraction : float) -> tuple[float,float,float]:
+        """Returns the 3D location of a position along the beam as fraction of the undeformed length."""
+
+        fraction = max(0, min(1, fraction)) # clamp to [0,1]
+
+        # All segments have the same length
+        f_segment = fraction*self.n_segments
+        i_left = floor(f_segment)
+        i_right = ceil(f_segment)
+
+        if i_left == i_right:
+            v = self.global_positions[i_left]
+
+        else:
+            f_left = f_segment - i_right
+            f_right = i_left - f_segment
+
+            v_left = self.global_positions[i_left]
+            v_right = self.global_positions[i_right]
+
+            v = f_left*v_left + f_right*v_right
+
+        return (v[0], v[1], v[2])
+
+
+
 
     @property
     def bending(self) -> np.array:

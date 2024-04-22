@@ -10,7 +10,7 @@ finally:
     del version, PackageNotFoundError
 
 from . import auto_download
-from .scene import Scene
+from .scene import Scene, NodeSelector
 from .nodes import *
 from .exceptions import ModelInvalidException
 
@@ -22,6 +22,7 @@ from .exceptions import ModelInvalidException
 # print(generate)
 
 __all__ = [
+    "NodeSelector",
     "Watch",
     "AreaKind",
     "BallastSystem",

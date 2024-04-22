@@ -34,6 +34,10 @@ Example
 DAVE_ADDITIONAL_RUNTIME_MODULES['MyNode'] = MyNode
 """
 
+DAVE_ANNOTATION_LAYERS = dict()
+"""Annotation layers
+key : name, value: class"""
+
 
 from os.path import expanduser
 from os.path import dirname

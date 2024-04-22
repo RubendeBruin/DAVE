@@ -25,7 +25,9 @@ from vtkmodules.vtkRenderingCore import (
     vtkProperty,
     vtkTexture,
     vtkSkybox,
+    vtkCoordinate,
 )
+
 
 from DAVE.settings_visuals import ViewportSettings, PAINTERS
 from DAVE.visual_helpers.actors import VisualActor
@@ -84,6 +86,8 @@ class AbstractSceneRenderer:
         # set properties
         self.scene = scene
 
+        self.layers: list["AnnotationLayer"] = []  # list of layers
+
         # define attributes
         """These are the visuals for the nodes"""
         self.node_visuals: list[VisualActor] = list()
@@ -131,6 +135,21 @@ class AbstractSceneRenderer:
         """Creates the rendering pipeline"""
 
         raise NotImplementedError("This method must be implemented in a subclass")
+
+    def render_layers(self, *args):
+        """Renders all layers"""
+        for layer in self.layers:
+            layer.render()
+
+    def to_screenspace(self, pos3d):
+        """Converts a 3d position to screen space [0..1 , 0..1]"""
+
+        coo = vtkCoordinate()
+        coo.SetCoordinateSystemToWorld()
+        coo.SetValue(pos3d[0], pos3d[1], pos3d[2])
+        display_point = coo.GetComputedViewportValue(self.renderer)
+
+        return display_point[0], display_point[1]
 
     def set_startup_camera_position(self):
         """Sets the camera position at startup"""
@@ -187,8 +206,13 @@ class AbstractSceneRenderer:
 
         return None
 
-    def actor_from_node(self, node) -> VisualActor or None:
+    def actor_from_node(self, node, guess=None) -> VisualActor or None:
         """Finds the VisualActor belonging to node"""
+
+        if guess is not None:
+            if guess.node == node:
+                return guess
+
         for v in self.node_visuals:
             if v.node is node:
                 return v
@@ -727,6 +751,9 @@ class AbstractSceneRenderer:
             V.update_geometry(viewport=self)
 
         self.update_outlines()
+
+        for L in self.layers:
+            L.update()
 
     def add_temporary_actor(self, actor: vtkActor):
         self.temporary_actors.append(actor)

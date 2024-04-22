@@ -80,6 +80,7 @@ from PySide6.QtWidgets import (
     QToolBar,
     QWidget,
     QDialogButtonBox,
+    QMenu,
 )
 
 from DAVE.gui.autosave import DaveAutoSave
@@ -97,6 +98,7 @@ from DAVE.gui.dock_system.ads_helpers import (
 from DAVE.gui.dock_system.gui_dock_groups import DaveDockGroup
 from DAVE.gui.helpers.gui_logger import DAVE_GUI_LOGGER
 from DAVE.gui.helpers.qt_action_draggable import QDraggableNodeActionWidget
+from DAVE.gui.widget_layers import LayersWidget
 from DAVE.gui.widget_watches import WidgetWatches
 from DAVE.helpers.code_error_extract import get_code_error
 from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import DragInfo
@@ -555,25 +557,7 @@ class Gui:
         # cog size
         self.ui.menuView.addSeparator()
 
-        # --- label size
-        self.ui.actionShow_labels.setChecked(self.visual.settings.label_scale > 0)
-
-        self.ui.sliderLabelSize = MenuSlider("Label size")
-        self.ui.sliderLabelSize.setMin(0)
-        self.ui.sliderLabelSize.setMax(100)
-        self.ui.sliderLabelSize.slider.setValue(10)
-
-        def set_label_size(value):
-            self.run_code(
-                f"self.visual.settings.label_scale = {value / 10}",
-                guiEventType.VIEWER_SETTINGS_UPDATE,
-            )
-            self.visual.refresh_embeded_view()
-
-        self.ui.sliderLabelSize.connectvalueChanged(set_label_size)
-        self.ui.menuView.addAction(self.ui.sliderLabelSize)
-
-        # ---- label size
+        # ---- geometry size
 
         self.ui.sliderGeometrySize = MenuSlider("Geometry size")
         self.ui.sliderGeometrySize.setMin(0)
@@ -709,6 +693,8 @@ class Gui:
         self.ui.actionRestore_right_side_docks.triggered.connect(
             self.restore_right_side_docks
         )
+
+        self.ui.pbLayers.clicked.connect(self.edit_viewport_layers)
 
         self.ui.pbTop.clicked.connect(self.visual.Style.SetViewZ)
         self.ui.pbFront.clicked.connect(self.visual.Style.SetViewY)
@@ -1031,6 +1017,14 @@ class Gui:
 
         for dock in self._global_docks:
             dock_show(self.dock_manager, dock, True)
+
+    def edit_viewport_layers(self):
+        """Opens the layer editor"""
+        menu = QMenu(self.MainWindow)
+        widget = QtWidgets.QWidgetAction(menu)
+        widget.setDefaultWidget(LayersWidget(self.visual))
+        menu.addAction(widget)
+        menu.exec(QCursor.pos())
 
     def run_tests(self):
         """Run the automated tests"""
