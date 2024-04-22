@@ -263,14 +263,44 @@ info = NodePropertyInfo(node_class=cls,
 DAVE_NODEPROP_INFO[cls]["nodeB"] = info
 
 
+# Property: internal_forces
+info = NodePropertyInfo(node_class=cls,
+                        property_name="internal_forces",
+                        property_type=tuple,
+                        doc_short="""Returns the internal forces in the beam as applied on the A-side  """,
+                        doc_long = """Returns the internal forces in the beam as applied on the A-side (local axis system) [kN, kN, kN]""",
+                        units = """[kN, kN, kN]""",
+                        remarks="""local axis system""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["internal_forces"] = info
+
+
+# Property: internal_moments
+info = NodePropertyInfo(node_class=cls,
+                        property_name="internal_moments",
+                        property_type=tuple,
+                        doc_short="""Returns the internal forces in the beam as applied on the A-side  """,
+                        doc_long = """Returns the internal forces in the beam as applied on the A-side (local axis system) [kN, kN, kN]""",
+                        units = """[kN, kN, kN]""",
+                        remarks="""local axis system""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["internal_moments"] = info
+
+
 # Property: moment_A
 info = NodePropertyInfo(node_class=cls,
                         property_name="moment_A",
                         property_type=tuple,
                         doc_short="""Moment on beam at node A  """,
-                        doc_long = """Moment on beam at node A [kNm, kNm, kNm] (axis system of node A)""",
+                        doc_long = """Moment on beam at node A [kNm, kNm, kNm] (global axis system)""",
                         units = """[kNm, kNm, kNm]""",
-                        remarks="""axis system of node A""",
+                        remarks="""global axis system""",
                         is_settable=False,
                         is_single_settable = False,
                         is_single_numeric = False
@@ -283,14 +313,44 @@ info = NodePropertyInfo(node_class=cls,
                         property_name="moment_B",
                         property_type=tuple,
                         doc_short="""Moment on beam at node B  """,
-                        doc_long = """Moment on beam at node B [kNm, kNm, kNm] (axis system of node B)""",
+                        doc_long = """Moment on beam at node B [kNm, kNm, kNm] (global axis system)""",
                         units = """[kNm, kNm, kNm]""",
-                        remarks="""axis system of node B""",
+                        remarks="""global axis system""",
                         is_settable=False,
                         is_single_settable = False,
                         is_single_numeric = False
                         )
 DAVE_NODEPROP_INFO[cls]["moment_B"] = info
+
+
+# Property: force_A
+info = NodePropertyInfo(node_class=cls,
+                        property_name="force_A",
+                        property_type=tuple,
+                        doc_short="""Force that the beam applies onto node A  """,
+                        doc_long = """Force that the beam applies onto node A [kN, kN, kN] (global axis system)""",
+                        units = """[kN, kN, kN]""",
+                        remarks="""global axis system""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["force_A"] = info
+
+
+# Property: force_B
+info = NodePropertyInfo(node_class=cls,
+                        property_name="force_B",
+                        property_type=tuple,
+                        doc_short="""Force that the beam applies onto node B  """,
+                        doc_long = """Force that the beam applies onto node B [kN, kN, kN] (global axis system)""",
+                        units = """[kN, kN, kN]""",
+                        remarks="""global axis system""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["force_B"] = info
 
 
 # Property: tension
@@ -580,8 +640,9 @@ DAVE_NODEPROP_INFO[cls]["solve_segment_lengths"] = info
 info = NodePropertyInfo(node_class=cls,
                         property_name="segment_lengths",
                         property_type=tuple,
-                        doc_short="""Length of material in each of the segments """,
-                        doc_long = """Length of material in each of the segments [m,...]
+                        doc_short="""If EA>0: Length of material in each of the segments """,
+                        doc_long = """If EA>0: Length of material in each of the segments [m,...]
+        If EA==0: Stretched lengths of the cable between each of the connections [m,...]
         This includes the sections on connections. The first entry is the length _on_ the first connection.
         Sections on a Point have length 0.
         A non-zero first entry means that the cable is a loop starting/ending with a circle, the value then represents the length of cable on the circle.

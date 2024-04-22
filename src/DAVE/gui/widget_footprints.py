@@ -130,6 +130,15 @@ class WidgetFootprints(guiDockWidget):
 
         self.ui.treeView.expandAll()
 
+        if self._element is None:
+            self.grid.setEnabled(False)
+            return
+
+        if not self._element.is_valid:
+            self._element = None
+            self.grid.setEnabled(False)
+
+
     def item_clicked(self, data):
         name = data.text(0)
         self.guiSelectNode(name)
@@ -150,6 +159,7 @@ class WidgetFootprints(guiDockWidget):
                 pass
 
         self.grid.highlight_invalid_data()
+
         code = f"s['{self._element.name}'].footprint = {str(valid_data)}"
 
         # Safe, this widget itself does not
@@ -163,12 +173,14 @@ class WidgetFootprints(guiDockWidget):
         try:
             element = self.guiSelection[0]
         except:
+            self.grid.setEnabled(False)
             return
 
         if not isinstance(element, (Frame, Point)):
             return
 
         self._element = element
+        self.grid.setEnabled(True)
         self.lblInfo.setText(f"Footprint for {self._element.name} :")
         self.grid.setData(self._element.footprint, allow_add_or_remove_rows=True)
         self.grid.grid.resizeColumnsToContents()
