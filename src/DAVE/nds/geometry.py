@@ -1,6 +1,9 @@
 """These are the nodes that define the geometry and the degrees of freedom"""
 import logging
 
+from numpy import allclose
+from numpy.testing import assert_allclose
+
 from .helpers import *
 from .abstracts import *
 from .mixins import *
@@ -820,6 +823,31 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
 
         glob_pos = self.global_position
         glob_rot = self.global_rotation
+
+        # The orientation of any free DOFs should remain the same
+        # count the linear dofs:
+
+        check_orientation = False
+
+        nLinearDofs = sum([not i for i in self.fixed[:3]])
+        if nLinearDofs == 1 or nLinearDofs == 2:
+            check_orientation = True
+
+        nAngularDofs = sum([not i for i in self.fixed[3:]])
+        if nAngularDofs == 1 or nAngularDofs == 2:
+            check_orientation = True
+
+        if check_orientation:
+            if new_parent is None:
+                if not allclose(self.global_rotation, (0, 0, 0), atol=1e-6):
+                    raise ValueError(
+                        "Can not change parent to None when the rotation is not zero and the DOFs of the node depend on the orientation"
+                    )
+            else:
+                if not allclose(self.global_rotation, new_parent.global_rotation, atol=1e-6):
+                    raise ValueError(
+                        "Can not change parent when the rotation of the parent and the node are not the same and the DOFs of the node depend on the orientation"
+                    )
 
         self.parent = new_parent  # all checks are preformed here
 

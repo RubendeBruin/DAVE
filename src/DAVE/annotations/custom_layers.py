@@ -46,6 +46,3 @@ class WeightsLayer(CustomNodeLayer):
         return annotation
 
 DAVE_ANNOTATION_LAYERS["Weights"] = WeightsLayer
-
-for i in range(20):
-    DAVE_ANNOTATION_LAYERS[f"Layer {i}"] = CustomNodeLayer

@@ -2179,7 +2179,7 @@ class Scene:
         rotation=None,
         inertia=None,
         inertia_radii=None,
-        fixed: bool or (bool, bool, bool, bool, bool, bool) = True,
+        fixed: bool or (bool, bool, bool, bool, bool, bool) or str = True,
     ) -> Frame:
         """Creates a new *frame* node and adds it to the scene.
 
@@ -2236,6 +2236,9 @@ class Scene:
             new_node.inertia = inertia
         if inertia_radii is not None:
             new_node.inertia_radii = inertia_radii
+
+        if isinstance(fixed, str):
+            fixed = [True if c.lower() == 't' else False for c in fixed]
 
         if isinstance(fixed, bool):
             if fixed:
