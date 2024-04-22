@@ -34,6 +34,11 @@ def test_change_parent_to():
     with pytest.raises(ValueError):
         f2.change_parent_to(None)
 
+def test_change_parent_to2():
+    s, f1, f2, f3 = model()
+    f1.rotation = (0,0,0)
+
+    f2.change_parent_to(None)
 
 
 def test_dissolve_f1_issue125_Fixed():
