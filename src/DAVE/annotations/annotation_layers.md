@@ -51,6 +51,7 @@ The TextProducer holds:
 - a text
 - a setting of how to handle the text
 - optionally a format string
+- optionally a boolean or evaluation string that determines if the text should be produced or hidden
 
 `TextProducer` extends `HasNodeReference` and supports serialization to dict.
 
@@ -88,16 +89,19 @@ The position of an annotation is handled by it `Anchor`.
 
 The `Anchor` object holds:
 
-- position_1f, position_3d: These are user-supplied values that can be used to position the annotation in 3D
+- position_1f, position_3d: These are user-supplied values that can be used to position the annotation in 3D. By default
+  postion_1f is None and position_3d is (0,0,0)
 - screenspace_offset : This is a user-supplied value that can be used to offset the annotation in screen space
 - node: The node to which the annotation is anchored
 
-Anchor obtains the 3D position from a viewport (Scene Renderer) by invoking the `get_annotation_position` method of
-the `visualActor` associated with the `node`. This method, in turn, calls the `get_annotation_position` method of the
-node (if it exists). Otherwise, it used the logic implemented there.
+Anchor obtains the 3D position in two steps:
+If the node has a `get_annotation_position` method, it is called with the `position_1f` and `position_3d` values.
+If not then the anchor obtains the 3D position from a viewport (Scene Renderer) by invoking
+the `get_annotation_position` method of
+the `visualActor` associated with the `node`.
+
 The properties `position_1f` and `position_3d` are passed to that function and may have different meaning depending on
 the type of node.
-This logic is handled by the `get_annotation_position` method of the `visualActor`.
 
 | Node type | position_1f                     | position_3d                      | 
 |-----------|---------------------------------|----------------------------------|

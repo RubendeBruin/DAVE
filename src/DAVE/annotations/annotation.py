@@ -28,6 +28,19 @@ class Annotation(HasNodeReference):
         self.anchor.update()
 
     @property
+    def hide(self):
+        return self.text_producer.hide
+
+    @hide.setter
+    def hide(self, value):
+        self.text_producer.hide = value
+
+    @property
+    def hidden(self):
+        return self.text_producer.hidden
+
+
+    @property
     def is_valid(self):
         return self.text_producer.is_valid and self.anchor.is_valid
 

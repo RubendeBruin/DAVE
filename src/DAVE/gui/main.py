@@ -557,25 +557,7 @@ class Gui:
         # cog size
         self.ui.menuView.addSeparator()
 
-        # --- label size
-        self.ui.actionShow_labels.setChecked(self.visual.settings.label_scale > 0)
-
-        self.ui.sliderLabelSize = MenuSlider("Label size")
-        self.ui.sliderLabelSize.setMin(0)
-        self.ui.sliderLabelSize.setMax(100)
-        self.ui.sliderLabelSize.slider.setValue(10)
-
-        def set_label_size(value):
-            self.run_code(
-                f"self.visual.settings.label_scale = {value / 10}",
-                guiEventType.VIEWER_SETTINGS_UPDATE,
-            )
-            self.visual.refresh_embeded_view()
-
-        self.ui.sliderLabelSize.connectvalueChanged(set_label_size)
-        self.ui.menuView.addAction(self.ui.sliderLabelSize)
-
-        # ---- label size
+        # ---- geometry size
 
         self.ui.sliderGeometrySize = MenuSlider("Geometry size")
         self.ui.sliderGeometrySize.setMin(0)

@@ -10,6 +10,32 @@ from DAVE.visual_helpers.overlay_actor import OverlayActor
 from DAVE.visual_helpers.scene_renderer import AbstractSceneRenderer
 
 
+# Get the default font
+# https://en.wikipedia.org/wiki/List_of_typefaces_included_with_Microsoft_Windows
+
+
+class AnnotationLayerFont:
+    def __init__(self):
+        self.font = ImageFont.truetype("bahnschrift.ttf", 16)
+
+    def getbbox(self, text):
+        return self.font.getbbox(text)
+
+    def getmask(self, *args, **kwargs):
+        return self.font.getmask(*args, **kwargs)
+
+    @property
+    def size(self):
+        return self.font.size
+
+    @size.setter
+    def size(self, value):
+        self.font = ImageFont.truetype("bahnschrift.ttf", value)
+
+
+DEFAULT_ANNOTATION_FONT = AnnotationLayerFont()
+
+
 class AnnotationLayer(HasNodeReference):
     """A layer of annotations.
 
@@ -29,8 +55,7 @@ class AnnotationLayer(HasNodeReference):
         self.annotations = []
         self.name = name
 
-        # https://en.wikipedia.org/wiki/List_of_typefaces_included_with_Microsoft_Windows
-        self.font = ImageFont.truetype("bahnschrift.ttf", 16)
+        self.font = DEFAULT_ANNOTATION_FONT
         self.background_rgba = (255, 255, 255, 200)
         self.padding = (2, 4, 2, 4)
         self.border_width = 1

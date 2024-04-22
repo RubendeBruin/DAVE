@@ -80,10 +80,7 @@ class VisualActor:
         pos1f is the 1D position of the annotation, None if not provided
         """
 
-        print(self.node.__class__)
-
-        if hasattr(self.node, "get_annotation_position"):
-            return self.node.get_annotation_position(pos3d, pos1f)
+        # This is the fall-back option if the node does not have a get_annotation_position method
 
         if isinstance(self.node, dn.Point):
             return self.node.global_position
@@ -97,7 +94,7 @@ class VisualActor:
         if isinstance(self.node, dn.Frame):
             return self.node.to_glob_position(pos3d)
 
-        return self.center_position  # todo: implement
+        return self.center_position
 
     def select(self):
         self._is_selected = True

@@ -11,8 +11,8 @@ class ProduceTextAlgorithm(Enum):
     """
 
     NOTHING = 0            # just the raw text
-    PROPERTY = 1      # the text is a property of the node, nicely formatted using docs
-    PROPERTY_RAW = 2  # the text is a property of the node, but not formatted
+    PROPERTY = 1           # the text is a property of the node, nicely formatted using docs
+    PROPERTY_RAW = 2       # the text is a property of the node, but not formatted
     EVAL = 3               # the text is evaluated as python code
 
 
@@ -22,6 +22,10 @@ class TextProducer(HasNodeReference):
     TextProducer objects are used to provide the text of an annotation.
 
     The text of an annotation is provided by the get_text() method.
+
+    Optionally, the text can be formatted using a format string (ff).
+    Optionally the text can be hidden using the hide property, which can either be a bool or something to be evaluated.
+
     """
 
     def __init__(self,
@@ -34,9 +38,34 @@ class TextProducer(HasNodeReference):
         self._how = how
         self.ff : str or None = ff  # format string, eg "{:.3f}"
 
+        self._hide: bool or str = False
+
         self._property_documentation : NodePropertyInfo or None = None
 
         self._changed()
+
+    @property
+    def hide(self):
+        return self._hide
+
+    @hide.setter
+    def hide(self, value):
+        assert isinstance(value, (bool, str)), f'hide must be a boolean or a string, got {type(value)}'
+        self._hide = value
+
+    @property
+    def hidden(self):
+        if self._hide == False:
+            return False
+        if self._hide == True:
+            return True
+
+        assert isinstance(self._hide, str), f'if _hide is not a boolean then it must be a string, got {type(self._hide)}'
+
+        r =  eval(self._hide, {"node": self._node})
+        assert isinstance(r, bool), f'evaluated hide must be a boolean, got {type(r)} when evaluating {self._hide}'
+
+        return r
 
     def as_dict(self):
 
@@ -97,6 +126,10 @@ class TextProducer(HasNodeReference):
 
 
     def get_text(self) -> str:
+
+        if self.hidden:
+            return ""
+
         if self._how == ProduceTextAlgorithm.PROPERTY or self._how == ProduceTextAlgorithm.PROPERTY_RAW:
 
             value = getattr(self._node, self._text, None)

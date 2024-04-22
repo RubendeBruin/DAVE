@@ -519,7 +519,6 @@
     <addaction name="separator"/>
     <addaction name="actionShow_water_plane"/>
     <addaction name="actionShow_origin"/>
-    <addaction name="actionShow_labels"/>
     <addaction name="separator"/>
     <addaction name="actionFull_refresh"/>
     <addaction name="actionCamera_reset"/>
