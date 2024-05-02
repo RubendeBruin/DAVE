@@ -821,6 +821,9 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
 
         """
 
+        if new_parent == self.parent:  # trivial case
+            return
+
         glob_pos = self.global_position
         glob_rot = self.global_rotation
 
@@ -839,12 +842,12 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
 
         if check_orientation:
             if new_parent is None:
-                if not allclose(self.global_rotation, (0, 0, 0), atol=1e-6):
+                if not allclose(self.parent.global_rotation, (0, 0, 0), atol=1e-6):
                     raise ValueError(
                         "Can not change parent to None when the rotation is not zero and the DOFs of the node depend on the orientation"
                     )
             else:
-                if not allclose(self.global_rotation, new_parent.global_rotation, atol=1e-6):
+                if not allclose(self.parent.global_rotation, new_parent.global_rotation, atol=1e-6):
                     raise ValueError(
                         "Can not change parent when the rotation of the parent and the node are not the same and the DOFs of the node depend on the orientation"
                     )
@@ -1109,6 +1112,7 @@ class Point(NodeCoreConnected, HasParentCore, HasFootprint):
         self._vfNode = scene._vfc.new_poi(name)
         super().__init__(scene=scene, name=name)
 
+    @node_setter_manageable
     def change_parent_to(self, new_parent):
         gpos = self.global_position
         self.parent = new_parent
@@ -1457,7 +1461,7 @@ class Circle(NodeCoreConnected, HasParentCore):
 
     @node_setter_manageable
     def change_parent_to(self, new_parent):
-        """Assigns a new parent to the node but keeps the global position and rotation the same.
+        """Assigns a new parent to the node but keeps the global orientation the same.
 
         See also: .parent (property)
 
@@ -1467,13 +1471,17 @@ class Circle(NodeCoreConnected, HasParentCore):
         """
         glob_axis = self.global_axis
 
-        move = np.linalg.norm(
-            np.array(self.global_position) - np.array(new_parent.global_position)
-        )
-        if move > 1e-7:
-            raise ValueError(
-                "Global position of new parent must be the same as the global position of the node"
-            )
+        # we're not checking on move, the position is not a property of the Circle itself so this
+        # is not the proper place to check this.
+        # issue 163
+        #
+        # move = np.linalg.norm(
+        #     np.array(self.global_position) - np.array(new_parent.global_position)
+        # )
+        # if move > 1e-7:
+        #     raise ValueError(
+        #         "Global position of new parent must be the same as the global position of the node"
+        #     )
 
         self.parent = new_parent
         self.global_axis = glob_axis

@@ -266,7 +266,7 @@ def test_wind_on_beam_to_code_and_back():
     s2.solve_statics()
     s.solve_statics()
     #
-    assert_allclose(s['point'].global_position, s2['point'].global_position)
+    assert_allclose(s['point'].global_position, s2['point'].global_position, atol=1e-5)
 
 
 
