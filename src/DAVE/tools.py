@@ -13,9 +13,11 @@ import math
 import numbers
 from DAVE.scene import *
 import DAVE.settings as ds
+from DAVE.helpers.string_functions import increment_string_end
 import numpy as np
 from scipy.spatial.transform import Rotation
 from glob import glob
+
 
 def running_in_gui():
     """Returns True if running in a GUI environment, False otherwise"""
@@ -23,12 +25,13 @@ def running_in_gui():
         from PySide6.QtWidgets import QApplication
 
         if QApplication.instance() is not None:
-           return True
+            return True
 
     except ImportError:
         pass
 
     return False
+
 
 def MostLikelyMatch(search_for, choices) -> str:
     """Uses rapidfuzz to get a best match"""
@@ -467,3 +470,43 @@ def debug_yml_dump(d):
             raise ValueError(
                 f"Failed to dump key '{key}' with value {value} to YML. Type of value is {type(value)}"
             )
+
+
+"""
+ # We need to make sure that there are no clashes with the names
+            # In the target scene the name
+            # prefix + name needs to be available
+            # in the private scene the suggested_name needs to be available if it is not the same as the name
+
+            new_name = get_two_scene_available_name_like(
+                current_name=node.name,
+                target_scene_names=target.node_names,
+                prefix=prefix,
+                private_scene_names=self.private_scene.node_names,
+            )"""
+
+
+def get_two_scene_available_name_like(
+    current_name: str,
+    target_scene_names: tuple[str],
+    prefix: str,
+    private_scene_names: tuple[str],
+):
+    """Returns a name that is available in both scenes"""
+
+    assert (
+        current_name in private_scene_names
+    ), f"The current name {current_name} should be in the private scene"
+
+    # First check if the current name is available in the target scene
+    if prefix + current_name not in target_scene_names:
+        return current_name
+
+    # we need to come-up with a good suggestion
+    suggested_name = current_name
+
+    while True:
+        suggested_name = increment_string_end(suggested_name)
+        if prefix + suggested_name not in target_scene_names:
+            if suggested_name not in private_scene_names:
+                return suggested_name

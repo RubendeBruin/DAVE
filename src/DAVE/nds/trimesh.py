@@ -320,6 +320,8 @@ class TriMeshSource:  # not an instance of Node
                 f"File should be an .obj or .stl file but has extension {ext}"
             )
 
+        obj.SetGlobalWarningDisplay(False)
+
         # Add cleaning
         cln = vtkCleanPolyData()
         cln.SetInputConnection(obj.GetOutputPort())
