@@ -117,7 +117,11 @@ def DAVE_load_extensions():
 
 # convenience function for showing the gui
 def DG(
-    scene: object = None, bare: object = False, block: object = True, autosave=True
+    scene: object = None,
+    bare: object = False,
+    block: object = True,
+    autosave=True,
+    filename=None,
 ) -> "DAVE.gui.Gui":
     print("loading gui")
     from .gui import Gui
@@ -126,4 +130,4 @@ def DG(
     if not bare:
         DAVE_load_extensions()
 
-    return Gui(scene, block=block, autosave_enabled=autosave)
+    return Gui(scene, block=block, autosave_enabled=autosave, filename=filename)

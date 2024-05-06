@@ -3481,6 +3481,8 @@ class Gui:
                             force_bring_to_front=(event == guiEventType.NEW_NODE_ADDED),
                         )
 
+        updated = False
+
         # update warnings if needed
         if event in (
             guiEventType.FULL_UPDATE,
@@ -3490,6 +3492,8 @@ class Gui:
             guiEventType.MODEL_STATE_CHANGED,
             guiEventType.SELECTED_NODE_MODIFIED,
         ):
+            self.scene.update()
+            updated = True
             self.update_warnings()
 
         with DelayRenderingTillDone(
@@ -3505,7 +3509,8 @@ class Gui:
                 guiEventType.ENVIRONMENT_CHANGED,
                 guiEventType.NEW_NODE_ADDED,
             ):
-                self.scene.update()
+                if not updated:
+                    self.scene.update()
 
             if self.animation_running():
                 self.visual.position_visuals()
