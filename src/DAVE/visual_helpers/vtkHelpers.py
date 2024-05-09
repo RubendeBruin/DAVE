@@ -35,6 +35,7 @@ add_lid_to_open_mesh : adds a lid to an open mesh
 
 
 """
+from datetime import time, datetime
 from pathlib import Path
 
 import numpy as np
@@ -56,6 +57,101 @@ from DAVE.visual_helpers.vtkActorMakers import *
 
 import DAVE.nodes as dn
 from DAVE.settings_visuals import CABLE_DIA_WHEN_DIA_IS_ZERO
+
+
+def glue_segments(x, y) -> list:
+    """Glues segments together to form a single line or lines
+
+    If multiuple lines are created, they are sorted by the maximum diagonal distance
+    such that the first line is the outside of a shape and the next ones are holes.
+
+    x and y are the ouput of a slicing action.
+
+    Returns:
+        [x, y]
+
+    """
+
+    # TODO: Make this faster (Glueing 104 segments took 0.022341 seconds)
+    n_segments = len(x[0])
+
+    segments = []
+
+    for i in range(n_segments):
+        x1 = x[0][i]
+        y1 = y[0][i]
+        x2 = x[1][i]
+        y2 = y[1][i]
+
+        segments.append((x1, y1, x2, y2))
+
+    lines = []
+
+    line = list(segments[0])
+    segments.pop(0)
+
+    tol = 1e-6
+
+    # measure time
+    start_time = datetime.now()
+
+    while len(segments) > 0:
+        # find the segment that is closest to the end of the line
+
+        endpoint = None
+        for i, segment in enumerate(segments):
+            dist = np.linalg.norm(np.array(segment[:2]) - np.array(line[-2:]))
+            if dist < tol:
+                endpoint = segments.pop(i)[-2:]
+                break
+
+            dist = np.linalg.norm(np.array(segment[2:]) - np.array(line[-2:]))
+            if dist < tol:
+                endpoint = segments.pop(i)[:2]
+                break
+
+        if endpoint is None:
+            # No matching segment,
+            # start a new line using the first segment
+            xx = line[::2]
+            yy = line[1::2]
+
+            lines.append([xx, yy])
+
+            line = list(segments[0])
+            segments.pop(0)
+
+            # start a new line
+        else:
+            line.extend(endpoint)
+
+    xx = line[::2]
+    yy = line[1::2]
+
+    lines.append([xx, yy])
+
+    if len(lines) > 1:
+        # sort the lines by maximum digonal distance
+        def diag(lne):
+            x = lne[0]
+            y = lne[1]
+
+            minx = np.min(x)
+            maxx = np.max(x)
+            miny = np.min(y)
+            maxy = np.max(y)
+            dx = maxx - minx
+            dy = maxy - miny
+            return dx**2 + dy**2
+
+        lines = sorted(lines, key=lambda x: diag(x), reverse=True)
+
+    # print passed seconds
+    print(
+        f"Glueing {n_segments} segments took {(datetime.now() - start_time).total_seconds()} seconds"
+    )
+
+    return lines
 
 
 def vtkShow(actor):
@@ -632,19 +728,25 @@ def TrimeshToSlice(
         **kwargs,
     )
 
-    if do_convex_hull and len(x) > 0:
-        x = x.flatten()
-        y = y.flatten()
+    if do_convex_hull:
+        if len(x) > 0:
+            return glue_segments(x, y)
+        else:
+            return []
+        # x = x.flatten()
+        # y = y.flatten()
+        #
+        # from scipy.spatial import ConvexHull
+        #
+        # points = np.stack([x, y])
+        # points = points.transpose()
+        #
+        # hull = ConvexHull(points)
+        # vertices = hull.points[hull.vertices]
+        #
+        # return vertices[:, 0], vertices[:, 1]
 
-        from scipy.spatial import ConvexHull
-
-        points = np.stack([x, y])
-        points = points.transpose()
-
-        hull = ConvexHull(points)
-        vertices = hull.points[hull.vertices]
-
-        return vertices[:, 0], vertices[:, 1]
+        # these are all seperate segments
 
     else:
         return x, y

@@ -14,11 +14,13 @@ def test_slice():
 
     fig,ax = plt.subplots()
 
-    VisualToSlice(v, ax=ax)
+    x,y  = VisualToSlice(v, ax=ax)
     v.scale = (2,2,2)
     v.rotation = (0,0,45)
 
     VisualToSlice(v, ax=ax)
 
+
+    plt.plot(x,y)
+
     plt.show()
-    # print(x,y)
