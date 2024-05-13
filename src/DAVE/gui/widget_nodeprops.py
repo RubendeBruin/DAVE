@@ -392,8 +392,9 @@ class EditNode(NodeEditor):
         ui.setupUi(widget)
         self.ui = ui
         self._widget = widget
+        self.filling = False
+        self._editing = ''
 
-        ui.tbName.textChanged.connect(self.name_changed)
         ui.cbVisible.toggled.connect(self.visible_changed)
         ui.lbColor.mousePressEvent = self.color_clicked
 
@@ -404,10 +405,12 @@ class EditNode(NodeEditor):
         self.ui.tbName.installEventFilter(self.rightclickfilter)
 
     def post_update_event(self):
+        self.filling = True
         self.ui.tbName.blockSignals(True)
         self.ui.cbVisible.blockSignals(True)
 
         self.ui.tbName.setText(self.node.name)
+        self._editing = self.node.name
         self.ui.cbVisible.setChecked(self.node.visible)
 
         self.ui.tbName.blockSignals(False)
@@ -422,19 +425,20 @@ class EditNode(NodeEditor):
             )
             self.ui.lbColor.setText(str(self.node.color))
 
-        self.name_changed()
+        self.filling = False
 
-    def name_changed(self):
-        new_name = self.ui.tbName.text()
-        if not new_name == self.node.name:
-            self.ui.lblInfo.setText(f'Press [enter] to apply "{new_name}"')
-            self.ui.lblInfo.setVisible(True)
-        else:
-            self.ui.lblInfo.setVisible(False)
 
     def nameChangedEnter(self):
+
+        if self.filling:
+            return
+
         if self.node.is_valid:
             node = self.node
+
+            if node.name != self._editing:
+                return
+
             element = "\ns['{}']".format(node.name)
 
             new_name = self.ui.tbName.text()

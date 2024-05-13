@@ -289,9 +289,6 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
         # register the F2 key for renaming nodes
         self.treeView.keyPressEvent = self.keyPressEvent
 
-        # This signal is emitted when the contents of the column in the specified item changes.
-        self.treeView.itemChanged.connect(self.tree_item_changed)
-
 
         self.treeView.activated.connect(
             self.tree_select_node
@@ -398,38 +395,37 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
 
 
     def keyPressEvent(self, *args):
+
         if args[0].key() == Qt.Key_F2:
             # print('F2!')
 
             # find a selected item
             current_item = self.treeView.currentItem()
             if current_item:
-                current_item.setFlags(current_item.flags() | Qt.ItemIsEditable)
-                self.treeView.editItem(current_item)
+                # change the name of the item
+
+                rect = self.treeView.visualItemRect(current_item)
+                top_left = rect.topRight()
+                global_position = self.treeView.mapToGlobal(top_left)
+
+                from DAVE.gui.helpers.popup_textbox import get_text
+                new_name = get_text(suggestion = current_item.text(0),
+                                    pos = global_position)
+                if new_name:
+
+                    try:
+                        # do not update self, do that later to keep focus
+                        self.guiRunCodeCallback(f"s['{current_item.toolTip(0)}'].name = '{new_name}'", guiEventType.SELECTED_NODE_MODIFIED, sender = self)
+
+                        # update the item manually
+                        current_item.setText(0, new_name)
+                        current_item.setToolTip(0, new_name)
+                    except:
+                        pass
+
         else:
             QtWidgets.QTreeWidget.keyPressEvent(self.treeView, *args)
 
-    def tree_item_changed(self, item, column):
-        # item.setFlags(item.flags() & ~Qt.ItemIsEditable)
-
-
-        print('Item changed', item.text(0), item.toolTip(0))
-        if item.text(0) == item.toolTip(0):
-            return
-
-        # try to apply the name change
-        node_name = item.toolTip(0)
-        try:
-            self.guiRunCodeCallback(f"s['{node_name}'].name = '{item.text(0)}'", guiEventType.SELECTED_NODE_MODIFIED)
-            item.setToolTip(0, node_name)
-        except:
-            pass
-
-
-        #
-        # if item.toolTip(0) in self.items:
-        #     node = self.guiScene[item.toolTip(0)]
-        #     node.label = item.text(0)
 
     def make_tree_item(self, node):
         text = node.name
