@@ -3517,7 +3517,8 @@ class Gui:
 
                 return  # do not update the widgets when an animation is running
 
-            for widget in self.guiWidgets.values():
+            open_widgets = tuple(self.guiWidgets.values())
+            for widget in open_widgets:
                 if not (widget is sender):
                     if not widget.isClosed():
                         widget.guiEvent(event)

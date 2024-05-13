@@ -286,6 +286,13 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
         self.treeView.header().setVisible(False)
         self.treeView.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
 
+        # register the F2 key for renaming nodes
+        self.treeView.keyPressEvent = self.keyPressEvent
+
+        # This signal is emitted when the contents of the column in the specified item changes.
+        self.treeView.itemChanged.connect(self.tree_item_changed)
+
+
         self.treeView.activated.connect(
             self.tree_select_node
         )  # fires when a user presses [enter]
@@ -388,6 +395,41 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
 
         if event in [guiEventType.SELECTION_CHANGED]:
             self.update_selection()
+
+
+    def keyPressEvent(self, *args):
+        if args[0].key() == Qt.Key_F2:
+            # print('F2!')
+
+            # find a selected item
+            current_item = self.treeView.currentItem()
+            if current_item:
+                current_item.setFlags(current_item.flags() | Qt.ItemIsEditable)
+                self.treeView.editItem(current_item)
+        else:
+            QtWidgets.QTreeWidget.keyPressEvent(self.treeView, *args)
+
+    def tree_item_changed(self, item, column):
+        # item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+
+
+        print('Item changed', item.text(0), item.toolTip(0))
+        if item.text(0) == item.toolTip(0):
+            return
+
+        # try to apply the name change
+        node_name = item.toolTip(0)
+        try:
+            self.guiRunCodeCallback(f"s['{node_name}'].name = '{item.text(0)}'", guiEventType.SELECTED_NODE_MODIFIED)
+            item.setToolTip(0, node_name)
+        except:
+            pass
+
+
+        #
+        # if item.toolTip(0) in self.items:
+        #     node = self.guiScene[item.toolTip(0)]
+        #     node.label = item.text(0)
 
     def make_tree_item(self, node):
         text = node.name

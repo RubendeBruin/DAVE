@@ -3087,6 +3087,7 @@ class WidgetNodeProps(guiDockWidget):
         ]:  # reloaded component emit model structure changed instead of selected node modified
             for w in self._node_editors:
                 w.post_update_event()
+            self._node_name_editor.post_update_event()
             self.check_for_warnings()
 
     def run_code(self, code, event=None, sender=None, store_undo=True):
