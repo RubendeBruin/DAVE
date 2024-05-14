@@ -244,6 +244,14 @@ class SolverDialog_threaded(QDialog, Ui_SolverDialogThreaded):
 
         # make stay-on-top
         self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
+        self.terminate = None
+
+    def keyPressEvent(self, event, *args):
+        if event.key() == Qt.Key_Escape:
+            if self.terminate is not None:
+                self.terminate
+        else:
+            super().keyPressEvent(event)
 
 
 class SettingsDialog(QDialog, Ui_frmSettings):
@@ -2355,8 +2363,11 @@ class Gui:
         # Create the dialog and connect signals
 
         dialog = SolverDialog_threaded(parent=self.MainWindow)
+
+
         dialog.pbAccept.setEnabled(False)
         dialog.frame.setVisible(False)
+
 
         def show_settings(*args):
             dialog.frame.setVisible(True)
@@ -2373,6 +2384,8 @@ class Gui:
             self.scene._vfc.set_dofs(D0)
             self.visual.position_visuals()
             self.visual.refresh_embeded_view()
+
+        dialog.terminate = terminate
 
         def reset(*args):
             self.scene._vfc.set_dofs(D0)
@@ -2397,6 +2410,10 @@ class Gui:
             self.scene.solver_settings.do_linear_first = (
                 dialog.cbLinearFirst.isChecked()
             )
+
+
+
+
 
         # disable main window and prepare to start solving
         self.MainWindow.setEnabled(False)
@@ -2524,6 +2541,10 @@ class Gui:
 
                     dialog.pbReset.clicked.connect(reset)
                     dialog.pbAccept.clicked.connect(accept)
+
+                    # connect the escape button to terminate
+                    dialog.rejected.connect(terminate)
+                    dialog.accepted.connect(accept)
 
                     dialog.pbTerminate.clicked.connect(terminate)
 
