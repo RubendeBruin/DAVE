@@ -447,7 +447,7 @@ class EditNode(NodeEditor):
                 if not new_name == node.name:
                     code = element + ".name = '{}'".format(new_name)
                     self.run_code(code, guiEventType.SELECTED_NODE_MODIFIED)
-                    self.ui.lblInfo.setVisible(False)
+
 
     def visible_changed(self):
         node = self.node

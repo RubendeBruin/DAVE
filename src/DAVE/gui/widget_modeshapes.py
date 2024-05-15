@@ -125,7 +125,14 @@ class WidgetModeShapes(guiDockWidget):
 
     def quickfix(self):
         self.gui.animation_terminate()
-        summary = DAVE.mode_shapes.dynamics_quickfix(self.guiScene)
+
+        try:
+            remember_godmode = self.guiScene._godmode
+            self.guiScene._godmode = True
+            summary = DAVE.mode_shapes.dynamics_quickfix(self.guiScene)
+        finally:
+            self.guiScene._godmode = remember_godmode
+
         self.guiEmitEvent(guiEventType.MODEL_STRUCTURE_CHANGED)
         self.fill_results_table_with(summary)  # do this after emitting the event
 
