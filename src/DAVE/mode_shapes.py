@@ -51,12 +51,12 @@ def mode_shapes(scene):
     if not scene.verify_equilibrium():
         raise ArithmeticError('Scene is not in static equilibrium, modal analysis aborted')
 
-    print("Mass matrix")
+    # print("Mass matrix")
     M = scene.dynamics_M(1e-6)
-    print(M)
+    # print(M)
     K = scene.dynamics_K(1e-6)
-    print("Stiffness matrix")
-    print(K)
+    # print("Stiffness matrix")
+    # print(K)
 
     if K.size > 0:
         V, D = eig(K, M)
@@ -66,12 +66,12 @@ def mode_shapes(scene):
         V = V[i_sorted]
         D = D[:,i_sorted]
 
-        print("Values = ")
-        print(V)
-        print("Directions = ")
-        print(D)
+        # print("Values = ")
+        # print(V)
+        # print("Directions = ")
+        # print(D)
 
-        check_unconstrained(scene, V,D,K,M)
+        # check_unconstrained(scene, V,D,K,M)
 
         return V,D
     else:
