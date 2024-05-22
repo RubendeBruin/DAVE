@@ -3,3 +3,4 @@
 # under `install_requires` in `setup.cfg` is also listed here!
 sphinx>=3.2.1
 # sphinx_rtd_theme
+requests>=2.32.0 # not directly required, pinned by Snyk to avoid a vulnerability
