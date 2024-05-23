@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QListWidget,
 )
 import DAVE.scene as ds
+from DAVE.gui.helpers.info_message import InfoMessage
 from DAVE.gui.helpers.my_qt_helpers import (
     DeleteEventFilter,
     update_combobox_items_with_completer,
@@ -289,7 +290,6 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
         # register the F2 key for renaming nodes
         self.treeView.keyPressEvent = self.keyPressEvent
 
-
         self.treeView.activated.connect(
             self.tree_select_node
         )  # fires when a user presses [enter]
@@ -393,15 +393,23 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
         if event in [guiEventType.SELECTION_CHANGED]:
             self.update_selection()
 
-
     def keyPressEvent(self, *args):
-
         if args[0].key() == Qt.Key_F2:
             # print('F2!')
 
             # find a selected item
             current_item = self.treeView.currentItem()
             if current_item:
+                # Get the node
+                node_name = current_item.toolTip(0)
+                node = self.guiScene[node_name]
+
+                if node.manager is not None:
+                    InfoMessage(
+                        f"This node is managed by {node.manager.label} and can not be renamed"
+                    )
+                    return
+
                 # change the name of the item
 
                 rect = self.treeView.visualItemRect(current_item)
@@ -409,23 +417,25 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
                 global_position = self.treeView.mapToGlobal(top_left)
 
                 from DAVE.gui.helpers.popup_textbox import get_text
-                new_name = get_text(suggestion = current_item.text(0),
-                                    pos = global_position)
-                if new_name:
 
+                new_name = get_text(suggestion=node_name, pos=global_position)
+                if new_name:
                     try:
                         # do not update self, do that later to keep focus
-                        self.guiRunCodeCallback(f"s['{current_item.toolTip(0)}'].name = '{new_name}'", guiEventType.SELECTED_NODE_MODIFIED, sender = self)
+                        self.guiRunCodeCallback(
+                            f"s['{current_item.toolTip(0)}'].name = '{new_name}'",
+                            guiEventType.SELECTED_NODE_MODIFIED,
+                            sender=self,
+                        )
 
                         # update the item manually
-                        current_item.setText(0, new_name)
+                        current_item.setText(0, node.label)
                         current_item.setToolTip(0, new_name)
                     except:
                         pass
 
         else:
             QtWidgets.QTreeWidget.keyPressEvent(self.treeView, *args)
-
 
     def make_tree_item(self, node):
         text = node.name
