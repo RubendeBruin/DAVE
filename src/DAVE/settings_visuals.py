@@ -292,6 +292,14 @@ painters["Component"] = deepcopy(painters["Frame"])
 
 PAINTERS["Construction"] = deepcopy(painters)
 
+# Construction - no areas
+
+construction_no_areas = deepcopy(PAINTERS["Construction"])
+make_node_invisible(construction_no_areas["WindArea"])
+make_node_invisible(construction_no_areas["CurrentArea"])
+PAINTERS["Construction, no areas"] = construction_no_areas
+
+
 
 # Define the paint for ballasting
 # start with the active paints

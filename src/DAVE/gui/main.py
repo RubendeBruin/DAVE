@@ -3483,7 +3483,7 @@ class Gui:
         """
         if not execute_now:
             # make a single-shot timer to emit the event
-            DAVE_GUI_LOGGER.log(f"Gui emit event {event} from {sender} placed in que")
+            DAVE_GUI_LOGGER.log(f"Gui emit event {event} from {sender} placed in queue")
             QTimer.singleShot(
                 0, lambda: self.guiEmitEvent(event, sender, execute_now=True)
             )

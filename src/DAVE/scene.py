@@ -4372,7 +4372,7 @@ class Scene:
     def dynamics_K(self, delta=1e-6):
         """Returns the stiffness matrix of the scene for a perturbation of delta
 
-        A component is positive if a displacement introduces an reaction force in the opposite direction.
+        A component is positive if a displacement introduces a reaction force in the opposite direction.
         or:
         A component is positive if a positive force is needed to introduce a positive displacement.
         """
