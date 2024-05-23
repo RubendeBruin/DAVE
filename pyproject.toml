@@ -14,7 +14,7 @@ packages = ["src/DAVE"]
 
 [project]
 name = "useDAVE"
-version = "24.42"
+version = "24.0523"
 authors = [
   { name="Ruben de Bruin", email="info@rdbr.nl" },
 ]
