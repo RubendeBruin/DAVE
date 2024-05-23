@@ -2364,10 +2364,8 @@ class Gui:
 
         dialog = SolverDialog_threaded(parent=self.MainWindow)
 
-
         dialog.pbAccept.setEnabled(False)
         dialog.frame.setVisible(False)
-
 
         def show_settings(*args):
             dialog.frame.setVisible(True)
@@ -2410,10 +2408,6 @@ class Gui:
             self.scene.solver_settings.do_linear_first = (
                 dialog.cbLinearFirst.isChecked()
             )
-
-
-
-
 
         # disable main window and prepare to start solving
         self.MainWindow.setEnabled(False)
@@ -2717,7 +2711,9 @@ class Gui:
             if self.open_self_contained_DAVE_package(filename=filename):
                 return
 
-        current_directory = Path(filename).parent
+        current_directory = str(Path(filename).parent)
+        if current_directory.endswith(":\\"):
+            current_directory += "\\"
         code = f's.clear()\ns.current_directory = r"{current_directory}"\ns.load_scene(r"{filename}")'
 
         store = gui_globals.do_ask_user_for_unavailable_nodenames
@@ -2857,6 +2853,7 @@ class Gui:
             caption="Scene files",
             dir=dir,
         )
+
         if filename:
             code = 's.save_scene(r"{}")'.format(filename)
             self.run_code(code, guiEventType.NOTHING)
