@@ -1375,9 +1375,11 @@ class Scene:
         r = []
 
         if on is not None:
-            all_parents = self.nodes_with_parent(on, recursive=True)
+            if isinstance(on, str):
+                on = self[on]
+            all_nodes_on = self.nodes_with_parent(on, recursive=True)
         else:
-            all_parents = None
+            all_nodes_on = None
 
         # loop over all nodes
         for node in self._nodes:
@@ -1407,7 +1409,7 @@ class Scene:
                     continue
 
             if on is not None:
-                if node.parent != all_parents:
+                if node not in all_nodes_on:
                     continue
 
             if core_connected_to is not None:
