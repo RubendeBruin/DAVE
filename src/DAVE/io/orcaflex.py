@@ -202,9 +202,54 @@ def yesno(b):
 
 # =====================================================================================================================
 
+def make_orcaflex_compatible(s):
+    """Make the scene orcaflex compatible by converting all nodes to orcaflex compatible nodes.
 
-def export_ofx_yml(s, filename):
-    """Convert the scene to a orcaflex .yml file. Only compatible nodes are exported. Make the scene  orcaflex compatible before exporting.
+    All conversions are preformed using their default settings. If you need more control over the conversion then
+    manually convert the nodes before calling this function.
+
+    Fails if the scene contains unsupported nodes.
+    """
+
+    from DAVE.io.simplify import tanks_to_bodies, split_cables, connector6D_to_cables
+    from DAVE.marine import linearize_buoyancy
+
+    tanks_to_bodies(s)
+
+    for b in s.nodes_where(kind=Buoyancy):
+        linearize_buoyancy(s, b)
+
+    for D6 in s.nodes_where(kind=LC6d):
+        connector6D_to_cables(s, D6)
+
+
+def ofx_default_environment() -> OrderedDict:
+    """Returns the default enviornment dict"""
+
+    E = OrderedDict()
+    E["UserSpecifiedRandomWaveSeeds"] = "Yes"
+
+
+    train1 = OrderedDict()
+    train1["WaveType"] = "JONSWAP"
+    train1["Name"] = "default"
+    train1["WaveDirection"] = 150
+    train1["WaveNumberOfSpectralDirections"] = 1
+    train1["WaveHs"] = 2
+    train1["WaveTz"] = 6
+    train1["WaveGamma"] = 1
+    train1["WaveSeed"] = 8888
+
+    E["WaveTrains"] = [train1]
+
+    return E
+
+
+
+def export_ofx_yml(s, filename, frequency_domain=True, environment = None):
+    """Convert the scene to an orcaflex compatible .yml file.
+    Only compatible nodes are exported.
+    Make the scene orcaflex compatible before exporting.
 
     Visuals of .obj type are supported by orcaflex. These are copied to the same folder as the .yml file
 
@@ -218,6 +263,14 @@ def export_ofx_yml(s, filename):
     # filename.parent : folder
 
     s.sort_nodes_by_dependency()
+
+    general = {}
+    general['UnitsSystem'] = 'SI'
+    if frequency_domain:
+        general['DynamicsSolutionMethod'] = 'Frequency domain'
+
+    if environment is None:
+        environment = ofx_default_environment()
 
     buoys = []
     winches = []
@@ -606,13 +659,22 @@ def export_ofx_yml(s, filename):
                     "InitialHeel": float(n.heel),
                     "InitialTrim": float(n.trim),
                     "InitialHeading": float(n.heading),
+                    "Connection": "Free",
                     "IncludedInStatics": "6 DOF",
                     "PrimaryMotion": "Calculated (6 DOF)",
+                    "WaveFrequencyMotion": "Calculated (6 DOF)",
                     "SuperimposedMotion": "None",
                     "PrimaryMotionIsTreatedAs": "Wave frequency",
                     "IncludeWaveLoad1stOrder": "Yes",
                     "IncludeAddedMassAndDamping": "Yes",
                     "IncludeOtherDamping": "Yes",
+                    "IncludeManoeuvringLoad": "No",
+                    "IncludeCurrentLoad": "No",
+                    "IncludeWindLoad": "No",
+                    "IncludeWaveDriftLoad2ndOrder": "No",
+                    "IncludeWaveDriftDamping": "No",
+                    "IncludeSumFrequencyLoad": "No",
+                    "IncludeAppliedLoads": "No",
                 }
 
                 # Modify the buoy to be on the vessel
@@ -796,9 +858,15 @@ def export_ofx_yml(s, filename):
 
             lines.append(line)
 
+        if isinstance(n, Buoyancy):
+            raise ValueError("buoyancy nodes are not supported by Orcaflex. Convert to a linear hydrostatics node first (hint: use linearize_buoyancy function).")
+
     # Write the yml
 
     data = dict()
+
+    data['General'] = general
+    data['Environment'] = environment
 
     if buoys:
         data["6DBuoys"] = buoys

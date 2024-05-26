@@ -156,19 +156,6 @@ def connector6D_to_cables(s, L6D : LC6d, L=100):
     dy = max(dy, 1e-12)
     dz = max(dz, 1e-12)
 
-    print(f"kx = {kx}")
-    print(f"ky = {ky}")
-    print(f"kz = {kz}")
-
-    print(f"dx = {dx}")
-    print(f"dy = {dy}")
-    print(f"dz = {dz}")
-
-    print(f"mx = {mx}, dy^2*kz + dz^2*ky = {dy**2*kz + dz**2*ky}")
-    print(f"my = {my}, dz^2*kx + dx^2*kz = {dz**2*kx + dx**2*kz}")
-    print(f"mz = {mz}, dx^2*ky + dy^2*kx = {dx**2*ky + dy**2*kx}")
-
-
     # Make points on the corners of the cube
     positions = [(dx,dy,dz), (-dx,dy,dz), (dx,-dy,dz), (-dx,-dy,dz),
                  (dx,dy,-dz), (-dx,dy,-dz), (dx,-dy,-dz), (-dx,-dy,-dz)]
