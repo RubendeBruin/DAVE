@@ -274,7 +274,7 @@ def register_nodeprop(
 # ========== BLENDER ==============
 
 BLENDER_BASE_SCENE = RESOURCE_PATH[0] / "base ocean.blend"
-BLENDER_DEFAULT_OUTFILE = PATH_TEMP / "blenderout.blend"
+
 BLENDER_CABLE_DIA = 0.1  # m
 BLENDER_BEAM_DIA = 0.5  # m
 BLENDER_FPS = 30
