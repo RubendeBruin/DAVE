@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from PySide6.QtGui import QColor
 
 from DAVE import Point, Circle, Buoyancy
+from DAVE.gui.helpers.info_message import InfoMessage
 from DAVE.visual_helpers.vtkActorMakers import Line, Lines
 from DAVE.gui.dialog_advanced_cable_settings import AdvancedCableSettings
 from DAVE.gui.dock_system.dockwidget import *
@@ -703,6 +704,8 @@ class EditVisual(AbstractNodeEditorWithParent):
         self.ui.pbRescan.pressed.connect(self.update_resource_list)
         self.ui.pbReloadFile.pressed.connect(self.reload_visual)
 
+        self.ui.comboBox.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+
         self.ui.comboBox.editTextChanged.connect(self.generate_code)
         self.resources_loaded = False
 
@@ -767,9 +770,17 @@ class EditVisual(AbstractNodeEditorWithParent):
 
     def generate_code(self):
         if self.scene.is_valid_resource_path(self.ui.comboBox.currentText()):
-            self.ui.comboBox.setStyleSheet("")
+            resource = self.scene.get_resource_path(self.ui.comboBox.currentText())
+
+            if resource.suffix in ['.stl','.obj']:
+                self.ui.comboBox.setStyleSheet("")
+            else:
+                self.ui.comboBox.setStyleSheet("background: orange")
+                InfoMessage("Only .stl and .obj files are supported", self.ui.comboBox.mapToGlobal(self.ui.comboBox.pos()))
+                return
         else:
             self.ui.comboBox.setStyleSheet("background: orange")
+            return
 
         code = ""
         element = "\ns['{}']".format(self.node.name)
