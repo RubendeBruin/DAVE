@@ -406,27 +406,28 @@ class VisualActor:
         # the following ifs all end with Return, so only a single one is executed
 
         if isinstance(self.node, dn.Visual):
-            A = self.actors["main"]
+            # A = self.actors["main"]
+            for A in self.actors.values():
 
-            t = vtkTransform()
-            t.Identity()
-            t.PostMultiply()
+                t = vtkTransform()
+                t.Identity()
+                t.PostMultiply()
 
-            t.Scale(self.node.scale)
+                t.Scale(self.node.scale)
 
-            # calculate wxys from node.rotation
-            r = self.node.rotation
-            angle = (r[0] ** 2 + r[1] ** 2 + r[2] ** 2) ** (0.5)
-            if angle > 0:
-                t.RotateWXYZ(angle, r[0] / angle, r[1] / angle, r[2] / angle)
+                # calculate wxys from node.rotation
+                r = self.node.rotation
+                angle = (r[0] ** 2 + r[1] ** 2 + r[2] ** 2) ** (0.5)
+                if angle > 0:
+                    t.RotateWXYZ(angle, r[0] / angle, r[1] / angle, r[2] / angle)
 
-            t.Translate(self.node.offset)
+                t.Translate(self.node.offset)
 
-            # Get the parent matrix (if any)
-            if self.node.parent is not None:
-                apply_parent_translation_on_transform(self.node.parent, t)
+                # Get the parent matrix (if any)
+                if self.node.parent is not None:
+                    apply_parent_translation_on_transform(self.node.parent, t)
 
-            SetTransformIfDifferent(A, t)
+                SetTransformIfDifferent(A, t)
 
             return
 

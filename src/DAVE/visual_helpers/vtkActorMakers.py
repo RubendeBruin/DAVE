@@ -46,6 +46,7 @@ from vtkmodules.vtkFiltersSources import (
     vtkArrowSource,
 )
 from vtkmodules.vtkIOGeometry import vtkOBJReader, vtkSTLReader
+from vtkmodules.vtkIOImport import vtkGLTFImporter
 from vtkmodules.vtkRenderingCore import vtkActor, vtkPolyDataMapper
 
 from DAVE.visual_helpers.constants import ACTOR_COLOR, ACTOR_ROUGHESS, ACTOR_METALIC
@@ -287,8 +288,30 @@ def polydata_from_file(filename):
 
     return source
 
+def actors_from_gltf(filename):
+    """Reads a .glb file and returns a list of actors"""
+
+    importer = vtkGLTFImporter()
+    importer.SetFileName(filename)
+    importer.Read()
+
+    # Get the actors from the importer
+    actors = importer.GetRenderer().GetActors()
+
+    actors.InitTraversal()
+    print(actors.GetNumberOfItems())
+
+    R = []
+
+    for i in range(actors.GetNumberOfItems()):
+        R.append(actors.GetNextActor())
+
+    return R
+
 
 def vp_actor_from_file(filename):
+
+
     source = polydata_from_file(filename)
 
     # # clean the data

@@ -772,11 +772,11 @@ class EditVisual(AbstractNodeEditorWithParent):
         if self.scene.is_valid_resource_path(self.ui.comboBox.currentText()):
             resource = self.scene.get_resource_path(self.ui.comboBox.currentText())
 
-            if resource.suffix in ['.stl','.obj']:
+            if resource.suffix in ['.stl','.obj','.glb', '.gltf']:
                 self.ui.comboBox.setStyleSheet("")
             else:
                 self.ui.comboBox.setStyleSheet("background: orange")
-                InfoMessage("Only .stl and .obj files are supported", self.ui.comboBox.mapToGlobal(self.ui.comboBox.pos()))
+                InfoMessage("Only .stl, .obj and gtlf (.glb, .gltf) files are supported", self.ui.comboBox.mapToGlobal(self.ui.comboBox.pos()))
                 return
         else:
             self.ui.comboBox.setStyleSheet("background: orange")

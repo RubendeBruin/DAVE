@@ -46,7 +46,7 @@ from DAVE.visual_helpers.vtkActorMakers import (
     PlaneXY,
     actor_from_trimesh,
     Cylinder,
-    Circle,
+    Circle, actors_from_gltf,
 )
 from DAVE.visual_helpers.vtkHelpers import (
     transform_from_direction,
@@ -58,6 +58,47 @@ from DAVE.visual_helpers.vtkHelpers import (
 )
 
 import DAVE.nodes as dn
+
+
+def visual_actors_from_file(file,
+                            actors_dict: dict,
+                            N : dn.Visual):
+
+    actors = actors_dict # alias
+
+
+    if str(file).lower().endswith('glb'):
+
+        gltf_actors = actors_from_gltf(file)
+
+        if not gltf_actors:
+            raise ValueError(f"No actors were created from GLTF file {file}")
+
+        actors.clear()
+        actors["main"] = gltf_actors[0]
+        for i, a in enumerate(gltf_actors[1:]):
+            actors[f"extra_{i}"] = a
+
+    else:
+
+        visual = vp_actor_from_file(file)
+        actors.clear()
+        actors["main"] = visual
+
+    for actor in actors.values():
+
+        actor.loaded_obj = file
+        actor.actor_type = ActorType.VISUAL
+
+        if N.visual_outline == dn.VisualOutlineType.NONE:
+            actor.no_outline = True
+            actor.do_silhouette = False
+        elif N.visual_outline == dn.VisualOutlineType.FEATURE:
+            actor.do_silhouette = False
+            actor.no_outline = False
+        else:
+            actor.do_silhouette = True
+            actor.no_outline = False
 
 
 class AbstractSceneRenderer:
@@ -498,21 +539,10 @@ class AbstractSceneRenderer:
 
             if isinstance(N, dn.Visual):
                 file = self.scene.get_resource_path(N.path)
-                visual = vp_actor_from_file(file)
+                visual_actors_from_file(file,
+                                        actors_dict=actors,
+                                        N=N)
 
-                if N.visual_outline == dn.VisualOutlineType.NONE:
-                    visual.no_outline = True
-                    visual.do_silhouette = False
-                elif N.visual_outline == dn.VisualOutlineType.FEATURE:
-                    visual.do_silhouette = False
-                    visual.no_outline = False
-                else:
-                    visual.do_silhouette = True
-                    visual.no_outline = False
-
-                visual.loaded_obj = file
-                visual.actor_type = ActorType.VISUAL
-                actors["main"] = visual
 
             if isinstance(N, dn.Frame):
                 size = 1
@@ -828,29 +858,17 @@ class AbstractSceneRenderer:
                     if file == va.actors["main"].loaded_obj:
                         continue
 
-                    self.renderer.RemoveActor(va.actors["main"])
+                    # self.renderer.RemoveActor(va.actors["main"])
+                    for A in va.actors.values():
+                        self.renderer.RemoveActor(A)
 
-                    # update the obj
-                    va.actors["main"] = vp_actor_from_file(file)
-                    va.actors["main"].loaded_obj = file
-                    va.actors["main"].actor_type = ActorType.VISUAL
+                    visual_actors_from_file(file, actors_dict=va.actors, N = va.node)
 
-                    # set the outline visibility (copy from "create")
 
-                    if va.node.visual_outline == dn.VisualOutlineType.NONE:
-                        va.actors["main"].no_outline = True
-                        va.actors["main"].do_silhouette = False
-                    elif va.node.visual_outline == dn.VisualOutlineType.FEATURE:
-                        va.actors["main"].do_silhouette = False
-                        va.actors["main"].no_outline = False
-                    else:
-                        va.actors["main"].do_silhouette = True
-                        va.actors["main"].no_outline = False
+                    for A in va.actors.values():
+                        self.renderer.AddActor(A)
 
-                    if not va.node.visible:
-                        va.actors["main"].off()
-
-                    self.add(va.actors["main"])
+                    # self.add(va.actors["main"])
 
                 if (
                     isinstance(va.node, dn.Buoyancy)
