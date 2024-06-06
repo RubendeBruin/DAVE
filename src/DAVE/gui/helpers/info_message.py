@@ -4,11 +4,11 @@ from PySide6.QtWidgets import QLabel, QApplication, QWidget, QMenu
 
 
 class InfoMessage:
-    def __init__(self, message):
+    def __init__(self, message, pos=None):
         # get cursor position
-
-        cursor = QCursor()
-        pos = cursor.pos()
+        if pos is None:
+            cursor = QCursor()
+            pos = cursor.pos()
 
         self.menu = QMenu()
         self.menu.addAction(message)

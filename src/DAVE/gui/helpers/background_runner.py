@@ -10,18 +10,22 @@ from PySide6.QtGui import QIcon, Qt
 from PySide6.QtWidgets import QDialog, QApplication
 from PySide6.QtCore import Signal, Slot, QObject
 
+
 class SignalWrapper(
-    QObject):  # slots need to be defined inside a class derived from QObject (ref: https://wiki.qt.io/Qt_for_Python_Signals_and_Slots)
+    QObject
+):  # slots need to be defined inside a class derived from QObject (ref: https://wiki.qt.io/Qt_for_Python_Signals_and_Slots)
     # Signals are runtime objects owned by instances, they are not class attributes:
     action = Signal(str)
 
-class BackgroundRunnerGui:
-    """Runs tasks in the background and displays a dialog while running them.
-    """
 
-    def __init__(self, commands: list[list[str]], title = "Running external commands..."):
+class BackgroundRunnerGui:
+    """Runs tasks in the background and displays a dialog while running them."""
+
+    def __init__(self, commands: list[list[str]], title="Running external commands..."):
         """Constructor"""
-        assert QApplication.instance() is not None, "QApplication must be created before creating a BackgroundRunner"
+        assert (
+            QApplication.instance() is not None
+        ), "QApplication must be created before creating a BackgroundRunner"
         application = QApplication.instance()
 
         self.active_command = "Starting..."
@@ -44,7 +48,6 @@ class BackgroundRunnerGui:
         # disable close button
         dialog.setWindowFlags(dialog.windowFlags() & ~Qt.WindowCloseButtonHint)
 
-
         @Slot(str)
         def update_text(text: str):
             label.setText(text)
@@ -60,13 +63,12 @@ class BackgroundRunnerGui:
             else:
                 dialog.close()
 
-
         self.on_done = SignalWrapper()
         self.on_done.action.connect(on_done_func)
 
         self.do_terminate = False
 
-        new_thread = Thread(target = self.run_commands)
+        new_thread = Thread(target=self.run_commands)
         new_thread.start()
 
         def terminate():
@@ -80,12 +82,21 @@ class BackgroundRunnerGui:
 
     def run_commands(self):
         for command in self.commands:
-
             self.feedback.action.emit(f"Running command: {command}")
+
+            if isinstance(command, str):
+                if command.startswith("SLEEP"):
+                    sleeptime = float(command.split()[1])
+                    self.feedback.action.emit(f"Sleeping for {sleeptime} seconds")
+                    time.sleep(sleeptime)
+                    continue
+
             print(f"Running command: {command}")
 
             try:
-                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                process = subprocess.Popen(
+                    command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                )
             except:
                 self.on_done.action.emit(f"Error running {command}")
                 return
@@ -115,21 +126,11 @@ class BackgroundRunnerGui:
         self.on_done.action.emit("")
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     app = QApplication([])
-    commands = [["ping", "8.8.8.8", "-n","4"],   # hello google
-                ["ping", "1.2.3.4", "-n", "4"],  # this one times out
-                ]
+    commands = [
+        ["ping", "8.8.8.8", "-n", "4"],  # hello google
+        ["ping", "1.2.3.4", "-n", "4"],  # this one times out
+    ]
     BackgroundRunnerGui(commands)
     app.exec()
-
-
-
-
-
-
-
-
-
-

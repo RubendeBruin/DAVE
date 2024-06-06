@@ -382,7 +382,6 @@ class AbstractNodeEditorWithParent(NodeEditor):
         )
 
 
-@Singleton
 class EditNode(NodeEditor):
     """The basic settings of every node: Name and Visible"""
 
@@ -393,7 +392,7 @@ class EditNode(NodeEditor):
         self.ui = ui
         self._widget = widget
         self.filling = False
-        self._editing = ''
+        self._editing = ""
 
         ui.cbVisible.toggled.connect(self.visible_changed)
         ui.lbColor.mousePressEvent = self.color_clicked
@@ -427,9 +426,7 @@ class EditNode(NodeEditor):
 
         self.filling = False
 
-
     def nameChangedEnter(self):
-
         if self.filling:
             return
 
@@ -447,7 +444,6 @@ class EditNode(NodeEditor):
                 if not new_name == node.name:
                     code = element + ".name = '{}'".format(new_name)
                     self.run_code(code, guiEventType.SELECTED_NODE_MODIFIED)
-
 
     def visible_changed(self):
         node = self.node
@@ -3013,7 +3009,7 @@ class WidgetNodeProps(guiDockWidget):
 
         self.layout = QtWidgets.QVBoxLayout()
 
-        self._node_name_editor = EditNode.Instance()
+        self._node_name_editor = EditNode()
 
         self._name_widget = self._node_name_editor.widget
         self.layout.addWidget(self._name_widget)
@@ -3196,6 +3192,7 @@ class WidgetNodeProps(guiDockWidget):
 
         #
         no_name_editor = getattr(node, "_no_name_editor", False)
+
         self._name_widget.setVisible(not no_name_editor)
 
         suppressed_editors = getattr(node, "_suppressed_node_editors", [])

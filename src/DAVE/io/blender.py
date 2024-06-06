@@ -35,6 +35,8 @@
 
 
 """
+import time
+
 from vtkmodules.vtkCommonDataModel import vtkLine
 
 from DAVE.tools import running_in_gui
@@ -60,7 +62,91 @@ import numpy as np
 
 import subprocess
 
-# import vtk
+
+def try_get_blender_executable():
+    import platform
+
+    if platform.system().lower().startswith("win"):
+        # on windows we can possibly get blender from the registry
+        import winreg
+        import os
+
+        def find_blender_from_reg(where, key):
+            try:
+                pt = winreg.QueryValue(where, key)
+                if pt:
+                    if "%1" in pt:
+                        pt = pt[1:-6]  # strip the %1
+
+                    if os.path.exists(pt):
+                        return pt
+                    else:
+                        pass
+                        # print(f'Blender NOT found here {pt} as listed in {key}')
+            except Exception as E:
+                # print(f'Error when looking for blender here: {key} - {str(E)}')
+                raise ValueError("Not found here")
+
+        BLENDER_EXEC = None
+
+        where_is_blender_in_the_registry = [
+            (winreg.HKEY_CLASSES_ROOT, r"Applications\blender.exe\shell\open\command"),
+            (
+                winreg.HKEY_CLASSES_ROOT,
+                r"Applications\blender-launcher.exe\shell\open\command",
+            ),
+            (
+                winreg.HKEY_CURRENT_USER,
+                r"SOFTWARE\Classes\Applications\blender-launcher.exe\shell\open\command",
+            ),
+            (
+                winreg.HKEY_CURRENT_USER,
+                r"SOFTWARE\Classes\Applications\blender-launcher.exe\shell\open\command",
+            ),
+            (
+                winreg.HKEY_CURRENT_USER,
+                r"SOFTWARE\Classes\blendfile\shell\open\command",
+            ),
+            (
+                winreg.HKEY_LOCAL_MACHINE,
+                r"SOFTWARE\Classes\blendfile\shell\open\command",
+            ),
+        ]
+
+        for possibility in where_is_blender_in_the_registry:
+            try:
+                BLENDER_EXEC = find_blender_from_reg(*possibility)
+            except:
+                pass
+
+        # find it in a path
+        # by default the windows-store version seems to be installed in a location which is in the path
+
+        if BLENDER_EXEC == None:
+            paths = os.environ["PATH"].split(";")
+            for pth in paths:
+                test = pth + r"\\blender-launcher.exe"
+                if os.path.exists(test):
+                    BLENDER_EXEC = test
+                    break
+
+        if BLENDER_EXEC:
+            print("Blender found at: {}".format(BLENDER_EXEC))
+        else:
+            print(
+                "! Blender not found - Blender can be installed from the microsoft windows store."
+                "   if you have blender already and want to be able to use blender then please either:\n"
+                "   - configure windows to open .blend files with blender automatically \n"
+                "   - add the folder containing blender-launcher.exe to the PATH variable."
+            )
+
+            return "Blender can not be found automatically"
+
+        # print('\nLoading DAVE...')
+    else:  # assume we're on linux
+        BLENDER_EXEC = "blender"
+
+    return BLENDER_EXEC
 
 
 # utility functions for our python scripts are hard-coded here
@@ -579,6 +665,11 @@ def create_blend_and_open(
         wavefield=wavefield,
         frames_per_step=frames_per_step,
     )
+
+    # check that blender has started and has opened the file
+    # if not then wait for that to happen because the temporary file
+    # will be deleted when the script ends
+
     # command = 'explorer "{}"'.format(str(blender_result_file))
     # subprocess.call(command, creationflags=subprocess.DETACHED_PROCESS)
 
@@ -600,7 +691,12 @@ def create_blend(
         blender_base_file = consts.BLENDER_BASE_SCENE
 
     if blender_result_file is None:
-        blender_result_file = consts.BLENDER_DEFAULT_OUTFILE
+        i = 0
+        while True:
+            blender_result_file = consts.PATH_TEMP / f"result{i}.blend"
+            if not blender_result_file.exists():
+                break
+            i += 1
 
     blender_py_file(
         scene,
@@ -629,12 +725,14 @@ def create_blend(
     if running_in_gui():
         command_run = [blender_exe_path, "-b", "--python", str(tempfile)]
         command_open = [blender_exe_path, str(blender_result_file)]
+        command_wait = "SLEEP 5"
 
         from DAVE.gui.helpers.background_runner import BackgroundRunnerGui
 
-        BackgroundRunnerGui([command_run, command_open])
+        BackgroundRunnerGui([command_run, command_open, command_wait])
 
     else:
+        print(f"Creating Blender file here: {tempfile}")
         print("Producing Blender file using:")
         print(command_run)
         result = subprocess.run(command_run)
