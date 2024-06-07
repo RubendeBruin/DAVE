@@ -11,11 +11,4 @@
 from DAVE import *
 
 if __name__ == '__main__':
-    s = Scene()
-
-    s.new_frame(name='Frame')
-    s.new_visual(name='Visual', parent='Frame', path='res: cube_with_bevel.obj')
-
-    s['Visual'].path = r'H:\assets\HL10\Visuals\Hebo Lift 10 JIB brace frame.glb'
-
-    DG(s)
+    DG()

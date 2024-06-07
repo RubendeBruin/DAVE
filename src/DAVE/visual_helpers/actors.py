@@ -262,23 +262,6 @@ class VisualActor:
                 new_painter_settings[k] = v
             node_painter_settings = new_painter_settings
 
-        # # label
-        # if settings.label_scale > 0 and self.label_actor.GetCaption() != "":
-        #     if (
-        #         self.label_actor.GetVisibility()
-        #         != node_painter_settings["main"].labelShow
-        #     ):
-        #         self.label_actor.SetVisibility(node_painter_settings["main"].labelShow)
-        #
-        #     ta = self.label_actor.GetTextActor()
-        #
-        #     txtprop = ta.GetTextProperty()
-        #
-        #     if txtprop.GetFontSize() != int(settings.label_scale * 10):
-        #         txtprop.SetFontSize(int(settings.label_scale * 10))
-        # else:
-        #     self.label_actor.SetVisibility(False)
-
         # check for UCs, create uc_paint accordingly
         uc_paint = None
         if settings.paint_uc:
@@ -309,8 +292,11 @@ class VisualActor:
             if key in node_painter_settings:
                 actor_settings = node_painter_settings[key]
             else:
-                print(f"No paint for actor {node_class} {key}")
-                continue
+                if node_class == "Visual":
+                    pass # it is ok for visuals
+                else:
+                    print(f"No paint for actor {node_class} {key}")
+                    continue
 
             # ****** Some very-custom code for Buoyancy ********
 
