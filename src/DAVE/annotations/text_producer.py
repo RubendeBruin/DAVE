@@ -13,7 +13,7 @@ class ProduceTextAlgorithm(Enum):
     NOTHING = 0            # just the raw text
     PROPERTY = 1           # the text is a property of the node, nicely formatted using docs
     PROPERTY_RAW = 2       # the text is a property of the node, but not formatted
-    EVAL = 3               # the text is evaluated as python code
+    EVAL = 3               # the text is evaluated as python code, the result is used a label. The node is available as 'node'
 
 
 class TextProducer(HasNodeReference):
