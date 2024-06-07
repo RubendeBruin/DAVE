@@ -100,6 +100,8 @@ def visual_actors_from_file(file,
             actor.do_silhouette = True
             actor.no_outline = False
 
+        actor._original_color = actor.GetProperty().GetColor()
+
 
 class AbstractSceneRenderer:
     """Scene renderer

@@ -341,13 +341,18 @@ class VisualActor:
                 props.SetRepresentationToSurface()
 
                 if uc_paint is None:
-                    props.SetColor(
-                        (
-                            actor_settings.surfaceColor[0] / 255,
-                            actor_settings.surfaceColor[1] / 255,
-                            actor_settings.surfaceColor[2] / 255,
+
+                    # do we have an original color to restore?
+                    if hasattr(actor, "_original_color") and not self._is_selected:  # support for colored visuals (gltf)
+                        props.SetColor(actor._original_color)
+                    else:
+                        props.SetColor(
+                            (
+                                actor_settings.surfaceColor[0] / 255,
+                                actor_settings.surfaceColor[1] / 255,
+                                actor_settings.surfaceColor[2] / 255,
+                            )
                         )
-                    )
                 else:
                     props.SetColor(uc_paint[:3])
 
