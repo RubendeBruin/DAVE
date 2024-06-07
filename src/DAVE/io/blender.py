@@ -208,21 +208,21 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), or
                 # bpy.context.active_object
                 objects.append(bpy.context.view_layer.objects.active)
 
+    elif filepath.endswith('.obj') or filepath.endswith('.stl') or filepath.endswith('.glb') or filepath.endswith('.gltf'):
+        if filepath.endswith('.obj'):
+            obj = bpy.ops.wm.obj_import(filepath=filepath)
+        elif filepath.endswith('.stl'):
+            obj = bpy.ops.import_mesh.stl(filepath=filepath)
+        elif filepath.endswith('.glb') or filepath.endswith('.gltf'):
+            obj = bpy.ops.import_scene.gltf(filepath=filepath)
+        else:
+            raise ValueError(f'Unknown file format for {filepath}')
 
-    elif filepath.endswith('.obj'):
-        obj = bpy.ops.wm.obj_import(filepath=filepath)
         objects = []
         for obj in bpy.context.selected_objects:
             obj.rotation_euler[0] = 0
             objects.append(obj)
 
-
-    elif filepath.endswith('.stl'):
-        obj = bpy.ops.import_mesh.stl(filepath=filepath)
-        objects = []
-        for obj in bpy.context.selected_objects:
-            obj.rotation_euler[0] = 0
-            objects.append(obj)
 
     view3d_area = get_context_area()
 
@@ -654,6 +654,7 @@ def create_blend_and_open(
     animation_dofs=None,
     wavefield=None,
     frames_per_step=1,
+    tempfile = None
 ):
     create_blend(
         scene,
@@ -664,6 +665,7 @@ def create_blend_and_open(
         animation_dofs=animation_dofs,
         wavefield=wavefield,
         frames_per_step=frames_per_step,
+        tempfile = tempfile
     )
 
     # check that blender has started and has opened the file
@@ -683,9 +685,11 @@ def create_blend(
     animation_dofs=None,
     wavefield=None,
     frames_per_step=1,
+    tempfile = None
 ):
     # Can not use real temp files as those may be deleted before Blender can open them
-    tempfile = Path(consts.PATH_TEMP) / "blender.py"
+    if tempfile is None:
+        tempfile = Path(consts.PATH_TEMP) / "blender.py"
 
     if blender_base_file is None:
         blender_base_file = consts.BLENDER_BASE_SCENE
@@ -740,6 +744,7 @@ def create_blend(
             print("done, opening the file")
             assert Path(blender_result_file).exists(), "Blender file not created :-("
             subprocess.Popen(command_open)
+            time.sleep(5)
         else:
             print("Blender file creation failed")
             return
