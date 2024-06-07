@@ -1,0 +1,62 @@
+
+
+# code for Frame
+s.new_frame(name='Frame',
+           position=(0,
+                     0,
+                     0),
+           rotation=(0,
+                     0,
+                     0),
+           fixed =(True, True, True, True, True, True),
+            )
+
+# code for Body
+s.new_rigidbody(name='Body',
+                mass=0,
+                cog=(0,
+                     0,
+                     0),
+           position=(0,
+                     0,
+                     2),
+           rotation=(0,
+                     0,
+                     0),
+           fixed =(True, True, True, True, True, True),
+                )
+
+# code for Point2
+s.new_point(name='Point2',
+          position=(0,
+                    0,
+                    6))
+
+# code for Point
+s.new_point(name='Point',
+          parent='Frame',
+          position=(2,
+                    0,
+                    0))
+
+# code for Visual
+s.new_visual(name='Visual',
+            parent=None,
+            path=r'wirecube.obj',
+            offset=(0, -2, 0), 
+            rotation=(0, 0, 0), 
+            scale=(1, 1, 1) )
+
+# code for Circle
+c = s.new_circle(name='Circle',
+            parent='Point',
+            axis=(0.707107, 0.707107, 0),
+            radius=1 )
+
+# code for Cable
+s.new_cable(name='Cable',
+            endA='Point2',
+            endB='Point2',
+            length=8,
+            EA=13000.0,
+            sheaves = ['Circle'])
