@@ -80,7 +80,7 @@ from PySide6.QtWidgets import (
     QToolBar,
     QWidget,
     QDialogButtonBox,
-    QMenu,
+    QMenu, QStyleFactory,
 )
 
 from DAVE.gui.autosave import DaveAutoSave
@@ -333,7 +333,8 @@ class Gui:
         else:
             self.app = app
 
-        # self.app.setStyle("Fusion")
+        if "windowsvista" in QStyleFactory.keys():
+            self.app.setStyle("windowsvista")
 
         # pre-load icons
         for key, icon in ICONS.items():

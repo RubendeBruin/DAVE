@@ -217,7 +217,7 @@ def _dock_return_to_hidden_state(d: PySide6QtAds.CDockWidget):
 
     else:
         manager.addAutoHideDockWidget(
-            PySide6QtAds._ads.SideBarLocation.SideBarRight, d
+            PySide6QtAds.ads.SideBarLocation.SideBarRight, d
         )  # Ref: https://github.com/mborgerson/pyside6_PySide6QtAds/issues/23
 
 
@@ -237,7 +237,7 @@ def add_global_dock(
         d.setIcon(icon)
 
     container = manager.addAutoHideDockWidget(
-        PySide6QtAds._ads.SideBarLocation.SideBarRight, d
+        PySide6QtAds.ads.SideBarLocation.SideBarRight, d
     )  # Ref: https://github.com/mborgerson/pyside6_PySide6QtAds/issues/23
 
     d.setFeature(PySide6QtAds.CDockWidget.DockWidgetFeature.CustomCloseHandling, True)
