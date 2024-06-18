@@ -1381,6 +1381,14 @@ class Scene:
         else:
             all_nodes_on = None
 
+        if kind is not None:
+            if not isinstance(kind, type) and not isinstance(kind, tuple):
+                raise ValueError(f"kind should be a type or tuple of types, not a {str(type(kind))}")
+
+        if kind_not is not None:
+            if not isinstance(kind_not, type) and not isinstance(kind_not, tuple):
+                raise ValueError(f"kind_not should be a type or tuple of types, not a {str(type(kind_not))}")
+
         # loop over all nodes
         for node in self._nodes:
             if name is not None:
@@ -1618,7 +1626,7 @@ class Scene:
         with tempfile.TemporaryDirectory() as tmp_dir:
             used_resources = self.get_used_resources()
 
-            s = self.copy(quick=True)
+            s = self.copy()
             if flatten:
                 s.flatten(exclude_known_types=True)
                 log.append("Flattened")
@@ -3767,33 +3775,6 @@ class Scene:
                 if n.color is not None:
                     code.append(f"s._try_add_color('{n.name}',{n.color})")
 
-            # Solved state of managed DOFs nodes
-
-            _modes = ("x", "y", "z", "rx", "ry", "rz")
-            _dofs = []
-            for n in self.nodes_of_type(Frame):
-                if n.manager is not None:
-                    d = [*n.position, *n.rotation]
-                    for i, f in enumerate(n.fixed):
-                        if f is False:  # free dof
-                            _dofs.append((n.name, _modes[i], d[i]))
-                            # code.append(f"s['{n.name}'].{_modes[i]} = {d[i]}")
-            if _dofs:
-                code.append("\n# Solved state of managed DOFs nodes")
-                code.append(
-                    "# wrapped in try/except because some nodes or dofs may not be present anymore (eg changed components)"
-                )
-                code.append("solved_dofs = [")
-                for dof in _dofs:
-                    code.append(f"    ('{dof[0]}', '{dof[1]}', {dof[2]}),")
-                code.append("]")
-                code.append("for dof in solved_dofs:")
-                code.append("    try:")
-                code.append("       assert s.node_exists(dof[0])")
-                code.append("       setattr(s[dof[0]],dof[1],dof[2])")
-                code.append("    except:")
-                code.append("       pass")
-                code.append("")
 
             # Optional Reports
             if self.reports and not no_reports:
@@ -3807,6 +3788,34 @@ class Scene:
             # Optional Timelines
             if self.t and not no_timeline:
                 code.extend(self.t.give_python_code())
+
+        # Solved state of managed DOFs nodes
+
+        _modes = ("x", "y", "z", "rx", "ry", "rz")
+        _dofs = []
+        for n in self.nodes_of_type(Frame):
+            if n.manager is not None:
+                d = [*n.position, *n.rotation]
+                for i, f in enumerate(n.fixed):
+                    if f is False:  # free dof
+                        _dofs.append((n.name, _modes[i], d[i]))
+                        # code.append(f"s['{n.name}'].{_modes[i]} = {d[i]}")
+        if _dofs:
+            code.append("\n# Solved state of managed DOFs nodes")
+            code.append(
+                "# wrapped in try/except because some nodes or dofs may not be present anymore (eg changed components)"
+            )
+            code.append("solved_dofs = [")
+            for dof in _dofs:
+                code.append(f"    ('{dof[0]}', '{dof[1]}', {dof[2]}),")
+            code.append("]")
+            code.append("for dof in solved_dofs:")
+            code.append("    try:")
+            code.append("       assert s.node_exists(dof[0])")
+            code.append("       setattr(s[dof[0]],dof[1],dof[2])")
+            code.append("    except:")
+            code.append("       pass")
+            code.append("")
 
         # Exposed properties of components
         exposed = getattr(self, "exposed", [])
@@ -4029,6 +4038,7 @@ class Scene:
             nodes [None] : if provided then import only these nodes
             settings     : import settings (gravity, wind etc. ) from other scene as well
             prefix       : a prefix is applied to all names of the imported nodes
+            quick        : only import the nodes, not the settings, reports, timelines etc
 
 
         Returns:

@@ -27,7 +27,7 @@ def test_get_res_spaces():
     f = s.get_resource_path("res:     cube.obj")
     assert f.name == "cube.obj"
 
-
+@pytest.mark.skip(reason="This test is interactive")
 def test_probably_an_error():
 
     """Note: fails when a gui is open

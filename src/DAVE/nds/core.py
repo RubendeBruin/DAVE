@@ -1527,10 +1527,10 @@ class Cable(NodeCoreConnected):
         if val < 1e-9:
             if self.EA > 0:
                 raise ValueError(
-                    "Length shall be more than 0 if EA>0 (otherwise stiffness EA/L becomes infinite)"
+                    f"Can not set length of {self.label} to {val}.\nLength shall be more than 0 if EA>0 (otherwise stiffness EA/L becomes infinite)"
                 )
         if val < 0:
-            raise ValueError("Length shall be more than 0")
+            raise ValueError(f"Can not set length of {self.label} to {val}.\nLength shall be more than 0")
         self._vfNode.Length = val
 
     @property

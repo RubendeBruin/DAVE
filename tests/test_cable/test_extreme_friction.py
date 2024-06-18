@@ -2,6 +2,8 @@
 
 This crashes the core
 """
+import pytest
+
 from DAVE import *
 def model_extreme_friction():
 
@@ -84,6 +86,7 @@ def test_extreme_friction():
     s = model_extreme_friction()
     s.solve_statics()
 
+@pytest.mark.skip(reason="This test is interactive")
 def test_extreme_friction_GUI_PressSolveToCrashTheGui():
     s = model_extreme_friction()
     DG(s)  # <--- press solve to crash the gui

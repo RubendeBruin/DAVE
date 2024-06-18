@@ -1,3 +1,5 @@
+import pytest
+
 from DAVE.annotations.custom_layers import NodeLabelLayer
 from DAVE.visual_helpers.image_screen_renderer import ImageRenderer
 from DAVE.visual_helpers.qt_embedded_renderer import QtEmbeddedSceneRenderer
@@ -18,6 +20,7 @@ def test_annotation_positions_image(model):
     v.show()
 
 
+@pytest.mark.skip(reason="This test is interactive")
 def test_annotation_positions_interactive(model):
     s= model
     v = SimpleSceneRenderer(s)
@@ -27,6 +30,7 @@ def test_annotation_positions_interactive(model):
 
     v.show()
 
+@pytest.mark.skip(reason="This test is interactive")
 def test_annotation_positions_interactive_qt(model):
     s= model
 

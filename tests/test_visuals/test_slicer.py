@@ -23,4 +23,4 @@ def test_slice():
 
     plt.plot(x,y)
 
-    plt.show()
+    # plt.show()

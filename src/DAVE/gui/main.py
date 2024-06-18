@@ -2794,6 +2794,10 @@ class Gui:
 
             self.scene.load_package(model_file)
 
+            # show a message
+            QMessageBox.information(self.ui.widget, "Info", "Loaded a self-contained DAVE package.\nThis is meant for model review only, do no save or export the model", QMessageBox.Ok)
+
+
         except Exception as e:
             self.show_exception(
                 f"Could not load DAVE package because {e} - partial model load, continue at own risk"

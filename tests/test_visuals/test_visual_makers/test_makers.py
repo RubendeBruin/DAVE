@@ -1,3 +1,5 @@
+import pytest
+
 import DAVE.visual_helpers.vtkActorMakers as make
 from DAVE.settings_visuals import TEXTURE_SEA
 from DAVE.visual_helpers.vtkHelpers import update_line_to_points, ApplyTexture, vtkShow, update_vertices, \
@@ -55,6 +57,7 @@ def test_points_update_on_mesh_reduce():
     actor.GetMapper().Update()
 
     # vtkShow(actor)
+@pytest.mark.skip(reason="This test is interactive")
 def test_cube_to_sphere():
     actor = make.Cube()
     sphere = make.Sphere()
@@ -64,7 +67,7 @@ def test_cube_to_sphere():
 
     vtkShow(actor)
 
-
+@pytest.mark.skip(reason="This test is interactive")
 def test_plane_with_texture():
     actor = make.PlaneXY(size=20)
 

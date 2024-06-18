@@ -1,6 +1,7 @@
+import pytest
 from DAVE import DG, Visual
 
-
+@pytest.mark.skip(reason="This test is interactive")
 def test_render_basic_nodes(model_basic_nodes):
 
     s = model_basic_nodes
