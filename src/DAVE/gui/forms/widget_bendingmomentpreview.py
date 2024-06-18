@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'widget_bendingmomentpreview.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.0
+## Created by: Qt User Interface Compiler version 6.6.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -15,14 +15,15 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QDoubleSpinBox, QFormLayout,
-    QLabel, QPushButton, QSizePolicy, QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDoubleSpinBox,
+    QFormLayout, QLabel, QPushButton, QSizePolicy,
+    QWidget)
 
 class Ui_WidgetBendingMomentPreview(object):
     def setupUi(self, WidgetBendingMomentPreview):
         if not WidgetBendingMomentPreview.objectName():
             WidgetBendingMomentPreview.setObjectName(u"WidgetBendingMomentPreview")
-        WidgetBendingMomentPreview.resize(318, 256)
+        WidgetBendingMomentPreview.resize(373, 399)
         self.formLayout = QFormLayout(WidgetBendingMomentPreview)
         self.formLayout.setObjectName(u"formLayout")
         self.label_5 = QLabel(WidgetBendingMomentPreview)
@@ -57,6 +58,11 @@ class Ui_WidgetBendingMomentPreview(object):
 
         self.formLayout.setWidget(4, QFormLayout.FieldRole, self.cbOrientation)
 
+        self.pbReport = QPushButton(WidgetBendingMomentPreview)
+        self.pbReport.setObjectName(u"pbReport")
+
+        self.formLayout.setWidget(5, QFormLayout.FieldRole, self.pbReport)
+
         self.label_3 = QLabel(WidgetBendingMomentPreview)
         self.label_3.setObjectName(u"label_3")
 
@@ -65,29 +71,29 @@ class Ui_WidgetBendingMomentPreview(object):
         self.label_4 = QLabel(WidgetBendingMomentPreview)
         self.label_4.setObjectName(u"label_4")
 
-        self.formLayout.setWidget(7, QFormLayout.LabelRole, self.label_4)
+        self.formLayout.setWidget(9, QFormLayout.LabelRole, self.label_4)
 
         self.sbScale = QDoubleSpinBox(WidgetBendingMomentPreview)
         self.sbScale.setObjectName(u"sbScale")
         self.sbScale.setMaximum(100.000000000000000)
         self.sbScale.setValue(2.000000000000000)
 
-        self.formLayout.setWidget(7, QFormLayout.FieldRole, self.sbScale)
+        self.formLayout.setWidget(9, QFormLayout.FieldRole, self.sbScale)
 
-        self.pbShear = QPushButton(WidgetBendingMomentPreview)
-        self.pbShear.setObjectName(u"pbShear")
+        self.cbBending = QCheckBox(WidgetBendingMomentPreview)
+        self.cbBending.setObjectName(u"cbBending")
 
-        self.formLayout.setWidget(9, QFormLayout.FieldRole, self.pbShear)
+        self.formLayout.setWidget(8, QFormLayout.FieldRole, self.cbBending)
 
-        self.pbBending = QPushButton(WidgetBendingMomentPreview)
-        self.pbBending.setObjectName(u"pbBending")
+        self.cbShear = QCheckBox(WidgetBendingMomentPreview)
+        self.cbShear.setObjectName(u"cbShear")
 
-        self.formLayout.setWidget(10, QFormLayout.FieldRole, self.pbBending)
+        self.formLayout.setWidget(7, QFormLayout.FieldRole, self.cbShear)
 
-        self.pbReport = QPushButton(WidgetBendingMomentPreview)
-        self.pbReport.setObjectName(u"pbReport")
+        self.label_7 = QLabel(WidgetBendingMomentPreview)
+        self.label_7.setObjectName(u"label_7")
 
-        self.formLayout.setWidget(5, QFormLayout.FieldRole, self.pbReport)
+        self.formLayout.setWidget(6, QFormLayout.FieldRole, self.label_7)
 
 
         self.retranslateUi(WidgetBendingMomentPreview)
@@ -105,10 +111,11 @@ class Ui_WidgetBendingMomentPreview(object):
 #if QT_CONFIG(tooltip)
         self.cbOrientation.setToolTip(QCoreApplication.translate("WidgetBendingMomentPreview", u"<html><head/><body><p>By default the analysis will be performed for the local X-axis.</p><p>If any other axis is required then select any other system from this drop-down box.</p><p>The calculation will then be performed using the local x-axis of that node.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
+        self.pbReport.setText(QCoreApplication.translate("WidgetBendingMomentPreview", u"Write report", None))
         self.label_3.setText(QCoreApplication.translate("WidgetBendingMomentPreview", u"Preview", None))
         self.label_4.setText(QCoreApplication.translate("WidgetBendingMomentPreview", u"Scale max to [m]", None))
-        self.pbShear.setText(QCoreApplication.translate("WidgetBendingMomentPreview", u"Show Shear", None))
-        self.pbBending.setText(QCoreApplication.translate("WidgetBendingMomentPreview", u"Show Bending", None))
-        self.pbReport.setText(QCoreApplication.translate("WidgetBendingMomentPreview", u"Write report", None))
+        self.cbBending.setText(QCoreApplication.translate("WidgetBendingMomentPreview", u"Live bending curve", None))
+        self.cbShear.setText(QCoreApplication.translate("WidgetBendingMomentPreview", u"Live sheave curve", None))
+        self.label_7.setText(QCoreApplication.translate("WidgetBendingMomentPreview", u"(Only updated when this window is visible)", None))
     # retranslateUi
 

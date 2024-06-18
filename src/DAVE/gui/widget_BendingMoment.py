@@ -38,8 +38,12 @@ class WidgetBendingMoment(guiDockWidget):
 
         self.ui.pbReport.clicked.connect(self.write_report)
 
-        self.ui.pbBending.clicked.connect(lambda: self._action(True))
-        self.ui.pbShear.clicked.connect(lambda: self._action(False))
+        # assign events
+        self.ui.cbAxis.currentIndexChanged.connect(self.update_curves)
+        self.ui.cbOrientation.currentIndexChanged.connect(self.update_curves)
+        self.ui.sbScale.valueChanged.connect(self.update_curves)
+        self.ui.cbBending.stateChanged.connect(self.update_curves)
+        self.ui.cbShear.stateChanged.connect(self.update_curves)
 
     def guiProcessEvent(self, event):
         """
@@ -54,6 +58,14 @@ class WidgetBendingMoment(guiDockWidget):
             guiEventType.MODEL_STEP_ACTIVATED,
         ]:
             self.fill()
+
+        if event in [guiEventType.MODEL_STRUCTURE_CHANGED,
+                     guiEventType.MODEL_STEP_ACTIVATED,
+                     guiEventType.MODEL_STATE_CHANGED,
+                     guiEventType.FULL_UPDATE]:
+            self.update_curves()
+
+
 
     def guiDefaultLocation(self):
         return PySide6QtAds.DockWidgetArea.RightDockWidgetArea
@@ -84,7 +96,8 @@ class WidgetBendingMoment(guiDockWidget):
         self.ui.cbAxis.blockSignals(False)
         self.ui.cbOrientation.blockSignals(False)
 
-    def _action(self, bending):
+
+    def update_curves(self):
         self.gui.visual.remove_temporary_actors()
 
         target = self.ui.cbAxis.currentText()
@@ -97,22 +110,24 @@ class WidgetBendingMoment(guiDockWidget):
         orientation = self.guiScene[orientation]
 
         self.guiScene.update()
-
         scale = self.ui.sbScale.value()
 
-        if bending:
+        if self.ui.cbBending.isChecked():
             actor_axis, actor_graph = create_momentline_actors(
                 target, scale_to=scale, at=orientation
             )
-        else:
+            self.gui.visual.add_temporary_actor(actor_axis)
+            self.gui.visual.add_temporary_actor(actor_graph)
+
+        if self.ui.cbShear.isChecked():
             actor_axis, actor_graph = create_shearline_actors(
                 target, scale_to=scale, at=orientation
             )
-
-        self.gui.visual.add_temporary_actor(actor_axis)
-        self.gui.visual.add_temporary_actor(actor_graph)
+            self.gui.visual.add_temporary_actor(actor_axis)
+            self.gui.visual.add_temporary_actor(actor_graph)
 
         self.gui.visual.refresh_embeded_view()
+
 
     def write_report(self):
         element = self.ui.cbAxis.currentText()
