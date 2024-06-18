@@ -30,6 +30,9 @@ class WidgetBendingMoment(guiDockWidget):
         upon creation and guiScene etc are not yet available.
 
         """
+
+        self.filling = True
+
         self.ui = Ui_WidgetBendingMomentPreview()
         self.ui.setupUi(self.contents)
 
@@ -44,6 +47,8 @@ class WidgetBendingMoment(guiDockWidget):
         self.ui.sbScale.valueChanged.connect(self.update_curves)
         self.ui.cbBending.stateChanged.connect(self.update_curves)
         self.ui.cbShear.stateChanged.connect(self.update_curves)
+
+        self.filling = False
 
     def guiProcessEvent(self, event):
         """
@@ -98,6 +103,8 @@ class WidgetBendingMoment(guiDockWidget):
 
 
     def update_curves(self):
+        if self.filling:
+            return
         self.gui.visual.remove_temporary_actors()
 
         target = self.ui.cbAxis.currentText()
@@ -106,8 +113,14 @@ class WidgetBendingMoment(guiDockWidget):
         if orientation == "Same as reported":
             orientation = target
 
-        target = self.guiScene[target]
-        orientation = self.guiScene[orientation]
+        try:
+            target = self.guiScene[target]
+            orientation = self.guiScene[orientation]
+        except:
+            self.filling = True
+            self.ui.cbBending.setChecked(False)
+            self.ui.cbShear.setChecked(False)
+            self.filling = False
 
         self.guiScene.update()
         scale = self.ui.sbScale.value()
