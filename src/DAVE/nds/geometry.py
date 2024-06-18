@@ -1485,3 +1485,26 @@ class Circle(NodeCoreConnected, HasParentCore):
 
         self.parent = new_parent
         self.global_axis = glob_axis
+
+    @node_setter_manageable
+    def try_swap(self, old: "Node", new: "Node") -> bool:
+        if old==new:
+            return True
+
+        # we can only swap if the new parent is a point with the same parent and position
+        # as the current parent
+
+        if old == self.parent:
+            if isinstance(new, Point):
+                if new.parent == self.parent.parent:
+
+                    move = np.linalg.norm(np.array(self.position) - np.array(new.position))
+
+                    if move < 1e-7:
+                        self.change_parent_to(new)
+                        return True
+
+
+
+        return False
+
