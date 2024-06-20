@@ -123,11 +123,22 @@ class VisualOutline:
     def update(self):
         # update transform
 
+        # Note: outlines are re-cretead if self.is_silhouette changed
+        #       so probably we do not need to check this here
+
+        visible =  getattr(self.outlined_actor, "xray", False) or self.outlined_actor.GetVisibility()
+
+        self.outline_actor.SetVisibility(visible)
+
+        if not visible:
+            return
+
         if self.is_silhouette:
 
-            SetTransformIfDifferent(
-                self.outline_actor, self.I
-            )  # outline actor shall have identity
+            # # TODO: do we need to check this every time?
+            # SetTransformIfDifferent(
+            #     self.outline_actor, self.I
+            # )  # outline actor shall have identity
 
             new_matrix = self.outlined_actor.GetMatrix()
             current_matrix = self.outline_transform.GetTransform().GetMatrix()
@@ -137,19 +148,17 @@ class VisualOutline:
 
         else:
 
-            if not vtkMatricesAlmostEqual(
-                self.I.GetMatrix(), self.outline_transform.GetTransform().GetMatrix()  # setting is quicker than checking
-            ):
-                self.outline_transform.SetTransform(self.I)
+            # # TODO: do we need to check this every time?
+            # if not vtkMatricesAlmostEqual(
+            #     self.I.GetMatrix(), self.outline_transform.GetTransform().GetMatrix()  # setting is quicker than checking
+            # ):
+            #     self.outline_transform.SetTransform(self.I)
 
             SetMatrixIfDifferent(
                 self.outline_actor, self.outlined_actor.GetMatrix()
             )  # outline transform shall have identity
 
-        self.outline_actor.SetVisibility(
-            getattr(self.outlined_actor, "xray", False)
-            or self.outlined_actor.GetVisibility()
-        )
+
 
         # get color
         color = getattr(self.outlined_actor, "_outline_color", COLOR_OUTLINE)

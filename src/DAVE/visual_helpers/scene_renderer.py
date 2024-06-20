@@ -308,15 +308,31 @@ class AbstractSceneRenderer:
                 else:
                     outline.outline_actor.SetVisibility(False)
 
+        # t.elapsed("Control outline visibility")
+
+
+        # remove the outlines of actors that are no longer present
+        # ol.outlined actor is not in buffered actors
+
+        outlined_actors = set([ol.outlined_actor for ol in self.node_outlines])
+        actors_in_scene = set(self.actors)
+
+        obsolete_outlined_actors = outlined_actors - actors_in_scene
+
+        if obsolete_outlined_actors:
+            for obsolete_outlined in obsolete_outlined_actors:
+                ol = obsolete_outlined._outline  # Note: the outlined actor has already been removed from the scene, yet it still exists (or at least the _outline prop still exists)
+                self.node_outlines.remove(ol)
+                self.remove(ol.outline_actor)
+
+
         # list actors that already have an outline
         _outlines = [a.outlined_actor for a in self.node_outlines]
 
-        # Remove outlines of nodes for which
-        # - the input data has changed
-        # - the outlined actor has been removed
+        # Remove outlines of nodes for which the input data has changed
         # such that they can be re-created
 
-        buffered_actors = self.actors
+        # buffered_actors = self.actors
 
         for ol in tuple(self.node_outlines):
             remove = False
@@ -326,8 +342,7 @@ class AbstractSceneRenderer:
                 )
                 remove = True
 
-            if ol.outlined_actor not in buffered_actors:
-                remove = True
+
             elif getattr(ol.outlined_actor, "do_silhouette", True) != ol.is_silhouette:
                 logging.info(
                     "Force-recreating outline due to silhouette/feature egde change"
@@ -357,9 +372,9 @@ class AbstractSceneRenderer:
         # Update transforms for outlines
         for outline in self.node_outlines:
             # is the parent actor still present?
-            assert (
-                outline.outlined_actor in buffered_actors
-            ), "Parent actor not present in actors list"
+            # assert (
+            #     outline.outlined_actor in buffered_actors
+            # ), "Parent actor not present in actors list"    # this can be really slow!
             outline.update()
 
     def save_to_gtlf(self, filename):
@@ -832,18 +847,23 @@ class AbstractSceneRenderer:
     def add_new_node_actors_to_screen(self):
         """Updates the screen with added actors"""
 
-        to_be_added = []
+
 
         if self.renderer:
-            actors = self.actors
-            for va in self.node_visuals:
-                for a in va.actors.values():
-                    if not (a in actors):
-                        to_be_added.append(a)
 
-                # if va.label_actor is not None:
-                #     if va.label_actor not in actors:
-                #         to_be_added.append(va.label_actor)
+            # t = TimeElapsed()
+
+            actors_in_renderer = set(self.actors)
+            actors_required = list()
+            for va in self.node_visuals:
+                actors_required.extend(va.actors.values())
+            actors_required = set(actors_required)
+
+            # difference between actors and actors_present
+            to_be_added = actors_required - actors_in_renderer
+
+            # t.elapsed("Invesigated to be added")
+
 
             if to_be_added:
                 for add_me in to_be_added:

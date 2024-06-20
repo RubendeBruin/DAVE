@@ -243,10 +243,8 @@ class LoadShearMomentDiagram:
         else:
             to_be_plotted = loads
 
-        #
-        from matplotlib import cm
 
-        colors = cm.get_cmap("hsv", lut=len(to_be_plotted))
+        colors = plt.get_cmap("hsv", lut=len(to_be_plotted))
 
         from matplotlib.patches import Polygon
 

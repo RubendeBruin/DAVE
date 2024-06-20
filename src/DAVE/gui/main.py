@@ -101,6 +101,7 @@ from DAVE.gui.helpers.qt_action_draggable import QDraggableNodeActionWidget
 from DAVE.gui.widget_layers import LayersWidget
 from DAVE.gui.widget_watches import WidgetWatches
 from DAVE.helpers.code_error_extract import get_code_error
+from DAVE.helpers.profiling_timing import TimeElapsed
 from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import DragInfo
 from DAVE.gui.widget_BendingMoment import WidgetBendingMoment
 from DAVE.gui.widget_footprints import WidgetFootprints

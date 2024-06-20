@@ -13,6 +13,7 @@ from . import auto_download
 from .scene import Scene, NodeSelector
 from .nodes import *
 from .exceptions import ModelInvalidException
+from .helpers.profiling_timing import TimeElapsed
 
 # Convenience helper to set __all__
 # generate = list(DAVE_ADDITIONAL_RUNTIME_MODULES.keys()) + [
@@ -68,6 +69,7 @@ __all__ = [
     "Scene",
     "DAVE_load_extensions",
     "DG",
+    "TimeElapsed"
 ]
 
 

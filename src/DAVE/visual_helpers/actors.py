@@ -494,7 +494,7 @@ class VisualActor:
                         if old_diameter == diameter:
                             if old_tensions is not None:
                                 if np.allclose(old_tensions, tensions):
-                                    print("Not updating cable visual")
+                                    # print("Not updating cable visual")
                                     return
 
             A._actual_points = points
