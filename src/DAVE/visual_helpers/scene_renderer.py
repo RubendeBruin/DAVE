@@ -771,10 +771,13 @@ class AbstractSceneRenderer:
 
     def remove_visuals_for_deleted_nodes(self):
         """Removes visuals for nodes that have been deleted"""
+
+        set_of_scene_nodes = set(self.scene._nodes)
+
         to_be_removed = []
 
         for V in self.node_visuals:
-            if V.node not in self.scene._nodes:
+            if V.node not in set_of_scene_nodes:
                 to_be_removed.append(V)
 
         for V in to_be_removed:
@@ -792,7 +795,7 @@ class AbstractSceneRenderer:
         Updates the geometry for visuals where needed (meshes)
         Updates the "paint_state" property for tanks and contact nodes (see paint)"""
 
-        self.remove_visuals_for_deleted_nodes()  # TODO: remove
+        self.remove_visuals_for_deleted_nodes()
 
         for V in self.node_visuals:
             V.update_geometry(viewport=self)
