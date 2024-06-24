@@ -793,20 +793,30 @@ def GZcurve_DisplacementDriven(
 
 
 def ballast_to_even_keel(
-    bs: BallastSystem, delta_fill=1, tolerance=0.01, passive_only=False, deballast=False
+    bs: BallastSystem, delta_fill=1, tolerance=0.01, passive_only=False, deballast=False,
+    feedback_func = None, do_terminate = None, solve_func = None
 ):
     """Adds `delta_fill` fill to the tank at the highest projected elevation until parent
     of ballast-system is within heel and trim tolerance.
 
     Warning: delta_fill should be matched to tolerance else the the algorithm will fail
     """
+    if feedback_func is None:
+        feedback_func = lambda x: None
+
+    if do_terminate is None:
+        do_terminate = lambda x: False
+
+    if solve_func is None:
+        solve_func = lambda: s.solve_statics()
+
 
     f = bs.parent
     s = f._scene
 
-    s.solve_statics()
+    solve_func()
 
-    log = []
+    log = ["Staring ballast to even keel operation"]
 
     while True:
         # find highest tank
@@ -853,7 +863,11 @@ def ballast_to_even_keel(
         old_heel = f.heel
         old_trim = f.trim
 
-        s.solve_statics()
+        solve_func()
+
+        feedback_func(f"heel: {f.heel:.2f} trim: {f.trim:.2f} - {log[-1]}")
+        if do_terminate():
+            return log
 
         if (f.heel * old_heel) < 0 and (f.trim * old_trim < 0):  # overshoot!
             # undo and lower fill_pct
@@ -887,9 +901,13 @@ def ballast_to_even_keel(
             if abs(f.trim) < tolerance:
                 break
 
-        if abs(f.heel) > abs(old_heel) and abs(f.trim) > abs(old_trim):
-            raise ValueError(
-                "Action did increase total absolute heel AND trim, stopping - use different tanks or change method?"
-            )
+        # did anything change?
+        if abs(f.heel - old_heel) > 1e-6 or abs(f.trim - old_trim) > 1e-6:
+            if abs(f.heel) > abs(old_heel) and abs(f.trim) > abs(old_trim):
+                raise ValueError(
+                    "Action did increase total absolute heel AND trim, stopping - use different tanks or change method?"
+                )
+        else:
+            log.append("No change in heel and trim")
 
     return log

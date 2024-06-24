@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QPushButton,
 )
 
-from DAVE.gui import Gui
+
 
 
 # define the dialog
@@ -76,6 +76,9 @@ class BlockingDialog(QDialog):
         self.button.setText("Cancelling...")
         self.app.processEvents()
 
+    def do_terminate(self):
+        return self.wants_to_cancel
+
     def feedback(self, text):
         self.label.setText(text)
         self.processEventsIfSufficientTimeElapsed()
@@ -95,6 +98,8 @@ class BlockingDialog(QDialog):
 
 if __name__ == '__main__':
     from DAVE import *
+
+    from DAVE.gui import Gui
 
     s = Scene()
     gui = Gui(s, block = False)

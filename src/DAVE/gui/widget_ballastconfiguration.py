@@ -1,6 +1,8 @@
 """
 WidgetBallastConfiguration
 """
+from DAVE.gui.helpers.gui_blocking_dialog_context import BlockingDialog
+from DAVE.gui.helpers.info_message import InfoMessage
 
 """
   This Source Code Form is subject to the terms of the Mozilla Public
@@ -300,10 +302,20 @@ class WidgetBallastConfiguration(guiDockWidget):
         deballast = self.ui.rbUp.isChecked()
         passive = self.ui.cbPassive.isChecked()
 
-        code = f"from DAVE.marine import ballast_to_even_keel\nballast_to_even_keel(s['{self._bs.name}'], passive_only={passive}, deballast={deballast})"
-        self.guiRunCodeCallback(code, guiEventType.MODEL_STATE_CHANGED)
+        from DAVE.marine import ballast_to_even_keel
 
-        self.guiPressSolveButton()
+        with BlockingDialog(self.gui) as dlg:
+            try:
+                ballast_to_even_keel(self._bs, passive_only=passive, deballast=deballast, do_terminate=dlg.do_terminate, feedback_func=dlg.feedback, solve_func = self.guiPressSolveButton)
+            except ValueError as e:
+                InfoMessage("Did not work: " + str(e))
+
+        #
+        #
+        # code = f"from DAVE.marine import ballast_to_even_keel\nballast_to_even_keel(s['{self._bs.name}'], passive_only={passive}, deballast={deballast})"
+        # self.guiRunCodeCallback(code, guiEventType.MODEL_STATE_CHANGED)
+        #
+        # self.guiPressSolveButton()
 
 
 
