@@ -263,7 +263,10 @@ def actor_from_vertices_and_faces(vertices, faces):
 
 
 def polydata_from_file(filename):
-    """Creates a vtkPolyData object from a file"""
+    """Creates a vtkPolyData providing object from a file.
+
+    The resulting instance shall provide a GetOutputPort() method that returns a vtkPolyData object.
+    """
     # load the data
     filename = str(filename)
 
@@ -273,6 +276,17 @@ def polydata_from_file(filename):
         source = vtkOBJReader()
     elif filename.lower().endswith("stl"):
         source = vtkSTLReader()
+    elif filename.lower().endswith("glb") or filename.lower().endswith("gltf"):
+        actors = actors_from_gltf(filename)
+
+        # now append the actors into a single polydata
+        append_filter = vtkAppendPolyData()
+        for actor in actors:
+            append_filter.AddInputData(actor.GetMapper().GetInput())
+        append_filter.Update()
+
+        return append_filter
+
 
     if source is None:
         raise NotImplementedError(
@@ -313,17 +327,6 @@ def vp_actor_from_file(filename):
 
 
     source = polydata_from_file(filename)
-
-    # # clean the data
-    # con = vtk.vtkCleanPolyData()
-    # con.SetInputConnection(source.GetOutputPort())
-    # con.Update()
-    #
-    #
-    # normals = vtk.vtkPolyDataNormals()
-    # normals.SetInputConnection(con.GetOutputPort())
-    # normals.ConsistencyOn()
-    # normals.AutoOrientNormalsOn()
 
     mapper = vtkPolyDataMapper()
     mapper.SetInputConnection(source.GetOutputPort())
