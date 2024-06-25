@@ -216,9 +216,15 @@ def _dock_return_to_hidden_state(d: PySide6QtAds.CDockWidget):
         manager.addAutoHideDockWidget(PySide6QtAds.ads.SideBarLocation.SideBarRight, d)
 
     else:
-        manager.addAutoHideDockWidget(
-            PySide6QtAds.ads.SideBarLocation.SideBarRight, d
-        )  # Ref: https://github.com/mborgerson/pyside6_PySide6QtAds/issues/23
+        try:
+            manager.addAutoHideDockWidget(
+                PySide6QtAds.ads.SideBarLocation.SideBarRight, d
+            )  # Ref: https://github.com/mborgerson/pyside6_PySide6QtAds/issues/23
+        except AttributeError:
+            manager.addAutoHideDockWidget(
+                PySide6QtAds._ads.SideBarLocation.SideBarRight, d
+            )  # Ref: https://github.com/mborgerson/pyside6_PySide6QtAds/issues/23
+
 
 
 def add_global_dock(
@@ -236,9 +242,15 @@ def add_global_dock(
             icon = QIcon(icon)
         d.setIcon(icon)
 
-    container = manager.addAutoHideDockWidget(
-        PySide6QtAds.ads.SideBarLocation.SideBarRight, d
-    )  # Ref: https://github.com/mborgerson/pyside6_PySide6QtAds/issues/23
+    try:
+        container = manager.addAutoHideDockWidget(
+            PySide6QtAds.ads.SideBarLocation.SideBarRight, d
+        )  # Ref: https://github.com/mborgerson/pyside6_PySide6QtAds/issues/23
+    except AttributeError:
+        container = manager.addAutoHideDockWidget(
+            PySide6QtAds._ads.SideBarLocation.SideBarRight, d
+        )  # Ref: https://github.com/mborgerson/pyside6_PySide6QtAds/issues/23
+
 
     d.setFeature(PySide6QtAds.CDockWidget.DockWidgetFeature.CustomCloseHandling, True)
     d.closeRequested.connect(lambda dock=d: _dock_return_to_hidden_state(dock))

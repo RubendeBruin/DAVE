@@ -60,6 +60,7 @@
 
 
 """
+
 import os
 import subprocess
 import sys
@@ -80,7 +81,8 @@ from PySide6.QtWidgets import (
     QToolBar,
     QWidget,
     QDialogButtonBox,
-    QMenu, QStyleFactory,
+    QMenu,
+    QStyleFactory,
 )
 
 from DAVE.gui.autosave import DaveAutoSave
@@ -1012,6 +1014,7 @@ class Gui:
     def after_startup(self):
         """Executed after the gui has started up"""
         self.visual.zoom_all()
+        self.visual._camera_direction_changed()
         self.visual.refresh_embeded_view()
 
         if self._requested_workspace is None:
@@ -2797,8 +2800,12 @@ class Gui:
             self.scene.load_package(model_file)
 
             # show a message
-            QMessageBox.information(self.ui.widget, "Info", "Loaded a self-contained DAVE package.\nThis is meant for model review only, do no save or export the model", QMessageBox.Ok)
-
+            QMessageBox.information(
+                self.ui.widget,
+                "Info",
+                "Loaded a self-contained DAVE package.\nThis is meant for model review only, do no save or export the model",
+                QMessageBox.Ok,
+            )
 
         except Exception as e:
             self.show_exception(
@@ -3557,12 +3564,15 @@ class Gui:
                 if self.visual.settings.paint_uc:
                     self.visual.update_visibility()
                 self.visual.position_visuals()
+                self.visual._camera_direction_changed()
+
                 return
 
             if event == guiEventType.MODEL_STATE_CHANGED:
                 if self.visual.settings.paint_uc:
                     self.visual.update_visibility()
                 self.visual.position_visuals()
+                self.visual._camera_direction_changed()
                 return
 
             if event == guiEventType.ENVIRONMENT_CHANGED:
@@ -3578,12 +3588,14 @@ class Gui:
                 if self.visual.settings.paint_uc:
                     self.visual.update_visibility()
                 self.visual.position_visuals()
+                self.visual._camera_direction_changed()
                 return
 
             self.visual.create_node_visuals(recreate=False)
             self.visual.add_new_node_actors_to_screen()
             self.visual.position_visuals()
             self.visual_update_selection()
+            self.visual._camera_direction_changed()
 
     def guiSelectNodes(self, nodes):
         """Replace or extend the current selection with the given nodes (depending on keyboard-modifiers). Nodes may be passed as strings or nodes, but must be an tuple or list."""

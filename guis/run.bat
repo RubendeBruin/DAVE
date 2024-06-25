@@ -27,7 +27,6 @@ echo call pyside6-uic widget_sheave.ui -o "..\src\DAVE\gui\forms\widget_sheave.p
 echo call pyside6-uic widget_linhyd.ui -o "..\src\DAVE\gui\forms\widget_linhyd.py"
 echo call pyside6-uic widget_lincon6.ui -o "..\src\DAVE\gui\forms\widget_lincon6.py"
 echo call pyside6-uic widget_beam.ui -o "..\src\DAVE\gui\forms\widget_beam.py"
-echo call pyside6-uic widget_shackle.ui -o "..\src\DAVE\gui\forms\widget_shackle.py"
 echo call pyside6-uic menu_nodetypes.ui -o "..\src\DAVE\gui\forms\menu_nodetypes.py"
 echo call pyside6-uic widget_con2d.ui -o "..\src\DAVE\gui\forms\widget_con2d.py"
 echo call pyside6-uic widget_spmt.ui -o "..\src\DAVE\gui\forms\widget_spmt.py"

@@ -11,4 +11,6 @@
 from DAVE import *
 
 if __name__ == '__main__':
-    DG()
+    s = Scene()
+
+    DG(s, autosave=False)

@@ -24,6 +24,8 @@ class HasNodeTreeMixin:
 
     def init(self):
         self._current_tree = None
+
+        """items holds a mapping from node-name to QTreeWidgetItem"""
         self.items = dict()
 
         self.show_managed_nodes = False
@@ -421,16 +423,24 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
                 new_name = get_text(suggestion=node_name, pos=global_position)
                 if new_name:
                     try:
+                        old_name = current_item.toolTip(0)
+
                         # do not update self, do that later to keep focus
                         self.guiRunCodeCallback(
-                            f"s['{current_item.toolTip(0)}'].name = '{new_name}'",
+                            f"s['{old_name}'].name = '{new_name}'",
                             guiEventType.SELECTED_NODE_MODIFIED,
                             sender=self,
-                        )
+                        )  # this may fail
 
                         # update the item manually
                         current_item.setText(0, node.label)
                         current_item.setToolTip(0, new_name)
+
+                        # and update self.items manually with the new node name
+                        # rename the key of the item in the items dict
+                        self.items[new_name] = self.items.pop(old_name)
+
+
                     except:
                         pass
 
