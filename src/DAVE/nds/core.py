@@ -1261,6 +1261,10 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
         self._scene._vfc.delete(self._inertia.name)
         super()._delete_vfc()
 
+    def unmanaged_property_values(self) ->list[tuple[str, any]]:
+        return [("free_flooding", self.free_flooding),
+                ("volume", self.volume)]
+
     @property
     def free_flooding(self) -> bool:
         """Tank is filled till global waterline (aka: damaged) [bool]"""
@@ -1279,6 +1283,8 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
         return self._vfNode.permeability
 
     @permeability.setter
+    @node_setter_manageable
+    @node_setter_observable
     def permeability(self, value):
         assert1f_positive_or_zero(value)
         self._vfNode.permeability = value

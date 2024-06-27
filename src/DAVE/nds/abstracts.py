@@ -189,6 +189,16 @@ class Node(DAVENodeBase, ABC):
         self._manager = value
         pass
 
+    def unmanaged_property_values(self)->list[tuple[str, any]]:
+        """Returns the names and values of properties that can be changed even if the node is managed AND
+        are not managed by the manager.
+
+        Setting this will, if the node is managed, result in these properties being set when loading the scene from python.
+
+        For example [('fill_pct', self.fill_pct)]
+        """
+        return []
+
     def _verify_change_allowed(self):
         """Changing the state of a node is only allowed if either:
         1. the node is not manages (node._manager is None)
