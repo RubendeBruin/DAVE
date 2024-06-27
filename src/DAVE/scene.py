@@ -3775,6 +3775,27 @@ class Scene:
                 if n.color is not None:
                     code.append(f"s._try_add_color('{n.name}',{n.color})")
 
+            # ====== Exporting unmanaged property values ======
+
+            PVs = []
+            for n in self._nodes:
+                if n.manager is not None:
+                    PV = n.unmanaged_property_values()
+                    if PV:
+                        PVs.append(f'\nPV["{n.name}"] = {PV}')
+
+            if PVs:
+                code.append("\n# Unmanaged property values")
+                code.append("PV = dict()")
+                code.extend(PVs)
+                code.append("""for k, pv in PV.items():
+    try:
+        node = s[k]
+        for p,v in pv:
+            setattr(node, p,v)
+    except:
+        pass # perfectly valid, the node is not present in the scene anymore or had changed type
+""")
 
             # Optional Reports
             if self.reports and not no_reports:
