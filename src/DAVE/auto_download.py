@@ -72,6 +72,20 @@ except ValueError as v:
 
 except ImportError as err:
 
+    if 'Module expired' in err.msg:
+        from PySide6.QtWidgets import QApplication
+
+        # show a QT information messagebox
+        from PySide6.QtWidgets import QMessageBox
+
+        app = QApplication.instance() or QApplication()
+
+        filename = DAVE_details.origin
+        msg = QMessageBox.information(None, "DAVEcore expired", "<b>DAVEcore has expired.</b><br><br>Please replace the file:<br><u>" + filename + "</u><br>with a more recent version")
+
+        sys.exit(1)
+
+
     # we did find a file, but were unable to import it. Why?
     if hasattr(err, "path"):
         print(f"Attempting to load:\n {err.path}\nfailed because:")
