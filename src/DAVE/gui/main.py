@@ -3591,6 +3591,7 @@ class Gui:
                 self.visual._camera_direction_changed()
                 return
 
+            self.visual.remove_visuals_for_deleted_nodes()
             self.visual.create_node_visuals(recreate=False)
             self.visual.add_new_node_actors_to_screen()
             self.visual.position_visuals()

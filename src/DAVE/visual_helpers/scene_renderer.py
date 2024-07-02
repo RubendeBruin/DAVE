@@ -795,7 +795,7 @@ class AbstractSceneRenderer:
         Updates the geometry for visuals where needed (meshes)
         Updates the "paint_state" property for tanks and contact nodes (see paint)"""
 
-        self.remove_visuals_for_deleted_nodes()
+        # self.remove_visuals_for_deleted_nodes()
 
         for V in self.node_visuals:
             V.update_geometry(viewport=self)
