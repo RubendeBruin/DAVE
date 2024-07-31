@@ -1068,6 +1068,9 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
             code += "\n           position=({}, {}, {}),".format(*self.position)
             code += "\n           rotation=({}, {}, {}),".format(*self.rotation)
 
+        if self.inertia > 0:
+            code += "\n           inertia = {}, ".format(self.inertia)
+
         if np.any(self.inertia_radii):
             code += "\n           inertia_radii = ({}, {}, {}),".format(
                 *self.inertia_radii

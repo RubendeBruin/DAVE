@@ -2223,7 +2223,7 @@ class Scene:
         if inertia_radii is not None:
             assert3f_positive(inertia_radii, "Radii of inertia")
             assert inertia is not None, ValueError(
-                "Can not set radii of gyration without specifying inertia"
+                f"Can not set radii of gyration without specifying inertia on {name}"
             )
 
         if not isinstance(fixed, bool):
@@ -3982,10 +3982,15 @@ class Scene:
 
         locals["s"] = self
 
+        cd = self.resource_provider.cd
+
         if package_folder is not None:
             locals["package_folder"] = package_folder
+            self.resource_provider.cd = Path(package_folder)
 
         locals.update(ds.DAVE_ADDITIONAL_RUNTIME_MODULES)
+
+
 
         try:
             exec(code, {}, locals)
@@ -4006,6 +4011,8 @@ class Scene:
             raise M
 
         finally:
+            self.resource_provider.cd = cd
+
             if stored:
                 locals["s"] = store_s  # restore the original s
 

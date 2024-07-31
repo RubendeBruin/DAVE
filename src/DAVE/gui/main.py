@@ -2123,6 +2123,7 @@ class Gui:
         self.statusbar.showMessage(str(what))
 
         if not self.ui.dockWidget_2.isVisible() and style == 1:
+            what = str(what)
             tool_long = len(what) > 1000 or len(what.split("\n")) > 30
 
             short = what[-1000:]
