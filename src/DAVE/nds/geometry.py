@@ -1068,8 +1068,14 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
             code += "\n           position=({}, {}, {}),".format(*self.position)
             code += "\n           rotation=({}, {}, {}),".format(*self.rotation)
 
-        if self.inertia > 0:
-            code += "\n           inertia = {}, ".format(self.inertia)
+        # Frame has inertia, rigid-body had mass instead
+        # So only include this if we do not have a mass property
+
+        if hasattr(self, 'mass'):
+            pass
+        else:
+            if self.inertia > 0:
+                code += "\n           inertia = {}, ".format(self.inertia)
 
         if np.any(self.inertia_radii):
             code += "\n           inertia_radii = ({}, {}, {}),".format(
