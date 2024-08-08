@@ -16,6 +16,9 @@ def model():
     m.point1 = f1
     m.point2 = f2
 
+    s = s.copy()
+    m = s['m1']
+
     return s,m
 
 def test_angle_total():

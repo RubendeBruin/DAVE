@@ -172,3 +172,14 @@ class Measurement(NodePurePython):
         angle = np.arccos(np.dot(line1, line2) / (np.linalg.norm(line1) * np.linalg.norm(line2)))
 
         return np.degrees(angle)
+
+    def give_python_code(self):
+        code = []
+        code.append(f"m = Measurement(s, '{self.name}')")
+        code.append(f"m.point1 = s['{self.point1.name}']")
+        code.append(f"m.point2 = s['{self.point2.name}']")
+        code.append(f"m.kind = MeasurementType.{self.kind.name}")
+        code.append(f"m.direction = MeasurementDirection.{self.direction.name}")
+
+        return "\n".join(code)
+
