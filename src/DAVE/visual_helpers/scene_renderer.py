@@ -685,6 +685,13 @@ class AbstractSceneRenderer:
                 a.actor_type = ActorType.CABLE
                 actors["main"] = a
 
+            if isinstance(N, dn.Measurement):
+                a = Line([(0, 0, 0), (0, 0, 0.1), (0, 0, 0)])
+                a.actor_type = ActorType.MEASUREMENT
+                a.PickableOn()
+                a.GetProperty().SetColor(0.5,0.5, 0.5)
+                actors["main"] = a
+
             if isinstance(N, dn.SPMT):
                 # SPMT
                 #

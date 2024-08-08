@@ -62,7 +62,7 @@ from DAVE.settings_visuals import CABLE_DIA_WHEN_DIA_IS_ZERO
 def glue_segments(x, y) -> list:
     """Glues segments together to form a single line or lines
 
-    If multiuple lines are created, they are sorted by the maximum diagonal distance
+    If multiple lines are created, they are sorted by the maximum diagonal distance
     such that the first line is the outside of a shape and the next ones are holes.
 
     x and y are the ouput of a slicing action.
@@ -923,7 +923,7 @@ def add_lid_to_open_mesh(vertices: list, faces: list):
     d2 = top_plane_verts[:, 0:2]
 
     try:
-        hull = ConvexHull(d2)
+        hull = ConvexHull(d2)  # alternative is using "glue" function, but that is too slow
 
         points = top_plane_verts[
             hull.vertices, :

@@ -24,6 +24,9 @@ from .helpers.profiling_timing import TimeElapsed
 
 __all__ = [
     "NodeSelector",
+    "Measurement",
+    "MeasurementDirection",
+    "MeasurementType",
     "Watch",
     "AreaKind",
     "BallastSystem",
