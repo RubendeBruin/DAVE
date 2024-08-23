@@ -4,4 +4,5 @@
 sphinx>=3.2.1
 # sphinx_rtd_theme
 urllib3>=2.2.2 # not directly required, pinned by Snyk to avoid a vulnerability
+requests>=2.32.2 # not directly required, pinned by Snyk to avoid a vulnerability
 zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
