@@ -35,7 +35,16 @@ class SimpleSceneRenderer(AbstractSceneRenderer):
         return renderer, [renderer], camera, renwin
 
 
-    def show(self):
+    def show(self, timer=None, timer_callback=None):
+
+        if timer:
+            self.interactor.Initialize()
+            self.interactor.CreateRepeatingTimer(100)
+
+            # set the timer callback
+            self.interactor.AddObserver('TimerEvent', timer_callback)
+
+
         self.interactor.Start()
 
 

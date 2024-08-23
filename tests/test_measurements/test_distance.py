@@ -23,18 +23,32 @@ def test_total_distance():
 
 def test_projected_distance():
     s,m = model()
-    m.direction = MeasurementDirection.X
+    m.reference = MeasurementDirection.X
     assert m.value == 10
+
+def test_projected_distance_flip():
+    s,m = model()
+    m.reference = MeasurementDirection.X
+    m.update_positive_direction_guide(invert=True)
+    assert m.value == -10
 
 def test_projected_distance_negative():
     s,m = model()
-    m.direction = MeasurementDirection.negative_X
+    m.reference = MeasurementDirection.X # this sets the positive direction
+    s['f2'].x = -10
     assert m.value == -10
+
+def test_projected_distance_negative_reset():
+    s,m = model()
+    m.reference = MeasurementDirection.X # this sets the positive direction
+    s['f2'].x = -10
+    m.update_positive_direction_guide(invert=False)
+    assert m.value == 10
 
 def test_projected_distance_reference():
     s,m = model()
-    m.direction = MeasurementDirection.X
-    m.reference = s['f1']
+    m.reference = MeasurementDirection.X
+    m._reference_frame = s['f1']
     assert m.value == 10
 
 
