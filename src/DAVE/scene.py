@@ -2261,6 +2261,36 @@ class Scene:
         # self._nodes.append(new_node)
         return new_node
 
+    def new_measurement(self, name, point1, point2):
+        """Creates a new *measurement* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            point1: first point
+            point2: second point
+
+        Returns:
+            Reference to newly created measurement
+
+        """
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+
+        point1 = self._node_from_node_or_str_or_None(point1)
+        point2 = self._node_from_node_or_str_or_None(point2)
+
+        assert hasattr(point1, 'global_position'), f"Error creating {name}: Point1 {point1} should have a global_position"
+        assert hasattr(point2, 'global_position'), f"Error creating {name}: Point2 {point2} should have a global_position"
+
+        # then create
+        new_node = Measurement(scene=self, name=name)
+        new_node.point1 = point1
+        new_node.point2 = point2
+
+        return new_node
+
     def new_component(
         self,
         name,

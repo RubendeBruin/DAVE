@@ -172,6 +172,7 @@ class AbstractSceneRenderer:
         self.add_new_node_actors_to_screen()
         self.position_visuals()
 
+
     def create_rendering_pipeline(
         self,
     ) -> tuple[vtkRenderer, list[vtkRenderer], vtkCamera, vtkRenderWindow]:

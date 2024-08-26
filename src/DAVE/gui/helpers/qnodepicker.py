@@ -70,6 +70,7 @@ class QNodePicker(QWidget):
         old_value = self.value
         nodes = self.scene.nodes_of_type(self.nodetypes)
 
+        # exclude self
         if self.node is None:
             names = [node.name for node in nodes]
         else:

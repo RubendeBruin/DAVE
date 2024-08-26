@@ -110,5 +110,6 @@
     <file>icons/explode.svg</file>
     <file>icons/python_code.svg</file>
     <file>icons/layer.svg</file>
+    <file>icons/measurement.svg</file>
   </qresource>
 </RCC>

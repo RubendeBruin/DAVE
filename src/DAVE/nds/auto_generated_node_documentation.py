@@ -2667,6 +2667,21 @@ DAVE_NODEPROP_INFO[cls] = dict()
 cls = DAVE_ADDITIONAL_RUNTIME_MODULES["Measurement"]
 DAVE_NODEPROP_INFO[cls] = dict()
 
+# Property: reference_frame
+info = NodePropertyInfo(node_class=cls,
+                        property_name="reference_frame",
+                        property_type=DAVE_ADDITIONAL_RUNTIME_MODULES["Frame"],
+                        doc_short="""The reference frame for the measurement or None for global coordinates """,
+                        doc_long = """The reference frame for the measurement or None for global coordinates [-]""",
+                        units = """[-]""",
+                        remarks="""""",
+                        is_settable=True,
+                        is_single_settable = True,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["reference_frame"] = info
+
+
 # Property: p1
 info = NodePropertyInfo(node_class=cls,
                         property_name="p1",
@@ -2695,6 +2710,59 @@ info = NodePropertyInfo(node_class=cls,
                         is_single_numeric = False
                         )
 DAVE_NODEPROP_INFO[cls]["p2"] = info
+
+
+# Property: measurement_vector
+info = NodePropertyInfo(node_class=cls,
+                        property_name="measurement_vector",
+                        property_type=ndarray,
+                        doc_short="""The measurement vector in global coordinates """,
+                        doc_long = """The measurement vector in global coordinates [m,m,m]""",
+                        units = """[m,m,m]""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["measurement_vector"] = info
+
+
+# Property: reference_vector
+info = NodePropertyInfo(node_class=cls,
+                        property_name="reference_vector",
+                        property_type=ndarray,
+                        doc_short="""Reference vector for the measurement, in global coordinates  or None in case of total distance""",
+                        doc_long = """Reference vector for the measurement, in global coordinates [m,m,m] or None in case of total distance
+
+        If it is a plane, then the reference vector is derived from that plane as the projection of the
+        measurement vector onto that plane.
+
+        If a positive direction guide is defined, then the projection is made such that the reference vector
+        has a positive dot product with the positive direction guide.
+
+        """,
+                        units = """[m,m,m]""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["reference_vector"] = info
+
+
+# Property: reference
+info = NodePropertyInfo(node_class=cls,
+                        property_name="reference",
+                        property_type=DAVE_ADDITIONAL_RUNTIME_MODULES["MeasurementDirection"],
+                        doc_short="""The reference direction for the measurement""",
+                        doc_long = """The reference direction for the measurement""",
+                        units = """""",
+                        remarks="""""",
+                        is_settable=True,
+                        is_single_settable = True,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["reference"] = info
 
 
 # Property: value

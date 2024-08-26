@@ -218,6 +218,36 @@ def add_cable(scene, selection=None):
     else:
         return None
 
+def add_measurement(scene, selection=None):
+    ui, AddNode = add_node(scene, selection)
+
+    ui.frmPoints.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/v2/icons/measurement.svg"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like("Measurement"))
+
+    # add circles and frames to comboboxes
+    p = list()
+    for e in scene.nodes_of_type((vfs.Frame, vfs.Circle)):
+        p.append(e.name)
+
+    ui.cbPoiA.addItems(p)
+    ui.cbPoiB.addItems(p)
+
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
+        endA = ui.cbPoiA.currentText()
+        endB = ui.cbPoiB.currentText()
+        name = ui.tbName.text()
+
+        return "new_measurement('{}','{}','{}')".format(name, endA, endB)
+
+    else:
+        return None
+
 
 def add_force(scene, selection=None):
     ui, AddNode = add_node(scene, selection)

@@ -27,15 +27,9 @@ class MeasurementDirection(Enum):
     X = 1
     Y = 2
     Z = 3
-    negative_X = 4
-    negative_Y = 5
-    negative_Z = 6
     XY = 7
     YZ = 8
     XZ = 9
-    XY_negative = 11
-    YZ_negative = 12
-    XZ_negative = 13
 
     Total = 99
 
@@ -46,17 +40,11 @@ class MeasurementDirection(Enum):
             return np.array([0, 1, 0])
         elif self == MeasurementDirection.Z or self == MeasurementDirection.XY:
             return np.array([0, 0, 1])
-        elif self == MeasurementDirection.negative_X or self == MeasurementDirection.YZ_negative:
-            return np.array([-1, 0, 0])
-        elif self == MeasurementDirection.negative_Y or self == MeasurementDirection.XZ_negative:
-            return np.array([0, -1, 0])
-        elif self == MeasurementDirection.negative_Z or self == MeasurementDirection.XY_negative:
-            return np.array([0, 0, -1])
         else:
             return None
 
     def is_plane(self):
-        return self in [MeasurementDirection.XY, MeasurementDirection.YZ, MeasurementDirection.XZ, MeasurementDirection.XY_negative, MeasurementDirection.YZ_negative, MeasurementDirection.XZ_negative]
+        return self in [MeasurementDirection.XY, MeasurementDirection.YZ, MeasurementDirection.XZ]
 
 
 class MeasurementType(Enum):
@@ -91,11 +79,12 @@ class Measurement(NodePurePython):
 
 
     @property
-    def reference_frame(self):
+    def reference_frame(self) -> Frame or None:
+        """The reference frame for the measurement or None for global coordinates [-]"""
         return self._reference_frame
 
     @reference_frame.setter
-    def reference_frame(self, value):
+    def reference_frame(self, value : Frame or None):
         assert value is None or isinstance(value, Frame), f'Error when setting refernce_frame on {self.name}: Reference frame should be a Frame or None'
         self._reference_frame = value
         self.update_positive_direction_guide()
@@ -206,11 +195,12 @@ class Measurement(NodePurePython):
 
 
     @property
-    def reference(self):
+    def reference(self) -> MeasurementDirection:
+        """The reference direction for the measurement"""
         return self._reference
 
     @reference.setter
-    def reference(self, value):
+    def reference(self, value : MeasurementDirection):
         if value != self._reference:
             self._reference = value
             self.update_positive_direction_guide()
@@ -275,6 +265,7 @@ class Measurement(NodePurePython):
         # calculate the angle between the measurement vector and the reference vector in degrees
         # consider the direction and use atan2 to get the correct angle
 
+        # noinspection PyUnreachableCode
         perp = np.cross(refvec,m)
 
         # are the vectors parallel?
@@ -287,6 +278,7 @@ class Measurement(NodePurePython):
         perp = perp / np.linalg.norm(perp)
 
         x = refvec / np.linalg.norm(refvec)
+        # noinspection PyUnreachableCode
         y = np.cross(perp, x)
 
         return x, y
@@ -312,6 +304,21 @@ class Measurement(NodePurePython):
 
         return np.degrees(angle)
 
+    def get_annotation_position(self, position_3d, position_1f):
+        """Provides the 3d position of the annotation anchor"""
+
+
+        if self.kind == MeasurementType.Distance:
+            p1, p2, p3, p4 = self.points_for_drawing()
+            return 0.5 * (p1 + p3)
+
+        else:
+            p1, p2, p3, p4 = self.points_for_drawing()
+            return (2 * p1 + p2 + p4) / 4
+
+
+
+
 
     def give_python_code(self):
         code = []
@@ -319,11 +326,16 @@ class Measurement(NodePurePython):
         code.append(f"m.point1 = s['{self.point1.name}']")
         code.append(f"m.point2 = s['{self.point2.name}']")
         code.append(f"m.kind = MeasurementType.{self.kind.name}")
-        code.append(f"m.direction = MeasurementDirection.{self.reference.name}")
-        if self._reference_frame:
-            code.append(f"m.reference = s['{self._reference_frame.name}']")
+        code.append(f"m.reference = MeasurementDirection.{self.reference.name}")
+
+        if self.reference_frame:
+            code.append(f"m.reference_frame = s['{self.reference_frame.name}']")
         if self._positive_direction_guide is not None:
-            code.append(f"m._angle_reference = {str(tuple(self._positive_direction_guide))}")
+            code.append(f"m._positive_direction_guide = {str(tuple(self._positive_direction_guide))}")
+
+        if self.flip_angle_direction:
+            code.append(f"m.flip_angle_direction = True")
+
 
         return "\n".join(code)
 

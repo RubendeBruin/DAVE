@@ -35,6 +35,10 @@ DAVE_ANNOTATION_LAYERS["Cable tension"] = CableTensionLayer
 class MeasurementsLayer(CustomNodeLayer):
     """Annotation layer that adds the tension in kN to all Cable nodes."""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.text_color = (0, 50, 220)
+
     default_selector = NodeSelector(kind=(Measurement,))
 
     def provide_annotation_for_node(self, node):

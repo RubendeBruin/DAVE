@@ -962,6 +962,12 @@ class Gui:
         self.ui.actionCopy.triggered.connect(self.clipboard_copy)
         self.ui.actionPaste.triggered.connect(self.clipboard_paste)
 
+        # === enable measurement layer
+
+        # add measurement layer
+        from DAVE.annotations.custom_layers import MeasurementsLayer
+        self.visual.layers.append(MeasurementsLayer(self.scene, scene_renderer=self.visual))
+
         # ======================== Finalize ========================
 
         self._requested_workspace = workspace
@@ -3201,6 +3207,8 @@ class Gui:
         ui.pbVisual.clicked.connect(self.new_visual)
         ui.pbComponent.clicked.connect(self.new_component)
 
+        ui.pbMeasurement.clicked.connect(self.new_measurement)
+
         menu.addAction(wa)
 
         for plugin in self.plugins_context:
@@ -3222,6 +3230,9 @@ class Gui:
 
     def new_cable(self):
         self.new_something(new_node_dialog.add_cable)
+
+    def new_measurement(self):
+        self.new_something(new_node_dialog.add_measurement)
 
     def new_force(self):
         self.new_something(new_node_dialog.add_force)

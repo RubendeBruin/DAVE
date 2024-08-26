@@ -130,6 +130,20 @@ def circle(scene, selection, *args):
 QUICK_ACTION_REGISTER.append(circle)
 
 
+def measurement(scene, selection, *args):
+    nodes = nodes_of_type(selection, (Point, Circle, Frame))
+    if nodes:
+        if len(nodes) > 1:
+            btn = QPushButton('Measure')
+            btn.setIcon(QIcon(":/v2/icons/measurement.svg"))
+
+            code = f"s.new_measurement(name = '{scene.available_name_like('Measurement')}', point1 = '{nodes[0].name}', point2 = '{nodes[1].name}')"
+
+            return [(btn,code)]
+    return []
+
+QUICK_ACTION_REGISTER.append(measurement)
+
 def actions_on_circles(scene, selection, *args):
     # At least two sheaves selected
     style_warning = "color: darkred"

@@ -63,6 +63,23 @@ def test_angle_total_XY_downwards():
 
     assert_allclose(m.value,-45) # note: no orientation is defined for a vector, so the angle is the same
 
+    s2 = s.copy()
+    m2 = s2['m1']
+    assert_allclose(m2.value,-45)
+
+def test_angle_total_XY_flipped():
+    s,m = model()
+
+    s['f2'].position = (10,0,10)
+
+    m.reference = MeasurementDirection.XY
+    m.flip_angle_direction = True
+
+    assert_allclose(m.value,-45)
+
+    s2 = s.copy()
+    m2 = s2['m1']
+    assert_allclose(m2.value,-45)
 
 
 def test_angle_total_Y():
@@ -95,5 +112,6 @@ if __name__ == '__main__':
     s,m = model()
     m.kind = MeasurementType.Angle
     m._reference_frame = s['f1']
+    s['f1'].rotation = (0,45,10)
     m.reference = MeasurementDirection.XY
-    DG(s)
+    DG(s, autosave=False)

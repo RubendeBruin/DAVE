@@ -61,4 +61,8 @@ if __name__ == '__main__':
     print('Distance:', m1.value)
     print('Angle:', m2.value)
 
-    DG(s)
+    s.delete(m1)
+
+    wheel.rotation = (0,45,10)
+
+    DG(s, autosave=False)
