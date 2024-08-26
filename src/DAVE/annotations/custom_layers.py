@@ -1,6 +1,6 @@
 # This file contains custom annotation layers for DAVE.
 
-from DAVE import NodeSelector, Scene, Cable, RigidBody, Tank
+from DAVE import NodeSelector, Scene, Cable, RigidBody, Tank, Measurement
 from DAVE.annotations import Annotation, AnnotationLayer
 from DAVE.annotations.layer import CustomNodeLayer
 from DAVE.settings import DAVE_ANNOTATION_LAYERS
@@ -32,6 +32,22 @@ DAVE_ANNOTATION_LAYERS["Cable tension"] = CableTensionLayer
 
 # ================================================================
 
+class MeasurementsLayer(CustomNodeLayer):
+    """Annotation layer that adds the tension in kN to all Cable nodes."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.text_color = (0, 50, 220)
+
+    default_selector = NodeSelector(kind=(Measurement,))
+
+    def provide_annotation_for_node(self, node):
+        return Annotation.create_node_property_raw_annotation(node, "value_str")
+
+
+DAVE_ANNOTATION_LAYERS["Measurements"] = MeasurementsLayer
+
+# ================================================================
 
 class WeightsLayer(CustomNodeLayer):
     """Annotation layer that adds the weight in tonnes to all Cable nodes."""

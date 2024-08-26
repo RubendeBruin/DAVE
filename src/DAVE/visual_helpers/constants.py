@@ -13,6 +13,7 @@ class ActorType(Enum):
     BALLASTTANK = 7
     MESH_OR_CONNECTOR = 8
     COG = 9
+    MEASUREMENT = 10
 
 
 # ================== visuals :: general =============

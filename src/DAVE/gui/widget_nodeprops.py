@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 from PySide6.QtGui import QColor
 
-from DAVE import Point, Circle, Buoyancy
+from DAVE import Point, Circle, Buoyancy, Frame
 from DAVE.gui.helpers.info_message import InfoMessage
 from DAVE.visual_helpers.vtkActorMakers import Line, Lines
 from DAVE.gui.dialog_advanced_cable_settings import AdvancedCableSettings
@@ -25,6 +25,8 @@ import DAVE.gui.forms.widget_sheave
 import DAVE.gui.forms.widget_waveinteraction
 import DAVE.gui.forms.widget_contactball
 import DAVE.gui.forms.widget_geometricconnection
+
+from DAVE.gui.forms.widget_measurement import Ui_MeasurementWidget
 
 # import DAVE.gui.forms.widget_sling
 import DAVE.gui.forms.widget_tank
@@ -1084,6 +1086,199 @@ class EditTank(NodeEditor):
         code += add(name, new_elev, "level_global")
 
         self.run_code(code)
+
+@Singleton
+class EditMeasurement(NodeEditor):
+
+    def __init__(self):
+        widget = QtWidgets.QWidget()
+        ui = Ui_MeasurementWidget()
+        ui.setupUi(widget)
+        self.ui = ui
+        self._widget = widget
+
+        # fill cbDirection with the possible values
+        # get all names of MeasurementDirection enum
+        options = [d.name for d in MeasurementDirection]
+        self.ui.cbDirection.addItems(options)
+
+        # connect signals
+        self.ui.rbDistance.toggled.connect(self.changed)
+        self.ui.rbAngle.toggled.connect(self.changed)
+        self.ui.cbDirection.currentIndexChanged.connect(self.changed)
+        self.ui.cbFlipAngleDirection.toggled.connect(self.changed)
+
+        self.ui.pbUpdatePos.clicked.connect(self.update_pos)
+        self.ui.pbUpdateInverted.clicked.connect(self.update_inverted)
+
+
+    # override connect to initialize the pickers
+    def connect(
+        self,
+        node,
+        scene,
+        run_code,
+        guiEmitEvent,
+        gui_solve_func,
+        node_picker_register_func,
+    ):
+        self.ui.npFrame.initialize(
+            scene=scene,
+            nodetypes=(Frame),
+            callback=self.changed,
+            register_func=node_picker_register_func,
+            NoneAllowed=True,
+            node=node,
+        )
+
+        self.ui.npPoint1.initialize(
+            scene=scene,
+            nodetypes=(Point, Frame, Circle),
+            callback=self.changed,
+            register_func=node_picker_register_func,
+            NoneAllowed=False,
+            node=node,
+        )
+
+        self.ui.npPoint2.initialize(
+            scene=scene,
+            nodetypes=(Point, Frame, Circle),
+            callback=self.changed,
+            register_func=node_picker_register_func,
+            NoneAllowed=False,
+            node=node,
+        )
+
+        return super().connect(
+            node,
+            scene,
+            run_code,
+            guiEmitEvent,
+            gui_solve_func,
+            node_picker_register_func,
+        )
+
+    def update_pos(self):
+        self._update_reference(False)
+
+    def update_inverted(self):
+        self._update_reference(True)
+
+    def _update_reference(self, inverted):
+        code = f"s['{self.node.name}'].update_positive_direction_guide(invert={inverted})"
+        self.run_code(code)
+
+    def post_update_event(self):
+
+
+        # update properties
+        try:
+            self.filling = True
+
+            self.ui.npFrame.fill(property_name='reference_frame')
+            self.ui.npPoint1.fill(property_name='point1')
+            self.ui.npPoint2.fill(property_name='point2')
+
+            # noinspection PyTypeChecker
+            node : Measurement = self.node # alias and type hint
+
+            if node.kind == MeasurementType.Distance:
+                self.ui.rbDistance.setChecked(True)
+            elif node.kind == MeasurementType.Angle:
+                self.ui.rbAngle.setChecked(True)
+            else:
+                raise ValueError(f"Unknown measurement type {node.kind} for node {node.name}")
+
+            self.ui.cbDirection.setCurrentText(node.reference.name)
+            self.ui.cbFlipAngleDirection.setChecked(node.flip_angle_direction)
+
+            self.apply_gui_values_based_view()
+
+        finally:
+            self.filling = False
+
+
+    def apply_gui_values_based_view(self):
+        # Apply formatting based on the measurement type
+        if self.ui.rbDistance.isChecked():
+            self.ui.label.setText("Direction")
+            self.ui.pbUpdateInverted.setText("Update direction as -")
+            self.ui.pbUpdatePos.setText("Update direction as +")
+            self.ui.cbFlipAngleDirection.setVisible(False)
+        else:
+            self.ui.label.setText("Reference")
+            self.ui.pbUpdateInverted.setText("Update angle as > 90")
+            self.ui.pbUpdatePos.setText("Update angle as < 90")
+            self.ui.cbFlipAngleDirection.setVisible(True)
+
+        if self.ui.cbDirection.currentText() == "Total":
+            self.ui.widget_advanced.setVisible(False)
+            self.ui.npFrame.setVisible(False)
+            self.ui.label_5.setVisible(False)
+        else:
+            self.ui.widget_advanced.setVisible(True)
+            self.ui.npFrame.setVisible(True)
+            self.ui.label_5.setVisible(True)
+
+
+
+
+
+
+    def changed(self):
+        if self.filling:
+            return
+
+        # get the current values and generate code
+        self.apply_gui_values_based_view()
+
+        # see if what we try to do makes sense
+        if self.ui.cbDirection.currentText() == "Total" and self.ui.rbAngle.isChecked():
+            self.ui.cbDirection.setCurrentIndex(0)  # forces another changed() event which is ok!
+            return
+
+        code = ""
+        element = "\ns['{}']".format(self.node.name)
+
+        # noinspection PyTypeChecker
+        node : Measurement = self.node # alias and type hint
+
+        # change in kind?
+        if self.ui.rbDistance.isChecked() and node.kind != MeasurementType.Distance:
+            code += element + ".kind = MeasurementType.Distance"
+
+        if self.ui.rbAngle.isChecked() and node.kind != MeasurementType.Angle:
+            code += element + ".kind = MeasurementType.Angle"
+
+        # change in direction?
+        if self.ui.cbDirection.currentText() != node.reference.name:
+            code += element + f".reference = MeasurementDirection.{self.ui.cbDirection.currentText()}"
+
+        # change in flip angle direction?
+        if self.ui.cbFlipAngleDirection.isChecked() != node.flip_angle_direction:
+            code += element + f".flip_angle_direction = {self.ui.cbFlipAngleDirection.isChecked()}"
+
+        # change in point1?
+        if self.ui.npPoint1.value != node.point1.name:
+            code += element + f".point1 = s['{self.ui.npPoint1.value}']"
+
+        # change in point2?
+        if self.ui.npPoint2.value != node.point2.name:
+            code += element + f".point2 = s['{self.ui.npPoint2.value}']"
+
+        # change in reference frame?
+        frameValue = self.ui.npFrame.value
+        if frameValue == '' :
+            frameValue = None
+
+        if frameValue != node.reference_frame:
+            if self.ui.npFrame.value:
+                code += element + f".reference_frame = s['{self.ui.npFrame.value}']"
+            else:
+                code += element + f".reference_frame = None"
+
+        self.run_code(code)
+
 
 
 @Singleton
@@ -3325,6 +3520,9 @@ class WidgetNodeProps(guiDockWidget):
 
         if isinstance(node, vfs.Tank) and (vfs.Tank not in suppressed_editors):
             self._node_editors.append(EditTank.Instance())
+
+        if isinstance(node, vfs.Measurement) and (vfs.Measurement not in suppressed_editors):
+            self._node_editors.append(EditMeasurement.Instance())
 
         for key, value in DAVE_GUI_NODE_EDITORS.items():
             if isinstance(node, key):

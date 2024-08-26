@@ -510,3 +510,16 @@ def get_two_scene_available_name_like(
         if prefix + suggested_name not in target_scene_names:
             if suggested_name not in private_scene_names:
                 return suggested_name
+
+def something_orthogonal_to(x):
+    """Returns a vector that is orthogonal to the given vector x
+    such that the dot product between x and the result is zero"""
+
+    if abs(x[0]) > 1e-20:
+        return np.array([x[1], -x[0], 0])
+    elif abs(x[1]) > 1e-20:
+        return np.array([x[1], -x[0], 0])
+    elif abs(x[2]) > 1e-20:
+        return np.array([0, x[2], -x[1]])
+    else:
+        return np.array([1, 0, 0])

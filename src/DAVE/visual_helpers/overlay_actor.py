@@ -22,6 +22,7 @@ class OverlayActor:
         padding=(0, 0, 0, 0),
         border=0,
         border_color=(0, 0, 0, 255),
+        text_color=(0, 0, 0),
     ):
         """Set the overlay actor to the provided text.
         Both \n and <br> may be used to create new lines.
@@ -64,7 +65,7 @@ class OverlayActor:
             bitmap.text(
                 (padding[3] + border, padding[0] + border + hc),
                 line,
-                (0, 0, 0),
+                fill = text_color,
                 font=font,
             )
             hc += hh

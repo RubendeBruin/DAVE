@@ -514,6 +514,18 @@ class VisualActor:
 
             return
 
+        if isinstance(self.node, dn.Measurement):
+            A = self.actors["main"]
+            p1,p2,p3,p4 = self.node.points_for_drawing()
+
+            if self.node.kind == dn.MeasurementType.Distance:
+                update_line_to_points(A, [p1,p2,p3,p1,p4])
+            else:
+                # if sign<0:
+                #     update_line_to_points(A, [p2,p1,p4])
+                # else:
+                update_line_to_points(A, [p1,p2,p3,p1])
+
         if isinstance(self.node, dn.SPMT):
             # 'main' is a cube spanning the upper surface of the SPMT
             # the center is at the center

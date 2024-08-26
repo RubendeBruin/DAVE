@@ -125,6 +125,7 @@ from .nds.pure import BallastSystem, Visual, WaveInteraction1
 
 from .nds.geometry import Frame, Point, Circle
 from .nds.geometric_contact import GeometricContact
+from .nds.measurement import Measurement, MeasurementDirection, MeasurementType
 
 from DAVE.settings import DAVE_ADDITIONAL_RUNTIME_MODULES
 
@@ -148,6 +149,9 @@ DAVE_ADDITIONAL_RUNTIME_MODULES["LC6d"] = LC6d
 DAVE_ADDITIONAL_RUNTIME_MODULES["LoadShearMomentDiagram"] = LoadShearMomentDiagram
 DAVE_ADDITIONAL_RUNTIME_MODULES["Point"] = Point
 DAVE_ADDITIONAL_RUNTIME_MODULES["RigidBody"] = RigidBody
+DAVE_ADDITIONAL_RUNTIME_MODULES["Measurement"] = Measurement
+DAVE_ADDITIONAL_RUNTIME_MODULES["MeasurementDirection"] = MeasurementDirection
+DAVE_ADDITIONAL_RUNTIME_MODULES["MeasurementType"] = MeasurementType
 
 # DAVE_ADDITIONAL_RUNTIME_MODULES["SimpleSling"] = SimpleSling
 DAVE_ADDITIONAL_RUNTIME_MODULES["SPMT"] = SPMT

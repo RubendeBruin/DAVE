@@ -60,6 +60,7 @@ class AnnotationLayer(HasNodeReference):
         self.padding = (2, 4, 2, 4)
         self.border_width = 1
         self.border_rgba = (128, 128, 128, 255)
+        self.text_color = (0,0,0)
 
     def as_dict(self):
         return {
@@ -71,6 +72,7 @@ class AnnotationLayer(HasNodeReference):
             "padding": self.padding,
             "border_width": self.border_width,
             "border_rgba": self.border_rgba,
+            "text_color": self.text_color,
         }
 
     @classmethod
@@ -81,6 +83,7 @@ class AnnotationLayer(HasNodeReference):
         layer.padding = d["padding"]
         layer.border_width = d["border_width"]
         layer.border_rgba = d["border_rgba"]
+        layer.text_color = d["text_color"]
 
         for a in d["annotations"]:
             layer.add_annotation(Annotation.from_dict(a, scene))
@@ -147,6 +150,7 @@ class AnnotationLayer(HasNodeReference):
                 padding=self.padding,
                 border=self.border_width,
                 border_color=self.border_rgba,
+                text_color=self.text_color,
             )
 
         # Update the position of the annotations

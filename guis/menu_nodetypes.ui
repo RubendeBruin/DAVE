@@ -652,7 +652,7 @@
          <string>text-align:left</string>
         </property>
         <property name="text">
-         <string>Beauty</string>
+         <string>Non-physical</string>
         </property>
        </widget>
       </item>
@@ -667,6 +667,20 @@
         <property name="icon">
          <iconset resource="resources.qrc">
           <normaloff>:/v2/icons/visual.svg</normaloff>:/v2/icons/visual.svg</iconset>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pbMeasurement">
+        <property name="text">
+         <string>Measurement</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources.qrc">
+          <normaloff>:/v2/icons/measurement.svg</normaloff>:/v2/icons/measurement.svg</iconset>
         </property>
         <property name="flat">
          <bool>true</bool>
