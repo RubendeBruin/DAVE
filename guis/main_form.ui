@@ -456,6 +456,25 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QSpinBox" name="spinAnimationEndEdit">
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+         <property name="buttonSymbols">
+          <enum>QAbstractSpinBox::NoButtons</enum>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>37000</number>
+         </property>
+         <property name="value">
+          <number>69</number>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>
@@ -567,7 +586,7 @@
   </widget>
   <widget class="QDockWidget" name="dockWidget_2">
    <property name="windowTitle">
-    <string>Python engine</string>
+    <string>Python engine (Ctrl + p)</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>

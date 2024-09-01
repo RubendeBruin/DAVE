@@ -396,6 +396,9 @@ class VisualActor:
 
         # the following ifs all end with Return, so only a single one is executed
 
+        if not self.node.is_valid:
+            return
+
         if isinstance(self.node, dn.Visual):
             # A = self.actors["main"]
             for A in self.actors.values():
