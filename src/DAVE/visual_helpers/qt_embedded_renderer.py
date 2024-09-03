@@ -262,7 +262,8 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
     def add_dynamic_wave_plane(self, waveplane):
         self.remove_dynamic_wave_plane()
         self.add(waveplane.actor)
-        self.add(waveplane.line_actor)
+        if hasattr(waveplane, "line_actor"): # 2d planes do not have a line actor
+            self.add(waveplane.line_actor)
         self._wavefield = waveplane
 
         self.settings.show_sea = False
@@ -276,7 +277,9 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
     def remove_dynamic_wave_plane(self):
         if self._wavefield is not None:
             self.remove(self._wavefield.actor)
-            self.remove(self._wavefield.line_actor)
+
+            if hasattr(self._wavefield, "line_actor"):
+                self.remove(self._wavefield.line_actor)
             self._wavefield = None
 
             # if self._staticwaveplane:

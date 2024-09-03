@@ -3699,6 +3699,189 @@ info = NodePropertyInfo(node_class=cls,
                         )
 DAVE_NODEPROP_INFO[cls]["axles"] = info
 
+# ===================== Auto-generated documentation registration for SupportPoint
+cls = DAVE_ADDITIONAL_RUNTIME_MODULES["SupportPoint"]
+DAVE_NODEPROP_INFO[cls] = dict()
+
+# Property: kz
+info = NodePropertyInfo(node_class=cls,
+                        property_name="kz",
+                        property_type=float,
+                        doc_short="""Vertical contact stiffness """,
+                        doc_long = """Vertical contact stiffness [kN/m]""",
+                        units = """[kN/m]""",
+                        remarks="""""",
+                        is_settable=True,
+                        is_single_settable = True,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["kz"] = info
+
+
+# Property: ky
+info = NodePropertyInfo(node_class=cls,
+                        property_name="ky",
+                        property_type=float,
+                        doc_short="""Horizontal contact stiffness in y direction """,
+                        doc_long = """Horizontal contact stiffness in y direction [kN/m]""",
+                        units = """[kN/m]""",
+                        remarks="""""",
+                        is_settable=True,
+                        is_single_settable = True,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["ky"] = info
+
+
+# Property: kx
+info = NodePropertyInfo(node_class=cls,
+                        property_name="kx",
+                        property_type=float,
+                        doc_short="""Horizontal contact stiffness in x direction """,
+                        doc_long = """Horizontal contact stiffness in x direction [kN/m]""",
+                        units = """[kN/m]""",
+                        remarks="""""",
+                        is_settable=True,
+                        is_single_settable = True,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["kx"] = info
+
+
+# Property: delta_z
+info = NodePropertyInfo(node_class=cls,
+                        property_name="delta_z",
+                        property_type=float,
+                        doc_short="""Distance above frame where contact begins """,
+                        doc_long = """Distance above frame where contact begins [m]""",
+                        units = """[m]""",
+                        remarks="""""",
+                        is_settable=True,
+                        is_single_settable = True,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["delta_z"] = info
+
+
+# Property: contact_force
+info = NodePropertyInfo(node_class=cls,
+                        property_name="contact_force",
+                        property_type=tuple,
+                        doc_short="""Contact force on point  """,
+                        doc_long = """Contact force on point (frame system) [kN, kN, kN]""",
+                        units = """[kN, kN, kN]""",
+                        remarks="""frame system""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["contact_force"] = info
+
+
+# Property: contact_force_global
+info = NodePropertyInfo(node_class=cls,
+                        property_name="contact_force_global",
+                        property_type=tuple,
+                        doc_short="""Contact force on point  """,
+                        doc_long = """Contact force on point (global system) [kN, kN, kN]""",
+                        units = """[kN, kN, kN]""",
+                        remarks="""global system""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["contact_force_global"] = info
+
+
+# Property: fx
+info = NodePropertyInfo(node_class=cls,
+                        property_name="fx",
+                        property_type=float,
+                        doc_short="""Contact force in x-direction  """,
+                        doc_long = """Contact force in x-direction (frame) [kN]""",
+                        units = """[kN]""",
+                        remarks="""frame""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["fx"] = info
+
+
+# Property: fy
+info = NodePropertyInfo(node_class=cls,
+                        property_name="fy",
+                        property_type=float,
+                        doc_short="""Contact force in y-direction  """,
+                        doc_long = """Contact force in y-direction (frame) [kN]""",
+                        units = """[kN]""",
+                        remarks="""frame""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["fy"] = info
+
+
+# Property: fz
+info = NodePropertyInfo(node_class=cls,
+                        property_name="fz",
+                        property_type=float,
+                        doc_short="""Contact force in z-direction  """,
+                        doc_long = """Contact force in z-direction (frame) [kN]""",
+                        units = """[kN]""",
+                        remarks="""frame""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["fz"] = info
+
+
+# Property: fgx
+info = NodePropertyInfo(node_class=cls,
+                        property_name="fgx",
+                        property_type=float,
+                        doc_short="""Contact force in x-direction  """,
+                        doc_long = """Contact force in x-direction (global) [kN]""",
+                        units = """[kN]""",
+                        remarks="""global""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["fgx"] = info
+
+
+# Property: fgy
+info = NodePropertyInfo(node_class=cls,
+                        property_name="fgy",
+                        property_type=float,
+                        doc_short="""Contact force in y-direction  """,
+                        doc_long = """Contact force in y-direction (global) [kN]""",
+                        units = """[kN]""",
+                        remarks="""global""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["fgy"] = info
+
+
+# Property: fgz
+info = NodePropertyInfo(node_class=cls,
+                        property_name="fgz",
+                        property_type=float,
+                        doc_short="""Contact force in z-direction  """,
+                        doc_long = """Contact force in z-direction (global) [kN]""",
+                        units = """[kN]""",
+                        remarks="""global""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["fgz"] = info
+
 # ===================== Auto-generated documentation registration for Tank
 cls = DAVE_ADDITIONAL_RUNTIME_MODULES["Tank"]
 DAVE_NODEPROP_INFO[cls] = dict()

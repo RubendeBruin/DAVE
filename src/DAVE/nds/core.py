@@ -2381,7 +2381,7 @@ class Connector2d(NodeCoreConnected):
     def nodeA(self, val):
         val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Frame):
-            raise TypeError("Provided nodeA should be a Axis")
+            raise TypeError("Provided nodeA should be a Frame")
 
         self._nodeA = val
         self._vfNode.master = val._vfNode
@@ -2682,12 +2682,12 @@ class Beam(NodeCoreConnected):
         return self._vfNode.torsion
 
     @property
-    def X_nodes(self) -> tuple[float]:
+    def X_nodes(self) -> tuple[float,...]:
         """Returns the x-positions of the end nodes and internal nodes along the length of the beam [m]"""
         return self._vfNode.x
 
     @property
-    def X_midpoints(self) -> tuple[float]:
+    def X_midpoints(self) -> tuple[float,...]:
         """X-positions of the beam centers measured along the length of the beam [m]"""
         return tuple(
             0.5 * (np.array(self._vfNode.x[:-1]) + np.array(self._vfNode.x[1:]))
@@ -2750,5 +2750,159 @@ class Beam(NodeCoreConnected):
         code += "\n            EA ={:.6g},".format(self.EA)
         code += "\n            mass ={:.6g},".format(self.mass)
         code += "\n            L ={:.6g}) # L can possibly be omitted".format(self.L)
+
+        return code
+
+
+class SupportPoint(NodeCoreConnected):
+
+    def __init__(self, scene, name: str):
+        scene.assert_name_available(name)
+        self._vfNode = scene._vfc.new_supportpoint(name)
+        super().__init__(scene=scene, name=name)
+
+        self._frame : Frame = None
+        self._point : Point = None
+
+    def depends_on(self):
+        return [self._frame, self._point]
+
+    @property
+    def kz(self) -> float:
+        """Vertical contact stiffness [kN/m]"""
+        return self._vfNode.kz
+
+    @kz.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def kz(self, value : float):
+        assert1f_positive_or_zero(value, f"kz of {self.name}")
+        self._vfNode.kz = value
+
+    @property
+    def ky(self) -> float:
+        """Horizontal contact stiffness in y direction [kN/m]"""
+        return self._vfNode.ky
+
+    @ky.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def ky(self, value : float):
+        assert1f_positive_or_zero(value, f"ky of {self.name}")
+        self._vfNode.ky = value
+
+    @property
+    def kx(self) -> float:
+        """Horizontal contact stiffness in x direction [kN/m]"""
+        return self._vfNode.kx
+
+    @kx.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def kx(self, value : float):
+        assert1f_positive_or_zero(value, f"kx of {self.name}")
+        self._vfNode.kx = value
+
+    @property
+    def delta_z(self) -> float:
+        """Distance above frame where contact begins [m]"""
+        return self._vfNode.delta_z
+
+    @delta_z.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def delta_z(self, value : float):
+        assert1f(value, f"dz of {self.name}")
+        self._vfNode.delta_z = value
+
+    @property
+    def frame(self) -> Frame:
+        """Frame which acts as support [Frame]
+        #NOGUI"""
+        return self._frame
+
+    @frame.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def frame(self, val):
+        val = self._scene._node_from_node_or_str(val)
+        if not isinstance(val, Frame):
+            raise TypeError("Provided frame should be a Frame")
+
+        self._frame = val
+        self._vfNode.frame = val._vfNode
+
+    @property
+    def point(self) -> Point:
+        """Point which can contact the support [Point]
+        #NOGUI"""
+        return self._point
+
+    @point.setter
+    @node_setter_manageable
+    @node_setter_observable
+    def point(self, val):
+        val = self._scene._node_from_node_or_str(val)
+        if not isinstance(val, Point):
+            raise TypeError(f"Provided point for {self.name} should be a Point but is a {type(val)}")
+
+        self._point = val
+        self._vfNode.point = val._vfNode
+
+    @property
+    def contact_force(self) -> tuple[float,float,float]:
+        """Contact force on point (frame system) [kN, kN, kN]"""
+        return self.frame.to_loc_direction(self._vfNode.global_force)
+
+    @property
+    def contact_force_global(self) -> tuple[float,float,float]:
+        """Contact force on point (global system) [kN, kN, kN]"""
+        return self._vfNode.global_force
+
+    @property
+    def fx(self) -> float:
+        """Contact force in x-direction (frame) [kN]"""
+        return self.contact_force[0]
+
+    @property
+    def fy(self) -> float:
+        """Contact force in y-direction (frame) [kN]"""
+        return self.contact_force[1]
+
+    @property
+    def fz(self) -> float:
+        """Contact force in z-direction (frame) [kN]"""
+        return self.contact_force[2]
+
+    @property
+    def fgx(self) -> float:
+        """Contact force in x-direction (global) [kN]"""
+        return self.contact_force_global[0]
+
+    @property
+    def fgy(self) -> float:
+        """Contact force in y-direction (global) [kN]"""
+        return self.contact_force_global[1]
+
+    @property
+    def fgz(self) -> float:
+        """Contact force in z-direction (global) [kN]"""
+        return self.contact_force_global[2]
+
+    def give_python_code(self):
+        code = "# code for {}".format(self.name)
+
+        code += "\ns.new_supportpoint(name='{}',".format(self.name)
+        code += "\n            frame='{}',".format(self.frame.name)
+        code += "\n            point='{}',".format(self.point.name)
+        if self.kz != 0:
+            code += "\n            kz={:.6g},".format(self.kz)
+        if self.kx != 0:
+            code += "\n            kx={:.6g},".format(self.kx)
+        if self.ky != 0:
+            code += "\n            ky={:.6g},".format(self.ky)
+        if self.delta_z != 0:
+            code += "\n            delta_z={:.6g},".format(self.delta_z)
+        code += "\n            )"
 
         return code

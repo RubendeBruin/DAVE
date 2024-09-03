@@ -39,7 +39,6 @@ from DAVE.settings import (
 )
 
 from .exceptions import ModelInvalidException
-from DAVE import settings
 from DAVE import gui_globals
 from .helpers.code_error_extract import get_code_error
 
@@ -3630,6 +3629,45 @@ class Scene:
         node = Shackle(scene=self, name=name, kind=kind)
 
         return node
+
+    def new_supportpoint(self, name, frame, point, kz=0, kx=0, ky=0, delta_z=0):
+        """Creates a new *supportpoint* node and adds it to the scene.
+
+        Args:
+            name: Name for the node, should be unique
+            frame: name of the parent of the node [Frame]
+            point: name of the point that is supported [Point]
+            kz [0]: vertical stiffness
+            kx [0]: horizontal stiffness
+            ky [0]: horizontal stiffness
+            delta_z [0]: vertical offset [m]
+            """
+
+        # first check
+        assertValidName(name)
+        self._verify_name_available(name)
+        f = self._parent_from_node(frame)
+        p = self._poi_from_node(point)
+
+        assert1f(kz, f"kz on node {name}")
+        assert1f(kx, f"kx on node {name}")
+        assert1f(ky, f"ky on node {name}")
+        assert1f(delta_z, f"dz on node {name}")
+
+        # then create
+        new_node = SupportPoint(self, name)
+
+        # and set properties
+        new_node.frame = f
+        new_node.point = p
+        new_node.kz = kz
+        new_node.kx = kx
+        new_node.ky = ky
+        new_node.delta_z = delta_z
+
+        return new_node
+
+
 
     def print_python_code(self):
         """Prints the python code that generates the current scene

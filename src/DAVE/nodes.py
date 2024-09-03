@@ -115,6 +115,7 @@ from .nds.core import (
     Force,
     HydSpring,
     LC6d,
+    SupportPoint,
     RigidBody,
     SPMT,
     Tank,
@@ -138,6 +139,7 @@ DAVE_ADDITIONAL_RUNTIME_MODULES["Cable"] = Cable
 DAVE_ADDITIONAL_RUNTIME_MODULES["Circle"] = Circle
 DAVE_ADDITIONAL_RUNTIME_MODULES["Component"] = Component
 DAVE_ADDITIONAL_RUNTIME_MODULES["Connector2d"] = Connector2d
+DAVE_ADDITIONAL_RUNTIME_MODULES["SupportPoint"] = SupportPoint
 DAVE_ADDITIONAL_RUNTIME_MODULES["ContactBall"] = ContactBall
 DAVE_ADDITIONAL_RUNTIME_MODULES["ContactMesh"] = ContactMesh
 DAVE_ADDITIONAL_RUNTIME_MODULES["CurrentArea"] = CurrentArea

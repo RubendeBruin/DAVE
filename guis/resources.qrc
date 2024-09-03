@@ -111,5 +111,6 @@
     <file>icons/python_code.svg</file>
     <file>icons/layer.svg</file>
     <file>icons/measurement.svg</file>
+    <file>icons/supportpoint.svg</file>
   </qresource>
 </RCC>
