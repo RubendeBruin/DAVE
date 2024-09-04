@@ -529,6 +529,21 @@ class VisualActor:
                 # else:
                 update_line_to_points(A, [p1,p2,p3,p1])
 
+        if isinstance(self.node, dn.SupportPoint):
+            A = self.actors["main"]
+            p1 = self.node.point.global_position
+            p2 = self.node.frame.to_glob_position((0,0,self.node.delta_z))
+            update_line_to_points(A, [p1,p2])
+
+            sphere = self.actors["sphere"]
+            t = vtkTransform()
+            t.Identity()
+
+            t.Translate(p2)
+
+            SetTransformIfDifferent(sphere, t)
+            SetScaleIfDifferent(sphere, 0.25*viewport.settings.geometry_scale)
+
         if isinstance(self.node, dn.SPMT):
             # 'main' is a cube spanning the upper surface of the SPMT
             # the center is at the center

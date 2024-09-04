@@ -3267,6 +3267,7 @@ class Gui:
 
         ui.pbContactShape.clicked.connect(self.new_contactmesh)
         ui.pbContactBall.clicked.connect(self.new_contactball)
+        ui.pbSupportPoint.clicked.connect(self.new_supportpoint)
         ui.pbSPMT.clicked.connect(self.new_spmt)
 
         ui.pbTank.clicked.connect(self.new_tank)
@@ -3359,6 +3360,9 @@ class Gui:
 
     def new_spmt(self):
         self.new_something(new_node_dialog.add_spmt)
+
+    def new_supportpoint(self):
+        self.new_something(new_node_dialog.add_supportpoint)
 
     def new_geometric_contact(self):
         msgBox = QMessageBox()

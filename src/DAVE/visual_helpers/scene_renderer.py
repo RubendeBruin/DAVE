@@ -693,6 +693,16 @@ class AbstractSceneRenderer:
                 a.GetProperty().SetColor(0.5,0.5, 0.5)
                 actors["main"] = a
 
+            if isinstance(N, dn.SupportPoint):
+                a = Line([(0, 0, 0), (0, 0, 0.1), (0, 0, 0)])
+                a.actor_type = ActorType.MESH_OR_CONNECTOR
+                a.PickableOn()
+                a.GetProperty().SetColor(1, 0.5, 0)
+                actors["main"] = a
+
+                b = Sphere(r=0.25, res=RESOLUTION_SPHERE)
+                actors["sphere"] = b
+
             if isinstance(N, dn.SPMT):
                 # SPMT
                 #

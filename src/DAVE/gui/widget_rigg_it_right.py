@@ -144,6 +144,24 @@ def measurement(scene, selection, *args):
 
 QUICK_ACTION_REGISTER.append(measurement)
 
+
+
+def supportpoint(scene, selection, *args):
+    nodes = find_nodes(selection, (Frame, Point))
+    if nodes:
+        frame = nodes[0]
+        point = nodes[1]
+
+        btn = QPushButton('Support Point')
+        btn.setIcon(QIcon(":/v2/icons/supportpoint.svg"))
+
+        code = f"s.new_supportpoint(name = '{scene.available_name_like('SP')}', frame = '{frame.name}', point = '{point.name}')"
+
+        return [(btn,code)]
+    return []
+
+QUICK_ACTION_REGISTER.append(supportpoint)
+
 def actions_on_circles(scene, selection, *args):
     # At least two sheaves selected
     style_warning = "color: darkred"

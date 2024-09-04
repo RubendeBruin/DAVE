@@ -290,6 +290,14 @@ painters["CurrentArea"] = {"main": copy(surf)}
 painters["Component"] = deepcopy(painters["Frame"])
 
 
+mesh.lineWidth = 2
+mesh.lineColor = ORANGE
+surf.surfaceColor = ORANGE
+
+painters["SupportPoint"] = {"main": copy(mesh),
+                            "sphere" : copy(surf)}
+
+
 PAINTERS["Construction"] = deepcopy(painters)
 
 # Construction - no areas
@@ -356,6 +364,7 @@ ballast_painters["ContactBall:contact"]["main"] = copy(invisible)
 ballast_painters["ContactBall:contact"]["contact"] = copy(invisible)
 
 ballast_painters["WaveInteraction1"]["main"] = copy(invisible)
+make_node_invisible(ballast_painters["SupportPoint"])
 
 # Hide all labels
 # disable all other labels
@@ -583,6 +592,7 @@ make_node_invisible(pm["Tank:freeflooding"])
 make_node_invisible(pm["Tank:empty"])
 make_node_invisible(pm["Tank:partial"])
 make_node_invisible(pm["Tank:full"])
+make_node_invisible(pm["SupportPoint"])
 pm["Frame"]["footprint"] = copy(invisible)
 pm["Cable"]["main"].optionalScale = 0.3
 
@@ -649,6 +659,8 @@ foot_painters["RigidBody"]["footprint"] = copy(footprint_paint)
 
 foot_painters["WindArea"] = {"main": copy(invisible)}
 foot_painters["CurrentArea"] = {"main": copy(invisible)}
+
+make_node_invisible(foot_painters["SupportPoint"])
 
 PAINTERS["Footprints"] = foot_painters
 
