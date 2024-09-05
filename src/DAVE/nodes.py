@@ -121,6 +121,7 @@ from .nds.core import (
     Tank,
     WindArea,
     WindOrCurrentArea,
+
 )
 from .nds.pure import BallastSystem, Visual, WaveInteraction1
 
@@ -154,6 +155,7 @@ DAVE_ADDITIONAL_RUNTIME_MODULES["RigidBody"] = RigidBody
 DAVE_ADDITIONAL_RUNTIME_MODULES["Measurement"] = Measurement
 DAVE_ADDITIONAL_RUNTIME_MODULES["MeasurementDirection"] = MeasurementDirection
 DAVE_ADDITIONAL_RUNTIME_MODULES["MeasurementType"] = MeasurementType
+DAVE_ADDITIONAL_RUNTIME_MODULES["Supportpoint"] = SupportPoint
 
 # DAVE_ADDITIONAL_RUNTIME_MODULES["SimpleSling"] = SimpleSling
 DAVE_ADDITIONAL_RUNTIME_MODULES["SPMT"] = SPMT

@@ -209,6 +209,12 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>dsKz</tabstop>
+  <tabstop>dsDeltaZ</tabstop>
+  <tabstop>dsKx</tabstop>
+  <tabstop>dsKy</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

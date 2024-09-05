@@ -153,6 +153,9 @@ class Ui_SupportPointWidget(object):
 
         self.gridLayout_2.addWidget(self.widget_advanced, 2, 0, 1, 2)
 
+        QWidget.setTabOrder(self.dsKz, self.dsDeltaZ)
+        QWidget.setTabOrder(self.dsDeltaZ, self.dsKx)
+        QWidget.setTabOrder(self.dsKx, self.dsKy)
 
         self.retranslateUi(SupportPointWidget)
 
