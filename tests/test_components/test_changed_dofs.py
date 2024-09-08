@@ -37,7 +37,7 @@ def test_apply_to_changed_model(tmp_path):
     s = Scene(model_path)
 
 
-def test_apply_to_changed_model(tmp_path):
+def test_apply_to_changed_model_2(tmp_path):
     component_path = tmp_path / "component.dave"
     model_path = tmp_path / "model.dave"
 

@@ -1,4 +1,5 @@
 """These are the mixin classes for DAVE nodes"""
+
 from types import NoneType
 
 from .abstracts import *
@@ -255,6 +256,20 @@ class Manager(DAVENodeBase, ABC):
 
         super().__init__(scene=scene, name=name)
 
+    def is_property_change_allowed(self, node, property_name):
+        """Returns True if the property change is allowed, False otherwise
+
+        This method can be overridden in derived classes to fine-grained control over
+        allow or disallow certain property changes.
+        When overriding, consider that the manager node (which overrides this method) may
+        itself be managed by another manager node. In that case, the manager node should probably
+        recursively call the method on its manager node.
+
+        For an example see the implementation in GeometricContact
+
+        """
+        return False
+
     def helper_update_node_prefix(self, nodes, old_prefix, new_prefix):
         """Helper function to update the node names of the given nodes, management is claimed"""
 
@@ -263,7 +278,10 @@ class Manager(DAVENodeBase, ABC):
                 if (
                     node.manager is None or node.manager == self
                 ):  # only rename un-managed nodes or nodes managed by me - managed nodes will be renamed by their manager
-                    if node.name.startswith(old_prefix):
+
+                    if (
+                        node.name.startswith(old_prefix) or self._scene._godmode
+                    ):  # godmode is used during node / branch duplication
                         node.name = node.name.replace(old_prefix, new_prefix)
                     else:
                         raise Exception(

@@ -8,9 +8,8 @@
   File to open the Gui
 
 """
+
 from DAVE import *
 
-if __name__ == '__main__':
-    s = Scene()
-
-    DG(s, autosave=False)
+if __name__ == "__main__":
+    DG(autosave=False)

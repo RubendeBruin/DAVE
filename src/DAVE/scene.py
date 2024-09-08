@@ -5,6 +5,7 @@
 
   Ruben de Bruin - 2019
 """
+
 import graphlib
 import itertools
 import logging
@@ -374,12 +375,12 @@ class Scene:
     def _verify_name_available(self, name):
         """Throws an error if a node with name 'name' already exists"""
         if name == "":
-            raise Exception("Name can not be empty")
+            raise ValueError("Name can not be empty")
 
         names = [n.name for n in self._nodes]
         names.extend(self._vfc.names)
         if name in names:
-            raise Exception(
+            raise ValueError(
                 "The name '{}' is already in use. Pick a unique name".format(name)
             )
 
@@ -1382,11 +1383,15 @@ class Scene:
 
         if kind is not None:
             if not isinstance(kind, type) and not isinstance(kind, tuple):
-                raise ValueError(f"kind should be a type or tuple of types, not a {str(type(kind))}")
+                raise ValueError(
+                    f"kind should be a type or tuple of types, not a {str(type(kind))}"
+                )
 
         if kind_not is not None:
             if not isinstance(kind_not, type) and not isinstance(kind_not, tuple):
-                raise ValueError(f"kind_not should be a type or tuple of types, not a {str(type(kind_not))}")
+                raise ValueError(
+                    f"kind_not should be a type or tuple of types, not a {str(type(kind_not))}"
+                )
 
         # loop over all nodes
         for node in self._nodes:
@@ -2247,7 +2252,7 @@ class Scene:
             new_node.inertia_radii = inertia_radii
 
         if isinstance(fixed, str):
-            fixed = [True if c.lower() == 't' else False for c in fixed]
+            fixed = [True if c.lower() == "t" else False for c in fixed]
 
         if isinstance(fixed, bool):
             if fixed:
@@ -2280,8 +2285,12 @@ class Scene:
         point1 = self._node_from_node_or_str_or_None(point1)
         point2 = self._node_from_node_or_str_or_None(point2)
 
-        assert hasattr(point1, 'global_position'), f"Error creating {name}: Point1 {point1} should have a global_position"
-        assert hasattr(point2, 'global_position'), f"Error creating {name}: Point2 {point2} should have a global_position"
+        assert hasattr(
+            point1, "global_position"
+        ), f"Error creating {name}: Point1 {point1} should have a global_position"
+        assert hasattr(
+            point2, "global_position"
+        ), f"Error creating {name}: Point2 {point2} should have a global_position"
 
         # then create
         new_node = Measurement(scene=self, name=name)
@@ -3641,7 +3650,7 @@ class Scene:
             kx [0]: horizontal stiffness
             ky [0]: horizontal stiffness
             delta_z [0]: vertical offset [m]
-            """
+        """
 
         # first check
         assertValidName(name)
@@ -3666,8 +3675,6 @@ class Scene:
         new_node.delta_z = delta_z
 
         return new_node
-
-
 
     def print_python_code(self):
         """Prints the python code that generates the current scene
@@ -3856,14 +3863,16 @@ class Scene:
                 code.append("\n# Unmanaged property values")
                 code.append("PV = dict()")
                 code.extend(PVs)
-                code.append("""for k, pv in PV.items():
+                code.append(
+                    """for k, pv in PV.items():
     try:
         node = s[k]
         for p,v in pv:
             setattr(node, p,v)
     except:
         pass # perfectly valid, the node is not present in the scene anymore or had changed type
-""")
+"""
+                )
 
             # Optional Reports
             if self.reports and not no_reports:
@@ -4057,8 +4066,6 @@ class Scene:
             self.resource_provider.cd = Path(package_folder)
 
         locals.update(ds.DAVE_ADDITIONAL_RUNTIME_MODULES)
-
-
 
         try:
             exec(code, {}, locals)

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>326</width>
-    <height>57</height>
+    <height>72</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,6 +33,9 @@
      </property>
      <property name="editable">
       <bool>true</bool>
+     </property>
+     <property name="sizeAdjustPolicy">
+      <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
      </property>
     </widget>
    </item>
