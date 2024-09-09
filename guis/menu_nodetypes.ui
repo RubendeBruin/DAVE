@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>532</width>
+    <width>539</width>
     <height>374</height>
    </rect>
   </property>
@@ -286,6 +286,20 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="pbSupportPoint">
+        <property name="text">
+         <string>Support Point</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resources.qrc">
+          <normaloff>:/v2/icons/supportpoint.svg</normaloff>:/v2/icons/supportpoint.svg</iconset>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="pbSPMT">
         <property name="text">
          <string>SPMT susp. group</string>
@@ -439,7 +453,7 @@
          <string>text-align:left</string>
         </property>
         <property name="text">
-         <string>Steel</string>
+         <string>Structural</string>
         </property>
        </widget>
       </item>

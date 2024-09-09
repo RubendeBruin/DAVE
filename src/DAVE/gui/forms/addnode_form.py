@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'addnode_form.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.0
+## Created by: Qt User Interface Compiler version 6.6.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -61,6 +61,73 @@ class Ui_Dialog(object):
 
         self.verticalLayout.addWidget(self.errUniqueName)
 
+        self.frmFrame = QFrame(Dialog)
+        self.frmFrame.setObjectName(u"frmFrame")
+        self.frmFrame.setFrameShape(QFrame.StyledPanel)
+        self.frmFrame.setFrameShadow(QFrame.Raised)
+        self.gridLayout_5 = QGridLayout(self.frmFrame)
+        self.gridLayout_5.setObjectName(u"gridLayout_5")
+        self.cbFrame = QComboBox(self.frmFrame)
+        self.cbFrame.setObjectName(u"cbFrame")
+
+        self.gridLayout_5.addWidget(self.cbFrame, 0, 1, 1, 1)
+
+        self.label_15 = QLabel(self.frmFrame)
+        self.label_15.setObjectName(u"label_15")
+        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_15.sizePolicy().hasHeightForWidth())
+        self.label_15.setSizePolicy(sizePolicy)
+        self.label_15.setMinimumSize(QSize(80, 0))
+        self.label_15.setMaximumSize(QSize(80, 16777215))
+
+        self.gridLayout_5.addWidget(self.label_15, 0, 0, 1, 1)
+
+        self.label_16 = QLabel(self.frmFrame)
+        self.label_16.setObjectName(u"label_16")
+        sizePolicy.setHeightForWidth(self.label_16.sizePolicy().hasHeightForWidth())
+        self.label_16.setSizePolicy(sizePolicy)
+        self.label_16.setMinimumSize(QSize(60, 0))
+        self.label_16.setMaximumSize(QSize(60, 16777215))
+
+        self.gridLayout_5.addWidget(self.label_16, 0, 2, 1, 1)
+
+
+        self.verticalLayout.addWidget(self.frmFrame)
+
+        self.frmPoint = QFrame(Dialog)
+        self.frmPoint.setObjectName(u"frmPoint")
+        self.frmPoint.setFrameShape(QFrame.StyledPanel)
+        self.frmPoint.setFrameShadow(QFrame.Raised)
+        self.gridLayout_6 = QGridLayout(self.frmPoint)
+        self.gridLayout_6.setObjectName(u"gridLayout_6")
+        self.cbPoint = QComboBox(self.frmPoint)
+        self.cbPoint.setObjectName(u"cbPoint")
+
+        self.gridLayout_6.addWidget(self.cbPoint, 0, 1, 1, 1)
+
+        self.label_17 = QLabel(self.frmPoint)
+        self.label_17.setObjectName(u"label_17")
+        sizePolicy.setHeightForWidth(self.label_17.sizePolicy().hasHeightForWidth())
+        self.label_17.setSizePolicy(sizePolicy)
+        self.label_17.setMinimumSize(QSize(80, 0))
+        self.label_17.setMaximumSize(QSize(80, 16777215))
+
+        self.gridLayout_6.addWidget(self.label_17, 0, 0, 1, 1)
+
+        self.label_18 = QLabel(self.frmPoint)
+        self.label_18.setObjectName(u"label_18")
+        sizePolicy.setHeightForWidth(self.label_18.sizePolicy().hasHeightForWidth())
+        self.label_18.setSizePolicy(sizePolicy)
+        self.label_18.setMinimumSize(QSize(60, 0))
+        self.label_18.setMaximumSize(QSize(60, 16777215))
+
+        self.gridLayout_6.addWidget(self.label_18, 0, 2, 1, 1)
+
+
+        self.verticalLayout.addWidget(self.frmPoint)
+
         self.frmParent = QFrame(Dialog)
         self.frmParent.setObjectName(u"frmParent")
         self.frmParent.setFrameShape(QFrame.StyledPanel)
@@ -74,9 +141,6 @@ class Ui_Dialog(object):
 
         self.label_3 = QLabel(self.frmParent)
         self.label_3.setObjectName(u"label_3")
-        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_3.sizePolicy().hasHeightForWidth())
         self.label_3.setSizePolicy(sizePolicy)
         self.label_3.setMinimumSize(QSize(80, 0))
@@ -282,6 +346,10 @@ class Ui_Dialog(object):
         self.label.setText(QCoreApplication.translate("Dialog", u"Name", None))
         self.label_2.setText(QCoreApplication.translate("Dialog", u"[unique]", None))
         self.errUniqueName.setText(QCoreApplication.translate("Dialog", u"<html><head/><body><p><span style=\" font-weight:600; color:#aa0000;\">Pick a unique name !</span></p></body></html>", None))
+        self.label_15.setText(QCoreApplication.translate("Dialog", u"Frame", None))
+        self.label_16.setText(QCoreApplication.translate("Dialog", u"[Frame]", None))
+        self.label_17.setText(QCoreApplication.translate("Dialog", u"Point", None))
+        self.label_18.setText(QCoreApplication.translate("Dialog", u"[point]", None))
         self.label_3.setText(QCoreApplication.translate("Dialog", u"Parent", None))
         self.label_4.setText(QCoreApplication.translate("Dialog", u"[Frame]", None))
         self.label_13.setText(QCoreApplication.translate("Dialog", u"Parent", None))

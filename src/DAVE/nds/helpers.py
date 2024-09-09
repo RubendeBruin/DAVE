@@ -1,4 +1,5 @@
 """Helper functions and classes for nodes"""
+
 import functools
 from dataclasses import dataclass
 
@@ -6,7 +7,7 @@ from dataclasses import dataclass
 def node_setter_manageable(func):
     @functools.wraps(func)
     def wrapper_decorator(self, *args, **kwargs):
-        self._verify_change_allowed()
+        self._verify_change_allowed(func=func, args=args, kwargs=kwargs)
         value = func(self, *args, **kwargs)
         return value
 
@@ -40,6 +41,7 @@ class ClaimManagement:
         assert isinstance(scene, Scene)
         if manager is not None:
             from ..nodes import Manager
+
             assert isinstance(manager, Manager)
         self.scene = scene
         self.manager = manager

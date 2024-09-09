@@ -1,0 +1,151 @@
+
+
+def solved(number):
+    return number
+
+
+
+# code for Body
+s.new_rigidbody(name='Body',
+                mass=0,
+                cog=(0,
+                     0,
+                     0),
+           position=(0,
+                     0,
+                     0),
+           rotation=(0,
+                     0,
+                     0),
+           fixed =(True, True, True, True, True, True),
+                )
+
+# code for Shackle
+s.new_rigidbody(name='Shackle',
+                mass=0.295,
+                cog=(0,
+                     0,
+                     0.254667),
+           position=(-0,
+                     -0,
+                     -0),
+           rotation=(-0,
+                     -0,
+                     -0),
+           inertia_radii = (0.49955004754278626, 0.4179042952638798, 0.2910433816461044),
+           fixed =(True, True, True, True, True, True),
+                )
+
+# code for LP
+s.new_rigidbody(name='LP',
+                mass=-0,
+                cog=(0,
+                     0,
+                     0),
+                parent='Body',
+           position=(0,
+                     0,
+                     0),
+           rotation=(0,
+                     0,
+                     0),
+           fixed =(True, True, True, True, True, True),
+                )
+s['LP'].footprint = ((0.0, 0.0, 0.0), (0.5, 0.0, 0.0))
+
+# code for Shackle/pin_point
+s.new_point(name='Shackle/pin_point',
+          parent='Shackle',
+          position=(0,
+                    0,
+                    0))
+
+# code for Shackle/bow_point
+s.new_point(name='Shackle/bow_point',
+          parent='Shackle',
+          position=(0,
+                    0,
+                    0.689))
+
+# code for Shackle/inside_circle_center
+s.new_point(name='Shackle/inside_circle_center',
+          parent='Shackle',
+          position=(0,
+                    0,
+                    0.4715))
+
+# code for LP/point
+s.new_point(name='LP/point',
+          parent='LP',
+          position=(0.5,
+                    0,
+                    0.3))
+
+# code for LP/visual
+s.new_visual(name='LP/visual',
+            parent='LP',
+            path=r'res: cube.obj',
+            offset=(0.35, 0, 0.25),
+            rotation=(0, 0, 0),
+            scale=(0.7, 0.01, 0.5) )
+
+# code for Shackle/pin
+c = s.new_circle(name='Shackle/pin',
+            parent='Shackle/pin_point',
+            axis=(0, 1, 0),
+            radius=0.07 )
+
+# code for Shackle/bow
+c = s.new_circle(name='Shackle/bow',
+            parent='Shackle/bow_point',
+            axis=(0, 1, 0),
+            radius=0.065 )
+
+# code for Shackle/inside
+c = s.new_circle(name='Shackle/inside',
+            parent='Shackle/inside_circle_center',
+            axis=(1, 0, 0),
+            radius=0.1525 )
+
+# code for LP/circle
+c = s.new_circle(name='LP/circle',
+            parent='LP/point',
+            axis=(0, 1, 0),
+            radius=0.05 )
+
+s.new_geometriccontact(name = 'Shackle_connection',
+                       child = 'Shackle/pin',
+                       parent = 'LP/circle',
+                       inside=True,
+                       rotation_on_parent=solved(0.0),
+                       child_rotation=solved(0.0) )
+
+s['Shackle/pin_point']._visible = False
+
+s['Shackle/bow_point']._visible = False
+
+s['Shackle/inside_circle_center']._visible = False
+
+s['LP/point']._visible = False
+
+# Limits
+
+# Watches
+
+# Tags
+
+# - tags are added with 'try_add_tags' because the node may not exist anymore (eg changed components) wh
+
+
+# Solved state of managed DOFs nodes
+# wrapped in try/except because some nodes or dofs may not be present anymore (eg changed components)
+solved_dofs = [
+    ('Shackle_connection/_pin_hole_connection', 'ry', 0.0),
+    ('Shackle_connection/_axis_on_child', 'ry', 0.0),
+]
+for dof in solved_dofs:
+    try:
+       assert s.node_exists(dof[0])
+       setattr(s[dof[0]],dof[1],dof[2])
+    except:
+       pass

@@ -99,6 +99,7 @@ from DAVE.gui.dock_system.ads_helpers import (
 )
 from DAVE.gui.dock_system.gui_dock_groups import DaveDockGroup
 from DAVE.gui.helpers.gui_logger import DAVE_GUI_LOGGER
+from DAVE.gui.helpers.my_qt_helpers import BlockSigs
 from DAVE.gui.helpers.qt_action_draggable import QDraggableNodeActionWidget
 from DAVE.gui.widget_layers import LayersWidget
 from DAVE.gui.widget_watches import WidgetWatches
@@ -170,6 +171,7 @@ from DAVE.gui.forms.dlg_solver_threaded import Ui_SolverDialogThreaded
 
 import DAVE.gui.dock_system.default_dock_groups
 
+# noinspection PyUnresolvedReferences
 import DAVEcore
 
 # resources
@@ -363,9 +365,6 @@ class Gui:
         # ============== private properties ================
         self._codelog = []
 
-        self._animation_start_time = time.time()
-        """Time at start of the simulation in seconds (system-time)"""
-
         self._animation_length = 0
         """The length of the animation in seconds"""
 
@@ -384,9 +383,12 @@ class Gui:
         self._animation_available = False
         """Animation available"""
 
-        self._animation_current_time = None
-
         self._animation_speed = 1.0
+        self._animation_last_frame_animation_time = 0
+        self._animation_last_frame_system_time = time.time()
+
+        self._unlimited_animation_running = False
+        self._unlimited_animation_callback_time_activated = None
 
         # ================= Create globally available properties =======
         self.selected_nodes: [Node] = []
@@ -512,6 +514,8 @@ class Gui:
         )
         self.ui.aniSlider.valueChanged.connect(self.animation_change_time)
         self.ui.sbPlaybackspeed.valueChanged.connect(self.animation_speed_change)
+
+        self.ui.spinAnimationEndEdit.editingFinished.connect(self.user_changes_unlimited_animation_endtime)
 
         # ======================== Main Menu entries  ======
 
@@ -1756,6 +1760,42 @@ class Gui:
 
     # ============== Animation functions =============
 
+    def animation_start_unlimited(self,
+                                  callback_time_activated,
+                                  final_dofs = None,
+                                  end_time = 69):
+        """Start an animation that runs until it is terminated by the user"""
+        DAVE_GUI_LOGGER.log("Start unlimited animation")
+        self.animation_terminate()
+
+        if final_dofs is None:
+            final_dofs = self.scene._vfc.get_dofs()
+
+        self._animation_final_dofs = final_dofs
+        self.unlimited_animation_set_endtime(end_time)
+
+        self._unlimited_animation_callback_time_activated = callback_time_activated
+        self._unlimited_animation_running = True
+
+        iren = self.visual.interactor
+
+        self._animation_available = True
+
+        self._timerid = iren.CreateRepeatingTimer(
+            round(1000 / GUI_ANIMATION_FPS)
+        )
+
+
+
+        self.ui.spinAnimationEndEdit.setVisible(True)
+        self.ui.frameAni.setVisible(True)
+
+
+    def user_changes_unlimited_animation_endtime(self):
+        """event"""
+        new_endtime = self.ui.spinAnimationEndEdit.value()
+        self.unlimited_animation_set_endtime(new_endtime=new_endtime)
+
     def animation_running(self):
         """Returns true is an animation is running"""
         return self._timerid is not None
@@ -1764,33 +1804,63 @@ class Gui:
         if self._timerid is None:  # timer is going to be destroyed
             return
 
-        t = (
-            time.time() - self._animation_start_time
-        )  # time since start of animation in [s]
 
-        t *= self._animation_speed
+        # calculate the time passed since the last frame
+        dt = time.time() - self._animation_last_frame_system_time
+        t = self._animation_last_frame_animation_time + dt * self._animation_speed
+        t = max(t,0)  # start-time may be set to -999 to make sure we start at 0
+
 
         if self._animation_loop:
             t = np.mod(t, self._animation_length)
         else:
             if t > self._animation_length:
-                self.animation_terminate()
-                return
+
+                if self._unlimited_animation_running:
+                    self.unlimited_animation_extend_time()
+                else:
+                    self.animation_terminate()
+                    return
 
         self.animation_activate_time(t)
-
         self.ui.aniSlider.setValue(t * 1000)
+
+    def unlimited_animation_extend_time(self):
+        """Extends the current end-time of the animation"""
+
+        new_endtime = 2 * self._animation_length
+        self.unlimited_animation_set_endtime(new_endtime)
+
+    def unlimited_animation_set_endtime(self, new_endtime : int):
+        """Sets the end-time of the current unlimited animation
+        and updates the gui accordingly"""
+
+        self._animation_length = new_endtime
+
+        with BlockSigs(self.ui.spinAnimationEndEdit):
+            self.ui.spinAnimationEndEdit.setValue(new_endtime)
+
+        self.ui.aniSlider.setMaximum(1000*new_endtime)
+
 
     def animation_speed_change(self):
         DAVE_GUI_LOGGER.log("Animation speed change")
         self._animation_speed = self.ui.sbPlaybackspeed.value()
 
     def animation_activate_time(self, t):
-        self._animation_current_time = t
-        dofs = self._animation_keyframe_interpolation_object(t)
-        self.scene._vfc.set_dofs(dofs)
-        self.visual.update_dynamic_waveplane(t)
-        self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
+
+        if self._unlimited_animation_running:
+            self._unlimited_animation_callback_time_activated(t, self.scene)
+            self.visual.position_visuals()
+            self.visual.refresh_embeded_view()
+        else:
+            dofs = self._animation_keyframe_interpolation_object(t)
+            self.scene._vfc.set_dofs(dofs)
+            self.visual.update_dynamic_waveplane(t)
+            self.guiEmitEvent(guiEventType.MODEL_STATE_CHANGED)
+
+        self._animation_last_frame_animation_time = t
+        self._animation_last_frame_system_time = time.time()
 
     def animation_terminate(self, keep_current_dofs=False):
         DAVE_GUI_LOGGER.log(
@@ -1860,11 +1930,14 @@ class Gui:
 
         self._animation_final_dofs = final_dofs
         if not do_not_reset_time:
-            self._animation_start_time = time.time()
+            self._animation_last_frame_animation_time = -999
+
+        self._animation_last_frame_system_time = time.time()
 
         self.visual.quick_updates_only = True
 
         self.ui.aniSlider.setMaximum(1000 * self._animation_length)
+        self.ui.spinAnimationEndEdit.setVisible(False)
         self.ui.frameAni.setVisible(show_animation_bar)
 
         self._animation_available = True
@@ -1902,6 +1975,8 @@ class Gui:
 
     def animation_continue(self):
         DAVE_GUI_LOGGER.log("Continue animation")
+
+        self._animation_last_frame_system_time = time.time()
 
         if not self._animation_paused:
             return
@@ -3192,6 +3267,7 @@ class Gui:
 
         ui.pbContactShape.clicked.connect(self.new_contactmesh)
         ui.pbContactBall.clicked.connect(self.new_contactball)
+        ui.pbSupportPoint.clicked.connect(self.new_supportpoint)
         ui.pbSPMT.clicked.connect(self.new_spmt)
 
         ui.pbTank.clicked.connect(self.new_tank)
@@ -3284,6 +3360,9 @@ class Gui:
 
     def new_spmt(self):
         self.new_something(new_node_dialog.add_spmt)
+
+    def new_supportpoint(self):
+        self.new_something(new_node_dialog.add_supportpoint)
 
     def new_geometric_contact(self):
         msgBox = QMessageBox()

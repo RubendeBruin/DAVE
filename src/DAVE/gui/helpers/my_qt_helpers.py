@@ -7,14 +7,7 @@ from PySide6.QtWidgets import QComboBox, QWidget, QCompleter
 
 
 class BlockSigs():
-    """Little helper class to pause rendering and refresh using with(...)
-
-    with(DelayRenderingTillDone(Viewport):
-        do_updates
-
-
-    Creates an attribute _DelayRenderingTillDone_lock on the parent viewport to
-    keep this action exclusive to the first caller.
+    """Little helper class to block signals while updating a widget
 
     """
     def __init__(self, widget : QWidget):

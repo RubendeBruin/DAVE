@@ -5,6 +5,7 @@ Node:
     - Has name as abstract requirement
 
 """
+
 import fnmatch
 import logging
 import warnings
@@ -189,7 +190,7 @@ class Node(DAVENodeBase, ABC):
         self._manager = value
         pass
 
-    def unmanaged_property_values(self)->list[tuple[str, any]]:
+    def unmanaged_property_values(self) -> list[tuple[str, any]]:
         """Returns the names and values of properties that can be changed even if the node is managed AND
         are not managed by the manager.
 
@@ -199,9 +200,9 @@ class Node(DAVENodeBase, ABC):
         """
         return []
 
-    def _verify_change_allowed(self):
+    def _verify_change_allowed(self, func=None, args=tuple(), kwargs=tuple()):
         """Changing the state of a node is only allowed if either:
-        1. the node is not manages (node._manager is None)
+        1. the node is not managed (node._manager is None)
         2. the manager of the node is identical to scene.current_manager
         """
         if self._scene._godmode:  # pylint: disable=some-message,another-one
@@ -209,12 +210,24 @@ class Node(DAVENodeBase, ABC):
 
         if self._manager is not None:
             if self._manager != self._scene.current_manager:
+
+                # Not allowed, raise a proper exception
+                if func is not None:
+                    propery_name = func.__name__
+                    # ask the mananger if it is ok to change this property
+                    if self._manager.is_property_change_allowed(
+                        node=self, property_name=propery_name
+                    ):
+                        return True
+                else:
+                    propery_name = "unknown"
+
                 if self._scene.current_manager is None:
                     name = None
                 else:
                     name = self._scene.current_manager.name
-                raise Exception(
-                    f"Node {self.name} may not be changed because it is managed by {self._manager.name} and the current manager of the scene is {name}"
+                raise ValueError(
+                    f"Property {propery_name} of node {self.name} may not be changed because it is managed by {self._manager.name} and the current manager of the scene is {name}"
                 )
 
     @abstractmethod

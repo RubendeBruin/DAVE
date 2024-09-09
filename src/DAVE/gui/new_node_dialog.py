@@ -22,42 +22,49 @@ from PySide6 import QtWidgets
 
 
 def fill_dropdown_boxes(ui, scene, selection=None):
-    a = list()
-    p = list()
-    for e in scene.nodes_of_type(vfs.Frame):
-        a.append(e.name)
-    for e in scene.nodes_of_type((vfs.Point, vfs.Circle)):
-        p.append(e.name)
 
-    ui.cbMasterAxis.addItems(a)
-    ui.cbSlaveAxis.addItems(a)
-    ui.cbPoiA.addItems(p)
-    ui.cbPoiB.addItems(p)
-    ui.cbParentPoi.addItems(p)
-    if len(p) > 1:
-        ui.cbPoiB.setCurrentText(p[1])
+    frame_names = [n.name for n in scene.nodes_of_type(vfs.Frame)]
+    point_names = [n.name for n in scene.nodes_of_type(vfs.Point)]
+    point_or_circle_names = [n.name for n in scene.nodes_of_type((vfs.Point, vfs.Circle))]
+
+    ui.cbMasterAxis.addItems(frame_names)
+    ui.cbSlaveAxis.addItems(frame_names)
+    ui.cbPoiA.addItems(point_or_circle_names)
+    ui.cbPoiB.addItems(point_or_circle_names)
+    ui.cbParentPoi.addItems(point_or_circle_names)
+    if len(point_or_circle_names) > 1:
+        ui.cbPoiB.setCurrentText(point_or_circle_names[1])
 
     ui.cbParentAxis.addItems([""])
-    ui.cbParentAxis.addItems(a)
+    ui.cbParentAxis.addItems(frame_names)
+
+    ui.cbPoint.addItems(point_names)
+    ui.cbFrame.addItems(frame_names)
 
     # see if we can do something with the selection
     if selection:
         node = selection[0]
+        if isinstance(node, vfs.Point):
+            ui.cbPoint.setCurrentText(node.name)
         if isinstance(node, (vfs.Point, vfs.Circle)):
             ui.cbPoiA.setCurrentText(node.name)
             ui.cbParentPoi.setCurrentText(node.name)
         if isinstance(node, vfs.Frame):
             ui.cbMasterAxis.setCurrentText(node.name)
             ui.cbParentAxis.setCurrentText(node.name)
+            ui.cbFrame.setCurrentText(node.name)
+
 
         if len(selection) > 1:
             node = selection[1]
             if isinstance(node, (vfs.Point, vfs.Circle)):
                 ui.cbPoiB.setCurrentText(node.name)
                 ui.cbParentPoi.setCurrentText(node.name)
+                ui.cbPoint.setCurrentText(node.name)
             if isinstance(node, vfs.Frame):
                 ui.cbSlaveAxis.setCurrentText(node.name)
                 ui.cbParentAxis.setCurrentText(node.name)
+                ui.cbFrame.setCurrentText(node.name)
 
 
 def add_node(scene, selection=None):
@@ -69,6 +76,8 @@ def add_node(scene, selection=None):
     ui.frmPoints.setVisible(False)
     ui.frmParent.setVisible(False)
     ui.frmParentPoi.setVisible(False)
+    ui.frmPoint.setVisible(False)
+    ui.frmFrame.setVisible(False)
 
     fill_dropdown_boxes(ui, scene, selection)
 
@@ -383,6 +392,31 @@ def add_linear_connector(scene, selection=None):
     else:
         return None
 
+
+def add_supportpoint(scene, selection=None):
+    ui, AddNode = add_node(scene, selection)
+
+    ui.frmFrame.setVisible(True)
+    ui.frmPoint.setVisible(True)
+    ui.btnOk.setIcon(QIcon(":/v2/icons/supportpoint.svg"))
+
+    def ok():
+        AddNode.accept()
+
+    ui.btnOk.clicked.connect(ok)
+    ui.tbName.setText(scene.available_name_like("SP"))
+
+    if AddNode.exec() == QtWidgets.QDialog.Accepted:
+        frame = ui.cbFrame.currentText()
+        point = ui.cbPoint.currentText()
+        name = ui.tbName.text()
+
+        return "new_supportpoint('{}', frame = '{}', point = '{}')".format(
+            name, frame, point
+        )
+
+    else:
+        return None
 
 def add_connector2d(scene, selection=None):
     ui, AddNode = add_node(scene, selection)

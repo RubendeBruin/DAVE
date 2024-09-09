@@ -115,11 +115,13 @@ from .nds.core import (
     Force,
     HydSpring,
     LC6d,
+    SupportPoint,
     RigidBody,
     SPMT,
     Tank,
     WindArea,
     WindOrCurrentArea,
+
 )
 from .nds.pure import BallastSystem, Visual, WaveInteraction1
 
@@ -138,6 +140,7 @@ DAVE_ADDITIONAL_RUNTIME_MODULES["Cable"] = Cable
 DAVE_ADDITIONAL_RUNTIME_MODULES["Circle"] = Circle
 DAVE_ADDITIONAL_RUNTIME_MODULES["Component"] = Component
 DAVE_ADDITIONAL_RUNTIME_MODULES["Connector2d"] = Connector2d
+DAVE_ADDITIONAL_RUNTIME_MODULES["SupportPoint"] = SupportPoint
 DAVE_ADDITIONAL_RUNTIME_MODULES["ContactBall"] = ContactBall
 DAVE_ADDITIONAL_RUNTIME_MODULES["ContactMesh"] = ContactMesh
 DAVE_ADDITIONAL_RUNTIME_MODULES["CurrentArea"] = CurrentArea
@@ -152,6 +155,7 @@ DAVE_ADDITIONAL_RUNTIME_MODULES["RigidBody"] = RigidBody
 DAVE_ADDITIONAL_RUNTIME_MODULES["Measurement"] = Measurement
 DAVE_ADDITIONAL_RUNTIME_MODULES["MeasurementDirection"] = MeasurementDirection
 DAVE_ADDITIONAL_RUNTIME_MODULES["MeasurementType"] = MeasurementType
+DAVE_ADDITIONAL_RUNTIME_MODULES["Supportpoint"] = SupportPoint
 
 # DAVE_ADDITIONAL_RUNTIME_MODULES["SimpleSling"] = SimpleSling
 DAVE_ADDITIONAL_RUNTIME_MODULES["SPMT"] = SPMT

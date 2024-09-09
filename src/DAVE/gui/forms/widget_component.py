@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'widget_component.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.0
+## Created by: Qt User Interface Compiler version 6.6.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -22,7 +22,7 @@ class Ui_component(object):
     def setupUi(self, component):
         if not component.objectName():
             component.setObjectName(u"component")
-        component.resize(326, 57)
+        component.resize(326, 72)
         component.setStyleSheet(u"")
         self.gridLayout = QGridLayout(component)
         self.gridLayout.setObjectName(u"gridLayout")
@@ -35,6 +35,7 @@ class Ui_component(object):
         sizePolicy.setHeightForWidth(self.cbPath.sizePolicy().hasHeightForWidth())
         self.cbPath.setSizePolicy(sizePolicy)
         self.cbPath.setEditable(True)
+        self.cbPath.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon)
 
         self.gridLayout.addWidget(self.cbPath, 1, 1, 1, 1)
 

@@ -27,6 +27,7 @@ import DAVE.gui.forms.widget_contactball
 import DAVE.gui.forms.widget_geometricconnection
 
 from DAVE.gui.forms.widget_measurement import Ui_MeasurementWidget
+from DAVE.gui.forms.widget_supportpoint import Ui_SupportPointWidget
 
 # import DAVE.gui.forms.widget_sling
 import DAVE.gui.forms.widget_tank
@@ -1279,6 +1280,106 @@ class EditMeasurement(NodeEditor):
 
         self.run_code(code)
 
+@Singleton
+class EditSupportPoint(NodeEditor):
+
+    def __init__(self):
+        widget = QtWidgets.QWidget()
+        ui = Ui_SupportPointWidget()
+        ui.setupUi(widget)
+        self.ui = ui
+        self._widget = widget
+
+        # connect signals
+        self.ui.dsKx.valueChanged.connect(self.changed)
+        self.ui.dsKy.valueChanged.connect(self.changed)
+        self.ui.dsKz.valueChanged.connect(self.changed)
+        self.ui.dsDeltaZ.valueChanged.connect(self.changed)
+
+
+    # override connect to initialize the pickers
+    def connect(
+        self,
+        node,
+        scene,
+        run_code,
+        guiEmitEvent,
+        gui_solve_func,
+        node_picker_register_func,
+    ):
+        self.ui.npFrame.initialize(
+            scene=scene,
+            nodetypes=(Frame),
+            callback=self.changed,
+            register_func=node_picker_register_func,
+            NoneAllowed=False,
+            node=node,
+        )
+
+        self.ui.npPoint.initialize(
+            scene=scene,
+            nodetypes=(Point),
+            callback=self.changed,
+            register_func=node_picker_register_func,
+            NoneAllowed=False,
+            node=node,
+        )
+
+        return super().connect(
+            node,
+            scene,
+            run_code,
+            guiEmitEvent,
+            gui_solve_func,
+            node_picker_register_func,
+        )
+
+    def post_update_event(self):
+
+
+        # update properties
+        try:
+            self.filling = True
+
+            self.ui.npFrame.fill(property_name='frame')
+            self.ui.npPoint.fill(property_name='point')
+
+            # noinspection PyTypeChecker
+            node : SupportPoint = self.node # alias and type hint
+
+            self.ui.dsKx.setValue(node.kx)
+            self.ui.dsKy.setValue(node.ky)
+            self.ui.dsKz.setValue(node.kz)
+            self.ui.dsDeltaZ.setValue(node.delta_z)
+        finally:
+            self.filling = False
+
+    def changed(self):
+        if self.filling:
+            return
+
+        code = ""
+        element = "\ns['{}']".format(self.node.name)
+
+        # noinspection PyTypeChecker
+        node : SupportPoint = self.node # alias and type hint
+
+
+
+        # change in point?
+        if self.ui.npPoint.value != node.point.name:
+            code += element + f".point = s['{self.ui.npPoint.value}']"
+
+        # change in frame?
+        if self.ui.npFrame.value != node.frame.name:
+            code += element + f".frame = s['{self.ui.npFrame.value}']"
+
+        code += code_if_changed_d(node, self.ui.dsKz.value(), 'kz', 3)
+        code += code_if_changed_d(node, self.ui.dsDeltaZ.value(), 'delta_z', 3)
+        code += code_if_changed_d(node, self.ui.dsKx.value(), 'kx', 3)
+        code += code_if_changed_d(node, self.ui.dsKy.value(), 'ky', 3)
+
+        self.run_code(code)
 
 
 @Singleton
@@ -3523,6 +3624,9 @@ class WidgetNodeProps(guiDockWidget):
 
         if isinstance(node, vfs.Measurement) and (vfs.Measurement not in suppressed_editors):
             self._node_editors.append(EditMeasurement.Instance())
+
+        if isinstance(node, vfs.SupportPoint) and (vfs.SupportPoint not in suppressed_editors):
+            self._node_editors.append(EditSupportPoint.Instance())
 
         for key, value in DAVE_GUI_NODE_EDITORS.items():
             if isinstance(node, key):

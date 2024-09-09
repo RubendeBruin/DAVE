@@ -128,6 +128,19 @@ class GeometricContact(
 
         self._update_connection()
 
+    def is_property_change_allowed(self, node, property_name):
+        """The slaved frame managed by geometric contact is only restricted in its parent, position and dofs"""
+
+        if node == self._child_circle_parent_parent:
+            if property_name in ["parent", "position", "rotation", "fixed"]:
+                return False
+
+            if self.manager:
+                return self.manager.is_property_change_allowed(node, property_name)
+            return True
+
+        return False
+
     def dissolve_some(self) -> tuple:
         self.dissolve()
         return True, "Geometric contact dissolved"
@@ -156,6 +169,7 @@ class GeometricContact(
     def _on_name_changed(self):
         old_prefix = self._name_prefix
         new_prefix = self.name + "/"
+
         self.helper_update_node_prefix(self.created_nodes(), old_prefix, new_prefix)
         self._name_prefix = new_prefix
 
@@ -211,8 +225,15 @@ class GeometricContact(
         self._child_circle_parent.observers.append(self)
 
         # and manage
-        self._child_circle_parent_parent._parent_for_code_export = None
-        self._child_circle_parent_parent.manager = self
+        slaved_frame = self._child_circle_parent_parent
+
+        if not slaved_frame.name.startswith(self._name_prefix):
+            slaved_frame.name = self._name_prefix + slaved_frame.name
+
+        slaved_frame._parent_for_code_export = None
+        slaved_frame.manager = self
+
+        # adjust the name of the managed frame
 
         self._scene.current_manager = store
 

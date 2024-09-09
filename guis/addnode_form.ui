@@ -78,6 +78,136 @@
     </widget>
    </item>
    <item>
+    <widget class="QFrame" name="frmFrame">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_5">
+      <item row="0" column="1">
+       <widget class="QComboBox" name="cbFrame"/>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_15">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>80</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>80</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Frame</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="label_16">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>60</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>60</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>[Frame]</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="frmPoint">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_6">
+      <item row="0" column="1">
+       <widget class="QComboBox" name="cbPoint"/>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_17">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>80</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>80</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Point</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="label_18">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>60</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>60</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>[point]</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QFrame" name="frmParent">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -355,7 +485,7 @@
          </size>
         </property>
         <property name="text">
-         <string>point 1</string>
+         <string>Connection 1</string>
         </property>
        </widget>
       </item>
@@ -383,7 +513,7 @@
          </size>
         </property>
         <property name="text">
-         <string>[Point]</string>
+         <string>[Point/Circle]</string>
         </property>
        </widget>
       </item>
@@ -408,7 +538,7 @@
          </size>
         </property>
         <property name="text">
-         <string>point 2</string>
+         <string>Connection 2</string>
         </property>
        </widget>
       </item>
@@ -436,7 +566,7 @@
          </size>
         </property>
         <property name="text">
-         <string>[Point]</string>
+         <string>[Point/Circle]</string>
         </property>
        </widget>
       </item>
@@ -497,6 +627,18 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>tbName</tabstop>
+  <tabstop>cbFrame</tabstop>
+  <tabstop>cbPoint</tabstop>
+  <tabstop>cbParentAxis</tabstop>
+  <tabstop>cbParentPoi</tabstop>
+  <tabstop>cbMasterAxis</tabstop>
+  <tabstop>cbSlaveAxis</tabstop>
+  <tabstop>cbPoiA</tabstop>
+  <tabstop>cbPoiB</tabstop>
+  <tabstop>btnOk</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
