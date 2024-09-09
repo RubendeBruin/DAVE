@@ -259,13 +259,16 @@ class Manager(DAVENodeBase, ABC):
     def is_property_change_allowed(self, node, property_name):
         """Returns True if the property change is allowed, False otherwise
 
-        This method can be overridden in derived classes to fine-grained control over
+        This method can be overridden in derived classes to fine-grained control to
         allow or disallow certain property changes.
+
         When overriding, consider that the manager node (which overrides this method) may
         itself be managed by another manager node. In that case, the manager node should probably
         recursively call the method on its manager node.
 
         For an example see the implementation in GeometricContact
+
+        Hint: keep a close watch on where the changed properties are stored when saving to file
 
         """
         return False
