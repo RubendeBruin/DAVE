@@ -4219,6 +4219,11 @@ class Scene:
             for node in self._nodes:
                 if node.manager is None:
                     node.name = prefix + node.name
+                else:
+                    # check if manager allows renaming
+                    if node.manager.is_property_change_allowed(node, "name"):
+                        node.name = prefix + node.name
+
 
     def copy(self, nodes=None, quick=False):
         """Creates a full and independent copy of the scene and returns it.

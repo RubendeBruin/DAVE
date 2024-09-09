@@ -33,18 +33,17 @@ def model():
 
 def test_mass_change_allowed():
     s = model()
-    s['Geometric_connection of Circle2 on Circle/Body'].mass = 3.0
-    assert s['Geometric_connection of Circle2 on Circle/Body'].mass == 3.0
+    s['Body'].mass = 3.0
+    assert s['Body'].mass == 3.0
 
-def test_name_change_not_allowed():
+def test_name_change_IS_allowed():
     s = model()
-    node = s['Geometric_connection of Circle2 on Circle/Body']
-    with pytest.raises(ValueError):
-        node.name = 'NewName'
+    node = s['Body']
+    node.name = 'NewName'
 
 def test_position_change_not_allowed():
     s = model()
-    node = s['Geometric_connection of Circle2 on Circle/Body']
+    node = s['Body']
     with pytest.raises(ValueError):
         node.position = (1,2,3)
 
@@ -59,7 +58,7 @@ def test_mass_change_not_allowed_when_in_component(tmp_path):
 
     s2.print_node_tree()
 
-    node = s2['Component/Geometric_connection of Circle2 on Circle/Body']
+    node = s2['Component/Body']
 
     with pytest.raises(ValueError):
         node.mass = 3.0

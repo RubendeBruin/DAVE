@@ -128,13 +128,11 @@ class GeometricContact(
 
         self._update_connection()
 
-        self._on_name_changed()  # updates the name of the managed nodes (in this case only the slaved frame)
-
     def is_property_change_allowed(self, node, property_name):
-        """The slaved frame managed by geometric contact is only restricted in its parent, position and dofs and name"""
+        """The slaved frame managed by geometric contact is only restricted in its parent, position and dofs"""
 
         if node == self._child_circle_parent_parent:
-            if property_name in ["parent", "position", "rotation", "fixed", "name"]:
+            if property_name in ["parent", "position", "rotation", "fixed"]:
                 return False
 
             if self.manager:
@@ -172,20 +170,7 @@ class GeometricContact(
         old_prefix = self._name_prefix
         new_prefix = self.name + "/"
 
-        # work-around for old models [pre September 2024]
-        # apply prefix to slaved frame
-        if not self._child_circle_parent_parent.name.startswith(old_prefix):
-            warnings.warn(
-                "Fixing old model by applying prefix to slaved frame: "
-                + self._child_circle_parent_parent.name
-            )
-
-            with ClaimManagement(self._scene, self):
-                self._child_circle_parent_parent.name = (
-                    old_prefix + self._child_circle_parent_parent.name
-                )
-
-        self.helper_update_node_prefix(self.managed_nodes(), old_prefix, new_prefix)
+        self.helper_update_node_prefix(self.created_nodes(), old_prefix, new_prefix)
         self._name_prefix = new_prefix
 
     @staticmethod
