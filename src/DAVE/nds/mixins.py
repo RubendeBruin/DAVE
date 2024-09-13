@@ -497,6 +497,8 @@ class HasSubScene(HasContainer):
             prefix=self.name + "/",
             containerize=False,
             settings=False,  # do not import environment and other settings
+            do_reports=False,  # do not import reports
+            do_timeline=False,
         )
 
     @property

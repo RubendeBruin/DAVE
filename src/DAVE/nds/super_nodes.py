@@ -5,7 +5,6 @@ Shackle
 
 """
 
-
 from os.path import dirname
 
 from .geometry import Frame, Point, Circle
@@ -749,6 +748,8 @@ class Component(Frame, HasSubScene):
             prefix=self.name + "/",
             container=self,
             settings=False,  # do not import environment and other settings
+            do_reports=False,  # do not import reports
+            do_timeline=False,
         )
 
     def dissolve(self):

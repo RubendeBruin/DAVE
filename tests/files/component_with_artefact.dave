@@ -1,0 +1,7 @@
+# this components adds a point to the model
+
+s.new_point("ShouldBeImported")
+s.t = "This is a fake timeline"
+s.should_not_be_imported = "Hi, I should not be imported"
+
+
