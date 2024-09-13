@@ -1,0 +1,58 @@
+"""This model contains a few nodes that can not be created
+It should be able to load the rest of the model.
+
+- the cable can not be created because on of the points does not exist
+- the visual can not be created because the path does not exist
+
+used in test for issue 190
+"""
+
+# auto generated python code
+# By MS12H
+# Time: 2024-09-12 13:37:06 UTC
+
+
+# code for Frame
+s.new_frame(name='Frame',
+           position=(0,
+                     0,
+                     0),
+           rotation=(0,
+                     0,
+                     0),
+           fixed =(True, True, True, True, True, True),
+            )
+
+
+# code for Frame2
+s.new_frame(name='Frame2',
+           position=(0,
+                     0,
+                     0),
+           rotation=(0,
+                     0,
+                     0),
+           fixed =(True, True, True, True, True, True),
+            )
+
+# code for Point
+s.new_point(name='Point',
+          parent='Frame',
+          position=(0,
+                    0,
+                    0))
+
+# code for Visual
+s.new_visual(name='Visual',
+            parent='Frame2',
+            path=r'I do not exist',
+            offset=(0, 0, 0),
+            rotation=(0, 0, 0),
+            scale=(1, 1, 1) )
+
+# code for Cable
+s.new_cable(name='Cable',
+            endA='Point',
+            endB='Point2',
+            length=12.413,
+            EA=0)
