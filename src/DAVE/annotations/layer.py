@@ -9,6 +9,7 @@ from DAVE.annotations.has_node_reference import HasNodeReference
 from DAVE.visual_helpers.overlay_actor import OverlayActor
 from DAVE.visual_helpers.scene_renderer import AbstractSceneRenderer
 
+import nooverlap
 
 # Get the default font
 # https://en.wikipedia.org/wiki/List_of_typefaces_included_with_Microsoft_Windows
@@ -60,7 +61,7 @@ class AnnotationLayer(HasNodeReference):
         self.padding = (2, 4, 2, 4)
         self.border_width = 1
         self.border_rgba = (128, 128, 128, 255)
-        self.text_color = (0,0,0)
+        self.text_color = (0, 0, 0)
 
     def as_dict(self):
         return {
@@ -161,24 +162,31 @@ class AnnotationLayer(HasNodeReference):
     def is_valid(self):
         return True
 
-    def render(self):
-        """Renders the annotations on a render window."""
+    def give_annotation_data(self) -> list[tuple[Annotation, tuple,tuple]]:
+        """Returns a list of annotations that should be rendered as well as their positions
+        No rendering is done here.
+
+        Returns
+        -------
+        list of tuple of (Annotation, position_in_3d_space)
+            A list of annotations and their positions in screen space.
+
+        """
+        to_be_rendered = []
 
         for annotation in self.annotations:
-            p3 = (
-                annotation._p3
-            )  # all private properties used here are created by _update_buffered_properties
-            p2 = self.scene_renderer.to_screenspace(p3)
-            offset = annotation.anchor.screenspace_offset
 
             if (
                 annotation._text.strip() != ""
             ):  # only render annotation that are not empty
-                annotation._overlay_actor.render_at(
-                    render_window=self.scene_renderer.window,
-                    x=p2[0] + offset[0],
-                    y=p2[1] + offset[1],
+
+                to_be_rendered.append(
+                    (annotation, annotation._p3, annotation.anchor.screenspace_offset)
                 )
+
+
+        return to_be_rendered
+
 
 
 class CustomNodeLayer(AnnotationLayer):

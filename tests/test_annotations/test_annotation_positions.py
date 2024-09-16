@@ -1,5 +1,8 @@
+import math
+
 import pytest
 
+from DAVE import *
 from DAVE.annotations.custom_layers import NodeLabelLayer
 from DAVE.visual_helpers.image_screen_renderer import ImageRenderer
 from DAVE.visual_helpers.qt_embedded_renderer import QtEmbeddedSceneRenderer
@@ -30,7 +33,7 @@ def test_annotation_positions_interactive(model):
 
     v.show()
 
-@pytest.mark.skip(reason="This test is interactive")
+# @pytest.mark.skip(reason="This test is interactive")
 def test_annotation_positions_interactive_qt(model):
     s= model
 
@@ -56,3 +59,10 @@ def test_annotation_positions_interactive_qt(model):
 
     viewer.zoom_all()
     app.exec()
+
+if __name__ == '__main__':
+    s = Scene()
+    for i in range(100):
+        s.new_point(f"Point {i}",position = (math.cos(i),math.sin(i),math.sin(2*i)))
+
+    DG(s)
