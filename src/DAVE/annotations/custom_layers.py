@@ -4,7 +4,8 @@ from DAVE import NodeSelector, Scene, Cable, RigidBody, Tank, Measurement
 from DAVE.annotations import Annotation, AnnotationLayer
 from DAVE.annotations.layer import CustomNodeLayer
 from DAVE.settings import DAVE_ANNOTATION_LAYERS
-from DAVE.visual_helpers.scene_renderer import AbstractSceneRenderer
+
+# from DAVE.visual_helpers.scene_renderer import AbstractSceneRenderer
 
 
 class NodeLabelLayer(CustomNodeLayer):
@@ -32,6 +33,7 @@ DAVE_ANNOTATION_LAYERS["Cable tension"] = CableTensionLayer
 
 # ================================================================
 
+
 class MeasurementsLayer(CustomNodeLayer):
     """Annotation layer that adds the tension in kN to all Cable nodes."""
 
@@ -48,6 +50,7 @@ class MeasurementsLayer(CustomNodeLayer):
 DAVE_ANNOTATION_LAYERS["Measurements"] = MeasurementsLayer
 
 # ================================================================
+
 
 class WeightsLayer(CustomNodeLayer):
     """Annotation layer that adds the weight in tonnes to all Cable nodes."""

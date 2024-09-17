@@ -2,8 +2,10 @@
 
 provides a class to render a scene using VTK
 """
+
 import logging
 
+import nooverlap
 import numpy as np
 from vtkmodules.vtkCommonDataModel import vtkPolyData
 from vtkmodules.vtkCommonTransforms import vtkTransform
@@ -46,7 +48,8 @@ from DAVE.visual_helpers.vtkActorMakers import (
     PlaneXY,
     actor_from_trimesh,
     Cylinder,
-    Circle, actors_from_gltf,
+    Circle,
+    actors_from_gltf,
 )
 from DAVE.visual_helpers.vtkHelpers import (
     transform_from_direction,
@@ -60,14 +63,11 @@ from DAVE.visual_helpers.vtkHelpers import (
 import DAVE.nodes as dn
 
 
-def visual_actors_from_file(file,
-                            actors_dict: dict,
-                            N : dn.Visual):
+def visual_actors_from_file(file, actors_dict: dict, N: dn.Visual):
 
-    actors = actors_dict # alias
+    actors = actors_dict  # alias
 
-
-    if str(file).lower().endswith('glb'):
+    if str(file).lower().endswith("glb"):
 
         gltf_actors = actors_from_gltf(file)
 
@@ -172,7 +172,6 @@ class AbstractSceneRenderer:
         self.add_new_node_actors_to_screen()
         self.position_visuals()
 
-
     def create_rendering_pipeline(
         self,
     ) -> tuple[vtkRenderer, list[vtkRenderer], vtkCamera, vtkRenderWindow]:
@@ -182,8 +181,52 @@ class AbstractSceneRenderer:
 
     def render_layers(self, *args):
         """Renders all layers"""
+
+        # request the annotations and positions from all layers
+        annotation_data = []
         for layer in self.layers:
-            layer.render()
+            annotation_data.extend(layer.give_annotation_data())
+
+        to_be_rendered = []
+        for annotation, p3, offset in annotation_data:
+
+            p2 = self.to_screenspace(p3)
+            offset = annotation.anchor.screenspace_offset
+            to_be_rendered.append(
+                (
+                    annotation,
+                    p2[0] + offset[0],
+                    p2[1] + offset[1],
+                )
+            )
+
+        # do the pushing away
+        pusher = nooverlap.Pusher()
+
+        for tbr in to_be_rendered:
+            annotation = tbr[0]
+            x = tbr[1]
+            y = tbr[2]
+
+            width = annotation._overlay_actor._width
+            height = annotation._overlay_actor._height
+
+            pusher.add_box(
+                x0=x, y0=y, d_left=0, d_right=width, d_top=0, d_bottom=height
+            )
+
+        pusher.push_free(push_factor_horizontal=0.1, push_factor_vertical=0.3)
+
+        for i, tbr in enumerate(to_be_rendered):
+
+            annotation = tbr[0]
+            x, y = pusher.get_position(i)
+
+            annotation._overlay_actor.render_at(
+                render_window=self.window,
+                x=x,
+                y=y,
+            )
 
     def to_screenspace(self, pos3d):
         """Converts a 3d position to screen space [0..1 , 0..1]"""
@@ -311,7 +354,6 @@ class AbstractSceneRenderer:
 
         # t.elapsed("Control outline visibility")
 
-
         # remove the outlines of actors that are no longer present
         # ol.outlined actor is not in buffered actors
 
@@ -322,10 +364,11 @@ class AbstractSceneRenderer:
 
         if obsolete_outlined_actors:
             for obsolete_outlined in obsolete_outlined_actors:
-                ol = obsolete_outlined._outline  # Note: the outlined actor has already been removed from the scene, yet it still exists (or at least the _outline prop still exists)
+                ol = (
+                    obsolete_outlined._outline
+                )  # Note: the outlined actor has already been removed from the scene, yet it still exists (or at least the _outline prop still exists)
                 self.node_outlines.remove(ol)
                 self.remove(ol.outline_actor)
-
 
         # list actors that already have an outline
         _outlines = [a.outlined_actor for a in self.node_outlines]
@@ -342,7 +385,6 @@ class AbstractSceneRenderer:
                     "Force-recreating outline due to vertices_changed flag on outlined actor"
                 )
                 remove = True
-
 
             elif getattr(ol.outlined_actor, "do_silhouette", True) != ol.is_silhouette:
                 logging.info(
@@ -414,9 +456,9 @@ class AbstractSceneRenderer:
 
         self.sea_visuals["sea"] = plane
         self.sea_visuals["sea"].actor_type = ActorType.GLOBAL
-        self.sea_visuals[
-            "sea"
-        ].no_outline = False  # If outlines are used, then they need to be disabled
+        self.sea_visuals["sea"].no_outline = (
+            False  # If outlines are used, then they need to be disabled
+        )
         # when performing a zoom-fit (see zoom-all)
 
         self.origin_visuals["main"] = Line([(0, 0, 0), (10, 0, 0)], color=(1, 0, 0))
@@ -557,10 +599,7 @@ class AbstractSceneRenderer:
 
             if isinstance(N, dn.Visual):
                 file = self.scene.get_resource_path(N.path)
-                visual_actors_from_file(file,
-                                        actors_dict=actors,
-                                        N=N)
-
+                visual_actors_from_file(file, actors_dict=actors, N=N)
 
             if isinstance(N, dn.Frame):
                 size = 1
@@ -690,7 +729,7 @@ class AbstractSceneRenderer:
                 a = Line([(0, 0, 0), (0, 0, 0.1), (0, 0, 0)])
                 a.actor_type = ActorType.MEASUREMENT
                 a.PickableOn()
-                a.GetProperty().SetColor(0.5,0.5, 0.5)
+                a.GetProperty().SetColor(0.5, 0.5, 0.5)
                 actors["main"] = a
 
             if isinstance(N, dn.SupportPoint):
@@ -868,8 +907,6 @@ class AbstractSceneRenderer:
     def add_new_node_actors_to_screen(self):
         """Updates the screen with added actors"""
 
-
-
         if self.renderer:
 
             # t = TimeElapsed()
@@ -884,7 +921,6 @@ class AbstractSceneRenderer:
             to_be_added = actors_required - actors_in_renderer
 
             # t.elapsed("Invesigated to be added")
-
 
             if to_be_added:
                 for add_me in to_be_added:
@@ -905,8 +941,7 @@ class AbstractSceneRenderer:
                     for A in va.actors.values():
                         self.renderer.RemoveActor(A)
 
-                    visual_actors_from_file(file, actors_dict=va.actors, N = va.node)
-
+                    visual_actors_from_file(file, actors_dict=va.actors, N=va.node)
 
                     for A in va.actors.values():
                         self.renderer.AddActor(A)

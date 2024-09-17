@@ -2,6 +2,7 @@ import numpy as np
 
 # enforce PySide6 on vtk
 import vtkmodules.qt
+from vtkmodules.vtkCommonCore import vtkCommand
 from vtkmodules.vtkInteractionWidgets import (
     vtkOrientationMarkerWidget,
     vtkCameraOrientationWidget,
@@ -102,7 +103,7 @@ class QtEmbeddedSceneRenderer(AbstractSceneRenderer):
 
         camera = renderer.GetActiveCamera()
 
-        renderer.AddObserver('EndEvent', self.render_layers)
+        renderer.AddObserver(vtkCommand.EndEvent, self.render_layers)
 
         return renderer, [renderer], camera, renwin
 

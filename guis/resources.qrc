@@ -112,5 +112,8 @@
     <file>icons/layer.svg</file>
     <file>icons/measurement.svg</file>
     <file>icons/supportpoint.svg</file>
+    <file>icons/report_new.svg</file>
+    <file>icons/report_duplicate.svg</file>
+    <file>icons/report_delete.svg</file>
   </qresource>
 </RCC>

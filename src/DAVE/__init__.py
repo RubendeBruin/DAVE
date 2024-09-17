@@ -15,6 +15,8 @@ from .nodes import *
 from .exceptions import ModelInvalidException
 from .helpers.profiling_timing import TimeElapsed
 
+from .annotations import custom_layers  # defines the custom annotation layers
+
 # Convenience helper to set __all__
 # generate = list(DAVE_ADDITIONAL_RUNTIME_MODULES.keys()) + [
 #     "ModelInvalidException",
@@ -72,7 +74,7 @@ __all__ = [
     "Scene",
     "DAVE_load_extensions",
     "DG",
-    "TimeElapsed"
+    "TimeElapsed",
 ]
 
 
@@ -127,7 +129,7 @@ def DG(
     block: object = True,
     autosave=True,
     filename=None,
-    workspace = None,
+    workspace=None,
 ) -> "DAVE.gui.Gui":
     print("loading gui")
     from .gui import Gui
@@ -136,4 +138,10 @@ def DG(
     if not bare:
         DAVE_load_extensions()
 
-    return Gui(scene, block=block, autosave_enabled=autosave, filename=filename, workspace=workspace)
+    return Gui(
+        scene,
+        block=block,
+        autosave_enabled=autosave,
+        filename=filename,
+        workspace=workspace,
+    )

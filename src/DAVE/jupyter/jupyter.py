@@ -25,6 +25,8 @@ from vtkmodules.util.numpy_support import vtk_to_numpy
 import numpy as np
 from vtkmodules.vtkCommonCore import vtkUnsignedCharArray
 
+from DAVE.settings import DAVE_ANNOTATION_LAYERS
+
 
 def show(
     scene,
@@ -134,6 +136,7 @@ def pil_image(
     zoom_fit=False,
     scale=None,
     transparent=True,  # render using a transparent background
+    layers="",
 ):
     """
     Creates a 3d view of the scene and shows it as a static image.
@@ -160,6 +163,7 @@ def pil_image(
         paint_uc: Paint unity-checks using colors
         transparent : If one image: render image transparent. Multiple images: Renders the first image with solid background and the rest with transparent background
         scale : parallel scale for 2d views
+        layers : str : name of the layer(s) to be included in the image. Separate multiple layers with a newline \n
 
     Returns:
         A 3d view
@@ -271,10 +275,22 @@ def pil_image(
             "Both scale and zoom_fit have been defined. Scale will be ignored"
         )
 
-    # for visual in vp.node_visuals:
-    #     label_actor = visual.label_actor
-    #     if label_actor.GetVisibility():
-    #         plotter += label_actor
+    # Activate layers (if any)
+    if layers:
+        for layer_key in layers.split("\n"):
+
+            if layer_key not in DAVE_ANNOTATION_LAYERS:
+                raise ValueError(
+                    f"Layer {layer_key} not found, available layers are: {DAVE_ANNOTATION_LAYERS.keys()}"
+                )
+
+            layer = DAVE_ANNOTATION_LAYERS[layer_key](
+                scene,
+                scene_renderer=vp,
+                do_not_update_yet=False,
+            )
+
+            vp.layers.append(layer)
 
     # rotate actors to camera orientation (WindArea)
     vp._camera_direction_changed()
@@ -337,24 +353,6 @@ def pil_image(
             pil_img = vp.produce_pil_image(
                 width=width, height=height, transparent=_transparent
             )
-            #
-            # nx, ny = win.GetSize()
-            # arr = vtkUnsignedCharArray()
-            # win.GetRGBACharPixelData(0, 0, nx - 1, ny - 1, 0, arr)
-            #
-            # if use_step0_as_background and len(images) == 1:
-            #     _transparent = True
-            #     vp.renderer.SetLayer(1)
-            #     win.SetNumberOfLayers(2)
-            #
-            # if _transparent:
-            #     narr = vtk_to_numpy(arr).T[:4].T.reshape([ny, nx, 4])
-            # else:
-            #     narr = vtk_to_numpy(arr).T[:3].T.reshape([ny, nx, 3])
-            #
-            # narr = np.flip(narr, axis=0)
-            #
-            # pil_img = PIL.Image.fromarray(narr)
 
             pil_img.DAVE_caption = caption
 
