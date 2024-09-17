@@ -2,6 +2,7 @@ import PIL.ImageFont
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QWidget, QListWidgetItem, QColorDialog
+from pyqtgraph.parametertree.Parameter import SignalBlocker
 
 from DAVE.annotations import AnnotationLayer
 from DAVE.annotations.layer import DEFAULT_ANNOTATION_FONT
@@ -89,8 +90,6 @@ class LayersWidget(QWidget):
         rh = self.ui.layerList.sizeHintForRow(0)
         ht = min(rh * (1 + self.ui.layerList.count()), 800)
         self.ui.layerList.setFixedHeight(ht)
-
-
 
     def get_background_color(self):
         color = get_color()
