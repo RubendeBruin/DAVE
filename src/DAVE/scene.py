@@ -3699,8 +3699,8 @@ class Scene:
         export_environment_settings=True,
         _no_sort_nodes=False,
         state_only=False,
-        no_reports=False,
-        no_timeline=False,
+        do_reports=True,
+        do_timeline=True,
     ):
         """Generates the python code that rebuilds the scene and elements in its current state.
 
@@ -3884,7 +3884,7 @@ class Scene:
                 )
 
             # Optional Reports
-            if self.reports and not no_reports:
+            if self.reports and do_reports:
                 code.append("\n# Reports")
                 for r in self.reports:
                     yml = r.to_yml()
@@ -3893,7 +3893,7 @@ class Scene:
                     code.append("s.reports.append(Report(s,yml=report_contents))")
 
             # Optional Timelines
-            if self.t and not no_timeline:
+            if self.t and do_timeline:
                 code.extend(self.t.give_python_code())
 
         # Solved state of managed DOFs nodes
@@ -3948,7 +3948,7 @@ class Scene:
         except:
             pass
 
-    def save_scene(self, filename, no_reports=False, no_timeline=False):
+    def save_scene(self, filename, do_reports=True, do_timeline=True):
         """Saves the scene to a file
 
         This saves the scene in its current state to a file.
@@ -3963,13 +3963,15 @@ class Scene:
 
         Args:
             filename : filename or file-path to save the file. Default extension is .dave
+            do_reports : save reports as well
+            do_timeline : save timeline as well
 
         Returns:
             the full path to the saved file
 
         """
 
-        code = self.give_python_code(no_reports=no_reports, no_timeline=no_timeline)
+        code = self.give_python_code(do_reports=do_reports, do_timeline=do_timeline)
 
         filename = Path(filename)
 
@@ -4161,6 +4163,8 @@ class Scene:
         settings=True,
         quick=False,
         allow_errors_during_load = False
+        do_reports=True,
+        do_timeline=True,
     ):
         """Copy-paste all nodes of scene "other" into current scene.
 
@@ -4173,7 +4177,8 @@ class Scene:
             prefix       : a prefix is applied to all names of the imported nodes
             quick        : only import the nodes, not the settings, reports, timelines etc
             allow_errors_during_load : if True then errors during loading are ignored
-
+            do_reports   : do import reports
+            do_timeline  : do import timelines
 
         Returns:
             Contained (Frame) : if the imported scene is containerized then a reference to the created container is returned.
@@ -4214,7 +4219,11 @@ class Scene:
         store_export_code_with_solved_function = other._export_code_with_solved_function
         other._export_code_with_solved_function = False  # quicker
         code = other.give_python_code(
-            nodes=nodes, export_environment_settings=settings, state_only=quick
+            nodes=nodes,
+            export_environment_settings=settings,
+            state_only=quick,
+            do_reports=do_reports,
+            do_timeline=do_timeline,
         )
         other._export_code_with_solved_function = store_export_code_with_solved_function
 
@@ -4256,7 +4265,6 @@ class Scene:
                     # check if manager allows renaming
                     if node.manager.is_property_change_allowed(node, "name"):
                         node.name = prefix + node.name
-
 
     def copy(self, nodes=None, quick=False):
         """Creates a full and independent copy of the scene and returns it.
