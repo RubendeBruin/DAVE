@@ -278,10 +278,11 @@ def pil_image(
     # Activate layers (if any)
     if layers:
         for layer_key in layers.split("\n"):
+            layer_key = layer_key.strip()
 
             if layer_key not in DAVE_ANNOTATION_LAYERS:
                 raise ValueError(
-                    f"Layer {layer_key} not found, available layers are: {DAVE_ANNOTATION_LAYERS.keys()}"
+                    f"Layer '{layer_key}' not found, available layers are: {DAVE_ANNOTATION_LAYERS.keys()}"
                 )
 
             layer = DAVE_ANNOTATION_LAYERS[layer_key](
