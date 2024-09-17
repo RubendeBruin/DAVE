@@ -491,6 +491,17 @@ class AbstractSceneRenderer:
 
         # self.renderer.AddActor(self.colorbar_actor)
 
+    def _scaled_force_vector(self, vector):
+
+        r = np.array(vector)
+        len = np.linalg.norm(r)
+        if len == 0:
+            return r
+        if self.settings.force_do_normalize:
+            r *= 1000 / len
+        r *= self.settings.force_scale / 1000
+        return r
+
     def create_node_visuals(self, recreate=True):
         """Creates actors for nodes in the scene that do not yet have one
 
