@@ -98,7 +98,7 @@ from DAVE.gui.dock_system.ads_helpers import (
     get_all_active_docks,
 )
 from DAVE.gui.dock_system.gui_dock_groups import DaveDockGroup
-from DAVE.gui.helpers.gui_logger import DAVE_GUI_LOGGER
+from DAVE.gui.helpers.gui_logger import DAVE_GUI_LOGGER, format_exception_with_notes
 from DAVE.gui.helpers.my_qt_helpers import BlockSigs
 from DAVE.gui.helpers.qt_action_draggable import QDraggableNodeActionWidget
 from DAVE.gui.widget_layers import LayersWidget
@@ -2207,16 +2207,20 @@ class Gui:
             what = str(what)
             tool_long = len(what) > 1000 or len(what.split("\n")) > 30
 
-            short = what[-1000:]
-            short = "\n".join(short.split("\n")[-30:])
+            short_start = what[:500]
+            short_end = what[-500:]
+            short_start = "\n".join(short_start.split("\n")[-30:])
+            short_end = "\n".join(short_end.split("\n")[-30:])
 
             if tool_long:
                 print(what)
                 QMessageBox.warning(
                     self.ui.widget,
                     "error",
-                    short
-                    + "\n\n !!! first part omitted,\n see (python) console for full error message",
+                    short_start +
+                    ".....\n \n"
+                    ">>>> Error message too long, skipping middle part. See (python) console [ctrl + p] for full error message <<<\n\n....." +
+                    short_end,
                     QMessageBox.Ok,
                 )
             else:
@@ -2790,6 +2794,25 @@ class Gui:
         self.modelfilename = None
         self.MainWindow.setWindowTitle(f"DAVE [unnamed scene]")
 
+    def _handle_load_errors_if_any(self):
+        """Handles the load errors if any"""
+        if self.scene.errors_during_load:
+
+            text = []
+            for error in self.scene.errors_during_load:
+                text.append("\n")
+                text.extend(format_exception_with_notes(error))
+
+            if len(self.scene.errors_during_load) == 1:
+                txt = "was an error"
+            else:
+                txt = f"were {len(self.scene.errors_during_load)} errors"
+
+            self.show_exception(
+                f"There {txt} while loading the model. The model was not fully loaded.\n\nThe errors were:" + "\n".join(text)
+            )
+
+
     def open_file(self, filename: str or Path):
         """Opens the provided file"""
         DAVE_GUI_LOGGER.log(f"Open file {filename}")
@@ -2801,7 +2824,7 @@ class Gui:
         current_directory = str(Path(filename).parent)
         if current_directory.endswith(":\\"):
             current_directory += "\\"
-        code = f's.clear()\ns.current_directory = r"{current_directory}"\ns.load_scene(r"{filename}")'
+        code = f's.clear()\ns.current_directory = r"{current_directory}"\ns.load_scene(r"{filename}", allow_errors_during_load=True)'
 
         store = gui_globals.do_ask_user_for_unavailable_nodenames
         gui_globals.do_ask_user_for_unavailable_nodenames = True
@@ -2820,6 +2843,9 @@ class Gui:
             )
             self.guiEmitEvent(guiEventType.FULL_UPDATE)
         else:
+
+            self._handle_load_errors_if_any()
+
             self.modelfilename = filename
 
             name_and_ext = str(Path(filename).name)
@@ -2921,8 +2947,11 @@ class Gui:
         filename = self._get_filename_using_dialog()
 
         if filename:
-            code = 's.import_scene(r"{}")'.format(filename)
+            code = 's.import_scene(r"{}", allow_errors_during_load=True)'.format(filename)
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+
+            self._handle_load_errors_if_any()
+
             self.visual.update_visibility()
 
     def menu_save_model(self):

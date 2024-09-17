@@ -7,6 +7,20 @@ A global logger DAVE_GUI_LOGGER is created and used by the GUI.
 """
 import traceback
 
+def format_exception_with_notes(exception):
+
+    lines = []
+    lines.append(str(exception))
+    notes = getattr(exception, "__notes__", [])
+    for note in notes:
+        lines.append(note)
+
+    tb = traceback.format_exc()
+    if tb != 'NoneType: None\n':
+        lines.append(tb)
+
+    return lines
+
 
 class DaveGuiLogger:
     def __init__(self, scene=None):
@@ -19,11 +33,9 @@ class DaveGuiLogger:
     def log_exception(self, exception):
         """Append an exception to the log."""
 
-        self.log(str(exception))
-        notes = getattr(exception, "__notes__", [])
-        for note in notes:
-            self.log(note)
-        self.log(traceback.format_exc())
+        for line in format_exception_with_notes(exception):
+            self.log(line)
+
 
     def log(self, msg):
         """Append a message to the log."""

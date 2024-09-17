@@ -44,7 +44,7 @@ from DAVE import gui_globals
 from .helpers.code_error_extract import get_code_error
 
 from .resource_provider import DaveResourceProvider
-from .helpers.string_functions import increment_string_end
+from .helpers.string_functions import increment_string_end, code_to_blocks
 from .nds.mixins import Manager
 
 from .tools import *
@@ -118,12 +118,17 @@ class Scene:
         copy_from=None,
         code=None,
         resource_provider: DaveResourceProvider or None = None,
+        allow_errors_during_load = False
     ):
         """Creates a new Scene
 
         Args:
             filename: (str or Path) Insert contents from this file into the newly created scene
             copy_from:  (Scene) Copy nodes from this other scene into the newly created scene
+            code: (str) Run this code in the newly created scene
+            resource_provider: (DaveResourceProvider) Resource provider for this scene
+            allow_errors_during_load : (bool) If True, then errors during loading are allowed and the scene is still created
+                errors are stored in the scene.errors_during_load attribute
         """
 
         count = 0
@@ -184,14 +189,18 @@ class Scene:
         self.solver_settings = SolverSettings()
         """Settings for the solver"""
 
+        self.errors_during_load : list[Exception] = []
+        """List of errors that occurred during loading"""
+
+
         if filename is not None:
-            self.load_scene(filename)
+            self.load_scene(filename, allow_errors_during_load=allow_errors_during_load)
 
         if copy_from is not None:
-            self.import_scene(copy_from, containerize=False, settings=True)
+            self.import_scene(copy_from, containerize=False, settings=True, allow_errors_during_load=allow_errors_during_load)
 
         if code is not None:
-            self.run_code(code)
+            self.run_code(code, continue_on_errors=allow_errors_during_load)
 
     @property
     def resources_paths(self):
@@ -1709,13 +1718,13 @@ class Scene:
             #
         return Path(str(zip_filename) + ".zip"), log
 
-    def load(self, filename: str or Path):
+    def load(self, filename: str or Path, allow_error_during_load = False):
         """Loads a DAVE file or .zip file containing a DAVE file. The file is unzipped and the DAVE file is loaded."""
         filename = Path(filename)
 
         # check the extension
         if filename.suffix.lower() == ".dave":
-            self.load_package(filename)
+            self.load_package(filename, allow_error_during_load=allow_error_during_load)
 
         elif filename.suffix.lower() == ".zip":
             # Unzip the file
@@ -1729,18 +1738,18 @@ class Scene:
                     dave_file = Path(tmp_dir) / (
                         filename.name[:-4] + ".dave"
                     )  # without the .zip
-                    self.load_package(dave_file)
+                    self.load_package(dave_file, allow_error_during_load=allow_error_during_load)
 
         else:
             raise ValueError(f"Unsupported file type: {filename.suffix}")
 
-    def load_package(self, filename: str or Path):
+    def load_package(self, filename: str or Path, allow_error_during_load=False):
         """Loads a DAVE self-contained package file"""
         filename = Path(filename)
         path = filename.parent
         package_folder = str(path)
         code = filename.read_text()
-        self.run_code(code, package_folder=package_folder)
+        self.errors_during_load = self.run_code(code, package_folder=package_folder, continue_on_errors=allow_error_during_load)
 
     # ========= Limits ===========
 
@@ -4047,8 +4056,16 @@ class Scene:
             #     print("stop")
             print_deps(node, "")
 
-    def run_code(self, code, package_folder=None):
-        """Runs the provided code with 's' as self"""
+    def run_code(self, code : str, package_folder=None, continue_on_errors=False):
+        """Runs the provided code with 's' as self
+
+        If provided, the package folder is used as "cd"
+
+        If continue_on_errors is True then errors are caught and stored in a list.
+        The list is returned at the end of the function.
+
+        If continue_on_errors is False then the first error is raised and the function stops.
+        """
 
         import DAVE
 
@@ -4069,8 +4086,24 @@ class Scene:
 
         locals.update(ds.DAVE_ADDITIONAL_RUNTIME_MODULES)
 
+        blocks = code_to_blocks(code)
+        ignored_errors = []
+
         try:
-            exec(code, {}, locals)
+            for block in blocks:
+                try:
+                    exec(block, {}, locals)
+                except Exception as M:
+                    try:
+                        message = get_code_error(block)
+                        M.add_note(message)  # new in python 3.11
+                    except:
+                        print(message)  # fallback for older python versions
+
+                    if continue_on_errors:
+                        ignored_errors.append(M)
+                    else:
+                        raise M
 
             # self-check (pun intended)
             if self is not locals["s"]:
@@ -4078,12 +4111,6 @@ class Scene:
                     "The scene has been re-assigned. This is not allowed in the run_code function"
                 )
         except Exception as M:
-            message = get_code_error(code)
-
-            try:
-                M.add_note(message)  # new in python 3.11
-            except:
-                print(message)  # fallback for older python versions
 
             raise M
 
@@ -4093,7 +4120,9 @@ class Scene:
             if stored:
                 locals["s"] = store_s  # restore the original s
 
-    def load_scene(self, filename=None):
+        return ignored_errors
+
+    def load_scene(self, filename=None, allow_errors_during_load=False):
         """Loads the contents of filename into the current scene.
 
         This function is typically used on an empty scene.
@@ -4120,7 +4149,7 @@ class Scene:
             code += line + "\n"
 
         try:
-            self.run_code(code)
+            self.errors_during_load = self.run_code(code, continue_on_errors = allow_errors_during_load)
         except Exception as M:
             raise ModelInvalidException(M)
 
@@ -4133,6 +4162,7 @@ class Scene:
         container=None,
         settings=True,
         quick=False,
+        allow_errors_during_load = False
         do_reports=True,
         do_timeline=True,
     ):
@@ -4146,12 +4176,12 @@ class Scene:
             settings     : import settings (gravity, wind etc. ) from other scene as well
             prefix       : a prefix is applied to all names of the imported nodes
             quick        : only import the nodes, not the settings, reports, timelines etc
+            allow_errors_during_load : if True then errors during loading are ignored
             do_reports   : do import reports
             do_timeline  : do import timelines
 
-
         Returns:
-            Contained (Axis-type Node) : if the imported scene is containerized then a reference to the created container is returned.
+            Contained (Frame) : if the imported scene is containerized then a reference to the created container is returned.
         """
 
         if container is not None:
@@ -4168,10 +4198,11 @@ class Scene:
             other = Scene(
                 filename=other,
                 resource_provider=self.resource_provider,
+                allow_errors_during_load=allow_errors_during_load,
             )
 
         if not isinstance(other, Scene):
-            raise TypeError("Other should be a Scene but is a " + str(type(other)))
+            raise TypeError("Other should be a Scene, string or path but is a " + str(type(other)) + " with value " + str(other))
 
         # apply prefix
         other.prefix_element_names(prefix)
@@ -4197,7 +4228,8 @@ class Scene:
         other._export_code_with_solved_function = store_export_code_with_solved_function
 
         try:
-            self.run_code(code)
+            self.run_code(code, continue_on_errors = False)  # we just generated this code, so it should be fine
+
         except Exception as M:
             raise ModelInvalidException(M)
 
