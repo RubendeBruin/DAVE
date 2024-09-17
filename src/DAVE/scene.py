@@ -4162,7 +4162,7 @@ class Scene:
         container=None,
         settings=True,
         quick=False,
-        allow_errors_during_load = False
+        allow_errors_during_load = False,
         do_reports=True,
         do_timeline=True,
     ):
