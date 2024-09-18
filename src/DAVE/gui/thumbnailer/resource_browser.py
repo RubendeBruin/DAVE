@@ -1,25 +1,16 @@
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QScrollArea, QVBoxLayout, QFrame, QDialog
 from PySide6.QtGui import QPixmap, QImage
-import numpy as np
-from vtkmodules.vtkIOGeometry import vtkOBJReader, vtkSTLReader
-from vtkmodules.vtkIOImport import vtkGLTFImporter
-from vtkmodules.vtkRenderingCore import vtkRenderer, vtkRenderWindow, vtkPolyDataMapper, vtkActor, vtkCamera, \
-    vtkWindowToImageFilter
-from vtkmodules.util.numpy_support import vtk_to_numpy
 
 from DAVE import *
-import PySide6
-from PySide6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QScrollArea, QVBoxLayout, QFrame
-from PySide6.QtGui import QPixmap
 from DAVE.gui.helpers.flow_layout import FlowLayout
-
-
-from PySide6.QtGui import QPixmap, QImage
-
 from DAVE.gui.thumbnailer.thumbnail_provider import ThumbnailProvider
+
+from DAVE.gui.forms.resource_browser import Ui_ResourceBrowser
 
 
 class FileWidget(QFrame):
-    def __init__(self, file_path):
+    def __init__(self, file_path, s : Scene):
         super().__init__()
         layout = QVBoxLayout()
 
@@ -28,7 +19,6 @@ class FileWidget(QFrame):
         # Create a label for the thumbnail
         thumbnail = QLabel()
         filename = s.resource_provider.get_resource_path(file_path)
-        print(filename)
 
         pixmap = tumbs.get_thumbnail(filename)
 
@@ -42,12 +32,10 @@ class FileWidget(QFrame):
         self.pixmap = pixmap
         self.thumbnail = thumbnail
 
-        self.scale(50)
-
         self.setLayout(layout)
 
     def scale(self, pixels):
-        self.thumbnail.setPixmap(self.pixmap.scaled(pixels, pixels, PySide6.QtCore.Qt.KeepAspectRatio, PySide6.QtCore.Qt.SmoothTransformation))
+        self.thumbnail.setPixmap(self.pixmap.scaled(pixels, pixels, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
     def mousePressEvent(self, event):
         print("Mouse pressed")
@@ -55,36 +43,102 @@ class FileWidget(QFrame):
         self.setFrameStyle(QFrame.Box)
 
 
+class ResourceBrowserDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.ui = Ui_ResourceBrowser()
+        self.ui.setupUi(self)
+
+        self.ui.hsZoom.valueChanged.connect(self.zoom_changed)
+
+    def open_dialog(self, s: Scene, resource_type : str, model_maker_callback = None):
+        """Open a dialog to select a resource
+
+        Arguments:
+            s {Scene} -- The scene to use, used to get the resource provider
+            resource_type {str} -- The type of resource to select
+            model_maker_callback {function} -- A function to call to create a DAVE model from a
+                resource - used by the thumbnailer to show the resource
+
+        """
+
+        # Set the scene
+        self.scene = s
+
+        # Set the resource type
+        self.resource_type = resource_type
+
+        # Set the model maker callback
+        self.model_maker_callback = model_maker_callback
+
+        # Get the resource provider
+        self.resource_provider = s.resource_provider
+
+        # Get the resources
+        self.resources = self.resource_provider.get_resource_list(extension=resource_type)
+
+        # Fill the files panel
+        self.fill_files_panel(self.resources)
+
+
+    def fill_files_panel(self, resources):
+        # Create the files panel
+        main_widget = QWidget()
+        flow_layout = FlowLayout()
+
+        # Create a scroll area
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(main_widget)
+
+        file_tiles = []
+        for file in resources:
+            file_widget = FileWidget(file, self.scene)
+            file_widget.scale(self.ui.hsZoom.value())
+            flow_layout.addWidget(file_widget)
+            file_tiles.append(file_widget)
+
+        main_widget.setLayout(flow_layout)
+
+        # Add the scroll area to the layout
+        self.ui.TumbnailArea.setLayout(QVBoxLayout())
+        self.ui.TumbnailArea.layout().addWidget(scroll_area)
+
+        self.exec()
+
+    def zoom_changed(self, value):
+        for file_widget in self.findChildren(FileWidget):
+            file_widget.scale(value)
+
+
+
+
+
+
 app = QApplication.instance()
 
 s = Scene()
-s.add_resources_paths(r"C:\Users\MS12H\Jottacloud\RdBr\Klanten\Jumbo\DAVE company resources\Library\Visuals")
-file_list = s.resource_provider.get_resource_list(extension='glb')
-file_list.extend(s.resource_provider.get_resource_list(extension='obj'))
-file_list.extend(s.resource_provider.get_resource_list(extension='stl'))
-file_list.extend(s.resource_provider.get_resource_list(extension='dave'))
+dialog = ResourceBrowserDialog()
+dialog.open_dialog(s, 'obj')
 
-# Create the main widget and layout
+# app.exec()
+#
+# s.add_resources_paths(r"C:\Users\MS12H\Jottacloud\RdBr\Klanten\Jumbo\DAVE company resources\Library\Visuals")
+# file_list = s.resource_provider.get_resource_list(extension='glb')
+# file_list.extend(s.resource_provider.get_resource_list(extension='obj'))
+# file_list.extend(s.resource_provider.get_resource_list(extension='stl'))
+# file_list.extend(s.resource_provider.get_resource_list(extension='dave'))
+#
+# # Create the main widget and layout
+#
+#
+#
 
+#
+# # Add file widgets to the flow layout
 
-main_widget = QWidget()
-flow_layout = FlowLayout()
-
-# Create a scroll area
-scroll_area = QScrollArea()
-scroll_area.setWidgetResizable(True)
-scroll_area.setWidget(main_widget)
-
-# Add file widgets to the flow layout
-file_tiles = []
-for file in file_list:
-    file_widget = FileWidget(file)
-    flow_layout.addWidget(file_widget)
-    file_tiles.append(file_widget)
-
-main_widget.setLayout(flow_layout)
-
-# Show the scroll area
-scroll_area.show()
-
-app.exec()
+#
+# # Show the scroll area
+# scroll_area.show()
+#
+# app.exec()
