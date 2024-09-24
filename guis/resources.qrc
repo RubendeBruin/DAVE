@@ -115,5 +115,6 @@
     <file>icons/report_new.svg</file>
     <file>icons/report_duplicate.svg</file>
     <file>icons/report_delete.svg</file>
+    <file>icons/open.svg</file>
   </qresource>
 </RCC>

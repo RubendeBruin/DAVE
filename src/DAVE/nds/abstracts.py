@@ -507,8 +507,13 @@ class NodePurePython(Node):
     @node_setter_manageable
     @node_setter_observable
     def name(self, name):
-        self._name = name
+        if name == self.name:
+            return
 
+        # verify that the name is available
+        self._scene._verify_name_available(name)
+
+        self._name = name
         self._on_name_changed()
 
     def _delete_vfc(self):

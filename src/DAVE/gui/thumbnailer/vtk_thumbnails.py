@@ -15,6 +15,8 @@ def give_pixmap_from_3dfile(filename):
             reader = vtkSTLReader()
         elif filename.endswith('.glb'):
             reader = vtkGLTFImporter()
+        elif filename.endswith('.gltf'):
+            reader = vtkGLTFImporter()
         else:
             raise ValueError("Unsupported file format")
 
@@ -30,7 +32,7 @@ def give_pixmap_from_3dfile(filename):
         render_window.AddRenderer(renderer)
         render_window.SetOffScreenRendering(1)  # Enable off-screen rendering
 
-        if filename.endswith('.glb'):
+        if filename.endswith('.glb') or filename.endswith('.gltf'):
             # Get the actors from the importer
             actors = reader.GetRenderer().GetActors()
 

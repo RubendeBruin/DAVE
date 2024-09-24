@@ -15,10 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDialog, QGridLayout,
-    QHBoxLayout, QLabel, QLineEdit, QListWidget,
-    QListWidgetItem, QPushButton, QScrollBar, QSizePolicy,
-    QSpacerItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDialog, QFrame,
+    QGridLayout, QHBoxLayout, QLabel, QLineEdit,
+    QListWidget, QListWidgetItem, QPushButton, QScrollBar,
+    QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
 
 class Ui_ResourceBrowser(object):
     def setupUi(self, ResourceBrowser):
@@ -27,10 +27,16 @@ class Ui_ResourceBrowser(object):
         ResourceBrowser.resize(1142, 712)
         self.gridLayout_2 = QGridLayout(ResourceBrowser)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
+        self.label_4 = QLabel(ResourceBrowser)
+        self.label_4.setObjectName(u"label_4")
+
+        self.gridLayout_2.addWidget(self.label_4, 0, 0, 1, 1)
+
         self.widget_RES = QWidget(ResourceBrowser)
         self.widget_RES.setObjectName(u"widget_RES")
         self.verticalLayout = QVBoxLayout(self.widget_RES)
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setContentsMargins(0, -1, 0, -1)
         self.label_2 = QLabel(self.widget_RES)
         self.label_2.setObjectName(u"label_2")
 
@@ -46,6 +52,7 @@ class Ui_ResourceBrowser(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.lwResourcePaths.sizePolicy().hasHeightForWidth())
         self.lwResourcePaths.setSizePolicy(sizePolicy)
+        self.lwResourcePaths.setFrameShape(QFrame.NoFrame)
         self.lwResourcePaths.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.verticalLayout.addWidget(self.lwResourcePaths)
@@ -58,11 +65,21 @@ class Ui_ResourceBrowser(object):
         QListWidgetItem(self.lwWhere)
         QListWidgetItem(self.lwWhere)
         self.lwWhere.setObjectName(u"lwWhere")
-        sizePolicy.setHeightForWidth(self.lwWhere.sizePolicy().hasHeightForWidth())
-        self.lwWhere.setSizePolicy(sizePolicy)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.lwWhere.sizePolicy().hasHeightForWidth())
+        self.lwWhere.setSizePolicy(sizePolicy1)
+        self.lwWhere.setFrameShape(QFrame.NoFrame)
+        self.lwWhere.setAutoScroll(False)
         self.lwWhere.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.lwWhere.setProperty("showDropIndicator", False)
 
         self.gridLayout_2.addWidget(self.lwWhere, 1, 0, 1, 1)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_2.addItem(self.verticalSpacer, 3, 0, 1, 1)
 
         self.widget_2 = QWidget(ResourceBrowser)
         self.widget_2.setObjectName(u"widget_2")
@@ -83,37 +100,18 @@ class Ui_ResourceBrowser(object):
         self.horizontalLayout.addWidget(self.pushButton_2)
 
 
-        self.gridLayout_2.addWidget(self.widget_2, 4, 0, 1, 2)
-
-        self.label_4 = QLabel(ResourceBrowser)
-        self.label_4.setObjectName(u"label_4")
-
-        self.gridLayout_2.addWidget(self.label_4, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.widget_2, 4, 0, 1, 3)
 
         self.widget = QWidget(ResourceBrowser)
         self.widget.setObjectName(u"widget")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
-        self.widget.setSizePolicy(sizePolicy1)
-        self.gridLayout = QGridLayout(self.widget)
-        self.gridLayout.setObjectName(u"gridLayout")
-        self.label = QLabel(self.widget)
-        self.label.setObjectName(u"label")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
-        self.label.setSizePolicy(sizePolicy2)
-
-        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
-
-        self.teFilter = QLineEdit(self.widget)
-        self.teFilter.setObjectName(u"teFilter")
-
-        self.gridLayout.addWidget(self.teFilter, 0, 3, 1, 1)
-
+        sizePolicy2.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
+        self.widget.setSizePolicy(sizePolicy2)
+        self.gridLayout = QGridLayout(self.widget)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.gridLayout.setContentsMargins(-1, 0, -1, -1)
         self.label_3 = QLabel(self.widget)
         self.label_3.setObjectName(u"label_3")
         sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
@@ -122,21 +120,23 @@ class Ui_ResourceBrowser(object):
         sizePolicy3.setHeightForWidth(self.label_3.sizePolicy().hasHeightForWidth())
         self.label_3.setSizePolicy(sizePolicy3)
 
-        self.gridLayout.addWidget(self.label_3, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.label_3, 1, 2, 1, 1)
 
-        self.hsZoom = QScrollBar(self.widget)
-        self.hsZoom.setObjectName(u"hsZoom")
-        sizePolicy4 = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
+        self.teFilter = QLineEdit(self.widget)
+        self.teFilter.setObjectName(u"teFilter")
+        self.teFilter.setClearButtonEnabled(True)
+
+        self.gridLayout.addWidget(self.teFilter, 1, 3, 1, 1)
+
+        self.label = QLabel(self.widget)
+        self.label.setObjectName(u"label")
+        sizePolicy4 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
         sizePolicy4.setHorizontalStretch(0)
         sizePolicy4.setVerticalStretch(0)
-        sizePolicy4.setHeightForWidth(self.hsZoom.sizePolicy().hasHeightForWidth())
-        self.hsZoom.setSizePolicy(sizePolicy4)
-        self.hsZoom.setMinimum(1)
-        self.hsZoom.setMaximum(400)
-        self.hsZoom.setValue(100)
-        self.hsZoom.setOrientation(Qt.Horizontal)
+        sizePolicy4.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
+        self.label.setSizePolicy(sizePolicy4)
 
-        self.gridLayout.addWidget(self.hsZoom, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.label, 1, 0, 1, 1)
 
         self.TumbnailArea = QWidget(self.widget)
         self.TumbnailArea.setObjectName(u"TumbnailArea")
@@ -145,11 +145,38 @@ class Ui_ResourceBrowser(object):
         sizePolicy5.setVerticalStretch(0)
         sizePolicy5.setHeightForWidth(self.TumbnailArea.sizePolicy().hasHeightForWidth())
         self.TumbnailArea.setSizePolicy(sizePolicy5)
+        self.TumbnailArea.setStyleSheet(u"")
 
-        self.gridLayout.addWidget(self.TumbnailArea, 3, 0, 1, 6)
+        self.gridLayout.addWidget(self.TumbnailArea, 4, 0, 1, 6)
+
+        self.hsZoom = QScrollBar(self.widget)
+        self.hsZoom.setObjectName(u"hsZoom")
+        sizePolicy6 = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
+        sizePolicy6.setHorizontalStretch(0)
+        sizePolicy6.setVerticalStretch(0)
+        sizePolicy6.setHeightForWidth(self.hsZoom.sizePolicy().hasHeightForWidth())
+        self.hsZoom.setSizePolicy(sizePolicy6)
+        self.hsZoom.setMinimum(1)
+        self.hsZoom.setMaximum(400)
+        self.hsZoom.setValue(100)
+        self.hsZoom.setOrientation(Qt.Horizontal)
+
+        self.gridLayout.addWidget(self.hsZoom, 1, 1, 1, 1)
+
+        self.lbInfo = QLabel(self.widget)
+        self.lbInfo.setObjectName(u"lbInfo")
+
+        self.gridLayout.addWidget(self.lbInfo, 0, 0, 1, 5)
 
 
-        self.gridLayout_2.addWidget(self.widget, 0, 1, 4, 1)
+        self.gridLayout_2.addWidget(self.widget, 0, 2, 4, 1)
+
+        self.line = QFrame(ResourceBrowser)
+        self.line.setObjectName(u"line")
+        self.line.setFrameShadow(QFrame.Plain)
+        self.line.setFrameShape(QFrame.VLine)
+
+        self.gridLayout_2.addWidget(self.line, 0, 1, 4, 1)
 
 
         self.retranslateUi(ResourceBrowser)
@@ -159,6 +186,7 @@ class Ui_ResourceBrowser(object):
 
     def retranslateUi(self, ResourceBrowser):
         ResourceBrowser.setWindowTitle(QCoreApplication.translate("ResourceBrowser", u"Dialog", None))
+        self.label_4.setText(QCoreApplication.translate("ResourceBrowser", u"Select resource from:", None))
         self.label_2.setText(QCoreApplication.translate("ResourceBrowser", u"Resource system location:", None))
 
         __sortingEnabled = self.lwResourcePaths.isSortingEnabled()
@@ -184,8 +212,9 @@ class Ui_ResourceBrowser(object):
 
         self.pushButton.setText(QCoreApplication.translate("ResourceBrowser", u"Ok", None))
         self.pushButton_2.setText(QCoreApplication.translate("ResourceBrowser", u"Cancel", None))
-        self.label_4.setText(QCoreApplication.translate("ResourceBrowser", u"Find resource in:", None))
-        self.label.setText(QCoreApplication.translate("ResourceBrowser", u"Zoom:", None))
         self.label_3.setText(QCoreApplication.translate("ResourceBrowser", u"Search", None))
+        self.teFilter.setPlaceholderText(QCoreApplication.translate("ResourceBrowser", u"Filter [ctrl + f]", None))
+        self.label.setText(QCoreApplication.translate("ResourceBrowser", u"Zoom:", None))
+        self.lbInfo.setText(QCoreApplication.translate("ResourceBrowser", u"Info", None))
     # retranslateUi
 

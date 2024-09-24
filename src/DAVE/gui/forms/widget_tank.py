@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'widget_tank.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.1
+## Created by: Qt User Interface Compiler version 6.6.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -22,29 +22,10 @@ class Ui_Form(object):
     def setupUi(self, Form):
         if not Form.objectName():
             Form.setObjectName(u"Form")
-        Form.resize(392, 368)
+        Form.resize(296, 371)
         Form.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
         self.gridLayout_2 = QGridLayout(Form)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.label_6 = QLabel(Form)
-        self.label_6.setObjectName(u"label_6")
-
-        self.gridLayout_2.addWidget(self.label_6, 0, 0, 1, 1)
-
-        self.sbPermeability = QDoubleSpinBox(Form)
-        self.sbPermeability.setObjectName(u"sbPermeability")
-        self.sbPermeability.setDecimals(8)
-        self.sbPermeability.setMaximum(2.000000000000000)
-        self.sbPermeability.setSingleStep(0.000010000000000)
-        self.sbPermeability.setValue(1.000000000000000)
-
-        self.gridLayout_2.addWidget(self.sbPermeability, 0, 1, 1, 1)
-
-        self.cbFreeFlooding = QCheckBox(Form)
-        self.cbFreeFlooding.setObjectName(u"cbFreeFlooding")
-
-        self.gridLayout_2.addWidget(self.cbFreeFlooding, 1, 0, 1, 1)
-
         self.widgetContents = QWidget(Form)
         self.widgetContents.setObjectName(u"widgetContents")
         self.gridLayout = QGridLayout(self.widgetContents)
@@ -92,11 +73,6 @@ class Ui_Form(object):
         self.label_4.setObjectName(u"label_4")
 
         self.gridLayout.addWidget(self.label_4, 9, 0, 1, 1)
-
-        self.cbUseOutsideDensity = QCheckBox(self.widgetContents)
-        self.cbUseOutsideDensity.setObjectName(u"cbUseOutsideDensity")
-
-        self.gridLayout.addWidget(self.cbUseOutsideDensity, 3, 0, 1, 1)
 
         self.label_9 = QLabel(self.widgetContents)
         self.label_9.setObjectName(u"label_9")
@@ -168,8 +144,38 @@ class Ui_Form(object):
 
         self.gridLayout.addWidget(self.label_8, 10, 1, 1, 1)
 
+        self.cbUseOutsideDensity = QCheckBox(self.widgetContents)
+        self.cbUseOutsideDensity.setObjectName(u"cbUseOutsideDensity")
 
-        self.gridLayout_2.addWidget(self.widgetContents, 2, 0, 1, 2)
+        self.gridLayout.addWidget(self.cbUseOutsideDensity, 3, 0, 1, 2)
+
+
+        self.gridLayout_2.addWidget(self.widgetContents, 3, 0, 1, 2)
+
+        self.label_6 = QLabel(Form)
+        self.label_6.setObjectName(u"label_6")
+
+        self.gridLayout_2.addWidget(self.label_6, 1, 0, 1, 1)
+
+        self.sbPermeability = QDoubleSpinBox(Form)
+        self.sbPermeability.setObjectName(u"sbPermeability")
+        self.sbPermeability.setDecimals(8)
+        self.sbPermeability.setMaximum(2.000000000000000)
+        self.sbPermeability.setSingleStep(0.000010000000000)
+        self.sbPermeability.setValue(1.000000000000000)
+
+        self.gridLayout_2.addWidget(self.sbPermeability, 1, 1, 1, 1)
+
+        self.label_12 = QLabel(Form)
+        self.label_12.setObjectName(u"label_12")
+        self.label_12.setWordWrap(True)
+
+        self.gridLayout_2.addWidget(self.label_12, 0, 0, 1, 1)
+
+        self.cbFreeFlooding = QCheckBox(Form)
+        self.cbFreeFlooding.setObjectName(u"cbFreeFlooding")
+
+        self.gridLayout_2.addWidget(self.cbFreeFlooding, 2, 0, 1, 2)
 
         QWidget.setTabOrder(self.sbPermeability, self.cbFreeFlooding)
         QWidget.setTabOrder(self.cbFreeFlooding, self.cbUseOutsideDensity)
@@ -185,24 +191,25 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Form", None))
-        self.label_6.setText(QCoreApplication.translate("Form", u"Permeability", None))
-        self.cbFreeFlooding.setText(QCoreApplication.translate("Form", u"Free flooding (aka damaged)", None))
         self.label_7.setText(QCoreApplication.translate("Form", u"Ullage [m]", None))
         self.label_5.setText(QCoreApplication.translate("Form", u"Maximum capacity", None))
         self.label_3.setText(QCoreApplication.translate("Form", u"Fill percentage [%]", None))
         self.lbUllage.setText(QCoreApplication.translate("Form", u"Calculated", None))
         self.label.setText(QCoreApplication.translate("Form", u"Contents density [mT/m3]", None))
         self.label_4.setText(QCoreApplication.translate("Form", u"Global Elevation [m]", None))
-        self.cbUseOutsideDensity.setText(QCoreApplication.translate("Form", u"Same as outside water", None))
-        self.label_9.setText(QCoreApplication.translate("Form", u"<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Fluid density</span></p></body></html>", None))
+        self.label_9.setText(QCoreApplication.translate("Form", u"<html><head/><body><p><span style=\" font-weight:600;\">Fluid density</span></p></body></html>", None))
         self.lbSounding.setText(QCoreApplication.translate("Form", u"Calculated", None))
         self.lblCapacity.setText(QCoreApplication.translate("Form", u"Calculated", None))
         self.label_11.setText(QCoreApplication.translate("Form", u"Sounding [m]", None))
-        self.label_10.setText(QCoreApplication.translate("Form", u"<html><head/><body><p><span style=\" font-weight:600; text-decoration: underline;\">Fill</span></p></body></html>", None))
+        self.label_10.setText(QCoreApplication.translate("Form", u"<html><head/><body><p><span style=\" font-weight:600;\">Fill</span></p></body></html>", None))
         self.label_2.setText(QCoreApplication.translate("Form", u"Volume [m3]", None))
 #if QT_CONFIG(tooltip)
         self.label_8.setToolTip(QCoreApplication.translate("Form", u"<html><head/><body><p>Setting any of these values changes the amount of fluid in the tank. Global elevation may thus change if the vessel moves.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.label_8.setText(QCoreApplication.translate("Form", u"note (hoover to show)", None))
+        self.cbUseOutsideDensity.setText(QCoreApplication.translate("Form", u"Same as outside water", None))
+        self.label_6.setText(QCoreApplication.translate("Form", u"Permeability", None))
+        self.label_12.setText(QCoreApplication.translate("Form", u"<html><head/><body><p><span style=\" font-weight:600;\">Tank structure</span></p></body></html>", None))
+        self.cbFreeFlooding.setText(QCoreApplication.translate("Form", u"Free flooding (aka damaged)", None))
     # retranslateUi
 

@@ -11,6 +11,8 @@
 """
 import math
 import numbers
+import os
+
 from DAVE.scene import *
 import DAVE.settings as ds
 from DAVE.helpers.string_functions import increment_string_end
@@ -385,17 +387,36 @@ def sort_by_name(nodes):
 
 
 def get_all_files_with_extension(root_dir, extension, include_subdirs=True):
-    """Returns a list of str with files matching the given parameters."""
+    """Returns a list of str with files matching the given parameters.
+    extension can be a string or a list of strings"""
 
-    if extension.startswith("."):
-        extension = extension[1:]
+    # if extension.startswith("."):
+    #     extension = extension[1:]
+    #
+    # if include_subdirs:
+    #     a = glob(pathname=f"**/*.{extension}", root_dir=root_dir, recursive=True)
+    # else:
+    #     a = glob(pathname=f"*.{extension}", root_dir=root_dir, recursive=False)
+    #
+    # return a
 
-    if include_subdirs:
-        a = glob(pathname=f"**/*.{extension}", root_dir=root_dir, recursive=True)
-    else:
-        a = glob(pathname=f"*.{extension}", root_dir=root_dir, recursive=False)
+    if isinstance(extension, str):
+        extension = [extension]
 
-    return a
+    extensions = [ext.lstrip(".") for ext in extension]
+
+    files = []
+    for root, _, filenames in os.walk(root_dir):
+        for filename in filenames:
+            if any(filename.endswith(ext) for ext in extensions):
+                files.append(os.path.join(root, filename))
+        if not include_subdirs:
+            break
+
+    # remove root_dir from the path
+    files = [f[len(str(root_dir)) + 1 :] for f in files]
+
+    return files
 
 
 def align_y0_axis_and_below_half_height(ax1, ax2):

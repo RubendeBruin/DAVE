@@ -74,7 +74,11 @@ class DaveResourceProvider:
     def addPath(self, path: Path):
         """Add a path to the resource list"""
         assert isinstance(path, Path), "path must be a Path object"
-        self.resources_paths.append(path)
+
+        if path not in self.resources_paths:
+            self.resources_paths.append(path)
+        else:
+            warnings.warn(f"Path {path} already in resource list")
 
     def log(self, filename: str, path: Path):
         """Add a log entry"""
@@ -260,7 +264,7 @@ class DaveResourceProvider:
     ):
         """Returns a list of all UNIQUE resources (strings) with given extension in any of the resource-paths
 
-        extension: (str) extension to look for, for example 'dave' or '.dave'
+        extension: (str) extension to look for, for example 'dave' or '.dave' ; can be a list of extensions
         include_subdirs : do a recursive search
         include_current_dir : return 'cd:' based resources as well
 

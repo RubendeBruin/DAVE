@@ -422,7 +422,6 @@ class Gui:
             for p in paths_str.split(";"):
                 if p:
                     self.additional_user_resource_paths.append(Path(p))
-                    self.scene.add_resources_paths(p)
 
         self.update_resources_paths()
 
