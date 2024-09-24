@@ -15,8 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QGridLayout, QLabel,
-    QPushButton, QSizePolicy, QWidget)
+from PySide6.QtWidgets import (QApplication, QFormLayout, QLabel, QPushButton,
+    QSizePolicy, QWidget)
+
+from DAVE.gui.helpers.resource_selector import QResourceSelector
 
 class Ui_component(object):
     def setupUi(self, component):
@@ -24,45 +26,27 @@ class Ui_component(object):
             component.setObjectName(u"component")
         component.resize(326, 72)
         component.setStyleSheet(u"")
-        self.gridLayout = QGridLayout(component)
-        self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setContentsMargins(0, -1, 0, -1)
-        self.cbPath = QComboBox(component)
-        self.cbPath.setObjectName(u"cbPath")
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.cbPath.sizePolicy().hasHeightForWidth())
-        self.cbPath.setSizePolicy(sizePolicy)
-        self.cbPath.setEditable(True)
-        self.cbPath.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon)
-
-        self.gridLayout.addWidget(self.cbPath, 1, 1, 1, 1)
-
+        self.formLayout = QFormLayout(component)
+        self.formLayout.setObjectName(u"formLayout")
         self.label = QLabel(component)
         self.label.setObjectName(u"label")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
-        self.label.setSizePolicy(sizePolicy1)
+        sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
+        self.label.setSizePolicy(sizePolicy)
 
-        self.gridLayout.addWidget(self.label, 1, 0, 1, 1)
+        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.label)
 
-        self.pbReScan = QPushButton(component)
-        self.pbReScan.setObjectName(u"pbReScan")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.pbReScan.sizePolicy().hasHeightForWidth())
-        self.pbReScan.setSizePolicy(sizePolicy2)
+        self.resource_selector = QResourceSelector(component)
+        self.resource_selector.setObjectName(u"resource_selector")
 
-        self.gridLayout.addWidget(self.pbReScan, 1, 2, 1, 1)
+        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.resource_selector)
 
         self.pbEditExposedProperties = QPushButton(component)
         self.pbEditExposedProperties.setObjectName(u"pbEditExposedProperties")
 
-        self.gridLayout.addWidget(self.pbEditExposedProperties, 2, 1, 1, 1)
+        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.pbEditExposedProperties)
 
 
         self.retranslateUi(component)
@@ -73,7 +57,6 @@ class Ui_component(object):
     def retranslateUi(self, component):
         component.setWindowTitle(QCoreApplication.translate("component", u"Form", None))
         self.label.setText(QCoreApplication.translate("component", u"File:", None))
-        self.pbReScan.setText(QCoreApplication.translate("component", u"Rescan", None))
         self.pbEditExposedProperties.setText(QCoreApplication.translate("component", u"Edit exposed properties", None))
     # retranslateUi
 

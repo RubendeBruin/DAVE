@@ -889,37 +889,38 @@ class EditComponent(NodeEditor):
         self.fileextension = "dave"
         self.resources_loaded = False
 
-        self.ui.cbPath.editTextChanged.connect(self.generate_code)
-        self.ui.pbReScan.clicked.connect(self.rescan)
         self.ui.pbEditExposedProperties.clicked.connect(self.edit_exposed)
 
-    def rescan(self):
-        self.update_resource_list()
+    def connect(
+        self,
+        node,
+        scene,
+        run_code,
+        guiEmitEvent,
+        gui_solve_func,
+        node_picker_register_func,
+    ):
 
-        text = (
-            f"Rescan completed for files ending with {self.fileextension} in folders:"
+        self.ui.resource_selector.initialize(scene=scene, resource_types=".dave", callback=self.generate_code)
+        self.ui.resource_selector.callback_reload = self.reload
+
+        return super().connect(
+            node,
+            scene,
+            run_code,
+            guiEmitEvent,
+            gui_solve_func,
+            node_picker_register_func,
         )
-        for p in self.scene.resource_provider.resources_paths:
-            text += f"\n - {str(p)}"
-        text += "\n\nlist updated"
-
-        QMessageBox.information(self.widget, "Done", text, QMessageBox.Ok)
 
     def reload(self):
         code = f"\ns['{self.node.name}'].path = r'{self.node.path}'"
         self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
-    def update_resource_list(self):
-        names = self.scene.get_resource_list(self.fileextension, include_subdirs=True)
-        update_combobox_items_with_completer(self.ui.cbPath, names)
-        self.resources_loaded = True
-
     def post_update_event(self):
         """Sync the properties of the node to the gui"""
 
-        if not self.resources_loaded:
-            self.update_resource_list()
-        cvinf(self.ui.cbPath, str(self.node.path))
+        self.ui.resource_selector.setValue(self.node.path)
 
         if self.node.exposed_properties:
             self.ui.pbEditExposedProperties.setEnabled(True)
@@ -951,19 +952,14 @@ class EditComponent(NodeEditor):
     def generate_code(self):
         """Generate code to update the node, then run it"""
 
-        code = ""
+        if not self.ui.resource_selector._check_value():
+            return
 
-        if self.scene.is_valid_resource_path(self.ui.cbPath.currentText()):
-            self.ui.cbPath.setStyleSheet("")
-            code += code_if_changed_path(
-                self.node, self.ui.cbPath.currentText(), "path"
-            )
-        else:
-            self.ui.cbPath.setStyleSheet("background: orange")
+        if self.ui.resource_selector.value == self.node.path:
+            return
 
-        # only fire if resource is valid
-        if code:
-            self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+        code = f"\ns['{self.node.name}'].path = r'{self.ui.resource_selector.value}'"
+        self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
 
 # ======================================
