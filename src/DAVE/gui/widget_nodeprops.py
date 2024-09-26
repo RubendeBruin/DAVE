@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from PyQt5.QtWidgets import QSpacerItem
+
 from PySide6.QtGui import QColor
 
 from DAVE import Point, Circle, Buoyancy, Frame
@@ -57,13 +57,14 @@ from PySide6.QtWidgets import (
     QColorDialog,
     QSizePolicy,
     QCheckBox,
-    QTreeWidgetItem,
+    QTreeWidgetItem, QSpacerItem,
 )
 from PySide6 import QtWidgets
 
 DAVE_GUI_NODE_EDITORS = dict()  # Key: node-class, value: editor-class
 
 from DAVE.helpers.singleton_class import Singleton
+
 
 def cbvinf(checkbox: QCheckBox, value: bool, do_block=True):
     """Updates the value in the checkbox IF it does not have focus. Blocks signals during change if do_block is true (default)"""
@@ -136,6 +137,12 @@ def code_if_user_focus(node, control, ref, dec=3):
     except:
         pass
 
+    try:  # try text  ; carefull with this one, gives false positives for checkboxes etc that also have a "text" method
+        value = control.text()
+        return code_if_changed_text(node, value, ref)
+    except:
+        pass
+
     raise ValueError("Can not get value from this control")
 
 
@@ -180,6 +187,21 @@ def code_if_changed_d(node, value, ref, dec=3):
         return f"\ns['{node.name}'].{ref} = {value}"
     else:
         return ""
+
+
+def code_if_changed_text(node, value, ref):
+    """Returns code to change value of property "ref" to "value" - applicable for text properties
+
+    Args:
+        node: node
+        value: value to check and set
+        ref: name of the property
+
+    Returns:
+        str
+
+    """
+    return code_if_changed_path(node, value, ref, accept_empty=True)
 
 
 def code_if_changed_path(node, value, ref, accept_empty=False) -> str:
@@ -243,8 +265,6 @@ In singleton:
     property widget : returns the main widget
     
     e.connect(node, callback, scene, run_code) --> returns widget"""
-
-
 
 
 class NodeEditor(ABC):
@@ -687,7 +707,6 @@ class EditVisual(AbstractNodeEditorWithParent):
         self.ui.doubleSpinBox_8.valueChanged.connect(self.generate_code)
         self.ui.doubleSpinBox_9.valueChanged.connect(self.generate_code)
 
-
     def connect(
         self,
         node,
@@ -698,7 +717,11 @@ class EditVisual(AbstractNodeEditorWithParent):
         node_picker_register_func,
     ):
 
-        self.ui.resource_selector.initialize(scene=scene, resource_types=["stl", "obj","glb","gltf"], callback=self.generate_code)
+        self.ui.resource_selector.initialize(
+            scene=scene,
+            resource_types=["stl", "obj", "glb", "gltf"],
+            callback=self.generate_code,
+        )
 
         return super().connect(
             node,
@@ -708,7 +731,6 @@ class EditVisual(AbstractNodeEditorWithParent):
             gui_solve_func,
             node_picker_register_func,
         )
-
 
     def post_update_event(self):
         self.ui.widgetParent.fill()
@@ -723,7 +745,6 @@ class EditVisual(AbstractNodeEditorWithParent):
             self.ui.doubleSpinBox_7,
             self.ui.doubleSpinBox_8,
             self.ui.doubleSpinBox_9,
-
         ]
 
         for widget in widgets:
@@ -901,7 +922,9 @@ class EditComponent(NodeEditor):
         node_picker_register_func,
     ):
 
-        self.ui.resource_selector.initialize(scene=scene, resource_types=".dave", callback=self.generate_code)
+        self.ui.resource_selector.initialize(
+            scene=scene, resource_types=".dave", callback=self.generate_code
+        )
         self.ui.resource_selector.callback_reload = self.reload
 
         return super().connect(
@@ -1048,6 +1071,7 @@ class EditTank(NodeEditor):
 
         self.run_code(code)
 
+
 @Singleton
 class EditMeasurement(NodeEditor):
 
@@ -1071,7 +1095,6 @@ class EditMeasurement(NodeEditor):
 
         self.ui.pbUpdatePos.clicked.connect(self.update_pos)
         self.ui.pbUpdateInverted.clicked.connect(self.update_inverted)
-
 
     # override connect to initialize the pickers
     def connect(
@@ -1126,29 +1149,32 @@ class EditMeasurement(NodeEditor):
         self._update_reference(True)
 
     def _update_reference(self, inverted):
-        code = f"s['{self.node.name}'].update_positive_direction_guide(invert={inverted})"
+        code = (
+            f"s['{self.node.name}'].update_positive_direction_guide(invert={inverted})"
+        )
         self.run_code(code)
 
     def post_update_event(self):
-
 
         # update properties
         try:
             self.filling = True
 
-            self.ui.npFrame.fill(property_name='reference_frame')
-            self.ui.npPoint1.fill(property_name='point1')
-            self.ui.npPoint2.fill(property_name='point2')
+            self.ui.npFrame.fill(property_name="reference_frame")
+            self.ui.npPoint1.fill(property_name="point1")
+            self.ui.npPoint2.fill(property_name="point2")
 
             # noinspection PyTypeChecker
-            node : Measurement = self.node # alias and type hint
+            node: Measurement = self.node  # alias and type hint
 
             if node.kind == MeasurementType.Distance:
                 self.ui.rbDistance.setChecked(True)
             elif node.kind == MeasurementType.Angle:
                 self.ui.rbAngle.setChecked(True)
             else:
-                raise ValueError(f"Unknown measurement type {node.kind} for node {node.name}")
+                raise ValueError(
+                    f"Unknown measurement type {node.kind} for node {node.name}"
+                )
 
             self.ui.cbDirection.setCurrentText(node.reference.name)
             self.ui.cbFlipAngleDirection.setChecked(node.flip_angle_direction)
@@ -1157,7 +1183,6 @@ class EditMeasurement(NodeEditor):
 
         finally:
             self.filling = False
-
 
     def apply_gui_values_based_view(self):
         # Apply formatting based on the measurement type
@@ -1181,11 +1206,6 @@ class EditMeasurement(NodeEditor):
             self.ui.npFrame.setVisible(True)
             self.ui.label_5.setVisible(True)
 
-
-
-
-
-
     def changed(self):
         if self.filling:
             return
@@ -1195,14 +1215,16 @@ class EditMeasurement(NodeEditor):
 
         # see if what we try to do makes sense
         if self.ui.cbDirection.currentText() == "Total" and self.ui.rbAngle.isChecked():
-            self.ui.cbDirection.setCurrentIndex(0)  # forces another changed() event which is ok!
+            self.ui.cbDirection.setCurrentIndex(
+                0
+            )  # forces another changed() event which is ok!
             return
 
         code = ""
         element = "\ns['{}']".format(self.node.name)
 
         # noinspection PyTypeChecker
-        node : Measurement = self.node # alias and type hint
+        node: Measurement = self.node  # alias and type hint
 
         # change in kind?
         if self.ui.rbDistance.isChecked() and node.kind != MeasurementType.Distance:
@@ -1213,11 +1235,17 @@ class EditMeasurement(NodeEditor):
 
         # change in direction?
         if self.ui.cbDirection.currentText() != node.reference.name:
-            code += element + f".reference = MeasurementDirection.{self.ui.cbDirection.currentText()}"
+            code += (
+                element
+                + f".reference = MeasurementDirection.{self.ui.cbDirection.currentText()}"
+            )
 
         # change in flip angle direction?
         if self.ui.cbFlipAngleDirection.isChecked() != node.flip_angle_direction:
-            code += element + f".flip_angle_direction = {self.ui.cbFlipAngleDirection.isChecked()}"
+            code += (
+                element
+                + f".flip_angle_direction = {self.ui.cbFlipAngleDirection.isChecked()}"
+            )
 
         # change in point1?
         if self.ui.npPoint1.value != node.point1.name:
@@ -1229,7 +1257,7 @@ class EditMeasurement(NodeEditor):
 
         # change in reference frame?
         frameValue = self.ui.npFrame.value
-        if frameValue == '' :
+        if frameValue == "":
             frameValue = None
 
         if frameValue != node.reference_frame:
@@ -1239,6 +1267,7 @@ class EditMeasurement(NodeEditor):
                 code += element + f".reference_frame = None"
 
         self.run_code(code)
+
 
 @Singleton
 class EditSupportPoint(NodeEditor):
@@ -1255,7 +1284,6 @@ class EditSupportPoint(NodeEditor):
         self.ui.dsKy.valueChanged.connect(self.changed)
         self.ui.dsKz.valueChanged.connect(self.changed)
         self.ui.dsDeltaZ.valueChanged.connect(self.changed)
-
 
     # override connect to initialize the pickers
     def connect(
@@ -1296,16 +1324,15 @@ class EditSupportPoint(NodeEditor):
 
     def post_update_event(self):
 
-
         # update properties
         try:
             self.filling = True
 
-            self.ui.npFrame.fill(property_name='frame')
-            self.ui.npPoint.fill(property_name='point')
+            self.ui.npFrame.fill(property_name="frame")
+            self.ui.npPoint.fill(property_name="point")
 
             # noinspection PyTypeChecker
-            node : SupportPoint = self.node # alias and type hint
+            node: SupportPoint = self.node  # alias and type hint
 
             self.ui.dsKx.setValue(node.kx)
             self.ui.dsKy.setValue(node.ky)
@@ -1322,9 +1349,7 @@ class EditSupportPoint(NodeEditor):
         element = "\ns['{}']".format(self.node.name)
 
         # noinspection PyTypeChecker
-        node : SupportPoint = self.node # alias and type hint
-
-
+        node: SupportPoint = self.node  # alias and type hint
 
         # change in point?
         if self.ui.npPoint.value != node.point.name:
@@ -1334,10 +1359,10 @@ class EditSupportPoint(NodeEditor):
         if self.ui.npFrame.value != node.frame.name:
             code += element + f".frame = s['{self.ui.npFrame.value}']"
 
-        code += code_if_changed_d(node, self.ui.dsKz.value(), 'kz', 3)
-        code += code_if_changed_d(node, self.ui.dsDeltaZ.value(), 'delta_z', 3)
-        code += code_if_changed_d(node, self.ui.dsKx.value(), 'kx', 3)
-        code += code_if_changed_d(node, self.ui.dsKy.value(), 'ky', 3)
+        code += code_if_changed_d(node, self.ui.dsKz.value(), "kz", 3)
+        code += code_if_changed_d(node, self.ui.dsDeltaZ.value(), "delta_z", 3)
+        code += code_if_changed_d(node, self.ui.dsKx.value(), "kx", 3)
+        code += code_if_changed_d(node, self.ui.dsKy.value(), "ky", 3)
 
         self.run_code(code)
 
@@ -1366,7 +1391,6 @@ class EditBuoyancyOrContactMesh(AbstractNodeEditorWithParent):
 
         ui.cbInvertNormals.toggled.connect(self.generate_code)
 
-
     def connect(
         self,
         node,
@@ -1377,7 +1401,9 @@ class EditBuoyancyOrContactMesh(AbstractNodeEditorWithParent):
         node_picker_register_func,
     ):
 
-        self.ui.resource_selector.initialize(scene=scene, resource_types=["stl", "obj"], callback=self.generate_code)
+        self.ui.resource_selector.initialize(
+            scene=scene, resource_types=["stl", "obj"], callback=self.generate_code
+        )
 
         return super().connect(
             node,
@@ -1387,7 +1413,6 @@ class EditBuoyancyOrContactMesh(AbstractNodeEditorWithParent):
             gui_solve_func,
             node_picker_register_func,
         )
-
 
     def post_update_event(self):
         self.ui.widgetParent.fill()
@@ -3158,9 +3183,11 @@ class EditVisualOutline(NodeEditor):
         widget.setLayout(layout)
         self.cbOutline = QtWidgets.QComboBox()
         self.cbOutline.addItems(("None", "Feature", "Feature and Silhouette"))
-        spacerItem = QtWidgets.QSpacerItem(8, 8, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            8, 8, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         layout.addItem(spacerItem)
-        layout.setContentsMargins(9,0,9,0)
+        layout.setContentsMargins(9, 0, 9, 0)
 
         layout.addWidget(label)
         layout.addWidget(self.cbOutline)
@@ -3584,10 +3611,14 @@ class WidgetNodeProps(guiDockWidget):
         if isinstance(node, vfs.Tank) and (vfs.Tank not in suppressed_editors):
             self._node_editors.append(EditTank.Instance())
 
-        if isinstance(node, vfs.Measurement) and (vfs.Measurement not in suppressed_editors):
+        if isinstance(node, vfs.Measurement) and (
+            vfs.Measurement not in suppressed_editors
+        ):
             self._node_editors.append(EditMeasurement.Instance())
 
-        if isinstance(node, vfs.SupportPoint) and (vfs.SupportPoint not in suppressed_editors):
+        if isinstance(node, vfs.SupportPoint) and (
+            vfs.SupportPoint not in suppressed_editors
+        ):
             self._node_editors.append(EditSupportPoint.Instance())
 
         for key, value in DAVE_GUI_NODE_EDITORS.items():
