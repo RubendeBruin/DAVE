@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from PyQt5.QtWidgets import QSpacerItem
 from PySide6.QtGui import QColor
 
 from DAVE import Point, Circle, Buoyancy, Frame
@@ -62,6 +63,7 @@ from PySide6 import QtWidgets
 
 DAVE_GUI_NODE_EDITORS = dict()  # Key: node-class, value: editor-class
 
+from DAVE.helpers.singleton_class import Singleton
 
 def cbvinf(checkbox: QCheckBox, value: bool, do_block=True):
     """Updates the value in the checkbox IF it does not have focus. Blocks signals during change if do_block is true (default)"""
@@ -243,25 +245,6 @@ In singleton:
     e.connect(node, callback, scene, run_code) --> returns widget"""
 
 
-# Singleton decorator, obtained from: https://betterprogramming.pub/singleton-in-python-5eaa66618e3d
-
-
-class Singleton:
-    def __init__(self, cls):
-        self._cls = cls
-
-    def Instance(self):
-        try:
-            return self._instance
-        except AttributeError:
-            self._instance = self._cls()
-            return self._instance
-
-    def __call__(self):
-        raise TypeError("Singletons must be accessed through `Instance()`.")
-
-    def __instancecheck__(self, inst):
-        return isinstance(inst, self._cls)
 
 
 class NodeEditor(ABC):
@@ -704,41 +687,31 @@ class EditVisual(AbstractNodeEditorWithParent):
         self.ui.doubleSpinBox_8.valueChanged.connect(self.generate_code)
         self.ui.doubleSpinBox_9.valueChanged.connect(self.generate_code)
 
-        self.ui.pbRescan.pressed.connect(self.update_resource_list)
-        self.ui.pbReloadFile.pressed.connect(self.reload_visual)
 
-        self.ui.comboBox.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+    def connect(
+        self,
+        node,
+        scene,
+        run_code,
+        guiEmitEvent,
+        gui_solve_func,
+        node_picker_register_func,
+    ):
 
-        self.ui.comboBox.editTextChanged.connect(self.generate_code)
-        self.resources_loaded = False
+        self.ui.resource_selector.initialize(scene=scene, resource_types=["stl", "obj","glb","gltf"], callback=self.generate_code)
 
-    def reload_visual(self):
-        # Reload the visual
-        # find the actor in the viewport and re-set its  va.actors["main"].loaded_obj property
+        return super().connect(
+            node,
+            scene,
+            run_code,
+            guiEmitEvent,
+            gui_solve_func,
+            node_picker_register_func,
+        )
 
-        store = self.node.path
-        self.node.path = "res: cube_with_bevel.obj"
-        self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
-        self.node.path = store
-        self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
-        self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
-
-        print("Visual refreshed")
-
-    def update_resource_list(self):
-        stl = self.scene.get_resource_list("stl", include_subdirs=True)
-        obj = self.scene.get_resource_list("obj", include_subdirs=True)
-
-        names = (*stl, *obj)
-
-        update_combobox_items_with_completer(self.ui.comboBox, names)
 
     def post_update_event(self):
         self.ui.widgetParent.fill()
-
-        if not self.resources_loaded:
-            self.update_resource_list()
-            self.resources_loaded = True
 
         widgets = [
             self.ui.doubleSpinBox_1,
@@ -750,7 +723,7 @@ class EditVisual(AbstractNodeEditorWithParent):
             self.ui.doubleSpinBox_7,
             self.ui.doubleSpinBox_8,
             self.ui.doubleSpinBox_9,
-            self.ui.comboBox,
+
         ]
 
         for widget in widgets:
@@ -766,23 +739,14 @@ class EditVisual(AbstractNodeEditorWithParent):
         svinf(self.ui.doubleSpinBox_8, self.node.scale[1])
         svinf(self.ui.doubleSpinBox_9, self.node.scale[2])
 
-        cvinf(self.ui.comboBox, str(self.node.path))
+        self.ui.resource_selector.setValue(self.node.path)
 
         for widget in widgets:
             widget.blockSignals(False)
 
     def generate_code(self):
-        if self.scene.is_valid_resource_path(self.ui.comboBox.currentText()):
-            resource = self.scene.get_resource_path(self.ui.comboBox.currentText())
 
-            if resource.suffix in ['.stl','.obj','.glb', '.gltf']:
-                self.ui.comboBox.setStyleSheet("")
-            else:
-                self.ui.comboBox.setStyleSheet("background: orange")
-                InfoMessage("Only .stl, .obj and gtlf (.glb, .gltf) files are supported", self.ui.comboBox.mapToGlobal(self.ui.comboBox.pos()))
-                return
-        else:
-            self.ui.comboBox.setStyleSheet("background: orange")
+        if not self.ui.resource_selector._check_value():
             return
 
         code = ""
@@ -810,7 +774,7 @@ class EditVisual(AbstractNodeEditorWithParent):
             )
         )
 
-        new_path = self.ui.comboBox.currentText()
+        new_path = self.ui.resource_selector.value
 
         if not new_path == self.node.path:
             # check if path is valid
@@ -925,37 +889,38 @@ class EditComponent(NodeEditor):
         self.fileextension = "dave"
         self.resources_loaded = False
 
-        self.ui.cbPath.editTextChanged.connect(self.generate_code)
-        self.ui.pbReScan.clicked.connect(self.rescan)
         self.ui.pbEditExposedProperties.clicked.connect(self.edit_exposed)
 
-    def rescan(self):
-        self.update_resource_list()
+    def connect(
+        self,
+        node,
+        scene,
+        run_code,
+        guiEmitEvent,
+        gui_solve_func,
+        node_picker_register_func,
+    ):
 
-        text = (
-            f"Rescan completed for files ending with {self.fileextension} in folders:"
+        self.ui.resource_selector.initialize(scene=scene, resource_types=".dave", callback=self.generate_code)
+        self.ui.resource_selector.callback_reload = self.reload
+
+        return super().connect(
+            node,
+            scene,
+            run_code,
+            guiEmitEvent,
+            gui_solve_func,
+            node_picker_register_func,
         )
-        for p in self.scene.resource_provider.resources_paths:
-            text += f"\n - {str(p)}"
-        text += "\n\nlist updated"
-
-        QMessageBox.information(self.widget, "Done", text, QMessageBox.Ok)
 
     def reload(self):
         code = f"\ns['{self.node.name}'].path = r'{self.node.path}'"
         self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
-    def update_resource_list(self):
-        names = self.scene.get_resource_list(self.fileextension, include_subdirs=True)
-        update_combobox_items_with_completer(self.ui.cbPath, names)
-        self.resources_loaded = True
-
     def post_update_event(self):
         """Sync the properties of the node to the gui"""
 
-        if not self.resources_loaded:
-            self.update_resource_list()
-        cvinf(self.ui.cbPath, str(self.node.path))
+        self.ui.resource_selector.setValue(self.node.path)
 
         if self.node.exposed_properties:
             self.ui.pbEditExposedProperties.setEnabled(True)
@@ -987,19 +952,14 @@ class EditComponent(NodeEditor):
     def generate_code(self):
         """Generate code to update the node, then run it"""
 
-        code = ""
+        if not self.ui.resource_selector._check_value():
+            return
 
-        if self.scene.is_valid_resource_path(self.ui.cbPath.currentText()):
-            self.ui.cbPath.setStyleSheet("")
-            code += code_if_changed_path(
-                self.node, self.ui.cbPath.currentText(), "path"
-            )
-        else:
-            self.ui.cbPath.setStyleSheet("background: orange")
+        if self.ui.resource_selector.value == self.node.path:
+            return
 
-        # only fire if resource is valid
-        if code:
-            self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
+        code = f"\ns['{self.node.name}'].path = r'{self.ui.resource_selector.value}'"
+        self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
 
 # ======================================
@@ -1404,31 +1364,33 @@ class EditBuoyancyOrContactMesh(AbstractNodeEditorWithParent):
         ui.doubleSpinBox_8.valueChanged.connect(self.generate_code)
         ui.doubleSpinBox_9.valueChanged.connect(self.generate_code)
 
-        ui.comboBox.editTextChanged.connect(self.generate_code)
         ui.cbInvertNormals.toggled.connect(self.generate_code)
 
-        self.ui.pbRescan.pressed.connect(self.update_resource_list)
-        self.ui.pbReloadFile.pressed.connect(self.reload_file)
-        self.resources_loaded = False
 
-    def update_resource_list(self):
-        stl = self.scene.get_resource_list("stl", include_subdirs=True)
-        obj = self.scene.get_resource_list("obj", include_subdirs=True)
+    def connect(
+        self,
+        node,
+        scene,
+        run_code,
+        guiEmitEvent,
+        gui_solve_func,
+        node_picker_register_func,
+    ):
 
-        names = (*stl, *obj)
+        self.ui.resource_selector.initialize(scene=scene, resource_types=["stl", "obj"], callback=self.generate_code)
 
-        update_combobox_items_with_completer(self.ui.comboBox, names)
+        return super().connect(
+            node,
+            scene,
+            run_code,
+            guiEmitEvent,
+            gui_solve_func,
+            node_picker_register_func,
+        )
 
-    def reload_file(self):
-        self.node.trimesh._load_from_privates()
-        print("Mesh reloaded")
 
     def post_update_event(self):
         self.ui.widgetParent.fill()
-
-        if not self.resources_loaded:
-            self.update_resource_list()
-            self.resources_loaded = True
 
         widgets = [
             self.ui.doubleSpinBox_1,
@@ -1440,7 +1402,6 @@ class EditBuoyancyOrContactMesh(AbstractNodeEditorWithParent):
             self.ui.doubleSpinBox_7,
             self.ui.doubleSpinBox_8,
             self.ui.doubleSpinBox_9,
-            self.ui.comboBox,
             self.ui.cbInvertNormals,
         ]
 
@@ -1459,23 +1420,16 @@ class EditBuoyancyOrContactMesh(AbstractNodeEditorWithParent):
 
         self.ui.cbInvertNormals.setChecked(self.node.trimesh._invert_normals)
 
-        cvinf(self.ui.comboBox, str(self.node.trimesh._path))
-        # self.ui.comboBox.setCurrentText(self.node.trimesh._path)
+        self.ui.resource_selector.setValue(self.node.trimesh._path)
 
         for widget in widgets:
             widget.blockSignals(False)
 
     def generate_code(self):
-        # check if resource is valid, if not then do not reload
-        # only fire if resource is valid
 
-        if self.scene.is_valid_resource_path(self.ui.comboBox.currentText()):
-            self.ui.comboBox.setStyleSheet("")
-        else:
-            self.ui.comboBox.setStyleSheet("background: orange")
+        # do not generate code if the resource is not valid
+        if not self.ui.resource_selector._check_value():
             return
-
-        resource = self.ui.comboBox.currentText()
 
         code = ""
         element = "\ns['{}']".format(self.node.name)
@@ -1503,7 +1457,7 @@ class EditBuoyancyOrContactMesh(AbstractNodeEditorWithParent):
         )
         invert_normals = self.ui.cbInvertNormals.isChecked()
 
-        new_path = self.ui.comboBox.currentText()
+        new_path = self.ui.resource_selector.value
 
         # check if we need to reload the mesh
         if (
@@ -3197,10 +3151,18 @@ class EditVisualOutline(NodeEditor):
         widget = QtWidgets.QWidget()
         self._widget = widget
 
-        layout = QtWidgets.QVBoxLayout()
+        layout = QtWidgets.QHBoxLayout()
+
+        label = QtWidgets.QLabel("Edges in viewport")
+
         widget.setLayout(layout)
         self.cbOutline = QtWidgets.QComboBox()
         self.cbOutline.addItems(("None", "Feature", "Feature and Silhouette"))
+        spacerItem = QtWidgets.QSpacerItem(8, 8, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        layout.addItem(spacerItem)
+        layout.setContentsMargins(9,0,9,0)
+
+        layout.addWidget(label)
         layout.addWidget(self.cbOutline)
 
         self.cbOutline.currentTextChanged.connect(self.generate_code)

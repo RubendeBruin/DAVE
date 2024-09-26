@@ -12,7 +12,7 @@ from vtkmodules.vtkRenderingCore import (
     vtkRenderer,
     vtkRenderWindow,
     vtkRenderWindowInteractor,
-    vtkCamera,
+    vtkCamera, vtkWindowToImageFilter,
 )
 from vtkmodules.vtkRenderingOpenGL2 import vtkOpenGLRenderer
 
@@ -88,6 +88,8 @@ class ImageRenderer(AbstractSceneRenderer):
         pil_img = PIL.Image.fromarray(narr)
 
         return pil_img
+
+
 
 
 if __name__ == "__main__":

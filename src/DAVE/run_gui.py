@@ -11,5 +11,7 @@
 
 from DAVE import *
 
+DAVE_load_extensions()
+
 if __name__ == "__main__":
     DG(autosave=False)

@@ -795,7 +795,7 @@ class Scene:
             else:
                 # multiple matches
                 warnings.warn(
-                    f"Selecting node {node_name} based on fuzzy-match {N.name}. If you are not importing an old file then please use the correct the name in the future."
+                    f"Can not find a unique match for node {node_name}"
                 )
 
         # end work-around
@@ -2583,7 +2583,6 @@ class Scene:
 
         new_node = Visual(self, name)
 
-        new_node.name = name
         new_node.path = path
         new_node.parent = parent
 

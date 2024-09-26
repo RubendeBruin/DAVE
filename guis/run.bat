@@ -48,4 +48,5 @@ echo call pyside6-uic dlg_export_to_blender.ui -o "..\src\DAVE\gui\forms\dlg_exp
 call pyside6-uic widget_viewport_layers.ui -o "..\src\DAVE\gui\forms\widget_viewport_layers.py"
 call pyside6-uic widget_measurement.ui -o "..\src\DAVE\gui\forms\widget_measurement.py"
 call pyside6-uic widget_supportpoint.ui -o "..\src\DAVE\gui\forms\widget_supportpoint.py"
+call pyside6-uic resource_browser.ui -o "..\src\DAVE\gui\forms\resource_browser.py"
 echo call pyside6-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"

@@ -69,7 +69,13 @@ class FlowLayout(QLayout):
         line_height = 0
         spacing = self.spacing()
 
+        # print(f'layouting for {len(self._item_list)} items')
+
         for item in self._item_list:
+
+            if item.widget().isHidden():
+                continue
+
             style = item.widget().style()
             layout_spacing_x = style.layoutSpacing(
                 QSizePolicy.PushButton, QSizePolicy.PushButton, Qt.Horizontal

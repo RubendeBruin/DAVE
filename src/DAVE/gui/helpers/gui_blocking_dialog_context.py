@@ -85,6 +85,7 @@ class BlockingDialog(QDialog):
 
     def __enter__(self):
         self.main_window.setEnabled(False)
+
         self.show()
         return self
 

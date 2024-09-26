@@ -609,7 +609,10 @@ class AbstractSceneRenderer:
                 actors["main"] = vis
 
             if isinstance(N, dn.Visual):
-                file = self.scene.get_resource_path(N.path)
+                try:
+                    file = self.scene.get_resource_path(N.path)
+                except FileNotFoundError:
+                    file = self.scene.get_resource_path('res: missing.glb', no_gui=True)
                 visual_actors_from_file(file, actors_dict=actors, N=N)
 
             if isinstance(N, dn.Frame):
@@ -941,8 +944,8 @@ class AbstractSceneRenderer:
             for va in self.node_visuals:
                 if isinstance(va.node, dn.Visual):
                     try:
-                        file = self.scene.get_resource_path(va.node.path)
-                    except FileExistsError:
+                        file = self.scene.get_resource_path(va.node.path, no_gui=True)
+                    except FileNotFoundError:
                         continue
 
                     if file == va.actors["main"].loaded_obj:
