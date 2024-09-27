@@ -2817,8 +2817,9 @@ class Gui:
         DAVE_GUI_LOGGER.log(f"Open file {filename}")
 
         if str(filename).endswith(".zip"):
-            if self.open_self_contained_DAVE_package(filename=filename):
-                return
+            self.open_self_contained_DAVE_package(filename=filename)
+            return
+
 
         current_directory = str(Path(filename).parent)
         if current_directory.endswith(":\\"):
@@ -2904,7 +2905,9 @@ class Gui:
                 )
                 return
 
-            self.scene.load_package(model_file)
+            self.scene.load_package(model_file, allow_error_during_load=True)
+
+            self._handle_load_errors_if_any()
 
             # show a message
             QMessageBox.information(
@@ -2932,6 +2935,8 @@ class Gui:
             return True
         finally:
             gui_globals.do_ask_user_for_unavailable_nodenames = store
+
+        return False
 
     def open(self):
         """Opens a file"""
