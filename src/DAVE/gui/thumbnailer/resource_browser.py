@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from PySide6.QtWidgets import QFileDialog
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QApplication,
     QWidget,
@@ -12,12 +12,10 @@ from PySide6.QtWidgets import (
     QFrame,
     QDialog,
 )
-from PySide6.QtGui import QPixmap, QImage, QKeySequence, QShortcut
-from dill.pointers import parent
+from PySide6.QtGui import QKeySequence, QShortcut
 
 from DAVE import *
 from DAVE.gui.helpers.flow_layout import FlowLayout
-from DAVE.gui.helpers.gui_blocking_dialog_context import BlockingDialog
 from DAVE.gui.thumbnailer.thumbnail_provider import ThumbnailProvider
 
 from DAVE.gui.forms.resource_browser import Ui_ResourceBrowser
