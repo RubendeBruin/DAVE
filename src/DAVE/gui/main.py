@@ -2826,8 +2826,7 @@ class Gui:
             current_directory += "\\"
         code = f's.clear()\ns.current_directory = r"{current_directory}"\ns.load_scene(r"{filename}", allow_errors_during_load=True)'
 
-        store = gui_globals.do_ask_user_for_unavailable_nodenames
-        gui_globals.do_ask_user_for_unavailable_nodenames = True
+        self.scene.error_interaction.reset()
 
         try:
             self.run_code(code, guiEventType.FULL_UPDATE)
@@ -2858,8 +2857,7 @@ class Gui:
 
             self.visual.zoom_all()
 
-        finally:
-            gui_globals.do_ask_user_for_unavailable_nodenames = store
+
 
     def _get_filename_using_dialog(self):
         folder = self.get_folder_for_dialogs()
@@ -2884,9 +2882,8 @@ class Gui:
         """Opens a self-contained DAVE package"""
         DAVE_GUI_LOGGER.log("Open self contained DAVE package")
 
-        store = gui_globals.do_ask_user_for_unavailable_nodenames
+
         try:
-            gui_globals.do_ask_user_for_unavailable_nodenames = True
 
             # extract the zip file (filename) to a temporary folder
             temp_folder = tempfile.mkdtemp()
@@ -2933,8 +2930,6 @@ class Gui:
 
             self.visual.zoom_all()
             return True
-        finally:
-            gui_globals.do_ask_user_for_unavailable_nodenames = store
 
         return False
 

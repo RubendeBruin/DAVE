@@ -248,8 +248,13 @@ class DaveResourceProvider:
 
                 fname = filename.split(":")[-1].strip()  # remove 'res: ' or 'cd: '
 
+                # strip any subfolders
+                fname = fname.split("/")[-1]
+                fname = fname.split("\\")[-1]
+
                 dialog.setFileMode(QFileDialog.ExistingFile)
-                dialog.setNameFilters([fname, "All files (*.*)"])
+                files_of_same_type = f"Same type (*{fname.split('.')[-1]})"
+                dialog.setNameFilters([fname, files_of_same_type, "All files (*.*)"])
 
                 res = dialog.exec()
 

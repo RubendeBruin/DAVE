@@ -47,6 +47,7 @@ def MostLikelyMatch(search_for, choices) -> str:
         return "[install rapidfuzz to get a suggestion]"
 
 
+
 def assertBool(var, name="Variable"):
     if not isinstance(var, bool):
         raise ValueError(

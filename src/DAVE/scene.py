@@ -40,7 +40,6 @@ from DAVE.settings import (
 )
 
 from .exceptions import ModelInvalidException
-from DAVE import gui_globals
 from .helpers.code_error_extract import get_code_error
 
 from .resource_provider import DaveResourceProvider
@@ -185,6 +184,9 @@ class Scene:
 
         self.solve_activity_desc = "Solving static equilibrium"
         """This string may be used for feedback to user - read by Gui"""
+
+        self.error_interaction = None
+        """Error interaction object - see DAVE.gui.error_interaction"""
 
         self.solver_settings = SolverSettings()
         """Settings for the solver"""
@@ -767,67 +769,53 @@ class Scene:
         if node_name in self._node_dict:
             return self._nodes[self._node_dict[node_name]]  # return directly
 
-        # work-around for renames
-        # TODO: remove this when renames are implemented (May 2023) - Removing this break models created before May 2023
+
+        # The requested node does not exist!
+
+        # # work-around for renames
+        # # TODO: remove this when renames are implemented (May 2023) - Removing this break models created before May 2023
+        # #
+        # # Renames are _ to /
+        # #            >>> to /
         #
-        # Renames are _ to /
-        #            >>> to /
+        # # See if we get a single match when we just ignore _ / and >>>
+        #
+        # search_for = node_name.replace("_", "^").replace(">>>", "^").replace("/", "^")
+        # options = [
+        #     t.replace("_", "^").replace(">>>", "^").replace("/", "^")
+        #     for t in self.node_names
+        # ]
+        #
+        # if search_for in options:
+        #     if options.count(search_for) == 1:
+        #         index = options.index(search_for)
+        #         N = self._nodes[index]
+        #
+        #         warnings.warn(
+        #             f"Selecting node {node_name} based on fuzzy-match {N.name}. If you are not importing an old file then please use the correct the name in the future."
+        #         )
+        #
+        #         return N
+        #
+        #     else:
+        #         # multiple matches
+        #         warnings.warn(
+        #             f"Can not find a unique match for node {node_name}"
+        #         )
+        #
+        # # end work-around
 
-        # See if we get a single match when we just ignore _ / and >>>
+        if self.error_interaction is not None:
+            name = self.error_interaction.handle_missing_node(self, node_name)
+            if name is not None:
+                return self.node_by_name(name, silent=silent)
 
-        search_for = node_name.replace("_", "^").replace(">>>", "^").replace("/", "^")
-        options = [
-            t.replace("_", "^").replace(">>>", "^").replace("/", "^")
-            for t in self.node_names
-        ]
-
-        if search_for in options:
-            if options.count(search_for) == 1:
-                index = options.index(search_for)
-                N = self._nodes[index]
-
-                warnings.warn(
-                    f"Selecting node {node_name} based on fuzzy-match {N.name}. If you are not importing an old file then please use the correct the name in the future."
-                )
-
-                return N
-
-            else:
-                # multiple matches
-                warnings.warn(
-                    f"Can not find a unique match for node {node_name}"
-                )
-
-        # end work-around
-
+        #
+        #
         if not silent:
             self.print_node_tree()
 
-        # See if we can give a good hint using fuzzy
-
-        choices = [node.name for node in self._nodes]
-        suggestion = MostLikelyMatch(node_name, choices)
-
-        # do we have a gui and does it allow for us to ask?
-        if gui_globals.do_ask_user_for_unavailable_nodenames:
-            try:
-                from PySide6.QtWidgets import QApplication
-
-                if QApplication.instance() is not None:
-                    from PySide6.QtWidgets import QMessageBox
-
-                    msg = QMessageBox()
-                    msg.setIcon(QMessageBox.Question)
-                    msg.setText(
-                        f'Node with name "{node_name}" not found. Did you mean: "{suggestion}"?'
-                    )
-                    msg.setWindowTitle("DAVE")
-                    msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-                    if msg.exec() == QMessageBox.Yes:
-                        return self.node_by_name(suggestion)
-
-            except ImportError:
-                pass
+        suggestion = MostLikelyMatch(node_name, self.node_names)
 
         raise ValueError(
             'No node with name "{}". Did you mean: "{}"? \nAvailable names printed above.'.format(
@@ -2577,13 +2565,17 @@ class Scene:
         if rotation is not None:
             assert3f(rotation, "Rotation ")
 
-        self.get_resource_path(path)  # raises error when resource is not found
-
         # then create
 
         new_node = Visual(self, name)
 
-        new_node.path = path
+        try:
+            new_node.path = path   # validity of path is checked here.
+            # If the user ignores then the created node will be removed and the error will be raised
+
+        except Exception as E:
+            new_node.path = 'res: missing.glb'
+
         new_node.parent = parent
 
         # and set properties
