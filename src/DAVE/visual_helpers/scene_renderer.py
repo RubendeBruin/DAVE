@@ -612,7 +612,7 @@ class AbstractSceneRenderer:
                 try:
                     file = self.scene.get_resource_path(N.path)
                 except FileNotFoundError:
-                    file = self.scene.get_resource_path('res: missing.glb')
+                    file = self.scene.get_resource_path("res: missing.glb")
                 visual_actors_from_file(file, actors_dict=actors, N=N)
 
             if isinstance(N, dn.Frame):
@@ -946,7 +946,7 @@ class AbstractSceneRenderer:
                     try:
                         file = self.scene.get_resource_path(va.node.path)
                     except FileNotFoundError:
-                        continue
+                        continue  # not going to reload, nothing to replace the current value with
 
                     if file == va.actors["main"].loaded_obj:
                         continue
