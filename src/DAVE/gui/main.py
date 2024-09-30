@@ -98,6 +98,7 @@ from DAVE.gui.dock_system.ads_helpers import (
     get_all_active_docks,
 )
 from DAVE.gui.dock_system.gui_dock_groups import DaveDockGroup
+from DAVE.gui.error_interaction import ErrorInteraction
 from DAVE.gui.helpers.gui_logger import DAVE_GUI_LOGGER, format_exception_with_notes
 from DAVE.gui.helpers.my_qt_helpers import BlockSigs
 from DAVE.gui.helpers.qt_action_draggable import QDraggableNodeActionWidget
@@ -395,7 +396,9 @@ class Gui:
         """A list of selected nodes (if any)"""
 
         self.scene = scene
+        self.scene.error_interaction = ErrorInteraction()
         """Reference to a scene"""
+
 
         self.scene.gui_solve_func = self.solve_statics_using_gui_on_scene
         """Claim control of the solver for the gui"""
@@ -2815,9 +2818,11 @@ class Gui:
     def open_file(self, filename: str or Path):
         """Opens the provided file"""
         DAVE_GUI_LOGGER.log(f"Open file {filename}")
+        self.scene.error_interaction.reset()
 
         if str(filename).endswith(".zip"):
             self.open_self_contained_DAVE_package(filename=filename)
+            self.scene.error_interaction.reset()
             return
 
 
@@ -2826,7 +2831,7 @@ class Gui:
             current_directory += "\\"
         code = f's.clear()\ns.current_directory = r"{current_directory}"\ns.load_scene(r"{filename}", allow_errors_during_load=True)'
 
-        self.scene.error_interaction.reset()
+
 
         try:
             self.run_code(code, guiEventType.FULL_UPDATE)
@@ -2856,6 +2861,7 @@ class Gui:
             self.add_to_recent_file_menu(filename)
 
             self.visual.zoom_all()
+        self.scene.error_interaction.reset()
 
 
 
@@ -2876,7 +2882,9 @@ class Gui:
         )
 
         if filename:
+            self.scene.error_interaction.reset()
             self.open_self_contained_DAVE_package(filename)
+            self.scene.error_interaction.reset()
 
     def open_self_contained_DAVE_package(self, filename=None):
         """Opens a self-contained DAVE package"""
@@ -2944,6 +2952,7 @@ class Gui:
         """Imports a file"""
         DAVE_GUI_LOGGER.log("Menu import")
         filename = self._get_filename_using_dialog()
+        self.scene.error_interaction.reset()
 
         if filename:
             code = 's.import_scene(r"{}", allow_errors_during_load=True)'.format(filename)

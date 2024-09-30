@@ -17,7 +17,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog,
     QFrame, QGridLayout, QLabel, QPushButton,
-    QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
+    QSizePolicy, QSpacerItem, QWidget)
 
 class Ui_MissingItemDialog(object):
     def setupUi(self, MissingItemDialog):
@@ -26,12 +26,18 @@ class Ui_MissingItemDialog(object):
         MissingItemDialog.resize(672, 367)
         MissingItemDialog.setSizeGripEnabled(True)
         MissingItemDialog.setModal(True)
-        self.verticalLayout = QVBoxLayout(MissingItemDialog)
-        self.verticalLayout.setObjectName(u"verticalLayout")
-        self.label = QLabel(MissingItemDialog)
-        self.label.setObjectName(u"label")
+        self.gridLayout_2 = QGridLayout(MissingItemDialog)
+        self.gridLayout_2.setObjectName(u"gridLayout_2")
+        self.cbReplacement = QComboBox(MissingItemDialog)
+        self.cbReplacement.setObjectName(u"cbReplacement")
+        sizePolicy = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.cbReplacement.sizePolicy().hasHeightForWidth())
+        self.cbReplacement.setSizePolicy(sizePolicy)
+        self.cbReplacement.setEditable(True)
 
-        self.verticalLayout.addWidget(self.label)
+        self.gridLayout_2.addWidget(self.cbReplacement, 5, 0, 1, 1)
 
         self.lbItemName = QLabel(MissingItemDialog)
         self.lbItemName.setObjectName(u"lbItemName")
@@ -41,26 +47,30 @@ class Ui_MissingItemDialog(object):
         self.lbItemName.setFrameShape(QFrame.NoFrame)
         self.lbItemName.setAlignment(Qt.AlignCenter)
 
-        self.verticalLayout.addWidget(self.lbItemName)
+        self.gridLayout_2.addWidget(self.lbItemName, 1, 0, 1, 1)
 
         self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        self.verticalLayout.addItem(self.verticalSpacer_2)
+        self.gridLayout_2.addItem(self.verticalSpacer_2, 2, 0, 1, 1)
 
         self.label_2 = QLabel(MissingItemDialog)
         self.label_2.setObjectName(u"label_2")
 
-        self.verticalLayout.addWidget(self.label_2)
+        self.gridLayout_2.addWidget(self.label_2, 4, 0, 1, 1)
 
-        self.cbReplacement = QComboBox(MissingItemDialog)
-        self.cbReplacement.setObjectName(u"cbReplacement")
-        self.cbReplacement.setEditable(True)
+        self.label = QLabel(MissingItemDialog)
+        self.label.setObjectName(u"label")
 
-        self.verticalLayout.addWidget(self.cbReplacement)
+        self.gridLayout_2.addWidget(self.label, 0, 0, 1, 1)
 
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        self.verticalLayout.addItem(self.verticalSpacer)
+        self.gridLayout_2.addItem(self.verticalSpacer, 6, 0, 1, 1)
+
+        self.pbBrowse = QPushButton(MissingItemDialog)
+        self.pbBrowse.setObjectName(u"pbBrowse")
+
+        self.gridLayout_2.addWidget(self.pbBrowse, 5, 1, 1, 1)
 
         self.widget = QWidget(MissingItemDialog)
         self.widget.setObjectName(u"widget")
@@ -87,7 +97,7 @@ class Ui_MissingItemDialog(object):
         self.gridLayout.addWidget(self.pbNever, 1, 2, 1, 1)
 
 
-        self.verticalLayout.addWidget(self.widget)
+        self.gridLayout_2.addWidget(self.widget, 7, 0, 1, 2)
 
         QWidget.setTabOrder(self.cbReplacement, self.pbYes)
         QWidget.setTabOrder(self.pbYes, self.cbAcceptAll)
@@ -101,9 +111,10 @@ class Ui_MissingItemDialog(object):
 
     def retranslateUi(self, MissingItemDialog):
         MissingItemDialog.setWindowTitle(QCoreApplication.translate("MissingItemDialog", u"Dialog", None))
-        self.label.setText(QCoreApplication.translate("MissingItemDialog", u"A node with this name could not be found:", None))
         self.lbItemName.setText(QCoreApplication.translate("MissingItemDialog", u"Node name", None))
         self.label_2.setText(QCoreApplication.translate("MissingItemDialog", u"Use the following node instead:", None))
+        self.label.setText(QCoreApplication.translate("MissingItemDialog", u"A node with this name could not be found:", None))
+        self.pbBrowse.setText(QCoreApplication.translate("MissingItemDialog", u"...", None))
         self.cbAcceptAll.setText(QCoreApplication.translate("MissingItemDialog", u"Stop asking and automatically accept\n"
 "suggested replacements", None))
         self.pbNo.setText(QCoreApplication.translate("MissingItemDialog", u"No", None))

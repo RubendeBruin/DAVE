@@ -61,15 +61,12 @@ class Visual(NodePurePython, HasParentPure):
 
     @path.setter
     def path(self, value):
-        try:
-            self._scene.get_resource_path(value, no_gui=True), "File not found"
-        except FileNotFoundError:
-            new_path = self._scene.get_resource_path(value)
-            if new_path is None:
-                raise FileNotFoundError("File not found")
-            else:
-                value = str(new_path)
-        self._path = value
+        valid_value = self._scene.get_valid_resource_url(value)
+
+        if valid_value is None:
+            raise ValueError(f"Could not find resource {value}")
+
+        self._path = valid_value
 
     def depends_on(self):
         if self.parent is None:

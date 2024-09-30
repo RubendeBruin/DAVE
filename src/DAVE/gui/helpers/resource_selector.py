@@ -136,7 +136,7 @@ class QResourceSelector(QWidget):
     def _check_value(self):
         # try to get resource
         try:
-            self.scene.resource_provider.get_resource_path(self.value, no_gui=True)
+            self.scene.resource_provider.get_resource_path(self.value, error_interaction=None)
         except FileNotFoundError:
             self.dropdown.setStyleSheet("background-color: orange")
             return False

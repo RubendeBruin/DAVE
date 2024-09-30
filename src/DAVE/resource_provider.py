@@ -37,6 +37,7 @@ Install using `DaveResourceProvider.install_mapping()`, remove with remove_mappi
 import warnings
 from pathlib import Path
 
+# from DAVE.gui.error_interaction import ErrorInteraction
 from DAVE.tools import get_all_files_with_extension, MostLikelyMatch
 from DAVE.settings import RESOURCE_PATH
 
@@ -53,8 +54,6 @@ class DaveResourceProvider:
             self.cd = Path(cd)
 
         self.resources_paths: list[Path] = [Path(a) for a in RESOURCE_PATH + list(args)]
-
-        self._no_gui = False  # if True, do not show any GUI elements even if a QApplication is running
 
         # logging
         self._log = []  # list of tuples (filename, path)
@@ -92,7 +91,23 @@ class DaveResourceProvider:
         """Get the log"""
         return self._log.copy()
 
-    def get_resource_path(self, filename: str, no_gui=False) -> Path:
+    def get_valid_resource_url(self, resource_url: str, error_interaction = None) -> str:
+        """Get a valid resource url
+        
+        if the provided resource_url is valid, then return it
+        if the provided resource_url is not valid, then return a valid one using error_interaction if possible
+        otherwise raise FileNotFoundError
+        """
+
+        try:
+            self.get_resource_path(resource_url, error_interaction=None)
+            return resource_url
+        except FileNotFoundError as MSG:
+            return str(self.get_resource_path(resource_url, error_interaction=error_interaction))
+
+
+
+    def get_resource_path(self, filename: str, error_interaction : "ErrorInteraction" or None = None) -> Path:
         """Get a resource path
 
         filename can be a full path, or a path relative to one of the resource folders
@@ -138,13 +153,12 @@ class DaveResourceProvider:
                         )
 
         except FileNotFoundError as MSG:
-            if no_gui or self._no_gui:
-                raise MSG
 
-            # try with gui
-            file = self.handle_file_not_found(filename)
-            if file is None:
-                raise MSG
+            if error_interaction:
+                file = error_interaction.handle_missing_resource(resource_provider = self, resource_name = filename)
+                if file is not None:
+                    return file
+            raise MSG
 
         self.log(filename, file)
 
@@ -195,74 +209,6 @@ class DaveResourceProvider:
             f"Could not find resource for RES: {filename}, did you mean: {guess} ?"
         )
 
-    def handle_file_not_found(self, filename: str) -> Path or None:
-        """Handle a file not found error
-
-        This function is called when a file is not found.
-        The default implementation returns None, which will raise a FileNotFoundError
-        """
-        if self._no_gui:
-            return None
-
-        from PySide6.QtWidgets import QApplication
-
-        if QApplication.instance() is not None:
-            # show a messagebox with buttons "Manual" and "Cancel"
-            from PySide6.QtWidgets import QMessageBox, QPushButton
-            from PySide6.QtCore import Qt
-
-            msgBox = QMessageBox()
-            msgBox.setIcon(QMessageBox.Warning)
-            msgBox.setWindowTitle("Error loading resource")
-            msgBox.setText(f"Could not find resource <b>{filename}</b>")
-
-            if filename.startswith("res:"):
-                txt = "The file could not be found in any of the resource folders:\n"
-                for p in self.resources_paths:
-                    txt += f" - {p}\n"
-            elif filename.startswith("cd:"):
-                txt = "The file could not be found in the current directory:\n"
-                txt += f" - {self.cd}\n"
-            else:
-                txt = "The file could not be found:\n"
-                txt += f" - {filename}\n"
-
-            txt += "\n\nDo you want to locate the file manually?"
-
-            msgBox.setInformativeText(txt)
-            msgBox.setStandardButtons(QMessageBox.Cancel | QMessageBox.Yes)
-            msgBox.setDefaultButton(QMessageBox.Yes)
-            msgBox.setEscapeButton(QMessageBox.Cancel)
-            msgBox.setWindowFlags(msgBox.windowFlags() | Qt.WindowStaysOnTopHint)
-            ret = msgBox.exec()
-
-            if ret == QMessageBox.Yes:
-                # open a file dialog to select the file
-                from PySide6.QtWidgets import QFileDialog
-
-                dialog = QFileDialog(
-                    None,  # widget
-                    f"Locate file {filename}",
-                    str(self.cd),
-                )
-
-                fname = filename.split(":")[-1].strip()  # remove 'res: ' or 'cd: '
-
-                # strip any subfolders
-                fname = fname.split("/")[-1]
-                fname = fname.split("\\")[-1]
-
-                dialog.setFileMode(QFileDialog.ExistingFile)
-                files_of_same_type = f"Same type (*{fname.split('.')[-1]})"
-                dialog.setNameFilters([fname, files_of_same_type, "All files (*.*)"])
-
-                res = dialog.exec()
-
-                if res == QFileDialog.Accepted:
-                    file = dialog.selectedFiles()[0]
-                    return Path(file)
-
-        return None
 
     def get_resource_list(
         self, extension, include_subdirs=False, include_current_dir=True

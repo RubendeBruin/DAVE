@@ -48,6 +48,8 @@ from .nds.mixins import Manager
 
 from .tools import *
 from .nodes import *
+from .tools import MostLikelyMatch
+
 
 # from .nodes import _Area
 
@@ -430,7 +432,10 @@ class Scene:
 
         # node is a string then get the node with this name
         if type(node) == str:
-            # use prefix if any
+            # make sure the node is valid and of the correct type
+            # give the user the option to use the node name as a suggestion
+            node = self.existing_node_name(node, reqtype)
+
             node = self[node]
 
         reqtype = make_iterable(reqtype)
@@ -455,7 +460,7 @@ class Scene:
     def _parent_from_node(self, node):
         """Returns None if node is None
         Returns node if node is an axis type node
-        Else returns the axis with the given name
+        Else returns the frame with the given name
 
         Raises Exception if a node with name is not found"""
 
@@ -602,14 +607,24 @@ class Scene:
     # ======== resources =========
 
     def is_valid_resource_path(self, url) -> bool:
-        """Returns True if url is a valid resource path"""
+        """Returns True if url is a valid resource path, does not give the user a choice to locate the file"""
         try:
-            self.get_resource_path(url, no_gui=True)
+            self.resource_provider.get_resource_path(str(url), error_interaction=None)
             return True
         except FileNotFoundError:
             return False
 
-    def get_resource_path(self, url: str, no_gui=False) -> Path:
+    def get_valid_resource_url(self, url: str) -> str:
+        """Makes sure that the given url can be resolved to a valid resource.
+        Optionally shows a dialog to the user if the resource is not found.
+
+        returns the valid or replaced url
+        or raises a FileNotFoundError if the resource is not found and could not be replaced
+        """
+
+        return self.resource_provider.get_valid_resource_url(url, error_interaction=self.error_interaction)
+
+    def get_resource_path(self, url: str) -> Path:
         """Resolves the path on disk for resource url.
         Urls statring with res: result in a file from the resources system.
         Urls statring with cd: result in a file from the current directory.
@@ -617,9 +632,6 @@ class Scene:
         Looks for a file with "name" in the specified resource-paths of the resource provider and returns the full path to the the first one
         that is found.
         If name is a full path to an existing file, then that is returned.
-
-        If the file is not found, but a Qt Application is present, then a dialog will be shown asking the user to locate the file. Except if no_gui is True, then a FileNotFoundError is raised.
-
 
         Returns:
             Full Path to resource : Path
@@ -631,7 +643,7 @@ class Scene:
         if isinstance(url, Path):
             url = str(url)
 
-        return self.resource_provider.get_resource_path(url, no_gui=no_gui)
+        return self.resource_provider.get_resource_path(url, error_interaction=self.error_interaction)
 
     def get_used_resources(self):
         """Returns a list of all resources used in the scene"""
@@ -738,7 +750,22 @@ class Scene:
 
         return docs
 
-    def node_by_name(self, node_name, silent=False):
+    def existing_node_name(self, node_name, req_type=None):
+        """Returns the node the given name if it exists, uses the error interaction to handle missing nodes
+
+        returns None if the node does not exist and no alternative is presented.
+        """
+        if node_name is None:
+            return None
+
+        node = self.node_by_name(node_name, silent=True, req_type=req_type)
+        if node is not None:
+            return node.name
+        else:
+            return None
+
+
+    def node_by_name(self, node_name, silent=False, req_type = None):
         """Returns a node with the given name. Raises an error if no node is found."""
 
         # For faster lookup we keep a dict with node names as keys and node indices as values
@@ -750,6 +777,8 @@ class Scene:
         #
         # There is nothing keeping the dict in sync with _nodes, so we rebuild it
         # when we can not find the node that we're looking for.
+        #
+        # req_type may be provided to help the function find the suggested node if the given node name is not available
 
         # the quick way
         if node_name in self._node_dict:
@@ -806,7 +835,7 @@ class Scene:
         # # end work-around
 
         if self.error_interaction is not None:
-            name = self.error_interaction.handle_missing_node(self, node_name)
+            name = self.error_interaction.handle_missing_node(scene = self, node_name = node_name, req_type=req_type)
             if name is not None:
                 return self.node_by_name(name, silent=silent)
 
