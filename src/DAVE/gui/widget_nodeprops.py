@@ -57,7 +57,8 @@ from PySide6.QtWidgets import (
     QColorDialog,
     QSizePolicy,
     QCheckBox,
-    QTreeWidgetItem, QSpacerItem,
+    QTreeWidgetItem,
+    QSpacerItem,
 )
 from PySide6 import QtWidgets
 
@@ -299,6 +300,8 @@ class NodeEditor(ABC):
         gui_solve_func,
         node_picker_register_func,
     ):
+        """NOTE, overriding this method and then calling super() malfunctions when cythonized."""
+
         self.node: Node = node
         self.scene: Scene = scene
         self._run_code = run_code
