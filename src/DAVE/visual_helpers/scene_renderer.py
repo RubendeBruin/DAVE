@@ -1016,7 +1016,7 @@ class AbstractSceneRenderer:
         ren.UseSphericalHarmonicsOn()
 
         ren.SetEnvironmentUp(0, 0, 1)
-        ren.SetEnvironmentRight(1, 0, 0)
+        ren.SetEnvironmentRight(0, 1, 0)
 
         ren.SetEnvironmentTexture(texture, False)
 
