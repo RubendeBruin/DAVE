@@ -1016,7 +1016,7 @@ class AbstractSceneRenderer:
         ren.UseSphericalHarmonicsOn()
 
         ren.SetEnvironmentUp(0, 0, 1)
-        ren.SetEnvironmentRight(0, 1, 0)
+        ren.SetEnvironmentRight(0, 1, 0) # needs to align with the skybox
 
         ren.SetEnvironmentTexture(texture, False)
 

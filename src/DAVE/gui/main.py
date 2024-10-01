@@ -1545,7 +1545,23 @@ class Gui:
             if group.new_window:
                 s = self.scene
                 if group.new_window_copy:
-                    s = s.copy()
+                    if group.rao_requests:
+                        try:
+                            from DAVE_dynamics import RaoRequests
+                            if s.rao_requests is None:
+                                s.rao_requests = RaoRequests()
+                            rs = s.rao_requests
+
+                            s = s.copy()
+
+                            s.rao_requests = rs # set property to same object
+                        except ImportError:
+                            raise ModelInvalidException(
+                                "RaoRequests are required for new window copy but DAVE_dynamics could not be imported"
+                            )
+
+                    else:
+                        s = s.copy()
 
                 if group.init_actions:
                     try:
@@ -1765,7 +1781,7 @@ class Gui:
     def animation_start_unlimited(self,
                                   callback_time_activated,
                                   final_dofs = None,
-                                  end_time = 69):
+                                  end_time = 64):
         """Start an animation that runs until it is terminated by the user"""
         DAVE_GUI_LOGGER.log("Start unlimited animation")
         self.animation_terminate()
@@ -1774,7 +1790,7 @@ class Gui:
             final_dofs = self.scene._vfc.get_dofs()
 
         self._animation_final_dofs = final_dofs
-        self.unlimited_animation_set_endtime(end_time)
+        self.unlimited_animation_set_endtime(end_time)  # send event
 
         self._unlimited_animation_callback_time_activated = callback_time_activated
         self._unlimited_animation_running = True
@@ -1797,6 +1813,7 @@ class Gui:
         """event"""
         new_endtime = self.ui.spinAnimationEndEdit.value()
         self.unlimited_animation_set_endtime(new_endtime=new_endtime)
+
 
     def animation_running(self):
         """Returns true is an animation is running"""
@@ -1843,6 +1860,8 @@ class Gui:
             self.ui.spinAnimationEndEdit.setValue(new_endtime)
 
         self.ui.aniSlider.setMaximum(1000*new_endtime)
+
+        self.guiEmitEvent(guiEventType.UNLIMITED_ANIMATION_LENGTH_CHANGED)
 
 
     def animation_speed_change(self):
@@ -3674,7 +3693,8 @@ class Gui:
             if self.animation_running():
                 self.visual.position_visuals()
 
-                return  # do not update the widgets when an animation is running
+                if event not in [guiEventType.UNLIMITED_ANIMATION_LENGTH_CHANGED,]:
+                    return  # do not update the widgets when an animation is running
 
             open_widgets = tuple(self.guiWidgets.values())
             for widget in open_widgets:

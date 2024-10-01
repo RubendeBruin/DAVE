@@ -40,6 +40,8 @@ class DaveDockGroup:
     new_window_read_only = True
     init_actions : str = ""         # run this code (on the copy)
 
+    rao_requests : bool = False            # handle rao requests when opening this dock group
+
 
 
 

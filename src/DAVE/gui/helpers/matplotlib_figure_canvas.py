@@ -1,7 +1,7 @@
 """MplCanvas class for embedding matplotlib figures in Qt widgets
 includes fix/workaround for missing window handle when used in combination with ADS
 """
-
+import warnings
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure

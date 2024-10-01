@@ -180,6 +180,8 @@ class Scene:
         self.t: "TimeLine" or None = None
         """Optional timeline"""
 
+        self.rao_requests : "RaoRequests" or None = None
+
         self.gui_solve_func = None
         """Optional reference to function to use instead of solve_statics - used by the Gui to give user control of solving
         Function is called with self as argument"""
@@ -727,6 +729,10 @@ class Scene:
         # remove duplicates
         props = list(set(props))  # filter out doubles
         props.sort()
+
+        if props[0] == 'UC':  # move UC to the end
+            props.pop(0)
+            props.append('UC')
 
         return tuple(props)
 
@@ -3721,6 +3727,7 @@ class Scene:
         state_only=False,
         do_reports=True,
         do_timeline=True,
+        do_rao_requests = True,
     ):
         """Generates the python code that rebuilds the scene and elements in its current state.
 
@@ -3915,6 +3922,10 @@ class Scene:
             # Optional Timelines
             if self.t and do_timeline:
                 code.extend(self.t.give_python_code())
+
+            # Optional RAO requests
+            if self.rao_requests:
+                code.extend(self.rao_requests.give_python_code())
 
         # Solved state of managed DOFs nodes
 

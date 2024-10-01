@@ -30,6 +30,7 @@ class guiEventType(Enum):
     #    - model state changed
     #    - environment changed
     NEW_NODE_ADDED = 9  # a new node is added to the model -- a selection changed event will typically be sumbitted as well
+    UNLIMITED_ANIMATION_LENGTH_CHANGED = 10  # the animation is started
 
 
 class guiDockWidget(PySide6QtAds.CDockWidget):
