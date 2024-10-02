@@ -1872,8 +1872,9 @@ class Gui:
 
         if self._unlimited_animation_running:
             self._unlimited_animation_callback_time_activated(t, self.scene)
+            # self.visual.position_visuals(quick=True)
             self.guiEmitEvent(guiEventType.ANIMATION_TIME_CHANGED, execute_now=True)  # positions the visuals
-            # self.visual.refresh_embeded_view()
+            self.visual.refresh_embeded_view()
         else:
             dofs = self._animation_keyframe_interpolation_object(t)
             self.scene._vfc.set_dofs(dofs)
@@ -3694,8 +3695,6 @@ class Gui:
                     self.scene.update()
 
             if self.animation_running():
-                self.visual.position_visuals()
-
                 if event not in [guiEventType.UNLIMITED_ANIMATION_LENGTH_CHANGED,guiEventType.ANIMATION_TIME_CHANGED]:
                     return  # do not update the widgets when an animation is running
 
@@ -3719,11 +3718,15 @@ class Gui:
 
                 return
 
-            if event == (guiEventType.MODEL_STATE_CHANGED, guiEventType.ANIMATION_TIME_CHANGED, guiEventType.MODEL_STEP_ACTIVATED):
+            if event in (guiEventType.MODEL_STATE_CHANGED, guiEventType.MODEL_STEP_ACTIVATED):
                 if self.visual.settings.paint_uc:
                     self.visual.update_visibility()
                 self.visual.position_visuals()
                 self.visual._camera_direction_changed()
+                return
+
+            if event in (guiEventType.ANIMATION_TIME_CHANGED, ):
+                self.visual.position_visuals()
                 return
 
             if event == guiEventType.ENVIRONMENT_CHANGED:

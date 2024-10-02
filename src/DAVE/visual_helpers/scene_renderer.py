@@ -370,6 +370,8 @@ class AbstractSceneRenderer:
                 self.node_outlines.remove(ol)
                 self.remove(ol.outline_actor)
 
+                del obsolete_outlined._outline  # fixes memory leak issue 202
+
         # list actors that already have an outline
         _outlines = [a.outlined_actor for a in self.node_outlines]
 
