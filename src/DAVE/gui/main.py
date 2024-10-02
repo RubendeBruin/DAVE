@@ -1872,8 +1872,7 @@ class Gui:
 
         if self._unlimited_animation_running:
             self._unlimited_animation_callback_time_activated(t, self.scene)
-            # self.visual.position_visuals()
-            self.guiEmitEvent(guiEventType.ANIMATION_TIME_CHANGED)  # positions the visuals
+            self.guiEmitEvent(guiEventType.ANIMATION_TIME_CHANGED, execute_now=True)  # positions the visuals
             # self.visual.refresh_embeded_view()
         else:
             dofs = self._animation_keyframe_interpolation_object(t)
