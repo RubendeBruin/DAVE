@@ -822,7 +822,7 @@ class AbstractSceneRenderer:
                 actors["main"] = a
 
             if not actors:  # no actors created
-                if not isinstance(N, dn.Manager):
+                if not isinstance(N, (dn.Manager, dn.BallastSystem)):
                     print(f"No actors created for node {N.name}")
                 continue
 

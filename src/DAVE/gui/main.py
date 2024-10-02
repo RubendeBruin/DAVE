@@ -1872,8 +1872,9 @@ class Gui:
 
         if self._unlimited_animation_running:
             self._unlimited_animation_callback_time_activated(t, self.scene)
-            self.visual.position_visuals()
-            self.visual.refresh_embeded_view()
+            # self.visual.position_visuals()
+            self.guiEmitEvent(guiEventType.ANIMATION_TIME_CHANGED)  # positions the visuals
+            # self.visual.refresh_embeded_view()
         else:
             dofs = self._animation_keyframe_interpolation_object(t)
             self.scene._vfc.set_dofs(dofs)
@@ -3640,13 +3641,15 @@ class Gui:
         """
         if not execute_now:
             # make a single-shot timer to emit the event
-            DAVE_GUI_LOGGER.log(f"Gui emit event {event} from {sender} placed in queue")
+            if event not in [guiEventType.ANIMATION_TIME_CHANGED]:
+                DAVE_GUI_LOGGER.log(f"Gui emit event {event} from {sender} placed in queue")
             QTimer.singleShot(
                 0, lambda: self.guiEmitEvent(event, sender, execute_now=True)
             )
             return
 
-        DAVE_GUI_LOGGER.log(f"Gui emit event {event} from {sender}")
+        if event not in [guiEventType.ANIMATION_TIME_CHANGED]:
+            DAVE_GUI_LOGGER.log(f"Gui emit event {event} from {sender}")
 
         # Bring the properties editor to front if needed
         if event in (guiEventType.SELECTION_CHANGED, guiEventType.NEW_NODE_ADDED):
@@ -3686,6 +3689,7 @@ class Gui:
                 guiEventType.SELECTED_NODE_MODIFIED,  # weight or shape has change
                 guiEventType.ENVIRONMENT_CHANGED,
                 guiEventType.NEW_NODE_ADDED,
+                guiEventType.ANIMATION_TIME_CHANGED
             ):
                 if not updated:
                     self.scene.update()
@@ -3693,7 +3697,7 @@ class Gui:
             if self.animation_running():
                 self.visual.position_visuals()
 
-                if event not in [guiEventType.UNLIMITED_ANIMATION_LENGTH_CHANGED,]:
+                if event not in [guiEventType.UNLIMITED_ANIMATION_LENGTH_CHANGED,guiEventType.ANIMATION_TIME_CHANGED]:
                     return  # do not update the widgets when an animation is running
 
             open_widgets = tuple(self.guiWidgets.values())
@@ -3716,7 +3720,7 @@ class Gui:
 
                 return
 
-            if event == guiEventType.MODEL_STATE_CHANGED:
+            if event == (guiEventType.MODEL_STATE_CHANGED, guiEventType.ANIMATION_TIME_CHANGED, guiEventType.MODEL_STEP_ACTIVATED):
                 if self.visual.settings.paint_uc:
                     self.visual.update_visibility()
                 self.visual.position_visuals()
@@ -3732,12 +3736,6 @@ class Gui:
                 self.visual.position_visuals()
                 return
 
-            if event == guiEventType.MODEL_STEP_ACTIVATED:
-                if self.visual.settings.paint_uc:
-                    self.visual.update_visibility()
-                self.visual.position_visuals()
-                self.visual._camera_direction_changed()
-                return
 
             self.visual.remove_visuals_for_deleted_nodes()
             self.visual.create_node_visuals(recreate=False)
