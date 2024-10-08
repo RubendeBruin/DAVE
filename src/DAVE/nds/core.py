@@ -1908,27 +1908,37 @@ class Cable(NodeCoreConnected):
     def get_points_for_visual(self):
         """A list of 3D locations which can be used for visualization"""
 
+        if getattr(self, "_keep_taut_visual", None):  # for frequency domain response movies
+            rsag = 2
+        else:
+            rsag = RESOLUTION_CABLE_SAG
+
         if getattr(self, "_get_drawing_data_override", None):
             points, tensions = self._get_drawing_data_override(
-                RESOLUTION_CABLE_SAG, RESOLUTION_CABLE_OVER_CIRCLE
+                rsag, RESOLUTION_CABLE_OVER_CIRCLE
             )
             return points
 
         points, tensions = self._vfNode.get_drawing_data(
-            RESOLUTION_CABLE_SAG, RESOLUTION_CABLE_OVER_CIRCLE, False
+            rsag, RESOLUTION_CABLE_OVER_CIRCLE, False
         )
         return points
 
     def get_points_and_tensions_for_visual(self):
         """A list of 3D locations which can be used for visualization"""
 
-        if getattr(self, "_get_drawing_data_override", None):
+        if getattr(self, "_keep_taut_visual", None):  # for frequency domain response movies
+            rsag = 2
+        else:
+            rsag = RESOLUTION_CABLE_SAG
+
+        if getattr(self, "_get_drawing_data_override", None):  # For Slings
             return self._get_drawing_data_override(
-                RESOLUTION_CABLE_SAG, RESOLUTION_CABLE_OVER_CIRCLE
+                rsag, RESOLUTION_CABLE_OVER_CIRCLE
             )
 
         points, tensions = self._vfNode.get_drawing_data(
-            RESOLUTION_CABLE_SAG, RESOLUTION_CABLE_OVER_CIRCLE, False
+            rsag, RESOLUTION_CABLE_OVER_CIRCLE, False
         )
         return points, tensions
 
@@ -1936,7 +1946,7 @@ class Cable(NodeCoreConnected):
         """A list of 3D locations which can be used for visualization"""
         constant_point_count = True
 
-        if getattr(self, "_get_drawing_data_override", None):
+        if getattr(self, "_get_drawing_data_override", None):   # For Slings
             points, tensions = self._get_drawing_data_override(
                 RENDER_CATENARY_RESOLUTION, RENDER_CURVE_RESOLUTION
             )

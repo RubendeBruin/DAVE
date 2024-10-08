@@ -122,18 +122,11 @@ class WidgetBallastSystemSelect(guiDockWidget):
 
     def ballast_system_selected(self):
         name = self.comboBox.currentText()
-        try:
+
+        if self.guiScene.node_exists(name):
             bs = self.guiScene[name]
             self.label.setText("on vessel '{}'".format(bs.parent.name))
-        #
-        #     self.gui.visual.set_alpha(0.3, exclude_nodes = [bs])
-        #
-        #
-        #
-        #     self.guiEmitEvent(guiEventType.VIEWER_SETTINGS_UPDATE)
-        #
-        #
-        except ValueError:
+        else:
             return
         #
         self.guiSelection.clear()

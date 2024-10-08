@@ -2213,6 +2213,7 @@ class Gui:
         """Shows feedback in the feedback window and statusbar
         style 0 : normal
         style 1 : error
+        style 2 : warning
         """
 
         self.ui.teFeedback.setText(str(what))
@@ -2222,10 +2223,13 @@ class Gui:
         elif style == 1:
             self.ui.teFeedback.setStyleSheet("background-color: pink;")
             DAVE_GUI_LOGGER.log(f"Give feedback error: {what}")
+        elif style == 2:
+            self.ui.teFeedback.setStyleSheet("background-color: yellow;")
+            DAVE_GUI_LOGGER.log(f"Give feedback warning: {what}")
 
         self.statusbar.showMessage(str(what))
 
-        if not self.ui.dockWidget_2.isVisible() and style == 1:
+        if not self.ui.dockWidget_2.isVisible() and style > 0:  # 1 or 2 are errors and warnings
             what = str(what)
             tool_long = len(what) > 1000 or len(what.split("\n")) > 30
 
@@ -2234,19 +2238,21 @@ class Gui:
             short_start = "\n".join(short_start.split("\n")[-30:])
             short_end = "\n".join(short_end.split("\n")[-30:])
 
+            txt_kind = "error" if style == 1 else "warning"
+
             if tool_long:
                 print(what)
                 QMessageBox.warning(
                     self.ui.widget,
-                    "error",
+                    txt_kind,
                     short_start +
                     ".....\n \n"
-                    ">>>> Error message too long, skipping middle part. See (python) console [ctrl + p] for full error message <<<\n\n....." +
+                    f">>>> {txt_kind} message too long, skipping middle part. See (python) console [ctrl + p] for full error message <<<\n\n....." +
                     short_end,
                     QMessageBox.Ok,
                 )
             else:
-                QMessageBox.warning(self.ui.widget, "error", what, QMessageBox.Ok)
+                QMessageBox.warning(self.ui.widget, txt_kind, what, QMessageBox.Ok)
 
     def run_code(
         self, code: str, event: guiEventType, store_undo=True, sender=None
