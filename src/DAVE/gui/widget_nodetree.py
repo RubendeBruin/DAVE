@@ -432,13 +432,13 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
                             sender=self,
                         )  # this may fail
 
-                        # update the item manually
-                        current_item.setText(0, node.label)
-                        current_item.setToolTip(0, new_name)
+                        # # update the item manually : No, managed items need to be updated as well,
+                        # so simply update all
 
-                        # and update self.items manually with the new node name
-                        # rename the key of the item in the items dict
-                        self.items[new_name] = self.items.pop(old_name)
+                        self.update_node_data_and_tree()
+
+                        # and select the updated item again such that the cursor keys still work as expected
+                        self.treeView.setCurrentItem(self.items[new_name])
 
 
                     except:
