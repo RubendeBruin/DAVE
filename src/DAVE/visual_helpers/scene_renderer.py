@@ -31,10 +31,11 @@ from vtkmodules.vtkRenderingCore import (
 )
 
 
-from DAVE.settings_visuals import ViewportSettings, PAINTERS
+from DAVE.settings_visuals import ViewportSettings, PAINTERS, UC_IMAGE
 from DAVE.visual_helpers.actors import VisualActor
 from DAVE.visual_helpers.constants import *
 from DAVE.visual_helpers.outlines import VisualOutline
+from DAVE.visual_helpers.overlay_actor import OverlayActor
 
 from DAVE.visual_helpers.vtkActorMakers import (
     Mesh,
@@ -181,6 +182,13 @@ class AbstractSceneRenderer:
 
     def render_layers(self, *args):
         """Renders all layers"""
+
+        # render the global annotations (if any)
+        # UC, wind, current
+
+        if self.settings.paint_uc:
+            self.render_uc()
+
 
         # request the annotations and positions from all layers
         annotation_data = []
@@ -491,7 +499,13 @@ class AbstractSceneRenderer:
         self.current_actor = current_actor
         self.wind_actor = wind_actor
 
-        # self.renderer.AddActor(self.colorbar_actor)
+        self.uc_actor = OverlayActor()
+        self.uc_actor.set_image(UC_IMAGE)
+
+    def render_uc(self):
+        self.uc_actor.render_at(self.window, 0, 0)
+
+
 
     def _scaled_force_vector(self, vector):
 

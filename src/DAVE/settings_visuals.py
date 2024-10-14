@@ -9,8 +9,11 @@ PAINTERS["paintset_name"]["NodeClass:status"] = ActorSettings
 
 from dataclasses import dataclass
 from copy import copy, deepcopy
+from pathlib import Path
 
 from DAVE.visual_helpers.constants import *
+
+UC_IMAGE = Path(__file__).parent / "resources" / "uc_colorbar_smaller.png"
 
 
 ICONS = dict()  # [class] = QIcon
