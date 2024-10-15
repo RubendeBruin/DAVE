@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QLabel, QLineEdit, QCheckBox
 
+from DAVE.gui.helpers.my_qt_helpers import BlockSigs
 from DAVE.tools import fancy_format
 from DAVE.visual_helpers.constants import BLUE_LIGHT, YELLOW_LIGHT
 
@@ -14,6 +15,8 @@ class TreeWithDragOut(QtWidgets.QTreeWidget):
         super().__init__(parent)
         self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         self.last_selected_item_row = None
+
+        self.setFocusPolicy(Qt.StrongFocus)
 
     def mouseMoveEvent(self, event):
 
@@ -66,6 +69,12 @@ class TreeWithDragOut(QtWidgets.QTreeWidget):
 
             super().mousePressEvent(event)
 
+    def edit(self, index, trigger, event):
+        print(index.column())
+        if index.column() == 1:
+            return super().edit(index, trigger, event)
+        return False
+
 class WidgetDerivedProperties(guiDockWidget):
 
     def guiCreate(self):
@@ -81,7 +90,7 @@ class WidgetDerivedProperties(guiDockWidget):
 
 
         self.dispPropTree = TreeWithDragOut(self.contents)
-        self.dispPropTree.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.dispPropTree.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
         self.dispPropTree.setAlternatingRowColors(False)
         self.dispPropTree.setRootIsDecorated(False)
         self.dispPropTree.setObjectName("dispPropTree")
@@ -111,6 +120,9 @@ class WidgetDerivedProperties(guiDockWidget):
 
         # assign a callback to the delete-key event of the property tree
         self.dispPropTree.keyPressEvent = self.delete_key_pressed
+
+        # edit done event
+        self.dispPropTree.itemChanged.connect(self.item_changed)
 
     def delete_key_pressed(self, event):
         if event.key() == Qt.Key_Delete:
@@ -163,6 +175,16 @@ class WidgetDerivedProperties(guiDockWidget):
 
     # ======= custom
 
+    def item_changed(self, item, *args, **kwargs):
+        text = item.text(0)
+        node = text.split('.')[0]
+        if node == '':
+            node = self._nodename
+        prop = text.split('.')[1]
+        value = item.text(1)
+        code = f's["{node}"].{prop} = {value}'
+        self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
+
     def delete_selected_watches(self):
         """Deletes the watches of the selected properties."""
 
@@ -179,77 +201,93 @@ class WidgetDerivedProperties(guiDockWidget):
             self.guiRunCodeCallback('\n'.join(codes), guiEventType.WATCHES_CHANGED)
 
     def display_node_properties(self, *args):
-        self.dispPropTree.clear()
 
-        do_show_all = self.cd_show_all.isChecked()
+        with BlockSigs(self.dispPropTree):
 
-        s = self.guiScene
+            self.dispPropTree.clear()
 
-        # watches
-        node, prop, value, docs = s.evaluate_watches()
+            do_show_all = self.cd_show_all.isChecked()
 
-        for n, p, v, d in zip(node, prop, value, docs):
+            s = self.guiScene
 
-            w = f'{n.name}.{p}'
-            try:
-                result = f'{v:.3f}'
-            except:
-                result = str(v)  # for None
+            # watches
+            node, prop, value, docs = s.evaluate_watches()
 
-            pa = QtWidgets.QTreeWidgetItem(self.dispPropTree)
-            pa.setBackground(0,QBrush(QColor(*YELLOW_LIGHT)))
-            pa.setBackground(1, QBrush(QColor(*YELLOW_LIGHT)))
-            pa.setBackground(2, QBrush(QColor(*YELLOW_LIGHT)))
+            for n, p, v, d in zip(node, prop, value, docs):
 
-            pa.setText(0, w)
-            pa.setText(1, str(result))
-            pa.setText(2, d.units)
-            pa.setText(3, d.doc_short_with_remarks)
+                w = f'{n.name}.{p}'
+                try:
+                    result = f'{v:.3f}'
+                except:
+                    result = str(v)  # for None
 
-        # get first selected item
-        if self.guiSelection:
-            node = self.guiSelection[0]
-            self._nodename = node.name
-            self.dispPropTree.nodename = node.name
-            self.label.setText(f"{node.name} [{node.class_name}]")
-        else:
-            return
+                pa = QtWidgets.QTreeWidgetItem(self.dispPropTree)
+                pa.setBackground(0,QBrush(QColor(*YELLOW_LIGHT)))
+                pa.setBackground(1, QBrush(QColor(*YELLOW_LIGHT)))
+                pa.setBackground(2, QBrush(QColor(*YELLOW_LIGHT)))
 
-        props = self.guiScene.give_properties_for_node(node)
+                pa.setText(0, w)
+                pa.setText(1, str(result))
+                pa.setText(2, d.units)
+                pa.setText(3, d.doc_short_with_remarks)
+
+                # Set item editable based on documentation
+                if d.is_single_settable and n.manager is None:
+                    pa.setFlags(pa.flags() | Qt.ItemIsEditable)
+                    pa.setBackground(1, QBrush(QColor(*BLUE_LIGHT)))
+                else:
+                    pa.setFlags(pa.flags() & ~Qt.ItemIsEditable)
+
+            # get first selected item
+            if self.guiSelection:
+                node = self.guiSelection[0]
+                self._nodename = node.name
+                self.dispPropTree.nodename = node.name
+                self.label.setText(f"{node.name} [{node.class_name}]")
+            else:
+                return
+
+            props = self.guiScene.give_properties_for_node(node)
 
 
-        # evaluate properties
-        filter = self.filterbox.text()
+            # evaluate properties
+            filter = self.filterbox.text()
 
-        for p in props:
+            for p in props:
 
-            if filter not in p:
-                continue
-
-            doc = self.guiScene.give_documentation(node, p)
-
-            if not do_show_all:
-                if doc.is_single_numeric is False:
+                if filter not in p:
                     continue
 
-            code = "node.{}".format(p)
-            try:
-                result = eval(code)
-                result = fancy_format(result)
+                doc = self.guiScene.give_documentation(node, p)
 
-            except:
-                result = 'Error evaluating {}'.format(code)
+                if not do_show_all:
+                    if doc.is_single_numeric is False:
+                        continue
 
-            pa = QtWidgets.QTreeWidgetItem(self.dispPropTree)
-            pa.setText(0, '.' + p)
-            pa.setText(1, str(result))
-            pa.setText(2, doc.units)
-            pa.setText(3, doc.doc_short_with_remarks)
+                code = "node.{}".format(p)
+                try:
+                    result = eval(code)
+                    result = fancy_format(result)
 
-            pa.setToolTip(0, doc.doc_long)
+                except:
+                    result = 'Error evaluating {}'.format(code)
 
+                pa = QtWidgets.QTreeWidgetItem(self.dispPropTree)
+                pa.setText(0, '.' + p)
+                pa.setText(1, str(result))
+                pa.setText(2, doc.units)
+                pa.setText(3, doc.doc_short_with_remarks)
 
-        self.dispPropTree.expandAll()
+                pa.setToolTip(0, doc.doc_long)
+
+                # Set item editable based on documentation
+                if doc.is_single_settable and node.manager is None:
+                    pa.setFlags(pa.flags() | Qt.ItemIsEditable)
+                    pa.setBackground(1, QBrush(QColor(*BLUE_LIGHT)))
+                else:
+                    pa.setFlags(pa.flags() & ~Qt.ItemIsEditable)
+
+            self.dispPropTree.expandAll()
 
     def rightClickTreeview(self, point):
 

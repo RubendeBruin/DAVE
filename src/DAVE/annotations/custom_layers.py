@@ -113,17 +113,17 @@ class WatchesLayer(BaseAnnotationLayer):
 
         self._annotations = []
 
-        nodes, props, values, units = self._scene.evaluate_watches()
+        nodes, props, values, docs = self._scene.evaluate_watches()
 
         texts = dict()
 
-        for node, prop, value, unit in zip(nodes, props, values, units):
+        for node, prop, value, doc in zip(nodes, props, values, docs):
             if node not in texts:
                 texts[node] = ''
             try:
-                text = self._formatter.format(prop=prop, value=value, unit=unit)
+                text = self._formatter.format(prop=prop, value=value, unit=doc.units)
             except:
-                text = f'{prop}: {value} {unit}<br>'
+                text = f'{prop}: {value} {doc.units}<br>'
             texts[node] += text
 
         for node, text in texts.items():

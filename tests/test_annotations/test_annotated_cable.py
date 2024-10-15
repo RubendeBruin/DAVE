@@ -19,7 +19,7 @@ def test_annotated_cable(cable):
     v = ImageRenderer(s)
     v.zoom_all()
 
-    L = AnnotationLayer(name = "test", scene_renderer=v, scene=s)
+    L = AnnotationLayer(scene_renderer=v, scene=s)
     v.layers.append(L)
 
     # add an annotation to the cable
@@ -47,7 +47,7 @@ def test_annotated_cable_slack(cable):
     v = ImageRenderer(s)
     v.zoom_all()
 
-    L = AnnotationLayer(name="test", scene_renderer=v, scene=s)
+    L = AnnotationLayer(scene_renderer=v, scene=s)
     v.layers.append(L)
 
     # add an annotation to the cable
