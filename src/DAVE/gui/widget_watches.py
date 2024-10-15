@@ -83,6 +83,8 @@ class WidgetWatches(guiDockWidget):
 
     def fill(self):
 
+        return
+
         w = []
         hidden_watches = []
 

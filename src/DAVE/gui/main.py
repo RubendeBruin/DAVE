@@ -972,7 +972,7 @@ class Gui:
 
         # add measurement layer
         from DAVE.annotations.custom_layers import MeasurementsLayer
-        self.visual.layers.append(MeasurementsLayer(self.scene, scene_renderer=self.visual))
+        self.visual.layers.append(MeasurementsLayer(scene = self.scene, scene_renderer=self.visual))
 
         # ======================== Finalize ========================
 

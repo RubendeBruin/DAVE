@@ -1,5 +1,5 @@
 import dataclasses
-from abc import abstractmethod
+from abc import abstractmethod, abstractproperty
 
 from PIL import ImageFont
 
@@ -37,24 +37,30 @@ class AnnotationLayerFont:
 DEFAULT_ANNOTATION_FONT = AnnotationLayerFont()
 
 
-class AnnotationLayer(HasNodeReference):
-    """A layer of annotations.
+"""
+BaseAnnotationLayer is the base class for all annotation layers.
+It is an abstract class that defines the interface for annotation layers. 
 
-    Attributes:
-        annotations: A list of annotations.
-        name: A string with the name of the layer.
-    """
+Derived classes should implement the following methods:
+- annotations: a property that returns a list of annotations
 
-    def __init__(self, name, scene_renderer: AbstractSceneRenderer):
+post_init is called after the __init__ method and can be used to initialize additional attributes.
+
+update is called to update the layer. It is called whenever the model is updated.
+
+For implementation examples see:
+    AnnotationLayer
+    WatchesLayer
+
+"""
+
+class BaseAnnotationLayer(HasNodeReference):
+
+    def __init__(self, scene, scene_renderer: AbstractSceneRenderer, *args, **kwargs):
         """Initializes the annotation layer.
-
-        Args:
-            name: A string with the name of the layer.
         """
         self.scene_renderer = scene_renderer
-
-        self.annotations = []
-        self.name = name
+        self._scene = scene
 
         self.font = DEFAULT_ANNOTATION_FONT
         self.background_rgba = (255, 255, 255, 200)
@@ -63,11 +69,14 @@ class AnnotationLayer(HasNodeReference):
         self.border_rgba = (128, 128, 128, 255)
         self.text_color = (0, 0, 0)
 
+        self.post_init()
+
+    def post_init(self):
+        pass
+
     def as_dict(self):
         return {
-            "name": self.name,
             "annotations": [a.as_dict() for a in self.annotations],
-            "font_file": self.font.path,
             "font_size": self.font.size,
             "background_rgba": self.background_rgba,
             "padding": self.padding,
@@ -78,8 +87,8 @@ class AnnotationLayer(HasNodeReference):
 
     @classmethod
     def from_dict(cls, d, scene, scene_renderer: AbstractSceneRenderer):
-        layer = AnnotationLayer(d["name"], scene_renderer)
-        layer.font = ImageFont.truetype(d["font_file"], d["font_size"])
+        layer = AnnotationLayer(scene=scene, scene_renderer=scene_renderer)
+        layer.font.size = d["font_size"]
         layer.background_rgba = d["background_rgba"]
         layer.padding = d["padding"]
         layer.border_width = d["border_width"]
@@ -91,39 +100,44 @@ class AnnotationLayer(HasNodeReference):
 
         return layer
 
-    def enforce_rerender_actors(self):
-        for a in self.annotations:
-            a._text = "RECREATE ME"
+    @property
+    @abstractmethod
+    def annotations(self) -> list[Annotation]:
+        pass
 
-    def add_annotation(self, annotation):
-        """Adds an annotation to the layer.
+    @property
+    def is_valid(self):
+        return True
 
-        Args:
-            annotation: An Annotation object.
+    def give_annotation_data(self) -> list[tuple[Annotation, tuple,tuple]]:
+        """Returns a list of annotations that should be rendered as well as their positions
+        No rendering is done here.
+
+        Returns
+        -------
+        list of tuple of (Annotation, position_in_3d_space, screenspace_offset)
+            A list of annotations and their positions in screen space.
+
         """
-        self.annotations.append(annotation)
+        to_be_rendered = []
 
-    def remove_annotation(self, annotation):
-        """Removes an annotation from the layer.
-
-        Args:
-            annotation: An Annotation object.
-        """
-        self.annotations.remove(annotation)
-
-    def update(self):
-        """Updates the layer.
-
-        This method should be called whenever the model is updated.
-        """
         for annotation in self.annotations:
-            annotation.update()
 
-        self.annotations = [
-            annotation for annotation in self.annotations if annotation.is_valid
-        ]
+            # try quick
+            text = getattr(annotation, "_text", annotation.get_text())
+            if (
+                text.strip() != ""
+            ):  # only render annotation that are not empty
 
-        self._update_buffered_properties()
+                # try quick
+                p3 = getattr(annotation, "_p3", annotation.get_anchor_3d(self.scene_renderer))
+
+                to_be_rendered.append(
+                    (annotation, p3, annotation.anchor.screenspace_offset)
+                )
+
+
+        return to_be_rendered
 
     def _update_buffered_properties(self):
         """Prepares buffered properties of the annotations such that they can be rendered.
@@ -158,34 +172,63 @@ class AnnotationLayer(HasNodeReference):
         for a in self.annotations:
             a._p3 = a.get_anchor_3d(self.scene_renderer)
 
-    @property
-    def is_valid(self):
-        return True
+    def update(self):
+        """Updates the layer.
 
-    def give_annotation_data(self) -> list[tuple[Annotation, tuple,tuple]]:
-        """Returns a list of annotations that should be rendered as well as their positions
-        No rendering is done here.
-
-        Returns
-        -------
-        list of tuple of (Annotation, position_in_3d_space)
-            A list of annotations and their positions in screen space.
-
+        This method should be called whenever the model is updated.
         """
-        to_be_rendered = []
 
-        for annotation in self.annotations:
+        self._update_buffered_properties()
 
-            if (
-                annotation._text.strip() != ""
-            ):  # only render annotation that are not empty
-
-                to_be_rendered.append(
-                    (annotation, annotation._p3, annotation.anchor.screenspace_offset)
-                )
+    def enforce_rerender_actors(self):
+        for a in self.annotations:
+            a._text = "RECREATE ME"
 
 
-        return to_be_rendered
+
+
+class AnnotationLayer(BaseAnnotationLayer):
+    """A layer of annotations.
+
+    Attributes:
+        annotations: A list of annotations.
+
+    """
+
+    def __init__(self, scene, scene_renderer: AbstractSceneRenderer):
+        super().__init__(scene, scene_renderer)
+        self._annotations = []
+
+    @property
+    def annotations(self):
+        return self._annotations
+
+    @annotations.setter
+    def annotations(self, value):
+        self._annotations = value
+
+
+
+
+    def add_annotation(self, annotation):
+        """Adds an annotation to the layer.
+
+        Args:
+            annotation: An Annotation object.
+        """
+        self.annotations.append(annotation)
+
+    def remove_annotation(self, annotation):
+        """Removes an annotation from the layer.
+
+        Args:
+            annotation: An Annotation object.
+        """
+        self.annotations.remove(annotation)
+
+
+
+
 
 
 
@@ -199,9 +242,8 @@ class CustomNodeLayer(AnnotationLayer):
         do_not_update_yet=False,
     ):
         """Initializes the annotation layer."""
-        super().__init__(scene_renderer=scene_renderer, name="Custom Node Layer")
+        super().__init__(scene = scene, scene_renderer=scene_renderer)
 
-        self._scene = scene
         self.selector = dataclasses.replace(self.default_selector)  # copy
 
         if not do_not_update_yet:
@@ -222,6 +264,14 @@ class CustomNodeLayer(AnnotationLayer):
             annotation = self.provide_annotation_for_node(node)
             if annotation is not None:
                 self.add_annotation(annotation)
+
+        for annotation in self.annotations:
+            annotation.update()
+
+        self.annotations = [
+            annotation for annotation in self.annotations if annotation.is_valid
+        ]
+
 
         super().update()  # removes invalid annotations
 

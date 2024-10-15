@@ -77,8 +77,8 @@ class Node(DAVENodeBase, ABC):
         self.limits = dict()
         """Defines the limits of the nodes properties for calculating a UC, key is the property name, value is the limit."""
 
-        self.watches: dict[str, Watch] = dict()
-        """Defines the watches of the node, there are of type Watch"""
+        self._watches: set[str] = set()
+        """Defines the watches on a node. Controlled by the Scene"""
 
         self._valid = True
         """Turns False if the node in removed from a scene. This is a work-around for weakrefs"""
@@ -404,48 +404,48 @@ class Node(DAVENodeBase, ABC):
     def delete_tag(self, value: str):
         self._tags.remove(value)
 
-    # watches
-    def run_watches(self) -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
-        """Executes all watches on this node and returns the execution result as
-        active = list[tuple[str, values]]
-        hidden = list[tuple[str, values]]
-
-        watches of which the condition evaluates to False are excluded
-        numerical results are rounded to "decimals" if >= 0
-        """
-        r = []
-        hidden = []
-
-        for desc, w in self.watches.items():
-            try:
-                value = eval(w.evaluate, {"np": np}, {"s": self._scene, "self": self})
-            except Exception as M:
-                value = f"ERROR: {w.evaluate} -> {str(M)}"
-
-            if w.condition:
-                condition = eval(
-                    w.condition,
-                    {"np": np},
-                    {"s": self._scene, "self": self, "value": value},
-                )
-            else:
-                condition = True
-
-            # convert nd arrays to tuples for easier comparison later
-            if isinstance(value, np.ndarray):
-                value = tuple(value)
-
-            if condition:
-                if w.decimals >= 0:
-                    if isinstance(value, float):
-                        value = round(value, w.decimals)
-
-                r.append((desc, value))
-
-            else:
-                hidden.append((desc, value))
-
-        return r, hidden
+    # # watches
+    # def run_watches(self) -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
+    #     """Executes all watches on this node and returns the execution result as
+    #     active = list[tuple[str, values]]
+    #     hidden = list[tuple[str, values]]
+    #
+    #     watches of which the condition evaluates to False are excluded
+    #     numerical results are rounded to "decimals" if >= 0
+    #     """
+    #     r = []
+    #     hidden = []
+    #
+    #     for desc, w in self.watches.items():
+    #         try:
+    #             value = eval(w.evaluate, {"np": np}, {"s": self._scene, "self": self})
+    #         except Exception as M:
+    #             value = f"ERROR: {w.evaluate} -> {str(M)}"
+    #
+    #         if w.condition:
+    #             condition = eval(
+    #                 w.condition,
+    #                 {"np": np},
+    #                 {"s": self._scene, "self": self, "value": value},
+    #             )
+    #         else:
+    #             condition = True
+    #
+    #         # convert nd arrays to tuples for easier comparison later
+    #         if isinstance(value, np.ndarray):
+    #             value = tuple(value)
+    #
+    #         if condition:
+    #             if w.decimals >= 0:
+    #                 if isinstance(value, float):
+    #                     value = round(value, w.decimals)
+    #
+    #             r.append((desc, value))
+    #
+    #         else:
+    #             hidden.append((desc, value))
+    #
+    #     return r, hidden
 
 
 class NodeCoreConnected(Node):

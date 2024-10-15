@@ -3,23 +3,44 @@ from DAVE import *
 def test_watches():
 
     s = Scene()
-    s.new_point('Point')
-    s['Point'].watches['new watch 1'] = Watch(evaluate = 'self.name',
-          condition = '',
-          decimals = 2)
+    p = s.new_point('Point')
+    s.try_add_watch('Point', 'x')
+    s.try_add_watch(p, 'x')
+    s.try_add_watch('does not exist', 'x')
+    s.try_add_watch('Point', 'does not exist')
+
+    nodes, props, values, units = s.evaluate_watches()
+
+    assert len(props) == 1
+    assert props[0] == 'x'
+    assert values[0] == 0
+    assert units[0] == '[m]'
+
+    s2 = s.copy()
+
+    s.try_delete_watch('Point', 'x')
+
+    nodes, props, values, units = s.evaluate_watches()
+    assert len(props) == 0
 
 
-    s['Point'].watches['elevation'] = Watch(evaluate = 'self.gz',
-          condition = '',
-          decimals = 2)
+    nodes, props, values, units = s2.evaluate_watches()
 
-    s['Point'].watches['elevation above 1'] = Watch(evaluate = 'self.gz',
-          condition = 'value > 1',
-          decimals = 2)
+    assert len(props) == 1
+    assert props[0] == 'x'
+    assert values[0] == 0
+    assert units[0] == '[m]'
 
+    s2.delete('Point')
+    nodes, props, values, units = s2.evaluate_watches()
+    assert len(props) == 0
 
-    R = s['Point'].run_watches()
+def test_watches_only_single_numeric():
+    s = Scene()
+    p = s.new_point('Point')
+    s.try_add_watch('Point', 'applied_force')
+    s.try_add_watch('Point', 'x')
 
-    print(R)
+    nodes, props, values, units = s.evaluate_watches()
+    assert len(props) == 1
 
-    assert R == ([('new watch 1', 'Point'), ('elevation', 0.0)], [('elevation above 1', 0.0)])

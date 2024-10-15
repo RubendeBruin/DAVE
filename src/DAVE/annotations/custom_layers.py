@@ -2,7 +2,7 @@
 
 from DAVE import NodeSelector, Scene, Cable, RigidBody, Tank, Measurement
 from DAVE.annotations import Annotation, AnnotationLayer
-from DAVE.annotations.layer import CustomNodeLayer
+from DAVE.annotations.layer import CustomNodeLayer, BaseAnnotationLayer
 from DAVE.settings import DAVE_ANNOTATION_LAYERS
 
 # from DAVE.visual_helpers.scene_renderer import AbstractSceneRenderer
@@ -53,7 +53,7 @@ DAVE_ANNOTATION_LAYERS["Measurements"] = MeasurementsLayer
 
 
 class WeightsLayer(CustomNodeLayer):
-    """Annotation layer that adds the weight in tonnes to all Cable nodes."""
+    """Annotation layer that adds the weight in tonnes to all Cable nodes and rigid body."""
 
     default_selector = NodeSelector(kind=(Cable, RigidBody))
 
@@ -68,6 +68,7 @@ class WeightsLayer(CustomNodeLayer):
 
 
 DAVE_ANNOTATION_LAYERS["Weights"] = WeightsLayer
+
 
 # ================================================================
 
@@ -90,3 +91,50 @@ class BallastLayer(CustomNodeLayer):
 
 
 DAVE_ANNOTATION_LAYERS["Tanks"] = BallastLayer
+
+
+# ================================================================
+
+class WatchesLayer(BaseAnnotationLayer):
+    """Annotation layer that renders the watches on nodes. Watches are grouped in a single annotation if a node has more than one watch."""
+
+    def post_init(self):
+        self._annotations = []
+        self._formatter = '{prop}: {value:.3f} {unit}<br>'
+
+    def update(self):
+        """Updates the layer."""
+        self._update_annotations()
+        super().update()
+
+
+    def _update_annotations(self):
+        """Updates the layer."""
+
+        self._annotations = []
+
+        nodes, props, values, units = self._scene.evaluate_watches()
+
+        texts = dict()
+
+        for node, prop, value, unit in zip(nodes, props, values, units):
+            if node not in texts:
+                texts[node] = ''
+            try:
+                text = self._formatter.format(prop=prop, value=value, unit=unit)
+            except:
+                text = f'{prop}: {value} {unit}<br>'
+            texts[node] += text
+
+        for node, text in texts.items():
+            annotation = Annotation.create_node_text_annotation(node, text)
+            self._annotations.append(annotation)
+
+
+
+    @property
+    def annotations(self) -> list[Annotation]:
+        return self._annotations
+
+DAVE_ANNOTATION_LAYERS["Watches"] = WatchesLayer
+

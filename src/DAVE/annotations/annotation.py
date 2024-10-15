@@ -90,3 +90,15 @@ class Annotation(HasNodeReference):
             node=node, text=property, how=ProduceTextAlgorithm.PROPERTY_RAW
         )
         return Annotation(text_producer, anchor)
+
+    @staticmethod
+    def create_node_text_annotation(
+            node: Node, text: str, anchor: Anchor or None = None
+    ):
+        if anchor is None:
+            anchor = Anchor(node=node)
+        text_producer = TextProducer(
+            node=node, text=text, how=ProduceTextAlgorithm.NOTHING
+        )
+        return Annotation(text_producer, anchor)
+

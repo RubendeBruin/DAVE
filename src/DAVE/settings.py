@@ -194,6 +194,12 @@ class NodePropertyInfo:
     is_single_settable: bool
     is_single_numeric: bool
 
+    @property
+    def doc_short_with_remarks(self):
+        if self.remarks:
+            return self.doc_short + '(' + self.remarks + ')'
+        return self.doc_short
+
     def as_tuple(self):
         # derive class name
         class_name = None

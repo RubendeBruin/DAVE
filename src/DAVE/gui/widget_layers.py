@@ -116,7 +116,7 @@ class LayersWidget(QWidget):
             item = self.ui.layerList.item(i)
             if item.checkState() == Qt.CheckState.Checked:
                 layer = DAVE_ANNOTATION_LAYERS[item.text()](
-                    self.viewport.scene,
+                    scene = self.viewport.scene,
                     scene_renderer=self.viewport,
                     do_not_update_yet=True,
                 )

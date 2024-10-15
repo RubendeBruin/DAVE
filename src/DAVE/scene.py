@@ -409,7 +409,7 @@ class Scene:
         if node is a node, then returns that node
 
         Raises:
-            ValueError if a string is passed with an non-existing node
+            ValueError if a string is passed with a non-existing node
         """
 
         if isinstance(node, Node):
@@ -3844,32 +3844,9 @@ class Scene:
             code.append("\n# Watches")
 
             for n in nodes_to_be_exported:
-                if n.manager is None:
-                    for key, value in n.watches.items():
-                        code.append(f"s['{n.name}'].watches['{key}'] = {value}")
-                else:
-                    # Watches of managed nodes are only exported if they have been overridden
-                    # or are additional.
-                    # This is traced using the _watches_by_manager dict
-
-                    lbm = getattr(n, "_watches_by_manager", None)
-                    if lbm is not None:
-                        for key, value in n.watches.items():
-                            if key not in lbm:
-                                code.append(
-                                    f"s['{n.name}'].watches['{key}'] = {value}  # watch limit on managed node"
-                                )
-                            else:
-                                if value != lbm[key]:
-                                    code.append(
-                                        f"s['{n.name}'].watches['{key}'] = {value}  # watch overridden"
-                                    )
-                                else:
-                                    pass  # watch set by manager, so do not export
-                    else:
-                        logging.info(
-                            f"Managed node {n.name} does not have _watches_by_manager set"
-                        )
+                if n._watches:
+                    for w in n._watches:
+                        code.append(f"s.try_add_watch('{n.name}','{w}')")
 
             code.append("\n# Tags")
             code.append(
@@ -3978,6 +3955,84 @@ class Scene:
             self[node_name].add_tags(tags)
         except:
             pass
+
+    def try_add_watch(self, node_or_node_name, property_name):
+        """Adds a watch to the node after checking that the node exists and the property exists
+
+        Returns True if the watch was added, False if not"""
+
+        try:
+            node = self._node_from_node_or_str(node_or_node_name)
+        except ValueError:
+            return False
+
+        # check that the property exists and is single numeric
+        doc = self.give_documentation(node, property_name)
+        if doc is None:
+            warnings.warn(f"Property {property_name} does not exist on node {node.name} with type {type(node)}")
+            return False
+
+        if doc.is_single_numeric:
+            node._watches.add(property_name)  # is a set, so no duplicates
+            return True
+        else:
+            warnings.warn(f"Property {property_name} is not a single numeric property on node {node.name} with type {type(node)}")
+            return False
+
+    def try_delete_watch(self, node_or_node_name, property_name):
+        """Deletes a watch from the node after checking that the node exists and the property exists
+
+        Returns True if the watch was deleted, False if not"""
+
+        if not self.node_exists(node_or_node_name):
+            return
+
+        node = self._node_from_node_or_str(node_or_node_name)
+
+        if property_name in node._watches:
+            node._watches.remove(property_name)
+            return True
+        else:
+            return False
+
+    def get_watches(self) -> list[tuple[Node, str]]:
+        """Returns a list of all watches in the scene"""
+        watches = []
+        for node in self._nodes:
+            for watch in node._watches:
+                watches.append((node, watch))
+        return watches
+
+    def evaluate_watches(self) -> tuple[list[Node],list[str], list[float],list[NodePropertyInfo]]:
+        """Evaluates all watches and returns a tuple with four lists:
+        Node,
+        property name,
+        value,
+        documentation
+        """
+
+        watches = self.get_watches()
+        nodes = []
+        properties = []
+        values = []
+        docs = []
+
+        for node, property_name in watches:
+            try:
+                value = getattr(node, property_name)
+            except:
+                value = None
+
+            # get the unit using the documentation
+            doc = self.give_documentation(node, property_name)
+
+            nodes.append(node)
+            properties.append(property_name)
+            values.append(value)
+            docs.append(doc)
+
+        return nodes, properties, values, docs
+
 
     def save_scene(self, filename, do_reports=True, do_timeline=True):
         """Saves the scene to a file
