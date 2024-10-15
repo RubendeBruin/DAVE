@@ -82,7 +82,7 @@ def model_extreme_friction():
     return s
 
 def test_extreme_friction():
-    assert False # test disables - hard crashes
+    assert False # test disabled - hard crashes
     s = model_extreme_friction()
     s.solve_statics()
 

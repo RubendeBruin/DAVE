@@ -9,12 +9,12 @@ def test_watches():
     s.try_add_watch('does not exist', 'x')
     s.try_add_watch('Point', 'does not exist')
 
-    nodes, props, values, units = s.evaluate_watches()
+    nodes, props, values, docs = s.evaluate_watches()
 
     assert len(props) == 1
     assert props[0] == 'x'
     assert values[0] == 0
-    assert units[0] == '[m]'
+    assert docs[0].units == '[m]'
 
     s2 = s.copy()
 
@@ -24,12 +24,12 @@ def test_watches():
     assert len(props) == 0
 
 
-    nodes, props, values, units = s2.evaluate_watches()
+    nodes, props, values, docs = s2.evaluate_watches()
 
     assert len(props) == 1
     assert props[0] == 'x'
     assert values[0] == 0
-    assert units[0] == '[m]'
+    assert docs[0].units == '[m]'
 
     s2.delete('Point')
     nodes, props, values, units = s2.evaluate_watches()

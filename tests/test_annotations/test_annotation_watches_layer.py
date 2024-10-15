@@ -1,3 +1,5 @@
+import pytest
+
 from DAVE.annotations.custom_layers import WatchesLayer
 from DAVE.visual_helpers.image_screen_renderer import ImageRenderer
 
@@ -19,6 +21,7 @@ def test_watches_annotation_layer(cable):
     #
     v.show()
 
+@pytest.mark.skip(reason="This test is for GUI testing")
 def test_watches_annotation_layer_GUI(cable):
     s = cable
     cable = s["cable"]

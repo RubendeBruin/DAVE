@@ -1,6 +1,6 @@
 from DAVE.gui.dock_system.dockwidget import *
 from PySide6.QtGui import QDrag, QBrush
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QModelIndex
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QLabel, QLineEdit, QCheckBox
 
@@ -45,35 +45,41 @@ class TreeWithDragOut(QtWidgets.QTreeWidget):
         drag.exec(QtCore.Qt.MoveAction)
 
 
-    def mousePressEvent(self, event):
-        modifiers = QtWidgets.QApplication.keyboardModifiers()
-        current_item = self.itemAt(event.pos())
-
-        if modifiers == QtCore.Qt.ShiftModifier and self.last_selected_item_row:
-            current_row = self.indexFromItem(current_item).row()
-            last_row = self.last_selected_item_row
-
-            if last_row > self.topLevelItemCount():  # if the last selected item is out of bounds becuse the content has changed
-                last_row = self.topLevelItemCount() - 1
-
-            start, end = sorted([current_row, last_row])
-
-            for row in range(start, end + 1):
-                item = self.topLevelItem(row)
-                item.setSelected(True)
-            self.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
-        else:
-            if event.button() == QtCore.Qt.LeftButton:
-                self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
-                self.last_selected_item_row = self.indexFromItem(current_item).row()
-
-            super().mousePressEvent(event)
+    # def mousePressEvent(self, event):
+    #     modifiers = QtWidgets.QApplication.keyboardModifiers()
+    #     current_item = self.itemAt(event.pos())
+    #
+    #     if modifiers == QtCore.Qt.ShiftModifier and self.last_selected_item_row:
+    #         current_row = self.indexFromItem(current_item).row()
+    #         last_row = self.last_selected_item_row
+    #
+    #         if last_row > self.topLevelItemCount():  # if the last selected item is out of bounds becuse the content has changed
+    #             last_row = self.topLevelItemCount() - 1
+    #
+    #         start, end = sorted([current_row, last_row])
+    #
+    #         for row in range(start, end + 1):
+    #             item = self.topLevelItem(row)
+    #             item.setSelected(True)
+    #         self.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
+    #     else:
+    #         if event.button() == QtCore.Qt.LeftButton:
+    #             self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+    #             self.last_selected_item_row = self.indexFromItem(current_item).row()
+    #
+    #         super().mousePressEvent(event)
 
     def edit(self, index, trigger, event):
-        print(index.column())
+
+        # create a model index similar to index
+        # but with column 1
+        # edit_index = self.model().index(index.row(), 1, self.rootIndex())
+
         if index.column() == 1:
             return super().edit(index, trigger, event)
-        return False
+        else:
+            return False
+
 
 class WidgetDerivedProperties(guiDockWidget):
 
@@ -91,10 +97,11 @@ class WidgetDerivedProperties(guiDockWidget):
 
         self.dispPropTree = TreeWithDragOut(self.contents)
         self.dispPropTree.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
-        self.dispPropTree.setAlternatingRowColors(False)
-        self.dispPropTree.setRootIsDecorated(False)
+        self.dispPropTree.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.dispPropTree.setRootIsDecorated(True)
+        self.dispPropTree.setExpandsOnDoubleClick(False)
         self.dispPropTree.setObjectName("dispPropTree")
-        self.dispPropTree.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+
 
         self.dispPropTree.setColumnCount(4)
         self.dispPropTree.setHeaderLabels(('Property', 'Value','Unit','Description'))
@@ -127,6 +134,18 @@ class WidgetDerivedProperties(guiDockWidget):
     def delete_key_pressed(self, event):
         if event.key() == Qt.Key_Delete:
             self.delete_selected_watches()
+        elif event.key() == Qt.Key_Up or event.key() == Qt.Key_Down:
+
+            row = self.dispPropTree.currentIndex().row()
+
+            if event.key() == Qt.Key_Up:
+                row -= 1
+            elif event.key() == Qt.Key_Down:
+                row += 1
+
+            item = self.dispPropTree.topLevelItem(row)
+            self.dispPropTree.setCurrentItem(item)
+
         else:
             super().keyPressEvent(event)
 
@@ -177,6 +196,7 @@ class WidgetDerivedProperties(guiDockWidget):
 
     def item_changed(self, item, *args, **kwargs):
         text = item.text(0)
+        row = self.dispPropTree.currentIndex().row()
         node = text.split('.')[0]
         if node == '':
             node = self._nodename
@@ -184,6 +204,15 @@ class WidgetDerivedProperties(guiDockWidget):
         value = item.text(1)
         code = f's["{node}"].{prop} = {value}'
         self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
+
+        # re-focus at end of the event queue
+        def refocus_tree():
+            item = self.dispPropTree.topLevelItem(row)
+            self.dispPropTree.setCurrentItem(item)
+            self.dispPropTree.setFocus()
+
+        QtCore.QTimer.singleShot(0, refocus_tree)
+
 
     def delete_selected_watches(self):
         """Deletes the watches of the selected properties."""

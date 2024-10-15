@@ -80,6 +80,8 @@ class Node(DAVENodeBase, ABC):
         self._watches: set[str] = set()
         """Defines the watches on a node. Controlled by the Scene"""
 
+
+
         self._valid = True
         """Turns False if the node in removed from a scene. This is a work-around for weakrefs"""
 
@@ -91,6 +93,11 @@ class Node(DAVENodeBase, ABC):
         self._no_name_editor = False
 
         super().__init__(scene=scene, name=name)
+
+    @property
+    def watches(self):
+        warnings.warn("Using the deprecated watches property.")
+        return dict()
 
     @property
     @abstractmethod

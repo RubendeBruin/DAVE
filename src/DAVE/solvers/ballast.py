@@ -47,7 +47,7 @@ class OptBallastSystem():
 
         @property
         def inertia(self):
-            return self.weight() / vfc.G
+            return self.weight() / 9.81
 
         def weight(self):
             """Returns the actual weight of tank contents in kN"""
@@ -327,7 +327,7 @@ def force_vessel_to_evenkeel_and_draft(scene, vessel, z):
 
 class BallastSystemSolver:
     """
-    Changes in ballast system are condidered ok if either
+    Changes in ballast system are considered ok if either
 
     the error reduced with at least min_error_reduction
     the system is a a better state (more filling in higher priority tank without increasing the error)
