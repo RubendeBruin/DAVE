@@ -50,4 +50,5 @@ call pyside6-uic widget_measurement.ui -o "..\src\DAVE\gui\forms\widget_measurem
 call pyside6-uic widget_supportpoint.ui -o "..\src\DAVE\gui\forms\widget_supportpoint.py"
 call pyside6-uic resource_browser.ui -o "..\src\DAVE\gui\forms\resource_browser.py"
 call pyside6-uic dialog_missing_item.ui -o "..\src\DAVE\gui\forms\dialog_missing_item.py"
+call pyside6-uic widget_grid_edit_controls.ui -o "..\src\DAVE\gui\forms\widget_grid_edit_controls.py"
 echo call pyside6-rcc resources.qrc -o "..\src\DAVE\gui\forms\resources_rc.py"

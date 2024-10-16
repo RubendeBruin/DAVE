@@ -3793,25 +3793,32 @@ class Gui:
 
     def guiSelectNode(self, node_name, extend=False, new=False, execute_now=False):
         # Select a node with name, pass None to deselect all
+        #
+        # or pass a list of nodes to select multiple nodes directly. In this case
+        # keyboard modifiers are ignored
+
+        if isinstance(node_name, (tuple, list)):
+            self.selected_nodes.clear()
+            self.selected_nodes.extend(node_name)
+            self.guiEmitEvent(guiEventType.SELECTION_CHANGED, execute_now=execute_now)
+            return
 
         DAVE_GUI_LOGGER.log(f"Gui select node {node_name} extend {extend} new {new}")
 
         old_selection = self.selected_nodes.copy()
+        control_down = self.app.keyboardModifiers() and QtCore.Qt.KeyboardModifier.ControlModifier
 
-        if not (
-            (
-                self.app.keyboardModifiers()
-                and QtCore.Qt.KeyboardModifier.ControlModifier
-            )
-            or extend
+        if not (control_down or extend
         ):
             self.selected_nodes.clear()
 
-        node = None
         if node_name is not None:
             node = self.scene._node_from_node_or_str(node_name)
             if node not in self.selected_nodes:
                 self.selected_nodes.append(node)
+            else:
+                if control_down:
+                    self.selected_nodes.remove(node)  # we have control pressed else
 
         if new:
             self.guiEmitEvent(guiEventType.NEW_NODE_ADDED, execute_now=execute_now)
