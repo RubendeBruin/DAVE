@@ -3585,10 +3585,15 @@ class Gui:
     def _user_clicked_node(self, node, event=None):
         DAVE_GUI_LOGGER.log(f"User clicked node {node}")
 
+        control_or_shift_key_down = self.app.keyboardModifiers() and (
+            QtCore.Qt.KeyboardModifier.ControlModifier
+            or QtCore.Qt.KeyboardModifier.ShiftModifier
+        )
+
         if node is None:  # sea or something
             self.selected_nodes.clear()
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
-        elif node in self.selected_nodes:
+        elif node in self.selected_nodes and control_or_shift_key_down:
             self.selected_nodes.remove(node)
             self.guiEmitEvent(guiEventType.SELECTION_CHANGED)
         else:
@@ -3797,10 +3802,11 @@ class Gui:
         DAVE_GUI_LOGGER.log(f"Gui select node {node_name} extend {extend} new {new}")
 
         old_selection = self.selected_nodes.copy()
-        control_down = self.app.keyboardModifiers() and QtCore.Qt.KeyboardModifier.ControlModifier
+        control_down = (
+            self.app.keyboardModifiers() and QtCore.Qt.KeyboardModifier.ControlModifier
+        )
 
-        if not (control_down or extend
-        ):
+        if not (control_down or extend):
             self.selected_nodes.clear()
 
         if node_name is not None:
