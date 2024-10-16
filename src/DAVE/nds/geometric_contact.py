@@ -173,6 +173,19 @@ class GeometricContact(
         self.helper_update_node_prefix(self.created_nodes(), old_prefix, new_prefix)
         self._name_prefix = new_prefix
 
+    @property
+    def warnings(self) -> list[str]:
+        """Returns a list of warnings for the current state of the GeometricContact"""
+
+        warnings = []
+
+        if not self.inside_child_is_smaller_than_parent():
+            warnings.append(
+                f"(GC:101) The child circle is inside the parent circle but does not physically fit because it has a larger radius: {self._child_circle.radius:.3f}m > {self._parent_circle.radius:.3f}m"
+            )
+
+        return warnings
+
     @staticmethod
     def _assert_parent_child_possible(parent, child):
         if parent.parent.parent == child.parent.parent:

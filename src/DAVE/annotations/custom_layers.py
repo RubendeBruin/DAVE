@@ -1,9 +1,12 @@
 # This file contains custom annotation layers for DAVE.
+from sqlalchemy.testing.plugin.plugin_base import warnings
 
 from DAVE import NodeSelector, Scene, Cable, RigidBody, Tank, Measurement
 from DAVE.annotations import Annotation, AnnotationLayer
 from DAVE.annotations.layer import CustomNodeLayer, BaseAnnotationLayer
 from DAVE.settings import DAVE_ANNOTATION_LAYERS
+from DAVE.visual_helpers.constants import YELLOW, ERROR_COLOR_BACKGROUND
+
 
 # from DAVE.visual_helpers.scene_renderer import AbstractSceneRenderer
 
@@ -138,3 +141,83 @@ class WatchesLayer(BaseAnnotationLayer):
 
 DAVE_ANNOTATION_LAYERS["Watches"] = WatchesLayer
 
+# ============ Warnings layer =============
+
+class WarningsLayer(BaseAnnotationLayer):
+    """Annotation layer that renders the warnings on nodes. Warnings are grouped in a single annotation if a node has more than one warning."""
+
+    def post_init(self):
+        self._annotations = []
+
+
+
+    def update(self):
+        """Updates the layer."""
+
+        self.background_rgba = (*YELLOW,)  # override
+        self._update_annotations()
+        super().update()
+
+    def _update_annotations(self):
+        """Updates the layer."""
+
+        self._annotations = []
+
+        warns = self._scene.warnings      # list[tuple[Node, str]]:
+        texts = dict()
+
+        for node, txt in warns:
+            if node not in texts:
+                texts[node] = 'WARNING:<br>'
+            texts[node] += txt + '<br>'
+
+        for node, text in texts.items():
+            annotation = Annotation.create_node_text_annotation(node, text)
+            self._annotations.append(annotation)
+
+    @property
+    def annotations(self) -> list[Annotation]:
+        return self._annotations
+
+DAVE_ANNOTATION_LAYERS["Warnings"] = WarningsLayer
+
+# ============= Errors layer =============
+
+
+class ErrorsLayer(BaseAnnotationLayer):
+    """Annotation layer that renders the warnings on nodes. Warnings are grouped in a single annotation if a node has more than one warning."""
+
+    def post_init(self):
+        self._annotations = []
+
+
+    def update(self):
+        """Updates the layer."""
+
+        self.background_rgba = (*ERROR_COLOR_BACKGROUND,)  # override
+        self._update_annotations()
+        super().update()
+
+    def _update_annotations(self):
+        """Updates the layer."""
+
+        self._annotations = []
+
+        errors = self._scene.node_errors  #  list[tuple[Node, str]]:
+
+        texts = dict()
+
+        for node, txt in errors:
+            if node not in texts:
+                texts[node] = 'ERROR:<br>'
+            texts[node] += txt + '<br>'
+
+        for node, text in texts.items():
+            annotation = Annotation.create_node_text_annotation(node, text)
+            self._annotations.append(annotation)
+
+    @property
+    def annotations(self) -> list[Annotation]:
+        return self._annotations
+
+DAVE_ANNOTATION_LAYERS["Errors"] = ErrorsLayer

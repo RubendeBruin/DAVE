@@ -968,11 +968,13 @@ class Gui:
         self.ui.actionCopy.triggered.connect(self.clipboard_copy)
         self.ui.actionPaste.triggered.connect(self.clipboard_paste)
 
-        # === enable measurement layer
+        # === enable measurement, warnings and errors layers
 
         # add measurement layer
-        from DAVE.annotations.custom_layers import MeasurementsLayer
+        from DAVE.annotations.custom_layers import MeasurementsLayer, ErrorsLayer, WarningsLayer
         self.visual.layers.append(MeasurementsLayer(scene = self.scene, scene_renderer=self.visual))
+        self.visual.layers.append(ErrorsLayer(scene = self.scene, scene_renderer=self.visual))
+        self.visual.layers.append(WarningsLayer(scene = self.scene, scene_renderer=self.visual))
 
         # ======================== Finalize ========================
 
@@ -1026,8 +1028,7 @@ class Gui:
     def after_startup(self):
         """Executed after the gui has started up"""
         self.visual.zoom_all()
-        self.visual._camera_direction_changed()
-        self.visual.refresh_embeded_view()
+        self.guiEmitEvent(guiEventType.MODEL_STEP_ACTIVATED)  # triggers a refresh
 
         if self._requested_workspace is None:
             self.activate_dockgroup("Build", this_is_a_new_window=True)
@@ -1088,15 +1089,21 @@ class Gui:
     def update_warnings(self):
         """Updates the warnings label"""
         warnings = self.scene.warnings
+        errors = self.scene.node_errors
+
+        text = ''
 
         if warnings:
+            text += f"Warnings: {len(warnings)} "
+
+        if errors:
+            text += f"Errors: {len(errors)}"
+
+        if text:
+            self.warnings_label.setText(text)
             self.warnings_label.setVisible(True)
-            # self.warnings_label.setEnabled(True)
-            self.warnings_label.setText(f"Warnings: {len(warnings)}")
         else:
             self.warnings_label.setVisible(False)
-            # self.warnings_label.setEnabled(False)
-            self.warnings_label.setText("")
 
     def show_warnings_help(self):
         webbrowser.open("https://usedave.nl/scene/model_and_state_errors.html")
@@ -1104,6 +1111,7 @@ class Gui:
     def show_warnings(self):
         """Shows the warnings"""
         warnings = self.scene.warnings
+        warnings.extend(self.scene.node_errors)
 
         # create a dialog with a table
         dlg = QDialog()
@@ -1122,7 +1130,11 @@ class Gui:
         for i, (node, message) in enumerate(warnings):
             table.setItem(i, 0, QtWidgets.QTableWidgetItem(node.name))
             code = message.split(" ")[0]
+
+            code = code.lstrip('(').rstrip(')')
+
             message = " ".join(message.split(" ")[1:])
+
             table.setItem(i, 1, QtWidgets.QTableWidgetItem(code))
             table.setItem(i, 2, QtWidgets.QTableWidgetItem(message))
 

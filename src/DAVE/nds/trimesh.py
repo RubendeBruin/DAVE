@@ -38,8 +38,12 @@ class TriMeshSource:  # not an instance of Node
 
         self._invert_normals = False
 
+        # These are used to store the results of the check_shape method
+        # which is executed when the mesh is loaded
+        # they can safely be read
         self.boundary_edges = []
         self.non_manifold_edges = []
+        self.messages : list[str] = []
 
     def depends_on(self) -> list:
         return []
@@ -179,7 +183,7 @@ class TriMeshSource:  # not an instance of Node
         self._new_mesh = True
         self._scene.update()
 
-    def check_shape(self):
+    def check_shape(self) -> list[str]:
         """Performs some checks on the shape in the trimesh
         - Boundary edges (edge with only one face attached)
         - Non-manifold edges (edit with more than two faces attached)
@@ -245,14 +249,16 @@ class TriMeshSource:  # not an instance of Node
                 v2 = tm.GetVertex(edge[1])
                 non_manifold_edges.append((v1, v2))
 
-        if len(messages) == 2:
-            messages.append("Boundary edges are shown in Red")
-            messages.append("Non-manifold edges are shown in Pink")
+        # if len(messages) == 2:
+        #     messages.append("Boundary edges are shown in Red")
+        #     messages.append("Non-manifold edges are shown in Pink")
+        #
+        # try:
 
-        try:
-            volume = tm.Volume()
-        except:
-            volume = 1  # no available in every DAVEcore yet
+        # except:
+        #     volume = 1  # no available in every DAVEcore yet
+
+        volume = tm.Volume()
 
         if volume < 0:
             messages.append(
@@ -345,6 +351,8 @@ class TriMeshSource:  # not an instance of Node
         if self._rotation is None:
             self._rotation = (0.0, 0.0, 0.0)
         self._invert_normals = invert_normals
+
+        self.messages = self.check_shape()
 
     def _load_from_privates(self):
         """(Re)Loads the mesh using the values currently stored in _scale, _offset, _rotation and _invert_normals"""

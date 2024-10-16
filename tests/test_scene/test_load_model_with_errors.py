@@ -40,7 +40,7 @@ def test_load_model_with_errors(test_files):
     s['Frame']  # should exist
 
 
-def test_load_model_with_errors(test_files):
+def test_load_model_with_errors2(test_files):
 
     # this should load with errors
     s = Scene(test_files / 'model_with_errors.dave', allow_errors_during_load =True)
@@ -49,6 +49,12 @@ def test_load_model_with_errors(test_files):
     s['Frame']  # should exist
     s.delete('Frame')
 
+    # this should load just fine and therefore clear the errors
+
+    # check that is normally works
+    s_check = Scene(test_files / 'basic_nodes.dave')
+
+    s.delete('Visual')  # to avoid the error of having two visuals with the same name
     s.load(test_files / 'basic_nodes.dave')
 
     assert not s.errors_during_load

@@ -38,7 +38,7 @@ def test_annotation_positions_interactive_qt(model):
     s= model
 
     from PySide6.QtWidgets import QApplication
-    app = QApplication([])
+    app = QApplication.instance() or QApplication([])
 
     from PySide6.QtWidgets import QWidget
     widget = QWidget()

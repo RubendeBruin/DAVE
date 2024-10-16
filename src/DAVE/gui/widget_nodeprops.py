@@ -3418,12 +3418,12 @@ class WidgetNodeProps(guiDockWidget):
         self.warning_label.setVisible(False)
         if isinstance(node, (Buoyancy, Tank)):
             # check mesh
-            messages = node.trimesh.check_shape()
+
+            self.gui.visual.remove_temporary_actors()
+            messages = node.trimesh.messages
             if messages:
                 self.warning_label.setText("\n".join(messages))
                 self.warning_label.setVisible(True)
-
-                self.gui.visual.remove_temporary_actors()
 
                 if node.trimesh.boundary_edges:
                     actor = Lines(node.trimesh.boundary_edges, lw=5, color=(1, 0, 0))

@@ -1150,7 +1150,7 @@ class ContactMesh(NodeCoreConnected, HasParentCore, HasTrimesh):
         return code
 
 
-class Buoyancy(NodeCoreConnected, HasParentCore, HasTrimesh):
+class Buoyancy(NodeCoreConnected, HasParentCore, HasTrimesh, HasVolumeTrimeshCheck):
     """Buoyancy provides a buoyancy force based on a buoyancy mesh. The mesh is triangulated and chopped at the instantaneous flat water surface. Buoyancy is applied as an upwards force that the center of buoyancy.
     The calculation of buoyancy is as accurate as the provided geometry.
 
@@ -1179,6 +1179,10 @@ class Buoyancy(NodeCoreConnected, HasParentCore, HasTrimesh):
 
     def update(self):
         self._vfNode.reloadTrimesh()
+
+    @property
+    def node_errors(self) -> list[str]:
+        return self.trimesh_errors()
 
     @property
     def cob(self) -> tuple[tuple[float, float, float]]:
@@ -1220,7 +1224,7 @@ class Buoyancy(NodeCoreConnected, HasParentCore, HasTrimesh):
         return code
 
 
-class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
+class Tank(NodeCoreConnected, HasParentCore, HasTrimesh, HasVolumeTrimeshCheck):
     """Tank provides a fillable tank based on a mesh. The mesh is triangulated and chopped at the instantaneous flat fluid surface. Gravity is applied as an downwards force that the center of fluid.
     The calculation of fluid volume and center is as accurate as the provided geometry.
 
@@ -1264,6 +1268,10 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh):
     def unmanaged_property_values(self) ->list[tuple[str, any]]:
         return [("free_flooding", self.free_flooding),
                 ("volume", self.volume)]
+
+    @property
+    def node_errors(self) -> list[str]:
+        return self.trimesh_errors()
 
     @property
     def free_flooding(self) -> bool:

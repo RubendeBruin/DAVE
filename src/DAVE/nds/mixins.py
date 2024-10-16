@@ -241,6 +241,38 @@ class HasTrimesh(DAVENodeBase):
         )
 
 
+class HasVolumeTrimeshCheck(DAVENodeBase):
+    """Mixin class for nodes that have a trimesh. Checks that the trimesh is a volume mesh.
+    Raises appropriate errors if not
+
+    In the derived class, adapt node_errors to include the errors from this mixin class like so:
+
+    @property
+    def node_errors(self) -> list[str]:
+        return self.trimesh_errors()
+    """
+
+    def trimesh_errors(self):
+        """Returns a list of warnings for this node"""
+
+        assert isinstance(self, HasTrimesh), "This mixin class HasVolumeTrimeshCheck can only be used with nodes that have a trimesh"
+
+        if self._trimesh is None:
+            return []
+
+        messages = self._trimesh.messages
+        if messages:
+            msg = [f"(mesh:invalid) Mesh of node {self.name} is not a volume mesh"]
+            for m in messages:
+                msg.append(f"(mesh:info) {m}")
+            return msg
+
+        else:
+            return []
+
+
+
+
 class Manager(DAVENodeBase, ABC):
     """
     Notes:
