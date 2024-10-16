@@ -222,23 +222,23 @@ if __name__ == '__main__':
     for i in range(10):
         s.new_frame(f"Frame {i}")
 
-    # DG(s, autosave=False)
-
-    # s['Frame 4'].manager = s['Frame 3']
-    def ex(code):
-        print(len(code.split('\n')))
-        print(code)
-
-
-    win = GriddedNodeEditor(scene = s, execute_func = ex)
-
-    nodes = s.nodes()
-
-    print(nodes)
-
-    win.set_nodes(nodes)
-
-
-
-    win.show()
-    sys.exit(app.exec())
+    DG(s, autosave=False)
+    #
+    # # s['Frame 4'].manager = s['Frame 3']
+    # def ex(code):
+    #     print(len(code.split('\n')))
+    #     print(code)
+    #
+    #
+    # win = GriddedNodeEditor(scene = s, execute_func = ex)
+    #
+    # nodes = s.nodes()
+    #
+    # print(nodes)
+    #
+    # win.set_nodes(nodes)
+    #
+    #
+    #
+    # win.show()
+    # sys.exit(app.exec())

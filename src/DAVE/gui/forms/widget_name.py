@@ -34,7 +34,7 @@ class Ui_NameWidget(object):
         font.setBold(True)
         font.setUnderline(True)
         self.pbEditAll.setFont(font)
-        self.pbEditAll.setStyleSheet(u"color: rgb(85, 170, 255);")
+        self.pbEditAll.setStyleSheet(u"color: rgb(25, 110, 191);")
         self.pbEditAll.setFlat(True)
 
         self.gridLayout_2.addWidget(self.pbEditAll, 0, 0, 1, 1)

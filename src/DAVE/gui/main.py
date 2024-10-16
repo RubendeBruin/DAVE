@@ -103,7 +103,6 @@ from DAVE.gui.helpers.gui_logger import DAVE_GUI_LOGGER, format_exception_with_n
 from DAVE.gui.helpers.my_qt_helpers import BlockSigs
 from DAVE.gui.helpers.qt_action_draggable import QDraggableNodeActionWidget
 from DAVE.gui.widget_layers import LayersWidget
-from DAVE.gui.widget_watches import WidgetWatches
 from DAVE.helpers.code_error_extract import get_code_error
 from DAVE.helpers.profiling_timing import TimeElapsed
 from DAVE.visual_helpers.vtkBlenderLikeInteractionStyle import DragInfo
@@ -807,14 +806,6 @@ class Gui:
                 self.dock_manager,
                 self.get_dock("Derived Properties"),
                 icon=":/v2/icons/magnifier90.svg",
-            )
-        )
-
-        self._global_docks.append(
-            add_global_dock(
-                self.dock_manager,
-                self.get_dock("Watches"),
-                icon=":/v2/icons/glasses.svg",
             )
         )
 

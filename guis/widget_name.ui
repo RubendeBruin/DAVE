@@ -41,7 +41,7 @@
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">color: rgb(85, 170, 255);</string>
+      <string notr="true">color: rgb(25, 110, 191);</string>
      </property>
      <property name="text">
       <string>Edit all</string>
