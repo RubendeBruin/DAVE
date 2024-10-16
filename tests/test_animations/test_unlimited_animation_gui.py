@@ -31,8 +31,10 @@ def test_unlimited_animation_gui(noclose=False):
         s['frame'].ry = 36*t
 
     g.animation_start_unlimited(callback_time_activated = time_activated, end_time=2)
+    g._animation_speed = 10
 
-    # make a single shot time that executes after 10 seconds
+
+    # make a single shot time that executes after 2 seconds (ok as speed is 10)
     def single_shot():
         g.animation_terminate()
         g.MainWindow.close()
@@ -40,7 +42,7 @@ def test_unlimited_animation_gui(noclose=False):
 
     if not noclose:
         QTimer.singleShot(
-            10*1000, single_shot
+            2*1000, single_shot
         )
 
     g.app.exec()  # start the app

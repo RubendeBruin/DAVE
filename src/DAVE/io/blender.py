@@ -87,8 +87,6 @@ def try_get_blender_executable():
                 # print(f'Error when looking for blender here: {key} - {str(E)}')
                 raise ValueError("Not found here")
 
-        BLENDER_EXEC = None
-
         where_is_blender_in_the_registry = [
             (winreg.HKEY_CLASSES_ROOT, r"Applications\blender.exe\shell\open\command"),
             (
@@ -116,31 +114,42 @@ def try_get_blender_executable():
         for possibility in where_is_blender_in_the_registry:
             try:
                 BLENDER_EXEC = find_blender_from_reg(*possibility)
+                if BLENDER_EXEC:
+                    print('Blender found in registry at: {}'.format(BLENDER_EXEC))
+                    return BLENDER_EXEC
             except:
                 pass
 
         # find it in a path
         # by default the windows-store version seems to be installed in a location which is in the path
 
-        if BLENDER_EXEC == None:
-            paths = os.environ["PATH"].split(";")
-            for pth in paths:
-                test = pth + r"\\blender-launcher.exe"
-                if os.path.exists(test):
-                    BLENDER_EXEC = test
-                    break
 
-        if BLENDER_EXEC:
-            print("Blender found at: {}".format(BLENDER_EXEC))
-        else:
-            print(
-                "! Blender not found - Blender can be installed from the microsoft windows store."
-                "   if you have blender already and want to be able to use blender then please either:\n"
-                "   - configure windows to open .blend files with blender automatically \n"
-                "   - add the folder containing blender-launcher.exe to the PATH variable."
-            )
+        paths = os.environ["PATH"].split(";")
+        for pth in paths:
+            test = pth + r"\\blender-launcher.exe"
+            if os.path.exists(test):
+                print("Blender found (using PATH variable) at: {}".format(test))
+                return test
 
-            return "Blender can not be found automatically"
+        # Getting quite desperate Do a GLOB search for blender-launcher.exe in C:\Program Files\Blender Foundation
+
+        import glob
+        for pth in glob.glob(r"C:\Program Files\Blender Foundation\*\blender-launcher.exe"):
+            if os.path.exists(pth):
+                print("Blender found (using GLOB search) at: {}".format(pth))
+                return pth
+
+        # Out of options
+
+
+        print(
+            "! Blender not found - Blender can be installed from the microsoft windows store."
+            "   if you have blender already and want to be able to use blender then please either:\n"
+            "   - configure windows to open .blend files with blender automatically \n"
+            "   - add the folder containing blender-launcher.exe to the PATH variable."
+        )
+
+        return "Blender can not be found automatically"
 
         # print('\nLoading DAVE...')
     else:  # assume we're on linux

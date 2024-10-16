@@ -23,7 +23,7 @@ def test_memleak_vtk_actor():
               parent='Frame')
     mesh.trimesh.load_file(r'res: cube.obj', scale = (1.0,1.0,1.0), rotation = (0.0,0.0,0.0), offset = (0.0,0.0,0.0))
 
-    app = QApplication([])
+    app = QApplication.instance() or QApplication([])
 
     widget = QWidget()
 

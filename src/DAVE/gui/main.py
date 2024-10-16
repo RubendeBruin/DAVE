@@ -1787,6 +1787,7 @@ class Gui:
         self.animation_terminate()
 
         if final_dofs is None:
+            self.scene.update()
             final_dofs = self.scene._vfc.get_dofs()
 
         self._animation_final_dofs = final_dofs
