@@ -162,10 +162,6 @@ from DAVE.gui.widget_explore import WidgetExplore
 from DAVE.gui.widget_rigg_it_right import WidgetQuickActions
 from DAVE.gui.widget_environment import WidgetEnvironment
 from DAVE.gui.widget_dof_edit import WidgetDOFEditor
-import DAVE.gui.widget_ballastsolver
-import DAVE.gui.widget_ballastconfiguration
-import DAVE.gui.widget_tank_order
-import DAVE.gui.widget_ballastsystemselect
 
 
 from DAVE.gui.forms.dlg_solver_threaded import Ui_SolverDialogThreaded
@@ -399,7 +395,6 @@ class Gui:
         self.scene.error_interaction = ErrorInteraction()
         """Reference to a scene"""
 
-
         self.scene.gui_solve_func = self.solve_statics_using_gui_on_scene
         """Claim control of the solver for the gui"""
 
@@ -517,7 +512,9 @@ class Gui:
         self.ui.aniSlider.valueChanged.connect(self.animation_change_time)
         self.ui.sbPlaybackspeed.valueChanged.connect(self.animation_speed_change)
 
-        self.ui.spinAnimationEndEdit.editingFinished.connect(self.user_changes_unlimited_animation_endtime)
+        self.ui.spinAnimationEndEdit.editingFinished.connect(
+            self.user_changes_unlimited_animation_endtime
+        )
 
         # ======================== Main Menu entries  ======
 
@@ -971,10 +968,21 @@ class Gui:
         # === enable measurement, warnings and errors layers
 
         # add measurement layer
-        from DAVE.annotations.custom_layers import MeasurementsLayer, ErrorsLayer, WarningsLayer
-        self.visual.layers.append(MeasurementsLayer(scene = self.scene, scene_renderer=self.visual))
-        self.visual.layers.append(ErrorsLayer(scene = self.scene, scene_renderer=self.visual))
-        self.visual.layers.append(WarningsLayer(scene = self.scene, scene_renderer=self.visual))
+        from DAVE.annotations.custom_layers import (
+            MeasurementsLayer,
+            ErrorsLayer,
+            WarningsLayer,
+        )
+
+        self.visual.layers.append(
+            MeasurementsLayer(scene=self.scene, scene_renderer=self.visual)
+        )
+        self.visual.layers.append(
+            ErrorsLayer(scene=self.scene, scene_renderer=self.visual)
+        )
+        self.visual.layers.append(
+            WarningsLayer(scene=self.scene, scene_renderer=self.visual)
+        )
 
         # ======================== Finalize ========================
 
@@ -1091,7 +1099,7 @@ class Gui:
         warnings = self.scene.warnings
         errors = self.scene.node_errors
 
-        text = ''
+        text = ""
 
         if warnings:
             text += f"Warnings: {len(warnings)} "
@@ -1131,7 +1139,7 @@ class Gui:
             table.setItem(i, 0, QtWidgets.QTableWidgetItem(node.name))
             code = message.split(" ")[0]
 
-            code = code.lstrip('(').rstrip(')')
+            code = code.lstrip("(").rstrip(")")
 
             message = " ".join(message.split(" ")[1:])
 
@@ -1560,13 +1568,14 @@ class Gui:
                     if group.rao_requests:
                         try:
                             from DAVE_dynamics import RaoRequests
+
                             if s.rao_requests is None:
                                 s.rao_requests = RaoRequests()
                             rs = s.rao_requests
 
                             s = s.copy()
 
-                            s.rao_requests = rs # set property to same object
+                            s.rao_requests = rs  # set property to same object
                         except ImportError:
                             raise ModelInvalidException(
                                 "RaoRequests are required for new window copy but DAVE_dynamics could not be imported"
@@ -1790,10 +1799,9 @@ class Gui:
 
     # ============== Animation functions =============
 
-    def animation_start_unlimited(self,
-                                  callback_time_activated,
-                                  final_dofs = None,
-                                  end_time = 64):
+    def animation_start_unlimited(
+        self, callback_time_activated, final_dofs=None, end_time=64
+    ):
         """Start an animation that runs until it is terminated by the user"""
         DAVE_GUI_LOGGER.log("Start unlimited animation")
         self.animation_terminate()
@@ -1812,21 +1820,15 @@ class Gui:
 
         self._animation_available = True
 
-        self._timerid = iren.CreateRepeatingTimer(
-            round(1000 / GUI_ANIMATION_FPS)
-        )
-
-
+        self._timerid = iren.CreateRepeatingTimer(round(1000 / GUI_ANIMATION_FPS))
 
         self.ui.spinAnimationEndEdit.setVisible(True)
         self.ui.frameAni.setVisible(True)
-
 
     def user_changes_unlimited_animation_endtime(self):
         """event"""
         new_endtime = self.ui.spinAnimationEndEdit.value()
         self.unlimited_animation_set_endtime(new_endtime=new_endtime)
-
 
     def animation_running(self):
         """Returns true is an animation is running"""
@@ -1836,12 +1838,10 @@ class Gui:
         if self._timerid is None:  # timer is going to be destroyed
             return
 
-
         # calculate the time passed since the last frame
         dt = time.time() - self._animation_last_frame_system_time
         t = self._animation_last_frame_animation_time + dt * self._animation_speed
-        t = max(t,0)  # start-time may be set to -999 to make sure we start at 0
-
+        t = max(t, 0)  # start-time may be set to -999 to make sure we start at 0
 
         if self._animation_loop:
             t = np.mod(t, self._animation_length)
@@ -1863,7 +1863,7 @@ class Gui:
         new_endtime = 2 * self._animation_length
         self.unlimited_animation_set_endtime(new_endtime)
 
-    def unlimited_animation_set_endtime(self, new_endtime : int):
+    def unlimited_animation_set_endtime(self, new_endtime: int):
         """Sets the end-time of the current unlimited animation
         and updates the gui accordingly"""
 
@@ -1872,10 +1872,9 @@ class Gui:
         with BlockSigs(self.ui.spinAnimationEndEdit):
             self.ui.spinAnimationEndEdit.setValue(new_endtime)
 
-        self.ui.aniSlider.setMaximum(1000*new_endtime)
+        self.ui.aniSlider.setMaximum(1000 * new_endtime)
 
         self.guiEmitEvent(guiEventType.UNLIMITED_ANIMATION_LENGTH_CHANGED)
-
 
     def animation_speed_change(self):
         DAVE_GUI_LOGGER.log("Animation speed change")
@@ -1886,7 +1885,9 @@ class Gui:
         if self._unlimited_animation_running:
             self._unlimited_animation_callback_time_activated(t, self.scene)
             # self.visual.position_visuals(quick=True)
-            self.guiEmitEvent(guiEventType.ANIMATION_TIME_CHANGED, execute_now=True)  # positions the visuals
+            self.guiEmitEvent(
+                guiEventType.ANIMATION_TIME_CHANGED, execute_now=True
+            )  # positions the visuals
             self.visual.refresh_embeded_view()
         else:
             dofs = self._animation_keyframe_interpolation_object(t)
@@ -2242,7 +2243,9 @@ class Gui:
 
         self.statusbar.showMessage(str(what))
 
-        if not self.ui.dockWidget_2.isVisible() and style > 0:  # 1 or 2 are errors and warnings
+        if (
+            not self.ui.dockWidget_2.isVisible() and style > 0
+        ):  # 1 or 2 are errors and warnings
             what = str(what)
             tool_long = len(what) > 1000 or len(what.split("\n")) > 30
 
@@ -2258,10 +2261,9 @@ class Gui:
                 QMessageBox.warning(
                     self.ui.widget,
                     txt_kind,
-                    short_start +
-                    ".....\n \n"
-                    f">>>> {txt_kind} message too long, skipping middle part. See (python) console [ctrl + p] for full error message <<<\n\n....." +
-                    short_end,
+                    short_start + ".....\n \n"
+                    f">>>> {txt_kind} message too long, skipping middle part. See (python) console [ctrl + p] for full error message <<<\n\n....."
+                    + short_end,
                     QMessageBox.Ok,
                 )
             else:
@@ -2850,9 +2852,9 @@ class Gui:
                 txt = f"were {len(self.scene.errors_during_load)} errors"
 
             self.show_exception(
-                f"There {txt} while loading the model. The model was not fully loaded.\n\nThe errors were:" + "\n".join(text)
+                f"There {txt} while loading the model. The model was not fully loaded.\n\nThe errors were:"
+                + "\n".join(text)
             )
-
 
     def open_file(self, filename: str or Path):
         """Opens the provided file"""
@@ -2864,13 +2866,10 @@ class Gui:
             self.scene.error_interaction.reset()
             return
 
-
         current_directory = str(Path(filename).parent)
         if current_directory.endswith(":\\"):
             current_directory += "\\"
         code = f's.clear()\ns.current_directory = r"{current_directory}"\ns.load_scene(r"{filename}", allow_errors_during_load=True)'
-
-
 
         try:
             self.run_code(code, guiEventType.FULL_UPDATE)
@@ -2902,8 +2901,6 @@ class Gui:
             self.visual.zoom_all()
         self.scene.error_interaction.reset()
 
-
-
     def _get_filename_using_dialog(self):
         folder = self.get_folder_for_dialogs()
         filename, _ = QFileDialog.getOpenFileName(
@@ -2928,7 +2925,6 @@ class Gui:
     def open_self_contained_DAVE_package(self, filename=None):
         """Opens a self-contained DAVE package"""
         DAVE_GUI_LOGGER.log("Open self contained DAVE package")
-
 
         try:
 
@@ -2994,7 +2990,9 @@ class Gui:
         self.scene.error_interaction.reset()
 
         if filename:
-            code = 's.import_scene(r"{}", allow_errors_during_load=True)'.format(filename)
+            code = 's.import_scene(r"{}", allow_errors_during_load=True)'.format(
+                filename
+            )
             self.run_code(code, guiEventType.MODEL_STRUCTURE_CHANGED)
 
             self._handle_load_errors_if_any()
@@ -3661,7 +3659,9 @@ class Gui:
         if not execute_now:
             # make a single-shot timer to emit the event
             if event not in [guiEventType.ANIMATION_TIME_CHANGED]:
-                DAVE_GUI_LOGGER.log(f"Gui emit event {event} from {sender} placed in queue")
+                DAVE_GUI_LOGGER.log(
+                    f"Gui emit event {event} from {sender} placed in queue"
+                )
             QTimer.singleShot(
                 0, lambda: self.guiEmitEvent(event, sender, execute_now=True)
             )
@@ -3708,13 +3708,16 @@ class Gui:
                 guiEventType.SELECTED_NODE_MODIFIED,  # weight or shape has change
                 guiEventType.ENVIRONMENT_CHANGED,
                 guiEventType.NEW_NODE_ADDED,
-                guiEventType.ANIMATION_TIME_CHANGED
+                guiEventType.ANIMATION_TIME_CHANGED,
             ):
                 if not updated:
                     self.scene.update()
 
             if self.animation_running():
-                if event not in [guiEventType.UNLIMITED_ANIMATION_LENGTH_CHANGED,guiEventType.ANIMATION_TIME_CHANGED]:
+                if event not in [
+                    guiEventType.UNLIMITED_ANIMATION_LENGTH_CHANGED,
+                    guiEventType.ANIMATION_TIME_CHANGED,
+                ]:
                     return  # do not update the widgets when an animation is running
 
             open_widgets = tuple(self.guiWidgets.values())
@@ -3737,14 +3740,17 @@ class Gui:
 
                 return
 
-            if event in (guiEventType.MODEL_STATE_CHANGED, guiEventType.MODEL_STEP_ACTIVATED):
+            if event in (
+                guiEventType.MODEL_STATE_CHANGED,
+                guiEventType.MODEL_STEP_ACTIVATED,
+            ):
                 if self.visual.settings.paint_uc:
                     self.visual.update_visibility()
                 self.visual.position_visuals()
                 self.visual._camera_direction_changed()
                 return
 
-            if event in (guiEventType.ANIMATION_TIME_CHANGED, ):
+            if event in (guiEventType.ANIMATION_TIME_CHANGED,):
                 self.visual.position_visuals()
                 return
 
@@ -3756,7 +3762,6 @@ class Gui:
                 self.visual.update_visibility()
                 self.visual.position_visuals()
                 return
-
 
             self.visual.remove_visuals_for_deleted_nodes()
             self.visual.create_node_visuals(recreate=False)
