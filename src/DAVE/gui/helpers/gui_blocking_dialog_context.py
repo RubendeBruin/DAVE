@@ -1,6 +1,7 @@
 """Creates a context manager for a QT Dialog that blocks the main GUI,
 re-enables the main gui and closes the dialog when the context is exited."""
-from datetime import datetime
+import warnings
+from datetime import datetime, timedelta
 from time import sleep
 
 from PySide6.QtCore import Qt
@@ -12,16 +13,25 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
 )
-
-
+from docutils.nodes import warning
 
 
 # define the dialog
 class BlockingDialog(QDialog):
-    def __init__(self, gui):
-        self.gui = gui
-        self.main_window = gui.MainWindow
-        self.app = gui.app
+    def __init__(self, gui=None):
+
+        if gui is not None:
+            warnings.warn('The gui argument is deprecated. Use the app and main_window arguments instead.')
+
+        self.app = QApplication.instance()
+
+        # get the main window from the current app
+        self.main_window = self.app.activeWindow()
+        #
+        #
+        # self.gui = gui
+        # self.main_window = gui.MainWindow
+        # self.app = gui.app
         self.done = False
 
         self.wants_to_cancel = False
@@ -47,7 +57,7 @@ class BlockingDialog(QDialog):
         self.button.pressed.connect(self.cancel_button_pressed)
 
         # register the start-time
-        self.start_time = datetime.now()
+        self.start_time = datetime.now() - timedelta(seconds=1)  # to process the first update immediately
 
     def user_wants_to_terminate(self):
         return self.wants_to_cancel

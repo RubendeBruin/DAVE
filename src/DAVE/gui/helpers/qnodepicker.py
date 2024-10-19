@@ -1,6 +1,13 @@
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QComboBox, QHBoxLayout, QToolButton, QGridLayout, QLabel
+from PySide6.QtWidgets import (
+    QWidget,
+    QComboBox,
+    QHBoxLayout,
+    QToolButton,
+    QGridLayout,
+    QLabel,
+)
 
 from DAVE.gui.helpers.my_qt_helpers import update_combobox_items_with_completer
 
@@ -31,18 +38,21 @@ class QNodePicker(QWidget):
         self.layout = QGridLayout()
         self.dropdown = QComboBox()
         self.dropdown.setEditable(True)
+        self.dropdown.setSizeAdjustPolicy(
+            QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
+        )
         self.button = QToolButton()
         self.button.setIcon(QIcon(":/icons/cross.png"))
         self.button.setAutoRaise(True)
         self.button.setCheckable(True)
 
-        self.layout.addWidget(self.dropdown,0,0)
-        self.layout.addWidget(self.button,0,1)
+        self.layout.addWidget(self.dropdown, 0, 0)
+        self.layout.addWidget(self.button, 0, 1)
 
         self.label = QLabel("Select node in tree or view to continue")
         self.label.setAlignment(Qt.AlignCenter)
         self.label.setStyleSheet("QLabel { background : orange; }")
-        self.layout.addWidget(self.label,1,0,1,2)
+        self.layout.addWidget(self.label, 1, 0, 1, 2)
         self.label.setVisible(False)
 
         self.setLayout(self.layout)
@@ -51,7 +61,7 @@ class QNodePicker(QWidget):
         self.button.clicked.connect(self.pick_clicked)
 
         self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0,0,0,0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
 
         self.picking = False
 
@@ -64,7 +74,7 @@ class QNodePicker(QWidget):
         self.NoneAllowed = NoneAllowed
         self.node = node
 
-    def fill(self, property_name = 'parent'):
+    def fill(self, property_name="parent"):
         """Use 'keep' as property-name to try to maintain the old value"""
 
         old_value = self.value
@@ -77,16 +87,17 @@ class QNodePicker(QWidget):
             names = [node.name for node in nodes if node.name != self.node.name]
 
         if self.NoneAllowed:
-            names.insert(0,'')
+            names.insert(0, "")
         update_combobox_items_with_completer(self.dropdown, names)
 
-        if property_name == 'keep':
+        if property_name == "keep" and old_value in names:
             self.setValue(old_value)
+
         else:
             prop_node = getattr(self.node, property_name, None)
 
             if prop_node is None:
-                self.setValue('')
+                self.setValue("")
             else:
                 self.setValue(prop_node.name)
 
@@ -101,7 +112,7 @@ class QNodePicker(QWidget):
 
     def valueChanged(self):
         if self.callback is not None:
-            if self.value == '':
+            if self.value == "":
                 self.callback()
             else:
                 try:
@@ -136,7 +147,3 @@ class QNodePicker(QWidget):
         self.button.setChecked(False)
         self.picking = False
         self.label.setVisible(False)
-
-
-
-

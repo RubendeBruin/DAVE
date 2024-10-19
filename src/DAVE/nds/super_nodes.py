@@ -750,6 +750,7 @@ class Component(Frame, HasSubScene):
             settings=False,  # do not import environment and other settings
             do_reports=False,  # do not import reports
             do_timeline=False,
+            inplace_scene_modification_ok=True,
         )
 
     def dissolve(self):

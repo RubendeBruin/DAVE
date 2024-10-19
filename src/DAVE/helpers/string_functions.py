@@ -11,14 +11,18 @@ def increment_string_end(s):
     else:
         return s + "2"
 
-def code_to_blocks(code : str):
+def code_to_blocks(code : str, code_bewteen_empty_lines_is_a_block = True):
     """Splits the code into blocks of complete python code.
+
+    Code is a block if:
+    - the syntax demands it (indentation, brackets, braces, etc.)
+    - the code is between two empty lines (if code_bewteen_empty_lines_is_a_block is True)
+
 
     """
 
 
     lines = code.split('\n')
-
 
     blocks = []
     brackets = 0
@@ -26,16 +30,22 @@ def code_to_blocks(code : str):
     within_tripplequotes = False
     previous_line_ends_with_backslash = False
 
+    previous_line_empty = False
 
     for line in lines:
-        if line.strip():  # skip empty lines
+
+        line_is_empty = line.strip() == ''
+
+
+        if not line_is_empty:
 
             if (line.startswith(' ') or
                     line.startswith('\t') or
                     brackets!=0 or
                     braces!=0 or
                     previous_line_ends_with_backslash or
-                    within_tripplequotes):
+                    within_tripplequotes or
+                    (not previous_line_empty and code_bewteen_empty_lines_is_a_block)):
                 if blocks:
                     blocks[-1] += '\n' + line
                 else:
@@ -55,6 +65,8 @@ def code_to_blocks(code : str):
                 within_tripplequotes = not within_tripplequotes
 
             previous_line_ends_with_backslash = line.strip().endswith('\\')
+
+        previous_line_empty = line_is_empty
 
     return blocks
 

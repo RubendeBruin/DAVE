@@ -255,7 +255,9 @@ class HasVolumeTrimeshCheck(DAVENodeBase):
     def trimesh_errors(self):
         """Returns a list of warnings for this node"""
 
-        assert isinstance(self, HasTrimesh), "This mixin class HasVolumeTrimeshCheck can only be used with nodes that have a trimesh"
+        assert isinstance(
+            self, HasTrimesh
+        ), "This mixin class HasVolumeTrimeshCheck can only be used with nodes that have a trimesh"
 
         if self._trimesh is None:
             return []
@@ -269,8 +271,6 @@ class HasVolumeTrimeshCheck(DAVENodeBase):
 
         else:
             return []
-
-
 
 
 class Manager(DAVENodeBase, ABC):
@@ -490,7 +490,9 @@ class HasSubScene(HasContainer):
         # and re-import them
         old_scene_exposed = getattr(self._scene, "exposed", None)
 
-        self._import_scene_func(other_scene=t)
+        self._import_scene_func(
+            other_scene=t,
+        )
 
         all_imported_nodes = t._nodes.copy()
         auto_created_nodes = t.get_implicitly_created_nodes()
@@ -509,7 +511,6 @@ class HasSubScene(HasContainer):
             # if node.manager is None:
             node._manager = self
             node._limits_by_manager = node.limits.copy()
-            node._watches_by_manager = node.watches.copy()
 
         # Get exposed properties (if any)
         self._exposed = getattr(t, "exposed", [])
@@ -531,6 +532,7 @@ class HasSubScene(HasContainer):
             settings=False,  # do not import environment and other settings
             do_reports=False,  # do not import reports
             do_timeline=False,
+            inplace_scene_modification_ok=True,
         )
 
     @property
@@ -578,3 +580,15 @@ class HasSubScene(HasContainer):
 
         with ClaimManagement(self._scene, self):
             setattr(node, prop_name, value)
+
+
+class HasNotVisibleOrSelectable(DAVENodeBase):
+    """Mixin class for nodes that are not visible or selectable
+
+    Typically combined with NodeSingleton
+
+    Nodes with this class will not appear in the scene tree (gui) and will not be selectable in the scene viewer.
+
+    """
+
+    pass

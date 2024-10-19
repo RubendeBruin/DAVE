@@ -7,6 +7,7 @@
 - This column shows "VAR" if values are different.
 
 """
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QColor
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QWidget
@@ -15,21 +16,22 @@ from DAVE import Scene, DG
 from DAVE.gui.helpers.my_qt_helpers import BlockSigs
 from DAVE.visual_helpers.constants import ERROR_COLOR_BACKGROUND
 
-def smart_format(value : float):
+
+def smart_format(value: float):
     # convert to string with variable precision
     if value == 0:
-        return '0'
+        return "0"
     elif abs(value) > 1e6:
-        return f'{value:.0f}'
+        return f"{value:.0f}"
     elif abs(value) > 1e3:
-        return f'{value:.1f}'
+        return f"{value:.1f}"
     else:
-        return f'{value:.3f}'
+        return f"{value:.3f}"
 
 
 class GriddedNodeEditor(QTableWidget):
 
-    def __init__(self, parent=None, scene : Scene = None, execute_func = None):
+    def __init__(self, parent=None, scene: Scene = None, execute_func=None):
         super().__init__(parent)
 
         if scene is None:
@@ -71,7 +73,11 @@ class GriddedNodeEditor(QTableWidget):
                 continue
             covered[type(n)] = True
 
-            prop_for_this_node_type = set(self._scene.give_properties_for_node(n,single_settable=True, single_numeric=True))
+            prop_for_this_node_type = set(
+                self._scene.give_properties_for_node(
+                    n, single_settable=True, single_numeric=True
+                )
+            )
 
             if props is None:
                 props = prop_for_this_node_type
@@ -81,7 +87,8 @@ class GriddedNodeEditor(QTableWidget):
                 else:
                     props = props.union(prop_for_this_node_type)
 
-
+        if props is None:  # nothing selected
+            return []
 
         props = list(props)
         props.sort()
@@ -113,7 +120,7 @@ class GriddedNodeEditor(QTableWidget):
             self.setColumnCount(n_props)
 
             self.setHorizontalHeaderLabels(props)
-            self.setVerticalHeaderLabels(['ALL'] + [node.name for node in nodes])
+            self.setVerticalHeaderLabels(["ALL"] + [node.name for node in nodes])
 
             for j, prop in enumerate(props):
 
@@ -126,25 +133,29 @@ class GriddedNodeEditor(QTableWidget):
                     if doc:
                         value = getattr(node, prop)
 
-                        self.setItem(i+1,j, QTableWidgetItem(smart_format(value)))
+                        self.setItem(i + 1, j, QTableWidgetItem(smart_format(value)))
 
                         editable = doc.is_single_settable and doc.is_single_numeric
 
                     else:
-                        self.setItem(i + 1, j, QTableWidgetItem(''))
+                        self.setItem(i + 1, j, QTableWidgetItem(""))
                         editable = False
 
                     # cell can also be read-only if the node manager does not allow it
                     if editable:
                         if node.manager:
-                            editable = node.manager.is_property_change_allowed(node, prop)
+                            editable = node.manager.is_property_change_allowed(
+                                node, prop
+                            )
 
                     if editable:
                         values.append(value)
                     else:
                         # make cell un-editable
-                        self.item(i+1, j).setFlags(self.item(i+1, j).flags() & ~Qt.ItemIsEditable)
-                        self.item(i+1, j).setBackground(QBrush(QColor(200,200,200)))
+                        self.item(i + 1, j).setFlags(
+                            self.item(i + 1, j).flags() & ~Qt.ItemIsEditable
+                        )
+                        self.item(i + 1, j).setBackground(QBrush(QColor(200, 200, 200)))
 
                 if len(set(values)) == 1:
                     self.setItem(0, j, QTableWidgetItem(smart_format(values[0])))
@@ -158,14 +169,12 @@ class GriddedNodeEditor(QTableWidget):
                 if curindex.column() < self.columnCount():
                     self.setCurrentIndex(curindex)
 
-
-
     def item_changed(self, item):
 
         with BlockSigs(self):
             try:
                 value = float(item.text())
-                item.setBackground(QBrush(QColor(255,255,255)))
+                item.setBackground(QBrush(QColor(255, 255, 255)))
             except:
                 # mark the cell as invalid
                 item.setBackground(QBrush(QColor(*ERROR_COLOR_BACKGROUND)))
@@ -176,12 +185,11 @@ class GriddedNodeEditor(QTableWidget):
         else:
             rows = [item.row()]
 
-
         nodes = self._nodes_as_displayed()
 
         codes = []
         for row in rows:
-            node_name = nodes[row-1]
+            node_name = nodes[row - 1]
             prop_name = self.horizontalHeaderItem(item.column()).text()
 
             # see if cell is editable
@@ -189,35 +197,30 @@ class GriddedNodeEditor(QTableWidget):
                 continue
 
             # see if the value is different from what we had, if that is the case then no need to change it
-            if getattr(nodes[row-1], prop_name) == value:
+            if getattr(nodes[row - 1], prop_name) == value:
                 continue
 
             codes.append(f's["{node_name}"].{prop_name} = {value}')
 
-        code = '\n'.join(codes)
+        code = "\n".join(codes)
         #
         if code:
             self.execute(code)
             self.fill()
 
 
-
-
-
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
     from PySide6.QtWidgets import QApplication
+
     app = QApplication.instance() or QApplication(sys.argv)
 
     s = Scene()
 
-
     for i in range(10):
-        s.new_point(f"Point {i}", position = (i, i, i))
+        s.new_point(f"Point {i}", position=(i, i, i))
 
-    s.new_rigidbody('Rigid', position = (10, 10, 10))
+    s.new_rigidbody("Rigid", position=(10, 10, 10))
 
     for i in range(10):
         s.new_frame(f"Frame {i}")

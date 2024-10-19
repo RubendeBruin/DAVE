@@ -5,11 +5,12 @@
 
   Ruben de Bruin - 2019
 """
+
 import csv
 import numpy as np
 from pathlib import Path
 
-from .nds.base import RigidBodyContainer
+from .nds.base import RigidBodyContainer, RigidBodyContainerMassReadOnly
 from .nds.mixins import (
     Manager,
     HasFootprint,
@@ -19,7 +20,7 @@ from .nds.mixins import (
     HasContainer,
 )
 from .nds.results import LoadShearMomentDiagram
-from .nds.super_nodes import Component #, SimpleSling
+from .nds.super_nodes import Component  # , SimpleSling
 from .nds.trimesh import TriMeshSource
 
 """
@@ -100,7 +101,13 @@ Mixin:
 
 
 """
-from .nds.abstracts import Node, NodeCoreConnected, NodePurePython, DAVENodeBase
+from .nds.abstracts import (
+    Node,
+    NodeCoreConnected,
+    NodePurePython,
+    DAVENodeBase,
+    NodeSingleton,
+)
 from .nds.enums import AreaKind, VisualOutlineType
 from .nds.helpers import ClaimManagement, Watch
 
@@ -121,7 +128,6 @@ from .nds.core import (
     Tank,
     WindArea,
     WindOrCurrentArea,
-
 )
 from .nds.pure import BallastSystem, Visual, WaveInteraction1
 
@@ -178,8 +184,12 @@ DAVE_ADDITIONAL_RUNTIME_MODULES["HasTrimesh"] = HasTrimesh
 DAVE_ADDITIONAL_RUNTIME_MODULES["HasParent"] = HasParent
 DAVE_ADDITIONAL_RUNTIME_MODULES["HasSubScene"] = HasSubScene
 DAVE_ADDITIONAL_RUNTIME_MODULES["HasContainer"] = HasContainer
+DAVE_ADDITIONAL_RUNTIME_MODULES["NodeSingleton"] = NodeSingleton
 
 DAVE_ADDITIONAL_RUNTIME_MODULES["RigidBodyContainer"] = RigidBodyContainer
+DAVE_ADDITIONAL_RUNTIME_MODULES["RigidBodyContainerMassReadOnly"] = (
+    RigidBodyContainerMassReadOnly
+)
 
 
 # Helpers

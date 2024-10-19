@@ -32,7 +32,7 @@ class guiEventType(Enum):
     NEW_NODE_ADDED = 9  # a new node is added to the model -- a selection changed event will typically be submitted as well
     UNLIMITED_ANIMATION_LENGTH_CHANGED = 10  # the animation is started
     ANIMATION_TIME_CHANGED = 11  # the animation time is changed
-    WATCHES_CHANGED = 12 # Watches are added or removed
+    WATCHES_CHANGED = 12  # Watches are added or removed
 
 
 class guiDockWidget(PySide6QtAds.CDockWidget):
@@ -47,7 +47,7 @@ class guiDockWidget(PySide6QtAds.CDockWidget):
             PySide6QtAds.CDockWidget.MinimumSizeHintFromDockWidget
         )
 
-        self.ui : QtWidgets.QWidget  # type hinting
+        self.ui: QtWidgets.QWidget  # type hinting
 
         # These widgets are created by the main gui -> show_guiWidget. This function sets the following references
 
@@ -119,47 +119,3 @@ class guiDockWidget(PySide6QtAds.CDockWidget):
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(label)
         self.contents.setLayout(layout)
-
-    def move_away_from_cursor(self, max_spacing=100):
-        """If the widget is not docked, Moves the widget away from the current cursor position
-
-        move to at most max_spacing from the cursor (we do want to keep it near)
-        """
-
-        if self.isFloating():
-            print(self)
-
-            # get the extends of the window
-            pos = self.pos()
-            width = self.width()
-
-            left = pos.x()
-            right = left + width
-            top = pos.y()
-
-            cursor_pos = QCursor.pos()
-
-            x = cursor_pos.x()
-
-            if x > left and x < right:
-                # we're blocking the cursor position
-                size = QApplication.instance().screens()[0].size()
-
-                room_left = (
-                    left - width
-                )  # free space with widget right edge is at cursor
-                room_right = (
-                    size.width() - right
-                )  # free space if left edge is at cursor
-
-                if room_left > room_right:
-                    space = min(max_spacing, room_left)
-                    left = x - width - space
-                    self.move(QPoint(left, top))
-                    return
-
-                else:
-                    space = min(max_spacing, room_right)
-                    left = x + space
-                    self.move(QPoint(left, top))
-                    return

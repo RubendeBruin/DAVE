@@ -80,8 +80,6 @@ class Node(DAVENodeBase, ABC):
         self._watches: set[str] = set()
         """Defines the watches on a node. Controlled by the Scene"""
 
-
-
         self._valid = True
         """Turns False if the node in removed from a scene. This is a work-around for weakrefs"""
 
@@ -95,7 +93,8 @@ class Node(DAVENodeBase, ABC):
         super().__init__(scene=scene, name=name)
 
     @property
-    def watches(self):
+    def watches(self) -> dict:
+        """Deprecated property, use scene.watches instead"""
         warnings.warn("Using the deprecated watches property.")
         return dict()
 
@@ -411,49 +410,6 @@ class Node(DAVENodeBase, ABC):
     def delete_tag(self, value: str):
         self._tags.remove(value)
 
-    # # watches
-    # def run_watches(self) -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
-    #     """Executes all watches on this node and returns the execution result as
-    #     active = list[tuple[str, values]]
-    #     hidden = list[tuple[str, values]]
-    #
-    #     watches of which the condition evaluates to False are excluded
-    #     numerical results are rounded to "decimals" if >= 0
-    #     """
-    #     r = []
-    #     hidden = []
-    #
-    #     for desc, w in self.watches.items():
-    #         try:
-    #             value = eval(w.evaluate, {"np": np}, {"s": self._scene, "self": self})
-    #         except Exception as M:
-    #             value = f"ERROR: {w.evaluate} -> {str(M)}"
-    #
-    #         if w.condition:
-    #             condition = eval(
-    #                 w.condition,
-    #                 {"np": np},
-    #                 {"s": self._scene, "self": self, "value": value},
-    #             )
-    #         else:
-    #             condition = True
-    #
-    #         # convert nd arrays to tuples for easier comparison later
-    #         if isinstance(value, np.ndarray):
-    #             value = tuple(value)
-    #
-    #         if condition:
-    #             if w.decimals >= 0:
-    #                 if isinstance(value, float):
-    #                     value = round(value, w.decimals)
-    #
-    #             r.append((desc, value))
-    #
-    #         else:
-    #             hidden.append((desc, value))
-    #
-    #     return r, hidden
-
 
 class NodeCoreConnected(Node):
     def __init__(self, scene, name):
@@ -525,3 +481,43 @@ class NodePurePython(Node):
 
     def _delete_vfc(self):
         pass  # nothing to delete
+
+
+class NodeSingleton(NodePurePython):
+    """Singleton nodes are nodes that can only occur once in a scene. Typically used to store general information.
+
+    Defining a Singleton node will delete/overwrite any existing nodes of the same type
+    Singleton nodes are only imported if they do not yet exist
+
+    """
+
+    def __init__(self, scene, name):
+
+        # check if a node with the same type already exists
+        # if so, then delete it
+
+        existing = scene.nodes_where(kind=type(self))
+
+        # check if name is already taken BEFORE deleting the existing nodes
+        if name in [node.name for node in existing]:
+            pass  # ok, will be deleted
+        else:
+            scene.assert_name_available(name)
+
+        for node in existing:
+            logging.warning(
+                f"Deleting existing singleton node {node.name} because we are creating a new SingletonNode of type {type(self)}"
+            )
+            scene.delete(node)
+
+        super().__init__(scene=scene, name=name)
+
+    @property
+    def manager(self) -> "Manager" or None:
+        """Singleton nodes may not be managed by other nodes.
+        #NOGUI"""
+        return None
+
+    @manager.setter
+    def manager(self, value):
+        logging.warning("Setting manager on a SingletonNode is not allowed")

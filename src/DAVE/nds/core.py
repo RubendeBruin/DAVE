@@ -111,35 +111,61 @@ class RigidBody(Frame):
         """Center of Gravity position [m,m,m] (local axis)"""
         return self._vfPoi.position
 
+    # Define private setters for the properties.
+    # derived classes may override the public setters, but the private setters are always available
+
+    def _set_cog(self, value: tuple[float, float, float]):
+        """Set the cog position [m,m,m] (local axis)"""
+        self._vfPoi.position = value
+        self._set_inertia_position(value)
+        self._sync_selfweight_footprint()
+
+    def _set_cog_x(self, value: float):
+        """Set the cog x position [m] (local axis)"""
+        self._set_cog((value, self.cog[1], self.cog[2]))
+
+    def _set_cog_y(self, value: float):
+        """Set the cog y position [m] (local axis)"""
+        self._set_cog((self.cog[0], value, self.cog[2]))
+
+    def _set_cog_z(self, value: float):
+        """Set the cog z position [m] (local axis)"""
+        self._set_cog((self.cog[0], self.cog[1], value))
+
+    def _set_mass(self, value: float):
+        """Set the mass [t]"""
+        if value == 0:
+            self.inertia_radii = (0, 0, 0)
+        self._set_inertia(value)
+        self._vfForce.force = (0, 0, -self._scene.g * value)
+
     @cogx.setter
     @node_setter_manageable
     @node_setter_observable
     def cogx(self, var):
-        a = self.cog
-        self.cog = (var, a[1], a[2])
+        assert1f(var, "cogx")
+        self._set_cog_x(var)
 
     @cogy.setter
     @node_setter_manageable
     @node_setter_observable
     def cogy(self, var):
-        a = self.cog
-        self.cog = (a[0], var, a[2])
+        assert1f(var, "cogy")
+        self._set_cog_y(var)
 
     @cogz.setter
     @node_setter_manageable
     @node_setter_observable
     def cogz(self, var):
-        a = self.cog
-        self.cog = (a[0], a[1], var)
+        assert1f(var, "cogz")
+        self._set_cog_z(var)
 
     @cog.setter
     @node_setter_manageable
     @node_setter_observable
     def cog(self, newcog):
         assert3f(newcog)
-        self._vfPoi.position = newcog
-        self.inertia_position = self.cog
-        self._sync_selfweight_footprint()
+        self._set_cog(newcog)
 
     @property
     def mass(self) -> float:
@@ -154,10 +180,7 @@ class RigidBody(Frame):
     @node_setter_observable
     def mass(self, newmass):
         assert1f(newmass)
-        if newmass == 0:
-            self.inertia_radii = (0, 0, 0)
-        self.inertia = newmass
-        self._vfForce.force = (0, 0, -self._scene.g * newmass)
+        self._set_mass(newmass)
 
     def dissolve_some(self):
         """A RigidBody can only be dissolved if it has no mass, in that case it is actually a frame"""
@@ -1182,6 +1205,8 @@ class Buoyancy(NodeCoreConnected, HasParentCore, HasTrimesh, HasVolumeTrimeshChe
 
     @property
     def node_errors(self) -> list[str]:
+        """Returns a list of models structure errors that are relevant for this node
+        #NOGUI"""
         return self.trimesh_errors()
 
     @property
@@ -1265,12 +1290,13 @@ class Tank(NodeCoreConnected, HasParentCore, HasTrimesh, HasVolumeTrimeshCheck):
         self._scene._vfc.delete(self._inertia.name)
         super()._delete_vfc()
 
-    def unmanaged_property_values(self) ->list[tuple[str, any]]:
-        return [("free_flooding", self.free_flooding),
-                ("volume", self.volume)]
+    def unmanaged_property_values(self) -> list[tuple[str, any]]:
+        return [("free_flooding", self.free_flooding), ("volume", self.volume)]
 
     @property
     def node_errors(self) -> list[str]:
+        """Returns a list of models structure errors that are relevant for this node
+        #NOGUI"""
         return self.trimesh_errors()
 
     @property
@@ -1544,7 +1570,9 @@ class Cable(NodeCoreConnected):
                     f"Can not set length of {self.label} to {val}.\nLength shall be more than 0 if EA>0 (otherwise stiffness EA/L becomes infinite)"
                 )
         if val < 0:
-            raise ValueError(f"Can not set length of {self.label} to {val}.\nLength shall be more than 0")
+            raise ValueError(
+                f"Can not set length of {self.label} to {val}.\nLength shall be more than 0"
+            )
         self._vfNode.Length = val
 
     @property
@@ -1774,9 +1802,9 @@ class Cable(NodeCoreConnected):
         """The friction factors as calculated by DAVE [-], only applicable to loops"""
         if self._isloop:
             fr = list(self.friction)
-            fr[
-                self._vfNode.unkonwn_friction_index
-            ] = self._vfNode.calculated_unknown_friction_factor
+            fr[self._vfNode.unkonwn_friction_index] = (
+                self._vfNode.calculated_unknown_friction_factor
+            )
             return tuple(fr)
         else:
             return self.friction
@@ -1916,7 +1944,9 @@ class Cable(NodeCoreConnected):
     def get_points_for_visual(self):
         """A list of 3D locations which can be used for visualization"""
 
-        if getattr(self, "_keep_taut_visual", None):  # for frequency domain response movies
+        if getattr(
+            self, "_keep_taut_visual", None
+        ):  # for frequency domain response movies
             rsag = 2
         else:
             rsag = RESOLUTION_CABLE_SAG
@@ -1935,15 +1965,15 @@ class Cable(NodeCoreConnected):
     def get_points_and_tensions_for_visual(self):
         """A list of 3D locations which can be used for visualization"""
 
-        if getattr(self, "_keep_taut_visual", None):  # for frequency domain response movies
+        if getattr(
+            self, "_keep_taut_visual", None
+        ):  # for frequency domain response movies
             rsag = 2
         else:
             rsag = RESOLUTION_CABLE_SAG
 
         if getattr(self, "_get_drawing_data_override", None):  # For Slings
-            return self._get_drawing_data_override(
-                rsag, RESOLUTION_CABLE_OVER_CIRCLE
-            )
+            return self._get_drawing_data_override(rsag, RESOLUTION_CABLE_OVER_CIRCLE)
 
         points, tensions = self._vfNode.get_drawing_data(
             rsag, RESOLUTION_CABLE_OVER_CIRCLE, False
@@ -1954,7 +1984,7 @@ class Cable(NodeCoreConnected):
         """A list of 3D locations which can be used for visualization"""
         constant_point_count = True
 
-        if getattr(self, "_get_drawing_data_override", None):   # For Slings
+        if getattr(self, "_get_drawing_data_override", None):  # For Slings
             points, tensions = self._get_drawing_data_override(
                 RENDER_CATENARY_RESOLUTION, RENDER_CURVE_RESOLUTION
             )
@@ -2651,15 +2681,14 @@ class Beam(NodeCoreConnected):
     # read-only
 
     @property
-    def internal_forces(self) -> tuple[tuple[float,float,float]]:
+    def internal_forces(self) -> tuple[tuple[float, float, float]]:
         """Returns the internal forces in the beam as applied on the A-side (local axis system) [kN, kN, kN]"""
         return self._vfNode.internal_forces
 
     @property
-    def internal_moments(self) -> tuple[tuple[float,float,float]]:
+    def internal_moments(self) -> tuple[tuple[float, float, float]]:
         """Returns the internal forces in the beam as applied on the A-side (local axis system) [kN, kN, kN]"""
         return self._vfNode.internal_moments
-
 
     @property
     def moment_A(self) -> tuple[float, float, float]:
@@ -2669,8 +2698,7 @@ class Beam(NodeCoreConnected):
     @property
     def moment_B(self) -> tuple[float, float, float]:
         """Moment on beam at node B [kNm, kNm, kNm] (global axis system)"""
-        return   self._vfNode.mB
-
+        return self._vfNode.mB
 
     @property
     def force_A(self) -> tuple[float, float, float]:
@@ -2681,7 +2709,6 @@ class Beam(NodeCoreConnected):
     def force_B(self) -> tuple[float, float, float]:
         """Force that the beam applies onto node B [kN, kN, kN] (global axis system)"""
         return self._vfNode.fB
-
 
     @property
     def tension(self) -> float:
@@ -2700,12 +2727,12 @@ class Beam(NodeCoreConnected):
         return self._vfNode.torsion
 
     @property
-    def X_nodes(self) -> tuple[float,...]:
+    def X_nodes(self) -> tuple[float, ...]:
         """Returns the x-positions of the end nodes and internal nodes along the length of the beam [m]"""
         return self._vfNode.x
 
     @property
-    def X_midpoints(self) -> tuple[float,...]:
+    def X_midpoints(self) -> tuple[float, ...]:
         """X-positions of the beam centers measured along the length of the beam [m]"""
         return tuple(
             0.5 * (np.array(self._vfNode.x[:-1]) + np.array(self._vfNode.x[1:]))
@@ -2723,13 +2750,13 @@ class Beam(NodeCoreConnected):
         #NOGUI"""
         return np.rad2deg(self._vfNode.global_orientation, dtype=float)
 
-    def get_point_along_beam(self, fraction : float) -> tuple[float,float,float]:
+    def get_point_along_beam(self, fraction: float) -> tuple[float, float, float]:
         """Returns the 3D location of a position along the beam as fraction of the undeformed length."""
 
-        fraction = max(0, min(1, fraction)) # clamp to [0,1]
+        fraction = max(0, min(1, fraction))  # clamp to [0,1]
 
         # All segments have the same length
-        f_segment = fraction*self.n_segments
+        f_segment = fraction * self.n_segments
         i_left = floor(f_segment)
         i_right = ceil(f_segment)
 
@@ -2743,12 +2770,9 @@ class Beam(NodeCoreConnected):
             v_left = self.global_positions[i_left]
             v_right = self.global_positions[i_right]
 
-            v = f_left*v_left + f_right*v_right
+            v = f_left * v_left + f_right * v_right
 
         return (v[0], v[1], v[2])
-
-
-
 
     @property
     def bending(self) -> np.array:
@@ -2779,8 +2803,8 @@ class SupportPoint(NodeCoreConnected):
         self._vfNode = scene._vfc.new_supportpoint(name)
         super().__init__(scene=scene, name=name)
 
-        self._frame : Frame = None
-        self._point : Point = None
+        self._frame: Frame = None
+        self._point: Point = None
 
     def depends_on(self):
         return [self._frame, self._point]
@@ -2793,7 +2817,7 @@ class SupportPoint(NodeCoreConnected):
     @kz.setter
     @node_setter_manageable
     @node_setter_observable
-    def kz(self, value : float):
+    def kz(self, value: float):
         assert1f_positive_or_zero(value, f"kz of {self.name}")
         self._vfNode.kz = value
 
@@ -2805,7 +2829,7 @@ class SupportPoint(NodeCoreConnected):
     @ky.setter
     @node_setter_manageable
     @node_setter_observable
-    def ky(self, value : float):
+    def ky(self, value: float):
         assert1f_positive_or_zero(value, f"ky of {self.name}")
         self._vfNode.ky = value
 
@@ -2817,7 +2841,7 @@ class SupportPoint(NodeCoreConnected):
     @kx.setter
     @node_setter_manageable
     @node_setter_observable
-    def kx(self, value : float):
+    def kx(self, value: float):
         assert1f_positive_or_zero(value, f"kx of {self.name}")
         self._vfNode.kx = value
 
@@ -2829,7 +2853,7 @@ class SupportPoint(NodeCoreConnected):
     @delta_z.setter
     @node_setter_manageable
     @node_setter_observable
-    def delta_z(self, value : float):
+    def delta_z(self, value: float):
         assert1f(value, f"dz of {self.name}")
         self._vfNode.delta_z = value
 
@@ -2862,18 +2886,20 @@ class SupportPoint(NodeCoreConnected):
     def point(self, val):
         val = self._scene._node_from_node_or_str(val)
         if not isinstance(val, Point):
-            raise TypeError(f"Provided point for {self.name} should be a Point but is a {type(val)}")
+            raise TypeError(
+                f"Provided point for {self.name} should be a Point but is a {type(val)}"
+            )
 
         self._point = val
         self._vfNode.point = val._vfNode
 
     @property
-    def contact_force(self) -> tuple[float,float,float]:
+    def contact_force(self) -> tuple[float, float, float]:
         """Contact force on point (frame system) [kN, kN, kN]"""
         return self.frame.to_loc_direction(self._vfNode.global_force)
 
     @property
-    def contact_force_global(self) -> tuple[float,float,float]:
+    def contact_force_global(self) -> tuple[float, float, float]:
         """Contact force on point (global system) [kN, kN, kN]"""
         return self._vfNode.global_force
 

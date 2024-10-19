@@ -41,6 +41,7 @@ from DAVE.settings import (
 
 from .exceptions import ModelInvalidException
 from .helpers.code_error_extract import get_code_error
+from .nds.abstracts import NodeSingleton
 
 from .resource_provider import DaveResourceProvider
 from .helpers.string_functions import increment_string_end, code_to_blocks
@@ -119,7 +120,7 @@ class Scene:
         copy_from=None,
         code=None,
         resource_provider: DaveResourceProvider or None = None,
-        allow_errors_during_load = False
+        allow_errors_during_load=False,
     ):
         """Creates a new Scene
 
@@ -180,7 +181,7 @@ class Scene:
         self.t: "TimeLine" or None = None
         """Optional timeline"""
 
-        self.rao_requests : "RaoRequests" or None = None
+        self.rao_requests: "RaoRequests" or None = None
 
         self.gui_solve_func = None
         """Optional reference to function to use instead of solve_statics - used by the Gui to give user control of solving
@@ -195,15 +196,19 @@ class Scene:
         self.solver_settings = SolverSettings()
         """Settings for the solver"""
 
-        self.errors_during_load : list[Exception] = []
+        self.errors_during_load: list[Exception] = []
         """List of errors that occurred during loading"""
-
 
         if filename is not None:
             self.load_scene(filename, allow_errors_during_load=allow_errors_during_load)
 
         if copy_from is not None:
-            self.import_scene(copy_from, containerize=False, settings=True, allow_errors_during_load=allow_errors_during_load)
+            self.import_scene(
+                copy_from,
+                containerize=False,
+                settings=True,
+                allow_errors_during_load=allow_errors_during_load,
+            )
 
         if code is not None:
             self.run_code(code, continue_on_errors=allow_errors_during_load)
@@ -624,7 +629,9 @@ class Scene:
         or raises a FileNotFoundError if the resource is not found and could not be replaced
         """
 
-        return self.resource_provider.get_valid_resource_url(url, error_interaction=self.error_interaction)
+        return self.resource_provider.get_valid_resource_url(
+            url, error_interaction=self.error_interaction
+        )
 
     def get_resource_path(self, url: str) -> Path:
         """Resolves the path on disk for resource url.
@@ -645,7 +652,9 @@ class Scene:
         if isinstance(url, Path):
             url = str(url)
 
-        return self.resource_provider.get_resource_path(url, error_interaction=self.error_interaction)
+        return self.resource_provider.get_resource_path(
+            url, error_interaction=self.error_interaction
+        )
 
     def get_used_resources(self):
         """Returns a list of all resources used in the scene"""
@@ -707,12 +716,22 @@ class Scene:
             and (single_numeric is None)
         )
 
+        # we move up in the class hierarchy to get all properties
+        # we start with the most generic class and move to the most specific
+        # this way we can override properties in subclasses
+
         for anchestor in reversed(anchestors):
             if anchestor in DAVE_NODEPROP_INFO:
                 if ignore_all:
                     props.extend(DAVE_NODEPROP_INFO[anchestor].keys())
                 else:
                     for key, value in DAVE_NODEPROP_INFO[anchestor].items():
+
+                        if key in props:  # property is overridden in subclass
+                            props.remove(
+                                key
+                            )  # will be re-added if implementation matches the criteria
+
                         if (
                             ((value.is_settable == settable) or (settable is None))
                             and (
@@ -730,9 +749,10 @@ class Scene:
         props = list(set(props))  # filter out doubles
         props.sort()
 
-        if props[0] == 'UC':  # move UC to the end
-            props.pop(0)
-            props.append('UC')
+        if props:
+            if props[0] == "UC":  # move UC to the end
+                props.pop(0)
+                props.append("UC")
 
         return tuple(props)
 
@@ -770,8 +790,7 @@ class Scene:
         else:
             return None
 
-
-    def node_by_name(self, node_name, silent=False, req_type = None):
+    def node_by_name(self, node_name, silent=False, req_type=None):
         """Returns a node with the given name. Raises an error if no node is found."""
 
         # For faster lookup we keep a dict with node names as keys and node indices as values
@@ -803,7 +822,6 @@ class Scene:
         self._node_dict = {node.name: index for index, node in enumerate(self._nodes)}
         if node_name in self._node_dict:
             return self._nodes[self._node_dict[node_name]]  # return directly
-
 
         # The requested node does not exist!
 
@@ -841,7 +859,9 @@ class Scene:
         # # end work-around
 
         if self.error_interaction is not None:
-            name = self.error_interaction.handle_missing_node(scene = self, node_name = node_name, req_type=req_type)
+            name = self.error_interaction.handle_missing_node(
+                scene=self, node_name=node_name, req_type=req_type
+            )
             if name is not None:
                 return self.node_by_name(name, silent=silent)
 
@@ -1741,7 +1761,7 @@ class Scene:
             #
         return Path(str(zip_filename) + ".zip"), log
 
-    def load(self, filename: str or Path, allow_error_during_load = False):
+    def load(self, filename: str or Path, allow_error_during_load=False):
         """Loads a DAVE file or .zip file containing a DAVE file. The file is unzipped and the DAVE file is loaded."""
         filename = Path(filename)
 
@@ -1761,7 +1781,9 @@ class Scene:
                     dave_file = Path(tmp_dir) / (
                         filename.name[:-4] + ".dave"
                     )  # without the .zip
-                    self.load_package(dave_file, allow_error_during_load=allow_error_during_load)
+                    self.load_package(
+                        dave_file, allow_error_during_load=allow_error_during_load
+                    )
 
         else:
             raise ValueError(f"Unsupported file type: {filename.suffix}")
@@ -1772,7 +1794,11 @@ class Scene:
         path = filename.parent
         package_folder = str(path)
         code = filename.read_text()
-        self.errors_during_load = self.run_code(code, package_folder=package_folder, continue_on_errors=allow_error_during_load)
+        self.errors_during_load = self.run_code(
+            code,
+            package_folder=package_folder,
+            continue_on_errors=allow_error_during_load,
+        )
 
     # ========= Limits ===========
 
@@ -2605,11 +2631,11 @@ class Scene:
         new_node = Visual(self, name)
 
         try:
-            new_node.path = path   # validity of path is checked here.
+            new_node.path = path  # validity of path is checked here.
             # If the user ignores then the created node will be removed and the error will be raised
 
         except Exception as E:
-            new_node.path = 'res: missing.glb'
+            new_node.path = "res: missing.glb"
 
         new_node.parent = parent
 
@@ -3727,7 +3753,7 @@ class Scene:
         state_only=False,
         do_reports=True,
         do_timeline=True,
-        do_rao_requests = True,
+        do_rao_requests=True,
     ):
         """Generates the python code that rebuilds the scene and elements in its current state.
 
@@ -3969,14 +3995,18 @@ class Scene:
         # check that the property exists and is single numeric
         doc = self.give_documentation(node, property_name)
         if doc is None:
-            warnings.warn(f"Property {property_name} does not exist on node {node.name} with type {type(node)}")
+            warnings.warn(
+                f"Property {property_name} does not exist on node {node.name} with type {type(node)}"
+            )
             return False
 
         if doc.is_single_numeric:
             node._watches.add(property_name)  # is a set, so no duplicates
             return True
         else:
-            warnings.warn(f"Property {property_name} is not a single numeric property on node {node.name} with type {type(node)}")
+            warnings.warn(
+                f"Property {property_name} is not a single numeric property on node {node.name} with type {type(node)}"
+            )
             return False
 
     def try_delete_watch(self, node_or_node_name, property_name):
@@ -4003,7 +4033,9 @@ class Scene:
                 watches.append((node, watch))
         return watches
 
-    def evaluate_watches(self) -> tuple[list[Node],list[str], list[float],list[NodePropertyInfo]]:
+    def evaluate_watches(
+        self,
+    ) -> tuple[list[Node], list[str], list[float], list[NodePropertyInfo]]:
         """Evaluates all watches and returns a tuple with four lists:
         Node,
         property name,
@@ -4032,7 +4064,6 @@ class Scene:
             docs.append(doc)
 
         return nodes, properties, values, docs
-
 
     def save_scene(self, filename, do_reports=True, do_timeline=True):
         """Saves the scene to a file
@@ -4142,7 +4173,7 @@ class Scene:
             #     print("stop")
             print_deps(node, "")
 
-    def run_code(self, code : str, package_folder=None, continue_on_errors=False):
+    def run_code(self, code: str, package_folder=None, continue_on_errors=False):
         """Runs the provided code with 's' as self
 
         If provided, the package folder is used as "cd"
@@ -4235,7 +4266,9 @@ class Scene:
             code += line + "\n"
 
         try:
-            self.errors_during_load = self.run_code(code, continue_on_errors = allow_errors_during_load)
+            self.errors_during_load = self.run_code(
+                code, continue_on_errors=allow_errors_during_load
+            )
         except Exception as M:
             raise ModelInvalidException(M)
 
@@ -4248,15 +4281,17 @@ class Scene:
         container=None,
         settings=True,
         quick=False,
-        allow_errors_during_load = False,
+        allow_errors_during_load=False,
         do_reports=True,
         do_timeline=True,
+        inplace_scene_modification_ok=False,
     ):
         """Copy-paste all nodes of scene "other" into current scene.
 
         To avoid double names it is recommended to use a prefix. This prefix will be added to all element names.
 
         Args:
+            other        : the scene to import, can be a Scene object or a file-name
             containerize : place all the nodes without a parent in a dedicated Frame
             nodes [None] : if provided then import only these nodes
             settings     : import settings (gravity, wind etc. ) from other scene as well
@@ -4277,6 +4312,12 @@ class Scene:
                 )
                 containerize = True
 
+        # can not copy because the copy function recursively calls this function again
+        if (
+            isinstance(other, Scene) and not inplace_scene_modification_ok
+        ):  # create a copy as to not change the original (prefixes, singletons etc)
+            other = other.copy()
+
         if isinstance(other, Path):
             other = str(other)
 
@@ -4288,10 +4329,20 @@ class Scene:
             )
 
         if not isinstance(other, Scene):
-            raise TypeError("Other should be a Scene, string or path but is a " + str(type(other)) + " with value " + str(other))
+            raise TypeError(
+                "Other should be a Scene, string or path but is a "
+                + str(type(other))
+                + " with value "
+                + str(other)
+            )
 
         # apply prefix
         other.prefix_element_names(prefix)
+
+        # remove singleton nodes on other if they are present in self
+        for singleton_node in other.nodes_where(kind=NodeSingleton):
+            if self.nodes_where(kind=type(singleton_node)):
+                other.delete(singleton_node)
 
         # check for double names after applying prefix
         for imported_node in other._nodes:
@@ -4314,7 +4365,9 @@ class Scene:
         other._export_code_with_solved_function = store_export_code_with_solved_function
 
         try:
-            self.run_code(code, continue_on_errors = False)  # we just generated this code, so it should be fine
+            self.run_code(
+                code, continue_on_errors=False
+            )  # we just generated this code, so it should be fine
 
         except Exception as M:
             raise ModelInvalidException(M)
@@ -4371,7 +4424,13 @@ class Scene:
             resource_provider=copy_resource_provider,
         )
 
-        c.import_scene(self, containerize=False, nodes=nodes, quick=quick)
+        c.import_scene(
+            self,
+            containerize=False,
+            nodes=nodes,
+            quick=quick,
+            inplace_scene_modification_ok=True,
+        )
         return c
 
     def get_free_frame_state_dict(self) -> dict:

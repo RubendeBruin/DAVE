@@ -16,6 +16,7 @@ from PySide6.QtGui import QKeySequence, QShortcut
 
 from DAVE import *
 from DAVE.gui.helpers.flow_layout import FlowLayout
+from DAVE.gui.helpers.gui_blocking_dialog_context import BlockingDialog
 from DAVE.gui.thumbnailer.thumbnail_provider import ThumbnailProvider
 
 from DAVE.gui.forms.resource_browser import Ui_ResourceBrowser
@@ -110,30 +111,33 @@ class ResourceBrowserDialog(QDialog):
 
         self.resources = []
 
-        # scan res including subdirs
-        self.resources.extend(self.resource_provider.get_resource_list(extension=self.resource_type, include_subdirs=True, include_current_dir=False))
+        with BlockingDialog() as blocking_dialog:
+            # scan res including subdirs
+            blocking_dialog.feedback("Scanning resources and creating thumbnails")
 
-        # scan cd excluding subdirs
-        self.resources.extend(self.resource_provider.get_resource_list(extension=self.resource_type, include_subdirs=False,
-                                                     include_current_dir=True))
-        # Fill the files panel
-        self.create_files_panel()
+            self.resources.extend(self.resource_provider.get_resource_list(extension=self.resource_type, include_subdirs=True, include_current_dir=False))
 
-        # fill the lwResourcesPaths list widget
-        self.ui.lwResourcePaths.clear()
-        self.ui.lwResourcePaths.addItem("All Resources")
-        for r in self.resource_provider.resources_paths:
-            self.ui.lwResourcePaths.addItem(str(r))
+            # scan cd excluding subdirs
+            self.resources.extend(self.resource_provider.get_resource_list(extension=self.resource_type, include_subdirs=False,
+                                                         include_current_dir=True))
+            # Fill the files panel
+            self.create_files_panel()
 
-        self.ui.lwResourcePaths.blockSignals(True)
-        self.ui.lwResourcePaths.setCurrentRow(0)
-        self.ui.lwResourcePaths.blockSignals(False)
+            # fill the lwResourcesPaths list widget
+            self.ui.lwResourcePaths.clear()
+            self.ui.lwResourcePaths.addItem("All Resources")
+            for r in self.resource_provider.resources_paths:
+                self.ui.lwResourcePaths.addItem(str(r))
 
-        # select  the first item in the where list
-        # create a single-shot timer
-        self.ui.lwWhere.setCurrentRow(0)
+            self.ui.lwResourcePaths.blockSignals(True)
+            self.ui.lwResourcePaths.setCurrentRow(0)
+            self.ui.lwResourcePaths.blockSignals(False)
 
-        self.ui.teFilter.textChanged.connect(self.hide_tiles_on_filter)
+            # select  the first item in the where list
+            # create a single-shot timer
+            self.ui.lwWhere.setCurrentRow(0)
+
+            self.ui.teFilter.textChanged.connect(self.hide_tiles_on_filter)
 
 
 

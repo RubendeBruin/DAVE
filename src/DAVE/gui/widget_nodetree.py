@@ -14,6 +14,7 @@ from DAVE.gui.helpers.my_qt_helpers import (
     update_combobox_items_with_completer,
 )
 from DAVE.helpers.node_trees import give_parent_item
+from DAVE.nds.mixins import HasNotVisibleOrSelectable
 from DAVE.settings import DAVE_NODEPROP_INFO
 
 from DAVE.settings_visuals import ICONS
@@ -136,8 +137,12 @@ class HasNodeTreeMixin:
                 return item
 
         for node in self.guiScene._nodes:
-            # create a tree item
 
+            # skip nodes that are not visible or selectable
+            if isinstance(node, HasNotVisibleOrSelectable):
+                continue
+
+            # create a tree item
             item = self.make_tree_item(node)
 
             # if we have a parent, then put the items under the parent,
@@ -439,7 +444,6 @@ class WidgetNodeTree(guiDockWidget, HasNodeTreeMixin):
 
                         # and select the updated item again such that the cursor keys still work as expected
                         self.treeView.setCurrentItem(self.items[new_name])
-
 
                     except:
                         pass

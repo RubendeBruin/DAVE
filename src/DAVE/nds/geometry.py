@@ -1,4 +1,5 @@
 """These are the nodes that define the geometry and the degrees of freedom"""
+
 import logging
 
 from numpy import allclose
@@ -100,13 +101,16 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         - used only for dynamics"""
         return self._inertia
 
+    def _set_inertia(self, val):
+        self._inertia = val
+        self._update_inertia()
+
     @inertia.setter
     @node_setter_manageable
     @node_setter_observable
     def inertia(self, val):
         assert1f(val, "Inertia")
-        self._inertia = val
-        self._update_inertia()
+        self._set_inertia(val)
 
     @property
     def inertia_position(self) -> tuple[float, float, float]:
@@ -115,13 +119,16 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         - defined in local axis system"""
         return tuple(self._inertia_position)
 
+    def _set_inertia_position(self, val):
+        self._inertia_position = tuple(val)
+        self._update_inertia()
+
     @inertia_position.setter
     @node_setter_manageable
     @node_setter_observable
     def inertia_position(self, val):
         assert3f(val, "Inertia position")
-        self._inertia_position = tuple(val)
-        self._update_inertia()
+        self._set_inertia_position(val)
 
     @property
     def inertia_radii(self) -> tuple[float, float, float]:
@@ -139,13 +146,16 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         """
         return np.array(self._inertia_radii, dtype=float)
 
+    def _set_inertia_radii(self, val):
+        self._inertia_radii = tuple(val)
+        self._update_inertia()
+
     @inertia_radii.setter
     @node_setter_manageable
     @node_setter_observable
     def inertia_radii(self, val):
         assert3f_positive(val, "Inertia radii of gyration")
-        self._inertia_radii = val
-        self._update_inertia()
+        self._set_inertia_radii(val)
 
     def _update_inertia(self):
         # update mass
@@ -847,7 +857,9 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
                         "Can not change parent to None when the rotation is not zero and the DOFs of the node depend on the orientation"
                     )
             else:
-                if not allclose(self.parent.global_rotation, new_parent.global_rotation, atol=1e-6):
+                if not allclose(
+                    self.parent.global_rotation, new_parent.global_rotation, atol=1e-6
+                ):
                     raise ValueError(
                         "Can not change parent when the rotation of the parent and the node are not the same and the DOFs of the node depend on the orientation"
                     )
@@ -1071,7 +1083,7 @@ class Frame(NodeCoreConnected, HasParentCore, HasFootprint):
         # Frame has inertia, rigid-body had mass instead
         # So only include this if we do not have a mass property
 
-        if hasattr(self, 'mass'):
+        if hasattr(self, "mass"):
             pass
         else:
             if self.inertia > 0:
@@ -1497,7 +1509,7 @@ class Circle(NodeCoreConnected, HasParentCore):
 
     @node_setter_manageable
     def try_swap(self, old: "Node", new: "Node") -> bool:
-        if old==new:
+        if old == new:
             return True
 
         # we can only swap if the new parent is a point with the same parent and position
@@ -1507,13 +1519,12 @@ class Circle(NodeCoreConnected, HasParentCore):
             if isinstance(new, Point):
                 if new.parent == self.parent.parent:
 
-                    move = np.linalg.norm(np.array(self.position) - np.array(new.position))
+                    move = np.linalg.norm(
+                        np.array(self.position) - np.array(new.position)
+                    )
 
                     if move < 1e-7:
                         self.change_parent_to(new)
                         return True
 
-
-
         return False
-

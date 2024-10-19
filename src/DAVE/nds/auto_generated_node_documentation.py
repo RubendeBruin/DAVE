@@ -2188,6 +2188,21 @@ DAVE_NODEPROP_INFO[cls]["equilibrium_error"] = info
 cls = DAVE_ADDITIONAL_RUNTIME_MODULES["GeometricContact"]
 DAVE_NODEPROP_INFO[cls] = dict()
 
+# Property: warnings
+info = NodePropertyInfo(node_class=cls,
+                        property_name="warnings",
+                        property_type=list,
+                        doc_short="""Returns a list of warnings for the current state of the GeometricContact""",
+                        doc_long = """Returns a list of warnings for the current state of the GeometricContact""",
+                        units = """""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["warnings"] = info
+
+
 # Property: swivel
 info = NodePropertyInfo(node_class=cls,
                         property_name="swivel",
@@ -2799,6 +2814,21 @@ DAVE_NODEPROP_INFO[cls]["value_str"] = info
 cls = DAVE_ADDITIONAL_RUNTIME_MODULES["Node"]
 DAVE_NODEPROP_INFO[cls] = dict()
 
+# Property: watches
+info = NodePropertyInfo(node_class=cls,
+                        property_name="watches",
+                        property_type=dict,
+                        doc_short="""Deprecated property, use scene.watches instead""",
+                        doc_long = """Deprecated property, use scene.watches instead""",
+                        units = """""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["watches"] = info
+
+
 # Property: name
 info = NodePropertyInfo(node_class=cls,
                         property_name="name",
@@ -2949,6 +2979,9 @@ info = NodePropertyInfo(node_class=cls,
                         )
 DAVE_NODEPROP_INFO[cls]["name"] = info
 
+# ===================== Auto-generated documentation registration for NodeSingleton
+cls = DAVE_ADDITIONAL_RUNTIME_MODULES["NodeSingleton"]
+DAVE_NODEPROP_INFO[cls] = dict()
 # ===================== Auto-generated documentation registration for Point
 cls = DAVE_ADDITIONAL_RUNTIME_MODULES["Point"]
 DAVE_NODEPROP_INFO[cls] = dict()
@@ -3426,6 +3459,129 @@ DAVE_NODEPROP_INFO[cls]["mass"] = info
 # ===================== Auto-generated documentation registration for RigidBodyContainer
 cls = DAVE_ADDITIONAL_RUNTIME_MODULES["RigidBodyContainer"]
 DAVE_NODEPROP_INFO[cls] = dict()
+# ===================== Auto-generated documentation registration for RigidBodyContainerMassReadOnly
+cls = DAVE_ADDITIONAL_RUNTIME_MODULES["RigidBodyContainerMassReadOnly"]
+DAVE_NODEPROP_INFO[cls] = dict()
+
+# Property: mass
+info = NodePropertyInfo(node_class=cls,
+                        property_name="mass",
+                        property_type=float,
+                        doc_short="""Mass """,
+                        doc_long = """Mass [t]""",
+                        units = """[t]""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["mass"] = info
+
+
+# Property: inertia
+info = NodePropertyInfo(node_class=cls,
+                        property_name="inertia",
+                        property_type=float,
+                        doc_short="""Inertia """,
+                        doc_long = """Inertia [t]""",
+                        units = """[t]""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["inertia"] = info
+
+
+# Property: cogx
+info = NodePropertyInfo(node_class=cls,
+                        property_name="cogx",
+                        property_type=float,
+                        doc_short="""Center of gravity x-coordinate """,
+                        doc_long = """Center of gravity x-coordinate [m]""",
+                        units = """[m]""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["cogx"] = info
+
+
+# Property: cogy
+info = NodePropertyInfo(node_class=cls,
+                        property_name="cogy",
+                        property_type=float,
+                        doc_short="""Center of gravity y-coordinate """,
+                        doc_long = """Center of gravity y-coordinate [m]""",
+                        units = """[m]""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["cogy"] = info
+
+
+# Property: cogz
+info = NodePropertyInfo(node_class=cls,
+                        property_name="cogz",
+                        property_type=float,
+                        doc_short="""Center of gravity z-coordinate """,
+                        doc_long = """Center of gravity z-coordinate [m]""",
+                        units = """[m]""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = True
+                        )
+DAVE_NODEPROP_INFO[cls]["cogz"] = info
+
+
+# Property: cog
+info = NodePropertyInfo(node_class=cls,
+                        property_name="cog",
+                        property_type=tuple,
+                        doc_short="""Center of gravity """,
+                        doc_long = """Center of gravity [m,m,m]""",
+                        units = """[m,m,m]""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["cog"] = info
+
+
+# Property: inertia_radii
+info = NodePropertyInfo(node_class=cls,
+                        property_name="inertia_radii",
+                        property_type=tuple,
+                        doc_short="""Radii of gyration """,
+                        doc_long = """Radii of gyration [m,m,m]""",
+                        units = """[m,m,m]""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["inertia_radii"] = info
+
+
+# Property: inertia_position
+info = NodePropertyInfo(node_class=cls,
+                        property_name="inertia_position",
+                        property_type=tuple,
+                        doc_short="""Radii of gyration """,
+                        doc_long = """Radii of gyration [m,m,m]""",
+                        units = """[m,m,m]""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["inertia_position"] = info
+
 # ===================== Auto-generated documentation registration for SPMT
 cls = DAVE_ADDITIONAL_RUNTIME_MODULES["SPMT"]
 DAVE_NODEPROP_INFO[cls] = dict()
