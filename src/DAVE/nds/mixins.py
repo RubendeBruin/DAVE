@@ -7,7 +7,7 @@ from .trimesh import TriMeshSource
 from ..tools import *
 
 
-class HasParent(DAVENodeBase, ABC):
+class HasParentAbstract(DAVENodeBase, ABC):
     def __init__(self, scene, name):
         logging.info("HasParent.__init__")
 
@@ -76,7 +76,7 @@ class HasParent(DAVENodeBase, ABC):
             return super().try_swap(old, new)
 
 
-class HasParentCore(HasParent):
+class HasParentCore(HasParentAbstract):
     _valid_parent_types = (NoneType,)
 
     def __init__(self, scene, name):
@@ -117,7 +117,7 @@ class HasParentCore(HasParent):
             self._vfNode.parent = new_parent._vfNode
 
 
-class HasParentPure(HasParent):
+class HasParentPure(HasParentAbstract):
     def __init__(self, scene, name):
         self._parent = None
         super().__init__(scene=scene, name=name)

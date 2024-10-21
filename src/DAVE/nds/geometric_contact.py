@@ -17,7 +17,7 @@ from .abstracts import *
 
 
 class GeometricContact(
-    NodePurePython, Manager, HasParent
+    NodePurePython, Manager, HasParentAbstract
 ):  # Note: can not derive from Container because managed nodes is not equal to created nodes
     """
     GeometricContact

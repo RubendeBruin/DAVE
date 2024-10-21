@@ -1,7 +1,51 @@
 """Fully implemented base classes"""
 
+import logging
+
 from .core import RigidBody
 from .mixins import HasContainer, Manager
+from .abstracts import NodePurePython
+
+
+
+class NodeSingleton(NodePurePython):
+    """Singleton nodes are nodes that can only occur once in a scene. Typically used to store general information.
+
+    Defining a Singleton node will delete/overwrite any existing nodes of the same type
+    Singleton nodes are only imported if they do not yet exist
+
+    """
+
+    def __init__(self, scene, name):
+
+        # check if a node with the same type already exists
+        # if so, then delete it
+
+        existing = scene.nodes_where(kind=type(self))
+
+        # check if name is already taken BEFORE deleting the existing nodes
+        if name in [node.name for node in existing]:
+            pass  # ok, will be deleted
+        else:
+            scene.assert_name_available(name)
+
+        for node in existing:
+            logging.warning(
+                f"Deleting existing singleton node {node.name} because we are creating a new SingletonNode of type {type(self)}"
+            )
+            scene.delete(node)
+
+        super().__init__(scene=scene, name=name)
+
+    @property
+    def manager(self) -> "Manager" or None:
+        """Singleton nodes may not be managed by other nodes.
+        #NOGUI"""
+        return None
+
+    @manager.setter
+    def manager(self, value):
+        logging.warning("Setting manager on a SingletonNode is not allowed")
 
 
 class RigidBodyContainer(RigidBody, HasContainer):

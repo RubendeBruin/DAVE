@@ -1,6 +1,6 @@
 from DAVE import *
 from DAVE import DAVE_ADDITIONAL_RUNTIME_MODULES
-from DAVE.nds.abstracts import NodeSingleton
+from DAVE.nds.base import NodeSingleton
 
 
 class DummySingleton(NodeSingleton):

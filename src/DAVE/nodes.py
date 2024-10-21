@@ -15,7 +15,7 @@ from .nds.mixins import (
     Manager,
     HasFootprint,
     HasTrimesh,
-    HasParent,
+    HasParentAbstract,
     HasSubScene,
     HasContainer,
 )
@@ -106,7 +106,7 @@ from .nds.abstracts import (
     NodeCoreConnected,
     NodePurePython,
     DAVENodeBase,
-    NodeSingleton,
+
 )
 from .nds.enums import AreaKind, VisualOutlineType
 from .nds.helpers import ClaimManagement, Watch
@@ -136,6 +136,8 @@ from .nds.geometric_contact import GeometricContact
 from .nds.measurement import Measurement, MeasurementDirection, MeasurementType
 
 from DAVE.settings import DAVE_ADDITIONAL_RUNTIME_MODULES
+
+from .nds.base import NodeSingleton
 
 DAVE_ADDITIONAL_RUNTIME_MODULES["Watch"] = Watch
 DAVE_ADDITIONAL_RUNTIME_MODULES["AreaKind"] = AreaKind
@@ -181,7 +183,7 @@ DAVE_ADDITIONAL_RUNTIME_MODULES["Manager"] = Manager
 DAVE_ADDITIONAL_RUNTIME_MODULES["Node"] = Node
 DAVE_ADDITIONAL_RUNTIME_MODULES["HasFootprint"] = HasFootprint
 DAVE_ADDITIONAL_RUNTIME_MODULES["HasTrimesh"] = HasTrimesh
-DAVE_ADDITIONAL_RUNTIME_MODULES["HasParent"] = HasParent
+DAVE_ADDITIONAL_RUNTIME_MODULES["HasParent"] = HasParentAbstract
 DAVE_ADDITIONAL_RUNTIME_MODULES["HasSubScene"] = HasSubScene
 DAVE_ADDITIONAL_RUNTIME_MODULES["HasContainer"] = HasContainer
 DAVE_ADDITIONAL_RUNTIME_MODULES["NodeSingleton"] = NodeSingleton

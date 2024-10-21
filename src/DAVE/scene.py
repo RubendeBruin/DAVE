@@ -41,7 +41,7 @@ from DAVE.settings import (
 
 from .exceptions import ModelInvalidException
 from .helpers.code_error_extract import get_code_error
-from .nds.abstracts import NodeSingleton
+from .nds.base import NodeSingleton
 
 from .resource_provider import DaveResourceProvider
 from .helpers.string_functions import increment_string_end, code_to_blocks
@@ -942,7 +942,7 @@ class Scene:
         for node in self._nodes:
             deps = []
 
-            if isinstance(node, HasParent):
+            if isinstance(node, HasParentAbstract):
                 if node.parent is not None:
                     deps.append(node.parent)
 

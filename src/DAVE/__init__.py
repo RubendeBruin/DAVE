@@ -64,7 +64,7 @@ __all__ = [
     "Node",
     "HasFootprint",
     "HasTrimesh",
-    "HasParent",
+    "HasParentAbstract",
     "HasSubScene",
     "HasContainer",
     "RigidBodyContainer",
