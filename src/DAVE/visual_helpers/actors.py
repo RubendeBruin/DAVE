@@ -277,7 +277,7 @@ class VisualActor:
                 if uc > 1:
                     uc_paint = (1, 0, 1)  # ugly pink
                 else:
-                    uc_paint = UC_CMAP(round(100 * uc))
+                    uc_paint = UC_CMAP(uc)
 
         # Loop over the individual actors in the node
         # and apply their paint or the uc_paint

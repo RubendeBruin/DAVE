@@ -64,6 +64,7 @@ class ImageRenderer(AbstractSceneRenderer):
         png.Write()
 
     def show(self, width=800, height=600):
+        self.update_visibility()
         self.produce_pil_image(width=width, height=height).show()
 
     def produce_pil_image(self, width=800, height=600, transparent: bool = False):

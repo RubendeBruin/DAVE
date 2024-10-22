@@ -124,6 +124,6 @@ if __name__ == "__main__":
     n = 100
     for i in range(n):
         f = i / n
-        plt.plot(f, 0, marker="o", color=CABLE_COLORMAP(f))
+        plt.plot(f, 0, marker="o", color=UC_CMAP(f))
     plt.plot(1.1, 0, marker="o", color=(1, 0, 1, 1))
     plt.show()

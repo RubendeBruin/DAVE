@@ -7,11 +7,15 @@ from .mixins import HasContainer, Manager
 from .abstracts import NodePurePython
 
 
-
 class NodeSingleton(NodePurePython):
     """Singleton nodes are nodes that can only occur once in a scene. Typically used to store general information.
 
     Defining a Singleton node will delete/overwrite any existing nodes of the same type
+    Singleton nodes are only imported if they do not yet exist
+
+    Singleton nodes are only imported if they are not present in the main scene.
+    Implement:
+    Defining a Singleton node will delete/overwrite any exisiting nodes of the same type
     Singleton nodes are only imported if they do not yet exist
 
     """

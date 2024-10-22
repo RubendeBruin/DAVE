@@ -282,14 +282,16 @@ class WidgetLimits(guiDockWidget):
                 if uc > 1:
                     uc_paint = (1, 0, 1)  # ugly pink
                 else:
-                    uc_paint = UC_CMAP(round(100 * uc))
+                    uc_paint = UC_CMAP(uc)
 
                 uc_item = QTableWidgetItem(f"{uc:.2f}")
 
                 uc_item.setBackground(
                     QBrush(
                         QColor(
-                            255 * uc_paint[0], 255 * uc_paint[1], 255 * uc_paint[2], 254
+                            255 * uc_paint[0],
+                            255 * uc_paint[1],
+                            255 * uc_paint[2],
                         )
                     )
                 )
@@ -305,6 +307,8 @@ class WidgetLimits(guiDockWidget):
         table.resizeColumnsToContents()
         table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         table.blockSignals(False)
+
+
 
     def selection_changed(self, cur_row, cur_col, prev_row, prev_col):
         """Select the node via the gui, then select the property"""
