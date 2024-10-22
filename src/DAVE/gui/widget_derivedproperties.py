@@ -6,7 +6,12 @@ from PySide6.QtWidgets import QLabel, QLineEdit, QCheckBox
 
 from DAVE.gui.helpers.my_qt_helpers import BlockSigs
 from DAVE.tools import fancy_format
-from DAVE.visual_helpers.constants import BLUE_LIGHT, YELLOW_LIGHT
+from DAVE.visual_helpers.constants import (
+    BLUE_LIGHT,
+    YELLOW_LIGHT,
+    LIGHT_GRAY,
+    LIGHT_LIGHT_GRAY,
+)
 
 
 class TreeWithDragOut(QtWidgets.QTreeWidget):
@@ -28,46 +33,20 @@ class TreeWithDragOut(QtWidgets.QTreeWidget):
         texts = []
         for item in items:
 
-        # if item.parent() is not None:
-        #     item  = item.parent()
+            # if item.parent() is not None:
+            #     item  = item.parent()
 
             text = item.text(0)
-            if text[0]=='.':
+            if text[0] == ".":
                 text = "{}{}".format(self.nodename, text)
             texts.append(text)
-
 
         drag = QDrag(self)
         mime = QtCore.QMimeData()
 
-        mime.setText('\n'.join(texts))
+        mime.setText("\n".join(texts))
         drag.setMimeData(mime)
         drag.exec(QtCore.Qt.MoveAction)
-
-
-    # def mousePressEvent(self, event):
-    #     modifiers = QtWidgets.QApplication.keyboardModifiers()
-    #     current_item = self.itemAt(event.pos())
-    #
-    #     if modifiers == QtCore.Qt.ShiftModifier and self.last_selected_item_row:
-    #         current_row = self.indexFromItem(current_item).row()
-    #         last_row = self.last_selected_item_row
-    #
-    #         if last_row > self.topLevelItemCount():  # if the last selected item is out of bounds becuse the content has changed
-    #             last_row = self.topLevelItemCount() - 1
-    #
-    #         start, end = sorted([current_row, last_row])
-    #
-    #         for row in range(start, end + 1):
-    #             item = self.topLevelItem(row)
-    #             item.setSelected(True)
-    #         self.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
-    #     else:
-    #         if event.button() == QtCore.Qt.LeftButton:
-    #             self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
-    #             self.last_selected_item_row = self.indexFromItem(current_item).row()
-    #
-    #         super().mousePressEvent(event)
 
     def edit(self, index, trigger, event):
 
@@ -91,20 +70,20 @@ class WidgetDerivedProperties(guiDockWidget):
         self.filterbox = QLineEdit()
         self.filterbox.textChanged.connect(self.display_node_properties)
 
-        self.cd_show_all = QCheckBox('Show all properties')
+        self.cd_show_all = QCheckBox("Show all properties")
         self.cd_show_all.stateChanged.connect(self.display_node_properties)
-
 
         self.dispPropTree = TreeWithDragOut(self.contents)
         self.dispPropTree.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
-        self.dispPropTree.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.dispPropTree.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection
+        )
         self.dispPropTree.setRootIsDecorated(True)
         self.dispPropTree.setExpandsOnDoubleClick(False)
         self.dispPropTree.setObjectName("dispPropTree")
 
-
         self.dispPropTree.setColumnCount(4)
-        self.dispPropTree.setHeaderLabels(('Property', 'Value','Unit','Description'))
+        self.dispPropTree.setHeaderLabels(("Property", "Value", "Unit", "Description"))
 
         self.dispPropTree.header().setVisible(True)
         self.dispPropTree.setDragDropMode(QtWidgets.QAbstractItemView.DragOnly)
@@ -149,15 +128,16 @@ class WidgetDerivedProperties(guiDockWidget):
         else:
             super().keyPressEvent(event)
 
-
     def guiProcessEvent(self, event):
 
-        if event in [guiEventType.SELECTION_CHANGED,
-                     guiEventType.FULL_UPDATE,
-                     guiEventType.MODEL_STATE_CHANGED,
-                     guiEventType.SELECTED_NODE_MODIFIED,
-                     guiEventType.WATCHES_CHANGED,
-                     guiEventType.MODEL_STEP_ACTIVATED]:
+        if event in [
+            guiEventType.SELECTION_CHANGED,
+            guiEventType.FULL_UPDATE,
+            guiEventType.MODEL_STATE_CHANGED,
+            guiEventType.SELECTED_NODE_MODIFIED,
+            guiEventType.WATCHES_CHANGED,
+            guiEventType.MODEL_STEP_ACTIVATED,
+        ]:
             self.display_node_properties()
 
     def guiDefaultLocation(self):
@@ -166,7 +146,7 @@ class WidgetDerivedProperties(guiDockWidget):
     def dragEnterEvent(self, event):
         try:
             text = event.mimeData().text()
-            if '.' not in text:
+            if "." not in text:
                 return
         except:
             return
@@ -179,16 +159,16 @@ class WidgetDerivedProperties(guiDockWidget):
         # the text should be in the form of s['nodename'].property
         text = event.mimeData().text()
 
-        if '.' in text:
+        if "." in text:
 
             codes = []
 
-            for row in text.split('\n'):
-                node_name = row.split('.')[0]
-                prop = row.split('.')[1]
+            for row in text.split("\n"):
+                node_name = row.split(".")[0]
+                prop = row.split(".")[1]
                 codes.append(f's.try_add_watch("{node_name}", "{prop}")')
 
-            code = '\n'.join(codes)
+            code = "\n".join(codes)
             self.guiRunCodeCallback(code, guiEventType.WATCHES_CHANGED)
             event.accept()
 
@@ -197,10 +177,10 @@ class WidgetDerivedProperties(guiDockWidget):
     def item_changed(self, item, *args, **kwargs):
         text = item.text(0)
         row = self.dispPropTree.currentIndex().row()
-        node = text.split('.')[0]
-        if node == '':
+        node = text.split(".")[0]
+        if node == "":
             node = self._nodename
-        prop = text.split('.')[1]
+        prop = text.split(".")[1]
         value = item.text(1)
         code = f's["{node}"].{prop} = {value}'
         self.guiRunCodeCallback(code, guiEventType.SELECTED_NODE_MODIFIED)
@@ -213,7 +193,6 @@ class WidgetDerivedProperties(guiDockWidget):
 
         QtCore.QTimer.singleShot(0, refocus_tree)
 
-
     def delete_selected_watches(self):
         """Deletes the watches of the selected properties."""
 
@@ -221,13 +200,13 @@ class WidgetDerivedProperties(guiDockWidget):
         if self.dispPropTree.selectedItems():
             for item in self.dispPropTree.selectedItems():
                 text = item.text(0)
-                if '.' in text:
-                    node = text.split('.')[0]
-                    prop = text.split('.')[1]
+                if "." in text:
+                    node = text.split(".")[0]
+                    prop = text.split(".")[1]
 
                     codes.append(f's.try_delete_watch("{node}", "{prop}")')
 
-            self.guiRunCodeCallback('\n'.join(codes), guiEventType.WATCHES_CHANGED)
+            self.guiRunCodeCallback("\n".join(codes), guiEventType.WATCHES_CHANGED)
 
     def display_node_properties(self, *args):
 
@@ -244,14 +223,14 @@ class WidgetDerivedProperties(guiDockWidget):
 
             for n, p, v, d in zip(node, prop, value, docs):
 
-                w = f'{n.name}.{p}'
+                w = f"{n.name}.{p}"
                 try:
-                    result = f'{v:.3f}'
+                    result = f"{v:.3f}"
                 except:
                     result = str(v)  # for None
 
                 pa = QtWidgets.QTreeWidgetItem(self.dispPropTree)
-                pa.setBackground(0,QBrush(QColor(*YELLOW_LIGHT)))
+                pa.setBackground(0, QBrush(QColor(*YELLOW_LIGHT)))
                 pa.setBackground(1, QBrush(QColor(*YELLOW_LIGHT)))
                 pa.setBackground(2, QBrush(QColor(*YELLOW_LIGHT)))
 
@@ -263,9 +242,11 @@ class WidgetDerivedProperties(guiDockWidget):
                 # Set item editable based on documentation
                 if d.is_single_settable and n.manager is None:
                     pa.setFlags(pa.flags() | Qt.ItemIsEditable)
-                    pa.setBackground(1, QBrush(QColor(*BLUE_LIGHT)))
                 else:
                     pa.setFlags(pa.flags() & ~Qt.ItemIsEditable)
+                    pa.setBackground(0, QBrush(QColor(*LIGHT_LIGHT_GRAY)))
+                    pa.setBackground(1, QBrush(QColor(*LIGHT_LIGHT_GRAY)))
+                    pa.setBackground(2, QBrush(QColor(*LIGHT_LIGHT_GRAY)))
 
             # get first selected item
             if self.guiSelection:
@@ -277,7 +258,6 @@ class WidgetDerivedProperties(guiDockWidget):
                 return
 
             props = self.guiScene.give_properties_for_node(node)
-
 
             # evaluate properties
             filter = self.filterbox.text()
@@ -299,10 +279,10 @@ class WidgetDerivedProperties(guiDockWidget):
                     result = fancy_format(result)
 
                 except:
-                    result = 'Error evaluating {}'.format(code)
+                    result = "Error evaluating {}".format(code)
 
                 pa = QtWidgets.QTreeWidgetItem(self.dispPropTree)
-                pa.setText(0, '.' + p)
+                pa.setText(0, "." + p)
                 pa.setText(1, str(result))
                 pa.setText(2, doc.units)
                 pa.setText(3, doc.doc_short_with_remarks)
@@ -312,9 +292,11 @@ class WidgetDerivedProperties(guiDockWidget):
                 # Set item editable based on documentation
                 if doc.is_single_settable and node.manager is None:
                     pa.setFlags(pa.flags() | Qt.ItemIsEditable)
-                    pa.setBackground(1, QBrush(QColor(*BLUE_LIGHT)))
                 else:
                     pa.setFlags(pa.flags() & ~Qt.ItemIsEditable)
+                    pa.setBackground(0, QBrush(QColor(*LIGHT_LIGHT_GRAY)))
+                    pa.setBackground(1, QBrush(QColor(*LIGHT_LIGHT_GRAY)))
+                    pa.setBackground(2, QBrush(QColor(*LIGHT_LIGHT_GRAY)))
 
             self.dispPropTree.expandAll()
 
@@ -339,27 +321,21 @@ class WidgetDerivedProperties(guiDockWidget):
             for item in self.dispPropTree.selectedItems():
                 text = item.text(0)
 
-                node = text.split('.')[0]
-                prop = text.split('.')[1]
+                node = text.split(".")[0]
+                prop = text.split(".")[1]
 
-                if node == '':
+                if node == "":
                     node = self._nodename
                 codes.append(f's.try_add_watch("{node}", "{prop}")')
 
-            code = '\n'.join(codes)
+            code = "\n".join(codes)
             self.guiRunCodeCallback(code, guiEventType.WATCHES_CHANGED)
 
-            if 'Watches' in self.gui.guiWidgets:
-                self.gui.guiWidgets['Watches'].fill()
+            if "Watches" in self.gui.guiWidgets:
+                self.gui.guiWidgets["Watches"].fill()
 
         menu.addAction("Add watch", add_watch)
 
         menu.addSeparator()
 
         menu.exec_(globLoc)
-
-
-
-
-
-
