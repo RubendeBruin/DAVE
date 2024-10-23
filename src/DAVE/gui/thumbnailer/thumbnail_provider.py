@@ -92,23 +92,28 @@ class ThumbnailProvider(object):
 
         print("Creating thumbnail for", path)
 
-        for ext in self.loader_plugins.keys():
-            if str(path).endswith(ext):
-                func = self.loader_plugins[ext]
-                return give_pixmap_using_callback(path, func)
+        try:
 
-        # check file type
-        if path.suffix in [".png", ".jpg", ".jpeg", ".bmp", ".gif"]:
-            return QPixmap(str(path))
+            for ext in self.loader_plugins.keys():
+                if str(path).endswith(ext):
+                    func = self.loader_plugins[ext]
+                    return give_pixmap_using_callback(path, func)
 
-        if path.suffix in [".glb", ".obj", ".stl", ".gltf"]:
-            # Create a thumbnail for a 3D model
-            return give_pixmap_from_3dfile(str(path))
+            # check file type
+            if path.suffix in [".png", ".jpg", ".jpeg", ".bmp", ".gif"]:
+                return QPixmap(str(path))
 
-        if path.suffix == ".dave":
-            # Create a thumbnail for a DAVE file
-            return give_pixmap_from_DAVE_model(path)
+            if path.suffix in [".glb", ".obj", ".stl", ".gltf"]:
+                # Create a thumbnail for a 3D model
+                return give_pixmap_from_3dfile(str(path))
 
-        warnings.warn(f"No thumbnailer found for file type {path.suffix}")
+            if path.suffix == ".dave":
+                # Create a thumbnail for a DAVE file
+                return give_pixmap_from_DAVE_model(path)
 
-        return QPixmap()
+            warnings.warn(f"No thumbnailer found for file type {path.suffix}")
+
+            return QPixmap(':/v2/icons/warning.svg')
+
+        except:
+            return QPixmap(':/v2/icons/warning.svg')

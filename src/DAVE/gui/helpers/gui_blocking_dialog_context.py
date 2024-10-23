@@ -41,8 +41,10 @@ class BlockingDialog(QDialog):
 
         # # disable the close button
         # self.setWindowFlag(Qt.WindowCloseButtonHint, False)  # <-- captured by closeEvent
-
-        self.setWindowIcon(self.main_window.windowIcon())
+        try:
+            self.setWindowIcon(self.main_window.windowIcon())
+        except AttributeError:
+            pass
         self.setWindowTitle("Working...")
 
         layout = QVBoxLayout()
@@ -94,7 +96,8 @@ class BlockingDialog(QDialog):
         self.processEventsIfSufficientTimeElapsed()
 
     def __enter__(self):
-        self.main_window.setEnabled(False)
+        if self.main_window is not None:
+            self.main_window.setEnabled(False)
 
         self.show()
         return self
@@ -102,7 +105,8 @@ class BlockingDialog(QDialog):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.done = True
         self.close()
-        self.main_window.setEnabled(True)
+        if self.main_window is not None:
+            self.main_window.setEnabled(True)
         return False
 
 # example use:

@@ -1,3 +1,4 @@
+from PySide6.QtWidgets import QApplication
 from vtkmodules.vtkIOGeometry import vtkOBJReader, vtkSTLReader
 from vtkmodules.vtkIOImport import vtkGLTFImporter
 from vtkmodules.vtkRenderingCore import vtkRenderer, vtkRenderWindow, vtkPolyDataMapper, vtkActor, vtkCamera, \
@@ -18,7 +19,7 @@ def give_pixmap_from_3dfile(filename):
         elif filename.endswith('.gltf'):
             reader = vtkGLTFImporter()
         else:
-            raise ValueError("Unsupported file format")
+            return QPixmap(":/warning.svg")
 
         reader.SetGlobalWarningDisplay(False)
         reader.SetFileName(filename)
@@ -38,6 +39,9 @@ def give_pixmap_from_3dfile(filename):
 
             actors.InitTraversal()
             print(actors.GetNumberOfItems())
+
+            if actors.GetNumberOfItems() == 0:
+                return QPixmap(":/warning.svg")
 
             R = []
 
@@ -86,4 +90,8 @@ def give_pixmap_from_3dfile(filename):
 
     except Exception as e:
         print(f"Error: {e}")
-        return QPixmap()
+        return QPixmap(":/warning.svg")
+
+if __name__ == '__main__':
+    app = QApplication.instance() or QApplication([])
+    give_pixmap_from_3dfile("does not exist")

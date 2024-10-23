@@ -70,6 +70,9 @@ class FileWidget(QFrame):
 
 class ResourceBrowserDialog(QDialog):
     def __init__(self, s: Scene, resource_type: str or list[str] or tuple[str]):
+
+        self.blocking_dialog = None
+
         super().__init__()
         self.ui = Ui_ResourceBrowser()
         self.ui.setupUi(self)
@@ -111,15 +114,19 @@ class ResourceBrowserDialog(QDialog):
 
         self.resources = []
 
-        with BlockingDialog() as blocking_dialog:
+        with BlockingDialog() as BD:
+
+            self.blocking_dialog = BD
             # scan res including subdirs
-            blocking_dialog.feedback("Scanning resources and creating thumbnails")
+            BD.feedback("Scanning resources and creating thumbnails")
 
             self.resources.extend(self.resource_provider.get_resource_list(extension=self.resource_type, include_subdirs=True, include_current_dir=False))
 
             # scan cd excluding subdirs
             self.resources.extend(self.resource_provider.get_resource_list(extension=self.resource_type, include_subdirs=False,
                                                          include_current_dir=True))
+
+            BD.feedback(f"Found {len(self.resources)} resources")
             # Fill the files panel
             self.create_files_panel()
 
@@ -134,10 +141,14 @@ class ResourceBrowserDialog(QDialog):
             self.ui.lwResourcePaths.blockSignals(False)
 
             # select  the first item in the where list
-            # create a single-shot timer
+            # this triggers the update of the files panel and will generate the thumbnails
+
+
             self.ui.lwWhere.setCurrentRow(0)
+            self.blocking_dialog = None
 
             self.ui.teFilter.textChanged.connect(self.hide_tiles_on_filter)
+
 
 
 
@@ -244,15 +255,20 @@ class ResourceBrowserDialog(QDialog):
         # delay any gui updates while adding widgets
         self.scroll_area.setVisible(False)
 
-
         file_tiles = []
 
         print('creating tiles')
         for file in resources:
+            if self.blocking_dialog is not None:
+                self.blocking_dialog.feedback(f"Creating thumbnail for {file}")
             file_widget = FileWidget(file, self.scene)
             file_widget.scale(self.ui.hsZoom.value())
             file_tiles.append(file_widget)
             file_widget.browser = self
+
+
+        if self.blocking_dialog is not None:
+            self.blocking_dialog.feedback(f"Adding {len(file_tiles)} widgets to the layout")
 
         print('adding widgets')
         for w in file_tiles:
@@ -333,7 +349,8 @@ if __name__ == "__main__":
 
     s = Scene()
     s.resource_provider.cd = Path(r'c:\data')
-    s.resource_provider.addPath(Path(r"h:\assets"))
+    # s.resource_provider.addPath(Path(r"h:\assets"))
+    s.resource_provider.addPath(Path(r'c:\data\DAVE\resources'))
 
     tumbs = ThumbnailProvider.Instance()
 
