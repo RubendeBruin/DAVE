@@ -60,7 +60,8 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QCheckBox,
     QTreeWidgetItem,
-    QSpacerItem, QWidget,
+    QSpacerItem,
+    QWidget,
 )
 from PySide6 import QtWidgets
 
@@ -510,8 +511,8 @@ class EditNode(NodeEditor):
             self.ui.lbColor.setText(str(self.node.color))
 
     def edit_all(self):
-        node = self.node # alias
-        all_of_this_type = self.scene.nodes_where(kind = type(node))
+        node = self.node  # alias
+        all_of_this_type = self.scene.nodes_where(kind=type(node))
         self.select_nodes_callback(all_of_this_type)
 
 
@@ -3319,7 +3320,6 @@ class WidgetNodeProps(guiDockWidget):
 
         self._node_name_editor = EditNode()
 
-
         self._name_widget = self._node_name_editor.widget
         self.layout.addWidget(self._name_widget)
 
@@ -3346,24 +3346,33 @@ class WidgetNodeProps(guiDockWidget):
 
         self.widget_grid_edit_controls.setupUi(target)
 
-        self.widget_grid_edit_controls.cbSortByName.toggled.connect(self.multi_sort_toggled)
-        self.widget_grid_edit_controls.rbCommon.toggled.connect(self.multi_common_toggled)
+        self.widget_grid_edit_controls.cbSortByName.toggled.connect(
+            self.multi_sort_toggled
+        )
+        self.widget_grid_edit_controls.rbCommon.toggled.connect(
+            self.multi_common_toggled
+        )
 
         self.multi_layout.addWidget(target)
-        self.grid = None # created during first update
+        self.grid = None  # created during first update
 
         self.multi_active = False
 
-        self.layout_storage_multi = QWidget()  # used to store the current layout to keep it from being deleted
-        self.layout_storage_main = QWidget()  # used to store the current layout to keep it from being deleted
-
+        self.layout_storage_multi = (
+            QWidget()
+        )  # used to store the current layout to keep it from being deleted
+        self.layout_storage_main = (
+            QWidget()
+        )  # used to store the current layout to keep it from being deleted
 
     def set_single_layout(self):
         self.multi_active = False
         if self.contents.layout() == self.main_layout:
             return
 
-        self.layout_storage_multi.setLayout(self.multi_layout)  # remove the current layout
+        self.layout_storage_multi.setLayout(
+            self.multi_layout
+        )  # remove the current layout
         self.contents.setLayout(self.main_layout)
 
     def set_multi_layout(self):
@@ -3371,9 +3380,10 @@ class WidgetNodeProps(guiDockWidget):
         if self.contents.layout() == self.multi_layout:
             return
 
-        self.layout_storage_main.setLayout(self.main_layout) # remove the current layout
+        self.layout_storage_main.setLayout(
+            self.main_layout
+        )  # remove the current layout
         self.contents.setLayout(self.multi_layout)
-
 
     def multi_exec(self, code):
         self.run_code(code)
@@ -3383,7 +3393,6 @@ class WidgetNodeProps(guiDockWidget):
 
     def multi_common_toggled(self, *args, **kwargs):
         self.grid.set_common(self.widget_grid_edit_controls.rbCommon.isChecked())
-
 
     def node_picker_register(self, node_picker):
         self.node_picker = node_picker
@@ -3398,7 +3407,12 @@ class WidgetNodeProps(guiDockWidget):
         # if the moved node is the active node then it needs to be updated as its local-position may have changed
 
         if self.grid is None:  # first use final initialization
-            self.grid = GriddedNodeEditor(scene=self.guiScene, parent=self, execute_func=self.multi_exec)
+            self.grid = GriddedNodeEditor(
+                scene=self.guiScene,
+                parent=self,
+                execute_func=self.multi_exec,
+                select_single_node_callback=self.guiSelectNode,
+            )
             self.multi_layout.addWidget(self.grid)
             self._node_name_editor.select_nodes_callback = self.guiSelectNode
 

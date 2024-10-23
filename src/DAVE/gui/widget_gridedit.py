@@ -31,20 +31,46 @@ def smart_format(value: float):
 
 class GriddedNodeEditor(QTableWidget):
 
-    def __init__(self, parent=None, scene: Scene = None, execute_func=None):
+    def __init__(
+        self,
+        parent=None,
+        scene: Scene = None,
+        execute_func=None,
+        select_single_node_callback=None,
+    ):
         super().__init__(parent)
 
         if scene is None:
             raise ValueError("Need to provide a scene")
         if execute_func is None:
             raise ValueError("Need to provide an execute function")
+        if select_single_node_callback is None:
+            raise ValueError(
+                "Need to provide a select_single_node_callback function fun(name:str)"
+            )
 
         self.execute = execute_func
+        self.select_single_node_callback = select_single_node_callback
         self.nodes = []
         self.common = False
         self.sorted = True
         self._scene = scene
         self.itemChanged.connect(self.item_changed)
+
+        self.verticalHeader().setSectionsClickable(
+            False
+        )  # to make the vertical header submit the event
+        self.verticalHeader().sectionDoubleClicked.connect(
+            self.handle_vertical_header_double_click
+        )
+
+    def handle_vertical_header_double_click(self, row):
+        # Implement the desired behavior for double-clicking on the vertical header
+        node_name = self.verticalHeaderItem(row).text()
+        self.select_single_node_callback(node_name)
+
+        print(f"Node name: {node_name}")
+        # Add your custom logic here
 
     def set_nodes(self, nodes):
         # if self.nodes == nodes:
