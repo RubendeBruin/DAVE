@@ -8,9 +8,7 @@ def model():
     f1 = s.new_frame('f1')
     f2 = s.new_frame('f2', position = (10,10,10))
 
-    m = Measurement(s, 'm1')
-    m.point1 = f1
-    m.point2 = f2
+    m = Measurement(s, 'm1', 'f1','f2')
 
     s = s.copy()
     m = s['m1']

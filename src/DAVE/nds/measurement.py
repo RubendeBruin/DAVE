@@ -58,11 +58,21 @@ class Measurement(NodePurePython):
     Measures the distance or angle between two points.
     """
 
-    def __init__(self, scene, name: str):
+    def __init__(self, scene, name: str, point1, point2):
+
+
+        # check input
+        point1 = scene._node_from_node_or_str(point1)
+        point2 = scene._node_from_node_or_str(point2)
+
+        assert isinstance(point1, (Point, Frame)), f'Error when creating Measurement {name}: point1 should be a Point or Frame but is a {type(point1)}'
+        assert isinstance(point2, (Point, Frame)), f'Error when creating Measurement {name}: point2 should be a Point or Frame but is a {type(point2)}'
+
+        # then add
         super().__init__(scene=scene, name=name)
 
-        self.point1: Frame or Point or None = None
-        self.point2: Frame or Point or None = None
+        self.point1: Frame or Point = point1
+        self.point2: Frame or Point = point2
 
         self.kind: MeasurementType = MeasurementType.Distance
 
@@ -322,9 +332,7 @@ class Measurement(NodePurePython):
 
     def give_python_code(self):
         code = []
-        code.append(f"m = Measurement(s, '{self.name}')")
-        code.append(f"m.point1 = s['{self.point1.name}']")
-        code.append(f"m.point2 = s['{self.point2.name}']")
+        code.append(f"m = Measurement(s, '{self.name}', point1 = '{self.point1.name}', point2 = '{self.point2.name}')")
         code.append(f"m.kind = MeasurementType.{self.kind.name}")
         code.append(f"m.reference = MeasurementDirection.{self.reference.name}")
 

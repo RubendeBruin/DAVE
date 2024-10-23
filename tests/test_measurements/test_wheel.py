@@ -9,14 +9,12 @@ def make_wheel_model():
     wheel = s.new_frame('wheel')
     point = s.new_point('point', position = (5,0,0), parent=wheel)
 
-    m1 = Measurement(s, 'm1')
+    m1 = Measurement(s, 'm1','wheel','point')
     m1.point1 = wheel
     m1.point2 = point
     m1.kind = MeasurementType.Distance
 
-    m2 = Measurement(s, 'm2')
-    m2.point1 = wheel
-    m2.point2 = point
+    m2 = Measurement(s, 'm2','wheel','point')
     m2.reference = MeasurementDirection.XY
     m2.kind = MeasurementType.Angle
 
