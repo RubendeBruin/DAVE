@@ -2351,9 +2351,7 @@ class Scene:
         ), f"Error creating {name}: Point2 {point2} should have a global_position"
 
         # then create
-        new_node = Measurement(scene=self, name=name)
-        new_node.point1 = point1
-        new_node.point2 = point2
+        new_node = Measurement(scene=self, name=name, point1=point1, point2=point2)
 
         return new_node
 
