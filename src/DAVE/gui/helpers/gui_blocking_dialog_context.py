@@ -13,8 +13,6 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
 )
-from docutils.nodes import warning
-
 
 # define the dialog
 class BlockingDialog(QDialog):
