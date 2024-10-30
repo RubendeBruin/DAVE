@@ -6,6 +6,19 @@ A global logger DAVE_GUI_LOGGER is created and used by the GUI.
 
 """
 import traceback
+from PySide6.QtCore import QThread
+import DAVE_qc
+
+class FeedbackThread(QThread):
+    def __init__(self, feedback):
+        super().__init__()
+        self.feedback = feedback
+
+    def run(self):
+        try:
+            DAVE_qc.ET.Instance().report(self.feedback)
+        except:
+            pass
 
 def format_exception_with_notes(exception):
 
@@ -33,8 +46,15 @@ class DaveGuiLogger:
     def log_exception(self, exception):
         """Append an exception to the log."""
 
+        exception_log = []
+
         for line in format_exception_with_notes(exception):
             self.log(line)
+            exception_log.append(line)
+
+        self._thread = FeedbackThread(feedback = "\n".join(exception_log))
+        self._thread.start()
+
 
 
     def log(self, msg):

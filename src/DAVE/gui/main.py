@@ -331,8 +331,15 @@ class Gui:
             else:
                 self.app = QtWidgets.QApplication()
                 self._owns_the_application = True
+
         else:
             self.app = app
+
+        try:
+            from DAVE_qc import ET
+            self.et_qc = ET.Instance()
+        except Exception as e:
+            self.et_qc = None
 
         if "windowsvista" in QStyleFactory.keys():
             self.app.setStyle("windowsvista")
@@ -1020,7 +1027,14 @@ class Gui:
             sst.setSingleShot(True)
             sst.singleShot(0, self.after_startup)  # <-- 0 ms delay is ok
 
+
             self.app.exec()
+
+            if self.et_qc:
+                if self.et_qc.active:
+                    self.et_qc.close()
+                    self.et_qc = None
+
         else:
             self.after_startup()  # execute directly
 
@@ -2181,6 +2195,7 @@ class Gui:
         self.animation_terminate()
 
         if self.maybeSave():
+
             event.accept()
 
             if self._owns_the_application:
