@@ -1,6 +1,4 @@
 # This file contains custom annotation layers for DAVE.
-from sqlalchemy.testing.plugin.plugin_base import warnings
-
 from DAVE import NodeSelector, Scene, Cable, RigidBody, Tank, Measurement
 from DAVE.annotations import Annotation, AnnotationLayer
 from DAVE.annotations.layer import CustomNodeLayer, BaseAnnotationLayer
