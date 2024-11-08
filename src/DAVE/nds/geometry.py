@@ -2,6 +2,7 @@
 
 import logging
 
+import numpy as np
 from numpy import allclose
 from numpy.testing import assert_allclose
 
@@ -1402,6 +1403,58 @@ class Circle(NodeCoreConnected, HasParentCore):
         if np.linalg.norm(val) == 0:
             raise ValueError("Axis can not be 0,0,0")
         self._vfNode.axis_direction = val
+
+    @property
+    def _local_y_axis(self):
+        axis = self.axis
+
+        y = np.cross((1, 0, 0), axis)
+
+        if np.linalg.norm(y) <= 1e-6:
+            y = np.cross((0, 1, 0), axis)
+
+        # strong preference for upward positive y axis, flip if necessary
+        # (this keeps the vector perpendicular to the axis)
+        if y[2] < 0:
+            y = -y
+
+        y = y / np.linalg.norm(y)
+
+        return y
+
+    def theta_from_point(self, point):
+        """Return the theta angle of the point relative to the circle.
+        Point is given in the global axis system.
+
+        See Also: point3_from_theta_and_r
+        """
+        if self.parent.parent is None:
+            local3_position = point
+        else:
+            local3_position = self.parent.parent.to_loc_position(point)
+
+        relative_position3 = np.asarray(local3_position) - self.position
+
+        pos_x = np.dot(relative_position3, self._local_x_axis)
+        pos_y = np.dot(relative_position3, self._local_y_axis)
+
+        return np.arctan2(pos_y, pos_x)
+
+    def point3_from_theta_and_r_local(self, theta, r):
+        """Return the point3 position from the theta angle and radius.
+
+        See Also: theta_from_point
+        """
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
+
+        return self.position + x * self._local_x_axis + y * self._local_y_axis
+
+
+
+    @property
+    def _local_x_axis(self):
+        return np.cross(self._local_y_axis, self.axis)
 
     @property
     def radius(self) -> float:

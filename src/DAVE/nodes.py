@@ -17,7 +17,7 @@ from .nds.mixins import (
     HasTrimesh,
     HasParentAbstract,
     HasSubScene,
-    HasContainer,
+    HasContainer, HasParentPure, HasParentCore,
 )
 from .nds.results import LoadShearMomentDiagram
 from .nds.super_nodes import Component  # , SimpleSling
@@ -114,7 +114,6 @@ from .nds.helpers import ClaimManagement, Watch
 from .nds.core import (
     Buoyancy,
     Beam,
-    Cable,
     Connector2d,
     ContactBall,
     ContactMesh,
@@ -129,6 +128,7 @@ from .nds.core import (
     WindArea,
     WindOrCurrentArea,
 )
+from .nds.cable import Cable
 from .nds.pure import BallastSystem, Visual, WaveInteraction1
 
 from .nds.geometry import Frame, Point, Circle
@@ -183,7 +183,9 @@ DAVE_ADDITIONAL_RUNTIME_MODULES["Manager"] = Manager
 DAVE_ADDITIONAL_RUNTIME_MODULES["Node"] = Node
 DAVE_ADDITIONAL_RUNTIME_MODULES["HasFootprint"] = HasFootprint
 DAVE_ADDITIONAL_RUNTIME_MODULES["HasTrimesh"] = HasTrimesh
-DAVE_ADDITIONAL_RUNTIME_MODULES["HasParent"] = HasParentAbstract
+DAVE_ADDITIONAL_RUNTIME_MODULES["HasParentPure"] = HasParentPure
+DAVE_ADDITIONAL_RUNTIME_MODULES["HasParentCore"] = HasParentCore
+DAVE_ADDITIONAL_RUNTIME_MODULES["HasParentAbstract"] = HasParentAbstract
 DAVE_ADDITIONAL_RUNTIME_MODULES["HasSubScene"] = HasSubScene
 DAVE_ADDITIONAL_RUNTIME_MODULES["HasContainer"] = HasContainer
 DAVE_ADDITIONAL_RUNTIME_MODULES["NodeSingleton"] = NodeSingleton
@@ -200,60 +202,3 @@ DAVE_ADDITIONAL_RUNTIME_MODULES["ClaimManagement"] = ClaimManagement
 DAVE_ADDITIONAL_RUNTIME_MODULES["VisualOutlineType"] = VisualOutlineType
 
 from .nds import auto_generated_node_documentation  # noqa: F401
-
-#
-# # Register the documentation
-# #
-# cdir = Path(__file__).parent
-# filename = cdir / "./resources/node_prop_info.csv"
-# from DAVE.settings import DAVE_NODEPROP_INFO, NodePropertyInfo
-#
-# if filename.exists():
-#     types = DAVE_ADDITIONAL_RUNTIME_MODULES.copy()
-#     types["tuple"] = tuple
-#     types["int"] = int
-#     types["float"] = float
-#     types["bool"] = bool
-#     types["str"] = str
-#     types["dict"] = type(dict)
-#     types["array"] = type(np.array)
-#
-#     btypes = dict()
-#     btypes["True"] = True
-#     btypes["False"] = False
-#     btypes["true"] = True
-#     btypes["false"] = False
-#
-#     with open(filename, newline="") as csvfile:
-#         prop_reader = csv.reader(csvfile)
-#         header = prop_reader.__next__()  # skip the header
-#         for row in prop_reader:
-#             cls_name = row[0]
-#
-#             if cls_name == "Shackle":
-#                 continue
-#
-#             cls = DAVE_ADDITIONAL_RUNTIME_MODULES[cls_name]
-#
-#             prop_name = row[1]
-#             val_type = types[row[2]]
-#
-#             info = NodePropertyInfo(
-#                 node_class=cls,
-#                 property_name=row[1],
-#                 property_type=val_type,
-#                 doc_short=row[3],
-#                 units=row[4],
-#                 remarks=row[5],
-#                 is_settable=btypes[row[6]],
-#                 is_single_settable=btypes[row[7]],
-#                 is_single_numeric=btypes[row[8]],
-#                 doc_long=row[9],
-#             )
-#
-#             if cls not in DAVE_NODEPROP_INFO:
-#                 DAVE_NODEPROP_INFO[cls] = dict()
-#             DAVE_NODEPROP_INFO[cls][prop_name] = info
-#
-# else:
-#     print(f"Could not register node property info because {filename} does not exist")

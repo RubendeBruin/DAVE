@@ -488,12 +488,49 @@ DAVE_NODEPROP_INFO[cls]["displacement"] = info
 cls = DAVE_ADDITIONAL_RUNTIME_MODULES["Cable"]
 DAVE_NODEPROP_INFO[cls] = dict()
 
+# Property: sticky
+info = NodePropertyInfo(node_class=cls,
+                        property_name="sticky",
+                        property_type=tuple,
+                        doc_short="""Positions at which the connections stick to the cable. Aligned with connections.""",
+                        doc_long = """Positions at which the connections stick to the cable. Aligned with connections.
+        None means no sticky connection,
+        a value between 0 and 1 defines the position of the cable (as fraction of the cable length) at which the cable sticks
+        if the connection is a circle then the sticky data needs to be a tuple of which the second entry is the 3d location defining
+        the point at the circumference of the circle that cable point sticks to. This point does not need to be exactly on the circle
+        as long as it is not on the axis.
+        """,
+                        units = """""",
+                        remarks="""""",
+                        is_settable=True,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["sticky"] = info
+
+
+# Property: is_sticky
+info = NodePropertyInfo(node_class=cls,
+                        property_name="is_sticky",
+                        property_type=bool,
+                        doc_short="""True if any of the connections is sticky """,
+                        doc_long = """True if any of the connections is sticky [bool]""",
+                        units = """[bool]""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["is_sticky"] = info
+
+
 # Property: tension
 info = NodePropertyInfo(node_class=cls,
                         property_name="tension",
                         property_type=float,
                         doc_short="""Tension in the cable """,
-                        doc_long = """Tension in the cable [kN]""",
+                        doc_long = """Tension in the cable [kN]
+        Highest tension in the cable""",
                         units = """[kN]""",
                         remarks="""""",
                         is_settable=False,
@@ -659,6 +696,76 @@ info = NodePropertyInfo(node_class=cls,
 DAVE_NODEPROP_INFO[cls]["segment_lengths"] = info
 
 
+# Property: material_lengths
+info = NodePropertyInfo(node_class=cls,
+                        property_name="material_lengths",
+                        property_type=tuple,
+                        doc_short="""Length of material in each of the segments """,
+                        doc_long = """Length of material in each of the segments [m,...]
+
+        Amount of cable material in each of the segments.
+        Segments are:
+        - parts on a circle
+        - parts between two connections
+
+        If the cable is a loop and the connection entry is a circle, then the first entry is the length of cable material on that first circle.
+        Otherwise the first entry is the length of cable material between the first two connections.
+
+        See Also: segment_lengths
+        """,
+                        units = """[m,...]""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["material_lengths"] = info
+
+
+# Property: connected_bars_active
+info = NodePropertyInfo(node_class=cls,
+                        property_name="connected_bars_active",
+                        property_type=tuple,
+                        doc_short="""True if the i-th bar is active False if the bar is not active """,
+                        doc_long = """True if the i-th bar is active False if the bar is not active [bool,...]""",
+                        units = """[bool,...]""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["connected_bars_active"] = info
+
+
+# Property: material_lengths_no_bars
+info = NodePropertyInfo(node_class=cls,
+                        property_name="material_lengths_no_bars",
+                        property_type=tuple,
+                        doc_short="""Length of material in each of the segments  ignoring bars""",
+                        doc_long = """Length of material in each of the segments [m,...] ignoring bars
+
+        Amount of cable material in each of the segments.
+        Segments are:
+        - parts on a circle
+        - parts between two connections
+
+        If the cable is a loop and the connection entry is a circle, then the first entry is the length of cable material on that first circle.
+        Otherwise the first entry is the length of cable material between the first two connections.
+
+        Bars are excluded from the calculation. If a bar is present, then the length on the bar and the two adjacent
+        free sections are merged into a single section.
+
+        See Also: segment_lengths, material_lengths
+        """,
+                        units = """[m,...]""",
+                        remarks="""""",
+                        is_settable=False,
+                        is_single_settable = False,
+                        is_single_numeric = False
+                        )
+DAVE_NODEPROP_INFO[cls]["material_lengths_no_bars"] = info
+
+
 # Property: friction
 info = NodePropertyInfo(node_class=cls,
                         property_name="friction",
@@ -738,8 +845,8 @@ DAVE_NODEPROP_INFO[cls]["friction_forces"] = info
 info = NodePropertyInfo(node_class=cls,
                         property_name="calculated_friction_factor",
                         property_type=float,
-                        doc_short="""The friction factor that was left for DAVE to calculate , only applicable to loops""",
-                        doc_long = """The friction factor that was left for DAVE to calculate [-], only applicable to loops""",
+                        doc_short="""The friction factor that was left for DAVE to calculate , only applicable to non-sticky loops""",
+                        doc_long = """The friction factor that was left for DAVE to calculate [-], only applicable to non-sticky loops""",
                         units = """[-]""",
                         remarks="""""",
                         is_settable=False,
@@ -2331,8 +2438,8 @@ info = NodePropertyInfo(node_class=cls,
                         )
 DAVE_NODEPROP_INFO[cls]["footprint"] = info
 
-# ===================== Auto-generated documentation registration for HasParent
-cls = DAVE_ADDITIONAL_RUNTIME_MODULES["HasParent"]
+# ===================== Auto-generated documentation registration for HasParentAbstract
+cls = DAVE_ADDITIONAL_RUNTIME_MODULES["HasParentAbstract"]
 DAVE_NODEPROP_INFO[cls] = dict()
 
 # Property: parents

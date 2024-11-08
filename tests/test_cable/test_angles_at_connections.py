@@ -1,5 +1,7 @@
 """Angles at connections gives the angle change at each connection.
 including the first and last"""
+from cmath import isnan
+
 from numpy.testing import assert_allclose
 
 from DAVE import *
@@ -90,4 +92,101 @@ def test_bar_active_loop():
     c = s.new_cable(connections=["p1", "bar", "p2"], name="cable", EA=1e6, length=20)
     
     assert_allclose(c.angles_at_connections, [0, 36.135129, 0], atol=0.1)
+
+
+def test_circles_and_point():
+    s = Scene()
+
+    # code for Point
+    s.new_point(name='Point',
+                position=(0,
+                          0,
+                          0))
+
+    # code for Point2
+    s.new_point(name='Point2',
+                position=(2,
+                          0,
+                          5))
+
+    s.new_point('P3', position=(4, 0, 3))
+
+    # code for Circle
+    c = s.new_circle(name='Bottom',
+                     parent='Point',
+                     axis=(0, 1, 0),
+                     radius=1)
+
+    # code for Circle2
+    c = s.new_circle(name='Top',
+                     parent='Point2',
+                     axis=(0, 1, 0),
+                     radius=1)
+
+    # code for Loop
+    s.new_cable(name='Loop',
+                endA='Top',
+                endB='Bottom',
+                length=16.2832,
+                diameter=0.5,
+                EA=12345.0,
+                sheaves=['P3'])
+
+    loop = s['Loop']
+    s.update()
+
+    angles = loop.angles_at_connections
+
+    expected = [ 0.      , 57.424753,  0.     ]
+    assert_allclose(angles, expected)
+
+def test_loop_with_circle_and_points():
+    s = Scene()
+
+    # code for Point
+    s.new_point(name='Point',
+                position=(0,
+                          0,
+                          0))
+
+    # code for Point2
+    s.new_point(name='Point2',
+                position=(2,
+                          0,
+                          5))
+
+    s.new_point('P3', position=(4, 0, 3))
+
+    # code for Circle
+    c = s.new_circle(name='Bottom',
+                     parent='Point',
+                     axis=(0, 1, 0),
+                     radius=1)
+
+    # code for Circle2
+    c = s.new_circle(name='Top',
+                     parent='Point2',
+                     axis=(0, 1, 0),
+                     radius=1)
+
+    # code for Loop
+    s.new_cable(name='Loop',
+                endA='Top',
+                endB='Top',
+                length=16.2832,
+                diameter=0.5,
+                EA=12345.0,
+                sheaves=['P3','Bottom'])
+
+    s.update()
+
+    loop = s['Loop']
+    angles = loop.angles_at_connections
+
+    for a in angles:
+        assert not isnan(a)
+
+
+
+
 
