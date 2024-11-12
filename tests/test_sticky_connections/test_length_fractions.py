@@ -38,7 +38,9 @@ def test_length_fractions_on_sticky_2p_loop():
                 EA=12345.0,
                 sheaves=['Bottom'])
 
-    s['Loop'].sticky = [(0, (0,0,6.00001)),(0.5, (0,0,-1.0001)), None]
+    s['Loop'].sticky = [(0, 1.6),(0.5, 4.5), None]
+
+    DG(s)
 
     lengths = s['Loop']._get_partial_cable_length_fractions()
 

@@ -120,10 +120,17 @@ CABLE_COLORMAP = colormaps["turbo"]
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
+    #
+    # n = 100
+    # for i in range(n):
+    #     f = i / n
+    #     plt.plot(f, 0, marker="o", color=UC_CMAP(f))
+    # plt.plot(1.1, 0, marker="o", color=(1, 0, 1, 1))
+    # plt.show()
 
-    n = 100
-    for i in range(n):
-        f = i / n
-        plt.plot(f, 0, marker="o", color=UC_CMAP(f))
-    plt.plot(1.1, 0, marker="o", color=(1, 0, 1, 1))
+
+
+    defined_colors = [BLACK, RED, ORANGE, BROWN, GREEN, GREEN_DARK, YELLOW_LIGHT, YELLOW, YELLOW_DARK, PURPLE, WHITE, BLUE, BLUE_GREEN, BLUE_LIGHT, BLUE_DARK, PINK, DARK_GRAY, MEDIUM_GRAY, LIGHT_GRAY, LIGHT_LIGHT_GRAY, DAVE_YELLOW]
+    for i,col in enumerate(defined_colors):
+        plt.scatter(i, 0, 500, color=rgb(col))
     plt.show()

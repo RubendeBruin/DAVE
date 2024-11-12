@@ -29,7 +29,7 @@ class TextProducer(HasNodeReference):
     """
 
     def __init__(self,
-                 node : Node,
+                 node : Node or None,
                  text : str ,
                  how  : ProduceTextAlgorithm = ProduceTextAlgorithm.NOTHING,
                  ff : str or None = None):

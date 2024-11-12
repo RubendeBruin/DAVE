@@ -23,7 +23,7 @@ from DAVE.visual_helpers.vtkActorMakers import (
     Arrow,
     ArrowHead,
     actor_from_trimesh,
-    Mesh,
+    Mesh, Circle,
 )
 from DAVE.visual_helpers.vtkHelpers import (
     apply_parent_translation_on_transform,
@@ -525,6 +525,36 @@ class VisualActor:
                 update_line_to_points(A, points)
 
             # self.setLabelPosition(np.mean(points, axis=0))
+
+            # sticky location visualization
+            if self.node.sticky is not None:
+                sticky_pos, sticky_orientations = self.node.get_sticky_positions_and_directions()
+
+
+                # remove all sticky actors
+                for key in list(self.actors.keys()):
+                    if key.startswith("sticky"):
+                        viewport.remove(self.actors[key])
+                        del self.actors[key]
+
+                # create new actors for each sticky point
+                if len(sticky_pos) > 0:
+                    dia = diameter * 3
+
+                    for i, (pos, direction) in enumerate(zip(sticky_pos, sticky_orientations)):
+                        actor = Cylinder(
+                            pos=pos,
+                            r=dia/2,
+                            height=dia/30,
+                            axis=direction,
+                            res=5,
+                        )
+                        self.actors[f"sticky{pos}"] = actor
+                        viewport.add(actor)
+
+
+
+                # update_line_to_points(self.actors["sticky"], [sticky_pos, sticky_pos + (0,0,0.1)])
 
             return
 

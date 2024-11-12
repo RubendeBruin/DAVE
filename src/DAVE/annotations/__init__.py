@@ -17,3 +17,4 @@ from .text_producer import TextProducer, ProduceTextAlgorithm
 from .annotation import Annotation
 from .anchor import Anchor
 from .custom_layers import NodeLabelLayer
+from .cable_internal_force_layer import CableInternalForceLayer

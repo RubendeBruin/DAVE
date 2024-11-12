@@ -193,7 +193,14 @@ class AbstractSceneRenderer:
         # request the annotations and positions from all layers
         annotation_data = []
         for layer in self.layers:
-            annotation_data.extend(layer.give_annotation_data())
+            try:
+                annotation_data.extend(layer.give_annotation_data())
+            except Exception as E:
+                try:
+                    from DAVE.gui.helpers.gui_logger import DAVE_GUI_LOGGER
+                    DAVE_GUI_LOGGER.log(f"Error in layer {layer}: {E}")
+                except:
+                    raise E
 
         to_be_rendered = []
         for annotation, p3, offset in annotation_data:
@@ -895,7 +902,14 @@ class AbstractSceneRenderer:
         self.update_outlines()
 
         for L in self.layers:
-            L.update()
+            try:
+                L.update()
+            except Exception as E:
+                try:
+                    from DAVE.gui.helpers.gui_logger import DAVE_GUI_LOGGER
+                    DAVE_GUI_LOGGER.log(f"Error in layer {L}: {E}")
+                except:
+                    raise E
 
     def add_temporary_actor(self, actor: vtkActor):
         self.temporary_actors.append(actor)

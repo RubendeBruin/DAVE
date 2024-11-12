@@ -2939,9 +2939,8 @@ class Scene:
             else:
                 new_node.length = 1e-8  # set dummy length
 
-            new_node.EA = EA
-
-            new_node.diameter = diameter
+            new_node._EA = EA
+            new_node._diameter = diameter
 
             new_node.connections = pois
 
@@ -2972,7 +2971,9 @@ class Scene:
             if mass is not None:
                 mass_per_length = mass / new_node.length
 
-            new_node.mass_per_length = mass_per_length
+            new_node._mass_per_length = mass_per_length
+
+            new_node._update_vfNodes()
 
             new_node.update()
 
