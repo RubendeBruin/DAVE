@@ -524,10 +524,8 @@ class VisualActor:
 
                 update_line_to_points(A, points)
 
-            # self.setLabelPosition(np.mean(points, axis=0))
-
             # sticky location visualization
-            if self.node.sticky is not None:
+            if self.node.is_sticky:
                 sticky_pos, sticky_orientations = self.node.get_sticky_positions_and_directions()
 
 

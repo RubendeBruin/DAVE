@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'widget_connections.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.0
+## Created by: Qt User Interface Compiler version 6.6.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -75,14 +75,10 @@ class Ui_ConnectionForm(object):
 
         self.gridLayout.addWidget(self.widgetPicker, 10, 2, 1, 2)
 
-        self.checkBox = QCheckBox(self.frame)
-        self.checkBox.setObjectName(u"checkBox")
-
-        self.gridLayout.addWidget(self.checkBox, 6, 3, 1, 1)
-
         self.lblError = QLabel(self.frame)
         self.lblError.setObjectName(u"lblError")
-        self.lblError.setStyleSheet(u"background-color: rgb(255, 215, 251);")
+        self.lblError.setStyleSheet(u"background-color: rgb(255, 229, 255);")
+        self.lblError.setFrameShape(QFrame.Box)
         self.lblError.setWordWrap(True)
 
         self.gridLayout.addWidget(self.lblError, 9, 1, 1, 3)
@@ -92,6 +88,11 @@ class Ui_ConnectionForm(object):
         self.lbDirection.setWordWrap(True)
 
         self.gridLayout.addWidget(self.lbDirection, 5, 1, 1, 2)
+
+        self.checkBox = QCheckBox(self.frame)
+        self.checkBox.setObjectName(u"checkBox")
+
+        self.gridLayout.addWidget(self.checkBox, 6, 1, 1, 1)
 
 
         self.verticalLayout.addWidget(self.frame)
@@ -111,8 +112,8 @@ class Ui_ConnectionForm(object):
         self.pushButton.setText(QCoreApplication.translate("ConnectionForm", u"Add", None))
         self.pbRemoveSelected.setText(QCoreApplication.translate("ConnectionForm", u"Remove selected connection", None))
         self.pbSetShortestRoute.setText(QCoreApplication.translate("ConnectionForm", u"Auto route", None))
-        self.checkBox.setText(QCoreApplication.translate("ConnectionForm", u"Show advanced options", None))
         self.lblError.setText(QCoreApplication.translate("ConnectionForm", u"Error if any", None))
         self.lbDirection.setText(QCoreApplication.translate("ConnectionForm", u"For circles the direction in which the cable runs over it is defined by the axis of the circle. Check the box to run over the circle in opposite direction.", None))
+        self.checkBox.setText(QCoreApplication.translate("ConnectionForm", u"Friction options", None))
     # retranslateUi
 

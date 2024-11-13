@@ -1,29 +1,34 @@
 import warnings
 from contextlib import contextmanager
+# define enum FrictionType for friction calculation with values None, Force, Position
+from enum import Enum
+from typing import Tuple
 
 import numpy as np
 
 from .abstracts import NodeCoreConnected
 from .core import DEFAULT_WINDING_ANGLE
-from .helpers import *
 from .geometry import Point, Circle
+from .helpers import *
 from ..settings import (
     VF_NAME_SPLIT,
     RENDER_CURVE_RESOLUTION,
     RENDER_CATENARY_RESOLUTION,
 )
-from ..tools import assert1f_positive_or_zero, assertBool
+from ..tools import assert1f_positive_or_zero, assertBool, sync_inplace
 from ..visual_helpers.constants import RESOLUTION_CABLE_SAG, RESOLUTION_CABLE_OVER_CIRCLE
 
-# define enum FrictionType for friction calculation with values None, Force, Position
-from enum import Enum
 
 class FrictionType(Enum):
     No = 0
     Force = 1
     Position = 2
 
+    def __repr__(self):
+        return self.__str__()
 
+
+# noinspection PyProtectedMember
 @contextmanager
 def non_sticky_cable(cable: "Cable"):
     """Provides a non-sticky version of the cable.
@@ -59,6 +64,7 @@ def non_sticky_cable(cable: "Cable"):
                 cable._scene.delete(dummy_cable)
 
 
+# noinspection PyProtectedMember
 class Cable(NodeCoreConnected):
     """A Cable represents a linear elastic wire running from a Poi or sheave to another Poi of sheave.
 
@@ -84,7 +90,6 @@ class Cable(NodeCoreConnected):
     # We inherit from NodeCoreConnected, but we contain more than one node
     # so we need to override the _vfNode property to return the first cable node (which is always there)
 
-
     @property
     def _vfNode(self):
         return self._vfCableNodes[0]
@@ -94,7 +99,7 @@ class Cable(NodeCoreConnected):
 
         _vfNode = scene._vfc.new_cable(name)
         self._vfCableNodes = list()
-        self._vfPoiNodes = dict()   # key is the index of the connection that the poi belongs to (if any)
+        self._vfPoiNodes = dict()  # key is the index of the connection that the poi belongs to (if any)
         self._vfCableNodes = [_vfNode]
 
         super().__init__(scene=scene, name=name)
@@ -106,9 +111,15 @@ class Cable(NodeCoreConnected):
         self._reversed: list[bool] = list()
         self._max_winding_angle: list[float] = list()
         self._offsets: list[float] = list()
-        self._sticky: list[tuple or float or None] = list()
-        self._friction: list[float] = list()   # length of friction is one or two less than pois
 
+        # friction model
+        # Friction paramenters are defined at the intermediate connections
+        # If the cable is a loop then friction is defined at the first (start) connection as well.
+        # Hint: use _make_connection_aligned_copy_of_friction_vector to convert to connection aligned vector
+        self._friction_type: list[FrictionType] = list()
+        self._friction_force_factor: list[float or None] = list()  # length of friction is one or two less than pois
+        self._friction_point_cable: list[float or None] = list()
+        self._friction_point_connection: list[float or None] = list()
 
         # scalar properties
         self._length = 1
@@ -138,72 +149,108 @@ class Cable(NodeCoreConnected):
 
         self.invalidate()
 
-    @property
-    def sticky(self) -> tuple[float or None or tuple[float, float]]:
-        """Positions at which the connections stick to the cable. Aligned with connections.
-        None means no sticky connection,
-        a value between 0 and 1 defines the position of the cable (as fraction of the cable length) at which the cable sticks
-        if the connection is a circle then the sticky data needs to be a tuple of which the second entry is the 3d location defining
-        the point at the circumference of the circle that cable point sticks to. This point does not need to be exactly on the circle
-        as long as it is not on the axis.
+    def _give_poi_names(self):
+        """Returns a list with the names of all the pois"""
+        r = list()
+        for p in self._pois:
+            r.append(p.name)
+        return r
+
+    def _make_connection_aligned_copy_of_friction_vector(self, input_vector, insert_value=None):
+        """Make a copy of the input vector, but aligned with the connections
+
+        See Also: _make_friction_vector_from_connection_aligned_vector
         """
-        return tuple(self._sticky)
 
-    @sticky.setter
-    def sticky(self, value):
-        self._check_sticky(value)
-        self._sticky = list(value)
+        c = list(input_vector)  # copy
+        if not self._isloop:
+            c.insert(0, insert_value)
+        c.append(insert_value)
 
-        self._update_vfNodes()
+        return c
 
+    def _make_friction_vector_from_connection_aligned_vector(self, input_vector):
+        """Make a copy of the input vector, but aligned with the connections
+
+        See Also: _make_connection_aligned_copy_of_friction_vector
+        """
+
+        c = list(input_vector)
+        if not self._isloop:
+            c.pop(0)
+        c.pop(-1)
+
+        return c
+
+    def _assert_correct_friction_vector_length(self, vector):
+        if self._isloop:
+            assert len(vector) == len(
+                self._pois) - 1, f"Friction vector should have length {len(self._pois) - 1}, but has length {len(vector)}"
+        else:
+            assert len(vector) == len(
+                self._pois) - 2, f"Friction vector should have length {len(self._pois) - 2}, but has length {len(vector)}"
+
+    @property
+    def friction_type(self) -> tuple[FrictionType, ...]:
+        """Friction model at the connections [FrictionType]"""
+        return tuple(self._friction_type)
+
+    @friction_type.setter
+    def friction_type(self, value : tuple[FrictionType, ...] or FrictionType):
+        """Supply a single value to set all indices to the same value"""
+
+        if isinstance(value, FrictionType):
+            value = [value] * len(self._friction_type)
+
+        self._assert_correct_friction_vector_length(value)
+        self._check_friction_vectors(type_vector=value, do_raise = True)
+        self._friction_type = list(value)
+        self.update()
+
+    @property
+    def friction_force_factor(self):
+        return tuple(self._friction_force_factor)
+
+    @friction_force_factor.setter
+    def friction_force_factor(self, value):
+        self._assert_correct_friction_vector_length(value)
+        self._check_friction_vectors(force_factor_vector=value, do_raise = True)
+        self._friction_force_factor = list(value)
+        self.update()
+
+    @property
+    def friction_point_cable(self):
+        return tuple(self._friction_point_cable)
+
+    @friction_point_cable.setter
+    def friction_point_cable(self, value):
+        self._assert_correct_friction_vector_length(value)
+        self._check_friction_vectors(point_cable_vector=value, do_raise = True)
+        self._friction_point_cable = list(value)
+        self.update()
+
+    @property
+    def friction_point_connection(self):
+        return tuple(self._friction_point_connection)
+
+    @friction_point_connection.setter
+    def friction_point_connection(self, value):
+        self._assert_correct_friction_vector_length(value)
+        self._check_friction_vectors(point_connection_vector=value, do_raise = True)
+        self._friction_point_connection = list(value)
+        self.update()
+
+    def set_friction(self, friction_type = None, friction_force_factor = None, friction_point_cable = None, friction_point_connection = None):
+        """Applies multiple friction settings at once before validating their correctness. This may be needed """
+        self.friction_type = friction_type
+        self.friction_force_factor = friction_force_factor
+        self.friction_point_cable = friction_point_cable
+        self.friction_point_connection = friction_point_connection
 
     @property
     def is_sticky(self) -> bool:
-        """True if any of the connections is sticky [bool]"""
-
-        return any([s is not None for s in self._sticky])
-
-
-    def _check_sticky(self, value):
-        # check values
-        #
-        # length should be the same as the number of connections
-
-        connections = self.connections # alias
-
-        if len(value) != len(connections):
-            raise ValueError(f"Length of sticky should be the same as the number of connections ({len(connections)})")
-
-        for i, v in enumerate(value):
-            if v is None:
-                continue
-            if isinstance(v, (int, float)):
-                if v < 0 or v > 1:
-                    raise ValueError(f"Sticky value should be between 0 and 1, but {v} is not")
-
-                if not isinstance(connections[i], Point):
-                    raise ValueError(f"Sticky value for connection {i} is for a Point, but connection is not a Point but a {type(connections[i])}")
-
-            elif isinstance(v, tuple):
-                if len(v) != 2:
-                    raise ValueError(f"Sticky value should be a tuple of 2 values, but {v} is not")
-                if not isinstance(v[0], (int, float)):
-                    raise ValueError(f"First value of sticky tuple should be a float, but {v[0]} is not")
-                if not isinstance(v[1], (int, float)):
-                    raise ValueError(f"Second value of sticky tuple should be a float, but {v[1]} is not")
-
-                if not isinstance(connections[i], Circle):
-                    raise ValueError(f"Sticky value for connection {i} is for a Circle, but connection is not a Circle but a {type(connections[i])}")
-
-                if connections[i].is_roundbar:
-                    raise ValueError(f"Sticky value for connection {i} tries to stick to a roundbar, but roundbars can not be made sticky")
-
-            else:
-                raise ValueError(f"Sticky value should be None, a float or a tuple, but {v} is a {type(v)}")
-
-
-
-
+        """True if any of the connections uses Positional Friction [bool]"""
+        return any([k == FrictionType.Position for k in self._friction_type])
 
     @property
     def tension(self) -> float:
@@ -231,7 +278,6 @@ class Cable(NodeCoreConnected):
     def length(self) -> float:
         """Length of the cable when in rest [m]"""
         return self._length
-
 
     @length.setter
     @node_setter_manageable
@@ -268,7 +314,6 @@ class Cable(NodeCoreConnected):
         self._EA = ea
         self._update_vfCable_scalar_properties()
 
-
     @property
     def diameter(self) -> float:
         """Diameter of the cable. Used when a cable runs over a circle. [m]"""
@@ -304,7 +349,9 @@ class Cable(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def mass(self, mass):
-        self._vfNode.mass_per_length = mass / self.length
+        assert1f_positive_or_zero(mass, "mass")
+        self.mass_per_length = mass / self.length
+
 
     @property
     def reversed(self) -> tuple[bool, ...]:
@@ -314,8 +361,8 @@ class Cable(NodeCoreConnected):
     @reversed.setter
     @node_setter_manageable
     @node_setter_observable
-    def reversed(self, reversed):
-        self._reversed = list(reversed)
+    def reversed(self, new_reversed):
+        self._reversed = list(new_reversed)
         self._update_vfNodes()
 
     @property
@@ -324,12 +371,11 @@ class Cable(NodeCoreConnected):
         if len(self.connections) < 2:
             return False
         if self.connections[0] == self.connections[-1]:
-            if not self._vfCableNodes: # no cable nodes defined
+            if not self._vfCableNodes:  # no cable nodes defined
                 return True
             else:
                 return not self._vfNode.explicit_cable_no_loop
         return False
-
 
     def _set_no_loop(self):
         """Set the cable to be a non-loop explicitly - this overrules the normal behaviour"""
@@ -339,8 +385,8 @@ class Cable(NodeCoreConnected):
             n.explicit_cable_no_loop = True
 
         if cable_was_loop:
-            # update friction
-            self.friction = [f for f in self._friction if f is not None]
+            # update friction vectors
+            self.friction = [f for f in self._friction_force_factor if f is not None]
             self._update_vfNodes()
 
     def _unset_no_loop(self):
@@ -352,14 +398,14 @@ class Cable(NodeCoreConnected):
     def solve_segment_lengths(self) -> bool:
         """If True then lengths of the segment are solved for a continuous tension distribution including weight. If false then the segment lengths are determined only on the geometry [bool]
         Note that the solution is typically not unique!"""
-        if self.sticky:
+        if self.is_sticky:
             return False
         return self._vfNode.solve_section_lengths
 
     @solve_segment_lengths.setter
     def solve_segment_lengths(self, value):
         assertBool(value, "solve_segment_lengths")
-        if value and self.sticky:
+        if value and self.is_sticky:
             raise ValueError("Solve segment lengths is implemented in combination with sticky")
         self._vfNode.solve_section_lengths = value
 
@@ -393,7 +439,8 @@ class Cable(NodeCoreConnected):
         result = self.segment_lengths
 
         if not self._isloop or isinstance(self.connections[0], Point):
-            assert result[0] == 0, f"Getting material lengths from {self.name}; First segment length should be 0, but is {result[0]}"
+            assert result[
+                       0] == 0, f"Getting material lengths from {self.name}; First segment length should be 0, but is {result[0]}"
             result = result[1:]
 
         return result
@@ -401,14 +448,14 @@ class Cable(NodeCoreConnected):
     @property
     def connected_bars_active(self) -> tuple[bool]:
         """True if the i-th bar is active False if the bar is not active [bool,...]"""
-        all = []
+        result = []
 
         for n in self._vfCableNodes:
-            ab = n.connected_bar_active
-            all.extend(ab)
+            ab = n.connected_bar_active  # tuple of bool
+            result.extend(ab)
 
-        return tuple(all)
-
+        # noinspection PyTypeChecker
+        return tuple(result)
 
     @property
     def material_lengths_no_bars(self) -> tuple[float]:
@@ -433,8 +480,7 @@ class Cable(NodeCoreConnected):
 
         results = []
 
-        for i,c in enumerate(self.connections[:-1]):
-
+        for i, c in enumerate(self.connections[:-1]):
 
             # Logic for bars.
             # bars are always intermediate between two connections
@@ -442,36 +488,29 @@ class Cable(NodeCoreConnected):
                 if c.is_roundbar:
                     active = active_bars.pop(0)
                     if active:
-                        results[-1] += all_segments.pop(0) + all_segments.pop(0)  # segment on the bar and the following segment
+                        results[-1] += all_segments.pop(0) + all_segments.pop(
+                            0)  # segment on the bar and the following segment
                     else:
-                        pass # not present in the results
+                        pass  # not present in the results
 
                     continue
 
             # Segment length on intermediate circles
             # or fist segment on the first circle in a loop
             if isinstance(c, Circle):
-                if i>0 or i==0 and self._isloop:
+                if i > 0 or i == 0 and self._isloop:
                     results.append(all_segments.pop(0))
 
             results.append(all_segments.pop(0))  # free segment
 
+        # noinspection PyTypeChecker
         return tuple(results)
-
-
-
-
-
-
-
-
-
-
 
     @property
     def friction(self) -> tuple[float]:
         """Friction factors at the connections [-]"""
-        return tuple(self._friction)
+        # noinspection PyTypeChecker
+        return tuple(self._friction_force_factor)
 
     # note: not managed because it is technically a DOF (and we need it in rigging variations)
     @friction.setter
@@ -485,12 +524,12 @@ class Cable(NodeCoreConnected):
         if self._isloop:
             req_len += 1
         assert (
-            len(friction) == req_len
+                len(friction) == req_len
         ), f"Friction should be defined for {req_len} connections, got {len(friction)}."
 
         if self._isloop and not self.is_sticky:
             assert (
-                list(friction).count(None) == 1
+                    list(friction).count(None) == 1
             ), f"When defining friction for a loop, exactly of the frictions should be 'None'. The friction at that last connection is calculated from the other frictions. Received: {friction}"
 
             # the None friction shall not be on a roundbar
@@ -502,10 +541,10 @@ class Cable(NodeCoreConnected):
                         f"Defining the unknown friction for '{self.name}' to be on connection '{connection.name}' which is a round-bar. This would become invalid if the round-bar disconnected and is thus not allowed."
                     )
 
-        self._friction = list(friction)
+        self._friction_force_factor = list(friction)
 
         if self._isloop:
-            self._vfNode.unkonwn_friction_index = self._friction.index(None)
+            self._vfNode.unkonwn_friction_index = self._friction_force_factor.index(None)
 
         self._update_vfNodes()
 
@@ -515,7 +554,6 @@ class Cable(NodeCoreConnected):
 
         with non_sticky_cable(self) as non_sticky:
             return tuple(np.rad2deg(non_sticky._vfNode.angles_at_connections))
-
 
     @property
     def max_winding_angles(self) -> tuple[float, ...]:
@@ -532,13 +570,13 @@ class Cable(NodeCoreConnected):
         # check length
         req_len = len(self._pois)
         assert (
-            len(max_winding_angles) == req_len
+                len(max_winding_angles) == req_len
         ), f"max_winding_angles should be defined for all {req_len} connections, got {len(max_winding_angles)} values."
 
         for _ in max_winding_angles:
             if _ > 0:
                 assert (
-                    _ > 180
+                        _ > 180
                 ), f"max_winding_angles should be more than 180 degrees, {_} is not."
 
         self._max_winding_angle = list(max_winding_angles)
@@ -559,7 +597,7 @@ class Cable(NodeCoreConnected):
         # check length
         req_len = len(self._pois)
         assert (
-            len(offset) == req_len
+                len(offset) == req_len
         ), f"offsets should be defined for all {req_len} connections"
 
         self._offsets = list(offset)
@@ -592,12 +630,10 @@ class Cable(NodeCoreConnected):
 
                 if segment_end_force is not None:
                     segment_start_force = n.get_segment_end_tensions[0]
-                    friction  = segment_start_force - segment_end_force
-                    forces.append(np.linalg.norm(friction))
-                else: # first segment
+                    friction = segment_start_force - segment_end_force
+                    forces.append(friction)
+                else:  # first segment
                     tension_at_start_of_first_segment = n.get_segment_end_tensions[0]
-
-
 
                 internal_forces = n.friction_forces
 
@@ -610,28 +646,18 @@ class Cable(NodeCoreConnected):
 
                 forces.extend(internal_forces)
 
-                # get forces from the point: possible,
-                # but getting from end tensions is easier and also works for points
-                # # get force from point i
-                # if i_to in self._vfPoiNodes:
-                #     node = self._vfPoiNodes[i_to]
-                #     gforce = node.applied_force[:3]
-                #     forces.append(np.linalg.norm(gforce))
-                #     segment_end_force = None
-                # else:
-
                 segment_end_force = n.get_segment_end_tensions[-1]
 
             if self._isloop:
                 # insert the friction at the end/start of the loop
+                # noinspection PyUnboundLocalVariable
                 forces.insert(0, tension_at_start_of_first_segment - segment_end_force)
 
+            # noinspection PyTypeChecker
             return tuple(forces)
 
         else:
             return tuple(self._vfNode.friction_forces)
-
-
 
     @property
     def calculated_friction_factor(self) -> float or None:
@@ -649,6 +675,7 @@ class Cable(NodeCoreConnected):
             fr[self._vfNode.unkonwn_friction_index] = (
                 self._vfNode.calculated_unknown_friction_factor
             )
+            # noinspection PyTypeChecker
             return tuple(fr)
         else:
             return self.friction
@@ -670,6 +697,7 @@ class Cable(NodeCoreConnected):
 
             combined.extend(reshuffled)
 
+        # noinspection PyTypeChecker
         return tuple(combined)
 
     @property
@@ -677,6 +705,7 @@ class Cable(NodeCoreConnected):
         """Mean tensions in the free segments of the cable [kN]
         Note that the tension in a segment is constant if the cable weight is zero.
         """
+        # noinspection PyTypeChecker
         return tuple([0.5 * (p[0] + p[1]) for p in self.segment_end_tensions])
 
     @property
@@ -712,6 +741,7 @@ class Cable(NodeCoreConnected):
         this is invalid because point 3 is repeated.
         #NOGUI
         """
+        # noinspection PyTypeChecker
         return tuple(self._pois)
 
     @connections.setter
@@ -766,9 +796,9 @@ class Cable(NodeCoreConnected):
             if is_roundbar(nodes[i + 1]):
                 if is_roundbar(nodes[i]) or is_roundbar(nodes[i + 2]):
                     raise ValueError(
-                        f"Error when setting connections of '{self.name}': Connection '{nodes[i+1].name}' is a round-bar and is not surrounded by two non-roundbars. This is not allowed.\n"
+                        f"Error when setting connections of '{self.name}': Connection '{nodes[i + 1].name}' is a round-bar and is not surrounded by two non-roundbars. This is not allowed.\n"
                         f"Connections to a round-bar must always be between two non-roundbar connections\n"
-                        f"before is {nodes[i].name} and after is {nodes[i+2].name}"
+                        f"before is {nodes[i].name} and after is {nodes[i + 2].name}"
                     )
 
         was_loop = self._isloop
@@ -777,16 +807,22 @@ class Cable(NodeCoreConnected):
         self._pois.extend(nodes)
 
         # are we switching from a line to a loop
-        if not was_loop and self._isloop and not self.is_sticky:
+        if not was_loop and self._isloop:
             # yes, we are switching from a line to a loop
             # so we need to add a friction factor (None) at the start and set the unknown friction index
-            self._friction.insert(0, None)
+            self._friction_force_factor.insert(0, None)
+            self._friction_type.insert(0, FrictionType.No)
+            self._friction_point_cable.insert(0, 0)
+            self._friction_point_connection.insert(0, 0)
             self._vfNode.unkonwn_friction_index = 0
 
         if was_loop and not self._isloop:
             # switching from loop to line
             # pop the first friction factor
-            self._friction.pop(0)
+            self._friction_force_factor.pop(0)
+            self._friction_type.pop(0)
+            self._friction_point_cable.pop(0)
+            self._friction_point_connection.pop(0)
             self._vfNode.unkonwn_friction_index = -1
 
         self._update_vfNodes()
@@ -795,7 +831,7 @@ class Cable(NodeCoreConnected):
         """A list of 3D locations which can be used for visualization"""
 
         if getattr(
-            self, "_keep_taut_visual", None
+                self, "_keep_taut_visual", None
         ):  # for frequency domain response movies
             rsag = 2
         else:
@@ -820,7 +856,7 @@ class Cable(NodeCoreConnected):
         """A list of 3D locations which can be used for visualization"""
 
         if getattr(
-            self, "_keep_taut_visual", None
+                self, "_keep_taut_visual", None
         ):  # for frequency domain response movies
             rsag = 2
         else:
@@ -857,7 +893,6 @@ class Cable(NodeCoreConnected):
             )
         return points
 
-
     # ============================================================
     #
     # Annotation data
@@ -885,18 +920,20 @@ class Cable(NodeCoreConnected):
 
         # friction at the connections
         friction = self.friction_forces
+        i_offset = 1
+        if self._isloop:
+            i_offset = 0
         for i, f in enumerate(friction):
-            data.append((-(1000 + i), f"friction: {f:.2f} kN"))
+            data.append((-(1000 + i + i_offset), f"friction: {f:.2f} kN"))
 
         # tensions at the segment ends
         segment_end_data = []
 
         i = 0
         for n in self._vfCableNodes:
-            positions, tensions = n.get_drawing_data(2, 2, False)
+            positions, tensions = n.get_drawing_data(5, 2, True)
             previous_pos = positions[-1]
             for pos, t in zip(positions, tensions):
-
                 if np.linalg.norm(np.array(pos) - previous_pos) > 1e-3:
                     new_row = (-(2000 + i), f"tension: {t:.2f} kN")
                     segment_end_data.append(new_row)
@@ -915,10 +952,13 @@ class Cable(NodeCoreConnected):
                     # merge the group
                     middle = len(group) // 2
                     data.append((group[middle][0], text))
+                    # data.append((group[-1][0], text))
+                    # data.append((group[0][0], text))
+                    # data.extend(group)
+
+
                 else:
                     data.append(group[0])
-
-
 
         return data
 
@@ -940,18 +980,24 @@ class Cable(NodeCoreConnected):
         if pos1f < 0:  # --- special cases ----
             special = -pos1f
 
-            if special >= 1000 and special < 2000:
-                i = special - 1000
-                midpoints = self._get_cable_points_at_mid_of_connections()
-                return midpoints[i]
+            if 1000 <= special < 2000:  # friction point of the cable on the section
+                i_connection = special - 1000
 
-            if special >= 2000 and special < 3000:
+                # is this a sticky cable on a circle? If so then get the location of the point on the circle
+                if i_connection in self._vfPoiNodes:
+                    return self._vfPoiNodes[i_connection].global_position
+
+
+                midpoints = self._get_cable_points_at_mid_of_connections()
+                return midpoints[i_connection]
+
+            if 2000 <= special < 3000:
                 i = special - 2000
 
                 # tensions at the segment ends
                 poss = []
                 for n in self._vfCableNodes:
-                    positions, tensions = n.get_drawing_data(2, 2, False)
+                    positions, tensions = n.get_drawing_data(5, 2, True)
                     poss.extend(positions)
                 return poss[i]
 
@@ -975,11 +1021,107 @@ class Cable(NodeCoreConnected):
             pos = SL[1] / 2  # the first free segment is nr 1
 
         # interpolate the position
-        x = np.interp(pos, distance_along_line, points[:, 0])
-        y = np.interp(pos, distance_along_line, points[:, 1])
-        z = np.interp(pos, distance_along_line, points[:, 2])
+        x = float(np.interp(pos, distance_along_line, points[:, 0]))
+        y = float(np.interp(pos, distance_along_line, points[:, 1]))
+        z = float(np.interp(pos, distance_along_line, points[:, 2]))
 
-        return (x, y, z)
+        return x, y, z
+
+    # ============================================================
+    #
+    # Friction
+    #
+    # ============================================================
+
+    def _check_friction_vectors(self,
+                                connections = None,
+                                type_vector = None,
+                                force_factor_vector = None,
+                                point_cable_vector = None,
+                                point_connection_vector = None,
+                                do_raise = False):
+        """Check the friction vectors for consistency with connections.
+        If do_raise is true then the first error is raised as an exception.
+        Returns a list of errors
+
+        All parameters are optional and default to the current values of the cable.
+        """
+
+        if connections is None:
+            connections = self.connections
+
+        if type_vector is None:
+            type_vector = self._friction_type
+
+        if force_factor_vector is None:
+            force_factor_vector = self._friction_force_factor
+
+        if point_cable_vector is None:
+            point_cable_vector = self._friction_point_cable
+
+        if point_connection_vector is None:
+            point_connection_vector = self._friction_point_connection
+
+        errors = []
+
+        # check lengths
+        n_req = len(connections) - 2
+        if self._isloop:
+            n_req += 1
+
+        if len(type_vector) != n_req:
+            errors.append(f"Friction type vector has length {len(type_vector)} but should have length {n_req}")
+
+        if len(force_factor_vector) != n_req:
+            errors.append(f"Friction force factor vector has length {len(force_factor_vector)} but should have length {n_req}")
+
+        if len(point_cable_vector) != n_req:
+            errors.append(f"Friction point cable vector has length {len(point_cable_vector)} but should have length {n_req}")
+
+        if len(point_connection_vector) != n_req:
+            errors.append(f"Friction point connection vector has length {len(point_connection_vector)} but should have length {n_req}")
+
+        if errors:
+            if do_raise:
+                raise ValueError(errors[0])
+            return errors
+
+        # check friction definitions
+        if self._isloop:
+            cons = self.connections[:-1]
+        else:
+            cons = self.connections[1:-1]
+
+
+        for i, (con, kind, ff, pcable, pconnector) in enumerate(zip(cons, type_vector, force_factor_vector, point_cable_vector, point_connection_vector)):
+
+            if kind == FrictionType.No:
+                continue
+
+            if kind == FrictionType.Force:
+                if abs(ff) >= 1:
+                    errors.append(f"Friction force factor nr {i} is {ff} but should be in the range (-1,1)")
+
+            if kind == FrictionType.Position:
+                if isinstance(pcable, (int,float)):
+                    if 0<=pcable<=1:
+                        pass  # ok
+                    else:
+                        errors.append(f"Friction type nr {i} is set to Position, Position of cable is set to {pcable} but should be in range [0,1]")
+                else:
+                    errors.append(f"Friction type nr {i} is set to Position, but the position of the cable is not valid: {pcable}")
+
+                if isinstance(con, Circle):
+                    if not isinstance(pconnector, (int, float)):
+                        errors.append(f"Friction type nr {i}is set to Position, but the point on the connector is not valid {pconnector}")
+                    if con.is_roundbar:
+                        errors.append(
+                            f"Friction type nr {i}is set to Position, but the connection is a round-bar. This is not allowed")
+
+        if errors:
+            if do_raise:
+                raise ValueError(errors[0])
+        return errors
 
     # ============================================================
     #
@@ -1001,30 +1143,30 @@ class Cable(NodeCoreConnected):
 
     # ============================================================
 
-    def set_all_sticky(self):
-        """Sets all connections to sticky using cut actual positions of the cable on the connections. Then remove friction factors."""
+    def set_sticky_data_from_current_geometry(self):
+        """Sets all sticky friction position data using actual positions of the cable on the connections."""
 
-        lengths = self.material_lengths_no_bars   #
+        lengths = self.material_lengths_no_bars  #
         L = sum(lengths)
 
-
-        assert abs(L-self.length)<1e-6, f"{self.name} : Length of the cable {self.length} is not equal to the sum of the segment lengths {L}"
+        assert abs(
+            L - self.length) < 1e-6, f"{self.name} : Length of the cable {self.length} is not equal to the sum of the segment lengths {L}"
 
         positions = self._get_cable_points_at_mid_of_connections()
 
         # if the cable is a loop, then the last position is the same as the first
         # if the cable is not a loop then sticky[0] and sticky[-1] are not used
 
-        sticky = []
+        point_cable = []
+        point_connection = []
+
         cum_length = 0
         i_segment = 0
 
         for i, c in enumerate(self.connections):
 
-            if not self._isloop and (i == 0 or i == len(positions)-1):
-                sticky.append(None)
-
-                if i==0:
+            if not self._isloop and (i == 0 or i == len(positions) - 1):
+                if i == 0:
                     cum_length += lengths[i_segment]
                     i_segment += 1
                 continue
@@ -1032,11 +1174,13 @@ class Cable(NodeCoreConnected):
             # check for in-active bars!
 
             if isinstance(c, Point):
-                sticky.append(cum_length / L)
+                point_cable.append(cum_length / L)
+                point_connection.append(None)  # not applicable
 
             elif isinstance(c, Circle):
                 if c.is_roundbar:
-                    sticky.append(None)
+                    point_cable.append(None)
+                    point_connection.append(None)
 
                 else:
                     length_on_connection = lengths[i_segment]
@@ -1047,28 +1191,50 @@ class Cable(NodeCoreConnected):
                     p = positions[i]
                     theta = c.theta_from_point(p)
 
-                    cum_length += length_on_connection/2
-                    sticky.append((cum_length / L, theta))
                     cum_length += length_on_connection / 2
 
+                    point_cable.append(cum_length / L)
+                    point_connection.append(np.rad2deg(theta))
+
+                    cum_length += length_on_connection / 2
 
             cum_length += lengths[i_segment]
             i_segment += 1
-
-        if self._isloop:
-            # derive the first sticky position from the last
-            # sticky.append(positions[-1])
-            sticky.append(None) # last is not used
-
-        self.sticky = sticky
 
         req_len = len(self.connections) - 2
         if self._isloop:
             req_len += 1
 
-        self.friction = [None] * req_len
+        assert len(point_cable) == req_len, f"Length of sticky points is {len(point_cable)}, but should be {req_len}"
+        assert len(point_cable) == len(
+            point_connection), f"Length of sticky points and sticky connections should be the same, but are {len(point_cable)} and {len(point_connection)}"
 
+        self.friction_point_cable = point_cable
+        self.friction_point_connection = point_connection
 
+    def _synchronize_connection_definition_vector_lengths_to_connections(self):
+        """Synchronize the lengths of the connection definition vectors such that they
+        match the length of the connections vector.
+
+        Pad with default values if needed
+
+        For friction the required lenght is len(connections) - 2 or len(connections) - 1 if the cable is a loop
+        """
+        req_len_connections = len(self._pois)
+        req_len_friction = req_len_connections - 2
+        if self._isloop:
+            req_len_friction += 1
+
+        sync_inplace(self._reversed, False, req_len_connections)
+        sync_inplace(self._max_winding_angle, DEFAULT_WINDING_ANGLE, req_len_connections)
+        sync_inplace(self._offsets, 0, req_len_connections)
+
+        # --- sync length of friction ---
+
+        sync_inplace(self._friction_type, FrictionType.No, req_len_friction)
+        sync_inplace(self._friction_force_factor, 0, req_len_friction)
+        sync_inplace(self._friction_point_cable, None, req_len_friction)
+        sync_inplace(self._friction_point_connection, None, req_len_friction)
 
     def get_sticky_positions_and_directions(self):
         """For each of the sticky points, gets the actual 3D position and direction of the cable at that point. Used for drawings"""
@@ -1076,25 +1242,28 @@ class Cable(NodeCoreConnected):
         positions = []
         orientations = []
 
-        for i, (s,c)  in enumerate(zip(self.sticky, self.connections)):
-            if s is None:
+        sticky_position = self._make_connection_aligned_copy_of_friction_vector(self.friction_point_cable)
+        sticky_connection = self._make_connection_aligned_copy_of_friction_vector(self.friction_point_connection)
+        friction_type = self._make_connection_aligned_copy_of_friction_vector(self.friction_type)
+
+        for i, (c, model, s_pos, theta) in enumerate(
+                zip(self.connections, friction_type, sticky_position, sticky_connection)):
+            if model is not FrictionType.Position:
                 continue
 
-            if isinstance(s, (int, float)):
-                # sticky location at a point
-                assert isinstance(c, Point), "Sticky location is a float, but the connection is not a Point"
+            if isinstance(c, Point):
 
                 positions.append(c.global_position)
                 # cable has no orientation at a point
                 # use the orientation of the previous segment and the next segment (if any)
-                o1 = (0,0,0)
+                o1 = (0, 0, 0)
                 if i > 0:
-                    o1 = np.asarray(self.connections[i-1].global_position) - c.global_position
-                o2 = (0,0,0)
-                if i < len(self.connections)-1:
-                    o2 = np.asarray(self.connections[i+1].global_position) - c.global_position
+                    o1 = np.asarray(self.connections[i - 1].global_position) - c.global_position
+                o2 = (0, 0, 0)
+                if i < len(self.connections) - 1:
+                    o2 = np.asarray(self.connections[i + 1].global_position) - c.global_position
 
-                orient = np.asarray((0,0,0), dtype=float)
+                orient = np.asarray((0, 0, 0), dtype=float)
                 if np.linalg.norm(o1) > 1e-9:
                     orient += o1
                 if np.linalg.norm(o2) > 1e-9:
@@ -1107,13 +1276,12 @@ class Cable(NodeCoreConnected):
                     orient = orient / np.linalg.norm(orient)
                     orientations.append(orient)
                 else:
-                    orientations.append((1,0,0))
+                    orientations.append((1, 0, 0))
 
-            elif len(s) == 2:
+            elif isinstance(c, Circle):
                 # sticky location at a circle
-                assert isinstance(c, Circle), "Sticky location is a tuple, but the connection is not a Circle"
 
-                local_position = c.point3_from_theta_and_r_local(theta = s[1], r = c.radius + self.diameter/2)
+                local_position = c.point3_from_theta_and_r_local(theta=np.deg2rad(theta), r=c.radius + self.diameter / 2)
                 if c.parent.parent is not None:
                     global_position = c.parent.parent.to_glob_position(local_position)
                 else:
@@ -1126,77 +1294,14 @@ class Cable(NodeCoreConnected):
                 tangent = np.cross(c.axis, radial)
 
                 if np.linalg.norm(tangent) < 1e-9:  # fallback for zero radius and zero diameter
-                    orientations.append((1,0,0))
+                    orientations.append((1, 0, 0))
 
                 orientations.append(tangent)
 
-
             else:
-                raise ValueError("Invalid sticky format")
+                raise ValueError("Unknown connection type")
 
         return positions, orientations
-
-
-
-
-
-    def _synchronize_connection_definition_vector_lengths_to_connections(self):
-        """Synchronize the lengths of the connection definition vectors such that they
-        match the length of the connections vector for all except friction.
-        """
-
-        # sync length of reversed
-        while len(self._reversed) < len(self._pois):
-            self._reversed.append(False)
-        self._reversed = self._reversed[0: len(self._pois)]
-
-        # sync length of friction
-        req_friction_length = len(self._pois) - 2
-        if self._isloop:
-            req_friction_length += 1
-
-        while len(self._friction) < req_friction_length:
-            self._friction.append(0)
-        self._friction = self._friction[0:req_friction_length]
-
-        # sync length of maximum winding angles
-        while len(self._max_winding_angle) < len(self._pois):
-            self._max_winding_angle.append(DEFAULT_WINDING_ANGLE)
-        self._max_winding_angle = self._max_winding_angle[0: len(self._pois)]
-
-        # sync length of offsets
-        while len(self._offsets) < len(self._pois):
-            self._offsets.append(0)
-        self._offsets = self._offsets[0: len(self._pois)]
-
-        # sync length of sticky
-        while len(self._sticky) < len(self._pois):
-            self._sticky.append(None)
-        self._sticky = self._sticky[0: len(self._pois)]
-
-        # for non-loops: remove sticky from the first and last connection if any. They are sticky by default
-        if not self._isloop:
-            if self._sticky[0] is not None:
-                self._sticky[0] = None
-            if self._sticky[-1] is not None:
-                self._sticky[-1] = None
-
-    def _get_connection_aligned_friction(self):
-        """Return a list of frictions aligned with the connections.
-
-        For loops: The first index is the friction at the start/end point of the loop.
-
-        If the cable is a loop then the friction at the last connection is calculated from the other frictions.
-        """
-
-        if self._isloop:
-            frictions = list(self._friction)
-            frictions.append(0)
-        else:
-            frictions = [0, *self._friction, 0]
-
-        return frictions
-
 
     def _get_partial_cable_length_fractions(self) -> list[float]:
         """For sticky cables, return a list of the fractions of the cable length that are between the sticky connections.
@@ -1207,19 +1312,12 @@ class Cable(NodeCoreConnected):
 
             positions = []
 
-            for sticky in self._sticky:
-                if sticky is not None:
-                    if isinstance(sticky, (int,float)):
-                        positions.append(sticky)
-                    elif len(sticky) == 2:
-                        positions.append(sticky[0])
-                    else:
-                        raise ValueError("Invalid sticky format")
+            for kind, pos_cable in zip(self._friction_type, self._friction_point_cable):
+                if kind is FrictionType.Position:
+                    positions.append(pos_cable)
 
-
-
-            lengths = [positions[i+1]-positions[i] for i in range(len(positions)-1)]
-            lengths.append(1-positions[-1])
+            lengths = [positions[i + 1] - positions[i] for i in range(len(positions) - 1)]
+            lengths.append(1 - positions[-1])
 
             if self._isloop:
                 lengths[-1] += positions[0]
@@ -1230,7 +1328,6 @@ class Cable(NodeCoreConnected):
 
         else:
             return [1.0]
-
 
     def _get_core_cable_indices(self) -> list[list[int]]:
         """For sticky cables, return a list of lists of indices of the connections that are part of the core cables.
@@ -1251,7 +1348,7 @@ class Cable(NodeCoreConnected):
                                                  1
 
 
-API Definition      CoreCable1       CoreCable2
+        API Definition      CoreCable1       CoreCable2
 
         Connection #        indeces[0]       indices[1]
         0   sticky             0
@@ -1266,13 +1363,14 @@ API Definition      CoreCable1       CoreCable2
 
         """
 
+        friction_type_c_aligned = self._make_connection_aligned_copy_of_friction_vector(self._friction_type, FrictionType.No)
+
 
         if self._isloop:
 
             connections_to_be_processed = list(range(len(self.connections)))
             core_cables = list()
             core_cable = None
-
 
             while True:
                 if len(connections_to_be_processed) == 0:
@@ -1281,7 +1379,7 @@ API Definition      CoreCable1       CoreCable2
 
                 connection = connections_to_be_processed.pop(0)
 
-                if self._sticky[connection] is not None:  # this is a sticky connection,
+                if friction_type_c_aligned[connection] is FrictionType.Position:  # this is a sticky connection,
 
                     # add the last connection to the current core_cable (if any)
                     if core_cable is not None:
@@ -1309,16 +1407,16 @@ API Definition      CoreCable1       CoreCable2
             for i_connection, connection in enumerate(self.connections):
 
                 cable.append(i_connection)
-                if self._sticky[i_connection] is not None:
+                if friction_type_c_aligned[i_connection] is FrictionType.Position:
                     core_cables.append(cable)
                     cable = [i_connection]
 
             core_cables.append(cable)
             return core_cables
 
-    def _get_or_create_sticky_point_for(self, i_connection):
-        """Returns the sticky point for a connection. If it does not exist yet, it is created"""
-        if i_connection == len(self.connections) - 1: # last connection
+    def _get_or_create_sticky_point_node_for(self, i_connection):
+        """Returns the sticky point NODE for a connection. If it does not exist yet, it is created"""
+        if i_connection == len(self.connections) - 1:  # last connection
             if self._isloop:
                 i_connection = 0
 
@@ -1326,16 +1424,15 @@ API Definition      CoreCable1       CoreCable2
 
             # create
             connection = self.connections[i_connection]
-            sticky = self._sticky[i_connection]
 
-            assert len(sticky) == 2
-            assert isinstance(connection, Circle)
-            theta = sticky[1]
-            assert isinstance(theta, (float, int))
+            if self._isloop:
+                theta = self._friction_point_connection[i_connection]
+            else:
+                theta = self._friction_point_connection[i_connection - 1]
 
-            position = connection.point3_from_theta_and_r_local(theta, r = connection.radius + 0.5*self.diameter)
+            position = connection.point3_from_theta_and_r_local(np.deg2rad(theta), r=connection.radius + 0.5 * self.diameter)
 
-            parent = connection.parent.parent # the parent of the point that the circle is on
+            parent = connection.parent.parent  # the parent of the point that the circle is on
 
             # create a point at the position
             name = f"{self.name}{VF_NAME_SPLIT}sticky#{i_connection}"
@@ -1350,16 +1447,13 @@ API Definition      CoreCable1       CoreCable2
 
         return self._vfPoiNodes[i_connection]
 
-
-
-
     def _update_vfNodes(self):
 
         self._synchronize_connection_definition_vector_lengths_to_connections()
 
         if self.is_sticky:
 
-            name = self.name # copy here because it will not be available after deleting vfNodes
+            name = self.name  # copy here because it will not be available after deleting vfNodes
 
             # clean up
             for node in self._vfCableNodes:
@@ -1374,7 +1468,9 @@ API Definition      CoreCable1       CoreCable2
             # In the core structure the definition starts with the first sticky connection and starts a new
             # cable at every other sticky connection.
 
-            connection_aligned_friction = self._get_connection_aligned_friction()
+            connection_aligned_friction_factors = self._make_connection_aligned_copy_of_friction_vector(
+                self._friction_force_factor, 0)
+
             core_cables_connection_indices = self._get_core_cable_indices()
 
             # by definition, each core-cable starts and ends with a sticky connection. So none of them are loops!
@@ -1383,7 +1479,7 @@ API Definition      CoreCable1       CoreCable2
             for core_cable_indices in core_cables_connection_indices:
 
                 # for the first cable, use  the name of the cable, for the others add a number
-                if self._vfCableNodes: # first cable
+                if self._vfCableNodes:  # first cable
                     name = f"{name}{VF_NAME_SPLIT}core_cable#{len(self._vfCableNodes)}"
 
                 vfCable = self._scene._vfc.new_cable(name)
@@ -1392,19 +1488,21 @@ API Definition      CoreCable1       CoreCable2
                 # start point -------------------
                 i_connection = core_cable_indices[0]
                 if isinstance(self.connections[i_connection], Circle):
-                    if not self._isloop and (i_connection == 0 or i_connection == len(self.connections)-1):
+                    if not self._isloop and (i_connection == 0 or i_connection == len(self.connections) - 1):
                         pass
                     else:
-                        vfCable.add_connection_poi(self._get_or_create_sticky_point_for(i_connection), 0) # makes sure that the point is created, no friction
+                        vfCable.add_connection_poi(self._get_or_create_sticky_point_node_for(i_connection),
+                                                   0)  # makes sure that the point is created, no friction
 
                 # intermediate points ------------
 
                 for i_connection in core_cable_indices:
                     connection = self.connections[i_connection]
-                    friction = connection_aligned_friction[i_connection]
+                    friction = connection_aligned_friction_factors[i_connection]
 
                     if friction is None:
-                        warnings.warn("Friction factor is None which is not allowed when using sticky cables, setting to 0")
+                        warnings.warn(
+                            "Friction factor is None which is not allowed when using sticky cables, setting to 0")
                         friction = 0
 
                     if isinstance(connection, Circle):
@@ -1423,15 +1521,12 @@ API Definition      CoreCable1       CoreCable2
 
                 if isinstance(self.connections[i_connection], Circle):
                     if not self._isloop and (i_connection == 0 or i_connection == len(self.connections) - 1):
-                       pass
+                        pass
                     else:
-                        vfCable.add_connection_poi(self._get_or_create_sticky_point_for(i_connection),0)  # makes sure that the point is created
+                        vfCable.add_connection_poi(self._get_or_create_sticky_point_node_for(i_connection),
+                                                   0)  # makes sure that the point is created
 
             self._update_vfCable_scalar_properties()
-
-
-
-
 
         else:
             # reduce to a single cable node
@@ -1443,22 +1538,22 @@ API Definition      CoreCable1       CoreCable2
                 self._scene._vfc.delete(node.name)
             self._vfPoiNodes.clear()
 
-            cableNode = self._vfCableNodes[0] # alias
+            cableNode = self._vfCableNodes[0]  # alias
 
             cableNode.clear_connections()
 
-            for connection, reversed, max_winding, offset in zip(
-                self._pois, self._reversed, self._max_winding_angle, self._offsets
+            for connection, is_reversed, max_winding, offset in zip(
+                    self._pois, self._reversed, self._max_winding_angle, self._offsets
             ):
 
-                friction = 0 # overruled later
+                friction = 0  # overruled later
 
                 if isinstance(connection, Point):
                     self._vfNode.add_connection_poi(connection._vfNode, friction)
                 if isinstance(connection, Circle):
                     self._vfNode.add_connection_sheave(
                         connection._vfNode,
-                        reversed,
+                        is_reversed,
                         friction,
                         np.deg2rad(max_winding),
                         offset,
@@ -1467,17 +1562,13 @@ API Definition      CoreCable1       CoreCable2
             # set friction
             # replace none friction by 0
             self._vfNode.friction_factors = [
-                f if f is not None else 0 for f in self._friction
+                f if f is not None else 0 for f in self._friction_force_factor
             ]
 
+            self._update_vfCable_scalar_properties()
             self._vfNode.update()
 
-    def _give_poi_names(self):
-        """Returns a list with the names of all the pois"""
-        r = list()
-        for p in self._pois:
-            r.append(p.name)
-        return r
+
 
     def _update_vfCable_scalar_properties(self):
         """Updates the lengths, masses and EA """
@@ -1507,8 +1598,6 @@ API Definition      CoreCable1       CoreCable2
 
         return dummy_cable
 
-
-
     def _get_cable_points_at_mid_of_connections(self):
         """Returns the 3d points at the mid of the connections.
         For points this is just the point,
@@ -1527,7 +1616,7 @@ API Definition      CoreCable1       CoreCable2
             n_circle = 3
             constant_pointcount = True
 
-            points, _  = non_sticky._vfNode.get_drawing_data(n_free, n_circle, constant_pointcount)
+            points, _ = non_sticky._vfNode.get_drawing_data(n_free, n_circle, constant_pointcount)
 
         # loop over the connections,
         # for each connection get the points that are on the connection (just check the distance)
@@ -1548,7 +1637,7 @@ API Definition      CoreCable1       CoreCable2
 
                     for p in points:
                         distance = np.linalg.norm(p - c.global_position)
-                        if np.abs(distance - c.radius - self.diameter/2) < self.diameter/2000:
+                        if np.abs(distance - c.radius - self.diameter / 2) < self.diameter / 2000:
                             points_on_connection.append(tuple(p))
 
                     if len(points_on_connection) == 3:
@@ -1558,13 +1647,7 @@ API Definition      CoreCable1       CoreCable2
                     else:
                         raise ValueError("Could not find the mid of the section on the circle")
 
-
         return connection_points
-
-
-
-
-
 
     @node_setter_manageable
     def set_length_for_tension(self, target_tension):
@@ -1575,11 +1658,11 @@ API Definition      CoreCable1       CoreCable2
         # F = stretch * EA / L
         # so : L = L0*EA / (F + EA)
 
-        self.length = (self.actual_length) * self.EA / (target_tension + self.EA)
+        self.length = self.actual_length * self.EA / (target_tension + self.EA)
 
     @node_setter_manageable
     def set_length_for_stretched_length_under_tension(
-        self, stretched_length, target_tension=None
+            self, stretched_length, target_tension=None
     ):
         """Changes the length of cable such that its stretched length under target-tension becomes stretched-length."""
 
@@ -1594,11 +1677,11 @@ API Definition      CoreCable1       CoreCable2
     def update(self):
         """Update the cable internals"""
 
+        self._update_vfNodes()
         self._update_vfCable_scalar_properties()
 
         for node in self._vfCableNodes:
             node.update()
-
 
     def give_python_code(self):
         code = list()
@@ -1644,11 +1727,10 @@ API Definition      CoreCable1       CoreCable2
         if np.any([_ != 0 for _ in self._offsets]):
             code.append(f"s['{self.name}'].offsets = {self._offsets}")
 
-        if np.any(self._friction):
-            code.append(f"s['{self.name}'].friction = {self._friction}")
+        if np.any(self._friction_force_factor):
+            code.append(f"s['{self.name}'].friction = {self._friction_force_factor}")
 
         if self._vfNode.explicit_cable_no_loop:
             code.append(f"s['{self.name}']._set_no_loop()")
 
         return "\n".join(code)
-

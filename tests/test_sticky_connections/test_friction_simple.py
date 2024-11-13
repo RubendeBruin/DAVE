@@ -1,6 +1,8 @@
+from dask.array import rad2deg
 from imapclient.version import maintainer
 from numpy.testing import assert_allclose
 from DAVE import *
+from DAVE.nds.cable import FrictionType
 
 """Single point/circle between two other points.
 Cable is made sticky
@@ -49,9 +51,12 @@ def test_friction_pcp():
 
     print(c.friction_forces)
 
-    c.set_all_sticky()
+    c.set_sticky_data_from_current_geometry()
+    c.friction_type = FrictionType.Position
 
+    s.update()
     print(c.friction_forces)
+    assert_allclose(c.friction_forces, (0, ), atol=1e-9)
 
     s['Point1'].x = 4
 
@@ -100,7 +105,9 @@ def test_friction_ppp():
                 sheaves=['Point2'])
 
     c: Cable = s['Cable']
-    c.set_all_sticky()
+
+    c.set_sticky_data_from_current_geometry()
+    c.friction_type = FrictionType.Position
 
     s['Point1'].x = 4
 
@@ -151,15 +158,16 @@ def test_cc_loop():
                 sheaves=['Bottom'])
 
 
+    loop.friction_point_cable = [0, 0.5]
+    loop.friction_point_connection = [rad2deg(1.6), rad2deg(4.5)]
+    loop.friction_type = [FrictionType.Position, FrictionType.Position]
 
-    loop.sticky = [(0, 1.6), (0.5, 4.5), None]
 
     expected = (-915.8093337200321, 915.8093337200321)
     assert_allclose(loop.friction_forces, expected)
 
     # change points fixed to the circle, but same difference
-
-    loop.sticky = [(0.25, 1.6), (0.25 + 0.5, 4.5), None]
+    loop.friction_point_cable = [0.2, 0.7]
 
     s.update()
 
@@ -199,26 +207,24 @@ def test_pp_loop():
                 EA=12345.0,
                 sheaves=['Point'])
 
-
-
-    loop.sticky = [0, 0.5, None]
+    loop.friction_point_cable = [0, 0.5]
+    loop.friction_type = [FrictionType.Position, FrictionType.Position]
 
     expected = (0,0)
     assert_allclose(loop.friction_forces, expected)
 
-    loop.sticky = [0, 0.6, None]
+    loop.friction_point_cable = [0, 0.6]
 
-    s.update()
     print(loop.friction_forces)
-    # expected = (0,0)
-    # assert_allclose(loop.friction_forces, expected)
-    loop.friction_forces
+    assert max(loop.friction_forces) > 0
 
-    # loop.sticky = [0, 0.7, None]
+    loop.friction_point_cable = [0.1, 0.6]
+    print(loop.friction_forces)
+    assert max(loop.friction_forces) <= 1e-6
 
 if __name__ == '__main__':
-    s = test_cc_loop()
-    DG(s, autosave=False)
+    s = test_friction_ppp()
+    # DG(s, autosave=False)
 
 
 

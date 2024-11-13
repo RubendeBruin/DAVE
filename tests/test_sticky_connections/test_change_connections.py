@@ -1,9 +1,6 @@
-import numpy as np
-from numpy.testing import assert_allclose
-
 from DAVE import *
 
-if __name__ == '__main__':
+def test_change_connections():
     s = Scene()
     # code for Point1
     s.new_point(name='Point1',
@@ -103,4 +100,5 @@ if __name__ == '__main__':
 
     s['Cable'].connections = ('Point1', 'Circle', 'Point1')
 
-    DG(s, autosave=False)
+if __name__ == '__main__':
+    test_change_connections()

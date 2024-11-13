@@ -128,7 +128,7 @@ from .nds.core import (
     WindArea,
     WindOrCurrentArea,
 )
-from .nds.cable import Cable
+from .nds.cable import Cable, FrictionType
 from .nds.pure import BallastSystem, Visual, WaveInteraction1
 
 from .nds.geometry import Frame, Point, Circle
@@ -145,6 +145,7 @@ DAVE_ADDITIONAL_RUNTIME_MODULES["BallastSystem"] = BallastSystem
 DAVE_ADDITIONAL_RUNTIME_MODULES["Beam"] = Beam
 DAVE_ADDITIONAL_RUNTIME_MODULES["Buoyancy"] = Buoyancy
 DAVE_ADDITIONAL_RUNTIME_MODULES["Cable"] = Cable
+DAVE_ADDITIONAL_RUNTIME_MODULES["FrictionType"] = FrictionType
 DAVE_ADDITIONAL_RUNTIME_MODULES["Circle"] = Circle
 DAVE_ADDITIONAL_RUNTIME_MODULES["Component"] = Component
 DAVE_ADDITIONAL_RUNTIME_MODULES["Connector2d"] = Connector2d

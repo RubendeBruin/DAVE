@@ -75,6 +75,7 @@ __all__ = [
     "DAVE_load_extensions",
     "DG",
     "TimeElapsed",
+    "FrictionType"
 ]
 
 
