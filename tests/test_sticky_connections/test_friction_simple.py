@@ -66,10 +66,12 @@ def test_friction_pcp():
     f1 = s['Point1'].force
     f2 = s['Point3'].force
 
-    friction = f1 - f2
+    friction = f2 - f1
 
     print(friction)
     print(c.friction_forces)
+
+    # DG(s)
 
     assert_allclose(friction, c.friction_forces)
 
@@ -115,10 +117,10 @@ def test_friction_ppp():
 
     f1 = s['Point1'].force
     f2 = s['Point3'].force
-    friction = f1 - f2
+    friction = f2 - f1
 
     assert_allclose(friction, c.friction_forces)
-    assert_allclose(friction, 231.51169218139086)
+    assert_allclose(friction, -231.51169218139086)
     assert abs(friction) > 1
 
 def test_cc_loop():

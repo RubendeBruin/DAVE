@@ -94,6 +94,11 @@ class Ui_ConnectionForm(object):
 
         self.gridLayout.addWidget(self.checkBox, 6, 1, 1, 1)
 
+        self.cbGeometryTweaking = QCheckBox(self.frame)
+        self.cbGeometryTweaking.setObjectName(u"cbGeometryTweaking")
+
+        self.gridLayout.addWidget(self.cbGeometryTweaking, 6, 2, 1, 2)
+
 
         self.verticalLayout.addWidget(self.frame)
 
@@ -114,6 +119,7 @@ class Ui_ConnectionForm(object):
         self.pbSetShortestRoute.setText(QCoreApplication.translate("ConnectionForm", u"Auto route", None))
         self.lblError.setText(QCoreApplication.translate("ConnectionForm", u"Error if any", None))
         self.lbDirection.setText(QCoreApplication.translate("ConnectionForm", u"For circles the direction in which the cable runs over it is defined by the axis of the circle. Check the box to run over the circle in opposite direction.", None))
-        self.checkBox.setText(QCoreApplication.translate("ConnectionForm", u"Friction options", None))
+        self.checkBox.setText(QCoreApplication.translate("ConnectionForm", u"Show Friction options", None))
+        self.cbGeometryTweaking.setText(QCoreApplication.translate("ConnectionForm", u"Show geometry tweaking options", None))
     # retranslateUi
 

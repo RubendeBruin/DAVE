@@ -1,3 +1,5 @@
+import pytest
+
 from DAVE import *
 
 def test_friction_ppp():
@@ -37,7 +39,9 @@ def test_friction_ppp():
 
 
     c.friction_point_cable = (0.3, 0.3)
-    c.friction_type = FrictionType.Position # <-- should raise an error because the points on the cable are not > previous
+
+    with pytest.raises(ValueError):
+        c.friction_type = FrictionType.Position # <-- should raise an error because the points on the cable are not > previous
 
     s.update()
 

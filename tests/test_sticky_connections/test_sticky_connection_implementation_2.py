@@ -38,69 +38,54 @@ if __name__ == '__main__':
                 EA=12345.0,
                 sheaves=['Circle'])
 
-    s['Cable'].max_winding_angles = [0, 181, 0]
+    # make 5 points in the shape of a house
+    p1 = s.new_point(name='p1', position=(0, 0, 0))
+    p2 = s.new_point(name='p2', position=(0, 0, 5))
+    p3 = s.new_point(name='p3', position=(2.5, 0, 7))
+    p4 = s.new_point(name='p4', position=(5, 0, 5))
+    p5 = s.new_point(name='p5', position=(5, 0, 0))
 
-    c: Cable = s['Cable']
-    #
-    # print(c.friction_forces)
+    connections = [p1, p2, p3, p4, p5, p1]
 
-    c.set_sticky_data_from_current_geometry()
-    c.friction_type = FrictionType.Position
-    #
-    # s.update()
-    # print(c.friction_forces)
-    # assert_allclose(c.friction_forces, (0,), atol=1e-9)
-    #
-    # s['Point1'].x = 4
-    #
-    # s.update()
-    # print(c.friction_forces)
-    #
-    # f1 = s['Point1'].force
-    # f2 = s['Point3'].force
-    #
-    # friction = f1 - f2
-    #
-    # # print(friction)
-    # # print(c.friction_forces)
-    # #
-    # # assert_allclose(friction, c.friction_forces)
-    # #
-    # #
-    # # print(c.friction_forces)
-    #
-    # s['Point1'].x = 4
-    #
-    # s.update()
-    # print(c.friction_forces)
-    #
-    # f1 = s['Point1'].force
-    # f2 = s['Point3'].force
-    #
-    # friction = f2-f1
-    # print(friction)
+    c = s.new_cable(name='cable2', connections=connections, length=10, EA=12345)
 
-    s.new_frame(name='Frame')
-    s['Point2'].change_parent_to(s['Frame'])
-    s['Frame'].rotation = (0.0, -5.0, 0.0)
+    connections = ['p1', 'p2', 'p3', 'p5', 'p4', 'p1']
+    reversed = [False, False, False, False, False, False]
+    offsets = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    max_winding_angles = [999.0, 999.0, 999.0, 999.0, 999.0, 999.0]
+    friction_type = [FrictionType.Force, FrictionType.No, FrictionType.No, FrictionType.No, FrictionType.Position]
+    friction_force_factor = [0.5, 0.0, 0.0, 0.0, 0.0]
+    friction_point_cable = [None, None, None, None, 0.3]
+    friction_point_connection = [None, None, None, None, None]
 
-    # range = np.linspace(-40, 45, num = 100)
-    #
-    # for y in range:
-    #     s['Frame'].rotation = (0.0, y, 0.0)
-    #     s.update()
-    #     print(s['Cable'].friction_forces)
-
-    data = c.get_annotation_data()
-    print(data)
-
-    s['Cable'].connections = ('Point1', 'Circle', 'Point1', 'Point3')
-
-    s['Cable'].friction = [0.0, 0.0]
-    s['Cable'].friction_point_cable = [0.584, 0.6]
-    s['Cable'].friction_point_connection = [38.9, None]
-    s['Cable'].friction_type = [FrictionType.Position, FrictionType.Position]
-
-    s['Cable'].connections = ('Point1', 'Circle', 'Point1')
+    s['cable2'].update_connections(connections=connections,
+                                   reversed=reversed,
+                                   offsets=offsets,
+                                   max_winding_angles=max_winding_angles,
+                                   friction_type=friction_type,
+                                   friction_force_factor=friction_force_factor,
+                                   friction_point_cable=friction_point_cable,
+                                   friction_point_connection=friction_point_connection)
 
     DG(s, autosave=False)
+
+
+
+
+    #
+    # s.update()
+    #
+    # print(c._vfCableNodes)
+    #
+    # points, f = c.get_points_and_tensions_for_visual()
+    # points = np.array(points)
+    #
+    # # plot the first two coordinates for the points array using matplotlib
+    # import matplotlib.pyplot as plt
+    # plt.plot(points[:, 0], points[:, 2])
+    # plt.show()
+    # #
+    # #
+    # #
+    # #
+    # # DG(s, autosave=False)
