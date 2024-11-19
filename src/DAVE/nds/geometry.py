@@ -1408,10 +1408,11 @@ class Circle(NodeCoreConnected, HasParentCore):
     def _local_y_axis(self):
         axis = self.axis
 
-        y = np.cross((1, 0, 0), axis)
+        temp = np.cross((0, 0, 1), axis)
+        if np.linalg.norm(temp) <= 1e-6:
+            temp = np.cross((0, 1, 0), axis)
 
-        if np.linalg.norm(y) <= 1e-6:
-            y = np.cross((0, 1, 0), axis)
+        y = -np.cross(temp, axis)
 
         # strong preference for upward positive y axis, flip if necessary
         # (this keeps the vector perpendicular to the axis)
@@ -1438,23 +1439,28 @@ class Circle(NodeCoreConnected, HasParentCore):
         pos_x = np.dot(relative_position3, self._local_x_axis)
         pos_y = np.dot(relative_position3, self._local_y_axis)
 
-        return np.arctan2(pos_y, pos_x)
+        theta = 0.5 * np.pi - np.arctan2(pos_y, pos_x)
+
+        theta = np.mod(theta, 2 * np.pi)
+
+        return theta
 
     def point3_from_theta_and_r_local(self, theta, r):
-        """Return the point3 position from the theta angle and radius.
+        """Return the point3 position from the theta angle and radius. Theta is given in radians.
 
         See Also: theta_from_point
         """
+
+        theta = 0.5 * np.pi - theta
+
         x = r * np.cos(theta)
         y = r * np.sin(theta)
 
         return self.position + x * self._local_x_axis + y * self._local_y_axis
 
-
-
     @property
     def _local_x_axis(self):
-        return np.cross(self._local_y_axis, self.axis)
+        return -np.cross(self._local_y_axis, self.axis)
 
     @property
     def radius(self) -> float:

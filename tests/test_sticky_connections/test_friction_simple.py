@@ -165,7 +165,7 @@ def test_cc_loop():
     loop.friction_type = [FrictionType.Position, FrictionType.Position]
 
 
-    expected = (-915.8093337200321, 915.8093337200321)
+    expected = [ 10993.078756, -10993.078756]
     assert_allclose(loop.friction_forces, expected)
 
     # change points fixed to the circle, but same difference
@@ -173,7 +173,7 @@ def test_cc_loop():
 
     s.update()
 
-    expected = (-915.8093337200321, 915.8093337200321)
+    expected = [ 10993.078756, -10993.078756]
     assert_allclose(loop.friction_forces, expected)
 
     friction = loop.friction_forces

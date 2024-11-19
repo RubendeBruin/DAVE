@@ -11,6 +11,7 @@ from DAVE.nodes import *
 from .forms.widget_connections import Ui_ConnectionForm
 from .helpers.nodelist_drag_drop_move import call_from_dragEnter_or_Move_Event
 from .widget_nodeprops_abstracts_and_helpers import NodeEditor
+from ..nds.core import DEFAULT_WINDING_ANGLE
 
 """
 This module contains the code for the connections editor
@@ -630,8 +631,25 @@ class EditConnections(NodeEditor):
                     return
 
                 # add the node to the model
+
+                # connection_node: [Circle, Point]
+                # reversed: bool
+                # offset: float
+                # max_winding_angle: float
+                # friction_type: FrictionType
+                # friction_force_factor: float or None
+                # friction_point_cable: float or None
+                # friction_point_connection: float or None
+
                 new_connection = CableConnection(
-                    node, False, 0, 0, FrictionType.No, None, None, None
+                    connection_node=node,
+                    reversed=False,
+                    offset=0,
+                    max_winding_angle=DEFAULT_WINDING_ANGLE,
+                    friction_type=FrictionType.No,
+                    friction_force_factor=None,
+                    friction_point_cable=None,
+                    friction_point_connection=None,
                 )
                 if to_row > 0:
                     self.connections_model.insert(to_row, new_connection)
