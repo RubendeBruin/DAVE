@@ -72,6 +72,7 @@ def model():
 
 def test_cable_catenary_estimation_using_model():
     s = model()
+    s._save_coredump()
     s.solve_statics()
     assert_allclose(s['Point'].my, 0, atol=1e-6)
 

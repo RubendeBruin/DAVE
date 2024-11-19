@@ -2780,7 +2780,6 @@ class Scene:
         connections=None,
         reversed=None,
         mass_per_length=None,
-        friction=None,
         offsets=None,
     ) -> Cable:
         """Creates a new *cable* node and adds it to the scene.
@@ -2824,9 +2823,6 @@ class Scene:
         if length is not None:
             assert1f(length, "length")
         assert1f(EA, "EA")
-
-        if friction is not None:
-            raise DeprecationWarning("Set friction via friction-type after creation")
 
         # check if connections is supplied
         if connections is not None:
@@ -2895,27 +2891,6 @@ class Scene:
         if mass is not None:
             assert1f(mass, "mass")
 
-        if friction is not None:
-            req_len = len(pois) - 2
-            is_loop = False
-            if connections[0] == connections[-1]:
-                is_loop = True
-                req_len += 1
-
-            if is_loop:
-                assert (
-                    len(friction) == req_len
-                ), f"friction (for a loop) should be a list with the same length as the number of unique connections (={req_len}), got {len(friction)}"
-            else:
-                assert (
-                    len(friction) == req_len
-                ), "friction should be a list with the same length as the number of intermediate points/circles (={req_len}), got {len(friction)}"
-
-            for _ in friction:
-                assert isinstance(
-                    _, (float, int, type(None))
-                ), "friction should be a list with floats or None"
-
         if reversed is not None:
             assert len(reversed) == len(
                 pois
@@ -2947,8 +2922,7 @@ class Scene:
 
             new_node.connections = pois
 
-            if friction is not None:
-                new_node.friction = friction
+            new_node.friction = [0] * (len(pois) - 1)
 
             if reversed is not None:
                 new_node.reversed = reversed

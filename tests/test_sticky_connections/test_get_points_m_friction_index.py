@@ -1,9 +1,16 @@
-import numpy as np
-from numpy.testing import assert_allclose
-
 from DAVE import *
+from DAVE.visual_helpers.constants import RESOLUTION_CABLE_OVER_CIRCLE
 
-if __name__ == '__main__':
+"""
+    s['cable2'].get_points_for_visual()
+  File "C:\data\DAVE\public\DAVE\src\DAVE\nds\cable.py", line 913, in get_points_for_visual
+    pts, _ = cableNode.get_drawing_data(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+DAVEcore.DAVECore_runtime: m_unknown_friction_index not found in active connections cable2
+"""
+
+def test_get_points_explicit_no_loop_sticky_segments():
+
     s = Scene()
     # code for Point1
     s.new_point(name='Point1',
@@ -49,7 +56,6 @@ if __name__ == '__main__':
 
     c = s.new_cable(name='cable2', connections=connections, length=10, EA=12345)
 
-
     connections = ['p1', 'p2', 'p5', 'p1', 'p3', 'p4']
     reversed = [False, False, False, False, False, False]
     offsets = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -68,27 +74,22 @@ if __name__ == '__main__':
                                    friction_point_cable=friction_point_cable,
                                    friction_point_connection=friction_point_connection)
 
+    # one position and one force
+    # but not a loop
+    # so correct that there is no m_unknown_friction_index
+
+    # the error is in the first segment
+    # which happens to start and end with the same point
+    # so the solver must be told explicitly that this is not a loop
+
+    c = s['cable2']
+
+    rsag = 100
+
+    c._vfCableNodes[0].get_drawing_data(
+        rsag, RESOLUTION_CABLE_OVER_CIRCLE, False
+    )
+
     s['cable2'].get_points_for_visual()
 
-    DG(s, autosave=False)
 
-
-
-
-    #
-    # s.update()
-    #
-    # print(c._vfCableNodes)
-    #
-    # points, f = c.get_points_and_tensions_for_visual()
-    # points = np.array(points)
-    #
-    # # plot the first two coordinates for the points array using matplotlib
-    # import matplotlib.pyplot as plt
-    # plt.plot(points[:, 0], points[:, 2])
-    # plt.show()
-    # #
-    # #
-    # #
-    # #
-    # # DG(s, autosave=False)
