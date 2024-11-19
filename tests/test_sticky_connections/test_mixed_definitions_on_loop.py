@@ -55,6 +55,12 @@ def test_1f_1p():
 
     assert_allclose(c.friction_forces, (-6767.464008214147, 0, 0.0, 0, 6767.464008214147), atol = 1e-6)
 
+    s2 = s.copy()
+    c2 = s2['cable']
+    assert_allclose(c2.friction_forces, (-6767.464008214147, 0, 0.0, 0, 6767.464008214147), atol = 1e-6)
+
+
+
 
 def test_2p_1f():
     """Test with one force, one position"""
@@ -80,6 +86,10 @@ def test_2p_1f():
     assert len(c.friction_forces) == 5
     print(c.friction_forces)
     assert_allclose(c.friction_forces, [-3130.270959407646, 11446.566489443281, 0.0, 3.637978807091713e-12, 8316.295530035632], atol = 1e-6)
+
+    s2 = s.copy()
+    c2 = s2['cable']
+    assert_allclose(c2.friction_forces, [-3130.270959407646, 11446.566489443281, 0.0, 3.637978807091713e-12, 8316.295530035632], atol = 1e-6)
 
 def test_invalid_setting():
     """Impossible because it defines friction at a single location on a loop"""

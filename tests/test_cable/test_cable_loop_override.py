@@ -40,7 +40,10 @@ def test_compare_with_normal_nonloop2p():
     # loop over all properties
 
     for key, value in cab_explicit.__dict__.items():
-        if key in ("endB", "_pois","_vfNode","_vfPoiNodes","_vfCableNodes"):
+        if key in ("endB", "_pois","_vfNode","_vfPoiNodes","_vfCableNodes","_explicit_no_loop"):
+            continue
+
+        if "friction" in key:
             continue
 
         print("comparing", key, value, ' =?= ' , getattr(cab_normal, key))
@@ -68,7 +71,10 @@ def test_compare_with_normal_nonloop3p():
     # loop over all properties
 
     for key, value in cab_explicit.__dict__.items():
-        if key in ("endB", "_pois", "_vfNode", "_vfPoiNodes", "_vfCableNodes"):
+        if key in ("endB", "_pois", "_vfNode", "_vfPoiNodes", "_vfCableNodes","_explicit_no_loop"):
+            continue
+
+        if "friction" in key:
             continue
 
         print("comparing", key, value, ' =?= ' , getattr(cab_normal, key))

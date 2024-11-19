@@ -18,15 +18,21 @@ class CableInternalForceLayer(BaseAnnotationLayer):
 
         for cable in self._scene.nodes_where(kind=Cable):
 
-
             for d in cable.get_annotation_data():
 
                 f1 = d[0]
+
+                # the position from f1 may become None for non-active roundbars
+                if cable.get_point_along_cable(f1) is None:
+                    continue
+
                 tension = d[1]
 
                 # The anchor defines the position of the annotation
                 # using 1f (length along the cable)
                 anchor = Anchor(node=cable, position_1f=f1)
+
+
 
                 # the text is just a fixed string
                 text_producer = TextProducer(node=None,

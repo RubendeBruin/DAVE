@@ -14,7 +14,9 @@ def test_friction_cable_over_circle():
     s.new_point('p1', position=(-0.5, 0, 0), parent=f)
     s.new_point('p2', position=(0.5, 0, 0), parent=f)
 
-    c = s.new_cable(connections = ['p1', 'hook', 'p2'], name='cable', EA = 122345, friction=[0.1], length=7, diameter=0.2)
+    c = s.new_cable(connections = ['p1', 'hook', 'p2'], name='cable', EA = 122345, length=7, diameter=0.2)
+    c.friction_force_factor = [0.1]
+    c.friction_type = [FrictionType.Force]
 
     s.solve_statics()
 
@@ -43,7 +45,9 @@ def test_friction_cable_over_circle_opposite():
     s.new_point('p1', position=(-0.1, 0, 0), parent=f)
     s.new_point('p2', position=(0.1, 0, 0), parent=f)
 
-    c = s.new_cable(connections = ['p1', 'hook', 'p2'], name='cable', EA = 122345, friction=[-0.1], length=7)
+    c = s.new_cable(connections = ['p1', 'hook', 'p2'], name='cable', EA = 122345, length=7)
+    c.friction_force_factor = [-0.1]
+    c.friction_type = [FrictionType.Force]
 
     s.solve_statics()
 
@@ -74,7 +78,9 @@ def test_friction_cable_over_two_circles_symmetric():
     s.new_point('p1', position=(-0.1, 0, 0), parent=f)
     s.new_point('p2', position=(1.1, 0, 0), parent=f)
 
-    c = s.new_cable(connections = ['p1', 'hs1', 'hs2','p2'], name='cable', EA = 122345, friction=[0.05, -0.05], length=7)
+    c = s.new_cable(connections = ['p1', 'hs1', 'hs2','p2'], name='cable', EA = 122345, length=7)
+    c.friction_force_factor =[0.05, -0.05]
+    c.friction_type = FrictionType.Force
 
     s.solve_statics()
     weight = f.mass * s.g
@@ -156,7 +162,8 @@ def test_friction_cable_over_two_circles_none_symmetric():
                 sheaves=['hs1',
                          'hs2'])
 
-    c.friction = (0.1, 0.1)
+    c.friction_force_factor = (0.1, 0.1)
+    c.friction_type = FrictionType.Force
 
     s.solve_statics()
 
@@ -250,7 +257,8 @@ def test_friction_cable_over_three_circles():
                          'hs3',
                          'hs2'])
 
-    c.friction = (0.1, 0.1,0.1)
+    c.friction_force_factor = (0.1, 0.1,0.1)
+    c.friction_type = FrictionType.Force
 
     s.solve_statics()
 
@@ -275,7 +283,13 @@ def test_friction_grommet_over_circles():
     s.new_point('p1_point', position=(0, 0, -10))
     p1 = s.new_circle('p1', parent='p1_point', axis=(0, 1, 0), radius=0.1)
 
-    c = s.new_cable(connections=['p1', 'hook', 'p1'], name='cable', EA=122345, friction=[None, 0.05], length=7)
+    c = s.new_cable(connections=['p1', 'hook', 'p1'], name='cable', EA=122345, length=7)
+
+    c.friction_force_factor = [None, 0.05]
+    c.friction_point_cable = [0, None]
+    c.friction_point_connection = [0, 0]
+
+    c.friction_type = [FrictionType.Position, FrictionType.Force]
 
     # s._save_coredump()
 
@@ -317,7 +331,13 @@ def test_friction_grommet_over_circles_higher_friction():
     s.new_point('p1_point', position=(0, 0, -10))
     p1 = s.new_circle('p1', parent='p1_point', axis=(0, 1, 0), radius=0.1)
 
-    c = s.new_cable(connections=['p1', 'hook', 'p1'], name='cable', EA=122345, friction=[None, 0.5], length=7)
+    c = s.new_cable(connections=['p1', 'hook', 'p1'], name='cable', EA=122345, length=7)
+
+    c.friction_force_factor = [None, 0.5]
+    c.friction_point_cable = [0, None]
+    c.friction_point_connection = [0, 0]
+
+    c.friction_type = [FrictionType.Position, FrictionType.Force]
 
     s.update()
 
@@ -386,7 +406,8 @@ def test_demo_90deg():
     # 90 degrees
     s.solve_statics()
 
-    c.friction = [0.1]
+    c.friction_force_factor = [0.1]
+    c.friction_type = FrictionType.Force
 
     s.solve_statics()
 
@@ -441,7 +462,8 @@ def test_demo_270deg():
                 sheaves=['hs1'])
 
     # 270 degrees
-    c.friction = [0.1]
+    c.friction_force_factor = [0.1]
+    c.friction_type = FrictionType.Force
 
     s.solve_statics()
 
@@ -477,12 +499,16 @@ def test_friction_over_three_circle_loop():
         connections=["c1", "c2", "c3", "c1"],
         name="cable",
         EA=122345,
-        friction=[0.1, None, 0.1],
         length=20,
         diameter=0.4
     )
 
-    s._save_coredump()
+
+    c.friction_force_factor = [0.1, None, 0.1]
+    c.friction_point_cable = [None, 0, None]
+    c.friction_point_connection = [0,0,0]
+    c.friction_type = [FrictionType.Force, FrictionType.Position,FrictionType.Force]
+
 
     expected = [254963.727468, 333184.395387, 291461.721985]
     assert_allclose(c.segment_mean_tensions, expected, atol=1e-6)

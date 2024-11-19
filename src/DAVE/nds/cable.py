@@ -103,7 +103,7 @@ class Cable(NodeCoreConnected):
         self._vfCableNodes = list()
         self._vfPoiNodes = dict()  # key is the index of the connection that the poi belongs to (if any)
         self._vfCableNodes = [_vfNode]
-        self._explicit_cable_no_loop = False
+        self._explicit_no_loop = False
 
         super().__init__(scene=scene, name=name)
 
@@ -242,6 +242,9 @@ class Cable(NodeCoreConnected):
     @property
     def friction(self) -> tuple[float]:
         """Friction factors at the connections [-]"""
+
+        warnings.warn('Deprecated: Use friction_force_factor instead', DeprecationWarning)
+
         # noinspection PyTypeChecker
         return tuple(self._friction_force_factor)
 
@@ -251,45 +254,31 @@ class Cable(NodeCoreConnected):
     def friction(self, value):
 
         warnings.warn('Deprecated: Use friction_force_factor instead', DeprecationWarning)
-        #
-        #
-        # self._assert_correct_friction_vector_length(value)
-        # self._check_friction_vectors(friction_force_factor=value, do_raise = True)
-        # self._friction_force_factor = list(value)
-        # self.update()
-        #
-        #
-        # if isinstance(friction, (float, int)):
-        #     friction = [friction]
-        #
-        # # check length
-        # req_len = len(self._pois) - 2
-        # if self._isloop:
-        #     req_len += 1
-        # assert (
-        #         len(friction) == req_len
-        # ), f"Friction should be defined for {req_len} connections, got {len(friction)}."
-        #
-        # if self._isloop and not self.is_sticky:
-        #     assert (
-        #             list(friction).count(None) == 1
-        #     ), f"When defining friction for a loop, exactly of the frictions should be 'None'. The friction at that last connection is calculated from the other frictions. Received: {friction}"
-        #
-        #     # the None friction shall not be on a roundbar
-        #     index = friction.index(None)
-        #     connection = self.connections[index]
-        #     if isinstance(connection, Circle):
-        #         if connection.is_roundbar:
-        #             raise ValueError(
-        #                 f"Defining the unknown friction for '{self.name}' to be on connection '{connection.name}' which is a round-bar. This would become invalid if the round-bar disconnected and is thus not allowed."
-        #             )
-        #
-        # self._friction_force_factor = list(friction)
-        #
-        # if self._isloop:
-        #     self._vfNode.unkonwn_friction_index = self._friction_force_factor.index(None)
-        #
-        # self._update_vfNodes()
+
+
+    def set_friction_old_style(self, value):
+        """Sets the friction to the old style friction factor and None for a single fixed point"""
+
+        if None in value:
+
+            self.friction_type = FrictionType.No
+
+            positions = [None] * len(value)
+            positions[value.index(None)] = 0
+
+            self.friction_point_cable = positions
+            self.friction_point_connection = positions
+
+            self.friction_force_factor = [_ if _ is not None else 0 for _ in value]
+
+            types = [FrictionType.Force if _ is not None else FrictionType.Position for _ in value]
+            self.friction_type = types
+
+        else:
+            self.friction_type = FrictionType.No
+            self.friction_force_factor = value
+            self.friction_type = FrictionType.Force
+
 
     @node_setter_manageable
     def update_connections(self, friction_type = None,
@@ -360,7 +349,7 @@ class Cable(NodeCoreConnected):
         offsets = list(offsets)
 
         # loop?
-        is_loop = connections[0] == connections[-1] and not self._explicit_cable_no_loop
+        is_loop = connections[0] == connections[-1] and not self._explicit_no_loop
 
         # sync all the vectors to the correct length
         req_len_connections = len(connections)
@@ -519,10 +508,7 @@ class Cable(NodeCoreConnected):
         if len(self.connections) < 2:
             return False
         if self.connections[0] == self.connections[-1]:
-            if not self._vfCableNodes:  # no cable nodes defined
-                return True
-            else:
-                return not self._vfNode.explicit_cable_no_loop
+            return not self._explicit_no_loop
         return False
 
     def _set_no_loop(self):
@@ -535,7 +521,7 @@ class Cable(NodeCoreConnected):
             n.explicit_cable_no_loop = True
 
         if cable_was_loop:
-            self.make_friction_vectors_valid()
+            # self.make_friction_vectors_valid()
             self._update_vfNodes()
 
     def _unset_no_loop(self):
@@ -548,7 +534,7 @@ class Cable(NodeCoreConnected):
             n.explicit_cable_no_loop = False
 
         if not cable_was_loop:
-            self.make_friction_vectors_valid()
+            # self.make_friction_vectors_valid()
             self._update_vfNodes()
 
 
@@ -779,6 +765,13 @@ class Cable(NodeCoreConnected):
                 # insert the friction at the end/start of the loop
                 # noinspection PyUnboundLocalVariable
                 forces.insert(0, tension_at_start_of_first_segment - segment_end_force)
+
+            # if the first segment does not start at the first connection, then
+            # we need to shift the indices accordingly
+
+            i0 = segments_indices[0][0]
+            if i0 != 0:
+                forces = forces[-i0:] + forces[:-i0]
 
             # noinspection PyTypeChecker
             return tuple(forces)
@@ -1095,116 +1088,116 @@ class Cable(NodeCoreConnected):
             n_req += 1
         return n_req
 
-    def make_friction_vectors_valid(self):
-        """Make the friction vectors valid. This """
-
-        self._check_friction_vectors()
-
-        # make sure that the friction vectors are valid using the current values as basis
-        #
-        # First check and adjust the lengths
-        # then check the type of friction
-        # finally adjust the values to be within the allowed range
-
-
-
-        # check friction type
-        #
-
-        if self._isloop:
-            if FrictionType.Force in self._friction_type:
-                if FrictionType.Position not in self._friction_type:
-                    # make the first friction type that is not Force to be Position
-                    for i in range(n_req):
-                        if self._friction_type[i] != FrictionType.Force:
-                            self._friction_type[i] = FrictionType.Position
-                            break
-
-        # check friction force factor
-        #
-        # this value should be in the range (-1,1) or None (for the unknown friction index, checked later)
-        # if the value is outside this range, then it is set to the nearest value in the range
-
-        for i, (kind,ff) in enumerate(zip(self._friction_type, self._friction_force_factor)):
-            if kind == FrictionType.Force:
-                if ff is not None:
-                    self._friction_force_factor[i] = max(-1,min(1,ff))
-
-        # check friction point cable
-        #
-        # this value should be in the range [0,1]
-        # and it should be larger than the previous value (if any)
-
-        previous_value = 0
-        delta = 1e-6  # precision in the gui is 1e-6
-
-        # fill any missing values, and make sure that the filled values are increasing
-        for i, (kind,pc) in enumerate(zip(self._friction_type, self._friction_point_cable)):
-            if kind == FrictionType.Position:
-                if not isinstance(pc, (int,float)):
-                    pc = previous_value
-
-                if pc <= previous_value:
-                    pc = previous_value + delta
-
-                self._friction_point_cable[i] = pc
-                previous_value = pc
-
-        # the largest value should be less than 1. If not then scale
-        max_value = max([v if v is not None else 0 for v in self._friction_point_cable])
-        if max_value >= 1:
-            scale = (1-delta)/max_value
-            for i in range(len(self._friction_point_cable)):
-                if self._friction_point_cable[i] is not None:
-                    self._friction_point_cable[i] *= scale
-
-        # check friction point connection
-        #
-        # this value is only used for position on circles and can have any numerical value
-
-        for i, (kind,pc) in enumerate(zip(self._friction_type, self._friction_point_connection)):
-            if kind == FrictionType.Position:
-                if isinstance(self.connections[i], Circle):
-                    if not isinstance(pc, (int,float)):
-                        self._friction_point_connection[i] = 0
-
-        # If the cable is a loop and friction force is used, then at least on the other connection shall have a friction position
-
-
-        # Unknown friction index for loops
-        # if the cable is not sticky, and is a loop, and friction force is used, then exactly one of the friction values should be None to
-        # indicate that the friction force at this location shall be calculated.
-        #
-        # If the cable is sticky then the underlying cable is never a loop and the unknown friction index shall not be present
-        #
-
-        # if self._isloop and not self.is_sticky and any([_ is FrictionType.Force for _ in self._friction_type]):
-        #     none_required = True
-        # else:
-        #     none_required = False
-
-        # # count the number of None values in the friction force factor vector for locations where the friction type is Force
-        # none_count = 0
-        # for i, (kind, ff) in enumerate(zip(self._friction_type, self._friction_force_factor)):
-        #     if kind == FrictionType.Force:
-        #         if ff is None:
-        #             if not none_required:
-        #                 self._friction_force_factor = 0
-        #             else:
-        #                 none_count += 1
-        #                 none_required = False # we have one none, no further nones needed
-        #
-        # # if we need a none, but no none is present, then set the first friction_force where friction_type is Force to None
-        # if none_count == 0 and none_required:
-        #     for i in range(n_req):
-        #         if self._friction_type[i] == FrictionType.Force:
-        #             self._friction_force_factor[i] = None
-        #             break
-
-
-
-        # self-check
-        assert self._check_friction_vectors(do_raise=False) == [], "Internal error in make_friction_vectors_valid, resulting friction vectors did not pass the check"
+    # def make_friction_vectors_valid(self):
+    #     """Make the friction vectors valid. This """
+    #
+    #     self._check_friction_vectors()
+    #
+    #     # make sure that the friction vectors are valid using the current values as basis
+    #     #
+    #     # First check and adjust the lengths
+    #     # then check the type of friction
+    #     # finally adjust the values to be within the allowed range
+    #
+    #
+    #
+    #     # check friction type
+    #     #
+    #
+    #     if self._isloop:
+    #         if FrictionType.Force in self._friction_type:
+    #             if FrictionType.Position not in self._friction_type:
+    #                 # make the first friction type that is not Force to be Position
+    #                 for i in range(n_req):
+    #                     if self._friction_type[i] != FrictionType.Force:
+    #                         self._friction_type[i] = FrictionType.Position
+    #                         break
+    #
+    #     # check friction force factor
+    #     #
+    #     # this value should be in the range (-1,1) or None (for the unknown friction index, checked later)
+    #     # if the value is outside this range, then it is set to the nearest value in the range
+    #
+    #     for i, (kind,ff) in enumerate(zip(self._friction_type, self._friction_force_factor)):
+    #         if kind == FrictionType.Force:
+    #             if ff is not None:
+    #                 self._friction_force_factor[i] = max(-1,min(1,ff))
+    #
+    #     # check friction point cable
+    #     #
+    #     # this value should be in the range [0,1]
+    #     # and it should be larger than the previous value (if any)
+    #
+    #     previous_value = 0
+    #     delta = 1e-6  # precision in the gui is 1e-6
+    #
+    #     # fill any missing values, and make sure that the filled values are increasing
+    #     for i, (kind,pc) in enumerate(zip(self._friction_type, self._friction_point_cable)):
+    #         if kind == FrictionType.Position:
+    #             if not isinstance(pc, (int,float)):
+    #                 pc = previous_value
+    #
+    #             if pc <= previous_value:
+    #                 pc = previous_value + delta
+    #
+    #             self._friction_point_cable[i] = pc
+    #             previous_value = pc
+    #
+    #     # the largest value should be less than 1. If not then scale
+    #     max_value = max([v if v is not None else 0 for v in self._friction_point_cable])
+    #     if max_value >= 1:
+    #         scale = (1-delta)/max_value
+    #         for i in range(len(self._friction_point_cable)):
+    #             if self._friction_point_cable[i] is not None:
+    #                 self._friction_point_cable[i] *= scale
+    #
+    #     # check friction point connection
+    #     #
+    #     # this value is only used for position on circles and can have any numerical value
+    #
+    #     for i, (kind,pc) in enumerate(zip(self._friction_type, self._friction_point_connection)):
+    #         if kind == FrictionType.Position:
+    #             if isinstance(self.connections[i], Circle):
+    #                 if not isinstance(pc, (int,float)):
+    #                     self._friction_point_connection[i] = 0
+    #
+    #     # If the cable is a loop and friction force is used, then at least on the other connection shall have a friction position
+    #
+    #
+    #     # Unknown friction index for loops
+    #     # if the cable is not sticky, and is a loop, and friction force is used, then exactly one of the friction values should be None to
+    #     # indicate that the friction force at this location shall be calculated.
+    #     #
+    #     # If the cable is sticky then the underlying cable is never a loop and the unknown friction index shall not be present
+    #     #
+    #
+    #     # if self._isloop and not self.is_sticky and any([_ is FrictionType.Force for _ in self._friction_type]):
+    #     #     none_required = True
+    #     # else:
+    #     #     none_required = False
+    #
+    #     # # count the number of None values in the friction force factor vector for locations where the friction type is Force
+    #     # none_count = 0
+    #     # for i, (kind, ff) in enumerate(zip(self._friction_type, self._friction_force_factor)):
+    #     #     if kind == FrictionType.Force:
+    #     #         if ff is None:
+    #     #             if not none_required:
+    #     #                 self._friction_force_factor = 0
+    #     #             else:
+    #     #                 none_count += 1
+    #     #                 none_required = False # we have one none, no further nones needed
+    #     #
+    #     # # if we need a none, but no none is present, then set the first friction_force where friction_type is Force to None
+    #     # if none_count == 0 and none_required:
+    #     #     for i in range(n_req):
+    #     #         if self._friction_type[i] == FrictionType.Force:
+    #     #             self._friction_force_factor[i] = None
+    #     #             break
+    #
+    #
+    #
+    #     # self-check
+    #     assert self._check_friction_vectors(do_raise=False) == [], "Internal error in make_friction_vectors_valid, resulting friction vectors did not pass the check"
 
     # ==============================================
     #
@@ -1336,7 +1329,7 @@ class Cable(NodeCoreConnected):
 
         # check lengths
         # loop?
-        is_loop = connections[0] == connections[-1] and not self._explicit_cable_no_loop
+        is_loop = connections[0] == connections[-1] and not self._explicit_no_loop
 
         n_req = len(connections) - 2
         if is_loop:
@@ -1803,7 +1796,7 @@ class Cable(NodeCoreConnected):
                     name = f"{name}{VF_NAME_SPLIT}core_cable#{len(self._vfCableNodes)}"
 
                 vfCable = self._scene._vfc.new_cable(name)
-                vfCable.explicit_cable_no_loop = self._explicit_cable_no_loop
+                vfCable.explicit_cable_no_loop = self._explicit_no_loop
                 self._vfCableNodes.append(vfCable)
 
                 # start point -------------------
@@ -1863,7 +1856,7 @@ class Cable(NodeCoreConnected):
             self._vfPoiNodes.clear()
 
             cableNode = self._vfCableNodes[0]  # alias
-            cableNode.explicit_cable_no_loop = self._explicit_cable_no_loop
+            cableNode.explicit_cable_no_loop = self._explicit_no_loop
 
             cableNode.clear_connections()
 
@@ -1934,11 +1927,12 @@ class Cable(NodeCoreConnected):
 
         return dummy_cable
 
-    def _get_cable_points_at_mid_of_connections(self):
+    def _get_cable_points_at_mid_of_connections(self) -> list[tuple or None]:
         """Returns the 3d points at the mid of the connections.
         For points this is just the point,
         for circles or round this is the mid of the section on the circle.
-        Roundbars are EXCLUDED
+
+        Inactive roundbars are returned as None
 
         ! This is a relatively slow function; it utilizes the drawing data to get the points !
         """
@@ -1954,9 +1948,15 @@ class Cable(NodeCoreConnected):
 
             points, _ = non_sticky._vfNode.get_drawing_data(n_free, n_circle, constant_pointcount)
 
+            active_bars = list(non_sticky._vfNode.connected_bar_active)
+
         # loop over the connections,
         # for each connection get the points that are on the connection (just check the distance)
         points = np.asarray(points)
+
+        # tolerance for the distance
+        tolerance = self.diameter / 2000
+        tolerance = max(tolerance, 1e-6)
 
         connection_points = []
 
@@ -1964,24 +1964,43 @@ class Cable(NodeCoreConnected):
             if isinstance(c, Point):
                 connection_points.append(c.global_position)
             elif isinstance(c, Circle):
+
+                axis = None
                 if c.is_roundbar:
-                    connection_points.append(None)
-                else:
-                    # get the points on the circumference of the circle
-                    # the second point in row is the mid of the section on the circle
-                    points_on_connection = []
-
-                    for p in points:
-                        distance = np.linalg.norm(p - c.global_position)
-                        if np.abs(distance - c.radius - self.diameter / 2) < self.diameter / 2000:
-                            points_on_connection.append(tuple(p))
-
-                    if len(points_on_connection) == 3:
-                        connection_points.append(points_on_connection[1])
-                    elif len(points_on_connection) == 4:
-                        connection_points.append(points_on_connection[0])
+                    active = active_bars.pop(0)
+                    if active:
+                        axis = np.array(c.global_axis)  # normalized
                     else:
-                        raise ValueError("Could not find the mid of the section on the circle")
+                        connection_points.append(None)
+                        continue
+
+
+                # active roundbar or circle
+
+                # get the points on the circumference of the circle
+                # the second point in row is the mid of the section on the circle
+                points_on_connection = []
+
+                for p in points:
+
+                    center_to_p = p - c.global_position
+
+                    if axis is not None:
+                        center_to_p = center_to_p - np.dot(center_to_p, axis) * axis  # project on the plane perpendicular to the axis
+
+                    distance = np.linalg.norm(center_to_p)
+
+
+                    if np.abs(distance - c.radius - self.diameter / 2) < tolerance:
+
+                        points_on_connection.append(tuple(p))
+
+                if len(points_on_connection) == 3:
+                    connection_points.append(points_on_connection[1])
+                elif len(points_on_connection) == 4:
+                    connection_points.append(points_on_connection[0])
+                else:
+                    raise ValueError("Could not find the mid of the section on the circle")
 
         return connection_points
 
@@ -2063,10 +2082,25 @@ class Cable(NodeCoreConnected):
         if np.any([_ != 0 for _ in self._offsets]):
             code.append(f"s['{self.name}'].offsets = {self._offsets}")
 
-        if np.any(self._friction_force_factor):
-            code.append(f"s['{self.name}'].friction = {self._friction_force_factor}")
+        # if np.any(self._friction_force_factor):
+        #     code.append(f"s['{self.name}'].friction = {self._friction_force_factor}")
 
-        if self._explicit_cable_no_loop:
+        if any([_ is not FrictionType.No for _ in self._friction_type]):  # friction is active
+
+            code.append("# friction, first set values, then enable")
+
+            if any([_ is FrictionType.Force for _ in self._friction_type]):
+                code.append(f"s['{self.name}'].friction_force_factor = {self._friction_force_factor}")
+
+            if any([_ is FrictionType.Position for _ in self._friction_type]):
+                code.append(f"s['{self.name}'].friction_point_cable = {self._friction_point_cable}")
+
+                if any([_ is not None for _ in self._friction_point_connection]):
+                    code.append(f"s['{self.name}'].friction_point_connection = {self._friction_point_connection}")
+
+            code.append(f"s['{self.name}'].friction_type = {self._friction_type}")
+
+        if self._explicit_no_loop:
             code.append(f"s['{self.name}']._set_no_loop()")
 
         return "\n".join(code)

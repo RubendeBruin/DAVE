@@ -33,12 +33,13 @@ def test_convex_loop_180():
     c,s = convex_loop_180()
 
     A = 0.3
-    c.friction = [A, -A , None]
+    c.set_friction_old_style([A, -A , None])
+    # c.friction =
 
     c.update()
     F1 = c.friction_forces
 
-    c.friction = [None, -A , -A ]
+    c.set_friction_old_style([None, -A , -A ])
 
     c.update()
     F2 = c.friction_forces
@@ -48,20 +49,22 @@ def test_convex_loop_180():
 def test_get_calculated_values():
     c,s  = convex_loop_180()
 
+
+
     A = 0.3
-    c.friction = [A, -A , None]
+    c.set_friction_old_style([A, -A , None])
 
     s.update()
 
     F = c.calculated_friction_factor
     assert_allclose(F, -A)
 
-    c.friction = [None, -A , -A ]
+    c.set_friction_old_style( [None, -A , -A ])
     s.update()
     F = c.calculated_friction_factor
     assert_allclose(F, A)
 
-    c.friction = [A, None, -A]
+    c.set_friction_old_style( [A, None, -A])
     s.update()
     F = c.calculated_friction_factor
     assert_allclose(F, -A)

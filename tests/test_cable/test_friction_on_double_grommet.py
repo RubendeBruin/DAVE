@@ -37,7 +37,7 @@ def test_friction_on_double_grommet_documentation():
     grommet.reversed = (True, False, False, True, False)
 
     grommet = s['Cable'] # alias
-    s['Cable'].friction = [-0.1, 0.1, 0.1, None]
+    s['Cable'].set_friction_old_style( [-0.1, 0.1, 0.1, None])
 
     s.solve_statics()
     print(4*grommet.tension)

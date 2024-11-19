@@ -9,9 +9,9 @@ def test_friction_over_one_point():
     p2 = s.new_point('p2', position=(0, 5, 0))
     p3 = s.new_point('p3', position=(10, 0, 0))
 
-    c = s.new_cable(connections=['p1', 'p2', 'p3'], name='cable', EA=122345, friction=[0.1], length=20)
-
-    s._save_coredump()
+    c = s.new_cable(connections=['p1', 'p2', 'p3'], name='cable', EA=122345, length=20)
+    c.friction_force_factor = [0.1]
+    c.friction_type = FrictionType.Force
 
     assert_allclose(c.segment_mean_tensions, [14869.796095, 14014.613876], atol=1)  # DAVE result, not checked
 
@@ -23,9 +23,10 @@ def test_friction_cable_over_point():
     s.new_point('p1', position=(0, 0, 0), parent=f)
     s.new_point('p2', position=(0, 0, 0), parent=f)
 
-    c = s.new_cable(connections = ['p1', 'hook', 'p2'], name='cable', EA = 122345, friction=[0.1], length=7)
+    c = s.new_cable(connections = ['p1', 'hook', 'p2'], name='cable', EA = 122345, length=7)
+    c.friction_force_factor = [0.1]
+    c.friction_type = FrictionType.Force
 
-    s._save_coredump()
 
     s.solve_statics()
 
@@ -51,7 +52,10 @@ def test_friction_cable_over_point_opposite():
     s.new_point('p1', position=(0, 0, 0), parent=f)
     s.new_point('p2', position=(0, 0, 0), parent=f)
 
-    c = s.new_cable(connections = ['p1', 'hook', 'p2'], name='cable', EA = 122345, friction=[-0.05], length=7)
+    c = s.new_cable(connections = ['p1', 'hook', 'p2'], name='cable', EA = 122345, length=7)
+
+    c.friction_force_factor = [-0.05]
+    c.friction_type = FrictionType.Force
 
     s.solve_statics()
 
@@ -78,7 +82,10 @@ def test_friction_cable_over_two_points_symmetric():
     s.new_point('p1', position=(0, 0, 0), parent=f)
     s.new_point('p2', position=(1, 0, 0), parent=f)
 
-    c = s.new_cable(connections = ['p1', 'hook1', 'hook2','p2'], name='cable', EA = 122345, friction=[0.05, -0.05], length=7)
+    c = s.new_cable(connections = ['p1', 'hook1', 'hook2','p2'], name='cable', EA = 122345,  length=7)
+
+    c.friction_force_factor = [0.05, -0.05]
+    c.friction_type = FrictionType.Force
 
     s.solve_statics()
     weight = f.mass * s.g
@@ -104,7 +111,10 @@ def test_friction_cable_over_multiple_points():
     s.new_point('p1', position=(0, 0, 0), parent=f)
     s.new_point('p2', position=(1, 0, 0), parent=f)
 
-    c = s.new_cable(connections = ['p1', 'hook1', 'hook2','hook3','hook4','p2'], name='cable', EA = 122345, friction=[0.1,0.1,0.1,0.1], length=7)
+    c = s.new_cable(connections = ['p1', 'hook1', 'hook2','hook3','hook4','p2'], name='cable', EA = 122345, length=7)
+
+    c.friction_force_factor = [0.1,0.1,0.1,0.1]
+    c.friction_type = FrictionType.Force
 
     s.solve_statics()
     weight = f.mass * s.g
@@ -134,9 +144,11 @@ def test_friction_grommet_over_points():
     hook = s.new_point('hook', position=(0, 0, 0))
     s.new_point('p1', position=(0, 0, -10))
 
-    c = s.new_cable(connections=['p1', 'hook', 'p1'], name='cable', EA=122345, friction=[None, 0.05], length=7)
+    c = s.new_cable(connections=['p1', 'hook', 'p1'], name='cable', EA=122345, length=7)
 
-    s._save_coredump()
+    c.friction_force_factor = [None, 0.05]
+    c.friction_point_cable = [0, 1]
+    c.friction_type = [FrictionType.Position, FrictionType.Force]
 
     s.update()
 
@@ -162,7 +174,10 @@ def test_friction_grommet_over_points_solver():
     hook = s.new_point('hook', position=(0, 0, 0))
     s.new_point('p1', position=(0, 0, 0), parent=f)
 
-    c = s.new_cable(connections=['p1', 'hook', 'p1'], name='cable', EA=122345, friction=[None, 0.05], length=7)
+    c = s.new_cable(connections=['p1', 'hook', 'p1'], name='cable', EA=122345, length=7)
+    c.friction_force_factor = [None, 0.05]
+    c.friction_point_cable = [0, 1]
+    c.friction_type = [FrictionType.Position, FrictionType.Force]
 
     s.solve_statics()
 
@@ -198,7 +213,11 @@ def test_friction_over_three_point_loop_test_calcualted_friction_factor():
     p3 = s.new_point('p2', position=(0, 0, math.sqrt(20**2 - 10**2)))
     p2 = s.new_point('p3', position=(10, 0, 0))
 
-    c = s.new_cable(connections=['p1', 'p2', 'p3', 'p1'], name='cable', EA=122345, friction=[0.0001, None, 0.0001], length=20)
+    c = s.new_cable(connections=['p1', 'p2', 'p3', 'p1'], name='cable', EA=122345, length=20)
+
+    c.friction_force_factor =[0.0001, None, 0.0001]
+    c.friction_point_cable = [None, 0, None]
+    c.friction_type = [FrictionType.Force, FrictionType.Position, FrictionType.Force]
 
     assert_allclose(c.calculated_friction_factor, -0.0002, atol=1e-2)
 
@@ -212,9 +231,12 @@ def test_friction_over_three_point_loop_test_frictions_sum_to_zero():
         connections=["p1", "p2", "p3", "p1"],
         name="cable",
         EA=122345,
-        friction=[0.1, None, 0.1],
         length=20,
     )
+
+    c.friction_force_factor =[0.0001, None, 0.0001]
+    c.friction_point_cable = [None, 0, None]
+    c.friction_type = [FrictionType.Force, FrictionType.Position, FrictionType.Force]
 
     frictions = [(0.1, None, 0.1),
                  (0.1, None, -0.1),
@@ -223,7 +245,7 @@ def test_friction_over_three_point_loop_test_frictions_sum_to_zero():
 
     for friction in frictions:
 
-        c.friction = friction
+        c.friction_force_factor = friction
         c.update()
 
         assert np.max(c.friction_forces) > 0
@@ -252,10 +274,13 @@ def test_friction_over_three_point_loop():
         connections=["p1", "p2", "p3", "p1"],
         name="cable",
         EA=122345,
-        friction=[0.1, None, 0.1],
         length=20,
         diameter=0.4
     )
+
+    c.friction_force_factor =[0.1, None, 0.1]
+    c.friction_point_cable = [None, 0, None]
+    c.friction_type = [FrictionType.Force, FrictionType.Position, FrictionType.Force]
 
     # s._save_coredump()
 

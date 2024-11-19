@@ -375,7 +375,9 @@ def sync_inplace(vector : list, pad_value, req_length : int):
     """Cuts or pads the vector to the required length. Preformed in-place on the vector (list)"""
     while len(vector) < req_length:
         vector.append(pad_value)
-    vector = vector[0: req_length]
+    while len(vector) > req_length:
+        del vector[-1]
+
 
 def remove_duplicates_from_list_keep_order(seq):
     """Returns a copy of the list (or tuple) with duplicated removed

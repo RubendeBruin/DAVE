@@ -11,7 +11,8 @@ def scene_1():
 
     c = s.new_cable(connections=['p1','bar','p2'],name='cable',EA=1e6,length=20)
 
-    c.friction = (0.1, )
+    # c.friction = (0.1, )
+    c.set_friction_old_style([0.1])
 
     return s,c
 
@@ -20,7 +21,7 @@ def test_roundbar_active_1():
 
     c.update()
 
-    assert len(c.friction) == 1
+    # assert len(c.friction) == 1
     assert len(c.friction_forces) == 1
     assert c.friction_forces[0] > 0
 

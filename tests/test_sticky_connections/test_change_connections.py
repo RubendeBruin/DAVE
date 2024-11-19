@@ -61,6 +61,7 @@ def test_change_connections():
     data = c.get_annotation_data()
     print(data)
 
+    s['Cable'].friction_type = FrictionType.No
     s['Cable'].connections = ('Point1', 'Circle', 'Point1', 'Point3')
 
     s['Cable'].friction = [0.0, 0.0]
@@ -121,7 +122,7 @@ def test_should_not_crash():
     print(data)
 
     c = s['Cable']
-
+    s['Cable'].friction_type = FrictionType.No
     s['Cable'].connections = ('Point1', 'Circle', 'Point1', 'Point3')
 
     s['Cable'].friction = [0.0, 0.0]
@@ -129,7 +130,9 @@ def test_should_not_crash():
     s['Cable'].friction_point_connection = [38.9, None]
 
     s['Cable'].friction_type = [FrictionType.Position, FrictionType.Position]
-    s['Cable'].connections = ('Point1', 'Circle', 'Point3')
+
+    with pytest.raises(ValueError):
+        s['Cable'].connections = ('Point1', 'Circle', 'Point3')
 
 
 def test_should_not_crash2():
@@ -182,7 +185,7 @@ def test_should_not_crash2():
     print(data)
 
     c = s['Cable']
-
+    s['Cable'].friction_type = FrictionType.No
     s['Cable'].connections = ('Point1', 'Circle', 'Point1', 'Point3')
 
     s['Cable'].friction = [0.0, 0.0]
@@ -191,7 +194,8 @@ def test_should_not_crash2():
 
     s['Cable'].friction_type = [FrictionType.Position, FrictionType.Position]
 
-    s['Cable'].connections = ('Point1', 'Point1','Circle', 'Point3')
+    with pytest.raises(ValueError):
+        s['Cable'].connections = ('Point1', 'Point1','Circle', 'Point3')
 
 if __name__ == '__main__':
     test_should_not_crash2()

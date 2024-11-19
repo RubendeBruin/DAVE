@@ -24,13 +24,10 @@ def model():
 def test_roundbar_in_loop_continuous_tension():
     s,c = model()
 
-    c.friction = (0.1, 0.1, None)
+
+    c.set_friction_old_style( (0.1, 0.1, None))
 
     force0 = []
-
-    s["cable"].watches["Force"] = Watch(
-        evaluate="self.segment_mean_tensions[0]", condition="", decimals=3
-    )
 
     for z in np.linspace(-1,0, num=100):
         s['b'].gz = z
@@ -39,10 +36,36 @@ def test_roundbar_in_loop_continuous_tension():
 
     print(np.max(np.diff(force0)))
 
+    data = c.get_annotation_data()
+
+    for d in data:
+        assert c.get_point_along_cable(d[0]) is not None
+
+
     assert np.max(np.diff(force0)) < 150
 
 def test_roundbar_in_loop_set_friction_on_roundbar_to_None():
     s,c = model()
 
     with pytest.raises(ValueError):
-        c.friction = (0.1, None, 0.1)
+        c.set_friction_old_style( (0.1, None, 0.1) )
+
+
+def test_roundbar_in_loop_label_position_inactive():
+    s,c = model()
+
+
+    c.set_friction_old_style( (0.1, 0.1, None))
+
+    s['b'].gz = -5
+
+    data = c.get_annotation_data()
+
+    points = [c.get_point_along_cable(d[0]) for d in data]
+
+    assert None in points
+
+
+
+if __name__ == '__main__':
+    test_roundbar_in_loop_continuous_tension()

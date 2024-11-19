@@ -2825,6 +2825,9 @@ class Scene:
             assert1f(length, "length")
         assert1f(EA, "EA")
 
+        if friction is not None:
+            raise DeprecationWarning("Set friction via friction-type after creation")
+
         # check if connections is supplied
         if connections is not None:
             if endA is not None:

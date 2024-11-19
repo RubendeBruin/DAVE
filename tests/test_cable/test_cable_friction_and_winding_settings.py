@@ -1,6 +1,6 @@
 from numpy.testing import assert_allclose
 
-from DAVE import Scene, Watch
+from DAVE import *
 
 
 def cable():
@@ -54,56 +54,60 @@ def test_modify_create_loop_by_adding_a_point():
     c = cable()
     s = c._scene
 
-    c.friction = (0.1, -0.1)
+    # c.friction = (0.1, -0.1)
     s.solve_statics()
     c.connections = ['p1', 'hook1', 'hook2', 'p2', 'p1']
     s.solve_statics()  #<-- should not crash
 
     assert c.max_winding_angles == (999, 999,999,999,999)
-    assert c.friction == (None, 0.1, -0.1, 0)
+    # assert c.friction == (None, 0.1, -0.1, 0)
 
 
 def test_modify_create_loop_by_changing_a_point():
     c = cable()
     s = c._scene
 
-    c.friction = (0.1, -0.1)
+    # c.friction = (0.1, -0.1)
     s.solve_statics()
     c.connections = ['p1', 'hook1', 'hook2', 'p1']
     s.solve_statics()  #<-- should not crash
 
     assert c.max_winding_angles == (999, 999,999,999)
-    assert c.friction == (None, 0.1, -0.1)
+    # assert c.friction == (None, 0.1, -0.1)
 
 def test_break_loop_by_removing_a_point():
     c = loop()
     s = c._scene
 
-    c.friction = (None, 0.1, -0.1, 0)
+    # c.friction = (None, 0.1, -0.1, 0)
 
     s.solve_statics()
     c.connections = ['p1', 'hook1', 'hook2', 'p2']
     s.solve_statics()  #<-- should not crash
 
     assert c.max_winding_angles == (999, 999,999,999)
-    assert c.friction == (0.1, -0.1)
+    # assert c.friction == (0.1, -0.1)
 
 def test_break_loop_by_changing_a_point():
     c = loop()
     s = c._scene
     
-    c.friction = (None, 0.1, -0.1, 0)
+    # c.friction = (None, 0.1, -0.1, 0)
     
     s.solve_statics()
     c.connections = ["p1", "hook1", "hook2", "p2", "hook1"]
     s.solve_statics()  # <-- should not crash
     
     assert c.max_winding_angles == (999, 999, 999, 999, 999)
-    assert c.friction == (0.1, -0.1,0)
+    # assert c.friction == (0.1, -0.1,0)
 
 def test_revesed():
-    c  = cable_with_circle()
-    c.friction = (0.1, )
+    c : Cable = cable_with_circle()
+
+
+    c.friction_force_factor = (0.1, )
+    c.friction_type = FrictionType.Force
+
     c.update()
     tensions = c.segment_mean_tensions
     assert tensions[0] > tensions[1]  # friction from A to B
