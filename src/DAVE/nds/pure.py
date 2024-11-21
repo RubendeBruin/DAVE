@@ -57,7 +57,7 @@ class Visual(NodePurePython, HasParentPure):
     @property
     def path(self) -> str or Path:
         """Resource path or url to the visual (str)"""
-        return self._path
+        return str(self._path)
 
     @path.setter
     def path(self, value):

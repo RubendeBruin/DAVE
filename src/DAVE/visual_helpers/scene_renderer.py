@@ -735,11 +735,13 @@ class AbstractSceneRenderer:
                 p.actor_type = ActorType.GEOMETRY
 
                 actors["main"] = p
-                actors["X"] = Sphere(r=0.1, res=RESOLUTION_SPHERE)
-                actors["X"].GetProperty().SetColor(1, 0, 0)
 
-                actors["Y"] = Sphere(r=0.1, res=RESOLUTION_SPHERE)
-                actors["Y"].GetProperty().SetColor(0, 1, 0)
+                # local axis for debugging
+                # actors["X"] = Sphere(r=0.1, res=RESOLUTION_SPHERE)
+                # actors["X"].GetProperty().SetColor(1, 0, 0)
+                #
+                # actors["Y"] = Sphere(r=0.1, res=RESOLUTION_SPHERE)
+                # actors["Y"].GetProperty().SetColor(0, 1, 0)
 
             if isinstance(N, dn.Cable):
                 cable_gpoints = N.get_points_for_visual()

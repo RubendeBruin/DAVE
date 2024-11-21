@@ -113,6 +113,9 @@ class DaveResourceProvider:
         filename can be a full path, or a path relative to one of the resource folders
         """
         file = None
+
+        filename = str(filename)
+
         filename = filename.strip()
 
         if filename in self.mapping:

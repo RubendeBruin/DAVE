@@ -467,16 +467,16 @@ class VisualActor:
 
             SetTransformIfDifferent(A, t)
 
-            # two points (for debug)
-            t = vtkTransform()
-            t.Identity()
-            t.Translate(np.array(self.node.global_position) + self.node.radius * np.array(self.node._local_y_axis))
-            SetTransformIfDifferent(self.actors["Y"], t)
-
-            t = vtkTransform()
-            t.Identity()
-            t.Translate(np.array(self.node.global_position) + self.node.radius * np.array(self.node._local_x_axis))
-            SetTransformIfDifferent(self.actors["X"], t)
+            # # two points (for debug)
+            # t = vtkTransform()
+            # t.Identity()
+            # t.Translate(np.array(self.node.global_position) + self.node.radius * np.array(self.node._local_y_axis))
+            # SetTransformIfDifferent(self.actors["Y"], t)
+            #
+            # t = vtkTransform()
+            # t.Identity()
+            # t.Translate(np.array(self.node.global_position) + self.node.radius * np.array(self.node._local_x_axis))
+            # SetTransformIfDifferent(self.actors["X"], t)
 
             return
 

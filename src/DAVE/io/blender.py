@@ -37,6 +37,7 @@
 """
 import time
 
+import warnings
 from vtkmodules.vtkCommonDataModel import vtkLine
 
 from DAVE.tools import running_in_gui
@@ -157,6 +158,22 @@ def try_get_blender_executable():
 
     return BLENDER_EXEC
 
+def make_constant_point_count(points : list) -> list:
+    """Accepts a list of lists of points. Each point contains 3 coordinates.
+    Returns a list of lists of points where each list has the same number of points.
+    This is done by repeating the last point in the list if needed.
+    """
+
+    max_points = max([len(p) for p in points])
+
+    for i, p in enumerate(points):
+        n = len(p)
+        warnings.warn(f'Point {i} has {n} points - last point, will be repeated to {max_points}')
+        if n < max_points:
+            points[i] = p + [p[-1]]*(max_points - n)
+
+    return points
+
 
 # utility functions for our python scripts are hard-coded here
 
@@ -218,18 +235,25 @@ def insert_objects(filepath,scale=(1,1,1),rotation=(0,0,0,0), offset=(0,0,0), or
                 objects.append(bpy.context.view_layer.objects.active)
 
     elif filepath.endswith('.obj') or filepath.endswith('.stl') or filepath.endswith('.glb') or filepath.endswith('.gltf'):
+        gltf = False
         if filepath.endswith('.obj'):
             obj = bpy.ops.wm.obj_import(filepath=filepath)
         elif filepath.endswith('.stl'):
             obj = bpy.ops.import_mesh.stl(filepath=filepath)
         elif filepath.endswith('.glb') or filepath.endswith('.gltf'):
+            gltf = True
             obj = bpy.ops.import_scene.gltf(filepath=filepath)
         else:
             raise ValueError(f'Unknown file format for {filepath}')
 
         objects = []
         for obj in bpy.context.selected_objects:
-            obj.rotation_euler[0] = 0
+            if gltf:
+                bpy.ops.object.select_all(action='DESELECT')
+                obj.select_set(True)
+                bpy.context.object.rotation_mode = 'XYZ'
+                bpy.context.object.rotation_euler[0] = -1.5708
+                bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
             objects.append(obj)
 
 
@@ -811,7 +835,7 @@ def blender_py_file(
 
         try:
             name = visual.path.split(".")[0]
-            filename = scene.get_resource_path(
+            filename = scene.resource_provider.get_resource_path(
                 name + ".blend", error_interaction = None
             )  # raises exception if file is not found
         except:
@@ -955,10 +979,25 @@ def blender_py_file(
             code += "\nani_points = []"
             time_start, time_end = timeline.range()
 
+            points_for_each_step = [points]
             for i_time in range(time_end - time_start + 1):
                 timeline.activate_time(i_time + time_start)
                 scene.update()
-                points = cable.get_points_for_visual_blender()
+                points_step = cable.get_points_for_visual_blender()
+                points_for_each_step.append(points_step)
+
+            # make sure that all points have the same number of points
+
+            points_for_each_step = make_constant_point_count(points_for_each_step)
+
+            code += "\n# Re-defining points cause length may be different"
+            code += "\npoints=["
+            for p in points_for_each_step[0]:
+                code += "({},{},{},1.0),".format(*p)
+            code = code[:-1]
+            code += "]"
+
+            for points in points_for_each_step[1:]:
                 code += "\nframe_points=["
                 for p in points:
                     code += "({},{},{},1.0),".format(*p)
