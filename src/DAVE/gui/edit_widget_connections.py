@@ -274,6 +274,23 @@ class EditConnections(NodeEditor):
         #
         # For a SlingGrommet the values CAN be used.
 
+        """
+        Depending on what "cable" really is, the following settings are exposed:
+        
+        endA friction
+        endA max winding angle
+        endB friction
+        endB max winding angle
+        
+                                  Cable          Cable    SlingGrommet*     SlingGrommet          SlingGrommet
+                                  line           loop       sling           Grommet/circle        Grommet/line
+                                  
+        endA friction              no             yes        no              yes                       yes
+        endA max winding angle     no             yes        no              yes                       yes
+        endB friction              no             no         no              yes                       yes
+        endB max winding angle     no             no         no              yes                       yes
+        """
+
         endAFr = self.endAFr
         endBFr = self.endBFr
 
@@ -281,6 +298,12 @@ class EditConnections(NodeEditor):
             endAFr = is_loop
 
         self.ui.tree.clear()
+
+        # flag that position properties are not required
+        friction_types = [c.friction_type for c in self.connections_model]
+        loop_with_one_fixed_position = (
+            endAFr and friction_types.count(FrictionType.Position) == 1
+        )
 
         # columns:
         # 0 : reversed
@@ -345,14 +368,20 @@ class EditConnections(NodeEditor):
 
                 elif connection.friction_type == FrictionType.Position:
                     friction_kind_combo.setCurrentIndex(2)
-                    set_disabled(item, [5])
-                    value = connection.friction_point_cable
-                    item.setText(6, f"{value:.6g}" if value or value == 0 else "")
-                    if isinstance(connection.connection_node, Point):
-                        set_disabled(item, [7])
+
+                    if loop_with_one_fixed_position:
+                        set_disabled(item, [5, 6, 7])
                     else:
-                        value = connection.friction_point_connection
-                        item.setText(7, f"{value:.3g}" if value or value == 0 else "")
+                        set_disabled(item, [5])
+                        value = connection.friction_point_cable
+                        item.setText(6, f"{value:.6g}" if value or value == 0 else "")
+                        if isinstance(connection.connection_node, Point):
+                            set_disabled(item, [7])
+                        else:
+                            value = connection.friction_point_connection
+                            item.setText(
+                                7, f"{value:.3g}" if value or value == 0 else ""
+                            )
 
                 friction_kind_combo.currentIndexChanged.connect(self.ui_changed)
 
@@ -667,8 +696,8 @@ class EditConnections(NodeEditor):
             guiEventType.SELECTED_NODE_MODIFIED,
         )
 
-    def show_advanced_settings(self):
-        dialog = AdvancedCableSettings(cable=self.node)
-        dialog.exec()
-        if dialog.code:
-            self.run_code(dialog.code, guiEventType.SELECTED_NODE_MODIFIED)
+    # def show_advanced_settings(self):
+    #     dialog = AdvancedCableSettings(cable=self.node)
+    #     dialog.exec()
+    #     if dialog.code:
+    #         self.run_code(dialog.code, guiEventType.SELECTED_NODE_MODIFIED)

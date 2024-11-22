@@ -405,8 +405,15 @@ class Cable(NodeCoreConnected):
 
     @property
     def is_sticky(self) -> bool:
-        """True if any of the connections uses Positional Friction [bool]"""
-        return any([k == FrictionType.Position for k in self._friction_type])
+        """True if the loop is sticky. If the cable is a loop then this is the case if the cable has more than one positional points,
+          if the cable is not a loop then one positional point is sufficient to make the cable sticky[bool]"""
+        n_positions = self._friction_type.count(FrictionType.Position)
+
+        if self._isloop:
+            return n_positions > 1
+        else:
+            return n_positions > 0
+
 
     @property
     def tension(self) -> float:
@@ -825,6 +832,9 @@ class Cable(NodeCoreConnected):
         These are identical if the cable weight is zero.
         """
         combined = []
+
+        if self.is_sticky:
+            raise ValueError("TODO: re-order the connections to match the segments, see friction_forces implementation")
 
         for node in self._vfCableNodes:
             segment_end_forces = node.get_segment_end_tensions
@@ -1342,13 +1352,12 @@ class Cable(NodeCoreConnected):
 
         # any friction?
         any_friction = not all([_ == FrictionType.No for _ in friction_type])
+        is_loop = connections[0] == connections[-1] and not self._explicit_no_loop
 
         if not any_friction:  # no further checks needed
             return errors
 
         # check lengths
-        # loop?
-        is_loop = connections[0] == connections[-1] and not self._explicit_no_loop
 
         n_req = len(connections) - 2
         if is_loop:
@@ -1383,6 +1392,8 @@ class Cable(NodeCoreConnected):
         else:
             cons = connections[1:-1]
 
+        is_loop_with_single_positional_connection = is_loop and friction_type.count(FrictionType.Position) == 1
+
         # check values for active friction types
         errors.extend(
             self.check_friction_vector_properties(
@@ -1391,6 +1402,7 @@ class Cable(NodeCoreConnected):
                 friction_force_factor,
                 friction_point_cable,
                 friction_point_connection,
+                is_loop_with_single_positional_connection = is_loop_with_single_positional_connection
             )
         )
 
@@ -1411,14 +1423,22 @@ class Cable(NodeCoreConnected):
         friction_force_factor,
         friction_point_cable,
         friction_point_connection,
+        is_loop_with_single_positional_connection = False
     ) -> list[str]:
         """Check the friction vectors values. Input vectors to be aligned with connections, pass only that portion of the
         connections vector that has friction properties defined
-        Returns a list of errors"""
+
+        is_loop_with_single_positional_connection: bool : set to True if the cable is a loop and has only one connection with friction type Position
+
+        Returns a list of errors
+        """
+
+
 
         errors = []
         previous_friction_point_cable = -1
         delta = 1e-6
+
 
         for i, (con, kind, ff, pcable, pconnector) in enumerate(
             zip(
@@ -1448,6 +1468,17 @@ class Cable(NodeCoreConnected):
                             )
 
             if kind == FrictionType.Position:
+
+                if isinstance(con, Circle):
+                    if con.is_roundbar:
+                        errors.append(
+                            f"Friction type nr {i}is set to Position, but the connection is a round-bar. This is not allowed"
+                        )
+
+                if is_loop_with_single_positional_connection:
+                    continue  # this connection will be re-written as Force later
+
+
                 if isinstance(pcable, (int, float)):
                     if 0 <= pcable <= 1:
                         pass  # ok
@@ -1473,10 +1504,7 @@ class Cable(NodeCoreConnected):
                             f"Friction type nr {i}is set to Position, but the point on the connector is not valid {pconnector}"
                         )
                         continue
-                    if con.is_roundbar:
-                        errors.append(
-                            f"Friction type nr {i}is set to Position, but the connection is a round-bar. This is not allowed"
-                        )
+
 
         return errors
 
