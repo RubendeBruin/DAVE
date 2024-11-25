@@ -302,7 +302,12 @@ class EditConnections(NodeEditor):
         # flag that position properties are not required
         friction_types = [c.friction_type for c in self.connections_model]
         loop_with_one_fixed_position = (
-            endAFr and friction_types.count(FrictionType.Position) == 1
+            endAFr
+            and friction_types.count(FrictionType.Position) == 1
+            and (
+                friction_types[0] == FrictionType.Position
+                or (endBFr and (friction_types[-1] == FrictionType.Position))
+            )
         )
 
         # columns:

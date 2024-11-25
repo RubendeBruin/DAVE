@@ -337,6 +337,7 @@ class Gui:
 
         try:
             from DAVE_qc import ET
+
             self.et_qc = ET.Instance()
         except Exception as e:
             self.et_qc = None
@@ -1026,7 +1027,6 @@ class Gui:
             sst = QtCore.QTimer()
             sst.setSingleShot(True)
             sst.singleShot(0, self.after_startup)  # <-- 0 ms delay is ok
-
 
             self.app.exec()
 
@@ -2229,12 +2229,16 @@ class Gui:
     def show_exception(self, e):
         self.give_feedback(e, style=1)
 
-    def give_feedback(self, what, style=0):
+    def give_feedback(self, what: str or list[str] or tuple[str], style=0):
         """Shows feedback in the feedback window and statusbar
         style 0 : normal
         style 1 : error
         style 2 : warning
         """
+
+        if isinstance(what, (tuple, list)):
+            messages = ["- " + str(m) for m in what]
+            what = "\n".join(messages)
 
         self.ui.teFeedback.setText(str(what))
         if style == 0:
@@ -2276,7 +2280,12 @@ class Gui:
                 QMessageBox.warning(self.ui.widget, txt_kind, what, QMessageBox.Ok)
 
     def run_code(
-        self, code: str, event: guiEventType, store_undo=True, sender=None
+        self,
+        code: str,
+        event: guiEventType,
+        store_undo=True,
+        sender=None,
+        show_warnings=True,
     ) -> bool:
         """Runs the provided code
 
@@ -2319,6 +2328,7 @@ class Gui:
         DAVE_GUI_LOGGER.log_code(code)
 
         executed = False
+
         with capture_output() as c:
             try:
                 glob_vars = globals()
@@ -2326,7 +2336,16 @@ class Gui:
                 glob_vars["s"] = self.scene
                 glob_vars["self"] = self
 
-                exec(code, glob_vars)
+                with warnings.catch_warnings(record=True) as w:
+                    warnings.simplefilter("always")
+                    exec(code, glob_vars)
+
+                # Process captured warnings
+                captured_warnings = [str(warning.message) for warning in w]
+
+                if captured_warnings:
+                    self.give_feedback(captured_warnings, style=2)
+
                 DAVE_GUI_LOGGER.log("Code executed successfully")
                 executed = True
 

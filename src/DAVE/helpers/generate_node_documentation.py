@@ -15,6 +15,7 @@ def generate_python_code(cls, imports=True):
         code.append(
             "from DAVE.settings import NodePropertyInfo, DAVE_ADDITIONAL_RUNTIME_MODULES, DAVE_NODEPROP_INFO"
         )
+        code.append("NoneType = type(None)")
 
     cls_name = cls.__name__
 

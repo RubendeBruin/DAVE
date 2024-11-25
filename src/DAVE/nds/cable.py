@@ -1,4 +1,5 @@
 import warnings
+import numbers
 from contextlib import contextmanager
 
 # define enum FrictionType for friction calculation with values None, Force, Position
@@ -325,7 +326,7 @@ class Cable(NodeCoreConnected):
         )
 
         if errors:
-            raise ValueError(errors)
+            raise ValueError("\n".join(errors))
 
         # -------- input is valid, apply the settings ----------
 
@@ -406,14 +407,14 @@ class Cable(NodeCoreConnected):
     @property
     def is_sticky(self) -> bool:
         """True if the loop is sticky. If the cable is a loop then this is the case if the cable has more than one positional points,
-          if the cable is not a loop then one positional point is sufficient to make the cable sticky[bool]"""
+        if the cable is not a loop then one positional point is sufficient to make the cable sticky[bool]
+        """
         n_positions = self._friction_type.count(FrictionType.Position)
 
         if self._isloop:
             return n_positions > 1
         else:
             return n_positions > 0
-
 
     @property
     def tension(self) -> float:
@@ -694,7 +695,7 @@ class Cable(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def max_winding_angles(self, max_winding_angles):
-        if isinstance(max_winding_angles, (float, int)):
+        if isinstance(max_winding_angles, numbers.Real):
             max_winding_angles = [max_winding_angles]
 
         # check length
@@ -721,7 +722,7 @@ class Cable(NodeCoreConnected):
     @node_setter_manageable
     @node_setter_observable
     def offsets(self, offset):
-        if isinstance(offset, (float, int)):
+        if isinstance(offset, numbers.Real):
             offset = [offset]
 
         # check length
@@ -817,14 +818,14 @@ class Cable(NodeCoreConnected):
     def friction_factors_as_calculated(self) -> tuple[float]:
         """The friction factors as calculated by DAVE [-], only applicable to loops"""
         if self._isloop and not self._multi_segment_model:
-            fr = list(self.friction)
-            fr[self._vfNode.unkonwn_friction_index] = (
+            fr = list(self.friction_force_factor)
+            fr[self._vfNode.unknown_friction_index] = (
                 self._vfNode.calculated_unknown_friction_factor
             )
             # noinspection PyTypeChecker
             return tuple(fr)
         else:
-            return self.friction
+            return self.friction_force_factor
 
     @property
     def segment_end_tensions(self) -> tuple[tuple[float]]:
@@ -834,7 +835,9 @@ class Cable(NodeCoreConnected):
         combined = []
 
         if self.is_sticky:
-            raise ValueError("TODO: re-order the connections to match the segments, see friction_forces implementation")
+            raise ValueError(
+                "TODO: re-order the connections to match the segments, see friction_forces implementation"
+            )
 
         for node in self._vfCableNodes:
             segment_end_forces = node.get_segment_end_tensions
@@ -1387,12 +1390,16 @@ class Cable(NodeCoreConnected):
             return errors
 
         # check friction definitions
+        endA_is_first = True
         if is_loop:  # if loop
             cons = connections[:-1]
         else:
             cons = connections[1:-1]
+            endA_is_first = False
 
-        is_loop_with_single_positional_connection = is_loop and friction_type.count(FrictionType.Position) == 1
+        is_loop_with_single_positional_connection = (
+            is_loop and friction_type.count(FrictionType.Position) == 1
+        )
 
         # check values for active friction types
         errors.extend(
@@ -1402,7 +1409,9 @@ class Cable(NodeCoreConnected):
                 friction_force_factor,
                 friction_point_cable,
                 friction_point_connection,
-                is_loop_with_single_positional_connection = is_loop_with_single_positional_connection
+                is_loop_with_single_positional_connection=is_loop_with_single_positional_connection,
+                first_con_is_endA=endA_is_first,
+                last_con_is_endB=False,
             )
         )
 
@@ -1423,7 +1432,9 @@ class Cable(NodeCoreConnected):
         friction_force_factor,
         friction_point_cable,
         friction_point_connection,
-        is_loop_with_single_positional_connection = False
+        is_loop_with_single_positional_connection=False,
+        first_con_is_endA=False,
+        last_con_is_endB=False,
     ) -> list[str]:
         """Check the friction vectors values. Input vectors to be aligned with connections, pass only that portion of the
         connections vector that has friction properties defined
@@ -1433,12 +1444,9 @@ class Cable(NodeCoreConnected):
         Returns a list of errors
         """
 
-
-
         errors = []
         previous_friction_point_cable = -1
         delta = 1e-6
-
 
         for i, (con, kind, ff, pcable, pconnector) in enumerate(
             zip(
@@ -1457,9 +1465,9 @@ class Cable(NodeCoreConnected):
                 if ff is None:
                     pass  # ok, checked later
                 else:
-                    if not isinstance(ff, (int, float)):
+                    if not isinstance(ff, numbers.Real):
                         errors.append(
-                            "Friction force factor nr {i} is {ff} but should be a number"
+                            f"Friction force factor nr {i} is {ff} of type {type(ff)} but should be a number"
                         )
                     else:
                         if abs(ff) >= 1:
@@ -1478,9 +1486,19 @@ class Cable(NodeCoreConnected):
                 if is_loop_with_single_positional_connection:
                     continue  # this connection will be re-written as Force later
 
-
-                if isinstance(pcable, (int, float)):
-                    if 0 <= pcable <= 1:
+                if isinstance(pcable, numbers.Real):
+                    # Check 0 , only ok if this is the first connection
+                    if pcable == 0:
+                        if not first_con_is_endA and i == 0:
+                            errors.append(
+                                f"Friction type nr {i} is set to Position = 0, This can only be done for the first connection"
+                            )
+                    elif pcable == 1:
+                        if not last_con_is_endB and i == len(cons) - 1:
+                            errors.append(
+                                f"Friction type nr {i} is set to Position = 1, This can only be done for the last connection"
+                            )
+                    elif 0 <= pcable <= 1:
                         pass  # ok
                     else:
                         errors.append(
@@ -1499,12 +1517,11 @@ class Cable(NodeCoreConnected):
                     )
 
                 if isinstance(con, Circle):
-                    if not isinstance(pconnector, (int, float)):
+                    if not isinstance(pconnector, numbers.Real):
                         errors.append(
                             f"Friction type nr {i}is set to Position, but the point on the connector is not valid {pconnector}"
                         )
                         continue
-
 
         return errors
 

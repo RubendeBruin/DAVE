@@ -2922,8 +2922,6 @@ class Scene:
 
             new_node.connections = pois
 
-            new_node.friction = [0] * (len(pois) - 1)
-
             if reversed is not None:
                 new_node.reversed = reversed
 
