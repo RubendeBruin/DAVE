@@ -298,7 +298,7 @@ class Cable(NodeCoreConnected):
             self.friction_force_factor = value
             self.friction_type = FrictionType.Force
 
-    @node_setter_manageable
+    # Only manage geometrical propertis, not the friction @node_setter_manageable
     def update_connections(
         self,
         friction_type=None,
@@ -316,6 +316,9 @@ class Cable(NodeCoreConnected):
 
         Raises ValueError if any of the settings are invalid.
         """
+
+        if connections or offsets or reversed:
+            self._verify_change_allowed()
 
         errors = self._check_friction_vectors(
             friction_type=friction_type,
