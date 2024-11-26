@@ -1503,7 +1503,7 @@ class Scene:
             if node in self._nodes:
                 self.delete(node)
 
-    def delete(self, node):
+    def delete(self, node : Node or str):
         """Deletes the given node from the scene as well as all nodes depending on it.
 
         Depending nodes are nodes that are physically connected to the deleted node or are observing the node.
@@ -4082,9 +4082,8 @@ class Scene:
         if not directory.exists():
             directory.mkdir()
 
-        f = open(filename, "w+")
-        f.write(code)
-        f.close()
+        with open(filename, "w+") as f:
+            f.write(code)
 
         self._print("Saved as {}".format(filename))
 
@@ -4234,17 +4233,17 @@ class Scene:
 
         print("Loading {}".format(filename))
 
-        f = open(file=filename, mode="r")
-        code = ""
-        for line in f:
-            code += line + "\n"
+        with open(file=filename, mode="r") as f:
+            code = ""
+            for line in f:
+                code += line + "\n"
 
-        try:
-            self.errors_during_load = self.run_code(
-                code, continue_on_errors=allow_errors_during_load
-            )
-        except Exception as M:
-            raise ModelInvalidException(M)
+            try:
+                self.errors_during_load = self.run_code(
+                    code, continue_on_errors=allow_errors_during_load
+                )
+            except Exception as M:
+                raise ModelInvalidException(M)
 
     def import_scene(
         self,

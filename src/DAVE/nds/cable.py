@@ -13,7 +13,7 @@ from .abstracts import NodeCoreConnected
 from .core import DEFAULT_WINDING_ANGLE
 from .geometry import Point, Circle
 from .helpers import *
-from ..helpers.vector_compare_and_match import vector_compare_and_match
+# from ..helpers.vector_compare_and_match import vector_compare_and_match
 from ..settings import (
     VF_NAME_SPLIT,
     RENDER_CURVE_RESOLUTION,
