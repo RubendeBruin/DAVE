@@ -71,7 +71,8 @@ def model_extreme_friction():
                 length=10,
                 EA=1000.0,
                 sheaves=['Liftpoint'])
-    s['Cable'].friction = [50.0]
+    s['Cable'].friction_force_factor = [50.0]
+    s['Cable'].friction_type = [FrictionType.Force]
 
     s.solver_settings.timeout_s = 3 # enough to check that it does not crash fatally
 
@@ -82,16 +83,19 @@ def model_extreme_friction():
     return s
 
 def test_extreme_friction():
-    assert False # test disabled - hard crashes
-    s = model_extreme_friction()
-    s.solve_statics()
+    with pytest.raises(ValueError):
+        s = model_extreme_friction()
 
-@pytest.mark.skip(reason="This test is interactive")
-def test_extreme_friction_GUI_PressSolveToCrashTheGui():
-    s = model_extreme_friction()
-    DG(s)  # <--- press solve to crash the gui
+    # s.solve_statics()
+
+# # @pytest.mark.skip(reason="This test is interactive")
+# def test_extreme_friction_GUI_PressSolveToCrashTheGui():
+#     s = model_extreme_friction()
+#     DG(s)  # <--- press solve to crash the gui
 
 
 if __name__ == '__main__':
-    s = test_extreme_friction()
+    s = model_extreme_friction()
+    DG(s)
+
 

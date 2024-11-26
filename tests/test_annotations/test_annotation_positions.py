@@ -33,7 +33,7 @@ def test_annotation_positions_interactive(model):
 
     v.show()
 
-# @pytest.mark.skip(reason="This test is interactive")
+@pytest.mark.skip(reason="This test is interactive")
 def test_annotation_positions_interactive_qt(model):
     s= model
 
