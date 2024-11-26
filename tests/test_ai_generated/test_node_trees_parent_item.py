@@ -1,6 +1,6 @@
 import pytest
 from DAVE import GeometricContact
-from src.DAVE.helpers.node_trees import give_parent_item
+from DAVE.helpers.node_trees import give_parent_item
 
 def test_node_tree_parent_item():
 

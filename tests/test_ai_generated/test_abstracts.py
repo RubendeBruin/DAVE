@@ -1,5 +1,5 @@
 import pytest
-from src.DAVE.nds.abstracts import NodePurePython, NodeCoreConnected, DAVENodeBase
+from DAVE.nds.abstracts import NodePurePython, NodeCoreConnected, DAVENodeBase
 
 class MockScene:
 

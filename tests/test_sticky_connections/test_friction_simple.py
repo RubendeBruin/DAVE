@@ -4,6 +4,7 @@ from numpy.testing import assert_allclose
 from DAVE import *
 from DAVE.nds.cable import FrictionType
 
+
 """Single point/circle between two other points.
 Cable is made sticky
 Then one of the two end-points is moved.
@@ -225,8 +226,8 @@ def test_pp_loop():
     assert max(loop.friction_forces) <= 1e-6
 
 if __name__ == '__main__':
-    s = test_friction_ppp()
-    # DG(s, autosave=False)
+    s = test_cc_loop()
+    DG(s, autosave=False)
 
 
 

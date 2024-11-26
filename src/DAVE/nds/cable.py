@@ -1692,13 +1692,16 @@ class Cable(NodeCoreConnected):
             elif isinstance(c, Circle):
                 # sticky location at a circle
 
-                local_position = c.point3_from_theta_and_r_local(
+                local_position_on_parent = c.point3_from_theta_and_r_local(
                     theta=np.deg2rad(theta), r=c.radius + self.diameter / 2
                 )
+
+                # local_position_on_parent = local_position + c.parent.position
+
                 if c.parent.parent is not None:
-                    global_position = c.parent.parent.to_glob_position(local_position)
+                    global_position = c.parent.parent.to_glob_position(local_position_on_parent)
                 else:
-                    global_position = local_position
+                    global_position = local_position_on_parent
 
                 positions.append(global_position)
 

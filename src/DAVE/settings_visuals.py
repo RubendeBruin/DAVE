@@ -197,6 +197,8 @@ painters["Force"] = {"main": copy(surf), "moment1": copy(surf), "moment2": copy(
 surf.surfaceColor = BLACK
 painters["Cable"] = {"main": copy(surf)}
 painters["Cable"]["main"].labelShow = False
+painters["Cable"]["pin"] = copy(surf)
+painters["Cable"]["pin"].surfaceColor = ORANGE
 
 # --- beam
 mesh.lineWidth = 5

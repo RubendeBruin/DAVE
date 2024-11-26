@@ -295,7 +295,7 @@ class VisualActor:
                 if node_class == "Visual":
                     pass # it is ok for visuals
                 else:
-                    print(f"No paint for actor {node_class} {key}")
+                    print(f"No paint for actor Class={node_class} Key={key}")
                     continue
 
             # ****** Some very-custom code for Buoyancy ********
@@ -525,15 +525,14 @@ class VisualActor:
                 update_line_to_points(A, points)
 
             # sticky location visualization
+            # remove all sticky actors
+            for key in list(self.actors.keys()):
+                if key.startswith("pin#"):
+                    viewport.remove(self.actors[key])
+                    del self.actors[key]
+
             if self.node.is_sticky:
                 sticky_pos, sticky_orientations = self.node.get_sticky_positions_and_directions()
-
-
-                # remove all sticky actors
-                for key in list(self.actors.keys()):
-                    if key.startswith("sticky"):
-                        viewport.remove(self.actors[key])
-                        del self.actors[key]
 
                 # create new actors for each sticky point
                 if len(sticky_pos) > 0:
@@ -541,15 +540,16 @@ class VisualActor:
 
                     for i, (pos, direction) in enumerate(zip(sticky_pos, sticky_orientations)):
                         actor = Cylinder(
-                            pos=pos,
                             r=dia/2,
                             height=dia/30,
                             axis=direction,
-                            res=5,
+                            res=3,
+                            gpos = pos
                         )
-                        self.actors[f"sticky{pos}"] = actor
+                        self.actors[f"pin#{i}"] = actor
                         viewport.add(actor)
 
+                    self.update_paint(viewport.settings)
 
 
                 # update_line_to_points(self.actors["sticky"], [sticky_pos, sticky_pos + (0,0,0.1)])

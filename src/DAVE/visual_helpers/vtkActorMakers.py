@@ -470,8 +470,11 @@ def Lines(lines, color=(1, 1, 1), lw=1):
     return actor
 
 
-def Cylinder(pos=(0, 0, 0), r=1, height=2.0, axis=(0, 0, 1), res=24):
-    """Creates a cylinder actor with a position, radius, height, axis and resolution"""
+def Cylinder(pos=(0, 0, 0), r=1, height=2.0, axis=(0, 0, 1), res=24, gpos = None):
+    """Creates a cylinder actor with a position, radius, height, axis and resolution.
+    pos is applied before rotation
+    gpos is applied after rotation
+    """
     source = vtkCylinderSource()
     source.SetRadius(r)
     source.SetHeight(height)
@@ -489,6 +492,8 @@ def Cylinder(pos=(0, 0, 0), r=1, height=2.0, axis=(0, 0, 1), res=24):
     rot_angle = np.arccos(np.dot([0, 1, 0], axis_n))
     # create a transform
     t = vtkTransform()
+    if gpos is not None:
+        t.Translate(gpos)
     t.RotateWXYZ(np.rad2deg(rot_angle), *rot_axis)
     t.Update()
     # apply the transform to the cylinder

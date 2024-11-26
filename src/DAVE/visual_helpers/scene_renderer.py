@@ -747,16 +747,6 @@ class AbstractSceneRenderer:
                 cable_gpoints = N.get_points_for_visual()
                 if cable_gpoints:
                     if N._render_as_tube:
-                        # Ref: vedo / shapes.py :: Tube
-                        # mapper = vtkPolyDataMapper()
-                        # mapper.SetInputData(
-                        #     create_tube_data(cable_gpoints, N._vfNode.diameter)
-                        # )
-                        #
-                        # a = vtkActor()
-                        # a.SetMapper(mapper)
-                        #
-                        # info = {"mapper": mapper}
                         a = Dummy()
 
                     else:

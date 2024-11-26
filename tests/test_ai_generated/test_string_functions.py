@@ -1,5 +1,5 @@
 import pytest
-from src.DAVE.helpers.string_functions import increment_string_end, code_to_blocks
+from DAVE.helpers.string_functions import increment_string_end, code_to_blocks
 
 def test_increment_string_end_with_number():
     result = increment_string_end("file123")

@@ -1,5 +1,5 @@
 import pytest
-from src.DAVE.helpers.code_error_extract import get_code_error
+from DAVE.helpers.code_error_extract import get_code_error
 
 def test_get_code_error_valid_code():
     code = "print('Hello, World!')\nprint('Goodbye, World!')"
