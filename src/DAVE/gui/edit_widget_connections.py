@@ -73,12 +73,6 @@ def float_or_none(s):
         return None
 
 
-#
-# def set_enabled(item, i):
-#     item.setForeground(i, Qt.black)
-#     item.setBackground(i, Qt.white)
-
-
 @Singleton
 class EditConnections(NodeEditor):
     def __init__(self):
@@ -112,9 +106,9 @@ class EditConnections(NodeEditor):
                 "Offset",
                 "Max winding",
                 "Use Friction",
-                "Force Factor",
-                "Cable point",
-                "Circle point",
+                "Friction Force [-]",
+                "Pin pos. Cable [-]",
+                "Pin pos. Surface [deg]",
             ]
         )
 
@@ -127,6 +121,7 @@ class EditConnections(NodeEditor):
         ui.pbRemoveSelected.clicked.connect(self.delete_selected)
         self.ui.pushButton.clicked.connect(self.add_item)
         ui.pbSetShortestRoute.clicked.connect(self.set_shortest_route)
+        ui.pbPinLocations.clicked.connect(self.set_pin_locations)
         ui.tree.keyPressEvent = self.deleteKeyPressEvent  # delete
 
         # ------- setup the drag-and-drop code ---------
@@ -566,6 +561,7 @@ class EditConnections(NodeEditor):
         self.ui.tree.setColumnHidden(5, basic)
         self.ui.tree.setColumnHidden(6, basic)
         self.ui.tree.setColumnHidden(7, basic)
+        self.ui.pbPinLocations.setHidden(basic)
 
         # hide the geometry tweaking column if not applicable
         geo = not self.ui.cbGeometryTweaking.isChecked()
@@ -700,6 +696,21 @@ class EditConnections(NodeEditor):
             f's["{self.node.name}"].set_optimum_connection_directions()',
             guiEventType.SELECTED_NODE_MODIFIED,
         )
+
+    def set_pin_locations(self, *args):
+        # update the model
+
+        if isinstance(self.node, Cable):
+            self.node.set_sticky_data_from_current_geometry()
+
+        self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
+        #
+        # self._update_model_from_node()
+        # self._update_ui_from_model()
+
+
+
+
 
     # def show_advanced_settings(self):
     #     dialog = AdvancedCableSettings(cable=self.node)

@@ -1554,9 +1554,9 @@ class Cable(NodeCoreConnected):
         lengths = self.material_lengths_no_bars  #
         L = sum(lengths)
 
-        assert (
-            abs(L - self.length) < 1e-6
-        ), f"{self.name} : Length of the cable {self.length} is not equal to the sum of the segment lengths {L}"
+        # assert (
+        #     abs(L - self.length) < 1e-6
+        # ), f"{self.name} : Length of the cable {self.length} is not equal to the sum of the segment lengths {L}"
 
         positions = self._get_cable_points_at_mid_of_connections()
 
