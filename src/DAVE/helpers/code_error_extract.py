@@ -11,6 +11,10 @@ def get_code_error(code):
 
     # get traceback to code
     exc_type, exc_value, exc_traceback = sys.exc_info()
+
+    if exc_type is None:
+        return 'No error occurred'
+
     traceback_details = traceback.extract_tb(exc_traceback)
 
     if exc_type == SyntaxError:

@@ -1503,7 +1503,7 @@ class Scene:
             if node in self._nodes:
                 self.delete(node)
 
-    def delete(self, node):
+    def delete(self, node : Node or str):
         """Deletes the given node from the scene as well as all nodes depending on it.
 
         Depending nodes are nodes that are physically connected to the deleted node or are observing the node.

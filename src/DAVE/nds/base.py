@@ -139,30 +139,3 @@ class RigidBodyContainerMassReadOnly(RigidBodyContainer):
         """Radii of gyration [m,m,m]"""
         return super().inertia_position
 
-    # def _set_mass(self, value: float):
-    #     """Set the mass [t]"""
-    #     RigidBody.mass.fset(self, value)
-    #
-    # def _set_inertia(self, value: float):
-    #     """Set the inertia [t]"""
-    #     RigidBody.inertia.fset(self, value)
-    #
-    # def _set_cogx(self, value: float):
-    #     """Set the center of gravity x-coordinate [m]"""
-    #     RigidBody.cogx.fset(self, value)
-    #
-    # def _set_cogy(self, value: float):
-    #     """Set the center of gravity y-coordinate [m]"""
-    #     RigidBody.cogy.fset(self, value)
-    #
-    # def _set_cogz(self, value: float):
-    #     """Set the center of gravity z-coordinate [m]"""
-    #     RigidBody.cogz.fset(self, value)
-    #
-    # def _set_cog(self, value: tuple[float, float, float]):
-    #     """Set the center of gravity [m,m,m]"""
-    #     RigidBody.cog.fset(self, value)
-    #
-    # def _set_inertia_radii(self, value: tuple[float, float, float]):
-    #     """Set the radii of gyration [m,m,m]"""
-    #     RigidBody.inertia_radii.fset(self, value)

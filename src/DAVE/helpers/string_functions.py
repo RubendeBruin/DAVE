@@ -7,7 +7,11 @@ def increment_string_end(s):
         end_num = match.group()
         start_index = s.rfind(end_num)
         incremented_num = str(int(end_num) + 1)
-        return s[:start_index] + incremented_num
+
+        # find leading zeros (if any) in end_num
+        leading_zeros = len(end_num) - len(end_num.lstrip('0'))
+
+        return s[:start_index + leading_zeros] + incremented_num
     else:
         return s + "2"
 
