@@ -532,27 +532,19 @@ class VisualActor:
                     del self.actors[key]
 
             if self.node.is_sticky:
-                sticky_pos, sticky_orientations = self.node.get_sticky_positions_and_directions()
+                pts_to, pts_from = self.node.get_sticky_positions_and_directions()
 
                 # create new actors for each sticky point
-                if len(sticky_pos) > 0:
-                    dia = diameter * 3
 
-                    for i, (pos, direction) in enumerate(zip(sticky_pos, sticky_orientations)):
-                        actor = Cylinder(
-                            r=dia/2,
-                            height=dia/30,
-                            axis=direction,
-                            res=3,
-                            gpos = pos
-                        )
-                        self.actors[f"pin#{i}"] = actor
-                        viewport.add(actor)
+                for i, (p1, p2) in enumerate(zip(pts_to, pts_from)):
+                    actor = ArrowHead(startPoint= p2, endPoint = p1)
 
+                    self.actors[f"pin#{i}"] = actor
+                    viewport.add(actor)
+
+                if len(pts_to) > 0:
                     self.update_paint(viewport.settings)
 
-
-                # update_line_to_points(self.actors["sticky"], [sticky_pos, sticky_pos + (0,0,0.1)])
 
             return
 

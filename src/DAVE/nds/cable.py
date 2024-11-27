@@ -1634,11 +1634,16 @@ class Cable(NodeCoreConnected):
         For friction the required lenght is len(connections) - 2 or len(connections) - 1 if the cable is a loop
         """
 
-    def get_sticky_positions_and_directions(self):
-        """For each of the sticky points, gets the actual 3D position and direction of the cable at that point. Used for drawings"""
+    def get_sticky_positions_and_directions(self, min_dia = 0.1, scale = 1.5):
+        """For each of the sticky points, the endpoints of the cone that visualizes the sticky point are returned.
+        Scale is the size of the cone in relation to the diameter of the cable.
+        min_dia is the minimum diameter of the cable as used in the visualization"""
 
-        positions = []
-        orientations = []
+        diameter = self.diameter
+        diameter = max(diameter, min_dia)
+
+        p_to = []
+        p_from = []
 
         sticky_position = self._make_connection_aligned_copy_of_friction_vector(
             self.friction_point_cable
@@ -1658,68 +1663,49 @@ class Cable(NodeCoreConnected):
 
             if isinstance(c, Point):
 
-                positions.append(c.global_position)
                 # cable has no orientation at a point
                 # use the orientation of the previous segment and the next segment (if any)
-                o1 = (0, 0, 0)
+
+                gp = np.array(c.global_position, dtype=float)
+                direction = np.array((0,0,0), dtype=float)
+
                 if i > 0:
-                    o1 = (
-                        np.asarray(self.connections[i - 1].global_position)
-                        - c.global_position
-                    )
-                o2 = (0, 0, 0)
+                    direction = direction - self.connections[i - 1].global_position + gp
+
                 if i < len(self.connections) - 1:
-                    o2 = (
-                        np.asarray(self.connections[i + 1].global_position)
-                        - c.global_position
-                    )
+                    direction = direction - self.connections[i + 1].global_position + gp
 
-                orient = np.asarray((0, 0, 0), dtype=float)
-                if np.linalg.norm(o1) > 1e-9:
-                    orient += o1
-                if np.linalg.norm(o2) > 1e-9:
-                    if np.linalg.norm(np.dot(orient, o2)) > 1e-9:
-                        orient += o2
-                    else:
-                        orient -= o2
-
-                if np.linalg.norm(orient) > 1e-9:
-                    orient = orient / np.linalg.norm(orient)
-                    orientations.append(orient)
+                if np.linalg.norm(direction) < 1e-9:
+                    direction[2] = 1
                 else:
-                    orientations.append((1, 0, 0))
+                    direction = direction / np.linalg.norm(direction)
+
+                p_to.append(gp)
+                p_from.append(gp + direction * diameter * scale)
+
 
             elif isinstance(c, Circle):
                 # sticky location at a circle
 
-                local_position_on_parent = c.point3_from_theta_and_r_local(
-                    theta=np.deg2rad(theta), r=c.radius + self.diameter / 2
+                local_position_on_parent1 = c.point3_from_theta_and_r_local(
+                    theta=np.deg2rad(theta), r=c.radius + diameter
+                )
+                local_position_on_parent2 = c.point3_from_theta_and_r_local(
+                    theta=np.deg2rad(theta), r=c.radius + diameter * (1+scale)
                 )
 
-                # local_position_on_parent = local_position + c.parent.position
 
                 if c.parent.parent is not None:
-                    global_position = c.parent.parent.to_glob_position(local_position_on_parent)
+                    p_to.append(c.parent.parent.to_glob_position(local_position_on_parent1))
+                    p_from.append(c.parent.parent.to_glob_position(local_position_on_parent2))
                 else:
-                    global_position = local_position_on_parent
-
-                positions.append(global_position)
-
-                # orientation is the tangent of the circle at the sticky point
-                radial = np.asarray(global_position) - c.global_position
-                tangent = np.cross(c.axis, radial)
-
-                if (
-                    np.linalg.norm(tangent) < 1e-9
-                ):  # fallback for zero radius and zero diameter
-                    orientations.append((1, 0, 0))
-
-                orientations.append(tangent)
+                    p_to.append(local_position_on_parent1)
+                    p_from.append(local_position_on_parent2)
 
             else:
                 raise ValueError("Unknown connection type")
 
-        return positions, orientations
+        return p_to, p_from
 
     def _get_partial_cable_length_fractions(self) -> list[float]:
         """For sticky cables, return a list of the fractions of the cable length that are between the sticky connections.
