@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
     c: Cable = s['Cable']
 
-    c.set_sticky_data_from_current_geometry()
+    c.set_zero_friction_sticky_data_from_current_geometry()
     c.friction_type = FrictionType.Position
 
     c.mass = 0.1

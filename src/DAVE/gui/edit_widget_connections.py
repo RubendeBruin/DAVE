@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from PySide6 import QtWidgets
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import QSizePolicy, QTreeWidgetItem, QComboBox
+from PySide6.QtGui import QPalette, QBrush
 
 from DAVE.gui.dialog_advanced_cable_settings import AdvancedCableSettings
 from DAVE.gui.dock_system.dockwidget import guiEventType
@@ -60,12 +61,6 @@ class CableConnection:
     friction_point_connection: float or None
 
 
-def set_disabled(item, indices):
-    for i in indices:
-        item.setForeground(i, Qt.lightGray)
-        item.setBackground(i, Qt.lightGray)
-
-
 def float_or_none(s):
     try:
         return float(s)
@@ -90,6 +85,10 @@ class EditConnections(NodeEditor):
         widget = QtWidgets.QWidget()
         ui = Ui_ConnectionForm()
         ui.setupUi(widget)
+
+        # Create a QBrush with the window surface color
+        window_color = widget.palette().color(QPalette.Window)
+        self._disabled_brush = QBrush(window_color)
 
         self.ui = ui
         self._widget = widget
@@ -143,6 +142,11 @@ class EditConnections(NodeEditor):
         ui.cbGeometryTweaking.toggled.connect(self._update_column_visibility)
 
         self._update_column_visibility()
+
+    def set_disabled(self, item, indices):
+        for i in indices:
+            item.setForeground(i, self._disabled_brush)
+            item.setBackground(i, self._disabled_brush)
 
     def connect(
         self,
@@ -284,26 +288,54 @@ class EditConnections(NodeEditor):
         endA max winding angle     no             yes        no              yes                       yes
         endB friction              no             no         no              yes                       yes
         endB max winding angle     no             no         no              yes                       yes
+        endA reversed              yes
+        endB reversed              yes            no         yes             yes                       yes
         """
 
         endAFr = self.endAFr
         endBFr = self.endBFr
 
+        endB_is_duplicate_to_close_loop = False
         if isinstance(self.node, Cable):
             endAFr = is_loop
+            endB_is_duplicate_to_close_loop = is_loop
 
         self.ui.tree.clear()
 
         # flag that position properties are not required
         friction_types = [c.friction_type for c in self.connections_model]
-        loop_with_one_fixed_position = (
-            endAFr
-            and friction_types.count(FrictionType.Position) == 1
-            and (
-                friction_types[0] == FrictionType.Position
-                or (endBFr and (friction_types[-1] == FrictionType.Position))
+
+        # determine if this is a loop with only a single fixed position
+        loop_with_one_fixed_position = False  # default
+        if isinstance(self.node, Cable):
+            if is_loop:
+                loop_with_one_fixed_position = (
+                    friction_types.count(FrictionType.Position) == 1
+                )
+        else:
+            # not a cable. Assume a SlingGrommet
+
+            # loop_with_one_fixed_position is possible:
+            #   - Sling : not possible
+            #   - Grommet in line mode : possible if single friction and it is the first or last
+            #   - Grommet in circle mode : possible if single friction
+
+            grommet_in_line_mode = getattr(self.node, "is_grommet_in_line_mode", False)
+            grommet_in_circle_mode = getattr(
+                self.node, "is_grommet_in_circle_mode", False
             )
-        )
+
+            if grommet_in_circle_mode:
+                loop_with_one_fixed_position = (
+                    friction_types.count(FrictionType.Position) == 1
+                )
+            elif grommet_in_line_mode:
+                loop_with_one_fixed_position = friction_types.count(
+                    FrictionType.Position
+                ) == 1 and (
+                    friction_types[0] == FrictionType.Position
+                    or friction_types[-1] == FrictionType.Position
+                )
 
         # columns:
         # 0 : reversed
@@ -330,14 +362,17 @@ class EditConnections(NodeEditor):
 
             # column # 0 : reversed
             if isinstance(connection.connection_node, (Circle)):
-                item.setCheckState(
-                    0,
-                    (
-                        Qt.CheckState.Checked
-                        if connection.reversed
-                        else Qt.CheckState.Unchecked
-                    ),
-                )
+                if i == N - 1 and endB_is_duplicate_to_close_loop:
+                    item.setText(0, "◡")
+                else:
+                    item.setCheckState(
+                        0,
+                        (
+                            Qt.CheckState.Checked
+                            if connection.reversed
+                            else Qt.CheckState.Unchecked
+                        ),
+                    )
 
             # 4 : friction type
 
@@ -345,7 +380,7 @@ class EditConnections(NodeEditor):
                 i == 0 and not endAFr and not is_loop or i == N - 1 and not endBFr
             ):  # see above for reasoning
                 # no friction to be set
-                set_disabled(item, [5, 6, 7])
+                self.set_disabled(item, [5, 6, 7])
 
             else:
                 friction_kind_combo = QComboBox()
@@ -358,25 +393,25 @@ class EditConnections(NodeEditor):
 
                 if connection.friction_type == FrictionType.No:
                     friction_kind_combo.setCurrentIndex(0)
-                    set_disabled(item, [5, 6, 7])
+                    self.set_disabled(item, [5, 6, 7])
 
                 elif connection.friction_type == FrictionType.Force:
                     friction_kind_combo.setCurrentIndex(1)
                     value = connection.friction_force_factor
                     item.setText(5, f"{value:.3g}" if value else "0")
-                    set_disabled(item, [6, 7])
+                    self.set_disabled(item, [6, 7])
 
                 elif connection.friction_type == FrictionType.Position:
                     friction_kind_combo.setCurrentIndex(2)
 
                     if loop_with_one_fixed_position:
-                        set_disabled(item, [5, 6, 7])
+                        self.set_disabled(item, [5, 6, 7])
                     else:
-                        set_disabled(item, [5])
+                        self.set_disabled(item, [5])
                         value = connection.friction_point_cable
                         item.setText(6, f"{value:.6g}" if value or value == 0 else "")
                         if isinstance(connection.connection_node, Point):
-                            set_disabled(item, [7])
+                            self.set_disabled(item, [7])
                         else:
                             value = connection.friction_point_connection
                             item.setText(
@@ -434,6 +469,28 @@ class EditConnections(NodeEditor):
             friction_factor = float_or_none(item.text(5))
             friction_cable_point = float_or_none(item.text(6))
             friction_connector_point = float_or_none(item.text(7))
+
+            # auto-fill positions if required but not set
+            if friction_type == FrictionType.Position:
+                if friction_cable_point is None:
+                    self.node: Cable
+                    try:
+                        pcab, psurf = (
+                            self.node.get_zero_friction_sticky_data_from_current_geometry()
+                        )
+                        friction_cable_point = pcab[i]
+                    except:
+                        pass
+
+                if friction_connector_point is None:
+                    self.node: Cable
+                    try:
+                        pcab, psurf = (
+                            self.node.get_zero_friction_sticky_data_from_current_geometry()
+                        )
+                        friction_connector_point = psurf[i]
+                    except:
+                        pass
 
             self.connections_model.append(
                 CableConnection(
@@ -701,19 +758,7 @@ class EditConnections(NodeEditor):
         # update the model
 
         if isinstance(self.node, Cable):
-            self.node.set_sticky_data_from_current_geometry()
+            self.node.set_zero_friction_sticky_data_from_current_geometry()
 
         self.guiEmitEvent(guiEventType.SELECTED_NODE_MODIFIED)
-        #
-        # self._update_model_from_node()
-        # self._update_ui_from_model()
-
-
-
-
-
-    # def show_advanced_settings(self):
-    #     dialog = AdvancedCableSettings(cable=self.node)
-    #     dialog.exec()
-    #     if dialog.code:
-    #         self.run_code(dialog.code, guiEventType.SELECTED_NODE_MODIFIED)
+        # automatically triggers update

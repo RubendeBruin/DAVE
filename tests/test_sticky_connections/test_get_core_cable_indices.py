@@ -38,7 +38,7 @@ def test_example_case_1():
     s, points = model()
     c = s.new_cable(name='Cable',connections = [points[0], points[1], points[2], points[3], points[4], points[0]])
 
-    c.set_sticky_data_from_current_geometry()
+    c.set_zero_friction_sticky_data_from_current_geometry()
 
     c.friction_type = [FrictionType.No,
                        FrictionType.Position,
@@ -68,7 +68,7 @@ def test_example_case_2():
     s, points = model()
     c = s.new_cable(name='Cable',connections = [points[0], points[1], points[2], points[3], points[4], points[0]])
 
-    c.set_sticky_data_from_current_geometry()
+    c.set_zero_friction_sticky_data_from_current_geometry()
 
     c.friction_type = [FrictionType.Position,  # 0
                        FrictionType.No,        # 1

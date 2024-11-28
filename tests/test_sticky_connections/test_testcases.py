@@ -22,4 +22,4 @@ if __name__ == '__main__':
 
     s.new_cable("Cable", endA="Circle", endB="Circle3", sheaves=["Circle2"])
 
-    DG(s)
+    # DG(s)

@@ -43,7 +43,7 @@ def test_change_connections():
     #
     # print(c.friction_forces)
 
-    c.set_sticky_data_from_current_geometry()
+    c.set_zero_friction_sticky_data_from_current_geometry()
     c.friction_type = FrictionType.Position
 
 
@@ -111,7 +111,7 @@ def test_should_not_crash():
 
     c: Cable = s['Cable']
 
-    c.set_sticky_data_from_current_geometry()
+    c.set_zero_friction_sticky_data_from_current_geometry()
     c.friction_type = FrictionType.Position
 
     s.new_frame(name='Frame')
@@ -174,7 +174,7 @@ def test_should_not_crash2():
 
     c: Cable = s['Cable']
 
-    c.set_sticky_data_from_current_geometry()
+    c.set_zero_friction_sticky_data_from_current_geometry()
     c.friction_type = FrictionType.Position
 
     s.new_frame(name='Frame')

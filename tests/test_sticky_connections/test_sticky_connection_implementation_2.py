@@ -70,7 +70,7 @@ if __name__ == '__main__':
 
     s['cable2'].get_points_for_visual()
 
-    DG(s, autosave=False)
+    # DG(s, autosave=False)
 
 
 

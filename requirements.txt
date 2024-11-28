@@ -2,7 +2,7 @@ PySide6-QtAds
 PySide6-essentials
 vtk
 matplotlib~=3.7.1
-numpy~=1.24.3
+numpy<2.0
 scipy~=1.10.1
 IPython~=8.12.2
 rapidfuzz

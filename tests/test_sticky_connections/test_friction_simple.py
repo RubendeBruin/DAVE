@@ -52,7 +52,7 @@ def test_friction_pcp():
 
     print(c.friction_forces)
 
-    c.set_sticky_data_from_current_geometry()
+    c.set_zero_friction_sticky_data_from_current_geometry()
     c.friction_type = FrictionType.Position
 
     s.update()
@@ -109,7 +109,7 @@ def test_friction_ppp():
 
     c: Cable = s['Cable']
 
-    c.set_sticky_data_from_current_geometry()
+    c.set_zero_friction_sticky_data_from_current_geometry()
     c.friction_type = FrictionType.Position
 
     s['Point1'].x = 4

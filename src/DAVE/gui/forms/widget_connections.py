@@ -130,6 +130,6 @@ class Ui_ConnectionForm(object):
         self.checkBox.setText(QCoreApplication.translate("ConnectionForm", u"Show Friction options", None))
         self.label_8.setText(QCoreApplication.translate("ConnectionForm", u"Drag/drop items to change order, add or remove.", None))
         self.pbPinLocations.setText(QCoreApplication.translate("ConnectionForm", u"Set Pin Locations", None))
-        self.lbDirection.setText(QCoreApplication.translate("ConnectionForm", u"For circles the direction in which the cable runs over it is defined by the axis of the circle. Check the box to run over the circle in opposite direction.", None))
+        self.lbDirection.setText(QCoreApplication.translate("ConnectionForm", u"For circles the direction in which the cable runs over it is defined by the axis of the circle. Check the box below \u2b6e/\u2b6f to run over the circle in opposite direction.", None))
     # retranslateUi
 

@@ -3,6 +3,34 @@ from numpy.testing import assert_allclose
 
 from DAVE import *
 
+def test_pp_stretched():
+    """10m material length stretched to 20m"""
+    s = Scene()
+    s.new_point(name='p1', position=(-10, 0, 0))
+    s.new_point(name='p2', position=(10, 0, 0))
+
+    c = s.new_cable(connections=['p1', 'p2'], name='cable', EA=1e6, length=10)
+    s.update()
+    print(c.material_lengths)
+
+    expected = (10.0,)
+    assert_allclose(c.material_lengths, expected, rtol=1e-6)
+
+def test_cc_loop_stretched():
+    s = Scene()
+    s.new_point(name='p1', position=(-10, 0, 0))
+    s.new_point(name='p2', position=(10, 0, 0))
+    s.new_circle(name='c1', parent='p1', radius=1.2, axis=(0, 1, 0))
+    s.new_circle(name='c2', parent='p2', radius=1.2, axis=(0, 1, 0))
+
+    c = s.new_cable(connections=['c1', 'c2', 'c1'], name='cable', EA=1e6, length=10)
+    s.update()
+    print(c.material_lengths_no_bars)
+
+    total = sum(c.material_lengths_no_bars)
+    assert_allclose(total, 10.0, rtol=1e-6)
+
+
 def test_pp():
     s = Scene()
     s.new_point(name='p1', position=(-10, 0, 0))
