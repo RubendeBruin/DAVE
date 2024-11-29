@@ -39,6 +39,8 @@ from DAVE.settings import (
     DAVE_NODEPROP_INFO,
 )
 
+import DAVE.settings as dave_settings
+
 from .exceptions import ModelInvalidException
 from .helpers.code_error_extract import get_code_error
 from .nds.base import NodeSingleton
@@ -1503,7 +1505,7 @@ class Scene:
             if node in self._nodes:
                 self.delete(node)
 
-    def delete(self, node : Node or str):
+    def delete(self, node: Node or str):
         """Deletes the given node from the scene as well as all nodes depending on it.
 
         Depending nodes are nodes that are physically connected to the deleted node or are observing the node.
@@ -1940,7 +1942,7 @@ class Scene:
                     while BackgroundSolver.Running:
                         if should_terminate():
                             BackgroundSolver.Stop()
-                            settings.SOLVER_TERMINATED_SCENE = self
+                            dave_settings.SOLVER_TERMINATED_SCENE = self  # we place the scene in the settings such that is can be handled.
                             print("Terminating solver")
                             return False
 
