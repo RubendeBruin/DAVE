@@ -170,7 +170,7 @@ class Cable(NodeCoreConnected):
         return r
 
     def _make_connection_aligned_copy_of_friction_vector(
-        self, input_vector, insert_value=None
+        self, input_vector: tuple or list, insert_value=None
     ):
         """Make a copy of the input vector, but aligned with the connections
 
@@ -192,7 +192,9 @@ class Cable(NodeCoreConnected):
 
         return c
 
-    def _make_friction_vector_from_connection_aligned_vector(self, input_vector):
+    def _make_friction_vector_from_connection_aligned_vector(
+        self, input_vector: tuple or list
+    ):
         """Make a copy of the input vector, but aligned with the connections
 
         See Also: _make_connection_aligned_copy_of_friction_vector
