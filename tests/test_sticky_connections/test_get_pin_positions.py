@@ -568,5 +568,138 @@ def test_model_with_roundbar():
 
     DG(s)
 
-if __name__ == '__main__':
-    test_model_with_roundbar()
+def test_relaxed_tolerance_needed():
+    s = Scene()
+
+
+    # auto generated python code
+    # By MS12H
+    # Time: 2024-11-29 12:04:21 UTC
+
+    # To be able to distinguish the important number (eg: fixed positions) from
+    # non-important numbers (eg: a position that is solved by the static solver) we use a dummy-function called 'solved'.
+    # For anything written as solved(number) that actual number does not influence the static solution
+
+    def solved(number):
+        return number
+
+
+    # Environment settings
+    s.g = 9.80665
+    s.waterlevel = 0.0
+    s.rho_air = 0.00126
+    s.rho_water = 1.025
+    s.wind_direction = 0.0
+    s.wind_velocity = 0.0
+    s.current_direction = 0.0
+    s.current_velocity = 0.0
+
+    # code for Body
+    s.new_rigidbody(
+        name="Body",
+        mass=300,
+        cog=(0, 0, 40),
+        position=(
+            solved(-13.41149842995775),
+            solved(-59.540491419181535),
+            solved(10.18239543411967),
+        ),
+        rotation=(solved(70.1431), solved(65.051), solved(66.1323)),
+        fixed=(False, False, False, False, False, False),
+    )
+
+    # code for system/Shackle1
+    s.new_rigidbody(
+        name="system/Shackle1",
+        mass=0.36,
+        cog=(0, 0, 0.267333),
+        position=(
+            solved(-0.5785365459955837),
+            solved(-62.45176828929154),
+            solved(24.935557977085217),
+        ),
+        rotation=(solved(-9.50913), solved(-8.4655), solved(-54.9617)),
+        inertia_radii=(0.6660330322138684, 0.5172583977085341, 0.4595174098986892),
+        fixed=(False, False, False, False, False, False),
+    )
+
+    # code for main/Block2p/prong1_axis
+    s.new_frame(
+        name="main/Block2p/prong1_axis",
+        position=(1.19819, -60.0626, 30.5161),
+        rotation=(-0.111092, -0.801472, 33.8703),
+        fixed=(True, True, True, True, True, True),
+    )
+
+    # code for Point
+    s.new_point(name="Point", parent="Body", position=(0, 0, 14))
+
+    # code for system/Shackle1/pin_point
+    s.new_point(
+        name="system/Shackle1/pin_point", parent="system/Shackle1", position=(0, 0, 0)
+    )
+
+    # code for system/Shackle1/bow_point
+    s.new_point(
+        name="system/Shackle1/bow_point",
+        parent="system/Shackle1",
+        position=(0, 0, 0.8005),
+    )
+
+    # code for system/Shackle1/inside_circle_center
+    s.new_point(
+        name="system/Shackle1/inside_circle_center",
+        parent="system/Shackle1",
+        position=(0, 0, 0.493),
+    )
+
+    # code for main/Block2p/prong1_sheave_att
+    s.new_frame(
+        name="main/Block2p/prong1_sheave_att",
+        parent="main/Block2p/prong1_axis",
+        position=(0, 0, 0),
+        rotation=(0, solved(-5.16826), 0),
+        fixed=(True, True, True, True, False, True),
+    )
+
+    # code for Circle
+    c = s.new_circle(name="Circle", parent="Point", axis=(0, 0, 1), radius=4.7)
+
+    # code for system/Shackle1/pin
+    c = s.new_circle(
+        name="system/Shackle1/pin",
+        parent="system/Shackle1/pin_point",
+        axis=(0, 1, 0),
+        radius=0.067,
+    )
+
+    # code for main/Block2p/prong1_sheave_poi
+    s.new_point(
+        name="main/Block2p/prong1_sheave_poi",
+        parent="main/Block2p/prong1_sheave_att",
+        position=(0, 0, -0.7),
+    )
+
+    # code for main/Block2p/prong1_sheave
+    c = s.new_circle(
+        name="main/Block2p/prong1_sheave",
+        parent="main/Block2p/prong1_sheave_poi",
+        axis=(1, 0, 0),
+        radius=0.4,
+    )
+
+    # code for system/Grommet1/_grommet
+    cab = s.new_cable(
+        name="system/Grommet1/_grommet",
+        endA="main/Block2p/prong1_sheave",
+        endB="main/Block2p/prong1_sheave",
+        length=100.196,
+        mass_per_length=0.0163768,
+        diameter=0.0625,
+        EA=267035.37555513246,
+        sheaves=["Circle", "system/Shackle1/pin", "Circle"],
+    )
+    s["system/Grommet1/_grommet"].reversed = (False, True, False, False, True)
+    s["system/Grommet1/_grommet"].offsets = [0, -1, 0, -1, 0]
+
+    cab.get_zero_friction_sticky_data_from_current_geometry()

@@ -1359,7 +1359,9 @@ class Cable(NodeCoreConnected):
         """Check the friction vectors values. Input vectors to be aligned with connections, pass only that portion of the
         connections vector that has friction properties defined
 
-        is_loop_with_single_positional_connection: bool : set to True if the cable is a loop and has only one connection with friction type Position
+        Args:
+        - is_loop_with_single_positional_connection: bool : set to True if the cable is a loop and has only one connection with friction type Position
+        - first_con_is_endA: bool : set to True if the first connection is the endA of the cable. This may not be the case if the first connection is not passed
 
         Returns a list of errors
         """
@@ -2072,8 +2074,9 @@ class Cable(NodeCoreConnected):
             connections_to_be_processed = connections_to_be_processed[:-1]
 
         # tolerance for the distance
-        tolerance = self.diameter / 2000
-        tolerance = max(tolerance, 1e-6)
+        #
+        tolerance = self.diameter / 100
+        tolerance = max(tolerance, 1e-4)
 
         connection_points = []
 
@@ -2100,6 +2103,8 @@ class Cable(NodeCoreConnected):
                 # the second point in row is the mid of the section on the circle
                 points_on_connection = []
 
+                n_before = len(cable_points)
+
                 while cable_points:
 
                     p = cable_points.pop(0)
@@ -2111,9 +2116,12 @@ class Cable(NodeCoreConnected):
                             center_to_p - np.dot(center_to_p, axis) * axis
                         )  # project on the plane perpendicular to the axis
 
-                    distance = np.linalg.norm(center_to_p)
+                    distance_to_center = np.linalg.norm(center_to_p)
+                    distance_to_target = np.abs(
+                        distance_to_center - c.radius - self.diameter / 2
+                    )
 
-                    if np.abs(distance - c.radius - self.diameter / 2) < tolerance:
+                    if distance_to_target < tolerance:
                         points_on_connection.append(tuple(p))
 
                         if not is_loop and (
@@ -2130,14 +2138,16 @@ class Cable(NodeCoreConnected):
                 # each island corresponds to a section of the cable that is on the circle
                 # which is also present as
 
-                if len(points_on_connection) == 3:
+                n_points_on_connection = len(points_on_connection)
+
+                if n_points_on_connection == 3:
                     connection_points.append(points_on_connection[1])
-                elif len(points_on_connection) > 0 and (i == 0 or i == N - 1):
+                elif n_points_on_connection > 0 and (i == 0 or i == N - 1):
                     # fewer points are found if the connection is at the start or end of the cable
                     connection_points.append(points_on_connection[0])
                 else:
                     raise ValueError(
-                        "Could not find the mid of the section on the circle"
+                        f"Could not find the mid of the section on the circle, of the {n_points_on_connection} remaining points found {n_points_on_connection} points on the circle"
                     )
 
         if is_loop:
