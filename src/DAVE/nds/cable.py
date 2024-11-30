@@ -2044,118 +2044,72 @@ class Cable(NodeCoreConnected):
 
         # create a dummy copy of the cable to get the visual without interfering with the actual cable
         # and without sticky points
+        #
+        # with non_sticky_cable(self) as non_sticky:
+        #
+        #     n_free = 0
+        #     n_circle = 3
+        #     constant_pointcount = True
+        #
+        #     points, _ = non_sticky._vfNode.get_drawing_data(
+        #         n_free, n_circle, constant_pointcount
+        #     )
+        #
+        #     active_bars = list(non_sticky._vfNode.connected_bar_active)
+        #
+        # # loop over the connections,
+        # # for each connection get the points that are on the connection (just check the distance)
+        # cable_points = [np.array(p) for p in points]
+        #
+        # # for loops, the last connection is the same as the first connection
+        # # but the visual breaks half-way the circle.
+        # # copy the last few point to the start of the list
+        # # end exclude the last connection from being processed
+        #
+        # is_loop = self._isloop
+        # connections_to_be_processed = self.connections
+        # if is_loop:
+        #     cable_points.insert(0, cable_points[-1])  # add the last point at the start
+        #     cable_points.insert(
+        #         0, cable_points[-2]
+        #     )  # add the for-last point at the start
+        #     connections_to_be_processed = connections_to_be_processed[:-1]
+        #
+        # # tolerance for the distance
+        # #
+        # tolerance = self.diameter / 100
+        # tolerance = max(tolerance, 1e-1)
+        #
+        # connection_points = []
+        #
 
+        # the easy way:
         with non_sticky_cable(self) as non_sticky:
-
-            n_free = 0
-            n_circle = 3
-            constant_pointcount = True
-
-            points, _ = non_sticky._vfNode.get_drawing_data(
-                n_free, n_circle, constant_pointcount
-            )
-
+            points = non_sticky._vfNode.get_connector_center_segment_positions()
             active_bars = list(non_sticky._vfNode.connected_bar_active)
 
-        # loop over the connections,
-        # for each connection get the points that are on the connection (just check the distance)
-        cable_points = [np.array(p) for p in points]
+        # check for non-active roundbars
+        # and set the points to None
 
-        # for loops, the last connection is the same as the first connection
-        # but the visual breaks half-way the circle.
-        # copy the last few point to the start of the list
-        # end exclude the last connection from being processed
+        assert len(points) == len(
+            self.connections
+        ), "Internal error in _get_cable_points_at_mid_of_connections returned wrong number of points"
 
-        is_loop = self._isloop
-        connections_to_be_processed = self.connections
-        if is_loop:
-            cable_points.insert(0, cable_points[-1])  # add the last point at the start
-            cable_points.insert(
-                0, cable_points[-2]
-            )  # add the for-last point at the start
-            connections_to_be_processed = connections_to_be_processed[:-1]
-
-        # tolerance for the distance
-        #
-        tolerance = self.diameter / 100
-        tolerance = max(tolerance, 1e-4)
-
-        connection_points = []
-
-        N = len(connections_to_be_processed)
-        for i, c in enumerate(connections_to_be_processed):
-            if isinstance(c, Point):
-                connection_points.append(c.global_position)
-                cable_points.pop(0)
-
-            elif isinstance(c, Circle):
-
-                axis = None
+        for i, c in enumerate(self.connections):
+            if isinstance(c, Circle):
                 if c.is_roundbar:
                     active = active_bars.pop(0)
                     if active:
-                        axis = np.array(c.global_axis)  # normalized
+                        pass
                     else:
-                        connection_points.append(None)  # inactive bar
-                        continue
+                        assert points[i] == (
+                            0,
+                            0,
+                            0,
+                        ), "Internal error in _get_cable_points_at_mid_of_connections, non-active roundbar has non-zero position"
+                        points[i] = None
 
-                # if we are here, we have an active roundbar or circle
-
-                # get the points on the circumference of the circle
-                # the second point in row is the mid of the section on the circle
-                points_on_connection = []
-
-                n_before = len(cable_points)
-
-                while cable_points:
-
-                    p = cable_points.pop(0)
-
-                    center_to_p = p - c.global_position
-
-                    if axis is not None:
-                        center_to_p = (
-                            center_to_p - np.dot(center_to_p, axis) * axis
-                        )  # project on the plane perpendicular to the axis
-
-                    distance_to_center = np.linalg.norm(center_to_p)
-                    distance_to_target = np.abs(
-                        distance_to_center - c.radius - self.diameter / 2
-                    )
-
-                    if distance_to_target < tolerance:
-                        points_on_connection.append(tuple(p))
-
-                        if not is_loop and (
-                            i == 0 or i == N - 1
-                        ):  # on first or last connection, we only need one point
-                            break
-
-                        # on intermediate connections we need 3 points
-                        if len(points_on_connection) == 3:
-                            break
-
-                # A cable may visit a circle more than once and even on different sides.
-                # if so we get multiple "islands" where the cable is on the circle
-                # each island corresponds to a section of the cable that is on the circle
-                # which is also present as
-
-                n_points_on_connection = len(points_on_connection)
-
-                if n_points_on_connection == 3:
-                    connection_points.append(points_on_connection[1])
-                elif n_points_on_connection > 0 and (i == 0 or i == N - 1):
-                    # fewer points are found if the connection is at the start or end of the cable
-                    connection_points.append(points_on_connection[0])
-                else:
-                    raise ValueError(
-                        f"Could not find the mid of the section on the circle, of the {n_points_on_connection} remaining points found {n_points_on_connection} points on the circle"
-                    )
-
-        if is_loop:
-            connection_points.append(connection_points[0])
-
-        return connection_points
+        return points
 
     @node_setter_manageable
     def set_length_for_tension(self, target_tension):

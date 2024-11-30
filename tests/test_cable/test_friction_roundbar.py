@@ -54,7 +54,6 @@ def test_roundbar_in_loop_set_friction_on_roundbar_to_None():
 def test_roundbar_in_loop_label_position_inactive():
     s,c = model()
 
-
     c.set_friction_old_style( (0.1, 0.1, None))
 
     s['b'].gz = -5
@@ -62,6 +61,8 @@ def test_roundbar_in_loop_label_position_inactive():
     data = c.get_annotation_data()
 
     points = [c.get_point_along_cable(d[0]) for d in data]
+
+    print(points)
 
     assert None in points
 

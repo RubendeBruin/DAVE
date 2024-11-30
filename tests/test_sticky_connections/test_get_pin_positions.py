@@ -566,9 +566,9 @@ def test_model_with_roundbar():
     cable : Cable = s['Cable']
     cable.get_zero_friction_sticky_data_from_current_geometry()
 
-    DG(s)
+    # DG(s)
 
-def test_relaxed_tolerance_needed():
+def test_relaxed_tolerance_needed_with_old_method():
     s = Scene()
 
 
