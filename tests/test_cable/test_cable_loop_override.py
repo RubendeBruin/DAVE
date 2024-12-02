@@ -46,6 +46,9 @@ def test_compare_with_normal_nonloop2p():
         if "friction" in key:
             continue
 
+        if "pin_position" in key:
+            continue
+
         print("comparing", key, value, ' =?= ' , getattr(cab_normal, key))
 
         assert value == getattr(cab_normal, key)
@@ -75,6 +78,9 @@ def test_compare_with_normal_nonloop3p():
             continue
 
         if "friction" in key:
+            continue
+
+        if "pin_position" in key:
             continue
 
         print("comparing", key, value, ' =?= ' , getattr(cab_normal, key))

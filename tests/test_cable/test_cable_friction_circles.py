@@ -286,10 +286,10 @@ def test_friction_grommet_over_circles():
     c = s.new_cable(connections=['p1', 'hook', 'p1'], name='cable', EA=122345, length=7)
 
     c.friction_force_factor = [None, 0.05]
-    c.friction_point_cable = [0, None]
-    c.friction_point_connection = [0, 0]
+    c.pin_position_cable = [0, None]
+    c.pin_position_circle = [0, 0]
 
-    c.friction_type = [FrictionType.Position, FrictionType.Force]
+    c.friction_type = [FrictionType.Pinned, FrictionType.Force]
 
     # s._save_coredump()
 
@@ -334,10 +334,10 @@ def test_friction_grommet_over_circles_higher_friction():
     c = s.new_cable(connections=['p1', 'hook', 'p1'], name='cable', EA=122345, length=7)
 
     c.friction_force_factor = [None, 0.5]
-    c.friction_point_cable = [0, None]
-    c.friction_point_connection = [0, 0]
+    c.pin_position_cable = [0, None]
+    c.pin_position_circle = [0, 0]
 
-    c.friction_type = [FrictionType.Position, FrictionType.Force]
+    c.friction_type = [FrictionType.Pinned, FrictionType.Force]
 
     s.update()
 
@@ -505,9 +505,9 @@ def test_friction_over_three_circle_loop():
 
 
     c.friction_force_factor = [0.1, None, 0.1]
-    c.friction_point_cable = [None, 0, None]
-    c.friction_point_connection = [0,0,0]
-    c.friction_type = [FrictionType.Force, FrictionType.Position,FrictionType.Force]
+    c.pin_position_cable = [None, 0, None]
+    c.pin_position_circle = [0,0,0]
+    c.friction_type = [FrictionType.Force, FrictionType.Pinned,FrictionType.Force]
 
 
     expected = [254963.727468, 333184.395387, 291461.721985]

@@ -54,10 +54,10 @@ if __name__ == '__main__':
     reversed = [False, False, False, False, False, False]
     offsets = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     max_winding_angles = [999.0, 999.0, 999.0, 999.0, 999.0, 999.0]
-    friction_type = [FrictionType.No, FrictionType.Force, FrictionType.Position, FrictionType.No]
+    friction_type = [FrictionType.No, FrictionType.Force, FrictionType.Pinned, FrictionType.No]
     friction_force_factor = [None, 0.5, None, None]
-    friction_point_cable = [None, None, 0.5, None]
-    friction_point_connection = [None, None, None, None]
+    pin_position_cable = [None, None, 0.5, None]
+    pin_position_circle = [None, None, None, None]
 
     s['cable2'].update_connections(connections=connections,
                                    reversed=reversed,
@@ -65,8 +65,8 @@ if __name__ == '__main__':
                                    max_winding_angles=max_winding_angles,
                                    friction_type=friction_type,
                                    friction_force_factor=friction_force_factor,
-                                   friction_point_cable=friction_point_cable,
-                                   friction_point_connection=friction_point_connection)
+                                   pin_position_cable=pin_position_cable,
+                                   pin_position_circle=pin_position_circle)
 
     s['cable2'].get_points_for_visual()
 

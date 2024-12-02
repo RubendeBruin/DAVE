@@ -55,9 +55,9 @@ def model():
                 sheaves=['Point3',
                          'Bottom'])
     # friction, first set values, then enable
-    s['Loop'].friction_point_cable = [0.059024212918091915, 0.34484533331770295, 0.6989516860188825]
-    s['Loop'].friction_point_connection = [328.61902993549796, None, 200.19826133364919]
-    s['Loop'].friction_type = [FrictionType.Position, FrictionType.Position, FrictionType.Position]
+    s['Loop'].pin_position_cable = [0.059024212918091915, 0.34484533331770295, 0.6989516860188825]
+    s['Loop'].pin_position_circle = [328.61902993549796, None, 200.19826133364919]
+    s['Loop'].friction_type = [FrictionType.Pinned, FrictionType.Pinned, FrictionType.Pinned]
 
     return s, s['Loop']
 

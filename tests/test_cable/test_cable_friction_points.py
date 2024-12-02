@@ -147,8 +147,8 @@ def test_friction_grommet_over_points():
     c = s.new_cable(connections=['p1', 'hook', 'p1'], name='cable', EA=122345, length=7)
 
     c.friction_force_factor = [None, 0.05]
-    c.friction_point_cable = [0, 1]
-    c.friction_type = [FrictionType.Position, FrictionType.Force]
+    c.pin_position_cable = [0, 1]
+    c.friction_type = [FrictionType.Pinned, FrictionType.Force]
 
     s.update()
 
@@ -176,8 +176,8 @@ def test_friction_grommet_over_points_solver():
 
     c = s.new_cable(connections=['p1', 'hook', 'p1'], name='cable', EA=122345, length=7)
     c.friction_force_factor = [None, 0.05]
-    c.friction_point_cable = [0, 1]
-    c.friction_type = [FrictionType.Position, FrictionType.Force]
+    c.pin_position_cable = [0, 1]
+    c.friction_type = [FrictionType.Pinned, FrictionType.Force]
 
     s.solve_statics()
 
@@ -216,8 +216,8 @@ def test_friction_over_three_point_loop_test_calcualted_friction_factor():
     c = s.new_cable(connections=['p1', 'p2', 'p3', 'p1'], name='cable', EA=122345, length=20)
 
     c.friction_force_factor =[0.0001, None, 0.0001]
-    c.friction_point_cable = [None, 0, None]
-    c.friction_type = [FrictionType.Force, FrictionType.Position, FrictionType.Force]
+    c.pin_position_cable = [None, 0, None]
+    c.friction_type = [FrictionType.Force, FrictionType.Pinned, FrictionType.Force]
 
     assert_allclose(c.calculated_friction_factor, -0.0002, atol=1e-2)
 
@@ -235,8 +235,8 @@ def test_friction_over_three_point_loop_test_frictions_sum_to_zero():
     )
 
     c.friction_force_factor =[0.0001, None, 0.0001]
-    c.friction_point_cable = [None, 0, None]
-    c.friction_type = [FrictionType.Force, FrictionType.Position, FrictionType.Force]
+    c.pin_position_cable = [None, 0, None]
+    c.friction_type = [FrictionType.Force, FrictionType.Pinned, FrictionType.Force]
 
     frictions = [(0.1, None, 0.1),
                  (0.1, None, -0.1),
@@ -279,8 +279,8 @@ def test_friction_over_three_point_loop():
     )
 
     c.friction_force_factor =[0.1, None, 0.1]
-    c.friction_point_cable = [None, 0, None]
-    c.friction_type = [FrictionType.Force, FrictionType.Position, FrictionType.Force]
+    c.pin_position_cable = [None, 0, None]
+    c.friction_type = [FrictionType.Force, FrictionType.Pinned, FrictionType.Force]
 
     # s._save_coredump()
 

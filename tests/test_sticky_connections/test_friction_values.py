@@ -84,10 +84,10 @@ def test_p1f2_test_zero_diameter_cable_points():
     reversed = [False, True, False, False, False, False]
     offsets = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     max_winding_angles = [999.0, 0.0, 999.0, 999.0, 999.0, 0.0]
-    friction_type = [FrictionType.No, FrictionType.No, FrictionType.Position, FrictionType.No, FrictionType.Force]
+    friction_type = [FrictionType.No, FrictionType.No, FrictionType.Pinned, FrictionType.No, FrictionType.Force]
     friction_force_factor = [None, None, None, None, 0.5]
-    friction_point_cable = [None, None, 0.0, None, None]
-    friction_point_connection = [None, None, None, None, None]
+    pin_position_cable = [None, None, 0.0, None, None]
+    pin_position_circle = [None, None, None, None, None]
 
     s['cable'].update_connections(connections=connections,
                                   reversed=reversed,
@@ -95,8 +95,8 @@ def test_p1f2_test_zero_diameter_cable_points():
                                   max_winding_angles=max_winding_angles,
                                   friction_type=friction_type,
                                   friction_force_factor=friction_force_factor,
-                                  friction_point_cable=friction_point_cable,
-                                  friction_point_connection=friction_point_connection)
+                                  pin_position_cable=pin_position_cable,
+                                  pin_position_circle=pin_position_circle)
 
     forces = s['cable'].friction_forces
     assert_allclose(forces, (0, 0, -8333, 0, 8333), atol=1)
@@ -111,10 +111,10 @@ def test_2p():
     reversed = [False, True, False, False, False, False]
     offsets = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     max_winding_angles = [999.0, 0.0, 999.0, 999.0, 999.0, 0.0]
-    friction_type = [FrictionType.No, FrictionType.No, FrictionType.Position, FrictionType.No, FrictionType.Position]
+    friction_type = [FrictionType.No, FrictionType.No, FrictionType.Pinned, FrictionType.No, FrictionType.Pinned]
     friction_force_factor = [None, None, None, None, None]
-    friction_point_cable = [None, None, 0.1, None, 0.4]
-    friction_point_connection = [None, None, None, None, None]
+    pin_position_cable = [None, None, 0.1, None, 0.4]
+    pin_position_circle = [None, None, None, None, None]
 
     s['cable'].update_connections(connections=connections,
                                   reversed=reversed,
@@ -122,8 +122,8 @@ def test_2p():
                                   max_winding_angles=max_winding_angles,
                                   friction_type=friction_type,
                                   friction_force_factor=friction_force_factor,
-                                  friction_point_cable=friction_point_cable,
-                                  friction_point_connection=friction_point_connection)
+                                  pin_position_cable=pin_position_cable,
+                                  pin_position_circle=pin_position_circle)
 
     forces = s['cable'].friction_forces
 
@@ -213,9 +213,9 @@ def test_evaporated_sling():
     s['sling_grommet/_main'].reversed = (False, True, False, False, False)
     # friction, first set values, then enable
     s['sling_grommet/_main'].friction_force_factor = [None, 0.5, None]
-    s['sling_grommet/_main'].friction_point_cable = [0.2, None, None]
-    s['sling_grommet/_main'].friction_point_connection = [0.0, None, None]
-    s['sling_grommet/_main'].friction_type = [FrictionType.Position, FrictionType.Force, FrictionType.No]
+    s['sling_grommet/_main'].pin_position_cable = [0.2, None, None]
+    s['sling_grommet/_main'].pin_position_circle = [0.0, None, None]
+    s['sling_grommet/_main'].friction_type = [FrictionType.Pinned, FrictionType.Force, FrictionType.No]
 
     c : Cable = s['sling_grommet/_main']
     print(c.friction_forces)

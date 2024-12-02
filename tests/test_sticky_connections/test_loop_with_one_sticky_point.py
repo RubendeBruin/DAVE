@@ -22,11 +22,11 @@ def test_one_sticky_is_not_sticky():
     s, c, points = loop3()
 
     # this is valid
-    c.friction_type = [FrictionType.No, FrictionType.Position, FrictionType.No]
+    c.friction_type = [FrictionType.No, FrictionType.Pinned, FrictionType.No]
 
     # this is not valid
     with pytest.raises(ValueError):
-        c.friction_type = [FrictionType.No, FrictionType.Position, FrictionType.Position]
+        c.friction_type = [FrictionType.No, FrictionType.Pinned, FrictionType.Pinned]
 
 
 

@@ -44,7 +44,7 @@ def test_change_connections():
     # print(c.friction_forces)
 
     c.set_zero_friction_sticky_data_from_current_geometry()
-    c.friction_type = FrictionType.Position
+    c.friction_type = FrictionType.Pinned
 
 
     s.new_frame(name='Frame')
@@ -65,9 +65,9 @@ def test_change_connections():
     s['Cable'].connections = ('Point1', 'Circle', 'Point1', 'Point3')
 
     s['Cable'].friction = [0.0, 0.0]
-    s['Cable'].friction_point_cable = [0.584, 0.6]
-    s['Cable'].friction_point_connection = [38.9, None]
-    s['Cable'].friction_type = [FrictionType.Position, FrictionType.Position]
+    s['Cable'].pin_position_cable = [0.584, 0.6]
+    s['Cable'].pin_position_circle = [38.9, None]
+    s['Cable'].friction_type = [FrictionType.Pinned, FrictionType.Pinned]
 
     with pytest.raises(ValueError):
         s['Cable'].connections = ('Point1', 'Circle', 'Point1')
@@ -112,7 +112,7 @@ def test_should_not_crash():
     c: Cable = s['Cable']
 
     c.set_zero_friction_sticky_data_from_current_geometry()
-    c.friction_type = FrictionType.Position
+    c.friction_type = FrictionType.Pinned
 
     s.new_frame(name='Frame')
     s['Point2'].change_parent_to(s['Frame'])
@@ -126,10 +126,10 @@ def test_should_not_crash():
     s['Cable'].connections = ('Point1', 'Circle', 'Point1', 'Point3')
 
     s['Cable'].friction = [0.0, 0.0]
-    s['Cable'].friction_point_cable = [0.584, 0.6]
-    s['Cable'].friction_point_connection = [38.9, None]
+    s['Cable'].pin_position_cable = [0.584, 0.6]
+    s['Cable'].pin_position_circle = [38.9, None]
 
-    s['Cable'].friction_type = [FrictionType.Position, FrictionType.Position]
+    s['Cable'].friction_type = [FrictionType.Pinned, FrictionType.Pinned]
 
     with pytest.raises(ValueError):
         s['Cable'].connections = ('Point1', 'Circle', 'Point3')
@@ -175,7 +175,7 @@ def test_should_not_crash2():
     c: Cable = s['Cable']
 
     c.set_zero_friction_sticky_data_from_current_geometry()
-    c.friction_type = FrictionType.Position
+    c.friction_type = FrictionType.Pinned
 
     s.new_frame(name='Frame')
     s['Point2'].change_parent_to(s['Frame'])
@@ -189,10 +189,10 @@ def test_should_not_crash2():
     s['Cable'].connections = ('Point1', 'Circle', 'Point1', 'Point3')
 
     s['Cable'].friction = [0.0, 0.0]
-    s['Cable'].friction_point_cable = [0.584, 0.6]
-    s['Cable'].friction_point_connection = [38.9, None]
+    s['Cable'].pin_position_cable = [0.584, 0.6]
+    s['Cable'].pin_position_circle = [38.9, None]
 
-    s['Cable'].friction_type = [FrictionType.Position, FrictionType.Position]
+    s['Cable'].friction_type = [FrictionType.Pinned, FrictionType.Pinned]
 
     with pytest.raises(ValueError):
         s['Cable'].connections = ('Point1', 'Point1','Circle', 'Point3')

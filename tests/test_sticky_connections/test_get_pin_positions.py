@@ -45,8 +45,8 @@ def model():
                 EA=12345.0,
                 sheaves=['Point3'])
     # friction, first set values, then enable
-    s['Cable'].friction_point_cable = [0.34484533331770295]
-    s['Cable'].friction_type = [FrictionType.Position]
+    s['Cable'].pin_position_cable = [0.34484533331770295]
+    s['Cable'].friction_type = [FrictionType.Pinned]
 
     return s, s['Cable']
 
@@ -54,16 +54,16 @@ def model_loop():
     s, c = model()
 
     connections = ['Top', 'Point3', 'Bottom', 'Top']
-    friction_type = [FrictionType.No, FrictionType.Position, FrictionType.No]
+    friction_type = [FrictionType.No, FrictionType.Pinned, FrictionType.No]
     friction_force_factor = [None, 0, None]
-    friction_point_cable = [None, 0.34484533331770295, None]
-    friction_point_connection = [None, None, None]
+    pin_position_cable = [None, 0.34484533331770295, None]
+    pin_position_circle = [None, None, None]
 
     s['Cable'].update_connections(connections=connections,
                                   friction_type=friction_type,
                                   friction_force_factor=friction_force_factor,
-                                  friction_point_cable=friction_point_cable,
-                                  friction_point_connection=friction_point_connection)
+                                  pin_position_cable=pin_position_cable,
+                                  pin_position_circle=pin_position_circle)
 
     return s, c
 
@@ -469,8 +469,8 @@ def test_model_doubled_grommet():
     s['system/Sling1/_grommet'].reversed = (False, False, True, False, False, True, False, True, True)
     # friction, first set values, then enable
     s['system/Sling1/_grommet'].friction_force_factor = [None, None, 0.0, None, None, None, -0.0, None]
-    s['system/Sling1/_grommet'].friction_point_cable = [None, None, None, None, None, None, None, None]
-    s['system/Sling1/_grommet'].friction_type = [FrictionType.Position, FrictionType.No, FrictionType.Force,
+    s['system/Sling1/_grommet'].pin_position_cable = [None, None, None, None, None, None, None, None]
+    s['system/Sling1/_grommet'].friction_type = [FrictionType.Pinned, FrictionType.No, FrictionType.Force,
                                                  FrictionType.No, FrictionType.No, FrictionType.No, FrictionType.Force,
                                                  FrictionType.No]
 
@@ -496,8 +496,8 @@ def test_model_loop_with_returns_and_point_as_start_and_end():
     max_winding_angles = [999, 999, 999, 999, 999, 999]
     friction_type = [FrictionType.No, FrictionType.No, FrictionType.No, FrictionType.No, FrictionType.No]
     friction_force_factor = [None, None, None, None, None]
-    friction_point_cable = [None, None, None, None, None]
-    friction_point_connection = [None, None, None, None, None]
+    pin_position_cable = [None, None, None, None, None]
+    pin_position_circle = [None, None, None, None, None]
 
     c.update_connections(connections=connections,
                                   reversed=reversed,
@@ -505,8 +505,8 @@ def test_model_loop_with_returns_and_point_as_start_and_end():
                                   max_winding_angles=max_winding_angles,
                                   friction_type=friction_type,
                                   friction_force_factor=friction_force_factor,
-                                  friction_point_cable=friction_point_cable,
-                                  friction_point_connection=friction_point_connection)
+                                  pin_position_cable=pin_position_cable,
+                                  pin_position_circle=pin_position_circle)
 
     c: Cable
     poss = c._get_cable_points_at_mid_of_connections()
@@ -560,8 +560,8 @@ def test_model_with_roundbar():
     s['Cable'].reversed = (True, True, False, False)
     # friction, first set values, then enable
     s['Cable'].friction_force_factor = [None, 0.0, None]
-    s['Cable'].friction_point_cable = [None, None, None]
-    s['Cable'].friction_type = [FrictionType.No, FrictionType.Force, FrictionType.Position]
+    s['Cable'].pin_position_cable = [None, None, None]
+    s['Cable'].friction_type = [FrictionType.No, FrictionType.Force, FrictionType.Pinned]
 
     cable : Cable = s['Cable']
     cable.get_zero_friction_sticky_data_from_current_geometry()

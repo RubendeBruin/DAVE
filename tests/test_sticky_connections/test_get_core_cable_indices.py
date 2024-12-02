@@ -41,10 +41,10 @@ def test_example_case_1():
     c.set_zero_friction_sticky_data_from_current_geometry()
 
     c.friction_type = [FrictionType.No,
-                       FrictionType.Position,
+                       FrictionType.Pinned,
                        FrictionType.No,
                        FrictionType.No,
-                       FrictionType.Position]
+                       FrictionType.Pinned]
 
     indices = c._get_core_cable_indices()
     print(indices)
@@ -70,11 +70,11 @@ def test_example_case_2():
 
     c.set_zero_friction_sticky_data_from_current_geometry()
 
-    c.friction_type = [FrictionType.Position,  # 0
+    c.friction_type = [FrictionType.Pinned,  # 0
                        FrictionType.No,        # 1
                        FrictionType.No,        # 2
                        FrictionType.No,        # 3
-                       FrictionType.Position]  # 4
+                       FrictionType.Pinned]  # 4
 
     indices = c._get_core_cable_indices()
     print(indices)

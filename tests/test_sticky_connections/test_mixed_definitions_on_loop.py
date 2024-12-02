@@ -38,8 +38,8 @@ def test_2f_bugus_friction_def():
 
     s, c, points = loop5()
     c.friction_force_factor = [None, -2.0, 3.0, None, 0.5]
-    c.friction_point_cable = [0, 1,2,3,4]  # only the first point matters
-    c.friction_type = [FrictionType.Position, FrictionType.No, FrictionType.No, FrictionType.No,
+    c.pin_position_cable = [0, 1,2,3,4]  # only the first point matters
+    c.friction_type = [FrictionType.Pinned, FrictionType.No, FrictionType.No, FrictionType.No,
                        FrictionType.Force]
 
     assert_allclose(c.friction_forces, (-6767.464008214147, 0, 0.0, 0, 6767.464008214147), atol = 1e-6)
@@ -49,8 +49,8 @@ def test_1f_1p():
 
     s, c, points = loop5()
     c.friction_force_factor = [None, -2.0, 3.0, None, 0.5]
-    c.friction_point_cable = [0, 1,2,3,4]  # only the first point matters
-    c.friction_type = [FrictionType.Position, FrictionType.No, FrictionType.No, FrictionType.No,
+    c.pin_position_cable = [0, 1,2,3,4]  # only the first point matters
+    c.friction_type = [FrictionType.Pinned, FrictionType.No, FrictionType.No, FrictionType.No,
                        FrictionType.Force]
 
     assert_allclose(c.friction_forces, (-6767.464008214147, 0, 0.0, 0, 6767.464008214147), atol = 1e-6)
@@ -67,8 +67,8 @@ def test_2p_1f():
 
     s, c, points = loop5()
     c.friction_force_factor = [None, -2.0, 3.0, None, 0.5]
-    c.friction_point_cable = [0, 0.3,2,3,4]  # only the first two points matter
-    c.friction_type = [FrictionType.Position, FrictionType.Position, FrictionType.No, FrictionType.No,
+    c.pin_position_cable = [0, 0.3,2,3,4]  # only the first two points matter
+    c.friction_type = [FrictionType.Pinned, FrictionType.Pinned, FrictionType.No, FrictionType.No,
                        FrictionType.Force]
 
     s.update()
@@ -98,8 +98,8 @@ def test_invalid_setting():
     c.update()
 
     s['cable'].friction = [None, -2.0, 3.0, None, 0.5]
-    s['cable'].friction_point_cable = [0.0, 0.3, 2.0, 3.0, 4.0]
-    s['cable'].friction_point_connection = [None, None, None, None, None]
+    s['cable'].pin_position_cable = [0.0, 0.3, 2.0, 3.0, 4.0]
+    s['cable'].pin_position_circle = [None, None, None, None, None]
 
     with pytest.raises(ValueError):
         s['cable'].friction_type = [FrictionType.No, FrictionType.No, FrictionType.No, FrictionType.No, FrictionType.Force]
@@ -113,13 +113,13 @@ def test_invalid_setting_detect():
     c.update()
 
     friction_force = [None, -2.0, 3.0, None, 0.5]
-    friction_point_cable = [0.0, 0.3, 2.0, 3.0, 4.0]
-    friction_point_connection = [None, None, None, None, None]
+    pin_position_cable = [0.0, 0.3, 2.0, 3.0, 4.0]
+    pin_position_circle = [None, None, None, None, None]
     friction_type = [FrictionType.No, FrictionType.No, FrictionType.No, FrictionType.No, FrictionType.Force]
 
     errors = c._check_friction_vectors(friction_force_factor= friction_force,
-                                       friction_point_cable= friction_point_cable,
-                                       friction_point_connection= friction_point_connection,
+                                       pin_position_cable= pin_position_cable,
+                                       pin_position_circle= pin_position_circle,
                                        friction_type= friction_type)
     print(errors)
 

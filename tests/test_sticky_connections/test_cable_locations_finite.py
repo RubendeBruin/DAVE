@@ -38,10 +38,10 @@ def test_friction_ppp():
                 sheaves=['Point2','Point3'])
 
 
-    c.friction_point_cable = (0.3, 0.3)
+    c.pin_position_cable = (0.3, 0.3)
 
     with pytest.raises(ValueError):
-        c.friction_type = FrictionType.Position # <-- should raise an error because the points on the cable are not > previous
+        c.friction_type = FrictionType.Pinned # <-- should raise an error because the points on the cable are not > previous
 
     s.update()
 

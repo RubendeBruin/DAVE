@@ -57,8 +57,8 @@ class CableConnection:
     max_winding_angle: float
     friction_type: FrictionType
     friction_force_factor: float or None
-    friction_point_cable: float or None
-    friction_point_connection: float or None
+    pin_position_cable: float or None
+    pin_position_circle: float or None
 
 
 def float_or_none(s):
@@ -212,12 +212,12 @@ class EditConnections(NodeEditor):
         )
         a_friction_cable_point = (
             self.node._make_connection_aligned_copy_of_friction_vector(
-                self.node.friction_point_cable, insert_value=None
+                self.node.pin_position_cable, insert_value=None
             )
         )
         a_friction_connector_point = (
             self.node._make_connection_aligned_copy_of_friction_vector(
-                self.node.friction_point_connection, insert_value=None
+                self.node.pin_position_circle, insert_value=None
             )
         )
 
@@ -310,7 +310,7 @@ class EditConnections(NodeEditor):
         if isinstance(self.node, Cable):
             if is_loop:
                 loop_with_one_fixed_position = (
-                    friction_types.count(FrictionType.Position) == 1
+                    friction_types.count(FrictionType.Pinned) == 1
                 )
         else:
             # not a cable. Assume a SlingGrommet
@@ -327,14 +327,14 @@ class EditConnections(NodeEditor):
 
             if grommet_in_circle_mode:
                 loop_with_one_fixed_position = (
-                    friction_types.count(FrictionType.Position) == 1
+                    friction_types.count(FrictionType.Pinned) == 1
                 )
             elif grommet_in_line_mode:
                 loop_with_one_fixed_position = friction_types.count(
-                    FrictionType.Position
+                    FrictionType.Pinned
                 ) == 1 and (
-                    friction_types[0] == FrictionType.Position
-                    or friction_types[-1] == FrictionType.Position
+                    friction_types[0] == FrictionType.Pinned
+                    or friction_types[-1] == FrictionType.Pinned
                 )
 
         # columns:
@@ -401,19 +401,19 @@ class EditConnections(NodeEditor):
                     item.setText(5, f"{value:.3g}" if value else "0")
                     self.set_disabled(item, [6, 7])
 
-                elif connection.friction_type == FrictionType.Position:
+                elif connection.friction_type == FrictionType.Pinned:
                     friction_kind_combo.setCurrentIndex(2)
 
                     if loop_with_one_fixed_position:
                         self.set_disabled(item, [5, 6, 7])
                     else:
                         self.set_disabled(item, [5])
-                        value = connection.friction_point_cable
+                        value = connection.pin_position_cable
                         item.setText(6, f"{value:.6g}" if value or value == 0 else "")
                         if isinstance(connection.connection_node, Point):
                             self.set_disabled(item, [7])
                         else:
-                            value = connection.friction_point_connection
+                            value = connection.pin_position_circle
                             item.setText(
                                 7, f"{value:.3g}" if value or value == 0 else ""
                             )
@@ -464,14 +464,14 @@ class EditConnections(NodeEditor):
                 elif friction_type_string == "Force":
                     friction_type = FrictionType.Force
                 elif friction_type_string == "Position":
-                    friction_type = FrictionType.Position
+                    friction_type = FrictionType.Pinned
 
             friction_factor = float_or_none(item.text(5))
             friction_cable_point = float_or_none(item.text(6))
             friction_connector_point = float_or_none(item.text(7))
 
             # auto-fill positions if required but not set
-            if friction_type == FrictionType.Position:
+            if friction_type == FrictionType.Pinned:
                 if friction_cable_point is None:
                     self.node: Cable
                     try:
@@ -543,16 +543,16 @@ class EditConnections(NodeEditor):
 
         friction_types = [n.friction_type for n in cons]
         friction_factors = [n.friction_force_factor for n in cons]
-        friction_cable_points = [n.friction_point_cable for n in cons]
-        friction_connector_points = [n.friction_point_connection for n in cons]
+        friction_cable_points = [n.pin_position_cable for n in cons]
+        friction_connector_points = [n.pin_position_circle for n in cons]
 
         # check the values
         self.node: Cable  # type hint only
         errors = self.node._check_friction_vectors(
             connections=connection_names,
             friction_force_factor=friction_factors,
-            friction_point_cable=friction_cable_points,
-            friction_point_connection=friction_connector_points,
+            pin_position_cable=friction_cable_points,
+            pin_position_circle=friction_connector_points,
             friction_type=friction_types,
             max_winding_angles=max_winding_angles,
             offsets=offsets,
@@ -563,8 +563,8 @@ class EditConnections(NodeEditor):
             errors = self.node._check_friction_vectors(
                 connections=connection_names,
                 friction_force_factor=friction_factors,
-                friction_point_cable=friction_cable_points,
-                friction_point_connection=friction_connector_points,
+                pin_position_cable=friction_cable_points,
+                pin_position_circle=friction_connector_points,
                 friction_type=friction_types,
                 max_winding_angles=max_winding_angles,
                 offsets=offsets,
@@ -581,8 +581,8 @@ class EditConnections(NodeEditor):
         code += f"max_winding_angles = {max_winding_angles}\n"
         code += f"friction_type = {friction_types}\n"
         code += f"friction_force_factor = {friction_factors}\n"
-        code += f"friction_point_cable = {friction_cable_points}\n"
-        code += f"friction_point_connection = {friction_connector_points}\n"
+        code += f"pin_position_cable = {friction_cable_points}\n"
+        code += f"pin_position_circle = {friction_connector_points}\n"
 
         element = f"\ns['{self.node.name}']"
         code += (
@@ -592,8 +592,8 @@ class EditConnections(NodeEditor):
             "                             max_winding_angles=max_winding_angles,\n"
             "                             friction_type=friction_type,\n"
             "                             friction_force_factor=friction_force_factor,\n"
-            "                             friction_point_cable=friction_point_cable,\n"
-            "                             friction_point_connection=friction_point_connection)\n"
+            "                             pin_position_cable=pin_position_cable,\n"
+            "                             pin_position_circle=pin_position_circle)\n"
         )
 
         self.run_code(code, guiEventType.SELECTED_NODE_MODIFIED, sender=self)
@@ -725,8 +725,8 @@ class EditConnections(NodeEditor):
                 # max_winding_angle: float
                 # friction_type: FrictionType
                 # friction_force_factor: float or None
-                # friction_point_cable: float or None
-                # friction_point_connection: float or None
+                # pin_position_cable: float or None
+                # pin_position_circle: float or None
 
                 new_connection = CableConnection(
                     connection_node=node,
@@ -735,8 +735,8 @@ class EditConnections(NodeEditor):
                     max_winding_angle=DEFAULT_WINDING_ANGLE,
                     friction_type=FrictionType.No,
                     friction_force_factor=None,
-                    friction_point_cable=None,
-                    friction_point_connection=None,
+                    pin_position_cable=None,
+                    pin_position_circle=None,
                 )
                 if to_row > 0:
                     self.connections_model.insert(to_row, new_connection)

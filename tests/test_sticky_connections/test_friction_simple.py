@@ -53,7 +53,7 @@ def test_friction_pcp():
     print(c.friction_forces)
 
     c.set_zero_friction_sticky_data_from_current_geometry()
-    c.friction_type = FrictionType.Position
+    c.friction_type = FrictionType.Pinned
 
     s.update()
     print(c.friction_forces)
@@ -110,7 +110,7 @@ def test_friction_ppp():
     c: Cable = s['Cable']
 
     c.set_zero_friction_sticky_data_from_current_geometry()
-    c.friction_type = FrictionType.Position
+    c.friction_type = FrictionType.Pinned
 
     s['Point1'].x = 4
 
@@ -161,16 +161,16 @@ def test_cc_loop():
                 sheaves=['Bottom'])
 
 
-    loop.friction_point_cable = [0, 0.5]
-    loop.friction_point_connection = [rad2deg(1.6), rad2deg(4.5)]
-    loop.friction_type = [FrictionType.Position, FrictionType.Position]
+    loop.pin_position_cable = [0, 0.5]
+    loop.pin_position_circle = [rad2deg(1.6), rad2deg(4.5)]
+    loop.friction_type = [FrictionType.Pinned, FrictionType.Pinned]
 
 
     expected = [ 10993.078756, -10993.078756]
     assert_allclose(loop.friction_forces, expected)
 
     # change points fixed to the circle, but same difference
-    loop.friction_point_cable = [0.2, 0.7]
+    loop.pin_position_cable = [0.2, 0.7]
 
     s.update()
 
@@ -210,18 +210,18 @@ def test_pp_loop():
                 EA=12345.0,
                 sheaves=['Point'])
 
-    loop.friction_point_cable = [0, 0.5]
-    loop.friction_type = [FrictionType.Position, FrictionType.Position]
+    loop.pin_position_cable = [0, 0.5]
+    loop.friction_type = [FrictionType.Pinned, FrictionType.Pinned]
 
     expected = (0,0)
     assert_allclose(loop.friction_forces, expected)
 
-    loop.friction_point_cable = [0, 0.6]
+    loop.pin_position_cable = [0, 0.6]
 
     print(loop.friction_forces)
     assert max(loop.friction_forces) > 0
 
-    loop.friction_point_cable = [0.1, 0.6]
+    loop.pin_position_cable = [0.1, 0.6]
     print(loop.friction_forces)
     assert max(loop.friction_forces) <= 1e-6
 

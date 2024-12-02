@@ -69,9 +69,9 @@ if __name__ == '__main__':
                            'Bottom'])
     # friction, first set values, then enable
     s['Cable'].friction_force_factor = [None, 0.0, None]
-    s['Cable'].friction_point_cable = [None, None, 0.0]
-    s['Cable'].friction_point_connection = [None, None, 210.0]
-    s['Cable'].friction_type = [FrictionType.No, FrictionType.Force, FrictionType.Position]
+    s['Cable'].pin_position_cable = [None, None, 0.0]
+    s['Cable'].pin_position_circle = [None, None, 210.0]
+    s['Cable'].friction_type = [FrictionType.No, FrictionType.Force, FrictionType.Pinned]
 
     # Limits
 

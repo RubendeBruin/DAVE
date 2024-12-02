@@ -30,7 +30,7 @@ from ..visual_helpers.constants import (
 class FrictionType(Enum):
     No = 0
     Force = 1
-    Position = 2
+    Pinned = 2
 
     def __repr__(self):
         return self.__str__()
@@ -131,8 +131,8 @@ class Cable(NodeCoreConnected):
         self._friction_force_factor: list[float or None] = (
             list()
         )  # length of friction is one or two less than pois
-        self._friction_point_cable: list[float or None] = list()
-        self._friction_point_connection: list[float or None] = list()
+        self._pin_position_cable: list[float or None] = list()
+        self._pin_position_circle: list[float or None] = list()
 
         # scalar properties
         self._length = 1
@@ -240,20 +240,20 @@ class Cable(NodeCoreConnected):
         self.update_connections(friction_force_factor=value)
 
     @property
-    def friction_point_cable(self):
-        return tuple(self._friction_point_cable)
+    def pin_position_cable(self):
+        return tuple(self._pin_position_cable)
 
-    @friction_point_cable.setter
-    def friction_point_cable(self, value):
-        self.update_connections(friction_point_cable=value)
+    @pin_position_cable.setter
+    def pin_position_cable(self, value):
+        self.update_connections(pin_position_cable=value)
 
     @property
-    def friction_point_connection(self):
-        return tuple(self._friction_point_connection)
+    def pin_position_circle(self):
+        return tuple(self._pin_position_circle)
 
-    @friction_point_connection.setter
-    def friction_point_connection(self, value):
-        self.update_connections(friction_point_connection=value)
+    @pin_position_circle.setter
+    def pin_position_circle(self, value):
+        self.update_connections(pin_position_circle=value)
 
     @property
     def friction(self) -> tuple[float]:
@@ -285,13 +285,13 @@ class Cable(NodeCoreConnected):
             positions = [None] * len(value)
             positions[value.index(None)] = 0
 
-            self.friction_point_cable = positions
-            self.friction_point_connection = positions
+            self.pin_position_cable = positions
+            self.pin_position_circle = positions
 
             self.friction_force_factor = [_ if _ is not None else 0 for _ in value]
 
             types = [
-                FrictionType.Force if _ is not None else FrictionType.Position
+                FrictionType.Force if _ is not None else FrictionType.Pinned
                 for _ in value
             ]
             self.friction_type = types
@@ -306,8 +306,8 @@ class Cable(NodeCoreConnected):
         self,
         friction_type=None,
         friction_force_factor=None,
-        friction_point_cable=None,
-        friction_point_connection=None,
+        pin_position_cable=None,
+        pin_position_circle=None,
         connections=None,
         reversed=None,
         max_winding_angles=None,
@@ -326,8 +326,8 @@ class Cable(NodeCoreConnected):
         errors = self._check_friction_vectors(
             friction_type=friction_type,
             friction_force_factor=friction_force_factor,
-            friction_point_cable=friction_point_cable,
-            friction_point_connection=friction_point_connection,
+            pin_position_cable=pin_position_cable,
+            pin_position_circle=pin_position_circle,
             connections=connections,
         )
 
@@ -342,11 +342,11 @@ class Cable(NodeCoreConnected):
         if friction_force_factor is None:
             friction_force_factor = self._friction_force_factor
 
-        if friction_point_cable is None:
-            friction_point_cable = self._friction_point_cable
+        if pin_position_cable is None:
+            pin_position_cable = self._pin_position_cable
 
-        if friction_point_connection is None:
-            friction_point_connection = self._friction_point_connection
+        if pin_position_circle is None:
+            pin_position_circle = self._pin_position_circle
 
         if connections is None:
             connections = self.connections
@@ -367,8 +367,8 @@ class Cable(NodeCoreConnected):
         # Make all lists, such that we can inplace adjust lengths
         friction_type = list(friction_type)
         friction_force_factor = list(friction_force_factor)
-        friction_point_cable = list(friction_point_cable)
-        friction_point_connection = list(friction_point_connection)
+        pin_position_cable = list(pin_position_cable)
+        pin_position_circle = list(pin_position_circle)
         connections = list(connections)
         reversed = list(reversed)
         max_winding_angles = list(max_winding_angles)
@@ -392,14 +392,14 @@ class Cable(NodeCoreConnected):
 
         sync_inplace(friction_type, FrictionType.No, n_req)
         sync_inplace(friction_force_factor, 0, n_req)
-        sync_inplace(friction_point_cable, None, n_req)
-        sync_inplace(friction_point_connection, None, n_req)
+        sync_inplace(pin_position_cable, None, n_req)
+        sync_inplace(pin_position_circle, None, n_req)
 
         # apply
         self._friction_type = friction_type
         self._friction_force_factor = friction_force_factor
-        self._friction_point_cable = friction_point_cable
-        self._friction_point_connection = friction_point_connection
+        self._pin_position_cable = pin_position_cable
+        self._pin_position_circle = pin_position_circle
 
         self._offsets = offsets
         self._max_winding_angle = max_winding_angles
@@ -415,7 +415,7 @@ class Cable(NodeCoreConnected):
         """True if the loop is sticky. If the cable is a loop then this is the case if the cable has more than one positional points,
         if the cable is not a loop then one positional point is sufficient to make the cable sticky[bool]
         """
-        n_positions = self._friction_type.count(FrictionType.Position)
+        n_positions = self._friction_type.count(FrictionType.Pinned)
 
         if self._isloop:
             return n_positions > 1
@@ -1221,8 +1221,8 @@ class Cable(NodeCoreConnected):
         connections=None,
         friction_type=None,
         friction_force_factor=None,
-        friction_point_cable=None,
-        friction_point_connection=None,
+        pin_position_cable=None,
+        pin_position_circle=None,
         max_winding_angles=None,
         offsets=None,
         reversed=None,
@@ -1260,11 +1260,11 @@ class Cable(NodeCoreConnected):
         if friction_force_factor is None:
             friction_force_factor = self._friction_force_factor
 
-        if friction_point_cable is None:
-            friction_point_cable = self._friction_point_cable
+        if pin_position_cable is None:
+            pin_position_cable = self._pin_position_cable
 
-        if friction_point_connection is None:
-            friction_point_connection = self._friction_point_connection
+        if pin_position_circle is None:
+            pin_position_circle = self._pin_position_circle
 
         errors = []
 
@@ -1298,14 +1298,14 @@ class Cable(NodeCoreConnected):
                 f"Friction force factor vector has length {len(friction_force_factor)} but should have length {n_req}"
             )
 
-        if len(friction_point_cable) != n_req:
+        if len(pin_position_cable) != n_req:
             errors.append(
-                f"Friction point cable vector has length {len(friction_point_cable)} but should have length {n_req}"
+                f"Friction point cable vector has length {len(pin_position_cable)} but should have length {n_req}"
             )
 
-        if len(friction_point_connection) != n_req:
+        if len(pin_position_circle) != n_req:
             errors.append(
-                f"Friction point connection vector has length {len(friction_point_connection)} but should have length {n_req}"
+                f"Friction point connection vector has length {len(pin_position_circle)} but should have length {n_req}"
             )
 
         if errors:
@@ -1320,7 +1320,7 @@ class Cable(NodeCoreConnected):
             endA_is_first = False
 
         is_loop_with_single_positional_connection = (
-            is_loop and friction_type.count(FrictionType.Position) == 1
+            is_loop and friction_type.count(FrictionType.Pinned) == 1
         )
 
         # check values for active friction types
@@ -1329,8 +1329,8 @@ class Cable(NodeCoreConnected):
                 cons,
                 friction_type,
                 friction_force_factor,
-                friction_point_cable,
-                friction_point_connection,
+                pin_position_cable,
+                pin_position_circle,
                 is_loop_with_single_positional_connection=is_loop_with_single_positional_connection,
                 first_con_is_endA=endA_is_first,
                 last_con_is_endB=False,
@@ -1340,7 +1340,7 @@ class Cable(NodeCoreConnected):
         # check loops
         if is_loop:
             if FrictionType.Force in friction_type:
-                if FrictionType.Position not in friction_type:
+                if FrictionType.Pinned not in friction_type:
                     errors.append(
                         "If 'Force' friction is defined on a LOOPED cable, then at least one of the other connections shall be set to 'Position' to absorb any remaining friction and ensure internal force balance."
                     )
@@ -1352,8 +1352,8 @@ class Cable(NodeCoreConnected):
         cons,
         friction_type,
         friction_force_factor,
-        friction_point_cable,
-        friction_point_connection,
+        pin_position_cable,
+        pin_position_circle,
         is_loop_with_single_positional_connection=False,
         first_con_is_endA=False,
         last_con_is_endB=False,
@@ -1369,7 +1369,7 @@ class Cable(NodeCoreConnected):
         """
 
         errors = []
-        previous_friction_point_cable = -1
+        previous_pin_position_cable = -1
         delta = 1e-6
 
         for i, (con, kind, ff, pcable, pconnector) in enumerate(
@@ -1377,8 +1377,8 @@ class Cable(NodeCoreConnected):
                 cons,
                 friction_type,
                 friction_force_factor,
-                friction_point_cable,
-                friction_point_connection,
+                pin_position_cable,
+                pin_position_circle,
             )
         ):
 
@@ -1399,7 +1399,7 @@ class Cable(NodeCoreConnected):
                                 f"Friction force factor nr {i} is {ff} but should be in the range (-1,1)"
                             )
 
-            if kind == FrictionType.Position:
+            if kind == FrictionType.Pinned:
 
                 if isinstance(con, Circle):
                     if con.is_roundbar:
@@ -1429,12 +1429,12 @@ class Cable(NodeCoreConnected):
                             f"Friction type nr {i} is set to Position, Position of cable is set to {pcable} but should be in range [0,1]"
                         )
 
-                    if pcable < previous_friction_point_cable + delta:
+                    if pcable < previous_pin_position_cable + delta:
                         errors.append(
-                            f"'Friction point cable' nr {i} has value {pcable} but should be larger than the previous friction point cable with value {previous_friction_point_cable} (there shall be a non-zero length of cable between two connections)"
+                            f"'Friction point cable' nr {i} has value {pcable} but should be larger than the previous friction point cable with value {previous_pin_position_cable} (there shall be a non-zero length of cable between two connections)"
                         )
 
-                    previous_friction_point_cable = pcable
+                    previous_pin_position_cable = pcable
                 else:
                     errors.append(
                         f"Friction type nr {i} is set to Position, but the position of the cable is not valid: {pcable}"
@@ -1455,13 +1455,13 @@ class Cable(NodeCoreConnected):
     #
     # For sticky cables, the cable is stuck to the connections. This is done by defining the position of the cable at the connections.
     # For this two pieces of data are needed:
-    #   1. Which point of the cable is stuck to the connection  :  friction_point_cable
-    #   2. To which point of the connection is the cable stuck  :  friction_point_connection
+    #   1. Which point of the cable is stuck to the connection  :  pin_position_cable
+    #   2. To which point of the connection is the cable stuck  :  pin_position_connection
     #
     # The second piece is only applicable to circles. For points the cable is stuck to the point.
     #
-    # The friction_point_cable is a vector of floats or None where None may be used if the connection is not sticky.
-    # The friction_point_connection is a vector of floats (for circles) or None (for points). None may also be used if the connection is not sticky.
+    # The pin_position_cable is a vector of floats or None where None may be used if the connection is not sticky.
+    # The pin_position_connection is a vector of floats (for circles) or None (for points). None may also be used if the connection is not sticky.
     #
     # Sitcky connections are active if the friction_model for the connector is FrictionModel.Position
     #
@@ -1566,8 +1566,8 @@ class Cable(NodeCoreConnected):
             point_cable = point_cable[1:-1]
             point_connection = point_connection[1:-1]
 
-        self.friction_point_cable = point_cable
-        self.friction_point_connection = point_connection
+        self.pin_position_cable = point_cable
+        self.pin_position_circle = point_connection
 
     def _synchronize_connection_definition_vector_lengths_to_connections(self):
         """Synchronize the lengths of the connection definition vectors such that they
@@ -1597,10 +1597,10 @@ class Cable(NodeCoreConnected):
         p_from = []
 
         sticky_position = self._make_connection_aligned_copy_of_friction_vector(
-            self.friction_point_cable
+            self.pin_position_cable
         )
         sticky_connection = self._make_connection_aligned_copy_of_friction_vector(
-            self.friction_point_connection
+            self.pin_position_circle
         )
         friction_type = self._make_connection_aligned_copy_of_friction_vector(
             self.friction_type
@@ -1609,7 +1609,7 @@ class Cable(NodeCoreConnected):
         for i, (c, model, s_pos, theta) in enumerate(
             zip(self.connections, friction_type, sticky_position, sticky_connection)
         ):
-            if model is not FrictionType.Position:
+            if model is not FrictionType.Pinned:
                 continue
 
             if isinstance(c, Point):
@@ -1669,8 +1669,8 @@ class Cable(NodeCoreConnected):
 
             positions = []
 
-            for kind, pos_cable in zip(self._friction_type, self._friction_point_cable):
-                if kind is FrictionType.Position:
+            for kind, pos_cable in zip(self._friction_type, self._pin_position_cable):
+                if kind is FrictionType.Pinned:
                     positions.append(pos_cable)
 
             lengths = [
@@ -1742,7 +1742,7 @@ class Cable(NodeCoreConnected):
                 connection = connections_to_be_processed.pop(0)
 
                 if (
-                    friction_type_c_aligned[connection] is FrictionType.Position
+                    friction_type_c_aligned[connection] is FrictionType.Pinned
                 ):  # this is a sticky connection,
 
                     # add the last connection to the current core_cable (if any)
@@ -1774,7 +1774,7 @@ class Cable(NodeCoreConnected):
             for i_connection, connection in enumerate(self.connections):
 
                 cable.append(i_connection)
-                if friction_type_c_aligned[i_connection] is FrictionType.Position:
+                if friction_type_c_aligned[i_connection] is FrictionType.Pinned:
                     core_cables.append(cable)
                     cable = [i_connection]
 
@@ -1803,9 +1803,9 @@ class Cable(NodeCoreConnected):
             connection = self.connections[i_connection]
 
             if self._isloop:
-                theta = self._friction_point_connection[i_connection]
+                theta = self._pin_position_circle[i_connection]
             else:
-                theta = self._friction_point_connection[i_connection - 1]
+                theta = self._pin_position_circle[i_connection - 1]
 
             position = connection.point3_from_theta_and_r_local(
                 np.deg2rad(theta), r=connection.radius + 0.5 * self.diameter
@@ -1846,8 +1846,8 @@ class Cable(NodeCoreConnected):
         # re-write the friction factors for loops with a single sticky connection
         if self._isloop:
             # do we have a single sticky connection?
-            if self._friction_type.count(FrictionType.Position) == 1:
-                i = self._friction_type.index(FrictionType.Position)
+            if self._friction_type.count(FrictionType.Pinned) == 1:
+                i = self._friction_type.index(FrictionType.Pinned)
                 friction_factors_copy[i] = None
                 model_sticky = False
 
@@ -2041,7 +2041,6 @@ class Cable(NodeCoreConnected):
             points = non_sticky._vfNode.get_connector_center_segment_positions()
             active_bars = list(non_sticky._vfNode.connected_bar_active)
 
-
         assert len(points) == len(
             self.connections
         ), "Internal error in _get_cable_points_at_mid_of_connections returned wrong number of points"
@@ -2157,14 +2156,14 @@ class Cable(NodeCoreConnected):
                     f"s['{self.name}'].friction_force_factor = {self._friction_force_factor}"
                 )
 
-            if any([_ is FrictionType.Position for _ in self._friction_type]):
+            if any([_ is FrictionType.Pinned for _ in self._friction_type]):
                 code.append(
-                    f"s['{self.name}'].friction_point_cable = {self._friction_point_cable}"
+                    f"s['{self.name}'].pin_position_cable = {self._pin_position_cable}"
                 )
 
-                if any([_ is not None for _ in self._friction_point_connection]):
+                if any([_ is not None for _ in self._pin_position_circle]):
                     code.append(
-                        f"s['{self.name}'].friction_point_connection = {self._friction_point_connection}"
+                        f"s['{self.name}'].pin_position_circle = {self._pin_position_circle}"
                     )
 
             code.append(f"s['{self.name}'].friction_type = {self._friction_type}")
