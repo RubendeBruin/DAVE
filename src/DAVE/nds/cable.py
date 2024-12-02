@@ -2035,65 +2035,19 @@ class Cable(NodeCoreConnected):
     def _get_cable_points_at_mid_of_connections(self) -> list[tuple or None]:
         """Returns the 3d points at the mid of the connections.
         For points this is just the point,
-        for circles or round this is the mid of the section on the circle.
+        for circles or round this is the mid of the section on the circle."""
 
-        Inactive roundbars are returned as None
-
-        ! This is a relatively slow function; it utilizes the drawing data to get the points !
-        """
-
-        # create a dummy copy of the cable to get the visual without interfering with the actual cable
-        # and without sticky points
-        #
-        # with non_sticky_cable(self) as non_sticky:
-        #
-        #     n_free = 0
-        #     n_circle = 3
-        #     constant_pointcount = True
-        #
-        #     points, _ = non_sticky._vfNode.get_drawing_data(
-        #         n_free, n_circle, constant_pointcount
-        #     )
-        #
-        #     active_bars = list(non_sticky._vfNode.connected_bar_active)
-        #
-        # # loop over the connections,
-        # # for each connection get the points that are on the connection (just check the distance)
-        # cable_points = [np.array(p) for p in points]
-        #
-        # # for loops, the last connection is the same as the first connection
-        # # but the visual breaks half-way the circle.
-        # # copy the last few point to the start of the list
-        # # end exclude the last connection from being processed
-        #
-        # is_loop = self._isloop
-        # connections_to_be_processed = self.connections
-        # if is_loop:
-        #     cable_points.insert(0, cable_points[-1])  # add the last point at the start
-        #     cable_points.insert(
-        #         0, cable_points[-2]
-        #     )  # add the for-last point at the start
-        #     connections_to_be_processed = connections_to_be_processed[:-1]
-        #
-        # # tolerance for the distance
-        # #
-        # tolerance = self.diameter / 100
-        # tolerance = max(tolerance, 1e-1)
-        #
-        # connection_points = []
-        #
-
-        # the easy way:
         with non_sticky_cable(self) as non_sticky:
             points = non_sticky._vfNode.get_connector_center_segment_positions()
             active_bars = list(non_sticky._vfNode.connected_bar_active)
 
-        # check for non-active roundbars
-        # and set the points to None
 
         assert len(points) == len(
             self.connections
         ), "Internal error in _get_cable_points_at_mid_of_connections returned wrong number of points"
+
+        # check for non-active roundbars
+        # and set the points to None
 
         for i, c in enumerate(self.connections):
             if isinstance(c, Circle):
