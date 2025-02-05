@@ -1,4 +1,4 @@
-![](docs/images/promo1.jpg)
+# We are restructuring, this repository is currently outdated
 
 # DAVE
 
@@ -7,10 +7,6 @@ DAVE is a software package designed to make engineering more fun. DAVE will take
 
 See https://open-ocean.org/dave
 Documentation: https://usedave.nl
-
-## Download the compiled GUI
-
-A compiled version of the graphical user interface can be downloaded here: https://www.open-ocean.org/dave-gui-standalone-portable/
 
 ## Description
 
@@ -29,16 +25,3 @@ The design of DAVE is such that export to software such as dynamic simulation pa
 ## Documentation
 
 See https://usedave.nl
-
-## Installation
-
-At the moment DAVE only work under Windows. Linux can be made available on request. OSX only if you sponsor me a mac with more that 8Gb ram :-p
-
-Quick instuctions:
-
-    pip install useDAVE
-
-
-## Note
-
-This project relies on DAVEcore for geometry and force calculations. This compiled module is downloaded when starting the gui for the first time.
